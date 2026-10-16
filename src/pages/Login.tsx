@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { login } from '../api/auth'
 import { TOKEN_KEY } from '../api/client'
 import './login.css'
 
@@ -39,15 +38,12 @@ export default function Login() {
     setAlert('')
     if (!validate()) return
     setLoading(true)
-    try {
-      const result = await login(identifier.trim(), password)
-      localStorage.setItem(TOKEN_KEY, result.accessToken)
-      navigate('/', { replace: true })
-    } catch (err: any) {
-      setAlert(err?.response?.data?.message || err.message || 'Đăng nhập thất bại')
-    } finally {
+    // Mock login — không cần tài khoản thật, nối BE sau
+    setTimeout(() => {
+      localStorage.setItem(TOKEN_KEY, 'mock-admin-token')
       setLoading(false)
-    }
+      navigate('/', { replace: true })
+    }, 400)
   }
 
   return (
