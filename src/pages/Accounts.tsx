@@ -1,49 +1,69 @@
-import { useState } from 'react'
-import { Avatar, Button, Form, Input, Modal, Popconfirm, Select, Space, Switch, Table, Tag, message } from 'antd'
+import { useCallback, useEffect, useState } from 'react'
+import { Avatar, Button, Form, Input, Modal, Select, Space, Table, Tag, Typography, message } from 'antd'
 import { PlusOutlined, UserOutlined } from '@ant-design/icons'
 import PageTitle from '../components/PageTitle'
-import { ACCOUNTS, ROLES } from '../mock/admin'
-import type { Account } from '../mock/admin'
+import { bizErrorMessage, createAdminUser, listRoles, listUsers, updateAdminUser } from '../api/newsky'
+
+interface AccountRow {
+  id: string
+  zalo_name?: string
+  phone_number?: string
+  email?: string
+  is_admin?: boolean
+  [k: string]: unknown
+}
 
 export default function Accounts() {
-  const [rows, setRows] = useState<Account[]>(ACCOUNTS)
+  const [rows, setRows] = useState<AccountRow[]>([])
+  const [total, setTotal] = useState(0)
+  const [page, setPage] = useState(1)
+  const [limit] = useState(10)
+  const [loading, setLoading] = useState(false)
+  const [roles, setRoles] = useState<{ id: string; role_name: string }[]>([])
   const [open, setOpen] = useState(false)
-  const [editing, setEditing] = useState<Account | null>(null)
+  const [editing, setEditing] = useState<AccountRow | null>(null)
   const [form] = Form.useForm()
 
-  const openModal = (a?: Account) => {
+  const load = useCallback(async () => {
+    setLoading(true)
+    try {
+      const data = await listUsers({ page, limit })
+      const users = data?.rows ?? (Array.isArray(data) ? data : [])
+      setRows(users)
+      setTotal(data?.count ?? users.length)
+    } catch (err) {
+      message.error(bizErrorMessage(err))
+    } finally {
+      setLoading(false)
+    }
+  }, [page, limit])
+
+  useEffect(() => {
+    load()
+    listRoles().then((r: any[]) => setRoles(r.map((x) => ({ id: x.id, role_name: x.role_name ?? x.name })))).catch(() => undefined)
+  }, [load])
+
+  const openModal = (a?: AccountRow) => {
     setEditing(a ?? null)
-    form.setFieldsValue(
-      a ?? {
-        name: '',
-        email: '',
-        role: 'KTV',
-        password: '',
-        is_active: true,
-      },
-    )
+    form.setFieldsValue(a ? { zalo_name: a.zalo_name, email: a.email, phone_number: a.phone_number, is_admin: a.is_admin } : { zalo_name: '', email: '', phone_number: '', password: '', role_id: undefined, is_admin: false })
     setOpen(true)
   }
 
   const submit = async () => {
     const values = await form.validateFields()
-    const { password, ...rest } = values
-    if (editing) {
-      setRows((rs) => rs.map((r) => (r.id === editing.id ? { ...r, ...rest } : r)))
-      message.success(password ? 'Đã cập nhật tài khoản (kèm mật khẩu mới)' : 'Đã cập nhật tài khoản')
-    } else {
-      setRows((rs) => [
-        ...rs,
-        { id: String(Date.now()), last_login: 'Chưa đăng nhập', ...rest },
-      ])
-      message.success('Đã tạo tài khoản')
+    try {
+      if (editing) {
+        await updateAdminUser(editing.id, { zalo_name: values.zalo_name, is_admin: values.is_admin })
+        message.success('Đã cập nhật tài khoản')
+      } else {
+        await createAdminUser({ email: values.email, phone_number: values.phone_number, password: values.password, role_id: values.role_id, full_name: values.zalo_name })
+        message.success('Đã tạo tài khoản')
+      }
+      setOpen(false)
+      load()
+    } catch (err) {
+      message.error(bizErrorMessage(err))
     }
-    setOpen(false)
-  }
-
-  const toggleActive = (row: Account) => {
-    setRows((rs) => rs.map((r) => (r.id === row.id ? { ...r, is_active: !r.is_active } : r)))
-    message.success(row.is_active ? `Đã khóa tài khoản ${row.name}` : `Đã mở khóa ${row.name}`)
   }
 
   return (
@@ -59,104 +79,65 @@ export default function Accounts() {
       </PageTitle>
       <Table
         rowKey="id"
+        loading={loading}
         dataSource={rows}
+        pagination={{ current: page, pageSize: limit, total, onChange: setPage }}
         columns={[
           {
             title: 'Người dùng',
-            dataIndex: 'name',
-            render: (v, row) => (
+            dataIndex: 'zalo_name',
+            render: (v) => (
               <Space>
                 <Avatar style={{ backgroundColor: '#8E63A9' }} icon={<UserOutlined />} size="small" />
-                <div>
-                  <div style={{ fontWeight: 500 }}>{v}</div>
-                  <div style={{ fontSize: 12, color: '#6F7071' }}>{row.email}</div>
-                </div>
+                <Typography.Text strong>{v || '—'}</Typography.Text>
               </Space>
             ),
           },
+          { title: 'SĐT', dataIndex: 'phone_number' },
           {
             title: 'Vai trò',
-            dataIndex: 'role',
+            dataIndex: 'is_admin',
             width: 120,
-            render: (v) => <Tag color={v === 'Admin' ? 'gold' : 'purple'}>{v}</Tag>,
-          },
-          { title: 'Đăng nhập cuối', dataIndex: 'last_login', width: 170 },
-          {
-            title: 'Trạng thái',
-            dataIndex: 'is_active',
-            width: 110,
-            render: (v) => (v ? <Tag color="green">Hoạt động</Tag> : <Tag>Đã khóa</Tag>),
+            render: (v: boolean) => (v ? <Tag color="gold">Admin</Tag> : <Tag>Nhân viên</Tag>),
           },
           {
             title: '',
-            width: 200,
+            width: 100,
             render: (_, row) => (
-              <Space>
-                <Button size="small" onClick={() => openModal(row)}>
-                  Sửa
-                </Button>
-                {row.name !== 'Admin' && row.role !== 'Admin' && (
-                  <Button size="small" danger={row.is_active} onClick={() => toggleActive(row)}>
-                    {row.is_active ? 'Khóa' : 'Mở khóa'}
-                  </Button>
-                )}
-                <Popconfirm
-                  title="Xóa tài khoản này?"
-                  okText="Xóa"
-                  cancelText="Hủy"
-                  onConfirm={() => {
-                    setRows((rs) => rs.filter((r) => r.id !== row.id))
-                    message.success('Đã xóa tài khoản')
-                  }}
-                >
-                  <Button size="small" danger>
-                    Xóa
-                  </Button>
-                </Popconfirm>
-              </Space>
+              <Button size="small" onClick={() => openModal(row)}>
+                Sửa
+              </Button>
             ),
           },
         ]}
       />
 
-      <Modal
-        title={editing ? 'Sửa tài khoản' : 'Thêm tài khoản'}
-        open={open}
-        onCancel={() => setOpen(false)}
-        onOk={submit}
-        okText="Lưu"
-        cancelText="Hủy"
-      >
+      <Modal title={editing ? 'Sửa tài khoản' : 'Thêm tài khoản'} open={open} onCancel={() => setOpen(false)} onOk={submit} okText="Lưu" cancelText="Hủy">
         <Form form={form} layout="vertical" style={{ marginTop: 12 }}>
-          <Form.Item name="name" label="Họ tên" rules={[{ required: true, message: 'Nhập họ tên' }]}>
-            <Input placeholder="VD: Nguyễn Quản Lý" />
+          <Form.Item name="zalo_name" label="Họ và tên" rules={[{ required: true, message: 'Nhập họ tên' }]}>
+            <Input />
           </Form.Item>
-          <Form.Item
-            name="email"
-            label="Email đăng nhập"
-            rules={[
-              { required: true, message: 'Nhập email' },
-              { type: 'email', message: 'Email không hợp lệ' },
-            ]}
-          >
-            <Input placeholder="ten@newskyvista.vn" />
-          </Form.Item>
+          {!editing && (
+            <Space style={{ display: 'flex' }}>
+              <Form.Item name="email" label="Email" rules={[{ required: true, message: 'Nhập email' }, { type: 'email', message: 'Email không hợp lệ' }]} style={{ flex: 1 }}>
+                <Input placeholder="nhanvien@vista.vn" />
+              </Form.Item>
+              <Form.Item name="phone_number" label="SĐT (đăng nhập)" rules={[{ required: true, message: 'Nhập SĐT' }]} style={{ flex: 1 }}>
+                <Input placeholder="0901234568" />
+              </Form.Item>
+              <Form.Item name="password" label="Mật khẩu" rules={[{ required: true, message: 'Nhập mật khẩu' }]} style={{ flex: 1 }}>
+                <Input.Password />
+              </Form.Item>
+            </Space>
+          )}
           <Space style={{ display: 'flex' }}>
-            <Form.Item name="role" label="Vai trò" style={{ flex: 1 }}>
-              <Select options={ROLES.map((r) => ({ value: r.name, label: r.name }))} />
+            <Form.Item name="role_id" label="Vai trò" style={{ flex: 1 }}>
+              <Select allowClear options={roles.map((r) => ({ value: r.id, label: r.role_name }))} />
             </Form.Item>
-            <Form.Item
-              name="password"
-              label={editing ? 'Mật khẩu mới (bỏ trống nếu giữ)' : 'Mật khẩu'}
-              rules={editing ? [] : [{ required: true, message: 'Nhập mật khẩu' }]}
-              style={{ flex: 1 }}
-            >
-              <Input.Password placeholder="••••••••" />
+            <Form.Item name="is_admin" label="Là Admin" style={{ flex: 1 }}>
+              <Select options={[{ value: true, label: 'Có' }, { value: false, label: 'Không' }]} />
             </Form.Item>
           </Space>
-          <Form.Item name="is_active" label="Hoạt động" valuePropName="checked">
-            <Switch />
-          </Form.Item>
         </Form>
       </Modal>
     </>

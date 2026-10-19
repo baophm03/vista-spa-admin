@@ -1,50 +1,116 @@
-import { useState } from 'react'
-import { Avatar, Button, Card, Col, Form, Input, Modal, Popconfirm, Row, Select, Space, Switch, Tag, message } from 'antd'
-import { PlusOutlined } from '@ant-design/icons'
+import { useCallback, useEffect, useState } from 'react'
+import { Avatar, Button, Card, Col, Form, Input, Modal, Popconfirm, Row, Select, Space, Tag, Typography, message } from 'antd'
+import { PlusOutlined, ReloadOutlined, UserOutlined } from '@ant-design/icons'
 import PageTitle from '../components/PageTitle'
-import { SERVICE_CATEGORIES, STAFF_LIST } from '../mock/admin'
-import type { Staff } from '../mock/admin'
+import {
+  bizErrorMessage,
+  createAdminUser,
+  deleteAdminUser,
+  listRoles,
+  listUsers,
+  updateAdminUser,
+} from '../api/newsky'
+
+interface StaffRow {
+  id: string
+  zalo_name?: string
+  email?: string
+  phone_number?: string
+  is_admin?: boolean
+  is_active?: boolean
+  roles?: { role_name?: string }[]
+}
 
 export default function Staffs() {
-  const [rows, setRows] = useState<Staff[]>(STAFF_LIST)
+  const [rows, setRows] = useState<StaffRow[]>([])
+  const [roles, setRoles] = useState<{ id: string; role_name: string }[]>([])
+  const [loading, setLoading] = useState(false)
   const [open, setOpen] = useState(false)
-  const [editing, setEditing] = useState<Staff | null>(null)
+  const [editing, setEditing] = useState<StaffRow | null>(null)
   const [form] = Form.useForm()
 
-  const openModal = (s?: Staff) => {
+  const load = useCallback(async () => {
+    setLoading(true)
+    try {
+      const data = await listUsers({ page: 1, limit: 100 })
+      setRows(data?.rows ?? [])
+    } catch (err) {
+      message.error(bizErrorMessage(err))
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    load()
+    listRoles()
+      .then((r: any[]) => setRoles(r.map((x) => ({ id: x.id, role_name: x.role_name ?? x.name }))))
+      .catch(() => undefined)
+  }, [load])
+
+  const openModal = (s?: StaffRow) => {
     setEditing(s ?? null)
     form.setFieldsValue(
-      s ?? {
-        name: '',
-        avatar: '',
-        specialty: SERVICE_CATEGORIES[0],
-        services: [],
-        phone: '',
-        is_active: true,
-      },
+      s
+        ? { zalo_name: s.zalo_name, email: s.email, phone_number: s.phone_number, is_admin: s.is_admin }
+        : { zalo_name: '', email: '', phone_number: '', password: '', role_id: undefined, is_admin: false },
     )
     setOpen(true)
   }
 
   const submit = async () => {
     const values = await form.validateFields()
-    if (editing) {
-      setRows((rs) => rs.map((r) => (r.id === editing.id ? { ...r, ...values } : r)))
-      message.success('Đã cập nhật chuyên viên')
-    } else {
-      setRows((rs) => [...rs, { id: String(Date.now()), ...values }])
-      message.success('Đã thêm chuyên viên')
+    try {
+      if (editing) {
+        await updateAdminUser(editing.id, {
+          zalo_name: values.zalo_name,
+          is_admin: values.is_admin,
+          role_id: values.role_id,
+        })
+        message.success('Đã cập nhật chuyên viên')
+      } else {
+        await createAdminUser({
+          email: values.email,
+          phone_number: values.phone_number,
+          password: values.password,
+          role_id: values.role_id,
+          full_name: values.zalo_name,
+        })
+        message.success('Đã thêm chuyên viên')
+      }
+      setOpen(false)
+      load()
+    } catch (err) {
+      message.error(bizErrorMessage(err))
     }
-    setOpen(false)
+  }
+
+  const remove = async (row: StaffRow) => {
+    try {
+      await deleteAdminUser(row.id)
+      message.success('Đã xóa chuyên viên')
+      load()
+    } catch (err) {
+      message.error(bizErrorMessage(err))
+    }
+  }
+
+  const roleLabel = (r: StaffRow) => {
+    if (r.is_admin) return 'Admin'
+    const name = r.roles?.[0]?.role_name
+    return name || 'Nhân viên'
   }
 
   return (
     <>
       <PageTitle
         extra={
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
-            Thêm chuyên viên
-          </Button>
+          <Space>
+            <Button icon={<ReloadOutlined />} onClick={load} />
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
+              Thêm chuyên viên
+            </Button>
+          </Space>
         }
       >
         Chuyên viên / KTV
@@ -54,44 +120,32 @@ export default function Staffs() {
           <Col xs={24} sm={12} lg={8} key={s.id}>
             <Card styles={{ body: { padding: 20 } }}>
               <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
-                <Avatar src={s.avatar} size={56} style={{ backgroundColor: '#8E63A9' }} />
+                <Avatar size={56} style={{ backgroundColor: '#8E63A9' }} icon={<UserOutlined />} />
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 600, fontSize: 15 }}>{s.name}</div>
-                  <Tag color={s.is_active ? 'green' : 'default'} style={{ marginTop: 4 }}>
-                    {s.is_active ? 'Đang làm' : 'Nghỉ'}
-                  </Tag>
+                  <div style={{ fontWeight: 600, fontSize: 15 }}>{s.zalo_name || s.email || '—'}</div>
+                  <Space size={6} wrap style={{ marginTop: 4 }}>
+                    <Tag color={s.is_admin ? 'gold' : 'purple'}>{roleLabel(s)}</Tag>
+                    <Tag color={s.is_active === false ? 'default' : 'green'}>
+                      {s.is_active === false ? 'Nghỉ' : 'Đang làm'}
+                    </Tag>
+                  </Space>
                 </div>
               </div>
               <div style={{ marginTop: 14, fontSize: 13 }}>
                 <div>
-                  <span style={{ color: '#6F7071' }}>Chuyên môn: </span>
-                  <span style={{ fontWeight: 500 }}>{s.specialty}</span>
+                  <span style={{ color: '#6F7071' }}>SĐT: </span>
+                  <span>{s.phone_number || '—'}</span>
                 </div>
                 <div style={{ marginTop: 4 }}>
-                  <span style={{ color: '#6F7071' }}>SĐT: </span>
-                  <span>{s.phone}</span>
-                </div>
-                <div style={{ marginTop: 10, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                  {s.services.map((sv) => (
-                    <Tag key={sv} color="purple" style={{ marginInlineEnd: 0 }}>
-                      {sv}
-                    </Tag>
-                  ))}
+                  <span style={{ color: '#6F7071' }}>Email: </span>
+                  <span>{s.email || '—'}</span>
                 </div>
               </div>
               <div style={{ marginTop: 16, display: 'flex', gap: 8 }}>
                 <Button size="small" onClick={() => openModal(s)}>
                   Sửa
                 </Button>
-                <Popconfirm
-                  title="Xóa chuyên viên này?"
-                  okText="Xóa"
-                  cancelText="Hủy"
-                  onConfirm={() => {
-                    setRows((rs) => rs.filter((r) => r.id !== s.id))
-                    message.success('Đã xóa chuyên viên')
-                  }}
-                >
+                <Popconfirm title="Xóa chuyên viên này?" okText="Xóa" cancelText="Hủy" onConfirm={() => remove(s)}>
                   <Button size="small" danger>
                     Xóa
                   </Button>
@@ -101,6 +155,9 @@ export default function Staffs() {
           </Col>
         ))}
       </Row>
+      {!loading && rows.length === 0 && (
+        <Typography.Text type="secondary">Chưa có nhân viên nào trong hệ thống.</Typography.Text>
+      )}
 
       <Modal
         title={editing ? 'Sửa chuyên viên' : 'Thêm chuyên viên'}
@@ -111,30 +168,44 @@ export default function Staffs() {
         cancelText="Hủy"
       >
         <Form form={form} layout="vertical" style={{ marginTop: 12 }}>
-          <Form.Item name="name" label="Họ tên" rules={[{ required: true, message: 'Nhập họ tên' }]}>
+          <Form.Item name="zalo_name" label="Họ tên" rules={[{ required: true, message: 'Nhập họ tên' }]}>
             <Input placeholder="VD: Trần Hoa" />
           </Form.Item>
-          <Space style={{ display: 'flex' }}>
-            <Form.Item name="phone" label="SĐT" style={{ flex: 1 }}>
-              <Input placeholder="0901 111 222" />
+          {!editing && (
+            <Space style={{ display: 'flex' }}>
+              <Form.Item name="email" label="Email" rules={[{ required: true, message: 'Nhập email' }, { type: 'email', message: 'Email không hợp lệ' }]} style={{ flex: 1 }}>
+                <Input placeholder="nhanvien@vista.vn" />
+              </Form.Item>
+              <Form.Item name="phone_number" label="SĐT (đăng nhập)" rules={[{ required: true, message: 'Nhập SĐT' }]} style={{ flex: 1 }}>
+                <Input placeholder="0901 111 222" />
+              </Form.Item>
+              <Form.Item name="password" label="Mật khẩu" rules={[{ required: true, message: 'Nhập mật khẩu' }]} style={{ flex: 1 }}>
+                <Input.Password />
+              </Form.Item>
+            </Space>
+          )}
+          {editing && (
+            <Form.Item name="phone_number" label="SĐT" style={{ flex: 1 }}>
+              <Input />
             </Form.Item>
-            <Form.Item name="specialty" label="Chuyên môn" style={{ flex: 1 }}>
-              <Select options={SERVICE_CATEGORIES.map((c) => ({ value: c, label: c }))} />
+          )}
+          <Space style={{ display: 'flex' }}>
+            <Form.Item name="role_id" label="Vai trò" style={{ flex: 1 }}>
+              <Select
+                allowClear
+                options={roles.map((r) => ({ value: r.id, label: r.role_name }))}
+                placeholder="Chọn vai trò"
+              />
+            </Form.Item>
+            <Form.Item name="is_admin" label="Quyền admin" valuePropName="checked" style={{ flex: 1 }}>
+              <Select
+                options={[
+                  { value: true, label: 'Có' },
+                  { value: false, label: 'Không' },
+                ]}
+              />
             </Form.Item>
           </Space>
-          <Form.Item name="services" label="Dịch vụ phụ trách">
-            <Select
-              mode="multiple"
-              placeholder="Chọn dịch vụ"
-              options={SERVICE_CATEGORIES.map((c) => ({ value: c, label: c }))}
-            />
-          </Form.Item>
-          <Form.Item name="avatar" label="Ảnh (URL)">
-            <Input placeholder="https://..." />
-          </Form.Item>
-          <Form.Item name="is_active" label="Đang làm việc" valuePropName="checked">
-            <Switch />
-          </Form.Item>
         </Form>
       </Modal>
     </>

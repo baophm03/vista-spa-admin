@@ -1,41 +1,78 @@
-import { useState } from 'react'
-import { Avatar, Button, Form, Input, Modal, Select, Space, Table, Tag, Typography, message } from 'antd'
-import { SendOutlined, UserOutlined } from '@ant-design/icons'
+import { useCallback, useEffect, useState } from 'react'
+import { Button, Form, Input, Modal, Select, Table, Tag, message } from 'antd'
+import { SendOutlined } from '@ant-design/icons'
+import dayjs from 'dayjs'
 import PageTitle from '../components/PageTitle'
-import { CUSTOMERS, NOTIFICATIONS } from '../mock/admin'
-import type { Notification } from '../mock/admin'
+import { bizErrorMessage, listCustomerProfiles, listNotifications, markNotificationRead, sendNotification } from '../api/newsky'
+import type { CustomerProfile, NotificationRow } from '../api/newsky'
 
-const TYPE_META: Record<Notification['type'], { label: string; color: string }> = {
-  appointment: { label: 'Lịch hẹn', color: 'purple' },
-  promo: { label: 'Ưu đãi', color: 'gold' },
-  treatment: { label: 'Liệu trình', color: 'geekblue' },
-  birthday: { label: 'Sinh nhật', color: 'magenta' },
+const EVENT_META: Record<string, { label: string; color: string }> = {
+  APPT_REMINDER: { label: 'Nhắc lịch', color: 'purple' },
+  BIRTHDAY: { label: 'Sinh nhật', color: 'magenta' },
+  RANK_CHANGE: { label: 'Nâng hạng', color: 'gold' },
+  SYSTEM: { label: 'Hệ thống', color: 'default' },
 }
 
 export default function Notifications() {
-  const [rows, setRows] = useState<Notification[]>(NOTIFICATIONS)
+  const [rows, setRows] = useState<NotificationRow[]>([])
+  const [total, setTotal] = useState(0)
+  const [page, setPage] = useState(1)
+  const [limit] = useState(10)
+  const [loading, setLoading] = useState(false)
+  const [profiles, setProfiles] = useState<CustomerProfile[]>([])
   const [open, setOpen] = useState(false)
   const [form] = Form.useForm()
 
+  const load = useCallback(async () => {
+    setLoading(true)
+    try {
+      const { data, meta } = await listNotifications({ page, limit })
+      setRows(data)
+      setTotal(meta?.total ?? data.length)
+    } catch (err) {
+      message.error(bizErrorMessage(err))
+    } finally {
+      setLoading(false)
+    }
+  }, [page, limit])
+
+  useEffect(() => {
+    load()
+  }, [load])
+
+  useEffect(() => {
+    listCustomerProfiles({ page: 1, limit: 200 }).then(({ data }) => setProfiles(data)).catch(() => undefined)
+  }, [])
+
   const submit = async () => {
     const values = await form.validateFields()
-    setRows((rs) => [
-      {
-        id: String(Date.now()),
+    try {
+      await sendNotification({
+        event_key: values.event_key,
         title: values.title,
         body: values.body,
-        type: values.type,
-        audience: values.audience === 'all' ? 'Tất cả khách hàng' : values.audience,
-        sent_at: new Date().toLocaleString('vi-VN'),
-        status: 'sent',
-      },
-      ...rs,
-    ])
-    message.success('Đã gửi thông báo qua Zalo OA')
-    setOpen(false)
+        user_id: values.user_id || null,
+      })
+      message.success('Đã gửi thông báo')
+      setOpen(false)
+      load()
+    } catch (err) {
+      message.error(bizErrorMessage(err))
+    }
   }
 
-  const birthdayCustomers = CUSTOMERS.slice(0, 3)
+  const markRead = async (row: NotificationRow) => {
+    try {
+      await markNotificationRead(row.id)
+      message.success('Đã đánh dấu đã đọc')
+      load()
+    } catch (err) {
+      message.error(bizErrorMessage(err))
+    }
+  }
+
+  const audience = (row: NotificationRow) =>
+    row.user_id ? profiles.find((p) => p.user_id === row.user_id)?.full_name ?? 'Một khách hàng' : 'Tất cả khách (broadcast)'
 
   return (
     <>
@@ -45,7 +82,7 @@ export default function Notifications() {
             type="primary"
             icon={<SendOutlined />}
             onClick={() => {
-              form.setFieldsValue({ title: '', body: '', type: 'promo', audience: 'all' })
+              form.setFieldsValue({ event_key: 'SYSTEM', title: '', body: '', user_id: undefined })
               setOpen(true)
             }}
           >
@@ -58,7 +95,9 @@ export default function Notifications() {
 
       <Table
         rowKey="id"
+        loading={loading}
         dataSource={rows}
+        pagination={{ current: page, pageSize: limit, total, onChange: setPage }}
         style={{ marginTop: 4 }}
         columns={[
           {
@@ -73,73 +112,49 @@ export default function Notifications() {
           },
           {
             title: 'Loại',
-            dataIndex: 'type',
-            width: 110,
-            render: (v: Notification['type']) => <Tag color={TYPE_META[v].color}>{TYPE_META[v].label}</Tag>,
+            dataIndex: 'event_key',
+            width: 120,
+            render: (v: string) => <Tag color={EVENT_META[v]?.color}>{EVENT_META[v]?.label ?? v}</Tag>,
           },
-          { title: 'Đối tượng', dataIndex: 'audience', width: 180 },
-          { title: 'Thời gian', dataIndex: 'sent_at', width: 170 },
+          { title: 'Đối tượng', key: 'audience', width: 180, render: (_, row) => audience(row) },
+          { title: 'Thời gian', dataIndex: 'sent_at', width: 170, render: (v) => (v ? dayjs(v).format('DD/MM/YYYY HH:mm') : '—') },
           {
             title: 'Trạng thái',
-            dataIndex: 'status',
-            width: 110,
-            render: (v) => (v === 'sent' ? <Tag color="green">Đã gửi</Tag> : <Tag color="orange">Đã lên lịch</Tag>),
+            key: 'read',
+            width: 160,
+            render: (_, row) =>
+              row.is_read ? (
+                <Tag>Đã đọc</Tag>
+              ) : (
+                <Button size="small" onClick={() => markRead(row)}>
+                  Đánh dấu đã đọc
+                </Button>
+              ),
           },
         ]}
       />
 
-      <Typography.Title level={5} style={{ marginTop: 28 }}>
-        Khách sinh nhật trong tháng
-      </Typography.Title>
-      <Space wrap>
-        {birthdayCustomers.map((c) => (
-          <div
-            key={c.id}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 10,
-              padding: '10px 16px',
-              border: '1px solid #E9DDF0',
-              borderRadius: 12,
-            }}
-          >
-            <Avatar style={{ backgroundColor: '#8E63A9' }} icon={<UserOutlined />} />
-            <div>
-              <div style={{ fontWeight: 500, fontSize: 13 }}>{c.name}</div>
-              <div style={{ fontSize: 12, color: '#6F7071' }}>{c.phone}</div>
-            </div>
-            <Button
-              size="small"
-              type="primary"
-              onClick={() => message.success(`Đã gửi lời chúc sinh nhật tới ${c.name}`)}
-            >
-              Gửi chúc mừng
-            </Button>
-          </div>
-        ))}
-      </Space>
-
       <Modal title="Gửi thông báo" open={open} onCancel={() => setOpen(false)} onOk={submit} okText="Gửi" cancelText="Hủy">
         <Form form={form} layout="vertical" style={{ marginTop: 12 }}>
-          <Form.Item name="type" label="Loại thông báo" rules={[{ required: true }]}>
-            <Select
-              options={Object.entries(TYPE_META).map(([value, meta]) => ({ value, label: meta.label }))}
-            />
+          <Form.Item name="event_key" label="Loại thông báo" rules={[{ required: true }]}>
+            <Select options={Object.entries(EVENT_META).map(([value, meta]) => ({ value, label: meta.label }))} />
           </Form.Item>
-          <Form.Item name="audience" label="Đối tượng nhận" rules={[{ required: true }]}>
+          <Form.Item name="user_id" label="Đối tượng nhận (bỏ trống = broadcast tất cả)">
             <Select
-              options={[
-                { value: 'all', label: 'Tất cả khách hàng' },
-                ...CUSTOMERS.map((c) => ({ value: c.name, label: c.name })),
-              ]}
+              allowClear
+              showSearch
+              optionFilterProp="label"
+              placeholder="Tất cả khách hàng"
+              options={profiles
+                .filter((p) => p.user_id)
+                .map((c) => ({ value: c.user_id, label: `${c.full_name} — ${c.phone}` }))}
             />
           </Form.Item>
           <Form.Item name="title" label="Tiêu đề" rules={[{ required: true, message: 'Nhập tiêu đề' }]}>
             <Input placeholder="VD: Ưu đãi tháng 11" />
           </Form.Item>
           <Form.Item name="body" label="Nội dung" rules={[{ required: true, message: 'Nhập nội dung' }]}>
-            <Input.TextArea rows={3} placeholder="Nội dung thông báo gửi qua Zalo OA..." />
+            <Input.TextArea rows={3} placeholder="Nội dung thông báo gửi qua app..." />
           </Form.Item>
         </Form>
       </Modal>

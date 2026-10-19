@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { Button, Card, Col, Divider, Row, Space, Steps, Tag, Typography, message } from 'antd'
+import { Button, Card, Col, Divider, Row, Space, Steps, Tag, Typography, Alert, message } from 'antd'
 import { ArrowLeftOutlined, EnvironmentOutlined, PhoneOutlined, PrinterOutlined } from '@ant-design/icons'
 import PageTitle from '../components/PageTitle'
 import { ORDERS } from '../mock/admin'
@@ -20,7 +20,12 @@ export default function OrderDetail() {
     return (
       <>
         <PageTitle>Đơn hàng</PageTitle>
-        <Typography.Text>Không tìm thấy đơn hàng.</Typography.Text>
+        <Alert
+          type="warning"
+          showIcon
+          style={{ marginBottom: 16 }}
+          message="Dữ liệu minh họa — backend chưa có module đơn hàng."
+        />
       </>
     )
   }
@@ -44,6 +49,12 @@ export default function OrderDetail() {
       >
         Chi tiết đơn {order.code}
       </PageTitle>
+      <Alert
+        type="warning"
+        showIcon
+        style={{ marginBottom: 16 }}
+        message="Dữ liệu minh họa — backend chưa có module đơn hàng."
+      />
 
       <Card style={{ marginBottom: 20 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>

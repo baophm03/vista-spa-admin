@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Button, Card, Col, Form, Input, InputNumber, Modal, Popconfirm, Row, Segmented, Select, Space, Statistic, Table, Tag, Typography, message } from 'antd'
+import { Button, Card, Col, Form, Input, InputNumber, Modal, Popconfirm, Row, Segmented, Select, Space, Statistic, Table, Tag, Typography, Alert, message } from 'antd'
 import { PlusOutlined } from '@ant-design/icons'
 import PageTitle from '../components/PageTitle'
 import { CUSTOMERS, ORDERS, PRODUCTS } from '../mock/admin'
@@ -84,6 +84,12 @@ export default function Orders() {
       >
         Đơn hàng
       </PageTitle>
+      <Alert
+        type="warning"
+        showIcon
+        style={{ marginBottom: 16 }}
+        message="Dữ liệu minh họa — backend chưa có module đơn hàng. Các thao tác chỉ lưu tạm trên trình duyệt."
+      />
 
       <Row gutter={[16, 16]} style={{ marginBottom: 20 }}>
         <Col xs={12} md={6}>

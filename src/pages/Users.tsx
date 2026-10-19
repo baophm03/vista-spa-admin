@@ -1,84 +1,130 @@
-import { useMemo, useState } from 'react'
-import { Avatar, Button, DatePicker, Drawer, Form, Input, InputNumber, Modal, Popconfirm, Select, Space, Table, Tag, Typography, message } from 'antd'
+import { useCallback, useEffect, useState } from 'react'
+import { Avatar, Button, DatePicker, Drawer, Form, Input, Modal, Popconfirm, Select, Space, Table, Tag, Typography, message } from 'antd'
 import { PlusOutlined, SearchOutlined, UserOutlined } from '@ant-design/icons'
+import dayjs from 'dayjs'
 import PageTitle from '../components/PageTitle'
-import { CUSTOMERS } from '../mock/admin'
-import type { Customer, Rank } from '../mock/admin'
+import {
+  bizErrorMessage,
+  createCustomerProfile,
+  deleteCustomerProfile,
+  getCustomerProfileSummary,
+  listBranches,
+  listCustomerProfiles,
+  updateCustomerProfile,
+} from '../api/newsky'
+import type { Branch, CustomerProfile } from '../api/newsky'
 
-const RANK_COLOR: Record<Rank, string> = {
-  Vista: 'purple',
-  VIP: 'gold',
-  'Kim Cương': 'geekblue',
+interface Summary {
+  rank?: { name?: string }
+  points?: number
+  year_spent?: number
 }
 
 export default function Users() {
-  const [rows, setRows] = useState<Customer[]>(CUSTOMERS)
+  const [rows, setRows] = useState<CustomerProfile[]>([])
+  const [total, setTotal] = useState(0)
+  const [page, setPage] = useState(1)
+  const [limit] = useState(10)
   const [keyword, setKeyword] = useState('')
-  const [selected, setSelected] = useState<string | null>(null)
+  const [branches, setBranches] = useState<Branch[]>([])
+  const [loading, setLoading] = useState(false)
+  const [selected, setSelected] = useState<CustomerProfile | null>(null)
+  const [summary, setSummary] = useState<Summary | null>(null)
   const [open, setOpen] = useState(false)
-  const [editing, setEditing] = useState<Customer | null>(null)
+  const [editing, setEditing] = useState<CustomerProfile | null>(null)
   const [form] = Form.useForm()
 
-  const openModal = (customer?: Customer) => {
+  const load = useCallback(async () => {
+    setLoading(true)
+    try {
+      const params: Record<string, unknown> = { page, limit }
+      if (keyword) params.q = keyword
+      const { data, meta } = await listCustomerProfiles(params)
+      setRows(data)
+      setTotal(meta?.total ?? data.length)
+    } catch (err) {
+      message.error(bizErrorMessage(err))
+    } finally {
+      setLoading(false)
+    }
+  }, [page, limit, keyword])
+
+  useEffect(() => {
+    load()
+  }, [load])
+
+  useEffect(() => {
+    listBranches().then(setBranches).catch(() => undefined)
+  }, [])
+
+  const openDetail = async (row: CustomerProfile) => {
+    setSelected(row)
+    setSummary(null)
+    try {
+      setSummary((await getCustomerProfileSummary(row.id)) as Summary)
+    } catch {
+      setSummary(null)
+    }
+  }
+
+  const openModal = (customer?: CustomerProfile) => {
     setEditing(customer ?? null)
     form.setFieldsValue(
-      customer ?? {
-        name: '',
-        phone: '',
-        email: '',
-        rank: 'Vista',
-        points: 0,
-        expiry: '',
-      },
+      customer
+        ? { ...customer, birthday: customer.birthday ? dayjs(customer.birthday) : undefined }
+        : { full_name: '', phone: '', email: '' },
     )
     setOpen(true)
   }
 
   const submit = async () => {
     const values = await form.validateFields()
-    const row = {
+    const payload = {
       ...values,
-      expiry: values.expiry?.format?.('DD/MM/YYYY') ?? values.expiry,
+      birthday: values.birthday ? values.birthday.format('YYYY-MM-DD') : undefined,
     }
-    if (editing) {
-      setRows((rs) => rs.map((r) => (r.id === editing.id ? { ...r, ...row } : r)))
-      message.success('Đã cập nhật khách hàng')
-    } else {
-      const nextCode = `KH-${String(rows.length + 1).padStart(4, '0')}`
-      setRows((rs) => [
-        ...rs,
-        { id: String(Date.now()), code: nextCode, created_at: new Date().toLocaleDateString('vi-VN'), ...row },
-      ])
-      message.success('Đã thêm khách hàng')
+    try {
+      if (editing) {
+        await updateCustomerProfile(editing.id, payload)
+        message.success('Đã cập nhật khách hàng')
+      } else {
+        await createCustomerProfile(payload)
+        message.success('Đã thêm khách hàng')
+      }
+      setOpen(false)
+      load()
+    } catch (err) {
+      message.error(bizErrorMessage(err))
     }
-    setOpen(false)
   }
 
-  const filtered = useMemo(
-    () =>
-      rows.filter(
-        (c) =>
-          c.name.toLowerCase().includes(keyword.toLowerCase()) ||
-          c.phone.includes(keyword) ||
-          c.code.toLowerCase().includes(keyword.toLowerCase()),
-      ),
-    [rows, keyword],
-  )
+  const remove = async (row: CustomerProfile) => {
+    try {
+      await deleteCustomerProfile(row.id)
+      message.success('Đã xóa khách hàng')
+      load()
+    } catch (err) {
+      message.error(bizErrorMessage(err))
+    }
+  }
 
-  const customer = rows.find((c) => c.id === selected)
+  const branchName = (id?: string) => branches.find((b) => b.id === id)?.name ?? '—'
+  const rankName = summary?.rank?.name
 
   return (
     <>
       <PageTitle
         extra={
           <Space>
-            <Input
+            <Input.Search
               allowClear
               prefix={<SearchOutlined style={{ color: '#A9ADB2' }} />}
               placeholder="Tìm theo tên, SĐT, mã KH..."
               style={{ width: 260 }}
-              value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
+              onSearch={(v) => {
+                setKeyword(v)
+                setPage(1)
+              }}
             />
             <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
               Thêm khách hàng
@@ -90,18 +136,20 @@ export default function Users() {
       </PageTitle>
       <Table
         rowKey="id"
-        dataSource={filtered}
-        onRow={(row) => ({ onClick: () => setSelected(row.id), style: { cursor: 'pointer' } })}
+        loading={loading}
+        dataSource={rows}
+        pagination={{ current: page, pageSize: limit, total, onChange: setPage }}
+        onRow={(row) => ({ onClick: () => openDetail(row), style: { cursor: 'pointer' } })}
         columns={[
           {
             title: 'Mã KH',
-            dataIndex: 'code',
-            width: 110,
+            dataIndex: 'customer_code',
+            width: 130,
             render: (v) => <Typography.Text code>{v}</Typography.Text>,
           },
           {
             title: 'Khách hàng',
-            dataIndex: 'name',
+            dataIndex: 'full_name',
             render: (v) => (
               <Space>
                 <Avatar style={{ backgroundColor: '#8E63A9' }} icon={<UserOutlined />} size="small" />
@@ -111,19 +159,14 @@ export default function Users() {
           },
           { title: 'Số điện thoại', dataIndex: 'phone' },
           { title: 'Email', dataIndex: 'email', render: (v) => v || '-' },
+          { title: 'Cơ sở', dataIndex: 'branch_id', render: (v) => branchName(v) },
           {
             title: 'Hạng',
-            dataIndex: 'rank',
+            key: 'rank',
             width: 110,
-            render: (v: Rank) => <Tag color={RANK_COLOR[v]}>{v}</Tag>,
+            render: (_, row) =>
+              row.user_id ? <Tag color="purple">{rankName ?? '—'}</Tag> : <Tag>Chưa liên kết</Tag>,
           },
-          {
-            title: 'Điểm',
-            dataIndex: 'points',
-            width: 110,
-            render: (v) => v.toLocaleString('vi-VN'),
-          },
-          { title: 'Ngày tham gia', dataIndex: 'created_at', width: 130 },
           {
             title: '',
             width: 140,
@@ -139,13 +182,12 @@ export default function Users() {
                   Sửa
                 </Button>
                 <Popconfirm
-                  title="Xóa khách hàng này?"
+                  title="Xóa (ẩn) khách hàng này?"
                   okText="Xóa"
                   cancelText="Hủy"
                   onConfirm={(e) => {
                     e?.stopPropagation()
-                    setRows((rs) => rs.filter((r) => r.id !== row.id))
-                    message.success('Đã xóa khách hàng')
+                    remove(row)
                   }}
                   onCancel={(e) => e?.stopPropagation()}
                 >
@@ -160,16 +202,16 @@ export default function Users() {
       />
 
       <Drawer
-        title={customer ? `${customer.name} — ${customer.code}` : ''}
+        title={selected ? `${selected.full_name} — ${selected.customer_code}` : ''}
         width={420}
-        open={!!customer}
+        open={!!selected}
         onClose={() => setSelected(null)}
       >
-        {customer && (
+        {selected && (
           <div style={{ textAlign: 'center' }}>
             <img
-              src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${customer.code}`}
-              alt={customer.code}
+              src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${selected.customer_code}`}
+              alt={selected.customer_code}
               width={180}
               height={180}
               style={{ borderRadius: 12, border: '1px solid #E9DDF0' }}
@@ -179,16 +221,17 @@ export default function Users() {
             </Typography.Text>
             <div style={{ textAlign: 'left', marginTop: 24, display: 'grid', gap: 12 }}>
               {[
-                ['Hạng thành viên', <Tag key="r" color={RANK_COLOR[customer.rank]}>{customer.rank}</Tag>],
-                ['Điểm hiện có', customer.points.toLocaleString('vi-VN')],
-                ['Hạn thẻ', customer.expiry],
-                ['Số điện thoại', customer.phone],
-                ['Email', customer.email || '-'],
-                ['Ngày tham gia', customer.created_at],
+                ['Hạng thành viên', rankName ? <Tag key="r" color="purple">{rankName}</Tag> : '—'],
+                ['Điểm hiện có', (summary?.points ?? 0).toLocaleString('vi-VN')],
+                ['Chi tiêu năm nay', (summary?.year_spent ?? 0).toLocaleString('vi-VN')],
+                ['Số điện thoại', selected.phone],
+                ['Email', selected.email || '-'],
+                ['Ngày sinh', selected.birthday ? dayjs(selected.birthday).format('DD/MM/YYYY') : '-'],
+                ['Cơ sở', branchName(selected.branch_id)],
               ].map(([label, value]) => (
                 <div key={String(label)} style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <Typography.Text type="secondary">{label}</Typography.Text>
-                  <Typography.Text strong>{value}</Typography.Text>
+                  <Typography.Text strong>{value as React.ReactNode}</Typography.Text>
                 </div>
               ))}
             </div>
@@ -205,7 +248,7 @@ export default function Users() {
         cancelText="Hủy"
       >
         <Form form={form} layout="vertical" style={{ marginTop: 12 }}>
-          <Form.Item name="name" label="Họ và tên" rules={[{ required: true, message: 'Nhập họ tên' }]}>
+          <Form.Item name="full_name" label="Họ và tên" rules={[{ required: true, message: 'Nhập họ tên' }]}>
             <Input placeholder="VD: Nguyễn Thu Hà" />
           </Form.Item>
           <Space style={{ display: 'flex' }}>
@@ -215,27 +258,28 @@ export default function Users() {
               rules={[{ required: true, message: 'Nhập SĐT' }]}
               style={{ flex: 1 }}
             >
-              <Input placeholder="0901 234 568" />
+              <Input placeholder="0901234568" />
             </Form.Item>
             <Form.Item name="email" label="Email" style={{ flex: 1 }}>
               <Input placeholder="email@gmail.com" />
             </Form.Item>
           </Space>
           <Space style={{ display: 'flex' }}>
-            <Form.Item name="rank" label="Hạng thành viên" style={{ flex: 1 }}>
+            <Form.Item name="branch_id" label="Cơ sở" rules={[{ required: true, message: 'Chọn cơ sở' }]} style={{ flex: 1 }}>
               <Select
-                options={(['Vista', 'VIP', 'Kim Cương'] as Rank[]).map((r) => ({
-                  value: r,
-                  label: r,
-                }))}
+                options={branches.map((b) => ({ value: b.id, label: b.name }))}
+                placeholder="Chọn cơ sở"
               />
             </Form.Item>
-            <Form.Item name="points" label="Điểm" style={{ flex: 1 }}>
-              <InputNumber min={0} style={{ width: '100%' }} />
+            <Form.Item name="birthday" label="Ngày sinh" style={{ flex: 1 }}>
+              <DatePicker style={{ width: '100%' }} format="DD/MM/YYYY" />
             </Form.Item>
           </Space>
-          <Form.Item name="expiry" label="Hạn thẻ">
-            <DatePicker style={{ width: '100%' }} format="DD/MM/YYYY" />
+          <Form.Item name="address" label="Địa chỉ">
+            <Input />
+          </Form.Item>
+          <Form.Item name="note" label="Ghi chú">
+            <Input.TextArea rows={2} />
           </Form.Item>
         </Form>
       </Modal>

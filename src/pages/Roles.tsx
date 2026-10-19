@@ -1,119 +1,141 @@
-import { useState } from 'react'
-import { Button, Card, Form, Input, Modal, Popconfirm, Switch, Table, Tag, message } from 'antd'
-import { PlusOutlined } from '@ant-design/icons'
+import { useCallback, useEffect, useState } from 'react'
+import { Button, Card, Space, Spin, Switch, Table, Tag, Typography, message } from 'antd'
+import { PlusOutlined, ReloadOutlined } from '@ant-design/icons'
 import PageTitle from '../components/PageTitle'
-import { ROLES } from '../mock/admin'
-import type { Role } from '../mock/admin'
+import { bizErrorMessage, getRolePermissions, listPermissions, listRoles, updateRolePermissions } from '../api/newsky'
 
-const PERM_LABELS: Record<keyof Role['permissions'], string> = {
-  dashboard: 'Dashboard',
-  customers: 'Khách hàng',
-  appointments: 'Lịch hẹn',
-  treatments: 'Liệu trình',
-  vouchers: 'Voucher',
-  products: 'Sản phẩm',
-  staffs: 'Nhân sự',
-  settings: 'Cấu hình',
+interface RoleRow {
+  id: string
+  role_name: string
+  [k: string]: unknown
+}
+interface PermRow {
+  id: string
+  key: string
+  module: string
+  description?: string
 }
 
 export default function Roles() {
-  const [rows, setRows] = useState<Role[]>(ROLES)
-  const [open, setOpen] = useState(false)
-  const [form] = Form.useForm()
+  const [roles, setRoles] = useState<RoleRow[]>([])
+  const [perms, setPerms] = useState<PermRow[]>([])
+  const [grants, setGrants] = useState<Record<string, Set<string>>>({})
+  const [loading, setLoading] = useState(false)
+  const [saving, setSaving] = useState(false)
 
-  const togglePerm = (roleId: string, perm: keyof Role['permissions']) => {
-    setRows((rs) =>
-      rs.map((r) =>
-        r.id === roleId ? { ...r, permissions: { ...r.permissions, [perm]: !r.permissions[perm] } } : r,
-      ),
-    )
-    message.success('Đã cập nhật quyền')
+  const load = useCallback(async () => {
+    setLoading(true)
+    try {
+      const [r, p] = await Promise.all([listRoles(), listPermissions()])
+      setRoles(r as RoleRow[])
+      setPerms(p as PermRow[])
+      const g: Record<string, Set<string>> = {}
+      for (const role of r as RoleRow[]) {
+        try {
+          const keys = (await getRolePermissions(role.id)) as string[]
+          g[role.id] = new Set(keys)
+        } catch {
+          g[role.id] = new Set()
+        }
+      }
+      setGrants(g)
+    } catch (err) {
+      message.error(bizErrorMessage(err))
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    load()
+  }, [load])
+
+  const toggle = (roleId: string, permKey: string, checked: boolean) => {
+    setGrants((g) => {
+      const next = { ...g, [roleId]: new Set(g[roleId] ?? []) }
+      if (checked) next[roleId].add(permKey)
+      else next[roleId].delete(permKey)
+      return next
+    })
   }
 
-  const submit = async () => {
-    const values = await form.validateFields()
-    const permissions = Object.keys(PERM_LABELS).reduce(
-      (acc, k) => ({ ...acc, [k]: false }),
-      {} as Role['permissions'],
-    )
-    setRows((rs) => [...rs, { id: String(Date.now()), members: 0, ...values, permissions }])
-    message.success('Đã thêm vai trò (mặc định không có quyền — bật trong bảng)')
-    setOpen(false)
+  const save = async () => {
+    setSaving(true)
+    try {
+      for (const role of roles) {
+        await updateRolePermissions(role.id, { permissions: [...(grants[role.id] ?? [])] })
+      }
+      message.success('Đã lưu phân quyền')
+      load()
+    } catch (err) {
+      message.error(bizErrorMessage(err))
+    } finally {
+      setSaving(false)
+    }
   }
+
+  const modules = [...new Set(perms.map((p) => p.module))]
 
   return (
     <>
       <PageTitle
         extra={
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => { form.setFieldsValue({ name: '' }); setOpen(true) }}>
-            Thêm vai trò
-          </Button>
+          <Space>
+            <Button icon={<ReloadOutlined />} onClick={load} />
+            <Button type="primary" icon={<PlusOutlined />} disabled>
+              Thêm vai trò (tạo qua API)
+            </Button>
+            <Button type="primary" loading={saving} onClick={save}>
+              Lưu phân quyền
+            </Button>
+          </Space>
         }
       >
         Phân quyền
       </PageTitle>
       <Card>
-        <Table
-          rowKey="id"
-          dataSource={rows}
-          pagination={false}
-          columns={[
-            {
-              title: 'Vai trò',
-              dataIndex: 'name',
-              width: 140,
-              render: (v) => <Tag color="purple" style={{ fontSize: 13 }}>{v}</Tag>,
-            },
-            {
-              title: 'Thành viên',
-              dataIndex: 'members',
-              width: 100,
-              render: (v) => `${v} người`,
-            },
-            ...(
-              Object.keys(PERM_LABELS) as (keyof Role['permissions'])[]
-            ).map((perm) => ({
-              title: PERM_LABELS[perm],
-              width: 100,
-              align: 'center' as const,
-              render: (_: unknown, row: Role) =>
-                row.name === 'Admin' ? (
-                  <Tag color="gold">Toàn quyền</Tag>
-                ) : (
-                  <Switch size="small" checked={row.permissions[perm]} onChange={() => togglePerm(row.id, perm)} />
+        <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 12 }}>
+          Quyền theo key (VD: appointment.approve) — nhân viên có quyền nào sẽ gọi được API tương ứng. Admin toàn quyền mặc định.
+        </Typography.Text>
+        <Spin spinning={loading}>
+          <Table
+            rowKey="id"
+            dataSource={roles}
+            pagination={false}
+            size="small"
+            scroll={{ x: 'max-content' }}
+            columns={[
+              {
+                title: 'Vai trò',
+                dataIndex: 'role_name',
+                width: 140,
+                fixed: 'left',
+                render: (v) => <Tag color="purple" style={{ fontSize: 13 }}>{v}</Tag>,
+              },
+              ...modules.map((m) => ({
+                title: m,
+                width: 160,
+                render: (_: unknown, row: RoleRow) => (
+                  <Space direction="vertical" size={2}>
+                    {perms
+                      .filter((p) => p.module === m)
+                      .map((p) => (
+                        <div key={p.key} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <Switch
+                            size="small"
+                            checked={grants[row.id]?.has(p.key) ?? false}
+                            onChange={(v) => toggle(row.id, p.key, v)}
+                          />
+                          <Typography.Text style={{ fontSize: 11 }}>{p.key.split('.')[1]}</Typography.Text>
+                        </div>
+                      ))}
+                  </Space>
                 ),
-            })),
-            {
-              title: '',
-              width: 80,
-              render: (_: unknown, row: Role) =>
-                row.name === 'Admin' ? null : (
-                  <Popconfirm
-                    title="Xóa vai trò này?"
-                    okText="Xóa"
-                    cancelText="Hủy"
-                    onConfirm={() => {
-                      setRows((rs) => rs.filter((r) => r.id !== row.id))
-                      message.success('Đã xóa vai trò')
-                    }}
-                  >
-                    <Button size="small" danger>
-                      Xóa
-                    </Button>
-                  </Popconfirm>
-                ),
-            },
-          ]}
-        />
+              })),
+            ]}
+          />
+        </Spin>
       </Card>
-
-      <Modal title="Thêm vai trò" open={open} onCancel={() => setOpen(false)} onOk={submit} okText="Lưu" cancelText="Hủy">
-        <Form form={form} layout="vertical" style={{ marginTop: 12 }}>
-          <Form.Item name="name" label="Tên vai trò" rules={[{ required: true, message: 'Nhập tên vai trò' }]}>
-            <Input placeholder="VD: Marketing" />
-          </Form.Item>
-        </Form>
-      </Modal>
     </>
   )
 }

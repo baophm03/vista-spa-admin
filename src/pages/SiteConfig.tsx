@@ -1,86 +1,124 @@
-import { useState } from 'react'
-import { Button, Card, Col, Form, Input, Row, Switch, message } from 'antd'
+import { useCallback, useEffect, useState } from 'react'
+import { Button, Card, Col, Input, Row, Space, Table, Typography, message } from 'antd'
+import { ReloadOutlined, SaveOutlined } from '@ant-design/icons'
 import PageTitle from '../components/PageTitle'
-import { SITE_CONFIG } from '../mock/admin'
+import { bizErrorMessage, listSettings, updateSettings } from '../api/newsky'
+
+interface SettingRow {
+  id: string
+  key: string
+  value: unknown
+  scope: string
+  branch_id?: string
+  description?: string
+  schema?: { type?: string; enum?: unknown[]; min?: number; max?: number } | null
+}
+
+/** Ép kiểu giá trị nhập vào theo schema của key trước khi gửi PUT /settings. */
+function coerceValue(raw: string, schema?: SettingRow['schema']): unknown {
+  const type = schema?.type
+  if (type === 'boolean') return ['true', '1', 'yes'].includes(String(raw).toLowerCase())
+  if (type === 'number') return Number(raw)
+  if (type === 'array') {
+    try {
+      const parsed = JSON.parse(raw)
+      return Array.isArray(parsed) ? parsed : raw.split(',').map((s) => s.trim()).filter(Boolean)
+    } catch {
+      return raw.split(',').map((s) => s.trim()).filter(Boolean)
+    }
+  }
+  return raw
+}
 
 export default function SiteConfig() {
-  const [config, setConfig] = useState(SITE_CONFIG)
-  const [form] = Form.useForm()
+  const [rows, setRows] = useState<SettingRow[]>([])
+  const [loading, setLoading] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [edits, setEdits] = useState<Record<string, string>>({})
+
+  const load = useCallback(async () => {
+    setLoading(true)
+    try {
+      const data = (await listSettings()) as SettingRow[]
+      setRows(data)
+      setEdits({})
+    } catch (err) {
+      message.error(bizErrorMessage(err))
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    load()
+  }, [load])
 
   const save = async () => {
-    const values = await form.validateFields()
-    setConfig(values)
-    localStorage.setItem('vista-site-config', JSON.stringify(values))
-    message.success('Đã lưu cấu hình trang')
+    setSaving(true)
+    try {
+      const schemaOf = (key: string) => rows.find((r) => r.key === key)?.schema
+      await updateSettings({ items: Object.entries(edits).map(([key, value]) => ({ key, value: coerceValue(value, schemaOf(key)) })) })
+      message.success('Đã lưu cấu hình')
+      load()
+    } catch (err) {
+      message.error(bizErrorMessage(err))
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
     <>
       <PageTitle
         extra={
-          <Button type="primary" onClick={save}>
-            Lưu cấu hình
-          </Button>
+          <Space>
+            <Button icon={<ReloadOutlined />} onClick={load} />
+            <Button type="primary" icon={<SaveOutlined />} loading={saving} onClick={save} disabled={!Object.keys(edits).length}>
+              Lưu cấu hình
+            </Button>
+          </Space>
         }
       >
-        Cấu hình trang
+        Cấu hình hệ thống
       </PageTitle>
       <Row gutter={[20, 20]}>
-        <Col xs={24} md={14}>
-          <Card title="Thông tin spa">
-            <Form form={form} layout="vertical" initialValues={config}>
-              <Form.Item name="spa_name" label="Tên spa" rules={[{ required: true, message: 'Nhập tên spa' }]}>
-                <Input />
-              </Form.Item>
-              <Form.Item name="hotline" label="Hotline">
-                <Input />
-              </Form.Item>
-              <Form.Item name="address" label="Địa chỉ">
-                <Input />
-              </Form.Item>
-              <Form.Item name="open_hours" label="Giờ mở cửa">
-                <Input placeholder="08:00 - 21:00" />
-              </Form.Item>
-              <Form.Item name="zalo_oa" label="Link Zalo OA">
-                <Input />
-              </Form.Item>
-            </Form>
-          </Card>
-        </Col>
-        <Col xs={24} md={10}>
-          <Card title="Hiển thị" style={{ marginBottom: 20 }}>
-            <Form form={form} layout="vertical" initialValues={config}>
-              <Form.Item name="marquee" label="Chữ chạy trang chủ">
-                <Input.TextArea rows={2} />
-              </Form.Item>
-              <Form.Item name="hero_banner" label="Banner hero (URL)">
-                <Input />
-              </Form.Item>
-            </Form>
-            {config.hero_banner && (
-              <img
-                src={config.hero_banner}
-                alt="banner"
-                style={{ width: '100%', borderRadius: 12, objectFit: 'cover', height: 140 }}
-              />
-            )}
-          </Card>
-          <Card title="Bảo trì">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <div style={{ fontWeight: 500 }}>Chế độ bảo trì MiniApp</div>
-                <div style={{ fontSize: 12, color: '#6F7071' }}>
-                  Khách không đặt lịch được khi bật
-                </div>
-              </div>
-              <Switch
-                checked={config.maintenance}
-                onChange={(v) => {
-                  setConfig((c) => ({ ...c, maintenance: v }))
-                  message.warning(v ? 'Đã BẬT chế độ bảo trì' : 'Đã tắt chế độ bảo trì')
-                }}
-              />
-            </div>
+        <Col xs={24}>
+          <Card title="Cấu hình động (setting)">
+            <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 12 }}>
+              Cấu hình phân tầng: BRANCH (theo cơ sở) {'>'} GLOBAL {'>'} mặc định code. Sửa ở đây sẽ có hiệu lực ngay không cần restart.
+            </Typography.Text>
+            <Table
+              rowKey="id"
+              loading={loading}
+              dataSource={rows}
+              pagination={false}
+              size="small"
+              columns={[
+                {
+                  title: 'Key',
+                  dataIndex: 'key',
+                  width: 260,
+                  render: (v, row) => (
+                    <div>
+                      <Typography.Text code>{v}</Typography.Text>
+                      <div style={{ fontSize: 11, color: '#A9ADB2' }}>{row.scope}{row.branch_id ? ' · theo cơ sở' : ''}</div>
+                    </div>
+                  ),
+                },
+                {
+                  title: 'Giá trị',
+                  dataIndex: 'value',
+                  render: (v, row) => (
+                    <Input
+                      value={edits[row.key] ?? (Array.isArray(v) || typeof v === 'object' ? JSON.stringify(v) : String(v ?? ''))}
+                      onChange={(e) => setEdits((s) => ({ ...s, [row.key]: e.target.value }))}
+                      style={{ maxWidth: 320 }}
+                    />
+                  ),
+                },
+                { title: 'Mô tả', dataIndex: 'description', render: (v) => v || '—' },
+              ]}
+            />
           </Card>
         </Col>
       </Row>

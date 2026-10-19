@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Button, Form, Input, InputNumber, Modal, Popconfirm, Select, Space, Switch, Table, Tag, message } from 'antd'
+import { Alert, Button, Form, Input, InputNumber, Modal, Popconfirm, Select, Space, Switch, Table, Tag, message } from 'antd'
 import { PlusOutlined } from '@ant-design/icons'
 import PageTitle from '../components/PageTitle'
 import { PRODUCTS, PRODUCT_CATEGORIES } from '../mock/admin'
@@ -49,6 +49,12 @@ export default function Products() {
       >
         Sản phẩm
       </PageTitle>
+      <Alert
+        type="warning"
+        showIcon
+        style={{ marginBottom: 16 }}
+        message="Dữ liệu minh họa — backend chưa có module sản phẩm. Các thao tác chỉ lưu tạm trên trình duyệt."
+      />
       <Table
         rowKey="id"
         dataSource={rows}

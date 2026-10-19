@@ -23,7 +23,7 @@ import {
   UserSwitchOutlined,
 } from '@ant-design/icons'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { TOKEN_KEY } from '../api/client'
+import { TOKEN_KEY, clearAuth } from '../api/client'
 import './admin-layout.css'
 
 const { Header, Sider, Content } = Layout
@@ -74,7 +74,7 @@ export default function AdminLayout() {
   }, [navigate])
 
   const logout = () => {
-    localStorage.removeItem(TOKEN_KEY)
+    clearAuth()
     navigate('/login', { replace: true })
   }
 

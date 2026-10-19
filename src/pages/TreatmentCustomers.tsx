@@ -1,90 +1,153 @@
-import { useMemo, useState } from 'react'
-import { Button, Card, Col, DatePicker, Form, InputNumber, Modal, Popconfirm, Progress, Row, Segmented, Select, Space, Statistic, Table, Tag, Typography, message } from 'antd'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Button, Card, Col, Form, Input, InputNumber, Modal, Popconfirm, Progress, Row, Segmented, Select, Space, Statistic, Table, Tag, Typography, message } from 'antd'
 import { PlusOutlined } from '@ant-design/icons'
 import PageTitle from '../components/PageTitle'
-import { CUSTOMERS, STAFFS, TREATMENT_ASSIGNMENTS, TREATMENT_CATALOG } from '../mock/admin'
-import type { TreatmentAssignment } from '../mock/admin'
+import {
+  bizErrorMessage,
+  cancelCustomerTreatment,
+  createCustomerTreatment,
+  createTreatmentPayment,
+  createTreatmentSession,
+  listCustomerProfiles,
+  listCustomerTreatments,
+  listTreatmentPackages,
+  listTreatmentPayments,
+  listTreatmentSessions,
+} from '../api/newsky'
+import type { CustomerProfile, CustomerTreatment, TreatmentPackage } from '../api/newsky'
+
+const QUOTA_LABEL: Record<string, string> = {
+  SESSIONS: 'Theo số buổi',
+  VALUE: 'Theo định mức tiền',
+  UNLIMITED: 'Trọn gói',
+}
 
 const FILTERS = [
   { value: 'all', label: 'Tất cả' },
-  { value: 'ongoing', label: 'Đang làm' },
-  { value: 'done', label: 'Hoàn tất' },
+  { value: 'ACTIVE', label: 'Đang làm' },
+  { value: 'FINISHED', label: 'Hoàn tất' },
+  { value: 'CANCELLED', label: 'Đã hủy' },
 ]
 
+const STATUS_META: Record<string, { label: string; color: string }> = {
+  ACTIVE: { label: 'Đang làm', color: 'purple' },
+  FINISHED: { label: 'Hoàn tất', color: 'green' },
+  CANCELLED: { label: 'Đã hủy', color: 'default' },
+}
+
 export default function TreatmentCustomers() {
-  const [rows, setRows] = useState<TreatmentAssignment[]>(TREATMENT_ASSIGNMENTS)
+  const [rows, setRows] = useState<CustomerTreatment[]>([])
+  const [profiles, setProfiles] = useState<CustomerProfile[]>([])
+  const [packages, setPackages] = useState<TreatmentPackage[]>([])
   const [filter, setFilter] = useState<string>('all')
+  const [loading, setLoading] = useState(false)
   const [open, setOpen] = useState(false)
-  const [editing, setEditing] = useState<TreatmentAssignment | null>(null)
   const [form] = Form.useForm()
+  // Drawer chi tiết
+  const [detail, setDetail] = useState<CustomerTreatment | null>(null)
+  const [sessions, setSessions] = useState<any[]>([])
+  const [payments, setPayments] = useState<any[]>([])
+  const [payOpen, setPayOpen] = useState(false)
+  const [payForm] = Form.useForm()
+
+  const load = useCallback(async () => {
+    setLoading(true)
+    try {
+      setRows(await listCustomerTreatments())
+    } catch (err) {
+      message.error(bizErrorMessage(err))
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    load()
+    listCustomerProfiles({ page: 1, limit: 200 }).then(({ data }) => setProfiles(data)).catch(() => undefined)
+    listTreatmentPackages().then(setPackages).catch(() => undefined)
+  }, [load])
 
   const list = useMemo(
     () => (filter === 'all' ? rows : rows.filter((r) => r.status === filter)),
     [rows, filter],
   )
 
-  const stats = useMemo(() => {
-    const ongoing = rows.filter((r) => r.status === 'ongoing')
-    return {
-      total: rows.length,
-      ongoing: ongoing.length,
-      done: rows.filter((r) => r.status === 'done').length,
-      customers: new Set(ongoing.map((r) => r.customer)).size,
-    }
-  }, [rows])
+  const stats = useMemo(() => ({
+    total: rows.length,
+    ongoing: rows.filter((r) => r.status === 'ACTIVE').length,
+    done: rows.filter((r) => r.status === 'FINISHED').length,
+    debt: rows.reduce((s, r) => s + Number(r.debt_amount ?? 0), 0),
+  }), [rows])
 
-  const openModal = (t?: TreatmentAssignment) => {
-    setEditing(t ?? null)
-    form.setFieldsValue(
-      t ?? {
-        customer: undefined,
-        treatment: undefined,
-        total_sessions: 4,
-        done_sessions: 0,
-        start_date: '',
-        staff: STAFFS[0],
-      },
-    )
+  const openDetail = async (row: CustomerTreatment) => {
+    setDetail(row)
+    try {
+      setSessions((await listTreatmentSessions(row.id)) as any[])
+      setPayments((await listTreatmentPayments(row.id)) as any[])
+    } catch (err) {
+      message.error(bizErrorMessage(err))
+    }
+  }
+
+  const openModal = () => {
+    form.setFieldsValue({ customer_profile_id: undefined, package_id: undefined, total_amount: undefined })
     setOpen(true)
   }
 
-  const onTreatmentChange = (name: string) => {
-    const item = TREATMENT_CATALOG.find((t) => t.name === name)
-    if (item) form.setFieldsValue({ total_sessions: item.sessions })
+  const onPackageChange = (id: string) => {
+    const pkg = packages.find((p) => p.id === id)
+    if (pkg) form.setFieldsValue({ total_amount: pkg.list_price ?? undefined })
   }
 
   const submit = async () => {
     const values = await form.validateFields()
-    const row = {
-      ...values,
-      start_date: values.start_date?.format?.('DD/MM/YYYY') ?? values.start_date,
-      status: values.done_sessions >= values.total_sessions ? 'done' : 'ongoing',
-    }
-    if (editing) {
-      setRows((rs) => rs.map((r) => (r.id === editing.id ? { ...r, ...row } : r)))
-      message.success('Đã cập nhật liệu trình của khách')
-    } else {
-      setRows((rs) => [...rs, { id: String(Date.now()), code: `LT-0${239 + rs.length}`, ...row }])
+    try {
+      await createCustomerTreatment(values)
       message.success('Đã thêm khách vào liệu trình')
+      setOpen(false)
+      load()
+    } catch (err) {
+      message.error(bizErrorMessage(err))
     }
-    setOpen(false)
   }
 
-  const addSession = (row: TreatmentAssignment) => {
-    const next = row.done_sessions + 1
-    setRows((rs) =>
-      rs.map((r) =>
-        r.id === row.id
-          ? { ...r, done_sessions: next, status: next >= r.total_sessions ? 'done' : 'ongoing' }
-          : r,
-      ),
-    )
-    message.success(
-      next >= row.total_sessions
-        ? `Hoàn tất liệu trình ${row.code} 🎉`
-        : `Ghi nhận buổi ${next}/${row.total_sessions} — ${row.code}`,
-    )
+  const addSession = async (row: CustomerTreatment) => {
+    try {
+      await createTreatmentSession(row.id, {})
+      message.success('Đã tạo buổi mới')
+      if (detail?.id === row.id) openDetail(row)
+      load()
+    } catch (err) {
+      message.error(bizErrorMessage(err))
+    }
   }
+
+  const cancelTreatment = async (row: CustomerTreatment) => {
+    try {
+      await cancelCustomerTreatment(row.id)
+      message.success('Đã hủy liệu trình')
+      load()
+    } catch (err) {
+      message.error(bizErrorMessage(err))
+    }
+  }
+
+  const submitPayment = async () => {
+    const values = await payForm.validateFields()
+    try {
+      await createTreatmentPayment(detail!.id, values)
+      message.success('Đã ghi nhận thanh toán')
+      setPayOpen(false)
+      payForm.resetFields()
+      openDetail(detail!)
+      load()
+    } catch (err) {
+      message.error(bizErrorMessage(err))
+    }
+  }
+
+  const profileName = (id: string) => profiles.find((p) => p.id === id)?.full_name ?? id?.slice(0, 8)
+  const packageName = (id: string) => packages.find((p) => p.id === id)?.name ?? '—'
 
   return (
     <>
@@ -119,82 +182,95 @@ export default function TreatmentCustomers() {
         </Col>
         <Col xs={12} md={6}>
           <Card styles={{ body: { padding: '16px 20px' } }}>
-            <Statistic title="Khách đang dùng liệu trình" value={stats.customers} valueStyle={{ color: '#D97706' }} />
+            <Statistic title="Tổng công nợ" value={stats.debt} suffix="đ" valueStyle={{ color: '#D97706' }} />
           </Card>
         </Col>
       </Row>
 
       <Table
         rowKey="id"
+        loading={loading}
         dataSource={list}
+        onRow={(row) => ({ onClick: () => openDetail(row), style: { cursor: 'pointer' } })}
         columns={[
           {
-            title: 'Mã',
-            dataIndex: 'code',
-            width: 100,
-            render: (v) => <Typography.Text code>{v}</Typography.Text>,
-          },
-          {
             title: 'Khách hàng',
-            dataIndex: 'customer',
-            render: (v, row) => (
+            key: 'customer',
+            render: (_, row) => (
               <div>
-                <div style={{ fontWeight: 500 }}>{v}</div>
-                <div style={{ fontSize: 12, color: '#6F7071' }}>{row.treatment}</div>
+                <div style={{ fontWeight: 500 }}>{profileName(row.customer_profile_id)}</div>
+                <div style={{ fontSize: 12, color: '#6F7071' }}>{packageName(row.package_id)}</div>
               </div>
             ),
           },
           {
             title: 'Tiến độ',
             width: 200,
+            render: (_, row) => {
+              const total = row.quota_type === 'UNLIMITED' ? null : row.quota_type === 'VALUE' ? null : row.sessions_total
+              const used = row.sessions_used ?? 0
+              return total ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <Progress percent={Math.round((used / total) * 100)} size="small" strokeColor="#8E63A9" style={{ flex: 1, margin: 0 }} />
+                  <span style={{ fontSize: 12, whiteSpace: 'nowrap' }}>
+                    {used}/{total}
+                  </span>
+                </div>
+              ) : (
+                <Tag color="gold">{row.quota_type === 'UNLIMITED' ? 'Trọn gói' : `Định mức ${Number(row.value_used ?? 0).toLocaleString('vi-VN')}đ`}</Tag>
+              )
+            },
+          },
+          {
+            title: 'Thanh toán',
+            key: 'payment',
+            width: 200,
             render: (_, row) => (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <Progress
-                  percent={Math.round((row.done_sessions / row.total_sessions) * 100)}
-                  size="small"
-                  strokeColor="#8E63A9"
-                  style={{ flex: 1, margin: 0 }}
-                />
-                <span style={{ fontSize: 12, whiteSpace: 'nowrap' }}>
-                  {row.done_sessions}/{row.total_sessions}
-                </span>
+              <div>
+                <div style={{ fontSize: 13 }}>
+                  {Number(row.paid_amount ?? 0).toLocaleString('vi-VN')} / {Number(row.total_amount ?? 0).toLocaleString('vi-VN')}đ
+                </div>
+                <Tag color={row.debt_amount > 0 ? 'orange' : 'green'} style={{ marginTop: 4 }}>
+                  {row.debt_amount > 0 ? `Còn nợ ${Number(row.debt_amount).toLocaleString('vi-VN')}đ` : 'Đã trả đủ'}
+                </Tag>
               </div>
             ),
           },
-          { title: 'Chuyên viên', dataIndex: 'staff', width: 120 },
-          { title: 'Bắt đầu', dataIndex: 'start_date', width: 110 },
           {
             title: 'Trạng thái',
             dataIndex: 'status',
             width: 110,
-            render: (v) => (v === 'done' ? <Tag color="green">Hoàn tất</Tag> : <Tag color="purple">Đang làm</Tag>),
+            render: (v: string) => <Tag color={STATUS_META[v]?.color}>{STATUS_META[v]?.label ?? v}</Tag>,
           },
           {
             title: '',
-            width: 180,
+            width: 240,
             render: (_, row) => (
-              <Space>
-                {row.status === 'ongoing' && (
+              <Space onClick={(e) => e.stopPropagation()}>
+                {row.status === 'ACTIVE' && (
                   <Button size="small" type="primary" ghost onClick={() => addSession(row)}>
                     +1 buổi
                   </Button>
                 )}
-                <Button size="small" onClick={() => openModal(row)}>
-                  Sửa
-                </Button>
-                <Popconfirm
-                  title="Xóa lượt đăng ký này?"
-                  okText="Xóa"
-                  cancelText="Hủy"
-                  onConfirm={() => {
-                    setRows((rs) => rs.filter((r) => r.id !== row.id))
-                    message.success('Đã xóa lượt đăng ký')
-                  }}
-                >
-                  <Button size="small" danger>
-                    Xóa
+                {row.debt_amount > 0 && row.status !== 'CANCELLED' && (
+                  <Button
+                    size="small"
+                    onClick={() => {
+                      setDetail(row)
+                      payForm.setFieldsValue({ amount: row.debt_amount, method: 'CASH' })
+                      setPayOpen(true)
+                    }}
+                  >
+                    Thu tiền
                   </Button>
-                </Popconfirm>
+                )}
+                {row.status === 'ACTIVE' && (
+                  <Popconfirm title="Hủy liệu trình này?" okText="Hủy" cancelText="Không" onConfirm={() => cancelTreatment(row)}>
+                    <Button size="small" danger>
+                      Hủy LT
+                    </Button>
+                  </Popconfirm>
+                )}
               </Space>
             ),
           },
@@ -202,7 +278,7 @@ export default function TreatmentCustomers() {
       />
 
       <Modal
-        title={editing ? 'Sửa lượt đăng ký' : 'Thêm khách vào liệu trình'}
+        title="Thêm khách vào liệu trình"
         open={open}
         onCancel={() => setOpen(false)}
         onOk={submit}
@@ -210,43 +286,103 @@ export default function TreatmentCustomers() {
         cancelText="Hủy"
       >
         <Form form={form} layout="vertical" style={{ marginTop: 12 }}>
-          <Form.Item name="customer" label="Khách hàng" rules={[{ required: true, message: 'Chọn khách hàng' }]}>
+          <Form.Item name="customer_profile_id" label="Khách hàng" rules={[{ required: true, message: 'Chọn khách hàng' }]}>
             <Select
               showSearch
               optionFilterProp="label"
               placeholder="Chọn khách hàng từ danh sách"
-              options={CUSTOMERS.map((c) => ({ value: c.name, label: `${c.name} — ${c.code}` }))}
+              options={profiles.map((c) => ({ value: c.id, label: `${c.full_name} — ${c.phone}` }))}
             />
           </Form.Item>
-          <Form.Item name="treatment" label="Liệu trình" rules={[{ required: true, message: 'Chọn liệu trình' }]}>
+          <Form.Item name="package_id" label="Liệu trình" rules={[{ required: true, message: 'Chọn liệu trình' }]}>
             <Select
               showSearch
               optionFilterProp="label"
               placeholder="Chọn liệu trình"
-              onChange={onTreatmentChange}
-              options={TREATMENT_CATALOG.filter((t) => t.is_active).map((t) => ({
-                value: t.name,
-                label: `${t.name} (${t.sessions} buổi)`,
+              onChange={onPackageChange}
+              options={packages.filter((p) => p.is_active).map((p) => ({
+                value: p.id,
+                label: `${p.name} (${QUOTA_LABEL[p.quota_type ?? ''] ?? p.quota_type})`,
               }))}
             />
           </Form.Item>
-          <Space style={{ display: 'flex' }}>
-            <Form.Item name="total_sessions" label="Tổng số buổi" rules={[{ required: true }]} style={{ flex: 1 }}>
-              <InputNumber min={1} max={20} style={{ width: '100%' }} />
-            </Form.Item>
-            <Form.Item name="done_sessions" label="Đã thực hiện" rules={[{ required: true }]} style={{ flex: 1 }}>
-              <InputNumber min={0} max={20} style={{ width: '100%' }} />
-            </Form.Item>
-          </Space>
-          <Space style={{ display: 'flex' }}>
-            <Form.Item name="start_date" label="Ngày bắt đầu" style={{ flex: 1 }}>
-              <DatePicker style={{ width: '100%' }} format="DD/MM/YYYY" />
-            </Form.Item>
-            <Form.Item name="staff" label="Chuyên viên" style={{ flex: 1 }}>
-              <Select options={STAFFS.map((s) => ({ value: s, label: s }))} />
-            </Form.Item>
-          </Space>
+          <Form.Item name="total_amount" label="Số tiền (đ)" rules={[{ required: true, message: 'Nhập số tiền' }]}>
+            <InputNumber min={0} step={100000} style={{ width: '100%' }} />
+          </Form.Item>
         </Form>
+      </Modal>
+
+      <Modal
+        title="Ghi nhận thanh toán"
+        open={payOpen}
+        onCancel={() => setPayOpen(false)}
+        onOk={submitPayment}
+        okText="Lưu"
+        cancelText="Hủy"
+      >
+        <Form form={payForm} layout="vertical" style={{ marginTop: 12 }}>
+          <Form.Item name="amount" label="Số tiền (đ)" rules={[{ required: true, message: 'Nhập số tiền' }]}>
+            <InputNumber min={1} step={50000} style={{ width: '100%' }} />
+          </Form.Item>
+          <Form.Item name="method" label="Phương thức" rules={[{ required: true }]}>
+            <Select
+              options={[
+                { value: 'CASH', label: 'Tiền mặt' },
+                { value: 'BANK', label: 'Chuyển khoản' },
+                { value: 'POS', label: 'POS' },
+                { value: 'OTHER', label: 'Khác' },
+              ]}
+            />
+          </Form.Item>
+          <Form.Item name="note" label="Ghi chú">
+            <Input.TextArea rows={2} />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      <Modal
+        title={detail ? `Chi tiết — ${profileName(detail.customer_profile_id)}` : ''}
+        open={!!detail}
+        onCancel={() => setDetail(null)}
+        footer={null}
+        width={720}
+      >
+        {detail && (
+          <>
+            <Typography.Title level={5} style={{ marginTop: 16 }}>
+              Buổi điều trị
+            </Typography.Title>
+            <Table
+              rowKey="id"
+              dataSource={sessions}
+              pagination={false}
+              size="small"
+              columns={[
+                { title: 'Buổi', dataIndex: 'session_no', width: 70 },
+                { title: 'Trạng thái', dataIndex: 'status', render: (v) => <Tag>{v}</Tag> },
+                { title: 'KTV', dataIndex: ['staff', 'zalo_name'], render: (v) => v || '—' },
+              ]}
+            />
+            <Typography.Title level={5} style={{ marginTop: 16 }}>
+              Lịch sử thanh toán
+            </Typography.Title>
+            <Table
+              rowKey="id"
+              dataSource={payments}
+              pagination={false}
+              size="small"
+              columns={[
+                {
+                  title: 'Số tiền',
+                  dataIndex: 'amount',
+                  render: (v) => `${Number(v).toLocaleString('vi-VN')}đ`,
+                },
+                { title: 'Phương thức', dataIndex: 'method', width: 110 },
+                { title: 'Ghi chú', dataIndex: 'note', render: (v) => v || '—' },
+              ]}
+            />
+          </>
+        )}
       </Modal>
     </>
   )
