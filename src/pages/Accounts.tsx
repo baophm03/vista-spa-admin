@@ -88,7 +88,7 @@ export default function Accounts() {
             dataIndex: 'zalo_name',
             render: (v) => (
               <Space>
-                <Avatar style={{ backgroundColor: '#8E63A9' }} icon={<UserOutlined />} size="small" />
+                <Avatar style={{ backgroundColor: 'var(--brand-primary)' }} icon={<UserOutlined />} size="small" />
                 <Typography.Text strong>{v || '—'}</Typography.Text>
               </Space>
             ),

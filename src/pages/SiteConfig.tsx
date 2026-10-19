@@ -1,8 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Button, Card, Col, Input, Row, Space, Table, Typography, message } from 'antd'
-import { ReloadOutlined, SaveOutlined } from '@ant-design/icons'
+import { Button, Card, Col, ColorPicker, ConfigProvider, Divider, Input, Progress, Row, Space, Table, Tag, Typography, message } from 'antd'
+import { BgColorsOutlined, ReloadOutlined, SaveOutlined } from '@ant-design/icons'
 import PageTitle from '../components/PageTitle'
 import { bizErrorMessage, listSettings, updateSettings } from '../api/newsky'
+import { applyThemeColors, getAccentColor, getPrimaryColor, THEME_KEYS } from '../themeRuntime'
+
+const PRESET_COLORS = ['var(--brand-primary)', 'var(--brand-dark)', '#C0457A', '#2F6F62', '#3B6EA5', '#B7791F']
 
 interface SettingRow {
   id: string
@@ -34,7 +37,10 @@ export default function SiteConfig() {
   const [rows, setRows] = useState<SettingRow[]>([])
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [savingTheme, setSavingTheme] = useState(false)
   const [edits, setEdits] = useState<Record<string, string>>({})
+  const [primaryColor, setPrimaryColor] = useState(getPrimaryColor())
+  const [accentColor, setAccentColor] = useState(getAccentColor())
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -42,6 +48,12 @@ export default function SiteConfig() {
       const data = (await listSettings()) as SettingRow[]
       setRows(data)
       setEdits({})
+      const pick = (key: string) => {
+        const v = data.find((r) => r.key === key)?.value
+        return typeof v === 'string' ? v : undefined
+      }
+      setPrimaryColor(pick(THEME_KEYS.primary) ?? getPrimaryColor())
+      setAccentColor(pick(THEME_KEYS.accent) ?? getAccentColor())
     } catch (err) {
       message.error(bizErrorMessage(err))
     } finally {
@@ -67,6 +79,24 @@ export default function SiteConfig() {
     }
   }
 
+  const saveTheme = async () => {
+    setSavingTheme(true)
+    try {
+      await updateSettings({
+        items: [
+          { key: THEME_KEYS.primary, value: primaryColor },
+          { key: THEME_KEYS.accent, value: accentColor },
+        ],
+      })
+      applyThemeColors({ primary: primaryColor, accent: accentColor })
+      message.success('Đã áp dụng màu mới cho toàn hệ thống')
+    } catch (err) {
+      message.error(bizErrorMessage(err))
+    } finally {
+      setSavingTheme(false)
+    }
+  }
+
   return (
     <>
       <PageTitle
@@ -83,14 +113,83 @@ export default function SiteConfig() {
       </PageTitle>
       <Row gutter={[20, 20]}>
         <Col xs={24}>
+          <Card
+            title={
+              <Space>
+                <BgColorsOutlined />
+                Màu sắc giao diện
+              </Space>
+            }
+            extra={
+              <Button type="primary" icon={<SaveOutlined />} loading={savingTheme} onClick={saveTheme}>
+                Áp dụng
+              </Button>
+            }
+          >
+            <Row gutter={[24, 16]} align="middle">
+              <Col xs={24} md={8}>
+                <div style={{ marginBottom: 6, fontWeight: 500 }}>Màu chủ đạo</div>
+                <Space>
+                  <ColorPicker value={primaryColor} onChange={(c) => setPrimaryColor(c.toHexString())} showText />
+                  <Space size={4}>
+                    {PRESET_COLORS.map((c) => (
+                      <div
+                        key={c}
+                        onClick={() => setPrimaryColor(c)}
+                        style={{
+                          width: 22,
+                          height: 22,
+                          borderRadius: '50%',
+                          background: c,
+                          cursor: 'pointer',
+                          border: primaryColor === c ? '2px solid #292331' : '2px solid transparent',
+                          outline: '1px solid var(--brand-border)',
+                        }}
+                      />
+                    ))}
+                  </Space>
+                </Space>
+                <div style={{ fontSize: 12, color: '#A9ADB2', marginTop: 6 }}>
+                  Dùng cho nút chính, link, menu active... (key: <Typography.Text code>{THEME_KEYS.primary}</Typography.Text>)
+                </div>
+              </Col>
+              <Col xs={24} md={8}>
+                <div style={{ marginBottom: 6, fontWeight: 500 }}>Màu nhấn phụ</div>
+                <ColorPicker value={accentColor} onChange={(c) => setAccentColor(c.toHexString())} showText />
+                <div style={{ fontSize: 12, color: '#A9ADB2', marginTop: 6 }}>
+                  Vàng champagne / điểm nhấn thương hiệu (key: <Typography.Text code>{THEME_KEYS.accent}</Typography.Text>)
+                </div>
+              </Col>
+              <Col xs={24} md={8}>
+                <div style={{ marginBottom: 6, fontWeight: 500 }}>Xem trước</div>
+                <ConfigProvider theme={{ token: { colorPrimary: primaryColor } }}>
+                  <Space size={8} wrap>
+                    <Button type="primary" size="small">
+                      Nút chính
+                    </Button>
+                    <Button size="small">Nút phụ</Button>
+                    <Tag color={primaryColor}>Tag</Tag>
+                  </Space>
+                  <Progress percent={62} strokeColor={primaryColor} size="small" style={{ marginTop: 10, marginBottom: 0 }} />
+                </ConfigProvider>
+              </Col>
+            </Row>
+            <Divider style={{ margin: '14px 0' }} />
+            <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+              Lưu ý: màu áp dụng ngay cho toàn bộ component Ant Design (nút, link, checkbox, pagination...).
+              Mini App đọc cùng key này qua GET /settings để đồng bộ màu thương hiệu.
+            </Typography.Text>
+          </Card>
+        </Col>
+        <Col xs={24}>
           <Card title="Cấu hình động (setting)">
             <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 12 }}>
               Cấu hình phân tầng: BRANCH (theo cơ sở) {'>'} GLOBAL {'>'} mặc định code. Sửa ở đây sẽ có hiệu lực ngay không cần restart.
             </Typography.Text>
             <Table
-              rowKey="id"
+              rowKey="key"
               loading={loading}
-              dataSource={rows}
+              dataSource={rows.filter((r) => !r.key.startsWith('theme.'))}
               pagination={false}
               size="small"
               columns={[

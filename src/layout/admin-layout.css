@@ -17,6 +17,6 @@
 }
 
 .admin-content::-webkit-scrollbar-thumb {
-  background: #E0D5E8;
-  border-radius: 8px;
+  background: var(--brand-border);
+  border-radius: 12px;
 }

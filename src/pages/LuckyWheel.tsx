@@ -130,7 +130,7 @@ export default function LuckyWheel() {
           onRow={(row) => ({ onClick: () => selectWheel(row), style: { cursor: 'pointer' } })}
           columns={[
             { title: 'Tên vòng quay', dataIndex: 'name', render: (v, row) => (
-              <Typography.Text strong style={selected?.id === row.id ? { color: '#8E63A9' } : undefined}>{v}</Typography.Text>
+              <Typography.Text strong style={selected?.id === row.id ? { color: 'var(--brand-primary)' } : undefined}>{v}</Typography.Text>
             ) },
             { title: 'Cơ sở', dataIndex: 'branch_id', render: (v) => branchName(v) },
             { title: 'Doanh số tối thiểu', dataIndex: 'min_year_spent', render: (v) => `${Number(v).toLocaleString('vi-VN')}đ/năm` },

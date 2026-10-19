@@ -3,3 +3,138 @@ body {
   font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
+
+
+
+/* ===== Bảng — khung hairline + shadow khuếch tán theo màu brand ===== */
+.ant-table-wrapper {
+  border: 1px solid var(--brand-border);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #FFFFFF;
+  box-shadow:
+    0 1px 2px rgba(var(--brand-dark-rgb), 0.04),
+    0 12px 32px -16px rgba(var(--brand-dark-rgb), 0.1);
+}
+
+.ant-table-wrapper .ant-table-container {
+  border: none;
+  border-radius: 0;
+}
+
+/* Header: nhãn nhỏ, semibold — phân tách bằng hairline */
+.ant-table-wrapper .ant-table-thead > tr > th {
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.4px;
+  border-bottom: 1px solid var(--brand-border) !important;
+}
+
+/* Hàng body: hairline siêu nhạt giữa các dòng, dòng cuối không viền */
+.ant-table-wrapper .ant-table-tbody > tr > td {
+  border-bottom: 1px solid var(--brand-border-soft);
+}
+
+.ant-table-wrapper .ant-table-tbody > tr:last-child > td {
+  border-bottom: none;
+}
+
+/* Đường dọc ngăn cách giữa các cột — giữ theo yêu cầu, làm siêu nhạt */
+.ant-table-wrapper table th:not(:last-child),
+.ant-table-wrapper table td:not(:last-child) {
+  border-inline-end: 1px solid var(--brand-border-soft);
+}
+
+/* Bảng lồng trong dòng mở rộng: bỏ khung ngoài để tránh "khung trong khung" */
+.ant-table-expanded-row .ant-table-wrapper {
+  border: none;
+  box-shadow: none;
+  border-radius: 0;
+}
+
+.ant-table-wrapper .ant-table-pagination.ant-pagination {
+  margin: 14px 16px;
+}
+
+/* ===== Khối nội dung chính ===== */
+.admin-surface {
+  border: 1px solid var(--brand-border);
+  box-shadow:
+    0 1px 2px rgba(var(--brand-dark-rgb), 0.04),
+    0 12px 32px -16px rgba(var(--brand-dark-rgb), 0.08);
+}
+
+/* ===== Card — viền hairline + shadow mềm cùng tông ===== */
+.ant-card {
+  border-color: var(--brand-border);
+  box-shadow:
+    0 1px 2px rgba(var(--brand-dark-rgb), 0.04),
+    0 12px 32px -16px rgba(var(--brand-dark-rgb), 0.08);
+}
+
+.ant-card .ant-card-head {
+  border-bottom-color: var(--brand-border-soft);
+}
+
+/* ===== Nút chính — shadow mềm cùng màu, bấm có lực ===== */
+.ant-btn-primary {
+  box-shadow: 0 4px 14px -4px rgba(var(--brand-rgb), 0.5);
+}
+
+.ant-btn-primary:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 8px -4px rgba(var(--brand-rgb), 0.4);
+}
+
+/* Header modal chi tiết liệu trình — nền màu chủ đạo */
+.brand-header-modal .ant-modal-content,
+.brand-header-modal .ant-modal-container {
+  padding: 0;
+  overflow: hidden;
+}
+.brand-header-modal .ant-modal-header {
+  background: linear-gradient(120deg, var(--brand-dark), var(--brand-primary));
+  padding: 20px 24px;
+  margin-bottom: 0;
+}
+.brand-header-modal .ant-modal-footer {
+  margin-top: 0;
+  padding: 12px 24px;
+  border-top: 1px solid var(--brand-border-soft);
+  text-align: right;
+}
+/* Thanh tab trong modal chi tiết — ghim khi cuộn */
+.brand-header-modal .ant-tabs-nav {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: #ffffff;
+  margin-bottom: 0;
+  padding-bottom: 10px;
+}
+/* Nút + tab trong modal chi tiết — chữ đậm */
+.brand-header-modal .ant-btn {
+  font-weight: 600;
+}
+.brand-header-modal .ant-tabs-tab {
+  font-weight: 600;
+}
+
+/* Item buổi điều trị — hover cả hàng */
+.session-row {
+  transition: background 0.15s;
+}
+.session-row:hover {
+  background: var(--brand-hover);
+}
+
+/* Rail trái modal chi tiết liệu trình — ghim khi cuộn (chỉ desktop) */
+.rail-sticky {
+  position: sticky;
+  top: 0;
+}
+@media (max-width: 991px) {
+  .rail-sticky {
+    position: static;
+  }
+}

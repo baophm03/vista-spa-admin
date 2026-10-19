@@ -109,7 +109,7 @@ export default function Orders() {
         </Col>
         <Col xs={12} md={6}>
           <Card styles={{ body: { padding: '16px 20px' } }}>
-            <Statistic title="Doanh thu bán lẻ" value={stats.revenue} suffix="đ" valueStyle={{ color: '#8E63A9' }} />
+            <Statistic title="Doanh thu bán lẻ" value={stats.revenue} suffix="đ" valueStyle={{ color: 'var(--brand-primary)' }} />
           </Card>
         </Col>
       </Row>
@@ -123,7 +123,7 @@ export default function Orders() {
             title: 'Mã đơn',
             dataIndex: 'code',
             width: 110,
-            render: (v) => <Typography.Text strong style={{ color: '#54316F' }}>{v}</Typography.Text>,
+            render: (v) => <Typography.Text strong style={{ color: 'var(--brand-dark)' }}>{v}</Typography.Text>,
           },
           {
             title: 'Khách hàng',
@@ -140,7 +140,7 @@ export default function Orders() {
             dataIndex: 'items',
             render: (_, row) => (
               <Space>
-                <img src={row.items[0]?.image} alt="" width={36} height={36} style={{ borderRadius: 8, objectFit: 'cover' }} />
+                <img src={row.items[0]?.image} alt="" width={36} height={36} style={{ borderRadius: 12, objectFit: 'cover' }} />
                 <div>
                   <div style={{ fontSize: 13 }}>{row.items[0]?.name}</div>
                   {row.items.length > 1 && (

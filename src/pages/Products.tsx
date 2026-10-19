@@ -69,7 +69,7 @@ export default function Products() {
                   alt={v}
                   width={44}
                   height={44}
-                  style={{ objectFit: 'cover', borderRadius: 8 }}
+                  style={{ objectFit: 'cover', borderRadius: 12 }}
                 />
                 <div>
                   <div style={{ fontWeight: 500 }}>{v}</div>

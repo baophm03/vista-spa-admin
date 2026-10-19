@@ -59,7 +59,7 @@ export default function OrderDetail() {
       <Card style={{ marginBottom: 20 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
           <Space size={12}>
-            <Typography.Text strong style={{ fontSize: 16, color: '#54316F' }}>
+            <Typography.Text strong style={{ fontSize: 16, color: 'var(--brand-dark)' }}>
               {order.code}
             </Typography.Text>
             <Tag color={ORDER_STATUS_META[order.status].color} style={{ fontSize: 13 }}>
@@ -111,7 +111,7 @@ export default function OrderDetail() {
             ]}
           />
         ) : (
-          <div style={{ marginTop: 20, padding: '14px 18px', background: '#F5F1F7', borderRadius: 10 }}>
+          <div style={{ marginTop: 20, padding: '14px 18px', background: 'var(--brand-bg)', borderRadius: 12 }}>
             <Typography.Text type="danger" strong>
               Đơn hàng đã bị hủy
             </Typography.Text>
@@ -131,7 +131,7 @@ export default function OrderDetail() {
                     alt={item.name}
                     width={64}
                     height={64}
-                    style={{ borderRadius: 10, objectFit: 'cover', flexShrink: 0 }}
+                    style={{ borderRadius: 12, objectFit: 'cover', flexShrink: 0 }}
                   />
                   <div style={{ flex: 1 }}>
                     <div style={{ fontWeight: 500 }}>{item.name}</div>
@@ -155,7 +155,7 @@ export default function OrderDetail() {
               <Typography.Text strong style={{ fontSize: 15 }}>
                 Tổng cộng
               </Typography.Text>
-              <Typography.Text strong style={{ fontSize: 18, color: '#54316F' }}>
+              <Typography.Text strong style={{ fontSize: 18, color: 'var(--brand-dark)' }}>
                 {total.toLocaleString('vi-VN')}đ
               </Typography.Text>
             </div>
@@ -167,16 +167,16 @@ export default function OrderDetail() {
             <div style={{ fontWeight: 600, fontSize: 15 }}>{order.customer}</div>
             <div style={{ marginTop: 10, display: 'grid', gap: 8, fontSize: 13 }}>
               <Space>
-                <PhoneOutlined style={{ color: '#8E63A9' }} />
+                <PhoneOutlined style={{ color: 'var(--brand-primary)' }} />
                 <span>{order.phone}</span>
               </Space>
               <Space align="start">
-                <EnvironmentOutlined style={{ color: '#8E63A9', marginTop: 3 }} />
+                <EnvironmentOutlined style={{ color: 'var(--brand-primary)', marginTop: 3 }} />
                 <span>{order.address}</span>
               </Space>
             </div>
             {order.note && (
-              <div style={{ marginTop: 12, padding: '8px 12px', background: '#FBF3DF', borderRadius: 8, fontSize: 13 }}>
+              <div style={{ marginTop: 12, padding: '8px 12px', background: '#FBF3DF', borderRadius: 12, fontSize: 13 }}>
                 Ghi chú: {order.note}
               </div>
             )}

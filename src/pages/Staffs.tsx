@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Avatar, Button, Card, Col, Form, Input, Modal, Popconfirm, Row, Select, Space, Tag, Typography, message } from 'antd'
+import { Avatar, Button, Form, Input, Modal, Popconfirm, Select, Space, Table, Tag, message } from 'antd'
 import { PlusOutlined, ReloadOutlined, UserOutlined } from '@ant-design/icons'
 import PageTitle from '../components/PageTitle'
 import {
@@ -115,33 +115,44 @@ export default function Staffs() {
       >
         Chuyên viên / KTV
       </PageTitle>
-      <Row gutter={[20, 20]}>
-        {rows.map((s) => (
-          <Col xs={24} sm={12} lg={8} key={s.id}>
-            <Card styles={{ body: { padding: 20 } }}>
-              <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
-                <Avatar size={56} style={{ backgroundColor: '#8E63A9' }} icon={<UserOutlined />} />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 600, fontSize: 15 }}>{s.zalo_name || s.email || '—'}</div>
-                  <Space size={6} wrap style={{ marginTop: 4 }}>
-                    <Tag color={s.is_admin ? 'gold' : 'purple'}>{roleLabel(s)}</Tag>
-                    <Tag color={s.is_active === false ? 'default' : 'green'}>
-                      {s.is_active === false ? 'Nghỉ' : 'Đang làm'}
-                    </Tag>
-                  </Space>
-                </div>
-              </div>
-              <div style={{ marginTop: 14, fontSize: 13 }}>
-                <div>
-                  <span style={{ color: '#6F7071' }}>SĐT: </span>
-                  <span>{s.phone_number || '—'}</span>
-                </div>
-                <div style={{ marginTop: 4 }}>
-                  <span style={{ color: '#6F7071' }}>Email: </span>
-                  <span>{s.email || '—'}</span>
-                </div>
-              </div>
-              <div style={{ marginTop: 16, display: 'flex', gap: 8 }}>
+      <Table<StaffRow>
+        rowKey="id"
+        loading={loading}
+        dataSource={rows}
+        locale={{ emptyText: 'Chưa có nhân viên nào trong hệ thống.' }}
+        columns={[
+          {
+            title: 'Nhân viên',
+            dataIndex: 'zalo_name',
+            render: (_, s) => (
+              <Space>
+                <Avatar size={36} style={{ backgroundColor: 'var(--brand-primary)' }} icon={<UserOutlined />} />
+                <span style={{ fontWeight: 600 }}>{s.zalo_name || s.email || '—'}</span>
+              </Space>
+            ),
+          },
+          {
+            title: 'Vai trò',
+            key: 'role',
+            width: 140,
+            render: (_, s) => <Tag color={s.is_admin ? 'gold' : 'purple'}>{roleLabel(s)}</Tag>,
+          },
+          {
+            title: 'Trạng thái',
+            dataIndex: 'is_active',
+            width: 120,
+            render: (v) => (
+              <Tag color={v === false ? 'default' : 'green'}>{v === false ? 'Nghỉ' : 'Đang làm'}</Tag>
+            ),
+          },
+          { title: 'SĐT', dataIndex: 'phone_number', width: 150, render: (v) => v || '—' },
+          { title: 'Email', dataIndex: 'email', render: (v) => v || '—' },
+          {
+            title: 'Thao tác',
+            key: 'actions',
+            width: 140,
+            render: (_, s) => (
+              <Space>
                 <Button size="small" onClick={() => openModal(s)}>
                   Sửa
                 </Button>
@@ -150,14 +161,11 @@ export default function Staffs() {
                     Xóa
                   </Button>
                 </Popconfirm>
-              </div>
-            </Card>
-          </Col>
-        ))}
-      </Row>
-      {!loading && rows.length === 0 && (
-        <Typography.Text type="secondary">Chưa có nhân viên nào trong hệ thống.</Typography.Text>
-      )}
+              </Space>
+            ),
+          },
+        ]}
+      />
 
       <Modal
         title={editing ? 'Sửa chuyên viên' : 'Thêm chuyên viên'}

@@ -24,6 +24,7 @@ import {
 } from '@ant-design/icons'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { TOKEN_KEY, clearAuth } from '../api/client'
+import { refreshThemeFromServer } from '../themeRuntime'
 import './admin-layout.css'
 
 const { Header, Sider, Content } = Layout
@@ -71,6 +72,7 @@ export default function AdminLayout() {
 
   useEffect(() => {
     if (!localStorage.getItem(TOKEN_KEY)) navigate('/login', { replace: true })
+    else refreshThemeFromServer()
   }, [navigate])
 
   const logout = () => {
@@ -87,16 +89,16 @@ export default function AdminLayout() {
             itemBorderRadius: 10,
             itemMarginInline: 12,
             itemMarginBlock: 3,
-            itemSelectedBg: '#F0E6F6',
-            itemSelectedColor: '#54316F',
-            itemHoverBg: '#F7F3FA',
+            itemSelectedBg: 'var(--brand-tint)',
+            itemSelectedColor: 'var(--brand-dark)',
+            itemHoverBg: 'var(--brand-hover)',
             activeBarBorderWidth: 0,
             fontSize: 14,
           },
         },
       }}
     >
-      <Layout style={{ height: '100vh', overflow: 'hidden', background: '#F5F1F7' }}>
+      <Layout style={{ height: '100vh', overflow: 'hidden', background: 'var(--brand-bg)' }}>
         <Sider
           collapsible
           collapsed={collapsed}
@@ -107,7 +109,7 @@ export default function AdminLayout() {
           className="admin-sider"
           style={{
             height: '100vh',
-            borderRight: '1px solid #F0EAF4',
+            borderRight: '1px solid var(--brand-border-soft)',
           }}
         >
           <div
@@ -117,7 +119,7 @@ export default function AdminLayout() {
               alignItems: 'center',
               justifyContent: 'center',
               gap: 10,
-              borderBottom: '1px solid #F0EAF4',
+              borderBottom: '1px solid var(--brand-border-soft)',
               overflow: 'hidden',
               flexShrink: 0,
             }}
@@ -127,8 +129,8 @@ export default function AdminLayout() {
                 width: 34,
                 height: 34,
                 flexShrink: 0,
-                borderRadius: 10,
-                background: 'linear-gradient(135deg, #54316F, #8E63A9)',
+                borderRadius: 12,
+                background: 'linear-gradient(135deg, var(--brand-dark), var(--brand-primary))',
                 color: '#fff',
                 fontWeight: 700,
                 fontSize: 16,
@@ -141,7 +143,7 @@ export default function AdminLayout() {
             </div>
             {!collapsed && (
               <div style={{ lineHeight: 1.2, whiteSpace: 'nowrap' }}>
-                <div style={{ fontWeight: 700, fontSize: 15, color: '#54316F' }}>NewSky Vista</div>
+                <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--brand-dark)' }}>NewSky Vista</div>
                 <div style={{ fontSize: 11, color: '#A9ADB2' }}>Học viện Spa</div>
               </div>
             )}
@@ -166,7 +168,7 @@ export default function AdminLayout() {
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
-              borderBottom: '1px solid #F0EAF4',
+              borderBottom: '1px solid var(--brand-border-soft)',
               height: 64,
               lineHeight: 'normal',
               flexShrink: 0,
@@ -175,7 +177,7 @@ export default function AdminLayout() {
           >
             <Space size={16}>
               <Typography.Text
-                style={{ fontSize: 18, color: '#54316F', cursor: 'pointer' }}
+                style={{ fontSize: 18, color: 'var(--brand-dark)', cursor: 'pointer' }}
                 onClick={() => setCollapsed((c) => !c)}
               >
                 {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
@@ -194,14 +196,14 @@ export default function AdminLayout() {
                   <BellOutlined />
                 </Typography.Text>
               </Badge>
-              <div style={{ width: 1, height: 24, background: '#F0EAF4' }} />
+              <div style={{ width: 1, height: 24, background: 'var(--brand-border-soft)' }} />
               <Dropdown
                 menu={{
                   items: [{ key: 'logout', icon: <LogoutOutlined />, label: 'Đăng xuất', onClick: logout }],
                 }}
               >
                 <Space style={{ cursor: 'pointer' }}>
-                  <Avatar size={34} style={{ backgroundColor: '#8E63A9' }} icon={<UserOutlined />} />
+                  <Avatar size={34} style={{ backgroundColor: 'var(--brand-primary)' }} icon={<UserOutlined />} />
                   <div style={{ lineHeight: 1.2 }}>
                     <div style={{ fontWeight: 600, fontSize: 13 }}>Admin</div>
                     <div style={{ fontSize: 11, color: '#A9ADB2' }}>Quản trị viên</div>
@@ -212,7 +214,10 @@ export default function AdminLayout() {
           </Header>
 
           <Content className="admin-content" style={{ flex: 1, overflowY: 'auto', padding: 24 }}>
-            <div style={{ padding: 24, background: colorBgContainer, borderRadius: borderRadiusLG, minHeight: '100%' }}>
+            <div
+              className="admin-surface"
+              style={{ padding: 24, background: colorBgContainer, borderRadius: borderRadiusLG, minHeight: '100%' }}
+            >
               <Outlet />
             </div>
           </Content>

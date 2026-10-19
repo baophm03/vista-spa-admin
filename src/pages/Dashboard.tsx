@@ -23,12 +23,11 @@ import dayjs from 'dayjs'
 import PageTitle from '../components/PageTitle'
 import { listAppointments, listCustomerProfiles, reportAppointments, reportRanks, reportRevenue } from '../api/newsky'
 import type { Appointment } from '../api/newsky'
-
-const RANK_COLORS = ['#8E63A9', '#D9A441', '#3B5BDB', '#16A34A', '#E06666']
+import { useBrandColors } from '../themeRuntime'
 
 const tooltipStyle = {
-  borderRadius: 10,
-  border: '1px solid #E9DDF0',
+  borderRadius: 12,
+  border: '1px solid var(--brand-border)',
   fontSize: 13,
 }
 
@@ -54,6 +53,8 @@ const STATUS_MAP: Record<string, { label: string; color: string }> = {
 }
 
 export default function Dashboard() {
+  const brand = useBrandColors()
+  const rankColors = [brand.primary, '#D9A441', '#3B5BDB', '#16A34A', '#E06666']
   const [totalCustomers, setTotalCustomers] = useState<number | null>(null)
   const [revenueData, setRevenueData] = useState<{ period: string; revenue: number }[]>([])
   const [rankData, setRankData] = useState<{ name: string; value: number }[]>([])
@@ -100,7 +101,7 @@ export default function Dashboard() {
           <Card styles={{ body: { padding: '18px 20px' } }}>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <Statistic title="Tổng khách hàng" value={totalCustomers ?? '—'} />
-              <div style={KPI_ICON_STYLE('#F0E6F6', '#8E63A9')}>
+              <div style={KPI_ICON_STYLE(brand.tint, brand.primary)}>
                 <TeamOutlined />
               </div>
             </div>
@@ -148,11 +149,11 @@ export default function Dashboard() {
               <AreaChart data={revenueData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                 <defs>
                   <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#8E63A9" stopOpacity={0.45} />
-                    <stop offset="100%" stopColor="#8E63A9" stopOpacity={0.02} />
+                    <stop offset="0%" stopColor={brand.primary} stopOpacity={0.45} />
+                    <stop offset="100%" stopColor={brand.primary} stopOpacity={0.02} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#EFE8F3" vertical={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke={brand.border} vertical={false} />
                 <XAxis dataKey="period" tick={{ fontSize: 12, fill: '#6F7071' }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 12, fill: '#6F7071' }} axisLine={false} tickLine={false} />
                 <Tooltip contentStyle={tooltipStyle} formatter={(v: any) => `${Number(v).toFixed(1)} tr`} />
@@ -161,7 +162,7 @@ export default function Dashboard() {
                   type="monotone"
                   dataKey="revenue"
                   name="Doanh thu (tr)"
-                  stroke="#8E63A9"
+                  stroke={brand.primary}
                   strokeWidth={2.5}
                   fill="url(#revGrad)"
                 />
@@ -183,7 +184,7 @@ export default function Dashboard() {
                   strokeWidth={0}
                 >
                   {rankData.map((entry, i) => (
-                    <Cell key={entry.name} fill={RANK_COLORS[i % RANK_COLORS.length]} />
+                    <Cell key={entry.name} fill={rankColors[i % rankColors.length]} />
                   ))}
                 </Pie>
                 <Tooltip contentStyle={tooltipStyle} />

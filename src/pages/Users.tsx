@@ -152,7 +152,7 @@ export default function Users() {
             dataIndex: 'full_name',
             render: (v) => (
               <Space>
-                <Avatar style={{ backgroundColor: '#8E63A9' }} icon={<UserOutlined />} size="small" />
+                <Avatar style={{ backgroundColor: 'var(--brand-primary)' }} icon={<UserOutlined />} size="small" />
                 <span style={{ fontWeight: 500 }}>{v}</span>
               </Space>
             ),
@@ -214,7 +214,7 @@ export default function Users() {
               alt={selected.customer_code}
               width={180}
               height={180}
-              style={{ borderRadius: 12, border: '1px solid #E9DDF0' }}
+              style={{ borderRadius: 12, border: '1px solid var(--brand-border)' }}
             />
             <Typography.Text type="secondary" style={{ display: 'block', marginTop: 8 }}>
               Mã QR khách hàng — quét để tra cứu

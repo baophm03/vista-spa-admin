@@ -125,7 +125,7 @@ export default function Points() {
               <div style={{ marginTop: 12, fontSize: 13 }}>
                 <div>
                   <span style={{ color: '#6F7071' }}>Hiệu lực: </span>
-                  <span style={{ fontWeight: 600, color: '#54316F' }}>{r.validity === 'PERMANENT' ? 'Vĩnh viễn' : '1 năm'}</span>
+                  <span style={{ fontWeight: 600, color: 'var(--brand-dark)' }}>{r.validity === 'PERMANENT' ? 'Vĩnh viễn' : '1 năm'}</span>
                 </div>
                 <div style={{ marginTop: 6, color: '#6F7071' }}>{r.benefits || '—'}</div>
               </div>
@@ -161,7 +161,7 @@ export default function Points() {
             title: 'Điểm',
             width: 110,
             render: (_, row) => (
-              <span style={{ fontWeight: 600, color: '#8E63A9' }}>
+              <span style={{ fontWeight: 600, color: 'var(--brand-primary)' }}>
                 {Number(row.membership?.points ?? 0).toLocaleString('vi-VN')}
               </span>
             ),

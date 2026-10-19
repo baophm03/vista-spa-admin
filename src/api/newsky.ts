@@ -117,6 +117,8 @@ export interface CustomerTreatment {
   debt_amount: number
   payment_status: 'UNPAID' | 'PARTIAL' | 'PAID'
   status: 'ACTIVE' | 'FINISHED' | 'CANCELLED'
+  customer_profile?: { full_name?: string; phone?: string }
+  package_type?: { name?: string }
 }
 export const listCustomerTreatments = (params: Record<string, unknown> = {}) =>
   biz<CustomerTreatment[]>(api.get('/customerTreatments', { params }))
@@ -134,6 +136,13 @@ export const startSession = (id: string) => biz(api.put(`/sessions/${id}/start`)
 export const doneSession = (id: string, dto: Record<string, unknown> = {}) => biz(api.put(`/sessions/${id}/done`, dto))
 export const completeSession = (id: string) => biz(api.put(`/sessions/${id}/complete`))
 export const listSessionPhotos = (id: string) => biz(api.get(`/sessions/${id}/photos`))
+export const createSessionPhoto = (id: string, dto: Record<string, unknown>) =>
+  biz(api.post(`/sessions/${id}/photos`, dto))
+export const uploadFile = (file: File) => {
+  const fd = new FormData()
+  fd.append('file', file)
+  return unwrap<{ fileName: string; contentType?: string; original: string }>(api.post('/files', fd))
+}
 export const deleteSession = (id: string) => biz(api.delete(`/sessions/${id}`))
 
 // ---------- Payments ----------

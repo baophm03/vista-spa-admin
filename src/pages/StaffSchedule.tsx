@@ -164,11 +164,11 @@ export default function StaffSchedule() {
                 style={{
                   textAlign: 'center',
                   padding: '8px 0',
-                  borderRadius: 8,
+                  borderRadius: 12,
                   fontWeight: 600,
                   fontSize: 13,
-                  background: '#F5F1F7',
-                  color: '#54316F',
+                  background: 'var(--brand-bg)',
+                  color: 'var(--brand-dark)',
                 }}
               >
                 {d}
@@ -178,7 +178,7 @@ export default function StaffSchedule() {
 
           {staffIds.map((staffId) => (
             <div key={staffId} style={{ display: 'grid', gridTemplateColumns: '150px repeat(7, 1fr)', gap: 6, marginBottom: 6 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', background: '#F5F1F7', borderRadius: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', background: 'var(--brand-bg)', borderRadius: 12 }}>
                 <span style={{ fontWeight: 600, fontSize: 13, whiteSpace: 'nowrap' }}>{staffName(staffId)}</span>
               </div>
               {Array.from({ length: 7 }, (_, i) => i + 1).map((weekday) => (
@@ -187,7 +187,7 @@ export default function StaffSchedule() {
                   style={{
                     minHeight: 52,
                     border: '1px dashed #E0D5E8',
-                    borderRadius: 8,
+                    borderRadius: 12,
                     padding: 4,
                     display: 'flex',
                     flexDirection: 'column',
