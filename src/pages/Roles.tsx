@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Button, Card, Space, Spin, Switch, Table, Tag, Typography, message } from 'antd'
 import { PlusOutlined, ReloadOutlined } from '@ant-design/icons'
 import PageTitle from '../components/PageTitle'
@@ -20,6 +20,7 @@ export default function Roles() {
   const [roles, setRoles] = useState<RoleRow[]>([])
   const [perms, setPerms] = useState<PermRow[]>([])
   const [grants, setGrants] = useState<Record<string, Set<string>>>({})
+  const initialGrants = useRef<Record<string, string[]>>({})
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
 
@@ -34,8 +35,10 @@ export default function Roles() {
         try {
           const keys = (await getRolePermissions(role.id)) as string[]
           g[role.id] = new Set(keys)
+          initialGrants.current[role.id] = [...keys].sort()
         } catch {
           g[role.id] = new Set()
+          initialGrants.current[role.id] = []
         }
       }
       setGrants(g)
@@ -62,7 +65,13 @@ export default function Roles() {
   const save = async () => {
     setSaving(true)
     try {
-      for (const role of roles) {
+      // Chỉ PUT các role có thay đổi so với lúc load
+      const changed = roles.filter((role) => {
+        const next = [...(grants[role.id] ?? [])].sort()
+        const prev = initialGrants.current[role.id] ?? []
+        return next.length !== prev.length || next.some((k, i) => k !== prev[i])
+      })
+      for (const role of changed) {
         await updateRolePermissions(role.id, { permissions: [...(grants[role.id] ?? [])] })
       }
       message.success('Đã lưu phân quyền')

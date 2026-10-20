@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Card, Col, Row, Statistic, Table, Tag, Typography } from 'antd'
+import { Card, Col, Empty, Row, Statistic, Table, Tag, Typography } from 'antd'
 import {
   CalendarOutlined,
   DollarOutlined,
@@ -145,6 +145,11 @@ export default function Dashboard() {
       <Row gutter={[16, 16]} style={{ marginBottom: 20 }}>
         <Col xs={24} lg={16}>
           <Card title="Doanh thu theo tháng (6 tháng gần nhất)">
+            {revenueData.length < 2 ? (
+              <div style={{ height: 280, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={revenueData.length === 0 ? 'Chưa có dữ liệu doanh thu' : 'Chưa đủ dữ liệu — cần ít nhất 2 tháng'} />
+              </div>
+            ) : (
             <ResponsiveContainer width="100%" height={280}>
               <AreaChart data={revenueData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                 <defs>
@@ -168,10 +173,16 @@ export default function Dashboard() {
                 />
               </AreaChart>
             </ResponsiveContainer>
+            )}
           </Card>
         </Col>
         <Col xs={24} lg={8}>
           <Card title="Cơ cấu thành viên theo hạng">
+            {rankData.length === 0 ? (
+              <div style={{ height: 280, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Chưa có thành viên xếp hạng" />
+              </div>
+            ) : (
             <ResponsiveContainer width="100%" height={280}>
               <PieChart>
                 <Pie
@@ -191,6 +202,7 @@ export default function Dashboard() {
                 <Legend wrapperStyle={{ fontSize: 13 }} />
               </PieChart>
             </ResponsiveContainer>
+            )}
           </Card>
         </Col>
       </Row>

@@ -22,7 +22,7 @@ import {
   UserOutlined,
   UserSwitchOutlined,
 } from '@ant-design/icons'
-import { Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { TOKEN_KEY, clearAuth } from '../api/client'
 import { refreshThemeFromServer } from '../themeRuntime'
 import './admin-layout.css'
@@ -53,7 +53,6 @@ const menuItems = [
   ]},
   { type: 'group' as const, label: 'Hệ thống', children: [
     { key: '/notifications', icon: <BellOutlined />, label: 'Thông báo' },
-    { key: '/accounts', icon: <UserOutlined />, label: 'Tài khoản' },
     { key: '/roles', icon: <SafetyOutlined />, label: 'Phân quyền' },
     { key: '/site-config', icon: <SettingOutlined />, label: 'Cấu hình trang' },
   ]},
@@ -71,14 +70,17 @@ export default function AdminLayout() {
       .find((item) => item.key === location.pathname)?.label ?? 'Dashboard'
 
   useEffect(() => {
-    if (!localStorage.getItem(TOKEN_KEY)) navigate('/login', { replace: true })
-    else refreshThemeFromServer()
-  }, [navigate])
+    // Chỉ gọi API khi đã có token — tránh bắn request lỗi trước khi guard redirect
+    if (localStorage.getItem(TOKEN_KEY)) refreshThemeFromServer()
+  }, [])
 
   const logout = () => {
     clearAuth()
     navigate('/login', { replace: true })
   }
+
+  // Chưa login → redirect ngay trong render, KHÔNG mount Outlet (children sẽ không chạy effect/fetch API)
+  if (!localStorage.getItem(TOKEN_KEY)) return <Navigate to="/login" replace />
 
   return (
     <ConfigProvider

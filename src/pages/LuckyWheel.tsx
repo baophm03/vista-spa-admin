@@ -177,6 +177,7 @@ export default function LuckyWheel() {
               size="small"
               columns={[
                 { title: 'Thời gian', dataIndex: 'spun_at', render: (v) => dayjs(v).format('DD/MM/YYYY HH:mm') },
+                { title: 'Khách hàng', dataIndex: ['user', 'zalo_name'], render: (v) => v || '—' },
                 { title: 'Trúng', dataIndex: 'is_win', render: (v) => (v ? <Tag color="green">Trúng thưởng</Tag> : <Tag>Không trúng</Tag>) },
                 { title: 'Giải', dataIndex: ['prize', 'name'], render: (v) => v || '—' },
               ]}

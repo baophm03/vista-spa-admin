@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Avatar, Button, DatePicker, Drawer, Form, Input, Modal, Popconfirm, Select, Space, Table, Tag, Typography, message } from 'antd'
 import { PlusOutlined, SearchOutlined, UserOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
+import QRCode from 'qrcode'
 import PageTitle from '../components/PageTitle'
 import {
   bizErrorMessage,
@@ -30,6 +31,7 @@ export default function Users() {
   const [loading, setLoading] = useState(false)
   const [selected, setSelected] = useState<CustomerProfile | null>(null)
   const [summary, setSummary] = useState<Summary | null>(null)
+  const [qrUrl, setQrUrl] = useState<string>('')
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<CustomerProfile | null>(null)
   const [form] = Form.useForm()
@@ -60,6 +62,10 @@ export default function Users() {
   const openDetail = async (row: CustomerProfile) => {
     setSelected(row)
     setSummary(null)
+    setQrUrl('')
+    QRCode.toDataURL(row.customer_code, { width: 360, margin: 1 })
+      .then(setQrUrl)
+      .catch(() => undefined)
     try {
       setSummary((await getCustomerProfileSummary(row.id)) as Summary)
     } catch {
@@ -109,7 +115,7 @@ export default function Users() {
   }
 
   const branchName = (id?: string) => branches.find((b) => b.id === id)?.name ?? '—'
-  const rankName = summary?.rank?.name
+  const rowRankName = (row: CustomerProfile) => row.user?.membership?.card_rank?.name
 
   return (
     <>
@@ -165,7 +171,7 @@ export default function Users() {
             key: 'rank',
             width: 110,
             render: (_, row) =>
-              row.user_id ? <Tag color="purple">{rankName ?? '—'}</Tag> : <Tag>Chưa liên kết</Tag>,
+              row.user_id ? <Tag color="purple">{rowRankName(row) ?? '—'}</Tag> : <Tag>Chưa liên kết</Tag>,
           },
           {
             title: '',
@@ -209,19 +215,23 @@ export default function Users() {
       >
         {selected && (
           <div style={{ textAlign: 'center' }}>
-            <img
-              src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${selected.customer_code}`}
-              alt={selected.customer_code}
-              width={180}
-              height={180}
-              style={{ borderRadius: 12, border: '1px solid var(--brand-border)' }}
-            />
+            {qrUrl ? (
+              <img
+                src={qrUrl}
+                alt={selected.customer_code}
+                width={180}
+                height={180}
+                style={{ borderRadius: 12, border: '1px solid var(--brand-border)' }}
+              />
+            ) : (
+              <div style={{ width: 180, height: 180, borderRadius: 12, border: '1px solid var(--brand-border)' }} />
+            )}
             <Typography.Text type="secondary" style={{ display: 'block', marginTop: 8 }}>
               Mã QR khách hàng — quét để tra cứu
             </Typography.Text>
             <div style={{ textAlign: 'left', marginTop: 24, display: 'grid', gap: 12 }}>
               {[
-                ['Hạng thành viên', rankName ? <Tag key="r" color="purple">{rankName}</Tag> : '—'],
+                ['Hạng thành viên', rowRankName(selected) ? <Tag key="r" color="purple">{rowRankName(selected)}</Tag> : '—'],
                 ['Điểm hiện có', (summary?.points ?? 0).toLocaleString('vi-VN')],
                 ['Chi tiêu năm nay', (summary?.year_spent ?? 0).toLocaleString('vi-VN')],
                 ['Số điện thoại', selected.phone],

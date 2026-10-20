@@ -52,7 +52,7 @@ export default function StaffSchedule() {
       for (const sch of s) ids.set(sch.staff_id, sch.staff?.zalo_name ?? sch.staff_id.slice(0, 8))
       // Danh sách KTV để chọn trong form: tất cả user nội bộ
       try {
-        const ud: any = await listUsers({ page: 1, limit: 200 })
+        const ud: any = await listUsers({ page: 1, limit: 200, has_role: 'true' })
         setStaffList(ud?.rows ?? [...ids.entries()].map(([id, name]) => ({ id, zalo_name: name })))
       } catch {
         setStaffList([...ids.entries()].map(([id, name]) => ({ id, zalo_name: name })))

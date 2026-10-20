@@ -7,6 +7,7 @@ import {
   approveAppointment,
   bizErrorMessage,
   cancelAppointment,
+  completeAppointment,
   createAppointment,
   listAppointments,
   listAvailableSlots,
@@ -79,7 +80,7 @@ export default function Appointments() {
     listServices()
       .then((data: any) => setServices(Array.isArray(data) ? data : []))
       .catch(() => undefined)
-    listUsers({ page: 1, limit: 200 })
+    listUsers({ page: 1, limit: 200, has_role: 'true' })
       .then((d: any) => setStaffs(d?.rows ?? []))
       .catch(() => undefined)
   }, [])
@@ -252,7 +253,7 @@ export default function Appointments() {
             width: 160,
             render: (v, row) => `${dayjs(v).format('DD/MM/YYYY')} ${row.start_time?.slice(0, 5)}`,
           },
-          { title: 'Nguồn', dataIndex: 'created_via', width: 80, render: (v) => (v === 'APP' ? <Tag>App</Tag> : <Tag>Staff</Tag>) },
+          { title: 'Nguồn', dataIndex: 'created_via', width: 100, render: (v) => (v === 'APP' ? <Tag>Mini App</Tag> : <Tag>Nhân viên</Tag>) },
           {
             title: 'Trạng thái',
             dataIndex: 'status',
@@ -290,6 +291,11 @@ export default function Appointments() {
                       </Button>
                     </Popconfirm>
                   </>
+                )}
+                {row.status === 'in_progress' && (
+                  <Button size="small" type="primary" onClick={() => doAction(() => completeAppointment(row.id), 'Đã hoàn tất')}>
+                    Hoàn tất
+                  </Button>
                 )}
                 {['pending', 'approved'].includes(row.status) && (
                   <Button size="small" onClick={() => openModal(row)}>

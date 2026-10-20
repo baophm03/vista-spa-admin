@@ -18,7 +18,7 @@ interface StaffRow {
   phone_number?: string
   is_admin?: boolean
   is_active?: boolean
-  roles?: { role_name?: string }[]
+  user_roles?: { role_id?: string; role?: { role_name?: string } }[]
 }
 
 export default function Staffs() {
@@ -32,7 +32,7 @@ export default function Staffs() {
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const data = await listUsers({ page: 1, limit: 100 })
+      const data = await listUsers({ page: 1, limit: 100, has_role: 'true' })
       setRows(data?.rows ?? [])
     } catch (err) {
       message.error(bizErrorMessage(err))
@@ -52,7 +52,13 @@ export default function Staffs() {
     setEditing(s ?? null)
     form.setFieldsValue(
       s
-        ? { zalo_name: s.zalo_name, email: s.email, phone_number: s.phone_number, is_admin: s.is_admin }
+        ? {
+            zalo_name: s.zalo_name,
+            email: s.email,
+            phone_number: s.phone_number,
+            is_admin: s.is_admin,
+            role_id: s.user_roles?.[0]?.role_id,
+          }
         : { zalo_name: '', email: '', phone_number: '', password: '', role_id: undefined, is_admin: false },
     )
     setOpen(true)
@@ -64,6 +70,7 @@ export default function Staffs() {
       if (editing) {
         await updateAdminUser(editing.id, {
           zalo_name: values.zalo_name,
+          phone_number: values.phone_number,
           is_admin: values.is_admin,
           role_id: values.role_id,
         })
@@ -97,7 +104,7 @@ export default function Staffs() {
 
   const roleLabel = (r: StaffRow) => {
     if (r.is_admin) return 'Admin'
-    const name = r.roles?.[0]?.role_name
+    const name = r.user_roles?.[0]?.role?.role_name
     return name || 'Nhân viên'
   }
 

@@ -1,6 +1,6 @@
 import React, { useMemo, useSyncExternalStore } from 'react'
 import ReactDOM from 'react-dom/client'
-import { ConfigProvider } from 'antd'
+import { ConfigProvider, Empty } from 'antd'
 import viVN from 'antd/locale/vi_VN'
 import { theme } from './theme'
 import { getPrimaryColor, subscribeTheme } from './themeRuntime'
@@ -17,7 +17,11 @@ function Root() {
     [primary],
   )
   return (
-    <ConfigProvider locale={viVN} theme={merged}>
+    <ConfigProvider
+      locale={viVN}
+      theme={merged}
+      renderEmpty={() => <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Chưa có dữ liệu" />}
+    >
       <App />
     </ConfigProvider>
   )

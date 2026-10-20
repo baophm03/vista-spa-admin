@@ -168,7 +168,7 @@ export default function SiteConfig() {
                       Nút chính
                     </Button>
                     <Button size="small">Nút phụ</Button>
-                    <Tag color={primaryColor}>Tag</Tag>
+                    <Tag color={primaryColor}>Nhãn</Tag>
                   </Space>
                   <Progress percent={62} strokeColor={primaryColor} size="small" style={{ marginTop: 10, marginBottom: 0 }} />
                 </ConfigProvider>

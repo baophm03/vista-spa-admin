@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Button, Card, Col, Form, Modal, Popconfirm, Row, Select, Space, Statistic, Table, Tag, Typography, message } from 'antd'
 import { PlusOutlined, ReloadOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
@@ -11,6 +11,7 @@ import {
   markVoucherUsed,
   redeemVoucher,
   revokeUserVoucher,
+  voucherStatistics,
 } from '../api/newsky'
 import type { UserVoucherRow } from '../api/newsky'
 
@@ -29,6 +30,7 @@ export default function Redemptions() {
   const [vouchers, setVouchers] = useState<{ id: string; title: string; required_points?: number }[]>([])
   const [loading, setLoading] = useState(false)
   const [open, setOpen] = useState(false)
+  const [stats, setStats] = useState<{ total: number; pending: number; used: number }>({ total: 0, pending: 0, used: 0 })
   const [form] = Form.useForm()
 
   const load = useCallback(async () => {
@@ -46,6 +48,15 @@ export default function Redemptions() {
 
   useEffect(() => {
     load()
+    voucherStatistics()
+      .then((s: any) =>
+        setStats({
+          total: s?.overview?.total_redemptions ?? 0,
+          pending: s?.overview?.pending_redemptions ?? 0,
+          used: s?.overview?.used_redemptions ?? 0,
+        }),
+      )
+      .catch(() => undefined)
   }, [load])
 
   useEffect(() => {
@@ -56,15 +67,6 @@ export default function Redemptions() {
       .then((d: any) => setVouchers(d?.rows ?? []))
       .catch(() => undefined)
   }, [])
-
-  const stats = useMemo(
-    () => ({
-      total: total,
-      pending: rows.filter((r) => r.status === 'redeemed').length,
-      used: rows.filter((r) => r.status === 'used').length,
-    }),
-    [rows, total],
-  )
 
   const submit = async () => {
     const values = await form.validateFields()
@@ -124,12 +126,12 @@ export default function Redemptions() {
         </Col>
         <Col xs={12} md={8}>
           <Card styles={{ body: { padding: '16px 20px' } }}>
-            <Statistic title="Chờ nhận quà (trang này)" value={stats.pending} valueStyle={{ color: '#D97706' }} />
+            <Statistic title="Chờ nhận quà" value={stats.pending} valueStyle={{ color: '#D97706' }} />
           </Card>
         </Col>
         <Col xs={12} md={8}>
           <Card styles={{ body: { padding: '16px 20px' } }}>
-            <Statistic title="Đã nhận (trang này)" value={stats.used} valueStyle={{ color: '#16A34A' }} />
+            <Statistic title="Đã nhận quà" value={stats.used} valueStyle={{ color: '#16A34A' }} />
           </Card>
         </Col>
       </Row>

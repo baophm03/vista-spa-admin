@@ -6,12 +6,13 @@ import PageTitle from '../components/PageTitle'
 import { bizErrorMessage, createVoucher, deleteVoucher, listVouchers, updateVoucher } from '../api/newsky'
 import type { VoucherRow } from '../api/newsky'
 
+/** type theo contract BE: hạng thẻ được áp dụng (0=Tất cả, 1=Silver, 2=Gold, 3=Diamond, 4=VIP) */
 const TYPE_LABEL: Record<number, string> = {
-  0: 'Giảm tiền',
-  1: 'Giảm %',
-  2: 'Dịch vụ miễn phí',
-  3: 'Quà tặng',
-  4: 'Điểm thưởng',
+  0: 'Tất cả hạng',
+  1: 'Silver',
+  2: 'Gold',
+  3: 'Diamond',
+  4: 'VIP',
 }
 
 export default function Vouchers() {
@@ -104,12 +105,7 @@ export default function Vouchers() {
             dataIndex: 'title',
             render: (v) => <Typography.Text strong>{v}</Typography.Text>,
           },
-          {
-            title: 'Loại',
-            dataIndex: 'type',
-            width: 140,
-            render: (v: number) => <Tag color="gold">{TYPE_LABEL[v] ?? v}</Tag>,
-          },
+          { title: 'Áp dụng hạng', dataIndex: 'type', width: 140, render: (v: number) => <Tag color="gold">{TYPE_LABEL[v] ?? v}</Tag> },
           {
             title: 'Điểm đổi',
             dataIndex: 'required_points',
@@ -166,7 +162,7 @@ export default function Vouchers() {
             <Input placeholder="VD: Giảm 50k cho hóa đơn đầu" />
           </Form.Item>
           <Space style={{ display: 'flex' }}>
-            <Form.Item name="type" label="Loại voucher" rules={[{ required: true }]} style={{ flex: 1 }}>
+            <Form.Item name="type" label="Áp dụng hạng" rules={[{ required: true }]} style={{ flex: 1 }}>
               <Select options={Object.entries(TYPE_LABEL).map(([value, label]) => ({ value: Number(value), label }))} />
             </Form.Item>
             <Form.Item name="required_points" label="Điểm đổi" rules={[{ required: true, message: 'Nhập điểm' }]} style={{ flex: 1 }}>
@@ -181,9 +177,6 @@ export default function Vouchers() {
               <DatePicker style={{ width: '100%' }} format="DD/MM/YYYY" />
             </Form.Item>
           </Space>
-          <Form.Item name="quantity" label="Số lượng (bỏ trống = không giới hạn)">
-            <InputNumber min={1} style={{ width: '100%' }} />
-          </Form.Item>
           <Form.Item name="is_active" label="Hoạt động" valuePropName="checked">
             <Switch />
           </Form.Item>

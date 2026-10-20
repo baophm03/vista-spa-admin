@@ -112,14 +112,14 @@ export default function Points() {
 
       <Row gutter={[20, 20]}>
         {ranks.map((r) => (
-          <Col xs={24} md={8} key={r.id}>
-            <Card styles={{ body: { padding: 20 } }}>
+          <Col xs={24} md={8} key={r.id} style={{ display: 'flex' }}>
+            <Card styles={{ body: { padding: 20 } }} style={{ width: '100%' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Tag color={r.is_active ? 'purple' : 'default'} style={{ fontSize: 13, padding: '2px 12px' }}>
                   {r.name}
                 </Tag>
                 <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                  {r.min_spent ? `Từ ${Number(r.min_spent).toLocaleString('vi-VN')}đ` : '—'}
+                  {r.min_spent ? `Từ ${Number(r.min_spent).toLocaleString('vi-VN')}đ` : 'Không ngưỡng'}
                 </Typography.Text>
               </div>
               <div style={{ marginTop: 12, fontSize: 13 }}>
@@ -127,7 +127,7 @@ export default function Points() {
                   <span style={{ color: '#6F7071' }}>Hiệu lực: </span>
                   <span style={{ fontWeight: 600, color: 'var(--brand-dark)' }}>{r.validity === 'PERMANENT' ? 'Vĩnh viễn' : '1 năm'}</span>
                 </div>
-                <div style={{ marginTop: 6, color: '#6F7071' }}>{r.benefits || '—'}</div>
+                <div style={{ marginTop: 6, color: '#6F7071' }}>{r.benefits || 'Chưa mô tả quyền lợi'}</div>
               </div>
             </Card>
           </Col>
@@ -193,7 +193,7 @@ export default function Points() {
                   onChange={(v) => doOverride(row, v)}
                 />
                 <Popconfirm title="Tính lại hạng theo chi tiêu?" onConfirm={() => doRecalc(row)}>
-                  <Button size="small">Recalc</Button>
+                  <Button size="small">Tính lại</Button>
                 </Popconfirm>
               </Space>
             ),

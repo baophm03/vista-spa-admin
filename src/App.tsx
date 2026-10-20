@@ -20,7 +20,6 @@ import Orders from './pages/Orders'
 import OrderDetail from './pages/OrderDetail'
 import StaffSchedule from './pages/StaffSchedule'
 import LuckyWheel from './pages/LuckyWheel'
-import Accounts from './pages/Accounts'
 
 export default function App() {
   return (
@@ -47,7 +46,6 @@ export default function App() {
           <Route path="/health-records" element={<HealthRecords />} />
           <Route path="/site-config" element={<SiteConfig />} />
           <Route path="/roles" element={<Roles />} />
-          <Route path="/accounts" element={<Accounts />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

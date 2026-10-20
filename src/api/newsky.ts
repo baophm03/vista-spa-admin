@@ -59,6 +59,7 @@ export interface CustomerProfile {
   note?: string
   is_deleted?: boolean
   user_id?: string
+  user?: { membership?: { card_rank?: { name?: string } | null } | null } | null
   custom_fields?: Record<string, unknown>
 }
 export interface PageMeta {
@@ -115,6 +116,7 @@ export interface CustomerTreatment {
   total_amount: number
   paid_amount: number
   debt_amount: number
+  progress_percent?: number
   payment_status: 'UNPAID' | 'PARTIAL' | 'PAID'
   status: 'ACTIVE' | 'FINISHED' | 'CANCELLED'
   customer_profile?: { full_name?: string; phone?: string }
@@ -176,6 +178,7 @@ export const approveAppointment = (id: string, dto: Record<string, unknown> = {}
 export const rejectAppointment = (id: string, reason: string) => biz<Appointment>(api.put(`/appointments/${id}/reject`, { reason }))
 export const cancelAppointment = (id: string) => biz<Appointment>(api.put(`/appointments/${id}/cancel`))
 export const startAppointment = (id: string) => biz<Appointment>(api.post(`/appointments/${id}/start`))
+export const completeAppointment = (id: string) => biz<Appointment>(api.post(`/appointments/${id}/complete`))
 export const listAvailableSlots = (params: { branch_id: string; service_id: string; date: string; staff_id?: string }) =>
   biz<{ date: string; start_time: string; end_time: string; staff_ids: string[] }[]>(api.get('/appointments/available-slots', { params }))
 
@@ -319,14 +322,13 @@ export const deleteService = (id: string) => unwrap(api.delete(`/service/${id}`)
 // ---------- Vouchers (legacy) ----------
 export interface VoucherRow {
   id: string
-  code?: string
   title: string
   required_points?: number
+  /** 0=Tất cả hạng, 1=Silver, 2=Gold, 3=Diamond, 4=VIP (contract BE) */
   type?: number
   start_date?: string
   end_date?: string
   is_active?: boolean
-  quantity?: number
 }
 /** Legacy paging middleware dùng currentPage/pageSize thay vì page/limit. */
 const legacyPage = (params: Record<string, unknown>) => {

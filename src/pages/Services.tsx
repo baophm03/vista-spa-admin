@@ -111,7 +111,7 @@ export default function Services() {
             title: 'Điểm đổi',
             dataIndex: 'required_points',
             width: 100,
-            render: (v) => Number(v ?? 0).toLocaleString('vi-VN'),
+            render: (v) => (v ? Number(v).toLocaleString('vi-VN') : '—'),
           },
           {
             title: '',
