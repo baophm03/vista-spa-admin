@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Button, Card, Col, Form, Input, InputNumber, Modal, Popconfirm, Row, Select, Space, Table, Tag, Typography, message } from 'antd'
 import { ReloadOutlined } from '@ant-design/icons'
-import PageTitle from '../components/PageTitle'
+import PageTitle from '../components/base/PageTitle'
 import {
   adjustPoints,
   bizErrorMessage,

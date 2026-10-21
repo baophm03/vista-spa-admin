@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Button, DatePicker, Form, Input, InputNumber, Modal, Popconfirm, Select, Space, Switch, Table, Tag, Typography, message } from 'antd'
 import { PlusOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
-import PageTitle from '../components/PageTitle'
+import PageTitle from '../components/base/PageTitle'
 import { bizErrorMessage, createVoucher, deleteVoucher, listVouchers, updateVoucher } from '../api/newsky'
 import type { VoucherRow } from '../api/newsky'
 
@@ -43,10 +43,10 @@ export default function Vouchers() {
     form.setFieldsValue(
       voucher
         ? {
-            ...voucher,
-            start_date: voucher.start_date ? dayjs(voucher.start_date) : undefined,
-            end_date: voucher.end_date ? dayjs(voucher.end_date) : undefined,
-          }
+          ...voucher,
+          start_date: voucher.start_date ? dayjs(voucher.start_date) : undefined,
+          end_date: voucher.end_date ? dayjs(voucher.end_date) : undefined,
+        }
         : { title: '', required_points: 0, type: 0, is_active: true },
     )
     setOpen(true)

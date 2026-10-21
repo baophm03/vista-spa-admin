@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Button, Card, Col, Form, Modal, Popconfirm, Row, Select, Space, Statistic, Table, Tag, Typography, message } from 'antd'
 import { PlusOutlined, ReloadOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
-import PageTitle from '../components/PageTitle'
+import PageTitle from '../components/base/PageTitle'
 import {
   bizErrorMessage,
   listRedeemedVouchers,

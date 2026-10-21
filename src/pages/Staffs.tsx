@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Avatar, Button, Form, Input, Modal, Popconfirm, Select, Space, Table, Tag, message } from 'antd'
 import { PlusOutlined, ReloadOutlined, UserOutlined } from '@ant-design/icons'
-import PageTitle from '../components/PageTitle'
+import PageTitle from '../components/base/PageTitle'
 import {
   bizErrorMessage,
   createAdminUser,
@@ -53,12 +53,12 @@ export default function Staffs() {
     form.setFieldsValue(
       s
         ? {
-            zalo_name: s.zalo_name,
-            email: s.email,
-            phone_number: s.phone_number,
-            is_admin: s.is_admin,
-            role_id: s.user_roles?.[0]?.role_id,
-          }
+          zalo_name: s.zalo_name,
+          email: s.email,
+          phone_number: s.phone_number,
+          is_admin: s.is_admin,
+          role_id: s.user_roles?.[0]?.role_id,
+        }
         : { zalo_name: '', email: '', phone_number: '', password: '', role_id: undefined, is_admin: false },
     )
     setOpen(true)

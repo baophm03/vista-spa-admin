@@ -3,7 +3,7 @@ import { Avatar, Button, DatePicker, Drawer, Form, Input, Modal, Popconfirm, Sel
 import { PlusOutlined, SearchOutlined, UserOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import QRCode from 'qrcode'
-import PageTitle from '../components/PageTitle'
+import PageTitle from '../components/base/PageTitle'
 import {
   bizErrorMessage,
   createCustomerProfile,

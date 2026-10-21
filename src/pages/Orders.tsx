@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button, Card, Col, Form, Input, InputNumber, Modal, Popconfirm, Row, Segmented, Select, Space, Statistic, Table, Tag, Typography, Alert, message } from 'antd'
 import { PlusOutlined } from '@ant-design/icons'
-import PageTitle from '../components/PageTitle'
+import PageTitle from '../components/base/PageTitle'
 import { CUSTOMERS, ORDERS, PRODUCTS } from '../mock/admin'
 import type { Order } from '../mock/admin'
 

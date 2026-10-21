@@ -1,0 +1,75 @@
+import { BellOutlined, LogoutOutlined, MenuFoldOutlined, MenuOutlined, MenuUnfoldOutlined, UserOutlined } from '@ant-design/icons'
+import { Avatar, Badge, Dropdown, Layout, Space, Typography } from 'antd'
+
+const { Header } = Layout
+
+type AdminHeaderProps = {
+  collapsed: boolean
+  pageTitle: string
+  onToggleCollapsed: () => void
+  onOpenMobileMenu: () => void
+  onNavigateNotifications: () => void
+  onLogout: () => void
+}
+
+export default function AdminHeader({
+  collapsed,
+  pageTitle,
+  onToggleCollapsed,
+  onOpenMobileMenu,
+  onNavigateNotifications,
+  onLogout,
+}: AdminHeaderProps) {
+  return (
+    <Header className="flex! h-16! shrink-0! items-center! justify-between! gap-4! border-b! border-[var(--brand-border-soft)]! bg-white! px-4! py-0! leading-normal! lg:px-6!">
+      <Space size={16}>
+        <button
+          type="button"
+          aria-label="Mở menu"
+          className="cursor-pointer border-0 bg-transparent p-0 text-lg leading-none text-[var(--brand-dark)] lg:hidden"
+          onClick={onOpenMobileMenu}
+        >
+          <MenuOutlined />
+        </button>
+        <button
+          type="button"
+          aria-label={collapsed ? 'Mở rộng menu' : 'Thu gọn menu'}
+          className="hidden cursor-pointer border-0 bg-transparent p-0 text-lg leading-none text-[var(--brand-dark)] lg:inline-block"
+          onClick={onToggleCollapsed}
+        >
+          {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+        </button>
+        <Typography.Text strong className="text-base text-[#3A2C44]!">
+          {pageTitle}
+        </Typography.Text>
+      </Space>
+
+      <Space size={20}>
+        <Badge count={3} size="small">
+          <button
+            type="button"
+            aria-label="Thông báo"
+            className="cursor-pointer border-0 bg-transparent p-0 text-lg leading-none text-[#6F7071]"
+            onClick={onNavigateNotifications}
+          >
+            <BellOutlined />
+          </button>
+        </Badge>
+        <div className="h-6 w-px bg-[var(--brand-border-soft)]" />
+        <Dropdown
+          menu={{
+            items: [{ key: 'logout', icon: <LogoutOutlined />, label: 'Đăng xuất', onClick: onLogout }],
+          }}
+        >
+          <Space className="cursor-pointer">
+            <Avatar size={34} className="bg-[var(--brand-primary)]!" icon={<UserOutlined />} />
+            <div className="leading-[1.2]">
+              <div className="text-[13px] font-semibold">Admin</div>
+              <div className="text-[11px] text-[#A9ADB2]">Quản trị viên</div>
+            </div>
+          </Space>
+        </Dropdown>
+      </Space>
+    </Header>
+  )
+}

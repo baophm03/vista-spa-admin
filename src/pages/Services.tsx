@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Button, Form, Input, InputNumber, Modal, Popconfirm, Select, Space, Table, Tag, message } from 'antd'
 import { PlusOutlined } from '@ant-design/icons'
-import PageTitle from '../components/PageTitle'
+import PageTitle from '../components/base/PageTitle'
 import { bizErrorMessage, createService, deleteService, listServices, updateService } from '../api/newsky'
 import type { ServiceRow } from '../api/newsky'
 

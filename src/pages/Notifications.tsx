@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Button, Form, Input, Modal, Select, Table, Tag, message } from 'antd'
 import { SendOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
-import PageTitle from '../components/PageTitle'
+import PageTitle from '../components/base/PageTitle'
 import { bizErrorMessage, listCustomerProfiles, listNotifications, markNotificationRead, sendNotification } from '../api/newsky'
 import type { CustomerProfile, NotificationRow } from '../api/newsky'
 

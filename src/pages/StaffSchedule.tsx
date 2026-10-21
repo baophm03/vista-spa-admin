@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Button, Card, DatePicker, Form, Input, Modal, Popconfirm, Select, Space, Table, Tag, Typography, message } from 'antd'
 import { PlusOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
-import PageTitle from '../components/PageTitle'
+import PageTitle from '../components/base/PageTitle'
 import {
   approveStaffDayOff,
   bizErrorMessage,

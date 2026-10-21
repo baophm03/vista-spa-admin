@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Alert, Button, Form, Input, InputNumber, Modal, Popconfirm, Select, Space, Switch, Table, Tag, message } from 'antd'
 import { PlusOutlined } from '@ant-design/icons'
-import PageTitle from '../components/PageTitle'
+import PageTitle from '../components/base/PageTitle'
 import { PRODUCTS, PRODUCT_CATEGORIES } from '../mock/admin'
 import type { Product } from '../mock/admin'
 

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Button, DatePicker, Form, Input, Modal, Popconfirm, Select, Space, Table, Tag, Typography, message } from 'antd'
 import { CheckOutlined, CloseOutlined, PlusOutlined, ReloadOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
-import PageTitle from '../components/PageTitle'
+import PageTitle from '../components/base/PageTitle'
 import {
   approveAppointment,
   bizErrorMessage,
@@ -91,13 +91,13 @@ export default function Appointments() {
     form.setFieldsValue(
       appointment
         ? {
-            customer_profile_id: appointment.customer_profile_id,
-            service_id: appointment.service_id,
-            staff_id: appointment.staff_id,
-            appt_date: dayjs(appointment.appt_date),
-            start_time: appointment.start_time?.slice(0, 5),
-            note: appointment.note,
-          }
+          customer_profile_id: appointment.customer_profile_id,
+          service_id: appointment.service_id,
+          staff_id: appointment.staff_id,
+          appt_date: dayjs(appointment.appt_date),
+          start_time: appointment.start_time?.slice(0, 5),
+          note: appointment.note,
+        }
         : { appt_date: dayjs().add(1, 'day') },
     )
     setOpen(true)

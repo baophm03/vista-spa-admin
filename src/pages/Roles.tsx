@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Button, Card, Space, Spin, Switch, Table, Tag, Typography, message } from 'antd'
 import { PlusOutlined, ReloadOutlined } from '@ant-design/icons'
-import PageTitle from '../components/PageTitle'
+import PageTitle from '../components/base/PageTitle'
 import { bizErrorMessage, getRolePermissions, listPermissions, listRoles, updateRolePermissions } from '../api/newsky'
 
 interface RoleRow {

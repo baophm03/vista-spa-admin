@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Button, Card, Col, DatePicker, Divider, Empty, Form, Image, Input, InputNumber, Modal, Popconfirm, Progress, Row, Segmented, Select, Space, Spin, Statistic, Table, Tabs, Tag, Tooltip, Typography, Upload, message } from 'antd'
 import { DeleteOutlined, EditOutlined, PlusOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons'
-import PageTitle from '../components/PageTitle'
+import PageTitle from '../components/base/PageTitle'
 import {
   bizErrorMessage,
   cancelCustomerTreatment,
@@ -933,72 +933,72 @@ export default function TreatmentCustomers() {
             {/* Rail trái: tóm tắt + hành động — ghim khi cuộn */}
             <Col xs={24} lg={7}>
               <div className="rail-sticky">
-              <div
-                style={{
-                  border: '1px solid var(--brand-border)',
-                  borderRadius: 12,
-                  padding: 18,
-                  background: 'var(--brand-bg)',
-                }}
-              >
-                <div style={{ fontSize: 12, color: '#6F7071', letterSpacing: 1.5, textTransform: 'uppercase', fontWeight: 700 }}>Tiến độ</div>
-                <div style={{ fontSize: 26, fontWeight: 700, color: 'var(--brand-dark)', marginTop: 2 }}>
-                  {detail.quota_type === 'SESSIONS'
-                    ? `${detail.sessions_used ?? 0}/${detail.sessions_total ?? 0} buổi`
-                    : detail.quota_type === 'VALUE'
-                      ? `${fmtVnd(detail.value_used)}/${fmtVnd(detail.value_total)}đ`
-                      : 'Trọn gói'}
+                <div
+                  style={{
+                    border: '1px solid var(--brand-border)',
+                    borderRadius: 12,
+                    padding: 18,
+                    background: 'var(--brand-bg)',
+                  }}
+                >
+                  <div style={{ fontSize: 12, color: '#6F7071', letterSpacing: 1.5, textTransform: 'uppercase', fontWeight: 700 }}>Tiến độ</div>
+                  <div style={{ fontSize: 26, fontWeight: 700, color: 'var(--brand-dark)', marginTop: 2 }}>
+                    {detail.quota_type === 'SESSIONS'
+                      ? `${detail.sessions_used ?? 0}/${detail.sessions_total ?? 0} buổi`
+                      : detail.quota_type === 'VALUE'
+                        ? `${fmtVnd(detail.value_used)}/${fmtVnd(detail.value_total)}đ`
+                        : 'Trọn gói'}
+                  </div>
+                  <Progress
+                    percent={detail.progress_percent ?? 0}
+                    size="small"
+                    style={{ marginTop: 6, marginBottom: 12 }}
+                  />
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 9, borderTop: '1px solid var(--brand-border-soft)', paddingTop: 12 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
+                      <span style={{ color: '#3F4145', fontWeight: 600 }}>Đã trả</span>
+                      <b style={{ fontWeight: 700 }}>{fmtVnd(detail.paid_amount)}đ</b>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
+                      <span style={{ color: '#3F4145', fontWeight: 600 }}>Công nợ</span>
+                      <b style={{ fontWeight: 700, color: detail.debt_amount > 0 ? '#D97706' : '#16A34A' }}>
+                        {fmtVnd(detail.debt_amount)}đ
+                      </b>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
+                      <span style={{ color: '#3F4145', fontWeight: 600 }}>Trạng thái</span>
+                      <Tag color={STATUS_META[detail.status ?? '']?.color} style={{ marginInlineEnd: 0 }}>
+                        {STATUS_META[detail.status ?? '']?.label ?? detail.status}
+                      </Tag>
+                    </div>
+                  </div>
                 </div>
-                <Progress
-                  percent={detail.progress_percent ?? 0}
-                  size="small"
-                  style={{ marginTop: 6, marginBottom: 12 }}
-                />
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 9, borderTop: '1px solid var(--brand-border-soft)', paddingTop: 12 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
-                    <span style={{ color: '#3F4145', fontWeight: 600 }}>Đã trả</span>
-                    <b style={{ fontWeight: 700 }}>{fmtVnd(detail.paid_amount)}đ</b>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
-                    <span style={{ color: '#3F4145', fontWeight: 600 }}>Công nợ</span>
-                    <b style={{ fontWeight: 700, color: detail.debt_amount > 0 ? '#D97706' : '#16A34A' }}>
-                      {fmtVnd(detail.debt_amount)}đ
-                    </b>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
-                    <span style={{ color: '#3F4145', fontWeight: 600 }}>Trạng thái</span>
-                    <Tag color={STATUS_META[detail.status ?? '']?.color} style={{ marginInlineEnd: 0 }}>
-                      {STATUS_META[detail.status ?? '']?.label ?? detail.status}
-                    </Tag>
-                  </div>
-                </div>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 12 }}>
-                {detail.status === 'ACTIVE' && detail.quota_type !== 'UNLIMITED' && (
-                  <Button block onClick={() => addSession(detail)}>
-                    +1 buổi
-                  </Button>
-                )}
-                {detail.status !== 'CANCELLED' && detail.debt_amount > 0 && (
-                  <Button
-                    block
-                    type="primary"
-                    onClick={() => {
-                      payForm.setFieldsValue({ amount: detail.debt_amount, method: 'CASH' })
-                      setPayOpen(true)
-                    }}
-                  >
-                    Thu tiền ({fmtVnd(detail.debt_amount)}đ)
-                  </Button>
-                )}
-                {detail.status === 'ACTIVE' && (
-                  <Popconfirm title="Hủy liệu trình này?" okText="Hủy" cancelText="Không" onConfirm={() => cancelTreatment(detail)}>
-                    <Button block danger>
-                      Hủy liệu trình
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 12 }}>
+                  {detail.status === 'ACTIVE' && detail.quota_type !== 'UNLIMITED' && (
+                    <Button block onClick={() => addSession(detail)}>
+                      +1 buổi
                     </Button>
-                  </Popconfirm>
-                )}
-              </div>
+                  )}
+                  {detail.status !== 'CANCELLED' && detail.debt_amount > 0 && (
+                    <Button
+                      block
+                      type="primary"
+                      onClick={() => {
+                        payForm.setFieldsValue({ amount: detail.debt_amount, method: 'CASH' })
+                        setPayOpen(true)
+                      }}
+                    >
+                      Thu tiền ({fmtVnd(detail.debt_amount)}đ)
+                    </Button>
+                  )}
+                  {detail.status === 'ACTIVE' && (
+                    <Popconfirm title="Hủy liệu trình này?" okText="Hủy" cancelText="Không" onConfirm={() => cancelTreatment(detail)}>
+                      <Button block danger>
+                        Hủy liệu trình
+                      </Button>
+                    </Popconfirm>
+                  )}
+                </div>
               </div>
             </Col>
 

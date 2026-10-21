@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Button, Card, Form, Input, InputNumber, Modal, Popconfirm, Select, Space, Table, Tag, Typography, message } from 'antd'
 import { PlusOutlined, ReloadOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
-import PageTitle from '../components/PageTitle'
+import PageTitle from '../components/base/PageTitle'
 import {
   bizErrorMessage,
   createLuckyWheel,
@@ -129,9 +129,11 @@ export default function LuckyWheel() {
           pagination={false}
           onRow={(row) => ({ onClick: () => selectWheel(row), style: { cursor: 'pointer' } })}
           columns={[
-            { title: 'Tên vòng quay', dataIndex: 'name', render: (v, row) => (
-              <Typography.Text strong style={selected?.id === row.id ? { color: 'var(--brand-primary)' } : undefined}>{v}</Typography.Text>
-            ) },
+            {
+              title: 'Tên vòng quay', dataIndex: 'name', render: (v, row) => (
+                <Typography.Text strong style={selected?.id === row.id ? { color: 'var(--brand-primary)' } : undefined}>{v}</Typography.Text>
+              )
+            },
             { title: 'Cơ sở', dataIndex: 'branch_id', render: (v) => branchName(v) },
             { title: 'Doanh số tối thiểu', dataIndex: 'min_year_spent', render: (v) => `${Number(v).toLocaleString('vi-VN')}đ/năm` },
             { title: 'Lượt/user', dataIndex: 'spins_per_user', width: 90 },

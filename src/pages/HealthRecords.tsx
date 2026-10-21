@@ -15,7 +15,7 @@ import {
   SyncOutlined,
 } from '@ant-design/icons'
 import dayjs from 'dayjs'
-import PageTitle from '../components/PageTitle'
+import PageTitle from '../components/base/PageTitle'
 import {
   bizErrorMessage,
   listCustomerProfiles,
@@ -150,12 +150,12 @@ export default function HealthRecords() {
     form.setFieldsValue(
       r
         ? {
-            skin_type: cf.skin_type ?? SKIN_TYPES[0],
-            condition: cf.condition ?? '',
-            allergies: cf.allergies ?? 'Không',
-            checked_by: cf.checked_by,
-            checked_date: cf.checked_date ? dayjs(cf.checked_date) : dayjs(),
-          }
+          skin_type: cf.skin_type ?? SKIN_TYPES[0],
+          condition: cf.condition ?? '',
+          allergies: cf.allergies ?? 'Không',
+          checked_by: cf.checked_by,
+          checked_date: cf.checked_date ? dayjs(cf.checked_date) : dayjs(),
+        }
         : { skin_type: SKIN_TYPES[0], condition: '', allergies: 'Không', checked_date: dayjs() },
     )
     setOpen(true)
@@ -564,67 +564,67 @@ export default function HealthRecords() {
 
             <div style={{ padding: '24px 36px 28px' }}>
               <Form form={form} layout="vertical" requiredMark={false}>
-              <div style={{ ...eyebrowStyle, marginBottom: 12 }}>Khám da</div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2px 20px' }}>
-                <Form.Item name="skin_type" label={<span style={labelStyle}>Loại da</span>}>
-                  <Select variant="filled" style={{ borderRadius: 14 }} options={SKIN_TYPES.map((t) => ({ value: t, label: t }))} />
-                </Form.Item>
-                <Form.Item name="checked_by" label={<span style={labelStyle}>Khám bởi</span>}>
-                  <Select
+                <div style={{ ...eyebrowStyle, marginBottom: 12 }}>Khám da</div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2px 20px' }}>
+                  <Form.Item name="skin_type" label={<span style={labelStyle}>Loại da</span>}>
+                    <Select variant="filled" style={{ borderRadius: 14 }} options={SKIN_TYPES.map((t) => ({ value: t, label: t }))} />
+                  </Form.Item>
+                  <Form.Item name="checked_by" label={<span style={labelStyle}>Khám bởi</span>}>
+                    <Select
+                      variant="filled"
+                      allowClear
+                      style={{ borderRadius: 14 }}
+                      placeholder="Chọn chuyên viên"
+                      options={staffs.map((s) => ({
+                        value: s.zalo_name || s.email || s.id.slice(0, 8),
+                        label: s.zalo_name || s.email || s.id.slice(0, 8),
+                      }))}
+                    />
+                  </Form.Item>
+                  <Form.Item name="allergies" label={<span style={labelStyle}>Dị ứng</span>}>
+                    <Input variant="filled" style={{ borderRadius: 14 }} placeholder="VD: Cồn khô / Không" />
+                  </Form.Item>
+                  <Form.Item name="checked_date" label={<span style={labelStyle}>Ngày khám</span>}>
+                    <DatePicker variant="filled" style={{ width: '100%', borderRadius: 14 }} format="DD/MM/YYYY" />
+                  </Form.Item>
+                </div>
+
+                <div style={{ ...eyebrowStyle, margin: '20px 0 12px' }}>Ghi chú lâm sàng</div>
+                <Form.Item
+                  name="condition"
+                  rules={[{ required: true, message: 'Nhập tình trạng da' }]}
+                >
+                  <Input.TextArea
+                    rows={4}
                     variant="filled"
-                    allowClear
-                    style={{ borderRadius: 14 }}
-                    placeholder="Chọn chuyên viên"
-                    options={staffs.map((s) => ({
-                      value: s.zalo_name || s.email || s.id.slice(0, 8),
-                      label: s.zalo_name || s.email || s.id.slice(0, 8),
-                    }))}
+                    style={{ borderRadius: 14, resize: 'none' }}
+                    placeholder="VD: Mụn viêm vùng cằm, thâm nhẹ..."
                   />
                 </Form.Item>
-                <Form.Item name="allergies" label={<span style={labelStyle}>Dị ứng</span>}>
-                  <Input variant="filled" style={{ borderRadius: 14 }} placeholder="VD: Cồn khô / Không" />
-                </Form.Item>
-                <Form.Item name="checked_date" label={<span style={labelStyle}>Ngày khám</span>}>
-                  <DatePicker variant="filled" style={{ width: '100%', borderRadius: 14 }} format="DD/MM/YYYY" />
-                </Form.Item>
+              </Form>
+
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  gap: 10,
+                  marginTop: 8,
+                  paddingTop: 20,
+                  borderTop: '1px solid var(--brand-border-soft)',
+                }}
+              >
+                <Button shape="round" style={{ paddingInline: 24, height: 42 }} onClick={() => setOpen(false)}>
+                  Hủy
+                </Button>
+                <Button
+                  type="primary"
+                  shape="round"
+                  onClick={submit}
+                  style={{ paddingInline: 30, height: 42, fontWeight: 600 }}
+                >
+                  Lưu hồ sơ
+                </Button>
               </div>
-
-              <div style={{ ...eyebrowStyle, margin: '20px 0 12px' }}>Ghi chú lâm sàng</div>
-              <Form.Item
-                name="condition"
-                rules={[{ required: true, message: 'Nhập tình trạng da' }]}
-              >
-                <Input.TextArea
-                  rows={4}
-                  variant="filled"
-                  style={{ borderRadius: 14, resize: 'none' }}
-                  placeholder="VD: Mụn viêm vùng cằm, thâm nhẹ..."
-                />
-              </Form.Item>
-            </Form>
-
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'flex-end',
-                gap: 10,
-                marginTop: 8,
-                paddingTop: 20,
-                borderTop: '1px solid var(--brand-border-soft)',
-              }}
-            >
-              <Button shape="round" style={{ paddingInline: 24, height: 42 }} onClick={() => setOpen(false)}>
-                Hủy
-              </Button>
-              <Button
-                type="primary"
-                shape="round"
-                onClick={submit}
-                style={{ paddingInline: 30, height: 42, fontWeight: 600 }}
-              >
-                Lưu hồ sơ
-              </Button>
-            </div>
             </div>
           </div>
         )}

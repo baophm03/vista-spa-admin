@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Button, Card, Col, ColorPicker, ConfigProvider, Divider, Input, Progress, Row, Space, Table, Tag, Typography, message } from 'antd'
 import { BgColorsOutlined, ReloadOutlined, SaveOutlined } from '@ant-design/icons'
-import PageTitle from '../components/PageTitle'
+import PageTitle from '../components/base/PageTitle'
 import { bizErrorMessage, listSettings, updateSettings } from '../api/newsky'
 import { applyThemeColors, getAccentColor, getPrimaryColor, THEME_KEYS } from '../themeRuntime'
 
