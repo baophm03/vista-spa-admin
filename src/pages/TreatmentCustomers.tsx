@@ -677,9 +677,9 @@ export default function TreatmentCustomers() {
     <>
       <PageTitle
         extra={
-          <Space>
+          <Space className="max-sm:flex! max-sm:w-full! max-sm:flex-wrap!">
             <Button icon={<ReloadOutlined />} onClick={load} />
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
+            <Button className="max-sm:flex-1" type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
               Thêm khách vào liệu trình
             </Button>
           </Space>
@@ -711,12 +711,13 @@ export default function TreatmentCustomers() {
         </Col>
       </Row>
 
-      <Space size={12} style={{ marginBottom: 16 }} wrap>
+      <Space className="mb-4 max-sm:flex! max-sm:w-full! max-sm:flex-wrap!" size={12} wrap>
         <Input
           allowClear
           prefix={<SearchOutlined style={{ color: '#A9ADB2' }} />}
           placeholder="Tìm theo tên / SĐT khách"
-          style={{ width: 260 }}
+          className="max-sm:w-full!"
+          style={{ width: 260, maxWidth: '100%' }}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />

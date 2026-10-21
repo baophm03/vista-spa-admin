@@ -3,11 +3,15 @@ import type { ReactNode } from 'react'
 
 export default function PageTitle({ children, extra }: { children: ReactNode; extra?: ReactNode }) {
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-      <Typography.Title level={4} style={{ margin: 0 }}>
+    <div className="mb-5 flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <Typography.Title level={4} className="m-0! min-w-0 break-words text-xl! sm:text-2xl!">
         {children}
       </Typography.Title>
-      {extra}
+      {extra && (
+        <div className="flex min-w-0 flex-wrap items-center gap-2 sm:justify-end [&_.ant-space]:max-w-full! [&_.ant-space]:flex-wrap! max-sm:[&_.ant-space]:w-full!">
+          {extra}
+        </div>
+      )}
     </div>
   )
 }

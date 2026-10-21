@@ -91,7 +91,7 @@ export default function Treatments() {
     <>
       <PageTitle
         extra={
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
+          <Button className="max-sm:w-full" type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
             Thêm liệu trình
           </Button>
         }

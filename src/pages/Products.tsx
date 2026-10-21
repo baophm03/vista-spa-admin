@@ -42,7 +42,7 @@ export default function Products() {
     <>
       <PageTitle
         extra={
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
+          <Button className="max-sm:w-full" type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
             Thêm sản phẩm
           </Button>
         }

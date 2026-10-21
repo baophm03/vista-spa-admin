@@ -101,9 +101,9 @@ export default function SiteConfig() {
     <>
       <PageTitle
         extra={
-          <Space>
+          <Space className="max-sm:flex! max-sm:w-full! max-sm:flex-wrap!">
             <Button icon={<ReloadOutlined />} onClick={load} />
-            <Button type="primary" icon={<SaveOutlined />} loading={saving} onClick={save} disabled={!Object.keys(edits).length}>
+            <Button className="max-sm:flex-1" type="primary" icon={<SaveOutlined />} loading={saving} onClick={save} disabled={!Object.keys(edits).length}>
               Lưu cấu hình
             </Button>
           </Space>
@@ -121,7 +121,7 @@ export default function SiteConfig() {
               </Space>
             }
             extra={
-              <Button type="primary" icon={<SaveOutlined />} loading={savingTheme} onClick={saveTheme}>
+              <Button className="max-sm:flex-1" type="primary" icon={<SaveOutlined />} loading={savingTheme} onClick={saveTheme}>
                 Áp dụng
               </Button>
             }

@@ -107,9 +107,9 @@ export default function Redemptions() {
     <>
       <PageTitle
         extra={
-          <Space>
+          <Space className="max-sm:flex! max-sm:w-full! max-sm:flex-wrap!">
             <Button icon={<ReloadOutlined />} onClick={load} />
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => setOpen(true)}>
+            <Button className="max-sm:flex-1" type="primary" icon={<PlusOutlined />} onClick={() => setOpen(true)}>
               Ghi nhận đổi quà
             </Button>
           </Space>

@@ -138,10 +138,10 @@ export default function StaffSchedule() {
     <>
       <PageTitle
         extra={
-          <Space>
+          <Space className="max-sm:flex! max-sm:w-full! max-sm:flex-wrap!">
             <Button onClick={() => setTplOpen(true)}>Thêm ca (template)</Button>
             <Button onClick={() => setOffOpen(true)}>Đăng ký nghỉ</Button>
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => setOpen(true)}>
+            <Button className="max-sm:w-full" type="primary" icon={<PlusOutlined />} onClick={() => setOpen(true)}>
               Thêm ca làm
             </Button>
           </Space>

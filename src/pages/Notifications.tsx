@@ -79,6 +79,7 @@ export default function Notifications() {
       <PageTitle
         extra={
           <Button
+            className="max-sm:w-full"
             type="primary"
             icon={<SendOutlined />}
             onClick={() => {

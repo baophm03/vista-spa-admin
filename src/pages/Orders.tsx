@@ -74,9 +74,11 @@ export default function Orders() {
     <>
       <PageTitle
         extra={
-          <Space>
-            <Segmented options={FILTERS} value={filter} onChange={(v) => setFilter(v as string)} />
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => { form.setFieldsValue({ customer: undefined, product: undefined, quantity: 1, address: '', payment: 'COD' }); setOpen(true) }}>
+          <Space className="max-sm:flex! max-sm:w-full! max-sm:flex-wrap!">
+            <div className="max-w-full overflow-x-auto">
+              <Segmented options={FILTERS} value={filter} onChange={(v) => setFilter(v as string)} />
+            </div>
+            <Button className="max-sm:w-full" type="primary" icon={<PlusOutlined />} onClick={() => { form.setFieldsValue({ customer: undefined, product: undefined, quantity: 1, address: '', payment: 'COD' }); setOpen(true) }}>
               Tạo đơn hàng
             </Button>
           </Space>

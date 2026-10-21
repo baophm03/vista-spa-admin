@@ -105,7 +105,7 @@ export default function Points() {
   return (
     <>
       <PageTitle
-        extra={<Button icon={<ReloadOutlined />} onClick={load} />}
+        extra={<Button icon={<ReloadOutlined />} onClick={load} className="max-sm:w-full" />}
       >
         Điểm & Hạng thành viên
       </PageTitle>

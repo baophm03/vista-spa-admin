@@ -189,12 +189,13 @@ export default function HealthRecords() {
     <>
       <PageTitle
         extra={
-          <Space>
+          <Space className="max-sm:flex! max-sm:w-full!">
             <Input
               allowClear
               prefix={<SearchOutlined style={{ color: '#A9ADB2' }} />}
               placeholder="Tìm theo khách, tình trạng da..."
-              style={{ width: 260 }}
+              className="max-sm:w-full!"
+              style={{ width: 260, maxWidth: '100%' }}
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
             />

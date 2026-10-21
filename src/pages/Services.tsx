@@ -73,7 +73,7 @@ export default function Services() {
     <>
       <PageTitle
         extra={
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
+          <Button className="max-sm:w-full" type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
             Thêm dịch vụ
           </Button>
         }

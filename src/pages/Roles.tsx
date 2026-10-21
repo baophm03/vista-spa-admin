@@ -89,12 +89,12 @@ export default function Roles() {
     <>
       <PageTitle
         extra={
-          <Space>
+          <Space className="max-sm:flex! max-sm:w-full! max-sm:flex-wrap!">
             <Button icon={<ReloadOutlined />} onClick={load} />
             <Button type="primary" icon={<PlusOutlined />} disabled>
               Thêm vai trò (tạo qua API)
             </Button>
-            <Button type="primary" loading={saving} onClick={save}>
+            <Button className="max-sm:flex-1" type="primary" loading={saving} onClick={save}>
               Lưu phân quyền
             </Button>
           </Space>

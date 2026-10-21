@@ -111,9 +111,9 @@ export default function LuckyWheel() {
     <>
       <PageTitle
         extra={
-          <Space>
+          <Space className="max-sm:flex! max-sm:w-full! max-sm:flex-wrap!">
             <Button icon={<ReloadOutlined />} onClick={loadWheels} />
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => setWheelOpen(true)}>
+            <Button className="max-sm:flex-1" type="primary" icon={<PlusOutlined />} onClick={() => setWheelOpen(true)}>
               Thêm vòng quay
             </Button>
           </Space>

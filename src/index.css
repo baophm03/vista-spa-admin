@@ -63,6 +63,17 @@ body {
   margin: 14px 16px;
 }
 
+/* Bảng nhiều cột: cho phép vuốt ngang trên mobile thay vì cắt cột */
+@media (max-width: 767px) {
+  .ant-table-wrapper {
+    overflow-x: auto;
+  }
+
+  .ant-table-wrapper .ant-table {
+    min-width: max-content;
+  }
+}
+
 /* ===== Card — viền hairline + shadow mềm cùng tông ===== */
 .ant-card {
   border-color: var(--brand-border);

@@ -210,7 +210,7 @@ export default function Appointments() {
     <>
       <PageTitle
         extra={
-          <Space>
+          <Space className="max-sm:flex! max-sm:w-full! max-sm:flex-wrap!">
             <Button icon={<ReloadOutlined />} onClick={load} />
             <Select
               value={filter}
@@ -219,9 +219,10 @@ export default function Appointments() {
                 setPage(1)
               }}
               options={FILTERS}
-              style={{ width: 140 }}
+              className="max-sm:flex-1!"
+              style={{ width: 140, maxWidth: '100%' }}
             />
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
+            <Button className="max-sm:w-full" type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
               Thêm lịch hẹn
             </Button>
           </Space>

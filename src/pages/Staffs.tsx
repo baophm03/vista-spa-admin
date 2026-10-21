@@ -112,9 +112,9 @@ export default function Staffs() {
     <>
       <PageTitle
         extra={
-          <Space>
+          <Space className="max-sm:flex! max-sm:w-full! max-sm:flex-wrap!">
             <Button icon={<ReloadOutlined />} onClick={load} />
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
+            <Button className="max-sm:flex-1" type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
               Thêm chuyên viên
             </Button>
           </Space>

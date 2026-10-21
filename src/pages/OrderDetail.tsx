@@ -66,16 +66,16 @@ export default function OrderDetail() {
               {ORDER_STATUS_META[order.status].label}
             </Tag>
           </Space>
-          <Space>
+          <Space className="max-sm:flex! max-sm:w-full! max-sm:flex-wrap!">
             <Button icon={<PrinterOutlined />} onClick={() => message.success('Đã gửi lệnh in hóa đơn')}>
               In hóa đơn
             </Button>
             {order.status === 'pending' && (
               <>
-                <Button type="primary" onClick={() => setStatus('confirmed', `Đã xác nhận ${order.code}`)}>
+                <Button className="max-sm:w-full" type="primary" onClick={() => setStatus('confirmed', `Đã xác nhận ${order.code}`)}>
                   Xác nhận đơn
                 </Button>
-                <Button danger onClick={() => setStatus('cancelled', `Đã hủy ${order.code}`)}>
+                <Button className="max-sm:w-full" danger onClick={() => setStatus('cancelled', `Đã hủy ${order.code}`)}>
                   Hủy đơn
                 </Button>
               </>

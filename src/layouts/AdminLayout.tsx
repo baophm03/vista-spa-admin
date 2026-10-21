@@ -65,8 +65,8 @@ export default function AdminLayout() {
             onLogout={logout}
           />
 
-          <Content className="min-h-0 flex-1 overflow-y-auto bg-[var(--brand-bg)]! p-6! [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-xl [&::-webkit-scrollbar-thumb]:bg-[var(--brand-border)]">
-            <div className="min-h-full rounded-xl border border-[var(--brand-border)] bg-white p-6 shadow-[0_1px_2px_rgba(var(--brand-dark-rgb),0.04),0_12px_32px_-16px_rgba(var(--brand-dark-rgb),0.1)]">
+          <Content className="min-h-0 flex-1 overflow-y-auto bg-[var(--brand-bg)]! p-3! sm:p-4! lg:p-6! [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-xl [&::-webkit-scrollbar-thumb]:bg-[var(--brand-border)]">
+            <div className="min-h-full rounded-xl border border-[var(--brand-border)] bg-white p-3 shadow-[0_1px_2px_rgba(var(--brand-dark-rgb),0.04),0_12px_32px_-16px_rgba(var(--brand-dark-rgb),0.1)] sm:p-4 lg:p-6">
               <Outlet />
             </div>
           </Content>

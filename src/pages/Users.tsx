@@ -121,18 +121,19 @@ export default function Users() {
     <>
       <PageTitle
         extra={
-          <Space>
+          <Space className="max-sm:flex! max-sm:w-full! max-sm:flex-wrap!" >
             <Input.Search
               allowClear
               prefix={<SearchOutlined style={{ color: '#A9ADB2' }} />}
               placeholder="Tìm theo tên, SĐT, mã KH..."
-              style={{ width: 260 }}
+              className="max-sm:flex-1"
+              style={{ width: 260, maxWidth: '100%' }}
               onSearch={(v) => {
                 setKeyword(v)
                 setPage(1)
               }}
             />
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
+            <Button className="max-sm:w-full" type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
               Thêm khách hàng
             </Button>
           </Space>
