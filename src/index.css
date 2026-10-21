@@ -1,3 +1,10 @@
+/* Tailwind 4: bỏ qua preflight để không ghi đè style mặc định của Ant Design */
+@layer theme, base, components, utilities;
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
+/* Cần reset mặc định của Tailwind? Bỏ comment dòng dưới (có thể ảnh hưởng Ant Design): */
+/* @import 'tailwindcss/preflight.css' layer(base); */
+
 body {
   margin: 0;
   font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
