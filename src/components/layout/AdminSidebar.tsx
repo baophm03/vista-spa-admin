@@ -4,7 +4,7 @@ import { menuItems } from './sidebarMenu'
 const { Sider } = Layout
 
 const menuClassName =
-  'border-e-0! pt-1! [&_.ant-menu-item]:justify-start! [&_.ant-menu-item]:pl-3! [&_.ant-menu-item]:text-left! [&_.ant-menu-item-group-title]:pl-5! [&_.ant-menu-item-group-title]:pr-4! [&_.ant-menu-item-group-title]:pt-4! [&_.ant-menu-item-group-title]:pb-1! [&_.ant-menu-item-group-title]:text-left! [&_.ant-menu-item-group-title]:text-[11px]! [&_.ant-menu-item-group-title]:font-semibold! [&_.ant-menu-item-group-title]:tracking-[0.08em]! [&_.ant-menu-item-group-title]:text-[#A9ADB2]! [&_.ant-menu-item-group-title]:uppercase!'
+  '[--ant-menu-collapsed-icon-size:16px]! border-e-0! pt-1! [&_.ant-menu-item]:justify-start! [&_.ant-menu-item]:pl-3! [&_.ant-menu-item]:text-left! [&_.ant-menu-item_.anticon]:text-[16px]! [&_.ant-menu-item_.ant-menu-item-icon]:text-[16px]! [&_.ant-menu-item-group-title]:pl-5! [&_.ant-menu-item-group-title]:pr-4! [&_.ant-menu-item-group-title]:pt-4! [&_.ant-menu-item-group-title]:pb-1! [&_.ant-menu-item-group-title]:text-left! [&_.ant-menu-item-group-title]:text-[11px]! [&_.ant-menu-item-group-title]:font-semibold! [&_.ant-menu-item-group-title]:tracking-[0.08em]! [&_.ant-menu-item-group-title]:text-[#A9ADB2]! [&_.ant-menu-item-group-title]:uppercase!'
 
 function SidebarContent({
   collapsed,
@@ -30,7 +30,7 @@ function SidebarContent({
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto pb-[120px]">
         <Menu
-          className={menuClassName}
+          className={`${menuClassName} ${collapsed ? '[&_.ant-menu-item-group-title]:hidden!' : ''}`}
           items={menuItems}
           mode="inline"
           selectedKeys={[pathname]}
