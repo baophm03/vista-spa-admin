@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { REFRESH_KEY, TOKEN_KEY } from '../api/client'
-import { login } from '../api/auth'
+import { usePostAuthLogin } from '../api/endpoints/auth'
+import { useAuthStore } from '../stores/auth-store'
 
 const UserIcon = () => (
   <svg
@@ -38,11 +38,13 @@ const inputClassName =
 
 export default function Login() {
   const navigate = useNavigate()
+  const setTokens = useAuthStore((state) => state.setTokens)
   const [identifier, setIdentifier] = useState('admin@newskyvista.vn')
   const [password, setPassword] = useState('Admin@2026')
   const [errors, setErrors] = useState<{ identifier?: string; password?: string }>({})
   const [alert, setAlert] = useState('')
-  const [loading, setLoading] = useState(false)
+  const loginMutation = usePostAuthLogin()
+  const loading = loginMutation.isPending
 
   const validate = () => {
     const next: typeof errors = {}
@@ -56,16 +58,14 @@ export default function Login() {
     e.preventDefault()
     setAlert('')
     if (!validate()) return
-    setLoading(true)
     try {
-      const result = await login(identifier.trim(), password)
-      localStorage.setItem(TOKEN_KEY, result.accessToken)
-      localStorage.setItem(REFRESH_KEY, result.refreshToken)
+      const response = await loginMutation.mutateAsync({ data: { identifier: identifier.trim(), password } })
+      const result = (response.responseData ?? {}) as { accessToken?: string; refreshToken?: string }
+      if (!result.accessToken || !result.refreshToken) throw new Error('Phản hồi đăng nhập không hợp lệ')
+      setTokens(result.accessToken, result.refreshToken)
       navigate('/', { replace: true })
     } catch (err: any) {
       setAlert(err?.response?.data?.message ?? 'Đăng nhập thất bại, vui lòng thử lại')
-    } finally {
-      setLoading(false)
     }
   }
 

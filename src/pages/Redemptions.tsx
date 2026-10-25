@@ -1,19 +1,30 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Button, Card, Col, Form, Modal, Popconfirm, Row, Select, Space, Statistic, Table, Tag, Typography, message } from 'antd'
 import { PlusOutlined, ReloadOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import PageTitle from '../components/base/PageTitle'
 import {
-  bizErrorMessage,
-  listRedeemedVouchers,
-  listUsers,
-  listVouchers,
-  markVoucherUsed,
-  redeemVoucher,
-  revokeUserVoucher,
-  voucherStatistics,
-} from '../api/newsky'
-import type { UserVoucherRow } from '../api/newsky'
+  useGetUsers,
+} from '../api/endpoints/users'
+import {
+  useGetVouchers,
+  useGetVouchersRedeemed,
+  useGetVouchersStatistics,
+  usePostVouchersIdRedeem,
+  usePostVouchersMarkUsed,
+  usePostVouchersRevoke,
+} from '../api/endpoints/vouchers'
+
+interface UserVoucherRow {
+  id: string
+  user_id: string
+  voucher_id: string
+  status: string
+  redeemed_at?: string
+  note?: string
+  voucher?: { id: string; title: string; required_points?: number }
+  user?: { id: string; zalo_name?: string; phone_number?: string }
+}
 
 const STATUS_META: Record<string, { label: string; color: string }> = {
   redeemed: { label: 'Chờ nhận', color: 'orange' },
@@ -22,82 +33,60 @@ const STATUS_META: Record<string, { label: string; color: string }> = {
 }
 
 export default function Redemptions() {
-  const [rows, setRows] = useState<UserVoucherRow[]>([])
-  const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
   const [limit] = useState(10)
-  const [users, setUsers] = useState<{ id: string; zalo_name?: string; phone_number?: string }[]>([])
-  const [vouchers, setVouchers] = useState<{ id: string; title: string; required_points?: number }[]>([])
-  const [loading, setLoading] = useState(false)
   const [open, setOpen] = useState(false)
-  const [stats, setStats] = useState<{ total: number; pending: number; used: number }>({ total: 0, pending: 0, used: 0 })
   const [form] = Form.useForm()
-
-  const load = useCallback(async () => {
-    setLoading(true)
-    try {
-      const data = await listRedeemedVouchers({ page, limit })
-      setRows(data?.rows ?? [])
-      setTotal(data?.count ?? data?.rows?.length ?? 0)
-    } catch (err) {
-      message.error(bizErrorMessage(err))
-    } finally {
-      setLoading(false)
-    }
-  }, [page, limit])
-
-  useEffect(() => {
-    load()
-    voucherStatistics()
-      .then((s: any) =>
-        setStats({
-          total: s?.overview?.total_redemptions ?? 0,
-          pending: s?.overview?.pending_redemptions ?? 0,
-          used: s?.overview?.used_redemptions ?? 0,
-        }),
-      )
-      .catch(() => undefined)
-  }, [load])
-
-  useEffect(() => {
-    listUsers({ page: 1, limit: 200 })
-      .then((d: any) => setUsers(d?.rows ?? []))
-      .catch(() => undefined)
-    listVouchers({ page: 1, limit: 200 })
-      .then((d: any) => setVouchers(d?.rows ?? []))
-      .catch(() => undefined)
-  }, [])
+  const redeemedQuery = useGetVouchersRedeemed({ currentPage: String(page), pageSize: String(limit) })
+  const statisticsQuery = useGetVouchersStatistics()
+  const usersQuery = useGetUsers({ currentPage: '1', pageSize: '200' })
+  const vouchersQuery = useGetVouchers({ currentPage: 1, pageSize: 200 })
+  const redeemMutation = usePostVouchersIdRedeem()
+  const markUsedMutation = usePostVouchersMarkUsed()
+  const revokeMutation = usePostVouchersRevoke()
+  const redeemedData = (redeemedQuery.data?.responseData ?? {}) as { rows?: UserVoucherRow[]; count?: number }
+  const rows = redeemedData.rows ?? []
+  const total = redeemedData.count ?? rows.length
+  const users = (((usersQuery.data?.responseData ?? {}) as { rows?: UserVoucherRow['user'][] }).rows ?? []).filter(Boolean) as NonNullable<UserVoucherRow['user']>[]
+  const vouchers = (((vouchersQuery.data?.responseData ?? {}) as { rows?: UserVoucherRow['voucher'][] }).rows ?? []).filter(Boolean) as NonNullable<UserVoucherRow['voucher']>[]
+  const overview = (statisticsQuery.data?.data ?? {}) as { total_redemptions?: number; pending_redemptions?: number; used_redemptions?: number }
+  const stats = {
+    total: overview.total_redemptions ?? 0,
+    pending: overview.pending_redemptions ?? 0,
+    used: overview.used_redemptions ?? 0,
+  }
+  const loading = redeemedQuery.isLoading
 
   const submit = async () => {
     const values = await form.validateFields()
     try {
-      await redeemVoucher(values.voucher_id, { user_id: values.user_id, note: values.note })
+      await redeemMutation.mutateAsync({ id: values.voucher_id, data: { user_id: values.user_id, note: values.note } })
       message.success('Đã ghi nhận đổi quà')
       setOpen(false)
       form.resetFields()
-      load()
+      await redeemedQuery.refetch()
     } catch (err) {
-      message.error(bizErrorMessage(err))
+      message.error(err instanceof Error ? err.message : 'Không thể ghi nhận đổi quà')
     }
   }
 
   const markDone = async (row: UserVoucherRow) => {
     try {
-      await markVoucherUsed({ user_voucher_id: row.id, note: 'Nhận quà tại spa' })
+      await markUsedMutation.mutateAsync({ data: { user_voucher_id: row.id, note: 'Nhận quà tại spa' } })
       message.success('Đã đánh dấu khách nhận quà')
-      load()
+      await redeemedQuery.refetch()
     } catch (err) {
-      message.error(bizErrorMessage(err))
+      message.error(err instanceof Error ? err.message : 'Không thể cập nhật trạng thái')
     }
   }
 
   const revoke = async (row: UserVoucherRow) => {
     try {
-      await revokeUserVoucher({ user_voucher_id: row.id, reason: 'Thu hồi bởi admin' })
+      await revokeMutation.mutateAsync({ data: { user_voucher_id: row.id, reason: 'Thu hồi bởi admin' } })
       message.success('Đã thu hồi voucher')
-      load()
+      await redeemedQuery.refetch()
     } catch (err) {
-      message.error(bizErrorMessage(err))
+      message.error(err instanceof Error ? err.message : 'Không thể thu hồi voucher')
     }
   }
 
@@ -108,7 +97,7 @@ export default function Redemptions() {
       <PageTitle
         extra={
           <Space className="max-sm:flex! max-sm:w-full! max-sm:flex-wrap!">
-            <Button icon={<ReloadOutlined />} onClick={load} />
+            <Button icon={<ReloadOutlined />} onClick={() => redeemedQuery.refetch()} />
             <Button className="max-sm:flex-1" type="primary" icon={<PlusOutlined />} onClick={() => setOpen(true)}>
               Ghi nhận đổi quà
             </Button>
@@ -136,7 +125,7 @@ export default function Redemptions() {
         </Col>
       </Row>
 
-      <Table
+      <Table<UserVoucherRow>
         rowKey="id"
         loading={loading}
         dataSource={rows}

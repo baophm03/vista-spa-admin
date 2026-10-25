@@ -1,10 +1,26 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Button, Form, Input, Modal, Select, Table, Tag, message } from 'antd'
 import { SendOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import PageTitle from '../components/base/PageTitle'
-import { bizErrorMessage, listCustomerProfiles, listNotifications, markNotificationRead, sendNotification } from '../api/newsky'
-import type { CustomerProfile, NotificationRow } from '../api/newsky'
+import { useGetCustomerProfiles } from '../api/endpoints/customer-profiles'
+import { useGetNotifications, usePostNotifications, usePutNotificationsId } from '../api/endpoints/notifications'
+
+interface CustomerProfile {
+  id: string
+  user_id?: string
+  full_name: string
+  phone: string
+}
+interface NotificationRow {
+  id: string
+  user_id?: string
+  event_key: string
+  title?: string
+  body?: string
+  is_read?: boolean
+  sent_at?: string
+}
 
 const EVENT_META: Record<string, { label: string; color: string }> = {
   APPT_REMINDER: { label: 'Nhắc lịch', color: 'purple' },
@@ -14,60 +30,44 @@ const EVENT_META: Record<string, { label: string; color: string }> = {
 }
 
 export default function Notifications() {
-  const [rows, setRows] = useState<NotificationRow[]>([])
-  const [total, setTotal] = useState(0)
-  const [page, setPage] = useState(1)
-  const [limit] = useState(10)
-  const [loading, setLoading] = useState(false)
-  const [profiles, setProfiles] = useState<CustomerProfile[]>([])
+  const notificationsQuery = useGetNotifications()
+  const profilesQuery = useGetCustomerProfiles()
+  const sendMutation = usePostNotifications()
+  const markReadMutation = usePutNotificationsId()
+  const notificationData = (notificationsQuery.data?.responseData ?? {}) as { rows?: NotificationRow[]; count?: number }
+  const rows = notificationData.rows ?? []
+  const total = notificationData.count ?? rows.length
+  const profiles = (((profilesQuery.data?.responseData ?? {}) as { rows?: CustomerProfile[] }).rows ?? [])
+  const loading = notificationsQuery.isLoading
   const [open, setOpen] = useState(false)
   const [form] = Form.useForm()
-
-  const load = useCallback(async () => {
-    setLoading(true)
-    try {
-      const { data, meta } = await listNotifications({ page, limit })
-      setRows(data)
-      setTotal(meta?.total ?? data.length)
-    } catch (err) {
-      message.error(bizErrorMessage(err))
-    } finally {
-      setLoading(false)
-    }
-  }, [page, limit])
-
-  useEffect(() => {
-    load()
-  }, [load])
-
-  useEffect(() => {
-    listCustomerProfiles({ page: 1, limit: 200 }).then(({ data }) => setProfiles(data)).catch(() => undefined)
-  }, [])
 
   const submit = async () => {
     const values = await form.validateFields()
     try {
-      await sendNotification({
-        event_key: values.event_key,
-        title: values.title,
-        body: values.body,
-        user_id: values.user_id || null,
+      await sendMutation.mutateAsync({
+        data: {
+          event_key: values.event_key,
+          title: values.title,
+          body: values.body,
+          user_id: values.user_id || null,
+        }
       })
       message.success('Đã gửi thông báo')
       setOpen(false)
-      load()
+      await notificationsQuery.refetch()
     } catch (err) {
-      message.error(bizErrorMessage(err))
+      message.error(err instanceof Error ? err.message : 'Không thể gửi thông báo')
     }
   }
 
   const markRead = async (row: NotificationRow) => {
     try {
-      await markNotificationRead(row.id)
+      await markReadMutation.mutateAsync({ id: row.id, data: {} })
       message.success('Đã đánh dấu đã đọc')
-      load()
+      await notificationsQuery.refetch()
     } catch (err) {
-      message.error(bizErrorMessage(err))
+      message.error(err instanceof Error ? err.message : 'Không thể cập nhật thông báo')
     }
   }
 
@@ -98,7 +98,7 @@ export default function Notifications() {
         rowKey="id"
         loading={loading}
         dataSource={rows}
-        pagination={{ current: page, pageSize: limit, total, onChange: setPage }}
+        pagination={{ current: 1, pageSize: rows.length || 10, total }}
         style={{ marginTop: 4 }}
         columns={[
           {

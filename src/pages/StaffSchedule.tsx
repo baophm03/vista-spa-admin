@@ -1,24 +1,17 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Button, Card, DatePicker, Form, Input, Modal, Popconfirm, Select, Space, Table, Tag, Typography, message } from 'antd'
 import { PlusOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import PageTitle from '../components/base/PageTitle'
-import {
-  approveStaffDayOff,
-  bizErrorMessage,
-  createStaffDayOff,
-  createStaffSchedule,
-  createShiftTemplate,
-  deleteStaffDayOff,
-  deleteStaffSchedule,
-  listBranches,
-  listStaffDaysOff,
-  listStaffSchedules,
-  listShiftTemplates,
-  listUsers,
-  rejectStaffDayOff,
-} from '../api/newsky'
-import type { StaffDayOff, StaffSchedule, ShiftTemplate } from '../api/newsky'
+import { useGetBranches } from '../api/endpoints/branches'
+import { useGetStaffDaysOff, usePostStaffDaysOff, usePutStaffDaysOffIdApprove, usePutStaffDaysOffIdReject, useDeleteStaffDaysOffId } from '../api/endpoints/staff-days-off'
+import { useGetStaffSchedules, usePostStaffSchedules, useDeleteStaffSchedulesId } from '../api/endpoints/staff-schedules'
+import { useGetShiftTemplates, usePostShiftTemplates } from '../api/endpoints/shift-templates'
+import { useGetUsers } from '../api/endpoints/users'
+
+interface ShiftTemplate { id: string; name: string; start_time: string; end_time: string; is_active?: boolean }
+interface StaffSchedule { id: string; staff_id: string; branch_id: string; weekday: number; shift_template_id: string; is_active?: boolean; staff?: { zalo_name?: string } }
+interface StaffDayOff { id: string; staff_id: string; off_date: string; reason?: string; status: string }
 
 const DAY_HEADERS = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN']
 const DAY_LABEL: Record<number, string> = { 1: 'T2', 2: 'T3', 3: 'T4', 4: 'T5', 5: 'T6', 6: 'T7', 7: 'CN' }
@@ -29,11 +22,6 @@ const DAY_OFF_STATUS: Record<string, { label: string; color: string }> = {
 }
 
 export default function StaffSchedule() {
-  const [schedules, setSchedules] = useState<StaffSchedule[]>([])
-  const [templates, setTemplates] = useState<ShiftTemplate[]>([])
-  const [daysOff, setDaysOff] = useState<StaffDayOff[]>([])
-  const [staffList, setStaffList] = useState<{ id: string; zalo_name?: string; email?: string; phone_number?: string }[]>([])
-  const [branches, setBranches] = useState<{ id: string; name: string }[]>([])
   const [open, setOpen] = useState(false)
   const [tplOpen, setTplOpen] = useState(false)
   const [offOpen, setOffOpen] = useState(false)
@@ -41,31 +29,24 @@ export default function StaffSchedule() {
   const [tplForm] = Form.useForm()
   const [offForm] = Form.useForm()
 
-  const load = useCallback(async () => {
-    try {
-      const [s, t, d] = await Promise.all([listStaffSchedules(), listShiftTemplates(), listStaffDaysOff()])
-      setSchedules(s)
-      setTemplates(t)
-      setDaysOff(d)
-      // KTV trong tuần: vẫn nhóm theo ai đã có ca
-      const ids = new Map<string, string>()
-      for (const sch of s) ids.set(sch.staff_id, sch.staff?.zalo_name ?? sch.staff_id.slice(0, 8))
-      // Danh sách KTV để chọn trong form: tất cả user nội bộ
-      try {
-        const ud: any = await listUsers({ page: 1, limit: 200, has_role: 'true' })
-        setStaffList(ud?.rows ?? [...ids.entries()].map(([id, name]) => ({ id, zalo_name: name })))
-      } catch {
-        setStaffList([...ids.entries()].map(([id, name]) => ({ id, zalo_name: name })))
-      }
-      listBranches().then((b: any) => setBranches(b)).catch(() => undefined)
-    } catch (err) {
-      message.error(bizErrorMessage(err))
-    }
-  }, [])
-
-  useEffect(() => {
-    load()
-  }, [load])
+  const schedulesQuery = useGetStaffSchedules()
+  const templatesQuery = useGetShiftTemplates()
+  const daysOffQuery = useGetStaffDaysOff()
+  const usersQuery = useGetUsers({ currentPage: '1', pageSize: '200', IsAdmin: 'true' })
+  const branchesQuery = useGetBranches()
+  const scheduleMutation = usePostStaffSchedules()
+  const templateMutation = usePostShiftTemplates()
+  const dayOffMutation = usePostStaffDaysOff()
+  const approveMutation = usePutStaffDaysOffIdApprove()
+  const rejectMutation = usePutStaffDaysOffIdReject()
+  const deleteScheduleMutation = useDeleteStaffSchedulesId()
+  const deleteDayOffMutation = useDeleteStaffDaysOffId()
+  const schedules = (((schedulesQuery.data?.responseData ?? (schedulesQuery.data as any)?.data ?? []) as StaffSchedule[]))
+  const templates = (((templatesQuery.data?.responseData ?? (templatesQuery.data as any)?.data ?? []) as ShiftTemplate[]))
+  const daysOff = (((daysOffQuery.data?.responseData ?? (daysOffQuery.data as any)?.data ?? []) as StaffDayOff[]))
+  const staffList = ((((usersQuery.data?.responseData ?? {}) as { rows?: { id: string; zalo_name?: string; email?: string; phone_number?: string }[] }).rows ?? []))
+  const branches = (((branchesQuery.data?.responseData ?? (branchesQuery.data as any)?.data ?? []) as { id: string; name: string }[]))
+  const reload = async () => Promise.all([schedulesQuery.refetch(), templatesQuery.refetch(), daysOffQuery.refetch()])
 
   const templateName = (id: string) => templates.find((t) => t.id === id)?.name ?? '—'
   const staffName = (id: string) => {
@@ -79,46 +60,46 @@ export default function StaffSchedule() {
   const submit = async () => {
     const values = await form.validateFields()
     try {
-      await createStaffSchedule(values)
+      await scheduleMutation.mutateAsync({ data: values })
       message.success('Đã thêm ca làm việc')
       setOpen(false)
-      load()
+      await reload()
     } catch (err) {
-      message.error(bizErrorMessage(err))
+      message.error(err instanceof Error ? err.message : 'Không thể thêm ca làm')
     }
   }
 
   const submitTemplate = async () => {
     const values = await tplForm.validateFields()
     try {
-      await createShiftTemplate(values)
+      await templateMutation.mutateAsync({ data: values })
       message.success('Đã thêm ca làm (template)')
       setTplOpen(false)
-      load()
+      await reload()
     } catch (err) {
-      message.error(bizErrorMessage(err))
+      message.error(err instanceof Error ? err.message : 'Không thể thêm template')
     }
   }
 
   const submitDayOff = async () => {
     const values = await offForm.validateFields()
     try {
-      await createStaffDayOff({ ...values, off_date: values.off_date.format('YYYY-MM-DD') })
+      await dayOffMutation.mutateAsync({ data: { ...values, off_date: values.off_date.format('YYYY-MM-DD') } })
       message.success('Đã đăng ký ngày nghỉ')
       setOffOpen(false)
-      load()
+      await reload()
     } catch (err) {
-      message.error(bizErrorMessage(err))
+      message.error(err instanceof Error ? err.message : 'Không thể đăng ký ngày nghỉ')
     }
   }
 
   const removeSchedule = async (id: string) => {
     try {
-      await deleteStaffSchedule(id)
+      await deleteScheduleMutation.mutateAsync({ id })
       message.success('Đã xóa ca làm việc')
-      load()
+      await reload()
     } catch (err) {
-      message.error(bizErrorMessage(err))
+      message.error(err instanceof Error ? err.message : 'Không thể xóa ca làm')
     }
   }
 
@@ -126,9 +107,9 @@ export default function StaffSchedule() {
     try {
       await fn()
       message.success(msg)
-      load()
+      await reload()
     } catch (err) {
-      message.error(bizErrorMessage(err))
+      message.error(err instanceof Error ? err.message : 'Không thể cập nhật ngày nghỉ')
     }
   }
 
@@ -235,13 +216,13 @@ export default function StaffSchedule() {
                 <Space>
                   {row.status === 'pending' && (
                     <>
-                      <Button size="small" type="primary" onClick={() => doDayOffAction(() => approveStaffDayOff(row.id), 'Đã duyệt nghỉ')}>
+                      <Button size="small" type="primary" onClick={() => doDayOffAction(() => approveMutation.mutateAsync({ id: row.id, data: {} }), 'Đã duyệt nghỉ')}>
                         Duyệt
                       </Button>
-                      <Button size="small" danger onClick={() => doDayOffAction(() => rejectStaffDayOff(row.id, 'Không thể sắp xếp'), 'Đã từ chối')}>
+                      <Button size="small" danger onClick={() => doDayOffAction(() => rejectMutation.mutateAsync({ id: row.id, data: { reason: 'Không thể sắp xếp' } }), 'Đã từ chối')}>
                         Từ chối
                       </Button>
-                      <Popconfirm title="Rút đăng ký nghỉ này?" onConfirm={() => doDayOffAction(() => deleteStaffDayOff(row.id), 'Đã rút đăng ký')}>
+                      <Popconfirm title="Rút đăng ký nghỉ này?" onConfirm={() => doDayOffAction(() => deleteDayOffMutation.mutateAsync({ id: row.id }), 'Đã rút đăng ký')}>
                         <Button size="small">Rút</Button>
                       </Popconfirm>
                     </>

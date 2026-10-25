@@ -1,20 +1,22 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Button, Card, Form, Input, InputNumber, Modal, Popconfirm, Select, Space, Table, Tag, Typography, message } from 'antd'
 import { PlusOutlined, ReloadOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import PageTitle from '../components/base/PageTitle'
+import { useGetBranches } from '../api/endpoints/branches'
 import {
-  bizErrorMessage,
-  createLuckyWheel,
-  createWheelPrize,
-  deleteLuckyWheel,
-  listBranches,
-  listLuckyWheels,
-  listWheelPrizes,
-  listWheelSpins,
-  updateLuckyWheel,
-} from '../api/newsky'
-import type { Branch, LuckyWheel, WheelPrize } from '../api/newsky'
+  useDeleteLuckyWheelsId,
+  useGetLuckyWheels,
+  useGetLuckyWheelsIdPrizes,
+  useGetLuckyWheelsIdSpins,
+  usePostLuckyWheels,
+  usePostLuckyWheelsIdPrizes,
+  usePutLuckyWheelsId,
+} from '../api/endpoints/lucky-wheels'
+
+interface Branch { id: string; name: string }
+interface LuckyWheel { id: string; branch_id?: string; name: string; min_year_spent: number; spins_per_user: number; is_active?: boolean }
+interface WheelPrize { id: string; name: string; prize_type: string; weight: number; quantity_total?: number; quantity_given: number }
 
 const TYPE_META: Record<string, { label: string; color: string }> = {
   VOUCHER: { label: 'Voucher', color: 'gold' },
@@ -24,84 +26,74 @@ const TYPE_META: Record<string, { label: string; color: string }> = {
 }
 
 export default function LuckyWheel() {
-  const [wheels, setWheels] = useState<LuckyWheel[]>([])
-  const [branches, setBranches] = useState<Branch[]>([])
   const [selected, setSelected] = useState<LuckyWheel | null>(null)
-  const [prizes, setPrizes] = useState<WheelPrize[]>([])
-  const [spins, setSpins] = useState<any[]>([])
   const [wheelOpen, setWheelOpen] = useState(false)
   const [prizeOpen, setPrizeOpen] = useState(false)
   const [wheelForm] = Form.useForm()
   const [prizeForm] = Form.useForm()
 
-  const loadWheels = useCallback(async () => {
-    try {
-      const data = await listLuckyWheels()
-      setWheels(data)
-      if (data.length && !selected) selectWheel(data[0])
-    } catch (err) {
-      message.error(bizErrorMessage(err))
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  const selectWheel = async (w: LuckyWheel) => {
-    setSelected(w)
-    try {
-      setPrizes(await listWheelPrizes(w.id))
-      setSpins((await listWheelSpins(w.id)) as any[])
-    } catch (err) {
-      message.error(bizErrorMessage(err))
-    }
-  }
+  const wheelsQuery = useGetLuckyWheels()
+  const branchesQuery = useGetBranches()
+  const prizesQuery = useGetLuckyWheelsIdPrizes(selected?.id ?? '')
+  const spinsQuery = useGetLuckyWheelsIdSpins(selected?.id ?? '')
+  const createMutation = usePostLuckyWheels()
+  const updateMutation = usePutLuckyWheelsId()
+  const deleteMutation = useDeleteLuckyWheelsId()
+  const prizeMutation = usePostLuckyWheelsIdPrizes()
+  const wheels = (((wheelsQuery.data?.responseData ?? (wheelsQuery.data as any)?.data ?? []) as LuckyWheel[]))
+  const branches = (((branchesQuery.data?.responseData ?? (branchesQuery.data as any)?.data ?? []) as Branch[]))
+  const prizes = (((prizesQuery.data?.responseData ?? (prizesQuery.data as any)?.data ?? []) as WheelPrize[]))
+  const spins = (((spinsQuery.data?.responseData ?? (spinsQuery.data as any)?.data ?? []) as any[]))
 
   useEffect(() => {
-    loadWheels()
-    listBranches().then(setBranches).catch(() => undefined)
-  }, [loadWheels])
+    if (!selected && wheels.length) setSelected(wheels[0])
+  }, [wheels, selected])
+
+  const selectWheel = (w: LuckyWheel) => setSelected(w)
+  const loadWheels = () => wheelsQuery.refetch()
 
   const submitWheel = async () => {
     const values = await wheelForm.validateFields()
     try {
-      await createLuckyWheel(values)
+      await createMutation.mutateAsync({ data: values })
       message.success('Đã tạo vòng quay')
       setWheelOpen(false)
-      loadWheels()
+      await wheelsQuery.refetch()
     } catch (err) {
-      message.error(bizErrorMessage(err))
+      message.error(err instanceof Error ? err.message : 'Không thể tạo vòng quay')
     }
   }
 
   const toggleWheel = async (w: LuckyWheel) => {
     try {
-      await updateLuckyWheel(w.id, { is_active: !w.is_active })
+      await updateMutation.mutateAsync({ id: w.id, data: { is_active: !w.is_active } })
       message.success(w.is_active ? 'Đã tắt vòng quay' : 'Đã bật vòng quay')
-      loadWheels()
+      await wheelsQuery.refetch()
     } catch (err) {
-      message.error(bizErrorMessage(err))
+      message.error(err instanceof Error ? err.message : 'Không thể cập nhật vòng quay')
     }
   }
 
   const removeWheel = async (w: LuckyWheel) => {
     try {
-      await deleteLuckyWheel(w.id)
+      await deleteMutation.mutateAsync({ id: w.id })
       message.success('Đã xóa vòng quay')
       setSelected(null)
-      loadWheels()
+      await wheelsQuery.refetch()
     } catch (err) {
-      message.error(bizErrorMessage(err))
+      message.error(err instanceof Error ? err.message : 'Không thể xóa vòng quay')
     }
   }
 
   const submitPrize = async () => {
     const values = await prizeForm.validateFields()
     try {
-      await createWheelPrize(selected!.id, values)
+      await prizeMutation.mutateAsync({ id: selected!.id, data: values })
       message.success('Đã thêm giải')
       setPrizeOpen(false)
-      selectWheel(selected!)
+      await prizesQuery.refetch()
     } catch (err) {
-      message.error(bizErrorMessage(err))
+      message.error(err instanceof Error ? err.message : 'Không thể thêm giải thưởng')
     }
   }
 

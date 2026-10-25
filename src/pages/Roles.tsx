@@ -1,8 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Button, Card, Space, Spin, Switch, Table, Tag, Typography, message } from 'antd'
 import { PlusOutlined, ReloadOutlined } from '@ant-design/icons'
+import { useQueries } from '@tanstack/react-query'
 import PageTitle from '../components/base/PageTitle'
-import { bizErrorMessage, getRolePermissions, listPermissions, listRoles, updateRolePermissions } from '../api/newsky'
+import { useGetPermissions } from '../api/endpoints/permissions'
+import { getGetRolesIdPermissionsQueryOptions, useGetRoles, usePutRolesIdPermissions } from '../api/endpoints/roles'
 
 interface RoleRow {
   id: string
@@ -17,41 +19,35 @@ interface PermRow {
 }
 
 export default function Roles() {
-  const [roles, setRoles] = useState<RoleRow[]>([])
-  const [perms, setPerms] = useState<PermRow[]>([])
   const [grants, setGrants] = useState<Record<string, Set<string>>>({})
   const initialGrants = useRef<Record<string, string[]>>({})
-  const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
-
-  const load = useCallback(async () => {
-    setLoading(true)
-    try {
-      const [r, p] = await Promise.all([listRoles(), listPermissions()])
-      setRoles(r as RoleRow[])
-      setPerms(p as PermRow[])
-      const g: Record<string, Set<string>> = {}
-      for (const role of r as RoleRow[]) {
-        try {
-          const keys = (await getRolePermissions(role.id)) as string[]
-          g[role.id] = new Set(keys)
-          initialGrants.current[role.id] = [...keys].sort()
-        } catch {
-          g[role.id] = new Set()
-          initialGrants.current[role.id] = []
-        }
-      }
-      setGrants(g)
-    } catch (err) {
-      message.error(bizErrorMessage(err))
-    } finally {
-      setLoading(false)
-    }
-  }, [])
+  const rolesQuery = useGetRoles()
+  const permissionsQuery = useGetPermissions()
+  const updateMutation = usePutRolesIdPermissions()
+  const roles = ((((rolesQuery.data?.responseData ?? {}) as { rows?: RoleRow[] }).rows ?? []) as RoleRow[])
+  const perms = ((((permissionsQuery.data?.responseData ?? {}) as { rows?: PermRow[] }).rows ?? []) as PermRow[])
+  const rolePermissionQueries = useQueries({
+    queries: roles.map((role) => getGetRolesIdPermissionsQueryOptions(role.id)),
+  })
+  const permissionQueryState = rolePermissionQueries.map((query) => query.dataUpdatedAt).join(',')
+  const loading = rolesQuery.isLoading || permissionsQuery.isLoading || rolePermissionQueries.some((query) => query.isLoading)
 
   useEffect(() => {
-    load()
-  }, [load])
+    if (!roles.length || rolePermissionQueries.some((query) => query.isLoading)) return
+    const next: Record<string, Set<string>> = {}
+    roles.forEach((role, index) => {
+      const response = rolePermissionQueries[index]?.data
+      const keys = ((response?.responseData ?? (response as any)?.data ?? []) as string[])
+      next[role.id] = new Set(Array.isArray(keys) ? keys : [])
+      initialGrants.current[role.id] = [...next[role.id]].sort()
+    })
+    setGrants(next)
+  }, [rolesQuery.data, permissionQueryState])
+
+  const reload = async () => {
+    await Promise.all([rolesQuery.refetch(), permissionsQuery.refetch(), ...rolePermissionQueries.map((query) => query.refetch())])
+  }
 
   const toggle = (roleId: string, permKey: string, checked: boolean) => {
     setGrants((g) => {
@@ -72,12 +68,12 @@ export default function Roles() {
         return next.length !== prev.length || next.some((k, i) => k !== prev[i])
       })
       for (const role of changed) {
-        await updateRolePermissions(role.id, { permissions: [...(grants[role.id] ?? [])] })
+        await updateMutation.mutateAsync({ id: role.id, data: { permissions: [...(grants[role.id] ?? [])] } })
       }
       message.success('Đã lưu phân quyền')
-      load()
+      await reload()
     } catch (err) {
-      message.error(bizErrorMessage(err))
+      message.error(err instanceof Error ? err.message : 'Không thể lưu phân quyền')
     } finally {
       setSaving(false)
     }
@@ -90,7 +86,7 @@ export default function Roles() {
       <PageTitle
         extra={
           <Space className="max-sm:flex! max-sm:w-full! max-sm:flex-wrap!">
-            <Button icon={<ReloadOutlined />} onClick={load} />
+            <Button icon={<ReloadOutlined />} onClick={reload} />
             <Button type="primary" icon={<PlusOutlined />} disabled>
               Thêm vai trò (tạo qua API)
             </Button>

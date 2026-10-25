@@ -1,15 +1,10 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Avatar, Button, Form, Input, Modal, Popconfirm, Select, Space, Table, Tag, message } from 'antd'
 import { PlusOutlined, ReloadOutlined, UserOutlined } from '@ant-design/icons'
 import PageTitle from '../components/base/PageTitle'
-import {
-  bizErrorMessage,
-  createAdminUser,
-  deleteAdminUser,
-  listRoles,
-  listUsers,
-  updateAdminUser,
-} from '../api/newsky'
+import { useDeleteUsersAdminId, usePostUsersAdmin, usePutUsersAdminId } from '../api/endpoints/admin'
+import { useGetRoles } from '../api/endpoints/roles'
+import { useGetUsers } from '../api/endpoints/users'
 
 interface StaffRow {
   id: string
@@ -22,31 +17,18 @@ interface StaffRow {
 }
 
 export default function Staffs() {
-  const [rows, setRows] = useState<StaffRow[]>([])
-  const [roles, setRoles] = useState<{ id: string; role_name: string }[]>([])
-  const [loading, setLoading] = useState(false)
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<StaffRow | null>(null)
   const [form] = Form.useForm()
-
-  const load = useCallback(async () => {
-    setLoading(true)
-    try {
-      const data = await listUsers({ page: 1, limit: 100, has_role: 'true' })
-      setRows(data?.rows ?? [])
-    } catch (err) {
-      message.error(bizErrorMessage(err))
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    load()
-    listRoles()
-      .then((r: any[]) => setRoles(r.map((x) => ({ id: x.id, role_name: x.role_name ?? x.name }))))
-      .catch(() => undefined)
-  }, [load])
+  const usersQuery = useGetUsers({ currentPage: '1', pageSize: '100', IsAdmin: 'true' })
+  const rolesQuery = useGetRoles()
+  const createMutation = usePostUsersAdmin()
+  const updateMutation = usePutUsersAdminId()
+  const deleteMutation = useDeleteUsersAdminId()
+  const rows = (((usersQuery.data?.responseData ?? {}) as { rows?: StaffRow[] }).rows ?? [])
+  const roles = (((rolesQuery.data?.responseData ?? {}) as { rows?: { id: string; role_name?: string; name?: string }[] }).rows ?? [])
+    .map((role) => ({ id: role.id, role_name: role.role_name ?? role.name ?? role.id }))
+  const loading = usersQuery.isLoading
 
   const openModal = (s?: StaffRow) => {
     setEditing(s ?? null)
@@ -68,37 +50,41 @@ export default function Staffs() {
     const values = await form.validateFields()
     try {
       if (editing) {
-        await updateAdminUser(editing.id, {
-          zalo_name: values.zalo_name,
-          phone_number: values.phone_number,
-          is_admin: values.is_admin,
-          role_id: values.role_id,
+        await updateMutation.mutateAsync({
+          id: editing.id, data: {
+            zalo_name: values.zalo_name,
+            phone_number: values.phone_number,
+            is_admin: values.is_admin,
+            role_id: values.role_id,
+          }
         })
         message.success('Đã cập nhật chuyên viên')
       } else {
-        await createAdminUser({
-          email: values.email,
-          phone_number: values.phone_number,
-          password: values.password,
-          role_id: values.role_id,
-          full_name: values.zalo_name,
+        await createMutation.mutateAsync({
+          data: {
+            email: values.email,
+            phone_number: values.phone_number,
+            password: values.password,
+            role_id: values.role_id,
+            full_name: values.zalo_name,
+          }
         })
         message.success('Đã thêm chuyên viên')
       }
       setOpen(false)
-      load()
+      await usersQuery.refetch()
     } catch (err) {
-      message.error(bizErrorMessage(err))
+      message.error(err instanceof Error ? err.message : 'Không thể lưu chuyên viên')
     }
   }
 
   const remove = async (row: StaffRow) => {
     try {
-      await deleteAdminUser(row.id)
+      await deleteMutation.mutateAsync({ id: row.id })
       message.success('Đã xóa chuyên viên')
-      load()
+      await usersQuery.refetch()
     } catch (err) {
-      message.error(bizErrorMessage(err))
+      message.error(err instanceof Error ? err.message : 'Không thể xóa chuyên viên')
     }
   }
 
@@ -113,7 +99,7 @@ export default function Staffs() {
       <PageTitle
         extra={
           <Space className="max-sm:flex! max-sm:w-full! max-sm:flex-wrap!">
-            <Button icon={<ReloadOutlined />} onClick={load} />
+            <Button icon={<ReloadOutlined />} onClick={() => usersQuery.refetch()} />
             <Button className="max-sm:flex-1" type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
               Thêm chuyên viên
             </Button>

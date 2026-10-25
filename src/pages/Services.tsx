@@ -1,9 +1,17 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Button, Form, Input, InputNumber, Modal, Popconfirm, Select, Space, Table, Tag, message } from 'antd'
 import { PlusOutlined } from '@ant-design/icons'
 import PageTitle from '../components/base/PageTitle'
-import { bizErrorMessage, createService, deleteService, listServices, updateService } from '../api/newsky'
-import type { ServiceRow } from '../api/newsky'
+import { useDeleteServiceId, useGetService, usePostService, usePutServiceId } from '../api/endpoints/service'
+
+interface ServiceRow {
+  id: string
+  title: string
+  description?: string
+  type: number
+  required_points?: number
+  duration_minutes?: number
+}
 
 const TYPE_LABEL: Record<number, string> = {
   0: 'Dịch vụ spa',
@@ -13,26 +21,15 @@ const TYPE_LABEL: Record<number, string> = {
 }
 
 export default function Services() {
-  const [rows, setRows] = useState<ServiceRow[]>([])
-  const [loading, setLoading] = useState(false)
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<ServiceRow | null>(null)
   const [form] = Form.useForm()
-
-  const load = useCallback(async () => {
-    setLoading(true)
-    try {
-      setRows(await listServices())
-    } catch (err) {
-      message.error(bizErrorMessage(err))
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    load()
-  }, [load])
+  const servicesQuery = useGetService()
+  const createMutation = usePostService()
+  const updateMutation = usePutServiceId()
+  const deleteMutation = useDeleteServiceId()
+  const rows = (servicesQuery.data?.data?.services ?? []) as unknown as ServiceRow[]
+  const loading = servicesQuery.isLoading
 
   const openModal = (service?: ServiceRow) => {
     setEditing(service ?? null)
@@ -46,26 +43,26 @@ export default function Services() {
     const values = await form.validateFields()
     try {
       if (editing) {
-        await updateService(editing.id, values)
+        await updateMutation.mutateAsync({ id: editing.id, data: values })
         message.success('Đã cập nhật dịch vụ')
       } else {
-        await createService(values)
+        await createMutation.mutateAsync({ data: values })
         message.success('Đã thêm dịch vụ')
       }
       setOpen(false)
-      load()
+      await servicesQuery.refetch()
     } catch (err) {
-      message.error(bizErrorMessage(err))
+      message.error(err instanceof Error ? err.message : 'Không thể lưu dịch vụ')
     }
   }
 
   const remove = async (row: ServiceRow) => {
     try {
-      await deleteService(row.id)
+      await deleteMutation.mutateAsync({ id: row.id })
       message.success('Đã xóa dịch vụ')
-      load()
+      await servicesQuery.refetch()
     } catch (err) {
-      message.error(bizErrorMessage(err))
+      message.error(err instanceof Error ? err.message : 'Không thể xóa dịch vụ')
     }
   }
 

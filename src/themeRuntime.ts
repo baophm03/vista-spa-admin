@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react'
 import { brandColors } from './theme'
-import { listSettings } from './api/newsky'
+import { getSettings } from './api/endpoints/settings'
 
 /** Các key màu giao diện lưu trong bảng setting (group "theme"). */
 export const THEME_KEYS = {
@@ -72,7 +72,8 @@ export function applyThemeColors(colors: { primary?: string; accent?: string }) 
 /** Tải màu từ GET /settings (sau khi đăng nhập) và áp vào giao diện. */
 export async function refreshThemeFromServer() {
   try {
-    const rows = (await listSettings()) as Array<{ key: string; value: unknown }>
+    const response = await getSettings()
+    const rows = ((response.responseData ?? (response as any).data ?? []) as Array<{ key: string; value: unknown }>)
     const pick = (key: string) => {
       const v = rows.find((r) => r.key === key)?.value
       return typeof v === 'string' ? v : undefined

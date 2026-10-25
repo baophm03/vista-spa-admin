@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Button, Card, Col, ColorPicker, ConfigProvider, Divider, Input, Progress, Row, Space, Table, Tag, Typography, message } from 'antd'
 import { BgColorsOutlined, ReloadOutlined, SaveOutlined } from '@ant-design/icons'
 import PageTitle from '../components/base/PageTitle'
-import { bizErrorMessage, listSettings, updateSettings } from '../api/newsky'
+import { useGetSettings, usePutSettings } from '../api/endpoints/settings'
 import { applyThemeColors, getAccentColor, getPrimaryColor, THEME_KEYS } from '../themeRuntime'
 
 const PRESET_COLORS = ['var(--brand-primary)', 'var(--brand-dark)', '#C0457A', '#2F6F62', '#3B6EA5', '#B7791F']
@@ -34,46 +34,37 @@ function coerceValue(raw: string, schema?: SettingRow['schema']): unknown {
 }
 
 export default function SiteConfig() {
-  const [rows, setRows] = useState<SettingRow[]>([])
-  const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [savingTheme, setSavingTheme] = useState(false)
   const [edits, setEdits] = useState<Record<string, string>>({})
   const [primaryColor, setPrimaryColor] = useState(getPrimaryColor())
   const [accentColor, setAccentColor] = useState(getAccentColor())
 
-  const load = useCallback(async () => {
-    setLoading(true)
-    try {
-      const data = (await listSettings()) as SettingRow[]
-      setRows(data)
-      setEdits({})
-      const pick = (key: string) => {
-        const v = data.find((r) => r.key === key)?.value
-        return typeof v === 'string' ? v : undefined
-      }
-      setPrimaryColor(pick(THEME_KEYS.primary) ?? getPrimaryColor())
-      setAccentColor(pick(THEME_KEYS.accent) ?? getAccentColor())
-    } catch (err) {
-      message.error(bizErrorMessage(err))
-    } finally {
-      setLoading(false)
-    }
-  }, [])
+  const settingsQuery = useGetSettings()
+  const updateMutation = usePutSettings()
+  const responseData = (settingsQuery.data?.responseData ?? (settingsQuery.data as any)?.data ?? []) as SettingRow[]
+  const rows = Array.isArray(responseData) ? responseData : []
+  const loading = settingsQuery.isLoading
 
   useEffect(() => {
-    load()
-  }, [load])
+    setEdits({})
+    const pick = (key: string) => {
+      const v = rows.find((r) => r.key === key)?.value
+      return typeof v === 'string' ? v : undefined
+    }
+    setPrimaryColor(pick(THEME_KEYS.primary) ?? getPrimaryColor())
+    setAccentColor(pick(THEME_KEYS.accent) ?? getAccentColor())
+  }, [settingsQuery.data])
 
   const save = async () => {
     setSaving(true)
     try {
       const schemaOf = (key: string) => rows.find((r) => r.key === key)?.schema
-      await updateSettings({ items: Object.entries(edits).map(([key, value]) => ({ key, value: coerceValue(value, schemaOf(key)) })) })
+      await updateMutation.mutateAsync({ data: { items: Object.entries(edits).map(([key, value]) => ({ key, value: coerceValue(value, schemaOf(key)) })) } })
       message.success('Đã lưu cấu hình')
-      load()
+      await settingsQuery.refetch()
     } catch (err) {
-      message.error(bizErrorMessage(err))
+      message.error(err instanceof Error ? err.message : 'Không thể lưu cấu hình')
     } finally {
       setSaving(false)
     }
@@ -82,16 +73,18 @@ export default function SiteConfig() {
   const saveTheme = async () => {
     setSavingTheme(true)
     try {
-      await updateSettings({
-        items: [
-          { key: THEME_KEYS.primary, value: primaryColor },
-          { key: THEME_KEYS.accent, value: accentColor },
-        ],
+      await updateMutation.mutateAsync({
+        data: {
+          items: [
+            { key: THEME_KEYS.primary, value: primaryColor },
+            { key: THEME_KEYS.accent, value: accentColor },
+          ],
+        }
       })
       applyThemeColors({ primary: primaryColor, accent: accentColor })
       message.success('Đã áp dụng màu mới cho toàn hệ thống')
     } catch (err) {
-      message.error(bizErrorMessage(err))
+      message.error(err instanceof Error ? err.message : 'Không thể cập nhật màu giao diện')
     } finally {
       setSavingTheme(false)
     }
@@ -102,7 +95,7 @@ export default function SiteConfig() {
       <PageTitle
         extra={
           <Space className="max-sm:flex! max-sm:w-full! max-sm:flex-wrap!">
-            <Button icon={<ReloadOutlined />} onClick={load} />
+            <Button icon={<ReloadOutlined />} onClick={() => settingsQuery.refetch()} />
             <Button className="max-sm:flex-1" type="primary" icon={<SaveOutlined />} loading={saving} onClick={save} disabled={!Object.keys(edits).length}>
               Lưu cấu hình
             </Button>

@@ -1,19 +1,32 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Avatar, Button, DatePicker, Drawer, Form, Input, Modal, Popconfirm, Select, Space, Table, Tag, Typography, message } from 'antd'
 import { PlusOutlined, SearchOutlined, UserOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import QRCode from 'qrcode'
 import PageTitle from '../components/base/PageTitle'
+import { useGetBranches } from '../api/endpoints/branches'
 import {
-  bizErrorMessage,
-  createCustomerProfile,
-  deleteCustomerProfile,
-  getCustomerProfileSummary,
-  listBranches,
-  listCustomerProfiles,
-  updateCustomerProfile,
-} from '../api/newsky'
-import type { Branch, CustomerProfile } from '../api/newsky'
+  useDeleteCustomerProfilesId,
+  useGetCustomerProfiles,
+  useGetCustomerProfilesIdSummary,
+  usePostCustomerProfiles,
+  usePutCustomerProfilesId,
+} from '../api/endpoints/customer-profiles'
+
+interface Branch { id: string; name: string }
+interface CustomerProfile {
+  id: string
+  branch_id: string
+  customer_code: string
+  full_name: string
+  phone: string
+  birthday?: string
+  address?: string
+  email?: string
+  note?: string
+  user_id?: string
+  user?: { membership?: { card_rank?: { name?: string } | null } | null } | null
+}
 
 interface Summary {
   rank?: { name?: string }
@@ -22,55 +35,36 @@ interface Summary {
 }
 
 export default function Users() {
-  const [rows, setRows] = useState<CustomerProfile[]>([])
-  const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
   const [limit] = useState(10)
   const [keyword, setKeyword] = useState('')
-  const [branches, setBranches] = useState<Branch[]>([])
-  const [loading, setLoading] = useState(false)
   const [selected, setSelected] = useState<CustomerProfile | null>(null)
-  const [summary, setSummary] = useState<Summary | null>(null)
   const [qrUrl, setQrUrl] = useState<string>('')
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<CustomerProfile | null>(null)
   const [form] = Form.useForm()
 
-  const load = useCallback(async () => {
-    setLoading(true)
-    try {
-      const params: Record<string, unknown> = { page, limit }
-      if (keyword) params.q = keyword
-      const { data, meta } = await listCustomerProfiles(params)
-      setRows(data)
-      setTotal(meta?.total ?? data.length)
-    } catch (err) {
-      message.error(bizErrorMessage(err))
-    } finally {
-      setLoading(false)
-    }
-  }, [page, limit, keyword])
-
-  useEffect(() => {
-    load()
-  }, [load])
-
-  useEffect(() => {
-    listBranches().then(setBranches).catch(() => undefined)
-  }, [])
+  const profilesQuery = useGetCustomerProfiles()
+  const branchesQuery = useGetBranches()
+  const summaryQuery = useGetCustomerProfilesIdSummary(selected?.id ?? '')
+  const createMutation = usePostCustomerProfiles()
+  const updateMutation = usePutCustomerProfilesId()
+  const deleteMutation = useDeleteCustomerProfilesId()
+  const profileResponse = (profilesQuery.data?.responseData ?? (profilesQuery.data as any)?.data ?? {}) as { rows?: CustomerProfile[]; count?: number }
+  const allRows = profileResponse.rows ?? []
+  const rows = allRows.filter((row) => !keyword || `${row.full_name} ${row.phone} ${row.customer_code}`.toLowerCase().includes(keyword.toLowerCase()))
+    .slice((page - 1) * limit, page * limit)
+  const total = keyword ? rows.length : profileResponse.count ?? allRows.length
+  const branches = (((branchesQuery.data?.responseData ?? (branchesQuery.data as any)?.data ?? []) as Branch[]))
+  const loading = profilesQuery.isLoading
+  const summary = (summaryQuery.data?.responseData ?? (summaryQuery.data as any)?.data ?? null) as Summary | null
 
   const openDetail = async (row: CustomerProfile) => {
     setSelected(row)
-    setSummary(null)
     setQrUrl('')
     QRCode.toDataURL(row.customer_code, { width: 360, margin: 1 })
       .then(setQrUrl)
       .catch(() => undefined)
-    try {
-      setSummary((await getCustomerProfileSummary(row.id)) as Summary)
-    } catch {
-      setSummary(null)
-    }
   }
 
   const openModal = (customer?: CustomerProfile) => {
@@ -91,26 +85,26 @@ export default function Users() {
     }
     try {
       if (editing) {
-        await updateCustomerProfile(editing.id, payload)
+        await updateMutation.mutateAsync({ id: editing.id, data: payload })
         message.success('Đã cập nhật khách hàng')
       } else {
-        await createCustomerProfile(payload)
+        await createMutation.mutateAsync({ data: payload })
         message.success('Đã thêm khách hàng')
       }
       setOpen(false)
-      load()
+      await profilesQuery.refetch()
     } catch (err) {
-      message.error(bizErrorMessage(err))
+      message.error(err instanceof Error ? err.message : 'Không thể lưu khách hàng')
     }
   }
 
   const remove = async (row: CustomerProfile) => {
     try {
-      await deleteCustomerProfile(row.id)
+      await deleteMutation.mutateAsync({ id: row.id })
       message.success('Đã xóa khách hàng')
-      load()
+      await profilesQuery.refetch()
     } catch (err) {
-      message.error(bizErrorMessage(err))
+      message.error(err instanceof Error ? err.message : 'Không thể xóa khách hàng')
     }
   }
 

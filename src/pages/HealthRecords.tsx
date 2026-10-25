@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Button, DatePicker, Drawer, Empty, Form, Input, Modal, Select, Space, Table, Tag, Typography, message } from 'antd'
 import {
   BarChartOutlined,
@@ -16,15 +16,27 @@ import {
 } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import PageTitle from '../components/base/PageTitle'
-import {
-  bizErrorMessage,
-  listCustomerProfiles,
-  listCustomerTreatments,
-  listTreatmentPackages,
-  listUsers,
-  updateCustomerProfile,
-} from '../api/newsky'
-import type { CustomerProfile, CustomerTreatment } from '../api/newsky'
+import { useGetCustomerProfiles, usePutCustomerProfilesId } from '../api/endpoints/customer-profiles'
+import { useGetCustomerTreatments } from '../api/endpoints/customer-treatments'
+import { useGetTreatmentPackages } from '../api/endpoints/treatment-packages'
+import { useGetUsers } from '../api/endpoints/users'
+
+interface CustomerProfile {
+  id: string
+  customer_code: string
+  full_name: string
+  phone: string
+  custom_fields?: HealthFields
+}
+interface CustomerTreatment {
+  id: string
+  customer_profile_id?: string
+  package_id?: string
+  quota_type?: string
+  sessions_used?: number
+  sessions_total?: number
+  status?: string
+}
 
 const SKIN_TYPES = ['Da dầu', 'Da khô', 'Da hỗn hợp', 'Da nhạy cảm', 'Da thường']
 
@@ -89,49 +101,26 @@ interface HealthFields {
 type HealthRow = CustomerProfile & { custom_fields?: HealthFields }
 
 export default function HealthRecords() {
-  const [rows, setRows] = useState<HealthRow[]>([])
   const [keyword, setKeyword] = useState('')
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<HealthRow | null>(null)
-  const [staffs, setStaffs] = useState<{ id: string; zalo_name?: string; email?: string }[]>([])
-  const [loading, setLoading] = useState(false)
   const [detail, setDetail] = useState<HealthRow | null>(null)
-  const [detailTreatments, setDetailTreatments] = useState<CustomerTreatment[]>([])
-  const [packageNames, setPackageNames] = useState<Record<string, string>>({})
   const [form] = Form.useForm()
-
-  const load = useCallback(async () => {
-    setLoading(true)
-    try {
-      const { data } = await listCustomerProfiles({ page: 1, limit: 200 })
-      setRows(data)
-    } catch (err) {
-      message.error(bizErrorMessage(err))
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    load()
-    listUsers({ page: 1, limit: 200, has_role: 'true' })
-      .then((d: any) => setStaffs(d?.rows ?? []))
-      .catch(() => undefined)
-    listTreatmentPackages({ page: 1, limit: 200 })
-      .then((pkgs: any) => {
-        const m: Record<string, string> = {}
-        for (const p of pkgs ?? []) m[p.id] = p.name
-        setPackageNames(m)
-      })
-      .catch(() => undefined)
-  }, [load])
+  const profilesQuery = useGetCustomerProfiles()
+  const staffsQuery = useGetUsers({ currentPage: '1', pageSize: '200', IsAdmin: 'true' })
+  const treatmentsQuery = useGetCustomerTreatments()
+  const packagesQuery = useGetTreatmentPackages()
+  const summaryMutation = usePutCustomerProfilesId()
+  const rows = (((profilesQuery.data?.responseData ?? (profilesQuery.data as any)?.data ?? []) as HealthRow[]))
+  const staffs = (((staffsQuery.data?.responseData ?? {}) as { rows?: { id: string; zalo_name?: string; email?: string }[] }).rows ?? [])
+  const allTreatments = (((treatmentsQuery.data?.responseData ?? (treatmentsQuery.data as any)?.data ?? []) as CustomerTreatment[]))
+  const detailTreatments = detail ? allTreatments.filter((treatment) => treatment.customer_profile_id === detail.id) : []
+  const packageRows = (((packagesQuery.data?.responseData ?? (packagesQuery.data as any)?.data ?? []) as { id: string; name: string }[]))
+  const packageNames = Object.fromEntries(packageRows.map((pkg) => [pkg.id, pkg.name]))
+  const loading = profilesQuery.isLoading
 
   const openDetail = (row: HealthRow) => {
     setDetail(row)
-    setDetailTreatments([])
-    listCustomerTreatments({ customer_profile_id: row.id, limit: 50 })
-      .then(setDetailTreatments)
-      .catch(() => undefined)
   }
 
   const list = useMemo(
@@ -176,12 +165,12 @@ export default function HealthRecords() {
       checked_date: values.checked_date?.format?.('YYYY-MM-DD'),
     }
     try {
-      await updateCustomerProfile(editing.id, { custom_fields: custom_fields as Record<string, unknown> })
+      await summaryMutation.mutateAsync({ id: editing.id, data: { custom_fields: custom_fields as Record<string, unknown> } })
       message.success('Đã cập nhật sổ sức khỏe')
       setOpen(false)
-      load()
+      await profilesQuery.refetch()
     } catch (err) {
-      message.error(bizErrorMessage(err))
+      message.error(err instanceof Error ? err.message : 'Không thể cập nhật sổ sức khỏe')
     }
   }
 
@@ -460,7 +449,7 @@ export default function HealthRecords() {
                             whiteSpace: 'nowrap',
                           }}
                         >
-                          {packageNames[t.package_id] ?? 'Gói liệu trình'}
+                          {t.package_id ? packageNames[t.package_id] ?? 'Gói liệu trình' : 'Gói liệu trình'}
                         </div>
                         <div style={{ fontSize: 12, color: '#8A938E' }}>
                           {t.quota_type === 'SESSIONS'

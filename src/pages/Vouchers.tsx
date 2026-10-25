@@ -1,10 +1,19 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Button, DatePicker, Form, Input, InputNumber, Modal, Popconfirm, Select, Space, Switch, Table, Tag, Typography, message } from 'antd'
 import { PlusOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import PageTitle from '../components/base/PageTitle'
-import { bizErrorMessage, createVoucher, deleteVoucher, listVouchers, updateVoucher } from '../api/newsky'
-import type { VoucherRow } from '../api/newsky'
+import { useDeleteVouchersId, useGetVouchers, usePostVouchers, usePutVouchersId } from '../api/endpoints/vouchers'
+
+interface VoucherRow {
+  id: string
+  title: string
+  required_points?: number
+  type?: number
+  start_date?: string
+  end_date?: string
+  is_active?: boolean
+}
 
 /** type theo contract BE: hạng thẻ được áp dụng (0=Tất cả, 1=Silver, 2=Gold, 3=Diamond, 4=VIP) */
 const TYPE_LABEL: Record<number, string> = {
@@ -16,27 +25,16 @@ const TYPE_LABEL: Record<number, string> = {
 }
 
 export default function Vouchers() {
-  const [rows, setRows] = useState<VoucherRow[]>([])
-  const [loading, setLoading] = useState(false)
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<VoucherRow | null>(null)
   const [form] = Form.useForm()
-
-  const load = useCallback(async () => {
-    setLoading(true)
-    try {
-      const data = await listVouchers({ page: 1, limit: 100 })
-      setRows(data?.rows ?? (Array.isArray(data) ? data : []))
-    } catch (err) {
-      message.error(bizErrorMessage(err))
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    load()
-  }, [load])
+  const vouchersQuery = useGetVouchers({ currentPage: 1, pageSize: 100 })
+  const createMutation = usePostVouchers()
+  const updateMutation = usePutVouchersId()
+  const deleteMutation = useDeleteVouchersId()
+  const responseData = (vouchersQuery.data?.responseData ?? {}) as { rows?: VoucherRow[] }
+  const rows = responseData.rows ?? []
+  const loading = vouchersQuery.isLoading
 
   const openModal = (voucher?: VoucherRow) => {
     setEditing(voucher ?? null)
@@ -61,26 +59,26 @@ export default function Vouchers() {
     }
     try {
       if (editing) {
-        await updateVoucher(editing.id, payload)
+        await updateMutation.mutateAsync({ id: editing.id, data: payload })
         message.success('Đã cập nhật voucher')
       } else {
-        await createVoucher(payload)
+        await createMutation.mutateAsync({ data: payload })
         message.success('Đã thêm voucher')
       }
       setOpen(false)
-      load()
+      await vouchersQuery.refetch()
     } catch (err) {
-      message.error(bizErrorMessage(err))
+      message.error(err instanceof Error ? err.message : 'Không thể lưu voucher')
     }
   }
 
   const remove = async (row: VoucherRow) => {
     try {
-      await deleteVoucher(row.id)
+      await deleteMutation.mutateAsync({ id: row.id })
       message.success('Đã xóa voucher')
-      load()
+      await vouchersQuery.refetch()
     } catch (err) {
-      message.error(bizErrorMessage(err))
+      message.error(err instanceof Error ? err.message : 'Không thể xóa voucher')
     }
   }
 

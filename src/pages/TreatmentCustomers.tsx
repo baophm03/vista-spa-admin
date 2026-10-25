@@ -2,30 +2,44 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import { Button, Card, Col, DatePicker, Divider, Empty, Form, Image, Input, InputNumber, Modal, Popconfirm, Progress, Row, Segmented, Select, Space, Spin, Statistic, Table, Tabs, Tag, Tooltip, Typography, Upload, message } from 'antd'
 import { DeleteOutlined, EditOutlined, PlusOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons'
 import PageTitle from '../components/base/PageTitle'
+import { getCustomerProfiles } from '../api/endpoints/customer-profiles'
 import {
-  bizErrorMessage,
-  cancelCustomerTreatment,
-  createCustomerTreatment,
-  createTreatmentPayment,
-  createTreatmentSession,
-  createSessionPhoto,
-  completeSession,
-  deleteSession,
-  doneSession,
-  listCustomerProfiles,
-  listCustomerTreatments,
-  listSessionPhotos,
-  listTreatmentPackages,
-  listTreatmentPayments,
-  listTreatmentSessions,
-  listUsers,
-  startSession,
-  updateSession,
-  uploadFile,
-} from '../api/newsky'
-import type { CustomerProfile, CustomerTreatment, TreatmentPackage } from '../api/newsky'
-import { getMyInfo } from '../api/auth'
+  getCustomerTreatments,
+  getCustomerTreatmentsIdPayments,
+  getCustomerTreatmentsIdSessions,
+  postCustomerTreatments,
+  postCustomerTreatmentsIdPayments,
+  postCustomerTreatmentsIdSessions,
+  putCustomerTreatmentsIdCancel,
+} from '../api/endpoints/customer-treatments'
+import { postFiles } from '../api/endpoints/files'
+import { putSessionsId, putSessionsIdComplete, putSessionsIdDone, putSessionsIdStart, postSessionsIdPhotos, getSessionsIdPhotos, deleteSessionsId } from '../api/endpoints/sessions'
+import { getTreatmentPackages } from '../api/endpoints/treatment-packages'
+import { getUsers } from '../api/endpoints/users'
+import { useGetUsersGetMyInfo } from '../api/endpoints/users'
 import dayjs from 'dayjs'
+
+interface CustomerProfile { id: string; full_name: string; phone: string; user_id?: string; branch_id?: string }
+interface CustomerTreatment {
+  id: string
+  customer_profile_id: string
+  package_id: string
+  quota_type?: string
+  status?: string
+  sessions_total?: number
+  sessions_used?: number
+  total_amount?: number
+  paid_amount?: number
+  debt_amount: number
+  value_used?: number
+  value_total?: number
+  progress_percent?: number
+  customer_profile?: { full_name?: string; phone?: string }
+  package_type?: { name?: string }
+}
+interface TreatmentPackage { id: string; name: string; quota_type?: string; total_sessions?: number; list_price?: number; is_active?: boolean }
+const unwrapOrval = <T,>(response: any): T => (response?.responseData ?? response?.data ?? response) as T
+const apiErrorMessage = (error: unknown) => (error instanceof Error ? error.message : 'Có lỗi xảy ra')
 
 const QUOTA_LABEL: Record<string, string> = {
   SESSIONS: 'Theo số buổi',
@@ -142,12 +156,12 @@ function SessionPhotos({
           showUploadList={false}
           beforeUpload={async (file) => {
             try {
-              const uploaded = await uploadFile(file)
-              await createSessionPhoto(sessionId, { url: uploaded.original, kind })
+              const uploaded = unwrapOrval<{ original?: string }>(await postFiles({ file }))
+              await postSessionsIdPhotos(sessionId, { url: uploaded.original, kind })
               message.success('Đã thêm ảnh')
               onChanged()
             } catch (err) {
-              message.error(bizErrorMessage(err))
+              message.error(apiErrorMessage(err))
             }
             return false
           }}
@@ -230,14 +244,14 @@ function SessionTimeline({
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const rows = (await listTreatmentSessions(ctId)) as unknown as SessionRow[]
+      const rows = unwrapOrval<SessionRow[]>(await getCustomerTreatmentsIdSessions(ctId))
       setSessions(rows)
       const entries = await Promise.all(
-        rows.map(async (s) => [s.id, (await listSessionPhotos(s.id)) as unknown as PhotoRow[]] as const),
+        rows.map(async (s) => [s.id, unwrapOrval<PhotoRow[]>(await getSessionsIdPhotos(s.id))] as const),
       )
       setPhotos(Object.fromEntries(entries))
     } catch (err) {
-      message.error(bizErrorMessage(err))
+      message.error(apiErrorMessage(err))
     } finally {
       setLoading(false)
     }
@@ -254,7 +268,7 @@ function SessionTimeline({
       load()
       onChanged?.()
     } catch (err) {
-      message.error(bizErrorMessage(err))
+      message.error(apiErrorMessage(err))
     }
   }
 
@@ -276,7 +290,7 @@ function SessionTimeline({
     const values = await editForm.validateFields()
     await act(
       () =>
-        updateSession(editOpen!.id, {
+        putSessionsId(editOpen!.id, {
           ...values,
           scheduled_at: values.scheduled_at ? values.scheduled_at.toISOString() : null,
         }),
@@ -369,19 +383,19 @@ function SessionTimeline({
                           type="primary"
                           ghost
                           disabled={!canStart(s)}
-                          onClick={() => act(() => startSession(s.id), 'Đã bắt đầu buổi')}
+                          onClick={() => act(() => putSessionsIdStart(s.id, {}), 'Đã bắt đầu buổi')}
                         >
                           Bắt đầu
                         </Button>
                       </Tooltip>
                     )}
                     {s.status === 'in_progress' && (
-                      <Button onClick={() => act(() => doneSession(s.id), 'Đã thực hiện xong')}>
+                      <Button onClick={() => act(() => putSessionsIdDone(s.id, {}), 'Đã thực hiện xong')}>
                         Đã làm
                       </Button>
                     )}
                     {s.status === 'done' && (
-                      <Button type="primary" onClick={() => act(() => completeSession(s.id), 'Đã hoàn tất buổi')}>
+                      <Button type="primary" onClick={() => act(() => putSessionsIdComplete(s.id, {}), 'Đã hoàn tất buổi')}>
                         Hoàn tất
                       </Button>
                     )}
@@ -391,7 +405,7 @@ function SessionTimeline({
                       </Button>
                     )}
                     {s.status === 'scheduled' && (
-                      <Popconfirm title="Xóa buổi này?" okText="Xóa" cancelText="Hủy" onConfirm={() => act(() => deleteSession(s.id), 'Đã xóa buổi')}>
+                      <Popconfirm title="Xóa buổi này?" okText="Xóa" cancelText="Hủy" onConfirm={() => act(() => deleteSessionsId(s.id), 'Đã xóa buổi')}>
                         <Button danger icon={<DeleteOutlined />} />
                       </Popconfirm>
                     )}
@@ -514,6 +528,7 @@ function SessionTimeline({
 }
 
 export default function TreatmentCustomers() {
+  const myInfoQuery = useGetUsersGetMyInfo()
   const [rows, setRows] = useState<CustomerTreatment[]>([])
   const [profiles, setProfiles] = useState<CustomerProfile[]>([])
   const [packages, setPackages] = useState<TreatmentPackage[]>([])
@@ -535,9 +550,9 @@ export default function TreatmentCustomers() {
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      setRows(await listCustomerTreatments())
+      setRows(unwrapOrval<CustomerTreatment[]>(await getCustomerTreatments()))
     } catch (err) {
-      message.error(bizErrorMessage(err))
+      message.error(apiErrorMessage(err))
     } finally {
       setLoading(false)
     }
@@ -545,19 +560,19 @@ export default function TreatmentCustomers() {
 
   useEffect(() => {
     load()
-    getMyInfo()
-      .then((me: any) => setIsAdmin(!!me?.is_admin))
-      .catch(() => undefined)
-    listCustomerProfiles({ page: 1, limit: 200 }).then(({ data }) => setProfiles(data)).catch(() => undefined)
-    listTreatmentPackages().then(setPackages).catch(() => undefined)
-    listUsers({ page: 1, limit: 200 })
+    const me = (myInfoQuery.data?.responseData ?? (myInfoQuery.data as any)?.data ?? {}) as { is_admin?: boolean }
+    setIsAdmin(!!me.is_admin)
+    getCustomerProfiles().then((response) => setProfiles(unwrapOrval<CustomerProfile[]>(response))).catch(() => undefined)
+    getTreatmentPackages().then((response) => setPackages(unwrapOrval<TreatmentPackage[]>(response))).catch(() => undefined)
+    getUsers({ currentPage: '1', pageSize: '200' })
       .then((data: any) => {
+        const staffRows = unwrapOrval<{ rows?: any[] }>(data).rows ?? []
         setStaffOptions(
-          (data?.rows ?? []).map((u: any) => ({ value: u.id, label: u.zalo_name || u.email || u.id })),
+          staffRows.map((u: any) => ({ value: u.id, label: u.zalo_name || u.email || u.id })),
         )
       })
       .catch(() => undefined)
-  }, [load])
+  }, [load, myInfoQuery.data])
 
   const profileOf = (id: string) => profiles.find((p) => p.id === id)
   const profileName = (row: CustomerTreatment) =>
@@ -589,8 +604,8 @@ export default function TreatmentCustomers() {
   const openDetail = (row: CustomerTreatment) => {
     setDetail(row)
     setPayLoading(true)
-    listTreatmentPayments(row.id)
-      .then((data) => setPayments(data as unknown as PaymentRow[]))
+    getCustomerTreatmentsIdPayments(row.id)
+      .then((data) => setPayments(unwrapOrval<PaymentRow[]>(data)))
       .catch(() => setPayments([]))
       .finally(() => setPayLoading(false))
   }
@@ -600,11 +615,11 @@ export default function TreatmentCustomers() {
   const custTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   /** Search khách phía server (BE hỗ trợ ?q=) — debounce 300ms */
-  const fetchCustomerOptions = useCallback((q: string) => {
+  const fetchCustomerOptions = useCallback((_q: string) => {
     if (custTimer.current) clearTimeout(custTimer.current)
     custTimer.current = setTimeout(() => {
-      listCustomerProfiles({ page: 1, limit: 50, ...(q ? { q } : {}) })
-        .then(({ data }) => setCustomerOptions(data))
+      getCustomerProfiles()
+        .then((response) => setCustomerOptions(unwrapOrval<CustomerProfile[]>(response)))
         .catch(() => undefined)
     }, 300)
   }, [])
@@ -614,8 +629,8 @@ export default function TreatmentCustomers() {
     setOpen(true)
     // Fetch mới mỗi lần mở — gói vừa tạo ở chỗ khác cũng hiện ngay
     setFormLoading(true)
-    listTreatmentPackages()
-      .then(setPackages)
+    getTreatmentPackages()
+      .then((response) => setPackages(unwrapOrval<TreatmentPackage[]>(response)))
       .catch(() => undefined)
       .finally(() => setFormLoading(false))
     fetchCustomerOptions('')
@@ -629,47 +644,47 @@ export default function TreatmentCustomers() {
   const submit = async () => {
     const values = await form.validateFields()
     try {
-      await createCustomerTreatment(values)
+      await postCustomerTreatments(values)
       message.success('Đã thêm khách vào liệu trình')
       setOpen(false)
       load()
     } catch (err) {
-      message.error(bizErrorMessage(err))
+      message.error(apiErrorMessage(err))
     }
   }
 
   const addSession = async (row: CustomerTreatment) => {
     try {
-      await createTreatmentSession(row.id, {})
+      await postCustomerTreatmentsIdSessions(row.id, {})
       message.success('Đã tạo buổi mới — bấm vào dòng để gán lịch & KTV')
       load()
     } catch (err) {
-      message.error(bizErrorMessage(err))
+      message.error(apiErrorMessage(err))
     }
   }
 
   const cancelTreatment = async (row: CustomerTreatment) => {
     try {
-      await cancelCustomerTreatment(row.id)
+      await putCustomerTreatmentsIdCancel(row.id, {})
       message.success('Đã hủy liệu trình')
       if (detail?.id === row.id) setDetail(null)
       load()
     } catch (err) {
-      message.error(bizErrorMessage(err))
+      message.error(apiErrorMessage(err))
     }
   }
 
   const submitPayment = async () => {
     const values = await payForm.validateFields()
     try {
-      await createTreatmentPayment(detail!.id, values)
+      await postCustomerTreatmentsIdPayments(detail!.id, values)
       message.success('Đã ghi nhận thanh toán')
       setPayOpen(false)
       payForm.resetFields()
       openDetail(detail!)
       load()
     } catch (err) {
-      message.error(bizErrorMessage(err))
+      message.error(apiErrorMessage(err))
     }
   }
 

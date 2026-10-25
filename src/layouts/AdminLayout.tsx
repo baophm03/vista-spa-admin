@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react'
 import { ConfigProvider, Layout } from 'antd'
 import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { TOKEN_KEY, clearAuth } from '../api/client'
+import { useGetUsersGetMyInfo } from '../api/endpoints/users'
+import { clearAuth } from '../api/mutator/custom-instance'
 import { AdminHeader, AdminSidebar, getPageTitle } from '../components/layout'
+import { useAuthStore } from '../stores/auth-store'
+import { useProfileStore } from '../stores/profile-store'
 import { refreshThemeFromServer } from '../themeRuntime'
 
 const { Content } = Layout
@@ -10,6 +13,9 @@ const { Content } = Layout
 export default function AdminLayout() {
   const navigate = useNavigate()
   const location = useLocation()
+  const accessToken = useAuthStore((state) => state.accessToken)
+  const setProfile = useProfileStore((state) => state.setProfile)
+  const profileQuery = useGetUsersGetMyInfo({ query: { enabled: Boolean(accessToken) } })
   const [collapsed, setCollapsed] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
@@ -17,8 +23,14 @@ export default function AdminLayout() {
 
   useEffect(() => {
     // Chỉ gọi API khi đã có token — tránh bắn request lỗi trước khi guard redirect
-    if (localStorage.getItem(TOKEN_KEY)) refreshThemeFromServer()
-  }, [])
+    if (accessToken) refreshThemeFromServer()
+  }, [accessToken])
+
+  useEffect(() => {
+    const response = profileQuery.data
+    if (!response) return
+    setProfile((response.responseData ?? (response as any).data ?? response) as Record<string, unknown>)
+  }, [profileQuery.data, setProfile])
 
   const logout = () => {
     clearAuth()
@@ -26,7 +38,7 @@ export default function AdminLayout() {
   }
 
   // Chưa login → redirect ngay trong render, KHÔNG mount Outlet (children sẽ không chạy effect/fetch API)
-  if (!localStorage.getItem(TOKEN_KEY)) return <Navigate to="/login" replace />
+  if (!accessToken) return <Navigate to="/login" replace />
 
   return (
     <ConfigProvider

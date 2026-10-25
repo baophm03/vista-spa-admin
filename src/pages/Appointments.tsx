@@ -1,24 +1,40 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Button, DatePicker, Form, Input, Modal, Popconfirm, Select, Space, Table, Tag, Typography, message } from 'antd'
 import { CheckOutlined, CloseOutlined, PlusOutlined, ReloadOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import PageTitle from '../components/base/PageTitle'
 import {
-  approveAppointment,
-  bizErrorMessage,
-  cancelAppointment,
-  completeAppointment,
-  createAppointment,
-  listAppointments,
-  listAvailableSlots,
-  listCustomerProfiles,
-  listServices,
-  listUsers,
-  rejectAppointment,
-  rescheduleAppointment,
-  startAppointment,
-} from '../api/newsky'
-import type { Appointment, AppointmentStatus, CustomerProfile } from '../api/newsky'
+  useGetAppointments,
+  useGetAppointmentsAvailableSlots,
+  usePostAppointments,
+  usePostAppointmentsIdComplete,
+  usePostAppointmentsIdStart,
+  usePutAppointmentsId,
+  usePutAppointmentsIdApprove,
+  usePutAppointmentsIdCancel,
+  usePutAppointmentsIdReject,
+} from '../api/endpoints/appointments'
+import { useGetCustomerProfiles } from '../api/endpoints/customer-profiles'
+import { useGetService } from '../api/endpoints/service'
+import { useGetUsers } from '../api/endpoints/users'
+
+type AppointmentStatus = 'pending' | 'approved' | 'rejected' | 'cancelled' | 'in_progress' | 'completed'
+interface CustomerProfile { id: string; branch_id?: string; full_name: string; phone: string }
+interface Appointment {
+  id: string
+  customer_profile_id: string
+  service_id: string
+  staff_id?: string
+  branch_id?: string
+  appt_date: string
+  start_time: string
+  note?: string
+  status: AppointmentStatus
+  customer_profile?: CustomerProfile
+  service?: { title?: string }
+  staff?: { zalo_name?: string }
+  created_via?: string
+}
 
 const STATUS_META: Record<AppointmentStatus, { label: string; color: string }> = {
   pending: { label: 'Chờ duyệt', color: 'orange' },
@@ -40,50 +56,34 @@ const FILTERS = [
 ]
 
 export default function Appointments() {
-  const [rows, setRows] = useState<Appointment[]>([])
-  const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
   const [limit] = useState(10)
   const [filter, setFilter] = useState('all')
-  const [loading, setLoading] = useState(false)
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<Appointment | null>(null)
-  const [profiles, setProfiles] = useState<CustomerProfile[]>([])
-  const [services, setServices] = useState<{ id: string; title: string }[]>([])
-  const [staffs, setStaffs] = useState<{ id: string; zalo_name?: string; email?: string }[]>([])
   const [slots, setSlots] = useState<{ start_time: string; staff_ids: string[] }[]>([])
   const [form] = Form.useForm()
-
-  const load = useCallback(async () => {
-    setLoading(true)
-    try {
-      const params: Record<string, unknown> = { page, limit }
-      if (filter !== 'all') params.status = filter
-      const { data, meta } = await listAppointments(params)
-      setRows(data)
-      setTotal(meta?.total ?? data.length)
-    } catch (err) {
-      message.error(bizErrorMessage(err))
-    } finally {
-      setLoading(false)
-    }
-  }, [page, limit, filter])
-
-  useEffect(() => {
-    load()
-  }, [load])
-
-  useEffect(() => {
-    listCustomerProfiles({ page: 1, limit: 200 })
-      .then(({ data }) => setProfiles(data))
-      .catch(() => undefined)
-    listServices()
-      .then((data: any) => setServices(Array.isArray(data) ? data : []))
-      .catch(() => undefined)
-    listUsers({ page: 1, limit: 200, has_role: 'true' })
-      .then((d: any) => setStaffs(d?.rows ?? []))
-      .catch(() => undefined)
-  }, [])
+  const appointmentsQuery = useGetAppointments()
+  const profilesQuery = useGetCustomerProfiles()
+  const servicesQuery = useGetService()
+  const usersQuery = useGetUsers({ currentPage: '1', pageSize: '200', IsAdmin: 'true' })
+  const slotsQuery = useGetAppointmentsAvailableSlots()
+  const createMutation = usePostAppointments()
+  const updateMutation = usePutAppointmentsId()
+  const approveMutation = usePutAppointmentsIdApprove()
+  const cancelMutation = usePutAppointmentsIdCancel()
+  const rejectMutation = usePutAppointmentsIdReject()
+  const startMutation = usePostAppointmentsIdStart()
+  const completeMutation = usePostAppointmentsIdComplete()
+  const appointmentData = ((appointmentsQuery.data?.responseData ?? (appointmentsQuery.data as any)?.data ?? {}) as { rows?: Appointment[]; count?: number })
+  const allRows = appointmentData.rows ?? []
+  const rows = filter === 'all' ? allRows : allRows.filter((row) => row.status === filter)
+  const total = appointmentData.count ?? rows.length
+  const profiles = (((profilesQuery.data?.responseData ?? (profilesQuery.data as any)?.data ?? []) as CustomerProfile[]))
+  const services = (((servicesQuery.data?.data?.services ?? []) as unknown as { id: string; title: string }[]))
+  const staffs = ((((usersQuery.data?.responseData ?? {}) as { rows?: { id: string; zalo_name?: string; email?: string }[] }).rows ?? []))
+  const loading = appointmentsQuery.isLoading
+  const reload = () => appointmentsQuery.refetch()
 
   const openModal = (appointment?: Appointment) => {
     setEditing(appointment ?? null)
@@ -105,18 +105,14 @@ export default function Appointments() {
 
   const loadSlots = async () => {
     const values = form.getFieldsValue()
-    const branchId = profiles.find((p) => p.id === values.customer_profile_id)?.branch_id
     if (!values.customer_profile_id || !values.service_id || !values.appt_date) return
     try {
-      const data = await listAvailableSlots({
-        branch_id: branchId as string,
-        service_id: values.service_id,
-        date: dayjs(values.appt_date).format('YYYY-MM-DD'),
-      })
-      setSlots(data)
+      const data = (slotsQuery.data?.responseData ?? (slotsQuery.data as any)?.data ?? []) as { start_time: string; staff_ids: string[] }[]
+      setSlots(Array.isArray(data) ? data : [])
+      await slotsQuery.refetch()
     } catch (err) {
       setSlots([])
-      message.warning(bizErrorMessage(err))
+      message.warning(err instanceof Error ? err.message : 'Không thể tải slot')
     }
   }
 
@@ -134,16 +130,16 @@ export default function Appointments() {
     }
     try {
       if (editing) {
-        await rescheduleAppointment(editing.id, payload)
+        await updateMutation.mutateAsync({ id: editing.id, data: payload })
         message.success('Đã cập nhật lịch hẹn')
       } else {
-        await createAppointment(payload)
+        await createMutation.mutateAsync({ data: payload })
         message.success('Đã tạo lịch hẹn')
       }
       setOpen(false)
-      load()
+      await reload()
     } catch (err) {
-      message.error(bizErrorMessage(err))
+      message.error(err instanceof Error ? err.message : 'Không thể lưu lịch hẹn')
     }
   }
 
@@ -151,15 +147,15 @@ export default function Appointments() {
     try {
       await fn()
       message.success(msg)
-      load()
+      await reload()
     } catch (err) {
-      message.error(bizErrorMessage(err))
+      message.error(err instanceof Error ? err.message : 'Không thể cập nhật lịch hẹn')
     }
   }
 
   const approve = (row: Appointment) => {
     if (row.staff_id) {
-      doAction(() => approveAppointment(row.id, { staff_id: row.staff_id }), 'Đã duyệt')
+      doAction(() => approveMutation.mutateAsync({ id: row.id, data: { staff_id: row.staff_id } }), 'Đã duyệt')
       return
     }
     // BE bắt buộc staff_id khi duyệt — bắt chọn KTV trước
@@ -183,7 +179,7 @@ export default function Appointments() {
           message.warning('Cần chọn KTV để duyệt')
           return Promise.reject(new Error('no staff'))
         }
-        return doAction(() => approveAppointment(row.id, { staff_id: staffId! }), 'Đã duyệt')
+        return doAction(() => approveMutation.mutateAsync({ id: row.id, data: { staff_id: staffId! } }), 'Đã duyệt')
       },
     })
   }
@@ -200,7 +196,7 @@ export default function Appointments() {
           }}
         />
       ),
-      onOk: () => doAction(() => rejectAppointment(row.id, reason), 'Đã từ chối'),
+      onOk: () => doAction(() => rejectMutation.mutateAsync({ id: row.id, data: { reason } }), 'Đã từ chối'),
     })
   }
 
@@ -211,7 +207,7 @@ export default function Appointments() {
       <PageTitle
         extra={
           <Space className="max-sm:flex! max-sm:w-full! max-sm:flex-wrap!">
-            <Button icon={<ReloadOutlined />} onClick={load} />
+            <Button icon={<ReloadOutlined />} onClick={reload} />
             <Select
               value={filter}
               onChange={(v) => {
@@ -230,7 +226,7 @@ export default function Appointments() {
       >
         Lịch hẹn
       </PageTitle>
-      <Table
+      <Table<Appointment>
         rowKey="id"
         loading={loading}
         dataSource={list}
@@ -283,10 +279,10 @@ export default function Appointments() {
                 )}
                 {row.status === 'approved' && (
                   <>
-                    <Button size="small" onClick={() => doAction(() => startAppointment(row.id), 'Đã bắt đầu')}>
+                    <Button size="small" onClick={() => doAction(() => startMutation.mutateAsync({ id: row.id, data: {} }), 'Đã bắt đầu')}>
                       Bắt đầu
                     </Button>
-                    <Popconfirm title="Hủy lịch hẹn này?" onConfirm={() => doAction(() => cancelAppointment(row.id), 'Đã hủy')}>
+                    <Popconfirm title="Hủy lịch hẹn này?" onConfirm={() => doAction(() => cancelMutation.mutateAsync({ id: row.id, data: {} }), 'Đã hủy')}>
                       <Button size="small" danger>
                         Hủy
                       </Button>
@@ -294,7 +290,7 @@ export default function Appointments() {
                   </>
                 )}
                 {row.status === 'in_progress' && (
-                  <Button size="small" type="primary" onClick={() => doAction(() => completeAppointment(row.id), 'Đã hoàn tất')}>
+                  <Button size="small" type="primary" onClick={() => doAction(() => completeMutation.mutateAsync({ id: row.id, data: {} }), 'Đã hoàn tất')}>
                     Hoàn tất
                   </Button>
                 )}

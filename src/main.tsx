@@ -1,11 +1,14 @@
 import React, { useMemo, useSyncExternalStore } from 'react'
 import ReactDOM from 'react-dom/client'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ConfigProvider, Empty } from 'antd'
 import viVN from 'antd/locale/vi_VN'
 import { theme } from './theme'
 import { getPrimaryColor, subscribeTheme } from './themeRuntime'
 import App from './App'
 import './index.css'
+
+const queryClient = new QueryClient()
 
 function Root() {
   const primary = useSyncExternalStore(subscribeTheme, getPrimaryColor)
@@ -22,7 +25,9 @@ function Root() {
       theme={merged}
       renderEmpty={() => <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Chưa có dữ liệu" />}
     >
-      <App />
+      <QueryClientProvider client={queryClient}>
+        <App />
+      </QueryClientProvider>
     </ConfigProvider>
   )
 }

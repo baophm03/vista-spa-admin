@@ -1,16 +1,27 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Button, Form, Input, InputNumber, Modal, Popconfirm, Select, Space, Switch, Table, Tag, message } from 'antd'
 import { PlusOutlined } from '@ant-design/icons'
 import PageTitle from '../components/base/PageTitle'
+import { useGetBranches } from '../api/endpoints/branches'
 import {
-  bizErrorMessage,
-  createTreatmentPackage,
-  deleteTreatmentPackage,
-  listBranches,
-  listTreatmentPackages,
-  updateTreatmentPackage,
-} from '../api/newsky'
-import type { Branch, TreatmentPackage } from '../api/newsky'
+  useDeleteTreatmentPackagesId,
+  useGetTreatmentPackages,
+  usePostTreatmentPackages,
+  usePutTreatmentPackagesId,
+} from '../api/endpoints/treatment-packages'
+
+interface Branch { id: string; name: string }
+interface TreatmentPackage {
+  id: string
+  branch_id?: string
+  name: string
+  description?: string
+  quota_type?: 'SESSIONS' | 'VALUE' | 'UNLIMITED'
+  total_sessions?: number
+  total_value?: number
+  list_price?: number
+  is_active?: boolean
+}
 
 const QUOTA_LABEL: Record<string, string> = {
   SESSIONS: 'Theo số buổi',
@@ -19,28 +30,17 @@ const QUOTA_LABEL: Record<string, string> = {
 }
 
 export default function Treatments() {
-  const [rows, setRows] = useState<TreatmentPackage[]>([])
-  const [branches, setBranches] = useState<Branch[]>([])
-  const [loading, setLoading] = useState(false)
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<TreatmentPackage | null>(null)
   const [form] = Form.useForm()
-
-  const load = useCallback(async () => {
-    setLoading(true)
-    try {
-      setRows(await listTreatmentPackages())
-    } catch (err) {
-      message.error(bizErrorMessage(err))
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    load()
-    listBranches().then(setBranches).catch(() => undefined)
-  }, [load])
+  const packagesQuery = useGetTreatmentPackages()
+  const branchesQuery = useGetBranches()
+  const createMutation = usePostTreatmentPackages()
+  const updateMutation = usePutTreatmentPackagesId()
+  const deleteMutation = useDeleteTreatmentPackagesId()
+  const rows = (((packagesQuery.data?.responseData ?? (packagesQuery.data as any)?.data ?? []) as TreatmentPackage[]))
+  const branches = (((branchesQuery.data?.responseData ?? (branchesQuery.data as any)?.data ?? []) as Branch[]))
+  const loading = packagesQuery.isLoading
 
   const openModal = (t?: TreatmentPackage) => {
     setEditing(t ?? null)
@@ -62,26 +62,26 @@ export default function Treatments() {
     const values = await form.validateFields()
     try {
       if (editing) {
-        await updateTreatmentPackage(editing.id, values)
+        await updateMutation.mutateAsync({ id: editing.id, data: values })
         message.success('Đã cập nhật liệu trình')
       } else {
-        await createTreatmentPackage(values)
+        await createMutation.mutateAsync({ data: values })
         message.success('Đã thêm liệu trình')
       }
       setOpen(false)
-      load()
+      await packagesQuery.refetch()
     } catch (err) {
-      message.error(bizErrorMessage(err))
+      message.error(err instanceof Error ? err.message : 'Không thể lưu liệu trình')
     }
   }
 
   const remove = async (row: TreatmentPackage) => {
     try {
-      await deleteTreatmentPackage(row.id)
+      await deleteMutation.mutateAsync({ id: row.id })
       message.success('Đã xóa liệu trình')
-      load()
+      await packagesQuery.refetch()
     } catch (err) {
-      message.error(bizErrorMessage(err))
+      message.error(err instanceof Error ? err.message : 'Không thể xóa liệu trình')
     }
   }
 

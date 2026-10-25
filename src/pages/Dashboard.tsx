@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useMemo } from 'react'
 import { Card, Col, Empty, Row, Statistic, Table, Tag, Typography } from 'antd'
 import {
   CalendarOutlined,
@@ -21,8 +21,18 @@ import {
 } from 'recharts'
 import dayjs from 'dayjs'
 import PageTitle from '../components/base/PageTitle'
-import { listAppointments, listCustomerProfiles, reportAppointments, reportRanks, reportRevenue } from '../api/newsky'
-import type { Appointment } from '../api/newsky'
+import { useGetAppointments } from '../api/endpoints/appointments'
+import { useGetCustomerProfiles } from '../api/endpoints/customer-profiles'
+import { useGetReportsAppointments, useGetReportsRanks, useGetReportsRevenue } from '../api/endpoints/reports'
+
+interface Appointment {
+  id: string
+  appt_date: string
+  start_time: string
+  status: string
+  customer_profile?: { full_name?: string }
+  service?: { title?: string }
+}
 import { useBrandColors } from '../themeRuntime'
 
 const tooltipStyle = {
@@ -55,39 +65,24 @@ const STATUS_MAP: Record<string, { label: string; color: string }> = {
 export default function Dashboard() {
   const brand = useBrandColors()
   const rankColors = [brand.primary, '#D9A441', '#3B5BDB', '#16A34A', '#E06666']
-  const [totalCustomers, setTotalCustomers] = useState<number | null>(null)
-  const [revenueData, setRevenueData] = useState<{ period: string; revenue: number }[]>([])
-  const [rankData, setRankData] = useState<{ name: string; value: number }[]>([])
-  const [apptStatus, setApptStatus] = useState<Record<string, number>>({})
-  const [recent, setRecent] = useState<Appointment[]>([])
-
-  useEffect(() => {
-    const today = dayjs().format('YYYY-MM-DD')
-    const from = dayjs().subtract(6, 'month').format('YYYY-MM-DD')
-    listCustomerProfiles({ page: 1, limit: 1 })
-      .then(({ meta }) => setTotalCustomers(meta?.total ?? 0))
-      .catch(() => undefined)
-    reportRevenue({ from_date: from, to_date: today, group_by: 'month' })
-      .then((rows: any) => {
-        const merged = new Map<string, number>()
-        for (const r of rows as any[]) merged.set(r.period, (merged.get(r.period) ?? 0) + Number(r.revenue))
-        setRevenueData([...merged.entries()].map(([period, revenue]) => ({ period, revenue: revenue / 1_000_000 })))
-      })
-      .catch(() => undefined)
-    reportRanks({})
-      .then((rows: any) => setRankData((rows as any[]).filter((r) => Number(r.member_count) > 0).map((r) => ({ name: r.rank_name, value: Number(r.member_count) }))))
-      .catch(() => undefined)
-    reportAppointments({ from_date: from, to_date: today })
-      .then((r: any) => {
-        const map: Record<string, number> = {}
-        for (const s of r.by_status ?? []) map[s.status] = Number(s.count)
-        setApptStatus(map)
-      })
-      .catch(() => undefined)
-    listAppointments({ page: 1, limit: 5 })
-      .then(({ data }) => setRecent(data))
-      .catch(() => undefined)
-  }, [])
+  const profilesQuery = useGetCustomerProfiles()
+  const revenueQuery = useGetReportsRevenue()
+  const ranksQuery = useGetReportsRanks()
+  const appointmentsReportQuery = useGetReportsAppointments()
+  const appointmentsQuery = useGetAppointments()
+  const totalCustomers = ((profilesQuery.data?.responseData ?? (profilesQuery.data as any)?.data ?? {}) as { count?: number }).count ?? null
+  const revenueRows = ((revenueQuery.data?.responseData ?? (revenueQuery.data as any)?.data ?? []) as any[])
+  const revenueData = useMemo(() => {
+    const merged = new Map<string, number>()
+    for (const row of Array.isArray(revenueRows) ? revenueRows : []) merged.set(row.period, (merged.get(row.period) ?? 0) + Number(row.revenue))
+    return [...merged.entries()].map(([period, revenue]) => ({ period, revenue: revenue / 1_000_000 }))
+  }, [revenueQuery.data])
+  const rankRows = ((ranksQuery.data?.responseData ?? (ranksQuery.data as any)?.data ?? []) as any[])
+  const rankData = (Array.isArray(rankRows) ? rankRows : []).filter((row) => Number(row.member_count) > 0).map((row) => ({ name: row.rank_name, value: Number(row.member_count) }))
+  const reportData = ((appointmentsReportQuery.data?.responseData ?? (appointmentsReportQuery.data as any)?.data ?? {}) as { by_status?: { status: string; count: number }[] })
+  const apptStatus = Object.fromEntries((reportData.by_status ?? []).map((row) => [row.status, Number(row.count)]))
+  const appointmentData = ((appointmentsQuery.data?.responseData ?? (appointmentsQuery.data as any)?.data ?? {}) as { rows?: Appointment[]; data?: Appointment[] })
+  const recent = (appointmentData.rows ?? appointmentData.data ?? []).slice(0, 5)
 
   const pendingCount = apptStatus['pending'] ?? 0
   const totalRevenue = revenueData.reduce((s, r) => s + r.revenue, 0)
@@ -208,7 +203,7 @@ export default function Dashboard() {
       </Row>
 
       <Card title="Lịch hẹn gần đây">
-        <Table
+        <Table<Appointment>
           rowKey="id"
           dataSource={recent}
           pagination={false}

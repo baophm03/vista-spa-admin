@@ -1,15 +1,14 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Button, Card, Col, Form, Input, InputNumber, Modal, Popconfirm, Row, Select, Space, Table, Tag, Typography, message } from 'antd'
 import { ReloadOutlined } from '@ant-design/icons'
 import PageTitle from '../components/base/PageTitle'
+import { useGetCardRanks } from '../api/endpoints/card-ranks'
 import {
-  adjustPoints,
-  bizErrorMessage,
-  listCardRanks,
-  listUsers,
-  overrideRank,
-  recalculateMembership,
-} from '../api/newsky'
+  usePostMembershipsUserIdPointsAdjust,
+  usePostMembershipsUserIdRankOverride,
+  usePostMembershipsUserIdRecalculate,
+} from '../api/endpoints/memberships'
+import { useGetUsers } from '../api/endpoints/users'
 
 interface RankRow {
   id: string
@@ -37,75 +36,61 @@ interface MemberRow {
 }
 
 export default function Points() {
-  const [ranks, setRanks] = useState<RankRow[]>([])
-  const [rows, setRows] = useState<MemberRow[]>([])
-  const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
   const [limit] = useState(10)
-  const [loading, setLoading] = useState(false)
   const [adjusting, setAdjusting] = useState<MemberRow | null>(null)
   const [form] = Form.useForm()
-
-  const load = useCallback(async () => {
-    setLoading(true)
-    try {
-      const data = await listUsers({ page, limit })
-      const members = (data?.rows ?? []).filter((u: MemberRow) => u.membership)
-      setRows(members)
-      setTotal(data?.count ?? members.length)
-    } catch (err) {
-      message.error(bizErrorMessage(err))
-    } finally {
-      setLoading(false)
-    }
-  }, [page, limit])
-
-  useEffect(() => {
-    load()
-    listCardRanks()
-      .then((d: any) => setRanks((Array.isArray(d) ? d : []).sort((a: RankRow, b: RankRow) => a.sort_order - b.sort_order)))
-      .catch(() => undefined)
-  }, [load])
+  const usersQuery = useGetUsers({ currentPage: String(page), pageSize: String(limit) })
+  const ranksQuery = useGetCardRanks()
+  const adjustMutation = usePostMembershipsUserIdPointsAdjust()
+  const overrideMutation = usePostMembershipsUserIdRankOverride()
+  const recalcMutation = usePostMembershipsUserIdRecalculate()
+  const usersData = (usersQuery.data?.responseData ?? (usersQuery.data as any)?.data ?? {}) as { rows?: MemberRow[]; count?: number }
+  const rows = (usersData.rows ?? []).filter((user) => user.membership)
+  const total = usersData.count ?? rows.length
+  const ranksData = (ranksQuery.data?.responseData ?? (ranksQuery.data as any)?.data ?? []) as RankRow[]
+  const ranks = Array.isArray(ranksData) ? [...ranksData].sort((a, b) => a.sort_order - b.sort_order) : []
+  const loading = usersQuery.isLoading
 
   const rankName = (id?: string) => ranks.find((r) => r.id === id)?.name ?? '—'
 
   const submitAdjust = async () => {
     const values = await form.validateFields()
     try {
-      await adjustPoints(adjusting!.id, { delta: values.delta, reason: values.reason })
+      await adjustMutation.mutateAsync({ userId: adjusting!.id, data: { delta: values.delta, reason: values.reason } })
       message.success('Đã điều chỉnh điểm')
       setAdjusting(null)
       form.resetFields()
-      load()
+      await usersQuery.refetch()
     } catch (err) {
-      message.error(bizErrorMessage(err))
+      message.error(err instanceof Error ? err.message : 'Không thể điều chỉnh điểm')
     }
   }
 
   const doOverride = async (row: MemberRow, rankId: string) => {
     try {
-      await overrideRank(row.id, { rank_id: rankId, reason: 'Gán hạng bởi admin' })
+      await overrideMutation.mutateAsync({ userId: row.id, data: { rank_id: rankId, reason: 'Gán hạng bởi admin' } })
       message.success('Đã gán hạng mới')
-      load()
+      await usersQuery.refetch()
     } catch (err) {
-      message.error(bizErrorMessage(err))
+      message.error(err instanceof Error ? err.message : 'Không thể gán hạng')
     }
   }
 
   const doRecalc = async (row: MemberRow) => {
     try {
-      await recalculateMembership(row.id)
+      await recalcMutation.mutateAsync({ userId: row.id, data: {} })
       message.success('Đã tính lại hạng')
-      load()
+      await usersQuery.refetch()
     } catch (err) {
-      message.error(bizErrorMessage(err))
+      message.error(err instanceof Error ? err.message : 'Không thể tính lại hạng')
     }
   }
 
   return (
     <>
       <PageTitle
-        extra={<Button icon={<ReloadOutlined />} onClick={load} className="max-sm:w-full" />}
+        extra={<Button icon={<ReloadOutlined />} onClick={() => usersQuery.refetch()} className="max-sm:w-full" />}
       >
         Điểm & Hạng thành viên
       </PageTitle>
