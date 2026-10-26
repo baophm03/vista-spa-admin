@@ -148,3 +148,41 @@ body {
     position: static;
   }
 }
+
+/* ===== Modal luôn gọn trong màn hình =====
+   - Căn giữa dọc + ngang, không bao giờ cao hơn viewport → không kéo scrollbar trang.
+   - Nội dung dài hơn màn hình sẽ cuộn bên trong modal (header/footer ghim tại chỗ). */
+.ant-modal-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.ant-modal {
+  top: 0 !important;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100dvh - 32px);
+}
+
+.ant-modal .ant-modal-container {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100dvh - 32px);
+  overflow: hidden;
+}
+
+.ant-modal .ant-modal-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+@media (max-width: 767px) {
+  .ant-modal {
+    max-width: calc(100vw - 16px);
+  }
+}
