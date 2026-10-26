@@ -35,6 +35,7 @@ import { postFiles } from '@/api/endpoints/files'
 import { useGetLookupLists } from '@/api/endpoints/settings'
 import { useGetUsers } from '@/api/endpoints/users'
 import { useCustomerProfileAccess } from '@/utils/customerProfileAccess'
+import { Can } from '@casl/react'
 
 interface Slot {
   date?: string
@@ -534,7 +535,8 @@ function SessionTimeline({
                   )}
                 </Space>
                 {ctStatus === 'ACTIVE' && (
-                  <Space size={6} wrap style={{ marginLeft: 'auto' }}>
+                  <Can I="UPDATE" a="CUSTOMER">
+                    <Space size={6} wrap style={{ marginLeft: 'auto' }}>
                     {s.status === 'scheduled' && (
                       <Tooltip title={canStart(s) ? undefined : 'Hoàn tất các buổi trước theo đúng thứ tự'}>
                         <Button
@@ -567,7 +569,8 @@ function SessionTimeline({
                         <Button danger icon={<DeleteOutlined />} />
                       </Popconfirm>
                     )}
-                  </Space>
+                    </Space>
+                  </Can>
                 )}
               </div>
 
@@ -963,9 +966,11 @@ export default function TreatmentCustomers() {
         extra={
           <Space>
             <Button icon={<ReloadOutlined />} onClick={refresh} />
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
-              Thêm khách vào liệu trình
-            </Button>
+            <Can I="UPDATE" a="CUSTOMER">
+              <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
+                Thêm khách vào liệu trình
+              </Button>
+            </Can>
           </Space>
         }
       >
@@ -1110,12 +1115,13 @@ export default function TreatmentCustomers() {
             key: 'actions',
             width: 240,
             render: (_: unknown, row: CustomerTreatment) => (
-              <Space onClick={(e) => e.stopPropagation()}>
-                {row.status === 'ACTIVE' && (
-                  <Button size="small" type="primary" ghost disabled={addingSessionId !== null} loading={addingSessionId === row.id} onClick={() => addSession(row)}>
-                    +1 buổi
-                  </Button>
-                )}
+              <Can I="UPDATE" a="CUSTOMER">
+                <Space onClick={(e) => e.stopPropagation()}>
+                  {row.status === 'ACTIVE' && (
+                    <Button size="small" type="primary" ghost disabled={addingSessionId !== null} loading={addingSessionId === row.id} onClick={() => addSession(row)}>
+                      +1 buổi
+                    </Button>
+                  )}
                 {(row.debt_amount ?? 0) > 0 && row.status !== 'CANCELLED' && (
                   <Button
                     size="small"
@@ -1135,7 +1141,8 @@ export default function TreatmentCustomers() {
                     </Button>
                   </Popconfirm>
                 )}
-              </Space>
+                </Space>
+              </Can>
             ),
           },
         ].filter((column) => column.key === 'actions' || visibleColumns.includes(column.key as CustomerTreatmentColumnKey))}

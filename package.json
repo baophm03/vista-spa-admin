@@ -12,6 +12,8 @@
   },
   "dependencies": {
     "@ant-design/icons": "^6.3.4",
+    "@casl/ability": "^7.0.2",
+    "@casl/react": "^7.0.1",
     "@tanstack/react-query": "^5.90.21",
     "@zxing/browser": "^0.2.1",
     "antd": "^6.6.6",

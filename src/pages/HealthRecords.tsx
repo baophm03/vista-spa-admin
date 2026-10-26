@@ -46,6 +46,7 @@ import { getSkinTypes } from '@/api/endpoints/settings'
 import { getTreatmentPackages } from '@/api/endpoints/services'
 import { getUsers } from '@/api/endpoints/users'
 import { errorMessage, pickData } from '@/api/helpers'
+import { Can } from '@casl/react'
 
 const labelStyle = { fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#8A8D93', fontWeight: 600 }
 
@@ -398,7 +399,7 @@ export default function HealthRecords() {
         width={560}
         open={!!detail}
         onClose={() => setDetail(null)}
-        extra={detail && <Button type="primary" icon={<PlusOutlined />} onClick={() => openRecordForm(detail)}>Tạo phiếu khám</Button>}
+        extra={detail && <Can I="UPDATE" a="CUSTOMER"><Button type="primary" icon={<PlusOutlined />} onClick={() => openRecordForm(detail)}>Tạo phiếu khám</Button></Can>}
       >
         {detail && (() => {
           const current = currentHealth(detail, skinTypes)

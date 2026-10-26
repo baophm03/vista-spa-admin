@@ -12,6 +12,7 @@
 export interface RolePermission {
   id: string;
   role_id: string;
-  permission_key: string;
+  module: string;
+  action: string;
   created_at?: string;
 }

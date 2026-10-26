@@ -13,7 +13,7 @@ import {
   postIntegrationsProviderTest,
   putIntegrationsProvider,
 } from '@/api/endpoints/settings'
-import { useProfileStore } from '@/stores/profile-store'
+import { Can } from '@casl/react'
 
 interface SmtpConfig {
   host: string
@@ -38,8 +38,6 @@ function statusTag(row?: IntegrationStatus) {
 export default function IntegrationSettings() {
   const [form] = Form.useForm<SmtpConfig>()
   const queryClient = useQueryClient()
-  const profile = useProfileStore((state) => state.profile)
-  const canEdit = !!profile?.is_admin
   const query = useQuery({
     queryKey: getGetIntegrationsQueryKey(),
     queryFn: async () => (pickData<IntegrationStatus[]>(await getIntegrations()) ?? []) as IntegrationStatus[],
@@ -106,7 +104,10 @@ export default function IntegrationSettings() {
     catch (error) { message.error(errorMessage(error)) }
   }
 
+  // canEdit đọc từ CASL ability một cách reactive qua children-as-function của <Can>
   return (
+    <Can I="UPDATE" a="SETTING" passThrough>
+      {({ isAllowed: canEdit }) => (
     <>
       <PageTitle>Tích hợp dịch vụ</PageTitle>
       {!canEdit && <Alert className="mb-4" type="info" showIcon message="Chỉ ADM được xem và quản lý tích hợp." />}
@@ -168,5 +169,7 @@ export default function IntegrationSettings() {
         </Row>
       </Spin>
     </>
+      )}
+    </Can>
   )
 }

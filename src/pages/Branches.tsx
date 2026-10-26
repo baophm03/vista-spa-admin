@@ -13,7 +13,7 @@ import {
   usePostBranchesIdActivate,
   usePutBranchesId,
 } from '@/api/endpoints/branches'
-import { usePermissions } from '@/utils/permissions'
+import { Can } from '@casl/react'
 import { useQueryClient } from '@tanstack/react-query'
 
 interface BranchFormValues {
@@ -40,10 +40,6 @@ export default function Branches() {
   const [editing, setEditing] = useState<Branch | null>(null)
   const [form] = Form.useForm<BranchFormValues>()
   const queryClient = useQueryClient()
-  const { can } = usePermissions()
-  const canCreate = can('branch.create')
-  const canUpdate = can('branch.update')
-  const canDelete = can('branch.delete')
 
   const branchesQuery = useGetBranches(statusFilter === 'all' ? undefined : { status: statusFilter })
   const createMutation = usePostBranches()
@@ -190,21 +186,23 @@ export default function Branches() {
       align: 'right' as const,
       render: (_: unknown, row: Branch) => (
         <Space wrap size={6}>
-          {canUpdate && (
+          <Can I="UPDATE" a="BRANCH">
             <Button size="small" icon={<EditOutlined />} onClick={() => openEdit(row)}>
               Sửa
             </Button>
-          )}
-          {canDelete && row.is_active && (
-            <Button size="small" danger icon={<PauseCircleOutlined />} onClick={() => confirmStatusChange(row, false)}>
-              Ngừng
-            </Button>
-          )}
-          {canDelete && !row.is_active && (
-            <Button size="small" type="primary" ghost icon={<CheckCircleOutlined />} onClick={() => confirmStatusChange(row, true)}>
-              Kích hoạt
-            </Button>
-          )}
+          </Can>
+          <Can I="DELETE" a="BRANCH">
+            {row.is_active && (
+              <Button size="small" danger icon={<PauseCircleOutlined />} onClick={() => confirmStatusChange(row, false)}>
+                Ngừng
+              </Button>
+            )}
+            {!row.is_active && (
+              <Button size="small" type="primary" ghost icon={<CheckCircleOutlined />} onClick={() => confirmStatusChange(row, true)}>
+                Kích hoạt
+              </Button>
+            )}
+          </Can>
         </Space>
       ),
     },
@@ -247,11 +245,11 @@ export default function Branches() {
             onChange={(event) => setSearch(event.target.value)}
             style={{ width: 250, maxWidth: '100%' }}
           />
-          {canCreate && (
+          <Can I="CREATE" a="BRANCH">
             <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
               Thêm cơ sở
             </Button>
-          )}
+          </Can>
         </div>
 
         <Table<Branch>

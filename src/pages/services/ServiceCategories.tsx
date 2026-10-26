@@ -5,7 +5,7 @@ import { PlusOutlined, ReloadOutlined } from '@ant-design/icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import ServiceImageField from '@/components/ServiceImageField'
 import { errorMessage, pickData } from '@/api/helpers'
-import { usePermissions } from '@/utils/permissions'
+import { Can } from '@casl/react'
 import {
   deleteServiceCategoriesId,
   getGetServiceCategoriesQueryKey,
@@ -35,11 +35,6 @@ function flattenCategories(
 }
 
 export default function ServiceCategories() {
-  const { can } = usePermissions()
-  const canCreate = can('service.create')
-  const canUpdate = can('service.update')
-  const canDelete = can('service.delete')
-
   const queryClient = useQueryClient()
   const [saving, setSaving] = useState(false)
   const [editing, setEditing] = useState<ServiceCategoryRow | null>(null)
@@ -126,32 +121,36 @@ export default function ServiceCategories() {
         width: 170,
         render: (_value, row) => (
           <Space>
-            {canUpdate && (
+            <Can I="UPDATE" a="SERVICE">
               <Button size="small" onClick={() => openEditor(row)}>
                 Sửa
               </Button>
-            )}
-            {canUpdate && row.is_active === false ? (
-              <Button size="small" onClick={() => void restore(row)}>
-                Bật lại
-              </Button>
-            ) : canDelete && row.is_active !== false ? (
-              <Popconfirm
-                title="Ẩn danh mục này?"
-                description="Chỉ ẩn được khi không còn dịch vụ hoặc danh mục con đang hoạt động."
-                onConfirm={() => void hide(row)}
-              >
-                <Button size="small" danger>
-                  Ẩn
+            </Can>
+            {row.is_active === false ? (
+              <Can I="UPDATE" a="SERVICE">
+                <Button size="small" onClick={() => void restore(row)}>
+                  Bật lại
                 </Button>
-              </Popconfirm>
-            ) : null}
+              </Can>
+            ) : (
+              <Can I="DELETE" a="SERVICE">
+                <Popconfirm
+                  title="Ẩn danh mục này?"
+                  description="Chỉ ẩn được khi không còn dịch vụ hoặc danh mục con đang hoạt động."
+                  onConfirm={() => void hide(row)}
+                >
+                  <Button size="small" danger>
+                    Ẩn
+                  </Button>
+                </Popconfirm>
+              </Can>
+            )}
           </Space>
         ),
       },
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [canUpdate, canDelete],
+    [],
   )
 
   return (
@@ -164,11 +163,11 @@ export default function ServiceCategories() {
           <Button icon={<ReloadOutlined />} onClick={() => void categoriesQuery.refetch()}>
             Tải lại
           </Button>
-          {canCreate && (
+          <Can I="CREATE" a="SERVICE">
             <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor()}>
               Thêm danh mục
             </Button>
-          )}
+          </Can>
         </Space>
       </Space>
       <Table<ServiceCategoryRow> rowKey="id" loading={categoriesQuery.isLoading} dataSource={rows} columns={columns} pagination={{ pageSize: 10 }} />

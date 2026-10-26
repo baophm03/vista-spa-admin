@@ -9,7 +9,7 @@ import type { BrandSettingsUpdate } from '@/api/models/brandSettingsUpdate'
 import type { FileUpload } from '@/api/models/fileUpload'
 import { getGetSettingsBrandQueryKey, getSettingsBrand, putSettingsBrand } from '@/api/endpoints/settings'
 import { postFiles } from '@/api/endpoints/files'
-import { useProfileStore } from '@/stores/profile-store'
+import { Can } from '@casl/react'
 import { applyBrandSettings, useBrandRuntime } from '@/themeRuntime'
 
 const FALLBACK_TIMEZONES = [
@@ -31,9 +31,7 @@ interface BrandFormValues {
 export default function BrandSettings() {
   const [form] = Form.useForm<BrandFormValues>()
   const queryClient = useQueryClient()
-  const profile = useProfileStore((state) => state.profile)
   const runtime = useBrandRuntime()
-  const canEdit = !!profile?.is_admin
   const settingsQuery = useQuery({
     queryKey: getGetSettingsBrandQueryKey(),
     queryFn: async () => pickData<BrandSettings>(await getSettingsBrand()) as BrandSettings,
@@ -106,7 +104,10 @@ export default function BrandSettings() {
     await saveMutation.mutateAsync(values)
   }
 
+  // canEdit đọc từ CASL ability một cách reactive qua children-as-function của <Can>
   return (
+    <Can I="UPDATE" a="SETTING" passThrough>
+      {({ isAllowed: canEdit }) => (
     <>
       <PageTitle extra={canEdit ? <Button type="primary" icon={<SaveOutlined />} loading={saveMutation.isPending} onClick={() => form.submit()}>Lưu cấu hình</Button> : undefined}>
         Thương hiệu và khu vực
@@ -166,5 +167,7 @@ export default function BrandSettings() {
         </Form>
       </Spin>
     </>
+      )}
+    </Can>
   )
 }

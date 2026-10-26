@@ -26,7 +26,7 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import PageTitle from '@/components/base/PageTitle'
 import ServiceImageField from '@/components/ServiceImageField'
 import { errorMessage, pickData } from '@/api/helpers'
-import { usePermissions } from '@/utils/permissions'
+import { Can } from '@casl/react'
 import {
   deleteServiceId,
   getGetServiceQueryKey,
@@ -108,11 +108,6 @@ function ServiceCustomFieldControl({ field }: { field: CustomFieldDefRow }) {
 }
 
 function ServiceListTab() {
-  const { can } = usePermissions()
-  const canCreate = can('service.create')
-  const canUpdate = can('service.update')
-  const canDelete = can('service.delete')
-
   const [total, setTotal] = useState(0)
   const [categories, setCategories] = useState<ServiceCategoryRow[]>([])
   const [customFields, setCustomFields] = useState<CustomFieldDefRow[]>([])
@@ -278,28 +273,32 @@ function ServiceListTab() {
         fixed: 'right',
         render: (_value, row) => (
           <Space>
-            {canUpdate && (
+            <Can I="UPDATE" a="SERVICE">
               <Button size="small" onClick={() => void openEditor(row)}>
                 Sửa
               </Button>
-            )}
-            {canUpdate && row.is_active === false ? (
-              <Button size="small" onClick={() => void restoreService(row)}>
-                Bật lại
-              </Button>
-            ) : canDelete && row.is_active !== false ? (
-              <Popconfirm title="Ẩn dịch vụ này?" description="Lịch và gói cũ vẫn sẽ tham chiếu dịch vụ." onConfirm={() => void hideService(row)}>
-                <Button size="small" danger>
-                  Ẩn
+            </Can>
+            {row.is_active === false ? (
+              <Can I="UPDATE" a="SERVICE">
+                <Button size="small" onClick={() => void restoreService(row)}>
+                  Bật lại
                 </Button>
-              </Popconfirm>
-            ) : null}
+              </Can>
+            ) : (
+              <Can I="DELETE" a="SERVICE">
+                <Popconfirm title="Ẩn dịch vụ này?" description="Lịch và gói cũ vẫn sẽ tham chiếu dịch vụ." onConfirm={() => void hideService(row)}>
+                  <Button size="small" danger>
+                    Ẩn
+                  </Button>
+                </Popconfirm>
+              </Can>
+            )}
           </Space>
         ),
       },
     ]
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visibleColumns, canUpdate, canDelete])
+  }, [visibleColumns])
 
   const conditionCount = Number(Boolean(filters.category_id)) + Number(filters.is_active !== undefined)
   const applyFilters = () => {
@@ -393,11 +392,11 @@ function ServiceListTab() {
           <Button icon={<ReloadOutlined />} onClick={reload}>
             Tải lại
           </Button>
-          {canCreate && (
+          <Can I="CREATE" a="SERVICE">
             <Button type="primary" icon={<PlusOutlined />} onClick={() => void openEditor()}>
               Thêm dịch vụ
             </Button>
-          )}
+          </Can>
         </Space>
       </Space>
 

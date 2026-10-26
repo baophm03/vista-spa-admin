@@ -7,7 +7,7 @@ import { errorMessage, pickData } from '@/api/helpers'
 import type { LookupList } from '@/api/models/lookupList'
 import type { PostLookupListsBody } from '@/api/models/postLookupListsBody'
 import { deleteLookupListsId, getLookupLists, postLookupLists } from '@/api/endpoints/settings'
-import { usePermissions } from '@/utils/permissions'
+import { Can } from '@casl/react'
 
 /** Hai cột: danh sách lookup lists (bên trái) và các mục của list đang chọn (bên phải). */
 export default function LookupLists() {
@@ -19,11 +19,6 @@ export default function LookupLists() {
   const [saving, setSaving] = useState(false)
   const [createOpen, setCreateOpen] = useState(false)
   const [form] = Form.useForm()
-  const { can } = usePermissions()
-  const canRead = can('lookup.read')
-  const canCreate = can('lookup.create')
-  const canUpdate = can('lookup.update')
-  const canDelete = can('lookup.delete')
 
   const load = useCallback(async (search: string) => {
     setLoading(true)
@@ -84,9 +79,16 @@ export default function LookupLists() {
   }
 
   const selected = lists.find((row) => row.id === selectedId) ?? null
-  const canManageList = canCreate || canUpdate || canDelete
 
+  // Booleans đọc từ CASL ability một cách reactive qua children-as-function của <Can>
   return (
+    <Can I="UPDATE" a="LOOKUP" passThrough>
+      {({ ability }) => {
+        const canRead = ability.can('READ' as never, 'LOOKUP')
+        const canCreate = ability.can('CREATE' as never, 'LOOKUP')
+        const canDelete = ability.can('DELETE' as never, 'LOOKUP')
+        const canManageList = canCreate || ability.can('UPDATE' as never, 'LOOKUP') || canDelete
+        return (
     <>
       <PageTitle extra={(
         <Space wrap>
@@ -137,7 +139,7 @@ export default function LookupLists() {
         <section aria-label="Các mục trong danh mục">
           <Typography.Title level={5}>{selected ? selected.name : 'Mục chọn'}</Typography.Title>
           {selected ? (
-            <LookupItemsManager listId={selected.id} canUpdate={canUpdate} canDelete={canDelete} />
+            <LookupItemsManager listId={selected.id} />
           ) : (
             <Alert type="info" showIcon message="Chọn một danh mục để xem các mục lựa chọn" description={canManageList ? 'Tạo danh mục tự tạo để dùng làm nguồn lựa chọn cho trường tùy chỉnh.' : undefined} />
           )}
@@ -164,5 +166,8 @@ export default function LookupLists() {
         </Form>
       </Modal>
     </>
+        )
+      }}
+    </Can>
   )
 }

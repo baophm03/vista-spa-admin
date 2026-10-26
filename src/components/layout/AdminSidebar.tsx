@@ -1,8 +1,22 @@
-import { Drawer, Layout, Menu } from 'antd'
-import { menuItems } from './sidebarMenu'
+import { Drawer, Layout, Menu, type MenuProps } from 'antd'
+import { hasPagePermission, menuItems, type MenuItem } from './sidebarMenu'
+import { useProfileStore } from '../../stores/profile-store'
 import { useBrandRuntime } from '../../themeRuntime'
 
 const { Sider } = Layout
+
+// Lọc menu theo CASL ability — giống filteredNavigation trong sidebar của meu.
+// Subscribe profile store để re-render khi permission rules được update.
+function useFilteredMenuItems(): MenuItem[] {
+  useProfileStore((s) => s.profile)
+  return menuItems
+    .map((entry) =>
+      'children' in entry
+        ? { ...entry, children: (entry.children ?? []).filter(hasPagePermission) }
+        : entry,
+    )
+    .filter((entry) => !('children' in entry) || (entry.children ?? []).length > 0)
+}
 
 const menuClassName =
   '[--ant-menu-collapsed-icon-size:16px]! border-e-0! pt-1! [&_.ant-menu-item]:justify-start! [&_.ant-menu-item]:pl-3! [&_.ant-menu-item]:text-left! [&_.ant-menu-item_.anticon]:text-[16px]! [&_.ant-menu-item_.ant-menu-item-icon]:text-[16px]! [&_.ant-menu-item-group-title]:pl-5! [&_.ant-menu-item-group-title]:pr-4! [&_.ant-menu-item-group-title]:pt-4! [&_.ant-menu-item-group-title]:pb-1! [&_.ant-menu-item-group-title]:text-left! [&_.ant-menu-item-group-title]:text-[11px]! [&_.ant-menu-item-group-title]:font-semibold! [&_.ant-menu-item-group-title]:tracking-[0.08em]! [&_.ant-menu-item-group-title]:text-[#A9ADB2]! [&_.ant-menu-item-group-title]:uppercase!'
@@ -17,6 +31,7 @@ function SidebarContent({
   onNavigate: (path: string) => void
 }) {
   const brand = useBrandRuntime()
+  const filteredMenuItems = useFilteredMenuItems()
   return (
     <div className="flex h-full min-h-0 flex-col bg-white">
       <div className="flex h-16 shrink-0 items-center justify-start gap-2.5 overflow-hidden border-b border-[var(--brand-border-soft)] px-4">
@@ -41,7 +56,7 @@ function SidebarContent({
       <div className="min-h-0 flex-1 overflow-y-auto pb-[120px]">
         <Menu
           className={`${menuClassName} ${collapsed ? '[&_.ant-menu-item-group-title]:hidden!' : ''}`}
-          items={menuItems}
+          items={filteredMenuItems as MenuProps['items']}
           mode="inline"
           selectedKeys={[pathname]}
           onClick={({ key }) => onNavigate(key)}

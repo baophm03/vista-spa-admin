@@ -42,7 +42,7 @@ import {
 } from '@/api/endpoints/rewards'
 import { getCustomerProfiles, postCustomerProfilesIdRedeemReward } from '@/api/endpoints/customer-profiles'
 import { getVouchers } from '@/api/endpoints/vouchers'
-import { usePermissions } from '@/utils/permissions'
+import { Can } from '@casl/react'
 
 /** GET /rewards trả kèm voucher cấp khi type = VOUCHER (model gen thiếu — mở rộng cục bộ). */
 type RewardRow = Reward & { voucher?: { id?: string; title?: string; description?: string } | null }
@@ -66,7 +66,7 @@ function remainingLabel(row: RewardRow) {
   return `${Math.max(Number(row.quantity_total) - Number(row.quantity_given ?? 0), 0)}/${row.quantity_total}`
 }
 
-function RewardCatalogTab({ canManage, canRedeem, onChanged }: { canManage: boolean; canRedeem: boolean; onChanged: () => void }) {
+function RewardCatalogTab({ onChanged }: { onChanged: () => void }) {
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<RewardRow | null>(null)
   const [redeemTarget, setRedeemTarget] = useState<RewardRow | null>(null)
@@ -200,13 +200,15 @@ function RewardCatalogTab({ canManage, canRedeem, onChanged }: { canManage: bool
     {
       title: 'Thao tác', key: 'actions', width: 220,
       render: (_v, row) => <Space>
-        {canRedeem && row.is_active && <Button size="small" type="primary" onClick={() => void openRedeem(row)}>Đổi hộ khách</Button>}
-        {canManage && <Button size="small" onClick={() => openEditor(row)}>Sửa</Button>}
-        {canManage && row.is_active && (
-          <Popconfirm title="Ẩn quà này?" description="Lượt đổi cũ vẫn được giữ." onConfirm={() => void hide(row)}>
-            <Button size="small" danger>Ẩn</Button>
-          </Popconfirm>
-        )}
+        {row.is_active && <Can I="REDEEM_ADMIN" a="REWARD"><Button size="small" type="primary" onClick={() => void openRedeem(row)}>Đổi hộ khách</Button></Can>}
+        <Can I="UPDATE" a="REWARD">
+          <Button size="small" onClick={() => openEditor(row)}>Sửa</Button>
+          {row.is_active && (
+            <Popconfirm title="Ẩn quà này?" description="Lượt đổi cũ vẫn được giữ." onConfirm={() => void hide(row)}>
+              <Button size="small" danger>Ẩn</Button>
+            </Popconfirm>
+          )}
+        </Can>
       </Space>,
     },
   ]
@@ -215,7 +217,9 @@ function RewardCatalogTab({ canManage, canRedeem, onChanged }: { canManage: bool
     <>
       <Space style={{ width: '100%', justifyContent: 'flex-end', marginBottom: 16 }}>
         <Button icon={<ReloadOutlined />} onClick={() => void rewardsQuery.refetch()}>Tải lại</Button>
-        {canManage && <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor()}>Thêm quà</Button>}
+        <Can I="CREATE" a="REWARD">
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor()}>Thêm quà</Button>
+        </Can>
       </Space>
       {rewardsQuery.isError && (
         <Alert className="mb-4" type="error" showIcon message="Không tải được danh mục quà" description={errorMessage(rewardsQuery.error)} action={<Button size="small" onClick={() => void rewardsQuery.refetch()}>Thử lại</Button>} />
@@ -407,9 +411,6 @@ function RedemptionsTab({ onChanged }: { onChanged: () => void }) {
 }
 
 export default function Rewards() {
-  const { can } = usePermissions()
-  const canManage = can('reward.create') || can('reward.update')
-  const canRedeem = can('reward.redeem_admin')
   const [tick, setTick] = useState(0)
   const bump = useCallback(() => setTick((t) => t + 1), [])
 
@@ -419,7 +420,7 @@ export default function Rewards() {
       <Tabs
         key={tick}
         items={[
-          { key: 'catalog', label: 'Danh mục quà', children: <RewardCatalogTab canManage={canManage} canRedeem={canRedeem} onChanged={bump} /> },
+          { key: 'catalog', label: 'Danh mục quà', children: <RewardCatalogTab onChanged={bump} /> },
           { key: 'redemptions', label: 'Lượt đổi', children: <RedemptionsTab onChanged={bump} /> },
         ]}
       />

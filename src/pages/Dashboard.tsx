@@ -22,7 +22,7 @@ import {
 import dayjs from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
 import { pickData, pickMeta } from '@/api/helpers'
-import { usePermissions } from '@/utils/permissions'
+import { Can } from '@casl/react'
 import { useBrandColors } from '@/themeRuntime'
 import { getReportsAppointments, getReportsDebts, getReportsRanks, getReportsRevenue } from '@/api/endpoints/reports'
 import { getCustomerProfiles } from '@/api/endpoints/customer-profiles'
@@ -275,26 +275,31 @@ function Overview() {
 }
 
 export default function Dashboard() {
-  const { can } = usePermissions()
-  const canReport = (key: string) => can('report.read') || can(key)
-
-  const reportTabs = [
-    { key: 'money', label: 'Doanh thu & Công nợ', visible: canReport('report.revenue.read') || canReport('report.debt.read') || canReport('report.commission.read'), children: <ReportsTab section="money" /> },
-    { key: 'customers', label: 'Báo cáo khách hàng', visible: canReport('report.customer.read') || canReport('report.rank.read'), children: <ReportsTab section="customers" /> },
-    { key: 'ops', label: 'Vận hành & Liệu trình', visible: canReport('report.appointment.read') || canReport('report.session.read'), children: <ReportsTab section="ops" /> },
-  ].filter((t) => t.visible)
-
+  // Booleans đọc từ CASL ability một cách reactive qua children-as-function của <Can>
   return (
-    <>
-      <PageTitle>Dashboard</PageTitle>
-      <Tabs
-        defaultActiveKey="overview"
-        destroyOnHidden={false}
-        items={[
-          { key: 'overview', label: 'Tổng quan', children: <Overview /> },
-          ...reportTabs.map(({ key, label, children }) => ({ key, label, children })),
-        ]}
-      />
-    </>
+    <Can I="READ" a="REPORT" passThrough>
+      {({ ability }) => {
+        const canReport = (key: string) => ability.can('READ' as never, 'REPORT') || ability.can(key as never, 'REPORT')
+        const reportTabs = [
+          { key: 'money', label: 'Doanh thu & Công nợ', visible: canReport('report.revenue.read') || canReport('report.debt.read') || canReport('report.commission.read'), children: <ReportsTab section="money" /> },
+          { key: 'customers', label: 'Báo cáo khách hàng', visible: canReport('report.customer.read') || canReport('report.rank.read'), children: <ReportsTab section="customers" /> },
+          { key: 'ops', label: 'Vận hành & Liệu trình', visible: canReport('report.appointment.read') || canReport('report.session.read'), children: <ReportsTab section="ops" /> },
+        ].filter((t) => t.visible)
+
+        return (
+          <>
+            <PageTitle>Dashboard</PageTitle>
+            <Tabs
+              defaultActiveKey="overview"
+              destroyOnHidden={false}
+              items={[
+                { key: 'overview', label: 'Tổng quan', children: <Overview /> },
+                ...reportTabs.map(({ key, label, children }) => ({ key, label, children })),
+              ]}
+            />
+          </>
+        )
+      }}
+    </Can>
   )
 }

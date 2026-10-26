@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { usePostAuthLogin } from '../api/endpoints/auth'
 import { pickData, errorMessage } from '../api/helpers'
 import { useAuthStore } from '../stores/auth-store'
+import { useProfileStore, type AdminProfile } from '../stores/profile-store'
 import { useBrandRuntime } from '../themeRuntime'
 
 const UserIcon = () => (
@@ -42,9 +43,13 @@ export default function Login() {
     if (!validate()) return
     try {
       const response = await loginMutation.mutateAsync({ data: { identifier: identifier.trim(), password } })
-      const tokens = pickData<{ accessToken?: string; refreshToken?: string }>(response)
+      const loginData = pickData<Record<string, any>>(response)
+      const tokens = loginData as { accessToken?: string; refreshToken?: string } | undefined
       if (!tokens?.accessToken || !tokens?.refreshToken) throw new Error('Phản hồi đăng nhập không hợp lệ')
       useAuthStore.getState().setTokens(tokens.accessToken, tokens.refreshToken)
+      // Login response giờ kèm user (roles + permissions [{module, action}] như meu)
+      // → set profile sớm để CASL rules sẵn sàng trước khi getMyInfo refresh lại
+      if (loginData?.user) useProfileStore.getState().setProfile(loginData.user as AdminProfile)
       navigate('/', { replace: true })
     } catch (err) {
       setAlert(errorMessage(err, 'Đăng nhập thất bại, vui lòng thử lại'))

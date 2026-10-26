@@ -13,6 +13,7 @@ import {
   usePostLuckyWheelsIdPrizes,
   usePutLuckyWheelsId,
 } from '../api/endpoints/lucky-wheels'
+import { Can } from '@casl/react'
 
 interface Branch { id: string; name: string }
 interface LuckyWheel { id: string; branch_id?: string; name: string; min_year_spent: number; spins_per_user: number; is_active?: boolean }
@@ -105,9 +106,11 @@ export default function LuckyWheel() {
         extra={
           <Space className="max-sm:flex! max-sm:w-full! max-sm:flex-wrap!">
             <Button icon={<ReloadOutlined />} onClick={loadWheels} />
-            <Button className="max-sm:flex-1" type="primary" icon={<PlusOutlined />} onClick={() => setWheelOpen(true)}>
-              Thêm vòng quay
-            </Button>
+            <Can I="CREATE" a="WHEEL">
+              <Button className="max-sm:flex-1" type="primary" icon={<PlusOutlined />} onClick={() => setWheelOpen(true)}>
+                Thêm vòng quay
+              </Button>
+            </Can>
           </Space>
         }
       >
@@ -135,10 +138,14 @@ export default function LuckyWheel() {
               width: 160,
               render: (_, row) => (
                 <Space onClick={(e) => e.stopPropagation()}>
-                  <Button size="small" onClick={() => toggleWheel(row)}>{row.is_active ? 'Tắt' : 'Bật'}</Button>
-                  <Popconfirm title="Xóa vòng quay này?" onConfirm={() => removeWheel(row)}>
-                    <Button size="small" danger>Xóa</Button>
-                  </Popconfirm>
+                  <Can I="UPDATE" a="WHEEL">
+                    <Button size="small" onClick={() => toggleWheel(row)}>{row.is_active ? 'Tắt' : 'Bật'}</Button>
+                  </Can>
+                  <Can I="DELETE" a="WHEEL">
+                    <Popconfirm title="Xóa vòng quay này?" onConfirm={() => removeWheel(row)}>
+                      <Button size="small" danger>Xóa</Button>
+                    </Popconfirm>
+                  </Can>
                 </Space>
               ),
             },
@@ -146,7 +153,7 @@ export default function LuckyWheel() {
         />
 
         {selected && (
-          <Card title={`Giải thưởng — ${selected.name}`} extra={<Button size="small" icon={<PlusOutlined />} onClick={() => setPrizeOpen(true)}>Thêm giải</Button>}>
+          <Card title={`Giải thưởng — ${selected.name}`} extra={<Can I="CREATE" a="WHEEL"><Button size="small" icon={<PlusOutlined />} onClick={() => setPrizeOpen(true)}>Thêm giải</Button></Can>}>
             <Table
               rowKey="id"
               dataSource={prizes}

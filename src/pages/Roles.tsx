@@ -26,6 +26,8 @@ import {
   usePutRolesIdPermissions,
 } from '@/api/endpoints/roles'
 import { useQueryClient } from '@tanstack/react-query'
+import { Can } from '@casl/react'
+import { permKey, permissionSetToArray } from '@/config/permissions'
 
 interface RoleRow {
   id: string
@@ -37,6 +39,7 @@ interface PermRow {
   id: string
   key: string
   module: string
+  action: string
   description?: string
 }
 
@@ -123,8 +126,9 @@ export default function Roles() {
   })
   const permCountByRole = new Map<string, number>(
     roles.map((role, index) => {
-      const keys = (pickData<string[]>(rolePermissionQueries[index]?.data) ?? []) as string[]
-      return [role.id, Array.isArray(keys) ? keys.length : 0]
+      // GET /roles/{id}/permissions trả mảng {module, action} (định dạng meu)
+      const pairs = (pickData<{ module?: string; action?: string }[]>(rolePermissionQueries[index]?.data) ?? []) as { module?: string; action?: string }[]
+      return [role.id, Array.isArray(pairs) ? pairs.length : 0]
     }),
   )
 
@@ -169,10 +173,10 @@ export default function Roles() {
     setEditOpen(true)
   }
   const openPermissions = (role: RoleRow) => {
-    const cached = queryClient.getQueryData<string>(getGetRolesIdPermissionsQueryKey(role.id))
-    const keys = (pickData<string[]>(cached as unknown as unknown[]) ?? []) as string[]
+    const cached = queryClient.getQueryData<{ module?: string; action?: string }[]>(getGetRolesIdPermissionsQueryKey(role.id))
+    const pairs = (pickData<{ module?: string; action?: string }[]>(cached as unknown as unknown[]) ?? []) as { module?: string; action?: string }[]
     setPermRole(role)
-    setGranted(new Set(Array.isArray(keys) ? keys : []))
+    setGranted(new Set((Array.isArray(pairs) ? pairs : []).filter((p) => p.module && p.action).map((p) => permKey(p.module!, p.action!))))
     setPermOpen(true)
   }
 
@@ -219,12 +223,12 @@ export default function Roles() {
       const next = new Set(prev)
       perms
         .filter((p) => p.module === module)
-        .forEach((p) => (checked ? next.add(p.key) : next.delete(p.key)))
+        .forEach((p) => (checked ? next.add(permKey(p.module, p.action)) : next.delete(permKey(p.module, p.action))))
       return next
     })
   }
   const setAllPerms = (checked: boolean) => {
-    setGranted(checked ? new Set(perms.map((p) => p.key)) : new Set())
+    setGranted(checked ? new Set(perms.map((p) => permKey(p.module, p.action))) : new Set())
   }
 
   const savePermissions = async () => {
@@ -233,7 +237,8 @@ export default function Roles() {
     try {
       await setPermissionsMutation.mutateAsync({
         id: permRole.id,
-        data: { permissions: [...granted] } as unknown as PutRolesIdPermissionsBody,
+        // Submit mảng {module, action} — định dạng PUT /roles/{id}/permissions của meu-be
+        data: { permissions: permissionSetToArray(granted) } as unknown as PutRolesIdPermissionsBody,
       })
       message.success('Đã cập nhật quyền hạn')
       queryClient.removeQueries({ queryKey: getGetRolesIdPermissionsQueryKey(permRole.id) })
@@ -282,14 +287,16 @@ export default function Roles() {
     <>
       <PageTitle
         extra={
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            className="rounded-xl"
-            onClick={openCreate}
-          >
-            Tạo vai trò mới
-          </Button>
+          <Can I="MANAGE" a="PERMISSION">
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              className="rounded-xl"
+              onClick={openCreate}
+            >
+              Tạo vai trò mới
+            </Button>
+          </Can>
         }
       >
         Phân quyền
@@ -363,34 +370,36 @@ export default function Roles() {
                 </div>
 
                 <div className="flex items-center gap-1 max-sm:self-end">
-                  <Button
-                    type="text"
-                    size="small"
-                    icon={<EditOutlined />}
-                    className="rounded-xl text-[var(--brand-primary)] hover:bg-[rgba(var(--brand-rgb),0.08)]!"
-                    onClick={() => openEdit(role)}
-                  >
-                    Sửa
-                  </Button>
-                  <Button
-                    type="text"
-                    size="small"
-                    icon={<SafetyCertificateOutlined />}
-                    className="rounded-xl text-emerald-700 hover:bg-emerald-50!"
-                    onClick={() => openPermissions(role)}
-                  >
-                    Phân quyền
-                  </Button>
-                  <Button
-                    type="text"
-                    size="small"
-                    icon={<DeleteOutlined />}
-                    disabled={isSystem}
-                    className="rounded-xl text-red-600 hover:bg-red-50! disabled:opacity-50"
-                    onClick={() => askDelete(role)}
-                  >
-                    Xóa
-                  </Button>
+                  <Can I="MANAGE" a="PERMISSION">
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={<EditOutlined />}
+                      className="rounded-xl text-[var(--brand-primary)] hover:bg-[rgba(var(--brand-rgb),0.08)]!"
+                      onClick={() => openEdit(role)}
+                    >
+                      Sửa
+                    </Button>
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={<SafetyCertificateOutlined />}
+                      className="rounded-xl text-emerald-700 hover:bg-emerald-50!"
+                      onClick={() => openPermissions(role)}
+                    >
+                      Phân quyền
+                    </Button>
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={<DeleteOutlined />}
+                      disabled={isSystem}
+                      className="rounded-xl text-red-600 hover:bg-red-50! disabled:opacity-50"
+                      onClick={() => askDelete(role)}
+                    >
+                      Xóa
+                    </Button>
+                  </Can>
                 </div>
               </div>
             )
@@ -503,7 +512,7 @@ export default function Roles() {
             <p className="py-4 text-center text-sm text-slate-500">Không tải được danh sách quyền</p>
           )}
           {groups.map((group) => {
-            const checkedCount = group.rows.filter((p) => granted.has(p.key)).length
+            const checkedCount = group.rows.filter((p) => granted.has(permKey(p.module, p.action))).length
             const groupAll = group.rows.length > 0 && checkedCount === group.rows.length
             const groupSome = checkedCount > 0 && !groupAll
             return (
@@ -527,18 +536,18 @@ export default function Roles() {
                 </div>
                 <div className="grid grid-cols-2 gap-x-6 gap-y-3 pt-3 sm:grid-cols-3 lg:grid-cols-4">
                   {group.rows.map((p) => {
-                    const action = p.key.split('.').slice(1).join('.')
+                    const overrideKey = `${p.module}.${p.action}`
                     return (
                       <label key={p.id} className="flex cursor-pointer items-start gap-2" title={p.description}>
                         <Checkbox
                           className="mt-0.5"
-                          checked={granted.has(p.key)}
-                          onChange={(e) => togglePerm(p.key, e.target.checked)}
+                          checked={granted.has(permKey(p.module, p.action))}
+                          onChange={(e) => togglePerm(permKey(p.module, p.action), e.target.checked)}
                         />
                         <span className="leading-tight">
-                          <span className="block text-sm text-slate-800">{actionLabel(p.key, action)}</span>
+                          <span className="block text-sm text-slate-800">{actionLabel(overrideKey, p.action)}</span>
                           <span className="mt-0.5 block text-[10px] uppercase tracking-wide text-slate-400">
-                            {p.key}
+                            {overrideKey}
                           </span>
                         </span>
                       </label>

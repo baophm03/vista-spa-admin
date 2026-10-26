@@ -1,5 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { updateCaslAbility } from '@/config/permissions'
+import type { Permission } from '@/lib/types/permissions'
 
 export interface AdminProfile {
   id?: string
@@ -9,6 +11,8 @@ export interface AdminProfile {
   full_name?: string
   is_admin?: boolean
   is_active?: boolean
+  roles?: string[]
+  permissions?: Permission[]
   [key: string]: unknown
 }
 
@@ -22,9 +26,20 @@ export const useProfileStore = create<ProfileState>()(
   persist(
     (set) => ({
       profile: null,
-      setProfile: (profile) => set({ profile }),
-      clear: () => set({ profile: null }),
+      setProfile: (profile) => {
+        // Mỗi lần profile (getMyInfo) được set → update CASL rules, giống
+        // setAppUser/clearProfile của useProfileStore bên meu.
+        updateCaslAbility(profile)
+        set({ profile })
+      },
+      clear: () => {
+        updateCaslAbility(null)
+        set({ profile: null })
+      },
     }),
-    { name: 'admin-profile' },
+    { name: 'admin-profile', onRehydrateStorage: () => (state) => {
+      // Sau F5: rebuild CASL rules từ profile đã persist (getMyInfo sẽ refresh lại)
+      updateCaslAbility(state?.profile ?? null)
+    } },
   ),
 )

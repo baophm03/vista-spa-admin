@@ -44,7 +44,7 @@ import {
   usePutTreatmentPackagesId,
 } from '@/api/endpoints/services'
 import { useGetBranches } from '@/api/endpoints/branches'
-import { usePermissions } from '@/utils/permissions'
+import { useProfileStore } from '@/stores/profile-store'
 
 type QuotaType = TreatmentPackage['quota_type']
 type ValidityUnit = NonNullable<TreatmentPackage['validity_unit']>
@@ -120,8 +120,8 @@ function priceLabel(row: TreatmentPackage) {
 
 export default function Treatments() {
   const queryClient = useQueryClient()
-  const { isAdmin } = usePermissions()
-  const canManage = isAdmin
+  // Trang quản trị liệu trình: chỉ platform admin được quản lý (giữ behavior cũ)
+  const canManage = !!useProfileStore((s) => s.profile)?.is_admin
   const [activeTab, setActiveTab] = useState('packages')
 
   const [packageOpen, setPackageOpen] = useState(false)

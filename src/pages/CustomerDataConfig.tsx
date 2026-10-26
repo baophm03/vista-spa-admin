@@ -15,7 +15,6 @@ import {
   postCustomFieldDefs,
   putCustomFieldDefsId,
 } from '@/api/endpoints/settings'
-import { usePermissions } from '@/utils/permissions'
 
 function splitOptions(value?: string) {
   return value?.split(/\r?\n|,/).map((item) => item.trim()).filter(Boolean) ?? []
@@ -270,9 +269,6 @@ function HealthMetricsConfig() {
   const [lookup, setLookup] = useState<LookupList | null>(null)
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
-  const { can } = usePermissions()
-  const canUpdate = can('lookup.update')
-  const canDelete = can('lookup.delete')
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -316,7 +312,7 @@ function HealthMetricsConfig() {
   return (
     <>
       <Typography.Paragraph type="secondary">Mã đã ngừng sử dụng không nhận số đo mới; dữ liệu lịch sử được giữ lại.</Typography.Paragraph>
-      <LookupItemsManager listId={lookup.id} canUpdate={canUpdate} canDelete={canDelete} />
+      <LookupItemsManager listId={lookup.id} />
     </>
   )
 }

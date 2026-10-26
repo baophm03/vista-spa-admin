@@ -4,6 +4,7 @@ import { PlusOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import PageTitle from '../components/base/PageTitle'
 import { useDeleteVouchersId, useGetVouchers, usePostVouchers, usePutVouchersId } from '../api/endpoints/vouchers'
+import { Can } from '@casl/react'
 
 interface VoucherRow {
   id: string
@@ -86,9 +87,11 @@ export default function Vouchers() {
     <>
       <PageTitle
         extra={
-          <Button className="max-sm:w-full" type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
-            Thêm voucher
-          </Button>
+          <Can I="UPDATE" a="VOUCHER">
+            <Button className="max-sm:w-full" type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
+              Thêm voucher
+            </Button>
+          </Can>
         }
       >
         Voucher & Quà tặng
@@ -132,16 +135,18 @@ export default function Vouchers() {
             title: '',
             width: 140,
             render: (_, row) => (
-              <Space>
-                <Button size="small" onClick={() => openModal(row)}>
-                  Sửa
-                </Button>
-                <Popconfirm title="Xóa voucher này?" onConfirm={() => remove(row)}>
-                  <Button size="small" danger>
-                    Xóa
+              <Can I="UPDATE" a="VOUCHER">
+                <Space>
+                  <Button size="small" onClick={() => openModal(row)}>
+                    Sửa
                   </Button>
-                </Popconfirm>
-              </Space>
+                  <Popconfirm title="Xóa voucher này?" onConfirm={() => remove(row)}>
+                    <Button size="small" danger>
+                      Xóa
+                    </Button>
+                  </Popconfirm>
+                </Space>
+              </Can>
             ),
           },
         ]}

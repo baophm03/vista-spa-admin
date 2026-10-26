@@ -42,7 +42,7 @@ import {
 } from 'recharts'
 import dayjs, { Dayjs } from 'dayjs'
 import { pickData } from '@/api/helpers'
-import { usePermissions } from '@/utils/permissions'
+import { useAbility } from '@casl/react'
 import { useBrandColors } from '@/themeRuntime'
 import { toCsv, downloadCsv, type CsvColumn } from '@/utils/csv'
 import {
@@ -137,9 +137,10 @@ export type ReportSection = 'money' | 'customers' | 'ops'
 export default function ReportsTab({ section }: { section: ReportSection }) {
   const brand = useBrandColors()
   const rankColors = [brand.primary, '#D9A441', '#3B5BDB', '#16A34A', '#E06666']
-  const { can } = usePermissions()
-  /** report.read là key tổng; các key mịn report.<loại>.read cho role REC. */
-  const canReport = useCallback((key: string) => can('report.read') || can(key), [can])
+  const ability = useAbility()
+  /** report.read là key tổng; các key mịn report.<loại>.read cho role REC.
+   *  Dashboard bọc component trong <Can passThrough> nên ability ở đây luôn fresh khi rules đổi. */
+  const canReport = useCallback((key: string) => ability.can('READ' as never, 'REPORT') || ability.can(key as never, 'REPORT'), [ability])
   const canSeeCommission = canReport('report.commission.read')
 
   // Filters (applied)

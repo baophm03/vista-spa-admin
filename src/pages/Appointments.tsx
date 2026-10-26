@@ -46,6 +46,7 @@ import { useGetCustomerProfiles } from '@/api/endpoints/customer-profiles'
 import { useGetService } from '@/api/endpoints/services'
 import { useGetUsers } from '@/api/endpoints/users'
 import { useGetBranches } from '@/api/endpoints/branches'
+import { Can } from '@casl/react'
 
 interface Slot {
   date?: string
@@ -386,9 +387,11 @@ export default function Appointments() {
         extra={
           <Space>
             <Button icon={<ReloadOutlined />} onClick={refresh} />
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
-              Thêm lịch hẹn
-            </Button>
+            <Can I="CREATE" a="APPOINTMENT">
+              <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
+                Thêm lịch hẹn
+              </Button>
+            </Can>
           </Space>
         }
       >
@@ -497,11 +500,11 @@ export default function Appointments() {
             key: 'actions',
             width: 150,
             render: (_, row) => {
-              const confirmThen = (title: string, fn: () => void) =>
-                Modal.confirm({ title, okText: title, cancelText: 'Đóng', onOk: fn })
-              const extraActions = [
-                row.status === 'pending' && { key: 'reject', label: 'Từ chối', danger: true, onClick: () => reject(row) },
-                ['pending', 'approved'].includes(row.status ?? '') && { key: 'reschedule', label: 'Đổi lịch', onClick: () => openModal(row) },
+              const confirmThen = (title: string, fn: () => Promise<unknown> | void) =>
+                Modal.confirm({ title, okText: title, cancelText: 'Đóng', onOk: () => fn() })
+              const buildExtraActions = (check: (action: string) => boolean) => [
+                check('APPROVE') && row.status === 'pending' && { key: 'reject', label: 'Từ chối', danger: true, onClick: () => reject(row) },
+                check('UPDATE') && ['pending', 'approved'].includes(row.status ?? '') && { key: 'reschedule', label: 'Đổi lịch', onClick: () => openModal(row) },
                 row.status === 'approved' && isPastAppointment(row) && {
                   key: 'noshow',
                   label: 'Đánh dấu không đến',
@@ -519,28 +522,39 @@ export default function Appointments() {
               return (
                 <Space size={4}>
                   {row.status === 'pending' && (
-                    <Button size="small" type="primary" icon={<CheckOutlined />} onClick={() => approve(row)}>
-                      Duyệt
-                    </Button>
+                    <Can I="APPROVE" a="APPOINTMENT">
+                      <Button size="small" type="primary" icon={<CheckOutlined />} onClick={() => approve(row)}>
+                        Duyệt
+                      </Button>
+                    </Can>
                   )}
                   {row.status === 'approved' && (
-                    <Button size="small" onClick={() => doAction(() => startMutation.mutateAsync({ id: row.id }), 'Đã bắt đầu')}>
-                      Bắt đầu
-                    </Button>
+                    <Can I="START" a="APPOINTMENT">
+                      <Button size="small" onClick={() => doAction(() => startMutation.mutateAsync({ id: row.id }), 'Đã bắt đầu')}>
+                        Bắt đầu
+                      </Button>
+                    </Can>
                   )}
                   {row.status === 'in_progress' && (
                     <Button size="small" type="primary" onClick={() => doAction(() => completeMutation.mutateAsync({ id: row.id }), 'Đã hoàn tất')}>
                       Hoàn tất
                     </Button>
                   )}
-                  {extraActions.length > 0 && (
-                    <Dropdown
-                      trigger={['click']}
-                      menu={{ items: extraActions.map(({ key, label, danger, onClick }) => ({ key, label, danger, onClick })) }}
-                    >
-                      <Button size="small" icon={<EllipsisOutlined />} />
-                    </Dropdown>
-                  )}
+                  {/* Menu dropdown là data nên không bọc <Can> từng item được — dùng children-as-function
+                      của <Can> để nhận ability một cách reactive (giống useAbility của casl/react) */}
+                  <Can I="READ" a="APPOINTMENT" passThrough>
+                    {({ ability }) => {
+                      const extraActions = buildExtraActions((action) => ability.can(action as never, 'APPOINTMENT'))
+                      return extraActions.length > 0 ? (
+                        <Dropdown
+                          trigger={['click']}
+                          menu={{ items: extraActions.map(({ key, label, danger, onClick }) => ({ key, label, danger, onClick })) }}
+                        >
+                          <Button size="small" icon={<EllipsisOutlined />} />
+                        </Dropdown>
+                      ) : null
+                    }}
+                  </Can>
                 </Space>
               )
             },

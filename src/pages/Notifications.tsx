@@ -7,6 +7,7 @@ import { errorMessage, pickData, pickMeta } from '@/api/helpers'
 import type { Notification } from '@/api/models/notification'
 import { useGetCustomerProfiles } from '@/api/endpoints/customer-profiles'
 import { useGetNotifications, usePostNotifications, usePutNotificationsId } from '@/api/endpoints/admin'
+import { Can } from '@casl/react'
 
 interface NotificationRow {
   id: string
@@ -82,17 +83,19 @@ export default function Notifications() {
     <>
       <PageTitle
         extra={
-          <Button
-            className="max-sm:w-full"
-            type="primary"
-            icon={<SendOutlined />}
-            onClick={() => {
-              form.setFieldsValue({ event_key: 'SYSTEM', title: '', body: '', user_id: undefined })
-              setOpen(true)
-            }}
-          >
-            Gửi thông báo
-          </Button>
+          <Can I="CREATE" a="NOTIFICATION">
+            <Button
+              className="max-sm:w-full"
+              type="primary"
+              icon={<SendOutlined />}
+              onClick={() => {
+                form.setFieldsValue({ event_key: 'SYSTEM', title: '', body: '', user_id: undefined })
+                setOpen(true)
+              }}
+            >
+              Gửi thông báo
+            </Button>
+          </Can>
         }
       >
         Thông báo

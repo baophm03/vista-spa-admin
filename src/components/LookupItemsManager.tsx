@@ -14,11 +14,12 @@ import {
   putLookupItemsId,
   putLookupListsId,
 } from '@/api/endpoints/settings'
+import { Can } from '@casl/react'
 
 type LookupItemWithColor = LookupItem & { color?: string | null }
 
 /** Danh sách mục trong một lookup list: sắp thứ tự (drag + nút lên/xuống), thêm/sửa/ẩn mục. */
-export default function LookupItemsManager({ listId, canUpdate, canDelete }: { listId: string; canUpdate: boolean; canDelete: boolean }) {
+export default function LookupItemsManager({ listId }: { listId: string }) {
   const [items, setItems] = useState<LookupItemWithColor[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -106,7 +107,13 @@ export default function LookupItemsManager({ listId, canUpdate, canDelete }: { l
     }
   }
 
+  // Booleans đọc từ CASL ability một cách reactive qua children-as-function của <Can>
   return (
+    <Can I="UPDATE" a="LOOKUP" passThrough>
+      {({ ability }) => {
+        const canUpdate = ability.can('UPDATE' as never, 'LOOKUP')
+        const canDelete = ability.can('DELETE' as never, 'LOOKUP')
+        return (
     <>
       <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 16 }} wrap>
         <Typography.Text type="secondary">Mã mục không đổi sau khi tạo. Mục đã dùng chỉ có thể ẩn.</Typography.Text>
@@ -180,5 +187,8 @@ export default function LookupItemsManager({ listId, canUpdate, canDelete }: { l
         </Form>
       </Modal>
     </>
+        )
+      }}
+    </Can>
   )
 }

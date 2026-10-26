@@ -9,6 +9,7 @@ import {
   usePostMembershipsUserIdRecalculate,
 } from '../api/endpoints/membership'
 import { useGetUsers } from '../api/endpoints/users'
+import { Can } from '@casl/react'
 
 interface RankRow {
   id: string
@@ -161,25 +162,31 @@ export default function Points() {
             width: 300,
             render: (_, row) => (
               <Space>
-                <Button
-                  size="small"
-                  onClick={() => {
-                    setAdjusting(row)
-                    form.setFieldsValue({ delta: 0, reason: '' })
-                  }}
-                >
-                  Điều chỉnh điểm
-                </Button>
-                <Select
-                  size="small"
-                  placeholder="Gán hạng"
-                  style={{ width: 120 }}
-                  options={ranks.map((r) => ({ value: r.id, label: r.name }))}
-                  onChange={(v) => doOverride(row, v)}
-                />
-                <Popconfirm title="Tính lại hạng theo chi tiêu?" onConfirm={() => doRecalc(row)}>
-                  <Button size="small">Tính lại</Button>
-                </Popconfirm>
+                <Can I="POINTS_ADJUST" a="MEMBERSHIP">
+                  <Button
+                    size="small"
+                    onClick={() => {
+                      setAdjusting(row)
+                      form.setFieldsValue({ delta: 0, reason: '' })
+                    }}
+                  >
+                    Điều chỉnh điểm
+                  </Button>
+                </Can>
+                <Can I="RANK_OVERRIDE" a="MEMBERSHIP">
+                  <Select
+                    size="small"
+                    placeholder="Gán hạng"
+                    style={{ width: 120 }}
+                    options={ranks.map((r) => ({ value: r.id, label: r.name }))}
+                    onChange={(v) => doOverride(row, v)}
+                  />
+                </Can>
+                <Can I="RECALCULATE" a="MEMBERSHIP">
+                  <Popconfirm title="Tính lại hạng theo chi tiêu?" onConfirm={() => doRecalc(row)}>
+                    <Button size="small">Tính lại</Button>
+                  </Popconfirm>
+                </Can>
               </Space>
             ),
           },

@@ -1,14 +1,35 @@
-import { useEffect, useState } from 'react'
-import { ConfigProvider, Layout } from 'antd'
+import { useEffect, useState, type ReactNode } from 'react'
+import { ConfigProvider, Layout, Result } from 'antd'
 import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useGetUsersGetMyInfo } from '../api/endpoints/users'
 import { clearAuth } from '../api/mutator/custom-instance'
 import { AdminHeader, AdminSidebar, getPageTitle } from '../components/layout'
+import { getPagePermission } from '../components/layout/sidebarMenu'
+import { ability } from '../config/casl/ability'
+import { AbilityProvider } from '@casl/react'
+import type { Actions } from '../lib/types/permissions'
 import { useAuthStore } from '../stores/auth-store'
 import { useProfileStore } from '../stores/profile-store'
 import { refreshThemeFromServer } from '../themeRuntime'
 
 const { Content } = Layout
+
+// Route guard theo CASL — page có khai báo permission mà user không có ⇒ 403
+function PermissionGate({ children }: { children: ReactNode }) {
+  const location = useLocation()
+  const profile = useProfileStore((s) => s.profile)
+  const permissions = getPagePermission(location.pathname)
+  if (!permissions || !profile) return <>{children}</>
+  const allowed = permissions.some((p) => ability.can(p.action as Actions, p.subject))
+  if (allowed) return <>{children}</>
+  return (
+    <Result
+      status="403"
+      title="403"
+      subTitle="Bạn không có quyền truy cập trang này."
+    />
+  )
+}
 
 export default function AdminLayout() {
   const navigate = useNavigate()
@@ -40,7 +61,9 @@ export default function AdminLayout() {
   // Chưa login → redirect ngay trong render, KHÔNG mount Outlet (children sẽ không chạy effect/fetch API)
   if (!accessToken) return <Navigate to="/login" replace />
 
+  // AbilityProvider — giống admin/layout của meu, để <Can> trong pages đọc ability từ context
   return (
+    <AbilityProvider value={ability}>
     <ConfigProvider
       theme={{
         components: {
@@ -79,11 +102,14 @@ export default function AdminLayout() {
 
           <Content className="min-h-0 flex-1 overflow-y-auto bg-[var(--brand-bg)]! p-3! sm:p-4! lg:p-6! [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-xl [&::-webkit-scrollbar-thumb]:bg-[var(--brand-border)]">
             <div className="min-h-full rounded-xl border border-[var(--brand-border)] bg-white p-3 shadow-[0_1px_2px_rgba(var(--brand-dark-rgb),0.04),0_12px_32px_-16px_rgba(var(--brand-dark-rgb),0.1)] sm:p-4 lg:p-6">
-              <Outlet />
+              <PermissionGate>
+                <Outlet />
+              </PermissionGate>
             </div>
           </Content>
         </Layout>
       </Layout>
     </ConfigProvider>
+    </AbilityProvider>
   )
 }
