@@ -8,5 +8,5 @@
 import type { Setting } from './setting';
 
 export type PutSettings200AllOf = {
-  data?: Setting;
+  responseData?: Setting;
 };

@@ -1,5 +1,6 @@
 import { BellOutlined, LogoutOutlined, MenuFoldOutlined, MenuOutlined, MenuUnfoldOutlined, UserOutlined } from '@ant-design/icons'
 import { Avatar, Badge, Dropdown, Layout, Space, Typography } from 'antd'
+import { useProfileStore } from '../../stores/profile-store'
 
 const { Header } = Layout
 
@@ -20,6 +21,13 @@ export default function AdminHeader({
   onNavigateNotifications,
   onLogout,
 }: AdminHeaderProps) {
+  const profile = useProfileStore((state) => state.profile)
+  const displayName =
+    (profile?.full_name as string | undefined) ||
+    (profile?.zalo_name as string | undefined) ||
+    (profile?.email as string | undefined) ||
+    'Admin'
+  const roleLabel = profile?.is_admin ? 'Quản trị viên' : 'Nhân viên'
   return (
     <Header className="flex! h-16! shrink-0! items-center! justify-between! gap-4! border-b! border-[var(--brand-border-soft)]! bg-white! px-4! py-0! leading-normal! lg:px-6!">
       <Space size={16}>
@@ -62,10 +70,12 @@ export default function AdminHeader({
           }}
         >
           <Space className="cursor-pointer">
-            <Avatar size={34} className="bg-[var(--brand-primary)]!" icon={<UserOutlined />} />
+            <Avatar size={34} className="bg-[var(--brand-primary)]!" icon={<UserOutlined />}>
+              {displayName.charAt(0).toUpperCase()}
+            </Avatar>
             <div className="leading-[1.2]">
-              <div className="text-[13px] font-semibold">Admin</div>
-              <div className="text-[11px] text-[#A9ADB2]">Quản trị viên</div>
+              <div className="text-[13px] font-semibold">{displayName}</div>
+              <div className="text-[11px] text-[#A9ADB2]">{roleLabel}</div>
             </div>
           </Space>
         </Dropdown>

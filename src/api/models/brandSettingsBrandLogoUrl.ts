@@ -6,4 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 
+/**
+ * URL logo (đọc từ logo_file_id)
+ */
 export type BrandSettingsBrandLogoUrl = string | null;

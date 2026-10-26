@@ -26,14 +26,20 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  BizSuccess,
   ForbiddenResponse,
+  GetReportsAppointments200,
   GetReportsAppointmentsParams,
+  GetReportsCommissions200,
   GetReportsCommissionsParams,
+  GetReportsDebts200,
   GetReportsDebtsParams,
+  GetReportsNewCustomers200,
   GetReportsNewCustomersParams,
+  GetReportsRanks200,
   GetReportsRanksParams,
+  GetReportsRevenue200,
   GetReportsRevenueParams,
+  GetReportsSessionsUsed200,
   GetReportsSessionsUsedParams,
   InternalErrorResponse,
   UnauthorizedResponse
@@ -55,7 +61,7 @@ export const getReportsSessionsUsed = (
 ) => {
       
       
-      return customInstance<BizSuccess>(
+      return customInstance<GetReportsSessionsUsed200>(
       {url: `/reports/sessionsUsed`, method: 'GET',
         params, signal
     },
@@ -250,7 +256,7 @@ export const getReportsRevenue = (
 ) => {
       
       
-      return customInstance<BizSuccess>(
+      return customInstance<GetReportsRevenue200>(
       {url: `/reports/revenue`, method: 'GET',
         params, signal
     },
@@ -445,7 +451,7 @@ export const getReportsRanks = (
 ) => {
       
       
-      return customInstance<BizSuccess>(
+      return customInstance<GetReportsRanks200>(
       {url: `/reports/ranks`, method: 'GET',
         params, signal
     },
@@ -640,7 +646,7 @@ export const getReportsNewCustomers = (
 ) => {
       
       
-      return customInstance<BizSuccess>(
+      return customInstance<GetReportsNewCustomers200>(
       {url: `/reports/newCustomers`, method: 'GET',
         params, signal
     },
@@ -835,7 +841,7 @@ export const getReportsDebts = (
 ) => {
       
       
-      return customInstance<BizSuccess>(
+      return customInstance<GetReportsDebts200>(
       {url: `/reports/debts`, method: 'GET',
         params, signal
     },
@@ -1030,7 +1036,7 @@ export const getReportsCommissions = (
 ) => {
       
       
-      return customInstance<BizSuccess>(
+      return customInstance<GetReportsCommissions200>(
       {url: `/reports/commissions`, method: 'GET',
         params, signal
     },
@@ -1225,7 +1231,7 @@ export const getReportsAppointments = (
 ) => {
       
       
-      return customInstance<BizSuccess>(
+      return customInstance<GetReportsAppointments200>(
       {url: `/reports/appointments`, method: 'GET',
         params, signal
     },

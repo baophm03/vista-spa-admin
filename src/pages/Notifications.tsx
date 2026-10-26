@@ -1,25 +1,27 @@
 import { useState } from 'react'
-import { Button, Form, Input, Modal, Select, Table, Tag, message } from 'antd'
+import { Alert, Button, Form, Input, Modal, Select, Table, Tag, message } from 'antd'
 import { SendOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
-import PageTitle from '../components/base/PageTitle'
-import { useGetCustomerProfiles } from '../api/endpoints/customer-profiles'
-import { useGetNotifications, usePostNotifications, usePutNotificationsId } from '../api/endpoints/notifications'
+import PageTitle from '@/components/base/PageTitle'
+import { errorMessage, pickData, pickMeta } from '@/api/helpers'
+import type { Notification } from '@/api/models/notification'
+import { useGetCustomerProfiles } from '@/api/endpoints/customer-profiles'
+import { useGetNotifications, usePostNotifications, usePutNotificationsId } from '@/api/endpoints/admin'
 
-interface CustomerProfile {
-  id: string
-  user_id?: string
-  full_name: string
-  phone: string
-}
 interface NotificationRow {
   id: string
-  user_id?: string
+  user_id?: string | null
   event_key: string
   title?: string
   body?: string
   is_read?: boolean
   sent_at?: string
+}
+interface CustomerProfile {
+  id: string
+  user_id?: string
+  full_name: string
+  phone: string
 }
 
 const EVENT_META: Record<string, { label: string; color: string }> = {
@@ -34,10 +36,12 @@ export default function Notifications() {
   const profilesQuery = useGetCustomerProfiles()
   const sendMutation = usePostNotifications()
   const markReadMutation = usePutNotificationsId()
-  const notificationData = (notificationsQuery.data?.responseData ?? {}) as { rows?: NotificationRow[]; count?: number }
-  const rows = notificationData.rows ?? []
-  const total = notificationData.count ?? rows.length
-  const profiles = (((profilesQuery.data?.responseData ?? {}) as { rows?: CustomerProfile[] }).rows ?? [])
+  // Envelope chuẩn: responseData: Notification[] + meta.total
+  const payload = pickData<NotificationRow[] | { rows?: NotificationRow[] }>(notificationsQuery.data)
+  const rows = (Array.isArray(payload) ? payload : payload?.rows ?? []) as NotificationRow[]
+  const total = pickMeta(notificationsQuery.data)?.total ?? rows.length
+  const profilePayload = pickData<CustomerProfile[] | { rows?: CustomerProfile[] }>(profilesQuery.data)
+  const profiles = (Array.isArray(profilePayload) ? profilePayload : profilePayload?.rows ?? []) as CustomerProfile[]
   const loading = notificationsQuery.isLoading
   const [open, setOpen] = useState(false)
   const [form] = Form.useForm()
@@ -51,23 +55,23 @@ export default function Notifications() {
           title: values.title,
           body: values.body,
           user_id: values.user_id || null,
-        }
+        } as unknown as Notification,
       })
       message.success('Đã gửi thông báo')
       setOpen(false)
       await notificationsQuery.refetch()
     } catch (err) {
-      message.error(err instanceof Error ? err.message : 'Không thể gửi thông báo')
+      message.error(errorMessage(err, 'Không thể gửi thông báo'))
     }
   }
 
   const markRead = async (row: NotificationRow) => {
     try {
-      await markReadMutation.mutateAsync({ id: row.id, data: {} })
+      await markReadMutation.mutateAsync({ id: row.id })
       message.success('Đã đánh dấu đã đọc')
       await notificationsQuery.refetch()
     } catch (err) {
-      message.error(err instanceof Error ? err.message : 'Không thể cập nhật thông báo')
+      message.error(errorMessage(err, 'Không thể cập nhật thông báo'))
     }
   }
 
@@ -94,11 +98,23 @@ export default function Notifications() {
         Thông báo
       </PageTitle>
 
+      {notificationsQuery.isError && (
+        <Alert
+          className="mb-4"
+          type="error"
+          showIcon
+          message="Không tải được danh sách thông báo"
+          description={errorMessage(notificationsQuery.error)}
+          action={<Button size="small" onClick={() => void notificationsQuery.refetch()}>Thử lại</Button>}
+        />
+      )}
+
       <Table
         rowKey="id"
         loading={loading}
         dataSource={rows}
         pagination={{ current: 1, pageSize: rows.length || 10, total }}
+        locale={{ emptyText: 'Chưa có thông báo nào' }}
         style={{ marginTop: 4 }}
         columns={[
           {
@@ -127,7 +143,7 @@ export default function Notifications() {
               row.is_read ? (
                 <Tag>Đã đọc</Tag>
               ) : (
-                <Button size="small" onClick={() => markRead(row)}>
+                <Button size="small" onClick={() => void markRead(row)}>
                   Đánh dấu đã đọc
                 </Button>
               ),
@@ -135,7 +151,7 @@ export default function Notifications() {
         ]}
       />
 
-      <Modal title="Gửi thông báo" open={open} onCancel={() => setOpen(false)} onOk={submit} okText="Gửi" cancelText="Hủy">
+      <Modal title="Gửi thông báo" open={open} onCancel={() => setOpen(false)} onOk={() => void submit()} okText="Gửi" cancelText="Hủy">
         <Form form={form} layout="vertical" style={{ marginTop: 12 }}>
           <Form.Item name="event_key" label="Loại thông báo" rules={[{ required: true }]}>
             <Select options={Object.entries(EVENT_META).map(([value, meta]) => ({ value, label: meta.label }))} />

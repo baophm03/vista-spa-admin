@@ -30,23 +30,38 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  BizSuccess,
   ConflictResponse,
   GetAppAcademyCourses200,
   GetAppAcademyRegistrations200,
+  GetAppAppointments200,
+  GetAppAvailableSlots200,
   GetAppAvailableSlotsParams,
+  GetAppConfig200,
   GetAppConfigParams,
+  GetAppMe200,
+  GetAppMeMembership200,
+  GetAppMeOrders200,
+  GetAppMeTreatments200,
+  GetAppMeTreatmentsId200,
   GetAppMeTreatmentsIdSessions200,
   GetAppNotifications200,
   GetAppNotificationsParams,
+  GetAppPackages200,
+  GetAppRanks200,
+  GetAppWheels200,
   GetAppWheelsParams,
   InternalErrorResponse,
   NotFoundResponse,
   PostAppAcademyRegistrations200,
   PostAppAcademyRegistrationsBody,
+  PostAppAppointments200,
   PostAppAppointmentsBody,
+  PostAppMeLinkProfile200,
   PostAppMeLinkProfileBody,
+  PostAppOrders200,
   PostAppOrdersBody,
+  PostAppWheelsIdSpin200,
+  PutAppAppointmentsIdCancel200,
   PutAppNotificationsIdRead200,
   UnauthorizedResponse,
   UnprocessableEntityResponse
@@ -68,7 +83,7 @@ export const getAppRanks = (
 ) => {
       
       
-      return customInstance<BizSuccess>(
+      return customInstance<GetAppRanks200>(
       {url: `/app/ranks`, method: 'GET', signal
     },
       );
@@ -262,7 +277,7 @@ export const getAppPackages = (
 ) => {
       
       
-      return customInstance<BizSuccess>(
+      return customInstance<GetAppPackages200>(
       {url: `/app/packages`, method: 'GET', signal
     },
       );
@@ -456,7 +471,7 @@ export const getAppConfig = (
 ) => {
       
       
-      return customInstance<BizSuccess>(
+      return customInstance<GetAppConfig200>(
       {url: `/app/config`, method: 'GET',
         params, signal
     },
@@ -651,7 +666,7 @@ export const getAppAvailableSlots = (
 ) => {
       
       
-      return customInstance<BizSuccess>(
+      return customInstance<GetAppAvailableSlots200>(
       {url: `/app/available-slots`, method: 'GET',
         params, signal
     },
@@ -846,7 +861,7 @@ export const getAppWheels = (
 ) => {
       
       
-      return customInstance<BizSuccess>(
+      return customInstance<GetAppWheels200>(
       {url: `/app/wheels`, method: 'GET',
         params, signal
     },
@@ -1041,7 +1056,7 @@ export const postAppWheelsIdSpin = (
 ) => {
       
       
-      return customInstance<BizSuccess>(
+      return customInstance<PostAppWheelsIdSpin200>(
       {url: `/app/wheels/${id}/spin`, method: 'POST', signal
     },
       );
@@ -1104,7 +1119,7 @@ export const postAppOrders = (
 ) => {
       
       
-      return customInstance<BizSuccess>(
+      return customInstance<PostAppOrders200>(
       {url: `/app/orders`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: postAppOrdersBody, signal
@@ -1426,7 +1441,7 @@ export const getAppMeMembership = (
 ) => {
       
       
-      return customInstance<BizSuccess>(
+      return customInstance<GetAppMeMembership200>(
       {url: `/app/me/membership`, method: 'GET', signal
     },
       );
@@ -1620,7 +1635,7 @@ export const postAppMeLinkProfile = (
 ) => {
       
       
-      return customInstance<BizSuccess>(
+      return customInstance<PostAppMeLinkProfile200>(
       {url: `/app/me/link-profile`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: postAppMeLinkProfileBody, signal
@@ -1685,7 +1700,7 @@ export const getAppMe = (
 ) => {
       
       
-      return customInstance<BizSuccess>(
+      return customInstance<GetAppMe200>(
       {url: `/app/me`, method: 'GET', signal
     },
       );
@@ -1879,7 +1894,7 @@ export const getAppMeTreatmentsId = (
 ) => {
       
       
-      return customInstance<BizSuccess>(
+      return customInstance<GetAppMeTreatmentsId200>(
       {url: `/app/me/treatments/${id}`, method: 'GET', signal
     },
       );
@@ -2073,7 +2088,7 @@ export const getAppMeTreatments = (
 ) => {
       
       
-      return customInstance<BizSuccess>(
+      return customInstance<GetAppMeTreatments200>(
       {url: `/app/me/treatments`, method: 'GET', signal
     },
       );
@@ -2461,7 +2476,7 @@ export const getAppMeOrders = (
 ) => {
       
       
-      return customInstance<BizSuccess>(
+      return customInstance<GetAppMeOrders200>(
       {url: `/app/me/orders`, method: 'GET', signal
     },
       );
@@ -2655,7 +2670,7 @@ export const postAppAppointments = (
 ) => {
       
       
-      return customInstance<BizSuccess>(
+      return customInstance<PostAppAppointments200>(
       {url: `/app/appointments`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: postAppAppointmentsBody, signal
@@ -2720,7 +2735,7 @@ export const getAppAppointments = (
 ) => {
       
       
-      return customInstance<BizSuccess>(
+      return customInstance<GetAppAppointments200>(
       {url: `/app/appointments`, method: 'GET', signal
     },
       );
@@ -2913,7 +2928,7 @@ export const putAppAppointmentsIdCancel = (
  ) => {
       
       
-      return customInstance<BizSuccess>(
+      return customInstance<PutAppAppointmentsIdCancel200>(
       {url: `/app/appointments/${id}/cancel`, method: 'PUT'
     },
       );

@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
-import { Button, Card, Space, Spin, Switch, Table, Tag, Typography, message } from 'antd'
+import { Alert, Button, Card, Space, Spin, Switch, Table, Tag, Typography, message } from 'antd'
 import { PlusOutlined, ReloadOutlined } from '@ant-design/icons'
 import { useQueries } from '@tanstack/react-query'
-import PageTitle from '../components/base/PageTitle'
-import { useGetPermissions } from '../api/endpoints/permissions'
-import { getGetRolesIdPermissionsQueryOptions, useGetRoles, usePutRolesIdPermissions } from '../api/endpoints/roles'
+import PageTitle from '@/components/base/PageTitle'
+import { errorMessage, pickData } from '@/api/helpers'
+import type { PutRolesIdPermissionsBody } from '@/api/models/putRolesIdPermissionsBody'
+import { getGetRolesIdPermissionsQueryOptions, useGetPermissions, useGetRoles, usePutRolesIdPermissions } from '@/api/endpoints/roles'
 
 interface RoleRow {
   id: string
@@ -25,20 +26,27 @@ export default function Roles() {
   const rolesQuery = useGetRoles()
   const permissionsQuery = useGetPermissions()
   const updateMutation = usePutRolesIdPermissions()
-  const roles = ((((rolesQuery.data?.responseData ?? {}) as { rows?: RoleRow[] }).rows ?? []) as RoleRow[])
-  const perms = ((((permissionsQuery.data?.responseData ?? {}) as { rows?: PermRow[] }).rows ?? []) as PermRow[])
+  // Legacy envelope: responseData = { count, rows, totalPages, currentPage }
+  const roles = (pickData<{ rows?: RoleRow[] }>(rolesQuery.data)?.rows ?? []) as RoleRow[]
+  const permissionsPayload = pickData<PermRow[] | { rows?: PermRow[] }>(permissionsQuery.data)
+  const perms = (
+    Array.isArray(permissionsPayload)
+      ? permissionsPayload
+      : permissionsPayload?.rows ?? []
+  ) as PermRow[]
   const rolePermissionQueries = useQueries({
     queries: roles.map((role) => getGetRolesIdPermissionsQueryOptions(role.id)),
   })
   const permissionQueryState = rolePermissionQueries.map((query) => query.dataUpdatedAt).join(',')
   const loading = rolesQuery.isLoading || permissionsQuery.isLoading || rolePermissionQueries.some((query) => query.isLoading)
+  const loadError = rolesQuery.error ?? permissionsQuery.error ?? rolePermissionQueries.find((query) => query.isError)?.error
 
   useEffect(() => {
     if (!roles.length || rolePermissionQueries.some((query) => query.isLoading)) return
     const next: Record<string, Set<string>> = {}
     roles.forEach((role, index) => {
-      const response = rolePermissionQueries[index]?.data
-      const keys = ((response?.responseData ?? (response as any)?.data ?? []) as string[])
+      // responseData là mảng permission key (model gen sai kiểu — đọc bằng pickData rồi cast)
+      const keys = (pickData<string[]>(rolePermissionQueries[index]?.data) ?? []) as string[]
       next[role.id] = new Set(Array.isArray(keys) ? keys : [])
       initialGrants.current[role.id] = [...next[role.id]].sort()
     })
@@ -68,12 +76,16 @@ export default function Roles() {
         return next.length !== prev.length || next.some((k, i) => k !== prev[i])
       })
       for (const role of changed) {
-        await updateMutation.mutateAsync({ id: role.id, data: { permissions: [...(grants[role.id] ?? [])] } })
+        // Backend nhận mảng permission key; model orval gen sai kiểu string nên phải cast
+        await updateMutation.mutateAsync({
+          id: role.id,
+          data: { permissions: [...(grants[role.id] ?? [])] } as unknown as PutRolesIdPermissionsBody,
+        })
       }
       message.success('Đã lưu phân quyền')
       await reload()
     } catch (err) {
-      message.error(err instanceof Error ? err.message : 'Không thể lưu phân quyền')
+      message.error(errorMessage(err, 'Không thể lưu phân quyền'))
     } finally {
       setSaving(false)
     }
@@ -86,11 +98,17 @@ export default function Roles() {
       <PageTitle
         extra={
           <Space className="max-sm:flex! max-sm:w-full! max-sm:flex-wrap!">
-            <Button icon={<ReloadOutlined />} onClick={reload} />
+            <Button icon={<ReloadOutlined />} onClick={() => void reload()} />
             <Button type="primary" icon={<PlusOutlined />} disabled>
               Thêm vai trò (tạo qua API)
             </Button>
-            <Button className="max-sm:flex-1" type="primary" loading={saving} onClick={save}>
+            <Button
+              className="max-sm:flex-1"
+              type="primary"
+              loading={saving}
+              disabled={loading || Boolean(loadError) || perms.length === 0}
+              onClick={() => void save()}
+            >
               Lưu phân quyền
             </Button>
           </Space>
@@ -102,6 +120,25 @@ export default function Roles() {
         <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 12 }}>
           Quyền theo key (VD: appointment.approve) — nhân viên có quyền nào sẽ gọi được API tương ứng. Admin toàn quyền mặc định.
         </Typography.Text>
+        {loadError && (
+          <Alert
+            className="mb-4"
+            type="error"
+            showIcon
+            message="Không tải đủ danh sách vai trò và quyền"
+            description={errorMessage(loadError)}
+            action={<Button size="small" onClick={() => void reload()}>Thử lại</Button>}
+          />
+        )}
+        {!loading && !loadError && permissionsQuery.isSuccess && perms.length === 0 && (
+          <Alert
+            className="mb-4"
+            type="warning"
+            showIcon
+            message="Danh mục quyền đang trống"
+            description="BE chưa trả về permission key nào; cần đồng bộ danh mục quyền trước khi phân quyền."
+          />
+        )}
         <Spin spinning={loading}>
           <Table
             rowKey="id"

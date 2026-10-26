@@ -8,5 +8,5 @@
 import type { AcademyCourse } from './academyCourse';
 
 export type GetAcademyCourses200AllOf = {
-  data?: AcademyCourse;
+  responseData?: AcademyCourse;
 };

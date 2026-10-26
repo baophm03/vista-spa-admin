@@ -8,5 +8,5 @@
 import type { LookupItem } from './lookupItem';
 
 export type PutLookupItemsId200AllOf = {
-  data?: LookupItem;
+  responseData?: LookupItem;
 };

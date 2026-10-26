@@ -8,5 +8,5 @@
 import type { CustomFieldDef } from './customFieldDef';
 
 export type PostCustomFieldDefs200AllOf = {
-  data?: CustomFieldDef;
+  responseData?: CustomFieldDef;
 };

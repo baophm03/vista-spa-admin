@@ -8,5 +8,5 @@
 import type { Branch } from './branch';
 
 export type PostBranchesIdActivate200AllOf = {
-  data?: Branch;
+  responseData?: Branch;
 };

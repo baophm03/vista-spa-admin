@@ -8,5 +8,5 @@
 import type { ServiceCategory } from './serviceCategory';
 
 export type GetServiceCategoriesId200AllOf = {
-  data?: ServiceCategory;
+  responseData?: ServiceCategory;
 };

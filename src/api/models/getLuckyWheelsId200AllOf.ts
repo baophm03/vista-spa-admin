@@ -8,5 +8,5 @@
 import type { LuckyWheel } from './luckyWheel';
 
 export type GetLuckyWheelsId200AllOf = {
-  data?: LuckyWheel;
+  responseData?: LuckyWheel;
 };

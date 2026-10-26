@@ -8,5 +8,5 @@
 import type { ProductCategory } from './productCategory';
 
 export type PostProductCategories200AllOf = {
-  data?: ProductCategory;
+  responseData?: ProductCategory;
 };

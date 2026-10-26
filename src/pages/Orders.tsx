@@ -1,235 +1,244 @@
-import { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Button, Card, Col, Form, Input, InputNumber, Modal, Popconfirm, Row, Segmented, Select, Space, Statistic, Table, Tag, Typography, Alert, message } from 'antd'
-import { PlusOutlined } from '@ant-design/icons'
-import PageTitle from '../components/base/PageTitle'
-import { CUSTOMERS, ORDERS, PRODUCTS } from '../mock/admin'
-import type { Order } from '../mock/admin'
+import { useEffect, useState } from 'react'
+import { Button, Descriptions, Input, Modal, Popconfirm, Select, Space, Table, Tag, Typography, message } from 'antd'
+import type { TableColumnsType } from 'antd'
+import { ReloadOutlined, SearchOutlined } from '@ant-design/icons'
+import { useQuery } from '@tanstack/react-query'
+import PageTitle from '@/components/base/PageTitle'
+import { errorMessage, pickData, pickMeta } from '@/api/helpers'
+import { formatDateTime } from '@/themeRuntime'
+import { getProductOrders, getGetProductOrdersQueryKey, putProductOrdersId } from '@/api/endpoints/products'
+import type { ProductOrder } from '@/api/models/productOrder'
+import type { ProductOrderItem } from '@/api/models/productOrderItem'
 
-type OrderStatus = Order['status']
+type ProductOrderStatus = 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED'
 
-export const ORDER_STATUS_META: Record<OrderStatus, { label: string; color: string }> = {
-  pending: { label: 'Chờ xác nhận', color: 'orange' },
-  confirmed: { label: 'Đã xác nhận', color: 'purple' },
-  shipping: { label: 'Đang giao', color: 'geekblue' },
-  done: { label: 'Hoàn tất', color: 'green' },
-  cancelled: { label: 'Đã hủy', color: 'default' },
+/** BE include kèm `items` khi list. */
+type ProductOrderRow = ProductOrder & { items?: ProductOrderItem[] }
+
+const STATUS_META: Record<ProductOrderStatus, { label: string; color: string }> = {
+  PENDING: { label: 'Chờ xử lý', color: 'orange' },
+  CONFIRMED: { label: 'Đã xác nhận', color: 'blue' },
+  COMPLETED: { label: 'Hoàn thành', color: 'green' },
+  CANCELLED: { label: 'Đã hủy', color: 'default' },
 }
 
-const FILTERS = [
-  { value: 'all', label: 'Tất cả' },
-  { value: 'pending', label: 'Chờ xác nhận' },
-  { value: 'confirmed', label: 'Đã xác nhận' },
-  { value: 'shipping', label: 'Đang giao' },
-  { value: 'done', label: 'Hoàn tất' },
-  { value: 'cancelled', label: 'Đã hủy' },
-]
+const NEXT_ACTIONS: Record<ProductOrderStatus, { status: ProductOrderStatus; label: string; danger?: boolean }[]> = {
+  PENDING: [
+    { status: 'CONFIRMED', label: 'Xác nhận' },
+    { status: 'CANCELLED', label: 'Hủy đơn', danger: true },
+  ],
+  CONFIRMED: [
+    { status: 'COMPLETED', label: 'Hoàn thành' },
+    { status: 'CANCELLED', label: 'Hủy đơn', danger: true },
+  ],
+  COMPLETED: [],
+  CANCELLED: [],
+}
+
+function formatMoney(value?: number | string | null) {
+  return `${Number(value ?? 0).toLocaleString('vi-VN')} ₫`
+}
 
 export default function Orders() {
-  const navigate = useNavigate()
-  const [rows, setRows] = useState<Order[]>(ORDERS)
-  const [filter, setFilter] = useState<string>('all')
-  const [open, setOpen] = useState(false)
-  const [form] = Form.useForm()
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
+  const [searchText, setSearchText] = useState('')
+  const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState<ProductOrderStatus | undefined>()
+  const [detail, setDetail] = useState<ProductOrderRow | null>(null)
 
-  const list = useMemo(
-    () => (filter === 'all' ? rows : rows.filter((r) => r.status === filter)),
-    [rows, filter],
-  )
-
-  const stats = useMemo(
-    () => ({
-      total: rows.length,
-      pending: rows.filter((r) => r.status === 'pending').length,
-      shipping: rows.filter((r) => r.status === 'shipping').length,
-      revenue: rows.filter((r) => r.status === 'done').reduce((s, r) => s + r.items.reduce((x, i) => x + i.price * i.qty, 0), 0),
+  const ordersQuery = useQuery({
+    queryKey: getGetProductOrdersQueryKey({
+      page,
+      limit: pageSize,
+      ...(search.trim() ? { q: search.trim() } : {}),
+      ...(statusFilter ? { status: statusFilter } : {}),
     }),
-    [rows],
-  )
+    queryFn: async () =>
+      await getProductOrders({
+        page,
+        limit: pageSize,
+        ...(search.trim() ? { q: search.trim() } : {}),
+        ...(statusFilter ? { status: statusFilter } : {}),
+      }),
+  })
+  const rows = (pickData<ProductOrderRow[]>(ordersQuery.data) ?? []) as ProductOrderRow[]
+  const total = pickMeta(ordersQuery.data)?.total ?? rows.length
 
-  const submit = async () => {
-    const values = await form.validateFields()
-    const product = PRODUCTS.find((p) => p.name === values.product)
-    setRows((rs) => [
-      {
-        id: String(Date.now()),
-        code: `HD-${10250 + rs.length}`,
-        customer: values.customer,
-        phone: CUSTOMERS.find((c) => c.name === values.customer)?.phone ?? '',
-        address: values.address,
-        payment: values.payment,
-        date: values.date?.format?.('DD/MM/YYYY') ?? new Date().toLocaleDateString('vi-VN'),
-        status: 'pending',
-        items: product
-          ? [{ name: product.name, image: product.image, price: product.price, qty: values.quantity }]
-          : [],
-      },
-      ...rs,
-    ])
-    message.success('Đã tạo đơn hàng')
-    setOpen(false)
+  // Debounce 300ms cho ô tìm kiếm
+  useEffect(() => {
+    const timer = window.setTimeout(() => setSearch(searchText), 300)
+    return () => window.clearTimeout(timer)
+  }, [searchText])
+
+  const changeStatus = async (row: ProductOrderRow, status: ProductOrderStatus) => {
+    try {
+      await putProductOrdersId(row.id, { status })
+      message.success(`Đã chuyển đơn ${row.code} sang "${STATUS_META[status].label}"`)
+      if (detail?.id === row.id) setDetail({ ...detail, status })
+      await ordersQuery.refetch()
+    } catch (err) {
+      message.error(errorMessage(err))
+    }
   }
+
+  const columns: TableColumnsType<ProductOrderRow> = [
+    { title: 'Mã đơn', dataIndex: 'code', width: 160, render: (v: string) => <strong>{v}</strong> },
+    {
+      title: 'Khách hàng',
+      key: 'customer',
+      render: (_v, row) => (
+        <div>
+          <div style={{ fontWeight: 500 }}>{row.customer_name}</div>
+          <Typography.Text type="secondary" style={{ fontSize: 12 }}>{row.phone}</Typography.Text>
+        </div>
+      ),
+    },
+    {
+      title: 'Sản phẩm',
+      key: 'items',
+      render: (_v, row) => {
+        const items = row.items ?? []
+        if (!items.length) return '—'
+        const names = items.map((i) => `${i.product_name} ×${i.qty ?? 1}`).join(', ')
+        return <Typography.Text style={{ fontSize: 13 }} ellipsis={{ tooltip: names }}>{names}</Typography.Text>
+      },
+    },
+    { title: 'Tổng tiền', dataIndex: 'total_amount', width: 130, render: (v?: number | null) => formatMoney(v) },
+    {
+      title: 'Trạng thái',
+      dataIndex: 'status',
+      width: 130,
+      render: (v?: string | null) => <Tag color={STATUS_META[v as ProductOrderStatus]?.color}>{STATUS_META[v as ProductOrderStatus]?.label ?? v}</Tag>,
+    },
+    { title: 'Ngày đặt', dataIndex: 'created_at', width: 170, render: (v?: string | null) => (v ? formatDateTime(v) : '—') },
+    {
+      title: 'Thao tác',
+      key: 'actions',
+      width: 220,
+      render: (_v, row) => (
+        <Space>
+          <Button size="small" onClick={() => setDetail(row)}>Chi tiết</Button>
+          {(NEXT_ACTIONS[(row.status as ProductOrderStatus) ?? 'PENDING'] ?? []).map((action) => (
+            <Popconfirm
+              key={action.status}
+              title={`${action.label} đơn ${row.code}?`}
+              okText={action.label}
+              cancelText="Đóng"
+              onConfirm={() => void changeStatus(row, action.status)}
+            >
+              <Button size="small" danger={action.danger} type={action.danger ? 'default' : 'primary'}>{action.label}</Button>
+            </Popconfirm>
+          ))}
+        </Space>
+      ),
+    },
+  ]
+
+  const itemColumns: TableColumnsType<ProductOrderItem> = [
+    { title: 'Tên', dataIndex: 'product_name' },
+    { title: 'Đơn giá', dataIndex: 'price', width: 120, render: (v?: number | null) => formatMoney(v) },
+    { title: 'SL', dataIndex: 'qty', width: 60 },
+    { title: 'Thành tiền', dataIndex: 'subtotal', width: 130, render: (v?: number | null) => formatMoney(v) },
+  ]
+
+  const detailStatus = (detail?.status as ProductOrderStatus) ?? 'PENDING'
 
   return (
     <>
-      <PageTitle
-        extra={
-          <Space className="max-sm:flex! max-sm:w-full! max-sm:flex-wrap!">
-            <div className="max-w-full overflow-x-auto">
-              <Segmented options={FILTERS} value={filter} onChange={(v) => setFilter(v as string)} />
-            </div>
-            <Button className="max-sm:w-full" type="primary" icon={<PlusOutlined />} onClick={() => { form.setFieldsValue({ customer: undefined, product: undefined, quantity: 1, address: '', payment: 'COD' }); setOpen(true) }}>
-              Tạo đơn hàng
-            </Button>
-          </Space>
-        }
-      >
-        Đơn hàng
-      </PageTitle>
-      <Alert
-        type="warning"
-        showIcon
-        style={{ marginBottom: 16 }}
-        message="Dữ liệu minh họa — backend chưa có module đơn hàng. Các thao tác chỉ lưu tạm trên trình duyệt."
-      />
+      <PageTitle>Đơn hàng</PageTitle>
+      <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 16 }} wrap>
+        <Space wrap>
+          <Input
+            allowClear
+            value={searchText}
+            onChange={(e) => { setSearchText(e.target.value); setPage(1) }}
+            prefix={<SearchOutlined />}
+            placeholder="Tìm mã đơn, tên, SĐT"
+            style={{ width: 260 }}
+          />
+          <Select
+            allowClear
+            value={statusFilter}
+            placeholder="Trạng thái"
+            style={{ width: 160 }}
+            onChange={(v) => { setStatusFilter(v as ProductOrderStatus | undefined); setPage(1) }}
+            options={Object.entries(STATUS_META).map(([value, meta]) => ({ value, label: meta.label }))}
+          />
+        </Space>
+        <Button icon={<ReloadOutlined />} onClick={() => void ordersQuery.refetch()}>Tải lại</Button>
+      </Space>
 
-      <Row gutter={[16, 16]} style={{ marginBottom: 20 }}>
-        <Col xs={12} md={6}>
-          <Card styles={{ body: { padding: '16px 20px' } }}>
-            <Statistic title="Tổng đơn hàng" value={stats.total} />
-          </Card>
-        </Col>
-        <Col xs={12} md={6}>
-          <Card styles={{ body: { padding: '16px 20px' } }}>
-            <Statistic title="Chờ xác nhận" value={stats.pending} valueStyle={{ color: '#D97706' }} />
-          </Card>
-        </Col>
-        <Col xs={12} md={6}>
-          <Card styles={{ body: { padding: '16px 20px' } }}>
-            <Statistic title="Đang giao" value={stats.shipping} valueStyle={{ color: '#3B5BDB' }} />
-          </Card>
-        </Col>
-        <Col xs={12} md={6}>
-          <Card styles={{ body: { padding: '16px 20px' } }}>
-            <Statistic title="Doanh thu bán lẻ" value={stats.revenue} suffix="đ" valueStyle={{ color: 'var(--brand-primary)' }} />
-          </Card>
-        </Col>
-      </Row>
-
-      <Table
+      <Table<ProductOrderRow>
         rowKey="id"
-        dataSource={list}
-        onRow={(row) => ({ onClick: () => navigate(`/orders/${row.id}`), style: { cursor: 'pointer' } })}
-        columns={[
-          {
-            title: 'Mã đơn',
-            dataIndex: 'code',
-            width: 110,
-            render: (v) => <Typography.Text strong style={{ color: 'var(--brand-dark)' }}>{v}</Typography.Text>,
-          },
-          {
-            title: 'Khách hàng',
-            dataIndex: 'customer',
-            render: (v, row) => (
-              <div>
-                <div style={{ fontWeight: 500 }}>{v}</div>
-                <div style={{ fontSize: 12, color: '#6F7071' }}>{row.phone}</div>
-              </div>
-            ),
-          },
-          {
-            title: 'Sản phẩm',
-            dataIndex: 'items',
-            render: (_, row) => (
-              <Space>
-                <img src={row.items[0]?.image} alt="" width={36} height={36} style={{ borderRadius: 12, objectFit: 'cover' }} />
-                <div>
-                  <div style={{ fontSize: 13 }}>{row.items[0]?.name}</div>
-                  {row.items.length > 1 && (
-                    <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                      +{row.items.length - 1} sản phẩm khác
-                    </Typography.Text>
-                  )}
-                </div>
-              </Space>
-            ),
-          },
-          {
-            title: 'Tổng tiền',
-            width: 130,
-            render: (_, row) => (
-              <span style={{ fontWeight: 600 }}>
-                {row.items.reduce((s, i) => s + i.price * i.qty, 0).toLocaleString('vi-VN')}đ
-              </span>
-            ),
-          },
-          { title: 'Thanh toán', dataIndex: 'payment', width: 120 },
-          { title: 'Ngày', dataIndex: 'date', width: 110 },
-          {
-            title: 'Trạng thái',
-            dataIndex: 'status',
-            width: 130,
-            render: (v: OrderStatus) => <Tag color={ORDER_STATUS_META[v].color}>{ORDER_STATUS_META[v].label}</Tag>,
-          },
-          {
-            title: '',
-            width: 80,
-            render: (_, row) => (
-              <Popconfirm
-                title="Xóa đơn hàng này?"
-                okText="Xóa"
-                cancelText="Hủy"
-                onConfirm={(e) => {
-                  e?.stopPropagation()
-                  setRows((rs) => rs.filter((r) => r.id !== row.id))
-                  message.success('Đã xóa đơn hàng')
-                }}
-                onCancel={(e) => e?.stopPropagation()}
-              >
-                <Button size="small" danger onClick={(e) => e.stopPropagation()}>
-                  Xóa
-                </Button>
-              </Popconfirm>
-            ),
-          },
-        ]}
+        loading={ordersQuery.isFetching}
+        dataSource={rows}
+        columns={columns}
+        pagination={{
+          current: page,
+          pageSize,
+          total,
+          showSizeChanger: true,
+          showTotal: (count) => `${count} đơn`,
+        }}
+        onChange={(pagination) => {
+          if (pagination.current) setPage(pagination.current)
+          if (pagination.pageSize && pagination.pageSize !== pageSize) {
+            setPageSize(pagination.pageSize)
+            setPage(1)
+          }
+        }}
       />
 
-      <Modal title="Tạo đơn hàng" open={open} onCancel={() => setOpen(false)} onOk={submit} okText="Tạo đơn" cancelText="Hủy">
-        <Form form={form} layout="vertical" style={{ marginTop: 12 }}>
-          <Form.Item name="customer" label="Khách hàng" rules={[{ required: true, message: 'Chọn khách hàng' }]}>
-            <Select
-              showSearch
-              optionFilterProp="label"
-              placeholder="Chọn khách hàng"
-              options={CUSTOMERS.map((c) => ({ value: c.name, label: `${c.name} — ${c.code}` }))}
+      <Modal
+        title={`Đơn hàng ${detail?.code ?? ''}`}
+        open={!!detail}
+        footer={null}
+        onCancel={() => setDetail(null)}
+        width={640}
+      >
+        {detail && (
+          <>
+            <Descriptions size="small" column={2} style={{ marginTop: 12 }}>
+              <Descriptions.Item label="Trạng thái">
+                <Tag color={STATUS_META[detailStatus]?.color}>{STATUS_META[detailStatus]?.label}</Tag>
+              </Descriptions.Item>
+              <Descriptions.Item label="Ngày đặt">{detail.created_at ? formatDateTime(detail.created_at) : '—'}</Descriptions.Item>
+              <Descriptions.Item label="Khách hàng">{detail.customer_name}</Descriptions.Item>
+              <Descriptions.Item label="SĐT">{detail.phone}</Descriptions.Item>
+              <Descriptions.Item label="Địa chỉ" span={2}>{detail.address || '—'}</Descriptions.Item>
+              <Descriptions.Item label="Ghi chú" span={2}>{detail.note || '—'}</Descriptions.Item>
+            </Descriptions>
+            <Typography.Title level={5} style={{ marginTop: 16 }}>Sản phẩm</Typography.Title>
+            <Table<ProductOrderItem>
+              rowKey="id"
+              size="small"
+              pagination={false}
+              dataSource={detail.items ?? []}
+              columns={itemColumns}
+              summary={() => (
+                <Table.Summary.Row>
+                  <Table.Summary.Cell index={0} colSpan={3}><strong>Tổng cộng</strong></Table.Summary.Cell>
+                  <Table.Summary.Cell index={1}><strong>{formatMoney(detail.total_amount)}</strong></Table.Summary.Cell>
+                </Table.Summary.Row>
+              )}
             />
-          </Form.Item>
-          <Form.Item name="product" label="Sản phẩm" rules={[{ required: true, message: 'Chọn sản phẩm' }]}>
-            <Select
-              showSearch
-              optionFilterProp="label"
-              placeholder="Chọn sản phẩm"
-              options={PRODUCTS.filter((p) => p.is_active).map((p) => ({
-                value: p.name,
-                label: `${p.name} — ${p.price.toLocaleString('vi-VN')}đ`,
-              }))}
-            />
-          </Form.Item>
-          <Space style={{ display: 'flex' }}>
-            <Form.Item name="quantity" label="Số lượng" rules={[{ required: true }]} style={{ flex: 1 }}>
-              <InputNumber min={1} style={{ width: '100%' }} />
-            </Form.Item>
-            <Form.Item name="payment" label="Thanh toán" style={{ flex: 1 }}>
-              <Select options={['COD', 'ZaloPay', 'Chuyển khoản'].map((p) => ({ value: p, label: p }))} />
-            </Form.Item>
-          </Space>
-          <Form.Item name="address" label="Địa chỉ giao hàng" rules={[{ required: true, message: 'Nhập địa chỉ' }]}>
-            <Input placeholder="Số nhà, đường, quận..." />
-          </Form.Item>
-        </Form>
+            <Space style={{ marginTop: 16 }}>
+              {(NEXT_ACTIONS[detailStatus] ?? []).map((action) => (
+                <Popconfirm
+                  key={action.status}
+                  title={`${action.label} đơn ${detail.code}?`}
+                  okText={action.label}
+                  cancelText="Đóng"
+                  onConfirm={() => void changeStatus(detail, action.status)}
+                >
+                  <Button danger={action.danger} type={action.danger ? 'default' : 'primary'}>{action.label}</Button>
+                </Popconfirm>
+              ))}
+            </Space>
+          </>
+        )}
       </Modal>
     </>
   )
 }
-

@@ -8,5 +8,5 @@
 import type { CustomerHealthRecord } from './customerHealthRecord';
 
 export type GetHealthRecordsLatest200AllOf = {
-  data?: CustomerHealthRecord;
+  responseData?: CustomerHealthRecord;
 };

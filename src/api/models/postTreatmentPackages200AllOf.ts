@@ -8,5 +8,5 @@
 import type { TreatmentPackage } from './treatmentPackage';
 
 export type PostTreatmentPackages200AllOf = {
-  data?: TreatmentPackage;
+  responseData?: TreatmentPackage;
 };

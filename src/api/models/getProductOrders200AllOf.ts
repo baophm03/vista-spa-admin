@@ -6,7 +6,9 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { ProductOrder } from './productOrder';
+import type { PaginationMeta } from './paginationMeta';
 
 export type GetProductOrders200AllOf = {
-  data?: ProductOrder[];
+  responseData?: ProductOrder[];
+  meta?: PaginationMeta;
 };

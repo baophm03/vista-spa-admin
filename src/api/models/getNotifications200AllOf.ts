@@ -6,7 +6,9 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { Notification } from './notification';
+import type { PaginationMeta } from './paginationMeta';
 
 export type GetNotifications200AllOf = {
-  data?: Notification[];
+  responseData?: Notification[];
+  meta?: PaginationMeta;
 };

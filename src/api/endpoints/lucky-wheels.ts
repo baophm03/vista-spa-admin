@@ -45,6 +45,7 @@ import type {
   PostLuckyWheelsIdPrizes200,
   PostLuckyWheelsIdPrizesBody,
   PutLuckyWheelsId200,
+  PutLuckyWheelsIdBody,
   UnauthorizedResponse,
   UnprocessableEntityResponse
 } from '../models';
@@ -255,11 +256,14 @@ export const prefetchGetLuckyWheelsIdQuery = async <TData = Awaited<ReturnType<t
  */
 export const putLuckyWheelsId = (
     id: string,
+    putLuckyWheelsIdBody?: PutLuckyWheelsIdBody,
  ) => {
       
       
       return customInstance<PutLuckyWheelsId200>(
-      {url: `/luckyWheels/${id}`, method: 'PUT'
+      {url: `/luckyWheels/${id}`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: putLuckyWheelsIdBody
     },
       );
     }
@@ -267,8 +271,8 @@ export const putLuckyWheelsId = (
 
 
 export const getPutLuckyWheelsIdMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putLuckyWheelsId>>, TError,{id: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putLuckyWheelsId>>, TError,{id: string}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putLuckyWheelsId>>, TError,{id: string;data: PutLuckyWheelsIdBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putLuckyWheelsId>>, TError,{id: string;data: PutLuckyWheelsIdBody}, TContext> => {
 
 const mutationKey = ['putLuckyWheelsId'];
 const {mutation: mutationOptions} = options ?
@@ -280,10 +284,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putLuckyWheelsId>>, {id: string}> = (props) => {
-          const {id} = props ?? {};
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putLuckyWheelsId>>, {id: string;data: PutLuckyWheelsIdBody}> = (props) => {
+          const {id,data} = props ?? {};
 
-          return  putLuckyWheelsId(id,)
+          return  putLuckyWheelsId(id,data,)
         }
 
         
@@ -292,18 +296,18 @@ const {mutation: mutationOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type PutLuckyWheelsIdMutationResult = NonNullable<Awaited<ReturnType<typeof putLuckyWheelsId>>>
-    
+    export type PutLuckyWheelsIdMutationBody = PutLuckyWheelsIdBody
     export type PutLuckyWheelsIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
  * @summary Cập nhật vòng quay may mắn
  */
 export const usePutLuckyWheelsId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putLuckyWheelsId>>, TError,{id: string}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putLuckyWheelsId>>, TError,{id: string;data: PutLuckyWheelsIdBody}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof putLuckyWheelsId>>,
         TError,
-        {id: string},
+        {id: string;data: PutLuckyWheelsIdBody},
         TContext
       > => {
 

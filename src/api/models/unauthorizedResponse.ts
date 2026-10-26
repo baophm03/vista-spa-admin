@@ -5,9 +5,7 @@
  * Vista Spa backend API. Uses the NEWSKY+ business error envelope for permission-aware endpoints and the legacy response envelope for existing admin endpoints.
  * OpenAPI spec version: 1.0.0
  */
-import type { BizError } from './bizError';
+import type { Response } from './response';
+import type { UnauthorizedResponseAllOf } from './unauthorizedResponseAllOf';
 
-/**
- * Unauthorized - missing, expired, or invalid bearer token
- */
-export type UnauthorizedResponse = BizError;
+export type UnauthorizedResponse = Response & UnauthorizedResponseAllOf;

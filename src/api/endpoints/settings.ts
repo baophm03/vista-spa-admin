@@ -30,7 +30,7 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  BizSuccess,
+  BrandSettingsUpdate,
   ConflictResponse,
   DeleteCustomFieldDefsId200,
   DeleteDiscountRulesId200,
@@ -43,18 +43,21 @@ import type {
   GetDiscountRules200,
   GetDiscountRulesId200,
   GetDiscountRulesParams,
+  GetIntegrations200,
   GetLookupLists200,
   GetLookupListsId200,
   GetLookupListsParams,
   GetSettings200,
   GetSettingsBrand200,
   GetSettingsParams,
+  GetSkinTypes200,
   InternalErrorResponse,
   NotFoundResponse,
   PostCustomFieldDefs200,
   PostCustomFieldDefsBody,
   PostDiscountRules200,
   PostDiscountRulesBody,
+  PostIntegrationsProviderTest200,
   PostIntegrationsProviderTestBody,
   PostLookupLists200,
   PostLookupListsBody,
@@ -64,6 +67,7 @@ import type {
   PutCustomFieldDefsIdBody,
   PutDiscountRulesId200,
   PutDiscountRulesIdBody,
+  PutIntegrationsProvider200,
   PutIntegrationsProviderBody,
   PutLookupItemsId200,
   PutLookupItemsIdBody,
@@ -72,7 +76,6 @@ import type {
   PutSettings200,
   PutSettingsBody,
   PutSettingsBrand200,
-  Setting,
   UnauthorizedResponse,
   UnprocessableEntityResponse
 } from '../models';
@@ -93,7 +96,7 @@ export const getSkinTypes = (
 ) => {
       
       
-      return customInstance<BizSuccess>(
+      return customInstance<GetSkinTypes200>(
       {url: `/skinTypes`, method: 'GET', signal
     },
       );
@@ -735,14 +738,14 @@ export const prefetchGetSettingsBrandQuery = async <TData = Awaited<ReturnType<t
  * @summary Cập nhật cấu hình thương hiệu và khu vực
  */
 export const putSettingsBrand = (
-    setting: Setting,
+    brandSettingsUpdate: BrandSettingsUpdate,
  ) => {
       
       
       return customInstance<PutSettingsBrand200>(
       {url: `/settings/brand`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
-      data: setting
+      data: brandSettingsUpdate
     },
       );
     }
@@ -750,8 +753,8 @@ export const putSettingsBrand = (
 
 
 export const getPutSettingsBrandMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putSettingsBrand>>, TError,{data: Setting}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putSettingsBrand>>, TError,{data: Setting}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putSettingsBrand>>, TError,{data: BrandSettingsUpdate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putSettingsBrand>>, TError,{data: BrandSettingsUpdate}, TContext> => {
 
 const mutationKey = ['putSettingsBrand'];
 const {mutation: mutationOptions} = options ?
@@ -763,7 +766,7 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putSettingsBrand>>, {data: Setting}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putSettingsBrand>>, {data: BrandSettingsUpdate}> = (props) => {
           const {data} = props ?? {};
 
           return  putSettingsBrand(data,)
@@ -775,18 +778,18 @@ const {mutation: mutationOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type PutSettingsBrandMutationResult = NonNullable<Awaited<ReturnType<typeof putSettingsBrand>>>
-    export type PutSettingsBrandMutationBody = Setting
+    export type PutSettingsBrandMutationBody = BrandSettingsUpdate
     export type PutSettingsBrandMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
  * @summary Cập nhật cấu hình thương hiệu và khu vực
  */
 export const usePutSettingsBrand = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putSettingsBrand>>, TError,{data: Setting}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putSettingsBrand>>, TError,{data: BrandSettingsUpdate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof putSettingsBrand>>,
         TError,
-        {data: Setting},
+        {data: BrandSettingsUpdate},
         TContext
       > => {
 
@@ -1578,7 +1581,7 @@ export const putIntegrationsProvider = (
  ) => {
       
       
-      return customInstance<BizSuccess>(
+      return customInstance<PutIntegrationsProvider200>(
       {url: `/integrations/${provider}`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: putIntegrationsProviderBody
@@ -1643,7 +1646,7 @@ export const getIntegrations = (
 ) => {
       
       
-      return customInstance<BizSuccess>(
+      return customInstance<GetIntegrations200>(
       {url: `/integrations`, method: 'GET', signal
     },
       );
@@ -1838,7 +1841,7 @@ export const postIntegrationsProviderTest = (
 ) => {
       
       
-      return customInstance<BizSuccess>(
+      return customInstance<PostIntegrationsProviderTest200>(
       {url: `/integrations/${provider}/test`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: postIntegrationsProviderTestBody, signal

@@ -8,5 +8,5 @@
 import type { Role } from './role';
 
 export type GetRolesIdPermissions200AllOf = {
-  data?: Role;
+  responseData?: Role;
 };

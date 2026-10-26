@@ -6,7 +6,9 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { WarrantyClaim } from './warrantyClaim';
+import type { PaginationMeta } from './paginationMeta';
 
 export type GetWarrantyClaims200AllOf = {
-  data?: WarrantyClaim[];
+  responseData?: WarrantyClaim[];
+  meta?: PaginationMeta;
 };

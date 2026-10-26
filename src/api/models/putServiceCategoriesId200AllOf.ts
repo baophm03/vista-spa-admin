@@ -8,5 +8,5 @@
 import type { ServiceCategory } from './serviceCategory';
 
 export type PutServiceCategoriesId200AllOf = {
-  data?: ServiceCategory;
+  responseData?: ServiceCategory;
 };

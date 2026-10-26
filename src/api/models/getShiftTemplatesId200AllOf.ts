@@ -8,5 +8,5 @@
 import type { ShiftTemplate } from './shiftTemplate';
 
 export type GetShiftTemplatesId200AllOf = {
-  data?: ShiftTemplate;
+  responseData?: ShiftTemplate;
 };

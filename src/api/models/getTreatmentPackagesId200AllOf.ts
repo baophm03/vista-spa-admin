@@ -8,5 +8,5 @@
 import type { TreatmentPackage } from './treatmentPackage';
 
 export type GetTreatmentPackagesId200AllOf = {
-  data?: TreatmentPackage;
+  responseData?: TreatmentPackage;
 };

@@ -6,8 +6,8 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type BrandSettingsLocale = {
+export interface BrandSettingsLocale {
   timezone: string;
   currency: string;
   language: string;
-};
+}

@@ -8,5 +8,5 @@
 import type { Role } from './role';
 
 export type PutRolesIdPermissions200AllOf = {
-  data?: Role;
+  responseData?: Role;
 };

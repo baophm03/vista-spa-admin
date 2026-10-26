@@ -6,7 +6,9 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { AccessLog } from './accessLog';
+import type { PaginationMeta } from './paginationMeta';
 
 export type GetAccessLogs200AllOf = {
-  data?: AccessLog[];
+  responseData?: AccessLog[];
+  meta?: PaginationMeta;
 };

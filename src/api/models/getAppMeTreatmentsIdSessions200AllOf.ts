@@ -8,5 +8,5 @@
 import type { TreatmentSession } from './treatmentSession';
 
 export type GetAppMeTreatmentsIdSessions200AllOf = {
-  data?: TreatmentSession;
+  responseData?: TreatmentSession;
 };

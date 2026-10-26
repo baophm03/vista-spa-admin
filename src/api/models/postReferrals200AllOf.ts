@@ -8,5 +8,5 @@
 import type { Referral } from './referral';
 
 export type PostReferrals200AllOf = {
-  data?: Referral;
+  responseData?: Referral;
 };

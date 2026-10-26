@@ -30,11 +30,10 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  BizSuccess,
-  BizSuccessList,
   ConflictResponse,
   DeleteRewardsId200,
   ForbiddenResponse,
+  GetRewardRedemptions200,
   GetRewardRedemptionsParams,
   GetRewards200,
   GetRewardsId200,
@@ -42,7 +41,9 @@ import type {
   InternalErrorResponse,
   NotFoundResponse,
   PostRewards200,
+  PutRewardRedemptionsIdCancel200,
   PutRewardRedemptionsIdCancelBody,
+  PutRewardRedemptionsIdUse200,
   PutRewardsId200,
   Reward,
   UnauthorizedResponse,
@@ -646,7 +647,7 @@ export const getRewardRedemptions = (
 ) => {
       
       
-      return customInstance<BizSuccessList>(
+      return customInstance<GetRewardRedemptions200>(
       {url: `/reward-redemptions`, method: 'GET',
         params, signal
     },
@@ -840,7 +841,7 @@ export const putRewardRedemptionsIdUse = (
  ) => {
       
       
-      return customInstance<BizSuccess>(
+      return customInstance<PutRewardRedemptionsIdUse200>(
       {url: `/reward-redemptions/${id}/use`, method: 'PUT'
     },
       );
@@ -903,7 +904,7 @@ export const putRewardRedemptionsIdCancel = (
  ) => {
       
       
-      return customInstance<BizSuccess>(
+      return customInstance<PutRewardRedemptionsIdCancel200>(
       {url: `/reward-redemptions/${id}/cancel`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: putRewardRedemptionsIdCancelBody

@@ -8,5 +8,5 @@
 import type { LookupItem } from './lookupItem';
 
 export type DeleteLookupItemsId200AllOf = {
-  data?: LookupItem;
+  responseData?: LookupItem;
 };

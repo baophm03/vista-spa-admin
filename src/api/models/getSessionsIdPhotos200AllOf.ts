@@ -8,5 +8,5 @@
 import type { TreatmentSession } from './treatmentSession';
 
 export type GetSessionsIdPhotos200AllOf = {
-  data?: TreatmentSession;
+  responseData?: TreatmentSession;
 };

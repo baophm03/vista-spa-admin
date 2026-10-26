@@ -8,5 +8,5 @@
 import type { Notification } from './notification';
 
 export type PutNotificationsId200AllOf = {
-  data?: Notification;
+  responseData?: Notification;
 };

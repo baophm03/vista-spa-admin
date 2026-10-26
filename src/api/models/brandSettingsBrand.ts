@@ -8,9 +8,11 @@
 import type { BrandSettingsBrandLogoFileId } from './brandSettingsBrandLogoFileId';
 import type { BrandSettingsBrandLogoUrl } from './brandSettingsBrandLogoUrl';
 
-export type BrandSettingsBrand = {
+export interface BrandSettingsBrand {
   name: string;
-  logo_file_id: BrandSettingsBrandLogoFileId;
-  logo_url: BrandSettingsBrandLogoUrl;
+  /** Đường dẫn/logo file đã upload qua POST /files */
+  logo_file_id?: BrandSettingsBrandLogoFileId;
+  /** URL logo (đọc từ logo_file_id) */
+  logo_url?: BrandSettingsBrandLogoUrl;
   primary_color: string;
-};
+}

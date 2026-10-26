@@ -6,4 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 
+/**
+ * Đường dẫn/logo file đã upload qua POST /files
+ */
 export type BrandSettingsBrandLogoFileId = string | null;

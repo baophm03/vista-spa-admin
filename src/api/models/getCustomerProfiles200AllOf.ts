@@ -6,7 +6,9 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { CustomerProfile } from './customerProfile';
+import type { PaginationMeta } from './paginationMeta';
 
 export type GetCustomerProfiles200AllOf = {
-  data?: CustomerProfile[];
+  responseData?: CustomerProfile[];
+  meta?: PaginationMeta;
 };

@@ -8,5 +8,5 @@
 import type { StaffDayOff } from './staffDayOff';
 
 export type GetStaffDaysOff200AllOf = {
-  data?: StaffDayOff;
+  responseData?: StaffDayOff;
 };

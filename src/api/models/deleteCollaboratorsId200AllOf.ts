@@ -8,5 +8,5 @@
 import type { Collaborator } from './collaborator';
 
 export type DeleteCollaboratorsId200AllOf = {
-  data?: Collaborator;
+  responseData?: Collaborator;
 };

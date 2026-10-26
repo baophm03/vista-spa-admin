@@ -8,5 +8,5 @@
 import type { LuckyWheel } from './luckyWheel';
 
 export type DeleteLuckyWheelsId200AllOf = {
-  data?: LuckyWheel;
+  responseData?: LuckyWheel;
 };

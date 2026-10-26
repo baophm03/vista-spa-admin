@@ -8,5 +8,5 @@
 import type { DiscountRule } from './discountRule';
 
 export type PostDiscountRules200AllOf = {
-  data?: DiscountRule;
+  responseData?: DiscountRule;
 };

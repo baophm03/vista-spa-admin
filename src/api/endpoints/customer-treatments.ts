@@ -30,9 +30,9 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  BizSuccess,
   ConflictResponse,
   CustomerTreatment,
+  DeletePhotosId200,
   DeleteSessionsId200,
   ForbiddenResponse,
   GetCustomerTreatments200,
@@ -1445,7 +1445,7 @@ export const deletePhotosId = (
  ) => {
       
       
-      return customInstance<BizSuccess>(
+      return customInstance<DeletePhotosId200>(
       {url: `/photos/${id}`, method: 'DELETE'
     },
       );

@@ -1,50 +1,32 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { usePostAuthLogin } from '../api/endpoints/auth'
+import { pickData, errorMessage } from '../api/helpers'
 import { useAuthStore } from '../stores/auth-store'
+import { useBrandRuntime } from '../themeRuntime'
 
 const UserIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className="pointer-events-none absolute left-4 h-[18px] w-[18px] text-[#b3adbd]"
-  >
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
     <circle cx="12" cy="7" r="4" />
   </svg>
 )
 
 const LockIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className="pointer-events-none absolute left-4 h-[18px] w-[18px] text-[#b3adbd]"
-  >
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
     <path d="M7 11V7a5 5 0 0 1 10 0v4" />
   </svg>
 )
 
-const inputClassName =
-  'box-border h-12 w-full appearance-none rounded-xl border-[1.5px] border-[var(--brand-border)] bg-[#faf7f3] py-0 pr-4 pl-11 text-sm text-[#292331] outline-none transition-[border-color,background-color,box-shadow] duration-200 [font-family:inherit] placeholder:text-[#b3adbd] focus:border-[var(--brand-primary)] focus:bg-white focus:shadow-[0_0_0_4px_rgba(var(--brand-rgb),0.1)]'
-
 export default function Login() {
   const navigate = useNavigate()
-  const setTokens = useAuthStore((state) => state.setTokens)
-  const [identifier, setIdentifier] = useState('admin@newskyvista.vn')
-  const [password, setPassword] = useState('Admin@2026')
+  const brand = useBrandRuntime()
+  const [identifier, setIdentifier] = useState('')
+  const [password, setPassword] = useState('')
   const [errors, setErrors] = useState<{ identifier?: string; password?: string }>({})
   const [alert, setAlert] = useState('')
   const loginMutation = usePostAuthLogin()
-  const loading = loginMutation.isPending
 
   const validate = () => {
     const next: typeof errors = {}
@@ -60,41 +42,62 @@ export default function Login() {
     if (!validate()) return
     try {
       const response = await loginMutation.mutateAsync({ data: { identifier: identifier.trim(), password } })
-      const result = (response.responseData ?? {}) as { accessToken?: string; refreshToken?: string }
-      if (!result.accessToken || !result.refreshToken) throw new Error('Phản hồi đăng nhập không hợp lệ')
-      setTokens(result.accessToken, result.refreshToken)
+      const tokens = pickData<{ accessToken?: string; refreshToken?: string }>(response)
+      if (!tokens?.accessToken || !tokens?.refreshToken) throw new Error('Phản hồi đăng nhập không hợp lệ')
+      useAuthStore.getState().setTokens(tokens.accessToken, tokens.refreshToken)
       navigate('/', { replace: true })
-    } catch (err: any) {
-      setAlert(err?.response?.data?.message ?? 'Đăng nhập thất bại, vui lòng thử lại')
+    } catch (err) {
+      setAlert(errorMessage(err, 'Đăng nhập thất bại, vui lòng thử lại'))
     }
   }
 
-  return (
-    <div className="relative min-h-screen overflow-hidden bg-[url('/login.png')] bg-cover bg-center">
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_top,rgba(41,35,49,0.55)_0%,rgba(41,35,49,0.18)_28%,transparent_55%)]" />
+  const inputWrapClass =
+    'relative flex items-center [&>svg]:pointer-events-none [&>svg]:absolute [&>svg]:left-4 [&>svg]:h-[18px] [&>svg]:w-[18px] [&>svg]:text-[#b3adbd]'
+  const inputClass =
+    'h-12 w-full rounded-xl border-[1.5px] border-[var(--brand-border)] bg-[#faf7f3] px-4 pl-11 text-sm text-[#292331] outline-none transition placeholder:text-[#b3adbd] focus:border-[var(--brand-primary)] focus:bg-white focus:shadow-[0_0_0_4px_rgba(var(--brand-rgb),0.1)]'
+  const labelClass = 'mb-2 block text-xs font-semibold uppercase tracking-[0.06em] text-[#6f6880]'
+  const errorClass = 'mt-1.5 text-xs text-[#d4385f]'
 
-      <div className="absolute bottom-12 left-14 z-[1] max-w-[460px] max-[720px]:hidden">
-        <div className="mb-[18px] h-[3px] w-14 rounded-xl bg-[var(--brand-accent)]" />
-        <h2 className="mt-0 mb-2.5 text-[30px] leading-[1.35] font-semibold text-white [text-shadow:0_2px_16px_rgba(41,35,49,0.5)]">
+  return (
+    <div className="relative min-h-screen overflow-hidden bg-cover bg-center font-sans">
+      <div
+        className="absolute inset-0 -z-10 bg-cover bg-center"
+        style={{ backgroundImage: "url('/login.png')" }}
+      />
+      {/* Scrim nhẹ góc dưới-trái cho tagline */}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[rgba(41,35,49,0.55)] to-transparent [background-size:100%_55vh] [background-repeat:no-repeat] [background-position:bottom]" />
+
+      {/* Tagline góc dưới-trái */}
+      <div className="absolute bottom-12 left-14 z-[1] hidden max-w-[460px] max-[720px]:hidden">
+        <div className="mb-[18px] h-[3px] w-14 rounded-full bg-[var(--brand-accent)]" />
+        <h2 className="m-0 mb-2.5 text-[30px] font-semibold leading-[1.35] text-white drop-shadow-[0_2px_16px_rgba(41,35,49,0.5)]">
           Nâng tầm giá trị — Tự tin tỏa sáng
         </h2>
-        <p className="m-0 text-sm leading-[1.6] text-[rgba(255,255,255,0.92)] [text-shadow:0_1px_8px_rgba(41,35,49,0.45)]">
-          Hệ thống quản trị thành viên, dịch vụ & chương trình ưu đãi của NewSky Vista.
+        <p className="m-0 text-sm leading-relaxed text-white/90 drop-shadow-[0_1px_8px_rgba(41,35,49,0.45)]">
+          Hệ thống quản trị thành viên, dịch vụ & chương trình ưu đãi của {brand.name}.
         </p>
       </div>
 
-      <aside className="absolute top-1/2 right-[clamp(48px,10vw,140px)] z-[2] box-border w-[min(420px,calc(100vw-48px))] -translate-y-1/2 rounded-xl bg-white p-12 px-11 pb-8 shadow-[0_32px_80px_rgba(var(--brand-dark-rgb),0.28),0_4px_16px_rgba(var(--brand-dark-rgb),0.12)] max-[720px]:right-1/2 max-[720px]:translate-x-1/2 max-[720px]:p-10 max-[720px]:px-7 max-[720px]:pb-6">
+      {/* Panel form bên phải */}
+      <aside className="fixed top-1/2 right-12 z-[2] w-[min(420px,calc(100vw-48px))] -translate-y-1/2 rounded-xl bg-white p-11 pb-8 shadow-[0_32px_80px_rgba(var(--brand-dark-rgb),0.28),0_4px_16px_rgba(var(--brand-dark-rgb),0.12)] max-[720px]:right-1/2 max-[720px]:translate-x-1/2 max-[720px]:px-7 max-[720px]:py-10">
         <div className="mb-9 text-center">
-          <div className="text-2xl font-bold tracking-[0.08em] text-[var(--brand-dark)] uppercase">NewSky Vista</div>
+          {brand.logoUrl && (
+            <img
+              src={brand.logoUrl}
+              alt={brand.name}
+              className="mx-auto mb-3 block h-14 max-w-[160px] object-contain"
+            />
+          )}
+          <div className="text-2xl font-bold tracking-[0.08em] text-[var(--brand-dark)] uppercase">{brand.name}</div>
           <div className="mt-1.5 text-[11px] font-medium tracking-[0.32em] text-[var(--brand-accent)] uppercase">
             Học viện Spa
           </div>
           <div className="mx-auto mt-[18px] h-0.5 w-10 bg-[var(--brand-accent)]" />
         </div>
 
-        <div>
-          <h1 className="mt-0 mb-1.5 text-[22px] font-semibold text-[#292331]">Đăng nhập quản trị</h1>
-          <p className="mt-0 mb-7 text-[13px] text-[#8a8494]">Dùng email hoặc số điện thoại đã đăng ký với hệ thống.</p>
+        <div className="mb-7">
+          <h1 className="m-0 mb-1.5 text-[22px] font-semibold text-[#292331]">Đăng nhập quản trị</h1>
+          <p className="m-0 text-[13px] text-[#8a8494]">Dùng email hoặc số điện thoại đã đăng ký với hệ thống.</p>
         </div>
 
         {alert && (
@@ -105,17 +108,14 @@ export default function Login() {
 
         <form onSubmit={onSubmit} noValidate>
           <div className="mb-[18px]">
-            <label
-              htmlFor="identifier"
-              className="mb-2 block text-xs font-semibold tracking-[0.06em] text-[#6f6880] uppercase"
-            >
+            <label htmlFor="identifier" className={labelClass}>
               Tài khoản
             </label>
-            <div className="relative flex items-center">
+            <div className={inputWrapClass}>
               <UserIcon />
               <input
                 id="identifier"
-                className={inputClassName}
+                className={inputClass}
                 type="text"
                 placeholder="Email / Số điện thoại"
                 value={identifier}
@@ -123,21 +123,18 @@ export default function Login() {
                 autoComplete="username"
               />
             </div>
-            {errors.identifier && <div className="mt-1.5 text-xs text-[#d4385f]">{errors.identifier}</div>}
+            {errors.identifier && <div className={errorClass}>{errors.identifier}</div>}
           </div>
 
           <div className="mb-[18px]">
-            <label
-              htmlFor="password"
-              className="mb-2 block text-xs font-semibold tracking-[0.06em] text-[#6f6880] uppercase"
-            >
+            <label htmlFor="password" className={labelClass}>
               Mật khẩu
             </label>
-            <div className="relative flex items-center">
+            <div className={inputWrapClass}>
               <LockIcon />
               <input
                 id="password"
-                className={inputClassName}
+                className={inputClass}
                 type="password"
                 placeholder="••••••••"
                 value={password}
@@ -145,20 +142,20 @@ export default function Login() {
                 autoComplete="current-password"
               />
             </div>
-            {errors.password && <div className="mt-1.5 text-xs text-[#d4385f]">{errors.password}</div>}
+            {errors.password && <div className={errorClass}>{errors.password}</div>}
           </div>
 
           <button
             type="submit"
-            className="mt-1.5 box-border h-[50px] w-full cursor-pointer rounded-xl border-none bg-[linear-gradient(135deg,var(--brand-primary)_0%,var(--brand-dark)_100%)] p-0 text-[15px] font-semibold tracking-[0.02em] text-white shadow-[0_8px_20px_rgba(var(--brand-dark-rgb),0.35)] transition-[transform,box-shadow,opacity] duration-150 [font-family:inherit] enabled:hover:-translate-y-px enabled:hover:shadow-[0_10px_24px_rgba(var(--brand-dark-rgb),0.45)] enabled:active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-65"
-            disabled={loading}
+            disabled={loginMutation.isPending}
+            className="mt-1.5 h-[50px] w-full cursor-pointer rounded-xl border-0 bg-[linear-gradient(135deg,var(--brand-primary),var(--brand-dark))] text-[15px] font-semibold tracking-[0.02em] text-white shadow-[0_8px_20px_rgba(var(--brand-dark-rgb),0.35)] transition hover:-translate-y-px hover:shadow-[0_10px_24px_rgba(var(--brand-dark-rgb),0.45)] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-65"
           >
-            {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
+            {loginMutation.isPending ? 'Đang đăng nhập...' : 'Đăng nhập'}
           </button>
         </form>
 
         <div className="mt-7 border-t border-[var(--brand-border-soft)] pt-5 text-center text-[11px] text-[#b3adbd]">
-          © 2026 NewSky Vista — CTCP Việt Phụng
+          © 2026 {brand.name} — CTCP Việt Phụng
         </div>
       </aside>
     </div>

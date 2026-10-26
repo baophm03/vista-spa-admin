@@ -8,5 +8,5 @@
 import type { LookupList } from './lookupList';
 
 export type GetLookupListsId200AllOf = {
-  data?: LookupList;
+  responseData?: LookupList;
 };

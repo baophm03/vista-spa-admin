@@ -5,15 +5,15 @@
  * Vista Spa backend API. Uses the NEWSKY+ business error envelope for permission-aware endpoints and the legacy response envelope for existing admin endpoints.
  * OpenAPI spec version: 1.0.0
  */
-import type { BrandSettingsBrand } from './brandSettingsBrand';
-import type { BrandSettingsLocale } from './brandSettingsLocale';
+import type { BrandSettingsBrandProperty } from './brandSettingsBrandProperty';
+import type { BrandSettingsLocaleProperty } from './brandSettingsLocaleProperty';
 import type { BrandSettingsModulesItem } from './brandSettingsModulesItem';
 
 /**
  * Vista brand, locale and module settings
  */
 export interface BrandSettings {
-  brand: BrandSettingsBrand;
-  locale: BrandSettingsLocale;
+  brand: BrandSettingsBrandProperty;
+  locale: BrandSettingsLocaleProperty;
   modules: BrandSettingsModulesItem[];
 }

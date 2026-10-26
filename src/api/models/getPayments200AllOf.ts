@@ -6,7 +6,9 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { PaymentLog } from './paymentLog';
+import type { PaginationMeta } from './paginationMeta';
 
 export type GetPayments200AllOf = {
-  data?: PaymentLog[];
+  responseData?: PaymentLog[];
+  meta?: PaginationMeta;
 };

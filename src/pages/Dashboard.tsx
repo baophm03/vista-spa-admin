@@ -1,10 +1,10 @@
-import { useMemo } from 'react'
-import { Card, Col, Empty, Row, Statistic, Table, Tag, Typography } from 'antd'
+import { useEffect, useState } from 'react'
+import { Card, Col, Empty, Row, Statistic, Table, Tabs, Tag, Typography } from 'antd'
 import {
   CalendarOutlined,
   DollarOutlined,
   TeamOutlined,
-  UserOutlined,
+  WalletOutlined,
 } from '@ant-design/icons'
 import {
   Area,
@@ -20,20 +20,21 @@ import {
   YAxis,
 } from 'recharts'
 import dayjs from 'dayjs'
-import PageTitle from '../components/base/PageTitle'
-import { useGetAppointments } from '../api/endpoints/appointments'
-import { useGetCustomerProfiles } from '../api/endpoints/customer-profiles'
-import { useGetReportsAppointments, useGetReportsRanks, useGetReportsRevenue } from '../api/endpoints/reports'
+import PageTitle from '@/components/base/PageTitle'
+import { pickData, pickMeta } from '@/api/helpers'
+import { usePermissions } from '@/utils/permissions'
+import { useBrandColors } from '@/themeRuntime'
+import { getReportsAppointments, getReportsDebts, getReportsRanks, getReportsRevenue } from '@/api/endpoints/reports'
+import { getCustomerProfiles } from '@/api/endpoints/customer-profiles'
+import { getAppointments } from '@/api/endpoints/appointments'
+import type { Appointment } from '@/api/models/appointment'
+import ReportsTab from './ReportsTab'
 
-interface Appointment {
-  id: string
-  appt_date: string
-  start_time: string
-  status: string
+/** BE list include kèm `customer_profile` / `service`. */
+type AppointmentRow = Appointment & {
   customer_profile?: { full_name?: string }
   service?: { title?: string }
 }
-import { useBrandColors } from '../themeRuntime'
 
 const tooltipStyle = {
   borderRadius: 12,
@@ -60,81 +61,121 @@ const STATUS_MAP: Record<string, { label: string; color: string }> = {
   completed: { label: 'Hoàn tất', color: 'green' },
   cancelled: { label: 'Đã hủy', color: 'default' },
   rejected: { label: 'Từ chối', color: 'red' },
+  no_show: { label: 'Không đến', color: 'volcano' },
 }
 
-export default function Dashboard() {
+function Overview() {
   const brand = useBrandColors()
   const rankColors = [brand.primary, '#D9A441', '#3B5BDB', '#16A34A', '#E06666']
-  const profilesQuery = useGetCustomerProfiles()
-  const revenueQuery = useGetReportsRevenue()
-  const ranksQuery = useGetReportsRanks()
-  const appointmentsReportQuery = useGetReportsAppointments()
-  const appointmentsQuery = useGetAppointments()
-  const totalCustomers = ((profilesQuery.data?.responseData ?? (profilesQuery.data as any)?.data ?? {}) as { count?: number }).count ?? null
-  const revenueRows = ((revenueQuery.data?.responseData ?? (revenueQuery.data as any)?.data ?? []) as any[])
-  const revenueData = useMemo(() => {
-    const merged = new Map<string, number>()
-    for (const row of Array.isArray(revenueRows) ? revenueRows : []) merged.set(row.period, (merged.get(row.period) ?? 0) + Number(row.revenue))
-    return [...merged.entries()].map(([period, revenue]) => ({ period, revenue: revenue / 1_000_000 }))
-  }, [revenueQuery.data])
-  const rankRows = ((ranksQuery.data?.responseData ?? (ranksQuery.data as any)?.data ?? []) as any[])
-  const rankData = (Array.isArray(rankRows) ? rankRows : []).filter((row) => Number(row.member_count) > 0).map((row) => ({ name: row.rank_name, value: Number(row.member_count) }))
-  const reportData = ((appointmentsReportQuery.data?.responseData ?? (appointmentsReportQuery.data as any)?.data ?? {}) as { by_status?: { status: string; count: number }[] })
-  const apptStatus = Object.fromEntries((reportData.by_status ?? []).map((row) => [row.status, Number(row.count)]))
-  const appointmentData = ((appointmentsQuery.data?.responseData ?? (appointmentsQuery.data as any)?.data ?? {}) as { rows?: Appointment[]; data?: Appointment[] })
-  const recent = (appointmentData.rows ?? appointmentData.data ?? []).slice(0, 5)
+  const [totalCustomers, setTotalCustomers] = useState<number | null>(null)
+  const [revenueData, setRevenueData] = useState<{ period: string; revenue: number }[]>([])
+  const [rankData, setRankData] = useState<{ name: string; value: number }[]>([])
+  const [apptStatus, setApptStatus] = useState<Record<string, number>>({})
+  const [recent, setRecent] = useState<AppointmentRow[]>([])
+  const [debtTotal, setDebtTotal] = useState<number | null>(null)
+
+  useEffect(() => {
+    const today = dayjs().format('YYYY-MM-DD')
+    const from = dayjs().subtract(6, 'month').format('YYYY-MM-DD')
+    void getCustomerProfiles({ page: 1, limit: 1 })
+      .then((body) => setTotalCustomers(pickMeta(body)?.total ?? 0))
+      .catch(() => undefined)
+    void getReportsRevenue({ from_date: from, to_date: today, group_by: 'month' })
+      .then((body) => {
+        const rows = (pickData<any[]>(body) ?? []) as any[]
+        const merged = new Map<string, number>()
+        for (const r of rows) merged.set(r.period, (merged.get(r.period) ?? 0) + Number(r.revenue))
+        setRevenueData([...merged.entries()].map(([period, revenue]) => ({ period, revenue: revenue / 1_000_000 })))
+      })
+      .catch(() => undefined)
+    void getReportsRanks({})
+      .then((body) =>
+        setRankData(
+          ((((pickData<any>(body) ?? {}) as any)?.ranks ?? []) as any[])
+            .filter((x) => Number(x.member_count) > 0)
+            .map((x) => ({ name: x.rank_name, value: Number(x.member_count) })),
+        ),
+      )
+      .catch(() => undefined)
+    void getReportsAppointments({ from_date: from, to_date: today })
+      .then((body) => {
+        const map: Record<string, number> = {}
+        for (const s of ((((pickData<any>(body) ?? {}) as any)?.by_status ?? []) as any[])) map[s.status] = Number(s.count)
+        setApptStatus(map)
+      })
+      .catch(() => undefined)
+    void getAppointments({ page: 1, limit: 5 })
+      .then((body) => setRecent((pickData<AppointmentRow[]>(body) ?? []) as AppointmentRow[]))
+      .catch(() => undefined)
+    void getReportsDebts({})
+      .then((body) => setDebtTotal(((pickData<any[]>(body) ?? []) as any[]).reduce((s, r) => s + Number(r.debt_amount ?? 0), 0)))
+      .catch(() => undefined)
+  }, [])
 
   const pendingCount = apptStatus['pending'] ?? 0
   const totalRevenue = revenueData.reduce((s, r) => s + r.revenue, 0)
 
   return (
     <>
-      <PageTitle>Dashboard</PageTitle>
-
       <Row gutter={[16, 16]} style={{ marginBottom: 20 }}>
-        <Col xs={24} sm={12} lg={6}>
-          <Card styles={{ body: { padding: '18px 20px' } }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Statistic title="Tổng khách hàng" value={totalCustomers ?? '—'} />
-              <div style={KPI_ICON_STYLE(brand.tint, brand.primary)}>
-                <TeamOutlined />
+        {[
+          {
+            key: 'customers',
+            title: 'Tổng khách hàng',
+            value: totalCustomers ?? '—',
+            suffix: '',
+            note: `${rankData.reduce((s, r) => s + r.value, 0)} thành viên có hạng`,
+            icon: <TeamOutlined />,
+            bg: brand.tint,
+            color: brand.primary,
+          },
+          {
+            key: 'pending',
+            title: 'Lịch hẹn chờ duyệt',
+            value: pendingCount,
+            suffix: '',
+            note: `Tổng ${Object.values(apptStatus).reduce((s, v) => s + v, 0)} lịch 6 tháng`,
+            icon: <CalendarOutlined />,
+            bg: '#E8EDFB',
+            color: '#3B5BDB',
+          },
+          {
+            key: 'revenue',
+            title: 'Doanh thu 6 tháng',
+            value: totalRevenue.toFixed(1),
+            suffix: 'tr',
+            note: '',
+            icon: <DollarOutlined />,
+            bg: '#E4F5EC',
+            color: '#16A34A',
+          },
+          {
+            key: 'debt',
+            title: 'Công nợ hiện tại',
+            value: debtTotal === null ? '—' : (debtTotal / 1_000_000).toFixed(1),
+            suffix: debtTotal === null ? '' : 'tr',
+            note: '',
+            icon: <WalletOutlined />,
+            bg: '#FDECEC',
+            color: '#E06666',
+          },
+        ].map((kpi) => (
+          <Col key={kpi.key} xs={24} sm={12} lg={6} style={{ display: 'flex' }}>
+            <Card style={{ flex: 1, width: '100%' }} styles={{ body: { padding: '18px 20px', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' } }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div>
+                  <Statistic title={kpi.title} value={kpi.value} suffix={kpi.suffix || undefined} />
+                  {kpi.note && (
+                    <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                      {kpi.note}
+                    </Typography.Text>
+                  )}
+                </div>
+                <div style={KPI_ICON_STYLE(kpi.bg, kpi.color)}>{kpi.icon}</div>
               </div>
-            </div>
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card styles={{ body: { padding: '18px 20px' } }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Statistic title="Thành viên có hạng" value={rankData.reduce((s, r) => s + r.value, 0)} />
-              <div style={KPI_ICON_STYLE('#FBF3DF', '#D9A441')}>
-                <UserOutlined />
-              </div>
-            </div>
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card styles={{ body: { padding: '18px 20px' } }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Statistic title="Lịch hẹn chờ duyệt" value={pendingCount} />
-              <div style={KPI_ICON_STYLE('#E8EDFB', '#3B5BDB')}>
-                <CalendarOutlined />
-              </div>
-            </div>
-            <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-              Tổng {Object.values(apptStatus).reduce((s, v) => s + v, 0)} lịch 6 tháng
-            </Typography.Text>
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card styles={{ body: { padding: '18px 20px' } }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Statistic title="Doanh thu 6 tháng" value={totalRevenue.toFixed(1)} suffix="tr" />
-              <div style={KPI_ICON_STYLE('#E4F5EC', '#16A34A')}>
-                <DollarOutlined />
-              </div>
-            </div>
-          </Card>
-        </Col>
+            </Card>
+          </Col>
+        ))}
       </Row>
 
       <Row gutter={[16, 16]} style={{ marginBottom: 20 }}>
@@ -203,7 +244,7 @@ export default function Dashboard() {
       </Row>
 
       <Card title="Lịch hẹn gần đây">
-        <Table<Appointment>
+        <Table
           rowKey="id"
           dataSource={recent}
           pagination={false}
@@ -211,24 +252,49 @@ export default function Dashboard() {
           columns={[
             {
               title: 'Khách hàng',
-              dataIndex: ['customer_profile', 'full_name'],
+              render: (_, row: AppointmentRow) => row.customer_profile?.full_name ?? '—',
             },
-            { title: 'Dịch vụ', dataIndex: ['service', 'title'] },
+            { title: 'Dịch vụ', render: (_, row: AppointmentRow) => row.service?.title ?? '—' },
             {
               title: 'Thời gian',
               key: 'time',
               width: 150,
-              render: (_, row) => `${dayjs(row.appt_date).format('DD/MM/YYYY')} ${row.start_time?.slice(0, 5)}`,
+              render: (_, row: AppointmentRow) => `${dayjs(row.appt_date).format('DD/MM/YYYY')} ${row.start_time?.slice(0, 5)}`,
             },
             {
               title: 'Trạng thái',
               dataIndex: 'status',
               width: 130,
-              render: (v: string) => <Tag color={STATUS_MAP[v]?.color}>{STATUS_MAP[v]?.label ?? v}</Tag>,
+              render: (v?: string) => <Tag color={STATUS_MAP[v ?? '']?.color}>{STATUS_MAP[v ?? '']?.label ?? v}</Tag>,
             },
           ]}
         />
       </Card>
+    </>
+  )
+}
+
+export default function Dashboard() {
+  const { can } = usePermissions()
+  const canReport = (key: string) => can('report.read') || can(key)
+
+  const reportTabs = [
+    { key: 'money', label: 'Doanh thu & Công nợ', visible: canReport('report.revenue.read') || canReport('report.debt.read') || canReport('report.commission.read'), children: <ReportsTab section="money" /> },
+    { key: 'customers', label: 'Báo cáo khách hàng', visible: canReport('report.customer.read') || canReport('report.rank.read'), children: <ReportsTab section="customers" /> },
+    { key: 'ops', label: 'Vận hành & Liệu trình', visible: canReport('report.appointment.read') || canReport('report.session.read'), children: <ReportsTab section="ops" /> },
+  ].filter((t) => t.visible)
+
+  return (
+    <>
+      <PageTitle>Dashboard</PageTitle>
+      <Tabs
+        defaultActiveKey="overview"
+        destroyOnHidden={false}
+        items={[
+          { key: 'overview', label: 'Tổng quan', children: <Overview /> },
+          ...reportTabs.map(({ key, label, children }) => ({ key, label, children })),
+        ]}
+      />
     </>
   )
 }

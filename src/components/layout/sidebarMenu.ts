@@ -1,5 +1,6 @@
 import { createElement } from 'react'
 import {
+  AppstoreOutlined,
   BellOutlined,
   CalendarOutlined,
   ClockCircleOutlined,
@@ -29,7 +30,7 @@ export const menuItems = [
       { key: '/treatment-customers', icon: createElement(SolutionOutlined), label: 'Khách dùng liệu trình' },
       { key: '/health-records', icon: createElement(FileTextOutlined), label: 'Sổ sức khỏe' },
       { key: '/points', icon: createElement(StarOutlined), label: 'Điểm & Hạng' },
-      { key: '/redemptions', icon: createElement(GiftOutlined), label: 'Khách đổi quà' },
+      { key: '/rewards', icon: createElement(GiftOutlined), label: 'Quà & Lượt đổi' },
     ],
   },
   {
@@ -56,9 +57,13 @@ export const menuItems = [
     type: 'group' as const,
     label: 'Hệ thống',
     children: [
+      { key: '/branches', icon: createElement(AppstoreOutlined), label: 'Cơ sở' },
+      { key: '/customer-data-config', icon: createElement(ProfileOutlined), label: 'Dữ liệu khách hàng' },
+      { key: '/settings/lookups', icon: createElement(AppstoreOutlined), label: 'Danh mục chọn' },
+      { key: '/settings/brand', icon: createElement(SettingOutlined), label: 'Thương hiệu' },
+      { key: '/settings/integrations', icon: createElement(SettingOutlined), label: 'Tích hợp' },
       { key: '/notifications', icon: createElement(BellOutlined), label: 'Thông báo' },
       { key: '/roles', icon: createElement(SafetyOutlined), label: 'Phân quyền' },
-      { key: '/site-config', icon: createElement(SettingOutlined), label: 'Cấu hình trang' },
     ],
   },
 ]

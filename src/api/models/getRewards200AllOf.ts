@@ -8,5 +8,5 @@
 import type { Reward } from './reward';
 
 export type GetRewards200AllOf = {
-  data?: Reward;
+  responseData?: Reward;
 };

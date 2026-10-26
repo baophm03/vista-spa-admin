@@ -6,7 +6,9 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { ContentPost } from './contentPost';
+import type { PaginationMeta } from './paginationMeta';
 
 export type GetContentPosts200AllOf = {
-  data?: ContentPost[];
+  responseData?: ContentPost[];
+  meta?: PaginationMeta;
 };

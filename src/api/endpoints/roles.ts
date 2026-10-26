@@ -30,9 +30,9 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  BizSuccess,
   ConflictResponse,
   ForbiddenResponse,
+  GetPermissions200,
   GetRolesIdPermissions200,
   GetRolesParams,
   InternalErrorResponse,
@@ -902,7 +902,7 @@ export const getPermissions = (
 ) => {
       
       
-      return customInstance<BizSuccess>(
+      return customInstance<GetPermissions200>(
       {url: `/permissions`, method: 'GET', signal
     },
       );

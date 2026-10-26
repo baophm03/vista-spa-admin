@@ -8,5 +8,5 @@
 import type { CardRank } from './cardRank';
 
 export type PostCardRanks200AllOf = {
-  data?: CardRank;
+  responseData?: CardRank;
 };

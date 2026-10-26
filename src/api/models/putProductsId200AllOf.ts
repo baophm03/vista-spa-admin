@@ -8,5 +8,5 @@
 import type { Product } from './product';
 
 export type PutProductsId200AllOf = {
-  data?: Product;
+  responseData?: Product;
 };

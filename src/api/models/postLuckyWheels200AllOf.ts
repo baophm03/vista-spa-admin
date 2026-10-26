@@ -8,5 +8,5 @@
 import type { LuckyWheel } from './luckyWheel';
 
 export type PostLuckyWheels200AllOf = {
-  data?: LuckyWheel;
+  responseData?: LuckyWheel;
 };

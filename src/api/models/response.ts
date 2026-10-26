@@ -6,13 +6,34 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { ResponseResponseData } from './responseResponseData';
-import type { ResponseViolationItem } from './responseViolationItem';
+import type { ResponseViolationsItem } from './responseViolationsItem';
+import type { ResponseDetails } from './responseDetails';
+import type { ResponseMeta } from './responseMeta';
 
 export interface Response {
-  message?: string;
-  message_en?: string;
+  /** @nullable */
+  message?: string | null;
+  /** @nullable */
+  message_en?: string | null;
+  /** @nullable */
   responseData?: ResponseResponseData;
-  status?: string;
+  status: string;
   timeStamp?: string;
-  violation?: ResponseViolationItem[];
+  /** @nullable */
+  violations?: ResponseViolationsItem[] | null;
+  /**
+   * Mã lỗi nghiệp vụ (BizError) khi status = fail
+   * @nullable
+   */
+  code?: string | null;
+  /**
+   * Chi tiết bổ sung kèm BizError (vd: affected_appointments)
+   * @nullable
+   */
+  details?: ResponseDetails;
+  /**
+   * Thông tin phân trang cho endpoint danh sách
+   * @nullable
+   */
+  meta?: ResponseMeta;
 }

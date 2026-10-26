@@ -6,4 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type ResponseResponseData = { [key: string]: unknown };
+/**
+ * @nullable
+ */
+export type ResponseResponseData = unknown | null;

@@ -8,5 +8,5 @@
 import type { Setting } from './setting';
 
 export type GetSettings200AllOf = {
-  data?: Setting;
+  responseData?: Setting;
 };

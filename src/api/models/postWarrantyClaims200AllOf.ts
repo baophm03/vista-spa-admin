@@ -8,5 +8,5 @@
 import type { WarrantyClaim } from './warrantyClaim';
 
 export type PostWarrantyClaims200AllOf = {
-  data?: WarrantyClaim;
+  responseData?: WarrantyClaim;
 };

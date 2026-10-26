@@ -6,7 +6,9 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { CustomerTreatment } from './customerTreatment';
+import type { PaginationMeta } from './paginationMeta';
 
 export type GetCustomerTreatments200AllOf = {
-  data?: CustomerTreatment[];
+  responseData?: CustomerTreatment[];
+  meta?: PaginationMeta;
 };

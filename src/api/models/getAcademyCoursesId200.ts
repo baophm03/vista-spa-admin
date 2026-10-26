@@ -5,7 +5,7 @@
  * Vista Spa backend API. Uses the NEWSKY+ business error envelope for permission-aware endpoints and the legacy response envelope for existing admin endpoints.
  * OpenAPI spec version: 1.0.0
  */
-import type { BizSuccess } from './bizSuccess';
+import type { Response } from './response';
 import type { GetAcademyCoursesId200AllOf } from './getAcademyCoursesId200AllOf';
 
-export type GetAcademyCoursesId200 = BizSuccess & GetAcademyCoursesId200AllOf;
+export type GetAcademyCoursesId200 = Response & GetAcademyCoursesId200AllOf;

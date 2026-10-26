@@ -1,176 +1,313 @@
-import { useMemo, useState } from 'react'
-import { Button, DatePicker, Drawer, Empty, Form, Input, Modal, Select, Space, Table, Tag, Typography, message } from 'antd'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
-  BarChartOutlined,
+  Alert,
+  Button,
+  Card,
+  Collapse,
+  DatePicker,
+  Descriptions,
+  Divider,
+  Drawer,
+  Empty,
+  Form,
+  Input,
+  Modal,
+  Select,
+  Space,
+  Table,
+  Tag,
+  Typography,
+  message,
+} from 'antd'
+import {
   CalendarOutlined,
-  CloseOutlined,
+  FileAddOutlined,
   FileTextOutlined,
   MedicineBoxOutlined,
   PlusOutlined,
   ProfileOutlined,
-  RightOutlined,
-  SafetyOutlined,
   SearchOutlined,
-  SkinOutlined,
-  SyncOutlined,
 } from '@ant-design/icons'
 import dayjs from 'dayjs'
-import PageTitle from '../components/base/PageTitle'
-import { useGetCustomerProfiles, usePutCustomerProfilesId } from '../api/endpoints/customer-profiles'
-import { useGetCustomerTreatments } from '../api/endpoints/customer-treatments'
-import { useGetTreatmentPackages } from '../api/endpoints/treatment-packages'
-import { useGetUsers } from '../api/endpoints/users'
+import type { Dayjs } from 'dayjs'
+import PageTitle from '@/components/base/PageTitle'
+import type { CustomerHealthRecord } from '@/api/models/customerHealthRecord'
+import type { CustomerProfileRow } from '@/components/CustomerProfileOverviewTab'
+import type { CustomerTreatment } from '@/api/models/customerTreatment'
+import {
+  getCustomerProfiles,
+  getCustomerProfilesIdHealthRecords,
+  getHealthRecordsLatest,
+  postCustomerProfilesIdHealthRecords,
+  putCustomerProfilesIdHealthRecordsRecordId,
+} from '@/api/endpoints/customer-profiles'
+import { getCustomerTreatments } from '@/api/endpoints/customer-treatments'
+import { getSkinTypes } from '@/api/endpoints/settings'
+import { getTreatmentPackages } from '@/api/endpoints/services'
+import { getUsers } from '@/api/endpoints/users'
+import { errorMessage, pickData } from '@/api/helpers'
 
-interface CustomerProfile {
-  id: string
-  customer_code: string
-  full_name: string
-  phone: string
-  custom_fields?: HealthFields
-}
-interface CustomerTreatment {
-  id: string
-  customer_profile_id?: string
-  package_id?: string
-  quota_type?: string
-  sessions_used?: number
-  sessions_total?: number
-  status?: string
-}
-
-const SKIN_TYPES = ['Da dầu', 'Da khô', 'Da hỗn hợp', 'Da nhạy cảm', 'Da thường']
-
-const eyebrowStyle = { fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#A9ADB2', fontWeight: 600 } as const
 const labelStyle = { fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#8A8D93', fontWeight: 600 }
 
-/** Hình chữ thập y tế trang trí */
-function Cross({ size, color, style }: { size: number; color: string; style?: React.CSSProperties }) {
-  return (
-    <div style={{ position: 'relative', width: size, height: size, ...style }}>
-      <div style={{ position: 'absolute', left: size * 0.35, top: 0, width: size * 0.3, height: size, borderRadius: size * 0.15, background: color }} />
-      <div style={{ position: 'absolute', top: size * 0.35, left: 0, width: size, height: size * 0.3, borderRadius: size * 0.15, background: color }} />
-    </div>
-  )
-}
-
-const cardStyle = {
-  background: '#fff',
-  borderRadius: 24,
-  padding: 20,
-  border: '1px solid #EDF3EF',
-  boxShadow: '0 10px 34px rgba(23, 107, 75, 0.07)',
-} as const
-
-const cardHeaderStyle = { fontWeight: 700, fontSize: 14, letterSpacing: '0.05em', color: '#25332C' }
-
-const iconBadge = (bg: string, color: string) => ({
-  width: 34,
-  height: 34,
-  flexShrink: 0,
-  borderRadius: 12,
-  background: bg,
-  color,
-  fontSize: 16,
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-})
-
-const OVERVIEW_ROWS = (cf: HealthFields | undefined) => [
-  { icon: <SkinOutlined />, bg: '#FDEEF2', color: '#E46C93', label: 'Loại da', value: cf?.skin_type },
-  { icon: <BarChartOutlined />, bg: '#EAF1FD', color: '#4A7DE0', label: 'Tình trạng da', value: cf?.condition },
-  { icon: <SafetyOutlined />, bg: '#E7F6EE', color: '#2FA36B', label: 'Dị ứng', value: cf?.allergies },
-  { icon: <MedicineBoxOutlined />, bg: '#FDF2E7', color: '#E58A3A', label: 'Khám bởi', value: cf?.checked_by },
-  {
-    icon: <CalendarOutlined />,
-    bg: '#F1EBFD',
-    color: '#8B5CF6',
-    label: 'Ngày khám',
-    value: cf?.checked_date ? dayjs(cf.checked_date).format('DD/MM/YYYY') : undefined,
-  },
-]
-
 interface HealthFields {
+  checked_date?: string
+  checked_by?: string
+  medical_history?: string
   skin_type?: string
   condition?: string
   allergies?: string
-  checked_by?: string
-  checked_date?: string
+  protocol?: string
+  products_used?: string
+  advice?: string
+  note?: string
 }
 
-type HealthRow = CustomerProfile & { custom_fields?: HealthFields }
+type HealthRow = CustomerProfileRow & { latestRecord?: CustomerHealthRecord | null }
+
+interface SkinTypeOption {
+  code: string
+  label: string
+  sort_order?: number
+}
+
+type ExaminerOption = { id: string; zalo_name?: string | null; email?: string | null }
+
+function readLegacyHealth(row: HealthRow): HealthFields {
+  const fields = (row.custom_fields ?? {}) as Record<string, unknown>
+  const value = (...keys: string[]) => {
+    for (const key of keys) {
+      const candidate = fields[key]
+      if (typeof candidate === 'string' && candidate.trim()) return candidate
+    }
+    return undefined
+  }
+  return {
+    checked_date: value('checked_date'),
+    checked_by: value('checked_by'),
+    medical_history: value('tien_su_benh_ly', 'medical_history'),
+    skin_type: value('skin_type', 'loai_da'),
+    condition: value('condition', 'tinh_trang_da_ban_dau', 'tinh_trang_da'),
+    allergies: value('allergies', 'di_ung'),
+    protocol: value('phac_do_dieu_tri', 'protocol'),
+    products_used: value('san_pham_su_dung', 'products_used'),
+    advice: value('loi_dan_ktv', 'advice'),
+    note: value('ghi_chu', 'note') || row.note || undefined,
+  }
+}
+
+function skinTypeLabel(value: string | null | undefined, options: SkinTypeOption[]): string | undefined {
+  if (!value) return undefined
+  return options.find((option) => option.code === value || option.label === value)?.label ?? value
+}
+
+function skinTypeCode(value: string | null | undefined, options: SkinTypeOption[]): string | undefined {
+  if (!value) return undefined
+  return options.find((option) => option.code === value || option.label === value)?.code ?? value
+}
+
+function currentHealth(row: HealthRow, skinTypes: SkinTypeOption[]): HealthFields {
+  const record = row.latestRecord
+  const fields = !record ? readLegacyHealth(row) : {
+    checked_date: record.checked_date,
+    checked_by: record.checked_by ?? undefined,
+    medical_history: record.medical_history ?? undefined,
+    skin_type: record.skin_type ?? undefined,
+    condition: record.condition,
+    allergies: record.allergies ?? undefined,
+    protocol: record.protocol ?? undefined,
+    products_used: record.products_used ?? undefined,
+    advice: record.advice ?? undefined,
+    note: record.note ?? undefined,
+  }
+  return { ...fields, skin_type: skinTypeLabel(fields.skin_type, skinTypes) }
+}
+
+const healthDetails = (fields: HealthFields) => [
+  { label: 'Tiền sử bệnh lý', value: fields.medical_history },
+  { label: 'Loại da', value: fields.skin_type },
+  { label: 'Tình trạng da', value: fields.condition },
+  { label: 'Dị ứng', value: fields.allergies },
+  { label: 'Phác đồ điều trị', value: fields.protocol },
+  { label: 'Sản phẩm đã dùng', value: fields.products_used },
+  { label: 'Lời dặn KTV', value: fields.advice },
+  { label: 'Ghi chú', value: fields.note },
+]
+
+function displayDate(date?: string) {
+  return date && dayjs(date).isValid() ? dayjs(date).format('DD/MM/YYYY') : '—'
+}
 
 export default function HealthRecords() {
+  const [rows, setRows] = useState<HealthRow[]>([])
   const [keyword, setKeyword] = useState('')
-  const [open, setOpen] = useState(false)
-  const [editing, setEditing] = useState<HealthRow | null>(null)
+  const [loading, setLoading] = useState(false)
   const [detail, setDetail] = useState<HealthRow | null>(null)
+  const [history, setHistory] = useState<CustomerHealthRecord[]>([])
+  const [historyLoading, setHistoryLoading] = useState(false)
+  const [historyError, setHistoryError] = useState(false)
+  const [detailRefresh, setDetailRefresh] = useState(0)
+  const [detailTreatments, setDetailTreatments] = useState<CustomerTreatment[]>([])
+  const [packageNames, setPackageNames] = useState<Record<string, string>>({})
+  const [staffs, setStaffs] = useState<ExaminerOption[]>([])
+  const [skinTypes, setSkinTypes] = useState<SkinTypeOption[]>([])
+  const [skinTypesLoading, setSkinTypesLoading] = useState(true)
+  const [modalOpen, setModalOpen] = useState(false)
+  const [recordCustomer, setRecordCustomer] = useState<HealthRow | null>(null)
+  const [editingRecord, setEditingRecord] = useState<CustomerHealthRecord | null>(null)
+  const [saving, setSaving] = useState(false)
   const [form] = Form.useForm()
-  const profilesQuery = useGetCustomerProfiles()
-  const staffsQuery = useGetUsers({ currentPage: '1', pageSize: '200', IsAdmin: 'true' })
-  const treatmentsQuery = useGetCustomerTreatments()
-  const packagesQuery = useGetTreatmentPackages()
-  const summaryMutation = usePutCustomerProfilesId()
-  const rows = (((profilesQuery.data?.responseData ?? (profilesQuery.data as any)?.data ?? []) as HealthRow[]))
-  const staffs = (((staffsQuery.data?.responseData ?? {}) as { rows?: { id: string; zalo_name?: string; email?: string }[] }).rows ?? [])
-  const allTreatments = (((treatmentsQuery.data?.responseData ?? (treatmentsQuery.data as any)?.data ?? []) as CustomerTreatment[]))
-  const detailTreatments = detail ? allTreatments.filter((treatment) => treatment.customer_profile_id === detail.id) : []
-  const packageRows = (((packagesQuery.data?.responseData ?? (packagesQuery.data as any)?.data ?? []) as { id: string; name: string }[]))
-  const packageNames = Object.fromEntries(packageRows.map((pkg) => [pkg.id, pkg.name]))
-  const loading = profilesQuery.isLoading
 
-  const openDetail = (row: HealthRow) => {
-    setDetail(row)
-  }
+  const load = useCallback(async (): Promise<HealthRow[] | null> => {
+    setLoading(true)
+    try {
+      const [profileResult, latestRecords] = await Promise.all([
+        getCustomerProfiles({ page: 1, limit: 200 }),
+        getHealthRecordsLatest(),
+      ])
+      const latestByProfile = new Map(
+        (pickData<CustomerHealthRecord[]>(latestRecords) ?? []).map((record) => [record.customer_profile_id, record]),
+      )
+      const nextRows = (pickData<HealthRow[]>(profileResult) ?? []).map((row) => ({ ...row, latestRecord: latestByProfile.get(row.id) }))
+      setRows(nextRows)
+      return nextRows
+    } catch (err) {
+      message.error(errorMessage(err))
+      return null
+    } finally {
+      setLoading(false)
+    }
+  }, [])
 
-  const list = useMemo(
-    () =>
-      rows.filter(
-        (r) =>
-          r.full_name?.toLowerCase().includes(keyword.toLowerCase()) ||
-          (r.custom_fields?.condition ?? '').toLowerCase().includes(keyword.toLowerCase()),
-      ),
-    [rows, keyword],
-  )
+  useEffect(() => {
+    void load()
+    const loadExaminerOptions = async () => {
+      const result = await getUsers({ currentPage: 1, pageSize: 200, has_role: true }).catch(() => null)
+      const userRows = (pickData<{ rows?: Array<{ id: string; zalo_name?: string; email?: string; user_roles?: Array<{ role?: { role_name?: string } | null }> }> }>(result)?.rows ?? [])
+      const ktvUsers = userRows.filter((user) =>
+        (user.user_roles ?? []).some((assignment) => {
+          const roleName = String(assignment.role?.role_name ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('vi')
+          return roleName === 'ktv' || roleName.includes('chuyen vien') || roleName.includes('ky thuat vien')
+        }),
+      )
 
-  const openModal = (r?: HealthRow) => {
-    setEditing(r ?? null)
-    const cf = r?.custom_fields ?? {}
-    form.setFieldsValue(
-      r
-        ? {
-          skin_type: cf.skin_type ?? SKIN_TYPES[0],
-          condition: cf.condition ?? '',
-          allergies: cf.allergies ?? 'Không',
-          checked_by: cf.checked_by,
-          checked_date: cf.checked_date ? dayjs(cf.checked_date) : dayjs(),
-        }
-        : { skin_type: SKIN_TYPES[0], condition: '', allergies: 'Không', checked_date: dayjs() },
-    )
-    setOpen(true)
+      // Phiếu khám lưu tên người khám dạng văn bản, nên gộp các tài khoản KTV trùng tên.
+      const uniqueNames = new Map<string, ExaminerOption>()
+      for (const staff of ktvUsers) {
+        const name = (staff.zalo_name || staff.email || '').trim()
+        if (!name) continue
+        const normalizedName = name.toLocaleLowerCase('vi')
+        if (!uniqueNames.has(normalizedName)) uniqueNames.set(normalizedName, { id: staff.id, zalo_name: staff.zalo_name, email: staff.email })
+      }
+      setStaffs([...uniqueNames.values()].sort((a, b) =>
+        (a.zalo_name || a.email || '').localeCompare(b.zalo_name || b.email || '', 'vi'),
+      ))
+    }
+
+    void loadExaminerOptions()
+    getSkinTypes()
+      .then((body) => setSkinTypes(pickData<SkinTypeOption[]>(body) ?? []))
+      .catch((err) => message.error(`Không tải được danh mục loại da: ${errorMessage(err)}`))
+      .finally(() => setSkinTypesLoading(false))
+    getTreatmentPackages({ page: 1, limit: 200 })
+      .then((body) => {
+        const names: Record<string, string> = {}
+        for (const item of pickData<Array<{ id: string; name: string }>>(body) ?? []) names[item.id] = item.name
+        setPackageNames(names)
+      })
+      .catch(() => undefined)
+  }, [load])
+
+  useEffect(() => {
+    if (!detail) return
+    let cancelled = false
+    setHistoryLoading(true)
+    setHistoryError(false)
+    setHistory([])
+    setDetailTreatments([])
+    Promise.all([
+      getCustomerProfilesIdHealthRecords(detail.id),
+      getCustomerTreatments({ customer_profile_id: detail.id, limit: 50 }),
+    ])
+      .then(([recordsResult, treatmentsResult]) => {
+        if (cancelled) return
+        setHistory(pickData<CustomerHealthRecord[]>(recordsResult) ?? [])
+        setDetailTreatments(pickData<CustomerTreatment[]>(treatmentsResult) ?? [])
+      })
+      .catch(() => {
+        if (!cancelled) setHistoryError(true)
+      })
+      .finally(() => {
+        if (!cancelled) setHistoryLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [detail, detailRefresh])
+
+  const filteredRows = useMemo(() => {
+    const term = keyword.trim().toLocaleLowerCase('vi')
+    if (!term) return rows
+    return rows.filter((row) => {
+      const fields = currentHealth(row, skinTypes)
+      return [row.full_name, row.phone, row.email, row.customer_code, fields.condition, fields.medical_history]
+        .some((value) => value?.toLocaleLowerCase('vi').includes(term))
+    })
+  }, [rows, keyword, skinTypes])
+
+  const openRecordForm = (row: HealthRow, record?: CustomerHealthRecord) => {
+    setRecordCustomer(row)
+    setEditingRecord(record ?? null)
+    form.resetFields()
+    form.setFieldsValue({
+      checked_date: record?.checked_date ? dayjs(record.checked_date) : dayjs(),
+      checked_by: record?.checked_by ?? undefined,
+      medical_history: record?.medical_history ?? undefined,
+      skin_type: skinTypeCode(record?.skin_type, skinTypes),
+      condition: record?.condition ?? undefined,
+      allergies: record?.allergies ?? undefined,
+      protocol: record?.protocol ?? undefined,
+      products_used: record?.products_used ?? undefined,
+      advice: record?.advice ?? undefined,
+      note: record?.note ?? undefined,
+    })
+    setModalOpen(true)
   }
 
   const submit = async () => {
-    const values = await form.validateFields()
-    if (!editing) {
-      message.warning('Chọn khách hàng từ bảng để cập nhật sổ sức khỏe')
-      return
+    const values = (await form.validateFields()) as Record<string, Dayjs | string | undefined>
+    if (!recordCustomer) return
+    const dto = {
+      checked_date: (values.checked_date as Dayjs).format('YYYY-MM-DD'),
+      checked_by: (values.checked_by as string) || null,
+      medical_history: (values.medical_history as string) || null,
+      skin_type: (values.skin_type as string) || null,
+      condition: String(values.condition ?? '').trim(),
+      allergies: (values.allergies as string) || null,
+      protocol: (values.protocol as string) || null,
+      products_used: (values.products_used as string) || null,
+      advice: (values.advice as string) || null,
+      note: (values.note as string) || null,
     }
-    const custom_fields: HealthFields = {
-      ...(editing.custom_fields ?? {}),
-      skin_type: values.skin_type,
-      condition: values.condition,
-      allergies: values.allergies,
-      checked_by: values.checked_by,
-      checked_date: values.checked_date?.format?.('YYYY-MM-DD'),
-    }
+    setSaving(true)
     try {
-      await summaryMutation.mutateAsync({ id: editing.id, data: { custom_fields: custom_fields as Record<string, unknown> } })
-      message.success('Đã cập nhật sổ sức khỏe')
-      setOpen(false)
-      await profilesQuery.refetch()
+      if (editingRecord) {
+        await putCustomerProfilesIdHealthRecordsRecordId(recordCustomer.id, editingRecord.id, dto as never)
+        message.success('Đã cập nhật phiếu khám')
+      } else {
+        await postCustomerProfilesIdHealthRecords(recordCustomer.id, dto as never)
+        message.success('Đã tạo phiếu khám')
+      }
+      setModalOpen(false)
+      const nextRows = await load()
+      if (detail && detail.id === recordCustomer.id) {
+        setDetail(nextRows?.find((row) => row.id === detail.id) ?? detail)
+      } else if (detail) {
+        setDetailRefresh((value) => value + 1)
+      }
     } catch (err) {
-      message.error(err instanceof Error ? err.message : 'Không thể cập nhật sổ sức khỏe')
+      message.error(errorMessage(err))
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -178,80 +315,78 @@ export default function HealthRecords() {
     <>
       <PageTitle
         extra={
-          <Space className="max-sm:flex! max-sm:w-full!">
-            <Input
-              allowClear
-              prefix={<SearchOutlined style={{ color: '#A9ADB2' }} />}
-              placeholder="Tìm theo khách, tình trạng da..."
-              className="max-sm:w-full!"
-              style={{ width: 260, maxWidth: '100%' }}
-              value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
-            />
-          </Space>
+          <Input
+            allowClear
+            prefix={<SearchOutlined style={{ color: '#A9ADB2' }} />}
+            placeholder="Tìm khách, SĐT, tình trạng da..."
+            style={{ width: 300, maxWidth: '100%' }}
+            value={keyword}
+            onChange={(event) => setKeyword(event.target.value)}
+          />
         }
       >
         Sổ sức khỏe
       </PageTitle>
-      <Table
+
+      <Table<HealthRow>
         rowKey="id"
         loading={loading}
-        dataSource={list}
-        onRow={(row) => ({ onClick: () => openDetail(row), style: { cursor: 'pointer' } })}
+        dataSource={filteredRows}
+        scroll={{ x: 900 }}
+        onRow={(row) => ({ onClick: () => setDetail(row), style: { cursor: 'pointer' } })}
         columns={[
           {
             title: 'Khách hàng',
+            width: 210,
             render: (_, row) => (
               <div>
-                <div style={{ fontWeight: 500 }}>{row.full_name}</div>
-                <div style={{ fontSize: 12, color: '#6F7071' }}>{row.phone}</div>
+                <div style={{ fontWeight: 600 }}>{row.full_name}</div>
+                <Typography.Text type="secondary" style={{ fontSize: 12 }}>{row.phone}</Typography.Text>
               </div>
             ),
           },
           {
             title: 'Loại da',
             width: 130,
-            render: (_, row) =>
-              row.custom_fields?.skin_type ? <Tag color="purple">{row.custom_fields.skin_type}</Tag> : '—',
+            render: (_, row) => currentHealth(row, skinTypes).skin_type ? <Tag color="purple">{currentHealth(row, skinTypes).skin_type}</Tag> : '—',
           },
           {
             title: 'Tình trạng da',
-            render: (_, row) => row.custom_fields?.condition || '—',
+            render: (_, row) => <Typography.Text ellipsis={{ tooltip: currentHealth(row, skinTypes).condition }}>{currentHealth(row, skinTypes).condition || '—'}</Typography.Text>,
           },
           {
             title: 'Dị ứng',
-            width: 140,
-            render: (_, row) =>
-              !row.custom_fields?.allergies || row.custom_fields.allergies === 'Không' ? (
-                <Typography.Text type="secondary">Không</Typography.Text>
-              ) : (
-                <Tag color="red">{row.custom_fields.allergies}</Tag>
-              ),
+            width: 150,
+            render: (_, row) => {
+              const allergies = currentHealth(row, skinTypes).allergies
+              return !allergies || allergies.toLocaleLowerCase('vi') === 'không'
+                ? <Typography.Text type="secondary">{allergies || '—'}</Typography.Text>
+                : <Tag color="red">{allergies}</Tag>
+            },
           },
           {
             title: 'Khám bởi',
-            width: 120,
-            render: (_, row) => row.custom_fields?.checked_by || '—',
+            width: 140,
+            render: (_, row) => currentHealth(row, skinTypes).checked_by || '—',
           },
           {
             title: 'Ngày khám',
-            width: 110,
-            render: (_, row) =>
-              row.custom_fields?.checked_date ? dayjs(row.custom_fields.checked_date).format('DD/MM/YYYY') : '—',
+            width: 115,
+            render: (_, row) => displayDate(currentHealth(row, skinTypes).checked_date),
           },
           {
             title: '',
-            width: 140,
+            width: 145,
             render: (_, row) => (
               <Button
                 size="small"
-                icon={<PlusOutlined />}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  openModal(row)
+                icon={<FileAddOutlined />}
+                onClick={(event) => {
+                  event.stopPropagation()
+                  openRecordForm(row)
                 }}
               >
-                {row.custom_fields?.condition ? 'Sửa' : 'Ghi nhận'}
+                Ghi nhận khám
               </Button>
             ),
           },
@@ -259,364 +394,197 @@ export default function HealthRecords() {
       />
 
       <Drawer
-        title={null}
-        closable={false}
-        width={490}
+        title={detail ? `${detail.full_name} — ${detail.customer_code}` : 'Hồ sơ sức khỏe'}
+        width={560}
         open={!!detail}
         onClose={() => setDetail(null)}
-        styles={{
-          body: {
-            padding: 0,
-            background: 'linear-gradient(180deg, #E9F5EF 0%, #F7FBF9 45%, #FFFFFF 100%)',
-          },
-        }}
+        extra={detail && <Button type="primary" icon={<PlusOutlined />} onClick={() => openRecordForm(detail)}>Tạo phiếu khám</Button>}
       >
-        {detail && (
-          <div style={{ position: 'relative', padding: '20px 24px 40px', overflow: 'hidden', minHeight: '100%' }}>
-            {/* Nút đóng custom */}
-            <div
-              onClick={() => setDetail(null)}
-              style={{
-                width: 34,
-                height: 34,
-                borderRadius: '50%',
-                background: 'rgba(255, 255, 255, 0.75)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                color: '#6B8577',
-                fontSize: 13,
-                marginBottom: 14,
-                boxShadow: '0 2px 8px rgba(23, 107, 75, 0.08)',
-              }}
-            >
-              <CloseOutlined />
-            </div>
-            {/* Trang trí: chữ thập y tế + sóng đáy */}
-            <div style={{ position: 'absolute', top: 28, right: 20, pointerEvents: 'none' }}>
-              <Cross size={58} color="#C4E7D4" style={{ position: 'absolute', top: 0, right: 0, opacity: 0.9 }} />
-              <Cross size={30} color="#D9F0E3" style={{ position: 'absolute', top: 52, right: 66, opacity: 0.8 }} />
-              <Cross size={22} color="#E4F5EC" style={{ position: 'absolute', top: 8, right: 84, opacity: 0.8 }} />
-            </div>
-            <svg
-              viewBox="0 0 490 120"
-              preserveAspectRatio="none"
-              style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: 110, pointerEvents: 'none' }}
-            >
-              <path d="M0,70 C130,20 300,120 490,40 L490,120 L0,120 Z" fill="#DCEFE4" opacity="0.55" />
-              <path d="M0,95 C160,50 320,110 490,70 L490,120 L0,120 Z" fill="#CBE7D8" opacity="0.45" />
-            </svg>
-
-            {/* Header */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 22, position: 'relative' }}>
-              <div
-                style={{
-                  width: 54,
-                  height: 54,
-                  flexShrink: 0,
-                  borderRadius: 18,
-                  background: 'linear-gradient(135deg, var(--brand-dark), var(--brand-primary))',
-                  color: '#fff',
-                  fontSize: 20,
-                  fontWeight: 700,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: '0 8px 20px rgba(23, 107, 75, 0.25)',
-                }}
-              >
-                {detail.full_name?.charAt(0)?.toUpperCase() ?? 'K'}
-              </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={eyebrowStyle}>Hồ sơ lâm sàng</div>
-                <div style={{ fontSize: 19, fontWeight: 700, color: '#25332C', lineHeight: 1.35 }}>{detail.full_name}</div>
-                <div style={{ fontSize: 13, color: '#8A938E' }}>{detail.phone}</div>
-              </div>
-            </div>
-
-            {/* Tổng quan sức khỏe */}
-            <div style={cardStyle}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-                <div style={iconBadge('#E7F6EE', '#2FA36B')}>
-                  <ProfileOutlined />
-                </div>
-                <span style={cardHeaderStyle}>TỔNG QUAN SỨC KHỎE</span>
-              </div>
-              <div style={{ display: 'grid', gap: 10 }}>
-                {OVERVIEW_ROWS(detail.custom_fields).map((r) => (
-                  <div
-                    key={r.label}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 12,
-                      background: '#F7FAF8',
-                      borderRadius: 16,
-                      padding: '11px 14px',
-                    }}
-                  >
-                    <div style={iconBadge(r.bg, r.color)}>{r.icon}</div>
-                    <span style={{ flex: 1, fontSize: 14, color: '#3A453F' }}>{r.label}</span>
-                    <span
-                      style={{
-                        fontSize: 14,
-                        fontWeight: 600,
-                        color: r.value ? '#25332C' : '#C0C9C3',
-                        maxWidth: 150,
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      {r.value || '—'}
-                    </span>
-                    <RightOutlined style={{ fontSize: 11, color: '#C6CDC8' }} />
-                  </div>
-                ))}
-              </div>
-              <div
-                onClick={() => {
-                  setDetail(null)
-                  openModal(detail)
-                }}
-                style={{
-                  marginTop: 12,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 12,
-                  background: '#E7F5EC',
-                  borderRadius: 16,
-                  padding: '11px 14px',
-                  cursor: 'pointer',
-                }}
-              >
-                <div style={iconBadge('#D3EBDD', '#1B7A4E')}>
-                  <SyncOutlined />
-                </div>
-                <span style={{ flex: 1, fontWeight: 700, color: '#1B7A4E', fontSize: 14 }}>Cập nhật số sức khỏe</span>
-                <RightOutlined style={{ fontSize: 12, color: '#1B7A4E' }} />
-              </div>
-            </div>
-
-            {/* Lịch sử khám và điều trị */}
-            <div style={{ ...cardStyle, marginTop: 16, position: 'relative' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-                <div style={iconBadge('#EAF1FD', '#4A7DE0')}>
-                  <FileTextOutlined />
-                </div>
-                <span style={cardHeaderStyle}>LỊCH SỬ KHÁM VÀ ĐIỀU TRỊ</span>
-              </div>
-              {detailTreatments.length === 0 ? (
-                <div style={{ padding: '18px 0 12px' }}>
-                  <Empty
-                    image={Empty.PRESENTED_IMAGE_SIMPLE}
-                    description={
-                      <div>
-                        <div style={{ fontWeight: 700, color: '#374151', fontSize: 14 }}>Chưa có liệu trình</div>
-                        <div style={{ fontSize: 12, color: '#9CA3AF' }}>
-                          Thông tin lịch sử khám và điều trị sẽ được hiển thị tại đây.
-                        </div>
-                      </div>
-                    }
+        {detail && (() => {
+          const current = currentHealth(detail, skinTypes)
+          const hasLegacy = !detail.latestRecord && healthDetails(current).some((field) => !!field.value)
+          return (
+            <Space direction="vertical" size={16} style={{ width: '100%' }}>
+              <Card size="small" title={<Space><ProfileOutlined />Tổng quan sức khỏe</Space>}>
+                {hasLegacy && (
+                  <Alert
+                    type="info"
+                    showIcon
+                    style={{ marginBottom: 14 }}
+                    message="Thông tin cũ trên hồ sơ"
+                    description="Khách chưa có phiếu khám mới. Dữ liệu này vẫn được giữ nguyên và chưa được tính là một lần khám."
                   />
-                </div>
-              ) : (
-                <div style={{ display: 'grid', gap: 10 }}>
-                  {detailTreatments.map((t) => (
-                    <div
-                      key={t.id}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 12,
-                        background: '#F7FAF8',
-                        borderRadius: 16,
-                        padding: '11px 14px',
-                      }}
-                    >
-                      <div style={iconBadge('#EAF1FD', '#4A7DE0')}>
-                        <MedicineBoxOutlined />
-                      </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div
-                          style={{
-                            fontWeight: 600,
-                            fontSize: 14,
-                            color: '#25332C',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
-                          }}
-                        >
-                          {t.package_id ? packageNames[t.package_id] ?? 'Gói liệu trình' : 'Gói liệu trình'}
-                        </div>
-                        <div style={{ fontSize: 12, color: '#8A938E' }}>
-                          {t.quota_type === 'SESSIONS'
-                            ? `${t.sessions_used ?? 0}/${t.sessions_total ?? '?'} buổi`
-                            : 'Không giới hạn buổi'}
-                          {(t as any).updated_at
-                            ? ` · Cập nhật ${dayjs((t as any).updated_at).format('DD/MM/YYYY')}`
-                            : ''}
-                        </div>
-                      </div>
-                      <Tag
-                        style={{ marginInlineEnd: 0, borderRadius: 999 }}
-                        color={t.status === 'ACTIVE' ? 'green' : t.status === 'FINISHED' ? 'blue' : 'red'}
-                      >
-                        {t.status === 'ACTIVE' ? 'Đang dùng' : t.status === 'FINISHED' ? 'Hoàn tất' : 'Đã hủy'}
-                      </Tag>
-                    </div>
+                )}
+                {detail.latestRecord && (
+                  <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 12 }}>
+                    Theo phiếu khám ngày {displayDate(detail.latestRecord.checked_date)}
+                  </Typography.Text>
+                )}
+                <Descriptions column={1} size="small" labelStyle={{ width: 150, color: '#7E8581' }}>
+                  <Descriptions.Item label="Khám bởi">{current.checked_by || '—'}</Descriptions.Item>
+                  <Descriptions.Item label="Ngày khám">{displayDate(current.checked_date)}</Descriptions.Item>
+                  {healthDetails(current).map((field) => (
+                    <Descriptions.Item key={field.label} label={field.label}>{field.value || '—'}</Descriptions.Item>
                   ))}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
+                </Descriptions>
+              </Card>
+
+              <Card
+                size="small"
+                title={<Space><FileTextOutlined />Lịch sử phiếu khám</Space>}
+              >
+                {historyLoading ? (
+                  <div style={{ padding: 24, textAlign: 'center' }}>Đang tải lịch sử khám...</div>
+                ) : historyError ? (
+                  <Alert
+                    type="error"
+                    showIcon
+                    message="Không tải được lịch sử phiếu khám"
+                    action={<Button size="small" onClick={() => setDetailRefresh((value) => value + 1)}>Thử lại</Button>}
+                  />
+                ) : history.length === 0 ? (
+                  <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Chưa có phiếu khám mới" />
+                ) : (
+                  <Space direction="vertical" size={12} style={{ width: '100%' }}>
+                    {history.map((record) => (
+                      <Card
+                        key={record.id}
+                        size="small"
+                        title={<Space><CalendarOutlined />{displayDate(record.checked_date)}{record.checked_by ? ` · ${record.checked_by}` : ''}</Space>}
+                        extra={<Button size="small" onClick={() => openRecordForm(detail, record)}>Sửa</Button>}
+                      >
+                        <Descriptions column={1} size="small" labelStyle={{ width: 145, color: '#7E8581' }}>
+                          {healthDetails({
+                            medical_history: record.medical_history ?? undefined,
+                            skin_type: skinTypeLabel(record.skin_type, skinTypes),
+                            condition: record.condition,
+                            allergies: record.allergies ?? undefined,
+                            protocol: record.protocol ?? undefined,
+                            products_used: record.products_used ?? undefined,
+                            advice: record.advice ?? undefined,
+                            note: record.note ?? undefined,
+                          }).map((field) => (
+                            <Descriptions.Item key={field.label} label={field.label}>{field.value || '—'}</Descriptions.Item>
+                          ))}
+                        </Descriptions>
+                      </Card>
+                    ))}
+                  </Space>
+                )}
+              </Card>
+
+              <Card size="small" title={<Space><MedicineBoxOutlined />Liệu trình</Space>}>
+                {detailTreatments.length === 0 ? (
+                  <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Khách chưa có liệu trình" />
+                ) : (
+                  <Space direction="vertical" size={8} style={{ width: '100%' }}>
+                    {detailTreatments.map((treatment) => (
+                      <div key={treatment.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <Typography.Text style={{ flex: 1 }}>{packageNames[treatment.package_id] || 'Gói liệu trình'}</Typography.Text>
+                        <Typography.Text type="secondary">
+                          {treatment.quota_type === 'SESSIONS'
+                            ? `${treatment.sessions_used ?? 0}/${treatment.sessions_total ?? '?'} buổi`
+                            : 'Không giới hạn buổi'}
+                        </Typography.Text>
+                        <Tag color={treatment.status === 'ACTIVE' ? 'green' : treatment.status === 'FINISHED' ? 'blue' : 'default'}>
+                          {treatment.status === 'ACTIVE' ? 'Đang dùng' : treatment.status === 'FINISHED' ? 'Hoàn tất' : 'Đã hủy'}
+                        </Tag>
+                      </div>
+                    ))}
+                  </Space>
+                )}
+              </Card>
+            </Space>
+          )
+        })()}
       </Drawer>
 
       <Modal
-        open={open}
-        onCancel={() => setOpen(false)}
-        footer={null}
-        width={600}
-        centered
-        style={{ borderRadius: 24, overflow: 'hidden' }}
-        styles={{
-          body: { padding: 0 },
-          close: {
-            top: 22,
-            insetInlineEnd: 22,
-            width: 32,
-            height: 32,
-            borderRadius: '50%',
-            background: 'rgba(255, 255, 255, 0.85)',
-            boxShadow: '0 2px 8px rgba(23, 107, 75, 0.12)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          },
-        }}
+        title={editingRecord ? 'Sửa phiếu khám' : 'Tạo phiếu khám'}
+        open={modalOpen}
+        onCancel={() => setModalOpen(false)}
+        width={720}
+        destroyOnHidden
+        footer={[
+          <Button key="cancel" onClick={() => setModalOpen(false)}>Hủy</Button>,
+          <Button key="save" type="primary" loading={saving} onClick={() => void submit()}>{editingRecord ? 'Lưu thay đổi' : 'Lưu phiếu khám'}</Button>,
+        ]}
       >
-        {editing && (
-          <div>
-            {/* Header band xanh y tế */}
-            <div
-              style={{
-                position: 'relative',
-                padding: '26px 32px 22px',
-                background: 'linear-gradient(160deg, #DFF0E7 0%, #EDF7F1 55%, #F7FBF9 100%)',
-                overflow: 'hidden',
-              }}
-            >
-              <div style={{ position: 'absolute', top: 16, right: 66, pointerEvents: 'none' }}>
-                <Cross size={34} color="#C9E8D6" style={{ position: 'absolute', top: 0, right: 0, opacity: 0.85 }} />
-                <Cross size={18} color="#DDF1E5" style={{ position: 'absolute', top: 30, right: 40, opacity: 0.8 }} />
-              </div>
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 16,
-                  position: 'relative',
-                  paddingRight: 40,
-                }}
-              >
-                <div
-                  style={{
-                    width: 52,
-                    height: 52,
-                    flexShrink: 0,
-                    borderRadius: 18,
-                    background: 'linear-gradient(135deg, var(--brand-dark), var(--brand-primary))',
-                    color: '#fff',
-                    fontSize: 20,
-                    fontWeight: 700,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    boxShadow: '0 8px 20px rgba(23, 107, 75, 0.25)',
-                  }}
-                >
-                  {editing.full_name?.charAt(0)?.toUpperCase() ?? 'K'}
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ ...eyebrowStyle, color: '#4E8B6C' }}>Hồ sơ lâm sàng</div>
-                  <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--brand-dark)', lineHeight: 1.3 }}>
-                    {editing.full_name}
-                  </div>
-                  <div style={{ fontSize: 12.5, color: '#7A9486' }}>
-                    {editing.phone} · {editing.customer_code}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div style={{ padding: '24px 36px 28px' }}>
-              <Form form={form} layout="vertical" requiredMark={false}>
-                <div style={{ ...eyebrowStyle, marginBottom: 12 }}>Khám da</div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2px 20px' }}>
-                  <Form.Item name="skin_type" label={<span style={labelStyle}>Loại da</span>}>
-                    <Select variant="filled" style={{ borderRadius: 14 }} options={SKIN_TYPES.map((t) => ({ value: t, label: t }))} />
-                  </Form.Item>
-                  <Form.Item name="checked_by" label={<span style={labelStyle}>Khám bởi</span>}>
-                    <Select
-                      variant="filled"
-                      allowClear
-                      style={{ borderRadius: 14 }}
-                      placeholder="Chọn chuyên viên"
-                      options={staffs.map((s) => ({
-                        value: s.zalo_name || s.email || s.id.slice(0, 8),
-                        label: s.zalo_name || s.email || s.id.slice(0, 8),
-                      }))}
-                    />
-                  </Form.Item>
-                  <Form.Item name="allergies" label={<span style={labelStyle}>Dị ứng</span>}>
-                    <Input variant="filled" style={{ borderRadius: 14 }} placeholder="VD: Cồn khô / Không" />
-                  </Form.Item>
-                  <Form.Item name="checked_date" label={<span style={labelStyle}>Ngày khám</span>}>
-                    <DatePicker variant="filled" style={{ width: '100%', borderRadius: 14 }} format="DD/MM/YYYY" />
-                  </Form.Item>
-                </div>
-
-                <div style={{ ...eyebrowStyle, margin: '20px 0 12px' }}>Ghi chú lâm sàng</div>
-                <Form.Item
-                  name="condition"
-                  rules={[{ required: true, message: 'Nhập tình trạng da' }]}
-                >
-                  <Input.TextArea
-                    rows={4}
-                    variant="filled"
-                    style={{ borderRadius: 14, resize: 'none' }}
-                    placeholder="VD: Mụn viêm vùng cằm, thâm nhẹ..."
+        {recordCustomer && (
+          <>
+            <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 18 }}>
+              {recordCustomer.full_name} · {recordCustomer.phone} · {recordCustomer.customer_code}
+            </Typography.Text>
+            <Form form={form} layout="vertical" requiredMark={false}>
+              <Divider orientation="horizontal" titlePlacement="start" plain style={{ marginTop: 0, color: '#52635A', fontSize: 13 }}>Thông tin khám</Divider>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
+                <Form.Item name="checked_date" label={<span style={labelStyle}>Ngày khám</span>} rules={[{ required: true, message: 'Chọn ngày khám' }]}>
+                  <DatePicker style={{ width: '100%' }} format="DD/MM/YYYY" />
+                </Form.Item>
+                <Form.Item name="checked_by" label={<span style={labelStyle}>Người khám</span>}>
+                  <Select
+                    allowClear
+                    showSearch
+                    optionFilterProp="label"
+                    placeholder="Chọn chuyên viên"
+                    options={staffs.map((staff) => {
+                      const name = staff.zalo_name || staff.email || staff.id.slice(0, 8)
+                      return { value: name, label: name }
+                    })}
                   />
                 </Form.Item>
-              </Form>
-
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'flex-end',
-                  gap: 10,
-                  marginTop: 8,
-                  paddingTop: 20,
-                  borderTop: '1px solid var(--brand-border-soft)',
-                }}
-              >
-                <Button shape="round" style={{ paddingInline: 24, height: 42 }} onClick={() => setOpen(false)}>
-                  Hủy
-                </Button>
-                <Button
-                  type="primary"
-                  shape="round"
-                  onClick={submit}
-                  style={{ paddingInline: 30, height: 42, fontWeight: 600 }}
-                >
-                  Lưu hồ sơ
-                </Button>
+                <Form.Item name="skin_type" label={<span style={labelStyle}>Loại da</span>}>
+                  <Select
+                    allowClear
+                    loading={skinTypesLoading}
+                    disabled={skinTypesLoading || skinTypes.length === 0}
+                    placeholder={skinTypesLoading ? 'Đang tải loại da...' : 'Chọn loại da'}
+                    notFoundContent="Chưa có loại da được cấu hình"
+                    options={skinTypes.map((type) => ({ value: type.code, label: type.label }))}
+                  />
+                </Form.Item>
+                <Form.Item name="allergies" label={<span style={labelStyle}>Dị ứng</span>}>
+                  <Input placeholder="Ví dụ: hương liệu, cồn khô" />
+                </Form.Item>
               </div>
-            </div>
-          </div>
+              <Form.Item name="medical_history" label={<span style={labelStyle}>Tiền sử bệnh lý</span>}>
+                <Input.TextArea rows={2} placeholder="Bệnh lý, thuốc đang sử dụng, lưu ý sức khỏe..." />
+              </Form.Item>
+              <Form.Item name="condition" label={<span style={labelStyle}>Tình trạng da</span>} rules={[{ required: true, whitespace: true, message: 'Nhập tình trạng da' }]}>
+                <Input.TextArea rows={3} placeholder="Mô tả tình trạng da khi khám..." />
+              </Form.Item>
+              <Collapse
+                ghost
+                style={{ marginTop: 8, background: '#F7FAF8', borderRadius: 12, padding: '0 12px' }}
+                items={[{
+                  key: 'treatment-details',
+                  forceRender: true,
+                  label: (
+                    <div>
+                      <Typography.Text strong>Điều trị và ghi chú</Typography.Text>
+                      <Typography.Text type="secondary" style={{ marginLeft: 8, fontSize: 12 }}>Tùy chọn</Typography.Text>
+                    </div>
+                  ),
+                  children: (
+                    <>
+                      <Form.Item name="protocol" label={<span style={labelStyle}>Phác đồ điều trị</span>}>
+                        <Input.TextArea rows={2} placeholder="Các bước và kế hoạch điều trị..." />
+                      </Form.Item>
+                      <Form.Item name="products_used" label={<span style={labelStyle}>Sản phẩm đã dùng</span>}>
+                        <Input.TextArea rows={2} placeholder="Nhập tên sản phẩm đã sử dụng trong lần khám này..." />
+                      </Form.Item>
+                      <Form.Item name="advice" label={<span style={labelStyle}>Lời dặn KTV</span>}>
+                        <Input.TextArea rows={2} placeholder="Hướng dẫn chăm sóc hoặc lưu ý cho khách..." />
+                      </Form.Item>
+                      <Form.Item name="note" label={<span style={labelStyle}>Ghi chú</span>} style={{ marginBottom: 0 }}>
+                        <Input.TextArea rows={2} placeholder="Ghi chú thêm cho lần khám..." />
+                      </Form.Item>
+                    </>
+                  ),
+                }]}
+              />
+            </Form>
+          </>
         )}
       </Modal>
     </>

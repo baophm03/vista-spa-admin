@@ -8,5 +8,5 @@
 import type { ContentCategory } from './contentCategory';
 
 export type GetContentCategoriesId200AllOf = {
-  data?: ContentCategory;
+  responseData?: ContentCategory;
 };

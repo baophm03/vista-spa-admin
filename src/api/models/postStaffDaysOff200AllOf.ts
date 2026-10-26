@@ -8,5 +8,5 @@
 import type { StaffDayOff } from './staffDayOff';
 
 export type PostStaffDaysOff200AllOf = {
-  data?: StaffDayOff;
+  responseData?: StaffDayOff;
 };

@@ -30,12 +30,13 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  BizSuccess,
-  BizSuccessList,
   ConflictResponse,
+  DeletePackageTypesId200,
   DeleteServiceCategoriesId200,
   DeleteTreatmentPackagesId200,
   ForbiddenResponse,
+  GetPackageTypes200,
+  GetPackageTypesId200,
   GetPackageTypesParams,
   GetServiceCategories200,
   GetServiceCategoriesId200,
@@ -48,10 +49,12 @@ import type {
   LegacyBadRequestResponse,
   LegacyUnauthorizedResponse,
   NotFoundResponse,
+  PostPackageTypes200,
   PostPackageTypesBody,
   PostServiceCategories200,
   PostServiceExchangePointsAdminBody,
   PostTreatmentPackages200,
+  PutPackageTypesId200,
   PutPackageTypesIdBody,
   PutServiceCategoriesId200,
   PutTreatmentPackagesId200,
@@ -1888,7 +1891,7 @@ export const getPackageTypesId = (
 ) => {
       
       
-      return customInstance<BizSuccess>(
+      return customInstance<GetPackageTypesId200>(
       {url: `/packageTypes/${id}`, method: 'GET', signal
     },
       );
@@ -2082,7 +2085,7 @@ export const putPackageTypesId = (
  ) => {
       
       
-      return customInstance<BizSuccess>(
+      return customInstance<PutPackageTypesId200>(
       {url: `/packageTypes/${id}`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: putPackageTypesIdBody
@@ -2146,7 +2149,7 @@ export const deletePackageTypesId = (
  ) => {
       
       
-      return customInstance<BizSuccess>(
+      return customInstance<DeletePackageTypesId200>(
       {url: `/packageTypes/${id}`, method: 'DELETE'
     },
       );
@@ -2209,7 +2212,7 @@ export const getPackageTypes = (
 ) => {
       
       
-      return customInstance<BizSuccessList>(
+      return customInstance<GetPackageTypes200>(
       {url: `/packageTypes`, method: 'GET',
         params, signal
     },
@@ -2404,7 +2407,7 @@ export const postPackageTypes = (
 ) => {
       
       
-      return customInstance<BizSuccessList>(
+      return customInstance<PostPackageTypes200>(
       {url: `/packageTypes`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: postPackageTypesBody, signal

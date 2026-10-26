@@ -8,5 +8,5 @@
 import type { StaffSchedule } from './staffSchedule';
 
 export type GetStaffSchedulesId200AllOf = {
-  data?: StaffSchedule;
+  responseData?: StaffSchedule;
 };

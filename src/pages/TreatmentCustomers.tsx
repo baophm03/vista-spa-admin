@@ -1,45 +1,61 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { Button, Card, Col, DatePicker, Divider, Empty, Form, Image, Input, InputNumber, Modal, Popconfirm, Progress, Row, Segmented, Select, Space, Spin, Statistic, Table, Tabs, Tag, Tooltip, Typography, Upload, message } from 'antd'
-import { DeleteOutlined, EditOutlined, PlusOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons'
-import PageTitle from '../components/base/PageTitle'
-import { getCustomerProfiles } from '../api/endpoints/customer-profiles'
+import { useQueryClient } from '@tanstack/react-query'
+import { Alert, Button, Card, Checkbox, Col, DatePicker, Divider, Empty, Form, Image, Input, InputNumber, Modal, Popconfirm, Popover, Progress, Row, Select, Space, Spin, Statistic, Table, Tabs, Tag, Tooltip, Typography, Upload, message } from 'antd'
+import { DeleteOutlined, EditOutlined, FilterOutlined, PlusOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons'
+import dayjs, { type Dayjs } from 'dayjs'
+import PageTitle from '@/components/base/PageTitle'
+import { errorMessage, pickData } from '@/api/helpers'
+import type { CustomerTreatment } from '@/api/models/customerTreatment'
+import type { SessionPhoto } from '@/api/models/sessionPhoto'
+import type { TreatmentPackage } from '@/api/models/treatmentPackage'
+import type { LookupItem } from '@/api/models/lookupItem'
+import type { GetCustomerProfilesParams } from '@/api/models/getCustomerProfilesParams'
+import { getCustomerProfiles, useGetCustomerProfiles } from '@/api/endpoints/customer-profiles'
 import {
-  getCustomerTreatments,
+  deletePhotosId,
+  deleteSessionsId,
+  getCustomerTreatmentsIdAvailableSlots,
   getCustomerTreatmentsIdPayments,
   getCustomerTreatmentsIdSessions,
-  postCustomerTreatments,
-  postCustomerTreatmentsIdPayments,
+  getGetCustomerTreatmentsQueryKey,
+  getSessionsIdPhotos,
   postCustomerTreatmentsIdSessions,
-  putCustomerTreatmentsIdCancel,
-} from '../api/endpoints/customer-treatments'
-import { postFiles } from '../api/endpoints/files'
-import { putSessionsId, putSessionsIdComplete, putSessionsIdDone, putSessionsIdStart, postSessionsIdPhotos, getSessionsIdPhotos, deleteSessionsId } from '../api/endpoints/sessions'
-import { getTreatmentPackages } from '../api/endpoints/treatment-packages'
-import { getUsers } from '../api/endpoints/users'
-import { useGetUsersGetMyInfo } from '../api/endpoints/users'
-import dayjs from 'dayjs'
+  postSessionsIdPhotos,
+  putSessionsId,
+  putSessionsIdComplete,
+  putSessionsIdDone,
+  putSessionsIdStart,
+  useGetCustomerTreatments,
+  usePostCustomerTreatments,
+  usePostCustomerTreatmentsIdPayments,
+  usePutCustomerTreatmentsIdCancel,
+} from '@/api/endpoints/customer-treatments'
+import { useGetTreatmentPackages } from '@/api/endpoints/services'
+import { postFiles } from '@/api/endpoints/files'
+import { useGetLookupLists } from '@/api/endpoints/settings'
+import { useGetUsers } from '@/api/endpoints/users'
+import { useCustomerProfileAccess } from '@/utils/customerProfileAccess'
 
-interface CustomerProfile { id: string; full_name: string; phone: string; user_id?: string; branch_id?: string }
-interface CustomerTreatment {
-  id: string
-  customer_profile_id: string
-  package_id: string
-  quota_type?: string
-  status?: string
-  sessions_total?: number
-  sessions_used?: number
-  total_amount?: number
-  paid_amount?: number
-  debt_amount: number
-  value_used?: number
-  value_total?: number
-  progress_percent?: number
-  customer_profile?: { full_name?: string; phone?: string }
-  package_type?: { name?: string }
+interface Slot {
+  date?: string
+  start_time: string
+  end_time?: string
+  staff_ids: string[]
 }
-interface TreatmentPackage { id: string; name: string; quota_type?: string; total_sessions?: number; list_price?: number; is_active?: boolean }
-const unwrapOrval = <T,>(response: any): T => (response?.responseData ?? response?.data ?? response) as T
-const apiErrorMessage = (error: unknown) => (error instanceof Error ? error.message : 'Có lỗi xảy ra')
+
+interface ProfileRow {
+  id: string
+  full_name?: string
+  phone?: string
+}
+
+interface LookupListRow {
+  id: string
+  key: string
+  name: string
+  is_active?: boolean
+  lookup_items?: LookupItem[]
+}
 
 const QUOTA_LABEL: Record<string, string> = {
   SESSIONS: 'Theo số buổi',
@@ -53,6 +69,14 @@ const FILTERS = [
   { value: 'FINISHED', label: 'Hoàn tất' },
   { value: 'CANCELLED', label: 'Đã hủy' },
 ]
+type CustomerTreatmentColumnKey = 'customer' | 'progress' | 'payment' | 'status'
+const CUSTOMER_TREATMENT_COLUMN_OPTIONS: { label: string; value: CustomerTreatmentColumnKey }[] = [
+  { label: 'Khách hàng', value: 'customer' },
+  { label: 'Tiến độ', value: 'progress' },
+  { label: 'Thanh toán', value: 'payment' },
+  { label: 'Trạng thái', value: 'status' },
+]
+const DEFAULT_VISIBLE_COLUMNS = CUSTOMER_TREATMENT_COLUMN_OPTIONS.map((column) => column.value)
 
 const STATUS_META: Record<string, { label: string; color: string }> = {
   ACTIVE: { label: 'Đang làm', color: 'var(--brand-primary)' },
@@ -76,13 +100,30 @@ const PAY_METHOD: Record<string, string> = {
 
 const fmtVnd = (v: unknown) => Number(v ?? 0).toLocaleString('vi-VN')
 
-const apiOrigin = (() => {
-  try {
-    return new URL(import.meta.env.VITE_API_URL).origin
-  } catch {
-    return 'http://localhost:3001'
+const sessionUsage = (treatment: CustomerTreatment) => {
+  const rawTotal = Number(treatment.sessions_total ?? 0)
+  const rawUsed = Number(treatment.sessions_used ?? 0)
+  const total = Number.isFinite(rawTotal) ? Math.max(0, rawTotal) : 0
+  const used = Number.isFinite(rawUsed) ? Math.max(0, rawUsed) : 0
+  return {
+    total,
+    used,
+    remaining: Math.max(0, total - used),
+    percent: total > 0 ? Math.min(100, Math.round((used / total) * 100)) : 0,
   }
-})()
+}
+
+const treatmentProgress = (treatment: CustomerTreatment): number | null => {
+  if (treatment.quota_type === 'SESSIONS') return sessionUsage(treatment).percent
+  if (treatment.quota_type === 'VALUE') {
+    const total = Number(treatment.value_total ?? 0)
+    const used = Number(treatment.value_used ?? 0)
+    return total > 0 && Number.isFinite(total) && Number.isFinite(used)
+      ? Math.min(100, Math.max(0, Math.round((used / total) * 100)))
+      : 0
+  }
+  return null
+}
 
 interface SessionRow {
   id: string
@@ -91,6 +132,7 @@ interface SessionRow {
   staff_id?: string
   appointment_id?: string
   scheduled_at?: string
+  appointment?: { appt_date?: string; start_time?: string }
   started_at?: string
   done_at?: string
   completed_at?: string
@@ -103,15 +145,6 @@ interface SessionRow {
   is_warranty?: boolean
 }
 
-interface PhotoRow {
-  id: string
-  url?: string
-  file_id?: string
-  kind?: string
-  caption?: string
-  taken_at?: string
-}
-
 interface PaymentRow {
   id: string
   amount?: number
@@ -121,7 +154,7 @@ interface PaymentRow {
   created_at?: string
 }
 
-/** Ảnh của 1 buổi: thumbnail + preview + upload theo loại (trước/sau) */
+/** Ảnh của 1 buổi: thumbnail + preview + upload/xóa theo loại (trước/quá trình/sau) */
 function SessionPhotos({
   sessionId,
   photos,
@@ -130,23 +163,54 @@ function SessionPhotos({
   onChanged,
 }: {
   sessionId: string
-  photos: PhotoRow[]
+  photos: SessionPhoto[]
   kind?: string
   editable?: boolean
   onChanged: () => void
 }) {
+  const [deleting, setDeleting] = useState(false)
   return (
     <Space wrap size={8}>
       <Image.PreviewGroup>
         {photos.map((p) => (
-          <Image
-            key={p.id}
-            width={92}
-            height={92}
-            style={{ objectFit: 'cover', borderRadius: 12 }}
-            src={p.url ? apiOrigin + p.url : undefined}
-            fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
-          />
+          <div key={p.id} style={{ position: 'relative' }}>
+            <Image
+              width={92}
+              height={92}
+              style={{ objectFit: 'cover', borderRadius: 12 }}
+              src={p.url ?? undefined}
+              fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
+            />
+            {editable && (
+              <Popconfirm
+                title="Xóa ảnh này?"
+                okText="Xóa"
+                cancelText="Hủy"
+                onConfirm={async () => {
+                  setDeleting(true)
+                  try {
+                    await deletePhotosId(p.id)
+                    message.success('Đã xóa ảnh')
+                    onChanged()
+                  } catch (err) {
+                    message.error(errorMessage(err))
+                  } finally {
+                    setDeleting(false)
+                  }
+                }}
+              >
+                <Button
+                  size="small"
+                  danger
+                  type="text"
+                  loading={deleting}
+                  icon={<DeleteOutlined />}
+                  style={{ position: 'absolute', top: 0, right: 0 }}
+                  aria-label="Xóa ảnh"
+                />
+              </Popconfirm>
+            )}
+          </div>
         ))}
       </Image.PreviewGroup>
       {editable && (
@@ -156,12 +220,12 @@ function SessionPhotos({
           showUploadList={false}
           beforeUpload={async (file) => {
             try {
-              const uploaded = unwrapOrval<{ original?: string }>(await postFiles({ file }))
-              await postSessionsIdPhotos(sessionId, { url: uploaded.original, kind })
+              const uploaded = pickData<{ original?: string }>(await postFiles({ file }))
+              await postSessionsIdPhotos(sessionId, { url: uploaded?.original, kind })
               message.success('Đã thêm ảnh')
               onChanged()
             } catch (err) {
-              message.error(apiErrorMessage(err))
+              message.error(errorMessage(err))
             }
             return false
           }}
@@ -223,59 +287,77 @@ const TRow = ({ label, children }: { label: string; children: ReactNode }) => (
 function SessionTimeline({
   ctId,
   ctStatus,
+  treatmentTotalAmount = 0,
   staffOptions,
   isAdmin,
   onChanged,
+  refreshKey,
+  focusSessionId,
+  onFocusSessionHandled,
 }: {
   ctId: string
   ctStatus?: string
+  treatmentTotalAmount?: number
   staffOptions: { value: string; label: string }[]
   isAdmin?: boolean
   onChanged?: () => void
+  refreshKey?: number
+  focusSessionId?: string
+  onFocusSessionHandled?: () => void
 }) {
   const [sessions, setSessions] = useState<SessionRow[]>([])
-  const [photos, setPhotos] = useState<Record<string, PhotoRow[]>>({})
+  const [photos, setPhotos] = useState<Record<string, SessionPhoto[]>>({})
   const [loading, setLoading] = useState(true)
+  const hasLoadedSessions = useRef(false)
+  const loadSequence = useRef(0)
+  const sessionSlotSequence = useRef(0)
+  const [sessionSlots, setSessionSlots] = useState<Slot[]>([])
+  const [sessionSlotsLoading, setSessionSlotsLoading] = useState(false)
   const [editOpen, setEditOpen] = useState<SessionRow | null>(null)
   const [editForm] = Form.useForm()
+  const focusSessionIdRef = useRef(focusSessionId)
+  const onFocusSessionHandledRef = useRef(onFocusSessionHandled)
+  const maxSessionValue = Math.max(0, Number(treatmentTotalAmount) || 0)
+  const selectedSessionTime = Form.useWatch('scheduled_time', editForm)
+  const selectedSessionDate = Form.useWatch('scheduled_date', editForm)
 
-  const staffName = (id?: string) => staffOptions.find((o) => o.value === id)?.label
-
-  const load = useCallback(async () => {
-    setLoading(true)
+  const loadSessionSlots = useCallback(async (session: SessionRow, date: Dayjs) => {
+    const sequence = ++sessionSlotSequence.current
+    setSessionSlotsLoading(true)
     try {
-      const rows = unwrapOrval<SessionRow[]>(await getCustomerTreatmentsIdSessions(ctId))
-      setSessions(rows)
-      const entries = await Promise.all(
-        rows.map(async (s) => [s.id, unwrapOrval<PhotoRow[]>(await getSessionsIdPhotos(s.id))] as const),
-      )
-      setPhotos(Object.fromEntries(entries))
+      const response = await getCustomerTreatmentsIdAvailableSlots(ctId, {
+        date: date.format('YYYY-MM-DD'),
+        exclude_session_id: session.id,
+      })
+      if (sequence !== sessionSlotSequence.current) return
+      const slots = (pickData<Slot[] | undefined>(response) ?? []) as Slot[]
+      setSessionSlots(slots)
+      const selectedTime = editForm.getFieldValue('scheduled_time')
+      const selectedStaff = editForm.getFieldValue('staff_id')
+      const matchingSlot = slots.find((slot) => slot.start_time.slice(0, 5) === selectedTime)
+      if (selectedTime && !matchingSlot) editForm.setFieldsValue({ scheduled_time: undefined, staff_id: undefined })
+      else if (selectedStaff && !matchingSlot?.staff_ids.includes(selectedStaff)) editForm.setFieldsValue({ staff_id: undefined })
     } catch (err) {
-      message.error(apiErrorMessage(err))
+      if (sequence === sessionSlotSequence.current) {
+        setSessionSlots([])
+        message.warning(errorMessage(err))
+      }
     } finally {
-      setLoading(false)
+      if (sequence === sessionSlotSequence.current) setSessionSlotsLoading(false)
     }
-  }, [ctId])
+  }, [ctId, editForm])
 
-  useEffect(() => {
-    load()
-  }, [load])
-
-  const act = async (fn: () => Promise<unknown>, okText: string) => {
-    try {
-      await fn()
-      message.success(okText)
-      load()
-      onChanged?.()
-    } catch (err) {
-      message.error(apiErrorMessage(err))
-    }
-  }
-
-  const openEdit = (s: SessionRow) => {
+  const openEdit = useCallback((s: SessionRow) => {
     setEditOpen(s)
+    sessionSlotSequence.current += 1
+    setSessionSlots([])
     editForm.setFieldsValue({
-      scheduled_at: s.scheduled_at ? dayjs(s.scheduled_at) : null,
+      scheduled_date: s.scheduled_at
+        ? dayjs(s.scheduled_at)
+        : s.appointment?.appt_date ? dayjs(s.appointment.appt_date) : null,
+      scheduled_time: s.scheduled_at
+        ? dayjs(s.scheduled_at).format('HH:mm')
+        : s.appointment?.start_time?.slice(0, 5),
       staff_id: s.staff_id,
       session_value: s.session_value,
       skin_note: s.skin_note,
@@ -284,16 +366,86 @@ function SessionTimeline({
       products_used: s.products_used,
       result: s.result,
     })
+    if (!s.appointment_id && s.status === 'scheduled' && s.scheduled_at) {
+      void loadSessionSlots(s, dayjs(s.scheduled_at))
+    }
+  }, [editForm, loadSessionSlots])
+
+  const staffName = (id?: string) => staffOptions.find((o) => o.value === id)?.label
+
+  useEffect(() => {
+    focusSessionIdRef.current = focusSessionId
+    onFocusSessionHandledRef.current = onFocusSessionHandled
+  }, [focusSessionId, onFocusSessionHandled])
+
+  const load = useCallback(async () => {
+    const sequence = ++loadSequence.current
+    if (!hasLoadedSessions.current) setLoading(true)
+    try {
+      const response = await getCustomerTreatmentsIdSessions(ctId)
+      if (sequence !== loadSequence.current) return
+      const rows = (pickData<SessionRow[] | undefined>(response) ?? []) as SessionRow[]
+      setSessions(rows)
+      const focusId = focusSessionIdRef.current
+      const sessionToEdit = focusId ? rows.find((session) => session.id === focusId) : undefined
+      if (sessionToEdit) {
+        openEdit(sessionToEdit)
+        onFocusSessionHandledRef.current?.()
+      }
+      hasLoadedSessions.current = true
+      setLoading(false)
+
+      // Ảnh tải nền để việc làm mới buổi không giữ cả danh sách ở trạng thái spinner.
+      const entries = await Promise.all(rows.map(async (s) => {
+        try {
+          return [s.id, (pickData<SessionPhoto[] | undefined>(await getSessionsIdPhotos(s.id)) ?? []) as SessionPhoto[]] as const
+        } catch {
+          return [s.id, [] as SessionPhoto[]] as const
+        }
+      }))
+      if (sequence === loadSequence.current) setPhotos(Object.fromEntries(entries))
+    } catch (err) {
+      if (sequence === loadSequence.current) message.error(errorMessage(err))
+    } finally {
+      if (sequence === loadSequence.current) {
+        hasLoadedSessions.current = true
+        setLoading(false)
+      }
+    }
+  }, [ctId, openEdit])
+
+  useEffect(() => {
+    load()
+  }, [load, refreshKey])
+
+  const act = async (fn: () => Promise<unknown>, okText: string) => {
+    try {
+      await fn()
+      message.success(okText)
+      load()
+      onChanged?.()
+    } catch (err) {
+      message.error(errorMessage(err))
+    }
   }
 
   const submitEdit = async () => {
     const values = await editForm.validateFields()
+    const { scheduled_date, scheduled_time, ...sessionValues } = values
+    const scheduleValues = editOpen?.appointment_id
+      ? {}
+      : {
+          scheduled_at: scheduled_date && scheduled_time
+            ? scheduled_date.hour(Number(scheduled_time.slice(0, 2))).minute(Number(scheduled_time.slice(3, 5))).second(0).millisecond(0).toISOString()
+            : null,
+          staff_id: sessionValues.staff_id || null,
+        }
     await act(
       () =>
         putSessionsId(editOpen!.id, {
-          ...values,
-          scheduled_at: values.scheduled_at ? values.scheduled_at.toISOString() : null,
-        }),
+          ...sessionValues,
+          ...scheduleValues,
+        } as never),
       'Đã cập nhật buổi',
     )
     setEditOpen(null)
@@ -355,7 +507,13 @@ function SessionTimeline({
                 </div>
                 <Space size={8} align="center" wrap>
                   <span style={{ fontWeight: 800, fontSize: 15.5, color: '#26211F' }}>
-                    {s.scheduled_at ? dayjs(s.scheduled_at).format('DD/MM/YYYY · HH:mm') : 'Chưa xếp lịch'}
+                    {s.scheduled_at
+                      ? dayjs(s.scheduled_at).format('DD/MM/YYYY · HH:mm')
+                      : s.appointment?.appt_date
+                        ? `${dayjs(s.appointment.appt_date).format('DD/MM/YYYY')} · ${s.appointment.start_time?.slice(0, 5) ?? ''}`
+                        : s.started_at || s.done_at || s.completed_at
+                          ? `Thực hiện ${dayjs(s.started_at || s.done_at || s.completed_at).format('DD/MM/YYYY · HH:mm')}`
+                          : 'Chưa xếp lịch'}
                   </span>
                   <span
                     style={{
@@ -383,19 +541,19 @@ function SessionTimeline({
                           type="primary"
                           ghost
                           disabled={!canStart(s)}
-                          onClick={() => act(() => putSessionsIdStart(s.id, {}), 'Đã bắt đầu buổi')}
+                          onClick={() => act(() => putSessionsIdStart(s.id), 'Đã bắt đầu buổi')}
                         >
                           Bắt đầu
                         </Button>
                       </Tooltip>
                     )}
                     {s.status === 'in_progress' && (
-                      <Button onClick={() => act(() => putSessionsIdDone(s.id, {}), 'Đã thực hiện xong')}>
+                      <Button onClick={() => act(() => putSessionsIdDone(s.id, {} as never), 'Đã thực hiện xong')}>
                         Đã làm
                       </Button>
                     )}
                     {s.status === 'done' && (
-                      <Button type="primary" onClick={() => act(() => putSessionsIdComplete(s.id, {}), 'Đã hoàn tất buổi')}>
+                      <Button type="primary" onClick={() => act(() => putSessionsIdComplete(s.id), 'Đã hoàn tất buổi')}>
                         Hoàn tất
                       </Button>
                     )}
@@ -482,20 +640,70 @@ function SessionTimeline({
         width={560}
       >
         <Form form={editForm} layout="vertical" style={{ marginTop: 12 }}>
+          {editOpen?.appointment_id && (
+            <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 12 }}>
+              Buổi này đã gắn với lịch hẹn; KTV và giờ lấy theo lịch hẹn. Muốn đổi, hãy sửa ở tab Lịch hẹn.
+            </Typography.Text>
+          )}
           <Row gutter={12}>
-            <Col span={12}>
-              <Form.Item name="scheduled_at" label="Ngày hẹn">
-                <DatePicker showTime format="DD/MM/YYYY HH:mm" style={{ width: '100%' }} />
+            <Col span={8}>
+              <Form.Item name="scheduled_date" label="Ngày hẹn">
+                <DatePicker
+                  format="DD/MM/YYYY"
+                  style={{ width: '100%' }}
+                  disabled={!!editOpen?.appointment_id || editOpen?.status !== 'scheduled'}
+                  onChange={(date) => {
+                    editForm.setFieldsValue({ scheduled_time: undefined, staff_id: undefined })
+                    setSessionSlots([])
+                    if (date && editOpen && !editOpen.appointment_id && editOpen.status === 'scheduled') {
+                      void loadSessionSlots(editOpen, date)
+                    }
+                  }}
+                />
               </Form.Item>
             </Col>
-            <Col span={12}>
+            <Col span={8}>
+              <Form.Item name="scheduled_time" label="Giờ hẹn">
+                <Select
+                  disabled={!!editOpen?.appointment_id || editOpen?.status !== 'scheduled' || !selectedSessionDate || sessionSlotsLoading}
+                  loading={sessionSlotsLoading}
+                  placeholder={selectedSessionDate ? 'Chọn giờ còn trống' : 'Chọn ngày trước'}
+                  options={sessionSlots.map((slot) => ({ value: slot.start_time.slice(0, 5), label: slot.start_time.slice(0, 5) }))}
+                  onChange={(time) => {
+                    const slot = sessionSlots.find((candidate) => candidate.start_time.slice(0, 5) === time)
+                    if (!slot?.staff_ids.includes(editForm.getFieldValue('staff_id'))) editForm.setFieldsValue({ staff_id: undefined })
+                  }}
+                  allowClear
+                />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
               <Form.Item name="staff_id" label="KTV phụ trách">
-                <Select allowClear showSearch optionFilterProp="label" options={staffOptions} placeholder="Chọn KTV" />
+                <Select
+                  allowClear
+                  showSearch
+                  optionFilterProp="label"
+                  disabled={!!editOpen?.appointment_id || editOpen?.status !== 'scheduled' || !selectedSessionTime || sessionSlotsLoading}
+                  placeholder={selectedSessionTime ? 'Chọn KTV rảnh' : 'Chọn ngày và giờ trước'}
+                  options={sessionSlots
+                    .find((slot) => slot.start_time.slice(0, 5) === selectedSessionTime)
+                    ?.staff_ids.map((id) => staffOptions.find((option) => option.value === id))
+                    .filter((option): option is { value: string; label: string } => !!option)}
+                />
               </Form.Item>
             </Col>
           </Row>
-          <Form.Item name="session_value" label="Giá trị buổi (đ) — dùng cho gói định mức tiền">
-            <InputNumber min={0} step={50000} style={{ width: '100%' }} />
+          <Form.Item
+            name="session_value"
+            label="Giá trị buổi (đ) — dùng cho gói định mức tiền"
+            help={`Tối đa ${fmtVnd(maxSessionValue)}đ. Với gói định mức tiền, giá trị buổi này không được vượt quá số tiền còn lại trong gói.`}
+            rules={[{
+              type: 'number',
+              max: maxSessionValue,
+              message: `Giá trị một buổi không được vượt quá tổng tiền liệu trình (${fmtVnd(maxSessionValue)}đ)`,
+            }]}
+          >
+            <InputNumber min={0} max={maxSessionValue} step={50000} style={{ width: '100%' }} />
           </Form.Item>
           <Divider plain style={{ fontSize: 11, color: '#A9ADB2', letterSpacing: 1, margin: '4px 0 14px' }}>
             ĐẦU BUỔI
@@ -528,57 +736,81 @@ function SessionTimeline({
 }
 
 export default function TreatmentCustomers() {
-  const myInfoQuery = useGetUsersGetMyInfo()
-  const [rows, setRows] = useState<CustomerTreatment[]>([])
-  const [profiles, setProfiles] = useState<CustomerProfile[]>([])
-  const [packages, setPackages] = useState<TreatmentPackage[]>([])
-  const [staffOptions, setStaffOptions] = useState<{ value: string; label: string }[]>([])
+  const queryClient = useQueryClient()
+  const { isAdmin } = useCustomerProfileAccess()
   const [filter, setFilter] = useState<string>('all')
   const [search, setSearch] = useState('')
   const [pkgFilter, setPkgFilter] = useState<string>()
-  const [loading, setLoading] = useState(false)
+  const [filterOpen, setFilterOpen] = useState(false)
+  const [visibleColumns, setVisibleColumns] = useState<CustomerTreatmentColumnKey[]>(DEFAULT_VISIBLE_COLUMNS)
+  const [draftVisibleColumns, setDraftVisibleColumns] = useState<CustomerTreatmentColumnKey[]>(DEFAULT_VISIBLE_COLUMNS)
   const [open, setOpen] = useState(false)
   const [form] = Form.useForm()
+  const [filterForm] = Form.useForm()
   // Modal chi tiết
   const [detail, setDetail] = useState<CustomerTreatment | null>(null)
+  const [sessionsRefreshKey, setSessionsRefreshKey] = useState(0)
+  const [sessionToEdit, setSessionToEdit] = useState<{ treatmentId: string; sessionId: string } | null>(null)
+  const handleSessionFocusHandled = useCallback(() => setSessionToEdit(null), [])
+  const [addingSessionId, setAddingSessionId] = useState<string | null>(null)
   const [payments, setPayments] = useState<PaymentRow[]>([])
   const [payLoading, setPayLoading] = useState(false)
   const [payOpen, setPayOpen] = useState(false)
   const [payForm] = Form.useForm()
-  const [isAdmin, setIsAdmin] = useState(false)
+  const [paymentLookupError, setPaymentLookupError] = useState('')
 
-  const load = useCallback(async () => {
-    setLoading(true)
-    try {
-      setRows(unwrapOrval<CustomerTreatment[]>(await getCustomerTreatments()))
-    } catch (err) {
-      message.error(apiErrorMessage(err))
-    } finally {
-      setLoading(false)
-    }
-  }, [])
+  const treatmentsQuery = useGetCustomerTreatments({ page: 1, limit: 500 })
+  const rows = (pickData<CustomerTreatment[] | undefined>(treatmentsQuery.data) ?? []) as CustomerTreatment[]
+
+  const profilesQuery = useGetCustomerProfiles({ page: 1, limit: 200 })
+  const profiles = (pickData<ProfileRow[] | undefined>(profilesQuery.data) ?? []) as ProfileRow[]
+  const packagesQuery = useGetTreatmentPackages({ page: 1, limit: 200 })
+  const packages = (pickData<TreatmentPackage[] | undefined>(packagesQuery.data) ?? []) as TreatmentPackage[]
+  const staffsQuery = useGetUsers({ currentPage: 1, pageSize: 200, has_role: true })
+  const staffOptions = useMemo(
+    () =>
+      (((pickData<{ rows?: Array<{ id: string; zalo_name?: string; email?: string }> }>(staffsQuery.data)?.rows ?? [])) as Array<{ id: string; zalo_name?: string; email?: string }>)
+        .map((u) => ({ value: u.id, label: `${u.zalo_name || 'Nhân viên'} · ${u.email || u.id.slice(0, 8)}` })),
+    [staffsQuery.data],
+  )
+
+  const lookupQuery = useGetLookupLists({ key: 'payment.methods', items_is_active: 'true' })
+  const paymentLookup = (pickData<LookupListRow[] | undefined>(lookupQuery.data) ?? [])[0] ?? null
+  const activePaymentMethods = (paymentLookup?.lookup_items ?? []).filter((item) => item.is_active !== false)
+  const paymentMethodLabels = Object.fromEntries((paymentLookup?.lookup_items ?? []).map((item) => [item.code, item.label]))
+  const paymentLookupLoading = lookupQuery.isLoading
 
   useEffect(() => {
-    load()
-    const me = (myInfoQuery.data?.responseData ?? (myInfoQuery.data as any)?.data ?? {}) as { is_admin?: boolean }
-    setIsAdmin(!!me.is_admin)
-    getCustomerProfiles().then((response) => setProfiles(unwrapOrval<CustomerProfile[]>(response))).catch(() => undefined)
-    getTreatmentPackages().then((response) => setPackages(unwrapOrval<TreatmentPackage[]>(response))).catch(() => undefined)
-    getUsers({ currentPage: '1', pageSize: '200' })
-      .then((data: any) => {
-        const staffRows = unwrapOrval<{ rows?: any[] }>(data).rows ?? []
-        setStaffOptions(
-          staffRows.map((u: any) => ({ value: u.id, label: u.zalo_name || u.email || u.id })),
-        )
-      })
-      .catch(() => undefined)
-  }, [load, myInfoQuery.data])
+    if (lookupQuery.isError) {
+      setPaymentLookupError('Không tải được danh mục payment.methods: ' + errorMessage(lookupQuery.error))
+      return
+    }
+    if (lookupQuery.isLoading) return
+    const catalog = paymentLookup
+    if (!catalog || !catalog.is_active || !catalog.lookup_items?.some((item) => item.is_active !== false)) {
+      setPaymentLookupError('Chưa có phương thức thanh toán đang hoạt động trong danh mục payment.methods.')
+    } else setPaymentLookupError('')
+  }, [lookupQuery.isLoading, lookupQuery.isError, lookupQuery.error, paymentLookup])
+
+  const createMutation = usePostCustomerTreatments()
+  const createPaymentMutation = usePostCustomerTreatmentsIdPayments()
+  const cancelMutation = usePutCustomerTreatmentsIdCancel()
+
+  const refresh = useCallback(() => {
+    void queryClient.invalidateQueries({ queryKey: getGetCustomerTreatmentsQueryKey() })
+  }, [queryClient])
 
   const profileOf = (id: string) => profiles.find((p) => p.id === id)
   const profileName = (row: CustomerTreatment) =>
-    row.customer_profile?.full_name ?? profileOf(row.customer_profile_id)?.full_name ?? 'Khách hàng'
+    (row as CustomerTreatment & { customer_profile?: { full_name?: string } }).customer_profile?.full_name
+      ?? profileOf(row.customer_profile_id)?.full_name
+      ?? 'Khách hàng'
+  const profilePhone = (row: CustomerTreatment) =>
+    (row as CustomerTreatment & { customer_profile?: { phone?: string } }).customer_profile?.phone ?? profileOf(row.customer_profile_id)?.phone
   const packageName = (row: CustomerTreatment) =>
-    row.package_type?.name ?? packages.find((p) => p.id === row.package_id)?.name ?? '—'
+    (row as CustomerTreatment & { package_type?: { name?: string } }).package_type?.name
+      ?? packages.find((p) => p.id === row.package_id)?.name
+      ?? '—'
 
   const list = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -594,32 +826,60 @@ export default function TreatmentCustomers() {
     })
   }, [rows, filter, pkgFilter, search, profiles])
 
+  const activeFilterCount = Number(!!search.trim()) + Number(!!pkgFilter) + Number(filter !== 'all')
+  const openFilters = (nextOpen: boolean) => {
+    setFilterOpen(nextOpen)
+    if (!nextOpen) return
+    filterForm.setFieldsValue({ search, package_id: pkgFilter, status: filter })
+    setDraftVisibleColumns(visibleColumns)
+  }
+  const applyFilters = (values: Record<string, unknown>) => {
+    if (!draftVisibleColumns.length) {
+      message.error('Hãy giữ lại ít nhất một cột hiển thị')
+      return
+    }
+    setSearch(typeof values.search === 'string' ? values.search.trim() : '')
+    setPkgFilter(typeof values.package_id === 'string' ? values.package_id : undefined)
+    setFilter(typeof values.status === 'string' ? values.status : 'all')
+    setVisibleColumns(draftVisibleColumns)
+    setFilterOpen(false)
+  }
+  const clearFilters = () => {
+    filterForm.resetFields()
+    setSearch('')
+    setPkgFilter(undefined)
+    setFilter('all')
+    setDraftVisibleColumns(DEFAULT_VISIBLE_COLUMNS)
+    setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)
+  }
+
   const stats = useMemo(() => ({
     total: rows.length,
     ongoing: rows.filter((r) => r.status === 'ACTIVE').length,
     done: rows.filter((r) => r.status === 'FINISHED').length,
-    debt: rows.reduce((s, r) => s + Number(r.debt_amount ?? 0), 0),
+    debt: rows
+      .filter((r) => r.status !== 'CANCELLED')
+      .reduce((s, r) => s + Number(r.debt_amount ?? 0), 0),
   }), [rows])
 
   const openDetail = (row: CustomerTreatment) => {
     setDetail(row)
     setPayLoading(true)
     getCustomerTreatmentsIdPayments(row.id)
-      .then((data) => setPayments(unwrapOrval<PaymentRow[]>(data)))
+      .then((response) => setPayments((pickData<PaymentRow[] | undefined>(response) ?? []) as PaymentRow[]))
       .catch(() => setPayments([]))
       .finally(() => setPayLoading(false))
   }
 
-  const [formLoading, setFormLoading] = useState(false)
-  const [customerOptions, setCustomerOptions] = useState<CustomerProfile[]>([])
+  const [customerOptions, setCustomerOptions] = useState<ProfileRow[]>([])
   const custTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   /** Search khách phía server (BE hỗ trợ ?q=) — debounce 300ms */
-  const fetchCustomerOptions = useCallback((_q: string) => {
+  const fetchCustomerOptions = useCallback((q: string) => {
     if (custTimer.current) clearTimeout(custTimer.current)
     custTimer.current = setTimeout(() => {
-      getCustomerProfiles()
-        .then((response) => setCustomerOptions(unwrapOrval<CustomerProfile[]>(response)))
+      getCustomerProfiles({ page: 1, limit: 50, ...(q ? { q } : {}) } as GetCustomerProfilesParams)
+        .then((response) => setCustomerOptions((pickData<ProfileRow[] | undefined>(response) ?? []) as ProfileRow[]))
         .catch(() => undefined)
     }, 300)
   }, [])
@@ -627,12 +887,6 @@ export default function TreatmentCustomers() {
   const openModal = () => {
     form.setFieldsValue({ customer_profile_id: undefined, package_id: undefined, total_amount: undefined })
     setOpen(true)
-    // Fetch mới mỗi lần mở — gói vừa tạo ở chỗ khác cũng hiện ngay
-    setFormLoading(true)
-    getTreatmentPackages()
-      .then((response) => setPackages(unwrapOrval<TreatmentPackage[]>(response)))
-      .catch(() => undefined)
-      .finally(() => setFormLoading(false))
     fetchCustomerOptions('')
   }
 
@@ -644,47 +898,62 @@ export default function TreatmentCustomers() {
   const submit = async () => {
     const values = await form.validateFields()
     try {
-      await postCustomerTreatments(values)
+      await createMutation.mutateAsync({ data: values as never })
       message.success('Đã thêm khách vào liệu trình')
       setOpen(false)
-      load()
+      refresh()
     } catch (err) {
-      message.error(apiErrorMessage(err))
+      message.error(errorMessage(err))
     }
   }
 
   const addSession = async (row: CustomerTreatment) => {
+    if (addingSessionId !== null) return
+    setAddingSessionId(row.id)
     try {
-      await postCustomerTreatmentsIdSessions(row.id, {})
-      message.success('Đã tạo buổi mới — bấm vào dòng để gán lịch & KTV')
-      load()
+      const created = pickData<SessionRow>(await postCustomerTreatmentsIdSessions(row.id, {} as never))
+      setSessionToEdit({ treatmentId: row.id, sessionId: created?.id ?? '' })
+      openDetail(row)
+      setSessionsRefreshKey((key) => key + 1)
+      message.success('Đã tạo buổi mới')
+      refresh()
     } catch (err) {
-      message.error(apiErrorMessage(err))
+      message.error(errorMessage(err))
+    } finally {
+      setAddingSessionId(null)
     }
   }
 
   const cancelTreatment = async (row: CustomerTreatment) => {
     try {
-      await putCustomerTreatmentsIdCancel(row.id, {})
+      await cancelMutation.mutateAsync({ id: row.id })
       message.success('Đã hủy liệu trình')
       if (detail?.id === row.id) setDetail(null)
-      load()
+      refresh()
     } catch (err) {
-      message.error(apiErrorMessage(err))
+      message.error(errorMessage(err))
     }
   }
 
   const submitPayment = async () => {
+    if (paymentLookupLoading || paymentLookupError || activePaymentMethods.length === 0) {
+      message.error(paymentLookupError || 'Danh mục phương thức thanh toán chưa sẵn sàng')
+      return
+    }
     const values = await payForm.validateFields()
+    if (!activePaymentMethods.some((item) => item.code === values.method)) {
+      message.error('Chọn phương thức thanh toán đang hoạt động')
+      return
+    }
     try {
-      await postCustomerTreatmentsIdPayments(detail!.id, values)
+      await createPaymentMutation.mutateAsync({ id: detail!.id, data: values as never })
       message.success('Đã ghi nhận thanh toán')
       setPayOpen(false)
       payForm.resetFields()
       openDetail(detail!)
-      load()
+      refresh()
     } catch (err) {
-      message.error(apiErrorMessage(err))
+      message.error(errorMessage(err))
     }
   }
 
@@ -692,9 +961,9 @@ export default function TreatmentCustomers() {
     <>
       <PageTitle
         extra={
-          <Space className="max-sm:flex! max-sm:w-full! max-sm:flex-wrap!">
-            <Button icon={<ReloadOutlined />} onClick={load} />
-            <Button className="max-sm:flex-1" type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
+          <Space>
+            <Button icon={<ReloadOutlined />} onClick={refresh} />
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
               Thêm khách vào liệu trình
             </Button>
           </Space>
@@ -726,45 +995,65 @@ export default function TreatmentCustomers() {
         </Col>
       </Row>
 
-      <Space className="mb-4 max-sm:flex! max-sm:w-full! max-sm:flex-wrap!" size={12} wrap>
-        <Input
-          allowClear
-          prefix={<SearchOutlined style={{ color: '#A9ADB2' }} />}
-          placeholder="Tìm theo tên / SĐT khách"
-          className="max-sm:w-full!"
-          style={{ width: 260, maxWidth: '100%' }}
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-        <Select
-          allowClear
-          showSearch
-          optionFilterProp="label"
-          placeholder="Lọc theo liệu trình"
-          style={{ minWidth: 240 }}
-          value={pkgFilter}
-          onChange={setPkgFilter}
-          options={packages.map((p) => ({ value: p.id, label: p.name }))}
-        />
-        <Segmented options={FILTERS} value={filter} onChange={(v) => setFilter(v as string)} />
+      <Space size={12} style={{ marginBottom: 16 }} wrap>
+        <Popover
+          trigger="click"
+          placement="bottomLeft"
+          open={filterOpen}
+          onOpenChange={openFilters}
+          content={(
+            <div style={{ width: 320, maxHeight: 'min(70vh, 580px)', display: 'flex', flexDirection: 'column' }}>
+              <div style={{ overflowY: 'auto', paddingRight: 4 }}>
+                <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 10 }}>
+                  <Typography.Text strong>Cột hiển thị</Typography.Text>
+                  <Tag style={{ marginInlineEnd: 0 }}>{draftVisibleColumns.length}/{CUSTOMER_TREATMENT_COLUMN_OPTIONS.length} cột</Tag>
+                </Space>
+                <Checkbox.Group
+                  value={draftVisibleColumns}
+                  onChange={(values) => setDraftVisibleColumns(values as CustomerTreatmentColumnKey[])}
+                  style={{ display: 'grid', gap: 10 }}
+                  options={CUSTOMER_TREATMENT_COLUMN_OPTIONS}
+                />
+                <Divider style={{ margin: '14px 0' }} />
+                <Typography.Text strong>Điều kiện lọc</Typography.Text>
+                <Form form={filterForm} layout="vertical" onFinish={applyFilters} style={{ marginTop: 10 }}>
+                  <Form.Item name="search" label="Tìm khách hàng" style={{ marginBottom: 10 }}>
+                    <Input allowClear prefix={<SearchOutlined style={{ color: '#A9ADB2' }} />} placeholder="Tên hoặc số điện thoại" />
+                  </Form.Item>
+                  <Form.Item name="package_id" label="Liệu trình" style={{ marginBottom: 10 }}>
+                    <Select allowClear showSearch optionFilterProp="label" placeholder="Tất cả liệu trình" options={packages.map((pkg) => ({ value: pkg.id, label: pkg.name }))} />
+                  </Form.Item>
+                  <Form.Item name="status" label="Trạng thái" style={{ marginBottom: 0 }}>
+                    <Select options={FILTERS} />
+                  </Form.Item>
+                </Form>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, paddingTop: 12, marginTop: 12, borderTop: '1px solid var(--brand-border-soft)' }}>
+                <Button disabled={!activeFilterCount && visibleColumns.length === DEFAULT_VISIBLE_COLUMNS.length} onClick={clearFilters}>Xóa lọc</Button>
+                <Button type="primary" onClick={() => filterForm.submit()}>Xác nhận</Button>
+              </div>
+            </div>
+          )}
+        >
+          <Button icon={<FilterOutlined />}>Bộ lọc{activeFilterCount ? ` (${activeFilterCount})` : ''}</Button>
+        </Popover>
       </Space>
 
       <Table<CustomerTreatment>
         rowKey="id"
-        loading={loading}
+        loading={treatmentsQuery.isLoading}
         dataSource={list}
         onRow={(row) => ({ onClick: () => openDetail(row), style: { cursor: 'pointer' } })}
         columns={[
           {
             title: 'Khách hàng',
             key: 'customer',
-            render: (_, row) => {
-              const p = profileOf(row.customer_profile_id)
+            render: (_: unknown, row: CustomerTreatment) => {
               return (
                 <div>
                   <div style={{ fontWeight: 500 }}>{profileName(row)}</div>
                   <div style={{ fontSize: 12, color: '#6F7071' }}>
-                    {packageName(row)}{(row.customer_profile?.phone ?? p?.phone) ? ` · ${row.customer_profile?.phone ?? p?.phone}` : ''}
+                    {packageName(row)}{(profilePhone(row)) ? ` · ${profilePhone(row)}` : ''}
                   </div>
                 </div>
               )
@@ -772,18 +1061,19 @@ export default function TreatmentCustomers() {
           },
           {
             title: 'Tiến độ',
+            key: 'progress',
             width: 220,
-            render: (_, row) => {
+            render: (_: unknown, row: CustomerTreatment) => {
               if (row.quota_type === 'SESSIONS') {
-                const total = row.sessions_total ?? 0
-                const used = row.sessions_used ?? 0
+                const { total, used, remaining, percent } = sessionUsage(row)
                 if (!total) return <Tag>Chưa cấu hình số buổi</Tag>
                 return (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <Progress percent={Math.round((used / total) * 100)} size="small" strokeColor="var(--brand-primary)" style={{ flex: 1, margin: 0 }} />
-                    <span style={{ fontSize: 12, whiteSpace: 'nowrap', fontWeight: 500 }}>
-                      {used}/{total} buổi
-                    </span>
+                  <div>
+                    <Progress percent={percent} size="small" showInfo={false} strokeColor="var(--brand-primary)" style={{ margin: '0 0 4px' }} />
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2, fontSize: 12 }}>
+                      <span>Đã dùng {used}/{total} buổi</span>
+                      <span style={{ fontWeight: 600 }}>Còn lại {remaining} buổi</span>
+                    </div>
                   </div>
                 )
               }
@@ -797,39 +1087,41 @@ export default function TreatmentCustomers() {
             title: 'Thanh toán',
             key: 'payment',
             width: 200,
-            render: (_, row) => (
+            render: (_: unknown, row: CustomerTreatment) => (
               <div>
                 <div style={{ fontSize: 13 }}>
                   {fmtVnd(row.paid_amount)} / {fmtVnd(row.total_amount)}đ
                 </div>
-                <Tag color={row.debt_amount > 0 ? 'orange' : 'green'} style={{ marginTop: 4 }}>
-                  {row.debt_amount > 0 ? `Còn nợ ${fmtVnd(row.debt_amount)}đ` : 'Đã trả đủ'}
+                <Tag color={(row.debt_amount ?? 0) > 0 ? 'orange' : 'green'} style={{ marginTop: 4 }}>
+                  {(row.debt_amount ?? 0) > 0 ? `Còn nợ ${fmtVnd(row.debt_amount)}đ` : 'Đã trả đủ'}
                 </Tag>
               </div>
             ),
           },
           {
             title: 'Trạng thái',
+            key: 'status',
             dataIndex: 'status',
             width: 110,
             render: (v: string) => <Tag color={STATUS_META[v]?.color}>{STATUS_META[v]?.label ?? v}</Tag>,
           },
           {
             title: '',
+            key: 'actions',
             width: 240,
-            render: (_, row) => (
+            render: (_: unknown, row: CustomerTreatment) => (
               <Space onClick={(e) => e.stopPropagation()}>
                 {row.status === 'ACTIVE' && (
-                  <Button size="small" type="primary" ghost onClick={() => addSession(row)}>
+                  <Button size="small" type="primary" ghost disabled={addingSessionId !== null} loading={addingSessionId === row.id} onClick={() => addSession(row)}>
                     +1 buổi
                   </Button>
                 )}
-                {row.debt_amount > 0 && row.status !== 'CANCELLED' && (
+                {(row.debt_amount ?? 0) > 0 && row.status !== 'CANCELLED' && (
                   <Button
                     size="small"
                     onClick={() => {
                       setDetail(row)
-                      payForm.setFieldsValue({ amount: row.debt_amount, method: 'CASH' })
+                      payForm.setFieldsValue({ amount: row.debt_amount, method: activePaymentMethods.find((item) => item.code === 'CASH')?.code ?? activePaymentMethods[0]?.code })
                       setPayOpen(true)
                     }}
                   >
@@ -846,7 +1138,7 @@ export default function TreatmentCustomers() {
               </Space>
             ),
           },
-        ]}
+        ].filter((column) => column.key === 'actions' || visibleColumns.includes(column.key as CustomerTreatmentColumnKey))}
       />
 
       <Modal
@@ -872,7 +1164,7 @@ export default function TreatmentCustomers() {
               showSearch
               optionFilterProp="label"
               placeholder="Chọn liệu trình"
-              loading={formLoading}
+              loading={packagesQuery.isLoading}
               onChange={onPackageChange}
               options={packages.filter((p) => p.is_active).map((p) => ({
                 value: p.id,
@@ -893,19 +1185,18 @@ export default function TreatmentCustomers() {
         onOk={submitPayment}
         okText="Lưu"
         cancelText="Hủy"
+        okButtonProps={{ disabled: paymentLookupLoading || !!paymentLookupError || activePaymentMethods.length === 0 }}
       >
         <Form form={payForm} layout="vertical" style={{ marginTop: 12 }}>
+          {paymentLookupError && <Alert type="error" showIcon message="Không thể ghi nhận thanh toán" description={paymentLookupError} style={{ marginBottom: 16 }} />}
           <Form.Item name="amount" label="Số tiền (đ)" rules={[{ required: true, message: 'Nhập số tiền' }]}>
             <InputNumber min={1} step={50000} style={{ width: '100%' }} />
           </Form.Item>
           <Form.Item name="method" label="Phương thức" rules={[{ required: true }]}>
             <Select
-              options={[
-                { value: 'CASH', label: 'Tiền mặt' },
-                { value: 'BANK', label: 'Chuyển khoản' },
-                { value: 'POS', label: 'POS' },
-                { value: 'OTHER', label: 'Khác' },
-              ]}
+              loading={paymentLookupLoading}
+              disabled={paymentLookupLoading || !!paymentLookupError || activePaymentMethods.length === 0}
+              options={activePaymentMethods.map((item) => ({ value: item.code, label: item.label }))}
             />
           </Form.Item>
           <Form.Item name="note" label="Ghi chú">
@@ -916,7 +1207,6 @@ export default function TreatmentCustomers() {
 
       {/* Modal chi tiết — timeline buổi + lịch sử thanh toán */}
       <Modal
-        rootClassName="brand-header-modal"
         open={!!detail && !payOpen}
         onCancel={() => setDetail(null)}
         closeIcon={null}
@@ -948,73 +1238,85 @@ export default function TreatmentCustomers() {
           <Row gutter={[20, 16]} style={{ marginTop: 16 }}>
             {/* Rail trái: tóm tắt + hành động — ghim khi cuộn */}
             <Col xs={24} lg={7}>
-              <div className="rail-sticky">
-                <div
-                  style={{
-                    border: '1px solid var(--brand-border)',
-                    borderRadius: 12,
-                    padding: 18,
-                    background: 'var(--brand-bg)',
-                  }}
-                >
-                  <div style={{ fontSize: 12, color: '#6F7071', letterSpacing: 1.5, textTransform: 'uppercase', fontWeight: 700 }}>Tiến độ</div>
-                  <div style={{ fontSize: 26, fontWeight: 700, color: 'var(--brand-dark)', marginTop: 2 }}>
-                    {detail.quota_type === 'SESSIONS'
-                      ? `${detail.sessions_used ?? 0}/${detail.sessions_total ?? 0} buổi`
-                      : detail.quota_type === 'VALUE'
-                        ? `${fmtVnd(detail.value_used)}/${fmtVnd(detail.value_total)}đ`
-                        : 'Trọn gói'}
-                  </div>
+              <div className="sticky top-2 self-start">
+              <div
+                style={{
+                  border: '1px solid var(--brand-border)',
+                  borderRadius: 12,
+                  padding: 18,
+                  background: 'var(--brand-bg)',
+                }}
+              >
+                <div style={{ fontSize: 12, color: '#6F7071', letterSpacing: 1.5, textTransform: 'uppercase', fontWeight: 700 }}>Tiến độ</div>
+                <div style={{ fontSize: 26, fontWeight: 700, color: 'var(--brand-dark)', marginTop: 2 }}>
+                  {detail.quota_type === 'SESSIONS'
+                    ? `Đã dùng ${sessionUsage(detail).used}/${sessionUsage(detail).total} buổi`
+                    : detail.quota_type === 'VALUE'
+                      ? `${fmtVnd(detail.value_used)}/${fmtVnd(detail.value_total)}đ`
+                      : 'Trọn gói'}
+                </div>
+                {treatmentProgress(detail) !== null && (
                   <Progress
-                    percent={detail.progress_percent ?? 0}
+                    percent={treatmentProgress(detail) ?? 0}
                     size="small"
-                    style={{ marginTop: 6, marginBottom: 12 }}
+                    style={{ marginTop: 6, marginBottom: detail.quota_type === 'SESSIONS' ? 4 : 12 }}
                   />
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 9, borderTop: '1px solid var(--brand-border-soft)', paddingTop: 12 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
-                      <span style={{ color: '#3F4145', fontWeight: 600 }}>Đã trả</span>
-                      <b style={{ fontWeight: 700 }}>{fmtVnd(detail.paid_amount)}đ</b>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
-                      <span style={{ color: '#3F4145', fontWeight: 600 }}>Công nợ</span>
-                      <b style={{ fontWeight: 700, color: detail.debt_amount > 0 ? '#D97706' : '#16A34A' }}>
-                        {fmtVnd(detail.debt_amount)}đ
-                      </b>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
-                      <span style={{ color: '#3F4145', fontWeight: 600 }}>Trạng thái</span>
-                      <Tag color={STATUS_META[detail.status ?? '']?.color} style={{ marginInlineEnd: 0 }}>
-                        {STATUS_META[detail.status ?? '']?.label ?? detail.status}
-                      </Tag>
-                    </div>
+                )}
+                {detail.quota_type === 'SESSIONS' && (
+                  <div style={{ fontSize: 14, color: '#3F4145', marginBottom: 12 }}>
+                    Còn lại <b>{sessionUsage(detail).remaining} buổi</b>
+                  </div>
+                )}
+                {detail.quota_type === 'UNLIMITED' && (
+                  <div style={{ fontSize: 13, color: '#6F7071', margin: '6px 0 12px' }}>
+                    Không giới hạn số buổi
+                  </div>
+                )}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 9, borderTop: '1px solid var(--brand-border-soft)', paddingTop: 12 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
+                    <span style={{ color: '#3F4145', fontWeight: 600 }}>Đã trả</span>
+                    <b style={{ fontWeight: 700 }}>{fmtVnd(detail.paid_amount)}đ</b>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
+                    <span style={{ color: '#3F4145', fontWeight: 600 }}>Công nợ</span>
+                    <b style={{ fontWeight: 700, color: (detail.debt_amount ?? 0) > 0 ? '#D97706' : '#16A34A' }}>
+                      {fmtVnd(detail.debt_amount)}đ
+                    </b>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
+                    <span style={{ color: '#3F4145', fontWeight: 600 }}>Trạng thái</span>
+                    <Tag color={STATUS_META[detail.status ?? '']?.color} style={{ marginInlineEnd: 0 }}>
+                      {STATUS_META[detail.status ?? '']?.label ?? detail.status}
+                    </Tag>
                   </div>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 12 }}>
-                  {detail.status === 'ACTIVE' && detail.quota_type !== 'UNLIMITED' && (
-                    <Button block onClick={() => addSession(detail)}>
-                      +1 buổi
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 12 }}>
+                {detail.status === 'ACTIVE' && detail.quota_type !== 'UNLIMITED' && (
+                  <Button block disabled={addingSessionId !== null} loading={addingSessionId === detail.id} onClick={() => addSession(detail)}>
+                    +1 buổi
+                  </Button>
+                )}
+                {detail.status !== 'CANCELLED' && (detail.debt_amount ?? 0) > 0 && (
+                  <Button
+                    block
+                    type="primary"
+                    onClick={() => {
+                      payForm.setFieldsValue({ amount: detail.debt_amount, method: activePaymentMethods.find((item) => item.code === 'CASH')?.code ?? activePaymentMethods[0]?.code })
+                      setPayOpen(true)
+                    }}
+                  >
+                    Thu tiền ({fmtVnd(detail.debt_amount)}đ)
+                  </Button>
+                )}
+                {detail.status === 'ACTIVE' && (
+                  <Popconfirm title="Hủy liệu trình này?" okText="Hủy" cancelText="Không" onConfirm={() => cancelTreatment(detail)}>
+                    <Button block danger>
+                      Hủy liệu trình
                     </Button>
-                  )}
-                  {detail.status !== 'CANCELLED' && detail.debt_amount > 0 && (
-                    <Button
-                      block
-                      type="primary"
-                      onClick={() => {
-                        payForm.setFieldsValue({ amount: detail.debt_amount, method: 'CASH' })
-                        setPayOpen(true)
-                      }}
-                    >
-                      Thu tiền ({fmtVnd(detail.debt_amount)}đ)
-                    </Button>
-                  )}
-                  {detail.status === 'ACTIVE' && (
-                    <Popconfirm title="Hủy liệu trình này?" okText="Hủy" cancelText="Không" onConfirm={() => cancelTreatment(detail)}>
-                      <Button block danger>
-                        Hủy liệu trình
-                      </Button>
-                    </Popconfirm>
-                  )}
-                </div>
+                  </Popconfirm>
+                )}
+              </div>
               </div>
             </Col>
 
@@ -1026,7 +1328,17 @@ export default function TreatmentCustomers() {
                     key: 'sessions',
                     label: 'Buổi điều trị',
                     children: (
-                      <SessionTimeline ctId={detail.id} ctStatus={detail.status} staffOptions={staffOptions} isAdmin={isAdmin} onChanged={load} />
+                      <SessionTimeline
+                        ctId={detail.id}
+                        ctStatus={detail.status}
+                        treatmentTotalAmount={detail.total_amount}
+                        staffOptions={staffOptions}
+                        isAdmin={isAdmin}
+                        onChanged={refresh}
+                        refreshKey={sessionsRefreshKey}
+                        focusSessionId={sessionToEdit?.treatmentId === detail.id ? sessionToEdit.sessionId : undefined}
+                        onFocusSessionHandled={handleSessionFocusHandled}
+                      />
                     ),
                   },
                   {
@@ -1060,7 +1372,7 @@ export default function TreatmentCustomers() {
                             title: 'Phương thức',
                             dataIndex: 'method',
                             width: 130,
-                            render: (v: string) => PAY_METHOD[v] ?? v ?? '—',
+                            render: (v: string) => paymentMethodLabels[v] ?? PAY_METHOD[v] ?? v ?? '—',
                           },
                           { title: 'Ghi chú', dataIndex: 'note', render: (v) => v || '—' },
                         ]}

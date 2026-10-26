@@ -30,17 +30,26 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  BizSuccess,
-  BizSuccessList,
   ConflictResponse,
   ForbiddenResponse,
+  GetAppointments200,
+  GetAppointmentsAvailableSlots200,
   GetAppointmentsAvailableSlotsParams,
+  GetAppointmentsId200,
   GetAppointmentsParams,
   InternalErrorResponse,
   NotFoundResponse,
+  PostAppointments200,
   PostAppointmentsBody,
+  PostAppointmentsIdComplete200,
+  PostAppointmentsIdStart200,
+  PutAppointmentsId200,
+  PutAppointmentsIdApprove200,
   PutAppointmentsIdApproveBody,
   PutAppointmentsIdBody,
+  PutAppointmentsIdCancel200,
+  PutAppointmentsIdNoShow200,
+  PutAppointmentsIdReject200,
   PutAppointmentsIdRejectBody,
   UnauthorizedResponse,
   UnprocessableEntityResponse
@@ -62,7 +71,7 @@ export const getAppointmentsId = (
 ) => {
       
       
-      return customInstance<BizSuccess>(
+      return customInstance<GetAppointmentsId200>(
       {url: `/appointments/${id}`, method: 'GET', signal
     },
       );
@@ -256,7 +265,7 @@ export const putAppointmentsId = (
  ) => {
       
       
-      return customInstance<BizSuccess>(
+      return customInstance<PutAppointmentsId200>(
       {url: `/appointments/${id}`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: putAppointmentsIdBody
@@ -321,7 +330,7 @@ export const getAppointments = (
 ) => {
       
       
-      return customInstance<BizSuccessList>(
+      return customInstance<GetAppointments200>(
       {url: `/appointments`, method: 'GET',
         params, signal
     },
@@ -516,7 +525,7 @@ export const postAppointments = (
 ) => {
       
       
-      return customInstance<BizSuccess>(
+      return customInstance<PostAppointments200>(
       {url: `/appointments`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: postAppointmentsBody, signal
@@ -581,7 +590,7 @@ export const getAppointmentsAvailableSlots = (
 ) => {
       
       
-      return customInstance<BizSuccess>(
+      return customInstance<GetAppointmentsAvailableSlots200>(
       {url: `/appointments/available-slots`, method: 'GET',
         params, signal
     },
@@ -776,7 +785,7 @@ export const postAppointmentsIdStart = (
 ) => {
       
       
-      return customInstance<BizSuccess>(
+      return customInstance<PostAppointmentsIdStart200>(
       {url: `/appointments/${id}/start`, method: 'POST', signal
     },
       );
@@ -839,7 +848,7 @@ export const putAppointmentsIdReject = (
  ) => {
       
       
-      return customInstance<BizSuccess>(
+      return customInstance<PutAppointmentsIdReject200>(
       {url: `/appointments/${id}/reject`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: putAppointmentsIdRejectBody
@@ -903,7 +912,7 @@ export const putAppointmentsIdNoShow = (
  ) => {
       
       
-      return customInstance<BizSuccess>(
+      return customInstance<PutAppointmentsIdNoShow200>(
       {url: `/appointments/${id}/no-show`, method: 'PUT'
     },
       );
@@ -966,7 +975,7 @@ export const postAppointmentsIdComplete = (
 ) => {
       
       
-      return customInstance<BizSuccess>(
+      return customInstance<PostAppointmentsIdComplete200>(
       {url: `/appointments/${id}/complete`, method: 'POST', signal
     },
       );
@@ -1028,7 +1037,7 @@ export const putAppointmentsIdCancel = (
  ) => {
       
       
-      return customInstance<BizSuccess>(
+      return customInstance<PutAppointmentsIdCancel200>(
       {url: `/appointments/${id}/cancel`, method: 'PUT'
     },
       );
@@ -1091,7 +1100,7 @@ export const putAppointmentsIdApprove = (
  ) => {
       
       
-      return customInstance<BizSuccess>(
+      return customInstance<PutAppointmentsIdApprove200>(
       {url: `/appointments/${id}/approve`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: putAppointmentsIdApproveBody

@@ -1,5 +1,6 @@
 import { Drawer, Layout, Menu } from 'antd'
 import { menuItems } from './sidebarMenu'
+import { useBrandRuntime } from '../../themeRuntime'
 
 const { Sider } = Layout
 
@@ -15,15 +16,24 @@ function SidebarContent({
   pathname: string
   onNavigate: (path: string) => void
 }) {
+  const brand = useBrandRuntime()
   return (
     <div className="flex h-full min-h-0 flex-col bg-white">
       <div className="flex h-16 shrink-0 items-center justify-start gap-2.5 overflow-hidden border-b border-[var(--brand-border-soft)] px-4">
-        <div className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-xl bg-[linear-gradient(135deg,var(--brand-dark),var(--brand-primary))] text-base font-bold text-white">
-          V
-        </div>
+        {brand.logoUrl ? (
+          <img
+            src={brand.logoUrl}
+            alt={brand.name}
+            className="h-[34px] w-[34px] shrink-0 rounded-xl object-contain"
+          />
+        ) : (
+          <div className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-xl bg-[linear-gradient(135deg,var(--brand-dark),var(--brand-primary))] text-base font-bold text-white">
+            {brand.name.charAt(0).toUpperCase()}
+          </div>
+        )}
         {!collapsed && (
           <div className="leading-[1.2] whitespace-nowrap">
-            <div className="text-[15px] font-bold text-[var(--brand-dark)]">NewSky Vista</div>
+            <div className="text-[15px] font-bold text-[var(--brand-dark)]">{brand.name}</div>
             <div className="text-[11px] text-[#A9ADB2]">Học viện Spa</div>
           </div>
         )}

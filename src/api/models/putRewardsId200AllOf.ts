@@ -8,5 +8,5 @@
 import type { Reward } from './reward';
 
 export type PutRewardsId200AllOf = {
-  data?: Reward;
+  responseData?: Reward;
 };

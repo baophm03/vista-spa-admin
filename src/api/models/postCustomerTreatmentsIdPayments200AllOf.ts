@@ -8,5 +8,5 @@
 import type { PaymentLog } from './paymentLog';
 
 export type PostCustomerTreatmentsIdPayments200AllOf = {
-  data?: PaymentLog;
+  responseData?: PaymentLog;
 };

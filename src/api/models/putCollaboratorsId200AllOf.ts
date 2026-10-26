@@ -8,5 +8,5 @@
 import type { Collaborator } from './collaborator';
 
 export type PutCollaboratorsId200AllOf = {
-  data?: Collaborator;
+  responseData?: Collaborator;
 };

@@ -8,5 +8,5 @@
 import type { ContentPost } from './contentPost';
 
 export type PutContentPostsIdPublish200AllOf = {
-  data?: ContentPost;
+  responseData?: ContentPost;
 };

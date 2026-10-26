@@ -30,7 +30,6 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  BizSuccess,
   ConflictResponse,
   DeleteCardRanksId200,
   ForbiddenResponse,
@@ -45,8 +44,11 @@ import type {
   PostCardRanks200,
   PostCardRanksBody,
   PostMembershipBody,
+  PostMembershipsUserIdPointsAdjust200,
   PostMembershipsUserIdPointsAdjustBody,
+  PostMembershipsUserIdRankOverride200,
   PostMembershipsUserIdRankOverrideBody,
+  PostMembershipsUserIdRecalculate200,
   PostReferrals200,
   PostReferralsBody,
   PutCardRanksId200,
@@ -399,7 +401,7 @@ export const postMembershipsUserIdRecalculate = (
 ) => {
       
       
-      return customInstance<BizSuccess>(
+      return customInstance<PostMembershipsUserIdRecalculate200>(
       {url: `/memberships/${userId}/recalculate`, method: 'POST', signal
     },
       );
@@ -463,7 +465,7 @@ export const postMembershipsUserIdRankOverride = (
 ) => {
       
       
-      return customInstance<BizSuccess>(
+      return customInstance<PostMembershipsUserIdRankOverride200>(
       {url: `/memberships/${userId}/rank-override`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: postMembershipsUserIdRankOverrideBody, signal
@@ -529,7 +531,7 @@ export const postMembershipsUserIdPointsAdjust = (
 ) => {
       
       
-      return customInstance<BizSuccess>(
+      return customInstance<PostMembershipsUserIdPointsAdjust200>(
       {url: `/memberships/${userId}/points-adjust`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: postMembershipsUserIdPointsAdjustBody, signal

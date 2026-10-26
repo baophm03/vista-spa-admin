@@ -2,12 +2,12 @@ import { useState } from 'react'
 import { Button, Card, Col, Form, Input, InputNumber, Modal, Popconfirm, Row, Select, Space, Table, Tag, Typography, message } from 'antd'
 import { ReloadOutlined } from '@ant-design/icons'
 import PageTitle from '../components/base/PageTitle'
-import { useGetCardRanks } from '../api/endpoints/card-ranks'
 import {
+  useGetCardRanks,
   usePostMembershipsUserIdPointsAdjust,
   usePostMembershipsUserIdRankOverride,
   usePostMembershipsUserIdRecalculate,
-} from '../api/endpoints/memberships'
+} from '../api/endpoints/membership'
 import { useGetUsers } from '../api/endpoints/users'
 
 interface RankRow {
@@ -40,7 +40,7 @@ export default function Points() {
   const [limit] = useState(10)
   const [adjusting, setAdjusting] = useState<MemberRow | null>(null)
   const [form] = Form.useForm()
-  const usersQuery = useGetUsers({ currentPage: String(page), pageSize: String(limit) })
+  const usersQuery = useGetUsers({ currentPage: page, pageSize: limit })
   const ranksQuery = useGetCardRanks()
   const adjustMutation = usePostMembershipsUserIdPointsAdjust()
   const overrideMutation = usePostMembershipsUserIdRankOverride()
@@ -79,7 +79,7 @@ export default function Points() {
 
   const doRecalc = async (row: MemberRow) => {
     try {
-      await recalcMutation.mutateAsync({ userId: row.id, data: {} })
+      await recalcMutation.mutateAsync({ userId: row.id })
       message.success('Đã tính lại hạng')
       await usersQuery.refetch()
     } catch (err) {

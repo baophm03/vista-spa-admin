@@ -6,7 +6,9 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { TreatmentPackage } from './treatmentPackage';
+import type { PaginationMeta } from './paginationMeta';
 
 export type GetTreatmentPackages200AllOf = {
-  data?: TreatmentPackage[];
+  responseData?: TreatmentPackage[];
+  meta?: PaginationMeta;
 };

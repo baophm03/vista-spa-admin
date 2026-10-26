@@ -13,13 +13,17 @@ import Notifications from './pages/Notifications'
 import Products from './pages/Products'
 import Points from './pages/Points'
 import HealthRecords from './pages/HealthRecords'
-import SiteConfig from './pages/SiteConfig'
 import Roles from './pages/Roles'
-import Redemptions from './pages/Redemptions'
 import Orders from './pages/Orders'
-import OrderDetail from './pages/OrderDetail'
 import StaffSchedule from './pages/StaffSchedule'
+import ScheduleErrorBoundary from './pages/schedule/ScheduleErrorBoundary'
 import LuckyWheel from './pages/LuckyWheel'
+import Branches from './pages/Branches'
+import LookupLists from './pages/LookupLists'
+import BrandSettings from './pages/BrandSettings'
+import IntegrationSettings from './pages/IntegrationSettings'
+import CustomerDataConfig from './pages/CustomerDataConfig'
+import Rewards from './pages/Rewards'
 
 export default function App() {
   return (
@@ -38,13 +42,16 @@ export default function App() {
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/products" element={<Products />} />
           <Route path="/points" element={<Points />} />
-          <Route path="/redemptions" element={<Redemptions />} />
           <Route path="/orders" element={<Orders />} />
-          <Route path="/orders/:id" element={<OrderDetail />} />
-          <Route path="/schedule" element={<StaffSchedule />} />
+          <Route path="/schedule" element={<ScheduleErrorBoundary><StaffSchedule /></ScheduleErrorBoundary>} />
           <Route path="/luckywheel" element={<LuckyWheel />} />
           <Route path="/health-records" element={<HealthRecords />} />
-          <Route path="/site-config" element={<SiteConfig />} />
+          <Route path="/rewards" element={<Rewards />} />
+          <Route path="/branches" element={<Branches />} />
+          <Route path="/customer-data-config" element={<CustomerDataConfig />} />
+          <Route path="/settings/lookups" element={<LookupLists />} />
+          <Route path="/settings/brand" element={<BrandSettings />} />
+          <Route path="/settings/integrations" element={<IntegrationSettings />} />
           <Route path="/roles" element={<Roles />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />

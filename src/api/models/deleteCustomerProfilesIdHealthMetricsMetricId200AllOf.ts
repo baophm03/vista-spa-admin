@@ -8,5 +8,5 @@
 import type { CustomerProfile } from './customerProfile';
 
 export type DeleteCustomerProfilesIdHealthMetricsMetricId200AllOf = {
-  data?: CustomerProfile;
+  responseData?: CustomerProfile;
 };

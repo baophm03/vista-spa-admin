@@ -8,5 +8,5 @@
 import type { CustomerTreatment } from './customerTreatment';
 
 export type GetCustomerTreatmentsIdAdjustments200AllOf = {
-  data?: CustomerTreatment;
+  responseData?: CustomerTreatment;
 };

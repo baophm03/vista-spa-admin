@@ -8,5 +8,5 @@
 import type { CardRank } from './cardRank';
 
 export type PutCardRanksId200AllOf = {
-  data?: CardRank;
+  responseData?: CardRank;
 };
