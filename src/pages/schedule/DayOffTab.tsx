@@ -6,6 +6,7 @@ import { ClearOutlined, FilterOutlined, PlusOutlined, ReloadOutlined } from '@an
 import { errorMessage, pickData } from '@/api/helpers'
 import {
   deleteStaffDaysOffId,
+  getGetStaffDaysOffQueryKey,
   postStaffDaysOff,
   putStaffDaysOffIdApprove,
   putStaffDaysOffIdReject,
@@ -128,7 +129,7 @@ export default function DayOffTab({ branches, staff, access, loadingShared }: Pr
       } as never)
       message.success('Đã gửi đăng ký ngày nghỉ')
       setOpen(false)
-      void queryClient.invalidateQueries({ queryKey: ['staffDaysOff'] })
+      void queryClient.invalidateQueries({ queryKey: getGetStaffDaysOffQueryKey() })
     } catch (err) { message.error(errorMessage(err)) }
   }
 
@@ -150,7 +151,7 @@ export default function DayOffTab({ branches, staff, access, loadingShared }: Pr
           ]} />
         </div>,
       })
-      void queryClient.invalidateQueries({ queryKey: ['staffDaysOff'] })
+      void queryClient.invalidateQueries({ queryKey: getGetStaffDaysOffQueryKey() })
     } catch (err) { message.error(errorMessage(err)) }
   }
 
@@ -163,12 +164,12 @@ export default function DayOffTab({ branches, staff, access, loadingShared }: Pr
       message.success('Đã từ chối đăng ký nghỉ')
       setRejecting(null)
       setRejectReason('')
-      void queryClient.invalidateQueries({ queryKey: ['staffDaysOff'] })
+      void queryClient.invalidateQueries({ queryKey: getGetStaffDaysOffQueryKey() })
     } catch (err) { message.error(errorMessage(err)) }
   }
 
   const withdraw = async (row: StaffDayOff) => {
-    try { await deleteStaffDaysOffId(row.id); message.success('Đã rút đăng ký nghỉ'); void queryClient.invalidateQueries({ queryKey: ['staffDaysOff'] }) }
+    try { await deleteStaffDaysOffId(row.id); message.success('Đã rút đăng ký nghỉ'); void queryClient.invalidateQueries({ queryKey: getGetStaffDaysOffQueryKey() }) }
     catch (err) { message.error(errorMessage(err)) }
   }
 
