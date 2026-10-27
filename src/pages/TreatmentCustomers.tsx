@@ -30,6 +30,7 @@ import {
   usePostCustomerTreatments,
   usePostCustomerTreatmentsIdPayments,
   usePutCustomerTreatmentsIdCancel,
+  usePutCustomerTreatmentsIdFinish,
 } from '@/api/endpoints/customer-treatments'
 import { useGetTreatmentPackages } from '@/api/endpoints/services'
 import { postFiles } from '@/api/endpoints/files'
@@ -73,6 +74,7 @@ const FILTERS = [
   { value: 'ACTIVE', label: 'Đang làm' },
   { value: 'FINISHED', label: 'Hoàn tất' },
   { value: 'CANCELLED', label: 'Đã hủy' },
+  { value: 'EXPIRED', label: 'Hết hạn' },
 ]
 type CustomerTreatmentColumnKey = 'customer' | 'progress' | 'payment' | 'status'
 const CUSTOMER_TREATMENT_COLUMN_OPTIONS: { label: string; value: CustomerTreatmentColumnKey }[] = [
@@ -87,6 +89,7 @@ const STATUS_META: Record<string, { label: string; color: string }> = {
   ACTIVE: { label: 'Đang làm', color: 'var(--brand-primary)' },
   FINISHED: { label: 'Hoàn tất', color: 'green' },
   CANCELLED: { label: 'Đã hủy', color: 'default' },
+  EXPIRED: { label: 'Hết hạn', color: 'orange' },
 }
 
 const PAY_METHOD: Record<string, string> = {
@@ -827,6 +830,7 @@ export default function TreatmentCustomers() {
   const createMutation = usePostCustomerTreatments()
   const createPaymentMutation = usePostCustomerTreatmentsIdPayments()
   const cancelMutation = usePutCustomerTreatmentsIdCancel()
+  const finishMutation = usePutCustomerTreatmentsIdFinish()
 
   const refresh = useCallback(() => {
     void queryClient.invalidateQueries({ queryKey: getGetCustomerTreatmentsQueryKey() })
@@ -984,6 +988,17 @@ export default function TreatmentCustomers() {
     try {
       await cancelMutation.mutateAsync({ id: row.id })
       message.success('Đã hủy liệu trình')
+      if (detail?.id === row.id) setDetail(null)
+      refresh()
+    } catch (err) {
+      message.error(errorMessage(err))
+    }
+  }
+
+  const finishTreatment = async (row: CustomerTreatment) => {
+    try {
+      await finishMutation.mutateAsync({ id: row.id })
+      message.success('Đã hoàn tất liệu trình — bắt đầu thời gian bảo hành')
       if (detail?.id === row.id) setDetail(null)
       refresh()
     } catch (err) {
@@ -1186,6 +1201,13 @@ export default function TreatmentCustomers() {
                   >
                     Thu tiền
                   </Button>
+                )}
+                {row.status === 'ACTIVE' && row.quota_type === 'UNLIMITED' && (
+                  <Popconfirm title="Hoàn tất liệu trình (trả da)?" description="Gói sẽ chuyển sang Hoàn tất và bắt đầu tính thời gian bảo hành trọn đời." okText="Hoàn tất" cancelText="Không" onConfirm={() => finishTreatment(row)}>
+                    <Button size="small" type="primary" ghost>
+                      Hoàn tất
+                    </Button>
+                  </Popconfirm>
                 )}
                 {row.status === 'ACTIVE' && (
                   <Popconfirm title="Hủy liệu trình này?" okText="Hủy" cancelText="Không" onConfirm={() => cancelTreatment(row)}>

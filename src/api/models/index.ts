@@ -811,6 +811,8 @@ export * from './putCustomerTreatmentsIdAdjustments200AllOf';
 export * from './putCustomerTreatmentsIdAdjustmentsBody';
 export * from './putCustomerTreatmentsIdCancel200';
 export * from './putCustomerTreatmentsIdCancel200AllOf';
+export * from './putCustomerTreatmentsIdFinish200';
+export * from './putCustomerTreatmentsIdFinish200AllOf';
 export * from './putDiscountRulesId200';
 export * from './putDiscountRulesId200AllOf';
 export * from './putDiscountRulesIdBody';

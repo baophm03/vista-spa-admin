@@ -66,6 +66,7 @@ import type {
   PutCustomerTreatmentsIdAdjustments200,
   PutCustomerTreatmentsIdAdjustmentsBody,
   PutCustomerTreatmentsIdCancel200,
+  PutCustomerTreatmentsIdFinish200,
   PutSessionsId200,
   PutSessionsIdComplete200,
   PutSessionsIdDone200,
@@ -2803,6 +2804,68 @@ export const prefetchGetCustomerTreatmentsIdPaymentsQuery = async <TData = Await
 
 
 /**
+ * **CT-05** — PUT /customer-treatments/{id}/finish. Cần quyền `customer.update`. Chỉ từ ACTIVE -> FINISHED, ghi `finished_at` làm mốc bắt đầu bảo hành trọn đời. Bắt buộc đối với gói UNLIMITED; gói SESSIONS/VALUE tự kết thúc khi hết quota (BR-07).
+ * @summary Hoàn tất liệu trình / trả da
+ */
+export const putCustomerTreatmentsIdFinish = (
+    id: string,
+ ) => {
+      
+      
+      return customInstance<PutCustomerTreatmentsIdFinish200>(
+      {url: `/customerTreatments/${id}/finish`, method: 'PUT'
+    },
+      );
+    }
+  
+
+
+export const getPutCustomerTreatmentsIdFinishMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putCustomerTreatmentsIdFinish>>, TError,{id: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putCustomerTreatmentsIdFinish>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['putCustomerTreatmentsIdFinish'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putCustomerTreatmentsIdFinish>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  putCustomerTreatmentsIdFinish(id,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PutCustomerTreatmentsIdFinishMutationResult = NonNullable<Awaited<ReturnType<typeof putCustomerTreatmentsIdFinish>>>
+    
+    export type PutCustomerTreatmentsIdFinishMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | InternalErrorResponse
+
+    /**
+ * @summary Hoàn tất liệu trình / trả da
+ */
+export const usePutCustomerTreatmentsIdFinish = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putCustomerTreatmentsIdFinish>>, TError,{id: string}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof putCustomerTreatmentsIdFinish>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+
+      const mutationOptions = getPutCustomerTreatmentsIdFinishMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
  * **CT-05** — PUT /customer-treatments/{id}/cancel (ADM). Cần quyền `customer.delete`.
  * @summary Hủy
  */
