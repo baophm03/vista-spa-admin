@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   Avatar,
   Button,
@@ -7,12 +7,14 @@ import {
   Divider,
   Form,
   Input,
+  InputNumber,
   Modal,
   Popconfirm,
   Popover,
   Row,
   Select,
   Space,
+  Switch,
   Table,
   Tag,
   Typography,
@@ -20,13 +22,23 @@ import {
 } from 'antd'
 import { FilterOutlined, ReloadOutlined, SearchOutlined, UserOutlined } from '@ant-design/icons'
 import PageTitle from '@/components/base/PageTitle'
+import ServiceImageField from '@/components/ServiceImageField'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { Branch } from '@/api/models/branch'
 import type { UserCreate } from '@/api/models/userCreate'
 import type { PutUsersAdminIdBody } from '@/api/models/putUsersAdminIdBody'
+import type { StaffProfileRow } from '@/api/models/staffProfileRow'
 import { useDeleteUsersAdminId, usePostUsersAdmin, usePutUsersAdminId, useGetUsers } from '@/api/endpoints/users'
 import { useGetRoles } from '@/api/endpoints/roles'
 import { useGetBranches } from '@/api/endpoints/branches'
+import { useGetService } from '@/api/endpoints/services'
+import {
+  useGetStaffProfiles,
+  useGetStaffProfilesUserId,
+  useGetStaffProfilesUserIdServices,
+  usePutStaffProfilesUserId,
+  usePutStaffProfilesUserIdServices,
+} from '@/api/endpoints/staff-profiles'
 
 interface StaffRow {
   id: string
@@ -46,7 +58,7 @@ function isTechnicianRole(roleName = ''): boolean {
 }
 
 const PAGE_SIZE = 10
-type StaffColumnKey = 'staff' | 'role' | 'branch' | 'status' | 'phone' | 'email'
+type StaffColumnKey = 'staff' | 'role' | 'branch' | 'status' | 'phone' | 'email' | 'profile' | 'in_app'
 const STAFF_COLUMN_OPTIONS: { label: string; value: StaffColumnKey }[] = [
   { label: 'Nhân viên', value: 'staff' },
   { label: 'Vai trò', value: 'role' },
@@ -54,6 +66,8 @@ const STAFF_COLUMN_OPTIONS: { label: string; value: StaffColumnKey }[] = [
   { label: 'Trạng thái', value: 'status' },
   { label: 'SĐT', value: 'phone' },
   { label: 'Email', value: 'email' },
+  { label: 'Chức danh & dịch vụ phụ trách', value: 'profile' },
+  { label: 'Hiện trên app', value: 'in_app' },
 ]
 const DEFAULT_VISIBLE_COLUMNS = STAFF_COLUMN_OPTIONS.map((column) => column.value)
 
@@ -90,6 +104,52 @@ export default function Staffs() {
   const createMutation = usePostUsersAdmin()
   const updateMutation = usePutUsersAdminId()
   const deleteMutation = useDeleteUsersAdminId()
+
+  // KT — hồ sơ chuyên viên & dịch vụ phụ trách
+  const [profileOpen, setProfileOpen] = useState(false)
+  const [profileUser, setProfileUser] = useState<StaffRow | null>(null)
+  const [profileForm] = Form.useForm()
+  const [servicesOpen, setServicesOpen] = useState(false)
+  const [servicesUser, setServicesUser] = useState<StaffRow | null>(null)
+  const [checkedServiceIds, setCheckedServiceIds] = useState<string[]>([])
+
+  const staffProfilesQuery = useGetStaffProfiles(branchFilter ? { branch_id: branchFilter } : undefined)
+  const profileRows = (pickData<StaffProfileRow[]>(staffProfilesQuery.data) ?? []) as StaffProfileRow[]
+  const profileByUser = useMemo(() => new Map(profileRows.map((row) => [row.user_id, row])), [profileRows])
+  const servicesQuery = useGetService({ is_active: true, limit: 200 })
+  const serviceRows = (pickData<{ services?: { id: string; title?: string }[] }>(servicesQuery.data)?.services ?? []) as {
+    id: string
+    title?: string
+  }[]
+  const profileDetailQuery = useGetStaffProfilesUserId(profileUser?.id ?? 'none', {
+    query: { enabled: profileOpen && !!profileUser },
+  })
+  const staffServicesQuery = useGetStaffProfilesUserIdServices(servicesUser?.id ?? 'none', {
+    query: { enabled: servicesOpen && !!servicesUser },
+  })
+  const upsertProfileMutation = usePutStaffProfilesUserId()
+  const assignServicesMutation = usePutStaffProfilesUserIdServices()
+
+  useEffect(() => {
+    if (!profileOpen) return
+    const profile = pickData<StaffProfileRow>(profileDetailQuery.data)
+    if (!profile) return
+    profileForm.setFieldsValue({
+      display_name: profile.display_name,
+      title: profile.title ?? '',
+      photo_file_id: profile.photo_file_id ?? '',
+      expertise: profile.expertise ?? '',
+      bio: profile.bio ?? '',
+      sort_order: profile.sort_order ?? 0,
+      show_in_app: profile.show_in_app !== false,
+    })
+  }, [profileOpen, profileDetailQuery.data, profileForm])
+
+  useEffect(() => {
+    if (!servicesOpen) return
+    const data = pickData<{ service_ids?: string[] }>(staffServicesQuery.data)
+    if (data) setCheckedServiceIds(data.service_ids ?? [])
+  }, [servicesOpen, staffServicesQuery.data])
 
   // Legacy envelope: responseData = { count, rows, totalPages, currentPage }
   const usersPage = pickData<{ count?: number; rows?: StaffRow[] }>(usersQuery.data)
@@ -235,6 +295,64 @@ export default function Staffs() {
     }
   }
 
+  const openProfile = (row: StaffRow) => {
+    setProfileUser(row)
+    profileForm.resetFields()
+    setProfileOpen(true)
+  }
+
+  const submitProfile = async () => {
+    if (!profileUser) return
+    const values = await profileForm.validateFields()
+    try {
+      await upsertProfileMutation.mutateAsync({
+        userId: profileUser.id,
+        data: {
+          display_name: values.display_name,
+          title: values.title,
+          photo_file_id: values.photo_file_id || null,
+          expertise: values.expertise,
+          bio: values.bio,
+          sort_order: values.sort_order ?? 0,
+          show_in_app: !!values.show_in_app,
+        },
+      })
+      message.success('Đã lưu hồ sơ chuyên viên')
+      setProfileOpen(false)
+      await staffProfilesQuery.refetch()
+    } catch (err) {
+      message.error(errorMessage(err))
+    }
+  }
+
+  const toggleInApp = async (row: StaffRow, showInApp: boolean) => {
+    try {
+      await upsertProfileMutation.mutateAsync({ userId: row.id, data: { show_in_app: showInApp } })
+      message.success(showInApp ? 'Đã hiện chuyên viên trên app' : 'Đã ẩn chuyên viên khỏi app')
+      await staffProfilesQuery.refetch()
+    } catch (err) {
+      message.error(errorMessage(err))
+    }
+  }
+
+  const openServices = (row: StaffRow) => {
+    setServicesUser(row)
+    setCheckedServiceIds([])
+    setServicesOpen(true)
+  }
+
+  const submitServices = async () => {
+    if (!servicesUser) return
+    try {
+      await assignServicesMutation.mutateAsync({ userId: servicesUser.id, data: { service_ids: checkedServiceIds } })
+      message.success('Đã cập nhật dịch vụ phụ trách')
+      setServicesOpen(false)
+      await staffProfilesQuery.refetch()
+    } catch (err) {
+      message.error(errorMessage(err))
+    }
+  }
+
   return (
     <>
       <PageTitle
@@ -327,12 +445,19 @@ export default function Staffs() {
             title: 'Nhân viên',
             key: 'staff',
             dataIndex: 'zalo_name',
-            render: (_: unknown, s: StaffRow) => (
-              <Space>
-                <Avatar size={36} style={{ backgroundColor: 'var(--brand-primary)' }} icon={<UserOutlined />} />
-                <span style={{ fontWeight: 600 }}>{s.zalo_name || s.email || '—'}</span>
-              </Space>
-            ),
+            render: (_: unknown, s: StaffRow) => {
+              const photo = profileByUser.get(s.id)?.photo_file_id
+              return (
+                <Space>
+                  {photo ? (
+                    <img src={photo} alt="" width={36} height={36} style={{ objectFit: 'cover', borderRadius: 18 }} />
+                  ) : (
+                    <Avatar size={36} style={{ backgroundColor: 'var(--brand-primary)' }} icon={<UserOutlined />} />
+                  )}
+                  <span style={{ fontWeight: 600 }}>{s.zalo_name || s.email || '—'}</span>
+                </Space>
+              )
+            },
           },
           {
             title: 'Vai trò',
@@ -366,13 +491,55 @@ export default function Staffs() {
           { title: 'SĐT', key: 'phone', dataIndex: 'phone_number', width: 150, render: (v: string | undefined) => v || '—' },
           { title: 'Email', key: 'email', dataIndex: 'email', render: (v: string | undefined) => v || '—' },
           {
+            title: 'Chức danh & dịch vụ phụ trách',
+            key: 'profile',
+            width: 260,
+            render: (_: unknown, s: StaffRow) => {
+              const profile = profileByUser.get(s.id)
+              const serviceTags = (profile?.service_ids ?? [])
+                .map((serviceId) => serviceRows.find((service) => service.id === serviceId)?.title || 'Dịch vụ đã ẩn')
+              return (
+                <Space direction="vertical" size={4}>
+                  <Typography.Text>{profile?.title || '—'}</Typography.Text>
+                  <Space size={4} wrap>
+                    {serviceTags.length
+                      ? serviceTags.map((name, index) => <Tag key={`${s.id}-${index}`} color="blue">{name}</Tag>)
+                      : <Typography.Text type="secondary">Chưa gán dịch vụ</Typography.Text>}
+                  </Space>
+                </Space>
+              )
+            },
+          },
+          {
+            title: 'Hiện trên app',
+            key: 'in_app',
+            width: 120,
+            render: (_: unknown, s: StaffRow) => {
+              const profile = profileByUser.get(s.id)
+              return (
+                <Switch
+                  checked={profile?.show_in_app !== false}
+                  size="small"
+                  loading={upsertProfileMutation.isPending}
+                  onChange={(checked) => void toggleInApp(s, checked)}
+                />
+              )
+            },
+          },
+          {
             title: 'Thao tác',
             key: 'actions',
-            width: 190,
+            width: 280,
             render: (_: unknown, s: StaffRow) => (
-              <Space>
+              <Space size={4} wrap>
                 <Button size="small" onClick={() => openModal(s)}>
                   Sửa
+                </Button>
+                <Button size="small" onClick={() => openProfile(s)}>
+                  Hồ sơ
+                </Button>
+                <Button size="small" onClick={() => openServices(s)}>
+                  Dịch vụ
                 </Button>
                 {s.is_active === false ? (
                   <Popconfirm
@@ -491,6 +658,81 @@ export default function Staffs() {
             </Col>
           </Row>
         </Form>
+      </Modal>
+
+      <Modal
+        title={`Hồ sơ chuyên viên — ${profileUser?.zalo_name || profileUser?.email || ''}`}
+        open={profileOpen}
+        onCancel={() => setProfileOpen(false)}
+        onOk={() => void submitProfile()}
+        okText="Lưu"
+        cancelText="Hủy"
+        confirmLoading={upsertProfileMutation.isPending}
+      >
+        <Form form={profileForm} layout="vertical" style={{ marginTop: 12 }}>
+          <Form.Item
+            name="display_name"
+            label="Tên hiển thị trên app"
+            rules={[{ required: true, whitespace: true, message: 'Nhập tên hiển thị' }]}
+          >
+            <Input maxLength={255} placeholder="VD: KTV Minh" />
+          </Form.Item>
+          <Row gutter={12}>
+            <Col xs={24} sm={12}>
+              <Form.Item name="title" label="Chức danh">
+                <Input maxLength={255} placeholder="VD: Chuyên viên da liễu" />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12}>
+              <Form.Item name="expertise" label="Chuyên môn chính">
+                <Input maxLength={500} placeholder="VD: Trị mụn, trẻ hóa" />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Form.Item name="bio" label="Giới thiệu tóm tắt">
+            <Input.TextArea rows={3} maxLength={2000} placeholder="Tiểu sử ngắn hiển thị trên Mini App" />
+          </Form.Item>
+          <Row gutter={12}>
+            <Col xs={24} sm={12}>
+              <Form.Item name="photo_file_id" label="Ảnh đại diện">
+                <ServiceImageField />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12}>
+              <Form.Item name="sort_order" label="Thứ tự sắp xếp" initialValue={0}>
+                <InputNumber min={0} style={{ width: '100%' }} />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Form.Item name="show_in_app" label="Hiển thị trên Mini App" valuePropName="checked" initialValue={true}>
+            <Switch />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      <Modal
+        title={`Dịch vụ phụ trách — ${servicesUser?.zalo_name || servicesUser?.email || ''}`}
+        open={servicesOpen}
+        onCancel={() => setServicesOpen(false)}
+        onOk={() => void submitServices()}
+        okText="Lưu"
+        cancelText="Hủy"
+        confirmLoading={assignServicesMutation.isPending}
+        okButtonProps={{ disabled: staffServicesQuery.isLoading }}
+      >
+        {staffServicesQuery.isLoading ? (
+          <Typography.Text type="secondary">Đang tải dịch vụ hiện tại…</Typography.Text>
+        ) : (
+          <Checkbox.Group
+            value={checkedServiceIds}
+            onChange={(values) => setCheckedServiceIds(values as string[])}
+            style={{ display: 'grid', gap: 8, maxHeight: '50vh', overflowY: 'auto', marginTop: 8 }}
+            options={serviceRows.map((service) => ({ value: service.id, label: service.title || service.id }))}
+          />
+        )}
+        <Typography.Text type="secondary" style={{ display: 'block', marginTop: 12 }}>
+          Lưu sẽ thay thế toàn bộ danh sách dịch vụ KTV này phụ trách. Danh sách dùng để lọc KTV khi đặt lịch.
+        </Typography.Text>
       </Modal>
     </>
   )
