@@ -7,7 +7,7 @@ import type { HealthMetric } from '@/api/models/healthMetric'
 import type { LookupItem } from '@/api/models/lookupItem'
 import type { LookupList } from '@/api/models/lookupList'
 import { getCustomerProfilesIdHealthMetrics } from '@/api/endpoints/customer-profiles'
-import { getLookupLists } from '@/api/endpoints/settings'
+import { getLookupLists } from '@/api/endpoints/lookup-lists'
 import { errorMessage, pickData } from '@/api/helpers'
 import { useBrandDateTime } from '@/themeRuntime'
 

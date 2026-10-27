@@ -9,11 +9,10 @@ import type { PutLookupItemsIdBody } from '@/api/models/putLookupItemsIdBody'
 import type { PutLookupListsIdBody } from '@/api/models/putLookupListsIdBody'
 import {
   deleteLookupItemsId,
-  getLookupListsId,
   postLookupListsIdItems,
   putLookupItemsId,
-  putLookupListsId,
-} from '@/api/endpoints/settings'
+	} from '@/api/endpoints/lookup-items'
+import { getLookupListsId, putLookupListsId } from '@/api/endpoints/lookup-lists'
 import { Can } from '@casl/react'
 
 type LookupItemWithColor = LookupItem & { color?: string | null }

@@ -2,6 +2,7 @@ import { createElement, type ReactNode } from 'react'
 import {
   AppstoreOutlined,
   BellOutlined,
+  BookOutlined,
   CalendarOutlined,
   ClockCircleOutlined,
   DashboardOutlined,
@@ -67,6 +68,7 @@ export const menuItems: MenuItem[] = [
     children: [
       { key: '/services', icon: createElement(ShoppingOutlined), label: 'Dịch vụ', permission: { action: 'READ', subject: 'SERVICE' } },
       { key: '/treatments', icon: createElement(ExperimentOutlined), label: 'Liệu trình', permission: { action: 'READ', subject: 'TREATMENT_PACKAGE' } },
+      { key: '/academy/courses', icon: createElement(BookOutlined), label: 'Khóa học đào tạo', permission: { action: 'READ', subject: 'ACADEMY' } },
       { key: '/products', icon: createElement(ShoppingOutlined), label: 'Sản phẩm' },
       { key: '/orders', icon: createElement(ProfileOutlined), label: 'Đơn hàng' },
       { key: '/vouchers', icon: createElement(GiftOutlined), label: 'Voucher & Quà tặng', permission: { action: 'READ', subject: 'VOUCHER' } },

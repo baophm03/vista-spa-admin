@@ -6,7 +6,7 @@ import LookupItemsManager from '@/components/LookupItemsManager'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { LookupList } from '@/api/models/lookupList'
 import type { PostLookupListsBody } from '@/api/models/postLookupListsBody'
-import { deleteLookupListsId, getLookupLists, postLookupLists, putLookupListsId } from '@/api/endpoints/settings'
+import { deleteLookupListsId, getLookupLists, postLookupLists, putLookupListsId } from '@/api/endpoints/lookup-lists'
 import { Can } from '@casl/react'
 
 /** Hai cột: danh sách lookup lists (bên trái) và các mục của list đang chọn (bên phải). */

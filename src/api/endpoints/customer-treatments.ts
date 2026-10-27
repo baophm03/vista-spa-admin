@@ -71,6 +71,7 @@ import type {
   PutSessionsIdDone200,
   PutSessionsIdStart200,
   PutWarrantyClaimsIdApprove200,
+  PutWarrantyClaimsIdApproveBody,
   PutWarrantyClaimsIdReject200,
   PutWarrantyClaimsIdRejectBody,
   TreatmentSession,
@@ -610,11 +611,14 @@ export const usePutWarrantyClaimsIdReject = <TError = UnauthorizedResponse | For
  */
 export const putWarrantyClaimsIdApprove = (
     id: string,
+    putWarrantyClaimsIdApproveBody: PutWarrantyClaimsIdApproveBody,
  ) => {
       
       
       return customInstance<PutWarrantyClaimsIdApprove200>(
-      {url: `/warrantyClaims/${id}/approve`, method: 'PUT'
+      {url: `/warrantyClaims/${id}/approve`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: putWarrantyClaimsIdApproveBody
     },
       );
     }
@@ -622,8 +626,8 @@ export const putWarrantyClaimsIdApprove = (
 
 
 export const getPutWarrantyClaimsIdApproveMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putWarrantyClaimsIdApprove>>, TError,{id: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putWarrantyClaimsIdApprove>>, TError,{id: string}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putWarrantyClaimsIdApprove>>, TError,{id: string;data: PutWarrantyClaimsIdApproveBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putWarrantyClaimsIdApprove>>, TError,{id: string;data: PutWarrantyClaimsIdApproveBody}, TContext> => {
 
 const mutationKey = ['putWarrantyClaimsIdApprove'];
 const {mutation: mutationOptions} = options ?
@@ -635,10 +639,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putWarrantyClaimsIdApprove>>, {id: string}> = (props) => {
-          const {id} = props ?? {};
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putWarrantyClaimsIdApprove>>, {id: string;data: PutWarrantyClaimsIdApproveBody}> = (props) => {
+          const {id,data} = props ?? {};
 
-          return  putWarrantyClaimsIdApprove(id,)
+          return  putWarrantyClaimsIdApprove(id,data,)
         }
 
         
@@ -647,18 +651,18 @@ const {mutation: mutationOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type PutWarrantyClaimsIdApproveMutationResult = NonNullable<Awaited<ReturnType<typeof putWarrantyClaimsIdApprove>>>
-    
+    export type PutWarrantyClaimsIdApproveMutationBody = PutWarrantyClaimsIdApproveBody
     export type PutWarrantyClaimsIdApproveMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
  * @summary Duyệt
  */
 export const usePutWarrantyClaimsIdApprove = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putWarrantyClaimsIdApprove>>, TError,{id: string}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putWarrantyClaimsIdApprove>>, TError,{id: string;data: PutWarrantyClaimsIdApproveBody}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof putWarrantyClaimsIdApprove>>,
         TError,
-        {id: string},
+        {id: string;data: PutWarrantyClaimsIdApproveBody},
         TContext
       > => {
 

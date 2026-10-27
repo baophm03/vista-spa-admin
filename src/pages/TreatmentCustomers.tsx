@@ -4,6 +4,7 @@ import { Alert, Button, Card, Checkbox, Col, DatePicker, Divider, Empty, Form, I
 import { DeleteOutlined, EditOutlined, FilterOutlined, PlusOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons'
 import dayjs, { type Dayjs } from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
+import CustomFieldFormItems, { normalizeCustomFieldValues, type CustomFieldDefWithOptions } from '@/components/CustomFieldFormItems'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { CustomerTreatment } from '@/api/models/customerTreatment'
 import type { SessionPhoto } from '@/api/models/sessionPhoto'
@@ -32,10 +33,11 @@ import {
 } from '@/api/endpoints/customer-treatments'
 import { useGetTreatmentPackages } from '@/api/endpoints/services'
 import { postFiles } from '@/api/endpoints/files'
-import { useGetLookupLists } from '@/api/endpoints/settings'
+import { useGetLookupLists } from '@/api/endpoints/lookup-lists'
 import { useGetUsers } from '@/api/endpoints/users'
 import { useBrandCurrency, useBrandDateTime } from '@/themeRuntime'
 import { useCustomerProfileAccess } from '@/utils/customerProfileAccess'
+import useCustomFieldDefinitions from '@/hooks/useCustomFieldDefinitions'
 import { Can } from '@casl/react'
 
 interface Slot {
@@ -143,6 +145,7 @@ interface SessionRow {
   result?: string
   session_value?: number
   is_warranty?: boolean
+  custom_fields?: Record<string, unknown>
 }
 
 interface PaymentRow {
@@ -241,6 +244,14 @@ function SessionPhotos({
 const CellVal = ({ v }: { v?: string | null }) =>
   v ? <>{v}</> : <span style={{ color: '#C4C6C9' }}>—</span>
 
+function customFieldValueText(value: unknown): string | undefined {
+  if (value === null || value === undefined || value === '') return undefined
+  if (typeof value === 'boolean') return value ? 'Có' : 'Không'
+  if (Array.isArray(value)) return value.map((item) => String(item)).join(', ')
+  if (typeof value === 'object') return JSON.stringify(value)
+  return String(value)
+}
+
 /** Dòng subheader pha nằm trong bảng buổi (tint nhạt, full-width) */
 const SubHead = ({ children }: { children: string }) => (
   <div
@@ -291,6 +302,7 @@ function SessionTimeline({
   formatMoney,
   currencySymbol,
   staffOptions,
+  customFieldDefinitions,
   isAdmin,
   onChanged,
   refreshKey,
@@ -303,6 +315,7 @@ function SessionTimeline({
   formatMoney: (value: unknown) => string
   currencySymbol: string
   staffOptions: { value: string; label: string }[]
+  customFieldDefinitions: CustomFieldDefWithOptions[]
   isAdmin?: boolean
   onChanged?: () => void
   refreshKey?: number
@@ -371,6 +384,7 @@ function SessionTimeline({
       diary: s.diary,
       products_used: s.products_used,
       result: s.result,
+      custom_fields: s.custom_fields ?? {},
     })
     if (!s.appointment_id && s.status === 'scheduled' && scheduledParts) {
       void loadSessionSlots(s, dayjs(scheduledParts.date))
@@ -450,6 +464,7 @@ function SessionTimeline({
       () =>
         putSessionsId(editOpen!.id, {
           ...sessionValues,
+          custom_fields: normalizeCustomFieldValues(customFieldDefinitions, sessionValues.custom_fields ?? {}, editOpen?.custom_fields ?? {}),
           ...scheduleValues,
         } as never),
       'Đã cập nhật buổi',
@@ -624,6 +639,10 @@ function SessionTimeline({
 
               <SubHead>Kết quả cuối buổi</SubHead>
               <TRow label="Kết quả"><CellVal v={s.result} /></TRow>
+              {customFieldDefinitions.map((definition) => {
+                const value = customFieldValueText(s.custom_fields?.[definition.key])
+                return value ? <TRow key={definition.id} label={definition.label}><CellVal v={value} /></TRow> : null
+              })}
               <TRow label="Ảnh sau">
                 <SessionPhotos
                   sessionId={s.id}
@@ -737,6 +756,10 @@ function SessionTimeline({
           <Form.Item name="result" label="Kết quả">
             <Input.TextArea rows={2} placeholder="VD: da sáng hơn, khách hài lòng..." />
           </Form.Item>
+          <Divider plain style={{ fontSize: 11, color: '#A9ADB2', letterSpacing: 1, margin: '4px 0 14px' }}>
+            TRƯỜNG TÙY CHỈNH
+          </Divider>
+          <CustomFieldFormItems definitions={customFieldDefinitions} />
         </Form>
       </Modal>
     </>
@@ -748,6 +771,8 @@ export default function TreatmentCustomers() {
   const { formatDateTime } = useBrandDateTime()
   const queryClient = useQueryClient()
   const { isAdmin } = useCustomerProfileAccess()
+  const customerTreatmentCustomFields = useCustomFieldDefinitions('CUSTOMER_TREATMENT')
+  const sessionCustomFields = useCustomFieldDefinitions('SESSION')
   const [filter, setFilter] = useState<string>('all')
   const [search, setSearch] = useState('')
   const [pkgFilter, setPkgFilter] = useState<string>()
@@ -761,6 +786,8 @@ export default function TreatmentCustomers() {
   const [detail, setDetail] = useState<CustomerTreatment | null>(null)
   const [sessionsRefreshKey, setSessionsRefreshKey] = useState(0)
   const [sessionToEdit, setSessionToEdit] = useState<{ treatmentId: string; sessionId: string } | null>(null)
+  const [addSessionFor, setAddSessionFor] = useState<CustomerTreatment | null>(null)
+  const [addSessionForm] = Form.useForm()
   const handleSessionFocusHandled = useCallback(() => setSessionToEdit(null), [])
   const [addingSessionId, setAddingSessionId] = useState<string | null>(null)
   const [payments, setPayments] = useState<PaymentRow[]>([])
@@ -895,7 +922,7 @@ export default function TreatmentCustomers() {
   }, [])
 
   const openModal = () => {
-    form.setFieldsValue({ customer_profile_id: undefined, package_id: undefined, total_amount: undefined })
+    form.setFieldsValue({ customer_profile_id: undefined, package_id: undefined, total_amount: undefined, custom_fields: {} })
     setOpen(true)
     fetchCustomerOptions('')
   }
@@ -908,7 +935,11 @@ export default function TreatmentCustomers() {
   const submit = async () => {
     const values = await form.validateFields()
     try {
-      await createMutation.mutateAsync({ data: values as never })
+      const dto = {
+        ...values,
+        custom_fields: normalizeCustomFieldValues(customerTreatmentCustomFields, values.custom_fields ?? {}),
+      }
+      await createMutation.mutateAsync({ data: dto as never })
       message.success('Đã thêm khách vào liệu trình')
       setOpen(false)
       refresh()
@@ -917,15 +948,32 @@ export default function TreatmentCustomers() {
     }
   }
 
-  const addSession = async (row: CustomerTreatment) => {
+  const addSession = (row: CustomerTreatment) => {
     if (addingSessionId !== null) return
-    setAddingSessionId(row.id)
+    addSessionForm.resetFields()
+    addSessionForm.setFieldsValue({ custom_fields: {} })
+    setAddSessionFor(row)
+  }
+
+  const submitNewSession = async () => {
+    if (!addSessionFor || addingSessionId !== null) return
+    let values: Record<string, unknown>
     try {
-      const created = pickData<SessionRow>(await postCustomerTreatmentsIdSessions(row.id, {} as never))
-      setSessionToEdit({ treatmentId: row.id, sessionId: created?.id ?? '' })
-      openDetail(row)
+      values = await addSessionForm.validateFields()
+    } catch (error) {
+      if (!(error as { errorFields?: unknown })?.errorFields) message.error(errorMessage(error))
+      return
+    }
+    setAddingSessionId(addSessionFor.id)
+    try {
+      const created = pickData<SessionRow>(await postCustomerTreatmentsIdSessions(addSessionFor.id, {
+        custom_fields: normalizeCustomFieldValues(sessionCustomFields, values.custom_fields ?? {}),
+      } as never))
+      setSessionToEdit({ treatmentId: addSessionFor.id, sessionId: created?.id ?? '' })
+      openDetail(addSessionFor)
       setSessionsRefreshKey((key) => key + 1)
       message.success('Đã tạo buổi mới')
+      setAddSessionFor(null)
       refresh()
     } catch (err) {
       message.error(errorMessage(err))
@@ -1189,6 +1237,22 @@ export default function TreatmentCustomers() {
           <Form.Item name="total_amount" label="Số tiền" rules={[{ required: true, message: 'Nhập số tiền' }]}>
             <InputNumber min={0} step={100000} suffix={currencySymbol} style={{ width: '100%' }} />
           </Form.Item>
+          <CustomFieldFormItems definitions={customerTreatmentCustomFields} />
+        </Form>
+      </Modal>
+
+      <Modal
+        title="Thông tin buổi điều trị mới"
+        open={!!addSessionFor}
+        onCancel={() => setAddSessionFor(null)}
+        onOk={() => void submitNewSession()}
+        confirmLoading={addingSessionId !== null}
+        okText="Tạo buổi"
+        cancelText="Hủy"
+      >
+        <Form form={addSessionForm} layout="vertical" style={{ marginTop: 12 }}>
+          <CustomFieldFormItems definitions={sessionCustomFields} />
+          {sessionCustomFields.length === 0 && <Typography.Text type="secondary">Chưa có trường tùy chỉnh cho buổi điều trị.</Typography.Text>}
         </Form>
       </Modal>
 
@@ -1304,6 +1368,17 @@ export default function TreatmentCustomers() {
                     </Tag>
                   </div>
                 </div>
+                {Object.keys(detail.custom_fields ?? {}).length > 0 && (
+                  <div style={{ borderTop: '1px solid var(--brand-border-soft)', marginTop: 12, paddingTop: 12 }}>
+                    <Typography.Text strong>Thông tin bổ sung</Typography.Text>
+                    {Object.entries(detail.custom_fields ?? {}).map(([key, value]) => (
+                      <div key={key} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginTop: 6, fontSize: 13 }}>
+                        <span>{customerTreatmentCustomFields.find((field) => field.key === key)?.label ?? key}</span>
+                        <span>{customFieldValueText(value) ?? '—'}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 12 }}>
                 {detail.status === 'ACTIVE' && detail.quota_type !== 'UNLIMITED' && (
@@ -1349,6 +1424,7 @@ export default function TreatmentCustomers() {
                         formatMoney={formatMoney}
                         currencySymbol={currencySymbol}
                         staffOptions={staffOptions}
+                        customFieldDefinitions={sessionCustomFields}
                         isAdmin={isAdmin}
                         onChanged={refresh}
                         refreshKey={sessionsRefreshKey}

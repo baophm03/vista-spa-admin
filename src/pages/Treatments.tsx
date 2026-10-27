@@ -26,6 +26,8 @@ import {
 import type { TableColumnsType } from 'antd'
 import { FilterOutlined, PlusOutlined } from '@ant-design/icons'
 import PageTitle from '@/components/base/PageTitle'
+import CustomFieldFormItems, { normalizeCustomFieldValues } from '@/components/CustomFieldFormItems'
+import useCustomFieldDefinitions from '@/hooks/useCustomFieldDefinitions'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { Branch } from '@/api/models/branch'
 import type { Service } from '@/api/models/service'
@@ -129,6 +131,7 @@ export default function Treatments() {
   const [packageOpen, setPackageOpen] = useState(false)
   const [editingPackage, setEditingPackage] = useState<TreatmentPackageRow | null>(null)
   const [packageForm] = Form.useForm()
+  const packageCustomFields = useCustomFieldDefinitions('PACKAGE')
   const [packageSaving, setPackageSaving] = useState(false)
 
   const [typeOpen, setTypeOpen] = useState(false)
@@ -189,6 +192,7 @@ export default function Treatments() {
       list_price: row.list_price ?? 0,
       bonus_sessions_default: row.bonus_sessions_default ?? 0,
       service_ids: row.service_ids ?? [],
+      custom_fields: row.custom_fields ?? {},
     } : {
       name: '',
       quota_type: 'SESSIONS',
@@ -196,6 +200,7 @@ export default function Treatments() {
       list_price: 0,
       bonus_sessions_default: 0,
       service_ids: [],
+      custom_fields: {},
       is_active: true,
     })
     setPackageOpen(true)
@@ -226,6 +231,7 @@ export default function Treatments() {
         bonus_sessions_default: Number(values.bonus_sessions_default ?? 0),
         list_price: Number(values.list_price ?? 0),
         list_price_max: values.list_price_max == null ? null : Number(values.list_price_max),
+        custom_fields: normalizeCustomFieldValues(packageCustomFields, values.custom_fields ?? {}, editingPackage?.custom_fields ?? {}),
       }
       if (editingPackage) {
         await updatePackageMutation.mutateAsync({ id: editingPackage.id, data: dto as never })
@@ -731,6 +737,7 @@ export default function Treatments() {
               ),
             }]}
           />
+          <CustomFieldFormItems definitions={packageCustomFields} />
         </Form>
       </Modal>
 

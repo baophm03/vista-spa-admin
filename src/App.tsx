@@ -24,6 +24,7 @@ import BrandSettings from './pages/BrandSettings'
 import IntegrationSettings from './pages/IntegrationSettings'
 import CustomerDataConfig from './pages/CustomerDataConfig'
 import Rewards from './pages/Rewards'
+import AcademyCourses from './pages/AcademyCourses'
 
 export default function App() {
   return (
@@ -37,6 +38,7 @@ export default function App() {
           <Route path="/services" element={<Services />} />
           <Route path="/appointments" element={<Appointments />} />
           <Route path="/treatments" element={<Treatments />} />
+          <Route path="/academy/courses" element={<AcademyCourses />} />
           <Route path="/treatment-customers" element={<TreatmentCustomers />} />
           <Route path="/staffs" element={<Staffs />} />
           <Route path="/notifications" element={<Notifications />} />
