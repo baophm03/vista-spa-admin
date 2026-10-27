@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { Alert, Button, Card, Checkbox, Col, DatePicker, Divider, Empty, Form, Image, Input, InputNumber, Modal, Popconfirm, Popover, Progress, Row, Select, Space, Spin, Statistic, Table, Tabs, Tag, Tooltip, Typography, Upload, message } from 'antd'
-import { DeleteOutlined, EditOutlined, FilterOutlined, PlusOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons'
+import { Alert, Button, Card, Checkbox, Col, DatePicker, Divider, Dropdown, Empty, Form, Image, Input, InputNumber, Modal, Popconfirm, Popover, Progress, Row, Select, Space, Spin, Statistic, Table, Tabs, Tag, Tooltip, Typography, Upload, message } from 'antd'
+import { DeleteOutlined, EditOutlined, FilterOutlined, MoreOutlined, PlusOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons'
 import dayjs, { type Dayjs } from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
 import CustomFieldFormItems, { normalizeCustomFieldValues, type CustomFieldDefWithOptions } from '@/components/CustomFieldFormItems'
@@ -27,11 +27,15 @@ import {
   putSessionsIdDone,
   putSessionsIdStart,
   useGetCustomerTreatments,
+  useGetCustomerTreatmentsIdAdjustments,
   usePostCustomerTreatments,
+  usePostCustomerTreatmentsIdConvert,
   usePostCustomerTreatmentsIdPayments,
+  usePutCustomerTreatmentsIdAdjustments,
   usePutCustomerTreatmentsIdCancel,
   usePutCustomerTreatmentsIdFinish,
 } from '@/api/endpoints/customer-treatments'
+import { useGetService } from '@/api/endpoints/services'
 import { useGetTreatmentPackages } from '@/api/endpoints/services'
 import { postFiles } from '@/api/endpoints/files'
 import { useGetLookupLists } from '@/api/endpoints/lookup-lists'
@@ -76,11 +80,23 @@ const FILTERS = [
   { value: 'CANCELLED', label: 'Đã hủy' },
   { value: 'EXPIRED', label: 'Hết hạn' },
 ]
-type CustomerTreatmentColumnKey = 'customer' | 'progress' | 'payment' | 'status'
+interface TreatmentAdjustmentRow {
+  id: string
+  type: string
+  reason: string
+  amount?: number | null
+  before_json?: Record<string, unknown> | null
+  after_json?: Record<string, unknown> | null
+  created_at?: string
+  created_by?: string
+}
+
+type CustomerTreatmentColumnKey = 'customer' | 'progress' | 'payment' | 'expiry' | 'status'
 const CUSTOMER_TREATMENT_COLUMN_OPTIONS: { label: string; value: CustomerTreatmentColumnKey }[] = [
   { label: 'Khách hàng', value: 'customer' },
   { label: 'Tiến độ', value: 'progress' },
   { label: 'Thanh toán', value: 'payment' },
+  { label: 'Hạn sử dụng', value: 'expiry' },
   { label: 'Trạng thái', value: 'status' },
 ]
 const DEFAULT_VISIBLE_COLUMNS = CUSTOMER_TREATMENT_COLUMN_OPTIONS.map((column) => column.value)
@@ -102,7 +118,8 @@ const PAY_METHOD: Record<string, string> = {
 const sessionUsage = (treatment: CustomerTreatment) => {
   const rawTotal = Number(treatment.sessions_total ?? 0)
   const rawUsed = Number(treatment.sessions_used ?? 0)
-  const total = Number.isFinite(rawTotal) ? Math.max(0, rawTotal) : 0
+  const bonus = Number(treatment.sessions_bonus ?? 0)
+  const total = Number.isFinite(rawTotal) ? Math.max(0, rawTotal + bonus) : bonus
   const used = Number.isFinite(rawUsed) ? Math.max(0, rawUsed) : 0
   return {
     total,
@@ -110,6 +127,56 @@ const sessionUsage = (treatment: CustomerTreatment) => {
     remaining: Math.max(0, total - used),
     percent: total > 0 ? Math.min(100, Math.round((used / total) * 100)) : 0,
   }
+}
+
+const ADJUST_TYPE_OPTIONS = [
+  { value: 'ADJUST_BONUS', label: 'Số buổi tặng' },
+  { value: 'ADJUST_SESSIONS', label: 'Số buổi đã dùng' },
+  { value: 'ADJUST_VALUE', label: 'Giá trị đã tiêu' },
+  { value: 'EXTEND_EXPIRY', label: 'Hạn dùng của gói' },
+]
+const ADJUST_TYPE_LABEL: Record<string, string> = {
+  ADJUST_SESSIONS: 'Sửa số buổi đã dùng',
+  ADJUST_BONUS: 'Sửa buổi tặng',
+  ADJUST_VALUE: 'Sửa giá trị đã tiêu',
+  EXTEND_EXPIRY: 'Gia hạn hạn dùng',
+  CONVERT: 'Chuyển đổi buổi tặng',
+  DISCOUNT: 'Giảm giá',
+}
+const bonusRemainingOf = (row: CustomerTreatment) =>
+  Math.max(0, Number(row.sessions_bonus ?? 0) - Math.max(0, Number(row.sessions_used ?? 0) - Number(row.sessions_total ?? 0)))
+
+/** Đổi 1 giá trị trường lịch sử điều chỉnh thành chữ dễ đọc. */
+const formatAdjustValue = (field: string, value: unknown): string => {
+  if (value === null || value === undefined || value === '') return '—'
+  if (field === 'status') return STATUS_META[String(value)]?.label ?? String(value)
+  if (field === 'expires_at') return dayjs(String(value)).format('DD/MM/YYYY')
+  if (field === 'value_used') return Number(value).toLocaleString('vi-VN') + ' ₫'
+  return String(value)
+}
+
+/** So sánh before/after thành các dòng "Tên trường: cũ → mới" (chỉ hiện field thay đổi). */
+const adjustmentDiffLines = (row: TreatmentAdjustmentRow): { label: string; before: string; after: string }[] => {
+  const before = (row.before_json ?? {}) as Record<string, unknown>
+  const after = (row.after_json ?? {}) as Record<string, unknown>
+  const lines: { label: string; before: string; after: string }[] = []
+  const fields: [string, string][] = [
+    ['sessions_bonus', 'Buổi tặng'],
+    ['sessions_used', 'Buổi đã dùng'],
+    ['value_used', 'Giá trị đã tiêu'],
+    ['expires_at', 'Hạn dùng'],
+    ['status', 'Trạng thái'],
+  ]
+  for (const [field, label] of fields) {
+    if (JSON.stringify(before[field]) !== JSON.stringify(after[field])) {
+      lines.push({ label, before: formatAdjustValue(field, before[field]), after: formatAdjustValue(field, after[field]) })
+    }
+  }
+  if (after.target_service) lines.push({ label: 'Dịch vụ đích', before: '—', after: String(after.target_service) })
+  if (!lines.length) {
+    lines.push({ label: 'Ghi nhận', before: '—', after: JSON.stringify(after).slice(0, 80) })
+  }
+  return lines
 }
 
 const treatmentProgress = (treatment: CustomerTreatment): number | null => {
@@ -936,6 +1003,8 @@ export default function TreatmentCustomers() {
     try {
       const dto = {
         ...values,
+        sessions_bonus: values.sessions_bonus != null ? Number(values.sessions_bonus) : undefined,
+        expires_at: values.expires_at ? (values.expires_at as Dayjs).format('YYYY-MM-DD') : undefined,
         custom_fields: normalizeCustomFieldValues(customerTreatmentCustomFields, values.custom_fields ?? {}),
       }
       await createMutation.mutateAsync({ data: dto as never })
@@ -1004,6 +1073,79 @@ export default function TreatmentCustomers() {
     } catch (err) {
       message.error(errorMessage(err))
     }
+  }
+
+  // TA — điều chỉnh / chuyển đổi buổi tặng / lịch sử
+  const [adjustOpen, setAdjustOpen] = useState(false)
+  const [adjustRow, setAdjustRow] = useState<CustomerTreatment | null>(null)
+  const [adjustForm] = Form.useForm()
+  const adjustType = Form.useWatch('type', adjustForm)
+  const adjustMutation = usePutCustomerTreatmentsIdAdjustments()
+  const [convertOpen, setConvertOpen] = useState(false)
+  const [convertRow, setConvertRow] = useState<CustomerTreatment | null>(null)
+  const [convertForm] = Form.useForm()
+  const convertMutation = usePostCustomerTreatmentsIdConvert()
+  const [historyOpen, setHistoryOpen] = useState(false)
+  const [historyRow, setHistoryRow] = useState<CustomerTreatment | null>(null)
+  const historyQuery = useGetCustomerTreatmentsIdAdjustments(historyRow?.id ?? 'none', {
+    query: { enabled: historyOpen && !!historyRow },
+  })
+  const servicesQuery = useGetService({ is_active: true, limit: 200 })
+  const serviceOptions = (pickData<{ services?: { id: string; title?: string }[] }>(servicesQuery.data)?.services ?? [])
+    .map((service) => ({ value: service.id, label: service.title || service.id }))
+
+  const openAdjust = (row: CustomerTreatment) => {
+    setAdjustRow(row)
+    adjustForm.resetFields()
+    setAdjustOpen(true)
+  }
+
+  const submitAdjust = async () => {
+    if (!adjustRow) return
+    const values = await adjustForm.validateFields()
+    try {
+      await adjustMutation.mutateAsync({
+        id: adjustRow.id,
+        data: {
+          type: values.type,
+          reason: values.reason,
+          ...(values.type === 'EXTEND_EXPIRY' ? { expires_at: values.expires_at.format('YYYY-MM-DD') } : { amount: values.amount }),
+        } as never,
+      })
+      message.success('Đã ghi điều chỉnh và cập nhật gói')
+      setAdjustOpen(false)
+      if (detail?.id === adjustRow.id) setDetail(null)
+      refresh()
+    } catch (err) {
+      message.error(errorMessage(err))
+    }
+  }
+
+  const openConvert = (row: CustomerTreatment) => {
+    setConvertRow(row)
+    convertForm.resetFields()
+    setConvertOpen(true)
+  }
+
+  const submitConvert = async () => {
+    if (!convertRow) return
+    const values = await convertForm.validateFields()
+    try {
+      await convertMutation.mutateAsync({
+        id: convertRow.id,
+        data: { service_id: values.service_id, from_sessions: values.from_sessions, reason: values.reason } as never,
+      })
+      message.success('Đã chuyển buổi tặng sang gói con mới')
+      setConvertOpen(false)
+      refresh()
+    } catch (err) {
+      message.error(errorMessage(err))
+    }
+  }
+
+  const openHistory = (row: CustomerTreatment) => {
+    setHistoryRow(row)
+    setHistoryOpen(true)
   }
 
   const submitPayment = async () => {
@@ -1172,6 +1314,13 @@ export default function TreatmentCustomers() {
             ),
           },
           {
+            title: 'Hạn sử dụng',
+            key: 'expiry',
+            width: 120,
+            render: (_: unknown, row: CustomerTreatment) =>
+              row.expires_at ? dayjs(row.expires_at).format('DD/MM/YYYY') : 'Không hạn',
+          },
+          {
             title: 'Trạng thái',
             key: 'status',
             dataIndex: 'status',
@@ -1181,7 +1330,7 @@ export default function TreatmentCustomers() {
           {
             title: '',
             key: 'actions',
-            width: 240,
+            width: 170,
             render: (_: unknown, row: CustomerTreatment) => (
               <Can I="UPDATE" a="CUSTOMER">
                 <Space onClick={(e) => e.stopPropagation()}>
@@ -1190,32 +1339,64 @@ export default function TreatmentCustomers() {
                       +1 buổi
                     </Button>
                   )}
-                {(row.debt_amount ?? 0) > 0 && row.status !== 'CANCELLED' && (
-                  <Button
-                    size="small"
-                    onClick={() => {
-                      setDetail(row)
-                      payForm.setFieldsValue({ amount: row.debt_amount, method: activePaymentMethods.find((item) => item.code === 'CASH')?.code ?? activePaymentMethods[0]?.code })
-                      setPayOpen(true)
+                  <Dropdown
+                    trigger={['click']}
+                    menu={{
+                      items: [
+                        {
+                          key: 'pay',
+                          label: 'Thu tiền',
+                          disabled: !((row.debt_amount ?? 0) > 0 && row.status !== 'CANCELLED'),
+                        },
+                        { key: 'adjust', label: 'Điều chỉnh gói', disabled: !(row.status === 'ACTIVE' || row.status === 'EXPIRED') },
+                        {
+                          key: 'convert',
+                          label: `Đổi buổi tặng (${bonusRemainingOf(row)})`,
+                          disabled: !(row.status === 'ACTIVE' && bonusRemainingOf(row) > 0),
+                        },
+                        { key: 'history', label: 'Lịch sử điều chỉnh' },
+                        { type: 'divider' as const },
+                        {
+                          key: 'finish',
+                          label: 'Hoàn tất liệu trình (trả da)',
+                          disabled: !(row.status === 'ACTIVE' && row.quota_type === 'UNLIMITED'),
+                        },
+                        { key: 'cancel', label: 'Hủy liệu trình', danger: true, disabled: row.status !== 'ACTIVE' },
+                      ],
+                      onClick: ({ key }) => {
+                        if (key === 'pay') {
+                          setDetail(row)
+                          payForm.setFieldsValue({ amount: row.debt_amount, method: activePaymentMethods.find((item) => item.code === 'CASH')?.code ?? activePaymentMethods[0]?.code })
+                          setPayOpen(true)
+                        } else if (key === 'adjust') {
+                          openAdjust(row)
+                        } else if (key === 'convert') {
+                          openConvert(row)
+                        } else if (key === 'history') {
+                          openHistory(row)
+                        } else if (key === 'finish') {
+                          Modal.confirm({
+                            title: 'Hoàn tất liệu trình (trả da)?',
+                            content: 'Gói sẽ chuyển sang Hoàn tất và bắt đầu tính thời gian bảo hành trọn đời.',
+                            okText: 'Hoàn tất',
+                            cancelText: 'Không',
+                            onOk: () => finishTreatment(row),
+                          })
+                        } else if (key === 'cancel') {
+                          Modal.confirm({
+                            title: 'Hủy liệu trình này?',
+                            content: 'Chỉ được hủy khi chưa có buổi hoàn tất. Các giao dịch thanh toán được giữ nguyên.',
+                            okText: 'Hủy LT',
+                            okButtonProps: { danger: true },
+                            cancelText: 'Không',
+                            onOk: () => cancelTreatment(row),
+                          })
+                        }
+                      },
                     }}
                   >
-                    Thu tiền
-                  </Button>
-                )}
-                {row.status === 'ACTIVE' && row.quota_type === 'UNLIMITED' && (
-                  <Popconfirm title="Hoàn tất liệu trình (trả da)?" description="Gói sẽ chuyển sang Hoàn tất và bắt đầu tính thời gian bảo hành trọn đời." okText="Hoàn tất" cancelText="Không" onConfirm={() => finishTreatment(row)}>
-                    <Button size="small" type="primary" ghost>
-                      Hoàn tất
-                    </Button>
-                  </Popconfirm>
-                )}
-                {row.status === 'ACTIVE' && (
-                  <Popconfirm title="Hủy liệu trình này?" okText="Hủy" cancelText="Không" onConfirm={() => cancelTreatment(row)}>
-                    <Button size="small" danger>
-                      Hủy LT
-                    </Button>
-                  </Popconfirm>
-                )}
+                    <Button size="small" icon={<MoreOutlined />} aria-label="Thao tác khác" />
+                  </Dropdown>
                 </Space>
               </Can>
             ),
@@ -1256,6 +1437,12 @@ export default function TreatmentCustomers() {
           </Form.Item>
           <Form.Item name="total_amount" label="Số tiền" rules={[{ required: true, message: 'Nhập số tiền' }]}>
             <InputNumber min={0} step={100000} suffix={currencySymbol} style={{ width: '100%' }} />
+          </Form.Item>
+          <Form.Item name="sessions_bonus" label="Buổi tặng" extra="Cộng thêm vào số buổi của gói — để trống nếu không tặng">
+            <InputNumber min={0} precision={0} style={{ width: '100%' }} />
+          </Form.Item>
+          <Form.Item name="expires_at" label="Hạn sử dụng" extra="Để trống nếu gói không giới hạn thời gian">
+            <DatePicker style={{ width: '100%' }} />
           </Form.Item>
           <CustomFieldFormItems definitions={customerTreatmentCustomFields} />
         </Form>
@@ -1495,6 +1682,133 @@ export default function TreatmentCustomers() {
               />
             </Col>
           </Row>
+        )}
+      </Modal>
+
+      <Modal
+        title={`Điều chỉnh gói — ${adjustRow ? profileName(adjustRow) : ''}`}
+        open={adjustOpen}
+        onCancel={() => setAdjustOpen(false)}
+        onOk={() => void submitAdjust()}
+        okText="Ghi điều chỉnh"
+        cancelText="Hủy"
+        confirmLoading={adjustMutation.isPending}
+        destroyOnHidden
+      >
+        <Form form={adjustForm} layout="vertical" style={{ marginTop: 12 }}>
+          <Form.Item name="type" label="Tham số cần chỉnh" rules={[{ required: true, message: 'Chọn tham số' }]}>
+            <Select options={ADJUST_TYPE_OPTIONS} placeholder="Chọn tham số" />
+          </Form.Item>
+          {adjustType === 'EXTEND_EXPIRY' ? (
+            <Form.Item name="expires_at" label="Hạn dùng mới" rules={[{ required: true, message: 'Chọn hạn dùng mới' }]}
+              extra="Gói đang Hết hạn sẽ tự mở lại thành Đang làm nếu hạn mới ở tương lai.">
+              <DatePicker style={{ width: '100%' }} />
+            </Form.Item>
+          ) : (
+            <Form.Item
+              name="amount"
+              label="Giá trị mới"
+              rules={[{ required: true, message: 'Nhập giá trị mới' }]}
+              extra={adjustType === 'ADJUST_BONUS' ? 'Buổi tặng cộng thêm vào số buổi mua chính.' : undefined}
+            >
+              <InputNumber min={0} style={{ width: '100%' }} />
+            </Form.Item>
+          )}
+          <Form.Item name="reason" label="Lý do điều chỉnh (bắt buộc)" rules={[{ required: true, whitespace: true, message: 'Nhập lý do' }]}>
+            <Input.TextArea rows={2} maxLength={500} placeholder="VD: Khách báo salon ghi nhầm số buổi" />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      <Modal
+        title={`Đổi buổi tặng — ${convertRow ? profileName(convertRow) : ''}`}
+        open={convertOpen}
+        onCancel={() => setConvertOpen(false)}
+        onOk={() => void submitConvert()}
+        okText="Chuyển đổi"
+        cancelText="Hủy"
+        confirmLoading={convertMutation.isPending}
+        destroyOnHidden
+      >
+        <Alert
+          type="info"
+          showIcon
+          style={{ marginBottom: 12 }}
+          message={`Còn ${convertRow ? bonusRemainingOf(convertRow) : 0} buổi tặng khả dụng`}
+          description="Chỉ chuyển được buổi TẶNG còn lại, không ảnh hưởng buổi đã mua. Thao tác một chiều — không thể đổi ngược."
+        />
+        <Form form={convertForm} layout="vertical">
+          <Form.Item name="service_id" label="Dịch vụ đích" rules={[{ required: true, message: 'Chọn dịch vụ đích' }]}>
+            <Select showSearch optionFilterProp="label" options={serviceOptions} placeholder="Chọn dịch vụ muốn chuyển sang" />
+          </Form.Item>
+          <Form.Item
+            name="from_sessions"
+            label="Số buổi chuyển"
+            rules={[
+              { required: true, message: 'Nhập số buổi' },
+              { type: 'number', min: 1, message: 'Tối thiểu 1 buổi' },
+              { type: 'number', max: convertRow ? bonusRemainingOf(convertRow) : 0, message: 'Vượt số buổi tặng còn lại' },
+            ]}
+          >
+            <InputNumber min={1} max={convertRow ? bonusRemainingOf(convertRow) : 0} style={{ width: '100%' }} />
+          </Form.Item>
+          <Form.Item name="reason" label="Lý do (bắt buộc)" rules={[{ required: true, whitespace: true, message: 'Nhập lý do' }]}>
+            <Input.TextArea rows={2} maxLength={500} placeholder="VD: Khách không làm mụn nữa, đổi sang gội đầu dưỡng sinh" />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      <Modal
+        title={`Lịch sử điều chỉnh — ${historyRow ? profileName(historyRow) : ''}`}
+        open={historyOpen}
+        onCancel={() => setHistoryOpen(false)}
+        footer={null}
+        width={860}
+      >
+        {historyQuery.isLoading ? (
+          <Typography.Text type="secondary">Đang tải…</Typography.Text>
+        ) : (pickData<TreatmentAdjustmentRow[]>(historyQuery.data) ?? []).length === 0 ? (
+          <Empty description="Gói chưa từng bị điều chỉnh" style={{ margin: '24px 0' }} />
+        ) : (
+          <Table<TreatmentAdjustmentRow>
+            rowKey="id"
+            size="small"
+            loading={historyQuery.isLoading}
+            dataSource={(pickData<TreatmentAdjustmentRow[]>(historyQuery.data) ?? []) as TreatmentAdjustmentRow[]}
+            pagination={{ pageSize: 8 }}
+            columns={[
+              { title: 'Thời gian', dataIndex: 'created_at', width: 130, render: (v: string) => formatDateTime(v) },
+              { title: 'Loại', dataIndex: 'type', width: 140, render: (v: string) => ADJUST_TYPE_LABEL[v] ?? v },
+              {
+                title: 'Giá trị',
+                dataIndex: 'amount',
+                width: 90,
+                render: (v: number | null, row: TreatmentAdjustmentRow) =>
+                  v == null ? '—' : /CONVERT|SESSIONS|BONUS/.test(row.type) ? `${v} buổi` : Number(v).toLocaleString('vi-VN'),
+              },
+              { title: 'Lý do', dataIndex: 'reason', render: (v: string) => v },
+              {
+                title: 'Thay đổi',
+                key: 'diff',
+                width: 280,
+                render: (_: unknown, row: TreatmentAdjustmentRow) => {
+                  const lines = adjustmentDiffLines(row)
+                  return (
+                    <div style={{ fontSize: 12, display: 'grid', gap: 2 }}>
+                      {lines.map((line) => (
+                        <div key={line.label}>
+                          <span style={{ color: '#6F7071' }}>{line.label}: </span>
+                          <span style={{ color: '#8C9091' }}>{line.before}</span>
+                          {' → '}
+                          <span style={{ fontWeight: 600 }}>{line.after}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )
+                },
+              },
+            ]}
+          />
         )}
       </Modal>
     </>

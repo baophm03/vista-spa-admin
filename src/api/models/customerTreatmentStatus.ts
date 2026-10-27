@@ -14,4 +14,5 @@ export const CustomerTreatmentStatus = {
   ACTIVE: 'ACTIVE',
   FINISHED: 'FINISHED',
   CANCELLED: 'CANCELLED',
+  EXPIRED: 'EXPIRED',
 } as const;

@@ -12,6 +12,8 @@ import type { CustomerTreatmentPaymentStatus } from './customerTreatmentPaymentS
 import type { CustomerTreatmentStatus } from './customerTreatmentStatus';
 import type { CustomerTreatmentStartedAt } from './customerTreatmentStartedAt';
 import type { CustomerTreatmentFinishedAt } from './customerTreatmentFinishedAt';
+import type { CustomerTreatmentExpiresAt } from './customerTreatmentExpiresAt';
+import type { CustomerTreatmentParentTreatmentId } from './customerTreatmentParentTreatmentId';
 import type { CustomerTreatmentNote } from './customerTreatmentNote';
 import type { CustomerTreatmentCustomFields } from './customerTreatmentCustomFields';
 
@@ -44,6 +46,10 @@ export interface CustomerTreatment {
   status?: CustomerTreatmentStatus;
   started_at?: CustomerTreatmentStartedAt;
   finished_at?: CustomerTreatmentFinishedAt;
+  expires_at?: CustomerTreatmentExpiresAt;
+  /** @minimum 0 */
+  sessions_bonus?: number;
+  parent_treatment_id?: CustomerTreatmentParentTreatmentId;
   note?: CustomerTreatmentNote;
   custom_fields?: CustomerTreatmentCustomFields;
   created_at?: string;
