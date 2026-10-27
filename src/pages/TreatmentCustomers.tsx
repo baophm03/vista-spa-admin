@@ -962,7 +962,10 @@ export default function TreatmentCustomers() {
     setAddingSessionId(addSessionFor.id)
     try {
       const created = pickData<SessionRow>(await postCustomerTreatmentsIdSessions(addSessionFor.id, {
-        custom_fields: normalizeCustomFieldValues(sessionCustomFields, values.custom_fields ?? {}),
+        custom_fields: normalizeCustomFieldValues(
+          sessionCustomFields,
+          (values.custom_fields ?? {}) as Record<string, unknown>,
+        ) ?? {},
       } as never))
       setSessionToEdit({ treatmentId: addSessionFor.id, sessionId: created?.id ?? '' })
       openDetail(addSessionFor)

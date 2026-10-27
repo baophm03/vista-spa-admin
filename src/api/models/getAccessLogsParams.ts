@@ -5,6 +5,7 @@
  * Vista Spa backend API. Uses the NEWSKY+ business error envelope for permission-aware endpoints and the legacy response envelope for existing admin endpoints.
  * OpenAPI spec version: 1.0.0
  */
+import type { GetAccessLogsAction } from './getAccessLogsAction';
 
 export type GetAccessLogsParams = {
 /**
@@ -17,8 +18,14 @@ page?: number;
  */
 limit?: number;
 user_id?: string;
+/**
+ * Lọc theo cơ sở của hồ sơ khách; nhật ký không có hồ sơ dùng cơ sở nhân viên thực hiện
+ */
+branch_id?: string;
 customer_profile_id?: string;
-action?: string;
+action?: GetAccessLogsAction;
+from?: string;
+to?: string;
 from_date?: string;
 to_date?: string;
 };

@@ -590,7 +590,7 @@ export const useDeleteCustomerProfilesId = <TError = UnauthorizedResponse | Forb
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **CP-01** — GET /customer-profiles. Cần quyền `customer.read`. Vai trò được phép: receptionist, technician. Giới hạn theo hồ sơ khách hàng được phân quyền. Tham số truy vấn: `page`, `limit`.
+ * **CP-01** — GET /customer-profiles. Cần quyền `customer.read`. Vai trò được phép: receptionist, technician. Giới hạn theo hồ sơ khách hàng được phân quyền. Tham số truy vấn: `page`, `limit`, `q`.
  * @summary Lấy danh sách hồ sơ khách hàng
  */
 export const getCustomerProfiles = (

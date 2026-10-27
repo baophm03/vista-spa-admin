@@ -16,4 +16,8 @@ page?: number;
  * @maximum 200
  */
 limit?: number;
+/**
+ * Tìm theo mã, tên hoặc số điện thoại khách hàng
+ */
+q?: string;
 };

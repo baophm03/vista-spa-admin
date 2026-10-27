@@ -26,6 +26,7 @@ import SystemSettings from './pages/SystemSettings'
 import CustomerDataConfig from './pages/CustomerDataConfig'
 import Rewards from './pages/Rewards'
 import AcademyCourses from './pages/AcademyCourses'
+import AccessLogs from './pages/AccessLogs'
 
 export default function App() {
   return (
@@ -43,6 +44,7 @@ export default function App() {
           <Route path="/treatment-customers" element={<TreatmentCustomers />} />
           <Route path="/staffs" element={<Staffs />} />
           <Route path="/notifications" element={<Notifications />} />
+          <Route path="/access-logs" element={<AccessLogs />} />
           <Route path="/products" element={<Products />} />
           <Route path="/points" element={<Points />} />
           <Route path="/orders" element={<Orders />} />

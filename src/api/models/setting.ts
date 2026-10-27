@@ -5,24 +5,31 @@
  * Vista Spa backend API. Uses the NEWSKY+ business error envelope for permission-aware endpoints and the legacy response envelope for existing admin endpoints.
  * OpenAPI spec version: 1.0.0
  */
+import type { SettingId } from './settingId';
 import type { SettingScope } from './settingScope';
 import type { SettingBranchId } from './settingBranchId';
 import type { SettingSchema } from './settingSchema';
+import type { SettingSourceScope } from './settingSourceScope';
 import type { SettingUpdatedBy } from './settingUpdatedBy';
+import type { SettingUpdatedAt } from './settingUpdatedAt';
 
 /**
- * Branch or global setting
+ * Effective setting value and its validation schema
  */
 export interface Setting {
-  id: string;
+  id?: SettingId;
   scope: SettingScope;
   branch_id?: SettingBranchId;
   group: string;
   key: string;
   /** Any JSON value */
-  value?: unknown;
-  schema?: SettingSchema;
+  value: unknown;
+  /** Default from the backend setting registry */
+  default_value: unknown;
+  schema: SettingSchema;
+  branch_allowed: boolean;
+  source_scope: SettingSourceScope;
+  is_overridden: boolean;
   updated_by?: SettingUpdatedBy;
-  created_at?: string;
-  updated_at?: string;
+  updated_at?: SettingUpdatedAt;
 }

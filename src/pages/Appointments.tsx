@@ -300,7 +300,10 @@ export default function Appointments() {
     try {
       const values = await startForm.validateFields()
       const sessionFields = normalizeCustomFieldValues(sessionCustomFields, values.custom_fields ?? {})
-      await startMutation.mutateAsync({ id: startingAppointment.id, data: { session_custom_fields: sessionFields } })
+      await startMutation.mutateAsync({
+        id: startingAppointment.id,
+        data: sessionFields ? { session_custom_fields: sessionFields } : {},
+      })
       message.success('Đã bắt đầu')
       refresh()
       setStartingAppointment(null)

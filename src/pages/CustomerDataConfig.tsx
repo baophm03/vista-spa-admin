@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Alert, Button, Checkbox, Empty, Form, Input, InputNumber, Modal, Select, Space, Spin, Table, Tabs, Tag, Typography, message } from 'antd'
+import { Alert, Button, Checkbox, Empty, Form, Input, InputNumber, Modal, Select, Space, Spin, Table, Tag, Typography, message } from 'antd'
 import { PlusOutlined, ReloadOutlined } from '@ant-design/icons'
 import { Can } from '@casl/react'
 import PageTitle from '@/components/base/PageTitle'

@@ -57,7 +57,7 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * Trả danh sách tài khoản kèm thành viên, voucher và vai trò. Hỗ trợ tìm theo tên/email/số điện thoại, lọc trạng thái, cơ sở, vai trò và `has_role` để chỉ lấy nhân viên nội bộ. Người dùng bị giới hạn cơ sở chỉ thấy dữ liệu trong phạm vi được phân công.
+ * Trả danh sách tài khoản kèm thành viên, voucher và vai trò. Hỗ trợ tìm theo tên/email/số điện thoại, lọc trạng thái, cơ sở, vai trò và `has_role` để chỉ lấy nhân viên nội bộ cùng tài khoản Admin. Người dùng bị giới hạn cơ sở chỉ thấy dữ liệu trong phạm vi được phân công.
  * @summary Tìm kiếm và lọc danh sách người dùng
  */
 export const getUsers = (
