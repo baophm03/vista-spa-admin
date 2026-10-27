@@ -9,6 +9,7 @@ import type { LookupList } from '@/api/models/lookupList'
 import { getCustomerProfilesIdHealthMetrics } from '@/api/endpoints/customer-profiles'
 import { getLookupLists } from '@/api/endpoints/settings'
 import { errorMessage, pickData } from '@/api/helpers'
+import { useBrandDateTime } from '@/themeRuntime'
 
 type MetricRow = HealthMetric & {
   session?: { session_no?: number } | null
@@ -19,6 +20,7 @@ type MetricRow = HealthMetric & {
 type LookupListWithItems = LookupList & { lookup_items?: LookupItem[] | null }
 
 export default function CustomerProfileHealthMetricsTab({ profileId, onLoadingChange }: { profileId: string; onLoadingChange?: (loading: boolean) => void }) {
+  const { formatDateTime, getDateTimeParts } = useBrandDateTime()
   const [rows, setRows] = useState<MetricRow[]>([])
   const [items, setItems] = useState<LookupItem[]>([])
   const [metricCode, setMetricCode] = useState('')
@@ -54,9 +56,10 @@ export default function CustomerProfileHealthMetricsTab({ profileId, onLoadingCh
   const activeItems = items.filter((item) => item.is_active !== false)
   const inRange = (row: MetricRow) => {
     if (!dateRange) return true
-    const measured = dayjs(row.measured_at)
-    return (!dateRange[0] || !measured.isBefore(dateRange[0].startOf('day')))
-      && (!dateRange[1] || !measured.isAfter(dateRange[1].endOf('day')))
+    const measuredDate = getDateTimeParts(row.measured_at)?.date
+    if (!measuredDate) return false
+    return measuredDate >= dateRange[0].format('YYYY-MM-DD')
+      && measuredDate <= dateRange[1].format('YYYY-MM-DD')
   }
   const filteredRows = useMemo(() => rows
     .filter((row) => (!metricCode || row.metric_code === metricCode) && inRange(row)), [rows, metricCode, dateRange])
@@ -64,7 +67,7 @@ export default function CustomerProfileHealthMetricsTab({ profileId, onLoadingCh
     ? filteredRows.filter((row) => row.value_num !== null && row.value_num !== undefined)
       .slice()
       .sort((a, b) => new Date(a.measured_at).getTime() - new Date(b.measured_at).getTime())
-      .map((row) => ({ date: dayjs(row.measured_at).format('DD/MM/YY HH:mm'), value: Number(row.value_num), unit: row.unit || '' }))
+      .map((row) => ({ date: formatDateTime(row.measured_at), value: Number(row.value_num), unit: row.unit || '' }))
     : []
 
   if (loading) return <div className="py-9 text-center"><Spin tip="Đang tải chỉ số sức khỏe…" /></div>
@@ -107,7 +110,7 @@ export default function CustomerProfileHealthMetricsTab({ profileId, onLoadingCh
             pagination={{ pageSize: 8 }}
             dataSource={filteredRows}
             columns={[
-              { title: 'Thời điểm đo', dataIndex: 'measured_at', render: (value: string) => dayjs(value).format('DD/MM/YYYY HH:mm') },
+              { title: 'Thời điểm đo', dataIndex: 'measured_at', render: (value: string) => formatDateTime(value) },
               { title: 'Chỉ số', dataIndex: 'metric_code', render: (value: string) => names[value] || value },
               { title: 'Giá trị', render: (_: unknown, row: MetricRow) => row.value_num ?? row.value_text ?? '—' },
               { title: 'Đơn vị', dataIndex: 'unit', render: (value?: string | null) => value || '—' },

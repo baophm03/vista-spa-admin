@@ -41,6 +41,7 @@ import { getCustomFieldDefs } from '@/api/endpoints/settings'
 import type { CustomFieldDef } from '@/api/models/customFieldDef'
 import type { ServiceCategory } from '@/api/models/serviceCategory'
 import ServiceCategories from './services/ServiceCategories'
+import { formatCurrency, useBrandCurrency } from '@/themeRuntime'
 
 /** BE list include kèm `service_category`. */
 type ServiceRow = Service & { service_category?: { id?: string; name?: string } }
@@ -61,9 +62,9 @@ const COLUMN_OPTIONS = [
   { value: 'status', label: 'Trạng thái' },
 ]
 
-function formatPrice(value?: number | string | null) {
+function formatPrice(value: number | string | null | undefined, currency: string) {
   if (value === null || value === undefined || value === '') return '—'
-  return `${Number(value).toLocaleString('vi-VN')} ₫`
+  return formatCurrency(value, currency)
 }
 
 function categoryOptions(
@@ -108,6 +109,7 @@ function ServiceCustomFieldControl({ field }: { field: CustomFieldDefRow }) {
 }
 
 function ServiceListTab() {
+  const { currency, symbol: currencySymbol } = useBrandCurrency()
   const [total, setTotal] = useState(0)
   const [categories, setCategories] = useState<ServiceCategoryRow[]>([])
   const [customFields, setCustomFields] = useState<CustomFieldDefRow[]>([])
@@ -253,7 +255,7 @@ function ServiceListTab() {
         key: 'price',
         title: 'Giá niêm yết',
         render: (_value, row) =>
-          row.price_max != null && Number(row.price_max) !== Number(row.price) ? `${formatPrice(row.price)} – ${formatPrice(row.price_max)}` : formatPrice(row.price),
+          row.price_max != null && Number(row.price_max) !== Number(row.price) ? `${formatPrice(row.price, currency)} – ${formatPrice(row.price_max, currency)}` : formatPrice(row.price, currency),
       },
       duration: { key: 'duration', title: 'Thời lượng', dataIndex: 'duration_minutes', render: (value?: number | null) => (value ? `${value} phút` : 'Theo cấu hình') },
       points: { key: 'points', title: 'Điểm đổi', dataIndex: 'required_points', render: (value?: number | null) => (value ? Number(value).toLocaleString('vi-VN') : '—') },
@@ -457,12 +459,12 @@ function ServiceListTab() {
           <Row gutter={16}>
             <Col span={8}>
               <Form.Item name="price" label="Giá niêm yết" rules={[{ type: 'number', min: 0, message: 'Giá không được âm' }]}>
-                <InputNumber min={0} step={1000} style={{ width: '100%' }} />
+                <InputNumber min={0} step={1000} suffix={currencySymbol} style={{ width: '100%' }} />
               </Form.Item>
             </Col>
             <Col span={8}>
               <Form.Item name="price_max" label="Giá tối đa" rules={[{ type: 'number', min: 0, message: 'Giá không được âm' }]}>
-                <InputNumber min={0} step={1000} style={{ width: '100%' }} />
+                <InputNumber min={0} step={1000} suffix={currencySymbol} style={{ width: '100%' }} />
               </Form.Item>
             </Col>
             <Col span={8}>

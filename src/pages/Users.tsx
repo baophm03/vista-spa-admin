@@ -42,6 +42,7 @@ import LinkCustomerAccountModal from '@/components/LinkCustomerAccountModal'
 import CustomerProfileDetailsTabs from '@/components/CustomerProfileDetailsTabs'
 import CustomerProfileCustomFields, { normalizeCustomerCustomFields, type CustomFieldDefWithOptions } from '@/components/CustomerProfileCustomFields'
 import type { CustomerProfileRow, CustomerProfileSummary } from '@/components/CustomerProfileOverviewTab'
+import { useBrandCurrency } from '@/themeRuntime'
 import type { Branch } from '@/api/models/branch'
 import type { CardRank } from '@/api/models/cardRank'
 import type { CustomerProfile } from '@/api/models/customerProfile'
@@ -116,6 +117,7 @@ function buildListParams(filters: CustomerProfileListFilters, keyword: string, p
 }
 
 export default function Users() {
+  const { symbol: currencySymbol } = useBrandCurrency()
   const queryClient = useQueryClient()
   const profileAccess = useCustomerProfileAccess()
   const [page, setPage] = useState(1)
@@ -481,12 +483,12 @@ export default function Users() {
                       <Row gutter={8}>
                         <Col span={12}>
                           <Form.Item name="min_spent" label="Chi tiêu từ" style={{ marginBottom: 10 }}>
-                            <InputNumber min={0} step={100000} suffix="₫" placeholder="Tối thiểu" style={{ width: '100%' }} />
+                            <InputNumber min={0} step={100000} suffix={currencySymbol} placeholder="Tối thiểu" style={{ width: '100%' }} />
                           </Form.Item>
                         </Col>
                         <Col span={12}>
                           <Form.Item name="max_spent" label="Chi tiêu đến" style={{ marginBottom: 10 }}>
-                            <InputNumber min={0} step={100000} suffix="₫" placeholder="Tối đa" style={{ width: '100%' }} />
+                            <InputNumber min={0} step={100000} suffix={currencySymbol} placeholder="Tối đa" style={{ width: '100%' }} />
                           </Form.Item>
                         </Col>
                       </Row>

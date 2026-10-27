@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Button, Card, Col, Form, Input, InputNumber, Modal, Popconfirm, Row, Select, Space, Table, Tag, Typography, message } from 'antd'
 import { ReloadOutlined } from '@ant-design/icons'
+import { useBrandCurrency } from '@/themeRuntime'
 import PageTitle from '../components/base/PageTitle'
 import {
   useGetCardRanks,
@@ -37,6 +38,7 @@ interface MemberRow {
 }
 
 export default function Points() {
+  const { format: formatMoney } = useBrandCurrency()
   const [page, setPage] = useState(1)
   const [limit] = useState(10)
   const [adjusting, setAdjusting] = useState<MemberRow | null>(null)
@@ -105,7 +107,7 @@ export default function Points() {
                   {r.name}
                 </Tag>
                 <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                  {r.min_spent ? `Từ ${Number(r.min_spent).toLocaleString('vi-VN')}đ` : 'Không ngưỡng'}
+                  {r.min_spent ? `Từ ${formatMoney(r.min_spent)}` : 'Không ngưỡng'}
                 </Typography.Text>
               </div>
               <div style={{ marginTop: 12, fontSize: 13 }}>
@@ -155,7 +157,7 @@ export default function Points() {
           {
             title: 'Chi tiêu năm',
             width: 140,
-            render: (_, row) => `${Number(row.membership?.year_spent ?? 0).toLocaleString('vi-VN')}đ`,
+            render: (_, row) => formatMoney(row.membership?.year_spent),
           },
           {
             title: '',

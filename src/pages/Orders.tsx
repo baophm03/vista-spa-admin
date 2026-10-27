@@ -5,7 +5,7 @@ import { ReloadOutlined, SearchOutlined } from '@ant-design/icons'
 import { useQuery } from '@tanstack/react-query'
 import PageTitle from '@/components/base/PageTitle'
 import { errorMessage, pickData, pickMeta } from '@/api/helpers'
-import { formatDateTime } from '@/themeRuntime'
+import { formatCurrency, formatDateTime, useBrandCurrency } from '@/themeRuntime'
 import { getProductOrders, getGetProductOrdersQueryKey, putProductOrdersId } from '@/api/endpoints/products'
 import type { ProductOrder } from '@/api/models/productOrder'
 import type { ProductOrderItem } from '@/api/models/productOrderItem'
@@ -35,11 +35,9 @@ const NEXT_ACTIONS: Record<ProductOrderStatus, { status: ProductOrderStatus; lab
   CANCELLED: [],
 }
 
-function formatMoney(value?: number | string | null) {
-  return `${Number(value ?? 0).toLocaleString('vi-VN')} ₫`
-}
-
 export default function Orders() {
+  const { currency } = useBrandCurrency()
+  const formatMoney = (value?: number | string | null) => formatCurrency(value, currency)
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
   const [searchText, setSearchText] = useState('')

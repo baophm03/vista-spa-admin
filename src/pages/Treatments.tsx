@@ -45,6 +45,7 @@ import {
 } from '@/api/endpoints/services'
 import { useGetBranches } from '@/api/endpoints/branches'
 import { useProfileStore } from '@/stores/profile-store'
+import { useBrandCurrency } from '@/themeRuntime'
 
 type QuotaType = TreatmentPackage['quota_type']
 type ValidityUnit = NonNullable<TreatmentPackage['validity_unit']>
@@ -105,20 +106,21 @@ const PACKAGE_STATUS_OPTIONS = [
   { value: 'false', label: 'Đã ẩn' },
 ]
 
-function quotaLabel(row: TreatmentPackage) {
+function quotaLabel(row: TreatmentPackage, formatMoney: (value: unknown) => string) {
   if (row.quota_type === 'SESSIONS') return String(row.total_sessions ?? '—') + ' buổi'
-  if (row.quota_type === 'VALUE') return Number(row.total_value ?? 0).toLocaleString('vi-VN') + 'đ'
+  if (row.quota_type === 'VALUE') return formatMoney(row.total_value)
   return 'Không giới hạn'
 }
 
-function priceLabel(row: TreatmentPackage) {
-  const minimum = Number(row.list_price ?? 0).toLocaleString('vi-VN') + 'đ'
+function priceLabel(row: TreatmentPackage, formatMoney: (value: unknown) => string) {
+  const minimum = formatMoney(row.list_price)
   return row.list_price_max != null
-    ? minimum + ' – ' + Number(row.list_price_max).toLocaleString('vi-VN') + 'đ'
+    ? minimum + ' – ' + formatMoney(row.list_price_max)
     : minimum
 }
 
 export default function Treatments() {
+  const { format: formatMoney, symbol: currencySymbol } = useBrandCurrency()
   const queryClient = useQueryClient()
   // Trang quản trị liệu trình: chỉ platform admin được quản lý (giữ behavior cũ)
   const canManage = !!useProfileStore((s) => s.profile)?.is_admin
@@ -371,7 +373,7 @@ export default function Treatments() {
       title: 'Hạn mức',
       key: 'quota',
       width: 170,
-      render: (_value, row) => <Tag>{quotaLabel(row)}</Tag>,
+      render: (_value, row) => <Tag>{quotaLabel(row, formatMoney)}</Tag>,
     },
     {
       title: 'Dịch vụ',
@@ -382,7 +384,7 @@ export default function Treatments() {
         return ids.length ? ids.map((id) => serviceById.get(id) ?? 'Dịch vụ').join(', ') : '—'
       },
     },
-    { title: 'Giá niêm yết', key: 'price', width: 170, render: (_value, row) => priceLabel(row) },
+    { title: 'Giá niêm yết', key: 'price', width: 170, render: (_value, row) => priceLabel(row, formatMoney) },
     {
       title: 'Thời hạn',
       key: 'validity',
@@ -602,22 +604,22 @@ export default function Treatments() {
                 </Form.Item>
               )}
               {selectedQuotaType === 'VALUE' && (
-                <Form.Item name="total_value" label="Định mức tiền (đ)" rules={[{ required: true, message: 'Nhập định mức tiền' }]}>
-                  <InputNumber min={1} precision={0} step={1000000} style={{ width: '100%' }} />
+                <Form.Item name="total_value" label="Định mức tiền" rules={[{ required: true, message: 'Nhập định mức tiền' }]}>
+                  <InputNumber min={1} precision={0} step={1000000} suffix={currencySymbol} style={{ width: '100%' }} />
                 </Form.Item>
               )}
             </Col>
           </Row>
           <Row gutter={16}>
             <Col span={8}>
-              <Form.Item name="list_price" label="Giá từ (đ)" rules={[{ required: true, message: 'Nhập giá niêm yết' }]}>
-                <InputNumber min={0} precision={0} step={100000} style={{ width: '100%' }} />
+              <Form.Item name="list_price" label="Giá từ" rules={[{ required: true, message: 'Nhập giá niêm yết' }]}>
+                <InputNumber min={0} precision={0} step={100000} suffix={currencySymbol} style={{ width: '100%' }} />
               </Form.Item>
             </Col>
             <Col span={8}>
               <Form.Item
                 name="list_price_max"
-                label="Giá đến (đ, tùy chọn)"
+                label="Giá đến (tùy chọn)"
                 dependencies={['list_price']}
                 rules={[({ getFieldValue }) => ({
                   validator: (_rule, value) => value == null || Number(value) >= Number(getFieldValue('list_price') ?? 0)
@@ -625,7 +627,7 @@ export default function Treatments() {
                     : Promise.reject(new Error('Giá đến phải lớn hơn hoặc bằng giá từ')),
                 })]}
               >
-                <InputNumber min={0} precision={0} step={100000} style={{ width: '100%' }} />
+                <InputNumber min={0} precision={0} step={100000} suffix={currencySymbol} style={{ width: '100%' }} />
               </Form.Item>
             </Col>
             <Col span={8}>

@@ -34,6 +34,7 @@ import { useGetTreatmentPackages } from '@/api/endpoints/services'
 import { postFiles } from '@/api/endpoints/files'
 import { useGetLookupLists } from '@/api/endpoints/settings'
 import { useGetUsers } from '@/api/endpoints/users'
+import { useBrandCurrency, useBrandDateTime } from '@/themeRuntime'
 import { useCustomerProfileAccess } from '@/utils/customerProfileAccess'
 import { Can } from '@casl/react'
 
@@ -98,8 +99,6 @@ const PAY_METHOD: Record<string, string> = {
   POS: 'POS',
   OTHER: 'Khác',
 }
-
-const fmtVnd = (v: unknown) => Number(v ?? 0).toLocaleString('vi-VN')
 
 const sessionUsage = (treatment: CustomerTreatment) => {
   const rawTotal = Number(treatment.sessions_total ?? 0)
@@ -289,6 +288,8 @@ function SessionTimeline({
   ctId,
   ctStatus,
   treatmentTotalAmount = 0,
+  formatMoney,
+  currencySymbol,
   staffOptions,
   isAdmin,
   onChanged,
@@ -299,6 +300,8 @@ function SessionTimeline({
   ctId: string
   ctStatus?: string
   treatmentTotalAmount?: number
+  formatMoney: (value: unknown) => string
+  currencySymbol: string
   staffOptions: { value: string; label: string }[]
   isAdmin?: boolean
   onChanged?: () => void
@@ -306,6 +309,7 @@ function SessionTimeline({
   focusSessionId?: string
   onFocusSessionHandled?: () => void
 }) {
+  const { formatDateTime, getDateTimeParts } = useBrandDateTime()
   const [sessions, setSessions] = useState<SessionRow[]>([])
   const [photos, setPhotos] = useState<Record<string, SessionPhoto[]>>({})
   const [loading, setLoading] = useState(true)
@@ -352,12 +356,13 @@ function SessionTimeline({
     setEditOpen(s)
     sessionSlotSequence.current += 1
     setSessionSlots([])
+    const scheduledParts = getDateTimeParts(s.scheduled_at)
     editForm.setFieldsValue({
       scheduled_date: s.scheduled_at
-        ? dayjs(s.scheduled_at)
+        ? scheduledParts ? dayjs(scheduledParts.date) : null
         : s.appointment?.appt_date ? dayjs(s.appointment.appt_date) : null,
       scheduled_time: s.scheduled_at
-        ? dayjs(s.scheduled_at).format('HH:mm')
+        ? scheduledParts?.time
         : s.appointment?.start_time?.slice(0, 5),
       staff_id: s.staff_id,
       session_value: s.session_value,
@@ -367,10 +372,10 @@ function SessionTimeline({
       products_used: s.products_used,
       result: s.result,
     })
-    if (!s.appointment_id && s.status === 'scheduled' && s.scheduled_at) {
-      void loadSessionSlots(s, dayjs(s.scheduled_at))
+    if (!s.appointment_id && s.status === 'scheduled' && scheduledParts) {
+      void loadSessionSlots(s, dayjs(scheduledParts.date))
     }
-  }, [editForm, loadSessionSlots])
+  }, [editForm, getDateTimeParts, loadSessionSlots])
 
   const staffName = (id?: string) => staffOptions.find((o) => o.value === id)?.label
 
@@ -509,11 +514,11 @@ function SessionTimeline({
                 <Space size={8} align="center" wrap>
                   <span style={{ fontWeight: 800, fontSize: 15.5, color: '#26211F' }}>
                     {s.scheduled_at
-                      ? dayjs(s.scheduled_at).format('DD/MM/YYYY · HH:mm')
+                      ? formatDateTime(s.scheduled_at)
                       : s.appointment?.appt_date
                         ? `${dayjs(s.appointment.appt_date).format('DD/MM/YYYY')} · ${s.appointment.start_time?.slice(0, 5) ?? ''}`
                         : s.started_at || s.done_at || s.completed_at
-                          ? `Thực hiện ${dayjs(s.started_at || s.done_at || s.completed_at).format('DD/MM/YYYY · HH:mm')}`
+                          ? `Thực hiện ${formatDateTime(s.started_at || s.done_at || s.completed_at)}`
                           : 'Chưa xếp lịch'}
                   </span>
                   <span
@@ -578,14 +583,14 @@ function SessionTimeline({
               <TRow label="KTV">
                 {s.staff_id ? <span style={{ fontWeight: 600 }}>{staffName(s.staff_id)}</span> : <CellVal v={null} />}
               </TRow>
-              {s.session_value != null && <TRow label="Giá trị buổi">{fmtVnd(s.session_value)}đ</TRow>}
+              {s.session_value != null && <TRow label="Giá trị buổi">{formatMoney(s.session_value)}</TRow>}
               {(s.started_at || s.done_at || s.completed_at) && (
                 <TRow label="Thời gian">
                   <span style={{ fontSize: 13, fontWeight: 600, color: '#5A5C60' }}>
                     {[
-                      s.started_at && `Bắt đầu ${dayjs(s.started_at).format('DD/MM HH:mm')}`,
-                      s.done_at && `Xong ${dayjs(s.done_at).format('DD/MM HH:mm')}`,
-                      s.completed_at && `Hoàn tất ${dayjs(s.completed_at).format('DD/MM HH:mm')}`,
+                      s.started_at && `Bắt đầu ${formatDateTime(s.started_at)}`,
+                      s.done_at && `Xong ${formatDateTime(s.done_at)}`,
+                      s.completed_at && `Hoàn tất ${formatDateTime(s.completed_at)}`,
                     ].filter(Boolean).join('  →  ')}
                   </span>
                 </TRow>
@@ -698,15 +703,15 @@ function SessionTimeline({
           </Row>
           <Form.Item
             name="session_value"
-            label="Giá trị buổi (đ) — dùng cho gói định mức tiền"
-            help={`Tối đa ${fmtVnd(maxSessionValue)}đ. Với gói định mức tiền, giá trị buổi này không được vượt quá số tiền còn lại trong gói.`}
+            label="Giá trị buổi — dùng cho gói định mức tiền"
+            help={`Tối đa ${formatMoney(maxSessionValue)}. Với gói định mức tiền, giá trị buổi này không được vượt quá số tiền còn lại trong gói.`}
             rules={[{
               type: 'number',
               max: maxSessionValue,
-              message: `Giá trị một buổi không được vượt quá tổng tiền liệu trình (${fmtVnd(maxSessionValue)}đ)`,
+              message: `Giá trị một buổi không được vượt quá tổng tiền liệu trình (${formatMoney(maxSessionValue)})`,
             }]}
           >
-            <InputNumber min={0} max={maxSessionValue} step={50000} style={{ width: '100%' }} />
+            <InputNumber min={0} max={maxSessionValue} step={50000} suffix={currencySymbol} style={{ width: '100%' }} />
           </Form.Item>
           <Divider plain style={{ fontSize: 11, color: '#A9ADB2', letterSpacing: 1, margin: '4px 0 14px' }}>
             ĐẦU BUỔI
@@ -739,6 +744,8 @@ function SessionTimeline({
 }
 
 export default function TreatmentCustomers() {
+  const { format: formatMoney, symbol: currencySymbol } = useBrandCurrency()
+  const { formatDateTime } = useBrandDateTime()
   const queryClient = useQueryClient()
   const { isAdmin } = useCustomerProfileAccess()
   const [filter, setFilter] = useState<string>('all')
@@ -995,7 +1002,7 @@ export default function TreatmentCustomers() {
         </Col>
         <Col xs={12} md={6}>
           <Card styles={{ body: { padding: '16px 20px' } }}>
-            <Statistic title="Tổng công nợ" value={stats.debt} suffix="đ" valueStyle={{ color: '#D97706' }} />
+            <Statistic title="Tổng công nợ" value={formatMoney(stats.debt)} valueStyle={{ color: '#D97706' }} />
           </Card>
         </Col>
       </Row>
@@ -1083,7 +1090,7 @@ export default function TreatmentCustomers() {
                 )
               }
               if (row.quota_type === 'VALUE') {
-                return <Tag color="gold">Định mức {fmtVnd(row.value_used)}/{fmtVnd(row.value_total)}đ</Tag>
+                return <Tag color="gold">Định mức {formatMoney(row.value_used)} / {formatMoney(row.value_total)}</Tag>
               }
               return <Tag color="gold">Trọn gói</Tag>
             },
@@ -1095,10 +1102,10 @@ export default function TreatmentCustomers() {
             render: (_: unknown, row: CustomerTreatment) => (
               <div>
                 <div style={{ fontSize: 13 }}>
-                  {fmtVnd(row.paid_amount)} / {fmtVnd(row.total_amount)}đ
+                  {formatMoney(row.paid_amount)} / {formatMoney(row.total_amount)}
                 </div>
                 <Tag color={(row.debt_amount ?? 0) > 0 ? 'orange' : 'green'} style={{ marginTop: 4 }}>
-                  {(row.debt_amount ?? 0) > 0 ? `Còn nợ ${fmtVnd(row.debt_amount)}đ` : 'Đã trả đủ'}
+                  {(row.debt_amount ?? 0) > 0 ? `Còn nợ ${formatMoney(row.debt_amount)}` : 'Đã trả đủ'}
                 </Tag>
               </div>
             ),
@@ -1179,8 +1186,8 @@ export default function TreatmentCustomers() {
               }))}
             />
           </Form.Item>
-          <Form.Item name="total_amount" label="Số tiền (đ)" rules={[{ required: true, message: 'Nhập số tiền' }]}>
-            <InputNumber min={0} step={100000} style={{ width: '100%' }} />
+          <Form.Item name="total_amount" label="Số tiền" rules={[{ required: true, message: 'Nhập số tiền' }]}>
+            <InputNumber min={0} step={100000} suffix={currencySymbol} style={{ width: '100%' }} />
           </Form.Item>
         </Form>
       </Modal>
@@ -1196,8 +1203,8 @@ export default function TreatmentCustomers() {
       >
         <Form form={payForm} layout="vertical" style={{ marginTop: 12 }}>
           {paymentLookupError && <Alert type="error" showIcon message="Không thể ghi nhận thanh toán" description={paymentLookupError} style={{ marginBottom: 16 }} />}
-          <Form.Item name="amount" label="Số tiền (đ)" rules={[{ required: true, message: 'Nhập số tiền' }]}>
-            <InputNumber min={1} step={50000} style={{ width: '100%' }} />
+          <Form.Item name="amount" label="Số tiền" rules={[{ required: true, message: 'Nhập số tiền' }]}>
+            <InputNumber min={1} step={50000} suffix={currencySymbol} style={{ width: '100%' }} />
           </Form.Item>
           <Form.Item name="method" label="Phương thức" rules={[{ required: true }]}>
             <Select
@@ -1259,7 +1266,7 @@ export default function TreatmentCustomers() {
                   {detail.quota_type === 'SESSIONS'
                     ? `Đã dùng ${sessionUsage(detail).used}/${sessionUsage(detail).total} buổi`
                     : detail.quota_type === 'VALUE'
-                      ? `${fmtVnd(detail.value_used)}/${fmtVnd(detail.value_total)}đ`
+                      ? `${formatMoney(detail.value_used)} / ${formatMoney(detail.value_total)}`
                       : 'Trọn gói'}
                 </div>
                 {treatmentProgress(detail) !== null && (
@@ -1282,12 +1289,12 @@ export default function TreatmentCustomers() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 9, borderTop: '1px solid var(--brand-border-soft)', paddingTop: 12 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
                     <span style={{ color: '#3F4145', fontWeight: 600 }}>Đã trả</span>
-                    <b style={{ fontWeight: 700 }}>{fmtVnd(detail.paid_amount)}đ</b>
+                    <b style={{ fontWeight: 700 }}>{formatMoney(detail.paid_amount)}</b>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
                     <span style={{ color: '#3F4145', fontWeight: 600 }}>Công nợ</span>
                     <b style={{ fontWeight: 700, color: (detail.debt_amount ?? 0) > 0 ? '#D97706' : '#16A34A' }}>
-                      {fmtVnd(detail.debt_amount)}đ
+                      {formatMoney(detail.debt_amount)}
                     </b>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
@@ -1313,7 +1320,7 @@ export default function TreatmentCustomers() {
                       setPayOpen(true)
                     }}
                   >
-                    Thu tiền ({fmtVnd(detail.debt_amount)}đ)
+                    Thu tiền ({formatMoney(detail.debt_amount)})
                   </Button>
                 )}
                 {detail.status === 'ACTIVE' && (
@@ -1339,6 +1346,8 @@ export default function TreatmentCustomers() {
                         ctId={detail.id}
                         ctStatus={detail.status}
                         treatmentTotalAmount={detail.total_amount}
+                        formatMoney={formatMoney}
+                        currencySymbol={currencySymbol}
                         staffOptions={staffOptions}
                         isAdmin={isAdmin}
                         onChanged={refresh}
@@ -1366,14 +1375,14 @@ export default function TreatmentCustomers() {
                             width: 170,
                             render: (_, p) => {
                               const t = p.paid_at || p.created_at
-                              return t ? dayjs(t).format('DD/MM/YYYY HH:mm') : '—'
+                              return formatDateTime(t)
                             },
                           },
                           {
                             title: 'Số tiền',
                             dataIndex: 'amount',
                             width: 140,
-                            render: (v) => <b>{fmtVnd(v)}đ</b>,
+                            render: (v) => <b>{formatMoney(v)}</b>,
                           },
                           {
                             title: 'Phương thức',

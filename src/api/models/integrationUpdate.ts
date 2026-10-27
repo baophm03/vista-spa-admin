@@ -9,9 +9,10 @@ import type { IntegrationUpdateConfigPublic } from './integrationUpdateConfigPub
 import type { IntegrationUpdateSecrets } from './integrationUpdateSecrets';
 
 /**
- * SMTP integration configuration
+ * SMTP, HTTP JSON Email API, Zalo OA, or ZBS integration configuration
  */
 export interface IntegrationUpdate {
+  /** For EMAIL_SMTP provide host, port, security, username, from_name, and from_email. For EMAIL_API provide endpoint, auth_header, auth_prefix, from_name, from_email, test_email, and request_template. */
   config_public: IntegrationUpdateConfigPublic;
   secrets?: IntegrationUpdateSecrets;
   clear_secret?: boolean;

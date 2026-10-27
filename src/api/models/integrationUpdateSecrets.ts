@@ -9,4 +9,12 @@
 export type IntegrationUpdateSecrets = {
   /** @maxLength 2048 */
   password?: string;
+  /** @maxLength 2048 */
+  api_key?: string;
+  /** @maxLength 2048 */
+  access_token?: string;
+  /** @maxLength 2048 */
+  refresh_token?: string;
+  /** @maxLength 2048 */
+  app_secret?: string;
 };

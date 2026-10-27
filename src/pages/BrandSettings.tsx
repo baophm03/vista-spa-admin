@@ -46,7 +46,7 @@ export default function BrandSettings() {
 
   useEffect(() => {
     const data = settingsQuery.data
-    if (!data) return
+    if (!data?.brand || !data?.locale) return
     form.setFieldsValue({
       brand: { name: data.brand.name, logo_file_id: data.brand.logo_file_id ?? '' },
       locale: data.locale,
@@ -67,10 +67,14 @@ export default function BrandSettings() {
         },
         locale: values.locale,
       } as BrandSettingsUpdate),
-    onSuccess: (result) => {
+    onSuccess: async (result) => {
       const data = pickData<BrandSettings>(result)
-      queryClient.setQueryData(getGetSettingsBrandQueryKey(), result)
-      if (data) applyBrandSettings(data)
+      if (data?.brand && data?.locale) {
+        queryClient.setQueryData(getGetSettingsBrandQueryKey(), data)
+        applyBrandSettings(data)
+      } else {
+        await queryClient.invalidateQueries({ queryKey: getGetSettingsBrandQueryKey() })
+      }
       message.success('Đã lưu cấu hình thương hiệu')
     },
     onError: (error) => message.error(errorMessage(error)),

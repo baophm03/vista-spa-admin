@@ -1,9 +1,9 @@
 import { Card, Descriptions, Empty, Image, Space, Table, Tag, Typography } from 'antd'
-import dayjs from 'dayjs'
 import type { CustomerTreatment } from '@/api/models/customerTreatment'
 import type { PaymentLog } from '@/api/models/paymentLog'
 import type { SessionPhoto } from '@/api/models/sessionPhoto'
 import type { TreatmentSession } from '@/api/models/treatmentSession'
+import { useBrandCurrency, useBrandDateTime } from '@/themeRuntime'
 
 interface Props {
   treatment: CustomerTreatment & { package_type?: { name?: string } | null }
@@ -50,14 +50,12 @@ function localizedLabel(value: unknown, labels: Record<string, string>) {
   return labels[raw] ?? labels[raw.toUpperCase()] ?? (raw || '—')
 }
 
-function money(value: unknown) {
-  return Number(value ?? 0).toLocaleString('vi-VN') + ' ₫'
-}
-
 /** Ảnh có thể là URL tuyệt đối (MinIO) hoặc đường dẫn tương đối (/images, /files — đã được vite proxy). */
 const mediaSource = (url?: string | null) => (!url ? undefined : url)
 
 export default function CustomerTreatmentDetailCard({ treatment, sessions, payments, photos }: Props) {
+  const { format: money } = useBrandCurrency()
+  const { formatDateTime } = useBrandDateTime()
   const title = (treatment.package_snapshot?.name as string | undefined) || treatment.package_type?.name || 'Gói dịch vụ'
   const treatmentStatus = TREATMENT_STATUS[String(treatment.status ?? '').toUpperCase()] ?? { label: treatment.status || '—', color: 'default' }
   const paymentStatus = PAYMENT_STATUS[String(treatment.payment_status ?? '').toUpperCase()] ?? { label: treatment.payment_status || '—', color: 'default' }
@@ -81,7 +79,7 @@ export default function CustomerTreatmentDetailCard({ treatment, sessions, payme
       <Typography.Title level={5} className="mt-[18px]">Lịch sử buổi</Typography.Title>
       {sessions.length ? <Table<TreatmentSession> rowKey="id" size="small" pagination={false} dataSource={sessions} columns={[
         { title: 'Buổi', dataIndex: 'session_no', width: 70 },
-        { title: 'Ngày', dataIndex: 'scheduled_at', render: (value: string | null) => value ? dayjs(value).format('DD/MM/YYYY HH:mm') : '—' },
+        { title: 'Ngày', dataIndex: 'scheduled_at', render: (value: string | null) => formatDateTime(value) },
         { title: 'Trạng thái', dataIndex: 'status', render: (value: string | null) => {
           const status = value ? (SESSION_STATUS[value] ?? SESSION_STATUS[value.toLowerCase()]) : undefined
           return <Tag color={status?.color ?? 'default'}>{status?.label ?? value ?? '—'}</Tag>
@@ -91,7 +89,7 @@ export default function CustomerTreatmentDetailCard({ treatment, sessions, payme
 
       <Typography.Title level={5} className="mt-[18px]">Thanh toán</Typography.Title>
       {payments.length ? <Table<PaymentLog> rowKey="id" size="small" pagination={false} dataSource={payments} columns={[
-        { title: 'Thời gian', dataIndex: 'paid_at', render: (value: string | null) => value ? dayjs(value).format('DD/MM/YYYY HH:mm') : '—' },
+        { title: 'Thời gian', dataIndex: 'paid_at', render: (value: string | null) => formatDateTime(value) },
         { title: 'Số tiền', dataIndex: 'amount', render: (value: number) => money(value) },
         { title: 'Phương thức', dataIndex: 'method', render: (value: string) => localizedLabel(value, PAYMENT_METHOD) },
         { title: 'Ghi chú', dataIndex: 'note', ellipsis: true, render: (value: string | null) => value || '—' },

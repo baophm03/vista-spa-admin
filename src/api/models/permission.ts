@@ -14,6 +14,7 @@ export interface Permission {
   id: string;
   key: string;
   module: string;
+  action: string;
   description?: PermissionDescription;
   created_at?: string;
 }

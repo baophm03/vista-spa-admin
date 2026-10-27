@@ -43,7 +43,7 @@ import {
 import dayjs, { Dayjs } from 'dayjs'
 import { pickData } from '@/api/helpers'
 import { useAbility } from '@casl/react'
-import { useBrandColors } from '@/themeRuntime'
+import { useBrandColors, useBrandCurrency } from '@/themeRuntime'
 import { toCsv, downloadCsv, type CsvColumn } from '@/utils/csv'
 import {
   getBranches,
@@ -109,9 +109,6 @@ const SOURCE_LABEL: Record<string, string> = {
   referral_customer: 'Giới thiệu bởi khách cũ',
 }
 
-const fmtMoney = (v: unknown) => Number(v ?? 0).toLocaleString('vi-VN') + ' ₫'
-const fmtMillion = (v: number) => (v / 1_000_000).toFixed(1) + ' tr'
-
 const KPI_ICON = (bg: string, color: string): CSSProperties => ({
   width: 40, height: 40, borderRadius: 12, background: bg, color,
   display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18,
@@ -136,6 +133,7 @@ export type ReportSection = 'money' | 'customers' | 'ops'
 
 export default function ReportsTab({ section }: { section: ReportSection }) {
   const brand = useBrandColors()
+  const { format: fmtMoney, formatCompact: fmtCompactMoney } = useBrandCurrency()
   const rankColors = [brand.primary, '#D9A441', '#3B5BDB', '#16A34A', '#E06666']
   const ability = useAbility()
   /** report.read là key tổng; các key mịn report.<loại>.read cho role REC.
@@ -256,11 +254,11 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
   const commissionTotal = commissionPeriod.reduce((s, r) => s + r.total, 0)
 
   const kpis: Array<{ title: string; value: string; icon: ReactElement; bg: string; color: string; perm: string }> = [
-    { title: 'Doanh thu đã thu', value: fmtMillion(revenueTotal * 1_000_000), icon: <DollarOutlined />, bg: '#E4F5EC', color: '#16A34A', perm: 'report.revenue.read' },
-    { title: 'Công nợ còn lại', value: fmtMillion(debtsTotal), icon: <WalletOutlined />, bg: '#FDECEC', color: '#E06666', perm: 'report.debt.read' },
+    { title: 'Doanh thu đã thu', value: fmtCompactMoney(revenueTotal * 1_000_000), icon: <DollarOutlined />, bg: '#E4F5EC', color: '#16A34A', perm: 'report.revenue.read' },
+    { title: 'Công nợ còn lại', value: fmtCompactMoney(debtsTotal), icon: <WalletOutlined />, bg: '#FDECEC', color: '#E06666', perm: 'report.debt.read' },
     { title: 'Khách mới', value: String(newCustTotal), icon: <UserAddOutlined />, bg: brand.tint, color: brand.primary, perm: 'report.customer.read' },
     { title: 'Buổi hoàn tất', value: String(sessionsPeriod.reduce((s, r) => s + r.sessions_used, 0)), icon: <CheckCircleOutlined />, bg: '#E8EDFB', color: '#3B5BDB', perm: 'report.session.read' },
-    { title: 'Hoa hồng', value: fmtMillion(commissionTotal * 1_000_000), icon: <TeamOutlined />, bg: '#FBF3DF', color: '#D9A441', perm: 'report.commission.read' },
+    { title: 'Hoa hồng', value: fmtCompactMoney(commissionTotal * 1_000_000), icon: <TeamOutlined />, bg: '#FBF3DF', color: '#D9A441', perm: 'report.commission.read' },
   ].filter((k) => canReport(k.perm))
 
   const activeFilterCount =
@@ -429,9 +427,9 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke={brand.border} vertical={false} />
                     <XAxis dataKey="period" tick={{ fontSize: 11, fill: '#6F7071' }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 11, fill: '#6F7071' }} axisLine={false} tickLine={false} />
-                    <Tooltip contentStyle={tooltipStyle} formatter={(v: any) => `${Number(v).toFixed(1)} tr`} />
-                    <Area type="monotone" dataKey="revenue" name="Doanh thu (tr)" stroke={brand.primary} strokeWidth={2.5} fill="url(#rptRevGrad)" />
+                    <YAxis tick={{ fontSize: 11, fill: '#6F7071' }} tickFormatter={(v) => fmtCompactMoney(Number(v) * 1_000_000)} axisLine={false} tickLine={false} />
+                    <Tooltip contentStyle={tooltipStyle} formatter={(v: any) => fmtCompactMoney(Number(v) * 1_000_000)} />
+                    <Area type="monotone" dataKey="revenue" name="Doanh thu" stroke={brand.primary} strokeWidth={2.5} fill="url(#rptRevGrad)" />
                   </AreaChart>
                 </ResponsiveContainer>
               )}
@@ -671,7 +669,7 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
   const commissionSection = canSeeCommission && (
     <Card
       style={{ marginTop: 16 }}
-      title={`Hoa hồng — tổng ${commissionTotal.toFixed(1)} tr`}
+      title={`Hoa hồng — tổng ${fmtCompactMoney(commissionTotal * 1_000_000)}`}
       extra={<CsvButton filename="bao-cao-hoa-hong" rows={commissions.by_actor ?? []} columns={[
         { header: 'Đối tượng', value: (r: any) => ACTOR_LABEL[r.actor_type] ?? r.actor_type },
         { header: 'Tên', value: (r: any) => r.actor_name },
@@ -688,8 +686,8 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
               <BarChart data={commissionPeriod}>
                 <CartesianGrid strokeDasharray="3 3" stroke={brand.border} vertical={false} />
                 <XAxis dataKey="period" tick={{ fontSize: 11, fill: '#6F7071' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 11, fill: '#6F7071' }} axisLine={false} tickLine={false} />
-                <Tooltip contentStyle={tooltipStyle} formatter={(v: any) => `${Number(v).toFixed(1)} tr`} />
+                <YAxis tick={{ fontSize: 11, fill: '#6F7071' }} tickFormatter={(v) => fmtCompactMoney(Number(v) * 1_000_000)} axisLine={false} tickLine={false} />
+                <Tooltip contentStyle={tooltipStyle} formatter={(v: any) => fmtCompactMoney(Number(v) * 1_000_000)} />
                 <Bar dataKey="total" name="Hoa hồng (tr)" fill="#E06666" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>

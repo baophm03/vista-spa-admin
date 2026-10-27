@@ -51,6 +51,7 @@ import type {
   GetSettingsBrand200,
   GetSettingsParams,
   GetSkinTypes200,
+  IntegrationUpdate,
   InternalErrorResponse,
   NotFoundResponse,
   PostCustomFieldDefs200,
@@ -58,7 +59,6 @@ import type {
   PostDiscountRules200,
   PostDiscountRulesBody,
   PostIntegrationsProviderTest200,
-  PostIntegrationsProviderTestBody,
   PostLookupLists200,
   PostLookupListsBody,
   PostLookupListsIdItems200,
@@ -68,7 +68,6 @@ import type {
   PutDiscountRulesId200,
   PutDiscountRulesIdBody,
   PutIntegrationsProvider200,
-  PutIntegrationsProviderBody,
   PutLookupItemsId200,
   PutLookupItemsIdBody,
   PutLookupListsId200,
@@ -1576,15 +1575,15 @@ export const useDeleteLookupItemsId = <TError = UnauthorizedResponse | Forbidden
  * @summary Cập nhật cấu hình tích hợp
  */
 export const putIntegrationsProvider = (
-    provider: 'smtp' | 'zalo' | 'sms',
-    putIntegrationsProviderBody: PutIntegrationsProviderBody,
+    provider: 'ZALO_OA' | 'ZALO_ZBS' | 'EMAIL_SMTP' | 'EMAIL_API',
+    integrationUpdate: IntegrationUpdate,
  ) => {
       
       
       return customInstance<PutIntegrationsProvider200>(
       {url: `/integrations/${provider}`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
-      data: putIntegrationsProviderBody
+      data: integrationUpdate
     },
       );
     }
@@ -1592,8 +1591,8 @@ export const putIntegrationsProvider = (
 
 
 export const getPutIntegrationsProviderMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putIntegrationsProvider>>, TError,{provider: 'smtp' | 'zalo' | 'sms';data: PutIntegrationsProviderBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putIntegrationsProvider>>, TError,{provider: 'smtp' | 'zalo' | 'sms';data: PutIntegrationsProviderBody}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putIntegrationsProvider>>, TError,{provider: 'ZALO_OA' | 'ZALO_ZBS' | 'EMAIL_SMTP' | 'EMAIL_API';data: IntegrationUpdate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putIntegrationsProvider>>, TError,{provider: 'ZALO_OA' | 'ZALO_ZBS' | 'EMAIL_SMTP' | 'EMAIL_API';data: IntegrationUpdate}, TContext> => {
 
 const mutationKey = ['putIntegrationsProvider'];
 const {mutation: mutationOptions} = options ?
@@ -1605,7 +1604,7 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putIntegrationsProvider>>, {provider: 'smtp' | 'zalo' | 'sms';data: PutIntegrationsProviderBody}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putIntegrationsProvider>>, {provider: 'ZALO_OA' | 'ZALO_ZBS' | 'EMAIL_SMTP' | 'EMAIL_API';data: IntegrationUpdate}> = (props) => {
           const {provider,data} = props ?? {};
 
           return  putIntegrationsProvider(provider,data,)
@@ -1617,18 +1616,18 @@ const {mutation: mutationOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type PutIntegrationsProviderMutationResult = NonNullable<Awaited<ReturnType<typeof putIntegrationsProvider>>>
-    export type PutIntegrationsProviderMutationBody = PutIntegrationsProviderBody
+    export type PutIntegrationsProviderMutationBody = IntegrationUpdate
     export type PutIntegrationsProviderMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
  * @summary Cập nhật cấu hình tích hợp
  */
 export const usePutIntegrationsProvider = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putIntegrationsProvider>>, TError,{provider: 'smtp' | 'zalo' | 'sms';data: PutIntegrationsProviderBody}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putIntegrationsProvider>>, TError,{provider: 'ZALO_OA' | 'ZALO_ZBS' | 'EMAIL_SMTP' | 'EMAIL_API';data: IntegrationUpdate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof putIntegrationsProvider>>,
         TError,
-        {provider: 'smtp' | 'zalo' | 'sms';data: PutIntegrationsProviderBody},
+        {provider: 'ZALO_OA' | 'ZALO_ZBS' | 'EMAIL_SMTP' | 'EMAIL_API';data: IntegrationUpdate},
         TContext
       > => {
 
@@ -1831,12 +1830,12 @@ export const prefetchGetIntegrationsQuery = async <TData = Awaited<ReturnType<ty
 
 
 /**
- * POST `/integrations/{provider}/test` — tích hợp. Cần quyền `brand.admin`. Xử lý bởi `integrationService.test`.
+ * POST `/integrations/{provider}/test` — tích hợp. Với EMAIL_API, request gửi một thư kiểm tra thật tới `config_public.test_email`. Cần quyền `brand.admin`. Xử lý bởi `integrationService.test`.
  * @summary Kiểm tra kết nối của tích hợp
  */
 export const postIntegrationsProviderTest = (
-    provider: 'smtp' | 'zalo' | 'sms',
-    postIntegrationsProviderTestBody: PostIntegrationsProviderTestBody,
+    provider: 'ZALO_OA' | 'ZALO_ZBS' | 'EMAIL_SMTP' | 'EMAIL_API',
+    integrationUpdate: IntegrationUpdate,
  signal?: AbortSignal
 ) => {
       
@@ -1844,7 +1843,7 @@ export const postIntegrationsProviderTest = (
       return customInstance<PostIntegrationsProviderTest200>(
       {url: `/integrations/${provider}/test`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: postIntegrationsProviderTestBody, signal
+      data: integrationUpdate, signal
     },
       );
     }
@@ -1852,8 +1851,8 @@ export const postIntegrationsProviderTest = (
 
 
 export const getPostIntegrationsProviderTestMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postIntegrationsProviderTest>>, TError,{provider: 'smtp' | 'zalo' | 'sms';data: PostIntegrationsProviderTestBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postIntegrationsProviderTest>>, TError,{provider: 'smtp' | 'zalo' | 'sms';data: PostIntegrationsProviderTestBody}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postIntegrationsProviderTest>>, TError,{provider: 'ZALO_OA' | 'ZALO_ZBS' | 'EMAIL_SMTP' | 'EMAIL_API';data: IntegrationUpdate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postIntegrationsProviderTest>>, TError,{provider: 'ZALO_OA' | 'ZALO_ZBS' | 'EMAIL_SMTP' | 'EMAIL_API';data: IntegrationUpdate}, TContext> => {
 
 const mutationKey = ['postIntegrationsProviderTest'];
 const {mutation: mutationOptions} = options ?
@@ -1865,7 +1864,7 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postIntegrationsProviderTest>>, {provider: 'smtp' | 'zalo' | 'sms';data: PostIntegrationsProviderTestBody}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postIntegrationsProviderTest>>, {provider: 'ZALO_OA' | 'ZALO_ZBS' | 'EMAIL_SMTP' | 'EMAIL_API';data: IntegrationUpdate}> = (props) => {
           const {provider,data} = props ?? {};
 
           return  postIntegrationsProviderTest(provider,data,)
@@ -1877,18 +1876,18 @@ const {mutation: mutationOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type PostIntegrationsProviderTestMutationResult = NonNullable<Awaited<ReturnType<typeof postIntegrationsProviderTest>>>
-    export type PostIntegrationsProviderTestMutationBody = PostIntegrationsProviderTestBody
+    export type PostIntegrationsProviderTestMutationBody = IntegrationUpdate
     export type PostIntegrationsProviderTestMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
  * @summary Kiểm tra kết nối của tích hợp
  */
 export const usePostIntegrationsProviderTest = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postIntegrationsProviderTest>>, TError,{provider: 'smtp' | 'zalo' | 'sms';data: PostIntegrationsProviderTestBody}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postIntegrationsProviderTest>>, TError,{provider: 'ZALO_OA' | 'ZALO_ZBS' | 'EMAIL_SMTP' | 'EMAIL_API';data: IntegrationUpdate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof postIntegrationsProviderTest>>,
         TError,
-        {provider: 'smtp' | 'zalo' | 'sms';data: PostIntegrationsProviderTestBody},
+        {provider: 'ZALO_OA' | 'ZALO_ZBS' | 'EMAIL_SMTP' | 'EMAIL_API';data: IntegrationUpdate},
         TContext
       > => {
 

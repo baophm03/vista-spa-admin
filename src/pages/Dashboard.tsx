@@ -23,7 +23,7 @@ import dayjs from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
 import { pickData, pickMeta } from '@/api/helpers'
 import { Can } from '@casl/react'
-import { useBrandColors } from '@/themeRuntime'
+import { useBrandColors, useBrandCurrency } from '@/themeRuntime'
 import { getReportsAppointments, getReportsDebts, getReportsRanks, getReportsRevenue } from '@/api/endpoints/reports'
 import { getCustomerProfiles } from '@/api/endpoints/customer-profiles'
 import { getAppointments } from '@/api/endpoints/appointments'
@@ -66,6 +66,7 @@ const STATUS_MAP: Record<string, { label: string; color: string }> = {
 
 function Overview() {
   const brand = useBrandColors()
+  const { formatCompact: formatCompactMoney } = useBrandCurrency()
   const rankColors = [brand.primary, '#D9A441', '#3B5BDB', '#16A34A', '#E06666']
   const [totalCustomers, setTotalCustomers] = useState<number | null>(null)
   const [revenueData, setRevenueData] = useState<{ period: string; revenue: number }[]>([])
@@ -142,8 +143,8 @@ function Overview() {
           {
             key: 'revenue',
             title: 'Doanh thu 6 tháng',
-            value: totalRevenue.toFixed(1),
-            suffix: 'tr',
+            value: formatCompactMoney(totalRevenue * 1_000_000),
+            suffix: '',
             note: '',
             icon: <DollarOutlined />,
             bg: '#E4F5EC',
@@ -152,8 +153,8 @@ function Overview() {
           {
             key: 'debt',
             title: 'Công nợ hiện tại',
-            value: debtTotal === null ? '—' : (debtTotal / 1_000_000).toFixed(1),
-            suffix: debtTotal === null ? '' : 'tr',
+            value: debtTotal === null ? '—' : formatCompactMoney(debtTotal),
+            suffix: '',
             note: '',
             icon: <WalletOutlined />,
             bg: '#FDECEC',
@@ -196,13 +197,13 @@ function Overview() {
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke={brand.border} vertical={false} />
                   <XAxis dataKey="period" tick={{ fontSize: 12, fill: '#6F7071' }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 12, fill: '#6F7071' }} axisLine={false} tickLine={false} />
-                  <Tooltip contentStyle={tooltipStyle} formatter={(v: any) => `${Number(v).toFixed(1)} tr`} />
+                  <YAxis tick={{ fontSize: 12, fill: '#6F7071' }} tickFormatter={(v) => formatCompactMoney(Number(v) * 1_000_000)} axisLine={false} tickLine={false} />
+                  <Tooltip contentStyle={tooltipStyle} formatter={(v: any) => formatCompactMoney(Number(v) * 1_000_000)} />
                   <Legend wrapperStyle={{ fontSize: 13 }} />
                   <Area
                     type="monotone"
                     dataKey="revenue"
-                    name="Doanh thu (tr)"
+                    name="Doanh thu"
                     stroke={brand.primary}
                     strokeWidth={2.5}
                     fill="url(#revGrad)"

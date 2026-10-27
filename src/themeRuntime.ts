@@ -166,11 +166,32 @@ export function useBrandColors() {
   }
 }
 
-export function formatCurrency(value: unknown): string {
-  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: runtime.currency }).format(Number(value ?? 0))
+export function formatCurrency(value: unknown, currency = runtime.currency): string {
+  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency }).format(Number(value ?? 0))
 }
 
-export function formatDate(value: string | Date | null | undefined): string {
+export function getCurrencySymbol(currency = runtime.currency): string {
+  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency })
+    .formatToParts(0)
+    .find((part) => part.type === 'currency')?.value ?? currency
+}
+
+export function useBrandCurrency() {
+  const { currency } = useBrandRuntime()
+  return {
+    currency,
+    symbol: getCurrencySymbol(currency),
+    format: (value: unknown) => formatCurrency(value, currency),
+    formatCompact: (value: unknown) => new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency,
+      notation: 'compact',
+      maximumFractionDigits: 1,
+    }).format(Number(value ?? 0)),
+  }
+}
+
+export function formatDate(value: string | Date | null | undefined, timezone = runtime.timezone): string {
   if (!value) return '—'
   const raw = typeof value === 'string' ? value : value.toISOString()
   const isDateOnly = /^\d{4}-\d{2}-\d{2}$/.test(raw)
@@ -178,19 +199,52 @@ export function formatDate(value: string | Date | null | undefined): string {
   if (Number.isNaN(date.getTime())) return '—'
   return new Intl.DateTimeFormat('vi-VN', {
     dateStyle: 'short',
-    timeZone: isDateOnly ? 'UTC' : runtime.timezone,
+    timeZone: isDateOnly ? 'UTC' : timezone,
   }).format(date)
 }
 
-export function formatDateTime(value: string | Date | null | undefined): string {
+export function formatDateTime(value: string | Date | null | undefined, timezone = runtime.timezone): string {
   if (!value) return '—'
+  const parts = getConfiguredDateTimeParts(value, timezone)
+  if (!parts) return '—'
+  const [year, month, day] = parts.date.split('-')
+  return `${day}/${month}/${year} ${parts.time}`
+}
+
+export function getConfiguredDateTimeParts(
+  value: string | Date | null | undefined,
+  timezone = runtime.timezone,
+): { date: string; time: string } | null {
+  if (!value) return null
   const date = value instanceof Date ? value : new Date(value)
-  if (Number.isNaN(date.getTime())) return '—'
-  return new Intl.DateTimeFormat('vi-VN', {
-    dateStyle: 'short',
-    timeStyle: 'short',
-    timeZone: runtime.timezone,
-  }).format(date)
+  if (Number.isNaN(date.getTime())) return null
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: timezone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(date)
+  const part = (type: Intl.DateTimeFormatPartTypes) => parts.find((item) => item.type === type)?.value
+  const year = part('year')
+  const month = part('month')
+  const day = part('day')
+  const hour = part('hour')
+  const minute = part('minute')
+  if (!year || !month || !day || !hour || !minute) return null
+  return { date: `${year}-${month}-${day}`, time: `${hour}:${minute}` }
+}
+
+export function useBrandDateTime() {
+  const { timezone } = useBrandRuntime()
+  return {
+    timezone,
+    formatDate: (value: string | Date | null | undefined) => formatDate(value, timezone),
+    formatDateTime: (value: string | Date | null | undefined) => formatDateTime(value, timezone),
+    getDateTimeParts: (value: string | Date | null | undefined) => getConfiguredDateTimeParts(value, timezone),
+  }
 }
 
 export function formatCalendarDateTime(date: string, time?: string | null): string {

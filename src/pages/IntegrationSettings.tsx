@@ -4,9 +4,9 @@ import { Alert, Button, Card, Col, Form, Input, InputNumber, Row, Select, Space,
 import { CheckCircleOutlined, LinkOutlined, SaveOutlined } from '@ant-design/icons'
 import PageTitle from '@/components/base/PageTitle'
 import { errorMessage, pickData } from '@/api/helpers'
+import type { IntegrationUpdate } from '@/api/models/integrationUpdate'
 import type { IntegrationStatus } from '@/api/models/integrationStatus'
-import type { PutIntegrationsProviderBody } from '@/api/models/putIntegrationsProviderBody'
-import type { PostIntegrationsProviderTestBody } from '@/api/models/postIntegrationsProviderTestBody'
+import type { IntegrationStatusProvider } from '@/api/models/integrationStatusProvider'
 import {
   getIntegrations,
   getGetIntegrationsQueryKey,
@@ -24,10 +24,182 @@ interface SmtpConfig {
   from_email: string
 }
 
-// Spec gen enum path là 'smtp' nhưng backend thực tế nhận provider 'EMAIL_SMTP' (integrationService)
-const SMTP_PROVIDER = 'EMAIL_SMTP' as unknown as 'smtp'
+interface EmailApiConfig {
+  endpoint: string
+  auth_header: string
+  auth_prefix: string
+  from_name: string
+  from_email: string
+  test_email: string
+  request_template: string
+}
+
+const SMTP_PROVIDER: IntegrationStatusProvider = 'EMAIL_SMTP'
+const EMAIL_API_PROVIDER: IntegrationStatusProvider = 'EMAIL_API'
+
+type ZaloProvider = Extract<IntegrationStatusProvider, 'ZALO_OA' | 'ZALO_ZBS'>
+
+interface ZaloConfig {
+  oa_id: string
+  app_id: string
+  template_id?: string
+}
+
+interface ZaloSecrets {
+  access_token?: string
+  refresh_token?: string
+  app_secret?: string
+}
+
+function ZaloIntegrationCard({ provider, title, row, canEdit }: {
+  provider: ZaloProvider
+  title: string
+  row?: IntegrationStatus
+  canEdit: boolean
+}) {
+  const [form] = Form.useForm<ZaloConfig>()
+  const queryClient = useQueryClient()
+  const [secrets, setSecrets] = useState<ZaloSecrets>({})
+  const [clearSecret, setClearSecret] = useState(false)
+  const [enabled, setEnabled] = useState(false)
+  const [testResult, setTestResult] = useState<{ ok: boolean; message: string } | null>(null)
+  const isZbs = provider === 'ZALO_ZBS'
+
+  useEffect(() => {
+    const saved = (row?.config_public ?? {}) as Partial<ZaloConfig>
+    const defaults: ZaloConfig = isZbs
+      ? { oa_id: '', app_id: '', template_id: '' }
+      : { oa_id: '', app_id: '' }
+    form.setFieldsValue({ ...defaults, ...saved })
+    setEnabled(row?.enabled ?? false)
+    setSecrets({})
+    setClearSecret(false)
+    setTestResult(null)
+  }, [form, isZbs, row])
+
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: getGetIntegrationsQueryKey() })
+  const testMutation = useMutation({
+    mutationFn: async (payload: IntegrationUpdate) => {
+      const result = await postIntegrationsProviderTest(provider, payload)
+      return pickData<{ ok?: boolean; message?: string }>(result) ?? {}
+    },
+    onSuccess: (result) => setTestResult({ ok: !!result.ok, message: result.message ?? '' }),
+    onError: (error) => setTestResult({ ok: false, message: errorMessage(error) }),
+  })
+  const saveMutation = useMutation({
+    mutationFn: async (payload: IntegrationUpdate) => {
+      const result = await putIntegrationsProvider(provider, payload)
+      return pickData<{ status?: string; message?: string }>(result) ?? {}
+    },
+    onSuccess: async (result) => {
+      await invalidate()
+      setSecrets({})
+      setClearSecret(false)
+      setTestResult(result.status === 'ERROR' ? { ok: false, message: result.message ?? '' } : { ok: true, message: result.message ?? '' })
+      if (result.status === 'ERROR') message.error(result.message)
+      else message.success(result.message)
+    },
+    onError: (error) => message.error(errorMessage(error)),
+  })
+
+  const draft = async (): Promise<IntegrationUpdate> => {
+    const values = await form.validateFields()
+    const config = isZbs
+      ? { ...values, template_id: values.template_id?.trim() ?? '' }
+      : { oa_id: values.oa_id?.trim() ?? '', app_id: values.app_id?.trim() ?? '' }
+    return {
+      config_public: config,
+      ...(Object.values(secrets).some(Boolean) ? { secrets } : {}),
+      ...(clearSecret ? { clear_secret: true } : {}),
+    }
+  }
+
+  const onTest = async () => {
+    setTestResult(null)
+    try { testMutation.mutate(await draft()) }
+    catch (error) { message.error(errorMessage(error)) }
+  }
+
+  const onSave = async () => {
+    try { saveMutation.mutate({ ...(await draft()), enabled }) }
+    catch (error) { message.error(errorMessage(error)) }
+  }
+
+  const changeSecret = (field: keyof ZaloSecrets, value: string) => {
+    setSecrets((current) => ({ ...current, [field]: value }))
+    setTestResult(null)
+  }
+
+  return (
+    <Card className="mt-5!" title={title} extra={statusTag(row)}>
+      <Alert className="mb-4" type="info" showIcon message="Kiểm tra chỉ truy vấn quyền và hạn mức; không gửi tin và không phát sinh phí." />
+      <Form form={form} layout="vertical" disabled={!canEdit} onValuesChange={() => setTestResult(null)}>
+        <Row gutter={16}>
+          <Col xs={24} md={12}>
+            <Form.Item name="oa_id" label="OA ID">
+              <Input inputMode="numeric" placeholder="ID Official Account" />
+            </Form.Item>
+          </Col>
+          <Col xs={24} md={12}>
+            <Form.Item name="app_id" label="App ID">
+              <Input inputMode="numeric" placeholder="ID ứng dụng Zalo" />
+            </Form.Item>
+          </Col>
+        </Row>
+        {isZbs && (
+          <Form.Item name="template_id" label="Mã mẫu tin ZBS (tùy chọn)">
+            <Input placeholder="Template ID do Zalo cấp" />
+          </Form.Item>
+        )}
+        <Form.Item label="Access token" extra={row?.has_secret && !clearSecret ? 'Đã lưu secret mã hóa. Để trống nếu muốn giữ thông tin đã lưu.' : 'Dùng để kiểm tra kết nối OA/ZBS.'}>
+          <Input.Password value={secrets.access_token ?? ''} onChange={(event) => changeSecret('access_token', event.target.value)} autoComplete="new-password" placeholder={row?.has_secret ? 'Đã lưu an toàn' : 'Nhập access token'} disabled={!canEdit || clearSecret} />
+        </Form.Item>
+        <Row gutter={16}>
+          <Col xs={24} md={12}>
+            <Form.Item label="Refresh token (tùy chọn)">
+              <Input.Password value={secrets.refresh_token ?? ''} onChange={(event) => changeSecret('refresh_token', event.target.value)} autoComplete="new-password" placeholder="Nhập refresh token" disabled={!canEdit || clearSecret} />
+            </Form.Item>
+          </Col>
+          <Col xs={24} md={12}>
+            <Form.Item label="App Secret (tùy chọn)">
+              <Input.Password value={secrets.app_secret ?? ''} onChange={(event) => changeSecret('app_secret', event.target.value)} autoComplete="new-password" placeholder="Nhập App Secret" disabled={!canEdit || clearSecret} />
+            </Form.Item>
+          </Col>
+        </Row>
+        {row?.has_secret && (
+          <Button type="link" danger className="px-0!" onClick={() => { const next = !clearSecret; setClearSecret(next); if (next) setEnabled(false); setSecrets({}); setTestResult(null) }}>
+            {clearSecret ? 'Giữ lại secret đã lưu' : 'Xóa secret đã lưu'}
+          </Button>
+        )}
+        <div className="my-4 flex items-center justify-between rounded-lg border border-[var(--brand-border)] bg-[var(--brand-bg)] p-3">
+          <div><Typography.Text strong>Cho phép dùng {isZbs ? 'ZBS' : 'Zalo OA'}</Typography.Text><br /><Typography.Text type="secondary">Chỉ bật được sau khi kiểm tra kết nối thành công.</Typography.Text></div>
+          <Switch checked={enabled} onChange={(value) => { setEnabled(value); setTestResult(null) }} disabled={!canEdit || clearSecret} />
+        </div>
+        {testResult && <Alert className="mb-4" type={testResult.ok ? 'success' : 'error'} showIcon message={testResult.message} />}
+        <Space wrap>
+          <Button icon={<CheckCircleOutlined />} loading={testMutation.isPending} disabled={!canEdit || clearSecret} onClick={() => void onTest()}>Kiểm tra kết nối</Button>
+          <Button type="primary" icon={<SaveOutlined />} loading={saveMutation.isPending} disabled={!canEdit} onClick={() => void onSave()}>Lưu cấu hình</Button>
+        </Space>
+      </Form>
+    </Card>
+  )
+}
 
 const emptySmtp: SmtpConfig = { host: 'smtp.gmail.com', port: 587, security: 'STARTTLS', username: '', from_name: '', from_email: '' }
+const emptyEmailApi: EmailApiConfig = {
+  endpoint: '',
+  auth_header: 'Authorization',
+  auth_prefix: 'Bearer',
+  from_name: '',
+  from_email: '',
+  test_email: '',
+  request_template: JSON.stringify({
+    from: { email: '{{from_email}}', name: '{{from_name}}' },
+    to: '{{to}}',
+    subject: '{{subject}}',
+    text: '{{text}}',
+  }, null, 2),
+}
 
 function statusTag(row?: IntegrationStatus) {
   if (!row || row.status === 'NOT_CONFIGURED') return <Tag>Chưa cấu hình</Tag>
@@ -37,6 +209,7 @@ function statusTag(row?: IntegrationStatus) {
 
 export default function IntegrationSettings() {
   const [form] = Form.useForm<SmtpConfig>()
+  const [apiForm] = Form.useForm<EmailApiConfig>()
   const queryClient = useQueryClient()
   const query = useQuery({
     queryKey: getGetIntegrationsQueryKey(),
@@ -46,8 +219,15 @@ export default function IntegrationSettings() {
   const [clearSecret, setClearSecret] = useState(false)
   const [enabled, setEnabled] = useState(false)
   const [testResult, setTestResult] = useState<{ ok: boolean; message: string } | null>(null)
+  const [apiKey, setApiKey] = useState('')
+  const [clearApiSecret, setClearApiSecret] = useState(false)
+  const [apiEnabled, setApiEnabled] = useState(false)
+  const [apiTestResult, setApiTestResult] = useState<{ ok: boolean; message: string } | null>(null)
 
   const smtp = useMemo(() => query.data?.find((row) => row.provider === 'EMAIL_SMTP'), [query.data])
+  const emailApi = useMemo(() => query.data?.find((row) => row.provider === 'EMAIL_API'), [query.data])
+  const zaloOa = useMemo(() => query.data?.find((row) => row.provider === 'ZALO_OA'), [query.data])
+  const zaloZbs = useMemo(() => query.data?.find((row) => row.provider === 'ZALO_ZBS'), [query.data])
 
   useEffect(() => {
     if (!query.data) return
@@ -63,10 +243,20 @@ export default function IntegrationSettings() {
     setClearSecret(false)
   }, [form, query.data, smtp])
 
+  useEffect(() => {
+    if (!query.data) return
+    const savedConfig = (emailApi?.config_public ?? {}) as Partial<EmailApiConfig>
+    apiForm.setFieldsValue({ ...emptyEmailApi, ...savedConfig })
+    if (!emailApi) return
+    setApiEnabled(emailApi.enabled)
+    setApiKey('')
+    setClearApiSecret(false)
+  }, [apiForm, query.data, emailApi])
+
   const invalidate = () => queryClient.invalidateQueries({ queryKey: getGetIntegrationsQueryKey() })
   const testMutation = useMutation({
     mutationFn: async (payload: { config_public: SmtpConfig; secrets?: { password?: string }; clear_secret?: boolean }) => {
-      const result = await postIntegrationsProviderTest(SMTP_PROVIDER, payload as PostIntegrationsProviderTestBody)
+      const result = await postIntegrationsProviderTest(SMTP_PROVIDER, payload as unknown as IntegrationUpdate)
       return pickData<{ ok?: boolean; message?: string }>(result) ?? {}
     },
     onSuccess: (result) => setTestResult({ ok: !!result.ok, message: result.message ?? '' }),
@@ -74,7 +264,7 @@ export default function IntegrationSettings() {
   })
   const saveMutation = useMutation({
     mutationFn: async (payload: { config_public: SmtpConfig; secrets?: { password?: string }; clear_secret?: boolean; enabled: boolean }) => {
-      const result = await putIntegrationsProvider(SMTP_PROVIDER, payload as PutIntegrationsProviderBody)
+      const result = await putIntegrationsProvider(SMTP_PROVIDER, payload as unknown as IntegrationUpdate)
       return pickData<{ status?: string; message?: string }>(result) ?? {}
     },
     onSuccess: async (result) => {
@@ -82,6 +272,30 @@ export default function IntegrationSettings() {
       setPassword('')
       setClearSecret(false)
       setTestResult(result.status === 'ERROR' ? { ok: false, message: result.message ?? '' } : { ok: true, message: result.message ?? '' })
+      if (result.status === 'ERROR') message.error(result.message)
+      else message.success(result.message)
+    },
+    onError: (error) => message.error(errorMessage(error)),
+  })
+
+  const apiTestMutation = useMutation({
+    mutationFn: async (payload: { config_public: EmailApiConfig; secrets?: { api_key?: string }; clear_secret?: boolean }) => {
+      const result = await postIntegrationsProviderTest(EMAIL_API_PROVIDER, payload as unknown as IntegrationUpdate)
+      return pickData<{ ok?: boolean; message?: string }>(result) ?? {}
+    },
+    onSuccess: (result) => setApiTestResult({ ok: !!result.ok, message: result.message ?? '' }),
+    onError: (error) => setApiTestResult({ ok: false, message: errorMessage(error) }),
+  })
+  const apiSaveMutation = useMutation({
+    mutationFn: async (payload: { config_public: EmailApiConfig; secrets?: { api_key?: string }; clear_secret?: boolean; enabled: boolean }) => {
+      const result = await putIntegrationsProvider(EMAIL_API_PROVIDER, payload as unknown as IntegrationUpdate)
+      return pickData<{ status?: string; message?: string }>(result) ?? {}
+    },
+    onSuccess: async (result) => {
+      await invalidate()
+      setApiKey('')
+      setClearApiSecret(false)
+      setApiTestResult(result.status === 'ERROR' ? { ok: false, message: result.message ?? '' } : { ok: true, message: result.message ?? '' })
       if (result.status === 'ERROR') message.error(result.message)
       else message.success(result.message)
     },
@@ -101,6 +315,22 @@ export default function IntegrationSettings() {
 
   const onSave = async () => {
     try { saveMutation.mutate({ ...(await draft()), enabled }) }
+    catch (error) { message.error(errorMessage(error)) }
+  }
+
+  const apiDraft = async () => {
+    const values = await apiForm.validateFields()
+    return { config_public: values, ...(apiKey ? { secrets: { api_key: apiKey } } : {}), ...(clearApiSecret ? { clear_secret: true } : {}) }
+  }
+
+  const onApiTest = async () => {
+    setApiTestResult(null)
+    try { apiTestMutation.mutate(await apiDraft()) }
+    catch (error) { message.error(errorMessage(error)) }
+  }
+
+  const onApiSave = async () => {
+    try { apiSaveMutation.mutate({ ...(await apiDraft()), enabled: apiEnabled }) }
     catch (error) { message.error(errorMessage(error)) }
   }
 
@@ -139,29 +369,81 @@ export default function IntegrationSettings() {
                   <Col xs={24} md={8}><Form.Item name="from_email" label="Email người gửi" rules={[{ required: true, type: 'email' }]}><Input type="email" /></Form.Item></Col>
                 </Row>
                 <div className="mb-4 flex items-center justify-between rounded-lg border border-[var(--brand-border)] bg-[var(--brand-bg)] p-3">
-                  <div><Typography.Text strong>Cho phép gửi qua SMTP</Typography.Text><br /><Typography.Text type="secondary">Bật sẽ kiểm tra kết nối lại trước khi lưu.</Typography.Text></div>
+                  <div><Typography.Text strong>Cho phép gửi qua SMTP</Typography.Text><br /><Typography.Text type="secondary">Bật sẽ kiểm tra kết nối lại và tự tắt Email API.</Typography.Text></div>
                   <Switch checked={enabled} onChange={(value) => { setEnabled(value); setTestResult(null) }} disabled={!canEdit} />
                 </div>
-                {testResult && <Alert className="mb-4" type={testResult.ok ? 'success' : 'error'} showIcon message={testResult.message} />}
+                {testResult && <Alert className="mb-4!" type={testResult.ok ? 'success' : 'error'} showIcon message={testResult.message} />}
                 <Space wrap>
                   <Button icon={<CheckCircleOutlined />} loading={testMutation.isPending} disabled={!canEdit} onClick={() => void onTest()}>Kiểm tra kết nối</Button>
                   <Button type="primary" icon={<SaveOutlined />} loading={saveMutation.isPending} disabled={!canEdit} onClick={() => void onSave()}>Lưu cấu hình</Button>
                 </Space>
               </Form>
             </Card>
+            <Card
+              className="mt-5!"
+              title={<Space><LinkOutlined />Email qua HTTP API</Space>}
+              extra={statusTag(emailApi)}
+            >
+              <Form form={apiForm} layout="vertical" initialValues={emptyEmailApi} disabled={!canEdit} onValuesChange={() => setApiTestResult(null)}>
+                <Form.Item name="endpoint" label="Endpoint gửi email" rules={[{ required: true, type: 'url' }]}>
+                  <Input type="url" placeholder="https://api.example.com/emails" autoComplete="off" />
+                </Form.Item>
+                <Row gutter={16}>
+                  <Col xs={24} md={12}>
+                    <Form.Item name="auth_header" label="Tên header API key" rules={[{ required: true }]}>
+                      <Input placeholder="Authorization hoặc api-key" autoComplete="off" />
+                    </Form.Item>
+                  </Col>
+                  <Col xs={24} md={12}>
+                    <Form.Item name="auth_prefix" label="Tiền tố API key">
+                      <Input placeholder="Bearer (để trống nếu nhà cung cấp không dùng)" autoComplete="off" />
+                    </Form.Item>
+                  </Col>
+                </Row>
+                <Row gutter={16}>
+                  <Col xs={24} md={8}>
+                    <Form.Item label="API key" extra={emailApi?.has_secret && !clearApiSecret ? 'Đã lưu mã hóa. Để trống nếu giữ secret hiện tại.' : undefined}>
+                      <Input.Password value={apiKey} onChange={(event) => { setApiKey(event.target.value); setApiTestResult(null) }} autoComplete="new-password" placeholder={emailApi?.has_secret ? 'Đang lưu an toàn' : 'Nhập API key'} disabled={!canEdit || clearApiSecret} />
+                      {emailApi?.has_secret && <Button type="link" danger className="px-0!" onClick={() => { const next = !clearApiSecret; setClearApiSecret(next); if (next) setApiEnabled(false); setApiKey(''); setApiTestResult(null) }}>{clearApiSecret ? 'Giữ lại secret đã lưu' : 'Xóa secret đã lưu'}</Button>}
+                    </Form.Item>
+                  </Col>
+                  <Col xs={24} md={8}><Form.Item name="from_name" label="Tên người gửi"><Input maxLength={150} /></Form.Item></Col>
+                  <Col xs={24} md={8}><Form.Item name="from_email" label="Email người gửi" rules={[{ required: true, type: 'email' }]}><Input type="email" /></Form.Item></Col>
+                </Row>
+                <Form.Item name="test_email" label="Email nhận thư kiểm tra" rules={[{ required: true, type: 'email' }]}>
+                  <Input type="email" placeholder="you@example.com" />
+                </Form.Item>
+                <Form.Item name="request_template" label="Mẫu JSON gửi email" rules={[{ required: true }]} extra="Biến hỗ trợ: {{from_email}}, {{from_name}}, {{to}}, {{subject}}, {{text}}. Mẫu phải có {{to}}, {{subject}} và {{text}}.">
+                  <Input.TextArea rows={8} spellCheck={false} />
+                </Form.Item>
+                <div className="mb-4 flex items-center justify-between rounded-lg border border-[var(--brand-border)] bg-[var(--brand-bg)] p-3">
+                  <div><Typography.Text strong>Cho phép gửi qua Email API</Typography.Text><br /><Typography.Text type="secondary">Bật sẽ gửi thư thử tới email kiểm tra để xác thực API key và endpoint.</Typography.Text></div>
+                  <Switch checked={apiEnabled} onChange={(value) => { setApiEnabled(value); setApiTestResult(null) }} disabled={!canEdit} />
+                </div>
+                {apiTestResult && <Alert className="mb-4!" type={apiTestResult.ok ? 'success' : 'error'} showIcon message={apiTestResult.message} />}
+                <Space wrap>
+                  <Button icon={<CheckCircleOutlined />} loading={apiTestMutation.isPending} disabled={!canEdit || clearApiSecret} onClick={() => void onApiTest()}>Gửi thư kiểm tra</Button>
+                  <Button type="primary" icon={<SaveOutlined />} loading={apiSaveMutation.isPending} disabled={!canEdit} onClick={() => void onApiSave()}>Lưu cấu hình API</Button>
+                </Space>
+              </Form>
+            </Card>
+            <ZaloIntegrationCard provider="ZALO_OA" title="Zalo Official Account (OA)" row={zaloOa} canEdit={canEdit} />
+            <ZaloIntegrationCard provider="ZALO_ZBS" title="ZBS Template Message" row={zaloZbs} canEdit={canEdit} />
           </Col>
           <Col xs={24} xl={10}>
-            <Card title="Zalo OA / ZBS" style={{ marginBottom: 16 }}>
-              <Space direction="vertical" size={8}>
-                <Tag color="warning">Chờ Vista xác nhận</Tag>
-                <Typography.Text type="secondary">Chưa mở nhập credential hoặc kiểm tra kết nối cho tới khi chốt OA/ZBS, chủ tài khoản và bên chi trả.</Typography.Text>
-              </Space>
-            </Card>
             <Card title="Gmail SMTP">
               <Space direction="vertical" size={8}>
                 <Tag color="processing">SMTP Gmail</Tag>
                 <Typography.Text type="secondary">
                   Máy chủ smtp.gmail.com, cổng 587 và STARTTLS đã được điền sẵn trong biểu mẫu Email qua SMTP. Nhập tài khoản và mật khẩu SMTP tại đó, rồi chọn Kiểm tra kết nối.
+                </Typography.Text>
+              </Space>
+            </Card>
+            <Card className="mt-4!" title="Lưu ý Email API">
+              <Space direction="vertical" size={8}>
+                <Tag color="processing">Gửi email thử</Tag>
+                <Typography.Text type="secondary">
+                  Kiểm tra kết nối sẽ gửi một email thử thật. API phải nhận POST HTTPS với JSON. Có thể sửa mẫu JSON bên dưới để khớp định dạng của nhà cung cấp. Chỉ một trong SMTP hoặc Email API được bật; bật API sẽ tự tắt SMTP.
                 </Typography.Text>
               </Space>
             </Card>
