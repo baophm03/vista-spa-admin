@@ -38,6 +38,7 @@ import { useGetUsers } from '@/api/endpoints/users'
 import { useBrandCurrency, useBrandDateTime } from '@/themeRuntime'
 import { useCustomerProfileAccess } from '@/utils/customerProfileAccess'
 import useCustomFieldDefinitions from '@/hooks/useCustomFieldDefinitions'
+import useSessionStatusConfig from '@/hooks/useSessionStatusConfig'
 import { Can } from '@casl/react'
 
 interface Slot {
@@ -86,13 +87,6 @@ const STATUS_META: Record<string, { label: string; color: string }> = {
   ACTIVE: { label: 'Đang làm', color: 'var(--brand-primary)' },
   FINISHED: { label: 'Hoàn tất', color: 'green' },
   CANCELLED: { label: 'Đã hủy', color: 'default' },
-}
-
-const SESSION_STATUS: Record<string, { label: string; color: string; hex: string }> = {
-  scheduled: { label: 'Chưa làm', color: 'default', hex: '#BFBFBF' },
-  in_progress: { label: 'Đang thực hiện', color: 'processing', hex: '#1677FF' },
-  done: { label: 'Đã thực hiện', color: 'gold', hex: '#FAAD14' },
-  completed: { label: 'Hoàn tất', color: 'green', hex: '#52C41A' },
 }
 
 const PAY_METHOD: Record<string, string> = {
@@ -323,6 +317,7 @@ function SessionTimeline({
   onFocusSessionHandled?: () => void
 }) {
   const { formatDateTime, getDateTimeParts } = useBrandDateTime()
+  const sessionStatusConfig = useSessionStatusConfig()
   const [sessions, setSessions] = useState<SessionRow[]>([])
   const [photos, setPhotos] = useState<Record<string, SessionPhoto[]>>({})
   const [loading, setLoading] = useState(true)
@@ -484,7 +479,7 @@ function SessionTimeline({
       {/* Mỗi buổi = 1 bảng liền mạch: header tint + dòng subheader pha + dòng dữ liệu */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         {sessions.map((s) => {
-          const st = SESSION_STATUS[s.status ?? ''] ?? { label: s.status ?? '—', hex: '#BFBFBF' }
+          const st = sessionStatusConfig[s.status as keyof typeof sessionStatusConfig] ?? { label: s.status ?? '—', color: '#BFBFBF' }
           // Ảnh quá trình = kind 'process' + ảnh cũ chưa phân loại
           const midPhotos = (photos[s.id] ?? []).filter((p) => p.kind === 'process' || !p.kind)
           return (
@@ -519,9 +514,9 @@ function SessionTimeline({
                     justifyContent: 'center',
                     fontWeight: 700,
                     fontSize: 17,
-                    background: `${st.hex}14`,
-                    color: st.hex,
-                    border: `1px solid ${st.hex}33`,
+                    background: `${st.color}14`,
+                    color: st.color,
+                    border: `1px solid ${st.color}33`,
                   }}
                 >
                   {String(s.session_no).padStart(2, '0')}
@@ -542,8 +537,8 @@ function SessionTimeline({
                       fontWeight: 700,
                       padding: '3px 12px',
                       borderRadius: 999,
-                      background: `${st.hex}1A`,
-                      color: st.hex,
+                      background: `${st.color}1A`,
+                      color: st.color,
                     }}
                   >
                     {st.label}

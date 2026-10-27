@@ -22,6 +22,7 @@ import Branches from './pages/Branches'
 import LookupLists from './pages/LookupLists'
 import BrandSettings from './pages/BrandSettings'
 import IntegrationSettings from './pages/IntegrationSettings'
+import SystemSettings from './pages/SystemSettings'
 import CustomerDataConfig from './pages/CustomerDataConfig'
 import Rewards from './pages/Rewards'
 import AcademyCourses from './pages/AcademyCourses'
@@ -53,6 +54,7 @@ export default function App() {
           <Route path="/customer-data-config" element={<CustomerDataConfig />} />
           <Route path="/settings/lookups" element={<LookupLists />} />
           <Route path="/settings/brand" element={<BrandSettings />} />
+          <Route path="/settings/system" element={<SystemSettings />} />
           <Route path="/settings/integrations" element={<IntegrationSettings />} />
           <Route path="/roles" element={<Roles />} />
         </Route>

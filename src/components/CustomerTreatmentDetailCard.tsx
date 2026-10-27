@@ -4,6 +4,7 @@ import type { PaymentLog } from '@/api/models/paymentLog'
 import type { SessionPhoto } from '@/api/models/sessionPhoto'
 import type { TreatmentSession } from '@/api/models/treatmentSession'
 import { useBrandCurrency, useBrandDateTime } from '@/themeRuntime'
+import useSessionStatusConfig from '@/hooks/useSessionStatusConfig'
 
 interface Props {
   treatment: CustomerTreatment & { package_type?: { name?: string } | null }
@@ -30,14 +31,6 @@ const QUOTA_LABEL: Record<string, string> = {
   UNLIMITED: 'Trọn gói',
 }
 
-const SESSION_STATUS: Record<string, { label: string; color: string }> = {
-  scheduled: { label: 'Chưa làm', color: 'default' },
-  in_progress: { label: 'Đang thực hiện', color: 'processing' },
-  done: { label: 'Đã thực hiện', color: 'gold' },
-  completed: { label: 'Hoàn tất', color: 'green' },
-  cancelled: { label: 'Đã hủy', color: 'default' },
-}
-
 const PAYMENT_METHOD: Record<string, string> = {
   CASH: 'Tiền mặt',
   BANK: 'Chuyển khoản',
@@ -56,6 +49,7 @@ const mediaSource = (url?: string | null) => (!url ? undefined : url)
 export default function CustomerTreatmentDetailCard({ treatment, sessions, payments, photos }: Props) {
   const { format: money } = useBrandCurrency()
   const { formatDateTime } = useBrandDateTime()
+  const sessionStatusConfig = useSessionStatusConfig()
   const title = (treatment.package_snapshot?.name as string | undefined) || treatment.package_type?.name || 'Gói dịch vụ'
   const treatmentStatus = TREATMENT_STATUS[String(treatment.status ?? '').toUpperCase()] ?? { label: treatment.status || '—', color: 'default' }
   const paymentStatus = PAYMENT_STATUS[String(treatment.payment_status ?? '').toUpperCase()] ?? { label: treatment.payment_status || '—', color: 'default' }
@@ -81,8 +75,15 @@ export default function CustomerTreatmentDetailCard({ treatment, sessions, payme
         { title: 'Buổi', dataIndex: 'session_no', width: 70 },
         { title: 'Ngày', dataIndex: 'scheduled_at', render: (value: string | null) => formatDateTime(value) },
         { title: 'Trạng thái', dataIndex: 'status', render: (value: string | null) => {
-          const status = value ? (SESSION_STATUS[value] ?? SESSION_STATUS[value.toLowerCase()]) : undefined
-          return <Tag color={status?.color ?? 'default'}>{status?.label ?? value ?? '—'}</Tag>
+          const status = value ? sessionStatusConfig[value.toLowerCase() as keyof typeof sessionStatusConfig] : undefined
+          return (
+            <Tag
+              color={status ? undefined : 'default'}
+              style={status ? { color: status.color, backgroundColor: `${status.color}1A`, borderColor: `${status.color}55` } : undefined}
+            >
+              {status?.label ?? value ?? '—'}
+            </Tag>
+          )
         } },
         { title: 'Ghi chú', dataIndex: 'diary', ellipsis: true, render: (value: string | null) => value || '—' },
       ]} /> : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Chưa có buổi điều trị" />}
