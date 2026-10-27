@@ -24,7 +24,7 @@ import {
   message,
 } from 'antd'
 import type { TableColumnsType } from 'antd'
-import { FilterOutlined, PlusOutlined } from '@ant-design/icons'
+import { FilterOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
 import PageTitle from '@/components/base/PageTitle'
 import CustomFieldFormItems, { normalizeCustomFieldValues } from '@/components/CustomFieldFormItems'
 import useCustomFieldDefinitions from '@/hooks/useCustomFieldDefinitions'
@@ -151,6 +151,14 @@ export default function Treatments() {
   const branchesQuery = useGetBranches()
 
   const rows = (pickData<TreatmentPackageRow[]>(packagesQuery.data) ?? []) as TreatmentPackageRow[]
+  const [packageSearch, setPackageSearch] = useState('')
+  const visibleRows = useMemo(() => {
+    const keyword = packageSearch.trim().toLowerCase()
+    if (!keyword) return rows
+    return rows.filter((row) =>
+      String(row.name || '').toLowerCase().includes(keyword)
+      || String(row.description || '').toLowerCase().includes(keyword))
+  }, [rows, packageSearch])
   const packageTypes = (pickData<PackageTypeRow[]>(packageTypesQuery.data) ?? []) as PackageTypeRow[]
   // GET /service trả { services, total, ... } trong responseData
   const services = (pickData<{ services?: Service[] }>(servicesQuery.data)?.services ?? []) as Service[]
@@ -254,6 +262,16 @@ export default function Treatments() {
     try {
       await deletePackageMutation.mutateAsync({ id: row.id })
       message.success('Đã ẩn gói dịch vụ')
+      await reloadPackages()
+    } catch (err) {
+      message.error(errorMessage(err))
+    }
+  }
+
+  const restorePackage = async (row: TreatmentPackageRow) => {
+    try {
+      await updatePackageMutation.mutateAsync({ id: row.id, data: { is_active: true } as never })
+      message.success('Đã bật lại gói dịch vụ')
       await reloadPackages()
     } catch (err) {
       message.error(errorMessage(err))
@@ -463,6 +481,16 @@ export default function Treatments() {
           label: 'Danh mục gói',
           children: (
             <>
+              <Space wrap style={{ marginBottom: 12 }}>
+                <Input
+                  allowClear
+                  prefix={<SearchOutlined style={{ color: '#A9ADB2' }} />}
+                  placeholder="Tìm theo tên gói"
+                  aria-label="Tìm theo tên gói"
+                  value={packageSearch}
+                  onChange={(event) => setPackageSearch(event.target.value)}
+                  style={{ width: 250 }}
+                />
               <Popover
                 trigger="click"
                 placement="bottomLeft"
@@ -506,13 +534,14 @@ export default function Treatments() {
               >
                 <Button icon={<FilterOutlined />}>Bộ lọc{activeFilterCount ? ' (' + activeFilterCount + ')' : ''}</Button>
               </Popover>
+              </Space>
 
               {packagesQuery.isError && <Alert type="error" showIcon message="Không tải được danh mục gói" description={errorMessage(packagesQuery.error)} style={{ margin: '12px 0' }} />}
               <Table<TreatmentPackageRow>
                 style={{ marginTop: 12 }}
                 rowKey="id"
                 loading={packagesQuery.isLoading}
-                dataSource={rows}
+                dataSource={visibleRows}
                 columns={[
                   ...visiblePackageColumns,
                   ...(canManage ? [{
@@ -526,6 +555,9 @@ export default function Treatments() {
                           <Popconfirm title="Ẩn gói dịch vụ này?" okText="Ẩn" cancelText="Hủy" onConfirm={() => hidePackage(row)}>
                             <Button size="small" danger>Ẩn</Button>
                           </Popconfirm>
+                        )}
+                        {!row.is_active && (
+                          <Button size="small" type="primary" ghost onClick={() => restorePackage(row)}>Bật lại</Button>
                         )}
                       </Space>
                     ),
