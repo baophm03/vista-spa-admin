@@ -37,6 +37,7 @@ import type {
   ForbiddenResponse,
   GetBranches200,
   GetBranchesId200,
+  GetBranchesNextCode200,
   GetBranchesParams,
   InternalErrorResponse,
   NotFoundResponse,
@@ -248,7 +249,7 @@ export const prefetchGetBranchesIdQuery = async <TData = Awaited<ReturnType<type
 
 
 /**
- * **BR-04** — PUT /branches/{id}: không cho đổi code nếu đã có khách. Cần quyền `branch.update`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Trường body: `code`, `name`, `address`, `phone`.
+ * **BR-04** — PUT /branches/{id}: mã cơ sở do hệ thống tự sinh, không thể chỉnh sửa. Cần quyền `branch.update`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Chặn sửa thành trùng tên và địa chỉ với cơ sở khác (số điện thoại không tham gia so sánh vì có thể dùng chung số tổng đài). Trường body: `name`, `address`, `phone`.
  * @summary Cập nhật cơ sở
  */
 export const putBranchesId = (
@@ -375,6 +376,200 @@ export const useDeleteBranchesId = <TError = UnauthorizedResponse | ForbiddenRes
       return useMutation(mutationOptions, queryClient);
     }
     /**
+ * **BR-07** — GET /branches/next-code. Cần quyền `branch.create`. Trả về mã cơ sở sẽ được tự sinh ở lần tạo kế tiếp theo quy tắc `CS` + số thứ tự (ví dụ `CS02`). Mã thực tế vẫn do BR-03 gán khi lưu.
+ * @summary Xem trước mã cơ sở kế tiếp
+ */
+export const getBranchesNextCode = (
+    
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetBranchesNextCode200>(
+      {url: `/branches/next-code`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetBranchesNextCodeInfiniteQueryKey = () => {
+    return [
+    'infinite', `/branches/next-code`
+    ] as const;
+    }
+
+export const getGetBranchesNextCodeQueryKey = () => {
+    return [
+    `/branches/next-code`
+    ] as const;
+    }
+
+    
+export const getGetBranchesNextCodeInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getBranchesNextCode>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranchesNextCode>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetBranchesNextCodeInfiniteQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getBranchesNextCode>>> = ({ signal }) => getBranchesNextCode(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranchesNextCode>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetBranchesNextCodeInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getBranchesNextCode>>>
+export type GetBranchesNextCodeInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+
+
+export function useGetBranchesNextCodeInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getBranchesNextCode>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranchesNextCode>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getBranchesNextCode>>,
+          TError,
+          Awaited<ReturnType<typeof getBranchesNextCode>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetBranchesNextCodeInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getBranchesNextCode>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranchesNextCode>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getBranchesNextCode>>,
+          TError,
+          Awaited<ReturnType<typeof getBranchesNextCode>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetBranchesNextCodeInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getBranchesNextCode>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranchesNextCode>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Xem trước mã cơ sở kế tiếp
+ */
+
+export function useGetBranchesNextCodeInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getBranchesNextCode>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranchesNextCode>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetBranchesNextCodeInfiniteQueryOptions(options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Xem trước mã cơ sở kế tiếp
+ */
+export const prefetchGetBranchesNextCodeInfiniteQuery = async <TData = Awaited<ReturnType<typeof getBranchesNextCode>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranchesNextCode>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetBranchesNextCodeInfiniteQueryOptions(options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetBranchesNextCodeQueryOptions = <TData = Awaited<ReturnType<typeof getBranchesNextCode>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranchesNextCode>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetBranchesNextCodeQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getBranchesNextCode>>> = ({ signal }) => getBranchesNextCode(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getBranchesNextCode>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetBranchesNextCodeQueryResult = NonNullable<Awaited<ReturnType<typeof getBranchesNextCode>>>
+export type GetBranchesNextCodeQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+
+
+export function useGetBranchesNextCode<TData = Awaited<ReturnType<typeof getBranchesNextCode>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranchesNextCode>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getBranchesNextCode>>,
+          TError,
+          Awaited<ReturnType<typeof getBranchesNextCode>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetBranchesNextCode<TData = Awaited<ReturnType<typeof getBranchesNextCode>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranchesNextCode>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getBranchesNextCode>>,
+          TError,
+          Awaited<ReturnType<typeof getBranchesNextCode>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetBranchesNextCode<TData = Awaited<ReturnType<typeof getBranchesNextCode>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranchesNextCode>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Xem trước mã cơ sở kế tiếp
+ */
+
+export function useGetBranchesNextCode<TData = Awaited<ReturnType<typeof getBranchesNextCode>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranchesNextCode>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetBranchesNextCodeQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Xem trước mã cơ sở kế tiếp
+ */
+export const prefetchGetBranchesNextCodeQuery = async <TData = Awaited<ReturnType<typeof getBranchesNextCode>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranchesNextCode>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetBranchesNextCodeQueryOptions(options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
  * **BR-01** — GET /branches. Cần quyền `branch.read`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Tham số truy vấn: `status`.
  * @summary Lấy danh sách cơ sở
  */
@@ -570,7 +765,7 @@ export const prefetchGetBranchesQuery = async <TData = Awaited<ReturnType<typeof
 
 
 /**
- * **BR-03** — POST /branches. Cần quyền `branch.create`. Trường body: `code`, `name`, `address`, `phone`.
+ * **BR-03** — POST /branches. Cần quyền `branch.create`. Mã cơ sở `code` do hệ thống tự sinh theo quy tắc `CS` + số thứ tự (ví dụ `CS01`, `CS02`) và dùng làm tiền tố mã khách, client không gửi `code`. Chặn tạo trùng: cùng tên và địa chỉ với cơ sở đã có sẽ trả 409 (số điện thoại không tham gia so sánh vì có thể dùng chung số tổng đài). Trường body: `name`, `address`, `phone`.
  * @summary Tạo cơ sở mới
  */
 export const postBranches = (

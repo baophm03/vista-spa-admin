@@ -6,9 +6,11 @@ import { errorMessage, pickData } from '@/api/helpers'
 import type { Branch } from '@/api/models/branch'
 import type { BranchUpdate } from '@/api/models/branchUpdate'
 import {
+  getGetBranchesNextCodeQueryKey,
   getGetBranchesQueryKey,
   useDeleteBranchesId,
   useGetBranches,
+  useGetBranchesNextCode,
   usePostBranches,
   usePostBranchesIdActivate,
   usePutBranchesId,
@@ -17,7 +19,6 @@ import { Can } from '@casl/react'
 import { useQueryClient } from '@tanstack/react-query'
 
 interface BranchFormValues {
-  code: string
   name: string
   address?: string
   phone?: string
@@ -42,6 +43,8 @@ export default function Branches() {
   const queryClient = useQueryClient()
 
   const branchesQuery = useGetBranches(statusFilter === 'all' ? undefined : { status: statusFilter })
+  const nextCodeQuery = useGetBranchesNextCode({ query: { enabled: open && !editing } })
+  const nextCode = pickData<{ code?: string }>(nextCodeQuery.data)?.code
   const createMutation = usePostBranches()
   const updateMutation = usePutBranchesId()
   const deactivateMutation = useDeleteBranchesId()
@@ -49,7 +52,10 @@ export default function Branches() {
 
   const rows = (pickData<Branch[]>(branchesQuery.data) ?? []) as Branch[]
 
-  const invalidate = () => queryClient.invalidateQueries({ queryKey: getGetBranchesQueryKey() })
+  const invalidate = () => {
+    queryClient.invalidateQueries({ queryKey: getGetBranchesQueryKey() })
+    queryClient.invalidateQueries({ queryKey: getGetBranchesNextCodeQueryKey() })
+  }
 
   const visibleRows = useMemo(() => {
     const keyword = foldForSearch(search.trim())
@@ -63,7 +69,7 @@ export default function Branches() {
   const openCreate = () => {
     setEditing(null)
     form.resetFields()
-    form.setFieldsValue({ code: '', name: '', address: '', phone: '' })
+    form.setFieldsValue({ name: '', address: '', phone: '' })
     setOpen(true)
   }
 
@@ -71,7 +77,6 @@ export default function Branches() {
     setEditing(branch)
     form.resetFields()
     form.setFieldsValue({
-      code: branch.code,
       name: branch.name,
       address: branch.address ?? '',
       phone: branch.phone ?? '',
@@ -94,7 +99,6 @@ export default function Branches() {
     }
 
     const payload = {
-      code: values.code.trim(),
       name: values.name.trim(),
       address: values.address?.trim() ?? '',
       phone: values.phone?.trim() ?? '',
@@ -103,7 +107,6 @@ export default function Branches() {
     try {
       if (editing) {
         const body: BranchUpdate = {
-          code: payload.code,
           name: payload.name,
           address: payload.address,
           phone: payload.phone,
@@ -281,17 +284,18 @@ export default function Branches() {
         destroyOnHidden
       >
         <Form form={form} layout="vertical" style={{ marginTop: 16 }}>
-          <Form.Item
-            name="code"
-            label="Mã cơ sở"
-            rules={[
-              { required: true, whitespace: true, message: 'Nhập mã cơ sở' },
-              { max: 10, message: 'Mã cơ sở tối đa 10 ký tự' },
-            ]}
-            extra={editing ? 'Không thể đổi mã nếu cơ sở đã có khách.' : undefined}
-          >
-            <Input maxLength={10} autoComplete="off" />
-          </Form.Item>
+          {editing ? (
+            <Form.Item label="Mã cơ sở" extra="Mã do hệ thống tự sinh, không thể chỉnh sửa.">
+              <Typography.Text code>{editing.code}</Typography.Text>
+            </Form.Item>
+          ) : (
+            <Form.Item
+              label="Mã cơ sở"
+              extra="Hệ thống tự sinh mã theo quy tắc CS01, CS02, …; mã hiển thị là dự kiến, mã thật được gán khi lưu."
+            >
+              <Input disabled placeholder="Tự sinh khi lưu" value={nextCode} />
+            </Form.Item>
+          )}
           <Form.Item
             name="name"
             label="Tên cơ sở"

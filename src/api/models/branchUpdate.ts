@@ -9,10 +9,9 @@ import type { BranchUpdateAddress } from './branchUpdateAddress';
 import type { BranchUpdatePhone } from './branchUpdatePhone';
 
 /**
- * Partial branch update
+ * Partial branch update (code is system-generated and cannot be changed)
  */
 export interface BranchUpdate {
-  code?: string;
   name?: string;
   address?: BranchUpdateAddress;
   phone?: BranchUpdatePhone;
