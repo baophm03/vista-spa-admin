@@ -8,6 +8,7 @@ import Services from './pages/Services'
 import Appointments from './pages/Appointments'
 import Treatments from './pages/Treatments'
 import TreatmentCustomers from './pages/TreatmentCustomers'
+import Payments from './pages/Payments'
 import Staffs from './pages/Staffs'
 import Notifications from './pages/Notifications'
 import Products from './pages/Products'
@@ -42,6 +43,7 @@ export default function App() {
           <Route path="/treatments" element={<Treatments />} />
           <Route path="/academy/courses" element={<AcademyCourses />} />
           <Route path="/treatment-customers" element={<TreatmentCustomers />} />
+          <Route path="/payments" element={<Payments />} />
           <Route path="/staffs" element={<Staffs />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/access-logs" element={<AccessLogs />} />

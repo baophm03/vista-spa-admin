@@ -18,6 +18,7 @@ import {
   getCustomerTreatmentsIdAvailableSlots,
   getCustomerTreatmentsIdPayments,
   getCustomerTreatmentsIdSessions,
+  getCustomerTreatmentsId,
   getGetCustomerTreatmentsQueryKey,
   getSessionsIdPhotos,
   postCustomerTreatmentsIdSessions,
@@ -1064,6 +1065,14 @@ export default function TreatmentCustomers() {
     }
   }
 
+  const refreshSelectedDetail = async () => {
+    if (!detail) return
+    try {
+      const fresh = pickData<CustomerTreatment>(await getCustomerTreatmentsId(detail.id))
+      if (fresh) setDetail(fresh)
+    } catch { /* bỏ qua — drawer giữ dữ liệu cũ */ }
+  }
+
   const finishTreatment = async (row: CustomerTreatment) => {
     try {
       await finishMutation.mutateAsync({ id: row.id })
@@ -1633,7 +1642,7 @@ export default function TreatmentCustomers() {
                         staffOptions={staffOptions}
                         customFieldDefinitions={sessionCustomFields}
                         isAdmin={isAdmin}
-                        onChanged={refresh}
+                        onChanged={() => { refresh(); void refreshSelectedDetail() }}
                         refreshKey={sessionsRefreshKey}
                         focusSessionId={sessionToEdit?.treatmentId === detail.id ? sessionToEdit.sessionId : undefined}
                         onFocusSessionHandled={handleSessionFocusHandled}

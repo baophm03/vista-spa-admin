@@ -5,6 +5,7 @@ import {
   BookOutlined,
   CalendarOutlined,
   ClockCircleOutlined,
+  AccountBookOutlined,
   DashboardOutlined,
   ExperimentOutlined,
   FileTextOutlined,
@@ -74,6 +75,7 @@ export const menuItems: MenuItem[] = [
       { key: '/orders', icon: createElement(ProfileOutlined), label: 'Đơn hàng' },
       { key: '/vouchers', icon: createElement(GiftOutlined), label: 'Voucher & Quà tặng', permission: { action: 'READ', subject: 'VOUCHER' } },
       { key: '/luckywheel', icon: createElement(ThunderboltOutlined), label: 'Quay số may mắn', permission: { action: 'READ', subject: 'WHEEL' } },
+      { key: '/payments', icon: createElement(AccountBookOutlined), label: 'Sổ thanh toán', permission: { action: 'READ', subject: 'CUSTOMER' } },
     ],
   },
   {
