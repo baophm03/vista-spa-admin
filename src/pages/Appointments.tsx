@@ -14,6 +14,7 @@ import {
   Popover,
   Row,
   Select,
+  Segmented,
   Space,
   Table,
   Tag,
@@ -21,7 +22,7 @@ import {
   message,
 } from 'antd'
 import type { TableColumnsType } from 'antd'
-import { CheckOutlined, EllipsisOutlined, FilterOutlined, PlusOutlined, ReloadOutlined } from '@ant-design/icons'
+import { CalendarOutlined, CheckOutlined, EllipsisOutlined, FilterOutlined, LeftOutlined, PlusOutlined, ReloadOutlined, RightOutlined, UnorderedListOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
 import CustomFieldFormItems, { normalizeCustomFieldValues } from '@/components/CustomFieldFormItems'
@@ -44,7 +45,7 @@ import {
   usePutAppointmentsIdNoShow,
   usePutAppointmentsIdReject,
 } from '@/api/endpoints/appointments'
-import { useGetCustomerProfiles } from '@/api/endpoints/customer-profiles'
+import { getGetCustomerProfilesQueryKey, postCustomerProfiles, useGetCustomerProfiles } from '@/api/endpoints/customer-profiles'
 import { useGetService } from '@/api/endpoints/services'
 import { useGetUsers } from '@/api/endpoints/users'
 import { useGetBranches } from '@/api/endpoints/branches'
@@ -71,9 +72,17 @@ interface StaffRow {
 }
 
 type AppointmentRow = Appointment & {
-  customer_profile?: { full_name?: string; phone?: string } | null
-  service?: { title?: string } | null
+  customer_profile?: { id?: string; full_name?: string; phone?: string; branch_id?: string | null } | null
+  service?: { title?: string; duration_minutes?: number } | null
   staff?: { zalo_name?: string } | null
+}
+
+const CALENDAR_START_HOUR = 7
+const CALENDAR_END_HOUR = 22
+const CALENDAR_HOURS = Array.from({ length: CALENDAR_END_HOUR - CALENDAR_START_HOUR }, (_, index) => CALENDAR_START_HOUR + index)
+
+function mondayOf(date: dayjs.Dayjs) {
+  return date.startOf('day').subtract((date.day() + 6) % 7, 'day')
 }
 
 const STATUS_META: Record<AppointmentStatus, { label: string; color: string }> = {
@@ -97,6 +106,40 @@ const FILTERS = [
   { value: 'no_show', label: 'Không đến' },
 ]
 
+const CALENDAR_STATUS_STYLE: Record<AppointmentStatus, { border: string; background: string }> = {
+  pending: { border: '#f5a623', background: '#fff8e8' },
+  approved: { border: '#52a66b', background: '#f1fbf3' },
+  in_progress: { border: '#4587c7', background: '#eff7ff' },
+  completed: { border: '#8bbf69', background: '#f5fbef' },
+  cancelled: { border: '#a6adb1', background: '#f4f5f6' },
+  rejected: { border: '#d75a5a', background: '#fff2f0' },
+  no_show: { border: '#d46b08', background: '#fff7e6' },
+}
+
+function AppointmentCalendarCard({ row, onClick }: { row: AppointmentRow; onClick: () => void }) {
+  const status = row.status as AppointmentStatus
+  const style = CALENDAR_STATUS_STYLE[status] ?? CALENDAR_STATUS_STYLE.pending
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={onClick}
+      onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onClick() } }}
+      style={{ borderLeft: `3px solid ${style.border}`, borderRadius: 7, background: style.background, padding: '6px 8px', marginBottom: 5, lineHeight: 1.35, cursor: 'pointer' }}
+    >
+      <Typography.Text strong style={{ display: 'block', fontSize: 12 }}>
+        {row.start_time?.slice(0, 5)} · {row.customer_profile?.full_name || 'Khách hàng'}
+      </Typography.Text>
+      <Typography.Text type="secondary" style={{ display: 'block', fontSize: 11 }}>
+        {row.service?.title || 'Chưa có dịch vụ'} · {row.service?.duration_minutes || 60} phút
+      </Typography.Text>
+      <Typography.Text type="secondary" style={{ display: 'block', fontSize: 11 }}>
+        {row.staff?.zalo_name || 'Chưa gán KTV'} · {STATUS_META[status]?.label || status}
+      </Typography.Text>
+    </div>
+  )
+}
+
 const APPOINTMENT_COLUMNS = [
   { value: 'customer', label: 'Khách hàng' },
   { value: 'service', label: 'Dịch vụ' },
@@ -109,6 +152,9 @@ const DEFAULT_APPOINTMENT_COLUMNS = APPOINTMENT_COLUMNS.map((column) => column.v
 
 export default function Appointments() {
   const queryClient = useQueryClient()
+  const [displayMode, setDisplayMode] = useState<'calendar' | 'list'>('calendar')
+  const [calendarView, setCalendarView] = useState<'day' | 'week'>('week')
+  const [calendarDate, setCalendarDate] = useState(() => dayjs())
   const [page, setPage] = useState(1)
   const [limit] = useState(10)
   const [filter, setFilter] = useState('all')
@@ -123,12 +169,18 @@ export default function Appointments() {
   const [draftFilter, setDraftFilter] = useState('all')
   const [filterOpen, setFilterOpen] = useState(false)
   const [open, setOpen] = useState(false)
+  const [selectedAppointment, setSelectedAppointment] = useState<AppointmentRow | null>(null)
+  const [customerSearchInput, setCustomerSearchInput] = useState('')
+  const [customerSearch, setCustomerSearch] = useState('')
+  const [selectedProfile, setSelectedProfile] = useState<ProfileRow | null>(null)
+  const [quickCustomerOpen, setQuickCustomerOpen] = useState(false)
   const [startingAppointment, setStartingAppointment] = useState<AppointmentRow | null>(null)
   const [editing, setEditing] = useState<Appointment | null>(null)
   const [slots, setSlots] = useState<Slot[]>([])
   const [slotsLoading, setSlotsLoading] = useState(false)
   const [form] = Form.useForm()
   const [startForm] = Form.useForm()
+  const [quickCustomerForm] = Form.useForm()
   const appointmentCustomFields = useCustomFieldDefinitions('APPOINTMENT')
   const sessionCustomFields = useCustomFieldDefinitions('SESSION')
   const slotRequest = useRef(0)
@@ -149,17 +201,51 @@ export default function Appointments() {
     return params
   }, [page, limit, filter, dateFilter, staffFilter, branchFilter])
 
-  const appointmentsQuery = useGetAppointments(listParams as never)
+  const appointmentsQuery = useGetAppointments(listParams as never, { query: { enabled: displayMode === 'list' } })
   const rows = pickData<AppointmentRow[] | undefined>(appointmentsQuery.data) ?? []
   const total = pickMeta(appointmentsQuery.data)?.total ?? rows.length
 
-  const profilesQuery = useGetCustomerProfiles({ page: 1, limit: 200 })
+  const calendarStart = calendarView === 'week' ? mondayOf(calendarDate) : calendarDate.startOf('day')
+  const calendarEnd = calendarView === 'week' ? calendarStart.add(6, 'day') : calendarStart
+  const calendarParams = useMemo(() => {
+    const viewFrom = calendarStart.format('YYYY-MM-DD')
+    const viewTo = calendarEnd.format('YYYY-MM-DD')
+    const params: Record<string, unknown> = {
+      page: 1,
+      limit: 200,
+      from_date: dateFilter[0] && dateFilter[0] > viewFrom ? dateFilter[0] : viewFrom,
+      to_date: dateFilter[1] && dateFilter[1] < viewTo ? dateFilter[1] : viewTo,
+    }
+    if (filter !== 'all') params.status = filter
+    if (staffFilter) params.staff_id = staffFilter
+    if (branchFilter) params.branch_id = branchFilter
+    return params
+  }, [calendarStart, calendarEnd, dateFilter, filter, staffFilter, branchFilter])
+  const calendarAppointmentsQuery = useGetAppointments(calendarParams as never, { query: { enabled: displayMode === 'calendar' } })
+  const calendarRows = pickData<AppointmentRow[] | undefined>(calendarAppointmentsQuery.data) ?? []
+  const calendarDays = Array.from({ length: calendarView === 'week' ? 7 : 1 }, (_, index) => calendarStart.add(index, 'day'))
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setCustomerSearch(customerSearchInput.trim()), 250)
+    return () => window.clearTimeout(timer)
+  }, [customerSearchInput])
+
+  const profilesQuery = useGetCustomerProfiles({ page: 1, limit: 50, q: customerSearch || undefined })
   const profiles = (pickData<ProfileRow[] | undefined>(profilesQuery.data) ?? []) as ProfileRow[]
+  const profileOptions = useMemo(() => {
+    const options = [...profiles]
+    if (selectedProfile && !options.some((profile) => profile.id === selectedProfile.id)) options.unshift(selectedProfile)
+    return options
+  }, [profiles, selectedProfile])
   const servicesQuery = useGetService({ page: 1, limit: 200, is_active: true })
   // GET /service trả { services, total, ... } trong responseData
   const services = (pickData<{ services?: Service[] } | undefined>(servicesQuery.data)?.services ?? []) as Service[]
   const staffsQuery = useGetUsers({ currentPage: 1, pageSize: 200, has_role: true })
   const staffs = (pickData<{ rows?: StaffRow[] } | undefined>(staffsQuery.data)?.rows ?? []) as StaffRow[]
+  const calendarStaffs = useMemo(() => {
+    const assignedIds = [...new Set(calendarRows.map((row) => row.staff_id).filter((id): id is string => !!id))]
+    return assignedIds.map((id) => staffs.find((staff) => staff.id === id) ?? { id, zalo_name: 'Nhân viên' })
+  }, [calendarRows, staffs])
   const branchesQuery = useGetBranches({ status: 'active' })
   const branches = (pickData<Branch[] | undefined>(branchesQuery.data) ?? []) as Branch[]
 
@@ -179,6 +265,7 @@ export default function Appointments() {
   useEffect(() => {
     const requestId = ++slotRequest.current
     const branchId = profiles.find((p) => p.id === selectedCustomerId)?.branch_id
+      ?? (selectedProfile && selectedProfile.id === selectedCustomerId ? selectedProfile.branch_id : undefined)
     const criteria = selectedCustomerId && selectedServiceId && selectedDate
       ? `${selectedCustomerId}|${selectedServiceId}|${selectedDate}`
       : ''
@@ -223,7 +310,7 @@ export default function Appointments() {
       .finally(() => {
         if (requestId === slotRequest.current) setSlotsLoading(false)
       })
-  }, [open, selectedCustomerId, selectedServiceId, selectedDate, profiles, editing?.id, form])
+  }, [open, selectedCustomerId, selectedServiceId, selectedDate, profiles, selectedProfile, editing?.id, form])
 
   const openModal = (appointment?: Appointment) => {
     setEditing(appointment ?? null)
@@ -231,6 +318,18 @@ export default function Appointments() {
     slotRequest.current += 1
     previousSlotCriteria.current = ''
     form.resetFields()
+    setCustomerSearchInput('')
+    setCustomerSearch('')
+    const profileFromAppointment = (appointment as AppointmentRow | undefined)?.customer_profile
+    setSelectedProfile(appointment
+      ? profiles.find((profile) => profile.id === appointment.customer_profile_id)
+        ?? (profileFromAppointment?.id ? {
+          id: profileFromAppointment.id,
+          full_name: profileFromAppointment.full_name,
+          phone: profileFromAppointment.phone,
+          branch_id: profileFromAppointment.branch_id,
+        } : null)
+      : null)
     form.setFieldsValue(
       appointment
         ? {
@@ -247,9 +346,35 @@ export default function Appointments() {
     setOpen(true)
   }
 
+  const openQuickCustomer = () => {
+    quickCustomerForm.resetFields()
+    quickCustomerForm.setFieldsValue({ branch_id: branchFilter || branches[0]?.id })
+    setQuickCustomerOpen(true)
+  }
+
+  const submitQuickCustomer = async () => {
+    try {
+      const values = await quickCustomerForm.validateFields()
+      const response = await postCustomerProfiles(values as never)
+      const created = pickData<ProfileRow | undefined>(response)
+      if (!created?.id) throw new Error('Không nhận được hồ sơ khách hàng vừa tạo')
+      setSelectedProfile(created)
+      form.setFieldValue('customer_profile_id', created.id)
+      setCustomerSearchInput('')
+      setCustomerSearch('')
+      setQuickCustomerOpen(false)
+      message.success('Đã tạo khách hàng và chọn vào lịch hẹn')
+      void queryClient.invalidateQueries({ queryKey: getGetCustomerProfilesQueryKey() })
+    } catch (err) {
+      if ((err as { errorFields?: unknown })?.errorFields) return
+      message.error(errorMessage(err))
+    }
+  }
+
   const submit = async () => {
     const values = await form.validateFields()
     const profile = profiles.find((p) => p.id === values.customer_profile_id)
+      ?? (selectedProfile?.id === values.customer_profile_id ? selectedProfile : undefined)
     const payload = {
       customer_profile_id: values.customer_profile_id,
       branch_id: profile?.branch_id,
@@ -496,8 +621,99 @@ export default function Appointments() {
         >
           <Badge count={activeFilterCount} size="small"><Button icon={<FilterOutlined />}>Bộ lọc</Button></Badge>
         </Popover>
+        <Space style={{ marginLeft: 'auto' }} wrap>
+          <Segmented
+            value={displayMode}
+            options={[
+              { label: 'Lịch', value: 'calendar', icon: <CalendarOutlined /> },
+              { label: 'Danh sách', value: 'list', icon: <UnorderedListOutlined /> },
+            ]}
+            onChange={(value) => setDisplayMode(value as 'calendar' | 'list')}
+          />
+          {displayMode === 'calendar' && (
+            <Space>
+              <Button
+                aria-label="Khoảng thời gian trước"
+                icon={<LeftOutlined />}
+                onClick={() => setCalendarDate((current) => current.add(calendarView === 'week' ? -7 : -1, 'day'))}
+              />
+              <DatePicker
+                value={calendarView === 'week' ? calendarStart : calendarDate}
+                format={calendarView === 'week' ? '[Tuần bắt đầu] DD/MM/YYYY' : 'DD/MM/YYYY'}
+                onChange={(value) => value && setCalendarDate(value)}
+              />
+              <Button onClick={() => setCalendarDate(dayjs())}>Hôm nay</Button>
+              <Button
+                aria-label="Khoảng thời gian tiếp theo"
+                icon={<RightOutlined />}
+                onClick={() => setCalendarDate((current) => current.add(calendarView === 'week' ? 7 : 1, 'day'))}
+              />
+              <Segmented
+                value={calendarView}
+                options={[{ label: 'Ngày', value: 'day' }, { label: 'Tuần', value: 'week' }]}
+                onChange={(value) => setCalendarView(value as 'day' | 'week')}
+              />
+            </Space>
+          )}
+        </Space>
       </Space>
-      <Table<AppointmentRow>
+      {displayMode === 'calendar' ? (
+        <div style={{ overflowX: 'auto', border: '1px solid #d9e3e7', borderRadius: 12, background: '#fff' }}>
+          {calendarAppointmentsQuery.isLoading ? (
+            <div style={{ padding: 32, textAlign: 'center' }}>Đang tải lịch hẹn…</div>
+          ) : calendarView === 'day' ? (
+            <div style={{ minWidth: Math.max(760, (calendarStaffs.length + (calendarRows.some((row) => !row.staff_id) ? 1 : 0)) * 210 + 80) }}>
+              <div style={{ display: 'grid', gridTemplateColumns: `80px repeat(${Math.max(1, calendarStaffs.length + (calendarRows.some((row) => !row.staff_id) ? 1 : 0))}, minmax(190px, 1fr))`, position: 'sticky', top: 0, zIndex: 2, background: '#eef3f4', borderBottom: '1px solid #d9e3e7' }}>
+                <div style={{ padding: 12, fontWeight: 600, color: '#53636a' }}>{calendarStart.format('DD/MM')}</div>
+                {calendarStaffs.length || calendarRows.some((row) => !row.staff_id) ? (
+                  <>
+                    {calendarStaffs.map((staff) => <div key={staff.id} style={{ padding: 12, borderLeft: '1px solid #d9e3e7', fontWeight: 600 }}>{staff.zalo_name || 'Nhân viên'}</div>)}
+                    {calendarRows.some((row) => !row.staff_id) && <div style={{ padding: 12, borderLeft: '1px solid #d9e3e7', fontWeight: 600 }}>Chưa gán KTV</div>}
+                  </>
+                ) : <div style={{ padding: 12, borderLeft: '1px solid #d9e3e7', color: '#849197' }}>Chưa có lịch hẹn</div>}
+              </div>
+              {CALENDAR_HOURS.map((hour) => (
+                <div key={hour} style={{ display: 'grid', gridTemplateColumns: `80px repeat(${Math.max(1, calendarStaffs.length + (calendarRows.some((row) => !row.staff_id) ? 1 : 0))}, minmax(190px, 1fr))`, minHeight: 82, borderBottom: '1px solid #edf1f2' }}>
+                  <div style={{ padding: '8px 12px', color: '#849197', fontSize: 12 }}>{String(hour).padStart(2, '0')}:00</div>
+                  {calendarStaffs.length || calendarRows.some((row) => !row.staff_id) ? (
+                    <>
+                      {[
+                        ...calendarStaffs.map((staff) => ({ id: staff.id, rows: calendarRows.filter((row) => row.staff_id === staff.id) })),
+                        ...(calendarRows.some((row) => !row.staff_id) ? [{ id: '__unassigned', rows: calendarRows.filter((row) => !row.staff_id) }] : []),
+                      ].map((column) => (
+                        <div key={column.id} style={{ borderLeft: '1px solid #edf1f2', padding: 5 }}>
+                          {column.rows.filter((row) => dayjs(row.appt_date).isSame(calendarStart, 'day') && Number(row.start_time?.slice(0, 2)) === hour).map((row) => (
+                            <AppointmentCalendarCard key={row.id} row={row} onClick={() => setSelectedAppointment(row)} />
+                          ))}
+                        </div>
+                      ))}
+                    </>
+                  ) : <div style={{ gridColumn: '2 / -1', borderLeft: '1px solid #edf1f2' }} />}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{ minWidth: 1160 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '80px repeat(7, minmax(150px, 1fr))', position: 'sticky', top: 0, zIndex: 2, background: '#eef3f4', borderBottom: '1px solid #d9e3e7' }}>
+                <div style={{ padding: 12, fontWeight: 600, color: '#53636a' }}>Giờ</div>
+                {calendarDays.map((date) => <div key={date.format('YYYY-MM-DD')} style={{ padding: 12, borderLeft: '1px solid #d9e3e7', fontWeight: 600 }}>{['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][date.day()]} {date.format('DD/MM')}</div>)}
+              </div>
+              {CALENDAR_HOURS.map((hour) => (
+                <div key={hour} style={{ display: 'grid', gridTemplateColumns: '80px repeat(7, minmax(150px, 1fr))', minHeight: 92, borderBottom: '1px solid #edf1f2' }}>
+                  <div style={{ padding: '8px 12px', color: '#849197', fontSize: 12 }}>{String(hour).padStart(2, '0')}:00</div>
+                  {calendarDays.map((date) => (
+                    <div key={date.format('YYYY-MM-DD')} style={{ borderLeft: '1px solid #edf1f2', padding: 5 }}>
+                      {calendarRows.filter((row) => dayjs(row.appt_date).isSame(date, 'day') && Number(row.start_time?.slice(0, 2)) === hour).map((row) => (
+                        <AppointmentCalendarCard key={row.id} row={row} onClick={() => setSelectedAppointment(row)} />
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      ) : <Table<AppointmentRow>
         rowKey="id"
         loading={appointmentsQuery.isLoading}
         dataSource={rows}
@@ -548,7 +764,7 @@ export default function Appointments() {
                     confirmThen('Đánh dấu khách không đến? (Chỉ ghi nhận; không trừ buổi, không tính phí.)', () =>
                       doAction(() => noShowMutation.mutateAsync({ id: row.id }), 'Đã ghi nhận không đến')),
                 },
-                row.status === 'approved' && {
+                ['pending', 'approved'].includes(row.status ?? '') && {
                   key: 'cancel',
                   label: 'Hủy lịch hẹn',
                   danger: true,
@@ -596,7 +812,59 @@ export default function Appointments() {
             },
           },
         ] satisfies TableColumnsType<AppointmentRow>).filter((column) => column.key === 'actions' || visibleColumns.includes(String(column.key)))}
-      />
+      />}
+
+      <Modal
+        title="Chi tiết lịch hẹn"
+        open={!!selectedAppointment}
+        onCancel={() => setSelectedAppointment(null)}
+        footer={selectedAppointment ? (
+          <Space wrap>
+            <Button onClick={() => setSelectedAppointment(null)}>Đóng</Button>
+            {['pending', 'approved'].includes(selectedAppointment.status ?? '') && (
+              <Can I="UPDATE" a="APPOINTMENT">
+                <Button onClick={() => { const row = selectedAppointment; setSelectedAppointment(null); openModal(row) }}>Đổi lịch</Button>
+              </Can>
+            )}
+            {selectedAppointment.status === 'pending' && (
+              <Can I="APPROVE" a="APPOINTMENT">
+                <Button onClick={() => { const row = selectedAppointment; setSelectedAppointment(null); void approve(row) }}>Duyệt</Button>
+                <Button danger onClick={() => { const row = selectedAppointment; setSelectedAppointment(null); reject(row) }}>Từ chối</Button>
+              </Can>
+            )}
+            {selectedAppointment.status === 'approved' && isPastAppointment(selectedAppointment) && (
+              <Can I="APPROVE" a="APPOINTMENT">
+                <Button onClick={() => { const row = selectedAppointment; setSelectedAppointment(null); void doAction(() => noShowMutation.mutateAsync({ id: row.id }), 'Đã ghi nhận không đến') }}>Không đến</Button>
+              </Can>
+            )}
+            {['pending', 'approved'].includes(selectedAppointment.status ?? '') && (
+              <Can I="APPROVE" a="APPOINTMENT">
+                <Button danger onClick={() => { const row = selectedAppointment; setSelectedAppointment(null); void doAction(() => cancelMutation.mutateAsync({ id: row.id }), 'Đã hủy') }}>Hủy lịch</Button>
+              </Can>
+            )}
+            {selectedAppointment.status === 'approved' && (
+              <Can I="START" a="APPOINTMENT">
+                <Button type="primary" onClick={() => { const row = selectedAppointment; setSelectedAppointment(null); beginAppointment(row) }}>Bắt đầu</Button>
+              </Can>
+            )}
+            {selectedAppointment.status === 'in_progress' && (
+              <Button type="primary" onClick={() => { const row = selectedAppointment; setSelectedAppointment(null); void doAction(() => completeMutation.mutateAsync({ id: row.id }), 'Đã hoàn tất') }}>Hoàn tất</Button>
+            )}
+          </Space>
+        ) : null}
+      >
+        {selectedAppointment && (
+          <Space direction="vertical" size={8} style={{ width: '100%' }}>
+            <Typography.Text><strong>Khách hàng:</strong> {selectedAppointment.customer_profile?.full_name || '—'} ({selectedAppointment.customer_profile?.phone || 'không có số điện thoại'})</Typography.Text>
+            <Typography.Text><strong>Dịch vụ:</strong> {selectedAppointment.service?.title || '—'}</Typography.Text>
+            <Typography.Text><strong>KTV:</strong> {selectedAppointment.staff?.zalo_name || 'Chưa gán'}</Typography.Text>
+            <Typography.Text><strong>Thời gian:</strong> {dayjs(selectedAppointment.appt_date).format('DD/MM/YYYY')} {selectedAppointment.start_time?.slice(0, 5)}</Typography.Text>
+            <Typography.Text><strong>Trạng thái:</strong> <Tag color={STATUS_META[selectedAppointment.status as AppointmentStatus]?.color}>{STATUS_META[selectedAppointment.status as AppointmentStatus]?.label || selectedAppointment.status}</Tag></Typography.Text>
+            {selectedAppointment.note && <Typography.Text><strong>Ghi chú:</strong> {selectedAppointment.note}</Typography.Text>}
+            {selectedAppointment.reject_reason && <Typography.Text><strong>Lý do từ chối:</strong> {selectedAppointment.reject_reason}</Typography.Text>}
+          </Space>
+        )}
+      </Modal>
 
       <Modal
         title={editing ? 'Đổi lịch hẹn' : 'Thêm lịch hẹn'}
@@ -607,15 +875,30 @@ export default function Appointments() {
         cancelText="Hủy"
       >
         <Form form={form} layout="vertical" style={{ marginTop: 12 }}>
-          <Form.Item name="customer_profile_id" label="Khách hàng" rules={[{ required: true, message: 'Chọn khách' }]}>
+          <Form.Item
+            name="customer_profile_id"
+            label={(
+              <Space size={4}>
+                <span>Khách hàng</span>
+                <Can I="CREATE" a="CUSTOMER">
+                  <Button type="link" size="small" onClick={openQuickCustomer}>+ Tạo khách mới</Button>
+                </Can>
+              </Space>
+            )}
+            rules={[{ required: true, message: 'Chọn khách' }]}
+          >
             <Select
               showSearch
-              optionFilterProp="label"
+              filterOption={false}
+              onSearch={setCustomerSearchInput}
+              onChange={(id) => setSelectedProfile(profileOptions.find((profile) => profile.id === id) ?? null)}
+              loading={profilesQuery.isLoading}
               placeholder="Chọn khách hàng"
-              options={profiles.map((p) => ({
+              options={profileOptions.map((p) => ({
                 value: p.id,
                 label: `${p.full_name} — ${p.phone}`,
               }))}
+              notFoundContent={profilesQuery.isLoading ? 'Đang tìm khách hàng…' : 'Không tìm thấy khách'}
             />
           </Form.Item>
           <Row gutter={12}>
@@ -703,6 +986,32 @@ export default function Appointments() {
             <Input.TextArea rows={2} />
           </Form.Item>
           <CustomFieldFormItems definitions={appointmentCustomFields} />
+        </Form>
+      </Modal>
+      <Modal
+        title="Tạo nhanh khách hàng"
+        open={quickCustomerOpen}
+        onCancel={() => setQuickCustomerOpen(false)}
+        onOk={() => void submitQuickCustomer()}
+        okText="Tạo khách"
+        cancelText="Hủy"
+      >
+        <Form form={quickCustomerForm} layout="vertical" style={{ marginTop: 12 }}>
+          <Form.Item name="full_name" label="Họ và tên" rules={[{ required: true, message: 'Nhập họ tên' }]}>
+            <Input placeholder="Tên khách hàng" />
+          </Form.Item>
+          <Form.Item name="phone" label="Số điện thoại" rules={[{ required: true, message: 'Nhập số điện thoại' }]}>
+            <Input placeholder="0901234567" />
+          </Form.Item>
+          <Form.Item name="email" label="Email">
+            <Input type="email" placeholder="email@example.com" />
+          </Form.Item>
+          <Form.Item name="branch_id" label="Cơ sở" rules={[{ required: true, message: 'Chọn cơ sở' }]}>
+            <Select
+              placeholder="Chọn cơ sở"
+              options={branches.map((branch) => ({ value: branch.id, label: branch.name }))}
+            />
+          </Form.Item>
         </Form>
       </Modal>
       <Modal
