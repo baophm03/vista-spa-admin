@@ -39,9 +39,15 @@ export interface CustomerTreatment {
   /** @minimum 0 */
   total_amount?: number;
   /** @minimum 0 */
+  discount_amount?: number;
+  /** @minimum 0 */
   paid_amount?: number;
   /** @minimum 0 */
   debt_amount?: number;
+  /** @minimum 0 */
+  points_used?: number;
+  /** @minimum 0 */
+  points_discount?: number;
   payment_status?: CustomerTreatmentPaymentStatus;
   status?: CustomerTreatmentStatus;
   started_at?: CustomerTreatmentStartedAt;

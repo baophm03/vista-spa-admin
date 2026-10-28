@@ -1,23 +1,32 @@
 import { useEffect, useState } from 'react'
 import { Button, Card, Form, Input, InputNumber, Modal, Popconfirm, Select, Space, Table, Tag, Typography, message } from 'antd'
-import { PlusOutlined, ReloadOutlined } from '@ant-design/icons'
 import { useBrandCurrency, useBrandDateTime } from '@/themeRuntime'
+import { EditOutlined, PlusOutlined, ReloadOutlined } from '@ant-design/icons'
 import PageTitle from '../components/base/PageTitle'
 import { useGetBranches } from '../api/endpoints/branches'
 import {
   useDeleteLuckyWheelsId,
+  useDeleteLuckyWheelsIdPrizesPrizeId,
+  useGetLuckyWheelsIdEligibleCustomers,
   useGetLuckyWheels,
   useGetLuckyWheelsIdPrizes,
   useGetLuckyWheelsIdSpins,
   usePostLuckyWheels,
   usePostLuckyWheelsIdPrizes,
+  usePostLuckyWheelsIdSpins,
   usePutLuckyWheelsId,
+  usePutLuckyWheelsIdPrizesPrizeId,
+  usePutLuckyWheelsIdSpinsSpinIdClaim,
 } from '../api/endpoints/lucky-wheels'
+import type {
+  GetLuckyWheelsIdEligibleCustomers200AllOfResponseDataItem as EligibleCustomer,
+  PostLuckyWheelsBody,
+  WheelPrize,
+  WheelSpin,
+} from '../api/models'
 import { Can } from '@casl/react'
 
-interface Branch { id: string; name: string }
-interface LuckyWheel { id: string; branch_id?: string; name: string; min_year_spent: number; spins_per_user: number; is_active?: boolean }
-interface WheelPrize { id: string; name: string; prize_type: string; weight: number; quantity_total?: number; quantity_given: number }
+interface LuckyWheel { id: string; branch_id?: string | null; name: string; min_year_spent: number; spins_per_user: number; is_active?: boolean }
 
 const TYPE_META: Record<string, { label: string; color: string }> = {
   VOUCHER: { label: 'Voucher', color: 'gold' },
@@ -32,6 +41,11 @@ export default function LuckyWheel() {
   const [selected, setSelected] = useState<LuckyWheel | null>(null)
   const [wheelOpen, setWheelOpen] = useState(false)
   const [prizeOpen, setPrizeOpen] = useState(false)
+  const [editingPrize, setEditingPrize] = useState<WheelPrize | null>(null)
+  const [customerSearch, setCustomerSearch] = useState('')
+  const [chosenCustomer, setChosenCustomer] = useState<EligibleCustomer | null>(null)
+  const [manualPrizeOpen, setManualPrizeOpen] = useState(false)
+  const [manualPrizeId, setManualPrizeId] = useState<string | null>(null)
   const [wheelForm] = Form.useForm()
   const [prizeForm] = Form.useForm()
 
@@ -39,26 +53,38 @@ export default function LuckyWheel() {
   const branchesQuery = useGetBranches()
   const prizesQuery = useGetLuckyWheelsIdPrizes(selected?.id ?? '')
   const spinsQuery = useGetLuckyWheelsIdSpins(selected?.id ?? '')
+  const eligibleQuery = useGetLuckyWheelsIdEligibleCustomers(
+    selected?.id ?? '',
+    customerSearch ? { search: customerSearch, limit: 50 } : { limit: 50 },
+  )
   const createMutation = usePostLuckyWheels()
   const updateMutation = usePutLuckyWheelsId()
   const deleteMutation = useDeleteLuckyWheelsId()
   const prizeMutation = usePostLuckyWheelsIdPrizes()
-  const wheels = (((wheelsQuery.data?.responseData ?? (wheelsQuery.data as any)?.data ?? []) as LuckyWheel[]))
-  const branches = (((branchesQuery.data?.responseData ?? (branchesQuery.data as any)?.data ?? []) as Branch[]))
-  const prizes = (((prizesQuery.data?.responseData ?? (prizesQuery.data as any)?.data ?? []) as WheelPrize[]))
-  const spins = (((spinsQuery.data?.responseData ?? (spinsQuery.data as any)?.data ?? []) as any[]))
+  const prizeUpdateMutation = usePutLuckyWheelsIdPrizesPrizeId()
+  const prizeDeleteMutation = useDeleteLuckyWheelsIdPrizesPrizeId()
+  const spinForCustomerMutation = usePostLuckyWheelsIdSpins()
+  const claimMutation = usePutLuckyWheelsIdSpinsSpinIdClaim()
+  const wheels = wheelsQuery.data?.responseData ?? []
+  const branches = branchesQuery.data?.responseData ?? []
+  const prizes = prizesQuery.data?.responseData ?? []
+  const spins = spinsQuery.data?.responseData ?? []
+  const eligibleCustomers = eligibleQuery.data?.responseData ?? []
 
   useEffect(() => {
     if (!selected && wheels.length) setSelected(wheels[0])
   }, [wheels, selected])
 
-  const selectWheel = (w: LuckyWheel) => setSelected(w)
+  const selectWheel = (w: LuckyWheel) => {
+    setSelected(w)
+    setChosenCustomer(null)
+  }
   const loadWheels = () => wheelsQuery.refetch()
 
   const submitWheel = async () => {
     const values = await wheelForm.validateFields()
     try {
-      await createMutation.mutateAsync({ data: values })
+      await createMutation.mutateAsync({ data: values as PostLuckyWheelsBody })
       message.success('Đã tạo vòng quay')
       setWheelOpen(false)
       await wheelsQuery.refetch()
@@ -88,15 +114,90 @@ export default function LuckyWheel() {
     }
   }
 
+  const openCreatePrize = () => {
+    setEditingPrize(null)
+    prizeForm.resetFields()
+    prizeForm.setFieldsValue({ prize_type: 'VOUCHER', weight: 1 })
+    setPrizeOpen(true)
+  }
+
+  const openEditPrize = (p: WheelPrize) => {
+    setEditingPrize(p)
+    prizeForm.setFieldsValue({
+      name: p.name,
+      prize_type: p.prize_type,
+      weight: p.weight,
+      points: p.points ?? undefined,
+      voucher_id: p.voucher_id ?? undefined,
+      service_id: p.service_id ?? undefined,
+      quantity_total: p.quantity_total ?? undefined,
+      is_active: p.is_active !== false,
+    })
+    setPrizeOpen(true)
+  }
+
   const submitPrize = async () => {
     const values = await prizeForm.validateFields()
     try {
-      await prizeMutation.mutateAsync({ id: selected!.id, data: values })
-      message.success('Đã thêm giải')
+      if (editingPrize) {
+        await prizeUpdateMutation.mutateAsync({ id: selected!.id, prizeId: editingPrize.id, data: values })
+        message.success('Đã cập nhật giải')
+      } else {
+        await prizeMutation.mutateAsync({ id: selected!.id, data: values })
+        message.success('Đã thêm giải')
+      }
       setPrizeOpen(false)
       await prizesQuery.refetch()
     } catch (err) {
-      message.error(err instanceof Error ? err.message : 'Không thể thêm giải thưởng')
+      message.error(err instanceof Error ? err.message : 'Không thể lưu giải thưởng')
+    }
+  }
+
+  const removePrize = async (p: WheelPrize) => {
+    try {
+      await prizeDeleteMutation.mutateAsync({ id: selected!.id, prizeId: p.id })
+      message.success('Đã xóa giải')
+      await prizesQuery.refetch()
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : 'Không thể xóa giải thưởng')
+    }
+  }
+
+  const spinForCustomer = async (random: boolean) => {
+    if (!selected || !chosenCustomer?.customer_profile_id) return
+    try {
+      const res = await spinForCustomerMutation.mutateAsync({
+        id: selected.id,
+        data: {
+          customer_profile_id: chosenCustomer.customer_profile_id ?? '',
+          request_key: `admin-${selected.id}-${chosenCustomer.customer_profile_id}-${Date.now()}`,
+          ...(random ? {} : { prize_id: manualPrizeId! }),
+        },
+      })
+      const prizeName = res.responseData?.prize?.name
+      message.success(prizeName ? `Kết quả: khách trúng giải "${prizeName}"` : 'Kết quả: không trúng thưởng')
+      setManualPrizeOpen(false)
+      setManualPrizeId(null)
+      await Promise.all([eligibleQuery.refetch(), spinsQuery.refetch(), prizesQuery.refetch()])
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : 'Không thể quay cho khách')
+    }
+  }
+
+  const openManualPrize = () => {
+    if (!chosenCustomer) return
+    setManualPrizeId(null)
+    setManualPrizeOpen(true)
+  }
+
+  const claimSpin = async (spinId: string) => {
+    if (!selected) return
+    try {
+      await claimMutation.mutateAsync({ id: selected.id, spinId })
+      message.success('Đã xác nhận khách nhận giải')
+      await spinsQuery.refetch()
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : 'Không thể xác nhận giải')
     }
   }
 
@@ -155,7 +256,7 @@ export default function LuckyWheel() {
         />
 
         {selected && (
-          <Card title={`Giải thưởng — ${selected.name}`} extra={<Can I="CREATE" a="WHEEL"><Button size="small" icon={<PlusOutlined />} onClick={() => setPrizeOpen(true)}>Thêm giải</Button></Can>}>
+          <Card title={`Giải thưởng — ${selected.name}`} extra={<Can I="CREATE" a="WHEEL"><Button size="small" icon={<PlusOutlined />} onClick={openCreatePrize}>Thêm giải</Button></Can>}>
             <Table
               rowKey="id"
               dataSource={prizes}
@@ -166,23 +267,116 @@ export default function LuckyWheel() {
                 { title: 'Loại', dataIndex: 'prize_type', render: (v: string) => <Tag color={TYPE_META[v]?.color}>{TYPE_META[v]?.label ?? v}</Tag> },
                 { title: 'Trọng số', dataIndex: 'weight', width: 90 },
                 { title: 'Số lượng', key: 'qty', width: 120, render: (_, row) => (row.quantity_total != null ? `${row.quantity_given}/${row.quantity_total}` : '∞') },
+                {
+                  title: '',
+                  width: 140,
+                  render: (_, row: WheelPrize) => (
+                    <Space>
+                      <Can I="UPDATE" a="WHEEL">
+                        <Button size="small" icon={<EditOutlined />} onClick={(e) => { e.stopPropagation(); openEditPrize(row) }}>Sửa</Button>
+                      </Can>
+                      <Can I="DELETE" a="WHEEL">
+                        <Popconfirm title="Xóa giải này? (chỉ xóa được khi chưa có lượt quay trúng giải)" onConfirm={() => removePrize(row)}>
+                          <Button size="small" danger>Xóa</Button>
+                        </Popconfirm>
+                      </Can>
+                    </Space>
+                  ),
+                },
               ]}
             />
           </Card>
         )}
 
         {selected && (
+          <Can I="SPIN_ADMIN" a="WHEEL">
+            <Card title={`Quay hộ khách — ${selected.name}`}>
+              <Space direction="vertical" style={{ width: '100%' }} size={12}>
+                <Space wrap>
+                  <Input.Search
+                    allowClear
+                    placeholder="Tìm theo tên / SĐT"
+                    style={{ width: 260 }}
+                    onSearch={(v) => setCustomerSearch(v.trim() || '')}
+                  />
+                  {chosenCustomer && (
+                    <Typography.Text>
+                      Đã chọn: <Typography.Text strong>{chosenCustomer.full_name}</Typography.Text> ({chosenCustomer.phone})
+                    </Typography.Text>
+                  )}
+                </Space>
+                <Table
+                  rowKey="customer_profile_id"
+                  dataSource={eligibleCustomers}
+                  loading={eligibleQuery.isLoading}
+                  pagination={false}
+                  size="small"
+                  locale={{ emptyText: 'Không có khách đủ điều kiện' }}
+                  onRow={(row) => ({ onClick: () => setChosenCustomer(row), style: { cursor: 'pointer' } })}
+                  columns={[
+                    {
+                      title: 'Khách hàng', dataIndex: 'full_name', render: (v, row) => (
+                        <Typography.Text strong style={chosenCustomer?.customer_profile_id === row.customer_profile_id ? { color: 'var(--brand-primary)' } : undefined}>
+                          {v} {row.customer_code ? `(${row.customer_code})` : ''}
+                        </Typography.Text>
+                      ),
+                    },
+                    { title: 'SĐT', dataIndex: 'phone', width: 130 },
+                    { title: 'Chi tiêu', dataIndex: 'spend', width: 130, render: (v) => `${Number(v).toLocaleString('vi-VN')}đ` },
+                    { title: 'Lượt còn lại', dataIndex: 'spins_left', width: 110, render: (v, row) => `${v}/${row.spins_max}` },
+                  ]}
+                />
+                <Space wrap>
+                  <Button
+                    type="primary"
+                    disabled={!chosenCustomer || (chosenCustomer.spins_left ?? 0) <= 0 || spinForCustomerMutation.isPending}
+                    loading={spinForCustomerMutation.isPending && !!manualPrizeId}
+                    onClick={() => spinForCustomer(true)}
+                  >
+                    Quay ngẫu nhiên
+                  </Button>
+                  <Button
+                    disabled={!chosenCustomer || (chosenCustomer.spins_left ?? 0) <= 0 || !prizes.length}
+                    onClick={openManualPrize}
+                  >
+                    Ghi kết quả tay
+                  </Button>
+                </Space>
+              </Space>
+            </Card>
+          </Can>
+        )}
+
+        {selected && (
           <Card title="Lịch sử quay">
-            <Table
+            <Table<WheelSpin>
               rowKey="id"
               dataSource={spins}
               pagination={{ pageSize: 5 }}
               size="small"
               columns={[
                 { title: 'Thời gian', dataIndex: 'spun_at', render: (v) => formatDateTime(v) },
-                { title: 'Khách hàng', dataIndex: ['user', 'zalo_name'], render: (v) => v || '—' },
+                { title: 'Khách hàng', key: 'customer', render: (_, row) => row.customer_profile?.full_name || row.user_id || '—' },
                 { title: 'Trúng', dataIndex: 'is_win', render: (v) => (v ? <Tag color="green">Trúng thưởng</Tag> : <Tag>Không trúng</Tag>) },
                 { title: 'Giải', dataIndex: ['prize', 'name'], render: (v) => v || '—' },
+                {
+                  title: 'Trạng thái',
+                  dataIndex: 'status',
+                  width: 110,
+                  render: (v) => (v === 'CLAIMED' ? <Tag color="blue">Đã nhận</Tag> : <Tag>Chờ nhận</Tag>),
+                },
+                {
+                  title: '',
+                  width: 140,
+                  render: (_, row) =>
+                    row.status === 'ISSUED' && row.is_win ? (
+                      <Can I="SPIN_ADMIN" a="WHEEL">
+                        <Button size="small" type="primary" ghost loading={claimMutation.isPending} onClick={() => claimSpin(row.id)}>
+                          Xác nhận trúng
+                        </Button>
+                      </Can>
+                    ) : null,
+                },
               ]}
             />
           </Card>
@@ -208,7 +402,7 @@ export default function LuckyWheel() {
         </Form>
       </Modal>
 
-      <Modal title="Thêm giải thưởng" open={prizeOpen} onCancel={() => setPrizeOpen(false)} onOk={submitPrize} okText="Lưu" cancelText="Hủy">
+      <Modal title={editingPrize ? 'Sửa giải thưởng' : 'Thêm giải thưởng'} open={prizeOpen} onCancel={() => setPrizeOpen(false)} onOk={submitPrize} okText="Lưu" cancelText="Hủy">
         <Form form={prizeForm} layout="vertical" style={{ marginTop: 12 }}>
           <Form.Item name="name" label="Tên giải" rules={[{ required: true, message: 'Nhập tên giải' }]}>
             <Input placeholder="VD: Voucher giảm 100k" />
@@ -222,18 +416,58 @@ export default function LuckyWheel() {
             </Form.Item>
           </Space>
           <Form.Item noStyle shouldUpdate={(prev, cur) => prev.prize_type !== cur.prize_type}>
-            {({ getFieldValue }) =>
-              getFieldValue('prize_type') === 'POINTS' ? (
-                <Form.Item name="points" label="Số điểm tặng" rules={[{ required: true }]}>
-                  <InputNumber min={1} style={{ width: '100%' }} />
-                </Form.Item>
-              ) : null
-            }
+            {({ getFieldValue }) => (
+              <>
+                {getFieldValue('prize_type') === 'POINTS' ? (
+                  <Form.Item name="points" label="Số điểm tặng" rules={[{ required: true }]}>
+                    <InputNumber min={1} style={{ width: '100%' }} />
+                  </Form.Item>
+                ) : null}
+                {getFieldValue('prize_type') === 'VOUCHER' ? (
+                  <Form.Item name="voucher_id" label="Voucher ID (UUID)" rules={[{ required: true, message: 'Nhập voucher ID' }]}>
+                    <Input placeholder="UUID voucher cấp khi trúng" />
+                  </Form.Item>
+                ) : null}
+                {getFieldValue('prize_type') === 'SERVICE' ? (
+                  <Form.Item name="service_id" label="Dịch vụ ID (UUID)" rules={[{ required: true, message: 'Nhập dịch vụ ID' }]}>
+                    <Input placeholder="UUID dịch vụ tặng khi trúng" />
+                  </Form.Item>
+                ) : null}
+              </>
+            )}
           </Form.Item>
           <Form.Item name="quantity_total" label="Số lượng (bỏ trống = không giới hạn)">
             <InputNumber min={1} style={{ width: '100%' }} />
           </Form.Item>
+          {editingPrize && (
+            <Form.Item name="is_active" label="Đang kích hoạt" valuePropName="checked">
+              <Select options={[{ value: true, label: 'Bật' }, { value: false, label: 'Tắt' }]} />
+            </Form.Item>
+          )}
         </Form>
+      </Modal>
+
+      <Modal
+        title="Ghi kết quả tay"
+        open={manualPrizeOpen}
+        onCancel={() => setManualPrizeOpen(false)}
+        onOk={() => spinForCustomer(false)}
+        okText="Ghi kết quả"
+        cancelText="Hủy"
+        okButtonProps={{ disabled: !manualPrizeId, loading: spinForCustomerMutation.isPending }}
+      >
+        <Typography.Paragraph type="secondary" style={{ marginTop: 12 }}>
+          Chọn giải trúng cho {chosenCustomer?.full_name} — hệ thống sẽ ghi kết quả và phát thưởng (bỏ qua quay ngẫu nhiên).
+        </Typography.Paragraph>
+        <Select
+          style={{ width: '100%' }}
+          placeholder="Chọn giải trúng"
+          value={manualPrizeId}
+          onChange={setManualPrizeId}
+          options={prizes
+            .filter((p) => p.prize_type !== 'NONE' && (p.quantity_total == null || (p.quantity_given ?? 0) < p.quantity_total))
+            .map((p) => ({ value: p.id!, label: `${p.name} (${TYPE_META[p.prize_type]?.label ?? p.prize_type})` }))}
+        />
       </Modal>
     </>
   )

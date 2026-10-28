@@ -10,6 +10,9 @@ import {
   usePostMembershipsUserIdRecalculate,
 } from '../api/endpoints/membership'
 import { useGetUsers } from '../api/endpoints/users'
+import { useGetCustomerProfilesIdPoints } from '../api/endpoints/customer-profiles'
+import type { MembershipTransaction } from '../api/models'
+import { useGetCustomerProfiles } from '../api/endpoints/customer-profiles'
 import { Can } from '@casl/react'
 
 interface RankRow {
@@ -37,11 +40,29 @@ interface MemberRow {
   }
 }
 
+interface ProfileLite {
+  id: string
+  user_id?: string | null
+  full_name?: string
+  phone?: string
+}
+
+const REF_TYPE_LABELS: Record<string, string> = {
+  PAYMENT: 'Thanh toán',
+  MANUAL: 'Điều chỉnh tay',
+  RANK: 'Hạng',
+  REWARD: 'Đổi quà',
+  REWARD_CANCEL: 'Hủy đổi quà',
+  REDEEM: 'Trừ vào gói',
+  WHEEL: 'Vòng quay',
+}
+
 export default function Points() {
   const { format: formatMoney } = useBrandCurrency()
   const [page, setPage] = useState(1)
   const [limit] = useState(10)
   const [adjusting, setAdjusting] = useState<MemberRow | null>(null)
+  const [historyUserId, setHistoryUserId] = useState<string | null>(null)
   const [form] = Form.useForm()
   const usersQuery = useGetUsers({ currentPage: page, pageSize: limit })
   const ranksQuery = useGetCardRanks()
@@ -54,6 +75,17 @@ export default function Points() {
   const ranksData = (ranksQuery.data?.responseData ?? (ranksQuery.data as any)?.data ?? []) as RankRow[]
   const ranks = Array.isArray(ranksData) ? [...ranksData].sort((a, b) => a.sort_order - b.sort_order) : []
   const loading = usersQuery.isLoading
+
+  // Lịch sử điểm: map user id → customer profile id để gọi LY-01
+  const profilesQuery = useGetCustomerProfiles({ page: 1, limit: 200 })
+  const profilesData = (profilesQuery.data?.responseData ?? (profilesQuery.data as any)?.data ?? []) as ProfileLite[]
+  const profileIdByUserId = new Map(
+    profilesData.filter((p) => p.user_id).map((p) => [p.user_id as string, p.id]),
+  )
+  const historyProfileId = historyUserId ? profileIdByUserId.get(historyUserId) ?? null : null
+  const pointsQuery = useGetCustomerProfilesIdPoints(historyProfileId ?? '')
+  const pointsData = pointsQuery.data?.responseData ?? null
+  const historyRows = pointsData?.history ?? []
 
   const rankName = (id?: string) => ranks.find((r) => r.id === id)?.name ?? '—'
 
@@ -195,6 +227,83 @@ export default function Points() {
         ]}
       />
 
+      <Typography.Title level={5} style={{ marginTop: 28 }}>
+        Lịch sử điểm
+      </Typography.Title>
+      <Space style={{ marginBottom: 12 }} wrap>
+        <Select
+          placeholder="Chọn khách hàng"
+          style={{ width: 280 }}
+          allowClear
+          showSearch
+          optionFilterProp="label"
+          value={historyUserId ?? undefined}
+          onChange={(v) => setHistoryUserId(v ?? null)}
+          options={rows.map((r) => ({ value: r.id, label: r.zalo_name || r.phone_number || r.id }))}
+        />
+        {historyUserId && (
+          <span style={{ fontSize: 13 }}>
+            Số điểm hiện tại:{' '}
+            <b style={{ color: 'var(--brand-primary)' }}>
+              {Number(pointsData?.points ?? 0).toLocaleString('vi-VN')}
+            </b>
+          </span>
+        )}
+      </Space>
+      <Table
+        rowKey="id"
+        size="small"
+        loading={!!historyUserId && pointsQuery.isLoading}
+        dataSource={historyRows}
+        pagination={{ pageSize: 10, hideOnSinglePage: true }}
+        locale={{ emptyText: historyUserId ? 'Không có giao dịch điểm' : 'Chọn khách hàng để xem lịch sử điểm' }}
+        columns={[
+          {
+            title: 'Thời gian',
+            width: 170,
+            render: (_, row: MembershipTransaction) =>
+              row.created_at ? new Date(row.created_at).toLocaleString('vi-VN') : '—',
+          },
+          {
+            title: 'Loại',
+            width: 140,
+            render: (_, row: MembershipTransaction) => (
+              <Tag color={Number(row.points_earned ?? 0) >= 0 ? 'green' : 'red'}>
+                {REF_TYPE_LABELS[row.ref_type ?? ''] ?? row.ref_type ?? '—'}
+              </Tag>
+            ),
+          },
+          {
+            title: 'Điểm',
+            width: 110,
+            align: 'right',
+            render: (_, row: MembershipTransaction) => {
+              const delta = Number(row.points_earned ?? 0)
+              return (
+                <span style={{ fontWeight: 600, color: delta >= 0 ? '#389e0d' : '#cf1322' }}>
+                  {delta >= 0 ? `+${delta}` : delta}
+                </span>
+              )
+            },
+          },
+          {
+            title: 'Số tiền',
+            width: 140,
+            align: 'right',
+            render: (_, row: MembershipTransaction) =>
+              row.amount ? `${Number(row.amount).toLocaleString('vi-VN')}đ` : '—',
+          },
+          {
+            title: 'Mã giao dịch',
+            render: (_, row: MembershipTransaction) => (
+              <Typography.Text code style={{ fontSize: 12 }}>
+                {row.trans_code}
+              </Typography.Text>
+            ),
+          },
+        ]}
+      />
+
       <Modal
         title={`Điều chỉnh điểm — ${adjusting?.zalo_name || adjusting?.phone_number || ''}`}
         open={!!adjusting}
@@ -219,3 +328,4 @@ export default function Points() {
     </>
   )
 }
+

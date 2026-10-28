@@ -17,4 +17,8 @@ export type PostDiscountRulesBody = {
   max_total_percent?: number;
   start_date?: string;
   end_date?: string;
+  stackable?: boolean;
+  once_per_customer?: boolean;
+  show_in_app?: boolean;
+  service_ids?: string[];
 };

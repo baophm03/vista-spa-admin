@@ -11,11 +11,19 @@ export type PutDiscountRulesIdBody = {
   name?: string;
   audience?: string;
   applies_to?: string;
-  requires_rank_id?: string;
+  /** @nullable */
+  requires_rank_id?: string | null;
   percent_min?: number;
   percent_max?: number;
-  max_total_percent?: number;
-  start_date?: string;
-  end_date?: string;
+  /** @nullable */
+  max_total_percent?: number | null;
+  /** @nullable */
+  start_date?: string | null;
+  /** @nullable */
+  end_date?: string | null;
   is_active?: boolean;
+  stackable?: boolean;
+  once_per_customer?: boolean;
+  show_in_app?: boolean;
+  service_ids?: string[];
 };

@@ -28,6 +28,13 @@ import CustomerDataConfig from './pages/CustomerDataConfig'
 import Rewards from './pages/Rewards'
 import AcademyCourses from './pages/AcademyCourses'
 import AccessLogs from './pages/AccessLogs'
+import WarrantyClaims from './pages/WarrantyClaims'
+import CardRanks from './pages/CardRanks'
+import CommissionRules from './pages/CommissionRules'
+import Commissions from './pages/Commissions'
+import Collaborators from './pages/Collaborators'
+import Referrals from './pages/Referrals'
+import DiscountRules from './pages/DiscountRules'
 
 export default function App() {
   return (
@@ -54,6 +61,13 @@ export default function App() {
           <Route path="/luckywheel" element={<LuckyWheel />} />
           <Route path="/health-records" element={<HealthRecords />} />
           <Route path="/rewards" element={<Rewards />} />
+          <Route path="/warranty-claims" element={<WarrantyClaims />} />
+          <Route path="/card-ranks" element={<CardRanks />} />
+          <Route path="/commission-rules" element={<CommissionRules />} />
+          <Route path="/commissions" element={<Commissions />} />
+          <Route path="/collaborators" element={<Collaborators />} />
+          <Route path="/referrals" element={<Referrals />} />
+          <Route path="/discount-rules" element={<DiscountRules />} />
           <Route path="/branches" element={<Branches />} />
           <Route path="/customer-data-config" element={<CustomerDataConfig />} />
           <Route path="/settings/lookups" element={<LookupLists />} />

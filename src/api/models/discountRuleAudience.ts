@@ -11,8 +11,8 @@ export type DiscountRuleAudience = typeof DiscountRuleAudience[keyof typeof Disc
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const DiscountRuleAudience = {
-  ALL: 'ALL',
-  NEW: 'NEW',
   RANK: 'RANK',
-  REFERRAL: 'REFERRAL',
+  RETURNING_MEMBER: 'RETURNING_MEMBER',
+  NEW_BY_REFERRAL: 'NEW_BY_REFERRAL',
+  UPSELL: 'UPSELL',
 } as const;

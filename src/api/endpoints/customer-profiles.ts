@@ -44,6 +44,7 @@ import type {
   GetCustomerProfilesIdHealthMetrics200,
   GetCustomerProfilesIdHealthRecords200,
   GetCustomerProfilesIdLinkUser200,
+  GetCustomerProfilesIdPoints200,
   GetCustomerProfilesIdQr200,
   GetCustomerProfilesIdQrParams,
   GetCustomerProfilesIdSummary200,
@@ -1700,6 +1701,200 @@ export const prefetchGetCustomerProfilesIdQrQuery = async <TData = Awaited<Retur
   ): Promise<QueryClient> => {
 
   const queryOptions = getGetCustomerProfilesIdQrQueryOptions(id,params,options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * **LY-01** — GET /customer-profiles/{id}/points. Cần quyền `membership.points_adjust`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Trả về `{ points, history }` — history tối đa 100 giao dịch điểm mới nhất.
+ * @summary Xem số điểm và lịch sử giao dịch điểm của hồ sơ khách
+ */
+export const getCustomerProfilesIdPoints = (
+    id: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetCustomerProfilesIdPoints200>(
+      {url: `/customerProfiles/${id}/points`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetCustomerProfilesIdPointsInfiniteQueryKey = (id?: string,) => {
+    return [
+    'infinite', `/customerProfiles/${id}/points`
+    ] as const;
+    }
+
+export const getGetCustomerProfilesIdPointsQueryKey = (id?: string,) => {
+    return [
+    `/customerProfiles/${id}/points`
+    ] as const;
+    }
+
+    
+export const getGetCustomerProfilesIdPointsInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getCustomerProfilesIdPoints>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdPoints>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetCustomerProfilesIdPointsInfiniteQueryKey(id);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCustomerProfilesIdPoints>>> = ({ signal }) => getCustomerProfilesIdPoints(id, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdPoints>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetCustomerProfilesIdPointsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getCustomerProfilesIdPoints>>>
+export type GetCustomerProfilesIdPointsInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+
+
+export function useGetCustomerProfilesIdPointsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCustomerProfilesIdPoints>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdPoints>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getCustomerProfilesIdPoints>>,
+          TError,
+          Awaited<ReturnType<typeof getCustomerProfilesIdPoints>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetCustomerProfilesIdPointsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCustomerProfilesIdPoints>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdPoints>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getCustomerProfilesIdPoints>>,
+          TError,
+          Awaited<ReturnType<typeof getCustomerProfilesIdPoints>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetCustomerProfilesIdPointsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCustomerProfilesIdPoints>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdPoints>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Xem số điểm và lịch sử giao dịch điểm của hồ sơ khách
+ */
+
+export function useGetCustomerProfilesIdPointsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCustomerProfilesIdPoints>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdPoints>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetCustomerProfilesIdPointsInfiniteQueryOptions(id,options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Xem số điểm và lịch sử giao dịch điểm của hồ sơ khách
+ */
+export const prefetchGetCustomerProfilesIdPointsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getCustomerProfilesIdPoints>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdPoints>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetCustomerProfilesIdPointsInfiniteQueryOptions(id,options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetCustomerProfilesIdPointsQueryOptions = <TData = Awaited<ReturnType<typeof getCustomerProfilesIdPoints>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdPoints>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetCustomerProfilesIdPointsQueryKey(id);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCustomerProfilesIdPoints>>> = ({ signal }) => getCustomerProfilesIdPoints(id, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdPoints>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetCustomerProfilesIdPointsQueryResult = NonNullable<Awaited<ReturnType<typeof getCustomerProfilesIdPoints>>>
+export type GetCustomerProfilesIdPointsQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+
+
+export function useGetCustomerProfilesIdPoints<TData = Awaited<ReturnType<typeof getCustomerProfilesIdPoints>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdPoints>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getCustomerProfilesIdPoints>>,
+          TError,
+          Awaited<ReturnType<typeof getCustomerProfilesIdPoints>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetCustomerProfilesIdPoints<TData = Awaited<ReturnType<typeof getCustomerProfilesIdPoints>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdPoints>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getCustomerProfilesIdPoints>>,
+          TError,
+          Awaited<ReturnType<typeof getCustomerProfilesIdPoints>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetCustomerProfilesIdPoints<TData = Awaited<ReturnType<typeof getCustomerProfilesIdPoints>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdPoints>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Xem số điểm và lịch sử giao dịch điểm của hồ sơ khách
+ */
+
+export function useGetCustomerProfilesIdPoints<TData = Awaited<ReturnType<typeof getCustomerProfilesIdPoints>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdPoints>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetCustomerProfilesIdPointsQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Xem số điểm và lịch sử giao dịch điểm của hồ sơ khách
+ */
+export const prefetchGetCustomerProfilesIdPointsQuery = async <TData = Awaited<ReturnType<typeof getCustomerProfilesIdPoints>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdPoints>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetCustomerProfilesIdPointsQueryOptions(id,options)
 
   await queryClient.prefetchQuery(queryOptions);
 

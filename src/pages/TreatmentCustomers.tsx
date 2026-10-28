@@ -40,6 +40,12 @@ import { useGetService } from '@/api/endpoints/services'
 import { useGetTreatmentPackages } from '@/api/endpoints/services'
 import { postFiles } from '@/api/endpoints/files'
 import { useGetLookupLists } from '@/api/endpoints/lookup-lists'
+import {
+  useGetCustomerProfilesIdAvailableDiscounts,
+  usePostCustomerTreatmentsIdApplyDiscount,
+} from '@/api/endpoints/discounts'
+import type { DiscountRule } from '@/api/models'
+import { usePostCustomerTreatmentsIdRedeemPoints } from '@/api/endpoints/customer-treatments'
 import { useGetUsers } from '@/api/endpoints/users'
 import { useBrandCurrency, useBrandDateTime } from '@/themeRuntime'
 import { useCustomerProfileAccess } from '@/utils/customerProfileAccess'
@@ -521,11 +527,11 @@ function SessionTimeline({
     const scheduleValues = editOpen?.appointment_id
       ? {}
       : {
-          scheduled_at: scheduled_date && scheduled_time
-            ? scheduled_date.hour(Number(scheduled_time.slice(0, 2))).minute(Number(scheduled_time.slice(3, 5))).second(0).millisecond(0).toISOString()
-            : null,
-          staff_id: sessionValues.staff_id || null,
-        }
+        scheduled_at: scheduled_date && scheduled_time
+          ? scheduled_date.hour(Number(scheduled_time.slice(0, 2))).minute(Number(scheduled_time.slice(3, 5))).second(0).millisecond(0).toISOString()
+          : null,
+        staff_id: sessionValues.staff_id || null,
+      }
     await act(
       () =>
         putSessionsId(editOpen!.id, {
@@ -623,38 +629,38 @@ function SessionTimeline({
                 {ctStatus === 'ACTIVE' && (
                   <Can I="UPDATE" a="CUSTOMER">
                     <Space size={6} wrap style={{ marginLeft: 'auto' }}>
-                    {s.status === 'scheduled' && (
-                      <Tooltip title={canStart(s) ? undefined : 'Hoàn tất các buổi trước theo đúng thứ tự'}>
-                        <Button
-                          type="primary"
-                          ghost
-                          disabled={!canStart(s)}
-                          onClick={() => act(() => putSessionsIdStart(s.id), 'Đã bắt đầu buổi')}
-                        >
-                          Bắt đầu
+                      {s.status === 'scheduled' && (
+                        <Tooltip title={canStart(s) ? undefined : 'Hoàn tất các buổi trước theo đúng thứ tự'}>
+                          <Button
+                            type="primary"
+                            ghost
+                            disabled={!canStart(s)}
+                            onClick={() => act(() => putSessionsIdStart(s.id), 'Đã bắt đầu buổi')}
+                          >
+                            Bắt đầu
+                          </Button>
+                        </Tooltip>
+                      )}
+                      {s.status === 'in_progress' && (
+                        <Button onClick={() => act(() => putSessionsIdDone(s.id, {} as never), 'Đã thực hiện xong')}>
+                          Đã làm
                         </Button>
-                      </Tooltip>
-                    )}
-                    {s.status === 'in_progress' && (
-                      <Button onClick={() => act(() => putSessionsIdDone(s.id, {} as never), 'Đã thực hiện xong')}>
-                        Đã làm
-                      </Button>
-                    )}
-                    {s.status === 'done' && (
-                      <Button type="primary" onClick={() => act(() => putSessionsIdComplete(s.id), 'Đã hoàn tất buổi')}>
-                        Hoàn tất
-                      </Button>
-                    )}
-                    {s.status !== 'completed' && (
-                      <Button icon={<EditOutlined />} onClick={() => openEdit(s)}>
-                        Sửa
-                      </Button>
-                    )}
-                    {s.status === 'scheduled' && (
-                      <Popconfirm title="Xóa buổi này?" okText="Xóa" cancelText="Hủy" onConfirm={() => act(() => deleteSessionsId(s.id), 'Đã xóa buổi')}>
-                        <Button danger icon={<DeleteOutlined />} />
-                      </Popconfirm>
-                    )}
+                      )}
+                      {s.status === 'done' && (
+                        <Button type="primary" onClick={() => act(() => putSessionsIdComplete(s.id), 'Đã hoàn tất buổi')}>
+                          Hoàn tất
+                        </Button>
+                      )}
+                      {s.status !== 'completed' && (
+                        <Button icon={<EditOutlined />} onClick={() => openEdit(s)}>
+                          Sửa
+                        </Button>
+                      )}
+                      {s.status === 'scheduled' && (
+                        <Popconfirm title="Xóa buổi này?" okText="Xóa" cancelText="Hủy" onConfirm={() => act(() => deleteSessionsId(s.id), 'Đã xóa buổi')}>
+                          <Button danger icon={<DeleteOutlined />} />
+                        </Popconfirm>
+                      )}
                     </Space>
                   </Can>
                 )}
@@ -860,6 +866,10 @@ export default function TreatmentCustomers() {
   const [payLoading, setPayLoading] = useState(false)
   const [payOpen, setPayOpen] = useState(false)
   const [payForm] = Form.useForm()
+  // Modal ưu đãi & điểm (DC-06/07 + LY-02)
+  const [promoOpen, setPromoOpen] = useState(false)
+  const [promoForm] = Form.useForm()
+  const [redeemForm] = Form.useForm()
   const [paymentLookupError, setPaymentLookupError] = useState('')
 
   const treatmentsQuery = useGetCustomerTreatments({ page: 1, limit: 500 })
@@ -907,14 +917,14 @@ export default function TreatmentCustomers() {
   const profileOf = (id: string) => profiles.find((p) => p.id === id)
   const profileName = (row: CustomerTreatment) =>
     (row as CustomerTreatment & { customer_profile?: { full_name?: string } }).customer_profile?.full_name
-      ?? profileOf(row.customer_profile_id)?.full_name
-      ?? 'Khách hàng'
+    ?? profileOf(row.customer_profile_id)?.full_name
+    ?? 'Khách hàng'
   const profilePhone = (row: CustomerTreatment) =>
     (row as CustomerTreatment & { customer_profile?: { phone?: string } }).customer_profile?.phone ?? profileOf(row.customer_profile_id)?.phone
   const packageName = (row: CustomerTreatment) =>
     (row as CustomerTreatment & { package_type?: { name?: string } }).package_type?.name
-      ?? packages.find((p) => p.id === row.package_id)?.name
-      ?? '—'
+    ?? packages.find((p) => p.id === row.package_id)?.name
+    ?? '—'
 
   const list = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -1179,6 +1189,55 @@ export default function TreatmentCustomers() {
     }
   }
 
+  // ===== Ưu đãi & đổi điểm (DC-06/07/08, LY-02) =====
+  const promoCustomerProfileId = detail?.customer_profile_id
+  const availableDiscountsQuery = useGetCustomerProfilesIdAvailableDiscounts(promoCustomerProfileId ?? '', {
+    query: { enabled: promoOpen && !!promoCustomerProfileId },
+  })
+  const availableDiscounts: DiscountRule[] = useMemo(
+    () => availableDiscountsQuery.data?.responseData ?? [],
+    [availableDiscountsQuery.data],
+  )
+  const applyDiscountMutation = usePostCustomerTreatmentsIdApplyDiscount()
+  const redeemPointsMutation = usePostCustomerTreatmentsIdRedeemPoints()
+
+  const openPromo = (row: CustomerTreatment) => {
+    setDetail(row)
+    setPromoOpen(true)
+    promoForm.resetFields()
+    redeemForm.resetFields()
+  }
+
+  const submitApplyDiscount = async () => {
+    const target = detail
+    if (!target) return
+    try {
+      const values = await promoForm.validateFields()
+      await applyDiscountMutation.mutateAsync({ id: target.id, data: { rule_id: values.rule_id, percent: values.percent } })
+      message.success('Đã áp dụng giảm giá vào gói')
+      promoForm.resetFields()
+      openDetail(target)
+      refresh()
+    } catch (err) {
+      message.error(errorMessage(err))
+    }
+  }
+
+  const submitRedeemPoints = async () => {
+    const target = detail
+    if (!target) return
+    try {
+      const values = await redeemForm.validateFields()
+      await redeemPointsMutation.mutateAsync({ id: target.id, data: { points: values.points } })
+      message.success('Đã trừ điểm vào gói')
+      redeemForm.resetFields()
+      openDetail(target)
+      refresh()
+    } catch (err) {
+      message.error(errorMessage(err))
+    }
+  }
+
   return (
     <>
       <PageTitle
@@ -1406,56 +1465,61 @@ export default function TreatmentCustomers() {
                   >
                     <Button size="small" icon={<MoreOutlined />} aria-label="Thao tác khác" />
                   </Dropdown>
+                  {row.status === 'ACTIVE' && (
+                    <Button size="small" onClick={() => openPromo(row)}>
+                      Ưu đãi & điểm
+                    </Button>
+                  )}
                 </Space>
               </Can>
             ),
-          },
+},
         ].filter((column) => column.key === 'actions' || visibleColumns.includes(column.key as CustomerTreatmentColumnKey))}
       />
 
-      <Modal
-        title="Thêm khách vào liệu trình"
-        open={open}
-        onCancel={() => setOpen(false)}
-        onOk={submit}
-        okText="Lưu"
-        cancelText="Hủy"
-      >
-        <Form form={form} layout="vertical" style={{ marginTop: 12 }}>
-          <Form.Item name="customer_profile_id" label="Khách hàng" rules={[{ required: true, message: 'Chọn khách hàng' }]}>
-            <Select
-              showSearch
-              filterOption={false}
-              placeholder="Gõ tên hoặc SĐT để tìm khách"
-              onSearch={fetchCustomerOptions}
-              options={customerOptions.map((c) => ({ value: c.id, label: `${c.full_name} — ${c.phone}` }))}
-            />
-          </Form.Item>
-          <Form.Item name="package_id" label="Liệu trình" rules={[{ required: true, message: 'Chọn liệu trình' }]}>
-            <Select
-              showSearch
-              optionFilterProp="label"
-              placeholder="Chọn liệu trình"
-              loading={packagesQuery.isLoading}
-              onChange={onPackageChange}
-              options={packages.filter((p) => p.is_active).map((p) => ({
-                value: p.id,
-                label: `${p.name} (${QUOTA_LABEL[p.quota_type ?? ''] ?? p.quota_type})`,
-              }))}
-            />
-          </Form.Item>
-          <Form.Item name="total_amount" label="Số tiền" rules={[{ required: true, message: 'Nhập số tiền' }]}>
-            <InputNumber min={0} step={100000} suffix={currencySymbol} style={{ width: '100%' }} />
-          </Form.Item>
-          <Form.Item name="sessions_bonus" label="Buổi tặng" extra="Cộng thêm vào số buổi của gói — để trống nếu không tặng">
-            <InputNumber min={0} precision={0} style={{ width: '100%' }} />
-          </Form.Item>
-          <Form.Item name="expires_at" label="Hạn sử dụng" extra="Để trống nếu gói không giới hạn thời gian">
-            <DatePicker style={{ width: '100%' }} />
-          </Form.Item>
-          <CustomFieldFormItems definitions={customerTreatmentCustomFields} />
-        </Form>
-      </Modal>
+  < Modal
+title = "Thêm khách vào liệu trình"
+open = { open }
+onCancel = {() => setOpen(false)}
+onOk = { submit }
+okText = "Lưu"
+cancelText = "Hủy"
+  >
+  <Form form={form} layout="vertical" style={{ marginTop: 12 }}>
+    <Form.Item name="customer_profile_id" label="Khách hàng" rules={[{ required: true, message: 'Chọn khách hàng' }]}>
+      <Select
+        showSearch
+        filterOption={false}
+        placeholder="Gõ tên hoặc SĐT để tìm khách"
+        onSearch={fetchCustomerOptions}
+        options={customerOptions.map((c) => ({ value: c.id, label: `${c.full_name} — ${c.phone}` }))}
+      />
+    </Form.Item>
+    <Form.Item name="package_id" label="Liệu trình" rules={[{ required: true, message: 'Chọn liệu trình' }]}>
+      <Select
+        showSearch
+        optionFilterProp="label"
+        placeholder="Chọn liệu trình"
+        loading={packagesQuery.isLoading}
+        onChange={onPackageChange}
+        options={packages.filter((p) => p.is_active).map((p) => ({
+          value: p.id,
+          label: `${p.name} (${QUOTA_LABEL[p.quota_type ?? ''] ?? p.quota_type})`,
+        }))}
+      />
+    </Form.Item>
+    <Form.Item name="total_amount" label="Số tiền" rules={[{ required: true, message: 'Nhập số tiền' }]}>
+      <InputNumber min={0} step={100000} suffix={currencySymbol} style={{ width: '100%' }} />
+    </Form.Item>
+    <Form.Item name="sessions_bonus" label="Buổi tặng" extra="Cộng thêm vào số buổi của gói — để trống nếu không tặng">
+      <InputNumber min={0} precision={0} style={{ width: '100%' }} />
+    </Form.Item>
+    <Form.Item name="expires_at" label="Hạn sử dụng" extra="Để trống nếu gói không giới hạn thời gian">
+      <DatePicker style={{ width: '100%' }} />
+    </Form.Item>
+    <CustomFieldFormItems definitions={customerTreatmentCustomFields} />
+  </Form>
+      </Modal >
 
       <Modal
         title="Thông tin buổi điều trị mới"
@@ -1499,7 +1563,106 @@ export default function TreatmentCustomers() {
         </Form>
       </Modal>
 
-      {/* Modal chi tiết — timeline buổi + lịch sử thanh toán */}
+{/* Modal Ưu đãi & điểm — áp giảm giá (DC-07) và trừ điểm vào gói (LY-02) */ }
+<Modal
+  title={`Ưu đãi & điểm — gói #${(detail?.id ?? '').slice(0, 8)}`}
+  open={promoOpen}
+  onCancel={() => setPromoOpen(false)}
+  footer={null}
+  width={640}
+>
+  <Alert
+    type="warning" showIcon style={{ marginBottom: 12 }}
+    message={`Giảm giá hiện tại: ${formatMoney(detail?.discount_amount ?? 0)} — Điểm đã dùng: ${detail?.points_used ?? 0} (${formatMoney(detail?.points_discount ?? 0)})`}
+  />
+  <Tabs
+    items={[
+      {
+        key: 'discount',
+        label: 'Áp ưu đãi',
+        children: (
+          <>
+            {availableDiscounts.length === 0 && (
+              <Alert type="info" showIcon style={{ marginBottom: 12 }} message="Khách hiện không đủ điều kiện ưu đãi nào, hoặc chưa tải được danh sách." />
+            )}
+            {availableDiscounts.length > 0 && (
+              <Form form={promoForm} layout="vertical" style={{ marginBottom: 16 }}>
+                <Form.Item name="rule_id" label="Quy tắc ưu đãi đủ điều kiện" rules={[{ required: true, message: 'Chọn quy tắc' }]}>
+                  <Select
+                    showSearch
+                    optionFilterProp="label"
+                    placeholder="Chọn ưu đãi"
+                    options={availableDiscounts.map((rule) => ({
+                      value: rule.id!,
+                      label: `${rule.code} — ${rule.name} (${rule.percent_min ?? 0}–${rule.percent_max ?? 0}%)`,
+                    }))}
+                  />
+                </Form.Item>
+                <Form.Item noStyle shouldUpdate={(p, c) => p.rule_id !== c.rule_id}>
+                  {({ getFieldValue }) => {
+                    const rule = availableDiscounts.find((r) => r.id === getFieldValue('rule_id'))
+                    if (!rule) return null
+                    return (
+                      <Form.Item
+                        name="percent"
+                        label="Mức giảm (%)"
+                        initialValue={rule.percent_max ?? rule.percent_min}
+                        rules={[
+                          { required: true, message: 'Nhập mức giảm' },
+                          {
+                            validator: (_rule_, value) => {
+                              const min = rule.percent_min ?? 0
+                              const max = rule.percent_max ?? 100
+                              if (value == null) return Promise.resolve()
+                              if (value < min || value > max) {
+                                return Promise.reject(new Error(`Ngoài khoảng ${min}–${max}% — vượt khoảng cần quyền discount.override`))
+                              }
+                              return Promise.resolve()
+                            },
+                          },
+                        ]}
+                        extra={`Khoảng cho phép: ${rule.percent_min ?? 0}–${rule.percent_max ?? 0}%. Trần tổng xếp chồng: ${rule.max_total_percent ?? 50}%.`}
+                      >
+                        <InputNumber min={0} max={100} precision={0} style={{ width: '100%' }} />
+                      </Form.Item>
+                    )
+                  }}
+                </Form.Item>
+                <Can I="READ" a="DISCOUNT">
+                  <Button type="primary" loading={applyDiscountMutation.isPending} onClick={() => void submitApplyDiscount()}>
+                    Áp dụng
+                  </Button>
+                </Can>
+              </Form>
+            )}
+          </>
+        ),
+      },
+      {
+        key: 'redeem',
+        label: 'Đổi điểm',
+        children: (
+          <Form form={redeemForm} layout="vertical">
+            <Alert
+              type="info" showIcon style={{ marginBottom: 12 }}
+              message="Số điểm sẽ quy ra tiền giảm trừ nợ gói theo tỷ lệ cấu hình. Không được vượt khoảng % cho phép trên nợ còn lại."
+            />
+            <Form.Item name="points" label="Số điểm muốn dùng" rules={[{ required: true, message: 'Nhập số điểm' }]}>
+              <InputNumber min={1} precision={0} style={{ width: '100%' }} />
+            </Form.Item>
+            <Can I="POINTS_ADJUST" a="MEMBERSHIP">
+              <Button type="primary" loading={redeemPointsMutation.isPending} onClick={() => void submitRedeemPoints()}>
+                Đổi điểm
+              </Button>
+            </Can>
+          </Form>
+        ),
+      },
+    ]}
+  />
+</Modal>
+
+{/* Modal chi tiết — timeline buổi + lịch sử thanh toán */ }
       <Modal
         open={!!detail && !payOpen}
         onCancel={() => setDetail(null)}

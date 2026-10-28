@@ -8,5 +8,5 @@
 import type { Branch } from './branch';
 
 export type GetBranches200AllOf = {
-  responseData?: Branch;
+  responseData?: Branch[];
 };

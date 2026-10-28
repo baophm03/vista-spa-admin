@@ -8,6 +8,7 @@
 import type { CardRankMaxSpent } from './cardRankMaxSpent';
 import type { CardRankValidity } from './cardRankValidity';
 import type { CardRankBenefits } from './cardRankBenefits';
+import type { CardRankDiscountPercent } from './cardRankDiscountPercent';
 
 /**
  * Membership card rank
@@ -25,6 +26,11 @@ export interface CardRank {
   auto_assign?: boolean;
   benefits?: CardRankBenefits;
   is_active?: boolean;
+  /**
+   * @minimum 0
+   * @maximum 100
+   */
+  discount_percent?: CardRankDiscountPercent;
   created_at?: string;
   updated_at?: string;
 }
