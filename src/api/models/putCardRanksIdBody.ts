@@ -8,11 +8,15 @@
 
 export type PutCardRanksIdBody = {
   name?: string;
-  sort_order?: string;
+  sort_order?: number;
   min_spent?: number;
-  max_spent?: number;
+  /** @nullable */
+  max_spent?: number | null;
   validity?: string;
-  auto_assign?: string;
-  benefits?: string;
+  auto_assign?: boolean;
+  /** @nullable */
+  benefits?: string | null;
+  /** @nullable */
+  discount_percent?: number | null;
   is_active?: boolean;
 };

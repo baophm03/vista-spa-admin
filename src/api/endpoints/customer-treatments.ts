@@ -58,6 +58,8 @@ import type {
   PostCustomerTreatmentsIdConvert200,
   PostCustomerTreatmentsIdConvertBody,
   PostCustomerTreatmentsIdPayments200,
+  PostCustomerTreatmentsIdRedeemPoints200,
+  PostCustomerTreatmentsIdRedeemPointsBody,
   PostCustomerTreatmentsIdSessions200,
   PostPaymentsIdVoid200,
   PostPaymentsIdVoidBody,
@@ -80,7 +82,7 @@ import type {
   TreatmentSession,
   UnauthorizedResponse,
   UnprocessableEntityResponse,
-  WarrantyClaim
+  WarrantyClaimCreate
 } from '../models';
 
 import { customInstance } from '../mutator/custom-instance';
@@ -483,7 +485,7 @@ export const prefetchGetWarrantyClaimsQuery = async <TData = Awaited<ReturnType<
  * @summary Tạo yêu cầu bảo hành mới
  */
 export const postWarrantyClaims = (
-    warrantyClaim: WarrantyClaim,
+    warrantyClaimCreate: WarrantyClaimCreate,
  signal?: AbortSignal
 ) => {
       
@@ -491,7 +493,7 @@ export const postWarrantyClaims = (
       return customInstance<PostWarrantyClaims200>(
       {url: `/warrantyClaims`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: warrantyClaim, signal
+      data: warrantyClaimCreate, signal
     },
       );
     }
@@ -499,8 +501,8 @@ export const postWarrantyClaims = (
 
 
 export const getPostWarrantyClaimsMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postWarrantyClaims>>, TError,{data: WarrantyClaim}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postWarrantyClaims>>, TError,{data: WarrantyClaim}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postWarrantyClaims>>, TError,{data: WarrantyClaimCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postWarrantyClaims>>, TError,{data: WarrantyClaimCreate}, TContext> => {
 
 const mutationKey = ['postWarrantyClaims'];
 const {mutation: mutationOptions} = options ?
@@ -512,7 +514,7 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postWarrantyClaims>>, {data: WarrantyClaim}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postWarrantyClaims>>, {data: WarrantyClaimCreate}> = (props) => {
           const {data} = props ?? {};
 
           return  postWarrantyClaims(data,)
@@ -524,18 +526,18 @@ const {mutation: mutationOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type PostWarrantyClaimsMutationResult = NonNullable<Awaited<ReturnType<typeof postWarrantyClaims>>>
-    export type PostWarrantyClaimsMutationBody = WarrantyClaim
+    export type PostWarrantyClaimsMutationBody = WarrantyClaimCreate
     export type PostWarrantyClaimsMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
  * @summary Tạo yêu cầu bảo hành mới
  */
 export const usePostWarrantyClaims = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postWarrantyClaims>>, TError,{data: WarrantyClaim}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postWarrantyClaims>>, TError,{data: WarrantyClaimCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof postWarrantyClaims>>,
         TError,
-        {data: WarrantyClaim},
+        {data: WarrantyClaimCreate},
         TContext
       > => {
 
@@ -2542,6 +2544,72 @@ export const usePostCustomerTreatmentsIdSessions = <TError = UnauthorizedRespons
       > => {
 
       const mutationOptions = getPostCustomerTreatmentsIdSessionsMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * **LY-02** — POST /customer-treatments/{id}/redeem-points (BR-16). Cần quyền `membership.points_adjust`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Body: `points` (số nguyên dương) — số điểm dùng để giảm nợ. Số tiền giảm = points × `points.point_value`, phải nằm trong khoảng [% tối thiểu, % tối đa] của nợ còn lại theo cấu hình `points.redeem_min_percent` / `points.redeem_max_percent`.
+ * @summary Đổi điểm giảm nợ trên gói liệu trình
+ */
+export const postCustomerTreatmentsIdRedeemPoints = (
+    id: string,
+    postCustomerTreatmentsIdRedeemPointsBody: PostCustomerTreatmentsIdRedeemPointsBody,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<PostCustomerTreatmentsIdRedeemPoints200>(
+      {url: `/customerTreatments/${id}/redeem-points`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: postCustomerTreatmentsIdRedeemPointsBody, signal
+    },
+      );
+    }
+  
+
+
+export const getPostCustomerTreatmentsIdRedeemPointsMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postCustomerTreatmentsIdRedeemPoints>>, TError,{id: string;data: PostCustomerTreatmentsIdRedeemPointsBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postCustomerTreatmentsIdRedeemPoints>>, TError,{id: string;data: PostCustomerTreatmentsIdRedeemPointsBody}, TContext> => {
+
+const mutationKey = ['postCustomerTreatmentsIdRedeemPoints'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postCustomerTreatmentsIdRedeemPoints>>, {id: string;data: PostCustomerTreatmentsIdRedeemPointsBody}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  postCustomerTreatmentsIdRedeemPoints(id,data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostCustomerTreatmentsIdRedeemPointsMutationResult = NonNullable<Awaited<ReturnType<typeof postCustomerTreatmentsIdRedeemPoints>>>
+    export type PostCustomerTreatmentsIdRedeemPointsMutationBody = PostCustomerTreatmentsIdRedeemPointsBody
+    export type PostCustomerTreatmentsIdRedeemPointsMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | UnprocessableEntityResponse | InternalErrorResponse
+
+    /**
+ * @summary Đổi điểm giảm nợ trên gói liệu trình
+ */
+export const usePostCustomerTreatmentsIdRedeemPoints = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postCustomerTreatmentsIdRedeemPoints>>, TError,{id: string;data: PostCustomerTreatmentsIdRedeemPointsBody}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postCustomerTreatmentsIdRedeemPoints>>,
+        TError,
+        {id: string;data: PostCustomerTreatmentsIdRedeemPointsBody},
+        TContext
+      > => {
+
+      const mutationOptions = getPostCustomerTreatmentsIdRedeemPointsMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

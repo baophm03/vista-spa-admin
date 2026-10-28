@@ -8,5 +8,5 @@
 import type { Referral } from './referral';
 
 export type GetReferrals200AllOf = {
-  responseData?: Referral;
+  responseData?: Referral[];
 };

@@ -9,10 +9,13 @@
 export type PostCardRanksBody = {
   code?: string;
   name?: string;
-  sort_order?: string;
+  sort_order?: number;
   min_spent?: number;
   max_spent?: number;
   validity?: string;
-  auto_assign?: string;
-  benefits?: string;
+  auto_assign?: boolean;
+  /** @nullable */
+  benefits?: string | null;
+  /** @nullable */
+  discount_percent?: number | null;
 };

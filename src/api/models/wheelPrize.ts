@@ -7,6 +7,7 @@
  */
 import type { WheelPrizePrizeType } from './wheelPrizePrizeType';
 import type { WheelPrizeVoucherId } from './wheelPrizeVoucherId';
+import type { WheelPrizeServiceId } from './wheelPrizeServiceId';
 
 /**
  * Prize on a lucky wheel
@@ -26,5 +27,6 @@ export interface WheelPrize {
   /** @minimum 0 */
   quantity_given?: number;
   is_active?: boolean;
+  service_id?: WheelPrizeServiceId;
   created_at?: string;
 }

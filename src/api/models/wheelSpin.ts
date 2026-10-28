@@ -5,7 +5,15 @@
  * Vista Spa backend API. Uses the NEWSKY+ business error envelope for permission-aware endpoints and the legacy response envelope for existing admin endpoints.
  * OpenAPI spec version: 1.0.0
  */
+import type { WheelSpinUserId } from './wheelSpinUserId';
 import type { WheelSpinPrizeId } from './wheelSpinPrizeId';
+import type { WheelSpinCustomerProfileId } from './wheelSpinCustomerProfileId';
+import type { WheelSpinSpunBy } from './wheelSpinSpunBy';
+import type { WheelSpinStatus } from './wheelSpinStatus';
+import type { WheelSpinClaimedAt } from './wheelSpinClaimedAt';
+import type { WheelSpinClaimedBy } from './wheelSpinClaimedBy';
+import type { WheelSpinCustomerProfile } from './wheelSpinCustomerProfile';
+import type { WheelSpinPrize } from './wheelSpinPrize';
 
 /**
  * Lucky wheel spin result
@@ -13,8 +21,15 @@ import type { WheelSpinPrizeId } from './wheelSpinPrizeId';
 export interface WheelSpin {
   id: string;
   wheel_id: string;
-  user_id: string;
+  user_id: WheelSpinUserId;
   prize_id?: WheelSpinPrizeId;
   is_win: boolean;
   spun_at?: string;
+  customer_profile_id?: WheelSpinCustomerProfileId;
+  spun_by?: WheelSpinSpunBy;
+  status?: WheelSpinStatus;
+  claimed_at?: WheelSpinClaimedAt;
+  claimed_by?: WheelSpinClaimedBy;
+  customer_profile?: WheelSpinCustomerProfile;
+  prize?: WheelSpinPrize;
 }

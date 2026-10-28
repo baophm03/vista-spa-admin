@@ -10,6 +10,7 @@ import type { DiscountRuleAppliesTo } from './discountRuleAppliesTo';
 import type { DiscountRuleRequiresRankId } from './discountRuleRequiresRankId';
 import type { DiscountRuleStartDate } from './discountRuleStartDate';
 import type { DiscountRuleEndDate } from './discountRuleEndDate';
+import type { DiscountRuleRequiresRank } from './discountRuleRequiresRank';
 
 /**
  * Discount rule
@@ -36,9 +37,14 @@ export interface DiscountRule {
    * @maximum 100
    */
   max_total_percent?: number;
+  stackable?: boolean;
+  once_per_customer?: boolean;
+  show_in_app?: boolean;
   start_date?: DiscountRuleStartDate;
   end_date?: DiscountRuleEndDate;
   is_active?: boolean;
+  requires_rank?: DiscountRuleRequiresRank;
+  service_ids?: string[];
   created_at?: string;
   updated_at?: string;
 }

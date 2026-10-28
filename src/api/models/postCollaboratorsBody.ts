@@ -14,4 +14,5 @@ export type PostCollaboratorsBody = {
   branch_id?: string;
   user_id?: string;
   note?: string;
+  is_active?: boolean;
 };

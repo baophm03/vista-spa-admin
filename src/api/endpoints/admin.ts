@@ -37,6 +37,7 @@ import type {
   GetAccessLogsParams,
   GetCollaborators200,
   GetCollaboratorsId200,
+  GetCollaboratorsIdSummary200,
   GetCollaboratorsParams,
   GetLogsGetAllWithinTimeRangeParams,
   GetNotifications200,
@@ -1357,6 +1358,200 @@ export const usePostCollaborators = <TError = UnauthorizedResponse | ForbiddenRe
       return useMutation(mutationOptions, queryClient);
     }
     /**
+ * **CO** — GET /collaborators/{id}/summary. Trả về `referral_count` (số khách được giới thiệu), `total_package_value` (Σ giá trị gói điều trị ACTIVE/FINISHED của các khách được giới thiệu) và `total_commission` (Σ hoa hồng ACTIVE). Cần quyền `collaborator.read`.
+ * @summary Báo cáo tổng hợp của cộng tác viên
+ */
+export const getCollaboratorsIdSummary = (
+    id: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetCollaboratorsIdSummary200>(
+      {url: `/collaborators/${id}/summary`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetCollaboratorsIdSummaryInfiniteQueryKey = (id?: string,) => {
+    return [
+    'infinite', `/collaborators/${id}/summary`
+    ] as const;
+    }
+
+export const getGetCollaboratorsIdSummaryQueryKey = (id?: string,) => {
+    return [
+    `/collaborators/${id}/summary`
+    ] as const;
+    }
+
+    
+export const getGetCollaboratorsIdSummaryInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getCollaboratorsIdSummary>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCollaboratorsIdSummary>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetCollaboratorsIdSummaryInfiniteQueryKey(id);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCollaboratorsIdSummary>>> = ({ signal }) => getCollaboratorsIdSummary(id, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCollaboratorsIdSummary>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetCollaboratorsIdSummaryInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getCollaboratorsIdSummary>>>
+export type GetCollaboratorsIdSummaryInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+
+
+export function useGetCollaboratorsIdSummaryInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCollaboratorsIdSummary>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCollaboratorsIdSummary>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getCollaboratorsIdSummary>>,
+          TError,
+          Awaited<ReturnType<typeof getCollaboratorsIdSummary>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetCollaboratorsIdSummaryInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCollaboratorsIdSummary>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCollaboratorsIdSummary>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getCollaboratorsIdSummary>>,
+          TError,
+          Awaited<ReturnType<typeof getCollaboratorsIdSummary>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetCollaboratorsIdSummaryInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCollaboratorsIdSummary>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCollaboratorsIdSummary>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Báo cáo tổng hợp của cộng tác viên
+ */
+
+export function useGetCollaboratorsIdSummaryInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCollaboratorsIdSummary>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCollaboratorsIdSummary>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetCollaboratorsIdSummaryInfiniteQueryOptions(id,options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Báo cáo tổng hợp của cộng tác viên
+ */
+export const prefetchGetCollaboratorsIdSummaryInfiniteQuery = async <TData = Awaited<ReturnType<typeof getCollaboratorsIdSummary>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCollaboratorsIdSummary>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetCollaboratorsIdSummaryInfiniteQueryOptions(id,options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetCollaboratorsIdSummaryQueryOptions = <TData = Awaited<ReturnType<typeof getCollaboratorsIdSummary>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCollaboratorsIdSummary>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetCollaboratorsIdSummaryQueryKey(id);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCollaboratorsIdSummary>>> = ({ signal }) => getCollaboratorsIdSummary(id, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCollaboratorsIdSummary>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetCollaboratorsIdSummaryQueryResult = NonNullable<Awaited<ReturnType<typeof getCollaboratorsIdSummary>>>
+export type GetCollaboratorsIdSummaryQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+
+
+export function useGetCollaboratorsIdSummary<TData = Awaited<ReturnType<typeof getCollaboratorsIdSummary>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCollaboratorsIdSummary>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getCollaboratorsIdSummary>>,
+          TError,
+          Awaited<ReturnType<typeof getCollaboratorsIdSummary>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetCollaboratorsIdSummary<TData = Awaited<ReturnType<typeof getCollaboratorsIdSummary>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCollaboratorsIdSummary>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getCollaboratorsIdSummary>>,
+          TError,
+          Awaited<ReturnType<typeof getCollaboratorsIdSummary>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetCollaboratorsIdSummary<TData = Awaited<ReturnType<typeof getCollaboratorsIdSummary>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCollaboratorsIdSummary>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Báo cáo tổng hợp của cộng tác viên
+ */
+
+export function useGetCollaboratorsIdSummary<TData = Awaited<ReturnType<typeof getCollaboratorsIdSummary>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCollaboratorsIdSummary>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetCollaboratorsIdSummaryQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Báo cáo tổng hợp của cộng tác viên
+ */
+export const prefetchGetCollaboratorsIdSummaryQuery = async <TData = Awaited<ReturnType<typeof getCollaboratorsIdSummary>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCollaboratorsIdSummary>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetCollaboratorsIdSummaryQueryOptions(id,options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
  * **AL-01** — GET /access-logs (ADM). Cần quyền `permission.manage`. Tham số truy vấn: `page`, `limit`, `branch_id` (cơ sở của hồ sơ khách; nếu nhật ký không có hồ sơ thì dùng cơ sở nhân viên), `user_id`, `customer_profile_id`, `action`, `from`, `to`. Người dùng bị giới hạn cơ sở chỉ xem được nhật ký của cơ sở đó.
  * @summary Lấy danh sách nhật ký truy cập
  */
