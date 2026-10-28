@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Alert, Button, Form, Input, Modal, Space, Table, Tag, Typography, message } from 'antd'
-import { PlusOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons'
+import { Alert, Button, Form, Input, Modal, Space, Switch, Table, Tag, Typography, message } from 'antd'
+import { EditOutlined, PlusOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons'
 import PageTitle from '@/components/base/PageTitle'
 import LookupItemsManager from '@/components/LookupItemsManager'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { LookupList } from '@/api/models/lookupList'
 import type { PostLookupListsBody } from '@/api/models/postLookupListsBody'
-import { deleteLookupListsId, getLookupLists, postLookupLists } from '@/api/endpoints/settings'
+import { deleteLookupListsId, getLookupLists, postLookupLists, putLookupListsId } from '@/api/endpoints/lookup-lists'
 import { Can } from '@casl/react'
 
 /** Hai cột: danh sách lookup lists (bên trái) và các mục của list đang chọn (bên phải). */
@@ -18,7 +18,9 @@ export default function LookupLists() {
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
   const [createOpen, setCreateOpen] = useState(false)
+  const [editingList, setEditingList] = useState<LookupList | null>(null)
   const [form] = Form.useForm()
+  const [editForm] = Form.useForm<{ name: string; is_active: boolean }>()
 
   const load = useCallback(async (search: string) => {
     setLoading(true)
@@ -58,6 +60,30 @@ export default function LookupLists() {
     }
   }
 
+  const openEditList = (row: LookupList) => {
+    setEditingList(row)
+    editForm.setFieldsValue({ name: row.name, is_active: row.is_active !== false })
+  }
+
+  const updateList = async () => {
+    if (!editingList) return
+    const values = await editForm.validateFields()
+    setSaving(true)
+    try {
+      await putLookupListsId(editingList.id, {
+        name: values.name.trim(),
+        is_active: values.is_active,
+      })
+      setEditingList(null)
+      message.success('Đã cập nhật danh mục')
+      await load(query)
+    } catch (err) {
+      message.error(errorMessage(err))
+    } finally {
+      setSaving(false)
+    }
+  }
+
   const removeList = (row: LookupList) => {
     Modal.confirm({
       title: `Xóa danh mục “${row.name}”?`,
@@ -86,8 +112,9 @@ export default function LookupLists() {
       {({ ability }) => {
         const canRead = ability.can('READ' as never, 'LOOKUP')
         const canCreate = ability.can('CREATE' as never, 'LOOKUP')
+        const canUpdate = ability.can('UPDATE' as never, 'LOOKUP')
         const canDelete = ability.can('DELETE' as never, 'LOOKUP')
-        const canManageList = canCreate || ability.can('UPDATE' as never, 'LOOKUP') || canDelete
+        const canManageList = canCreate || canUpdate || canDelete
         return (
     <>
       <PageTitle extra={(
@@ -119,6 +146,10 @@ export default function LookupLists() {
             dataSource={lists}
             pagination={{ pageSize: 8 }}
             rowClassName={(row) => row.id === selectedId ? 'ant-table-row-selected' : ''}
+            onRow={(row) => ({
+              onClick: () => setSelectedId(row.id),
+              style: { cursor: 'pointer' },
+            })}
             locale={{ emptyText: query ? 'Không tìm thấy danh mục' : 'Chưa có danh mục' }}
             columns={[
               { title: 'Tên / mã', render: (_: unknown, row: LookupList) => (
@@ -129,8 +160,12 @@ export default function LookupLists() {
                 </Button>
               ) },
               { title: 'Loại', dataIndex: 'is_system', width: 100, render: (value?: boolean) => <Tag color={value ? 'blue' : 'default'}>{value ? 'Hệ thống' : 'Tự tạo'}</Tag> },
-              ...(canDelete ? [{ title: '', key: 'actions', width: 76, render: (_: unknown, row: LookupList) => row.is_system ? null : (
-                <Button type="link" danger size="small" onClick={() => removeList(row)}>Xóa</Button>
+              { title: 'Trạng thái', dataIndex: 'is_active', width: 120, render: (value?: boolean) => <Tag color={value === false ? 'default' : 'green'}>{value === false ? 'Đã tắt' : 'Đang hoạt động'}</Tag> },
+              ...(canUpdate || canDelete ? [{ title: 'Thao tác', key: 'actions', width: 150, render: (_: unknown, row: LookupList) => (
+                <Space size="small">
+                  {canUpdate && <Button type="link" icon={<EditOutlined />} size="small" onClick={() => openEditList(row)}>Sửa</Button>}
+                  {canDelete && !row.is_system && <Button type="link" danger size="small" onClick={() => removeList(row)}>Xóa</Button>}
+                </Space>
               ) }] : []),
             ]}
           />
@@ -163,6 +198,26 @@ export default function LookupLists() {
           <Form.Item name="name" label="Tên danh mục" rules={[{ required: true, message: 'Nhập tên danh mục' }, { max: 100 }]}>
             <Input maxLength={100} />
           </Form.Item>
+        </Form>
+      </Modal>
+      <Modal
+        title="Sửa danh mục"
+        open={!!editingList}
+        onCancel={() => setEditingList(null)}
+        onOk={() => updateList()}
+        confirmLoading={saving}
+        okText="Lưu thay đổi"
+        cancelText="Hủy"
+        destroyOnHidden
+      >
+        <Form form={editForm} layout="vertical" style={{ marginTop: 16 }}>
+          <Form.Item name="name" label="Tên danh mục" rules={[{ required: true, whitespace: true, message: 'Nhập tên danh mục' }, { max: 100 }]}>
+            <Input maxLength={100} />
+          </Form.Item>
+          <Form.Item name="is_active" label="Trạng thái" valuePropName="checked">
+            <Switch checkedChildren="Đang bật" unCheckedChildren="Đã tắt" />
+          </Form.Item>
+          <Typography.Text type="secondary">Mã danh mục không đổi. Tắt danh mục sẽ ngừng cho phép dùng danh mục này ở các lựa chọn mới.</Typography.Text>
         </Form>
       </Modal>
     </>

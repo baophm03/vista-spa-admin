@@ -43,6 +43,7 @@ import type {
   PostAppointmentsBody,
   PostAppointmentsIdComplete200,
   PostAppointmentsIdStart200,
+  PostAppointmentsIdStartBody,
   PutAppointmentsId200,
   PutAppointmentsIdApprove200,
   PutAppointmentsIdApproveBody,
@@ -781,12 +782,15 @@ export const prefetchGetAppointmentsAvailableSlotsQuery = async <TData = Awaited
  */
 export const postAppointmentsIdStart = (
     id: string,
+    postAppointmentsIdStartBody: PostAppointmentsIdStartBody,
  signal?: AbortSignal
 ) => {
       
       
       return customInstance<PostAppointmentsIdStart200>(
-      {url: `/appointments/${id}/start`, method: 'POST', signal
+      {url: `/appointments/${id}/start`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: postAppointmentsIdStartBody, signal
     },
       );
     }
@@ -794,8 +798,8 @@ export const postAppointmentsIdStart = (
 
 
 export const getPostAppointmentsIdStartMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAppointmentsIdStart>>, TError,{id: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postAppointmentsIdStart>>, TError,{id: string}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAppointmentsIdStart>>, TError,{id: string;data: PostAppointmentsIdStartBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postAppointmentsIdStart>>, TError,{id: string;data: PostAppointmentsIdStartBody}, TContext> => {
 
 const mutationKey = ['postAppointmentsIdStart'];
 const {mutation: mutationOptions} = options ?
@@ -807,10 +811,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAppointmentsIdStart>>, {id: string}> = (props) => {
-          const {id} = props ?? {};
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAppointmentsIdStart>>, {id: string;data: PostAppointmentsIdStartBody}> = (props) => {
+          const {id,data} = props ?? {};
 
-          return  postAppointmentsIdStart(id,)
+          return  postAppointmentsIdStart(id,data,)
         }
 
         
@@ -819,18 +823,18 @@ const {mutation: mutationOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type PostAppointmentsIdStartMutationResult = NonNullable<Awaited<ReturnType<typeof postAppointmentsIdStart>>>
-    
+    export type PostAppointmentsIdStartMutationBody = PostAppointmentsIdStartBody
     export type PostAppointmentsIdStartMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
  * @summary Bắt đầu
  */
 export const usePostAppointmentsIdStart = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAppointmentsIdStart>>, TError,{id: string}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAppointmentsIdStart>>, TError,{id: string;data: PostAppointmentsIdStartBody}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof postAppointmentsIdStart>>,
         TError,
-        {id: string},
+        {id: string;data: PostAppointmentsIdStartBody},
         TContext
       > => {
 

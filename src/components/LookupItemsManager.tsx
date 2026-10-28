@@ -9,14 +9,28 @@ import type { PutLookupItemsIdBody } from '@/api/models/putLookupItemsIdBody'
 import type { PutLookupListsIdBody } from '@/api/models/putLookupListsIdBody'
 import {
   deleteLookupItemsId,
-  getLookupListsId,
   postLookupListsIdItems,
   putLookupItemsId,
-  putLookupListsId,
-} from '@/api/endpoints/settings'
+	} from '@/api/endpoints/lookup-items'
+import { getLookupListsId, putLookupListsId } from '@/api/endpoints/lookup-lists'
 import { Can } from '@casl/react'
 
 type LookupItemWithColor = LookupItem & { color?: string | null }
+
+function normalizeLookupColor(value: unknown): string | null {
+  if (typeof value !== 'string' || !value.trim()) return null
+  const color = value.trim()
+  const hex = color.match(/^#([\da-f]{3}|[\da-f]{6})$/i)
+  if (hex) {
+    const digits = hex[1].length === 3 ? [...hex[1]].map((digit) => digit + digit).join('') : hex[1]
+    return `#${digits.toLowerCase()}`
+  }
+  const rgb = color.match(/^rgba?\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})(?:\s*,\s*[\d.]+)?\s*\)$/i)
+  if (!rgb) return color
+  const channels = rgb.slice(1, 4).map(Number)
+  if (channels.some((channel) => channel > 255)) return color
+  return `#${channels.map((channel) => channel.toString(16).padStart(2, '0')).join('')}`
+}
 
 /** Danh sách mục trong một lookup list: sắp thứ tự (drag + nút lên/xuống), thêm/sửa/ẩn mục. */
 export default function LookupItemsManager({ listId }: { listId: string }) {
@@ -49,7 +63,7 @@ export default function LookupItemsManager({ listId }: { listId: string }) {
   const openEditor = (row?: LookupItemWithColor) => {
     setEditing(row ?? null)
     form.resetFields()
-    form.setFieldsValue(row ? { ...row } : { sort_order: items.length * 10, is_active: true, color: null })
+    form.setFieldsValue(row ? { ...row, color: normalizeLookupColor(row.color) } : { sort_order: items.length * 10, is_active: true, color: null })
     setOpen(true)
   }
 
@@ -57,7 +71,7 @@ export default function LookupItemsManager({ listId }: { listId: string }) {
     const values = await form.validateFields()
     setSaving(true)
     try {
-      const dto = { ...values, color: values.color || null }
+      const dto = { ...values, color: normalizeLookupColor(values.color) }
       if (editing) await putLookupItemsId(editing.id, dto as unknown as PutLookupItemsIdBody)
       else await postLookupListsIdItems(listId, dto as unknown as PostLookupListsIdItemsBody)
       setOpen(false)
@@ -140,7 +154,7 @@ export default function LookupItemsManager({ listId }: { listId: string }) {
         columns={[
           { title: 'Mã', dataIndex: 'code', width: 150, render: (value: string) => <Typography.Text code>{value}</Typography.Text> },
           { title: 'Nhãn hiển thị', dataIndex: 'label', render: (value: string, row) => <Space><span style={{ width: 12, height: 12, borderRadius: 2, background: row.color || '#d9d9d9', display: 'inline-block' }} />{value}</Space> },
-          { title: 'Màu', dataIndex: 'color', width: 110, render: (value?: string | null) => value ? <Tag color={value}>{value.toUpperCase()}</Tag> : '—' },
+          { title: 'Màu', dataIndex: 'color', width: 110, render: (value?: string | null) => { const color = normalizeLookupColor(value); return color ? <Tag color={color}>{color.toUpperCase()}</Tag> : '—' } },
           { title: 'Thứ tự', dataIndex: 'sort_order', width: 90 },
           { title: 'Trạng thái', dataIndex: 'is_active', width: 120, render: (value?: boolean) => <Tag color={value === false ? 'default' : 'green'}>{value === false ? 'Đã ẩn' : 'Đang dùng'}</Tag> },
           ...(canUpdate || canDelete ? [{ title: 'Thao tác', key: 'actions', width: 220, render: (_: unknown, row: LookupItemWithColor, index: number) => (
@@ -176,7 +190,7 @@ export default function LookupItemsManager({ listId }: { listId: string }) {
           </Form.Item>
           <Form.Item name="color" label="Màu nhãn">
             <Space>
-              <ColorPicker value={color || '#8e63a9'} onChange={(_, hex) => form.setFieldValue('color', hex)} />
+              <ColorPicker value={normalizeLookupColor(color) || '#8e63a9'} onChange={(selectedColor) => form.setFieldValue('color', selectedColor.toHexString())} />
               <Typography.Text type="secondary">{color || 'Chưa chọn màu'}</Typography.Text>
               <Button size="small" onClick={() => form.setFieldValue('color', null)}>Xóa màu</Button>
             </Space>

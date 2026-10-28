@@ -6,12 +6,12 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type IntegrationUpdateConfigPublicSecurity = typeof IntegrationUpdateConfigPublicSecurity[keyof typeof IntegrationUpdateConfigPublicSecurity];
+export type SettingSourceScope = typeof SettingSourceScope[keyof typeof SettingSourceScope];
 
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const IntegrationUpdateConfigPublicSecurity = {
-  NONE: 'NONE',
-  STARTTLS: 'STARTTLS',
-  TLS: 'TLS',
+export const SettingSourceScope = {
+  BRANCH: 'BRANCH',
+  GLOBAL: 'GLOBAL',
+  DEFAULT: 'DEFAULT',
 } as const;

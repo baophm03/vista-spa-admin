@@ -25,6 +25,7 @@ import { PlusOutlined, SearchOutlined, FilterOutlined, ReloadOutlined } from '@a
 import { useMutation, useQuery } from '@tanstack/react-query'
 import PageTitle from '@/components/base/PageTitle'
 import ServiceImageField from '@/components/ServiceImageField'
+import CustomFieldFormItems, { normalizeCustomFieldValues } from '@/components/CustomFieldFormItems'
 import { errorMessage, pickData } from '@/api/helpers'
 import { Can } from '@casl/react'
 import {
@@ -37,20 +38,16 @@ import {
 } from '@/api/endpoints/services'
 import type { Service } from '@/api/models/service'
 import type { ServiceCreate } from '@/api/models/serviceCreate'
-import { getCustomFieldDefs } from '@/api/endpoints/settings'
-import type { CustomFieldDef } from '@/api/models/customFieldDef'
+import useCustomFieldDefinitions from '@/hooks/useCustomFieldDefinitions'
 import type { ServiceCategory } from '@/api/models/serviceCategory'
 import ServiceCategories from './services/ServiceCategories'
+import { formatCurrency, useBrandCurrency } from '@/themeRuntime'
 
 /** BE list include kèm `service_category`. */
 type ServiceRow = Service & { service_category?: { id?: string; name?: string } }
 type ServiceCategoryRow = ServiceCategory & { parent?: { id?: string; name?: string } }
 
 /** BE trả thêm resolved_options cho field có lookup_list_id. */
-type CustomFieldDefRow = CustomFieldDef & {
-  resolved_options?: { value: string; label: string; color?: string | null; is_active?: boolean }[]
-}
-
 const DEFAULT_COLUMNS = ['service', 'category', 'price', 'duration', 'points', 'status']
 const COLUMN_OPTIONS = [
   { value: 'service', label: 'Dịch vụ' },
@@ -61,9 +58,9 @@ const COLUMN_OPTIONS = [
   { value: 'status', label: 'Trạng thái' },
 ]
 
-function formatPrice(value?: number | string | null) {
+function formatPrice(value: number | string | null | undefined, currency: string) {
   if (value === null || value === undefined || value === '') return '—'
-  return `${Number(value).toLocaleString('vi-VN')} ₫`
+  return formatCurrency(value, currency)
 }
 
 function categoryOptions(
@@ -81,36 +78,11 @@ function categoryOptions(
     ])
 }
 
-function ServiceCustomFieldControl({ field }: { field: CustomFieldDefRow }) {
-  const form = Form.useFormInstance()
-  const value = Form.useWatch(['custom_fields', field.key], form)
-  if (field.data_type === 'number') return <InputNumber style={{ width: '100%' }} />
-  if (field.data_type === 'bool') return <Checkbox />
-  if (field.data_type === 'select' || field.data_type === 'multiselect') {
-    const selected = Array.isArray(value) ? value : [value]
-    const options = field.lookup_list_id
-      ? (field.resolved_options ?? []).map((option) => ({
-          value: option.value,
-          label: (
-            <Space size={6}>
-              {option.color && <span aria-hidden="true" style={{ width: 10, height: 10, borderRadius: 2, background: option.color, display: 'inline-block' }} />}
-              {option.label}
-              {option.is_active === false ? ' (đã ngừng)' : ''}
-            </Space>
-          ),
-          disabled: option.is_active === false && !selected.includes(option.value),
-        }))
-      : Object.keys(field.options ?? {}).map((option) => ({ value: option, label: <span>{option}</span>, disabled: false }))
-    return <Select mode={field.data_type === 'multiselect' ? 'multiple' : undefined} options={options} />
-  }
-  if (field.data_type === 'date') return <Input type="date" />
-  return <Input />
-}
-
 function ServiceListTab() {
+  const { currency, symbol: currencySymbol } = useBrandCurrency()
   const [total, setTotal] = useState(0)
   const [categories, setCategories] = useState<ServiceCategoryRow[]>([])
-  const [customFields, setCustomFields] = useState<CustomFieldDefRow[]>([])
+  const customFields = useCustomFieldDefinitions('SERVICE')
   const [saving, setSaving] = useState(false)
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<ServiceRow | null>(null)
@@ -143,11 +115,6 @@ function ServiceListTab() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  useEffect(() => {
-    void getCustomFieldDefs({ entity: 'SERVICE', is_active: true })
-      .then((body) => setCustomFields((pickData<CustomFieldDefRow[]>(body) ?? []) as CustomFieldDefRow[]))
-      .catch((err) => message.error(errorMessage(err)))
-  }, [])
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -197,8 +164,12 @@ function ServiceListTab() {
     try {
       const values = await form.validateFields()
       setSaving(true)
-      if (editing) await updateMutation.mutateAsync({ id: editing.id, dto: values })
-      else await createMutation.mutateAsync(values)
+      const dto = {
+        ...values,
+        custom_fields: normalizeCustomFieldValues(customFields, values.custom_fields ?? {}, editing?.custom_fields ?? {}),
+      }
+      if (editing) await updateMutation.mutateAsync({ id: editing.id, dto })
+      else await createMutation.mutateAsync(dto)
       setOpen(false)
       message.success(editing ? 'Đã cập nhật dịch vụ' : 'Đã thêm dịch vụ')
       await listQuery.refetch()
@@ -253,7 +224,7 @@ function ServiceListTab() {
         key: 'price',
         title: 'Giá niêm yết',
         render: (_value, row) =>
-          row.price_max != null && Number(row.price_max) !== Number(row.price) ? `${formatPrice(row.price)} – ${formatPrice(row.price_max)}` : formatPrice(row.price),
+          row.price_max != null && Number(row.price_max) !== Number(row.price) ? `${formatPrice(row.price, currency)} – ${formatPrice(row.price_max, currency)}` : formatPrice(row.price, currency),
       },
       duration: { key: 'duration', title: 'Thời lượng', dataIndex: 'duration_minutes', render: (value?: number | null) => (value ? `${value} phút` : 'Theo cấu hình') },
       points: { key: 'points', title: 'Điểm đổi', dataIndex: 'required_points', render: (value?: number | null) => (value ? Number(value).toLocaleString('vi-VN') : '—') },
@@ -457,12 +428,12 @@ function ServiceListTab() {
           <Row gutter={16}>
             <Col span={8}>
               <Form.Item name="price" label="Giá niêm yết" rules={[{ type: 'number', min: 0, message: 'Giá không được âm' }]}>
-                <InputNumber min={0} step={1000} style={{ width: '100%' }} />
+                <InputNumber min={0} step={1000} suffix={currencySymbol} style={{ width: '100%' }} />
               </Form.Item>
             </Col>
             <Col span={8}>
               <Form.Item name="price_max" label="Giá tối đa" rules={[{ type: 'number', min: 0, message: 'Giá không được âm' }]}>
-                <InputNumber min={0} step={1000} style={{ width: '100%' }} />
+                <InputNumber min={0} step={1000} suffix={currencySymbol} style={{ width: '100%' }} />
               </Form.Item>
             </Col>
             <Col span={8}>
@@ -482,17 +453,7 @@ function ServiceListTab() {
               <ServiceImageField multiple />
             </Form.Item>
           </Space>
-          {customFields.map((field) => (
-            <Form.Item
-              key={field.id}
-              name={['custom_fields', field.key]}
-              label={field.label}
-              valuePropName={field.data_type === 'bool' ? 'checked' : 'value'}
-              rules={field.required ? [{ required: true, message: `Nhập ${field.label}` }] : []}
-            >
-              <ServiceCustomFieldControl field={field} />
-            </Form.Item>
-          ))}
+          <CustomFieldFormItems definitions={customFields} />
         </Form>
       </Modal>
     </>

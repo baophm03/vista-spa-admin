@@ -1,18 +1,19 @@
 import { useState } from 'react'
 import { Alert, Button, Form, Input, Modal, Select, Table, Tag, message } from 'antd'
 import { SendOutlined } from '@ant-design/icons'
-import dayjs from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
 import { errorMessage, pickData, pickMeta } from '@/api/helpers'
 import type { Notification } from '@/api/models/notification'
 import { useGetCustomerProfiles } from '@/api/endpoints/customer-profiles'
 import { useGetNotifications, usePostNotifications, usePutNotificationsId } from '@/api/endpoints/admin'
 import { Can } from '@casl/react'
+import { useBrandDateTime } from '@/themeRuntime'
 
 interface NotificationRow {
   id: string
   user_id?: string | null
   event_key: string
+  channel?: 'app' | 'email'
   title?: string
   body?: string
   is_read?: boolean
@@ -33,6 +34,7 @@ const EVENT_META: Record<string, { label: string; color: string }> = {
 }
 
 export default function Notifications() {
+  const { formatDateTime } = useBrandDateTime()
   const notificationsQuery = useGetNotifications()
   const profilesQuery = useGetCustomerProfiles()
   const sendMutation = usePostNotifications()
@@ -53,6 +55,7 @@ export default function Notifications() {
       await sendMutation.mutateAsync({
         data: {
           event_key: values.event_key,
+          channel: values.channel || 'app',
           title: values.title,
           body: values.body,
           user_id: values.user_id || null,
@@ -89,7 +92,7 @@ export default function Notifications() {
               type="primary"
               icon={<SendOutlined />}
               onClick={() => {
-                form.setFieldsValue({ event_key: 'SYSTEM', title: '', body: '', user_id: undefined })
+                form.setFieldsValue({ event_key: 'SYSTEM', channel: 'app', title: '', body: '', user_id: undefined })
                 setOpen(true)
               }}
             >
@@ -136,8 +139,14 @@ export default function Notifications() {
             width: 120,
             render: (v: string) => <Tag color={EVENT_META[v]?.color}>{EVENT_META[v]?.label ?? v}</Tag>,
           },
+          {
+            title: 'Kênh',
+            dataIndex: 'channel',
+            width: 110,
+            render: (value?: string) => <Tag color={value === 'email' ? 'blue' : 'default'}>{value === 'email' ? 'Email' : 'Trong ứng dụng'}</Tag>,
+          },
           { title: 'Đối tượng', key: 'audience', width: 180, render: (_, row) => audience(row) },
-          { title: 'Thời gian', dataIndex: 'sent_at', width: 170, render: (v) => (v ? dayjs(v).format('DD/MM/YYYY HH:mm') : '—') },
+          { title: 'Thời gian', dataIndex: 'sent_at', width: 170, render: (v) => formatDateTime(v) },
           {
             title: 'Trạng thái',
             key: 'read',
@@ -156,6 +165,9 @@ export default function Notifications() {
 
       <Modal title="Gửi thông báo" open={open} onCancel={() => setOpen(false)} onOk={() => void submit()} okText="Gửi" cancelText="Hủy">
         <Form form={form} layout="vertical" style={{ marginTop: 12 }}>
+          <Form.Item name="channel" label="Kênh gửi" rules={[{ required: true }]} initialValue="app">
+          <Select options={[{ value: 'app', label: 'Thông báo trong ứng dụng' }, { value: 'email', label: 'Email' }]} />
+          </Form.Item>
           <Form.Item name="event_key" label="Loại thông báo" rules={[{ required: true }]}>
             <Select options={Object.entries(EVENT_META).map(([value, meta]) => ({ value, label: meta.label }))} />
           </Form.Item>

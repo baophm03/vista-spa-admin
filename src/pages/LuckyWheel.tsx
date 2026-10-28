@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Button, Card, Form, Input, InputNumber, Modal, Popconfirm, Select, Space, Table, Tag, Typography, message } from 'antd'
 import { PlusOutlined, ReloadOutlined } from '@ant-design/icons'
-import dayjs from 'dayjs'
+import { useBrandCurrency, useBrandDateTime } from '@/themeRuntime'
 import PageTitle from '../components/base/PageTitle'
 import { useGetBranches } from '../api/endpoints/branches'
 import {
@@ -27,6 +27,8 @@ const TYPE_META: Record<string, { label: string; color: string }> = {
 }
 
 export default function LuckyWheel() {
+  const { format: formatMoney, symbol: currencySymbol } = useBrandCurrency()
+  const { formatDateTime } = useBrandDateTime()
   const [selected, setSelected] = useState<LuckyWheel | null>(null)
   const [wheelOpen, setWheelOpen] = useState(false)
   const [prizeOpen, setPrizeOpen] = useState(false)
@@ -130,7 +132,7 @@ export default function LuckyWheel() {
               )
             },
             { title: 'Cơ sở', dataIndex: 'branch_id', render: (v) => branchName(v) },
-            { title: 'Doanh số tối thiểu', dataIndex: 'min_year_spent', render: (v) => `${Number(v).toLocaleString('vi-VN')}đ/năm` },
+            { title: 'Doanh số tối thiểu', dataIndex: 'min_year_spent', render: (v) => `${formatMoney(v)}/năm` },
             { title: 'Lượt/user', dataIndex: 'spins_per_user', width: 90 },
             { title: 'Trạng thái', dataIndex: 'is_active', width: 100, render: (v) => (v ? <Tag color="green">Đang mở</Tag> : <Tag>Tắt</Tag>) },
             {
@@ -177,7 +179,7 @@ export default function LuckyWheel() {
               pagination={{ pageSize: 5 }}
               size="small"
               columns={[
-                { title: 'Thời gian', dataIndex: 'spun_at', render: (v) => dayjs(v).format('DD/MM/YYYY HH:mm') },
+                { title: 'Thời gian', dataIndex: 'spun_at', render: (v) => formatDateTime(v) },
                 { title: 'Khách hàng', dataIndex: ['user', 'zalo_name'], render: (v) => v || '—' },
                 { title: 'Trúng', dataIndex: 'is_win', render: (v) => (v ? <Tag color="green">Trúng thưởng</Tag> : <Tag>Không trúng</Tag>) },
                 { title: 'Giải', dataIndex: ['prize', 'name'], render: (v) => v || '—' },
@@ -200,8 +202,8 @@ export default function LuckyWheel() {
               <InputNumber min={1} style={{ width: '100%' }} />
             </Form.Item>
           </Space>
-          <Form.Item name="min_year_spent" label="Doanh số tối thiểu năm (đ)" rules={[{ required: true }]}>
-            <InputNumber min={0} step={100000} style={{ width: '100%' }} />
+          <Form.Item name="min_year_spent" label="Doanh số tối thiểu năm" rules={[{ required: true }]}>
+            <InputNumber min={0} step={100000} suffix={currencySymbol} style={{ width: '100%' }} />
           </Form.Item>
         </Form>
       </Modal>

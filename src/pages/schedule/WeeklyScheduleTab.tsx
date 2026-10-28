@@ -7,6 +7,7 @@ import type { StaffSchedule as StaffScheduleRow, ShiftTemplate as ShiftTemplateR
 import {
   deleteStaffSchedulesId,
   getGetShiftTemplatesQueryKey,
+  getGetStaffSchedulesQueryKey,
   postStaffSchedules,
   putStaffSchedulesId,
   useGetShiftTemplates,
@@ -93,7 +94,7 @@ export default function WeeklyScheduleTab({ branches, staff, access, loadingShar
       else await postStaffSchedules(values as never)
       message.success(editing ? 'Đã cập nhật lịch làm' : 'Đã thêm lịch làm')
       setOpen(false)
-      void queryClient.invalidateQueries({ queryKey: ['staffSchedules'] })
+      void queryClient.invalidateQueries({ queryKey: getGetStaffSchedulesQueryKey() })
     } catch (err) { message.error(errorMessage(err)) }
   }
 
@@ -105,7 +106,7 @@ export default function WeeklyScheduleTab({ branches, staff, access, loadingShar
         confirmed ? { confirm_future_appointments: 'true' } : undefined,
       )
       message.success('Đã xóa lịch lặp. Các lịch hẹn đã đặt được giữ nguyên.')
-      void queryClient.invalidateQueries({ queryKey: ['staffSchedules'] })
+      void queryClient.invalidateQueries({ queryKey: getGetStaffSchedulesQueryKey() })
     } catch (err: unknown) {
       const response = (err as { response?: { data?: { code?: string; details?: Record<string, unknown> } } })?.response?.data
       if (!confirmed && response?.code === 'FUTURE_APPOINTMENTS_EXIST') {

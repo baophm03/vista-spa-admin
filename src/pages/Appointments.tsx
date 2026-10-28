@@ -24,6 +24,8 @@ import type { TableColumnsType } from 'antd'
 import { CheckOutlined, EllipsisOutlined, FilterOutlined, PlusOutlined, ReloadOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
+import CustomFieldFormItems, { normalizeCustomFieldValues } from '@/components/CustomFieldFormItems'
+import useCustomFieldDefinitions from '@/hooks/useCustomFieldDefinitions'
 import { errorMessage, pickData, pickMeta } from '@/api/helpers'
 import type { Appointment } from '@/api/models/appointment'
 import type { AppointmentStatus } from '@/api/models/appointmentStatus'
@@ -121,10 +123,14 @@ export default function Appointments() {
   const [draftFilter, setDraftFilter] = useState('all')
   const [filterOpen, setFilterOpen] = useState(false)
   const [open, setOpen] = useState(false)
+  const [startingAppointment, setStartingAppointment] = useState<AppointmentRow | null>(null)
   const [editing, setEditing] = useState<Appointment | null>(null)
   const [slots, setSlots] = useState<Slot[]>([])
   const [slotsLoading, setSlotsLoading] = useState(false)
   const [form] = Form.useForm()
+  const [startForm] = Form.useForm()
+  const appointmentCustomFields = useCustomFieldDefinitions('APPOINTMENT')
+  const sessionCustomFields = useCustomFieldDefinitions('SESSION')
   const slotRequest = useRef(0)
   const previousSlotCriteria = useRef('')
   const selectedCustomerId = Form.useWatch('customer_profile_id', form)
@@ -234,8 +240,9 @@ export default function Appointments() {
             appt_date: dayjs(appointment.appt_date),
             start_time: appointment.start_time?.slice(0, 5),
             note: appointment.note,
+            custom_fields: appointment.custom_fields ?? {},
           }
-        : { appt_date: dayjs().add(1, 'day') },
+        : { appt_date: dayjs().add(1, 'day'), custom_fields: {} },
     )
     setOpen(true)
   }
@@ -251,6 +258,7 @@ export default function Appointments() {
       appt_date: dayjs(values.appt_date).format('YYYY-MM-DD'),
       start_time: values.start_time,
       note: values.note,
+      custom_fields: normalizeCustomFieldValues(appointmentCustomFields, values.custom_fields ?? {}, editing?.custom_fields ?? {}),
     }
     try {
       if (editing) {
@@ -273,6 +281,34 @@ export default function Appointments() {
       message.success(msg)
       refresh()
     } catch (err) {
+      message.error(errorMessage(err))
+    }
+  }
+
+  const beginAppointment = (row: AppointmentRow) => {
+    if (sessionCustomFields.length === 0) {
+      void doAction(() => startMutation.mutateAsync({ id: row.id, data: {} }), 'Đã bắt đầu')
+      return
+    }
+    startForm.resetFields()
+    startForm.setFieldsValue({ custom_fields: {} })
+    setStartingAppointment(row)
+  }
+
+  const submitStart = async () => {
+    if (!startingAppointment) return
+    try {
+      const values = await startForm.validateFields()
+      const sessionFields = normalizeCustomFieldValues(sessionCustomFields, values.custom_fields ?? {})
+      await startMutation.mutateAsync({
+        id: startingAppointment.id,
+        data: sessionFields ? { session_custom_fields: sessionFields } : {},
+      })
+      message.success('Đã bắt đầu')
+      refresh()
+      setStartingAppointment(null)
+    } catch (err) {
+      if ((err as { errorFields?: unknown })?.errorFields) return
       message.error(errorMessage(err))
     }
   }
@@ -530,7 +566,7 @@ export default function Appointments() {
                   )}
                   {row.status === 'approved' && (
                     <Can I="START" a="APPOINTMENT">
-                      <Button size="small" onClick={() => doAction(() => startMutation.mutateAsync({ id: row.id }), 'Đã bắt đầu')}>
+                      <Button size="small" onClick={() => beginAppointment(row)}>
                         Bắt đầu
                       </Button>
                     </Can>
@@ -666,6 +702,19 @@ export default function Appointments() {
           <Form.Item name="note" label="Ghi chú">
             <Input.TextArea rows={2} />
           </Form.Item>
+          <CustomFieldFormItems definitions={appointmentCustomFields} />
+        </Form>
+      </Modal>
+      <Modal
+        title="Thông tin buổi điều trị"
+        open={!!startingAppointment}
+        onCancel={() => setStartingAppointment(null)}
+        onOk={() => void submitStart()}
+        okText="Bắt đầu buổi"
+        cancelText="Hủy"
+      >
+        <Form form={startForm} layout="vertical" style={{ marginTop: 12 }}>
+          <CustomFieldFormItems definitions={sessionCustomFields} />
         </Form>
       </Modal>
     </>

@@ -34,8 +34,6 @@ import type {
   ConflictResponse,
   DeleteCustomFieldDefsId200,
   DeleteDiscountRulesId200,
-  DeleteLookupItemsId200,
-  DeleteLookupListsId200,
   ForbiddenResponse,
   GetCustomFieldDefs200,
   GetCustomFieldDefsId200,
@@ -44,13 +42,11 @@ import type {
   GetDiscountRulesId200,
   GetDiscountRulesParams,
   GetIntegrations200,
-  GetLookupLists200,
-  GetLookupListsId200,
-  GetLookupListsParams,
   GetSettings200,
   GetSettingsBrand200,
   GetSettingsParams,
   GetSkinTypes200,
+  IntegrationUpdate,
   InternalErrorResponse,
   NotFoundResponse,
   PostCustomFieldDefs200,
@@ -58,21 +54,11 @@ import type {
   PostDiscountRules200,
   PostDiscountRulesBody,
   PostIntegrationsProviderTest200,
-  PostIntegrationsProviderTestBody,
-  PostLookupLists200,
-  PostLookupListsBody,
-  PostLookupListsIdItems200,
-  PostLookupListsIdItemsBody,
   PutCustomFieldDefsId200,
   PutCustomFieldDefsIdBody,
   PutDiscountRulesId200,
   PutDiscountRulesIdBody,
   PutIntegrationsProvider200,
-  PutIntegrationsProviderBody,
-  PutLookupItemsId200,
-  PutLookupItemsIdBody,
-  PutLookupListsId200,
-  PutLookupListsIdBody,
   PutSettings200,
   PutSettingsBody,
   PutSettingsBrand200,
@@ -798,793 +784,19 @@ export const usePutSettingsBrand = <TError = UnauthorizedResponse | ForbiddenRes
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **LK-04** — GET /lookup-lists/{id} (kèm items). Cần quyền `lookup.read`.
- * @summary Xem chi tiết danh mục chọn
- */
-export const getLookupListsId = (
-    id: string,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<GetLookupListsId200>(
-      {url: `/lookupLists/${id}`, method: 'GET', signal
-    },
-      );
-    }
-  
-
-
-
-export const getGetLookupListsIdInfiniteQueryKey = (id?: string,) => {
-    return [
-    'infinite', `/lookupLists/${id}`
-    ] as const;
-    }
-
-export const getGetLookupListsIdQueryKey = (id?: string,) => {
-    return [
-    `/lookupLists/${id}`
-    ] as const;
-    }
-
-    
-export const getGetLookupListsIdInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getLookupListsId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLookupListsId>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetLookupListsIdInfiniteQueryKey(id);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLookupListsId>>> = ({ signal }) => getLookupListsId(id, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLookupListsId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetLookupListsIdInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getLookupListsId>>>
-export type GetLookupListsIdInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
-
-
-export function useGetLookupListsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getLookupListsId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLookupListsId>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getLookupListsId>>,
-          TError,
-          Awaited<ReturnType<typeof getLookupListsId>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetLookupListsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getLookupListsId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLookupListsId>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getLookupListsId>>,
-          TError,
-          Awaited<ReturnType<typeof getLookupListsId>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetLookupListsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getLookupListsId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLookupListsId>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Xem chi tiết danh mục chọn
- */
-
-export function useGetLookupListsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getLookupListsId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLookupListsId>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetLookupListsIdInfiniteQueryOptions(id,options)
-
-  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary Xem chi tiết danh mục chọn
- */
-export const prefetchGetLookupListsIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getLookupListsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLookupListsId>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetLookupListsIdInfiniteQueryOptions(id,options)
-
-  await queryClient.prefetchInfiniteQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-export const getGetLookupListsIdQueryOptions = <TData = Awaited<ReturnType<typeof getLookupListsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLookupListsId>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetLookupListsIdQueryKey(id);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLookupListsId>>> = ({ signal }) => getLookupListsId(id, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getLookupListsId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetLookupListsIdQueryResult = NonNullable<Awaited<ReturnType<typeof getLookupListsId>>>
-export type GetLookupListsIdQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
-
-
-export function useGetLookupListsId<TData = Awaited<ReturnType<typeof getLookupListsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLookupListsId>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getLookupListsId>>,
-          TError,
-          Awaited<ReturnType<typeof getLookupListsId>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetLookupListsId<TData = Awaited<ReturnType<typeof getLookupListsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLookupListsId>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getLookupListsId>>,
-          TError,
-          Awaited<ReturnType<typeof getLookupListsId>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetLookupListsId<TData = Awaited<ReturnType<typeof getLookupListsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLookupListsId>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Xem chi tiết danh mục chọn
- */
-
-export function useGetLookupListsId<TData = Awaited<ReturnType<typeof getLookupListsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLookupListsId>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetLookupListsIdQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary Xem chi tiết danh mục chọn
- */
-export const prefetchGetLookupListsIdQuery = async <TData = Awaited<ReturnType<typeof getLookupListsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLookupListsId>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetLookupListsIdQueryOptions(id,options)
-
-  await queryClient.prefetchQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-/**
- * **LK-05** — PUT /lookup-lists/{id} — chỉ đổi name/is_active (key bất biến). Cần quyền `lookup.update`. Trường body: `name`, `is_active`, `item_order`.
- * @summary Cập nhật danh mục chọn
- */
-export const putLookupListsId = (
-    id: string,
-    putLookupListsIdBody: PutLookupListsIdBody,
- ) => {
-      
-      
-      return customInstance<PutLookupListsId200>(
-      {url: `/lookupLists/${id}`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: putLookupListsIdBody
-    },
-      );
-    }
-  
-
-
-export const getPutLookupListsIdMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putLookupListsId>>, TError,{id: string;data: PutLookupListsIdBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putLookupListsId>>, TError,{id: string;data: PutLookupListsIdBody}, TContext> => {
-
-const mutationKey = ['putLookupListsId'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putLookupListsId>>, {id: string;data: PutLookupListsIdBody}> = (props) => {
-          const {id,data} = props ?? {};
-
-          return  putLookupListsId(id,data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PutLookupListsIdMutationResult = NonNullable<Awaited<ReturnType<typeof putLookupListsId>>>
-    export type PutLookupListsIdMutationBody = PutLookupListsIdBody
-    export type PutLookupListsIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
-
-    /**
- * @summary Cập nhật danh mục chọn
- */
-export const usePutLookupListsId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putLookupListsId>>, TError,{id: string;data: PutLookupListsIdBody}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putLookupListsId>>,
-        TError,
-        {id: string;data: PutLookupListsIdBody},
-        TContext
-      > => {
-
-      const mutationOptions = getPutLookupListsIdMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * **LK-06** — DELETE /lookup-lists/{id} — chặn is_system. Cần quyền `lookup.delete`.
- * @summary Xóa danh mục chọn
- */
-export const deleteLookupListsId = (
-    id: string,
- ) => {
-      
-      
-      return customInstance<DeleteLookupListsId200>(
-      {url: `/lookupLists/${id}`, method: 'DELETE'
-    },
-      );
-    }
-  
-
-
-export const getDeleteLookupListsIdMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteLookupListsId>>, TError,{id: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof deleteLookupListsId>>, TError,{id: string}, TContext> => {
-
-const mutationKey = ['deleteLookupListsId'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteLookupListsId>>, {id: string}> = (props) => {
-          const {id} = props ?? {};
-
-          return  deleteLookupListsId(id,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteLookupListsIdMutationResult = NonNullable<Awaited<ReturnType<typeof deleteLookupListsId>>>
-    
-    export type DeleteLookupListsIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
-
-    /**
- * @summary Xóa danh mục chọn
- */
-export const useDeleteLookupListsId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteLookupListsId>>, TError,{id: string}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteLookupListsId>>,
-        TError,
-        {id: string},
-        TContext
-      > => {
-
-      const mutationOptions = getDeleteLookupListsIdMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * GET `/lookupLists` — danh mục chọn. Cần quyền `lookup.read`. Tham số truy vấn: `is_active`, `key`, `items_is_active`, `q`.
- * @summary Lấy danh sách danh mục chọn
- */
-export const getLookupLists = (
-    params?: GetLookupListsParams,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<GetLookupLists200>(
-      {url: `/lookupLists`, method: 'GET',
-        params, signal
-    },
-      );
-    }
-  
-
-
-
-export const getGetLookupListsInfiniteQueryKey = (params?: GetLookupListsParams,) => {
-    return [
-    'infinite', `/lookupLists`, ...(params ? [params]: [])
-    ] as const;
-    }
-
-export const getGetLookupListsQueryKey = (params?: GetLookupListsParams,) => {
-    return [
-    `/lookupLists`, ...(params ? [params]: [])
-    ] as const;
-    }
-
-    
-export const getGetLookupListsInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getLookupLists>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetLookupListsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLookupLists>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetLookupListsInfiniteQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLookupLists>>> = ({ signal }) => getLookupLists(params, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLookupLists>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetLookupListsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getLookupLists>>>
-export type GetLookupListsInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
-
-
-export function useGetLookupListsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getLookupLists>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params: undefined |  GetLookupListsParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLookupLists>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getLookupLists>>,
-          TError,
-          Awaited<ReturnType<typeof getLookupLists>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetLookupListsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getLookupLists>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetLookupListsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLookupLists>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getLookupLists>>,
-          TError,
-          Awaited<ReturnType<typeof getLookupLists>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetLookupListsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getLookupLists>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetLookupListsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLookupLists>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Lấy danh sách danh mục chọn
- */
-
-export function useGetLookupListsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getLookupLists>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetLookupListsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLookupLists>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetLookupListsInfiniteQueryOptions(params,options)
-
-  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary Lấy danh sách danh mục chọn
- */
-export const prefetchGetLookupListsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getLookupLists>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient, params?: GetLookupListsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLookupLists>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetLookupListsInfiniteQueryOptions(params,options)
-
-  await queryClient.prefetchInfiniteQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-export const getGetLookupListsQueryOptions = <TData = Awaited<ReturnType<typeof getLookupLists>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetLookupListsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLookupLists>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetLookupListsQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLookupLists>>> = ({ signal }) => getLookupLists(params, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getLookupLists>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetLookupListsQueryResult = NonNullable<Awaited<ReturnType<typeof getLookupLists>>>
-export type GetLookupListsQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
-
-
-export function useGetLookupLists<TData = Awaited<ReturnType<typeof getLookupLists>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params: undefined |  GetLookupListsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLookupLists>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getLookupLists>>,
-          TError,
-          Awaited<ReturnType<typeof getLookupLists>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetLookupLists<TData = Awaited<ReturnType<typeof getLookupLists>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetLookupListsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLookupLists>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getLookupLists>>,
-          TError,
-          Awaited<ReturnType<typeof getLookupLists>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetLookupLists<TData = Awaited<ReturnType<typeof getLookupLists>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetLookupListsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLookupLists>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Lấy danh sách danh mục chọn
- */
-
-export function useGetLookupLists<TData = Awaited<ReturnType<typeof getLookupLists>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetLookupListsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLookupLists>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetLookupListsQueryOptions(params,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary Lấy danh sách danh mục chọn
- */
-export const prefetchGetLookupListsQuery = async <TData = Awaited<ReturnType<typeof getLookupLists>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient, params?: GetLookupListsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLookupLists>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetLookupListsQueryOptions(params,options)
-
-  await queryClient.prefetchQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-/**
- * POST `/lookupLists` — danh mục chọn. Cần quyền `lookup.create`. Trường body: `key`, `name`, `is_system`, `items`.
- * @summary Tạo danh mục chọn mới
- */
-export const postLookupLists = (
-    postLookupListsBody: PostLookupListsBody,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<PostLookupLists200>(
-      {url: `/lookupLists`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: postLookupListsBody, signal
-    },
-      );
-    }
-  
-
-
-export const getPostLookupListsMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postLookupLists>>, TError,{data: PostLookupListsBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postLookupLists>>, TError,{data: PostLookupListsBody}, TContext> => {
-
-const mutationKey = ['postLookupLists'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postLookupLists>>, {data: PostLookupListsBody}> = (props) => {
-          const {data} = props ?? {};
-
-          return  postLookupLists(data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostLookupListsMutationResult = NonNullable<Awaited<ReturnType<typeof postLookupLists>>>
-    export type PostLookupListsMutationBody = PostLookupListsBody
-    export type PostLookupListsMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
-
-    /**
- * @summary Tạo danh mục chọn mới
- */
-export const usePostLookupLists = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postLookupLists>>, TError,{data: PostLookupListsBody}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postLookupLists>>,
-        TError,
-        {data: PostLookupListsBody},
-        TContext
-      > => {
-
-      const mutationOptions = getPostLookupListsMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * **LK-07** — POST /lookup-lists/{id}/items. Cần quyền `lookup.update`. Trường body: `code`, `label`, `sort_order`, `color`.
- * @summary Quản lý mục danh mục
- */
-export const postLookupListsIdItems = (
-    id: string,
-    postLookupListsIdItemsBody: PostLookupListsIdItemsBody,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<PostLookupListsIdItems200>(
-      {url: `/lookupLists/${id}/items`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: postLookupListsIdItemsBody, signal
-    },
-      );
-    }
-  
-
-
-export const getPostLookupListsIdItemsMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postLookupListsIdItems>>, TError,{id: string;data: PostLookupListsIdItemsBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postLookupListsIdItems>>, TError,{id: string;data: PostLookupListsIdItemsBody}, TContext> => {
-
-const mutationKey = ['postLookupListsIdItems'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postLookupListsIdItems>>, {id: string;data: PostLookupListsIdItemsBody}> = (props) => {
-          const {id,data} = props ?? {};
-
-          return  postLookupListsIdItems(id,data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostLookupListsIdItemsMutationResult = NonNullable<Awaited<ReturnType<typeof postLookupListsIdItems>>>
-    export type PostLookupListsIdItemsMutationBody = PostLookupListsIdItemsBody
-    export type PostLookupListsIdItemsMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
-
-    /**
- * @summary Quản lý mục danh mục
- */
-export const usePostLookupListsIdItems = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postLookupListsIdItems>>, TError,{id: string;data: PostLookupListsIdItemsBody}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postLookupListsIdItems>>,
-        TError,
-        {id: string;data: PostLookupListsIdItemsBody},
-        TContext
-      > => {
-
-      const mutationOptions = getPostLookupListsIdItemsMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * **LK-08** — PUT /lookup-items/{id} — chỉ đổi label/sort_order/is_active. Cần quyền `lookup.update`. Trường body: `label`, `color`, `sort_order`, `is_active`.
- * @summary Cập nhật mục danh mục
- */
-export const putLookupItemsId = (
-    id: string,
-    putLookupItemsIdBody: PutLookupItemsIdBody,
- ) => {
-      
-      
-      return customInstance<PutLookupItemsId200>(
-      {url: `/lookupItems/${id}`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: putLookupItemsIdBody
-    },
-      );
-    }
-  
-
-
-export const getPutLookupItemsIdMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putLookupItemsId>>, TError,{id: string;data: PutLookupItemsIdBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putLookupItemsId>>, TError,{id: string;data: PutLookupItemsIdBody}, TContext> => {
-
-const mutationKey = ['putLookupItemsId'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putLookupItemsId>>, {id: string;data: PutLookupItemsIdBody}> = (props) => {
-          const {id,data} = props ?? {};
-
-          return  putLookupItemsId(id,data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PutLookupItemsIdMutationResult = NonNullable<Awaited<ReturnType<typeof putLookupItemsId>>>
-    export type PutLookupItemsIdMutationBody = PutLookupItemsIdBody
-    export type PutLookupItemsIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
-
-    /**
- * @summary Cập nhật mục danh mục
- */
-export const usePutLookupItemsId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putLookupItemsId>>, TError,{id: string;data: PutLookupItemsIdBody}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putLookupItemsId>>,
-        TError,
-        {id: string;data: PutLookupItemsIdBody},
-        TContext
-      > => {
-
-      const mutationOptions = getPutLookupItemsIdMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * **LK-09** — DELETE /lookup-items/{id} — ẩn (is_active=false), không xóa cứng. Cần quyền `lookup.delete`.
- * @summary Xóa mục danh mục
- */
-export const deleteLookupItemsId = (
-    id: string,
- ) => {
-      
-      
-      return customInstance<DeleteLookupItemsId200>(
-      {url: `/lookupItems/${id}`, method: 'DELETE'
-    },
-      );
-    }
-  
-
-
-export const getDeleteLookupItemsIdMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteLookupItemsId>>, TError,{id: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof deleteLookupItemsId>>, TError,{id: string}, TContext> => {
-
-const mutationKey = ['deleteLookupItemsId'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteLookupItemsId>>, {id: string}> = (props) => {
-          const {id} = props ?? {};
-
-          return  deleteLookupItemsId(id,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteLookupItemsIdMutationResult = NonNullable<Awaited<ReturnType<typeof deleteLookupItemsId>>>
-    
-    export type DeleteLookupItemsIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
-
-    /**
- * @summary Xóa mục danh mục
- */
-export const useDeleteLookupItemsId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteLookupItemsId>>, TError,{id: string}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteLookupItemsId>>,
-        TError,
-        {id: string},
-        TContext
-      > => {
-
-      const mutationOptions = getDeleteLookupItemsIdMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
  * PUT `/integrations/{provider}` — tích hợp. Cần quyền `brand.admin`. Xử lý bởi `integrationService.update`.
  * @summary Cập nhật cấu hình tích hợp
  */
 export const putIntegrationsProvider = (
-    provider: 'smtp' | 'zalo' | 'sms',
-    putIntegrationsProviderBody: PutIntegrationsProviderBody,
+    provider: 'ZALO_OA' | 'ZALO_ZBS' | 'EMAIL_SMTP' | 'EMAIL_API',
+    integrationUpdate: IntegrationUpdate,
  ) => {
       
       
       return customInstance<PutIntegrationsProvider200>(
       {url: `/integrations/${provider}`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
-      data: putIntegrationsProviderBody
+      data: integrationUpdate
     },
       );
     }
@@ -1592,8 +804,8 @@ export const putIntegrationsProvider = (
 
 
 export const getPutIntegrationsProviderMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putIntegrationsProvider>>, TError,{provider: 'smtp' | 'zalo' | 'sms';data: PutIntegrationsProviderBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putIntegrationsProvider>>, TError,{provider: 'smtp' | 'zalo' | 'sms';data: PutIntegrationsProviderBody}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putIntegrationsProvider>>, TError,{provider: 'ZALO_OA' | 'ZALO_ZBS' | 'EMAIL_SMTP' | 'EMAIL_API';data: IntegrationUpdate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putIntegrationsProvider>>, TError,{provider: 'ZALO_OA' | 'ZALO_ZBS' | 'EMAIL_SMTP' | 'EMAIL_API';data: IntegrationUpdate}, TContext> => {
 
 const mutationKey = ['putIntegrationsProvider'];
 const {mutation: mutationOptions} = options ?
@@ -1605,7 +817,7 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putIntegrationsProvider>>, {provider: 'smtp' | 'zalo' | 'sms';data: PutIntegrationsProviderBody}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putIntegrationsProvider>>, {provider: 'ZALO_OA' | 'ZALO_ZBS' | 'EMAIL_SMTP' | 'EMAIL_API';data: IntegrationUpdate}> = (props) => {
           const {provider,data} = props ?? {};
 
           return  putIntegrationsProvider(provider,data,)
@@ -1617,18 +829,18 @@ const {mutation: mutationOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type PutIntegrationsProviderMutationResult = NonNullable<Awaited<ReturnType<typeof putIntegrationsProvider>>>
-    export type PutIntegrationsProviderMutationBody = PutIntegrationsProviderBody
+    export type PutIntegrationsProviderMutationBody = IntegrationUpdate
     export type PutIntegrationsProviderMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
  * @summary Cập nhật cấu hình tích hợp
  */
 export const usePutIntegrationsProvider = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putIntegrationsProvider>>, TError,{provider: 'smtp' | 'zalo' | 'sms';data: PutIntegrationsProviderBody}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putIntegrationsProvider>>, TError,{provider: 'ZALO_OA' | 'ZALO_ZBS' | 'EMAIL_SMTP' | 'EMAIL_API';data: IntegrationUpdate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof putIntegrationsProvider>>,
         TError,
-        {provider: 'smtp' | 'zalo' | 'sms';data: PutIntegrationsProviderBody},
+        {provider: 'ZALO_OA' | 'ZALO_ZBS' | 'EMAIL_SMTP' | 'EMAIL_API';data: IntegrationUpdate},
         TContext
       > => {
 
@@ -1831,12 +1043,12 @@ export const prefetchGetIntegrationsQuery = async <TData = Awaited<ReturnType<ty
 
 
 /**
- * POST `/integrations/{provider}/test` — tích hợp. Cần quyền `brand.admin`. Xử lý bởi `integrationService.test`.
+ * POST `/integrations/{provider}/test` — tích hợp. Với EMAIL_API, request gửi một thư kiểm tra thật tới `config_public.test_email`. Cần quyền `brand.admin`. Xử lý bởi `integrationService.test`.
  * @summary Kiểm tra kết nối của tích hợp
  */
 export const postIntegrationsProviderTest = (
-    provider: 'smtp' | 'zalo' | 'sms',
-    postIntegrationsProviderTestBody: PostIntegrationsProviderTestBody,
+    provider: 'ZALO_OA' | 'ZALO_ZBS' | 'EMAIL_SMTP' | 'EMAIL_API',
+    integrationUpdate: IntegrationUpdate,
  signal?: AbortSignal
 ) => {
       
@@ -1844,7 +1056,7 @@ export const postIntegrationsProviderTest = (
       return customInstance<PostIntegrationsProviderTest200>(
       {url: `/integrations/${provider}/test`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: postIntegrationsProviderTestBody, signal
+      data: integrationUpdate, signal
     },
       );
     }
@@ -1852,8 +1064,8 @@ export const postIntegrationsProviderTest = (
 
 
 export const getPostIntegrationsProviderTestMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postIntegrationsProviderTest>>, TError,{provider: 'smtp' | 'zalo' | 'sms';data: PostIntegrationsProviderTestBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postIntegrationsProviderTest>>, TError,{provider: 'smtp' | 'zalo' | 'sms';data: PostIntegrationsProviderTestBody}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postIntegrationsProviderTest>>, TError,{provider: 'ZALO_OA' | 'ZALO_ZBS' | 'EMAIL_SMTP' | 'EMAIL_API';data: IntegrationUpdate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postIntegrationsProviderTest>>, TError,{provider: 'ZALO_OA' | 'ZALO_ZBS' | 'EMAIL_SMTP' | 'EMAIL_API';data: IntegrationUpdate}, TContext> => {
 
 const mutationKey = ['postIntegrationsProviderTest'];
 const {mutation: mutationOptions} = options ?
@@ -1865,7 +1077,7 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postIntegrationsProviderTest>>, {provider: 'smtp' | 'zalo' | 'sms';data: PostIntegrationsProviderTestBody}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postIntegrationsProviderTest>>, {provider: 'ZALO_OA' | 'ZALO_ZBS' | 'EMAIL_SMTP' | 'EMAIL_API';data: IntegrationUpdate}> = (props) => {
           const {provider,data} = props ?? {};
 
           return  postIntegrationsProviderTest(provider,data,)
@@ -1877,18 +1089,18 @@ const {mutation: mutationOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type PostIntegrationsProviderTestMutationResult = NonNullable<Awaited<ReturnType<typeof postIntegrationsProviderTest>>>
-    export type PostIntegrationsProviderTestMutationBody = PostIntegrationsProviderTestBody
+    export type PostIntegrationsProviderTestMutationBody = IntegrationUpdate
     export type PostIntegrationsProviderTestMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
  * @summary Kiểm tra kết nối của tích hợp
  */
 export const usePostIntegrationsProviderTest = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postIntegrationsProviderTest>>, TError,{provider: 'smtp' | 'zalo' | 'sms';data: PostIntegrationsProviderTestBody}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postIntegrationsProviderTest>>, TError,{provider: 'ZALO_OA' | 'ZALO_ZBS' | 'EMAIL_SMTP' | 'EMAIL_API';data: IntegrationUpdate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof postIntegrationsProviderTest>>,
         TError,
-        {provider: 'smtp' | 'zalo' | 'sms';data: PostIntegrationsProviderTestBody},
+        {provider: 'ZALO_OA' | 'ZALO_ZBS' | 'EMAIL_SMTP' | 'EMAIL_API';data: IntegrationUpdate},
         TContext
       > => {
 

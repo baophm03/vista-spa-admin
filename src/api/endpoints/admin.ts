@@ -1357,7 +1357,7 @@ export const usePostCollaborators = <TError = UnauthorizedResponse | ForbiddenRe
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **AL-01** — GET /access-logs (ADM). Cần quyền `permission.manage`. Tham số truy vấn: `page`, `limit`, `user_id`, `customer_profile_id`, `action`, `from_date`, `to_date`.
+ * **AL-01** — GET /access-logs (ADM). Cần quyền `permission.manage`. Tham số truy vấn: `page`, `limit`, `branch_id` (cơ sở của hồ sơ khách; nếu nhật ký không có hồ sơ thì dùng cơ sở nhân viên), `user_id`, `customer_profile_id`, `action`, `from`, `to`. Người dùng bị giới hạn cơ sở chỉ xem được nhật ký của cơ sở đó.
  * @summary Lấy danh sách nhật ký truy cập
  */
 export const getAccessLogs = (
@@ -1367,7 +1367,7 @@ export const getAccessLogs = (
       
       
       return customInstance<GetAccessLogs200>(
-      {url: `/accessLogs`, method: 'GET',
+      {url: `/access-logs`, method: 'GET',
         params, signal
     },
       );
@@ -1378,13 +1378,13 @@ export const getAccessLogs = (
 
 export const getGetAccessLogsInfiniteQueryKey = (params?: GetAccessLogsParams,) => {
     return [
-    'infinite', `/accessLogs`, ...(params ? [params]: [])
+    'infinite', `/access-logs`, ...(params ? [params]: [])
     ] as const;
     }
 
 export const getGetAccessLogsQueryKey = (params?: GetAccessLogsParams,) => {
     return [
-    `/accessLogs`, ...(params ? [params]: [])
+    `/access-logs`, ...(params ? [params]: [])
     ] as const;
     }
 

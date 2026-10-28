@@ -65,6 +65,8 @@ const MODULE_LABELS: Record<string, string> = {
   service: 'Dịch vụ',
   setting: 'Cấu hình',
   shift_template: 'Ca làm',
+  staff_profile: 'Hồ sơ chuyên viên/KTV',
+  treatment: 'Điều chỉnh gói khách',
   treatment_package: 'Gói liệu trình',
   voucher: 'Voucher',
   wheel: 'Vòng quay may mắn',
@@ -93,6 +95,8 @@ const ACTION_LABELS: Record<string, string> = {
   appointment: 'Lịch hẹn',
   session: 'Buổi điều trị',
   commission: 'Hoa hồng',
+  adjust: 'Điều chỉnh gói',
+  convert: 'Chuyển buổi tặng',
 }
 const ACTION_OVERRIDES: Record<string, string> = {
   'report.customer': 'Khách mới',
@@ -538,15 +542,15 @@ export default function Roles() {
                   {group.rows.map((p) => {
                     const overrideKey = `${p.module}.${p.action}`
                     return (
-                      <label key={p.id} className="flex cursor-pointer items-start gap-2" title={p.description}>
+                      <label key={p.id} className="flex min-w-0 cursor-pointer items-start gap-2" title={p.description}>
                         <Checkbox
-                          className="mt-0.5"
+                          className="mt-0.5 shrink-0"
                           checked={granted.has(permKey(p.module, p.action))}
                           onChange={(e) => togglePerm(permKey(p.module, p.action), e.target.checked)}
                         />
-                        <span className="leading-tight">
+                        <span className="min-w-0 leading-tight">
                           <span className="block text-sm text-slate-800">{actionLabel(overrideKey, p.action)}</span>
-                          <span className="mt-0.5 block text-[10px] uppercase tracking-wide text-slate-400">
+                          <span className="mt-0.5 block text-[10px] uppercase tracking-wide text-slate-400 [overflow-wrap:anywhere]">
                             {overrideKey}
                           </span>
                         </span>

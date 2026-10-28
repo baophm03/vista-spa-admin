@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { Alert, Button, Card, Checkbox, Col, DatePicker, Divider, Empty, Form, Image, Input, InputNumber, Modal, Popconfirm, Popover, Progress, Row, Select, Space, Spin, Statistic, Table, Tabs, Tag, Tooltip, Typography, Upload, message } from 'antd'
-import { DeleteOutlined, EditOutlined, FilterOutlined, PlusOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons'
+import { Alert, Button, Card, Checkbox, Col, DatePicker, Divider, Dropdown, Empty, Form, Image, Input, InputNumber, Modal, Popconfirm, Popover, Progress, Row, Select, Space, Spin, Statistic, Table, Tabs, Tag, Tooltip, Typography, Upload, message } from 'antd'
+import { DeleteOutlined, EditOutlined, FilterOutlined, MoreOutlined, PlusOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons'
 import dayjs, { type Dayjs } from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
+import CustomFieldFormItems, { normalizeCustomFieldValues, type CustomFieldDefWithOptions } from '@/components/CustomFieldFormItems'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { CustomerTreatment } from '@/api/models/customerTreatment'
 import type { SessionPhoto } from '@/api/models/sessionPhoto'
@@ -17,6 +18,7 @@ import {
   getCustomerTreatmentsIdAvailableSlots,
   getCustomerTreatmentsIdPayments,
   getCustomerTreatmentsIdSessions,
+  getCustomerTreatmentsId,
   getGetCustomerTreatmentsQueryKey,
   getSessionsIdPhotos,
   postCustomerTreatmentsIdSessions,
@@ -26,15 +28,23 @@ import {
   putSessionsIdDone,
   putSessionsIdStart,
   useGetCustomerTreatments,
+  useGetCustomerTreatmentsIdAdjustments,
   usePostCustomerTreatments,
+  usePostCustomerTreatmentsIdConvert,
   usePostCustomerTreatmentsIdPayments,
+  usePutCustomerTreatmentsIdAdjustments,
   usePutCustomerTreatmentsIdCancel,
+  usePutCustomerTreatmentsIdFinish,
 } from '@/api/endpoints/customer-treatments'
+import { useGetService } from '@/api/endpoints/services'
 import { useGetTreatmentPackages } from '@/api/endpoints/services'
 import { postFiles } from '@/api/endpoints/files'
-import { useGetLookupLists } from '@/api/endpoints/settings'
+import { useGetLookupLists } from '@/api/endpoints/lookup-lists'
 import { useGetUsers } from '@/api/endpoints/users'
+import { useBrandCurrency, useBrandDateTime } from '@/themeRuntime'
 import { useCustomerProfileAccess } from '@/utils/customerProfileAccess'
+import useCustomFieldDefinitions from '@/hooks/useCustomFieldDefinitions'
+import useSessionStatusConfig from '@/hooks/useSessionStatusConfig'
 import { Can } from '@casl/react'
 
 interface Slot {
@@ -69,12 +79,25 @@ const FILTERS = [
   { value: 'ACTIVE', label: 'Đang làm' },
   { value: 'FINISHED', label: 'Hoàn tất' },
   { value: 'CANCELLED', label: 'Đã hủy' },
+  { value: 'EXPIRED', label: 'Hết hạn' },
 ]
-type CustomerTreatmentColumnKey = 'customer' | 'progress' | 'payment' | 'status'
+interface TreatmentAdjustmentRow {
+  id: string
+  type: string
+  reason: string
+  amount?: number | null
+  before_json?: Record<string, unknown> | null
+  after_json?: Record<string, unknown> | null
+  created_at?: string
+  created_by?: string
+}
+
+type CustomerTreatmentColumnKey = 'customer' | 'progress' | 'payment' | 'expiry' | 'status'
 const CUSTOMER_TREATMENT_COLUMN_OPTIONS: { label: string; value: CustomerTreatmentColumnKey }[] = [
   { label: 'Khách hàng', value: 'customer' },
   { label: 'Tiến độ', value: 'progress' },
   { label: 'Thanh toán', value: 'payment' },
+  { label: 'Hạn sử dụng', value: 'expiry' },
   { label: 'Trạng thái', value: 'status' },
 ]
 const DEFAULT_VISIBLE_COLUMNS = CUSTOMER_TREATMENT_COLUMN_OPTIONS.map((column) => column.value)
@@ -83,13 +106,7 @@ const STATUS_META: Record<string, { label: string; color: string }> = {
   ACTIVE: { label: 'Đang làm', color: 'var(--brand-primary)' },
   FINISHED: { label: 'Hoàn tất', color: 'green' },
   CANCELLED: { label: 'Đã hủy', color: 'default' },
-}
-
-const SESSION_STATUS: Record<string, { label: string; color: string; hex: string }> = {
-  scheduled: { label: 'Chưa làm', color: 'default', hex: '#BFBFBF' },
-  in_progress: { label: 'Đang thực hiện', color: 'processing', hex: '#1677FF' },
-  done: { label: 'Đã thực hiện', color: 'gold', hex: '#FAAD14' },
-  completed: { label: 'Hoàn tất', color: 'green', hex: '#52C41A' },
+  EXPIRED: { label: 'Hết hạn', color: 'orange' },
 }
 
 const PAY_METHOD: Record<string, string> = {
@@ -99,12 +116,11 @@ const PAY_METHOD: Record<string, string> = {
   OTHER: 'Khác',
 }
 
-const fmtVnd = (v: unknown) => Number(v ?? 0).toLocaleString('vi-VN')
-
 const sessionUsage = (treatment: CustomerTreatment) => {
   const rawTotal = Number(treatment.sessions_total ?? 0)
   const rawUsed = Number(treatment.sessions_used ?? 0)
-  const total = Number.isFinite(rawTotal) ? Math.max(0, rawTotal) : 0
+  const bonus = Number(treatment.sessions_bonus ?? 0)
+  const total = Number.isFinite(rawTotal) ? Math.max(0, rawTotal + bonus) : bonus
   const used = Number.isFinite(rawUsed) ? Math.max(0, rawUsed) : 0
   return {
     total,
@@ -112,6 +128,56 @@ const sessionUsage = (treatment: CustomerTreatment) => {
     remaining: Math.max(0, total - used),
     percent: total > 0 ? Math.min(100, Math.round((used / total) * 100)) : 0,
   }
+}
+
+const ADJUST_TYPE_OPTIONS = [
+  { value: 'ADJUST_BONUS', label: 'Số buổi tặng' },
+  { value: 'ADJUST_SESSIONS', label: 'Số buổi đã dùng' },
+  { value: 'ADJUST_VALUE', label: 'Giá trị đã tiêu' },
+  { value: 'EXTEND_EXPIRY', label: 'Hạn dùng của gói' },
+]
+const ADJUST_TYPE_LABEL: Record<string, string> = {
+  ADJUST_SESSIONS: 'Sửa số buổi đã dùng',
+  ADJUST_BONUS: 'Sửa buổi tặng',
+  ADJUST_VALUE: 'Sửa giá trị đã tiêu',
+  EXTEND_EXPIRY: 'Gia hạn hạn dùng',
+  CONVERT: 'Chuyển đổi buổi tặng',
+  DISCOUNT: 'Giảm giá',
+}
+const bonusRemainingOf = (row: CustomerTreatment) =>
+  Math.max(0, Number(row.sessions_bonus ?? 0) - Math.max(0, Number(row.sessions_used ?? 0) - Number(row.sessions_total ?? 0)))
+
+/** Đổi 1 giá trị trường lịch sử điều chỉnh thành chữ dễ đọc. */
+const formatAdjustValue = (field: string, value: unknown): string => {
+  if (value === null || value === undefined || value === '') return '—'
+  if (field === 'status') return STATUS_META[String(value)]?.label ?? String(value)
+  if (field === 'expires_at') return dayjs(String(value)).format('DD/MM/YYYY')
+  if (field === 'value_used') return Number(value).toLocaleString('vi-VN') + ' ₫'
+  return String(value)
+}
+
+/** So sánh before/after thành các dòng "Tên trường: cũ → mới" (chỉ hiện field thay đổi). */
+const adjustmentDiffLines = (row: TreatmentAdjustmentRow): { label: string; before: string; after: string }[] => {
+  const before = (row.before_json ?? {}) as Record<string, unknown>
+  const after = (row.after_json ?? {}) as Record<string, unknown>
+  const lines: { label: string; before: string; after: string }[] = []
+  const fields: [string, string][] = [
+    ['sessions_bonus', 'Buổi tặng'],
+    ['sessions_used', 'Buổi đã dùng'],
+    ['value_used', 'Giá trị đã tiêu'],
+    ['expires_at', 'Hạn dùng'],
+    ['status', 'Trạng thái'],
+  ]
+  for (const [field, label] of fields) {
+    if (JSON.stringify(before[field]) !== JSON.stringify(after[field])) {
+      lines.push({ label, before: formatAdjustValue(field, before[field]), after: formatAdjustValue(field, after[field]) })
+    }
+  }
+  if (after.target_service) lines.push({ label: 'Dịch vụ đích', before: '—', after: String(after.target_service) })
+  if (!lines.length) {
+    lines.push({ label: 'Ghi nhận', before: '—', after: JSON.stringify(after).slice(0, 80) })
+  }
+  return lines
 }
 
 const treatmentProgress = (treatment: CustomerTreatment): number | null => {
@@ -144,6 +210,7 @@ interface SessionRow {
   result?: string
   session_value?: number
   is_warranty?: boolean
+  custom_fields?: Record<string, unknown>
 }
 
 interface PaymentRow {
@@ -242,6 +309,14 @@ function SessionPhotos({
 const CellVal = ({ v }: { v?: string | null }) =>
   v ? <>{v}</> : <span style={{ color: '#C4C6C9' }}>—</span>
 
+function customFieldValueText(value: unknown): string | undefined {
+  if (value === null || value === undefined || value === '') return undefined
+  if (typeof value === 'boolean') return value ? 'Có' : 'Không'
+  if (Array.isArray(value)) return value.map((item) => String(item)).join(', ')
+  if (typeof value === 'object') return JSON.stringify(value)
+  return String(value)
+}
+
 /** Dòng subheader pha nằm trong bảng buổi (tint nhạt, full-width) */
 const SubHead = ({ children }: { children: string }) => (
   <div
@@ -289,7 +364,10 @@ function SessionTimeline({
   ctId,
   ctStatus,
   treatmentTotalAmount = 0,
+  formatMoney,
+  currencySymbol,
   staffOptions,
+  customFieldDefinitions,
   isAdmin,
   onChanged,
   refreshKey,
@@ -299,13 +377,18 @@ function SessionTimeline({
   ctId: string
   ctStatus?: string
   treatmentTotalAmount?: number
+  formatMoney: (value: unknown) => string
+  currencySymbol: string
   staffOptions: { value: string; label: string }[]
+  customFieldDefinitions: CustomFieldDefWithOptions[]
   isAdmin?: boolean
   onChanged?: () => void
   refreshKey?: number
   focusSessionId?: string
   onFocusSessionHandled?: () => void
 }) {
+  const { formatDateTime, getDateTimeParts } = useBrandDateTime()
+  const sessionStatusConfig = useSessionStatusConfig()
   const [sessions, setSessions] = useState<SessionRow[]>([])
   const [photos, setPhotos] = useState<Record<string, SessionPhoto[]>>({})
   const [loading, setLoading] = useState(true)
@@ -352,12 +435,13 @@ function SessionTimeline({
     setEditOpen(s)
     sessionSlotSequence.current += 1
     setSessionSlots([])
+    const scheduledParts = getDateTimeParts(s.scheduled_at)
     editForm.setFieldsValue({
       scheduled_date: s.scheduled_at
-        ? dayjs(s.scheduled_at)
+        ? scheduledParts ? dayjs(scheduledParts.date) : null
         : s.appointment?.appt_date ? dayjs(s.appointment.appt_date) : null,
       scheduled_time: s.scheduled_at
-        ? dayjs(s.scheduled_at).format('HH:mm')
+        ? scheduledParts?.time
         : s.appointment?.start_time?.slice(0, 5),
       staff_id: s.staff_id,
       session_value: s.session_value,
@@ -366,11 +450,12 @@ function SessionTimeline({
       diary: s.diary,
       products_used: s.products_used,
       result: s.result,
+      custom_fields: s.custom_fields ?? {},
     })
-    if (!s.appointment_id && s.status === 'scheduled' && s.scheduled_at) {
-      void loadSessionSlots(s, dayjs(s.scheduled_at))
+    if (!s.appointment_id && s.status === 'scheduled' && scheduledParts) {
+      void loadSessionSlots(s, dayjs(scheduledParts.date))
     }
-  }, [editForm, loadSessionSlots])
+  }, [editForm, getDateTimeParts, loadSessionSlots])
 
   const staffName = (id?: string) => staffOptions.find((o) => o.value === id)?.label
 
@@ -445,6 +530,7 @@ function SessionTimeline({
       () =>
         putSessionsId(editOpen!.id, {
           ...sessionValues,
+          custom_fields: normalizeCustomFieldValues(customFieldDefinitions, sessionValues.custom_fields ?? {}, editOpen?.custom_fields ?? {}),
           ...scheduleValues,
         } as never),
       'Đã cập nhật buổi',
@@ -464,7 +550,7 @@ function SessionTimeline({
       {/* Mỗi buổi = 1 bảng liền mạch: header tint + dòng subheader pha + dòng dữ liệu */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         {sessions.map((s) => {
-          const st = SESSION_STATUS[s.status ?? ''] ?? { label: s.status ?? '—', hex: '#BFBFBF' }
+          const st = sessionStatusConfig[s.status as keyof typeof sessionStatusConfig] ?? { label: s.status ?? '—', color: '#BFBFBF' }
           // Ảnh quá trình = kind 'process' + ảnh cũ chưa phân loại
           const midPhotos = (photos[s.id] ?? []).filter((p) => p.kind === 'process' || !p.kind)
           return (
@@ -499,9 +585,9 @@ function SessionTimeline({
                     justifyContent: 'center',
                     fontWeight: 700,
                     fontSize: 17,
-                    background: `${st.hex}14`,
-                    color: st.hex,
-                    border: `1px solid ${st.hex}33`,
+                    background: `${st.color}14`,
+                    color: st.color,
+                    border: `1px solid ${st.color}33`,
                   }}
                 >
                   {String(s.session_no).padStart(2, '0')}
@@ -509,11 +595,11 @@ function SessionTimeline({
                 <Space size={8} align="center" wrap>
                   <span style={{ fontWeight: 800, fontSize: 15.5, color: '#26211F' }}>
                     {s.scheduled_at
-                      ? dayjs(s.scheduled_at).format('DD/MM/YYYY · HH:mm')
+                      ? formatDateTime(s.scheduled_at)
                       : s.appointment?.appt_date
                         ? `${dayjs(s.appointment.appt_date).format('DD/MM/YYYY')} · ${s.appointment.start_time?.slice(0, 5) ?? ''}`
                         : s.started_at || s.done_at || s.completed_at
-                          ? `Thực hiện ${dayjs(s.started_at || s.done_at || s.completed_at).format('DD/MM/YYYY · HH:mm')}`
+                          ? `Thực hiện ${formatDateTime(s.started_at || s.done_at || s.completed_at)}`
                           : 'Chưa xếp lịch'}
                   </span>
                   <span
@@ -522,8 +608,8 @@ function SessionTimeline({
                       fontWeight: 700,
                       padding: '3px 12px',
                       borderRadius: 999,
-                      background: `${st.hex}1A`,
-                      color: st.hex,
+                      background: `${st.color}1A`,
+                      color: st.color,
                     }}
                   >
                     {st.label}
@@ -578,14 +664,14 @@ function SessionTimeline({
               <TRow label="KTV">
                 {s.staff_id ? <span style={{ fontWeight: 600 }}>{staffName(s.staff_id)}</span> : <CellVal v={null} />}
               </TRow>
-              {s.session_value != null && <TRow label="Giá trị buổi">{fmtVnd(s.session_value)}đ</TRow>}
+              {s.session_value != null && <TRow label="Giá trị buổi">{formatMoney(s.session_value)}</TRow>}
               {(s.started_at || s.done_at || s.completed_at) && (
                 <TRow label="Thời gian">
                   <span style={{ fontSize: 13, fontWeight: 600, color: '#5A5C60' }}>
                     {[
-                      s.started_at && `Bắt đầu ${dayjs(s.started_at).format('DD/MM HH:mm')}`,
-                      s.done_at && `Xong ${dayjs(s.done_at).format('DD/MM HH:mm')}`,
-                      s.completed_at && `Hoàn tất ${dayjs(s.completed_at).format('DD/MM HH:mm')}`,
+                      s.started_at && `Bắt đầu ${formatDateTime(s.started_at)}`,
+                      s.done_at && `Xong ${formatDateTime(s.done_at)}`,
+                      s.completed_at && `Hoàn tất ${formatDateTime(s.completed_at)}`,
                     ].filter(Boolean).join('  →  ')}
                   </span>
                 </TRow>
@@ -619,6 +705,10 @@ function SessionTimeline({
 
               <SubHead>Kết quả cuối buổi</SubHead>
               <TRow label="Kết quả"><CellVal v={s.result} /></TRow>
+              {customFieldDefinitions.map((definition) => {
+                const value = customFieldValueText(s.custom_fields?.[definition.key])
+                return value ? <TRow key={definition.id} label={definition.label}><CellVal v={value} /></TRow> : null
+              })}
               <TRow label="Ảnh sau">
                 <SessionPhotos
                   sessionId={s.id}
@@ -698,15 +788,15 @@ function SessionTimeline({
           </Row>
           <Form.Item
             name="session_value"
-            label="Giá trị buổi (đ) — dùng cho gói định mức tiền"
-            help={`Tối đa ${fmtVnd(maxSessionValue)}đ. Với gói định mức tiền, giá trị buổi này không được vượt quá số tiền còn lại trong gói.`}
+            label="Giá trị buổi — dùng cho gói định mức tiền"
+            help={`Tối đa ${formatMoney(maxSessionValue)}. Với gói định mức tiền, giá trị buổi này không được vượt quá số tiền còn lại trong gói.`}
             rules={[{
               type: 'number',
               max: maxSessionValue,
-              message: `Giá trị một buổi không được vượt quá tổng tiền liệu trình (${fmtVnd(maxSessionValue)}đ)`,
+              message: `Giá trị một buổi không được vượt quá tổng tiền liệu trình (${formatMoney(maxSessionValue)})`,
             }]}
           >
-            <InputNumber min={0} max={maxSessionValue} step={50000} style={{ width: '100%' }} />
+            <InputNumber min={0} max={maxSessionValue} step={50000} suffix={currencySymbol} style={{ width: '100%' }} />
           </Form.Item>
           <Divider plain style={{ fontSize: 11, color: '#A9ADB2', letterSpacing: 1, margin: '4px 0 14px' }}>
             ĐẦU BUỔI
@@ -732,6 +822,10 @@ function SessionTimeline({
           <Form.Item name="result" label="Kết quả">
             <Input.TextArea rows={2} placeholder="VD: da sáng hơn, khách hài lòng..." />
           </Form.Item>
+          <Divider plain style={{ fontSize: 11, color: '#A9ADB2', letterSpacing: 1, margin: '4px 0 14px' }}>
+            TRƯỜNG TÙY CHỈNH
+          </Divider>
+          <CustomFieldFormItems definitions={customFieldDefinitions} />
         </Form>
       </Modal>
     </>
@@ -739,8 +833,12 @@ function SessionTimeline({
 }
 
 export default function TreatmentCustomers() {
+  const { format: formatMoney, symbol: currencySymbol } = useBrandCurrency()
+  const { formatDateTime } = useBrandDateTime()
   const queryClient = useQueryClient()
   const { isAdmin } = useCustomerProfileAccess()
+  const customerTreatmentCustomFields = useCustomFieldDefinitions('CUSTOMER_TREATMENT')
+  const sessionCustomFields = useCustomFieldDefinitions('SESSION')
   const [filter, setFilter] = useState<string>('all')
   const [search, setSearch] = useState('')
   const [pkgFilter, setPkgFilter] = useState<string>()
@@ -754,6 +852,8 @@ export default function TreatmentCustomers() {
   const [detail, setDetail] = useState<CustomerTreatment | null>(null)
   const [sessionsRefreshKey, setSessionsRefreshKey] = useState(0)
   const [sessionToEdit, setSessionToEdit] = useState<{ treatmentId: string; sessionId: string } | null>(null)
+  const [addSessionFor, setAddSessionFor] = useState<CustomerTreatment | null>(null)
+  const [addSessionForm] = Form.useForm()
   const handleSessionFocusHandled = useCallback(() => setSessionToEdit(null), [])
   const [addingSessionId, setAddingSessionId] = useState<string | null>(null)
   const [payments, setPayments] = useState<PaymentRow[]>([])
@@ -798,6 +898,7 @@ export default function TreatmentCustomers() {
   const createMutation = usePostCustomerTreatments()
   const createPaymentMutation = usePostCustomerTreatmentsIdPayments()
   const cancelMutation = usePutCustomerTreatmentsIdCancel()
+  const finishMutation = usePutCustomerTreatmentsIdFinish()
 
   const refresh = useCallback(() => {
     void queryClient.invalidateQueries({ queryKey: getGetCustomerTreatmentsQueryKey() })
@@ -888,7 +989,7 @@ export default function TreatmentCustomers() {
   }, [])
 
   const openModal = () => {
-    form.setFieldsValue({ customer_profile_id: undefined, package_id: undefined, total_amount: undefined })
+    form.setFieldsValue({ customer_profile_id: undefined, package_id: undefined, total_amount: undefined, custom_fields: {} })
     setOpen(true)
     fetchCustomerOptions('')
   }
@@ -901,7 +1002,13 @@ export default function TreatmentCustomers() {
   const submit = async () => {
     const values = await form.validateFields()
     try {
-      await createMutation.mutateAsync({ data: values as never })
+      const dto = {
+        ...values,
+        sessions_bonus: values.sessions_bonus != null ? Number(values.sessions_bonus) : undefined,
+        expires_at: values.expires_at ? (values.expires_at as Dayjs).format('YYYY-MM-DD') : undefined,
+        custom_fields: normalizeCustomFieldValues(customerTreatmentCustomFields, values.custom_fields ?? {}),
+      }
+      await createMutation.mutateAsync({ data: dto as never })
       message.success('Đã thêm khách vào liệu trình')
       setOpen(false)
       refresh()
@@ -910,15 +1017,35 @@ export default function TreatmentCustomers() {
     }
   }
 
-  const addSession = async (row: CustomerTreatment) => {
+  const addSession = (row: CustomerTreatment) => {
     if (addingSessionId !== null) return
-    setAddingSessionId(row.id)
+    addSessionForm.resetFields()
+    addSessionForm.setFieldsValue({ custom_fields: {} })
+    setAddSessionFor(row)
+  }
+
+  const submitNewSession = async () => {
+    if (!addSessionFor || addingSessionId !== null) return
+    let values: Record<string, unknown>
     try {
-      const created = pickData<SessionRow>(await postCustomerTreatmentsIdSessions(row.id, {} as never))
-      setSessionToEdit({ treatmentId: row.id, sessionId: created?.id ?? '' })
-      openDetail(row)
+      values = await addSessionForm.validateFields()
+    } catch (error) {
+      if (!(error as { errorFields?: unknown })?.errorFields) message.error(errorMessage(error))
+      return
+    }
+    setAddingSessionId(addSessionFor.id)
+    try {
+      const created = pickData<SessionRow>(await postCustomerTreatmentsIdSessions(addSessionFor.id, {
+        custom_fields: normalizeCustomFieldValues(
+          sessionCustomFields,
+          (values.custom_fields ?? {}) as Record<string, unknown>,
+        ) ?? {},
+      } as never))
+      setSessionToEdit({ treatmentId: addSessionFor.id, sessionId: created?.id ?? '' })
+      openDetail(addSessionFor)
       setSessionsRefreshKey((key) => key + 1)
       message.success('Đã tạo buổi mới')
+      setAddSessionFor(null)
       refresh()
     } catch (err) {
       message.error(errorMessage(err))
@@ -936,6 +1063,98 @@ export default function TreatmentCustomers() {
     } catch (err) {
       message.error(errorMessage(err))
     }
+  }
+
+  const refreshSelectedDetail = async () => {
+    if (!detail) return
+    try {
+      const fresh = pickData<CustomerTreatment>(await getCustomerTreatmentsId(detail.id))
+      if (fresh) setDetail(fresh)
+    } catch { /* bỏ qua — drawer giữ dữ liệu cũ */ }
+  }
+
+  const finishTreatment = async (row: CustomerTreatment) => {
+    try {
+      await finishMutation.mutateAsync({ id: row.id })
+      message.success('Đã hoàn tất liệu trình — bắt đầu thời gian bảo hành')
+      if (detail?.id === row.id) setDetail(null)
+      refresh()
+    } catch (err) {
+      message.error(errorMessage(err))
+    }
+  }
+
+  // TA — điều chỉnh / chuyển đổi buổi tặng / lịch sử
+  const [adjustOpen, setAdjustOpen] = useState(false)
+  const [adjustRow, setAdjustRow] = useState<CustomerTreatment | null>(null)
+  const [adjustForm] = Form.useForm()
+  const adjustType = Form.useWatch('type', adjustForm)
+  const adjustMutation = usePutCustomerTreatmentsIdAdjustments()
+  const [convertOpen, setConvertOpen] = useState(false)
+  const [convertRow, setConvertRow] = useState<CustomerTreatment | null>(null)
+  const [convertForm] = Form.useForm()
+  const convertMutation = usePostCustomerTreatmentsIdConvert()
+  const [historyOpen, setHistoryOpen] = useState(false)
+  const [historyRow, setHistoryRow] = useState<CustomerTreatment | null>(null)
+  const historyQuery = useGetCustomerTreatmentsIdAdjustments(historyRow?.id ?? 'none', {
+    query: { enabled: historyOpen && !!historyRow },
+  })
+  const servicesQuery = useGetService({ is_active: true, limit: 200 })
+  const serviceOptions = (pickData<{ services?: { id: string; title?: string }[] }>(servicesQuery.data)?.services ?? [])
+    .map((service) => ({ value: service.id, label: service.title || service.id }))
+
+  const openAdjust = (row: CustomerTreatment) => {
+    setAdjustRow(row)
+    adjustForm.resetFields()
+    setAdjustOpen(true)
+  }
+
+  const submitAdjust = async () => {
+    if (!adjustRow) return
+    const values = await adjustForm.validateFields()
+    try {
+      await adjustMutation.mutateAsync({
+        id: adjustRow.id,
+        data: {
+          type: values.type,
+          reason: values.reason,
+          ...(values.type === 'EXTEND_EXPIRY' ? { expires_at: values.expires_at.format('YYYY-MM-DD') } : { amount: values.amount }),
+        } as never,
+      })
+      message.success('Đã ghi điều chỉnh và cập nhật gói')
+      setAdjustOpen(false)
+      if (detail?.id === adjustRow.id) setDetail(null)
+      refresh()
+    } catch (err) {
+      message.error(errorMessage(err))
+    }
+  }
+
+  const openConvert = (row: CustomerTreatment) => {
+    setConvertRow(row)
+    convertForm.resetFields()
+    setConvertOpen(true)
+  }
+
+  const submitConvert = async () => {
+    if (!convertRow) return
+    const values = await convertForm.validateFields()
+    try {
+      await convertMutation.mutateAsync({
+        id: convertRow.id,
+        data: { service_id: values.service_id, from_sessions: values.from_sessions, reason: values.reason } as never,
+      })
+      message.success('Đã chuyển buổi tặng sang gói con mới')
+      setConvertOpen(false)
+      refresh()
+    } catch (err) {
+      message.error(errorMessage(err))
+    }
+  }
+
+  const openHistory = (row: CustomerTreatment) => {
+    setHistoryRow(row)
+    setHistoryOpen(true)
   }
 
   const submitPayment = async () => {
@@ -995,7 +1214,7 @@ export default function TreatmentCustomers() {
         </Col>
         <Col xs={12} md={6}>
           <Card styles={{ body: { padding: '16px 20px' } }}>
-            <Statistic title="Tổng công nợ" value={stats.debt} suffix="đ" valueStyle={{ color: '#D97706' }} />
+            <Statistic title="Tổng công nợ" value={formatMoney(stats.debt)} valueStyle={{ color: '#D97706' }} />
           </Card>
         </Col>
       </Row>
@@ -1083,7 +1302,7 @@ export default function TreatmentCustomers() {
                 )
               }
               if (row.quota_type === 'VALUE') {
-                return <Tag color="gold">Định mức {fmtVnd(row.value_used)}/{fmtVnd(row.value_total)}đ</Tag>
+                return <Tag color="gold">Định mức {formatMoney(row.value_used)} / {formatMoney(row.value_total)}</Tag>
               }
               return <Tag color="gold">Trọn gói</Tag>
             },
@@ -1095,13 +1314,20 @@ export default function TreatmentCustomers() {
             render: (_: unknown, row: CustomerTreatment) => (
               <div>
                 <div style={{ fontSize: 13 }}>
-                  {fmtVnd(row.paid_amount)} / {fmtVnd(row.total_amount)}đ
+                  {formatMoney(row.paid_amount)} / {formatMoney(row.total_amount)}
                 </div>
                 <Tag color={(row.debt_amount ?? 0) > 0 ? 'orange' : 'green'} style={{ marginTop: 4 }}>
-                  {(row.debt_amount ?? 0) > 0 ? `Còn nợ ${fmtVnd(row.debt_amount)}đ` : 'Đã trả đủ'}
+                  {(row.debt_amount ?? 0) > 0 ? `Còn nợ ${formatMoney(row.debt_amount)}` : 'Đã trả đủ'}
                 </Tag>
               </div>
             ),
+          },
+          {
+            title: 'Hạn sử dụng',
+            key: 'expiry',
+            width: 120,
+            render: (_: unknown, row: CustomerTreatment) =>
+              row.expires_at ? dayjs(row.expires_at).format('DD/MM/YYYY') : 'Không hạn',
           },
           {
             title: 'Trạng thái',
@@ -1113,7 +1339,7 @@ export default function TreatmentCustomers() {
           {
             title: '',
             key: 'actions',
-            width: 240,
+            width: 170,
             render: (_: unknown, row: CustomerTreatment) => (
               <Can I="UPDATE" a="CUSTOMER">
                 <Space onClick={(e) => e.stopPropagation()}>
@@ -1122,25 +1348,64 @@ export default function TreatmentCustomers() {
                       +1 buổi
                     </Button>
                   )}
-                {(row.debt_amount ?? 0) > 0 && row.status !== 'CANCELLED' && (
-                  <Button
-                    size="small"
-                    onClick={() => {
-                      setDetail(row)
-                      payForm.setFieldsValue({ amount: row.debt_amount, method: activePaymentMethods.find((item) => item.code === 'CASH')?.code ?? activePaymentMethods[0]?.code })
-                      setPayOpen(true)
+                  <Dropdown
+                    trigger={['click']}
+                    menu={{
+                      items: [
+                        {
+                          key: 'pay',
+                          label: 'Thu tiền',
+                          disabled: !((row.debt_amount ?? 0) > 0 && row.status !== 'CANCELLED'),
+                        },
+                        { key: 'adjust', label: 'Điều chỉnh gói', disabled: !(row.status === 'ACTIVE' || row.status === 'EXPIRED') },
+                        {
+                          key: 'convert',
+                          label: `Đổi buổi tặng (${bonusRemainingOf(row)})`,
+                          disabled: !(row.status === 'ACTIVE' && bonusRemainingOf(row) > 0),
+                        },
+                        { key: 'history', label: 'Lịch sử điều chỉnh' },
+                        { type: 'divider' as const },
+                        {
+                          key: 'finish',
+                          label: 'Hoàn tất liệu trình (trả da)',
+                          disabled: !(row.status === 'ACTIVE' && row.quota_type === 'UNLIMITED'),
+                        },
+                        { key: 'cancel', label: 'Hủy liệu trình', danger: true, disabled: row.status !== 'ACTIVE' },
+                      ],
+                      onClick: ({ key }) => {
+                        if (key === 'pay') {
+                          setDetail(row)
+                          payForm.setFieldsValue({ amount: row.debt_amount, method: activePaymentMethods.find((item) => item.code === 'CASH')?.code ?? activePaymentMethods[0]?.code })
+                          setPayOpen(true)
+                        } else if (key === 'adjust') {
+                          openAdjust(row)
+                        } else if (key === 'convert') {
+                          openConvert(row)
+                        } else if (key === 'history') {
+                          openHistory(row)
+                        } else if (key === 'finish') {
+                          Modal.confirm({
+                            title: 'Hoàn tất liệu trình (trả da)?',
+                            content: 'Gói sẽ chuyển sang Hoàn tất và bắt đầu tính thời gian bảo hành trọn đời.',
+                            okText: 'Hoàn tất',
+                            cancelText: 'Không',
+                            onOk: () => finishTreatment(row),
+                          })
+                        } else if (key === 'cancel') {
+                          Modal.confirm({
+                            title: 'Hủy liệu trình này?',
+                            content: 'Chỉ được hủy khi chưa có buổi hoàn tất. Các giao dịch thanh toán được giữ nguyên.',
+                            okText: 'Hủy LT',
+                            okButtonProps: { danger: true },
+                            cancelText: 'Không',
+                            onOk: () => cancelTreatment(row),
+                          })
+                        }
+                      },
                     }}
                   >
-                    Thu tiền
-                  </Button>
-                )}
-                {row.status === 'ACTIVE' && (
-                  <Popconfirm title="Hủy liệu trình này?" okText="Hủy" cancelText="Không" onConfirm={() => cancelTreatment(row)}>
-                    <Button size="small" danger>
-                      Hủy LT
-                    </Button>
-                  </Popconfirm>
-                )}
+                    <Button size="small" icon={<MoreOutlined />} aria-label="Thao tác khác" />
+                  </Dropdown>
                 </Space>
               </Can>
             ),
@@ -1179,9 +1444,31 @@ export default function TreatmentCustomers() {
               }))}
             />
           </Form.Item>
-          <Form.Item name="total_amount" label="Số tiền (đ)" rules={[{ required: true, message: 'Nhập số tiền' }]}>
-            <InputNumber min={0} step={100000} style={{ width: '100%' }} />
+          <Form.Item name="total_amount" label="Số tiền" rules={[{ required: true, message: 'Nhập số tiền' }]}>
+            <InputNumber min={0} step={100000} suffix={currencySymbol} style={{ width: '100%' }} />
           </Form.Item>
+          <Form.Item name="sessions_bonus" label="Buổi tặng" extra="Cộng thêm vào số buổi của gói — để trống nếu không tặng">
+            <InputNumber min={0} precision={0} style={{ width: '100%' }} />
+          </Form.Item>
+          <Form.Item name="expires_at" label="Hạn sử dụng" extra="Để trống nếu gói không giới hạn thời gian">
+            <DatePicker style={{ width: '100%' }} />
+          </Form.Item>
+          <CustomFieldFormItems definitions={customerTreatmentCustomFields} />
+        </Form>
+      </Modal>
+
+      <Modal
+        title="Thông tin buổi điều trị mới"
+        open={!!addSessionFor}
+        onCancel={() => setAddSessionFor(null)}
+        onOk={() => void submitNewSession()}
+        confirmLoading={addingSessionId !== null}
+        okText="Tạo buổi"
+        cancelText="Hủy"
+      >
+        <Form form={addSessionForm} layout="vertical" style={{ marginTop: 12 }}>
+          <CustomFieldFormItems definitions={sessionCustomFields} />
+          {sessionCustomFields.length === 0 && <Typography.Text type="secondary">Chưa có trường tùy chỉnh cho buổi điều trị.</Typography.Text>}
         </Form>
       </Modal>
 
@@ -1196,8 +1483,8 @@ export default function TreatmentCustomers() {
       >
         <Form form={payForm} layout="vertical" style={{ marginTop: 12 }}>
           {paymentLookupError && <Alert type="error" showIcon message="Không thể ghi nhận thanh toán" description={paymentLookupError} style={{ marginBottom: 16 }} />}
-          <Form.Item name="amount" label="Số tiền (đ)" rules={[{ required: true, message: 'Nhập số tiền' }]}>
-            <InputNumber min={1} step={50000} style={{ width: '100%' }} />
+          <Form.Item name="amount" label="Số tiền" rules={[{ required: true, message: 'Nhập số tiền' }]}>
+            <InputNumber min={1} step={50000} suffix={currencySymbol} style={{ width: '100%' }} />
           </Form.Item>
           <Form.Item name="method" label="Phương thức" rules={[{ required: true }]}>
             <Select
@@ -1259,7 +1546,7 @@ export default function TreatmentCustomers() {
                   {detail.quota_type === 'SESSIONS'
                     ? `Đã dùng ${sessionUsage(detail).used}/${sessionUsage(detail).total} buổi`
                     : detail.quota_type === 'VALUE'
-                      ? `${fmtVnd(detail.value_used)}/${fmtVnd(detail.value_total)}đ`
+                      ? `${formatMoney(detail.value_used)} / ${formatMoney(detail.value_total)}`
                       : 'Trọn gói'}
                 </div>
                 {treatmentProgress(detail) !== null && (
@@ -1282,12 +1569,12 @@ export default function TreatmentCustomers() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 9, borderTop: '1px solid var(--brand-border-soft)', paddingTop: 12 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
                     <span style={{ color: '#3F4145', fontWeight: 600 }}>Đã trả</span>
-                    <b style={{ fontWeight: 700 }}>{fmtVnd(detail.paid_amount)}đ</b>
+                    <b style={{ fontWeight: 700 }}>{formatMoney(detail.paid_amount)}</b>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
                     <span style={{ color: '#3F4145', fontWeight: 600 }}>Công nợ</span>
                     <b style={{ fontWeight: 700, color: (detail.debt_amount ?? 0) > 0 ? '#D97706' : '#16A34A' }}>
-                      {fmtVnd(detail.debt_amount)}đ
+                      {formatMoney(detail.debt_amount)}
                     </b>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
@@ -1297,6 +1584,17 @@ export default function TreatmentCustomers() {
                     </Tag>
                   </div>
                 </div>
+                {Object.keys(detail.custom_fields ?? {}).length > 0 && (
+                  <div style={{ borderTop: '1px solid var(--brand-border-soft)', marginTop: 12, paddingTop: 12 }}>
+                    <Typography.Text strong>Thông tin bổ sung</Typography.Text>
+                    {Object.entries(detail.custom_fields ?? {}).map(([key, value]) => (
+                      <div key={key} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginTop: 6, fontSize: 13 }}>
+                        <span>{customerTreatmentCustomFields.find((field) => field.key === key)?.label ?? key}</span>
+                        <span>{customFieldValueText(value) ?? '—'}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 12 }}>
                 {detail.status === 'ACTIVE' && detail.quota_type !== 'UNLIMITED' && (
@@ -1313,7 +1611,7 @@ export default function TreatmentCustomers() {
                       setPayOpen(true)
                     }}
                   >
-                    Thu tiền ({fmtVnd(detail.debt_amount)}đ)
+                    Thu tiền ({formatMoney(detail.debt_amount)})
                   </Button>
                 )}
                 {detail.status === 'ACTIVE' && (
@@ -1339,9 +1637,12 @@ export default function TreatmentCustomers() {
                         ctId={detail.id}
                         ctStatus={detail.status}
                         treatmentTotalAmount={detail.total_amount}
+                        formatMoney={formatMoney}
+                        currencySymbol={currencySymbol}
                         staffOptions={staffOptions}
+                        customFieldDefinitions={sessionCustomFields}
                         isAdmin={isAdmin}
-                        onChanged={refresh}
+                        onChanged={() => { refresh(); void refreshSelectedDetail() }}
                         refreshKey={sessionsRefreshKey}
                         focusSessionId={sessionToEdit?.treatmentId === detail.id ? sessionToEdit.sessionId : undefined}
                         onFocusSessionHandled={handleSessionFocusHandled}
@@ -1366,14 +1667,14 @@ export default function TreatmentCustomers() {
                             width: 170,
                             render: (_, p) => {
                               const t = p.paid_at || p.created_at
-                              return t ? dayjs(t).format('DD/MM/YYYY HH:mm') : '—'
+                              return formatDateTime(t)
                             },
                           },
                           {
                             title: 'Số tiền',
                             dataIndex: 'amount',
                             width: 140,
-                            render: (v) => <b>{fmtVnd(v)}đ</b>,
+                            render: (v) => <b>{formatMoney(v)}</b>,
                           },
                           {
                             title: 'Phương thức',
@@ -1390,6 +1691,133 @@ export default function TreatmentCustomers() {
               />
             </Col>
           </Row>
+        )}
+      </Modal>
+
+      <Modal
+        title={`Điều chỉnh gói — ${adjustRow ? profileName(adjustRow) : ''}`}
+        open={adjustOpen}
+        onCancel={() => setAdjustOpen(false)}
+        onOk={() => void submitAdjust()}
+        okText="Ghi điều chỉnh"
+        cancelText="Hủy"
+        confirmLoading={adjustMutation.isPending}
+        destroyOnHidden
+      >
+        <Form form={adjustForm} layout="vertical" style={{ marginTop: 12 }}>
+          <Form.Item name="type" label="Tham số cần chỉnh" rules={[{ required: true, message: 'Chọn tham số' }]}>
+            <Select options={ADJUST_TYPE_OPTIONS} placeholder="Chọn tham số" />
+          </Form.Item>
+          {adjustType === 'EXTEND_EXPIRY' ? (
+            <Form.Item name="expires_at" label="Hạn dùng mới" rules={[{ required: true, message: 'Chọn hạn dùng mới' }]}
+              extra="Gói đang Hết hạn sẽ tự mở lại thành Đang làm nếu hạn mới ở tương lai.">
+              <DatePicker style={{ width: '100%' }} />
+            </Form.Item>
+          ) : (
+            <Form.Item
+              name="amount"
+              label="Giá trị mới"
+              rules={[{ required: true, message: 'Nhập giá trị mới' }]}
+              extra={adjustType === 'ADJUST_BONUS' ? 'Buổi tặng cộng thêm vào số buổi mua chính.' : undefined}
+            >
+              <InputNumber min={0} style={{ width: '100%' }} />
+            </Form.Item>
+          )}
+          <Form.Item name="reason" label="Lý do điều chỉnh (bắt buộc)" rules={[{ required: true, whitespace: true, message: 'Nhập lý do' }]}>
+            <Input.TextArea rows={2} maxLength={500} placeholder="VD: Khách báo salon ghi nhầm số buổi" />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      <Modal
+        title={`Đổi buổi tặng — ${convertRow ? profileName(convertRow) : ''}`}
+        open={convertOpen}
+        onCancel={() => setConvertOpen(false)}
+        onOk={() => void submitConvert()}
+        okText="Chuyển đổi"
+        cancelText="Hủy"
+        confirmLoading={convertMutation.isPending}
+        destroyOnHidden
+      >
+        <Alert
+          type="info"
+          showIcon
+          style={{ marginBottom: 12 }}
+          message={`Còn ${convertRow ? bonusRemainingOf(convertRow) : 0} buổi tặng khả dụng`}
+          description="Chỉ chuyển được buổi TẶNG còn lại, không ảnh hưởng buổi đã mua. Thao tác một chiều — không thể đổi ngược."
+        />
+        <Form form={convertForm} layout="vertical">
+          <Form.Item name="service_id" label="Dịch vụ đích" rules={[{ required: true, message: 'Chọn dịch vụ đích' }]}>
+            <Select showSearch optionFilterProp="label" options={serviceOptions} placeholder="Chọn dịch vụ muốn chuyển sang" />
+          </Form.Item>
+          <Form.Item
+            name="from_sessions"
+            label="Số buổi chuyển"
+            rules={[
+              { required: true, message: 'Nhập số buổi' },
+              { type: 'number', min: 1, message: 'Tối thiểu 1 buổi' },
+              { type: 'number', max: convertRow ? bonusRemainingOf(convertRow) : 0, message: 'Vượt số buổi tặng còn lại' },
+            ]}
+          >
+            <InputNumber min={1} max={convertRow ? bonusRemainingOf(convertRow) : 0} style={{ width: '100%' }} />
+          </Form.Item>
+          <Form.Item name="reason" label="Lý do (bắt buộc)" rules={[{ required: true, whitespace: true, message: 'Nhập lý do' }]}>
+            <Input.TextArea rows={2} maxLength={500} placeholder="VD: Khách không làm mụn nữa, đổi sang gội đầu dưỡng sinh" />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      <Modal
+        title={`Lịch sử điều chỉnh — ${historyRow ? profileName(historyRow) : ''}`}
+        open={historyOpen}
+        onCancel={() => setHistoryOpen(false)}
+        footer={null}
+        width={860}
+      >
+        {historyQuery.isLoading ? (
+          <Typography.Text type="secondary">Đang tải…</Typography.Text>
+        ) : (pickData<TreatmentAdjustmentRow[]>(historyQuery.data) ?? []).length === 0 ? (
+          <Empty description="Gói chưa từng bị điều chỉnh" style={{ margin: '24px 0' }} />
+        ) : (
+          <Table<TreatmentAdjustmentRow>
+            rowKey="id"
+            size="small"
+            loading={historyQuery.isLoading}
+            dataSource={(pickData<TreatmentAdjustmentRow[]>(historyQuery.data) ?? []) as TreatmentAdjustmentRow[]}
+            pagination={{ pageSize: 8 }}
+            columns={[
+              { title: 'Thời gian', dataIndex: 'created_at', width: 130, render: (v: string) => formatDateTime(v) },
+              { title: 'Loại', dataIndex: 'type', width: 140, render: (v: string) => ADJUST_TYPE_LABEL[v] ?? v },
+              {
+                title: 'Giá trị',
+                dataIndex: 'amount',
+                width: 90,
+                render: (v: number | null, row: TreatmentAdjustmentRow) =>
+                  v == null ? '—' : /CONVERT|SESSIONS|BONUS/.test(row.type) ? `${v} buổi` : Number(v).toLocaleString('vi-VN'),
+              },
+              { title: 'Lý do', dataIndex: 'reason', render: (v: string) => v },
+              {
+                title: 'Thay đổi',
+                key: 'diff',
+                width: 280,
+                render: (_: unknown, row: TreatmentAdjustmentRow) => {
+                  const lines = adjustmentDiffLines(row)
+                  return (
+                    <div style={{ fontSize: 12, display: 'grid', gap: 2 }}>
+                      {lines.map((line) => (
+                        <div key={line.label}>
+                          <span style={{ color: '#6F7071' }}>{line.label}: </span>
+                          <span style={{ color: '#8C9091' }}>{line.before}</span>
+                          {' → '}
+                          <span style={{ fontWeight: 600 }}>{line.after}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )
+                },
+              },
+            ]}
+          />
         )}
       </Modal>
     </>

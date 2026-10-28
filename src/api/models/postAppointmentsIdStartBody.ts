@@ -5,8 +5,8 @@
  * Vista Spa backend API. Uses the NEWSKY+ business error envelope for permission-aware endpoints and the legacy response envelope for existing admin endpoints.
  * OpenAPI spec version: 1.0.0
  */
+import type { PostAppointmentsIdStartBodySessionCustomFields } from './postAppointmentsIdStartBodySessionCustomFields';
 
-/**
- * Payload nghiệp vụ được chuyển nguyên vẹn cho lớp xử lý
- */
-export type PostIntegrationsProviderTestBody = { [key: string]: unknown };
+export type PostAppointmentsIdStartBody = {
+  session_custom_fields?: PostAppointmentsIdStartBodySessionCustomFields;
+};

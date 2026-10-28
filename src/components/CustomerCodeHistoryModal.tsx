@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Alert, Button, Empty, Modal, Table, Typography } from 'antd'
 import { ReloadOutlined } from '@ant-design/icons'
-import dayjs from 'dayjs'
+import { useBrandDateTime } from '@/themeRuntime'
 import { getCustomerProfilesIdCodeHistory } from '@/api/endpoints/customer-profiles'
 import { errorMessage, pickData } from '@/api/helpers'
 
@@ -30,6 +30,7 @@ function describeReason(reason?: string | null) {
 }
 
 export default function CustomerCodeHistoryModal({ open, profileId, onClose }: CustomerCodeHistoryModalProps) {
+  const { formatDateTime } = useBrandDateTime()
   const [rows, setRows] = useState<CodeHistoryRow[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -88,7 +89,7 @@ export default function CustomerCodeHistoryModal({ open, profileId, onClose }: C
               title: 'Thời điểm',
               dataIndex: 'changed_at',
               width: 150,
-              render: (value?: string) => value ? dayjs(value).format('DD/MM/YYYY HH:mm') : '—',
+              render: (value?: string) => formatDateTime(value),
             },
           ]}
         />

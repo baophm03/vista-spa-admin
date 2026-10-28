@@ -5,7 +5,11 @@
  * Vista Spa backend API. Uses the NEWSKY+ business error envelope for permission-aware endpoints and the legacy response envelope for existing admin endpoints.
  * OpenAPI spec version: 1.0.0
  */
+import type { AccessLogBranchId } from './accessLogBranchId';
+import type { AccessLogUserName } from './accessLogUserName';
 import type { AccessLogCustomerProfileId } from './accessLogCustomerProfileId';
+import type { AccessLogCustomerName } from './accessLogCustomerName';
+import type { AccessLogCustomerCode } from './accessLogCustomerCode';
 import type { AccessLogAction } from './accessLogAction';
 import type { AccessLogIp } from './accessLogIp';
 
@@ -15,7 +19,12 @@ import type { AccessLogIp } from './accessLogIp';
 export interface AccessLog {
   id: string;
   user_id: string;
+  /** Branch of the customer profile, or the employee branch when the log has no customer profile */
+  branch_id?: AccessLogBranchId;
+  user_name?: AccessLogUserName;
   customer_profile_id?: AccessLogCustomerProfileId;
+  customer_name?: AccessLogCustomerName;
+  customer_code?: AccessLogCustomerCode;
   action: AccessLogAction;
   ip?: AccessLogIp;
   created_at?: string;

@@ -6,7 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-/**
- * Payload nghiệp vụ được chuyển nguyên vẹn cho lớp xử lý
- */
-export type PutIntegrationsProviderBody = { [key: string]: unknown };
+export type StaffProfileRowUser = { [key: string]: unknown };

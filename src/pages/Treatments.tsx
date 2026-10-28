@@ -24,8 +24,10 @@ import {
   message,
 } from 'antd'
 import type { TableColumnsType } from 'antd'
-import { FilterOutlined, PlusOutlined } from '@ant-design/icons'
+import { FilterOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
 import PageTitle from '@/components/base/PageTitle'
+import CustomFieldFormItems, { normalizeCustomFieldValues } from '@/components/CustomFieldFormItems'
+import useCustomFieldDefinitions from '@/hooks/useCustomFieldDefinitions'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { Branch } from '@/api/models/branch'
 import type { Service } from '@/api/models/service'
@@ -45,6 +47,7 @@ import {
 } from '@/api/endpoints/services'
 import { useGetBranches } from '@/api/endpoints/branches'
 import { useProfileStore } from '@/stores/profile-store'
+import { useBrandCurrency } from '@/themeRuntime'
 
 type QuotaType = TreatmentPackage['quota_type']
 type ValidityUnit = NonNullable<TreatmentPackage['validity_unit']>
@@ -105,20 +108,21 @@ const PACKAGE_STATUS_OPTIONS = [
   { value: 'false', label: 'Đã ẩn' },
 ]
 
-function quotaLabel(row: TreatmentPackage) {
+function quotaLabel(row: TreatmentPackage, formatMoney: (value: unknown) => string) {
   if (row.quota_type === 'SESSIONS') return String(row.total_sessions ?? '—') + ' buổi'
-  if (row.quota_type === 'VALUE') return Number(row.total_value ?? 0).toLocaleString('vi-VN') + 'đ'
+  if (row.quota_type === 'VALUE') return formatMoney(row.total_value)
   return 'Không giới hạn'
 }
 
-function priceLabel(row: TreatmentPackage) {
-  const minimum = Number(row.list_price ?? 0).toLocaleString('vi-VN') + 'đ'
+function priceLabel(row: TreatmentPackage, formatMoney: (value: unknown) => string) {
+  const minimum = formatMoney(row.list_price)
   return row.list_price_max != null
-    ? minimum + ' – ' + Number(row.list_price_max).toLocaleString('vi-VN') + 'đ'
+    ? minimum + ' – ' + formatMoney(row.list_price_max)
     : minimum
 }
 
 export default function Treatments() {
+  const { format: formatMoney, symbol: currencySymbol } = useBrandCurrency()
   const queryClient = useQueryClient()
   // Trang quản trị liệu trình: chỉ platform admin được quản lý (giữ behavior cũ)
   const canManage = !!useProfileStore((s) => s.profile)?.is_admin
@@ -127,6 +131,7 @@ export default function Treatments() {
   const [packageOpen, setPackageOpen] = useState(false)
   const [editingPackage, setEditingPackage] = useState<TreatmentPackageRow | null>(null)
   const [packageForm] = Form.useForm()
+  const packageCustomFields = useCustomFieldDefinitions('PACKAGE')
   const [packageSaving, setPackageSaving] = useState(false)
 
   const [typeOpen, setTypeOpen] = useState(false)
@@ -146,6 +151,14 @@ export default function Treatments() {
   const branchesQuery = useGetBranches()
 
   const rows = (pickData<TreatmentPackageRow[]>(packagesQuery.data) ?? []) as TreatmentPackageRow[]
+  const [packageSearch, setPackageSearch] = useState('')
+  const visibleRows = useMemo(() => {
+    const keyword = packageSearch.trim().toLowerCase()
+    if (!keyword) return rows
+    return rows.filter((row) =>
+      String(row.name || '').toLowerCase().includes(keyword)
+      || String(row.description || '').toLowerCase().includes(keyword))
+  }, [rows, packageSearch])
   const packageTypes = (pickData<PackageTypeRow[]>(packageTypesQuery.data) ?? []) as PackageTypeRow[]
   // GET /service trả { services, total, ... } trong responseData
   const services = (pickData<{ services?: Service[] }>(servicesQuery.data)?.services ?? []) as Service[]
@@ -187,6 +200,7 @@ export default function Treatments() {
       list_price: row.list_price ?? 0,
       bonus_sessions_default: row.bonus_sessions_default ?? 0,
       service_ids: row.service_ids ?? [],
+      custom_fields: row.custom_fields ?? {},
     } : {
       name: '',
       quota_type: 'SESSIONS',
@@ -194,6 +208,7 @@ export default function Treatments() {
       list_price: 0,
       bonus_sessions_default: 0,
       service_ids: [],
+      custom_fields: {},
       is_active: true,
     })
     setPackageOpen(true)
@@ -224,6 +239,7 @@ export default function Treatments() {
         bonus_sessions_default: Number(values.bonus_sessions_default ?? 0),
         list_price: Number(values.list_price ?? 0),
         list_price_max: values.list_price_max == null ? null : Number(values.list_price_max),
+        custom_fields: normalizeCustomFieldValues(packageCustomFields, values.custom_fields ?? {}, editingPackage?.custom_fields ?? {}),
       }
       if (editingPackage) {
         await updatePackageMutation.mutateAsync({ id: editingPackage.id, data: dto as never })
@@ -246,6 +262,16 @@ export default function Treatments() {
     try {
       await deletePackageMutation.mutateAsync({ id: row.id })
       message.success('Đã ẩn gói dịch vụ')
+      await reloadPackages()
+    } catch (err) {
+      message.error(errorMessage(err))
+    }
+  }
+
+  const restorePackage = async (row: TreatmentPackageRow) => {
+    try {
+      await updatePackageMutation.mutateAsync({ id: row.id, data: { is_active: true } as never })
+      message.success('Đã bật lại gói dịch vụ')
       await reloadPackages()
     } catch (err) {
       message.error(errorMessage(err))
@@ -371,7 +397,7 @@ export default function Treatments() {
       title: 'Hạn mức',
       key: 'quota',
       width: 170,
-      render: (_value, row) => <Tag>{quotaLabel(row)}</Tag>,
+      render: (_value, row) => <Tag>{quotaLabel(row, formatMoney)}</Tag>,
     },
     {
       title: 'Dịch vụ',
@@ -382,7 +408,7 @@ export default function Treatments() {
         return ids.length ? ids.map((id) => serviceById.get(id) ?? 'Dịch vụ').join(', ') : '—'
       },
     },
-    { title: 'Giá niêm yết', key: 'price', width: 170, render: (_value, row) => priceLabel(row) },
+    { title: 'Giá niêm yết', key: 'price', width: 170, render: (_value, row) => priceLabel(row, formatMoney) },
     {
       title: 'Thời hạn',
       key: 'validity',
@@ -455,6 +481,16 @@ export default function Treatments() {
           label: 'Danh mục gói',
           children: (
             <>
+              <Space wrap style={{ marginBottom: 12 }}>
+                <Input
+                  allowClear
+                  prefix={<SearchOutlined style={{ color: '#A9ADB2' }} />}
+                  placeholder="Tìm theo tên gói"
+                  aria-label="Tìm theo tên gói"
+                  value={packageSearch}
+                  onChange={(event) => setPackageSearch(event.target.value)}
+                  style={{ width: 250 }}
+                />
               <Popover
                 trigger="click"
                 placement="bottomLeft"
@@ -498,13 +534,14 @@ export default function Treatments() {
               >
                 <Button icon={<FilterOutlined />}>Bộ lọc{activeFilterCount ? ' (' + activeFilterCount + ')' : ''}</Button>
               </Popover>
+              </Space>
 
               {packagesQuery.isError && <Alert type="error" showIcon message="Không tải được danh mục gói" description={errorMessage(packagesQuery.error)} style={{ margin: '12px 0' }} />}
               <Table<TreatmentPackageRow>
                 style={{ marginTop: 12 }}
                 rowKey="id"
                 loading={packagesQuery.isLoading}
-                dataSource={rows}
+                dataSource={visibleRows}
                 columns={[
                   ...visiblePackageColumns,
                   ...(canManage ? [{
@@ -518,6 +555,9 @@ export default function Treatments() {
                           <Popconfirm title="Ẩn gói dịch vụ này?" okText="Ẩn" cancelText="Hủy" onConfirm={() => hidePackage(row)}>
                             <Button size="small" danger>Ẩn</Button>
                           </Popconfirm>
+                        )}
+                        {!row.is_active && (
+                          <Button size="small" type="primary" ghost onClick={() => restorePackage(row)}>Bật lại</Button>
                         )}
                       </Space>
                     ),
@@ -602,22 +642,22 @@ export default function Treatments() {
                 </Form.Item>
               )}
               {selectedQuotaType === 'VALUE' && (
-                <Form.Item name="total_value" label="Định mức tiền (đ)" rules={[{ required: true, message: 'Nhập định mức tiền' }]}>
-                  <InputNumber min={1} precision={0} step={1000000} style={{ width: '100%' }} />
+                <Form.Item name="total_value" label="Định mức tiền" rules={[{ required: true, message: 'Nhập định mức tiền' }]}>
+                  <InputNumber min={1} precision={0} step={1000000} suffix={currencySymbol} style={{ width: '100%' }} />
                 </Form.Item>
               )}
             </Col>
           </Row>
           <Row gutter={16}>
             <Col span={8}>
-              <Form.Item name="list_price" label="Giá từ (đ)" rules={[{ required: true, message: 'Nhập giá niêm yết' }]}>
-                <InputNumber min={0} precision={0} step={100000} style={{ width: '100%' }} />
+              <Form.Item name="list_price" label="Giá từ" rules={[{ required: true, message: 'Nhập giá niêm yết' }]}>
+                <InputNumber min={0} precision={0} step={100000} suffix={currencySymbol} style={{ width: '100%' }} />
               </Form.Item>
             </Col>
             <Col span={8}>
               <Form.Item
                 name="list_price_max"
-                label="Giá đến (đ, tùy chọn)"
+                label="Giá đến (tùy chọn)"
                 dependencies={['list_price']}
                 rules={[({ getFieldValue }) => ({
                   validator: (_rule, value) => value == null || Number(value) >= Number(getFieldValue('list_price') ?? 0)
@@ -625,7 +665,7 @@ export default function Treatments() {
                     : Promise.reject(new Error('Giá đến phải lớn hơn hoặc bằng giá từ')),
                 })]}
               >
-                <InputNumber min={0} precision={0} step={100000} style={{ width: '100%' }} />
+                <InputNumber min={0} precision={0} step={100000} suffix={currencySymbol} style={{ width: '100%' }} />
               </Form.Item>
             </Col>
             <Col span={8}>
@@ -729,6 +769,7 @@ export default function Treatments() {
               ),
             }]}
           />
+          <CustomFieldFormItems definitions={packageCustomFields} />
         </Form>
       </Modal>
 

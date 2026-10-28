@@ -17,6 +17,16 @@ const FALLBACK_TIMEZONES = [
   'Australia/Sydney', 'Europe/London', 'Europe/Paris', 'America/Los_Angeles', 'America/New_York', 'UTC',
 ]
 
+const MODULE_LABELS: Record<string, string> = {
+  'module.academy': 'Khóa học',
+  'module.content': 'Nội dung',
+  'module.report': 'Báo cáo',
+  'module.lucky_wheel': 'Vòng quay may mắn',
+  'module.shop': 'Cửa hàng',
+  'module.shop_checkout': 'Thanh toán cửa hàng',
+  'module.invoice': 'Hóa đơn',
+}
+
 function supportedValues(key: 'timeZone' | 'currency', fallback: string[]) {
   const intl = Intl as typeof Intl & { supportedValuesOf?: (value: string) => string[] }
   const supported = intl.supportedValuesOf?.(key) ?? fallback
@@ -46,7 +56,7 @@ export default function BrandSettings() {
 
   useEffect(() => {
     const data = settingsQuery.data
-    if (!data) return
+    if (!data?.brand || !data?.locale) return
     form.setFieldsValue({
       brand: { name: data.brand.name, logo_file_id: data.brand.logo_file_id ?? '' },
       locale: data.locale,
@@ -67,10 +77,14 @@ export default function BrandSettings() {
         },
         locale: values.locale,
       } as BrandSettingsUpdate),
-    onSuccess: (result) => {
+    onSuccess: async (result) => {
       const data = pickData<BrandSettings>(result)
-      queryClient.setQueryData(getGetSettingsBrandQueryKey(), result)
-      if (data) applyBrandSettings(data)
+      if (data?.brand && data?.locale) {
+        queryClient.setQueryData(getGetSettingsBrandQueryKey(), data)
+        applyBrandSettings(data)
+      } else {
+        await queryClient.invalidateQueries({ queryKey: getGetSettingsBrandQueryKey() })
+      }
       message.success('Đã lưu cấu hình thương hiệu')
     },
     onError: (error) => message.error(errorMessage(error)),
@@ -159,7 +173,7 @@ export default function BrandSettings() {
               </Card>
               {!!settingsQuery.data?.modules?.length && (
                 <Card style={{ marginTop: 16 }} title="Mô-đun đang bật">
-                  <Space wrap size={24}>{settingsQuery.data.modules.filter((module) => module.enabled).map((module) => <Tag key={module.key} color="blue">{module.key.replace('module.', '')}</Tag>)}</Space>
+                  <Space wrap size={24}>{settingsQuery.data.modules.filter((module) => module.enabled).map((module) => <Tag key={module.key} color="blue">{MODULE_LABELS[module.key] ?? module.key.replace(/^module\./, '').replaceAll('_', ' ')}</Tag>)}</Space>
                 </Card>
               )}
             </Col>

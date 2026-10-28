@@ -1,20 +1,22 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Alert, Button, Checkbox, Empty, Form, Input, InputNumber, Modal, Select, Space, Spin, Table, Tabs, Tag, Typography, message } from 'antd'
+import { Alert, Button, Checkbox, Empty, Form, Input, InputNumber, Modal, Select, Space, Spin, Table, Tag, Typography, message } from 'antd'
 import { PlusOutlined, ReloadOutlined } from '@ant-design/icons'
+import { Can } from '@casl/react'
 import PageTitle from '@/components/base/PageTitle'
 import LookupItemsManager from '@/components/LookupItemsManager'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { CustomFieldDef } from '@/api/models/customFieldDef'
+import type { CustomFieldDefEntity } from '@/api/models/customFieldDefEntity'
 import type { LookupList } from '@/api/models/lookupList'
 import type { PostCustomFieldDefsBody } from '@/api/models/postCustomFieldDefsBody'
 import type { PutCustomFieldDefsIdBody } from '@/api/models/putCustomFieldDefsIdBody'
 import {
   deleteCustomFieldDefsId,
   getCustomFieldDefs,
-  getLookupLists,
   postCustomFieldDefs,
   putCustomFieldDefsId,
 } from '@/api/endpoints/settings'
+import { getLookupLists } from '@/api/endpoints/lookup-lists'
 
 function splitOptions(value?: string) {
   return value?.split(/\r?\n|,/).map((item) => item.trim()).filter(Boolean) ?? []
@@ -45,8 +47,8 @@ interface CustomFieldFormValues {
   visible_to_customer?: boolean
 }
 
-function CustomerFieldsConfig({ entity = 'CUSTOMER_PROFILE', sectionTitle = 'hồ sơ' }: {
-  entity?: 'CUSTOMER_PROFILE' | 'SERVICE'
+function CustomerFieldsConfig({ entity, sectionTitle }: {
+  entity: CustomFieldDefEntity
   sectionTitle?: string
 }) {
   const [rows, setRows] = useState<CustomFieldDef[]>([])
@@ -104,7 +106,7 @@ function CustomerFieldsConfig({ entity = 'CUSTOMER_PROFILE', sectionTitle = 'h�
       options: supportsOptions && !lookupListId ? splitOptions(values.options_text) : null,
       sort_order: values.sort_order ?? 0,
       required: values.required ?? false,
-      visible_to_customer: values.visible_to_customer ?? false,
+      ...(entity === 'CUSTOMER_PROFILE' ? { visible_to_customer: values.visible_to_customer ?? false } : {}),
     }
     setSaving(true)
     try {
@@ -131,9 +133,29 @@ function CustomerFieldsConfig({ entity = 'CUSTOMER_PROFILE', sectionTitle = 'h�
     }
   }
 
-  const helperText = entity === 'SERVICE'
-    ? 'Trường bổ sung sẽ xuất hiện trong biểu mẫu thêm/sửa dịch vụ. Tên, danh mục, giá và thời lượng đã được cấu hình sẵn ở mục Dịch vụ.'
-    : 'Trường bị ẩn sẽ không xuất hiện trong form hồ sơ khách. Giá trị cũ vẫn được giữ trong hồ sơ khách hàng.'
+  const helperText = entity === 'CUSTOMER_PROFILE'
+    ? 'Trường sẽ xuất hiện trong biểu mẫu hồ sơ khách. Trường bị ẩn không nhận dữ liệu mới; giá trị đã lưu vẫn được giữ.'
+    : entity === 'SERVICE'
+      ? 'Trường bổ sung sẽ xuất hiện trong biểu mẫu thêm/sửa dịch vụ. Các trường cơ bản đã được cấu hình sẵn ở mục Dịch vụ.'
+      : 'Trường tùy chỉnh sẽ xuất hiện trong biểu mẫu tương ứng. Trường bị ẩn không nhận dữ liệu mới; giá trị đã lưu vẫn được giữ.'
+
+  const columns = [
+    { title: 'Tên trường', dataIndex: 'label' },
+    { title: 'Key', dataIndex: 'key', render: (value: string) => <Typography.Text code>{value}</Typography.Text> },
+    { title: 'Kiểu dữ liệu', dataIndex: 'data_type' },
+    { title: 'Nguồn lựa chọn', render: (_: unknown, row: CustomFieldDef) => row.lookup_list_id ? `Danh mục: ${lookupLists.find((list) => list.id === row.lookup_list_id)?.key ?? row.lookup_list_id}` : (row.data_type === 'select' || row.data_type === 'multiselect') ? 'Nhập tay' : '—' },
+    { title: 'Bắt buộc', dataIndex: 'required', render: (value: boolean) => value ? <Tag color="blue">Có</Tag> : 'Không' },
+    ...(entity === 'CUSTOMER_PROFILE' ? [{ title: 'Hiển thị với khách', dataIndex: 'visible_to_customer', render: (value: boolean) => value ? 'Có' : 'Không' }] : []),
+    { title: 'Trạng thái', dataIndex: 'is_active', render: (value: boolean) => <Tag color={value === false ? 'default' : 'green'}>{value === false ? 'Đã ẩn' : 'Đang dùng'}</Tag> },
+    { title: '', key: 'actions', render: (_: unknown, row: CustomFieldDef) => (
+      <Space>
+        <Can I="UPDATE" a="CUSTOM_FIELD"><Button size="small" onClick={() => openEditor(row)}>Sửa</Button></Can>
+        <Can I={row.is_active === false ? 'UPDATE' : 'DELETE'} a="CUSTOM_FIELD" passThrough>
+          {(allowed) => allowed ? <Button size="small" type="link" onClick={() => void toggleActive(row)}>{row.is_active === false ? 'Bật lại' : 'Ẩn'}</Button> : null}
+        </Can>
+      </Space>
+    ) },
+  ]
 
   return (
     <>
@@ -143,7 +165,7 @@ function CustomerFieldsConfig({ entity = 'CUSTOMER_PROFILE', sectionTitle = 'h�
         </Typography.Paragraph>
         <Space>
           <Button icon={<ReloadOutlined />} onClick={() => void load()}>Tải lại</Button>
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor()}>Thêm trường</Button>
+          <Can I="CREATE" a="CUSTOM_FIELD"><Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor()}>Thêm trường</Button></Can>
         </Space>
       </Space>
       {entity === 'SERVICE' && (
@@ -183,21 +205,7 @@ function CustomerFieldsConfig({ entity = 'CUSTOMER_PROFILE', sectionTitle = 'h�
             />
           ) : undefined,
         }}
-        columns={[
-          { title: 'Tên trường', dataIndex: 'label' },
-          { title: 'Key', dataIndex: 'key', render: (value: string) => <Typography.Text code>{value}</Typography.Text> },
-          { title: 'Kiểu dữ liệu', dataIndex: 'data_type' },
-          { title: 'Nguồn lựa chọn', render: (_: unknown, row: CustomFieldDef) => row.lookup_list_id ? `Danh mục: ${lookupLists.find((list) => list.id === row.lookup_list_id)?.key ?? row.lookup_list_id}` : (row.data_type === 'select' || row.data_type === 'multiselect') ? 'Nhập tay' : '—' },
-          { title: 'Bắt buộc', dataIndex: 'required', render: (value: boolean) => value ? <Tag color="blue">Có</Tag> : 'Không' },
-          { title: 'Hiển thị với khách', dataIndex: 'visible_to_customer', render: (value: boolean) => value ? 'Có' : 'Không' },
-          { title: 'Trạng thái', dataIndex: 'is_active', render: (value: boolean) => <Tag color={value === false ? 'default' : 'green'}>{value === false ? 'Đã ẩn' : 'Đang dùng'}</Tag> },
-          { title: '', key: 'actions', render: (_: unknown, row: CustomFieldDef) => (
-            <Space>
-              <Button size="small" onClick={() => openEditor(row)}>Sửa</Button>
-              <Button size="small" type="link" onClick={() => void toggleActive(row)}>{row.is_active === false ? 'Bật lại' : 'Ẩn'}</Button>
-            </Space>
-          ) },
-        ]}
+        columns={columns}
       />
       <Modal
         title={editing ? `Sửa trường ${sectionTitle}` : `Thêm trường ${sectionTitle}`}
@@ -258,7 +266,7 @@ function CustomerFieldsConfig({ entity = 'CUSTOMER_PROFILE', sectionTitle = 'h�
           </Form.Item>
           <Form.Item name="sort_order" label="Thứ tự hiển thị"><InputNumber min={0} style={{ width: '100%' }} /></Form.Item>
           <Form.Item name="required" valuePropName="checked"><Checkbox>Bắt buộc nhập</Checkbox></Form.Item>
-          <Form.Item name="visible_to_customer" valuePropName="checked"><Checkbox>Hiển thị với khách hàng</Checkbox></Form.Item>
+          {entity === 'CUSTOMER_PROFILE' && <Form.Item name="visible_to_customer" valuePropName="checked"><Checkbox>Hiển thị với khách hàng</Checkbox></Form.Item>}
         </Form>
       </Modal>
     </>
@@ -318,14 +326,36 @@ function HealthMetricsConfig() {
 }
 
 export default function CustomerDataConfig() {
+  const [selectedSection, setSelectedSection] = useState<CustomFieldDefEntity | 'HEALTH_METRICS'>('CUSTOMER_PROFILE')
+  const sectionOptions = [
+    { value: 'CUSTOMER_PROFILE', label: 'Hồ sơ khách' },
+    { value: 'SESSION', label: 'Buổi điều trị' },
+    { value: 'SERVICE', label: 'Dịch vụ' },
+    { value: 'PACKAGE', label: 'Gói dịch vụ' },
+    { value: 'COURSE', label: 'Khóa học' },
+    { value: 'APPOINTMENT', label: 'Lịch hẹn' },
+    { value: 'CUSTOMER_TREATMENT', label: 'Gói liệu trình của khách' },
+    { value: 'HEALTH_METRICS', label: 'Chỉ số sức khỏe (HM)' },
+  ]
+
   return (
     <>
       <PageTitle>Cấu hình dữ liệu khách hàng</PageTitle>
-      <Tabs items={[
-        { key: 'fields', label: 'Trường tùy chỉnh (CF)', children: <CustomerFieldsConfig /> },
-        { key: 'service-fields', label: 'Trường dịch vụ', children: <CustomerFieldsConfig entity="SERVICE" sectionTitle="dịch vụ" /> },
-        { key: 'metrics', label: 'Chỉ số sức khỏe (HM)', children: <HealthMetricsConfig /> },
-      ]} />
+      <div style={{ width: 240, maxWidth: '100%', marginBottom: 20 }}>
+        <Select
+          aria-label="Chọn loại dữ liệu cần cấu hình"
+          value={selectedSection}
+          options={sectionOptions}
+          onChange={(value: CustomFieldDefEntity | 'HEALTH_METRICS') => setSelectedSection(value)}
+          style={{ width: '100%' }}
+        />
+      </div>
+      {selectedSection === 'HEALTH_METRICS'
+        ? <HealthMetricsConfig />
+        : <CustomerFieldsConfig
+            entity={selectedSection}
+            sectionTitle={sectionOptions.find((option) => option.value === selectedSection)?.label}
+          />}
     </>
   )
 }

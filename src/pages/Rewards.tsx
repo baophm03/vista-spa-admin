@@ -21,6 +21,7 @@ import type { TableColumnsType } from 'antd'
 import { PlusOutlined, ReloadOutlined } from '@ant-design/icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
+import { useBrandDateTime } from '@/themeRuntime'
 import PageTitle from '@/components/base/PageTitle'
 import { errorMessage, pickData, pickMeta } from '@/api/helpers'
 import type { CustomerProfile } from '@/api/models/customerProfile'
@@ -300,6 +301,7 @@ function RewardCatalogTab({ onChanged }: { onChanged: () => void }) {
 }
 
 function RedemptionsTab({ onChanged }: { onChanged: () => void }) {
+  const { formatDateTime } = useBrandDateTime()
   const [page, setPage] = useState(1)
   const [statusFilter, setStatusFilter] = useState<string | undefined>()
   const [cancelTarget, setCancelTarget] = useState<RewardRedemptionRow | null>(null)
@@ -358,7 +360,7 @@ function RedemptionsTab({ onChanged }: { onChanged: () => void }) {
     { title: 'Quà', key: 'reward', render: (_v, row) => row.reward?.name ?? row.reward_id },
     { title: 'Điểm đã trừ', dataIndex: 'points_spent', width: 110, render: (v: number) => Number(v).toLocaleString('vi-VN') },
     { title: 'Trạng thái', dataIndex: 'status', width: 110, render: (v: string) => <Tag color={REDEMPTION_META[v]?.color}>{REDEMPTION_META[v]?.label ?? v}</Tag> },
-    { title: 'Ngày đổi', dataIndex: 'created_at', width: 150, render: (v: string) => (v ? dayjs(v).format('DD/MM/YYYY HH:mm') : '—') },
+    { title: 'Ngày đổi', dataIndex: 'created_at', width: 150, render: (v: string) => formatDateTime(v) },
     { title: 'Lý do hủy', dataIndex: 'cancel_reason', ellipsis: true, render: (v?: string) => v || '—' },
     {
       title: 'Thao tác', key: 'actions', width: 170,

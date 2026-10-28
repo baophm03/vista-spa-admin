@@ -55,6 +55,8 @@ import type {
   PaymentLog,
   PostCustomerTreatments200,
   PostCustomerTreatmentsBody,
+  PostCustomerTreatmentsIdConvert200,
+  PostCustomerTreatmentsIdConvertBody,
   PostCustomerTreatmentsIdPayments200,
   PostCustomerTreatmentsIdSessions200,
   PostPaymentsIdVoid200,
@@ -66,11 +68,13 @@ import type {
   PutCustomerTreatmentsIdAdjustments200,
   PutCustomerTreatmentsIdAdjustmentsBody,
   PutCustomerTreatmentsIdCancel200,
+  PutCustomerTreatmentsIdFinish200,
   PutSessionsId200,
   PutSessionsIdComplete200,
   PutSessionsIdDone200,
   PutSessionsIdStart200,
   PutWarrantyClaimsIdApprove200,
+  PutWarrantyClaimsIdApproveBody,
   PutWarrantyClaimsIdReject200,
   PutWarrantyClaimsIdRejectBody,
   TreatmentSession,
@@ -610,11 +614,14 @@ export const usePutWarrantyClaimsIdReject = <TError = UnauthorizedResponse | For
  */
 export const putWarrantyClaimsIdApprove = (
     id: string,
+    putWarrantyClaimsIdApproveBody: PutWarrantyClaimsIdApproveBody,
  ) => {
       
       
       return customInstance<PutWarrantyClaimsIdApprove200>(
-      {url: `/warrantyClaims/${id}/approve`, method: 'PUT'
+      {url: `/warrantyClaims/${id}/approve`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: putWarrantyClaimsIdApproveBody
     },
       );
     }
@@ -622,8 +629,8 @@ export const putWarrantyClaimsIdApprove = (
 
 
 export const getPutWarrantyClaimsIdApproveMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putWarrantyClaimsIdApprove>>, TError,{id: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putWarrantyClaimsIdApprove>>, TError,{id: string}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putWarrantyClaimsIdApprove>>, TError,{id: string;data: PutWarrantyClaimsIdApproveBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putWarrantyClaimsIdApprove>>, TError,{id: string;data: PutWarrantyClaimsIdApproveBody}, TContext> => {
 
 const mutationKey = ['putWarrantyClaimsIdApprove'];
 const {mutation: mutationOptions} = options ?
@@ -635,10 +642,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putWarrantyClaimsIdApprove>>, {id: string}> = (props) => {
-          const {id} = props ?? {};
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putWarrantyClaimsIdApprove>>, {id: string;data: PutWarrantyClaimsIdApproveBody}> = (props) => {
+          const {id,data} = props ?? {};
 
-          return  putWarrantyClaimsIdApprove(id,)
+          return  putWarrantyClaimsIdApprove(id,data,)
         }
 
         
@@ -647,18 +654,18 @@ const {mutation: mutationOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type PutWarrantyClaimsIdApproveMutationResult = NonNullable<Awaited<ReturnType<typeof putWarrantyClaimsIdApprove>>>
-    
+    export type PutWarrantyClaimsIdApproveMutationBody = PutWarrantyClaimsIdApproveBody
     export type PutWarrantyClaimsIdApproveMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
  * @summary Duyệt
  */
 export const usePutWarrantyClaimsIdApprove = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putWarrantyClaimsIdApprove>>, TError,{id: string}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putWarrantyClaimsIdApprove>>, TError,{id: string;data: PutWarrantyClaimsIdApproveBody}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof putWarrantyClaimsIdApprove>>,
         TError,
-        {id: string},
+        {id: string;data: PutWarrantyClaimsIdApproveBody},
         TContext
       > => {
 
@@ -2799,6 +2806,134 @@ export const prefetchGetCustomerTreatmentsIdPaymentsQuery = async <TData = Await
 
 
 /**
+ * **CT-05** — PUT /customer-treatments/{id}/finish. Cần quyền `customer.update`. Chỉ từ ACTIVE -> FINISHED, ghi `finished_at` làm mốc bắt đầu bảo hành trọn đời. Bắt buộc đối với gói UNLIMITED; gói SESSIONS/VALUE tự kết thúc khi hết quota (BR-07).
+ * @summary Hoàn tất liệu trình / trả da
+ */
+export const putCustomerTreatmentsIdFinish = (
+    id: string,
+ ) => {
+      
+      
+      return customInstance<PutCustomerTreatmentsIdFinish200>(
+      {url: `/customerTreatments/${id}/finish`, method: 'PUT'
+    },
+      );
+    }
+  
+
+
+export const getPutCustomerTreatmentsIdFinishMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putCustomerTreatmentsIdFinish>>, TError,{id: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putCustomerTreatmentsIdFinish>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['putCustomerTreatmentsIdFinish'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putCustomerTreatmentsIdFinish>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  putCustomerTreatmentsIdFinish(id,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PutCustomerTreatmentsIdFinishMutationResult = NonNullable<Awaited<ReturnType<typeof putCustomerTreatmentsIdFinish>>>
+    
+    export type PutCustomerTreatmentsIdFinishMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | InternalErrorResponse
+
+    /**
+ * @summary Hoàn tất liệu trình / trả da
+ */
+export const usePutCustomerTreatmentsIdFinish = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putCustomerTreatmentsIdFinish>>, TError,{id: string}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof putCustomerTreatmentsIdFinish>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+
+      const mutationOptions = getPutCustomerTreatmentsIdFinishMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * **TA-02** — POST /customer-treatments/{id}/convert (BR-18). Chỉ chuyển **buổi tặng còn lại** (bonus_remaining = sessions_bonus − max(0, sessions_used − sessions_total)), không đổi buổi mua chính. Điều kiện: gói có `convertible_note` HOẶC người dùng có quyền `treatment.convert`. Tạo gói con `parent_treatment_id`, `total_amount = 0`, trừ buổi tặng gói nguồn, ghi audit CONVERT. Một chiều.
+ * @summary Chuyển đổi buổi tặng sang dịch vụ khác
+ */
+export const postCustomerTreatmentsIdConvert = (
+    id: string,
+    postCustomerTreatmentsIdConvertBody: PostCustomerTreatmentsIdConvertBody,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<PostCustomerTreatmentsIdConvert200>(
+      {url: `/customerTreatments/${id}/convert`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: postCustomerTreatmentsIdConvertBody, signal
+    },
+      );
+    }
+  
+
+
+export const getPostCustomerTreatmentsIdConvertMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postCustomerTreatmentsIdConvert>>, TError,{id: string;data: PostCustomerTreatmentsIdConvertBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postCustomerTreatmentsIdConvert>>, TError,{id: string;data: PostCustomerTreatmentsIdConvertBody}, TContext> => {
+
+const mutationKey = ['postCustomerTreatmentsIdConvert'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postCustomerTreatmentsIdConvert>>, {id: string;data: PostCustomerTreatmentsIdConvertBody}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  postCustomerTreatmentsIdConvert(id,data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostCustomerTreatmentsIdConvertMutationResult = NonNullable<Awaited<ReturnType<typeof postCustomerTreatmentsIdConvert>>>
+    export type PostCustomerTreatmentsIdConvertMutationBody = PostCustomerTreatmentsIdConvertBody
+    export type PostCustomerTreatmentsIdConvertMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | UnprocessableEntityResponse | InternalErrorResponse
+
+    /**
+ * @summary Chuyển đổi buổi tặng sang dịch vụ khác
+ */
+export const usePostCustomerTreatmentsIdConvert = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postCustomerTreatmentsIdConvert>>, TError,{id: string;data: PostCustomerTreatmentsIdConvertBody}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postCustomerTreatmentsIdConvert>>,
+        TError,
+        {id: string;data: PostCustomerTreatmentsIdConvertBody},
+        TContext
+      > => {
+
+      const mutationOptions = getPostCustomerTreatmentsIdConvertMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
  * **CT-05** — PUT /customer-treatments/{id}/cancel (ADM). Cần quyền `customer.delete`.
  * @summary Hủy
  */
@@ -3265,8 +3400,8 @@ export const prefetchGetCustomerTreatmentsIdAdjustmentsQuery = async <TData = Aw
 
 
 /**
- * **TA-02** — PUT /customer-treatments/{id}/adjust — ghi bản ghi điều chỉnh (append-only). Cần quyền `customer.update`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Trường body: `type`, `reason`, `amount`, `related_treatment_id`, `payload`.
- * @summary Điều chỉnh buổi
+ * **TA-01** — PUT /customer-treatments/{id}/adjust (BR-17). Cần quyền `treatment.adjust`. Bắt buộc `reason`. type: `ADJUST_SESSIONS` (số buổi đã dùng), `ADJUST_BONUS` (số buổi tặng), `ADJUST_VALUE` (giá trị đã tiêu), `EXTEND_EXPIRY` (hạn dùng — gửi `expires_at`; gói EXPIRED có hạn mới > now sẽ tự mở lại ACTIVE). Chặn giá trị âm/vượt tổng. Ghi `treatment_adjustment` với before/after.
+ * @summary Điều chỉnh thủ công gói của khách
  */
 export const putCustomerTreatmentsIdAdjustments = (
     id: string,
@@ -3284,7 +3419,7 @@ export const putCustomerTreatmentsIdAdjustments = (
   
 
 
-export const getPutCustomerTreatmentsIdAdjustmentsMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+export const getPutCustomerTreatmentsIdAdjustmentsMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putCustomerTreatmentsIdAdjustments>>, TError,{id: string;data: PutCustomerTreatmentsIdAdjustmentsBody}, TContext>, }
 ): UseMutationOptions<Awaited<ReturnType<typeof putCustomerTreatmentsIdAdjustments>>, TError,{id: string;data: PutCustomerTreatmentsIdAdjustmentsBody}, TContext> => {
 
@@ -3311,12 +3446,12 @@ const {mutation: mutationOptions} = options ?
 
     export type PutCustomerTreatmentsIdAdjustmentsMutationResult = NonNullable<Awaited<ReturnType<typeof putCustomerTreatmentsIdAdjustments>>>
     export type PutCustomerTreatmentsIdAdjustmentsMutationBody = PutCustomerTreatmentsIdAdjustmentsBody
-    export type PutCustomerTreatmentsIdAdjustmentsMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+    export type PutCustomerTreatmentsIdAdjustmentsMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Điều chỉnh buổi
+ * @summary Điều chỉnh thủ công gói của khách
  */
-export const usePutCustomerTreatmentsIdAdjustments = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+export const usePutCustomerTreatmentsIdAdjustments = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putCustomerTreatmentsIdAdjustments>>, TError,{id: string;data: PutCustomerTreatmentsIdAdjustmentsBody}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof putCustomerTreatmentsIdAdjustments>>,

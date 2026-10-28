@@ -3,6 +3,7 @@ import { Descriptions, Space, Tag } from 'antd'
 import dayjs from 'dayjs'
 import type { CustomerProfile } from '@/api/models/customerProfile'
 import type { CustomFieldDefWithOptions } from '@/components/CustomerProfileCustomFields'
+import { useBrandCurrency } from '@/themeRuntime'
 
 /** Hồ sơ khách hàng kèm dữ liệu user được include từ backend. */
 export interface CustomerProfileRow extends CustomerProfile {
@@ -44,11 +45,8 @@ interface Props {
   fieldDefinitions: CustomFieldDefWithOptions[]
 }
 
-function money(value: unknown) {
-  return Number(value ?? 0).toLocaleString('vi-VN') + ' ₫'
-}
-
 export default function CustomerProfileOverviewTab({ profile, summary, branchName, fieldDefinitions }: Props) {
+  const { format: money } = useBrandCurrency()
   const labels = useMemo(() => new Map(fieldDefinitions.map((definition) => [definition.key, definition.label])), [fieldDefinitions])
   return (
     <div className="grid gap-[18px] pt-2">

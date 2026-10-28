@@ -5,20 +5,8 @@
  * Vista Spa backend API. Uses the NEWSKY+ business error envelope for permission-aware endpoints and the legacy response envelope for existing admin endpoints.
  * OpenAPI spec version: 1.0.0
  */
-import type { IntegrationUpdateConfigPublicSecurity } from './integrationUpdateConfigPublicSecurity';
 
-export type IntegrationUpdateConfigPublic = {
-  /** @maxLength 255 */
-  host: string;
-  /**
-   * @minimum 1
-   * @maximum 65535
-   */
-  port: number;
-  security: IntegrationUpdateConfigPublicSecurity;
-  /** @maxLength 255 */
-  username?: string;
-  /** @maxLength 150 */
-  from_name?: string;
-  from_email: string;
-};
+/**
+ * For EMAIL_SMTP provide host, port, security, username, from_name, and from_email. For EMAIL_API provide endpoint, auth_header, auth_prefix, from_name, from_email, test_email, and request_template. For ZALO_OA provide oa_id and app_id; for ZALO_ZBS also provide template_id.
+ */
+export type IntegrationUpdateConfigPublic = { [key: string]: unknown };

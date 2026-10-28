@@ -44,14 +44,15 @@ import type { ProductCreate } from '@/api/models/productCreate'
 import type { ProductUpdate } from '@/api/models/productUpdate'
 import type { PostProductCategoriesBody } from '@/api/models/postProductCategoriesBody'
 import type { PutProductCategoriesIdBody } from '@/api/models/putProductCategoriesIdBody'
+import { formatCurrency, useBrandCurrency } from '@/themeRuntime'
 
 /** BE include kèm `category` (id, name) khi list. */
 type ProductRow = Product & { category?: { id?: string; name?: string } }
 /** BE list trả thêm active_product_count. */
 type ProductCategoryRow = ProductCategory & { active_product_count?: number }
 
-const formatPrice = (price?: number | null) =>
-  price === null || price === undefined ? '—' : `${new Intl.NumberFormat('vi-VN').format(Number(price))} ₫`
+const formatPrice = (price: number | null | undefined, currency: string) =>
+  price === null || price === undefined ? '—' : formatCurrency(price, currency)
 
 const PRODUCT_COLUMNS = [
   { value: 'cover', label: 'Ảnh' },
@@ -64,6 +65,7 @@ const PRODUCT_COLUMNS = [
 const DEFAULT_PRODUCT_COLUMNS = PRODUCT_COLUMNS.map((column) => column.value)
 
 export default function Products() {
+  const { currency, symbol: currencySymbol } = useBrandCurrency()
   const queryClient = useQueryClient()
   const [searchInput, setSearchInput] = useState('')
   const [search, setSearch] = useState('')
@@ -358,7 +360,7 @@ export default function Products() {
             width: 150,
             render: (_, p) => p.category?.name || '—',
           },
-          { title: 'Giá hiển thị', key: 'price', dataIndex: 'price', width: 130, render: (v?: number | null) => formatPrice(v) },
+          { title: 'Giá hiển thị', key: 'price', dataIndex: 'price', width: 130, render: (v?: number | null) => formatPrice(v, currency) },
           {
             title: 'Liên kết',
             key: 'link',
@@ -427,11 +429,12 @@ export default function Products() {
               </Form.Item>
             </Col>
             <Col xs={24} sm={12}>
-              <Form.Item name="price" label="Giá hiển thị (₫)">
+              <Form.Item name="price" label="Giá hiển thị">
                 <InputNumber<number>
                   style={{ width: '100%' }}
                   min={0}
                   step={1000}
+                  suffix={currencySymbol}
                   formatter={(v) => `${v ?? 0}`.replace(/\B(?=(\d{3})+(?!\d))/g, '.')}
                   parser={(v) => Number((v ?? '').replace(/\./g, ''))}
                   placeholder="VD: 350000"

@@ -98,12 +98,21 @@ function readLegacyHealth(row: HealthRow): HealthFields {
 
 function skinTypeLabel(value: string | null | undefined, options: SkinTypeOption[]): string | undefined {
   if (!value) return undefined
-  return options.find((option) => option.code === value || option.label === value)?.label ?? value
+  const normalizedValue = value.trim().toLocaleLowerCase('vi')
+  const option = options.find((item) =>
+    item.code.trim().toLocaleLowerCase('vi') === normalizedValue
+    || item.label.trim().toLocaleLowerCase('vi') === normalizedValue,
+  )
+  return option?.label ?? value
 }
 
 function skinTypeCode(value: string | null | undefined, options: SkinTypeOption[]): string | undefined {
   if (!value) return undefined
-  return options.find((option) => option.code === value || option.label === value)?.code ?? value
+  const normalizedValue = value.trim().toLocaleLowerCase('vi')
+  return options.find((option) =>
+    option.code.trim().toLocaleLowerCase('vi') === normalizedValue
+    || option.label.trim().toLocaleLowerCase('vi') === normalizedValue,
+  )?.code ?? value
 }
 
 function currentHealth(row: HealthRow, skinTypes: SkinTypeOption[]): HealthFields {
