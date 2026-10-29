@@ -7,6 +7,6 @@
  */
 
 export type PostMembershipsUserIdRankOverrideBody = {
-  rank_id?: string;
-  reason?: string;
+  rank_id: string;
+  reason: string;
 };

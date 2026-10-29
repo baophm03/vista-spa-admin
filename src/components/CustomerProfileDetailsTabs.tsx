@@ -16,12 +16,13 @@ interface Props {
   branchName: (id?: string) => string
   fieldDefinitions: CustomFieldDefWithOptions[]
   onLoadingChange?: (loading: boolean) => void
+  onMembershipUpdated?: () => Promise<void> | void
 }
 
-export default function CustomerProfileDetailsTabs({ profile, summary, branchName, fieldDefinitions, onLoadingChange }: Props) {
+export default function CustomerProfileDetailsTabs({ profile, summary, branchName, fieldDefinitions, onLoadingChange, onMembershipUpdated }: Props) {
   const [activeTab, setActiveTab] = useState<TabKey>('overview')
   const content = activeTab === 'overview'
-    ? <CustomerProfileOverviewTab profile={profile} summary={summary} branchName={branchName} fieldDefinitions={fieldDefinitions} />
+    ? <CustomerProfileOverviewTab profile={profile} summary={summary} branchName={branchName} fieldDefinitions={fieldDefinitions} onMembershipUpdated={onMembershipUpdated} />
     : activeTab === 'treatments'
       ? <CustomerProfileTreatmentsTab key={profile.id} profileId={profile.id} onLoadingChange={onLoadingChange} />
       : activeTab === 'appointments'

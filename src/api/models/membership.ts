@@ -17,7 +17,8 @@ import type { MembershipRankExpiresAt } from './membershipRankExpiresAt';
  */
 export interface Membership {
   id: string;
-  user_id: string;
+  customer_profile_id?: string | null;
+  user_id: string | null;
   /** @minimum 0 */
   lifetime_spent?: number;
   /** @minimum 0 */

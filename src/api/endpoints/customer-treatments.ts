@@ -286,7 +286,7 @@ export const prefetchGetWarrantyClaimsIdQuery = async <TData = Awaited<ReturnTyp
 
 
 /**
- * **WC-01** — GET /warranty-claims. Cần quyền `customer.read`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Tham số truy vấn: `page`, `limit`, `status`, `branch_id`.
+ * **WC-01** — GET /warranty-claims. Cần quyền `customer.read`. Tham số truy vấn: `page`, `limit`, `status`, `customer_treatment_id`, `branch_id`.
  * @summary Lấy danh sách yêu cầu bảo hành
  */
 export const getWarrantyClaims = (
@@ -3532,4 +3532,3 @@ export const usePutCustomerTreatmentsIdAdjustments = <TError = UnauthorizedRespo
 
       return useMutation(mutationOptions, queryClient);
     }
-    

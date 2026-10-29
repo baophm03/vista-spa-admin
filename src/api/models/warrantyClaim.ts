@@ -18,9 +18,12 @@ export interface WarrantyClaim {
   customer_treatment_id: string;
   reason: string;
   status?: WarrantyClaimStatus;
+  contract_file_id?: string | null;
   session_id?: WarrantyClaimSessionId;
   approved_by?: WarrantyClaimApprovedBy;
   reject_reason?: WarrantyClaimRejectReason;
+  customer_treatment?: Record<string, unknown> | null;
+  session?: Record<string, unknown> | null;
   created_at?: string;
   updated_at?: string;
 }

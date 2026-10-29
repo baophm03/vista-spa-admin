@@ -1,15 +1,15 @@
-import { useState } from 'react'
-import { Button, Card, Col, Form, Input, InputNumber, Modal, Popconfirm, Row, Select, Space, Table, Tag, Typography, message } from 'antd'
-import { ReloadOutlined } from '@ant-design/icons'
+import { useRef, useState } from 'react'
+import { Button, Card, Col, Divider, Form, Input, InputNumber, Modal, Popconfirm, Popover, Row, Select, Space, Table, Tag, Typography, message } from 'antd'
+import { EyeOutlined, FilterOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons'
 import { useBrandCurrency } from '@/themeRuntime'
 import PageTitle from '../components/base/PageTitle'
+import CustomerCodeHistoryModal from '../components/CustomerCodeHistoryModal'
 import {
   useGetCardRanks,
   usePostMembershipsUserIdPointsAdjust,
   usePostMembershipsUserIdRankOverride,
   usePostMembershipsUserIdRecalculate,
 } from '../api/endpoints/membership'
-import { useGetUsers } from '../api/endpoints/users'
 import { useGetCustomerProfilesIdPoints } from '../api/endpoints/customer-profiles'
 import type { MembershipTransaction } from '../api/models'
 import { useGetCustomerProfiles } from '../api/endpoints/customer-profiles'
@@ -29,15 +29,17 @@ interface RankRow {
 
 interface MemberRow {
   id: string
-  zalo_name?: string
-  phone_number?: string
+  full_name?: string
+  phone?: string
+  user_id?: string | null
+  user?: { zalo_name?: string | null; phone_number?: string | null } | null
   membership?: {
     id?: string
-    points?: number
+    lifetime_points?: number
     year_spent?: number
     card_rank_id?: string
     card_rank?: { name?: string }
-  }
+  } | null
 }
 
 interface ProfileLite {
@@ -61,53 +63,106 @@ export default function Points() {
   const { format: formatMoney } = useBrandCurrency()
   const [page, setPage] = useState(1)
   const [limit] = useState(10)
+  const [filterOpen, setFilterOpen] = useState(false)
+  const [searchText, setSearchText] = useState('')
+  const [rankFilter, setRankFilter] = useState<string>()
+  const [draftSearchText, setDraftSearchText] = useState('')
+  const [draftRankFilter, setDraftRankFilter] = useState<string>()
+  const [filters, setFilters] = useState<{ q?: string; rank_id?: string }>({})
   const [adjusting, setAdjusting] = useState<MemberRow | null>(null)
-  const [historyUserId, setHistoryUserId] = useState<string | null>(null)
+  const [overrideTarget, setOverrideTarget] = useState<{ row: MemberRow; rankId: string } | null>(null)
+  const [historyTarget, setHistoryTarget] = useState<MemberRow | null>(null)
+  const [historyProfileId, setHistoryProfileId] = useState<string | null>(null)
   const [form] = Form.useForm()
-  const usersQuery = useGetUsers({ currentPage: page, pageSize: limit })
+  const [overrideForm] = Form.useForm()
+  const adjustSubmitLock = useRef(false)
+  const memberProfilesQuery = useGetCustomerProfiles({ page, limit, ...filters } as Parameters<typeof useGetCustomerProfiles>[0])
   const ranksQuery = useGetCardRanks()
   const adjustMutation = usePostMembershipsUserIdPointsAdjust()
   const overrideMutation = usePostMembershipsUserIdRankOverride()
   const recalcMutation = usePostMembershipsUserIdRecalculate()
-  const usersData = (usersQuery.data?.responseData ?? (usersQuery.data as any)?.data ?? {}) as { rows?: MemberRow[]; count?: number }
-  const rows = (usersData.rows ?? []).filter((user) => user.membership)
-  const total = usersData.count ?? rows.length
+  const rows = (memberProfilesQuery.data?.responseData ?? (memberProfilesQuery.data as any)?.data ?? []) as MemberRow[]
+  const total = memberProfilesQuery.data?.meta?.total ?? rows.length
   const ranksData = (ranksQuery.data?.responseData ?? (ranksQuery.data as any)?.data ?? []) as RankRow[]
   const ranks = Array.isArray(ranksData) ? [...ranksData].sort((a, b) => a.sort_order - b.sort_order) : []
-  const loading = usersQuery.isLoading
+  const loading = memberProfilesQuery.isLoading
+  const activeFilterCount = Number(Boolean(filters.q)) + Number(Boolean(filters.rank_id))
+
+  const openFilters = (nextOpen: boolean) => {
+    setFilterOpen(nextOpen)
+    if (!nextOpen) return
+    setDraftSearchText(searchText)
+    setDraftRankFilter(rankFilter)
+  }
+
+  const applyFilters = () => {
+    const nextFilters: typeof filters = {}
+    if (draftSearchText.trim()) nextFilters.q = draftSearchText.trim()
+    if (draftRankFilter) nextFilters.rank_id = draftRankFilter
+    setSearchText(draftSearchText.trim())
+    setRankFilter(draftRankFilter)
+    setFilters(nextFilters)
+    setPage(1)
+    setFilterOpen(false)
+  }
+
+  const clearFilters = () => {
+    setSearchText('')
+    setRankFilter(undefined)
+    setDraftSearchText('')
+    setDraftRankFilter(undefined)
+    setFilters({})
+    setPage(1)
+  }
 
   // Lịch sử điểm: map user id → customer profile id để gọi LY-01
   const profilesQuery = useGetCustomerProfiles({ page: 1, limit: 200 })
   const profilesData = (profilesQuery.data?.responseData ?? (profilesQuery.data as any)?.data ?? []) as ProfileLite[]
-  const profileIdByUserId = new Map(
-    profilesData.filter((p) => p.user_id).map((p) => [p.user_id as string, p.id]),
-  )
-  const historyProfileId = historyUserId ? profileIdByUserId.get(historyUserId) ?? null : null
   const pointsQuery = useGetCustomerProfilesIdPoints(historyProfileId ?? '')
   const pointsData = pointsQuery.data?.responseData ?? null
-  const historyRows = pointsData?.history ?? []
+  const historyRows = (pointsData?.history ?? []) as Array<MembershipTransaction & { reason?: string }>
 
   const rankName = (id?: string) => ranks.find((r) => r.id === id)?.name ?? '—'
 
   const submitAdjust = async () => {
-    const values = await form.validateFields()
+    if (adjustSubmitLock.current || !adjusting) return
+    adjustSubmitLock.current = true
     try {
+      let values: { delta: number; reason: string }
+      try {
+        values = await form.validateFields()
+      } catch {
+        return
+      }
       await adjustMutation.mutateAsync({ userId: adjusting!.id, data: { delta: values.delta, reason: values.reason } })
       message.success('Đã điều chỉnh điểm')
+      if (historyProfileId === adjusting!.id) await pointsQuery.refetch()
       setAdjusting(null)
       form.resetFields()
-      await usersQuery.refetch()
+      await memberProfilesQuery.refetch()
     } catch (err) {
       message.error(err instanceof Error ? err.message : 'Không thể điều chỉnh điểm')
+    } finally {
+      adjustSubmitLock.current = false
     }
   }
 
   const doOverride = async (row: MemberRow, rankId: string) => {
+    setOverrideTarget({ row, rankId })
+    overrideForm.setFieldsValue({ reason: '' })
+  }
+
+  const submitOverride = async () => {
     try {
-      await overrideMutation.mutateAsync({ userId: row.id, data: { rank_id: rankId, reason: 'Gán hạng bởi admin' } })
+      const values = await overrideForm.validateFields()
+      if (!overrideTarget) return
+      await overrideMutation.mutateAsync({ userId: overrideTarget.row.id, data: { rank_id: overrideTarget.rankId, reason: values.reason.trim() } })
       message.success('Đã gán hạng mới')
-      await usersQuery.refetch()
+      setOverrideTarget(null)
+      overrideForm.resetFields()
+      await memberProfilesQuery.refetch()
     } catch (err) {
+      if (err && typeof err === 'object' && 'errorFields' in err) return
       message.error(err instanceof Error ? err.message : 'Không thể gán hạng')
     }
   }
@@ -116,7 +171,7 @@ export default function Points() {
     try {
       await recalcMutation.mutateAsync({ userId: row.id })
       message.success('Đã tính lại hạng')
-      await usersQuery.refetch()
+      await memberProfilesQuery.refetch()
     } catch (err) {
       message.error(err instanceof Error ? err.message : 'Không thể tính lại hạng')
     }
@@ -125,7 +180,7 @@ export default function Points() {
   return (
     <>
       <PageTitle
-        extra={<Button icon={<ReloadOutlined />} onClick={() => usersQuery.refetch()} className="max-sm:w-full" />}
+        extra={<Button icon={<ReloadOutlined />} onClick={() => memberProfilesQuery.refetch()} className="max-sm:w-full" />}
       >
         Điểm & Hạng thành viên
       </PageTitle>
@@ -154,9 +209,48 @@ export default function Points() {
         ))}
       </Row>
 
-      <Typography.Title level={5} style={{ marginTop: 28 }}>
-        Thành viên & điểm hiện có
-      </Typography.Title>
+      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginTop: 28, marginBottom: 12 }}>
+        <Typography.Title level={5} style={{ margin: 0 }}>
+          Thành viên & điểm hiện có
+        </Typography.Title>
+        <Popover
+          trigger="click"
+          placement="bottomRight"
+          open={filterOpen}
+          onOpenChange={openFilters}
+          content={(
+            <div style={{ width: 'min(300px, calc(100vw - 32px))' }}>
+              <Input
+                allowClear
+                prefix={<SearchOutlined style={{ color: '#A9ADB2' }} />}
+                placeholder="Tìm tên, số điện thoại, mã khách..."
+                value={draftSearchText}
+                onChange={(event) => setDraftSearchText(event.target.value)}
+                onPressEnter={applyFilters}
+              />
+              <Divider style={{ margin: '14px 0' }} />
+              <Typography.Text strong>Điều kiện lọc</Typography.Text>
+              <div style={{ marginTop: 10 }}>
+                <Typography.Text type="secondary">Hạng thành viên</Typography.Text>
+                <Select
+                  allowClear
+                  placeholder="Tất cả hạng"
+                  style={{ width: '100%', marginTop: 6 }}
+                  value={draftRankFilter}
+                  onChange={setDraftRankFilter}
+                  options={ranks.map((rank) => ({ value: rank.id, label: rank.name }))}
+                />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, paddingTop: 12, marginTop: 14, borderTop: '1px solid var(--brand-border-soft)' }}>
+                <Button disabled={!activeFilterCount && !draftSearchText && !draftRankFilter} onClick={clearFilters}>Xóa lọc</Button>
+                <Button type="primary" onClick={applyFilters}>Xác nhận</Button>
+              </div>
+            </div>
+          )}
+        >
+          <Button icon={<FilterOutlined />}>Bộ lọc{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}</Button>
+        </Popover>
+      </div>
       <Table
         rowKey="id"
         loading={loading}
@@ -167,8 +261,8 @@ export default function Points() {
             title: 'Khách hàng',
             render: (_, row: MemberRow) => (
               <div>
-                <div style={{ fontWeight: 500 }}>{row.zalo_name || '—'}</div>
-                <div style={{ fontSize: 12, color: '#6F7071' }}>{row.phone_number}</div>
+                <div style={{ fontWeight: 500 }}>{row.full_name || row.user?.zalo_name || '—'}</div>
+                <div style={{ fontSize: 12, color: '#6F7071' }}>{row.phone || row.user?.phone_number}</div>
               </div>
             ),
           },
@@ -182,7 +276,7 @@ export default function Points() {
             width: 110,
             render: (_, row) => (
               <span style={{ fontWeight: 600, color: 'var(--brand-primary)' }}>
-                {Number(row.membership?.points ?? 0).toLocaleString('vi-VN')}
+                {Number(row.membership?.lifetime_points ?? 0).toLocaleString('vi-VN')}
               </span>
             ),
           },
@@ -193,7 +287,7 @@ export default function Points() {
           },
           {
             title: '',
-            width: 300,
+            width: 380,
             render: (_, row) => (
               <Space>
                 <Can I="POINTS_ADJUST" a="MEMBERSHIP">
@@ -201,7 +295,8 @@ export default function Points() {
                     size="small"
                     onClick={() => {
                       setAdjusting(row)
-                      form.setFieldsValue({ delta: 0, reason: '' })
+                      form.resetFields()
+                      form.setFieldsValue({ reason: '' })
                     }}
                   >
                     Điều chỉnh điểm
@@ -221,6 +316,13 @@ export default function Points() {
                     <Button size="small">Tính lại</Button>
                   </Popconfirm>
                 </Can>
+                <Can I="READ" a="CUSTOMER">
+                  <Can I="POINTS_ADJUST" a="MEMBERSHIP">
+                    <Button size="small" icon={<EyeOutlined />} onClick={() => setHistoryTarget(row)}>
+                      Chi tiết
+                    </Button>
+                  </Can>
+                </Can>
               </Space>
             ),
           },
@@ -237,11 +339,11 @@ export default function Points() {
           allowClear
           showSearch
           optionFilterProp="label"
-          value={historyUserId ?? undefined}
-          onChange={(v) => setHistoryUserId(v ?? null)}
-          options={rows.map((r) => ({ value: r.id, label: r.zalo_name || r.phone_number || r.id }))}
+        value={historyProfileId ?? undefined}
+        onChange={(v) => setHistoryProfileId(v ?? null)}
+        options={profilesData.map((profile) => ({ value: profile.id, label: profile.full_name || profile.phone || profile.id }))}
         />
-        {historyUserId && (
+        {historyProfileId && (
           <span style={{ fontSize: 13 }}>
             Số điểm hiện tại:{' '}
             <b style={{ color: 'var(--brand-primary)' }}>
@@ -253,10 +355,10 @@ export default function Points() {
       <Table
         rowKey="id"
         size="small"
-        loading={!!historyUserId && pointsQuery.isLoading}
+        loading={!!historyProfileId && pointsQuery.isLoading}
         dataSource={historyRows}
         pagination={{ pageSize: 10, hideOnSinglePage: true }}
-        locale={{ emptyText: historyUserId ? 'Không có giao dịch điểm' : 'Chọn khách hàng để xem lịch sử điểm' }}
+        locale={{ emptyText: historyProfileId ? 'Không có giao dịch điểm' : 'Chọn khách hàng để xem lịch sử điểm' }}
         columns={[
           {
             title: 'Thời gian',
@@ -301,12 +403,19 @@ export default function Points() {
               </Typography.Text>
             ),
           },
+          {
+            title: 'Lý do',
+            dataIndex: 'reason',
+            render: (reason?: string) => reason || '—',
+          },
         ]}
       />
 
       <Modal
-        title={`Điều chỉnh điểm — ${adjusting?.zalo_name || adjusting?.phone_number || ''}`}
+        title={`Điều chỉnh điểm — ${adjusting?.full_name || adjusting?.phone || ''}`}
         open={!!adjusting}
+        confirmLoading={adjustMutation.isPending}
+        okButtonProps={{ disabled: adjustMutation.isPending }}
         onCancel={() => setAdjusting(null)}
         onOk={submitAdjust}
         okText="Lưu"
@@ -315,16 +424,47 @@ export default function Points() {
         <Form form={form} layout="vertical" style={{ marginTop: 12 }}>
           <Form.Item
             name="delta"
-            label="Số điểm (âm = trừ)"
-            rules={[{ required: true, message: 'Nhập số điểm' }]}
+            label="Điểm thay đổi (+ cộng, − trừ)"
+            help={Number(adjusting?.membership?.lifetime_points ?? 0) > 0
+              ? `Hiện có ${Number(adjusting?.membership?.lifetime_points ?? 0).toLocaleString('vi-VN')} điểm. Nhập -${Number(adjusting?.membership?.lifetime_points ?? 0).toLocaleString('vi-VN')} để đưa số dư về 0.`
+              : 'Nhập số dương để cộng hoặc số âm để trừ.'}
+            rules={[{ required: true, message: 'Nhập số điểm' }, { validator: async (_, value) => Number.isInteger(Number(value)) ? Promise.resolve() : Promise.reject(new Error('Số điểm phải là số nguyên')) }]}
           >
-            <InputNumber style={{ width: '100%' }} step={10} />
+            <InputNumber style={{ width: '100%' }} step={10} precision={0} />
           </Form.Item>
-          <Form.Item name="reason" label="Lý do" rules={[{ required: true, message: 'Nhập lý do' }]}>
-            <Input placeholder="VD: Bù điểm chương trình ưu đãi" />
+          <Form.Item name="reason" label="Lý do" rules={[{ validator: async (_, value) => String(value ?? '').trim() ? Promise.resolve() : Promise.reject(new Error('Nhập lý do')) }]}>
+            <Input placeholder="VD: Bù điểm chương trình ưu đãi" maxLength={500} />
           </Form.Item>
         </Form>
       </Modal>
+
+      <Modal
+        title={`Gán hạng — ${overrideTarget?.row.full_name || overrideTarget?.row.phone || ''}`}
+        open={!!overrideTarget}
+        confirmLoading={overrideMutation.isPending}
+        onCancel={() => setOverrideTarget(null)}
+        onOk={() => void submitOverride()}
+        okText="Gán hạng"
+        cancelText="Hủy"
+      >
+        <Form form={overrideForm} layout="vertical" style={{ marginTop: 12 }}>
+          <Form.Item label="Hạng mới">
+            <Typography.Text>{rankName(overrideTarget?.rankId)}</Typography.Text>
+          </Form.Item>
+          <Form.Item name="reason" label="Lý do gán hạng" rules={[{ validator: async (_, value) => String(value ?? '').trim() ? Promise.resolve() : Promise.reject(new Error('Nhập lý do')) }]}>
+            <Input.TextArea rows={3} maxLength={500} placeholder="Nhập lý do đặc cách gán hạng" />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      <CustomerCodeHistoryModal
+        open={!!historyTarget}
+        profileId={historyTarget?.id}
+        title="Lịch sử hạng, mã khách và điểm"
+        emptyDescription="Chưa có lịch sử gán hoặc đổi hạng"
+        includePointsHistory
+        onClose={() => setHistoryTarget(null)}
+      />
     </>
   )
 }

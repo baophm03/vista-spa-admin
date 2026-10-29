@@ -7,7 +7,7 @@
  */
 
 export type PutReferralsIdBody = {
+  discount_rule_id?: string | null;
   status?: string;
-  commission_amount?: number;
   note?: string;
 };

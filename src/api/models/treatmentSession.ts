@@ -37,6 +37,8 @@ export interface TreatmentSession {
   completed_at?: TreatmentSessionCompletedAt;
   /** @minimum 0 */
   session_value?: number;
+  /** @minimum 0 */
+  product_amount?: number;
   is_warranty?: boolean;
   diary?: TreatmentSessionDiary;
   skin_note?: TreatmentSessionSkinNote;

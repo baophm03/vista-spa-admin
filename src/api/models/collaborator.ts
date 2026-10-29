@@ -22,6 +22,9 @@ export interface Collaborator {
   type?: CollaboratorType;
   branch_id?: CollaboratorBranchId;
   user_id?: CollaboratorUserId;
+  commission_percent?: number | null;
+  referral_count?: number;
+  referral_use_count?: number;
   note?: CollaboratorNote;
   is_active?: boolean;
   created_at?: string;

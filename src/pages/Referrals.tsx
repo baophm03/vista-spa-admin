@@ -4,7 +4,6 @@ import {
   Button,
   Form,
   Input,
-  InputNumber,
   Modal,
   Select,
   Space,
@@ -28,6 +27,8 @@ import {
 } from '@/api/endpoints/membership'
 import { useGetCollaborators } from '@/api/endpoints/admin'
 import { useGetCustomerProfiles } from '@/api/endpoints/customer-profiles'
+import { useGetDiscountRules } from '@/api/endpoints/settings'
+import type { DiscountRule } from '@/api/models'
 
 const REFERRER_TYPES = ['COLLABORATOR', 'CUSTOMER'] as const
 
@@ -53,6 +54,11 @@ function formatVnd(v?: number | null): string {
 /** Hàng trả về có thêm `referred_profile` (include ở BE) — model gen chưa khai báo. */
 type ReferralRow = Referral & {
   referred_profile?: { id?: string; full_name?: string; phone?: string; customer_code?: string } | null
+  discount_rule?: { id?: string; code?: string; name?: string } | null
+  packages?: { id: string; name: string; total_amount: number; status?: string }[]
+  commission_entries?: { id: string; amount: number; status?: string; mode?: string; period_date?: string }[]
+  commission_total?: number
+  commission_status?: string
 }
 
 type CustomerOption = { id: string; full_name?: string; phone?: string; customer_code?: string }
@@ -70,7 +76,7 @@ export default function Referrals() {
   }, [listQuery.data])
 
   // Map tên CTV để hiển thị "người giới thiệu" khi referrer_type = COLLABORATOR
-  const collaboratorsQuery = useGetCollaborators()
+  const collaboratorsQuery = useGetCollaborators({ is_active: true })
   const collaboratorNameById = useMemo(() => {
     const raw = pickData<unknown>(collaboratorsQuery.data)
     const list = (Array.isArray(raw) ? raw : (raw as { rows?: { id: string; name: string }[] } | null)?.rows ?? []) as { id: string; name: string }[]
@@ -84,6 +90,9 @@ export default function Referrals() {
     const list = (Array.isArray(raw) ? raw : (raw as { rows?: CustomerOption[] } | null)?.rows ?? []) as CustomerOption[]
     return list
   }, [customersQuery.data])
+  const discountRulesQuery = useGetDiscountRules({ is_active: true, audience: 'NEW_BY_REFERRAL' })
+  const discountRules = useMemo(() => discountRulesQuery.data?.responseData ?? [], [discountRulesQuery.data])
+  const alreadyReferredIds = useMemo(() => new Set(rows.map((row) => row.referred_profile_id)), [rows])
 
   const invalidate = async () => {
     await queryClient.invalidateQueries({ queryKey: getGetReferralsQueryKey() })
@@ -106,7 +115,7 @@ export default function Referrals() {
       referrer_type: 'COLLABORATOR',
       referrer_id: undefined,
       referred_profile_id: undefined,
-      commission_amount: undefined,
+      discount_rule_id: undefined,
       note: '',
     })
     setOpen(true)
@@ -116,7 +125,7 @@ export default function Referrals() {
     setEditing(row)
     form.setFieldsValue({
       status: row.status ?? 'PENDING',
-      commission_amount: row.commission_amount ?? undefined,
+      discount_rule_id: row.discount_rule_id ?? undefined,
       note: row.note ?? '',
     })
     setOpen(true)
@@ -130,7 +139,7 @@ export default function Referrals() {
           id: editing.id,
           data: {
             status: values.status,
-            commission_amount: values.commission_amount ?? undefined,
+            discount_rule_id: values.discount_rule_id ?? null,
             note: values.note || undefined,
           } satisfies PutReferralsIdBody,
         })
@@ -145,7 +154,7 @@ export default function Referrals() {
             referrer_type: values.referrer_type,
             referrer_id: values.referrer_id,
             referred_profile_id: values.referred_profile_id,
-            commission_amount: values.commission_amount ?? undefined,
+            discount_rule_id: values.discount_rule_id || undefined,
             note: values.note || undefined,
           } satisfies PostReferralsBody,
         })
@@ -188,15 +197,34 @@ export default function Referrals() {
       render: (v?: string) => (v ? new Date(v).toLocaleDateString('vi-VN') : '—'),
     },
     {
-      title: 'Trạng thái', dataIndex: 'status', width: 110,
+      title: 'Ưu đãi', key: 'discount_rule', width: 180,
+      render: (_v, row) => row.discount_rule?.name ?? discountRules.find((rule: DiscountRule) => rule.id === row.discount_rule_id)?.name ?? '—',
+    },
+    {
+      title: 'Gói đã mua', key: 'packages', width: 220,
+      render: (_v, row) => row.packages?.length
+        ? <Space direction="vertical" size={0}>{row.packages.map((pkg) => <span key={pkg.id}>{pkg.name} · {formatVnd(pkg.total_amount)}</span>)}</Space>
+        : <Typography.Text type="secondary">Chưa mua gói</Typography.Text>,
+    },
+    {
+      title: 'Trạng thái giới thiệu', dataIndex: 'status', width: 140,
       render: (v?: string) => {
         const meta = v ? STATUS_META[v] : undefined
         return meta ? <Tag color={meta.color}>{meta.label}</Tag> : <Tag>{v || '—'}</Tag>
       },
     },
     {
-      title: 'Hoa hồng', dataIndex: 'commission_amount', width: 130, align: 'right',
-      render: (v?: number | null) => formatVnd(v),
+      title: 'Hoa hồng đã ghi nhận', key: 'commission_total', width: 160, align: 'right',
+      render: (_v, row) => formatVnd(row.commission_total),
+    },
+    {
+      title: 'Trạng thái hoa hồng', dataIndex: 'commission_status', width: 145,
+      render: (v?: string) => {
+        if (v === 'ACTIVE') return <Tag color="green">Đã ghi nhận</Tag>
+        if (v === 'VOID') return <Tag color="red">Đã hủy</Tag>
+        if (v === 'CANCELLED') return <Tag>Đã hủy</Tag>
+        return <Tag>Chưa ghi nhận</Tag>
+      },
     },
     {
       title: 'Ghi chú', dataIndex: 'note', ellipsis: true,
@@ -229,7 +257,7 @@ export default function Referrals() {
             {listQuery.isError && (
               <Alert
                 className="mb-4" type="error" showIcon
-                message="Không tải được lịch sử giới thiệu"
+                title="Không tải được lịch sử giới thiệu"
                 description={errorMessage(listQuery.error)}
                 action={<Button size="small" onClick={() => void listQuery.refetch()}>Thử lại</Button>}
               />
@@ -252,8 +280,9 @@ export default function Referrals() {
                     <Form.Item name="status" label="Trạng thái" rules={[{ required: true, message: 'Chọn trạng thái' }]}>
                       <Select options={STATUS_KEYS.map((s) => ({ value: s, label: STATUS_META[s].label }))} />
                     </Form.Item>
-                    <Form.Item name="commission_amount" label="Hoa hồng (₫)">
-                      <InputNumber min={0} precision={0} style={{ width: '100%' }} placeholder="VD: 200000" />
+                    <Form.Item name="discount_rule_id" label="Ưu đãi khách được giới thiệu">
+                      <Select allowClear placeholder="Chọn ưu đãi (không bắt buộc)" loading={discountRulesQuery.isLoading}
+                        options={discountRules.map((rule: DiscountRule) => ({ value: rule.id, label: `${rule.code} — ${rule.name}` }))} />
                     </Form.Item>
                     <Form.Item name="note" label="Ghi chú">
                       <Input.TextArea rows={3} maxLength={2000} />
@@ -295,14 +324,15 @@ export default function Referrals() {
                       <Select
                         showSearch optionFilterProp="label" placeholder="Chọn khách hàng"
                         loading={customersQuery.isLoading}
-                        options={customers.map((c) => ({
+                        options={customers.filter((c) => !alreadyReferredIds.has(c.id)).map((c) => ({
                           value: c.id,
                           label: [c.full_name, c.phone].filter(Boolean).join(' — ') || c.id,
                         }))}
                       />
                     </Form.Item>
-                    <Form.Item name="commission_amount" label="Hoa hồng (₫)">
-                      <InputNumber min={0} precision={0} style={{ width: '100%' }} placeholder="VD: 200000" />
+                    <Form.Item name="discount_rule_id" label="Ưu đãi khách được giới thiệu">
+                      <Select allowClear placeholder="Chọn ưu đãi (không bắt buộc)" loading={discountRulesQuery.isLoading}
+                        options={discountRules.map((rule: DiscountRule) => ({ value: rule.id, label: `${rule.code} — ${rule.name}` }))} />
                     </Form.Item>
                     <Form.Item name="note" label="Ghi chú">
                       <Input.TextArea rows={3} maxLength={2000} />
@@ -315,7 +345,7 @@ export default function Referrals() {
         ) : (
           <>
             <PageTitle>Lịch sử giới thiệu</PageTitle>
-            <Alert type="warning" showIcon message="Bạn không có quyền xem lịch sử giới thiệu (cần quyền referral.read)" />
+            <Alert type="warning" showIcon title="Bạn không có quyền xem lịch sử giới thiệu (cần quyền referral.read)" />
           </>
         )
       }

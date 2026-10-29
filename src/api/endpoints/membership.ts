@@ -856,7 +856,7 @@ export const getCardRanksId = (
       
       
       return customInstance<GetCardRanksId200>(
-      {url: `/cardRanks/${id}`, method: 'GET', signal
+      {url: `/card-ranks/${id}`, method: 'GET', signal
     },
       );
     }
@@ -866,13 +866,13 @@ export const getCardRanksId = (
 
 export const getGetCardRanksIdInfiniteQueryKey = (id?: string,) => {
     return [
-    'infinite', `/cardRanks/${id}`
+    'infinite', `/card-ranks/${id}`
     ] as const;
     }
 
 export const getGetCardRanksIdQueryKey = (id?: string,) => {
     return [
-    `/cardRanks/${id}`
+    `/card-ranks/${id}`
     ] as const;
     }
 
@@ -1050,7 +1050,7 @@ export const putCardRanksId = (
       
       
       return customInstance<PutCardRanksId200>(
-      {url: `/cardRanks/${id}`, method: 'PUT',
+      {url: `/card-ranks/${id}`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: putCardRanksIdBody
     },
@@ -1114,7 +1114,7 @@ export const deleteCardRanksId = (
       
       
       return customInstance<DeleteCardRanksId200>(
-      {url: `/cardRanks/${id}`, method: 'DELETE'
+      {url: `/card-ranks/${id}`, method: 'DELETE'
     },
       );
     }
@@ -1177,7 +1177,7 @@ export const getCardRanks = (
       
       
       return customInstance<GetCardRanks200>(
-      {url: `/cardRanks`, method: 'GET',
+      {url: `/card-ranks`, method: 'GET',
         params, signal
     },
       );
@@ -1188,13 +1188,13 @@ export const getCardRanks = (
 
 export const getGetCardRanksInfiniteQueryKey = (params?: GetCardRanksParams,) => {
     return [
-    'infinite', `/cardRanks`, ...(params ? [params]: [])
+    'infinite', `/card-ranks`, ...(params ? [params]: [])
     ] as const;
     }
 
 export const getGetCardRanksQueryKey = (params?: GetCardRanksParams,) => {
     return [
-    `/cardRanks`, ...(params ? [params]: [])
+    `/card-ranks`, ...(params ? [params]: [])
     ] as const;
     }
 
@@ -1372,7 +1372,7 @@ export const postCardRanks = (
       
       
       return customInstance<PostCardRanks200>(
-      {url: `/cardRanks`, method: 'POST',
+      {url: `/card-ranks`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: postCardRanksBody, signal
     },
@@ -1426,4 +1426,4 @@ export const usePostCardRanks = <TError = UnauthorizedResponse | ForbiddenRespon
 
       return useMutation(mutationOptions, queryClient);
     }
-    
+

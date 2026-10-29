@@ -17,5 +17,6 @@ page?: number;
  */
 limit?: number;
 status?: string;
+customer_treatment_id?: string;
 branch_id?: string;
 };

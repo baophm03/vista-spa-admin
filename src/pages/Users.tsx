@@ -668,6 +668,7 @@ export default function Users() {
               branchName={branchName}
               fieldDefinitions={profileFieldDefs}
               onLoadingChange={setDrawerTabLoading}
+              onMembershipUpdated={refreshSelected}
             />
           </div>
           </Spin>

@@ -11,6 +11,5 @@ export type PostReferralsBody = {
   referrer_id?: string;
   referred_profile_id?: string;
   discount_rule_id?: string;
-  commission_amount?: number;
   note?: string;
 };

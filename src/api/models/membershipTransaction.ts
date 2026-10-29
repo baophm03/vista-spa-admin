@@ -27,6 +27,7 @@ export interface MembershipTransaction {
   /** @minimum 0 */
   amount: number;
   points_earned?: MembershipTransactionPointsEarned;
+  reason?: string | null;
   source?: MembershipTransactionSource;
   branch_id?: MembershipTransactionBranchId;
   created_at?: MembershipTransactionCreatedAt;

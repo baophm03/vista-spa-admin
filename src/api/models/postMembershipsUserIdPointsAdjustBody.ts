@@ -7,6 +7,6 @@
  */
 
 export type PostMembershipsUserIdPointsAdjustBody = {
-  delta?: string;
-  reason?: string;
+  delta: number;
+  reason: string;
 };
