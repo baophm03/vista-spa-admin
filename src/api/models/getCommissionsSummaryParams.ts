@@ -13,6 +13,7 @@ group_by?: GetCommissionsSummaryGroupBy;
 payee_type?: GetCommissionsSummaryPayeeType;
 staff_id?: string;
 collaborator_id?: string;
+branch_id?: string;
 customer_profile_id?: string;
 date_from?: string;
 date_to?: string;

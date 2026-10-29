@@ -28,7 +28,7 @@ export interface CommissionRule {
    * @minimum 0
    * @maximum 100
    */
-  percent?: number;
+  percent?: number | null;
   service_id?: CommissionRuleServiceId;
   staff_id?: CommissionRuleStaffId;
   branch_id?: CommissionRuleBranchId;

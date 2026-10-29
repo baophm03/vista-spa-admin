@@ -14,6 +14,7 @@ payee_type?: GetCommissionsPayeeType;
 staff_id?: string;
 collaborator_id?: string;
 customer_profile_id?: string;
+branch_id?: string;
 mode?: GetCommissionsMode;
 status?: GetCommissionsStatus;
 date_from?: string;

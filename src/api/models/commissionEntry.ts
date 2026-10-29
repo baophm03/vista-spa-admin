@@ -37,6 +37,8 @@ export interface CommissionEntry {
   customer_profile_id?: CommissionEntryCustomerProfileId;
   customer_treatment_id?: CommissionEntryCustomerTreatmentId;
   appointment_id?: CommissionEntryAppointmentId;
+  session_id?: string;
+  branch_id?: string;
   /** @minimum 0 */
   amount: number;
   reason?: CommissionEntryReason;

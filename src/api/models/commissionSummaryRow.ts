@@ -13,6 +13,7 @@ import type { CommissionSummaryRowPayeeType } from './commissionSummaryRowPayeeT
 export interface CommissionSummaryRow {
   period: string;
   payee_type: CommissionSummaryRowPayeeType;
+  payee_id?: string | null;
   entries: number;
   total_amount: number;
 }

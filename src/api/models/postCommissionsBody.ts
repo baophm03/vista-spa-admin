@@ -9,12 +9,15 @@ import type { PostCommissionsBodyPayeeType } from './postCommissionsBodyPayeeTyp
 
 export type PostCommissionsBody = {
   payee_type: PostCommissionsBodyPayeeType;
-  amount: number;
+  amount?: number;
   staff_id?: string;
   collaborator_id?: string;
   referrer_profile_id?: string;
   customer_profile_id?: string;
   customer_treatment_id?: string;
+  appointment_id?: string;
+  session_id?: string;
+  branch_id?: string;
   base_amount?: number;
   percent?: number;
   period_date?: string;
