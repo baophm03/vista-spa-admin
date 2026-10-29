@@ -1219,6 +1219,38 @@ export default function TreatmentCustomers() {
   )
   const applyDiscountMutation = usePostCustomerTreatmentsIdApplyDiscount()
   const redeemPointsMutation = usePostCustomerTreatmentsIdRedeemPoints()
+  const promoPointsQuery = useGetCustomerProfilesIdPoints(promoCustomerProfileId ?? '', {
+    query: { enabled: promoOpen && Boolean(promoCustomerProfileId) },
+  })
+  const promoPointsData = pickData<{
+    points?: number
+    redemption?: { enabled?: boolean | string; point_value?: number | null; min_percent?: number | null; max_percent?: number | null }
+  }>(promoPointsQuery.data)
+  const redeemPointsValue = Number(Form.useWatch('points', redeemForm) ?? 0)
+  const redeemBalance = Number(promoPointsData?.points ?? 0)
+  const redeemDebt = Number(promoRow?.debt_amount ?? 0)
+  const pointValue = Number(promoPointsData?.redemption?.point_value)
+  const minRedeemPercent = Number(promoPointsData?.redemption?.min_percent)
+  const maxRedeemPercent = Number(promoPointsData?.redemption?.max_percent)
+  const isPointsEnabled = promoPointsData?.redemption?.enabled === true || promoPointsData?.redemption?.enabled === 'true'
+  const redemptionConfigReady = Number.isFinite(pointValue) && pointValue > 0
+    && Number.isFinite(minRedeemPercent) && Number.isFinite(maxRedeemPercent)
+    && minRedeemPercent <= maxRedeemPercent
+  const redeemMoney = redeemPointsValue * pointValue
+  const minRedeemMoney = redeemDebt * minRedeemPercent / 100
+  const maxRedeemMoney = redeemDebt * maxRedeemPercent / 100
+  let redeemValidationMessage = ''
+  if (redeemPointsValue > 0 && redeemDebt <= 0) redeemValidationMessage = 'Gói không còn công nợ để đổi điểm.'
+  else if (redeemPointsValue > redeemBalance) redeemValidationMessage = `Khách chỉ còn ${redeemBalance.toLocaleString('vi-VN')} điểm.`
+  else if (redeemPointsValue > 0 && redemptionConfigReady && redeemMoney < minRedeemMoney) {
+    redeemValidationMessage = `Giá trị đổi thấp hơn mức tối thiểu ${formatMoney(minRedeemMoney)}.`
+  } else if (redeemPointsValue > 0 && redemptionConfigReady && redeemMoney > maxRedeemMoney) {
+    redeemValidationMessage = `Giá trị đổi vượt mức tối đa ${formatMoney(maxRedeemMoney)}.`
+  }
+  const canSubmitRedeem = promoPointsQuery.isSuccess && isPointsEnabled && redemptionConfigReady
+    && redeemPointsValue > 0 && Number.isInteger(redeemPointsValue)
+    && redeemPointsValue <= redeemBalance && redeemDebt > 0
+    && redeemMoney >= minRedeemMoney && redeemMoney <= maxRedeemMoney
 
   const openPromo = (row: CustomerTreatment) => {
     setPromoRow(row)
@@ -1243,13 +1275,14 @@ export default function TreatmentCustomers() {
 
   const submitRedeemPoints = async () => {
     const target = promoRow
-    if (!target) return
+    if (!target || !canSubmitRedeem || redeemPointsMutation.isPending) return
     try {
       const values = await redeemForm.validateFields()
       await redeemPointsMutation.mutateAsync({ id: target.id, data: { points: values.points } })
       message.success('Đã trừ điểm vào gói')
       redeemForm.resetFields()
       refresh()
+      await promoPointsQuery.refetch()
     } catch (err) {
       message.error(errorMessage(err))
     }
@@ -1660,15 +1693,42 @@ cancelText = "Hủy"
         label: 'Đổi điểm',
         children: (
           <Form form={redeemForm} layout="vertical">
-            <Alert
-              type="info" showIcon style={{ marginBottom: 12 }}
-              message="Số điểm sẽ quy ra tiền giảm trừ nợ gói theo tỷ lệ cấu hình. Không được vượt khoảng % cho phép trên nợ còn lại."
-            />
-            <Form.Item name="points" label="Số điểm muốn dùng" rules={[{ required: true, message: 'Nhập số điểm' }]}>
-              <InputNumber min={1} precision={0} style={{ width: '100%' }} />
+            {promoPointsQuery.isLoading ? <Spin size="small" /> : null}
+            {promoPointsQuery.isError ? (
+              <Alert type="error" showIcon style={{ marginBottom: 12 }} message="Không tải được số dư và cấu hình điểm" description={errorMessage(promoPointsQuery.error)} />
+            ) : null}
+            {promoPointsQuery.isSuccess && !isPointsEnabled ? (
+              <Alert type="warning" showIcon style={{ marginBottom: 12 }} message="Tính năng đổi điểm đang tắt theo cấu hình hệ thống." />
+            ) : null}
+            {promoPointsQuery.isSuccess && isPointsEnabled && !redemptionConfigReady ? (
+              <Alert type="error" showIcon style={{ marginBottom: 12 }} message="Cấu hình quy đổi điểm chưa hợp lệ. Kiểm tra giá trị điểm và tỷ lệ tối thiểu/tối đa." />
+            ) : null}
+            <Form.Item
+              name="points"
+              label="Số điểm muốn dùng"
+              rules={[
+                { required: true, message: 'Nhập số điểm' },
+                { validator: async (_, value) => Number.isInteger(Number(value)) && Number(value) > 0 ? Promise.resolve() : Promise.reject(new Error('Số điểm phải là số nguyên dương')) },
+              ]}
+            >
+              <InputNumber min={1} max={redeemBalance > 0 ? redeemBalance : undefined} precision={0} style={{ width: '100%' }} disabled={!isPointsEnabled || !redemptionConfigReady || redeemBalance <= 0} />
             </Form.Item>
+            {promoPointsQuery.isSuccess && isPointsEnabled && redemptionConfigReady ? (
+              <Card size="small" style={{ marginBottom: 12 }}>
+                <Space direction="vertical" size={4}>
+                  <Typography.Text>Điểm hiện có: <Typography.Text strong>{redeemBalance.toLocaleString('vi-VN')}</Typography.Text></Typography.Text>
+                  <Typography.Text>Giá trị dự kiến: <Typography.Text strong>{redeemPointsValue > 0 ? formatMoney(redeemMoney) : '—'}</Typography.Text></Typography.Text>
+                  <Typography.Text type="secondary">
+                    1 điểm = {formatMoney(pointValue)} · Mức được phép: {formatMoney(minRedeemMoney)}–{formatMoney(maxRedeemMoney)} ({minRedeemPercent}–{maxRedeemPercent}% công nợ {formatMoney(redeemDebt)})
+                  </Typography.Text>
+                </Space>
+              </Card>
+            ) : null}
+            {redeemValidationMessage && redeemPointsValue > 0 ? (
+              <Alert type="error" showIcon style={{ marginBottom: 12 }} message={redeemValidationMessage} />
+            ) : null}
             <Can I="POINTS_ADJUST" a="MEMBERSHIP">
-              <Button type="primary" loading={redeemPointsMutation.isPending} onClick={() => void submitRedeemPoints()}>
+              <Button type="primary" loading={redeemPointsMutation.isPending} disabled={!canSubmitRedeem} onClick={() => void submitRedeemPoints()}>
                 Đổi điểm
               </Button>
             </Can>
@@ -2048,7 +2108,7 @@ function PointsHistoryPanel({ profileId }: { profileId: string }) {
                 </Typography.Text>
               ),
             },
-            { title: 'Ghi chú', dataIndex: 'note', render: (v: string) => v || '—' },
+            { title: 'Lý do', dataIndex: 'reason', render: (v: string | null) => v || '—' },
           ]}
         />
       )}

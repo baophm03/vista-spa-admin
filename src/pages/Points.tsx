@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
-import { Button, Card, Col, Form, Input, InputNumber, Modal, Popconfirm, Row, Select, Space, Table, Tag, Typography, message } from 'antd'
-import { EyeOutlined, ReloadOutlined } from '@ant-design/icons'
+import { Button, Card, Col, Divider, Form, Input, InputNumber, Modal, Popconfirm, Popover, Row, Select, Space, Table, Tag, Typography, message } from 'antd'
+import { EyeOutlined, FilterOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons'
 import { useBrandCurrency } from '@/themeRuntime'
 import PageTitle from '../components/base/PageTitle'
 import CustomerCodeHistoryModal from '../components/CustomerCodeHistoryModal'
@@ -63,6 +63,12 @@ export default function Points() {
   const { format: formatMoney } = useBrandCurrency()
   const [page, setPage] = useState(1)
   const [limit] = useState(10)
+  const [filterOpen, setFilterOpen] = useState(false)
+  const [searchText, setSearchText] = useState('')
+  const [rankFilter, setRankFilter] = useState<string>()
+  const [draftSearchText, setDraftSearchText] = useState('')
+  const [draftRankFilter, setDraftRankFilter] = useState<string>()
+  const [filters, setFilters] = useState<{ q?: string; rank_id?: string }>({})
   const [adjusting, setAdjusting] = useState<MemberRow | null>(null)
   const [overrideTarget, setOverrideTarget] = useState<{ row: MemberRow; rankId: string } | null>(null)
   const [historyTarget, setHistoryTarget] = useState<MemberRow | null>(null)
@@ -70,7 +76,7 @@ export default function Points() {
   const [form] = Form.useForm()
   const [overrideForm] = Form.useForm()
   const adjustSubmitLock = useRef(false)
-  const memberProfilesQuery = useGetCustomerProfiles({ page, limit })
+  const memberProfilesQuery = useGetCustomerProfiles({ page, limit, ...filters } as Parameters<typeof useGetCustomerProfiles>[0])
   const ranksQuery = useGetCardRanks()
   const adjustMutation = usePostMembershipsUserIdPointsAdjust()
   const overrideMutation = usePostMembershipsUserIdRankOverride()
@@ -80,6 +86,34 @@ export default function Points() {
   const ranksData = (ranksQuery.data?.responseData ?? (ranksQuery.data as any)?.data ?? []) as RankRow[]
   const ranks = Array.isArray(ranksData) ? [...ranksData].sort((a, b) => a.sort_order - b.sort_order) : []
   const loading = memberProfilesQuery.isLoading
+  const activeFilterCount = Number(Boolean(filters.q)) + Number(Boolean(filters.rank_id))
+
+  const openFilters = (nextOpen: boolean) => {
+    setFilterOpen(nextOpen)
+    if (!nextOpen) return
+    setDraftSearchText(searchText)
+    setDraftRankFilter(rankFilter)
+  }
+
+  const applyFilters = () => {
+    const nextFilters: typeof filters = {}
+    if (draftSearchText.trim()) nextFilters.q = draftSearchText.trim()
+    if (draftRankFilter) nextFilters.rank_id = draftRankFilter
+    setSearchText(draftSearchText.trim())
+    setRankFilter(draftRankFilter)
+    setFilters(nextFilters)
+    setPage(1)
+    setFilterOpen(false)
+  }
+
+  const clearFilters = () => {
+    setSearchText('')
+    setRankFilter(undefined)
+    setDraftSearchText('')
+    setDraftRankFilter(undefined)
+    setFilters({})
+    setPage(1)
+  }
 
   // Lịch sử điểm: map user id → customer profile id để gọi LY-01
   const profilesQuery = useGetCustomerProfiles({ page: 1, limit: 200 })
@@ -175,9 +209,48 @@ export default function Points() {
         ))}
       </Row>
 
-      <Typography.Title level={5} style={{ marginTop: 28 }}>
-        Thành viên & điểm hiện có
-      </Typography.Title>
+      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginTop: 28, marginBottom: 12 }}>
+        <Typography.Title level={5} style={{ margin: 0 }}>
+          Thành viên & điểm hiện có
+        </Typography.Title>
+        <Popover
+          trigger="click"
+          placement="bottomRight"
+          open={filterOpen}
+          onOpenChange={openFilters}
+          content={(
+            <div style={{ width: 'min(300px, calc(100vw - 32px))' }}>
+              <Input
+                allowClear
+                prefix={<SearchOutlined style={{ color: '#A9ADB2' }} />}
+                placeholder="Tìm tên, số điện thoại, mã khách..."
+                value={draftSearchText}
+                onChange={(event) => setDraftSearchText(event.target.value)}
+                onPressEnter={applyFilters}
+              />
+              <Divider style={{ margin: '14px 0' }} />
+              <Typography.Text strong>Điều kiện lọc</Typography.Text>
+              <div style={{ marginTop: 10 }}>
+                <Typography.Text type="secondary">Hạng thành viên</Typography.Text>
+                <Select
+                  allowClear
+                  placeholder="Tất cả hạng"
+                  style={{ width: '100%', marginTop: 6 }}
+                  value={draftRankFilter}
+                  onChange={setDraftRankFilter}
+                  options={ranks.map((rank) => ({ value: rank.id, label: rank.name }))}
+                />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, paddingTop: 12, marginTop: 14, borderTop: '1px solid var(--brand-border-soft)' }}>
+                <Button disabled={!activeFilterCount && !draftSearchText && !draftRankFilter} onClick={clearFilters}>Xóa lọc</Button>
+                <Button type="primary" onClick={applyFilters}>Xác nhận</Button>
+              </div>
+            </div>
+          )}
+        >
+          <Button icon={<FilterOutlined />}>Bộ lọc{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}</Button>
+        </Popover>
+      </div>
       <Table
         rowKey="id"
         loading={loading}
