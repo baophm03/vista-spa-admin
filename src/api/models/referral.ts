@@ -19,8 +19,6 @@ export interface Referral {
   referrer_id: string;
   referred_profile_id: string;
   discount_rule_id?: ReferralDiscountRuleId;
-  /** @minimum 0 */
-  commission_amount?: number;
   status?: ReferralStatus;
   note?: ReferralNote;
   created_at?: string;

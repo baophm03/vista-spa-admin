@@ -9,4 +9,5 @@
 export type GetCollaboratorsParams = {
 is_active?: boolean;
 q?: string;
+type?: string;
 };

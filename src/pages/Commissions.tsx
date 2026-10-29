@@ -30,15 +30,25 @@ import {
   usePostCommissionsIdVoid,
   usePutCommissionsId,
 } from '@/api/endpoints/commissions'
+import { useGetCollaborators } from '@/api/endpoints/admin'
+import { useGetReferrals } from '@/api/endpoints/membership'
 import type {
   CommissionEntry,
   CommissionEntryPayeeType,
   CommissionSummaryRow,
+  Collaborator,
   GetCommissionsParams,
   PostCommissionsBody,
 } from '@/api/models'
 
 type PayeeType = NonNullable<CommissionEntryPayeeType>
+type ReferralOption = {
+  referrer_type: string
+  referrer_id: string
+  referred_profile_id: string
+  status?: string
+  referred_profile?: { full_name?: string; phone?: string } | null
+}
 
 const PAYEE_LABEL: Record<PayeeType, string> = {
   STAFF: 'KTV',
@@ -75,7 +85,7 @@ export default function Commissions() {
         ) : (
           <>
             <PageTitle>Hoa hồng</PageTitle>
-            <Alert type="warning" showIcon message="Bạn không có quyền xem hoa hồng (cần quyền commission.read)" />
+            <Alert type="warning" showIcon title="Bạn không có quyền xem hoa hồng (cần quyền commission.read)" />
           </>
         )
       }
@@ -227,7 +237,7 @@ function LedgerTab() {
       {listQuery.isError && (
         <Alert
           className="mb-4" type="error" showIcon
-          message="Không tải được sổ hoa hồng"
+          title="Không tải được sổ hoa hồng"
           description={errorMessage(listQuery.error)}
           action={<Button size="small" onClick={() => void listQuery.refetch()}>Thử lại</Button>}
         />
@@ -250,7 +260,7 @@ function LedgerTab() {
         okText="Lưu" cancelText="Hủy"
       >
         {editTarget?.mode === 'AUTO' && (
-          <Alert type="warning" showIcon style={{ marginBottom: 12 }} message="Bút toán tự động sẽ chuyển thành NHẬP TAY vĩnh viễn sau khi sửa (không còn tính lại tự động)." />
+        <Alert type="warning" showIcon style={{ marginBottom: 12 }} title="Bút toán tự động sẽ chuyển thành NHẬP TAY vĩnh viễn sau khi sửa (không còn tính lại tự động)." />
         )}
         <Form form={editForm} layout="vertical" style={{ marginTop: 12 }}>
           <Space style={{ display: 'flex' }} align="start">
@@ -274,7 +284,7 @@ function LedgerTab() {
         confirmLoading={voidMutation.isPending}
         okText="Hủy bút toán" okButtonProps={{ danger: true }} cancelText="Đóng"
       >
-        <Alert type="info" showIcon style={{ marginBottom: 12 }} message="Bút toán không bị xóa, chỉ đánh dấu VOID và loại khỏi tổng hợp." />
+        <Alert type="info" showIcon style={{ marginBottom: 12 }} title="Bút toán không bị xóa, chỉ đánh dấu VOID và loại khỏi tổng hợp." />
         <Form form={voidForm} layout="vertical">
           <Form.Item name="void_reason" label="Lý do hủy" rules={[{ required: true, message: 'Nhập lý do hủy' }]}>
             <Input.TextArea rows={2} />
@@ -289,6 +299,15 @@ function ManualEntryModal({ open, onClose, onDone }: { open: boolean; onClose: (
   const [form] = Form.useForm()
   const [payeeType, setPayeeType] = useState<PayeeType>('STAFF')
   const createMutation = usePostCommissions()
+  const collaboratorsQuery = useGetCollaborators({ is_active: true })
+  const collaborators = useMemo(() => pickData<Collaborator[]>(collaboratorsQuery.data) ?? [], [collaboratorsQuery.data])
+  const referralsQuery = useGetReferrals()
+  const referrals = useMemo(() => pickData<ReferralOption[]>(referralsQuery.data) ?? [], [referralsQuery.data])
+  const selectedCollaboratorId = Form.useWatch('collaborator_id', form)
+  const collaboratorReferrals = useMemo(
+    () => referrals.filter((row) => row.referrer_type === 'COLLABORATOR' && row.referrer_id === selectedCollaboratorId && ['APPROVED', 'PAID'].includes(row.status ?? '')),
+    [referrals, selectedCollaboratorId],
+  )
 
   const submit = async () => {
     try {
@@ -297,12 +316,13 @@ function ManualEntryModal({ open, onClose, onDone }: { open: boolean; onClose: (
         payee_type: payeeType,
         amount: values.amount,
         reason: values.reason,
-        base_amount: values.base_amount || undefined,
+        base_amount: values.base_amount ?? undefined,
         percent: values.percent ?? undefined,
         period_date: values.period_date?.format('YYYY-MM-DD'),
         staff_id: payeeType === 'STAFF' ? values.staff_id || undefined : undefined,
         collaborator_id: payeeType === 'COLLABORATOR' ? values.collaborator_id || undefined : undefined,
         referrer_profile_id: payeeType === 'CUSTOMER_REFERRER' ? values.referrer_profile_id || undefined : undefined,
+        customer_profile_id: payeeType === 'COLLABORATOR' ? values.customer_profile_id || undefined : undefined,
       }
       await createMutation.mutateAsync({ data })
       message.success('Đã nhập bút toán hoa hồng')
@@ -325,7 +345,18 @@ function ManualEntryModal({ open, onClose, onDone }: { open: boolean; onClose: (
       okText="Lưu" cancelText="Hủy"
       width={560}
     >
-      <Form form={form} layout="vertical" style={{ marginTop: 12 }}>
+      <Form
+        form={form}
+        layout="vertical"
+        style={{ marginTop: 12 }}
+        onValuesChange={(changed) => {
+          if (Object.prototype.hasOwnProperty.call(changed, 'collaborator_id')) {
+            const collaborator = collaborators.find((row) => row.id === changed.collaborator_id)
+            form.setFieldValue('percent', collaborator?.commission_percent ?? undefined)
+            form.setFieldValue('customer_profile_id', undefined)
+          }
+        }}
+      >
         <Form.Item label="Người nhận" required>
           <Select
             value={payeeType}
@@ -339,9 +370,35 @@ function ManualEntryModal({ open, onClose, onDone }: { open: boolean; onClose: (
           </Form.Item>
         )}
         {payeeType === 'COLLABORATOR' && (
-          <Form.Item name="collaborator_id" label="ID cộng tác viên" rules={[{ required: true, message: 'Nhập ID CTV' }]}>
-            <Input placeholder="UUID của CTV" />
-          </Form.Item>
+          <>
+            <Form.Item name="collaborator_id" label="Cộng tác viên" rules={[{ required: true, message: 'Chọn cộng tác viên' }]}>
+              <Select
+                showSearch
+                optionFilterProp="label"
+                loading={collaboratorsQuery.isLoading}
+                placeholder="Chọn cộng tác viên"
+                options={collaborators.map((row) => ({
+                  value: row.id,
+                  label: `${row.name} · ${row.referral_code}${row.commission_percent != null ? ` · ${row.commission_percent}% tham khảo` : ''}`,
+                }))}
+              />
+            </Form.Item>
+            <Alert type="info" showIcon style={{ marginBottom: 16 }} title="% hoa hồng của CTV chỉ là mức tham khảo khi nhập tay; số tiền vẫn do bạn nhập." />
+            <Form.Item name="customer_profile_id" label="Khách được giới thiệu (nếu có)" extra="Gắn bút toán với khách để hiện trong lịch sử giới thiệu.">
+              <Select
+                allowClear
+                showSearch
+                optionFilterProp="label"
+                disabled={!selectedCollaboratorId}
+                loading={referralsQuery.isLoading}
+                placeholder="Chọn khách được CTV này giới thiệu"
+                options={collaboratorReferrals.map((row) => ({
+                  value: row.referred_profile_id,
+                  label: [row.referred_profile?.full_name, row.referred_profile?.phone].filter(Boolean).join(' · ') || row.referred_profile_id,
+                }))}
+              />
+            </Form.Item>
+          </>
         )}
         {payeeType === 'CUSTOMER_REFERRER' && (
           <Form.Item name="referrer_profile_id" label="ID hồ sơ khách giới thiệu" rules={[{ required: true, message: 'Nhập ID hồ sơ khách' }]}>
@@ -356,6 +413,16 @@ function ManualEntryModal({ open, onClose, onDone }: { open: boolean; onClose: (
             <DatePicker style={{ width: '100%' }} />
           </Form.Item>
         </Space>
+        {payeeType === 'COLLABORATOR' && (
+          <Space style={{ display: 'flex' }} align="start">
+            <Form.Item name="base_amount" label="Doanh số tham chiếu (₫)" style={{ flex: 1 }}>
+              <InputNumber min={0} precision={0} style={{ width: '100%' }} />
+            </Form.Item>
+            <Form.Item name="percent" label="% tham khảo" style={{ flex: 1 }}>
+              <InputNumber min={0} max={100} precision={2} style={{ width: '100%' }} />
+            </Form.Item>
+          </Space>
+        )}
         <Form.Item name="reason" label="Lý do / ghi chú" rules={[{ required: true, message: 'Nhập lý do' }]}>
           <Input.TextArea rows={2} placeholder="VD: Hoa hồng bán gói thân thiết tháng 10" />
         </Form.Item>

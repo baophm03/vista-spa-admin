@@ -30,6 +30,7 @@ import {
   usePutDiscountRulesId,
 } from '@/api/endpoints/settings'
 import { useGetCardRanks } from '@/api/endpoints/membership'
+import { useGetService } from '@/api/endpoints/services'
 import type {
   DiscountRule,
   DiscountRuleAppliesTo,
@@ -59,8 +60,14 @@ export default function DiscountRules() {
 
   const rulesQuery = useGetDiscountRules()
   const ranksQuery = useGetCardRanks(undefined, { query: { enabled: open } })
+  const servicesQuery = useGetService({ page: 1, limit: 200, is_active: true }, { query: { enabled: open } })
   const rules = useMemo(() => rulesQuery.data?.responseData ?? [], [rulesQuery.data])
   const ranks = useMemo(() => ranksQuery.data?.responseData ?? [], [ranksQuery.data])
+  const services = useMemo(() => {
+    const data = servicesQuery.data?.responseData as unknown
+    if (Array.isArray(data)) return data as { id: string; title: string }[]
+    return ((data as { services?: { id: string; title: string }[] } | undefined)?.services ?? [])
+  }, [servicesQuery.data])
 
   const invalidate = async () => {
     await queryClient.invalidateQueries({ queryKey: getGetDiscountRulesQueryKey() })
@@ -221,14 +228,14 @@ export default function DiscountRules() {
             {rulesQuery.isError && (
               <Alert
                 className="mb-4" type="error" showIcon
-                message="Không tải được quy tắc giảm giá"
+                title="Không tải được quy tắc giảm giá"
                 description={errorMessage(rulesQuery.error)}
                 action={<Button size="small" onClick={() => void rulesQuery.refetch()}>Thử lại</Button>}
               />
             )}
             <Alert
               type="info" showIcon style={{ marginBottom: 16 }}
-              message="Nhân viên chỉ áp được % trong khoảng của quy tắc; vượt khoảng cần quyền discount.override. Tổng % xếp chồng (gồm giảm hạng thẻ) không vượt trần của quy tắc."
+              title="Nhân viên chỉ áp được % trong khoảng của quy tắc; vượt khoảng cần quyền discount.override. Tổng % xếp chồng (gồm giảm hạng thẻ) không vượt trần của quy tắc."
             />
             <Table<DiscountRule>
               rowKey="id" loading={rulesQuery.isLoading} dataSource={rules} columns={columns}
@@ -287,8 +294,16 @@ export default function DiscountRules() {
                 <Form.Item noStyle shouldUpdate={(p, c) => p.applies_to !== c.applies_to}>
                   {({ getFieldValue }) =>
                     getFieldValue('applies_to') === 'SERVICE' ? (
-                      <Form.Item name="service_ids" label="Dịch vụ áp dụng" extra="Bỏ trống nếu áp mọi dịch vụ">
-                        <Select mode="multiple" placeholder="Chọn dịch vụ" options={[]} />
+                      <Form.Item
+                        name="service_ids" label="Dịch vụ áp dụng"
+                        rules={[{ required: true, type: 'array', min: 1, message: 'Chọn ít nhất một dịch vụ' }]}
+                      >
+                        <Select
+                          mode="multiple" showSearch optionFilterProp="label"
+                          loading={servicesQuery.isLoading}
+                          placeholder="Chọn ít nhất một dịch vụ"
+                          options={services.map((service) => ({ value: service.id, label: service.title }))}
+                        />
                       </Form.Item>
                     ) : null
                   }
@@ -316,7 +331,7 @@ export default function DiscountRules() {
         ) : (
           <>
             <PageTitle>Giảm giá & Ưu đãi</PageTitle>
-            <Alert type="warning" showIcon message="Bạn không có quyền xem quy tắc giảm giá (cần quyền discount.read)" />
+            <Alert type="warning" showIcon title="Bạn không có quyền xem quy tắc giảm giá (cần quyền discount.read)" />
           </>
         )
       }

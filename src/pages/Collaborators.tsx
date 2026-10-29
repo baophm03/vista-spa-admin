@@ -5,6 +5,7 @@ import {
   Drawer,
   Form,
   Input,
+  InputNumber,
   Modal,
   Popconfirm,
   Select,
@@ -31,6 +32,7 @@ import {
   usePutCollaboratorsId,
 } from '@/api/endpoints/admin'
 import type { PostCollaboratorsBody } from '@/api/models'
+import type { GetCollaboratorsParams } from '@/api/models/getCollaboratorsParams'
 
 const COLLABORATOR_TYPES = ['STAFF', 'CUSTOMER', 'EXTERNAL']
 
@@ -45,7 +47,7 @@ function formatVnd(v?: number | null): string {
   return `${Number(v).toLocaleString('vi-VN')} ₫`
 }
 
-type CollaboratorRow = Collaborator
+type CollaboratorRow = Collaborator & { referral_count?: number }
 
 function CollaboratorReportDrawer({ id, open, onClose }: { id: string; open: boolean; onClose: () => void }) {
   const summaryQuery = useGetCollaboratorsIdSummary(id, { query: { enabled: open && !!id } })
@@ -60,13 +62,13 @@ function CollaboratorReportDrawer({ id, open, onClose }: { id: string; open: boo
       ) : summaryQuery.isError ? (
         <Alert
           type="error" showIcon
-          message="Không tải được báo cáo"
+          title="Không tải được báo cáo"
           description={errorMessage(summaryQuery.error)}
           action={<Button size="small" onClick={() => void summaryQuery.refetch()}>Thử lại</Button>}
         />
       ) : (
         <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-          <Alert type="info" showIcon message="Số liệu tổng hợp theo toàn bộ lịch sử giới thiệu của CTV." />
+          <Alert type="info" showIcon title="Số liệu tổng hợp theo toàn bộ lịch sử giới thiệu của CTV." />
           <div>
             <Typography.Text type="secondary">Số khách được giới thiệu</Typography.Text>
             <div style={{ fontSize: 28, fontWeight: 600 }}>{(summary?.referral_count ?? 0).toLocaleString('vi-VN')}</div>
@@ -89,10 +91,11 @@ export default function Collaborators() {
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<CollaboratorRow | null>(null)
   const [reportRow, setReportRow] = useState<CollaboratorRow | null>(null)
+  const [listFilters, setListFilters] = useState<GetCollaboratorsParams>({})
   const [form] = Form.useForm()
   const queryClient = useQueryClient()
 
-  const listQuery = useGetCollaborators()
+  const listQuery = useGetCollaborators(listFilters)
   const rows = useMemo(() => {
     const raw = pickData<unknown>(listQuery.data)
     const list = (Array.isArray(raw) ? raw : (raw as { rows?: CollaboratorRow[] } | null)?.rows ?? []) as CollaboratorRow[]
@@ -116,10 +119,11 @@ export default function Collaborators() {
             phone: row.phone ?? '',
             referral_code: row.referral_code,
             type: row.type ?? undefined,
+            commission_percent: row.commission_percent ?? undefined,
             note: row.note ?? '',
             is_active: row.is_active !== false,
           }
-        : { name: '', phone: '', referral_code: '', type: undefined, note: '', is_active: true },
+        : { name: '', phone: '', referral_code: '', type: undefined, commission_percent: undefined, note: '', is_active: true },
     )
     setOpen(true)
   }
@@ -132,6 +136,7 @@ export default function Collaborators() {
         phone: values.phone || undefined,
         referral_code: values.referral_code,
         type: values.type || undefined,
+        commission_percent: values.commission_percent ?? null,
         note: values.note || undefined,
         is_active: values.is_active !== false,
       }
@@ -175,6 +180,8 @@ export default function Collaborators() {
         return meta ? <Tag color={meta.color}>{meta.label}</Tag> : <Tag>{v || '—'}</Tag>
       },
     },
+    { title: 'Khách giới thiệu', dataIndex: 'referral_count', width: 135, align: 'right', render: (v?: number) => Number(v ?? 0).toLocaleString('vi-VN') },
+    { title: '% hoa hồng tham khảo', dataIndex: 'commission_percent', width: 155, align: 'right', render: (v?: number | null) => v != null ? `${Number(v)}%` : '—' },
     {
       title: 'Ghi chú', dataIndex: 'note', ellipsis: true,
       render: (v?: string) => v || '—',
@@ -211,6 +218,17 @@ export default function Collaborators() {
           <>
             <PageTitle>Cộng tác viên</PageTitle>
             <Space style={{ width: '100%', justifyContent: 'flex-end', marginBottom: 16 }}>
+              <Input.Search
+                allowClear placeholder="Tìm tên, SĐT, mã giới thiệu" style={{ width: 260 }}
+                onSearch={(q) => setListFilters((current) => ({ ...current, q: q.trim() || undefined }))}
+                onChange={(event) => { if (!event.target.value) setListFilters((current) => ({ ...current, q: undefined })) }}
+              />
+              <Select
+                allowClear placeholder="Loại CTV" style={{ width: 160 }}
+                value={listFilters.type}
+                options={COLLABORATOR_TYPES.map((type) => ({ value: type, label: TYPE_META[type].label }))}
+                onChange={(type) => setListFilters((current) => ({ ...current, type }))}
+              />
               <Button icon={<ReloadOutlined />} onClick={() => void listQuery.refetch()}>Tải lại</Button>
               <Can I="CREATE" a="COLLABORATOR">
                 <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor()}>Thêm CTV</Button>
@@ -219,7 +237,7 @@ export default function Collaborators() {
             {listQuery.isError && (
               <Alert
                 className="mb-4" type="error" showIcon
-                message="Không tải được danh sách cộng tác viên"
+                title="Không tải được danh sách cộng tác viên"
                 description={errorMessage(listQuery.error)}
                 action={<Button size="small" onClick={() => void listQuery.refetch()}>Thử lại</Button>}
               />
@@ -240,9 +258,9 @@ export default function Collaborators() {
                 <Form.Item
                   name="referral_code" label="Mã giới thiệu"
                   rules={[{ required: true, message: 'Nhập mã giới thiệu' }]}
-                  extra={editing ? 'Không thể đổi mã nếu đã có lượt giới thiệu dùng mã này' : undefined}
+                  extra={editing ? 'Không thể đổi mã nếu mã này đã được dùng trong lịch sử giới thiệu' : undefined}
                 >
-                  <Input maxLength={50} placeholder="VD: CTV001" disabled={!!editing} />
+                  <Input maxLength={50} placeholder="VD: CTV001" disabled={!!editing && Number(editing.referral_use_count ?? editing.referral_count ?? 0) > 0} />
                 </Form.Item>
                 <Form.Item name="name" label="Tên CTV" rules={[{ required: true, message: 'Nhập tên CTV' }]}>
                   <Input maxLength={255} />
@@ -255,6 +273,9 @@ export default function Collaborators() {
                     <Select allowClear placeholder="Chọn loại" options={COLLABORATOR_TYPES.map((t) => ({ value: t, label: TYPE_META[t]?.label ?? t }))} />
                   </Form.Item>
                 </Space>
+                <Form.Item name="commission_percent" label="% hoa hồng tham khảo" extra="Chỉ gợi ý khi nhập tay trong module Hoa hồng; không tự động tính.">
+                  <InputNumber min={0} max={100} precision={2} style={{ width: '100%' }} />
+                </Form.Item>
                 <Form.Item name="note" label="Ghi chú">
                   <Input.TextArea rows={3} maxLength={2000} />
                 </Form.Item>
@@ -281,7 +302,7 @@ export default function Collaborators() {
         ) : (
           <>
             <PageTitle>Cộng tác viên</PageTitle>
-            <Alert type="warning" showIcon message="Bạn không có quyền xem danh sách cộng tác viên (cần quyền collaborator.read)" />
+            <Alert type="warning" showIcon title="Bạn không có quyền xem danh sách cộng tác viên (cần quyền collaborator.read)" />
           </>
         )
       }
