@@ -10,8 +10,9 @@ import type { CustomerTreatment } from '@/api/models/customerTreatment'
 import type { SessionPhoto } from '@/api/models/sessionPhoto'
 import type { TreatmentPackage } from '@/api/models/treatmentPackage'
 import type { LookupItem } from '@/api/models/lookupItem'
+import type { MembershipTransaction } from '@/api/models/membershipTransaction'
 import type { GetCustomerProfilesParams } from '@/api/models/getCustomerProfilesParams'
-import { getCustomerProfiles, useGetCustomerProfiles } from '@/api/endpoints/customer-profiles'
+import { getCustomerProfiles, useGetCustomerProfiles, useGetCustomerProfilesIdPoints } from '@/api/endpoints/customer-profiles'
 import {
   deletePhotosId,
   deleteSessionsId,
@@ -215,6 +216,7 @@ interface SessionRow {
   products_used?: string
   result?: string
   session_value?: number
+  product_amount?: number
   is_warranty?: boolean
   custom_fields?: Record<string, unknown>
 }
@@ -451,6 +453,7 @@ function SessionTimeline({
         : s.appointment?.start_time?.slice(0, 5),
       staff_id: s.staff_id,
       session_value: s.session_value,
+      product_amount: s.product_amount ?? 0,
       skin_note: s.skin_note,
       concern: s.concern,
       diary: s.diary,
@@ -626,10 +629,10 @@ function SessionTimeline({
                     </span>
                   )}
                 </Space>
-                {ctStatus === 'ACTIVE' && (
+                {(ctStatus === 'ACTIVE' || s.is_warranty) && (
                   <Can I="UPDATE" a="CUSTOMER">
                     <Space size={6} wrap style={{ marginLeft: 'auto' }}>
-                      {s.status === 'scheduled' && (
+                      {s.status === 'scheduled' && !s.is_warranty && (
                         <Tooltip title={canStart(s) ? undefined : 'Hoàn tất các buổi trước theo đúng thứ tự'}>
                           <Button
                             type="primary"
@@ -691,7 +694,7 @@ function SessionTimeline({
                   sessionId={s.id}
                   photos={(photos[s.id] ?? []).filter((p) => p.kind === 'before')}
                   kind="before"
-                  editable={ctStatus === 'ACTIVE'}
+                  editable={ctStatus === 'ACTIVE' || !!s.is_warranty}
                   onChanged={load}
                 />
               </TRow>
@@ -699,12 +702,15 @@ function SessionTimeline({
               <SubHead>Thực hiện</SubHead>
               <TRow label="Nhật ký"><CellVal v={s.diary} /></TRow>
               <TRow label="Sản phẩm"><CellVal v={s.products_used} /></TRow>
+              {(s.is_warranty || Number(s.product_amount || 0) > 0) && (
+                <TRow label="Tiền sản phẩm phát sinh">{formatMoney(s.product_amount || 0)}</TRow>
+              )}
               <TRow label="Ảnh quá trình">
                 <SessionPhotos
                   sessionId={s.id}
                   photos={midPhotos}
                   kind="process"
-                  editable={ctStatus === 'ACTIVE'}
+                  editable={ctStatus === 'ACTIVE' || !!s.is_warranty}
                   onChanged={load}
                 />
               </TRow>
@@ -720,7 +726,7 @@ function SessionTimeline({
                   sessionId={s.id}
                   photos={(photos[s.id] ?? []).filter((p) => p.kind === 'after')}
                   kind="after"
-                  editable={ctStatus === 'ACTIVE'}
+                  editable={ctStatus === 'ACTIVE' || !!s.is_warranty}
                   onChanged={load}
                 />
               </TRow>
@@ -792,18 +798,22 @@ function SessionTimeline({
               </Form.Item>
             </Col>
           </Row>
-          <Form.Item
-            name="session_value"
-            label="Giá trị buổi — dùng cho gói định mức tiền"
-            help={`Tối đa ${formatMoney(maxSessionValue)}. Với gói định mức tiền, giá trị buổi này không được vượt quá số tiền còn lại trong gói.`}
-            rules={[{
-              type: 'number',
-              max: maxSessionValue,
-              message: `Giá trị một buổi không được vượt quá tổng tiền liệu trình (${formatMoney(maxSessionValue)})`,
-            }]}
-          >
-            <InputNumber min={0} max={maxSessionValue} step={50000} suffix={currencySymbol} style={{ width: '100%' }} />
-          </Form.Item>
+          {editOpen?.is_warranty ? (
+            <Alert type="info" showIcon message="Buổi bảo hành miễn phí tiền công và không trừ quota. Phí sản phẩm phát sinh được ghi riêng bên dưới." />
+          ) : (
+            <Form.Item
+              name="session_value"
+              label="Giá trị buổi — dùng cho gói định mức tiền"
+              help={`Tối đa ${formatMoney(maxSessionValue)}. Với gói định mức tiền, giá trị buổi này không được vượt quá số tiền còn lại trong gói.`}
+              rules={[{
+                type: 'number',
+                max: maxSessionValue,
+                message: `Giá trị một buổi không được vượt quá tổng tiền liệu trình (${formatMoney(maxSessionValue)})`,
+              }]}
+            >
+              <InputNumber min={0} max={maxSessionValue} step={50000} suffix={currencySymbol} style={{ width: '100%' }} />
+            </Form.Item>
+          )}
           <Divider plain style={{ fontSize: 11, color: '#A9ADB2', letterSpacing: 1, margin: '4px 0 14px' }}>
             ĐẦU BUỔI
           </Divider>
@@ -821,6 +831,14 @@ function SessionTimeline({
           </Form.Item>
           <Form.Item name="products_used" label="Sản phẩm đã dùng">
             <Input.TextArea rows={2} />
+          </Form.Item>
+          <Form.Item
+            name="product_amount"
+            label="Tiền sản phẩm phát sinh"
+            help={editOpen?.is_warranty ? 'Chỉ ghi nhận tiền sản phẩm thêm; không trừ quota và không tính tiền công kỹ thuật.' : 'Số tiền sản phẩm thêm, tách biệt với giá trị buổi và quota liệu trình.'}
+            rules={[{ type: 'number', min: 0, message: 'Số tiền không được âm' }]}
+          >
+            <InputNumber min={0} step={10000} suffix={currencySymbol} style={{ width: '100%' }} />
           </Form.Item>
           <Divider plain style={{ fontSize: 11, color: '#A9ADB2', letterSpacing: 1, margin: '4px 0 14px' }}>
             KẾT QUẢ CUỐI BUỔI
@@ -868,6 +886,7 @@ export default function TreatmentCustomers() {
   const [payForm] = Form.useForm()
   // Modal ưu đãi & điểm (DC-06/07 + LY-02)
   const [promoOpen, setPromoOpen] = useState(false)
+  const [promoRow, setPromoRow] = useState<CustomerTreatment | null>(null)
   const [promoForm] = Form.useForm()
   const [redeemForm] = Form.useForm()
   const [paymentLookupError, setPaymentLookupError] = useState('')
@@ -1190,7 +1209,7 @@ export default function TreatmentCustomers() {
   }
 
   // ===== Ưu đãi & đổi điểm (DC-06/07/08, LY-02) =====
-  const promoCustomerProfileId = detail?.customer_profile_id
+  const promoCustomerProfileId = promoRow?.customer_profile_id
   const availableDiscountsQuery = useGetCustomerProfilesIdAvailableDiscounts(promoCustomerProfileId ?? '', {
     query: { enabled: promoOpen && !!promoCustomerProfileId },
   })
@@ -1202,21 +1221,20 @@ export default function TreatmentCustomers() {
   const redeemPointsMutation = usePostCustomerTreatmentsIdRedeemPoints()
 
   const openPromo = (row: CustomerTreatment) => {
-    setDetail(row)
+    setPromoRow(row)
     setPromoOpen(true)
     promoForm.resetFields()
     redeemForm.resetFields()
   }
 
   const submitApplyDiscount = async () => {
-    const target = detail
+    const target = promoRow
     if (!target) return
     try {
       const values = await promoForm.validateFields()
       await applyDiscountMutation.mutateAsync({ id: target.id, data: { rule_id: values.rule_id, percent: values.percent } })
       message.success('Đã áp dụng giảm giá vào gói')
       promoForm.resetFields()
-      openDetail(target)
       refresh()
     } catch (err) {
       message.error(errorMessage(err))
@@ -1224,14 +1242,13 @@ export default function TreatmentCustomers() {
   }
 
   const submitRedeemPoints = async () => {
-    const target = detail
+    const target = promoRow
     if (!target) return
     try {
       const values = await redeemForm.validateFields()
       await redeemPointsMutation.mutateAsync({ id: target.id, data: { points: values.points } })
       message.success('Đã trừ điểm vào gói')
       redeemForm.resetFields()
-      openDetail(target)
       refresh()
     } catch (err) {
       message.error(errorMessage(err))
@@ -1565,15 +1582,15 @@ cancelText = "Hủy"
 
 {/* Modal Ưu đãi & điểm — áp giảm giá (DC-07) và trừ điểm vào gói (LY-02) */ }
 <Modal
-  title={`Ưu đãi & điểm — gói #${(detail?.id ?? '').slice(0, 8)}`}
+  title={`Ưu đãi & điểm — gói #${(promoRow?.id ?? '').slice(0, 8)}`}
   open={promoOpen}
-  onCancel={() => setPromoOpen(false)}
+  onCancel={() => { setPromoOpen(false); setPromoRow(null) }}
   footer={null}
   width={640}
 >
   <Alert
     type="warning" showIcon style={{ marginBottom: 12 }}
-    message={`Giảm giá hiện tại: ${formatMoney(detail?.discount_amount ?? 0)} — Điểm đã dùng: ${detail?.points_used ?? 0} (${formatMoney(detail?.points_discount ?? 0)})`}
+    message={`Giảm giá hiện tại: ${formatMoney(promoRow?.discount_amount ?? 0)} — Điểm đã dùng: ${promoRow?.points_used ?? 0} (${formatMoney(promoRow?.points_discount ?? 0)})`}
   />
   <Tabs
     items={[
@@ -1850,6 +1867,11 @@ cancelText = "Hủy"
                       />
                     ),
                   },
+                  {
+                    key: 'points',
+                    label: 'Điểm thưởng',
+                    children: <PointsHistoryPanel profileId={detail.customer_profile_id} />,
+                  },
                 ]}
               />
             </Col>
@@ -1984,5 +2006,52 @@ cancelText = "Hủy"
         )}
       </Modal>
     </>
+  )
+}
+
+/** LY-01 — Lịch sử biến động điểm của khách (trong drawer chi tiết). */
+function PointsHistoryPanel({ profileId }: { profileId: string }) {
+  const pointsQuery = useGetCustomerProfilesIdPoints(profileId)
+  const data = pickData<{ points?: number; history?: MembershipTransaction[] }>(pointsQuery.data)
+  const REF_LABEL: Record<string, string> = {
+    PAYMENT: 'Thanh toán',
+    MANUAL: 'Chỉnh tay',
+    RANK: 'Xét hạng',
+    REWARD: 'Đổi quà',
+    WHEEL: 'Quay số',
+    REDEEM: 'Đổi tiền gói',
+  }
+  const rows = data?.history ?? []
+  return (
+    <div style={{ paddingTop: 8 }}>
+      <Statistic title="Điểm khả dụng" value={data?.points ?? 0} style={{ marginBottom: 16 }} />
+      {pointsQuery.isLoading ? (
+        <Typography.Text type="secondary">Đang tải…</Typography.Text>
+      ) : rows.length === 0 ? (
+        <Empty description="Chưa có biến động điểm nào" />
+      ) : (
+        <Table
+          rowKey={(r) => String(r.id ?? r.trans_code ?? r.trans_date)}
+          size="small"
+          dataSource={rows}
+          pagination={{ pageSize: 8 }}
+          columns={[
+            { title: 'Thời gian', dataIndex: 'created_at', width: 140, render: (v: string) => (v ? dayjs(v).format('DD/MM/YYYY HH:mm') : '—') },
+            { title: 'Loại', dataIndex: 'ref_type', width: 130, render: (v: string) => REF_LABEL[v] ?? v },
+            {
+              title: 'Điểm',
+              dataIndex: 'points_earned',
+              width: 90,
+              render: (v: number) => (
+                <Typography.Text type={Number(v) >= 0 ? 'success' : 'danger'}>
+                  {Number(v) >= 0 ? '+' : ''}{v}
+                </Typography.Text>
+              ),
+            },
+            { title: 'Ghi chú', dataIndex: 'note', render: (v: string) => v || '—' },
+          ]}
+        />
+      )}
+    </div>
   )
 }

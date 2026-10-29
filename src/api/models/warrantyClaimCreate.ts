@@ -13,4 +13,5 @@ export interface WarrantyClaimCreate {
   customer_treatment_id: string;
   /** @minLength 1 */
   reason: string;
+  contract_file_id?: string | null;
 }

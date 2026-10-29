@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import type { DragEvent as ReactDragEvent } from 'react'
 import {
   Alert,
   Button,
@@ -16,9 +17,9 @@ import {
   message,
 } from 'antd'
 import type { TableColumnsType } from 'antd'
-import { PlusOutlined, ReloadOutlined } from '@ant-design/icons'
+import { ArrowDownOutlined, ArrowUpOutlined, PlusOutlined, ReloadOutlined } from '@ant-design/icons'
 import { useQueryClient } from '@tanstack/react-query'
-import { Can } from '@casl/react'
+import { Can, useAbility } from '@casl/react'
 import PageTitle from '@/components/base/PageTitle'
 import { errorMessage } from '@/api/helpers'
 import type { CardRank } from '@/api/models/cardRank'
@@ -59,8 +60,12 @@ function holderCount(row: CardRankRow): number | undefined {
 export default function CardRanks() {
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<CardRankRow | null>(null)
+  const [draggedRankId, setDraggedRankId] = useState<string | null>(null)
+  const [isReordering, setIsReordering] = useState(false)
   const [form] = Form.useForm()
   const queryClient = useQueryClient()
+  const ability = useAbility()
+  const canReorder = ability.can('UPDATE', 'CARD_RANK')
 
   const ranksQuery = useGetCardRanks()
   const ranks = useMemo<CardRankRow[]>(() => {
@@ -75,6 +80,37 @@ export default function CardRanks() {
   const createMutation = usePostCardRanks({ mutation: { onSuccess: invalidate } })
   const updateMutation = usePutCardRanksId({ mutation: { onSuccess: invalidate } })
   const deleteMutation = useDeleteCardRanksId({ mutation: { onSuccess: invalidate } })
+
+  const moveRank = async (sourceId: string, targetId?: string) => {
+    if (!targetId || !canReorder || isReordering || sourceId === targetId) return
+    const reordered = [...ranks]
+    const sourceIndex = reordered.findIndex((rank) => rank.id === sourceId)
+    const targetIndex = reordered.findIndex((rank) => rank.id === targetId)
+    if (sourceIndex < 0 || targetIndex < 0) return
+
+    const [moved] = reordered.splice(sourceIndex, 1)
+    reordered.splice(targetIndex, 0, moved)
+    setIsReordering(true)
+    try {
+      await Promise.all(
+        reordered.map((rank, index) => {
+          const sort_order = index + 1
+          if (rank.sort_order === sort_order) return Promise.resolve()
+          return updateMutation.mutateAsync({
+            id: rank.id,
+            data: { sort_order } as PutCardRanksIdBody,
+          })
+        }),
+      )
+      await invalidate()
+      message.success('Đã cập nhật thứ tự hạng thẻ')
+    } catch (err) {
+      message.error(errorMessage(err, 'Không cập nhật được thứ tự hạng thẻ'))
+    } finally {
+      setDraggedRankId(null)
+      setIsReordering(false)
+    }
+  }
 
   const openEditor = (row?: CardRankRow) => {
     setEditing(row ?? null)
@@ -129,9 +165,9 @@ export default function CardRanks() {
       message.success(`Đã xóa hạng "${row.name}"`)
     } catch (err) {
       const status = (err as { response?: { status?: number } })?.response?.status
-      if (status === 409) {
+      if (status === 409 || status === 422) {
         message.error(
-          errorMessage(err, 'Không thể xóa: vẫn còn khách hàng đang giữ hạng này'),
+          errorMessage(err, 'Không thể xóa: khách hàng hoặc ưu đãi đang sử dụng hạng này'),
         )
       } else {
         message.error(errorMessage(err))
@@ -148,8 +184,33 @@ export default function CardRanks() {
     },
     { title: 'Tên hạng', dataIndex: 'name', render: (v: string) => <span style={{ fontWeight: 500 }}>{v}</span> },
     {
-      title: 'Thứ tự', dataIndex: 'sort_order', width: 90, align: 'center',
-      render: (v?: number) => v ?? '—',
+      title: 'Thứ tự', dataIndex: 'sort_order', width: 160, align: 'center',
+      render: (v: number | undefined, row) => {
+        const rankIndex = ranks.findIndex((rank) => rank.id === row.id)
+        return (
+          <Space size={2}>
+            <Typography.Text>{v ?? '—'}</Typography.Text>
+            {canReorder && (
+              <>
+                <Button
+                  type="text" size="small" icon={<ArrowUpOutlined />}
+                  aria-label={`Đưa hạng ${row.name} lên`}
+                  title={`Đưa hạng ${row.name} lên`}
+                  disabled={rankIndex <= 0 || isReordering}
+                  onClick={() => void moveRank(row.id, ranks[rankIndex - 1]?.id)}
+                />
+                <Button
+                  type="text" size="small" icon={<ArrowDownOutlined />}
+                  aria-label={`Đưa hạng ${row.name} xuống`}
+                  title={`Đưa hạng ${row.name} xuống`}
+                  disabled={rankIndex < 0 || rankIndex === ranks.length - 1 || isReordering}
+                  onClick={() => void moveRank(row.id, ranks[rankIndex + 1]?.id)}
+                />
+              </>
+            )}
+          </Space>
+        )
+      },
     },
     {
       title: 'Ngưỡng chi tiêu', key: 'spent', width: 220,
@@ -157,6 +218,10 @@ export default function CardRanks() {
         row.max_spent != null
           ? `${formatVnd(row.min_spent)} → ${formatVnd(row.max_spent)}`
           : `${formatVnd(row.min_spent)} trở lên`,
+    },
+    {
+      title: 'Giảm giá (%)', dataIndex: 'discount_percent', width: 110, align: 'center',
+      render: (v?: number | null) => v == null ? '—' : `${v}%`,
     },
     {
       title: 'Hiệu lực', dataIndex: 'validity', width: 120,
@@ -188,7 +253,7 @@ export default function CardRanks() {
         <Can I="DELETE" a="CARD_RANK">
           <Popconfirm
             title="Xóa hạng thẻ này?"
-            description="Xóa mềm (đặt is_active = false). Không xóa được nếu còn khách giữ hạng."
+            description="Xóa mềm. Không xóa được nếu còn khách giữ hạng hoặc có ưu đãi đang áp dụng."
             okText="Xóa" okButtonProps={{ danger: true }} cancelText="Hủy"
             onConfirm={() => void remove(row)}
           >
@@ -219,9 +284,42 @@ export default function CardRanks() {
                 action={<Button size="small" onClick={() => void ranksQuery.refetch()}>Thử lại</Button>}
               />
             )}
+            {canReorder && (
+              <Typography.Text type="secondary" className="mb-2 block">
+                Kéo thả hàng để sắp xếp; có thể dùng các nút mũi tên trong cột Thứ tự bằng bàn phím.
+              </Typography.Text>
+            )}
             <Table<CardRankRow>
               rowKey="id" loading={ranksQuery.isLoading} dataSource={ranks} columns={columns}
               pagination={{ pageSize: 10 }}
+              onRow={(row) => ({
+                draggable: canReorder && !isReordering,
+                onDragStart: (event: ReactDragEvent<HTMLTableRowElement>) => {
+                  if (!canReorder || isReordering) {
+                    event.preventDefault()
+                    return
+                  }
+                  event.dataTransfer.effectAllowed = 'move'
+                  event.dataTransfer.setData('text/plain', row.id)
+                  setDraggedRankId(row.id)
+                },
+                onDragOver: (event: ReactDragEvent<HTMLTableRowElement>) => {
+                  if (!canReorder || isReordering) return
+                  event.preventDefault()
+                  event.dataTransfer.dropEffect = 'move'
+                },
+                onDrop: (event: ReactDragEvent<HTMLTableRowElement>) => {
+                  if (!canReorder || isReordering) return
+                  event.preventDefault()
+                  const sourceId = event.dataTransfer.getData('text/plain') || draggedRankId
+                  if (sourceId) void moveRank(sourceId, row.id)
+                },
+                onDragEnd: () => setDraggedRankId(null),
+                style: {
+                  cursor: canReorder ? (isReordering ? 'wait' : 'grab') : undefined,
+                  opacity: draggedRankId === row.id ? 0.55 : 1,
+                },
+              })}
             />
             <Modal
               title={editing ? `Sửa hạng: ${editing.name}` : 'Thêm hạng thẻ'}
