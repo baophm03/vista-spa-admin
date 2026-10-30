@@ -1,10 +1,14 @@
 import { useState } from 'react'
-import { Button, DatePicker, Form, Input, InputNumber, Modal, Popconfirm, Select, Space, Switch, Table, Tag, Typography, message } from 'antd'
-import { PlusOutlined } from '@ant-design/icons'
+import { Button, DatePicker, Form, Input, InputNumber, Modal, Select, Space, Switch, Table, Tag, Typography, message } from 'antd'
+import { CheckCircleOutlined, ClockCircleOutlined, DeleteOutlined, EditOutlined, GiftOutlined, MinusCircleOutlined, PlusOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import PageTitle from '../components/base/PageTitle'
+import StatCards, { type StatItem } from '../components/base/StatCards'
+import RowActionsMenu from '../components/base/RowActionsMenu'
+import ListPagination from '../components/base/ListPagination'
+import { paginateRows } from '../utils/listTable'
 import { useDeleteVouchersId, useGetVouchers, usePostVouchers, usePutVouchersId } from '../api/endpoints/vouchers'
-import { Can } from '@casl/react'
+import { Can, useAbility } from '@casl/react'
 
 interface VoucherRow {
   id: string
@@ -26,6 +30,8 @@ const TYPE_LABEL: Record<number, string> = {
 }
 
 export default function Vouchers() {
+  const canUpdate = useAbility().can('UPDATE', 'VOUCHER')
+  const [page, setPage] = useState(1)
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<VoucherRow | null>(null)
   const [form] = Form.useForm()
@@ -36,6 +42,16 @@ export default function Vouchers() {
   const responseData = (vouchersQuery.data?.responseData ?? {}) as { rows?: VoucherRow[] }
   const rows = responseData.rows ?? []
   const loading = vouchersQuery.isLoading
+
+  // Thống kê đầu trang — tính trên toàn bộ rows đã tải (query lấy pageSize 100)
+  const activeVoucherCount = rows.filter((row) => !!row.is_active).length
+  const expiredVoucherCount = rows.filter((row) => row.end_date && dayjs(row.end_date).isBefore(dayjs(), 'day')).length
+  const statItems: StatItem[] = [
+    { key: 'total', label: 'Tổng voucher', value: rows.length.toLocaleString('vi-VN'), icon: <GiftOutlined />, tone: 'primary' },
+    { key: 'active', label: 'Hoạt động', value: activeVoucherCount.toLocaleString('vi-VN'), icon: <CheckCircleOutlined />, tone: 'secondary' },
+    { key: 'inactive', label: 'Đã tắt', value: (rows.length - activeVoucherCount).toLocaleString('vi-VN'), icon: <MinusCircleOutlined />, tone: 'neutral' },
+    { key: 'expired', label: 'Đã hết hạn', value: expiredVoucherCount.toLocaleString('vi-VN'), icon: <ClockCircleOutlined />, tone: 'neutral' },
+  ]
 
   const openModal = (voucher?: VoucherRow) => {
     setEditing(voucher ?? null)
@@ -85,7 +101,9 @@ export default function Vouchers() {
 
   return (
     <>
+      <StatCards items={statItems} />
       <PageTitle
+        subtitle="Voucher ưu đãi phát hành cho khách hàng"
         extra={
           <Can I="UPDATE" a="VOUCHER">
             <Button className="max-sm:w-full" type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
@@ -99,7 +117,8 @@ export default function Vouchers() {
       <Table
         rowKey="id"
         loading={loading}
-        dataSource={rows}
+        dataSource={paginateRows(rows, page, 10)}
+        pagination={false}
         columns={[
           {
             title: 'Tên chương trình',
@@ -131,26 +150,35 @@ export default function Vouchers() {
             width: 110,
             render: (v) => (v ? <Tag color="green">Hoạt động</Tag> : <Tag>Tắt</Tag>),
           },
-          {
-            title: '',
+          ...(canUpdate ? [{
+            title: 'Hành động',
+            key: 'actions',
             width: 140,
-            render: (_, row) => (
-              <Can I="UPDATE" a="VOUCHER">
-                <Space>
-                  <Button size="small" onClick={() => openModal(row)}>
-                    Sửa
-                  </Button>
-                  <Popconfirm title="Xóa voucher này?" onConfirm={() => remove(row)}>
-                    <Button size="small" danger>
-                      Xóa
-                    </Button>
-                  </Popconfirm>
-                </Space>
-              </Can>
+            fixed: 'right' as const,
+            render: (_: unknown, row: VoucherRow) => (
+              <RowActionsMenu
+                items={[
+                  { key: 'edit', icon: <EditOutlined />, label: 'Sửa' },
+                  { key: 'delete', icon: <DeleteOutlined />, label: 'Xóa', danger: true },
+                ]}
+                onSelect={(key) => {
+                  if (key === 'edit') openModal(row)
+                  else if (key === 'delete') {
+                    Modal.confirm({
+                      title: 'Xóa voucher này?',
+                      okText: 'Xóa',
+                      okButtonProps: { danger: true },
+                      cancelText: 'Hủy',
+                      onOk: () => remove(row),
+                    })
+                  }
+                }}
+              />
             ),
-          },
+          }] : []),
         ]}
       />
+      <ListPagination page={page} limit={10} total={rows.length} onChange={setPage} noun="voucher" />
 
       <Modal
         title={editing ? 'Sửa voucher' : 'Thêm voucher'}

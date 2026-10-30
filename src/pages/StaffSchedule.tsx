@@ -62,7 +62,7 @@ export default function StaffSchedule() {
   ]
 
   return <>
-    <PageTitle>Lịch làm việc KTV</PageTitle>
+    <PageTitle subtitle="Lịch làm việc của nhân viên theo tuần">Lịch làm việc KTV</PageTitle>
     <Tabs activeKey={activeTab} onChange={setActiveTab} items={items} />
     {!!sharedError && <Alert style={{ marginTop: 12 }} type="warning" showIcon message="Một phần dữ liệu dùng chung chưa tải được" description={sharedError} action={<a onClick={() => {
       void branchesQuery.refetch()

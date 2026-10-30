@@ -6,7 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type PostMembershipsUserIdPointsAdjustBody = {
-  delta: number;
-  reason: string;
-};
+export type MembershipCustomerProfileId = string | null;

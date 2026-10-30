@@ -6,7 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type PostMembershipsUserIdRankOverrideBody = {
-  rank_id: string;
-  reason: string;
-};
+export type WarrantyClaimCreateContractFileId = string | null;

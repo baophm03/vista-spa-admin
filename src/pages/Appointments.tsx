@@ -1,17 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
+import { Can, useAbility } from '@casl/react'
 import {
-  Badge,
   Button,
-  Checkbox,
   Col,
   DatePicker,
-  Divider,
-  Dropdown,
   Form,
   Input,
   Modal,
-  Popover,
   Row,
   Select,
   Segmented,
@@ -22,9 +18,26 @@ import {
   message,
 } from 'antd'
 import type { TableColumnsType } from 'antd'
-import { CalendarOutlined, CheckOutlined, EllipsisOutlined, FilterOutlined, LeftOutlined, PlusOutlined, ReloadOutlined, RightOutlined, UnorderedListOutlined } from '@ant-design/icons'
+import {
+  CalendarOutlined,
+  CheckCircleOutlined,
+  CheckOutlined,
+  CloseOutlined,
+  EditOutlined,
+  LeftOutlined,
+  MinusCircleOutlined,
+  PlayCircleOutlined,
+  PlusOutlined,
+  ReloadOutlined,
+  RightOutlined,
+  StopOutlined,
+  UnorderedListOutlined,
+} from '@ant-design/icons'
 import dayjs from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
+import ListFilterPopover from '@/components/base/ListFilterPopover'
+import RowActionsMenu from '@/components/base/RowActionsMenu'
+import ListPagination from '@/components/base/ListPagination'
 import CustomFieldFormItems, { normalizeCustomFieldValues } from '@/components/CustomFieldFormItems'
 import useCustomFieldDefinitions from '@/hooks/useCustomFieldDefinitions'
 import { errorMessage, pickData, pickMeta } from '@/api/helpers'
@@ -49,7 +62,6 @@ import { getGetCustomerProfilesQueryKey, postCustomerProfiles, useGetCustomerPro
 import { useGetService } from '@/api/endpoints/services'
 import { useGetUsers } from '@/api/endpoints/users'
 import { useGetBranches } from '@/api/endpoints/branches'
-import { Can } from '@casl/react'
 
 interface Slot {
   date?: string
@@ -152,6 +164,10 @@ const DEFAULT_APPOINTMENT_COLUMNS = APPOINTMENT_COLUMNS.map((column) => column.v
 
 export default function Appointments() {
   const queryClient = useQueryClient()
+  const ability = useAbility()
+  const canApprove = ability.can('APPROVE' as never, 'APPOINTMENT')
+  const canUpdate = ability.can('UPDATE' as never, 'APPOINTMENT')
+  const canStart = ability.can('START' as never, 'APPOINTMENT')
   const [displayMode, setDisplayMode] = useState<'calendar' | 'list'>('calendar')
   const [calendarView, setCalendarView] = useState<'day' | 'week'>('week')
   const [calendarDate, setCalendarDate] = useState(() => dayjs())
@@ -163,10 +179,6 @@ export default function Appointments() {
   const [branchFilter, setBranchFilter] = useState<string | undefined>()
   const [visibleColumns, setVisibleColumns] = useState<string[]>(DEFAULT_APPOINTMENT_COLUMNS)
   const [draftVisibleColumns, setDraftVisibleColumns] = useState<string[]>(DEFAULT_APPOINTMENT_COLUMNS)
-  const [draftDateFilter, setDraftDateFilter] = useState<[string | null, string | null]>([null, null])
-  const [draftStaffFilter, setDraftStaffFilter] = useState<string | null>(null)
-  const [draftBranchFilter, setDraftBranchFilter] = useState<string | null>(null)
-  const [draftFilter, setDraftFilter] = useState('all')
   const [filterOpen, setFilterOpen] = useState(false)
   const [open, setOpen] = useState(false)
   const [selectedAppointment, setSelectedAppointment] = useState<AppointmentRow | null>(null)
@@ -181,6 +193,7 @@ export default function Appointments() {
   const [form] = Form.useForm()
   const [startForm] = Form.useForm()
   const [quickCustomerForm] = Form.useForm()
+  const [filterForm] = Form.useForm()
   const appointmentCustomFields = useCustomFieldDefinitions('APPOINTMENT')
   const sessionCustomFields = useCustomFieldDefinitions('SESSION')
   const slotRequest = useRef(0)
@@ -518,38 +531,114 @@ export default function Appointments() {
     new Date(`${row.appt_date}T${row.start_time}`).getTime() < Date.now()
 
   const activeFilterCount = [dateFilter.some(Boolean), staffFilter, branchFilter, filter !== 'all'].filter(Boolean).length
-  const hasCustomColumns = DEFAULT_APPOINTMENT_COLUMNS.some((column) => !visibleColumns.includes(column))
 
-  const clearFilters = () => {
-    const emptyRange: [string | null, string | null] = [null, null]
-    setDateFilter(emptyRange)
-    setDraftDateFilter(emptyRange)
-    setStaffFilter(undefined)
-    setDraftStaffFilter(null)
-    setBranchFilter(undefined)
-    setDraftBranchFilter(null)
-    setFilter('all')
-    setDraftFilter('all')
-    setVisibleColumns(DEFAULT_APPOINTMENT_COLUMNS)
-    setDraftVisibleColumns(DEFAULT_APPOINTMENT_COLUMNS)
-    setPage(1)
+  const openFilters = (nextOpen: boolean) => {
+    setFilterOpen(nextOpen)
+    if (!nextOpen) return
+    filterForm.setFieldsValue({
+      date_range: [dateFilter[0] ? dayjs(dateFilter[0]) : null, dateFilter[1] ? dayjs(dateFilter[1]) : null],
+      staff_id: staffFilter,
+      branch_id: branchFilter,
+      status: filter,
+    })
+    setDraftVisibleColumns(visibleColumns)
   }
 
-  const applyFilters = () => {
-    setDateFilter(draftDateFilter)
-    setStaffFilter(draftStaffFilter ?? undefined)
-    setBranchFilter(draftBranchFilter ?? undefined)
-    setFilter(draftFilter)
+  const applyFilters = (values: Record<string, unknown>) => {
+    const range = values.date_range as [dayjs.Dayjs | null, dayjs.Dayjs | null] | undefined
+    setDateFilter([range?.[0] ? range[0].format('YYYY-MM-DD') : null, range?.[1] ? range[1].format('YYYY-MM-DD') : null])
+    setStaffFilter(typeof values.staff_id === 'string' && values.staff_id ? values.staff_id : undefined)
+    setBranchFilter(typeof values.branch_id === 'string' && values.branch_id ? values.branch_id : undefined)
+    setFilter(typeof values.status === 'string' && values.status ? values.status : 'all')
     setVisibleColumns(draftVisibleColumns)
     setPage(1)
     setFilterOpen(false)
   }
 
+  const clearFilters = () => {
+    const emptyRange: [string | null, string | null] = [null, null]
+    filterForm.resetFields()
+    setDateFilter(emptyRange)
+    setStaffFilter(undefined)
+    setBranchFilter(undefined)
+    setFilter('all')
+    setVisibleColumns(DEFAULT_APPOINTMENT_COLUMNS)
+    setDraftVisibleColumns(DEFAULT_APPOINTMENT_COLUMNS)
+    setPage(1)
+  }
+
   return (
     <>
       <PageTitle
+        subtitle="Quản lý lịch hẹn dịch vụ theo lịch hoặc danh sách"
         extra={
-          <Space>
+          <Space wrap>
+            <ListFilterPopover
+              open={filterOpen}
+              onOpenChange={openFilters}
+              activeFilterCount={activeFilterCount}
+              form={filterForm}
+              onApply={applyFilters}
+              onClear={clearFilters}
+              columnOptions={APPOINTMENT_COLUMNS}
+              draftVisibleColumns={draftVisibleColumns}
+              onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as string[])}
+              filterItems={(
+                <>
+                  <Form.Item name="date_range" label="Khoảng ngày" style={{ marginBottom: 10 }}>
+                    <DatePicker.RangePicker allowEmpty={[true, true]} placeholder={['Từ ngày', 'Đến ngày']} style={{ width: '100%' }} />
+                  </Form.Item>
+                  <Form.Item name="staff_id" label="KTV" style={{ marginBottom: 10 }}>
+                    <Select
+                      allowClear
+                      showSearch
+                      optionFilterProp="label"
+                      placeholder="Tất cả KTV"
+                      options={staffs.map((staff) => ({ value: staff.id, label: staff.zalo_name || staff.email }))}
+                    />
+                  </Form.Item>
+                  <Form.Item name="branch_id" label="Cơ sở" style={{ marginBottom: 10 }}>
+                    <Select allowClear placeholder="Tất cả cơ sở" options={branches.map((branch) => ({ value: branch.id, label: branch.name }))} />
+                  </Form.Item>
+                  <Form.Item name="status" label="Trạng thái" style={{ marginBottom: 0 }}>
+                    <Select options={FILTERS} />
+                  </Form.Item>
+                </>
+              )}
+            />
+            <Segmented
+              value={displayMode}
+              options={[
+                { label: 'Lịch', value: 'calendar', icon: <CalendarOutlined /> },
+                { label: 'Danh sách', value: 'list', icon: <UnorderedListOutlined /> },
+              ]}
+              onChange={(value) => setDisplayMode(value as 'calendar' | 'list')}
+            />
+            {displayMode === 'calendar' && (
+              <Space wrap>
+                <Button
+                  aria-label="Khoảng thời gian trước"
+                  icon={<LeftOutlined />}
+                  onClick={() => setCalendarDate((current) => current.add(calendarView === 'week' ? -7 : -1, 'day'))}
+                />
+                <DatePicker
+                  value={calendarView === 'week' ? calendarStart : calendarDate}
+                  format={calendarView === 'week' ? '[Tuần bắt đầu] DD/MM/YYYY' : 'DD/MM/YYYY'}
+                  onChange={(value) => value && setCalendarDate(value)}
+                />
+                <Button onClick={() => setCalendarDate(dayjs())}>Hôm nay</Button>
+                <Button
+                  aria-label="Khoảng thời gian tiếp theo"
+                  icon={<RightOutlined />}
+                  onClick={() => setCalendarDate((current) => current.add(calendarView === 'week' ? 7 : 1, 'day'))}
+                />
+                <Segmented
+                  value={calendarView}
+                  options={[{ label: 'Ngày', value: 'day' }, { label: 'Tuần', value: 'week' }]}
+                  onChange={(value) => setCalendarView(value as 'day' | 'week')}
+                />
+              </Space>
+            )}
             <Button icon={<ReloadOutlined />} onClick={refresh} />
             <Can I="CREATE" a="APPOINTMENT">
               <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
@@ -561,119 +650,20 @@ export default function Appointments() {
       >
         Lịch hẹn
       </PageTitle>
-      <Space style={{ width: '100%', marginBottom: 16 }} wrap>
-        <Popover
-          open={filterOpen}
-          onOpenChange={(next) => {
-            setFilterOpen(next)
-            if (next) {
-              setDraftDateFilter(dateFilter)
-              setDraftStaffFilter(staffFilter ?? null)
-              setDraftBranchFilter(branchFilter ?? null)
-              setDraftFilter(filter)
-              setDraftVisibleColumns(visibleColumns)
-            }
-          }}
-          trigger="click"
-          placement="bottomLeft"
-          content={(
-            <div style={{ width: 340 }}>
-              <Typography.Text strong>Cột hiển thị ({draftVisibleColumns.length}/{APPOINTMENT_COLUMNS.length})</Typography.Text>
-              <Checkbox.Group
-                style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', marginTop: 8, gap: 6 }}
-                value={draftVisibleColumns}
-                options={APPOINTMENT_COLUMNS}
-                onChange={(values) => { if (values.length) setDraftVisibleColumns(values as string[]) }}
-              />
-              <Divider style={{ margin: '14px 0' }} />
-              <Typography.Text strong>Điều kiện lọc</Typography.Text>
-              <Space direction="vertical" style={{ width: '100%', marginTop: 8 }}>
-                <DatePicker.RangePicker
-                  allowEmpty={[true, true]}
-                  value={[draftDateFilter[0] ? dayjs(draftDateFilter[0]) : null, draftDateFilter[1] ? dayjs(draftDateFilter[1]) : null]}
-                  onChange={(range) => setDraftDateFilter([range?.[0] ? range[0].format('YYYY-MM-DD') : null, range?.[1] ? range[1].format('YYYY-MM-DD') : null])}
-                  placeholder={['Từ ngày', 'Đến ngày']}
-                  style={{ width: '100%' }}
-                />
-                <Select
-                  allowClear
-                  value={draftStaffFilter}
-                  onChange={(value) => setDraftStaffFilter(value ?? null)}
-                  placeholder="KTV"
-                  style={{ width: '100%' }}
-                  showSearch
-                  optionFilterProp="label"
-                  options={staffs.map((staff) => ({ value: staff.id, label: staff.zalo_name || staff.email }))}
-                />
-                <Select
-                  allowClear
-                  value={draftBranchFilter}
-                  onChange={(value) => setDraftBranchFilter(value ?? null)}
-                  placeholder="Cơ sở"
-                  style={{ width: '100%' }}
-                  options={branches.map((branch) => ({ value: branch.id, label: branch.name }))}
-                />
-                <Select value={draftFilter} onChange={setDraftFilter} options={FILTERS} style={{ width: '100%' }} />
-              </Space>
-              <Space style={{ marginTop: 14, width: '100%', justifyContent: 'space-between' }}>
-                <Button disabled={!activeFilterCount && !hasCustomColumns} onClick={clearFilters}>Xóa lọc</Button>
-                <Button type="primary" onClick={applyFilters}>Xác nhận</Button>
-              </Space>
-            </div>
-          )}
-        >
-          <Badge count={activeFilterCount} size="small"><Button icon={<FilterOutlined />}>Bộ lọc</Button></Badge>
-        </Popover>
-        <Space style={{ marginLeft: 'auto' }} wrap>
-          <Segmented
-            value={displayMode}
-            options={[
-              { label: 'Lịch', value: 'calendar', icon: <CalendarOutlined /> },
-              { label: 'Danh sách', value: 'list', icon: <UnorderedListOutlined /> },
-            ]}
-            onChange={(value) => setDisplayMode(value as 'calendar' | 'list')}
-          />
-          {displayMode === 'calendar' && (
-            <Space>
-              <Button
-                aria-label="Khoảng thời gian trước"
-                icon={<LeftOutlined />}
-                onClick={() => setCalendarDate((current) => current.add(calendarView === 'week' ? -7 : -1, 'day'))}
-              />
-              <DatePicker
-                value={calendarView === 'week' ? calendarStart : calendarDate}
-                format={calendarView === 'week' ? '[Tuần bắt đầu] DD/MM/YYYY' : 'DD/MM/YYYY'}
-                onChange={(value) => value && setCalendarDate(value)}
-              />
-              <Button onClick={() => setCalendarDate(dayjs())}>Hôm nay</Button>
-              <Button
-                aria-label="Khoảng thời gian tiếp theo"
-                icon={<RightOutlined />}
-                onClick={() => setCalendarDate((current) => current.add(calendarView === 'week' ? 7 : 1, 'day'))}
-              />
-              <Segmented
-                value={calendarView}
-                options={[{ label: 'Ngày', value: 'day' }, { label: 'Tuần', value: 'week' }]}
-                onChange={(value) => setCalendarView(value as 'day' | 'week')}
-              />
-            </Space>
-          )}
-        </Space>
-      </Space>
       {displayMode === 'calendar' ? (
-        <div style={{ overflowX: 'auto', border: '1px solid #d9e3e7', borderRadius: 12, background: '#fff' }}>
+        <div style={{ overflowX: 'auto', border: '1px solid var(--brand-border-soft, #ECEFEA)', borderRadius: 12, background: '#fff' }}>
           {calendarAppointmentsQuery.isLoading ? (
             <div style={{ padding: 32, textAlign: 'center' }}>Đang tải lịch hẹn…</div>
           ) : calendarView === 'day' ? (
             <div style={{ minWidth: Math.max(760, (calendarStaffs.length + (calendarRows.some((row) => !row.staff_id) ? 1 : 0)) * 210 + 80) }}>
-              <div style={{ display: 'grid', gridTemplateColumns: `80px repeat(${Math.max(1, calendarStaffs.length + (calendarRows.some((row) => !row.staff_id) ? 1 : 0))}, minmax(190px, 1fr))`, position: 'sticky', top: 0, zIndex: 2, background: '#eef3f4', borderBottom: '1px solid #d9e3e7' }}>
-                <div style={{ padding: 12, fontWeight: 600, color: '#53636a' }}>{calendarStart.format('DD/MM')}</div>
+              <div style={{ display: 'grid', gridTemplateColumns: `80px repeat(${Math.max(1, calendarStaffs.length + (calendarRows.some((row) => !row.staff_id) ? 1 : 0))}, minmax(190px, 1fr))`, position: 'sticky', top: 0, zIndex: 2, background: 'var(--brand-primary)', borderBottom: '1px solid var(--brand-dark)', color: 'var(--brand-on-primary)' }}>
+                <div style={{ padding: 12, fontWeight: 600 }}>{calendarStart.format('DD/MM')}</div>
                 {calendarStaffs.length || calendarRows.some((row) => !row.staff_id) ? (
                   <>
-                    {calendarStaffs.map((staff) => <div key={staff.id} style={{ padding: 12, borderLeft: '1px solid #d9e3e7', fontWeight: 600 }}>{staff.zalo_name || 'Nhân viên'}</div>)}
-                    {calendarRows.some((row) => !row.staff_id) && <div style={{ padding: 12, borderLeft: '1px solid #d9e3e7', fontWeight: 600 }}>Chưa gán KTV</div>}
+                    {calendarStaffs.map((staff) => <div key={staff.id} style={{ padding: 12, borderLeft: '1px solid rgba(255, 255, 255, 0.14)', fontWeight: 600 }}>{staff.zalo_name || 'Nhân viên'}</div>)}
+                    {calendarRows.some((row) => !row.staff_id) && <div style={{ padding: 12, borderLeft: '1px solid rgba(255, 255, 255, 0.14)', fontWeight: 600 }}>Chưa gán KTV</div>}
                   </>
-                ) : <div style={{ padding: 12, borderLeft: '1px solid #d9e3e7', color: '#849197' }}>Chưa có lịch hẹn</div>}
+                ) : <div style={{ padding: 12, borderLeft: '1px solid rgba(255, 255, 255, 0.14)', opacity: 0.75 }}>Chưa có lịch hẹn</div>}
               </div>
               {CALENDAR_HOURS.map((hour) => (
                 <div key={hour} style={{ display: 'grid', gridTemplateColumns: `80px repeat(${Math.max(1, calendarStaffs.length + (calendarRows.some((row) => !row.staff_id) ? 1 : 0))}, minmax(190px, 1fr))`, minHeight: 82, borderBottom: '1px solid #edf1f2' }}>
@@ -697,9 +687,9 @@ export default function Appointments() {
             </div>
           ) : (
             <div style={{ minWidth: 1160 }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '80px repeat(7, minmax(150px, 1fr))', position: 'sticky', top: 0, zIndex: 2, background: '#eef3f4', borderBottom: '1px solid #d9e3e7' }}>
-                <div style={{ padding: 12, fontWeight: 600, color: '#53636a' }}>Giờ</div>
-                {calendarDays.map((date) => <div key={date.format('YYYY-MM-DD')} style={{ padding: 12, borderLeft: '1px solid #d9e3e7', fontWeight: 600 }}>{['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][date.day()]} {date.format('DD/MM')}</div>)}
+              <div style={{ display: 'grid', gridTemplateColumns: '80px repeat(7, minmax(150px, 1fr))', position: 'sticky', top: 0, zIndex: 2, background: 'var(--brand-primary)', borderBottom: '1px solid var(--brand-dark)', color: 'var(--brand-on-primary)' }}>
+                <div style={{ padding: 12, fontWeight: 600 }}>Giờ</div>
+                {calendarDays.map((date) => <div key={date.format('YYYY-MM-DD')} style={{ padding: 12, borderLeft: '1px solid rgba(255, 255, 255, 0.14)', fontWeight: 600 }}>{['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][date.day()]} {date.format('DD/MM')}</div>)}
               </div>
               {CALENDAR_HOURS.map((hour) => (
                 <div key={hour} style={{ display: 'grid', gridTemplateColumns: '80px repeat(7, minmax(150px, 1fr))', minHeight: 92, borderBottom: '1px solid #edf1f2' }}>
@@ -720,7 +710,12 @@ export default function Appointments() {
         rowKey="id"
         loading={appointmentsQuery.isLoading}
         dataSource={rows}
-        pagination={{ current: page, pageSize: limit, total, onChange: setPage }}
+        scroll={{ x: 950 }}
+        pagination={false}
+        onRow={(row) => ({
+          onClick: () => setSelectedAppointment(row),
+          style: { cursor: 'pointer' },
+        })}
         columns={([
           {
             title: 'Khách hàng',
@@ -751,74 +746,48 @@ export default function Appointments() {
             render: (v: AppointmentStatus) => <Tag color={STATUS_META[v]?.color}>{STATUS_META[v]?.label ?? v}</Tag>,
           },
           {
-            title: '',
+            title: 'Hành động',
             key: 'actions',
-            width: 150,
+            width: 140,
+            fixed: 'right' as const,
             render: (_, row) => {
               const confirmThen = (title: string, fn: () => Promise<unknown> | void) =>
-                Modal.confirm({ title, okText: title, cancelText: 'Đóng', onOk: () => fn() })
-              const buildExtraActions = (check: (action: string) => boolean) => [
-                check('APPROVE') && row.status === 'pending' && { key: 'reject', label: 'Từ chối', danger: true, onClick: () => reject(row) },
-                check('UPDATE') && ['pending', 'approved'].includes(row.status ?? '') && { key: 'reschedule', label: 'Đổi lịch', onClick: () => openModal(row) },
-                row.status === 'approved' && isPastAppointment(row) && {
-                  key: 'noshow',
-                  label: 'Đánh dấu không đến',
-                  onClick: () =>
-                    confirmThen('Đánh dấu khách không đến? (Chỉ ghi nhận; không trừ buổi, không tính phí.)', () =>
-                      doAction(() => noShowMutation.mutateAsync({ id: row.id }), 'Đã ghi nhận không đến')),
-                },
-                ['pending', 'approved'].includes(row.status ?? '') && {
-                  key: 'cancel',
-                  label: 'Hủy lịch hẹn',
-                  danger: true,
-                  onClick: () => confirmThen('Hủy lịch hẹn này?', () => doAction(() => cancelMutation.mutateAsync({ id: row.id }), 'Đã hủy')),
-                },
-              ].filter(Boolean) as Array<{ key: string; label: string; danger?: boolean; onClick: () => void }>
+                Modal.confirm({ title, okText: 'Đồng ý', okButtonProps: { danger: true }, cancelText: 'Hủy', onOk: () => fn() })
               return (
-                <Space size={4}>
-                  {row.status === 'pending' && (
-                    <Can I="APPROVE" a="APPOINTMENT">
-                      <Button size="small" type="primary" icon={<CheckOutlined />} onClick={() => approve(row)}>
-                        Duyệt
-                      </Button>
-                    </Can>
-                  )}
-                  {row.status === 'approved' && (
-                    <Can I="START" a="APPOINTMENT">
-                      <Button size="small" onClick={() => beginAppointment(row)}>
-                        Bắt đầu
-                      </Button>
-                    </Can>
-                  )}
-                  {row.status === 'in_progress' && (
-                    <Button size="small" type="primary" onClick={() => doAction(() => completeMutation.mutateAsync({ id: row.id }), 'Đã hoàn tất')}>
-                      Hoàn tất
-                    </Button>
-                  )}
-                  {/* Menu dropdown là data nên không bọc <Can> từng item được — dùng children-as-function
-                      của <Can> để nhận ability một cách reactive (giống useAbility của casl/react) */}
-                  <Can I="READ" a="APPOINTMENT" passThrough>
-                    {({ ability }) => {
-                      const extraActions = buildExtraActions((action) => ability.can(action as never, 'APPOINTMENT'))
-                      return extraActions.length > 0 ? (
-                        <Dropdown
-                          trigger={['click']}
-                          menu={{ items: extraActions.map(({ key, label, danger, onClick }) => ({ key, label, danger, onClick })) }}
-                        >
-                          <Button size="small" icon={<EllipsisOutlined />} />
-                        </Dropdown>
-                      ) : null
-                    }}
-                  </Can>
-                </Space>
+                <RowActionsMenu
+                  items={[
+                    ...(row.status === 'pending' && canApprove ? [{ key: 'approve', icon: <CheckOutlined />, label: 'Duyệt' }] : []),
+                    ...(row.status === 'approved' && canStart ? [{ key: 'start', icon: <PlayCircleOutlined />, label: 'Bắt đầu' }] : []),
+                    ...(row.status === 'in_progress' ? [{ key: 'complete', icon: <CheckCircleOutlined />, label: 'Hoàn tất' }] : []),
+                    ...(row.status === 'pending' && canApprove ? [{ key: 'reject', icon: <CloseOutlined />, danger: true, label: 'Từ chối' }] : []),
+                    ...(canUpdate && ['pending', 'approved'].includes(row.status ?? '') ? [{ key: 'reschedule', icon: <EditOutlined />, label: 'Đổi lịch' }] : []),
+                    ...(row.status === 'approved' && isPastAppointment(row) ? [{ key: 'noshow', icon: <MinusCircleOutlined />, label: 'Đánh dấu không đến' }] : []),
+                    ...(['pending', 'approved'].includes(row.status ?? '') ? [{ key: 'cancel', icon: <StopOutlined />, danger: true, label: 'Hủy lịch hẹn' }] : []),
+                  ]}
+                  onSelect={(key) => {
+                    if (key === 'approve') void approve(row)
+                    else if (key === 'start') beginAppointment(row)
+                    else if (key === 'complete') void doAction(() => completeMutation.mutateAsync({ id: row.id }), 'Đã hoàn tất')
+                    else if (key === 'reject') reject(row)
+                    else if (key === 'reschedule') openModal(row)
+                    else if (key === 'noshow') {
+                      confirmThen('Đánh dấu khách không đến? (Chỉ ghi nhận; không trừ buổi, không tính phí.)', () =>
+                        doAction(() => noShowMutation.mutateAsync({ id: row.id }), 'Đã ghi nhận không đến'))
+                    } else if (key === 'cancel') {
+                      confirmThen('Hủy lịch hẹn này?', () => doAction(() => cancelMutation.mutateAsync({ id: row.id }), 'Đã hủy'))
+                    }
+                  }}
+                />
               )
             },
           },
         ] satisfies TableColumnsType<AppointmentRow>).filter((column) => column.key === 'actions' || visibleColumns.includes(String(column.key)))}
       />}
+      {displayMode !== 'calendar' && <ListPagination page={page} limit={limit} total={total} onChange={setPage} noun="lịch hẹn" />}
 
       <Modal
         title="Chi tiết lịch hẹn"
+        width="min(760px, calc(100vw - 24px))"
         open={!!selectedAppointment}
         onCancel={() => setSelectedAppointment(null)}
         footer={selectedAppointment ? (
@@ -871,6 +840,7 @@ export default function Appointments() {
 
       <Modal
         title={editing ? 'Đổi lịch hẹn' : 'Thêm lịch hẹn'}
+        width="min(880px, calc(100vw - 24px))"
         open={open}
         onCancel={() => setOpen(false)}
         onOk={submit}
@@ -993,6 +963,7 @@ export default function Appointments() {
       </Modal>
       <Modal
         title="Tạo nhanh khách hàng"
+        width="min(640px, calc(100vw - 24px))"
         open={quickCustomerOpen}
         onCancel={() => setQuickCustomerOpen(false)}
         onOk={() => void submitQuickCustomer()}
@@ -1019,6 +990,7 @@ export default function Appointments() {
       </Modal>
       <Modal
         title="Thông tin buổi điều trị"
+        width="min(760px, calc(100vw - 24px))"
         open={!!startingAppointment}
         onCancel={() => setStartingAppointment(null)}
         onOk={() => void submitStart()}

@@ -8,14 +8,18 @@ import { pickData } from './api/helpers'
 export const THEME_KEYS = {
   primary: 'brand.primary_color',
   legacyPrimary: 'theme.primary_color',
-  accent: 'theme.accent_color',
+  tertiary: 'theme.tertiary_color',
+  secondary: 'brand.secondary_color',
+  background: 'brand.background_color',
 } as const
 
 export interface BrandRuntime {
   name: string
   logoUrl: string | null
   primaryColor: string
-  accentColor: string
+  tertiaryColor: string
+  secondaryColor: string
+  backgroundColor: string | null
   timezone: string
   currency: string
   language: 'vi'
@@ -35,13 +39,19 @@ function read(key: string, fallback: string): string {
 
 export const getPrimaryColor = () =>
   localStorage.getItem(THEME_KEYS.primary) || localStorage.getItem(THEME_KEYS.legacyPrimary) || brandColors.primary
-export const getAccentColor = () => read(THEME_KEYS.accent, brandColors.accent)
+export const getTertiaryColor = () => read(THEME_KEYS.tertiary, brandColors.tertiary)
+/** Màu phụ (tiêu đề nhấn, hiệu ứng phụ) — mặc định hồng đậm theo palette thương hiệu gốc. */
+export const getSecondaryColor = () => read(THEME_KEYS.secondary, brandColors.secondary)
+/** Màu nền trang; null/'' = tự suy từ màu chủ đạo. */
+export const getBackgroundColor = (): string | null => localStorage.getItem(THEME_KEYS.background) || null
 
 let runtime: BrandRuntime = {
   name: read(LOCALE_KEYS.name, 'Vista Spa'),
   logoUrl: localStorage.getItem(LOCALE_KEYS.logo) || null,
   primaryColor: getPrimaryColor(),
-  accentColor: getAccentColor(),
+  tertiaryColor: getTertiaryColor(),
+  secondaryColor: getSecondaryColor(),
+  backgroundColor: getBackgroundColor(),
   timezone: read(LOCALE_KEYS.timezone, 'Asia/Ho_Chi_Minh'),
   currency: read(LOCALE_KEYS.currency, 'VND'),
   language: 'vi',
@@ -73,25 +83,90 @@ function hexToRgb(hex: string): string {
   return [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)).join(', ')
 }
 
+/** Độ sáng 0..1 của màu hex — dùng chọn chữ trắng/tối trên nền màu chủ đạo. */
+function hexLuminance(hex: string): number {
+  const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b
+}
+
+/** Contrast ratio WCAG 2.1 giữa 2 màu hex (1..21). */
+function contrastRatio(fgHex: string, bgHex: string): number {
+  const [l1, l2] = [hexLuminance(fgHex), hexLuminance(bgHex)].sort((a, b) => b - a)
+  return (l1 + 0.05) / (l2 + 0.05)
+}
+
+/** Chọn màu chữ (on-*) đạt tương phản cao nhất trên nền bg — chuẩn Material Design 3.
+ *  Ưu tiên trắng rồi tới near-black #1D1B20; trả về candidate có ratio tốt nhất. */
+function computeOnColor(bgHex: string): string {
+  const normalized = normalizeHexStrict(bgHex)
+  if (!normalized) return '#FFFFFF'
+  let best = '#FFFFFF'
+  let bestRatio = -1
+  for (const candidate of ['#FFFFFF', '#1D1B20']) {
+    const ratio = contrastRatio(candidate, normalized)
+    if (ratio > bestRatio) {
+      best = candidate
+      bestRatio = ratio
+    }
+  }
+  return best
+}
+
+function normalizeHexStrict(color: string): string | null {
+  const raw = color.trim().replace(/^#/, '')
+  if (!/^[0-9A-Fa-f]{6}$/.test(raw)) return null
+  return `#${raw.toUpperCase()}`
+}
+
 /**
  * Derive bộ tông màu (đậm/nhạt/viền/nền) từ màu chủ đạo rồi ghi vào CSS vars.
  * Toàn bộ CSS/Tailwind trong app dùng var(--brand-*) → đổi màu là đổi hết.
  */
 export function applyCssVars() {
   const primary = getPrimaryColor()
-  const accent = getAccentColor()
+  const tertiary = getTertiaryColor()
+  const secondary = getSecondaryColor()
+  const background = getBackgroundColor()
   const root = document.documentElement.style
   root.setProperty('--brand-primary', primary)
   root.setProperty('--brand-rgb', hexToRgb(primary))
+  // Chữ trên nền màu chủ đạo: trắng nếu màu đậm, gần đen nếu màu quá sáng
+  root.setProperty('--brand-on-primary', hexLuminance(primary) > 0.62 ? 'rgba(0, 0, 0, 0.88)' : '#FFFFFF')
   root.setProperty('--brand-dark', mixHex(primary, '#000000', 0.62))
   root.setProperty('--brand-dark-rgb', hexToRgb(mixHex(primary, '#000000', 0.62)))
-  root.setProperty('--brand-accent', accent)
+  root.setProperty('--brand-tertiary', tertiary)
+  root.setProperty('--brand-tertiary-rgb', hexToRgb(tertiary))
+  // Chữ trên nền tertiary (tối lại nếu màu quá sáng) + tint/viền phái sinh cho badge, pill nhấn
+  root.setProperty('--brand-tertiary-ink', hexLuminance(tertiary) > 0.62 ? mixHex(tertiary, '#000000', 0.55) : tertiary)
+  root.setProperty('--brand-tertiary-tint', mixHex(tertiary, '#FFFFFF', 0.86))
+  root.setProperty('--brand-tertiary-border', mixHex(tertiary, '#FFFFFF', 0.45))
+  // Màu phụ (tiêu đề nhấn, hiệu ứng phụ) + bộ phái sinh giống tertiary
+  root.setProperty('--brand-secondary', secondary)
+  root.setProperty('--brand-secondary-ink', hexLuminance(secondary) > 0.62 ? mixHex(secondary, '#000000', 0.55) : secondary)
+  root.setProperty('--brand-secondary-tint', mixHex(secondary, '#FFFFFF', 0.86))
+  root.setProperty('--brand-secondary-border', mixHex(secondary, '#FFFFFF', 0.45))
+  // Nền trang: override bằng brand.background_color nếu có, không thì suy nhẹ từ màu chủ đạo
+  root.setProperty('--brand-bg', background || mixHex(primary, '#FFFFFF', 0.05))
+  root.setProperty('--brand-bg-card', '#FFFFFF') // nền card/section nổi trên nền trang
   root.setProperty('--brand-tint', mixHex(primary, '#FFFFFF', 0.14)) // nền selected/active
   root.setProperty('--brand-hover', mixHex(primary, '#FFFFFF', 0.08)) // nền hover nhẹ
-  root.setProperty('--brand-bg', mixHex(primary, '#FFFFFF', 0.05)) // nền trang/section
   root.setProperty('--brand-border', mixHex(primary, '#FFFFFF', 0.2)) // viền chính
   root.setProperty('--brand-border-strong', mixHex(primary, '#FFFFFF', 0.33)) // viền đậm (input, select)
   root.setProperty('--brand-border-soft', mixHex(primary, '#FFFFFF', 0.12)) // viền mảnh
+
+  // ===== Material Design 3 color roles — tự tính on-* theo contrast WCAG 2.1 =====
+  root.setProperty('--md-primary', primary)
+  root.setProperty('--md-on-primary', computeOnColor(primary))
+  root.setProperty('--md-secondary', secondary)
+  root.setProperty('--md-on-secondary', computeOnColor(secondary))
+  root.setProperty('--md-tertiary', tertiary)
+  root.setProperty('--md-on-tertiary', computeOnColor(tertiary))
+  root.setProperty('--md-error', '#B3261E')
+  root.setProperty('--md-on-error', '#FFFFFF')
+  root.setProperty('--md-surface', '#FFFFFF')
+  root.setProperty('--md-on-surface', '#1D1B20')
+  root.setProperty('--md-surface-variant', mixHex(primary, '#FFFFFF', 0.9))
+  root.setProperty('--md-on-surface-variant', '#49454F')
 }
 
 /** Cập nhật brand + locale vào bộ nhớ/localStorage để các màn hình Admin refresh ngay. */
@@ -100,7 +175,9 @@ export function applyBrandSettings(settings: BrandSettings) {
   const name = brand.name || 'Vista Spa'
   const logoUrl = brand.logo_url || brand.logo_file_id || null
   const primaryColor = brand.primary_color || brandColors.primary
-  const accentColor = getAccentColor()
+  const tertiaryColor = (brand as { tertiary_color?: string }).tertiary_color || getTertiaryColor()
+  const secondaryColor = (brand as { secondary_color?: string }).secondary_color || getSecondaryColor()
+  const backgroundColor = (brand as { background_color?: string | null }).background_color || null
   const timezone = locale.timezone || 'Asia/Ho_Chi_Minh'
   const currency = locale.currency || 'VND'
 
@@ -108,18 +185,22 @@ export function applyBrandSettings(settings: BrandSettings) {
   if (logoUrl) localStorage.setItem(LOCALE_KEYS.logo, logoUrl)
   else localStorage.removeItem(LOCALE_KEYS.logo)
   localStorage.setItem(THEME_KEYS.primary, primaryColor)
+  localStorage.setItem(THEME_KEYS.tertiary, tertiaryColor)
+  localStorage.setItem(THEME_KEYS.secondary, secondaryColor)
+  if (backgroundColor) localStorage.setItem(THEME_KEYS.background, backgroundColor)
+  else localStorage.removeItem(THEME_KEYS.background)
   localStorage.setItem(LOCALE_KEYS.timezone, timezone)
   localStorage.setItem(LOCALE_KEYS.currency, currency)
-  runtime = { name, logoUrl, primaryColor, accentColor, timezone, currency, language: 'vi' }
+  runtime = { name, logoUrl, primaryColor, tertiaryColor, secondaryColor, backgroundColor, timezone, currency, language: 'vi' }
   applyCssVars()
   notify()
 }
 
 /** Giữ hành vi lưu màu cũ (SiteConfig/legacy settings) hoạt động; brand.primary_color là canonical. */
-export function applyThemeColors(colors: { primary?: string; accent?: string }) {
+export function applyThemeColors(colors: { primary?: string; tertiary?: string }) {
   if (colors.primary) localStorage.setItem(THEME_KEYS.primary, colors.primary)
-  if (colors.accent) localStorage.setItem(THEME_KEYS.accent, colors.accent)
-  runtime = { ...runtime, primaryColor: getPrimaryColor(), accentColor: getAccentColor() }
+  if (colors.tertiary) localStorage.setItem(THEME_KEYS.tertiary, colors.tertiary)
+  runtime = { ...runtime, primaryColor: getPrimaryColor(), tertiaryColor: getTertiaryColor() }
   applyCssVars()
   notify()
 }
@@ -127,14 +208,8 @@ export function applyThemeColors(colors: { primary?: string; accent?: string }) 
 /** Tải brand settings từ server sau khi đăng nhập; fallback về GET /settings legacy nếu lỗi. */
 export async function refreshThemeFromServer() {
   try {
+    // brand settings là nguồn chính thức cho cả 4 màu — không cho giá trị legacy đè lên
     applyBrandSettings(pickData<BrandSettings>(await getSettingsBrand()))
-    try {
-      const rows = pickData<Array<{ key: string; value: unknown }>>(await getSettings())
-      const accent = rows?.find((row) => row.key === THEME_KEYS.accent)?.value
-      if (typeof accent === 'string') applyThemeColors({ accent })
-    } catch {
-      // accent color là tùy chọn khi caller không có quyền setting.read
-    }
   } catch {
     try {
       const rows = pickData<Array<{ key: string; value: unknown }>>(await getSettings())
@@ -142,7 +217,7 @@ export async function refreshThemeFromServer() {
         const value = rows?.find((row) => row.key === key)?.value
         return typeof value === 'string' ? value : undefined
       }
-      applyThemeColors({ primary: pick(THEME_KEYS.legacyPrimary), accent: pick(THEME_KEYS.accent) })
+      applyThemeColors({ primary: pick(THEME_KEYS.legacyPrimary), tertiary: pick(THEME_KEYS.tertiary) })
     } catch {
       // Không chặn login/render nếu chưa đọc được settings
     }
@@ -155,10 +230,11 @@ export function useBrandRuntime() {
 
 /** Hook cho component cần giá trị màu JS thật (chart SVG, canvas...) — tự re-render khi đổi màu. */
 export function useBrandColors() {
-  const { primaryColor: primary, accentColor: accent } = useBrandRuntime()
+  const { primaryColor: primary, secondaryColor: secondary, tertiaryColor: tertiary } = useBrandRuntime()
   return {
     primary,
-    accent,
+    secondary,
+    tertiary,
     dark: mixHex(primary, '#000000', 0.62),
     tint: mixHex(primary, '#FFFFFF', 0.14),
     hover: mixHex(primary, '#FFFFFF', 0.08),

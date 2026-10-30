@@ -6,9 +6,9 @@ import type { CardRank } from '@/api/models/cardRank'
 import { Can } from '@casl/react'
 import {
   useGetCardRanks,
-  usePostMembershipsUserIdPointsAdjust,
-  usePostMembershipsUserIdRankOverride,
-  usePostMembershipsUserIdRecalculate,
+  usePostMembershipsCustomerProfileIdPointsAdjust,
+  usePostMembershipsCustomerProfileIdRankOverride,
+  usePostMembershipsCustomerProfileIdRecalculate,
 } from '@/api/endpoints/membership'
 import type { CustomFieldDefWithOptions } from '@/components/CustomerProfileCustomFields'
 import { useBrandCurrency } from '@/themeRuntime'
@@ -71,9 +71,9 @@ export default function CustomerProfileOverviewTab({ profile, summary, branchNam
   const [adjustForm] = Form.useForm()
   const [rankForm] = Form.useForm()
   const ranksQuery = useGetCardRanks()
-  const adjustMutation = usePostMembershipsUserIdPointsAdjust()
-  const overrideMutation = usePostMembershipsUserIdRankOverride()
-  const recalculateMutation = usePostMembershipsUserIdRecalculate()
+  const adjustMutation = usePostMembershipsCustomerProfileIdPointsAdjust()
+  const overrideMutation = usePostMembershipsCustomerProfileIdRankOverride()
+  const recalculateMutation = usePostMembershipsCustomerProfileIdRecalculate()
   const membership = summary?.membership
   const rankRows = (ranksQuery.data?.responseData ?? (ranksQuery.data as any)?.data ?? []) as CardRank[]
   const activeRanks = Array.isArray(rankRows) ? rankRows.filter((rank) => rank.is_active !== false).sort((a, b) => Number(a.sort_order ?? 0) - Number(b.sort_order ?? 0)) : []
@@ -81,7 +81,7 @@ export default function CustomerProfileOverviewTab({ profile, summary, branchNam
   const savePoints = async () => {
     try {
       const values = await adjustForm.validateFields()
-      await adjustMutation.mutateAsync({ userId: profile.id, data: { delta: values.delta, reason: values.reason.trim() } })
+      await adjustMutation.mutateAsync({ customerProfileId: profile.id, data: { delta: values.delta, reason: values.reason.trim() } })
       message.success('Đã điều chỉnh điểm')
       setAdjustOpen(false)
       adjustForm.resetFields()
@@ -95,7 +95,7 @@ export default function CustomerProfileOverviewTab({ profile, summary, branchNam
   const saveRank = async () => {
     try {
       const values = await rankForm.validateFields()
-      await overrideMutation.mutateAsync({ userId: profile.id, data: { rank_id: values.rank_id, reason: values.reason.trim() } })
+      await overrideMutation.mutateAsync({ customerProfileId: profile.id, data: { rank_id: values.rank_id, reason: values.reason.trim() } })
       message.success('Đã gán hạng mới')
       setRankOpen(false)
       rankForm.resetFields()
@@ -108,7 +108,7 @@ export default function CustomerProfileOverviewTab({ profile, summary, branchNam
 
   const recalculate = async () => {
     try {
-      await recalculateMutation.mutateAsync({ userId: profile.id })
+      await recalculateMutation.mutateAsync({ customerProfileId: profile.id })
       message.success('Đã tính lại hạng theo chi tiêu')
       await onMembershipUpdated?.()
     } catch (error) {

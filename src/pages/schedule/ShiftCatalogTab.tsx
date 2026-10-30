@@ -1,9 +1,12 @@
 import { useCallback, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import dayjs, { type Dayjs } from 'dayjs'
-import { Alert, Button, Empty, Form, Input, Modal, Popconfirm, Select, Space, Table, Tag, TimePicker, message } from 'antd'
+import { Alert, Button, Form, Input, Modal, Popconfirm, Select, Space, Table, Tag, TimePicker, message } from 'antd'
 import { EditOutlined, PlusOutlined, ReloadOutlined } from '@ant-design/icons'
 import { errorMessage, pickData } from '@/api/helpers'
+import ListPagination from '@/components/base/ListPagination'
+import TableEmpty from '@/components/base/TableEmpty'
+import { paginateRows } from '@/utils/listTable'
 import {
   deleteShiftTemplatesId,
   getGetShiftTemplatesQueryKey,
@@ -22,6 +25,7 @@ export default function ShiftCatalogTab({ branches, access, loadingShared }: Pro
   const [branchFilter, setBranchFilter] = useState<string>()
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<ShiftTemplate | null>(null)
+  const [page, setPage] = useState(1)
   const [form] = Form.useForm()
 
   const templatesQuery = useGetShiftTemplates(branchFilter ? { branch_id: branchFilter } : {})
@@ -90,15 +94,16 @@ export default function ShiftCatalogTab({ branches, access, loadingShared }: Pro
 
   return <div>
     <Space wrap style={{ marginBottom: 16 }}>
-      {access.isAdmin && <Select allowClear placeholder="Tất cả cơ sở" style={{ width: 190 }} value={branchFilter} onChange={setBranchFilter} options={branches.map((branch) => ({ value: branch.id, label: branch.name }))} />}
+      {access.isAdmin && <Select allowClear placeholder="Tất cả cơ sở" style={{ width: 190 }} value={branchFilter} onChange={(value) => { setBranchFilter(value); setPage(1) }} options={branches.map((branch) => ({ value: branch.id, label: branch.name }))} />}
       {access.isAdmin && <Button type="primary" icon={<PlusOutlined />} onClick={() => openForm()}>Thêm ca</Button>}
     </Space>
-    {!!error && <Alert type="error" showIcon message="Không tải được danh mục ca" description={error} action={<Button size="small" icon={<ReloadOutlined />} onClick={() => void templatesQuery.refetch()}>Thử lại</Button>} style={{ marginBottom: 16 }} />}
+    {!!error && <Alert type="error" showIcon message="Không tải được danh mục ca" description={error} action={<Button size="small" icon={<ReloadOutlined />} onClick={() => { setPage(1); void templatesQuery.refetch() }}>Thử lại</Button>} style={{ marginBottom: 16 }} />}
     <Table<ShiftTemplate>
-      rowKey="id" size="middle" pagination={{ pageSize: 10 }}
-      loading={loadingShared || templatesQuery.isLoading} dataSource={rows} columns={columns}
-      locale={{ emptyText: <Empty description="Chưa có ca làm nào được cấu hình" /> }}
+      rowKey="id" size="middle" pagination={false}
+      loading={loadingShared || templatesQuery.isLoading} dataSource={paginateRows(rows, page, 10)} columns={columns}
+      locale={{ emptyText: <TableEmpty description="Chưa có ca làm nào được cấu hình" /> }}
     />
+    <ListPagination page={page} limit={10} total={rows.length} onChange={setPage} noun="ca làm việc" />
 
     <Modal title={editing ? 'Sửa ca làm' : 'Tạo ca làm'} open={open} onCancel={() => setOpen(false)} onOk={() => void submit()} okText="Lưu" cancelText="Hủy" destroyOnHidden>
       <Form form={form} layout="vertical" style={{ marginTop: 16 }}>

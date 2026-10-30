@@ -6,6 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type PostMembershipsUserIdPointsAdjust200AllOf = {
-  responseData?: unknown;
-};
+export type CommissionEntryBranchId = string | null;

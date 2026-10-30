@@ -12,6 +12,7 @@ export type PutCommissionRulesIdBody = {
   name?: string;
   payee_type?: PutCommissionRulesIdBodyPayeeType;
   base?: PutCommissionRulesIdBodyBase;
+  /** @nullable */
   percent?: number | null;
   service_id?: string;
   staff_id?: string;

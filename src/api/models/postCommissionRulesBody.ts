@@ -15,6 +15,7 @@ export type PostCommissionRulesBody = {
   /**
    * @minimum 0
    * @maximum 100
+   * @nullable
    */
   percent?: number | null;
   service_id?: string;

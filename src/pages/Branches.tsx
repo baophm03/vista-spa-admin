@@ -1,7 +1,13 @@
 import { useMemo, useState } from 'react'
-import { Alert, Button, Card, Form, Input, Modal, Select, Space, Table, Tag, Typography, message } from 'antd'
-import { CheckCircleOutlined, EditOutlined, PauseCircleOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
+import { Alert, Button, Form, Input, Modal, Select, Space, Table, Tag, Typography, message } from 'antd'
+import { CheckCircleOutlined, EditOutlined, EnvironmentOutlined, PauseCircleOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
 import PageTitle from '@/components/base/PageTitle'
+import StatCards, { type StatItem } from '@/components/base/StatCards'
+import ListFilterPopover from '@/components/base/ListFilterPopover'
+import RowActionsMenu from '@/components/base/RowActionsMenu'
+import ListPagination from '@/components/base/ListPagination'
+import TableEmpty from '@/components/base/TableEmpty'
+import { paginateRows } from '@/utils/listTable'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { Branch } from '@/api/models/branch'
 import type { BranchUpdate } from '@/api/models/branchUpdate'
@@ -15,7 +21,7 @@ import {
   usePostBranchesIdActivate,
   usePutBranchesId,
 } from '@/api/endpoints/branches'
-import { Can } from '@casl/react'
+import { Can, useAbility } from '@casl/react'
 import { useQueryClient } from '@tanstack/react-query'
 
 interface BranchFormValues {
@@ -26,6 +32,18 @@ interface BranchFormValues {
 
 type StatusFilter = 'all' | 'active' | 'inactive'
 
+type BranchColumnKey = 'code' | 'name' | 'address' | 'phone' | 'status'
+
+const BRANCH_COLUMN_OPTIONS: { label: string; value: BranchColumnKey }[] = [
+  { label: 'Mã cơ sở', value: 'code' },
+  { label: 'Tên cơ sở', value: 'name' },
+  { label: 'Địa chỉ', value: 'address' },
+  { label: 'Số điện thoại', value: 'phone' },
+  { label: 'Trạng thái', value: 'status' },
+]
+
+const DEFAULT_VISIBLE_COLUMNS = BRANCH_COLUMN_OPTIONS.map((column) => column.value)
+
 /** So sánh không dấu, bỏ đ (search tiếng Việt). */
 const foldForSearch = (value: string) =>
   value
@@ -35,11 +53,17 @@ const foldForSearch = (value: string) =>
     .toLocaleLowerCase('vi')
 
 export default function Branches() {
-  const [search, setSearch] = useState('')
+  const [searchText, setSearchText] = useState('')
+  const [keyword, setKeyword] = useState('')
+  const [page, setPage] = useState(1)
+  const [filterOpen, setFilterOpen] = useState(false)
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
+  const [visibleColumns, setVisibleColumns] = useState<BranchColumnKey[]>(DEFAULT_VISIBLE_COLUMNS)
+  const [draftVisibleColumns, setDraftVisibleColumns] = useState<BranchColumnKey[]>(DEFAULT_VISIBLE_COLUMNS)
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<Branch | null>(null)
   const [form] = Form.useForm<BranchFormValues>()
+  const [filterForm] = Form.useForm()
   const queryClient = useQueryClient()
 
   const branchesQuery = useGetBranches(statusFilter === 'all' ? undefined : { status: statusFilter })
@@ -49,6 +73,9 @@ export default function Branches() {
   const updateMutation = usePutBranchesId()
   const deactivateMutation = useDeleteBranchesId()
   const activateMutation = usePostBranchesIdActivate()
+  const ability = useAbility()
+  const canUpdate = ability.can('UPDATE', 'BRANCH')
+  const canDelete = ability.can('DELETE', 'BRANCH')
 
   const rows = (pickData<Branch[]>(branchesQuery.data) ?? []) as Branch[]
 
@@ -58,13 +85,59 @@ export default function Branches() {
   }
 
   const visibleRows = useMemo(() => {
-    const keyword = foldForSearch(search.trim())
+    const term = foldForSearch(keyword.trim())
     return rows.filter((row) => {
       if (statusFilter === 'active' && !row.is_active) return false
       if (statusFilter === 'inactive' && row.is_active) return false
-      return !keyword || foldForSearch(`${row.code} ${row.name}`).includes(keyword)
+      return !term || foldForSearch(`${row.code} ${row.name}`).includes(term)
     })
-  }, [rows, search, statusFilter])
+  }, [rows, keyword, statusFilter])
+
+  const applySearch = (nextKeyword: string) => {
+    setSearchText(nextKeyword)
+    setKeyword(nextKeyword.trim())
+    setPage(1)
+  }
+
+  // Thống kê đầu trang — chỉ đáng tin khi không lọc trạng thái phía server (khi đó rows là danh sách đầy đủ)
+  const statItems = useMemo<StatItem[]>(() => {
+    if (statusFilter !== 'all') return []
+    const activeCount = rows.filter((row) => !!row.is_active).length
+    return [
+      { key: 'total', label: 'Tổng cơ sở', value: rows.length.toLocaleString('vi-VN'), icon: <EnvironmentOutlined />, tone: 'primary' },
+      { key: 'active', label: 'Đang hoạt động', value: activeCount.toLocaleString('vi-VN'), icon: <CheckCircleOutlined />, tone: 'secondary' },
+      { key: 'inactive', label: 'Đã ngừng', value: (rows.length - activeCount).toLocaleString('vi-VN'), icon: <PauseCircleOutlined />, tone: 'neutral' },
+    ]
+  }, [rows, statusFilter])
+
+  const applyFilters = (values: Record<string, unknown>) => {
+    if (draftVisibleColumns.length === 0) {
+      message.error('Hãy giữ lại ít nhất một cột hiển thị')
+      return
+    }
+    setStatusFilter(values.status === 'active' || values.status === 'inactive' ? values.status : 'all')
+    setVisibleColumns(draftVisibleColumns)
+    setFilterOpen(false)
+    setPage(1)
+  }
+
+  const clearFilters = () => {
+    filterForm.resetFields()
+    setSearchText('')
+    setKeyword('')
+    setStatusFilter('all')
+    setDraftVisibleColumns(DEFAULT_VISIBLE_COLUMNS)
+    setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)
+    setPage(1)
+  }
+
+  const openFilters = (nextOpen: boolean) => {
+    setFilterOpen(nextOpen)
+    if (!nextOpen) return
+    filterForm.setFieldsValue({ status: statusFilter === 'all' ? undefined : statusFilter })
+    setSearchText(keyword)
+    setDraftVisibleColumns(visibleColumns)
+  }
 
   const openCreate = () => {
     setEditing(null)
@@ -150,31 +223,40 @@ export default function Branches() {
     })
   }
 
+  const activeFilterCount = (statusFilter !== 'all' ? 1 : 0) + (keyword ? 1 : 0)
+
   const columns = [
     {
+      key: 'code',
       title: 'Mã cơ sở',
       dataIndex: 'code',
       width: 130,
       render: (value: string) => <Typography.Text code>{value}</Typography.Text>,
     },
     {
+      key: 'name',
       title: 'Tên cơ sở',
       dataIndex: 'name',
       width: 210,
       render: (value: string) => <Typography.Text strong>{value}</Typography.Text>,
     },
     {
+      key: 'address',
       title: 'Địa chỉ',
       dataIndex: 'address',
+      width: 160,
+      ellipsis: true,
       render: (value?: string) => value?.trim() || '—',
     },
     {
+      key: 'phone',
       title: 'Số điện thoại',
       dataIndex: 'phone',
       width: 160,
       render: (value?: string) => value?.trim() || '—',
     },
     {
+      key: 'status',
       title: 'Trạng thái',
       dataIndex: 'is_active',
       width: 140,
@@ -183,37 +265,86 @@ export default function Branches() {
       ),
     },
     {
-      title: '',
       key: 'actions',
-      width: 220,
-      align: 'right' as const,
+      title: 'Hành động',
+      width: 160,
+      fixed: 'right' as const,
       render: (_: unknown, row: Branch) => (
-        <Space wrap size={6}>
-          <Can I="UPDATE" a="BRANCH">
-            <Button size="small" icon={<EditOutlined />} onClick={() => openEdit(row)}>
-              Sửa
-            </Button>
-          </Can>
-          <Can I="DELETE" a="BRANCH">
-            {row.is_active && (
-              <Button size="small" danger icon={<PauseCircleOutlined />} onClick={() => confirmStatusChange(row, false)}>
-                Ngừng
-              </Button>
-            )}
-            {!row.is_active && (
-              <Button size="small" type="primary" ghost icon={<CheckCircleOutlined />} onClick={() => confirmStatusChange(row, true)}>
-                Kích hoạt
-              </Button>
-            )}
-          </Can>
-        </Space>
+        <RowActionsMenu
+          items={[
+            ...(canUpdate ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []),
+            ...(canDelete
+              ? [row.is_active
+                  ? { key: 'deactivate', icon: <PauseCircleOutlined />, danger: true, label: 'Ngừng' }
+                  : { key: 'activate', icon: <CheckCircleOutlined />, label: 'Kích hoạt' }]
+              : []),
+          ]}
+          onSelect={(key) => {
+            if (key === 'edit') openEdit(row)
+            else if (key === 'deactivate') confirmStatusChange(row, false)
+            else if (key === 'activate') confirmStatusChange(row, true)
+          }}
+        />
       ),
     },
-  ]
+  ].filter((column) =>
+    (column.key !== 'actions' || canUpdate || canDelete) &&
+    (column.key === 'actions' || visibleColumns.includes(column.key as BranchColumnKey)),
+  )
 
   return (
     <>
-      <PageTitle>Cơ sở</PageTitle>
+      <StatCards items={statItems} />
+
+      <PageTitle
+        subtitle="Danh sách cơ sở spa trong hệ thống"
+        extra={
+          <Space wrap>
+            <Input
+              allowClear
+              prefix={<SearchOutlined style={{ color: 'var(--brand-text-inactive, #A9ADB2)' }} />}
+              placeholder="Tìm theo mã hoặc tên cơ sở"
+              style={{ width: 260 }}
+              value={searchText}
+              onChange={(event) => {
+                setSearchText(event.target.value)
+                if (!event.target.value) applySearch('')
+              }}
+              onPressEnter={() => applySearch(searchText)}
+            />
+            <ListFilterPopover
+              open={filterOpen}
+              onOpenChange={openFilters}
+              activeFilterCount={activeFilterCount}
+              form={filterForm}
+              onApply={applyFilters}
+              onClear={clearFilters}
+              columnOptions={BRANCH_COLUMN_OPTIONS}
+              draftVisibleColumns={draftVisibleColumns}
+              onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as BranchColumnKey[])}
+              filterItems={(
+                <Form.Item name="status" label="Trạng thái" style={{ marginBottom: 0 }}>
+                  <Select
+                    allowClear
+                    placeholder="Tất cả"
+                    options={[
+                      { value: 'active', label: 'Đang hoạt động' },
+                      { value: 'inactive', label: 'Đã ngừng' },
+                    ]}
+                  />
+                </Form.Item>
+              )}
+            />
+            <Can I="CREATE" a="BRANCH">
+              <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
+                Thêm cơ sở
+              </Button>
+            </Can>
+          </Space>
+        }
+      >
+        Cơ sở
+      </PageTitle>
 
       {branchesQuery.isError && (
         <Alert
@@ -226,52 +357,18 @@ export default function Branches() {
         />
       )}
 
-      <Card>
-        <div className="mb-4 flex flex-wrap items-center justify-end gap-2">
-          <Select<StatusFilter>
-            aria-label="Lọc theo trạng thái cơ sở"
-            value={statusFilter}
-            onChange={setStatusFilter}
-            style={{ width: 190, maxWidth: '100%' }}
-            options={[
-              { value: 'all', label: 'Tất cả trạng thái' },
-              { value: 'active', label: 'Đang hoạt động' },
-              { value: 'inactive', label: 'Đã ngừng' },
-            ]}
-          />
-          <Input
-            allowClear
-            prefix={<SearchOutlined style={{ color: '#A9ADB2' }} />}
-            placeholder="Tìm theo mã hoặc tên cơ sở"
-            aria-label="Tìm theo mã hoặc tên cơ sở"
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            style={{ width: 250, maxWidth: '100%' }}
-          />
-          <Can I="CREATE" a="BRANCH">
-            <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
-              Thêm cơ sở
-            </Button>
-          </Can>
-        </div>
-
-        <Table<Branch>
-          rowKey="id"
-          loading={branchesQuery.isLoading}
-          dataSource={visibleRows}
-          columns={columns}
-          scroll={{ x: 980 }}
-          pagination={{
-            pageSize: 10,
-            showSizeChanger: true,
-            pageSizeOptions: [10, 20, 50],
-            showTotal: (total) => `Tổng ${total} cơ sở`,
-          }}
-          locale={{
-            emptyText: search.trim() || statusFilter !== 'all' ? 'Không tìm thấy cơ sở phù hợp' : 'Chưa có cơ sở nào',
-          }}
-        />
-      </Card>
+      <Table<Branch>
+        rowKey="id"
+        loading={branchesQuery.isLoading}
+        dataSource={paginateRows(visibleRows, page, 10)}
+        columns={columns}
+        scroll={{ x: 980 }}
+        pagination={false}
+        locale={{
+          emptyText: <TableEmpty description={keyword.trim() || statusFilter !== 'all' ? 'Không tìm thấy cơ sở phù hợp' : 'Chưa có cơ sở nào'} />,
+        }}
+      />
+      <ListPagination page={page} limit={10} total={visibleRows.length} onChange={setPage} noun="cơ sở" />
 
       <Modal
         title={editing ? 'Sửa thông tin cơ sở' : 'Thêm cơ sở'}

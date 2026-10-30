@@ -47,6 +47,9 @@ export default function BrandSettings() {
     queryFn: async () => pickData<BrandSettings>(await getSettingsBrand()) as BrandSettings,
   })
   const [primaryColor, setPrimaryColor] = useState(runtime.primaryColor)
+  const [tertiaryColor, setTertiaryColor] = useState(runtime.tertiaryColor || '#FFD700')
+  const [secondaryColor, setSecondaryColor] = useState(runtime.secondaryColor || '#D01A7E')
+  const [backgroundColor, setBackgroundColor] = useState<string>(runtime.backgroundColor || '')
   const [logoFileId, setLogoFileId] = useState<string>('')
   const [logoPreview, setLogoPreview] = useState<string | null>(runtime.logoUrl)
   const [uploading, setUploading] = useState(false)
@@ -62,6 +65,9 @@ export default function BrandSettings() {
       locale: data.locale,
     })
     setPrimaryColor(data.brand.primary_color)
+    setTertiaryColor(data.brand.tertiary_color || '#FFD700')
+    setSecondaryColor(data.brand.secondary_color || '#D01A7E')
+    setBackgroundColor(data.brand.background_color || '')
     setLogoFileId(data.brand.logo_file_id ?? '')
     setLogoPreview(data.brand.logo_url || data.brand.logo_file_id || null)
     applyBrandSettings(data)
@@ -74,6 +80,9 @@ export default function BrandSettings() {
           name: values.brand.name,
           logo_file_id: logoFileId || null,
           primary_color: primaryColor,
+          tertiary_color: tertiaryColor,
+          secondary_color: secondaryColor,
+          background_color: backgroundColor || null,
         },
         locale: values.locale,
       } as BrandSettingsUpdate),
@@ -114,6 +123,12 @@ export default function BrandSettings() {
     }
   }
 
+  const removeLogo = () => {
+    setLogoFileId('')
+    setLogoPreview(null)
+    form.setFieldValue(['brand', 'logo_file_id'], '')
+  }
+
   const save = async (values: BrandFormValues) => {
     await saveMutation.mutateAsync(values)
   }
@@ -123,7 +138,7 @@ export default function BrandSettings() {
     <Can I="UPDATE" a="SETTING" passThrough>
       {({ isAllowed: canEdit }) => (
     <>
-      <PageTitle extra={canEdit ? <Button type="primary" icon={<SaveOutlined />} loading={saveMutation.isPending} onClick={() => form.submit()}>Lưu cấu hình</Button> : undefined}>
+      <PageTitle subtitle="Thông tin thương hiệu, giao diện và khu vực" extra={canEdit ? <Button type="primary" icon={<SaveOutlined />} loading={saveMutation.isPending} onClick={() => form.submit()}>Lưu cấu hình</Button> : undefined}>
         Thương hiệu và khu vực
       </PageTitle>
       {!canEdit && <Alert className="mb-4" type="info" showIcon message="Bạn có quyền xem cấu hình thương hiệu; chỉ ADM được chỉnh sửa." />}
@@ -137,23 +152,41 @@ export default function BrandSettings() {
                   <Input placeholder="NewSky Vista" maxLength={150} />
                 </Form.Item>
                 <Form.Item label="Logo">
-                  <Space align="center" size={16} wrap>
-                    <Avatar shape="square" size={76} src={logoPreview || undefined} className="border border-[var(--brand-border)] bg-[var(--brand-tint)]! text-[var(--brand-dark)]!">
-                      {form.getFieldValue(['brand', 'name'])?.slice(0, 1) || 'V'}
-                    </Avatar>
+                  <Space align="start" size={16} wrap>
+                    <Space direction="vertical" align="center" size={4}>
+                      <Avatar shape="square" size={76} src={logoPreview || undefined} className="border border-[var(--brand-border)] bg-[var(--brand-tint)]! text-[var(--brand-dark)]!">
+                        {form.getFieldValue(['brand', 'name'])?.slice(0, 1) || 'V'}
+                      </Avatar>
+                      {logoPreview && <Button type="link" danger size="small" className="p-0!" onClick={removeLogo} disabled={!canEdit}>Gỡ logo</Button>}
+                    </Space>
                     <Space direction="vertical">
                       <Upload accept="image/*" showUploadList={false} beforeUpload={(file) => { void uploadLogo(file); return false }}>
                         <Button icon={<UploadOutlined />} loading={uploading} disabled={!canEdit}>Tải logo lên</Button>
                       </Upload>
-                      {logoFileId && <Button type="link" danger className="p-0!" onClick={() => { setLogoFileId(''); setLogoPreview(null); form.setFieldValue(['brand', 'logo_file_id'], '') }}>Gỡ logo</Button>}
                       <Typography.Text type="secondary">Ảnh tối đa 5 MB. Chọn ảnh xong cần lưu cấu hình.</Typography.Text>
                     </Space>
                   </Space>
                 </Form.Item>
                 <Form.Item label="Màu chủ đạo">
+                  <ColorPicker value={primaryColor} onChange={(color) => setPrimaryColor(color.toHexString())} showText disabled={!canEdit} />
+                </Form.Item>
+                <Form.Item label="Màu bổ trợ" extra="Filter chips, nút phụ, badge">
+                  <ColorPicker value={secondaryColor} onChange={(color) => setSecondaryColor(color.toHexString())} showText disabled={!canEdit} />
+                </Form.Item>
+                <Form.Item label="Màu nhấn" extra="Điểm nhấn, huy hiệu khuyến mãi, thẻ thông tin đặc biệt">
+                  <ColorPicker value={tertiaryColor} onChange={(color) => setTertiaryColor(color.toHexString())} showText disabled={!canEdit} />
+                </Form.Item>
+                <Form.Item label="Màu nền trang" extra="Bỏ trống để tự suy từ màu chủ đạo">
                   <Space>
-                    <ColorPicker value={primaryColor} onChange={(color) => setPrimaryColor(color.toHexString())} showText disabled={!canEdit} />
-                    <Typography.Text code>{primaryColor}</Typography.Text>
+                    <ColorPicker
+                      value={backgroundColor || undefined}
+                      onChange={(color) => setBackgroundColor(color.toHexString())}
+                      allowClear
+                      onClear={() => setBackgroundColor('')}
+                      showText
+                      disabled={!canEdit}
+                    />
+                    {!backgroundColor && <Typography.Text type="secondary">Tự động</Typography.Text>}
                   </Space>
                 </Form.Item>
               </Card>

@@ -3,11 +3,11 @@ import type { DragEvent as ReactDragEvent } from 'react'
 import {
   Alert,
   Button,
+  ColorPicker,
   Form,
   Input,
   InputNumber,
   Modal,
-  Popconfirm,
   Select,
   Space,
   Switch,
@@ -17,10 +17,15 @@ import {
   message,
 } from 'antd'
 import type { TableColumnsType } from 'antd'
-import { ArrowDownOutlined, ArrowUpOutlined, PlusOutlined, ReloadOutlined } from '@ant-design/icons'
+import { ArrowDownOutlined, ArrowUpOutlined, CrownOutlined, DeleteOutlined, EditOutlined, PlusOutlined, ReloadOutlined, TeamOutlined } from '@ant-design/icons'
 import { useQueryClient } from '@tanstack/react-query'
 import { Can, useAbility } from '@casl/react'
 import PageTitle from '@/components/base/PageTitle'
+import StatCards, { type StatItem } from '@/components/base/StatCards'
+import ListFilterPopover from '@/components/base/ListFilterPopover'
+import RowActionsMenu from '@/components/base/RowActionsMenu'
+import ListPagination from '@/components/base/ListPagination'
+import { paginateRows } from '@/utils/listTable'
 import { errorMessage } from '@/api/helpers'
 import type { CardRank } from '@/api/models/cardRank'
 import type { PostCardRanksBody } from '@/api/models/postCardRanksBody'
@@ -57,15 +62,38 @@ function holderCount(row: CardRankRow): number | undefined {
   return row.customer_count ?? row.holder_count ?? row.holders_count ?? row.total_customers
 }
 
+type CardRankColumnKey = 'code' | 'color' | 'name' | 'sort_order' | 'spent' | 'discount_percent' | 'validity' | 'auto_assign' | 'holders' | 'is_active'
+
+const CARD_RANK_COLUMN_OPTIONS: { label: string; value: CardRankColumnKey }[] = [
+  { label: 'Mã', value: 'code' },
+  { label: 'Tên hạng', value: 'name' },
+  { label: 'Màu thẻ', value: 'color' },
+  { label: 'Thứ tự', value: 'sort_order' },
+  { label: 'Ngưỡng chi tiêu', value: 'spent' },
+  { label: 'Giảm giá (%)', value: 'discount_percent' },
+  { label: 'Hiệu lực', value: 'validity' },
+  { label: 'Tự gán hạng', value: 'auto_assign' },
+  { label: 'Khách đang giữ', value: 'holders' },
+  { label: 'Trạng thái', value: 'is_active' },
+]
+
+const DEFAULT_VISIBLE_COLUMNS = CARD_RANK_COLUMN_OPTIONS.map((column) => column.value)
+
 export default function CardRanks() {
+  const [page, setPage] = useState(1)
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<CardRankRow | null>(null)
   const [draggedRankId, setDraggedRankId] = useState<string | null>(null)
   const [isReordering, setIsReordering] = useState(false)
+  const [visibleColumns, setVisibleColumns] = useState<CardRankColumnKey[]>(DEFAULT_VISIBLE_COLUMNS)
+  const [draftVisibleColumns, setDraftVisibleColumns] = useState<CardRankColumnKey[]>(DEFAULT_VISIBLE_COLUMNS)
+  const [filterOpen, setFilterOpen] = useState(false)
   const [form] = Form.useForm()
   const queryClient = useQueryClient()
   const ability = useAbility()
-  const canReorder = ability.can('UPDATE', 'CARD_RANK')
+  const canUpdate = ability.can('UPDATE', 'CARD_RANK')
+  const canDelete = ability.can('DELETE', 'CARD_RANK')
+  const canReorder = canUpdate
 
   const ranksQuery = useGetCardRanks()
   const ranks = useMemo<CardRankRow[]>(() => {
@@ -119,6 +147,7 @@ export default function CardRanks() {
         ? {
             code: row.code,
             name: row.name,
+            color: row.color ?? undefined,
             sort_order: row.sort_order ?? 0,
             min_spent: row.min_spent ?? 0,
             max_spent: row.max_spent ?? undefined,
@@ -127,7 +156,7 @@ export default function CardRanks() {
             auto_assign: row.auto_assign ?? false,
             benefits: row.benefits ?? '',
           }
-        : { code: '', name: '', sort_order: (ranks.length ? Math.max(...ranks.map((r) => r.sort_order ?? 0)) : 0) + 1, min_spent: 0, max_spent: undefined, discount_percent: undefined, validity: 'PERMANENT', auto_assign: false, benefits: '' },
+        : { code: '', name: '', color: undefined, sort_order: (ranks.length ? Math.max(...ranks.map((r) => r.sort_order ?? 0)) : 0) + 1, min_spent: 0, max_spent: undefined, discount_percent: undefined, validity: 'PERMANENT', auto_assign: false, benefits: '' },
     )
     setOpen(true)
   }
@@ -137,6 +166,7 @@ export default function CardRanks() {
       const values = await form.validateFields()
       const dto = {
         name: values.name,
+        color: values.color || null,
         sort_order: values.sort_order ?? 0,
         min_spent: values.min_spent ?? 0,
         max_spent: values.max_spent ?? undefined,
@@ -177,13 +207,30 @@ export default function CardRanks() {
 
   const showHolders = ranks.some((r) => holderCount(r) != null)
 
-  const columns: TableColumnsType<CardRankRow> = [
+  // Thống kê đầu trang — chỉ hiện khi BE trả về số khách giữ hạng, nếu không thì bỏ qua
+  const statItems: StatItem[] = showHolders
+    ? [
+        { key: 'total', label: 'Tổng hạng thẻ', value: ranks.length.toLocaleString('vi-VN'), icon: <CrownOutlined />, tone: 'primary' },
+        { key: 'holders', label: 'Khách đang giữ hạng', value: ranks.reduce((sum, row) => sum + (holderCount(row) ?? 0), 0).toLocaleString('vi-VN'), icon: <TeamOutlined />, tone: 'tertiary' },
+      ]
+    : []
+
+  const columns: TableColumnsType<CardRankRow> = ([
     {
+      key: 'code',
       title: 'Mã', dataIndex: 'code', width: 110,
       render: (v: string) => <Typography.Text code>{v}</Typography.Text>,
     },
-    { title: 'Tên hạng', dataIndex: 'name', render: (v: string) => <span style={{ fontWeight: 500 }}>{v}</span> },
+    { key: 'name', title: 'Tên hạng', dataIndex: 'name', width: 210, ellipsis: true, render: (v: string) => <span style={{ fontWeight: 500 }}>{v}</span> },
     {
+      key: 'color',
+      title: 'Màu thẻ', dataIndex: 'color', width: 90, align: 'center',
+      render: (v?: string | null) => v
+        ? <span title={v} style={{ display: 'inline-block', width: 22, height: 22, borderRadius: 6, background: v, border: '1px solid rgba(0, 0, 0, 0.12)' }} />
+        : <Typography.Text type="secondary">—</Typography.Text>,
+    },
+    {
+      key: 'sort_order',
       title: 'Thứ tự', dataIndex: 'sort_order', width: 160, align: 'center',
       render: (v: number | undefined, row) => {
         const rankIndex = ranks.findIndex((rank) => rank.id === row.id)
@@ -213,17 +260,20 @@ export default function CardRanks() {
       },
     },
     {
-      title: 'Ngưỡng chi tiêu', key: 'spent', width: 220,
+      key: 'spent',
+      title: 'Ngưỡng chi tiêu', width: 220,
       render: (_v, row) =>
         row.max_spent != null
           ? `${formatVnd(row.min_spent)} → ${formatVnd(row.max_spent)}`
           : `${formatVnd(row.min_spent)} trở lên`,
     },
     {
+      key: 'discount_percent',
       title: 'Giảm giá (%)', dataIndex: 'discount_percent', width: 110, align: 'center',
       render: (v?: number | null) => v == null ? '—' : `${v}%`,
     },
     {
+      key: 'validity',
       title: 'Hiệu lực', dataIndex: 'validity', width: 120,
       render: (v?: string) => {
         const meta = v ? VALIDITY_META[v] : undefined
@@ -231,51 +281,91 @@ export default function CardRanks() {
       },
     },
     {
+      key: 'auto_assign',
       title: 'Tự gán hạng', dataIndex: 'auto_assign', width: 110, align: 'center',
       render: (v?: boolean) => <Switch size="small" checked={!!v} disabled />,
     },
     ...(showHolders
       ? [{
-          title: 'Khách đang giữ', key: 'holders', width: 130, align: 'center' as const,
+          key: 'holders',
+          title: 'Khách đang giữ', width: 130, align: 'center' as const,
           render: (_v: unknown, row: CardRankRow) => holderCount(row)?.toLocaleString('vi-VN') ?? '—',
         } satisfies TableColumnsType<CardRankRow>[number]]
       : []),
     {
+      key: 'is_active',
       title: 'Trạng thái', dataIndex: 'is_active', width: 110,
       render: (v?: boolean) => (v !== false ? <Tag color="green">Đang dùng</Tag> : <Tag>Đã xóa</Tag>),
     },
     {
-      title: 'Thao tác', key: 'actions', width: 160,
-      render: (_v, row) => <Space>
-        <Can I="UPDATE" a="CARD_RANK">
-          <Button size="small" onClick={() => openEditor(row)}>Sửa</Button>
-        </Can>
-        <Can I="DELETE" a="CARD_RANK">
-          <Popconfirm
-            title="Xóa hạng thẻ này?"
-            description="Xóa mềm. Không xóa được nếu còn khách giữ hạng hoặc có ưu đãi đang áp dụng."
-            okText="Xóa" okButtonProps={{ danger: true }} cancelText="Hủy"
-            onConfirm={() => void remove(row)}
-          >
-            <Button size="small" danger>Xóa</Button>
-          </Popconfirm>
-        </Can>
-      </Space>,
+      key: 'actions',
+      title: 'Hành động', width: 160, fixed: 'right',
+      render: (_v, row) => (
+        <RowActionsMenu
+          items={[
+            ...(canUpdate ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []),
+            ...(canDelete ? [{ key: 'delete', icon: <DeleteOutlined />, danger: true, label: 'Xóa' }] : []),
+          ]}
+          onSelect={(key) => {
+            if (key === 'edit') openEditor(row)
+            else if (key === 'delete') {
+              Modal.confirm({
+                title: 'Xóa hạng thẻ này?',
+                content: 'Xóa mềm. Không xóa được nếu còn khách giữ hạng hoặc có ưu đãi đang áp dụng.',
+                okText: 'Xóa',
+                okButtonProps: { danger: true },
+                cancelText: 'Hủy',
+                onOk: () => remove(row),
+              })
+            }
+          }}
+        />
+      ),
     },
-  ]
+  ] as TableColumnsType<CardRankRow>).filter((column) =>
+    (column.key !== 'actions' || canUpdate || canDelete) &&
+    (column.key === 'actions' || visibleColumns.includes(column.key as CardRankColumnKey)),
+  )
 
   return (
     <Can I="READ" a="CARD_RANK" passThrough>
       {(allowed) =>
         allowed ? (
           <>
-            <PageTitle>Hạng thẻ thành viên</PageTitle>
-            <Space style={{ width: '100%', justifyContent: 'flex-end', marginBottom: 16 }}>
-              <Button icon={<ReloadOutlined />} onClick={() => void ranksQuery.refetch()}>Tải lại</Button>
-              <Can I="CREATE" a="CARD_RANK">
-                <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor()}>Thêm hạng</Button>
-              </Can>
-            </Space>
+            <StatCards items={statItems} />
+            <PageTitle
+            subtitle="Định nghĩa hạng thẻ, ngưỡng chi tiêu và quyền lợi"
+              extra={
+                <Space wrap>
+                  <Button icon={<ReloadOutlined />} onClick={() => void ranksQuery.refetch()}>Tải lại</Button>
+                  <ListFilterPopover
+                    open={filterOpen}
+                    onOpenChange={setFilterOpen}
+                    activeFilterCount={0}
+                    onApply={() => {
+                      if (draftVisibleColumns.length === 0) {
+                        message.error('Hãy giữ lại ít nhất một cột hiển thị')
+                        return
+                      }
+                      setVisibleColumns(draftVisibleColumns)
+                      setFilterOpen(false)
+                    }}
+                    onClear={() => {
+                      setDraftVisibleColumns(DEFAULT_VISIBLE_COLUMNS)
+                      setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)
+                    }}
+                    columnOptions={CARD_RANK_COLUMN_OPTIONS}
+                    draftVisibleColumns={draftVisibleColumns}
+                    onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as CardRankColumnKey[])}
+                  />
+                  <Can I="CREATE" a="CARD_RANK">
+                    <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor()}>Thêm hạng</Button>
+                  </Can>
+                </Space>
+              }
+            >
+              Hạng thẻ thành viên
+            </PageTitle>
             {ranksQuery.isError && (
               <Alert
                 className="mb-4" type="error" showIcon
@@ -290,8 +380,9 @@ export default function CardRanks() {
               </Typography.Text>
             )}
             <Table<CardRankRow>
-              rowKey="id" loading={ranksQuery.isLoading} dataSource={ranks} columns={columns}
-              pagination={{ pageSize: 10 }}
+              rowKey="id" loading={ranksQuery.isLoading} dataSource={paginateRows(ranks, page, 10)} columns={columns}
+              scroll={{ x: 1300 }}
+              pagination={false}
               onRow={(row) => ({
                 draggable: canReorder && !isReordering,
                 onDragStart: (event: ReactDragEvent<HTMLTableRowElement>) => {
@@ -321,6 +412,7 @@ export default function CardRanks() {
                 },
               })}
             />
+            <ListPagination page={page} limit={10} total={ranks.length} onChange={setPage} noun="hạng thẻ" />
             <Modal
               title={editing ? `Sửa hạng: ${editing.name}` : 'Thêm hạng thẻ'}
               open={open}
@@ -328,6 +420,7 @@ export default function CardRanks() {
               onOk={() => void submit()}
               confirmLoading={createMutation.isPending || updateMutation.isPending}
               okText="Lưu" cancelText="Hủy"
+              width="min(880px, calc(100vw - 24px))"
             >
               <Alert
                 type="info" showIcon style={{ marginTop: 12, marginBottom: 12 }}
@@ -348,6 +441,20 @@ export default function CardRanks() {
                 </Space>
                 <Form.Item name="name" label="Tên hạng" rules={[{ required: true, message: 'Nhập tên hạng' }]}>
                   <Input maxLength={255} placeholder="VD: Bạc" />
+                </Form.Item>
+                <Form.Item
+                  name="color"
+                  label="Màu thẻ"
+                  extra="Hiển thị trên thẻ hạng ở trang Điểm & Hạng thành viên"
+                  getValueFromEvent={(_color: unknown, hex: string) => hex || undefined}
+                >
+                  <ColorPicker
+                    format="hex"
+                    showText
+                    allowClear
+                    disabledAlpha
+                    presets={[{ label: 'Gợi ý', colors: ['#8A6A1F', '#1E6FD0', '#C07A10', '#2B77C9', '#A11E42'] }]}
+                  />
                 </Form.Item>
                 <Space style={{ display: 'flex' }} align="start">
                   <Form.Item name="min_spent" label="Chi tiêu tối thiểu (₫)" rules={[{ required: true, message: 'Nhập ngưỡng tối thiểu' }]} style={{ flex: 1 }}>
@@ -376,7 +483,7 @@ export default function CardRanks() {
           </>
         ) : (
           <>
-            <PageTitle>Hạng thẻ thành viên</PageTitle>
+            <PageTitle subtitle="Định nghĩa hạng thẻ, ngưỡng chi tiêu và quyền lợi">Hạng thẻ thành viên</PageTitle>
             <Alert type="warning" showIcon message="Bạn không có quyền xem danh mục hạng thẻ (cần quyền card_rank.read)" />
           </>
         )

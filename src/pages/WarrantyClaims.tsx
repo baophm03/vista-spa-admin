@@ -19,6 +19,7 @@ import type { TableColumnsType } from 'antd'
 import { FileTextOutlined, PlusOutlined, ReloadOutlined, UploadOutlined } from '@ant-design/icons'
 import { useQueryClient } from '@tanstack/react-query'
 import PageTitle from '@/components/base/PageTitle'
+import ListPagination from '@/components/base/ListPagination'
 import { errorMessage, pickData } from '@/api/helpers'
 import { Can } from '@casl/react'
 import type { CustomerTreatment } from '@/api/models/customerTreatment'
@@ -202,7 +203,7 @@ export default function WarrantyClaims() {
 
   return (
     <>
-      <PageTitle>Bảo hành gói liệu trình</PageTitle>
+      <PageTitle subtitle="Tiếp nhận và xử lý yêu cầu bảo hành">Bảo hành gói liệu trình</PageTitle>
       <Space style={{ width: '100%', justifyContent: 'flex-end', marginBottom: 16 }}>
         <Select
           allowClear value={statusFilter} placeholder="Trạng thái" style={{ width: 160 }}
@@ -225,9 +226,9 @@ export default function WarrantyClaims() {
       )}
       <Table<ClaimRow>
         rowKey="id" loading={claimsQuery.isLoading} dataSource={rows} columns={columns}
-        pagination={{ current: page, pageSize: 10, total, showTotal: (c) => `${c} yêu cầu` }}
-        onChange={(p) => { if (p.current) setPage(p.current) }}
+        pagination={false}
       />
+      <ListPagination page={page} limit={10} total={total} onChange={setPage} noun="yêu cầu bảo hành" />
 
       <ClaimDetailDrawer
         claimId={detailId}

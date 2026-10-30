@@ -7,7 +7,6 @@ import {
   Input,
   InputNumber,
   Modal,
-  Popconfirm,
   Select,
   Space,
   Switch,
@@ -16,11 +15,16 @@ import {
   message,
 } from 'antd'
 import type { TableColumnsType } from 'antd'
-import { PlusOutlined, ReloadOutlined } from '@ant-design/icons'
+import { CheckCircleOutlined, EditOutlined, PauseCircleOutlined, PercentageOutlined, PlusOutlined, ReloadOutlined } from '@ant-design/icons'
 import { useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
-import { Can } from '@casl/react'
+import { Can, useAbility } from '@casl/react'
 import PageTitle from '@/components/base/PageTitle'
+import StatCards, { type StatItem } from '@/components/base/StatCards'
+import ListFilterPopover from '@/components/base/ListFilterPopover'
+import RowActionsMenu from '@/components/base/RowActionsMenu'
+import ListPagination from '@/components/base/ListPagination'
+import { paginateRows } from '@/utils/listTable'
 import { errorMessage, pickData } from '@/api/helpers'
 import {
   getGetCommissionRulesQueryKey,
@@ -47,11 +51,32 @@ const BASE_OPTIONS = [
   { value: 'SESSION_VALUE', label: 'Trên giá trị buổi' },
 ]
 
+type CommissionColumnKey = 'name' | 'payee_type' | 'base' | 'percent' | 'scope' | 'priority' | 'validity' | 'is_active'
+
+const COMMISSION_COLUMN_OPTIONS: { label: string; value: CommissionColumnKey }[] = [
+  { label: 'Tên quy tắc', value: 'name' },
+  { label: 'Người nhận', value: 'payee_type' },
+  { label: 'Căn tính', value: 'base' },
+  { label: '% hoa hồng', value: 'percent' },
+  { label: 'Phạm vi', value: 'scope' },
+  { label: 'Ưu tiên', value: 'priority' },
+  { label: 'Hạn', value: 'validity' },
+  { label: 'Trạng thái', value: 'is_active' },
+]
+
+const DEFAULT_VISIBLE_COLUMNS = COMMISSION_COLUMN_OPTIONS.map((column) => column.value)
+
 export default function CommissionRules() {
+  const [page, setPage] = useState(1)
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<CommissionRule | null>(null)
+  const [visibleColumns, setVisibleColumns] = useState<CommissionColumnKey[]>(DEFAULT_VISIBLE_COLUMNS)
+  const [draftVisibleColumns, setDraftVisibleColumns] = useState<CommissionColumnKey[]>(DEFAULT_VISIBLE_COLUMNS)
+  const [filterOpen, setFilterOpen] = useState(false)
   const [form] = Form.useForm()
   const queryClient = useQueryClient()
+  const ability = useAbility()
+  const canManage = ability.can('RULE_MANAGE', 'COMMISSION')
 
   const rulesQuery = useGetCommissionRules()
   const branchesQuery = useGetBranches({ status: 'active' })
@@ -72,6 +97,13 @@ export default function CommissionRules() {
   const invalidate = async () => {
     await queryClient.invalidateQueries({ queryKey: getGetCommissionRulesQueryKey() })
   }
+
+  // Thống kê đầu trang — rules là danh sách đầy đủ client-side (query không có bộ lọc server)
+  const activeRuleCount = rules.filter((row) => row.is_active !== false).length
+  const statItems: StatItem[] = [
+    { key: 'total', label: 'Tổng quy tắc', value: rules.length.toLocaleString('vi-VN'), icon: <PercentageOutlined />, tone: 'primary' },
+    { key: 'active', label: 'Đang áp dụng', value: activeRuleCount.toLocaleString('vi-VN'), icon: <CheckCircleOutlined />, tone: 'secondary' },
+  ]
 
   const createMutation = usePostCommissionRules({ mutation: { onSuccess: invalidate } })
   const updateMutation = usePutCommissionRulesId({ mutation: { onSuccess: invalidate } })
@@ -139,22 +171,25 @@ export default function CommissionRules() {
     }
   }
 
-  const columns: TableColumnsType<CommissionRule> = [
+  const columns: TableColumnsType<CommissionRule> = ([
     {
-      title: 'Tên quy tắc', dataIndex: 'name',
+      key: 'name',
+      title: 'Tên quy tắc', dataIndex: 'name', width: 200, ellipsis: true,
       render: (v: string) => <span style={{ fontWeight: 500 }}>{v}</span>,
     },
     {
+      key: 'payee_type',
       title: 'Người nhận', dataIndex: 'payee_type', width: 150,
       render: (v: PayeeType) => {
         const meta = PAYEE_META[v]
         return meta ? <Tag color={meta.color}>{meta.label}</Tag> : <Tag>{v}</Tag>
       },
     },
-    { title: 'Căn tính', dataIndex: 'base', width: 150, render: (v?: string) => BASE_OPTIONS.find((o) => o.value === v)?.label ?? '—' },
-    { title: '% hoa hồng', dataIndex: 'percent', width: 100, align: 'right', render: (v?: number) => (v != null ? `${v}%` : '—') },
+    { key: 'base', title: 'Căn tính', dataIndex: 'base', width: 150, render: (v?: string) => BASE_OPTIONS.find((o) => o.value === v)?.label ?? '—' },
+    { key: 'percent', title: '% hoa hồng', dataIndex: 'percent', width: 100, align: 'right', render: (v?: number) => (v != null ? `${v}%` : '—') },
     {
-      title: 'Phạm vi', key: 'scope', width: 220,
+      key: 'scope',
+      title: 'Phạm vi', width: 170,
       render: (_v, row) => {
         const parts: string[] = []
         if (row.service_id) parts.push(serviceNameById.get(row.service_id) ?? 'Theo dịch vụ')
@@ -163,45 +198,84 @@ export default function CommissionRules() {
         return parts.length ? parts.join(', ') : <Tag>Toàn hệ thống</Tag>
       },
     },
-    { title: 'Ưu tiên', dataIndex: 'priority', width: 80, align: 'center', render: (v?: number) => v ?? 0 },
+    { key: 'priority', title: 'Ưu tiên', dataIndex: 'priority', width: 80, align: 'center', render: (v?: number) => v ?? 0 },
     {
-      title: 'Hạn', key: 'validity', width: 200,
+      key: 'validity',
+      title: 'Hạn', width: 160,
       render: (_v, row) => (row.valid_from || row.valid_to ? `${row.valid_from ?? '...'} → ${row.valid_to ?? '...'}` : 'Không giới hạn'),
     },
     {
+      key: 'is_active',
       title: 'Trạng thái', dataIndex: 'is_active', width: 110,
       render: (v?: boolean) => (v !== false ? <Tag color="green">Đang dùng</Tag> : <Tag>Đã ngừng</Tag>),
     },
     {
-      title: 'Thao tác', key: 'actions', width: 160,
+      key: 'actions',
+      title: 'Hành động', width: 190, fixed: 'right',
       render: (_v, row) => (
-        <Space>
-          <Can I="RULE_MANAGE" a="COMMISSION">
-            <Button size="small" onClick={() => openEditor(row)}>Sửa</Button>
-            <Popconfirm
-              title="Ngừng quy tắc này?"
-              description="Quy tắc sẽ không áp dụng cho giao dịch mới; bút toán đã sinh không đổi."
-              okText="Ngừng" okButtonProps={{ danger: true }} cancelText="Hủy"
-              onConfirm={() => void remove(row)}
-            >
-              <Button size="small" danger>Ngừng</Button>
-            </Popconfirm>
-          </Can>
-        </Space>
+        <RowActionsMenu
+          items={[
+            { key: 'edit', icon: <EditOutlined />, label: 'Sửa' },
+            { key: 'deactivate', icon: <PauseCircleOutlined />, danger: true, label: 'Ngừng' },
+          ]}
+          onSelect={(key) => {
+            if (key === 'edit') openEditor(row)
+            else if (key === 'deactivate') {
+              Modal.confirm({
+                title: 'Ngừng quy tắc này?',
+                content: 'Quy tắc sẽ không áp dụng cho giao dịch mới; bút toán đã sinh không đổi.',
+                okText: 'Ngừng',
+                okButtonProps: { danger: true },
+                cancelText: 'Hủy',
+                onOk: () => remove(row),
+              })
+            }
+          }}
+        />
       ),
     },
-  ]
+  ] as TableColumnsType<CommissionRule>).filter((column) =>
+    (column.key !== 'actions' || canManage) &&
+    (column.key === 'actions' || visibleColumns.includes(column.key as CommissionColumnKey)),
+  )
 
   return (
     <Can I="RULE_MANAGE" a="COMMISSION" passThrough>
       {(allowed) =>
         allowed ? (
           <>
-            <PageTitle>Quy tắc hoa hồng</PageTitle>
-            <Space style={{ width: '100%', justifyContent: 'flex-end', marginBottom: 16 }}>
-              <Button icon={<ReloadOutlined />} onClick={() => void rulesQuery.refetch()}>Tải lại</Button>
-              <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor()}>Thêm quy tắc</Button>
-            </Space>
+            <StatCards items={statItems} />
+            <PageTitle
+            subtitle="Quy tắc tính hoa hồng cho nhân viên và cộng tác viên"
+              extra={
+                <Space wrap>
+                  <Button icon={<ReloadOutlined />} onClick={() => void rulesQuery.refetch()}>Tải lại</Button>
+                  <ListFilterPopover
+                    open={filterOpen}
+                    onOpenChange={setFilterOpen}
+                    activeFilterCount={0}
+                    onApply={() => {
+                      if (draftVisibleColumns.length === 0) {
+                        message.error('Hãy giữ lại ít nhất một cột hiển thị')
+                        return
+                      }
+                      setVisibleColumns(draftVisibleColumns)
+                      setFilterOpen(false)
+                    }}
+                    onClear={() => {
+                      setDraftVisibleColumns(DEFAULT_VISIBLE_COLUMNS)
+                      setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)
+                    }}
+                    columnOptions={COMMISSION_COLUMN_OPTIONS}
+                    draftVisibleColumns={draftVisibleColumns}
+                    onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as CommissionColumnKey[])}
+                  />
+                  <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor()}>Thêm quy tắc</Button>
+                </Space>
+              }
+            >
+              Quy tắc hoa hồng
+            </PageTitle>
             {rulesQuery.isError && (
               <Alert
                 className="mb-4" type="error" showIcon
@@ -215,9 +289,11 @@ export default function CommissionRules() {
               message="Hoa hồng tự động chỉ chạy khi bật cấu hình commission.auto_enabled. Rule cụ thể hơn (theo dịch vụ/KTV/cơ sở) được ưu tiên, rồi đến mức ưu tiên."
             />
             <Table<CommissionRule>
-              rowKey="id" loading={rulesQuery.isLoading} dataSource={rules} columns={columns}
-              pagination={{ pageSize: 10 }}
+              rowKey="id" loading={rulesQuery.isLoading} dataSource={paginateRows(rules, page, 10)} columns={columns}
+              scroll={{ x: 1310 }}
+              pagination={false}
             />
+            <ListPagination page={page} limit={10} total={rules.length} onChange={setPage} noun="quy tắc hoa hồng" />
             <Modal
               title={editing ? `Sửa quy tắc: ${editing.name}` : 'Thêm quy tắc hoa hồng'}
               open={open}
@@ -225,7 +301,7 @@ export default function CommissionRules() {
               onOk={() => void submit()}
               confirmLoading={createMutation.isPending || updateMutation.isPending}
               okText="Lưu" cancelText="Hủy"
-              width={560}
+              width={680}
             >
               <Form
                 form={form}
@@ -286,7 +362,7 @@ export default function CommissionRules() {
           </>
         ) : (
           <>
-            <PageTitle>Quy tắc hoa hồng</PageTitle>
+            <PageTitle subtitle="Quy tắc tính hoa hồng cho nhân viên và cộng tác viên">Quy tắc hoa hồng</PageTitle>
             <Alert type="warning" showIcon message="Bạn không có quyền quản lý quy tắc hoa hồng (cần quyền commission.rule_manage)" />
           </>
         )

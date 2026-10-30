@@ -1,15 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import type { CSSProperties, ReactElement } from 'react'
 import {
   Button,
   Card,
   Col,
   DatePicker,
-  Empty,
   Popover,
   Row,
   Select,
-  Statistic,
   Table,
   Tag,
   Tooltip as AntTooltip,
@@ -25,6 +22,8 @@ import {
   UserAddOutlined,
   WalletOutlined,
 } from '@ant-design/icons'
+import StatCards, { type StatItem } from '@/components/base/StatCards'
+import TableEmpty from '@/components/base/TableEmpty'
 import {
   Area,
   AreaChart,
@@ -42,6 +41,8 @@ import {
 } from 'recharts'
 import dayjs, { Dayjs } from 'dayjs'
 import { pickData } from '@/api/helpers'
+import ListPagination from '@/components/base/ListPagination'
+import { paginateRows } from '@/utils/listTable'
 import { useAbility } from '@casl/react'
 import { useBrandColors, useBrandCurrency } from '@/themeRuntime'
 import { toCsv, downloadCsv, type CsvColumn } from '@/utils/csv'
@@ -109,11 +110,6 @@ const SOURCE_LABEL: Record<string, string> = {
   referral_customer: 'Giới thiệu bởi khách cũ',
 }
 
-const KPI_ICON = (bg: string, color: string): CSSProperties => ({
-  width: 40, height: 40, borderRadius: 12, background: bg, color,
-  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18,
-})
-
 function CsvButton<T>({ filename, columns, rows }: { filename: string; columns: CsvColumn<T>[]; rows: T[] }) {
   return (
     <Button
@@ -134,7 +130,7 @@ export type ReportSection = 'money' | 'customers' | 'ops'
 export default function ReportsTab({ section }: { section: ReportSection }) {
   const brand = useBrandColors()
   const { format: fmtMoney, formatCompact: fmtCompactMoney } = useBrandCurrency()
-  const rankColors = [brand.primary, '#D9A441', '#3B5BDB', '#16A34A', '#E06666']
+  const rankColors = [brand.primary, brand.tertiary, '#3B5BDB', '#16A34A', '#E06666']
   const ability = useAbility()
   /** report.read là key tổng; các key mịn report.<loại>.read cho role REC.
    *  Dashboard bọc component trong <Can passThrough> nên ability ở đây luôn fresh khi rules đổi. */
@@ -168,6 +164,8 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
   const [newCustomers, setNewCustomers] = useState<{ by_period?: any[]; by_source?: any[] }>({})
   const [sessions, setSessions] = useState<{ by_period?: any[]; remaining?: any[] }>({})
   const [commissions, setCommissions] = useState<{ by_period?: any[]; by_actor?: any[] }>({})
+  const [debtsPage, setDebtsPage] = useState(1)
+  const [remainingPage, setRemainingPage] = useState(1)
 
   const params = useMemo(
     () => ({
@@ -224,6 +222,8 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
     setBranchId(draftBranchId ?? undefined)
     setCustomerProfileId(draftCustomerId ?? undefined)
     setStaffId(draftStaffId ?? undefined)
+    setDebtsPage(1)
+    setRemainingPage(1)
   }
   const resetFilters = () => {
     setRange([dayjs().subtract(29, 'day'), dayjs()])
@@ -231,6 +231,8 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
     setBranchId(undefined)
     setCustomerProfileId(undefined)
     setStaffId(undefined)
+    setDebtsPage(1)
+    setRemainingPage(1)
     setDraftRange(null); setDraftGroupBy(null); setDraftBranchId(null); setDraftCustomerId(null); setDraftStaffId(null)
   }
 
@@ -253,13 +255,13 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
   const commissionPeriod = (commissions.by_period ?? []).map((r) => ({ period: r.period, total: Number(r.total_amount) / 1_000_000 }))
   const commissionTotal = commissionPeriod.reduce((s, r) => s + r.total, 0)
 
-  const kpis: Array<{ title: string; value: string; icon: ReactElement; bg: string; color: string; perm: string }> = [
-    { title: 'Doanh thu đã thu', value: fmtCompactMoney(revenueTotal * 1_000_000), icon: <DollarOutlined />, bg: '#E4F5EC', color: '#16A34A', perm: 'report.revenue.read' },
-    { title: 'Công nợ còn lại', value: fmtCompactMoney(debtsTotal), icon: <WalletOutlined />, bg: '#FDECEC', color: '#E06666', perm: 'report.debt.read' },
-    { title: 'Khách mới', value: String(newCustTotal), icon: <UserAddOutlined />, bg: brand.tint, color: brand.primary, perm: 'report.customer.read' },
-    { title: 'Buổi hoàn tất', value: String(sessionsPeriod.reduce((s, r) => s + r.sessions_used, 0)), icon: <CheckCircleOutlined />, bg: '#E8EDFB', color: '#3B5BDB', perm: 'report.session.read' },
-    { title: 'Hoa hồng', value: fmtCompactMoney(commissionTotal * 1_000_000), icon: <TeamOutlined />, bg: '#FBF3DF', color: '#D9A441', perm: 'report.commission.read' },
-  ].filter((k) => canReport(k.perm))
+  const statItems: StatItem[] = [
+    { key: 'revenue', label: 'Doanh thu đã thu', value: fmtCompactMoney(revenueTotal * 1_000_000), icon: <DollarOutlined />, tone: 'tertiary', perm: 'report.revenue.read' },
+    { key: 'debt', label: 'Công nợ còn lại', value: fmtCompactMoney(debtsTotal), icon: <WalletOutlined />, tone: 'neutral', perm: 'report.debt.read' },
+    { key: 'newCustomers', label: 'Khách mới', value: newCustTotal.toLocaleString('vi-VN'), icon: <UserAddOutlined />, tone: 'primary', perm: 'report.customer.read' },
+    { key: 'sessions', label: 'Buổi hoàn tất', value: sessionsPeriod.reduce((s, r) => s + r.sessions_used, 0).toLocaleString('vi-VN'), icon: <CheckCircleOutlined />, tone: 'secondary', perm: 'report.session.read' },
+    { key: 'commission', label: 'Hoa hồng', value: fmtCompactMoney(commissionTotal * 1_000_000), icon: <TeamOutlined />, tone: 'tertiary', perm: 'report.commission.read' },
+  ].filter((k) => canReport(k.perm)) as StatItem[]
 
   const activeFilterCount =
     (branchId ? 1 : 0) + (customerProfileId ? 1 : 0) + (staffId ? 1 : 0)
@@ -358,7 +360,7 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
   )
 
   const filterBar = (
-    <Card size="small" style={{ marginBottom: 16 }}>
+    <Card style={{ marginBottom: 16 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
         <Popover open={filterOpen} onOpenChange={setFilterOpen} trigger="click" placement="bottomLeft" content={filterForm}>
           <Button icon={<FilterOutlined />}>
@@ -382,29 +384,15 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
     </Card>
   )
 
-  const kpiRow = (
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, marginBottom: 16 }}>
-      {kpis.map((k) => (
-        <div key={k.title} style={{ flex: `1 1 ${canSeeCommission ? 200 : 240}px`, minWidth: 180, display: 'flex' }}>
-          <Card style={{ flex: 1, width: '100%' }} styles={{ body: { padding: '16px 20px', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' } }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Statistic title={k.title} value={k.value} />
-              <div style={KPI_ICON(k.bg, k.color)}>{k.icon}</div>
-            </div>
-          </Card>
-        </div>
-      ))}
-    </div>
-  )
+  const kpiRow = <StatCards items={statItems} />
 
   const moneySection = (
     <>
       <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
         {canReport('report.revenue.read') && (
           <Col xs={24} lg={14}>
-            <Card
+            <Card style={{ height: '100%' }} styles={{ body: { display: 'flex', flexDirection: 'column' } }}
               title="Doanh thu đã thu"
-              size="small"
               extra={<CsvButton filename="bao-cao-doanh-thu" rows={revenue} columns={[
                 { header: 'Kỳ', value: (r: any) => r.period },
                 { header: 'Cơ sở', value: (r: any) => r.branch_name },
@@ -413,8 +401,8 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
               ]} />}
             >
               {revenueMerged.length < 2 ? (
-                <div style={{ height: 260, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Chưa đủ dữ liệu doanh thu trong kỳ" />
+                <div style={{ flex: 1, minHeight: 260, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <TableEmpty title="Chưa đủ dữ liệu doanh thu trong kỳ" />
                 </div>
               ) : (
                 <ResponsiveContainer width="100%" height={260}>
@@ -438,9 +426,8 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
         )}
         {canReport('report.debt.read') && (
           <Col xs={24} lg={10}>
-            <Card
+            <Card style={{ height: '100%' }} styles={{ body: { display: 'flex', flexDirection: 'column' } }}
               title={`Công nợ — tổng ${fmtMoney(debtsTotal)}`}
-              size="small"
               extra={<CsvButton filename="bao-cao-cong-no" rows={debts} columns={[
                 { header: 'Khách hàng', value: (r: any) => r.full_name },
                 { header: 'Mã khách', value: (r: any) => r.customer_code },
@@ -454,15 +441,15 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
             >
               <Table
                 rowKey={(r: any) => r.customer_treatment_id}
-                dataSource={debts}
-                size="small"
-                pagination={{ pageSize: 5, showSizeChanger: false }}
+                dataSource={paginateRows(debts, debtsPage, 5)}
+                pagination={false}
                 columns={[
                   { title: 'Khách hàng', dataIndex: 'full_name', ellipsis: true },
                   { title: 'Còn nợ', dataIndex: 'debt_amount', width: 110, align: 'right', render: (v: any) => fmtMoney(v) },
                   { title: 'Trạng thái', dataIndex: 'payment_status', width: 140, render: (v: string) => PAYMENT_STATUS_LABEL[v] ?? v },
                 ]}
               />
+              <ListPagination page={debtsPage} limit={5} total={debts.length} onChange={setDebtsPage} noun="khách hàng còn nợ" />
             </Card>
           </Col>
         )}
@@ -474,10 +461,9 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
     <>
       <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
         {canReport('report.customer.read') && (
-          <Col xs={24} lg={14}>
-            <Card
+          <Col xs={24} lg={12}>
+            <Card style={{ height: '100%' }} styles={{ body: { display: 'flex', flexDirection: 'column' } }}
               title="Khách mới theo kỳ"
-              size="small"
               extra={<CsvButton filename="bao-cao-khach-moi" rows={newCustPeriod} columns={[
                 { header: 'Kỳ', value: (r: any) => r.period },
                 { header: 'Khách mới', value: (r: any) => r.new_count },
@@ -485,8 +471,8 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
               ]} />}
             >
               {newCustPeriod.length === 0 ? (
-                <div style={{ height: 260, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Không có khách mới trong kỳ" />
+                <div style={{ flex: 1, minHeight: 260, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <TableEmpty title="Không có khách mới trong kỳ" />
                 </div>
               ) : (
                 <ResponsiveContainer width="100%" height={260}>
@@ -497,7 +483,7 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
                     <Tooltip contentStyle={tooltipStyle} />
                     <Legend wrapperStyle={{ fontSize: 12 }} />
                     <Bar dataKey="new_count" name="Khách mới" fill={brand.primary} radius={[6, 6, 0, 0]} />
-                    <Bar dataKey="referred" name="Được giới thiệu" fill="#D9A441" radius={[6, 6, 0, 0]} />
+                    <Bar dataKey="referred" name="Được giới thiệu" fill={brand.tertiary} radius={[6, 6, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               )}
@@ -505,7 +491,6 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
                 style={{ marginTop: 12 }}
                 rowKey={(r: any) => r.source}
                 dataSource={newCustomers.by_source ?? []}
-                size="small"
                 pagination={false}
                 columns={[
                   { title: 'Nguồn', dataIndex: 'source', render: (v: string) => SOURCE_LABEL[v] ?? v },
@@ -516,21 +501,20 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
           </Col>
         )}
         {canReport('report.rank.read') && (
-          <Col xs={24} lg={10}>
-            <Card
+          <Col xs={24} lg={12}>
+            <Card style={{ height: '100%' }} styles={{ body: { display: 'flex', flexDirection: 'column' } }}
               title="Phân bố hạng thẻ"
-              size="small"
               extra={<CsvButton filename="bao-cao-hang-the" rows={ranks.ranks ?? []} columns={[
                 { header: 'Hạng', value: (r: any) => r.rank_name },
                 { header: 'Số thành viên', value: (r: any) => r.member_count },
               ]} />}
             >
               {rankData.length === 0 ? (
-                <div style={{ height: 260, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Chưa có thành viên xếp hạng" />
+                <div style={{ flex: 1, minHeight: 260, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <TableEmpty title="Chưa có thành viên xếp hạng" />
                 </div>
               ) : (
-                <ResponsiveContainer width="100%" height={230}>
+                <ResponsiveContainer width="100%" height={260}>
                   <PieChart>
                     <Pie data={rankData} dataKey="value" nameKey="name" innerRadius={60} outerRadius={88} paddingAngle={3} strokeWidth={0}>
                       {rankData.map((entry, i) => (
@@ -543,15 +527,14 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
                 </ResponsiveContainer>
               )}
               <Table
-                style={{ marginTop: 8 }}
+                style={{ marginTop: 12 }}
                 rowKey={(_, i) => String(i)}
                 dataSource={ranks.upgrades ?? []}
-                size="small"
                 pagination={false}
                 columns={[
                   { title: 'Kỳ', dataIndex: 'period' },
                   { title: 'Hạng đạt', dataIndex: 'rank_name' },
-                  { title: 'Số khách nâng hạng', dataIndex: 'upgraded_count', width: 140, align: 'right' },
+                  { title: 'Số khách nâng hạng', dataIndex: 'upgraded_count', width: 170, align: 'right' },
                 ]}
               />
             </Card>
@@ -566,9 +549,9 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
       <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
         {canReport('report.appointment.read') && (
           <Col xs={24} lg={10}>
-            <Card title="Lịch hẹn theo trạng thái" size="small">
+            <Card style={{ height: '100%' }} styles={{ body: { display: 'flex', flexDirection: 'column' } }} title="Lịch hẹn theo trạng thái">
               {(appointments.by_status ?? []).length === 0 ? (
-                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Không có lịch hẹn trong kỳ" />
+                <TableEmpty title="Không có lịch hẹn trong kỳ" />
               ) : (
                 <ResponsiveContainer width="100%" height={240}>
                   <BarChart data={(appointments.by_status ?? []).map((s: any) => ({ status: STATUS_LABEL[s.status] ?? s.status, count: Number(s.count) }))}>
@@ -585,9 +568,8 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
         )}
         {canReport('report.appointment.read') && (
           <Col xs={24} lg={14}>
-            <Card
+            <Card style={{ height: '100%' }} styles={{ body: { display: 'flex', flexDirection: 'column' } }}
               title="Hiệu suất KTV"
-              size="small"
               extra={<CsvButton filename="bao-cao-hieu-suat-ktv" rows={appointments.by_staff ?? []} columns={[
                 { header: 'KTV', value: (r: any) => r.staff_name },
                 { header: 'Tổng lịch', value: (r: any) => r.total },
@@ -599,11 +581,10 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
               <Table
                 rowKey={(r: any) => r.staff_id ?? 'none'}
                 dataSource={appointments.by_staff ?? []}
-                size="small"
                 pagination={false}
                 columns={[
                   { title: 'KTV', dataIndex: 'staff_name', render: (v: any) => v || '(không tên)' },
-                  { title: 'Tổng lịch', dataIndex: 'total', width: 90, align: 'right' },
+                  { title: 'Tổng lịch', dataIndex: 'total', width: 95, align: 'right' },
                   { title: 'Hoàn tất', dataIndex: 'completed', width: 90, align: 'right' },
                   { title: 'Đã hủy', dataIndex: 'cancelled', width: 90, align: 'right' },
                   { title: 'Không đến', dataIndex: 'no_show', width: 100, align: 'right' },
@@ -618,9 +599,9 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
       {canReport('report.session.read') && (
         <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
           <Col xs={24} lg={10}>
-            <Card title="Buổi đã dùng theo kỳ" size="small">
+            <Card style={{ height: '100%' }} styles={{ body: { display: 'flex', flexDirection: 'column' } }} title="Buổi đã dùng theo kỳ">
               {sessionsPeriod.length === 0 ? (
-                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Không có buổi hoàn tất trong kỳ" />
+                <TableEmpty title="Không có buổi hoàn tất trong kỳ" />
               ) : (
                 <ResponsiveContainer width="100%" height={240}>
                   <BarChart data={sessionsPeriod}>
@@ -635,9 +616,8 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
             </Card>
           </Col>
           <Col xs={24} lg={14}>
-            <Card
+            <Card style={{ height: '100%' }} styles={{ body: { display: 'flex', flexDirection: 'column' } }}
               title="Buổi còn lại theo khách"
-              size="small"
               extra={<CsvButton filename="bao-cao-buoi-con-lai" rows={sessions.remaining ?? []} columns={[
                 { header: 'Khách hàng', value: (r: any) => r.full_name },
                 { header: 'Mã khách', value: (r: any) => r.customer_code },
@@ -650,15 +630,15 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
             >
               <Table
                 rowKey={(_, i) => String(i)}
-                dataSource={sessions.remaining ?? []}
-                size="small"
-                pagination={{ pageSize: 8, showSizeChanger: false }}
+                dataSource={paginateRows(sessions.remaining ?? [], remainingPage, 8)}
+                pagination={false}
                 columns={[
                   { title: 'Khách hàng', dataIndex: 'full_name' },
                   { title: 'Gói', dataIndex: 'package_name' },
                   { title: 'Còn lại', dataIndex: 'sessions_remaining', width: 90, align: 'right' },
                 ]}
               />
+              <ListPagination page={remainingPage} limit={8} total={(sessions.remaining ?? []).length} onChange={setRemainingPage} noun="gói còn lại" />
             </Card>
           </Col>
         </Row>
@@ -680,7 +660,7 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
       <Row gutter={[16, 16]}>
         <Col xs={24} lg={12}>
           {commissionPeriod.length === 0 ? (
-            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Chưa có hoa hồng trong kỳ" />
+            <TableEmpty title="Chưa có hoa hồng trong kỳ" />
           ) : (
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={commissionPeriod}>
@@ -697,7 +677,6 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
           <Table
             rowKey={(_, i) => String(i)}
             dataSource={commissions.by_actor ?? []}
-            size="small"
             pagination={false}
             columns={[
               { title: 'Đối tượng', dataIndex: 'actor_type', render: (v: string) => ACTOR_LABEL[v] ?? v },

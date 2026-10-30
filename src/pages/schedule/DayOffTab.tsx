@@ -1,9 +1,12 @@
 import { useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import dayjs, { type Dayjs } from 'dayjs'
-import { Alert, Badge, Button, Checkbox, DatePicker, Divider, Empty, Form, Input, Modal, Popconfirm, Popover, Select, Space, Table, Tag, Typography, message } from 'antd'
+import { Alert, Badge, Button, Checkbox, DatePicker, Divider, Form, Input, Modal, Popconfirm, Popover, Select, Space, Table, Tag, Typography, message } from 'antd'
 import { ClearOutlined, FilterOutlined, PlusOutlined, ReloadOutlined } from '@ant-design/icons'
 import { errorMessage, pickData } from '@/api/helpers'
+import ListPagination from '@/components/base/ListPagination'
+import TableEmpty from '@/components/base/TableEmpty'
+import { paginateRows } from '@/utils/listTable'
 import {
   deleteStaffDaysOffId,
   getGetStaffDaysOffQueryKey,
@@ -47,6 +50,7 @@ export default function DayOffTab({ branches, staff, access, loadingShared }: Pr
   const [draftVisibleColumns, setDraftVisibleColumns] = useState<DayOffColumnKey[]>(DEFAULT_VISIBLE_COLUMNS)
   const [rejecting, setRejecting] = useState<StaffDayOff | null>(null)
   const [rejectReason, setRejectReason] = useState('')
+  const [page, setPage] = useState(1)
   const [form] = Form.useForm()
   const [filterForm] = Form.useForm()
   const selectedStaff = Form.useWatch('staff_id', form)
@@ -61,6 +65,7 @@ export default function DayOffTab({ branches, staff, access, loadingShared }: Pr
     setRange(null)
     setDraftVisibleColumns(DEFAULT_VISIBLE_COLUMNS)
     setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)
+    setPage(1)
   }
 
   const openFilters = (nextOpen: boolean) => {
@@ -80,6 +85,7 @@ export default function DayOffTab({ branches, staff, access, loadingShared }: Pr
     setStatusFilter(typeof values.status === 'string' ? values.status : undefined)
     setRange((values.range as [Dayjs | null, Dayjs | null] | null | undefined) ?? null)
     setVisibleColumns(draftVisibleColumns)
+    setPage(1)
     setFilterOpen(false)
   }
 
@@ -237,11 +243,12 @@ export default function DayOffTab({ branches, staff, access, loadingShared }: Pr
     </Space>
     {!!error && <Alert type="error" showIcon message="Không tải được danh sách ngày nghỉ" description={error} action={<Button size="small" icon={<ReloadOutlined />} onClick={() => void daysOffQuery.refetch()}>Thử lại</Button>} style={{ marginBottom: 16 }} />}
     <Table<StaffDayOff>
-      rowKey="id" size="middle" pagination={{ pageSize: 10 }}
-      loading={loadingShared || daysOffQuery.isLoading || templatesQuery.isLoading} dataSource={rows}
+      rowKey="id" size="middle" pagination={false}
+      loading={loadingShared || daysOffQuery.isLoading || templatesQuery.isLoading} dataSource={paginateRows(rows, page, 10)}
       columns={columns.filter((column) => column.key === 'actions' || visibleColumns.includes(column.key as DayOffColumnKey))}
-      locale={{ emptyText: <Empty description="Chưa có đăng ký nghỉ trong điều kiện đã chọn" /> }}
+      locale={{ emptyText: <TableEmpty description="Chưa có đăng ký nghỉ trong điều kiện đã chọn" /> }}
     />
+    <ListPagination page={page} limit={10} total={rows.length} onChange={setPage} noun="đăng ký nghỉ" />
 
     <Modal title="Đăng ký ngày nghỉ" open={open} onCancel={() => setOpen(false)} onOk={() => void submit()} okText="Gửi đăng ký" cancelText="Hủy" destroyOnHidden>
       <Form form={form} layout="vertical" style={{ marginTop: 16 }} onValuesChange={(changed) => {

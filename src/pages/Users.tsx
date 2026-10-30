@@ -2,16 +2,13 @@ import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
 import {
   Avatar,
   Button,
-  Checkbox,
   DatePicker,
-  Divider,
   Drawer,
   Form,
   Input,
   InputNumber,
   Modal,
   Popconfirm,
-  Popover,
   Col,
   Row,
   Select,
@@ -23,8 +20,9 @@ import {
   message,
 } from 'antd'
 import {
+  DeleteOutlined,
   DownloadOutlined,
-  FilterOutlined,
+  EditOutlined,
   HistoryOutlined,
   LinkOutlined,
   PlusOutlined,
@@ -37,6 +35,9 @@ import { useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import type { Dayjs } from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
+import ListFilterPopover from '@/components/base/ListFilterPopover'
+import ListPagination from '@/components/base/ListPagination'
+import RowActionsMenu from '@/components/base/RowActionsMenu'
 import CustomerCodeHistoryModal from '@/components/CustomerCodeHistoryModal'
 import LinkCustomerAccountModal from '@/components/LinkCustomerAccountModal'
 import CustomerProfileDetailsTabs from '@/components/CustomerProfileDetailsTabs'
@@ -271,6 +272,12 @@ export default function Users() {
     setFilterOpen(false)
   }
 
+  const applySearch = (nextKeyword: string) => {
+    setSearchText(nextKeyword)
+    setKeyword(nextKeyword.trim())
+    setPage(1)
+  }
+
   const clearFilters = () => {
     filterForm.resetFields()
     setSearchText('')
@@ -427,85 +434,69 @@ export default function Users() {
   return (
     <>
       <PageTitle
+        subtitle="Quản lý cơ sở dữ liệu và phân hạng thành viên"
         extra={
           <Space wrap>
+            <Input
+              allowClear
+              prefix={<SearchOutlined style={{ color: 'var(--brand-text-inactive, #A9ADB2)' }} />}
+              placeholder="Tìm tên, SĐT, email, mã KH..."
+              style={{ width: 260 }}
+              value={searchText}
+              onChange={(event) => {
+                setSearchText(event.target.value)
+                if (!event.target.value) applySearch('')
+              }}
+              onPressEnter={() => applySearch(searchText)}
+            />
             {profileAccess.canRead && (
               <Button icon={<QrcodeOutlined />} loading={qrLookupLoading} onClick={() => setScannerOpen(true)}>Quét QR</Button>
             )}
-            <Popover
-              trigger="click"
-              placement="bottomRight"
+            <ListFilterPopover
               open={filterOpen}
               onOpenChange={openFilters}
-              content={(
-                <div style={{ width: 300, maxHeight: 'min(70vh, 580px)', display: 'flex', flexDirection: 'column' }}>
-                  <div style={{ overflowY: 'auto', paddingRight: 4 }}>
-                    <Input.Search
-                      allowClear
-                      prefix={<SearchOutlined style={{ color: '#A9ADB2' }} />}
-                      placeholder="Tìm tên, SĐT, email, mã KH..."
-                      value={searchText}
-                      onChange={(event) => setSearchText(event.target.value)}
-                      onSearch={() => filterForm.submit()}
-                    />
-
-                    <div style={{ marginTop: 16 }}>
-                      <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 10 }}>
-                        <Typography.Text strong>Cột hiển thị</Typography.Text>
-                        <Tag style={{ marginInlineEnd: 0 }}>{draftVisibleColumns.length}/{CUSTOMER_COLUMN_OPTIONS.length} cột</Tag>
-                      </Space>
-                      <Checkbox.Group
-                        value={draftVisibleColumns}
-                        onChange={(values) => setDraftVisibleColumns(values as CustomerColumnKey[])}
-                        style={{ display: 'grid', gap: 10 }}
-                        options={CUSTOMER_COLUMN_OPTIONS}
-                      />
-                    </div>
-
-                    <Divider style={{ margin: '14px 0' }} />
-                    <Typography.Text strong>Điều kiện lọc</Typography.Text>
-                    <Form form={filterForm} layout="vertical" onFinish={applyFilters} style={{ marginTop: 10 }}>
-                      <Form.Item name="branch_id" label="Cơ sở" style={{ marginBottom: 10 }}>
-                        <Select allowClear placeholder="Tất cả cơ sở" options={branches.map((branch) => ({ value: branch.id, label: branch.name }))} />
+              activeFilterCount={activeFilterCount}
+              form={filterForm}
+              onApply={applyFilters}
+              onClear={clearFilters}
+              columnOptions={CUSTOMER_COLUMN_OPTIONS}
+              draftVisibleColumns={draftVisibleColumns}
+              onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as CustomerColumnKey[])}
+              filterItems={(
+                <>
+                  <Form.Item name="branch_id" label="Cơ sở" style={{ marginBottom: 10 }}>
+                    <Select allowClear placeholder="Tất cả cơ sở" options={branches.map((branch) => ({ value: branch.id, label: branch.name }))} />
+                  </Form.Item>
+                  <Row gutter={8}>
+                    <Col span={12}>
+                      <Form.Item name="birth_month" label="Tháng sinh" style={{ marginBottom: 10 }}>
+                        <Select allowClear placeholder="Tất cả" options={Array.from({ length: 12 }, (_, index) => ({ value: index + 1, label: `Tháng ${index + 1}` }))} />
                       </Form.Item>
-                      <Row gutter={8}>
-                        <Col span={12}>
-                          <Form.Item name="birth_month" label="Tháng sinh" style={{ marginBottom: 10 }}>
-                            <Select allowClear placeholder="Tất cả" options={Array.from({ length: 12 }, (_, index) => ({ value: index + 1, label: `Tháng ${index + 1}` }))} />
-                          </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                          <Form.Item name="rank_id" label="Hạng thành viên" style={{ marginBottom: 10 }}>
-                            <Select allowClear placeholder="Tất cả" options={ranks.map((rank) => ({ value: rank.id, label: rank.name }))} />
-                          </Form.Item>
-                        </Col>
-                      </Row>
-                      <Row gutter={8}>
-                        <Col span={12}>
-                          <Form.Item name="min_spent" label="Chi tiêu từ" style={{ marginBottom: 10 }}>
-                            <InputNumber min={0} step={100000} suffix={currencySymbol} placeholder="Tối thiểu" style={{ width: '100%' }} />
-                          </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                          <Form.Item name="max_spent" label="Chi tiêu đến" style={{ marginBottom: 10 }}>
-                            <InputNumber min={0} step={100000} suffix={currencySymbol} placeholder="Tối đa" style={{ width: '100%' }} />
-                          </Form.Item>
-                        </Col>
-                      </Row>
-                      <Form.Item name="has_debt" label="Công nợ" style={{ marginBottom: 0 }}>
-                        <Select allowClear placeholder="Tất cả" options={[{ value: 'true', label: 'Có nợ' }, { value: 'false', label: 'Không nợ' }]} />
+                    </Col>
+                    <Col span={12}>
+                      <Form.Item name="rank_id" label="Hạng thành viên" style={{ marginBottom: 10 }}>
+                        <Select allowClear placeholder="Tất cả" options={ranks.map((rank) => ({ value: rank.id, label: rank.name }))} />
                       </Form.Item>
-                    </Form>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, paddingTop: 12, marginTop: 12, borderTop: '1px solid var(--brand-border-soft)' }}>
-                    <Button onClick={clearFilters}>Xóa lọc</Button>
-                    <Button type="primary" onClick={() => filterForm.submit()}>Xác nhận</Button>
-                  </div>
-                </div>
+                    </Col>
+                  </Row>
+                  <Row gutter={8}>
+                    <Col span={12}>
+                      <Form.Item name="min_spent" label="Chi tiêu từ" style={{ marginBottom: 10 }}>
+                        <InputNumber min={0} step={100000} suffix={currencySymbol} placeholder="Tối thiểu" style={{ width: '100%' }} />
+                      </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                      <Form.Item name="max_spent" label="Chi tiêu đến" style={{ marginBottom: 10 }}>
+                        <InputNumber min={0} step={100000} suffix={currencySymbol} placeholder="Tối đa" style={{ width: '100%' }} />
+                      </Form.Item>
+                    </Col>
+                  </Row>
+                  <Form.Item name="has_debt" label="Công nợ" style={{ marginBottom: 0 }}>
+                    <Select allowClear placeholder="Tất cả" options={[{ value: 'true', label: 'Có nợ' }, { value: 'false', label: 'Không nợ' }]} />
+                  </Form.Item>
+                </>
               )}
-            >
-              <Button icon={<FilterOutlined />}>Bộ lọc{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}</Button>
-            </Popover>
+            />
             {profileAccess.canExport && (
               <Button icon={<DownloadOutlined />} loading={exporting} onClick={() => void downloadCsv()}>
                 Xuất CSV
@@ -526,7 +517,7 @@ export default function Users() {
         loading={loading}
         dataSource={rows}
         scroll={{ x: 850 }}
-        pagination={{ current: page, pageSize: limit, total, onChange: setPage, showSizeChanger: false }}
+        pagination={false}
         onRow={(row) => ({
           onClick: profileAccess.canRead ? () => void openDetail(row) : undefined,
           style: profileAccess.canRead ? { cursor: 'pointer' } : undefined,
@@ -563,37 +554,36 @@ export default function Users() {
           },
           {
             key: 'actions',
-            title: '',
+            title: 'Hành động',
             width: 140,
             fixed: 'right' as const,
             render: (_: unknown, row: CustomerProfileRow) => (
-              <Space>
-                {profileAccess.canManage && (
-                  <Button size="small" onClick={(event) => { event.stopPropagation(); void openModal(row) }}>
-                    Sửa
-                  </Button>
-                )}
-                {profileAccess.canDelete && (
-                  <Popconfirm
-                    title="Xóa (ẩn) khách hàng này?"
-                    okText="Xóa"
-                    cancelText="Hủy"
-                    onConfirm={(event) => { event?.stopPropagation(); void remove(row) }}
-                    onCancel={(event) => event?.stopPropagation()}
-                  >
-                    <Button size="small" danger onClick={(event) => event.stopPropagation()}>
-                      Xóa
-                    </Button>
-                  </Popconfirm>
-                )}
-              </Space>
+              <RowActionsMenu
+                items={[
+                  ...(profileAccess.canManage ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []),
+                  ...(profileAccess.canDelete ? [{ key: 'delete', icon: <DeleteOutlined />, danger: true, label: 'Xóa' }] : []),
+                ]}
+                onSelect={(key) => {
+                  if (key === 'edit') void openModal(row)
+                  else if (key === 'delete') {
+                    Modal.confirm({
+                      title: 'Xóa (ẩn) khách hàng này?',
+                      okText: 'Xóa',
+                      okButtonProps: { danger: true },
+                      cancelText: 'Hủy',
+                      onOk: () => remove(row),
+                    })
+                  }
+                }}
+              />
             ),
           },
         ].filter((column) =>
-          (column.key !== 'actions' || profileAccess.canManage) &&
+          (column.key !== 'actions' || profileAccess.canManage || profileAccess.canDelete) &&
           (column.key === 'actions' || visibleColumns.includes(column.key as CustomerColumnKey)),
         )}
       />
+      <ListPagination page={page} limit={limit} total={total} onChange={setPage} noun="khách hàng" />
 
       <Drawer
         title={selected ? `${selected.full_name} — ${selected.customer_code}` : ''}

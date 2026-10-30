@@ -7,10 +7,15 @@
  */
 import type { BrandSettingsBrandPropertyLogoFileId } from './brandSettingsBrandPropertyLogoFileId';
 import type { BrandSettingsBrandPropertyLogoUrl } from './brandSettingsBrandPropertyLogoUrl';
+import type { BrandSettingsBrandPropertyBackgroundColor } from './brandSettingsBrandPropertyBackgroundColor';
 
 export type BrandSettingsBrandProperty = {
   name: string;
   logo_file_id: BrandSettingsBrandPropertyLogoFileId;
   logo_url: BrandSettingsBrandPropertyLogoUrl;
   primary_color: string;
+  tertiary_color?: string;
+  secondary_color: string;
+  /** @pattern ^#[0-9a-fA-F]{6}$ */
+  background_color: BrandSettingsBrandPropertyBackgroundColor;
 };

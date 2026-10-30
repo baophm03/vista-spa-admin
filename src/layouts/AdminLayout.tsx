@@ -72,8 +72,8 @@ export default function AdminLayout() {
             itemBorderRadius: 10,
             itemMarginInline: 12,
             itemMarginBlock: 3,
-            itemSelectedBg: 'var(--brand-tint)',
-            itemSelectedColor: 'var(--brand-dark)',
+            itemSelectedBg: 'var(--brand-primary)',
+            itemSelectedColor: 'var(--brand-on-primary)',
             itemHoverBg: 'var(--brand-hover)',
             activeBarBorderWidth: 0,
             fontSize: 14,
@@ -101,7 +101,8 @@ export default function AdminLayout() {
           />
 
           <Content className="min-h-0 flex-1 overflow-y-auto bg-[var(--brand-bg)]! p-3! sm:p-4! lg:p-6! [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-xl [&::-webkit-scrollbar-thumb]:bg-[var(--brand-border)]">
-            <div className="min-h-full rounded-xl border border-[var(--brand-border)] bg-white p-3 shadow-[0_1px_2px_rgba(var(--brand-dark-rgb),0.04),0_12px_32px_-16px_rgba(var(--brand-dark-rgb),0.1)] sm:p-4 lg:p-6">
+            {/* Nền trang theo brand.background_color — bảng/card bên trong có nền trắng riêng nên vẫn dễ đọc */}
+            <div className="min-h-full">
               <PermissionGate>
                 <Outlet />
               </PermissionGate>

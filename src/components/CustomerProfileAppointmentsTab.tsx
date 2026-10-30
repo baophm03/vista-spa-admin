@@ -5,6 +5,8 @@ import dayjs from 'dayjs'
 import type { Appointment } from '@/api/models/appointment'
 import { getAppointments } from '@/api/endpoints/appointments'
 import { errorMessage, pickData } from '@/api/helpers'
+import ListPagination from '@/components/base/ListPagination'
+import { paginateRows } from '@/utils/listTable'
 
 type AppointmentRow = Appointment & {
   service?: { title?: string } | null
@@ -25,6 +27,7 @@ export default function CustomerProfileAppointmentsTab({ profileId, onLoadingCha
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [refresh, setRefresh] = useState(0)
+  const [page, setPage] = useState(1)
 
   useEffect(() => {
     let active = true
@@ -43,14 +46,15 @@ export default function CustomerProfileAppointmentsTab({ profileId, onLoadingCha
   }, [onLoadingChange, profileId, refresh])
 
   if (loading) return <div className="py-9 text-center"><Spin tip="Đang tải lịch hẹn…" /></div>
-  if (error) return <Alert type="error" showIcon message="Không tải được lịch hẹn" description={error} action={<Button size="small" icon={<ReloadOutlined />} onClick={() => setRefresh((value) => value + 1)}>Thử lại</Button>} />
+  if (error) return <Alert type="error" showIcon message="Không tải được lịch hẹn" description={error} action={<Button size="small" icon={<ReloadOutlined />} onClick={() => { setPage(1); setRefresh((value) => value + 1) }}>Thử lại</Button>} />
   if (!rows.length) return <Empty description="Khách chưa có lịch hẹn" />
 
-  return <Table<AppointmentRow>
-    rowKey="id"
-    size="small"
-    pagination={{ pageSize: 8 }}
-    dataSource={rows}
+  return <>
+    <Table<AppointmentRow>
+      rowKey="id"
+      size="small"
+      pagination={false}
+      dataSource={paginateRows(rows, page, 8)}
     columns={[
       { title: 'Ngày', dataIndex: 'appt_date', render: (value: string) => dayjs(value).format('DD/MM/YYYY') },
       { title: 'Giờ', dataIndex: 'start_time' },
@@ -62,5 +66,7 @@ export default function CustomerProfileAppointmentsTab({ profileId, onLoadingCha
       } },
       { title: 'Ghi chú', dataIndex: 'note', ellipsis: true, render: (value?: string | null) => value || '—' },
     ]}
-  />
+    />
+    <ListPagination page={page} limit={8} total={rows.length} onChange={setPage} noun="lịch hẹn" />
+  </>
 }

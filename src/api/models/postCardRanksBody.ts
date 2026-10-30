@@ -18,4 +18,9 @@ export type PostCardRanksBody = {
   benefits?: string | null;
   /** @nullable */
   discount_percent?: number | null;
+  /**
+   * @nullable
+   * @pattern ^#[0-9A-Fa-f]{6}$
+   */
+  color?: string | null;
 };

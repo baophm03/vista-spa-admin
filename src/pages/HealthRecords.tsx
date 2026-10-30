@@ -31,6 +31,9 @@ import {
 import dayjs from 'dayjs'
 import type { Dayjs } from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
+import RowActionsMenu from '@/components/base/RowActionsMenu'
+import ListPagination from '@/components/base/ListPagination'
+import { paginateRows } from '@/utils/listTable'
 import type { CustomerHealthRecord } from '@/api/models/customerHealthRecord'
 import type { CustomerProfileRow } from '@/components/CustomerProfileOverviewTab'
 import type { CustomerTreatment } from '@/api/models/customerTreatment'
@@ -149,7 +152,9 @@ function displayDate(date?: string) {
 
 export default function HealthRecords() {
   const [rows, setRows] = useState<HealthRow[]>([])
+  const [searchText, setSearchText] = useState('')
   const [keyword, setKeyword] = useState('')
+  const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(false)
   const [detail, setDetail] = useState<HealthRow | null>(null)
   const [history, setHistory] = useState<CustomerHealthRecord[]>([])
@@ -264,6 +269,12 @@ export default function HealthRecords() {
     })
   }, [rows, keyword, skinTypes])
 
+  const applySearch = (nextKeyword: string) => {
+    setSearchText(nextKeyword)
+    setKeyword(nextKeyword.trim())
+    setPage(1)
+  }
+
   const openRecordForm = (row: HealthRow, record?: CustomerHealthRecord) => {
     setRecordCustomer(row)
     setEditingRecord(record ?? null)
@@ -324,15 +335,22 @@ export default function HealthRecords() {
   return (
     <>
       <PageTitle
+        subtitle="Hồ sơ sức khỏe và chỉ số của khách hàng"
         extra={
-          <Input
-            allowClear
-            prefix={<SearchOutlined style={{ color: '#A9ADB2' }} />}
-            placeholder="Tìm khách, SĐT, tình trạng da..."
-            style={{ width: 300, maxWidth: '100%' }}
-            value={keyword}
-            onChange={(event) => setKeyword(event.target.value)}
-          />
+          <Space wrap>
+            <Input
+              allowClear
+              prefix={<SearchOutlined style={{ color: 'var(--brand-text-inactive, #A9ADB2)' }} />}
+              placeholder="Tìm khách, SĐT, tình trạng da..."
+              style={{ width: 260 }}
+              value={searchText}
+              onChange={(event) => {
+                setSearchText(event.target.value)
+                if (!event.target.value) applySearch('')
+              }}
+              onPressEnter={() => applySearch(searchText)}
+            />
+          </Space>
         }
       >
         Sổ sức khỏe
@@ -341,8 +359,9 @@ export default function HealthRecords() {
       <Table<HealthRow>
         rowKey="id"
         loading={loading}
-        dataSource={filteredRows}
+        dataSource={paginateRows(filteredRows, page, 10)}
         scroll={{ x: 900 }}
+        pagination={false}
         onRow={(row) => ({ onClick: () => setDetail(row), style: { cursor: 'pointer' } })}
         columns={[
           {
@@ -385,23 +404,24 @@ export default function HealthRecords() {
             render: (_, row) => displayDate(currentHealth(row, skinTypes).checked_date),
           },
           {
-            title: '',
-            width: 145,
+            key: 'actions',
+            title: 'Hành động',
+            width: 140,
+            fixed: 'right' as const,
             render: (_, row) => (
-              <Button
-                size="small"
-                icon={<FileAddOutlined />}
-                onClick={(event) => {
-                  event.stopPropagation()
-                  openRecordForm(row)
+              <RowActionsMenu
+                items={[
+                  { key: 'record', icon: <FileAddOutlined />, label: 'Ghi nhận khám' },
+                ]}
+                onSelect={(key) => {
+                  if (key === 'record') openRecordForm(row)
                 }}
-              >
-                Ghi nhận khám
-              </Button>
+              />
             ),
           },
         ]}
       />
+      <ListPagination page={page} limit={10} total={filteredRows.length} onChange={setPage} noun="hồ sơ sức khỏe" />
 
       <Drawer
         title={detail ? `${detail.full_name} — ${detail.customer_code}` : 'Hồ sơ sức khỏe'}

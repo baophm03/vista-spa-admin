@@ -10,6 +10,8 @@ import type { CommissionEntryStaffId } from './commissionEntryStaffId';
 import type { CommissionEntryCustomerProfileId } from './commissionEntryCustomerProfileId';
 import type { CommissionEntryCustomerTreatmentId } from './commissionEntryCustomerTreatmentId';
 import type { CommissionEntryAppointmentId } from './commissionEntryAppointmentId';
+import type { CommissionEntrySessionId } from './commissionEntrySessionId';
+import type { CommissionEntryBranchId } from './commissionEntryBranchId';
 import type { CommissionEntryReason } from './commissionEntryReason';
 import type { CommissionEntryStatus } from './commissionEntryStatus';
 import type { CommissionEntryCreatedBy } from './commissionEntryCreatedBy';
@@ -37,8 +39,8 @@ export interface CommissionEntry {
   customer_profile_id?: CommissionEntryCustomerProfileId;
   customer_treatment_id?: CommissionEntryCustomerTreatmentId;
   appointment_id?: CommissionEntryAppointmentId;
-  session_id?: string;
-  branch_id?: string;
+  session_id?: CommissionEntrySessionId;
+  branch_id?: CommissionEntryBranchId;
   /** @minimum 0 */
   amount: number;
   reason?: CommissionEntryReason;

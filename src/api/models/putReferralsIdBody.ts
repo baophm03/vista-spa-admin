@@ -7,6 +7,7 @@
  */
 
 export type PutReferralsIdBody = {
+  /** @nullable */
   discount_rule_id?: string | null;
   status?: string;
   note?: string;

@@ -19,4 +19,9 @@ export type PutCardRanksIdBody = {
   /** @nullable */
   discount_percent?: number | null;
   is_active?: boolean;
+  /**
+   * @nullable
+   * @pattern ^#[0-9A-Fa-f]{6}$
+   */
+  color?: string | null;
 };

@@ -1095,7 +1095,7 @@ export const usePutAppointmentsIdCancel = <TError = UnauthorizedResponse | Forbi
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **AP-05** — PUT /appointments/{id}/approve (ADM/REC; KTV không được gọi — test 18). Cần quyền `appointment.update`.
+ * **AP-05** — PUT /appointments/{id}/approve (ADM/REC; KTV không được gọi — test 18). Cần quyền `appointment.approve`.
  * @summary Duyệt
  */
 export const putAppointmentsIdApprove = (

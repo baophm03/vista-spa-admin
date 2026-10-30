@@ -7,7 +7,6 @@ import {
   Input,
   InputNumber,
   Modal,
-  Popconfirm,
   Select,
   Space,
   Switch,
@@ -17,10 +16,15 @@ import {
   message,
 } from 'antd'
 import type { TableColumnsType } from 'antd'
-import { PlusOutlined, ReloadOutlined } from '@ant-design/icons'
+import { CheckCircleOutlined, DeleteOutlined, EditOutlined, PlusOutlined, ReloadOutlined, TagsOutlined } from '@ant-design/icons'
 import { useQueryClient } from '@tanstack/react-query'
-import { Can } from '@casl/react'
+import { Can, useAbility } from '@casl/react'
 import PageTitle from '@/components/base/PageTitle'
+import StatCards, { type StatItem } from '@/components/base/StatCards'
+import ListFilterPopover from '@/components/base/ListFilterPopover'
+import RowActionsMenu from '@/components/base/RowActionsMenu'
+import ListPagination from '@/components/base/ListPagination'
+import { paginateRows } from '@/utils/listTable'
 import { errorMessage } from '@/api/helpers'
 import {
   getGetDiscountRulesQueryKey,
@@ -52,11 +56,34 @@ const APPLIES_TO_OPTIONS = [
   { value: 'ALL', label: 'Tất cả' },
 ]
 
+type DiscountColumnKey = 'code' | 'name' | 'audience' | 'percent' | 'max_total_percent' | 'stack' | 'show_in_app' | 'validity' | 'is_active'
+
+const DISCOUNT_COLUMN_OPTIONS: { label: string; value: DiscountColumnKey }[] = [
+  { label: 'Mã', value: 'code' },
+  { label: 'Tên', value: 'name' },
+  { label: 'Đối tượng', value: 'audience' },
+  { label: 'Khoảng %', value: 'percent' },
+  { label: 'Trần tổng', value: 'max_total_percent' },
+  { label: 'Xếp chồng', value: 'stack' },
+  { label: 'Trên app', value: 'show_in_app' },
+  { label: 'Hạn', value: 'validity' },
+  { label: 'Trạng thái', value: 'is_active' },
+]
+
+const DEFAULT_VISIBLE_COLUMNS = DISCOUNT_COLUMN_OPTIONS.map((column) => column.value)
+
 export default function DiscountRules() {
+  const [page, setPage] = useState(1)
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<DiscountRule | null>(null)
+  const [visibleColumns, setVisibleColumns] = useState<DiscountColumnKey[]>(DEFAULT_VISIBLE_COLUMNS)
+  const [draftVisibleColumns, setDraftVisibleColumns] = useState<DiscountColumnKey[]>(DEFAULT_VISIBLE_COLUMNS)
+  const [filterOpen, setFilterOpen] = useState(false)
   const [form] = Form.useForm()
   const queryClient = useQueryClient()
+  const ability = useAbility()
+  const canUpdate = ability.can('UPDATE', 'DISCOUNT')
+  const canDelete = ability.can('DELETE', 'DISCOUNT')
 
   const rulesQuery = useGetDiscountRules()
   const ranksQuery = useGetCardRanks(undefined, { query: { enabled: open } })
@@ -72,6 +99,13 @@ export default function DiscountRules() {
   const invalidate = async () => {
     await queryClient.invalidateQueries({ queryKey: getGetDiscountRulesQueryKey() })
   }
+
+  // Thống kê đầu trang — rules là danh sách đầy đủ client-side (query không có bộ lọc server)
+  const activeRuleCount = rules.filter((row) => row.is_active !== false).length
+  const statItems: StatItem[] = [
+    { key: 'total', label: 'Tổng quy tắc', value: rules.length.toLocaleString('vi-VN'), icon: <TagsOutlined />, tone: 'primary' },
+    { key: 'active', label: 'Đang áp dụng', value: activeRuleCount.toLocaleString('vi-VN'), icon: <CheckCircleOutlined />, tone: 'secondary' },
+  ]
 
   const createMutation = usePostDiscountRules({ mutation: { onSuccess: invalidate } })
   const updateMutation = usePutDiscountRulesId({ mutation: { onSuccess: invalidate } })
@@ -158,13 +192,15 @@ export default function DiscountRules() {
     }
   }
 
-  const columns: TableColumnsType<DiscountRule> = [
+  const columns: TableColumnsType<DiscountRule> = ([
     {
+      key: 'code',
       title: 'Mã', dataIndex: 'code', width: 140,
       render: (v: string) => <Typography.Text code>{v}</Typography.Text>,
     },
-    { title: 'Tên', dataIndex: 'name', render: (v: string) => <span style={{ fontWeight: 500 }}>{v}</span> },
+    { key: 'name', title: 'Tên', dataIndex: 'name', render: (v: string) => <span style={{ fontWeight: 500 }}>{v}</span> },
     {
+      key: 'audience',
       title: 'Đối tượng', dataIndex: 'audience', width: 180,
       render: (v: DiscountRuleAudience, row) => {
         const meta = AUDIENCE_META[v]
@@ -178,53 +214,97 @@ export default function DiscountRules() {
         )
       },
     },
-    { title: 'Khoảng %', key: 'percent', width: 110, align: 'right', render: (_v, row) => `${row.percent_min ?? 0}–${row.percent_max ?? 0}%` },
-    { title: 'Trần tổng', dataIndex: 'max_total_percent', width: 90, align: 'right', render: (v?: number | null) => (v != null ? `${v}%` : '—') },
+    { key: 'percent', title: 'Khoảng %', width: 110, align: 'right', render: (_v, row) => `${row.percent_min ?? 0}–${row.percent_max ?? 0}%` },
+    { key: 'max_total_percent', title: 'Trần tổng', dataIndex: 'max_total_percent', width: 90, align: 'right', render: (v?: number | null) => (v != null ? `${v}%` : '—') },
     {
-      title: 'Xếp chồng', key: 'stack', width: 130, align: 'center',
+      key: 'stack',
+      title: 'Xếp chồng', width: 130, align: 'center',
       render: (_v, row) => <Space size={4}>{row.stackable !== false && <Tag color="cyan">Xếp chồng</Tag>}{row.once_per_customer && <Tag color="volcano">1 lần/khách</Tag>}</Space>,
     },
     {
+      key: 'show_in_app',
       title: 'Trên app', dataIndex: 'show_in_app', width: 90, align: 'center',
       render: (v?: boolean) => (v !== false ? <Tag color="green">Hiện</Tag> : <Tag>Ẩn</Tag>),
     },
     {
-      title: 'Hạn', key: 'validity', width: 190,
+      key: 'validity',
+      title: 'Hạn', width: 190,
       render: (_v, row) => (row.start_date || row.end_date ? `${row.start_date ?? '...'} → ${row.end_date ?? '...'}` : 'Không giới hạn'),
     },
     {
+      key: 'is_active',
       title: 'Trạng thái', dataIndex: 'is_active', width: 100,
       render: (v?: boolean) => (v !== false ? <Tag color="green">Đang dùng</Tag> : <Tag>Đã xóa</Tag>),
     },
     {
-      title: 'Thao tác', key: 'actions', width: 150,
+      key: 'actions',
+      title: 'Hành động', width: 140, fixed: 'right',
       render: (_v, row) => (
-        <Space>
-          <Can I="UPDATE" a="DISCOUNT">
-            <Button size="small" onClick={() => openEditor(row)}>Sửa</Button>
-          </Can>
-          <Can I="DELETE" a="DISCOUNT">
-            <Popconfirm title="Xóa quy tắc này?" description="Xóa mềm (is_active=false)." okText="Xóa" okButtonProps={{ danger: true }} cancelText="Hủy" onConfirm={() => void remove(row)}>
-              <Button size="small" danger>Xóa</Button>
-            </Popconfirm>
-          </Can>
-        </Space>
+        <RowActionsMenu
+          items={[
+            ...(canUpdate ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []),
+            ...(canDelete ? [{ key: 'delete', icon: <DeleteOutlined />, danger: true, label: 'Xóa' }] : []),
+          ]}
+          onSelect={(key) => {
+            if (key === 'edit') openEditor(row)
+            else if (key === 'delete') {
+              Modal.confirm({
+                title: 'Xóa quy tắc này?',
+                content: 'Xóa mềm (is_active=false).',
+                okText: 'Xóa',
+                okButtonProps: { danger: true },
+                cancelText: 'Hủy',
+                onOk: () => remove(row),
+              })
+            }
+          }}
+        />
       ),
     },
-  ]
+  ] as TableColumnsType<DiscountRule>).filter((column) =>
+    (column.key !== 'actions' || canUpdate || canDelete) &&
+    (column.key === 'actions' || visibleColumns.includes(column.key as DiscountColumnKey)),
+  )
 
   return (
     <Can I="READ" a="DISCOUNT" passThrough>
       {(allowed) =>
         allowed ? (
           <>
-            <PageTitle>Giảm giá & Ưu đãi</PageTitle>
-            <Space style={{ width: '100%', justifyContent: 'flex-end', marginBottom: 16 }}>
-              <Button icon={<ReloadOutlined />} onClick={() => void rulesQuery.refetch()}>Tải lại</Button>
-              <Can I="CREATE" a="DISCOUNT">
-                <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor()}>Thêm quy tắc</Button>
-              </Can>
-            </Space>
+            <StatCards items={statItems} />
+            <PageTitle
+            subtitle="Quyết định giảm giá và ưu đãi theo hạng thẻ"
+              extra={
+                <Space wrap>
+                  <Button icon={<ReloadOutlined />} onClick={() => void rulesQuery.refetch()}>Tải lại</Button>
+                  <ListFilterPopover
+                    open={filterOpen}
+                    onOpenChange={setFilterOpen}
+                    activeFilterCount={0}
+                    onApply={() => {
+                      if (draftVisibleColumns.length === 0) {
+                        message.error('Hãy giữ lại ít nhất một cột hiển thị')
+                        return
+                      }
+                      setVisibleColumns(draftVisibleColumns)
+                      setFilterOpen(false)
+                    }}
+                    onClear={() => {
+                      setDraftVisibleColumns(DEFAULT_VISIBLE_COLUMNS)
+                      setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)
+                    }}
+                    columnOptions={DISCOUNT_COLUMN_OPTIONS}
+                    draftVisibleColumns={draftVisibleColumns}
+                    onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as DiscountColumnKey[])}
+                  />
+                  <Can I="CREATE" a="DISCOUNT">
+                    <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor()}>Thêm quy tắc</Button>
+                  </Can>
+                </Space>
+              }
+            >
+              Giảm giá & Ưu đãi
+            </PageTitle>
             {rulesQuery.isError && (
               <Alert
                 className="mb-4" type="error" showIcon
@@ -238,9 +318,11 @@ export default function DiscountRules() {
               title="Nhân viên chỉ áp được % trong khoảng của quy tắc; vượt khoảng cần quyền discount.override. Tổng % xếp chồng (gồm giảm hạng thẻ) không vượt trần của quy tắc."
             />
             <Table<DiscountRule>
-              rowKey="id" loading={rulesQuery.isLoading} dataSource={rules} columns={columns}
-              pagination={{ pageSize: 10 }}
+              rowKey="id" loading={rulesQuery.isLoading} dataSource={paginateRows(rules, page, 10)} columns={columns}
+              scroll={{ x: 1150 }}
+              pagination={false}
             />
+            <ListPagination page={page} limit={10} total={rules.length} onChange={setPage} noun="quyết định giảm giá" />
             <Modal
               title={editing ? `Sửa quy tắc: ${editing.name}` : 'Thêm quy tắc giảm giá'}
               open={open}
@@ -330,7 +412,7 @@ export default function DiscountRules() {
           </>
         ) : (
           <>
-            <PageTitle>Giảm giá & Ưu đãi</PageTitle>
+            <PageTitle subtitle="Quyết định giảm giá và ưu đãi theo hạng thẻ">Giảm giá & Ưu đãi</PageTitle>
             <Alert type="warning" showIcon title="Bạn không có quyền xem quy tắc giảm giá (cần quyền discount.read)" />
           </>
         )

@@ -1,17 +1,13 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   Button,
-  Checkbox,
   Col,
-  Divider,
-  Empty,
   Form,
   Image,
   Input,
   InputNumber,
   Modal,
   Popconfirm,
-  Popover,
   Row,
   Select,
   Space,
@@ -22,9 +18,27 @@ import {
   message,
 } from 'antd'
 import type { TableColumnsType } from 'antd'
-import { DeleteOutlined, EditOutlined, FilterOutlined, InboxOutlined, LinkOutlined, PictureOutlined, PlusOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons'
+import {
+  DeleteOutlined,
+  EditOutlined,
+  EyeInvisibleOutlined,
+  EyeOutlined,
+  InboxOutlined,
+  LinkOutlined,
+  PictureOutlined,
+  PlusOutlined,
+  ReloadOutlined,
+  SearchOutlined,
+  ShoppingOutlined,
+} from '@ant-design/icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import PageTitle from '@/components/base/PageTitle'
+import StatCards, { type StatItem } from '@/components/base/StatCards'
+import ListFilterPopover from '@/components/base/ListFilterPopover'
+import RowActionsMenu from '@/components/base/RowActionsMenu'
+import ListPagination from '@/components/base/ListPagination'
+import TableEmpty from '@/components/base/TableEmpty'
+import { paginateRows } from '@/utils/listTable'
 import { errorMessage, pickData } from '@/api/helpers'
 import {
   deleteProductCategoriesId,
@@ -69,6 +83,7 @@ export default function Products() {
   const queryClient = useQueryClient()
   const [searchInput, setSearchInput] = useState('')
   const [search, setSearch] = useState('')
+  const [page, setPage] = useState(1)
   const [categoryFilter, setCategoryFilter] = useState<string>()
   const [statusFilter, setStatusFilter] = useState<boolean>()
   const [visibleColumns, setVisibleColumns] = useState<string[]>(DEFAULT_PRODUCT_COLUMNS)
@@ -87,8 +102,7 @@ export default function Products() {
   const [catSaving, setCatSaving] = useState(false)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
-  const activeFilterCount = [categoryFilter, statusFilter !== undefined].filter(Boolean).length
-  const hasCustomColumns = DEFAULT_PRODUCT_COLUMNS.some((column) => !visibleColumns.includes(column))
+  const activeFilterCount = [categoryFilter, statusFilter !== undefined].filter(Boolean).length + (search ? 1 : 0)
 
   const categoriesQuery = useQuery({
     queryKey: getGetProductCategoriesQueryKey(),
@@ -110,10 +124,24 @@ export default function Products() {
   })
   const rows = productsQuery.data ?? []
 
+  // Thống kê đầu trang — chỉ đáng tin khi không có bộ lọc phía server (khi đó rows là danh sách đầy đủ)
+  const statItems = useMemo<StatItem[]>(() => {
+    if (search || categoryFilter || statusFilter !== undefined) return []
+    const sellingCount = rows.filter((row) => row.is_active !== false).length
+    return [
+      { key: 'total', label: 'Tổng sản phẩm', value: rows.length.toLocaleString('vi-VN'), icon: <ShoppingOutlined />, tone: 'primary' },
+      { key: 'selling', label: 'Đang bán', value: sellingCount.toLocaleString('vi-VN'), icon: <EyeOutlined />, tone: 'secondary' },
+      { key: 'hidden', label: 'Đã ẩn', value: (rows.length - sellingCount).toLocaleString('vi-VN'), icon: <EyeInvisibleOutlined />, tone: 'neutral' },
+    ]
+  }, [rows, search, categoryFilter, statusFilter])
+
   // Tìm kiếm debounce 400ms
   useEffect(() => {
     clearTimeout(debounceRef.current)
-    debounceRef.current = setTimeout(() => setSearch(searchInput.trim()), 400)
+    debounceRef.current = setTimeout(() => {
+      setSearch(searchInput.trim())
+      setPage(1)
+    }, 400)
     return () => clearTimeout(debounceRef.current)
   }, [searchInput])
 
@@ -241,12 +269,75 @@ export default function Products() {
 
   return (
     <>
+      <StatCards items={statItems} />
       <PageTitle
+        subtitle="Danh mục sản phẩm hiển thị trên ứng dụng"
         extra={
-          <Space>
+          <Space wrap>
+            <Input
+              allowClear
+              prefix={<SearchOutlined style={{ color: 'var(--brand-text-inactive, #A9ADB2)' }} />}
+              placeholder="Tìm theo tên hoặc mã SKU"
+              style={{ width: 260 }}
+              value={searchInput}
+              onChange={(event) => setSearchInput(event.target.value)}
+              onPressEnter={() => {
+                clearTimeout(debounceRef.current)
+                setSearch(searchInput.trim())
+                setPage(1)
+              }}
+            />
             <Button icon={<InboxOutlined />} onClick={() => { setEditingCategory(null); catForm.resetFields(); setCatOpen(true) }}>
               Danh mục
             </Button>
+            <ListFilterPopover
+              open={filterOpen}
+              onOpenChange={(next) => {
+                setFilterOpen(next)
+                if (next) {
+                  filterForm.setFieldsValue({ category_id: categoryFilter, status: statusFilter === undefined ? undefined : String(statusFilter) })
+                  setDraftVisibleColumns(visibleColumns)
+                }
+              }}
+              activeFilterCount={activeFilterCount}
+              form={filterForm}
+              onApply={(values) => {
+                if (!draftVisibleColumns.length) {
+                  message.error('Hãy giữ lại ít nhất một cột hiển thị')
+                  return
+                }
+                setCategoryFilter(typeof values.category_id === 'string' ? values.category_id : undefined)
+                setStatusFilter(values.status === '' || values.status === undefined || values.status === null ? undefined : values.status === 'true')
+                setVisibleColumns(draftVisibleColumns)
+                setFilterOpen(false)
+                setPage(1)
+              }}
+              onClear={() => {
+                filterForm.resetFields()
+                setCategoryFilter(undefined)
+                setStatusFilter(undefined)
+                setVisibleColumns(DEFAULT_PRODUCT_COLUMNS)
+                setDraftVisibleColumns(DEFAULT_PRODUCT_COLUMNS)
+                setPage(1)
+              }}
+              columnOptions={PRODUCT_COLUMNS}
+              draftVisibleColumns={draftVisibleColumns}
+              onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as string[])}
+              filterItems={(
+                <>
+                  <Form.Item name="category_id" label="Danh mục" style={{ marginBottom: 10 }}>
+                    <Select allowClear placeholder="Tất cả danh mục" options={categories.map((c) => ({ value: c.id, label: c.name }))} />
+                  </Form.Item>
+                  <Form.Item name="status" label="Trạng thái" style={{ marginBottom: 0 }}>
+                    <Select allowClear placeholder="Tất cả trạng thái" options={[
+                      { value: 'true', label: 'Đang bán' },
+                      { value: 'false', label: 'Đã ẩn' },
+                    ]} />
+                  </Form.Item>
+                </>
+              )}
+            />
+            <Button icon={<ReloadOutlined />} onClick={() => { void productsQuery.refetch(); void categoriesQuery.refetch() }} />
             <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
               Thêm sản phẩm
             </Button>
@@ -255,79 +346,12 @@ export default function Products() {
       >
         Sản phẩm
       </PageTitle>
-      <Space wrap style={{ marginBottom: 16 }}>
-        <Input
-          allowClear
-          prefix={<SearchOutlined style={{ color: 'var(--brand-text-inactive, #A9ADB2)' }} />}
-          placeholder="Tìm theo tên hoặc mã SKU"
-          style={{ width: 260 }}
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-        />
-        <Popover
-          trigger="click"
-          placement="bottomLeft"
-          open={filterOpen}
-          onOpenChange={(next) => {
-            setFilterOpen(next)
-            if (next) {
-              filterForm.setFieldsValue({ category_id: categoryFilter, status: statusFilter === undefined ? undefined : String(statusFilter) })
-              setDraftVisibleColumns(visibleColumns)
-            }
-          }}
-          content={(
-            <div style={{ width: 320 }}>
-              <Typography.Text strong>Cột hiển thị ({draftVisibleColumns.length}/{PRODUCT_COLUMNS.length})</Typography.Text>
-              <Checkbox.Group
-                style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', marginTop: 8, gap: 6 }}
-                value={draftVisibleColumns}
-                options={PRODUCT_COLUMNS}
-                onChange={(values) => { if (values.length) setDraftVisibleColumns(values as string[]) }}
-              />
-              <Divider style={{ margin: '14px 0' }} />
-              <Typography.Text strong>Điều kiện lọc</Typography.Text>
-              <Form form={filterForm} layout="vertical" onFinish={(values) => {
-                setCategoryFilter(typeof values.category_id === 'string' ? values.category_id : undefined)
-                setStatusFilter(values.status === '' || values.status === undefined || values.status === null ? undefined : values.status === 'true')
-                setVisibleColumns(draftVisibleColumns)
-                setFilterOpen(false)
-              }}>
-                <Form.Item name="category_id" label="Danh mục" style={{ marginTop: 8, marginBottom: 10 }}>
-                  <Select allowClear placeholder="Tất cả danh mục" options={categories.map((c) => ({ value: c.id, label: c.name }))} />
-                </Form.Item>
-                <Form.Item name="status" label="Trạng thái" style={{ marginBottom: 10 }}>
-                  <Select allowClear placeholder="Tất cả trạng thái" options={[
-                    { value: 'true', label: 'Đang bán' },
-                    { value: 'false', label: 'Đã ẩn' },
-                  ]} />
-                </Form.Item>
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-                  <Button
-                    disabled={!activeFilterCount && !hasCustomColumns}
-                    onClick={() => {
-                      filterForm.resetFields()
-                      setCategoryFilter(undefined)
-                      setStatusFilter(undefined)
-                      setVisibleColumns(DEFAULT_PRODUCT_COLUMNS)
-                      setDraftVisibleColumns(DEFAULT_PRODUCT_COLUMNS)
-                    }}
-                  >Xóa lọc</Button>
-                  <Button type="primary" htmlType="submit">Xác nhận</Button>
-                </div>
-              </Form>
-            </div>
-          )}
-        >
-          <Button icon={<FilterOutlined />}>Bộ lọc{activeFilterCount ? ` (${activeFilterCount})` : ''}</Button>
-        </Popover>
-        <Button icon={<ReloadOutlined />} onClick={() => { void productsQuery.refetch(); void categoriesQuery.refetch() }} />
-      </Space>
       <Table<ProductRow>
         rowKey="id"
         loading={productsQuery.isFetching}
-        dataSource={rows}
-        locale={{ emptyText: <Empty description="Chưa có sản phẩm nào khớp điều kiện" /> }}
-        pagination={{ pageSize: 10, showTotal: (t) => `Tổng ${t} sản phẩm`, hideOnSinglePage: true }}
+        dataSource={paginateRows(rows, page, 10)}
+        locale={{ emptyText: <TableEmpty description="Chưa có sản phẩm nào khớp điều kiện" /> }}
+        pagination={false}
         columns={([
           {
             title: 'Ảnh',
@@ -377,26 +401,37 @@ export default function Products() {
             render: (v?: boolean) => (v === false ? <Tag>Đã ẩn</Tag> : <Tag color="green">Đang bán</Tag>),
           },
           {
-            title: 'Thao tác',
+            title: 'Hành động',
             key: 'actions',
-            width: 150,
+            width: 140,
+            fixed: 'right' as const,
             render: (_, p) => (
-              <Space>
-                <Button size="small" onClick={() => openModal(p)}>Sửa</Button>
-                {p.is_active === false ? (
-                  <Popconfirm title="Hiển thị lại sản phẩm này?" okText="Hiện" cancelText="Hủy" onConfirm={() => void toggleVisibility(p)}>
-                    <Button size="small">Hiện</Button>
-                  </Popconfirm>
-                ) : (
-                  <Popconfirm title="Ẩn sản phẩm này khỏi app?" okText="Ẩn" cancelText="Hủy" onConfirm={() => void toggleVisibility(p)}>
-                    <Button size="small" danger>Ẩn</Button>
-                  </Popconfirm>
-                )}
-              </Space>
+              <RowActionsMenu
+                items={[
+                  { key: 'edit', icon: <EditOutlined />, label: 'Sửa' },
+                  p.is_active === false
+                    ? { key: 'show', icon: <EyeOutlined />, label: 'Hiện lại' }
+                    : { key: 'hide', icon: <EyeInvisibleOutlined />, label: 'Ẩn', danger: true },
+                ]}
+                onSelect={(key) => {
+                  if (key === 'edit') openModal(p)
+                  else if (key === 'show') void toggleVisibility(p)
+                  else if (key === 'hide') {
+                    Modal.confirm({
+                      title: 'Ẩn sản phẩm này khỏi app?',
+                      okText: 'Ẩn',
+                      okButtonProps: { danger: true },
+                      cancelText: 'Hủy',
+                      onOk: () => toggleVisibility(p),
+                    })
+                  }
+                }}
+              />
             ),
           },
         ] satisfies TableColumnsType<ProductRow>).filter((column) => column.key === 'actions' || visibleColumns.includes(String(column.key)))}
       />
+      <ListPagination page={page} limit={10} total={rows.length} onChange={setPage} noun="sản phẩm" hideOnSinglePage />
 
       {/* Form sản phẩm */}
       <Modal
@@ -556,7 +591,7 @@ export default function Products() {
           size="small"
           dataSource={categories}
           pagination={false}
-          locale={{ emptyText: 'Chưa có danh mục nào' }}
+          locale={{ emptyText: <TableEmpty description="Chưa có danh mục nào" /> }}
           columns={[
             { title: 'Tên', dataIndex: 'name', render: (v: string) => <strong>{v}</strong> },
             { title: 'Thứ tự', dataIndex: 'sort_order', width: 70 },

@@ -125,7 +125,7 @@ export const usePutCommissionsId = <TError = NotFoundResponse | UnprocessableEnt
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **CM-10** — GET /commissions/summary. Filters: group_by (day|week|month), payee_type, staff_id, collaborator_id, customer_profile_id, date_from, date_to.
+ * **CM-10** — GET /commissions/summary. Filters: group_by (day|week|month), payee_type, staff_id, collaborator_id, branch_id, date_from, date_to. Results are grouped by recipient.
  * @summary Báo cáo tổng hợp hoa hồng
  */
 export const getCommissionsSummary = (
@@ -320,7 +320,7 @@ export const prefetchGetCommissionsSummaryQuery = async <TData = Awaited<ReturnT
 
 
 /**
- * **CM-06** — GET /commissions. Filters: payee_type, staff_id, collaborator_id, customer_profile_id, date_from, date_to, mode, status, page, limit.
+ * **CM-06** — GET /commissions. Filters: payee_type, staff_id, collaborator_id, customer_profile_id, branch_id, date_from, date_to, mode, status, page, limit.
  * @summary Sổ hoa hồng
  */
 export const getCommissions = (
@@ -515,7 +515,7 @@ export const prefetchGetCommissionsQuery = async <TData = Awaited<ReturnType<typ
 
 
 /**
- * **CM-07** — POST /commissions. Body: payee_type, amount, staff_id?|collaborator_id?|referrer_profile_id?, reason, base_amount?, percent?, period_date?.
+ * **CM-07** — POST /commissions. Nhập amount hoặc base_amount + percent; hỗ trợ gắn customer_treatment_id/session_id và chi nhánh.
  * @summary Nhập bút toán hoa hồng tay
  */
 export const postCommissions = (

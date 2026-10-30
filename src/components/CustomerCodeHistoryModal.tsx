@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react'
-import { Alert, Button, Empty, Modal, Table, Tabs, Tag, Typography } from 'antd'
+import { Alert, Button, Modal, Table, Tabs, Tag, Typography } from 'antd'
 import { ReloadOutlined } from '@ant-design/icons'
 import { useBrandDateTime } from '@/themeRuntime'
 import { getCustomerProfilesIdCodeHistory, getCustomerProfilesIdPoints } from '@/api/endpoints/customer-profiles'
 import type { MembershipTransaction } from '@/api/models'
 import { errorMessage, pickData } from '@/api/helpers'
+import ListPagination from '@/components/base/ListPagination'
+import TableEmpty from '@/components/base/TableEmpty'
+import { paginateRows } from '@/utils/listTable'
 
 interface CodeHistoryRow {
   id: string
@@ -53,12 +56,14 @@ export default function CustomerCodeHistoryModal({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [pointsError, setPointsError] = useState('')
+  const [pointPage, setPointPage] = useState(1)
 
   const load = async () => {
     if (!profileId) return
     setLoading(true)
     setError('')
     setPointsError('')
+    setPointPage(1)
     const results = await Promise.allSettled([
       getCustomerProfilesIdCodeHistory(profileId),
       ...(includePointsHistory ? [getCustomerProfilesIdPoints(profileId)] : []),
@@ -104,7 +109,7 @@ export default function CustomerCodeHistoryModal({
       dataSource={rows}
       pagination={false}
       scroll={{ x: 620 }}
-      locale={{ emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={emptyDescription} /> }}
+      locale={{ emptyText: <TableEmpty description={emptyDescription} /> }}
       columns={[
         { title: 'Mã cũ', dataIndex: 'old_code', render: (value?: string) => <Typography.Text code>{value}</Typography.Text> },
         { title: 'Mã mới', dataIndex: 'new_code', render: (value?: string) => <Typography.Text code>{value}</Typography.Text> },
@@ -136,13 +141,14 @@ export default function CustomerCodeHistoryModal({
           action={<Button icon={<ReloadOutlined />} onClick={() => void load()}>Thử lại</Button>}
         />
       ) : (
-        <Table<MembershipTransaction>
-          rowKey="id"
-          loading={loading}
-          dataSource={pointRows}
-          pagination={{ pageSize: 10, hideOnSinglePage: true }}
-          scroll={{ x: 650 }}
-          locale={{ emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Chưa có lịch sử điểm" /> }}
+        <>
+          <Table<MembershipTransaction>
+            rowKey="id"
+            loading={loading}
+            dataSource={paginateRows(pointRows, pointPage, 10)}
+            pagination={false}
+            scroll={{ x: 650 }}
+            locale={{ emptyText: <TableEmpty description="Chưa có lịch sử điểm" /> }}
           columns={[
             {
               title: 'Thời điểm',
@@ -178,6 +184,8 @@ export default function CustomerCodeHistoryModal({
             { title: 'Mã giao dịch', dataIndex: 'trans_code', render: (value?: string) => <Typography.Text code>{value || '—'}</Typography.Text> },
           ]}
         />
+        <ListPagination page={pointPage} limit={10} total={pointRows.length} onChange={setPointPage} noun="giao dịch điểm" hideOnSinglePage />
+        </>
       )}
     </>
   )

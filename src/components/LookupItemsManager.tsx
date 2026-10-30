@@ -2,6 +2,9 @@ import { useCallback, useEffect, useState } from 'react'
 import { Alert, Button, ColorPicker, Form, Input, InputNumber, Modal, Space, Table, Tag, Typography, message } from 'antd'
 import { ArrowDownOutlined, ArrowUpOutlined, PlusOutlined, ReloadOutlined } from '@ant-design/icons'
 import { errorMessage, pickData } from '@/api/helpers'
+import ListPagination from '@/components/base/ListPagination'
+import TableEmpty from '@/components/base/TableEmpty'
+import { paginateRows } from '@/utils/listTable'
 import type { LookupItem } from '@/api/models/lookupItem'
 import type { LookupList } from '@/api/models/lookupList'
 import type { PostLookupListsIdItemsBody } from '@/api/models/postLookupListsIdItemsBody'
@@ -41,6 +44,7 @@ export default function LookupItemsManager({ listId }: { listId: string }) {
   const [editing, setEditing] = useState<LookupItemWithColor | null>(null)
   const [open, setOpen] = useState(false)
   const [dragId, setDragId] = useState<string | null>(null)
+  const [itemsPage, setItemsPage] = useState(1)
   const [form] = Form.useForm()
 
   const load = useCallback(async () => {
@@ -132,7 +136,7 @@ export default function LookupItemsManager({ listId }: { listId: string }) {
       <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 16 }} wrap>
         <Typography.Text type="secondary">Mã mục không đổi sau khi tạo. Mục đã dùng chỉ có thể ẩn.</Typography.Text>
         <Space>
-          <Button icon={<ReloadOutlined />} onClick={() => void load()}>Tải lại</Button>
+          <Button icon={<ReloadOutlined />} onClick={() => { setItemsPage(1); void load() }}>Tải lại</Button>
           {canUpdate && <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor()}>Thêm mục</Button>}
         </Space>
       </Space>
@@ -141,9 +145,9 @@ export default function LookupItemsManager({ listId }: { listId: string }) {
         rowKey="id"
         size="small"
         loading={loading}
-        dataSource={items}
-        pagination={{ pageSize: 10 }}
-        locale={{ emptyText: 'Danh mục chưa có mục chọn nào' }}
+        dataSource={paginateRows(items, itemsPage, 10)}
+        pagination={false}
+        locale={{ emptyText: <TableEmpty description="Danh mục chưa có mục chọn nào" /> }}
         onRow={(row) => ({
           draggable: canUpdate && !saving,
           onDragStart: (event) => { setDragId(row.id); event.dataTransfer.effectAllowed = 'move' },
@@ -157,20 +161,25 @@ export default function LookupItemsManager({ listId }: { listId: string }) {
           { title: 'Màu', dataIndex: 'color', width: 110, render: (value?: string | null) => { const color = normalizeLookupColor(value); return color ? <Tag color={color}>{color.toUpperCase()}</Tag> : '—' } },
           { title: 'Thứ tự', dataIndex: 'sort_order', width: 90 },
           { title: 'Trạng thái', dataIndex: 'is_active', width: 120, render: (value?: boolean) => <Tag color={value === false ? 'default' : 'green'}>{value === false ? 'Đã ẩn' : 'Đang dùng'}</Tag> },
-          ...(canUpdate || canDelete ? [{ title: 'Thao tác', key: 'actions', width: 220, render: (_: unknown, row: LookupItemWithColor, index: number) => (
+          ...(canUpdate || canDelete ? [{ title: 'Thao tác', key: 'actions', width: 220, render: (_: unknown, row: LookupItemWithColor) => {
+            // index là vị trí trong trang hiện tại; quy đổi về vị trí trong mảng items đầy đủ
+            const globalIndex = items.findIndex((item) => item.id === row.id)
+            return (
             <Space size="small">
               {canUpdate && <>
-                <Button size="small" aria-label="Đưa lên" disabled={saving || index === 0} icon={<ArrowUpOutlined />} onClick={() => void persistOrder(row.id, items[index - 1].id)} />
-                <Button size="small" aria-label="Đưa xuống" disabled={saving || index === items.length - 1} icon={<ArrowDownOutlined />} onClick={() => void persistOrder(row.id, items[index + 1].id)} />
+                <Button size="small" aria-label="Đưa lên" disabled={saving || globalIndex === 0} icon={<ArrowUpOutlined />} onClick={() => void persistOrder(row.id, items[globalIndex - 1].id)} />
+                <Button size="small" aria-label="Đưa xuống" disabled={saving || globalIndex === items.length - 1} icon={<ArrowDownOutlined />} onClick={() => void persistOrder(row.id, items[globalIndex + 1].id)} />
                 <Button size="small" onClick={() => openEditor(row)}>Sửa</Button>
               </>}
               {row.is_active === false
                 ? canUpdate && <Button size="small" type="link" disabled={saving} onClick={() => void toggleActive(row)}>Bật lại</Button>
                 : canDelete && <Button size="small" type="link" disabled={saving} onClick={() => void toggleActive(row)}>Ẩn</Button>}
             </Space>
-          ) }] : []),
+            )
+          } }] : []),
         ]}
       />
+      <ListPagination page={itemsPage} limit={10} total={items.length} onChange={setItemsPage} noun="mục danh mục" />
       <Modal
         title={editing ? 'Sửa mục chọn' : 'Thêm mục chọn'}
         open={open}

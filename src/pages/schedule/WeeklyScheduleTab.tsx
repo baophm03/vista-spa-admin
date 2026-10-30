@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { Alert, Button, Empty, Form, Modal, Popconfirm, Select, Space, Table, Tag, message } from 'antd'
+import { Alert, Button, Form, Modal, Popconfirm, Select, Space, Table, Tag, message } from 'antd'
 import { DeleteOutlined, ReloadOutlined } from '@ant-design/icons'
 import { errorMessage, pickData } from '@/api/helpers'
+import TableEmpty from '@/components/base/TableEmpty'
 import type { StaffSchedule as StaffScheduleRow, ShiftTemplate as ShiftTemplateRow } from './types'
 import {
   deleteStaffSchedulesId,
@@ -175,7 +176,7 @@ export default function WeeklyScheduleTab({ branches, staff, access, loadingShar
     <Table<ScheduleStaff>
       rowKey="id" size="middle" pagination={false} tableLayout="fixed"
       loading={loadingShared || schedulesQuery.isLoading || templatesQuery.isLoading} dataSource={visibleStaff} columns={columns}
-      locale={{ emptyText: <Empty description={staff.length ? 'Không có KTV trong bộ lọc này' : 'Chưa có danh sách KTV'} /> }}
+      locale={{ emptyText: <TableEmpty description={staff.length ? 'Không có KTV trong bộ lọc này' : 'Chưa có danh sách KTV'} /> }}
     />
 
     <Modal title={editing ? 'Sửa lịch tuần' : 'Xếp ca làm việc'} open={open} onCancel={() => setOpen(false)} onOk={() => void submit()} okText="Lưu" cancelText="Hủy" destroyOnHidden>

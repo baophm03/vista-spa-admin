@@ -3,16 +3,13 @@ import { useQueryClient } from '@tanstack/react-query'
 import {
   Alert,
   Button,
-  Checkbox,
   Col,
   Collapse,
-  Divider,
   Form,
   Input,
   InputNumber,
   Modal,
   Popconfirm,
-  Popover,
   Row,
   Select,
   Space,
@@ -24,8 +21,13 @@ import {
   message,
 } from 'antd'
 import type { TableColumnsType } from 'antd'
-import { FilterOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
+import { EditOutlined, EyeInvisibleOutlined, EyeOutlined, PlusOutlined, SearchOutlined, ShoppingOutlined } from '@ant-design/icons'
 import PageTitle from '@/components/base/PageTitle'
+import StatCards, { type StatItem } from '@/components/base/StatCards'
+import ListFilterPopover from '@/components/base/ListFilterPopover'
+import RowActionsMenu from '@/components/base/RowActionsMenu'
+import ListPagination from '@/components/base/ListPagination'
+import { paginateRows } from '@/utils/listTable'
 import CustomFieldFormItems, { normalizeCustomFieldValues } from '@/components/CustomFieldFormItems'
 import useCustomFieldDefinitions from '@/hooks/useCustomFieldDefinitions'
 import { errorMessage, pickData } from '@/api/helpers'
@@ -152,6 +154,7 @@ export default function Treatments() {
 
   const rows = (pickData<TreatmentPackageRow[]>(packagesQuery.data) ?? []) as TreatmentPackageRow[]
   const [packageSearch, setPackageSearch] = useState('')
+  const [packagePage, setPackagePage] = useState(1)
   const visibleRows = useMemo(() => {
     const keyword = packageSearch.trim().toLowerCase()
     if (!keyword) return rows
@@ -159,6 +162,18 @@ export default function Treatments() {
       String(row.name || '').toLowerCase().includes(keyword)
       || String(row.description || '').toLowerCase().includes(keyword))
   }, [rows, packageSearch])
+  const pagedRows = paginateRows(visibleRows, packagePage, 10)
+  // Thống kê đầu tab gói — đếm trên TẤT CẢ gói (rows) trước khi phân trang;
+  // chỉ đáng tin khi không có bộ lọc server (loại gói/cơ sở/trạng thái)
+  const hasServerFilters = !!(filters.package_type_id || filters.branch_id || filters.is_active !== undefined)
+  const activePackageCount = rows.filter((row) => !!row.is_active).length
+  const statItems: StatItem[] = hasServerFilters
+    ? []
+    : [
+        { key: 'total', label: 'Tổng gói liệu trình', value: rows.length.toLocaleString('vi-VN'), icon: <ShoppingOutlined />, tone: 'primary' },
+        { key: 'active', label: 'Đang bán', value: activePackageCount.toLocaleString('vi-VN'), icon: <EyeOutlined />, tone: 'secondary' },
+        { key: 'hidden', label: 'Đã ẩn', value: (rows.length - activePackageCount).toLocaleString('vi-VN'), icon: <EyeInvisibleOutlined />, tone: 'neutral' },
+      ]
   const packageTypes = (pickData<PackageTypeRow[]>(packageTypesQuery.data) ?? []) as PackageTypeRow[]
   // GET /service trả { services, total, ... } trong responseData
   const services = (pickData<{ services?: Service[] }>(servicesQuery.data)?.services ?? []) as Service[]
@@ -339,13 +354,18 @@ export default function Treatments() {
     }
   }
 
-  const applyFilters = (values: PackageFiltersForm) => {
+  const applyFilters = (values: Record<string, unknown>) => {
+    if (!draftVisibleColumns.length) {
+      message.error('Hãy giữ lại ít nhất một cột hiển thị')
+      return
+    }
     const next: { package_type_id?: string; branch_id?: string; is_active?: boolean } = {}
-    if (values.package_type_id) next.package_type_id = values.package_type_id
-    if (values.branch_id) next.branch_id = values.branch_id
-    if (values.is_active) next.is_active = values.is_active === 'true'
+    if (typeof values.package_type_id === 'string' && values.package_type_id) next.package_type_id = values.package_type_id
+    if (typeof values.branch_id === 'string' && values.branch_id) next.branch_id = values.branch_id
+    if (values.is_active === 'true' || values.is_active === 'false') next.is_active = values.is_active === 'true'
     setFilters(next)
-    if (draftVisibleColumns.length) setVisibleColumns(draftVisibleColumns)
+    setVisibleColumns(draftVisibleColumns)
+    setPackagePage(1)
     setFilterOpen(false)
   }
 
@@ -363,17 +383,19 @@ export default function Treatments() {
 
   const clearFilters = () => {
     filterForm.resetFields()
+    setPackageSearch('')
+    setPackagePage(1)
     setFilters({})
     setVisibleColumns(DEFAULT_COLUMNS)
     setDraftVisibleColumns(DEFAULT_COLUMNS)
-    setFilterOpen(false)
   }
 
-  const activeFilterCount = Object.values(filters).filter((value) => value !== undefined && value !== '').length
+  const activeFilterCount = Object.values(filters).filter((value) => value !== undefined && value !== '').length + (packageSearch.trim() ? 1 : 0)
 
   const packageColumns: TableColumnsType<TreatmentPackageRow> = [
     {
       title: 'Gói dịch vụ',
+      key: 'name',
       dataIndex: 'name',
       width: 250,
       render: (name, row) => (
@@ -383,9 +405,10 @@ export default function Treatments() {
         </div>
       ),
     },
-    { title: 'Cơ sở', dataIndex: 'branch_id', width: 140, render: (id) => id ? branches.find((branch) => branch.id === id)?.name ?? '—' : 'Tất cả cơ sở' },
+    { title: 'Cơ sở', key: 'branch', dataIndex: 'branch_id', width: 140, render: (id) => id ? branches.find((branch) => branch.id === id)?.name ?? '—' : 'Tất cả cơ sở' },
     {
       title: 'Loại gói',
+      key: 'type',
       dataIndex: 'package_type_id',
       width: 190,
       render: (_value, row) => {
@@ -417,25 +440,11 @@ export default function Treatments() {
         ? String(row.validity_value) + ' ' + (VALIDITY_LABEL[row.validity_unit] ?? row.validity_unit)
         : 'Không thời hạn',
     },
-    { title: 'Buổi tặng', dataIndex: 'bonus_sessions_default', width: 100, render: (value) => Number(value ?? 0) },
-    { title: 'Trạng thái', dataIndex: 'is_active', width: 110, render: (active) => active ? <Tag color="green">Đang bán</Tag> : <Tag>Đã ẩn</Tag> },
+    { title: 'Buổi tặng', key: 'bonus', dataIndex: 'bonus_sessions_default', width: 100, render: (value) => Number(value ?? 0) },
+    { title: 'Trạng thái', key: 'status', dataIndex: 'is_active', width: 110, render: (active) => active ? <Tag color="green">Đang bán</Tag> : <Tag>Đã ẩn</Tag> },
   ]
 
-  const visiblePackageColumns = packageColumns.filter((column) => {
-    const key = String(column.key ?? ('dataIndex' in column ? column.dataIndex : ''))
-    const map: Record<PackageColumnKey, string[]> = {
-      name: ['name'],
-      branch: ['branch_id'],
-      type: ['package_type_id'],
-      quota: ['quota'],
-      services: ['services'],
-      price: ['price'],
-      validity: ['validity'],
-      bonus: ['bonus_sessions_default'],
-      status: ['is_active'],
-    }
-    return COLUMN_OPTIONS.some((option) => map[option.value].includes(key) && visibleColumns.includes(option.value))
-  })
+  const visiblePackageColumns = packageColumns.filter((column) => visibleColumns.includes(column.key as PackageColumnKey))
 
   const packageTypeColumns: TableColumnsType<PackageTypeRow> = [
     { title: 'Tên loại gói', dataIndex: 'name', render: (value) => <Typography.Text strong>{value}</Typography.Text> },
@@ -463,107 +472,109 @@ export default function Treatments() {
 
   return (
     <>
-      <PageTitle extra={activeTab === 'packages' && canManage ? (
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => openPackageModal()}>
-          Thêm gói
-        </Button>
-      ) : activeTab === 'types' && canManage ? (
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => openTypeModal()}>
-          Thêm loại gói
-        </Button>
-      ) : null}>
+      <PageTitle subtitle="Danh mục gói liệu trình và loại gói dịch vụ">
         Liệu trình
       </PageTitle>
+      <StatCards items={statItems} />
 
       <Tabs activeKey={activeTab} onChange={setActiveTab} items={[
-        {
-          key: 'packages',
-          label: 'Danh mục gói',
-          children: (
-            <>
-              <Space wrap style={{ marginBottom: 12 }}>
-                <Input
-                  allowClear
-                  prefix={<SearchOutlined style={{ color: '#A9ADB2' }} />}
-                  placeholder="Tìm theo tên gói"
-                  aria-label="Tìm theo tên gói"
-                  value={packageSearch}
-                  onChange={(event) => setPackageSearch(event.target.value)}
-                  style={{ width: 250 }}
-                />
-              <Popover
-                trigger="click"
-                placement="bottomLeft"
-                open={filterOpen}
-                onOpenChange={openFilters}
-                content={(
-                  <div style={{ width: 340, maxHeight: 'min(75vh, 640px)', display: 'flex', flexDirection: 'column' }}>
-                    <div style={{ overflowY: 'auto', paddingRight: 4 }}>
-                      <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 10 }}>
-                        <Typography.Text strong>Cột hiển thị</Typography.Text>
-                        <Tag style={{ marginInlineEnd: 0 }}>{draftVisibleColumns.length}/{COLUMN_OPTIONS.length} cột</Tag>
-                      </Space>
-                      <Checkbox.Group
-                        value={draftVisibleColumns}
-                        onChange={(values) => {
-                          if (values.length) setDraftVisibleColumns(values as PackageColumnKey[])
-                        }}
-                        style={{ display: 'grid', gap: 9 }}
-                        options={COLUMN_OPTIONS}
-                      />
-                      <Divider style={{ margin: '14px 0' }} />
-                      <Typography.Text strong>Điều kiện lọc</Typography.Text>
-                      <Form form={filterForm} layout="vertical" onFinish={applyFilters} style={{ marginTop: 10 }}>
-                        <Form.Item name="package_type_id" label="Loại gói" style={{ marginBottom: 10 }}>
-                          <Select allowClear placeholder="Tất cả loại gói" options={packageTypes.map((type) => ({ value: type.id, label: type.name }))} />
-                        </Form.Item>
-                        <Form.Item name="branch_id" label="Cơ sở" style={{ marginBottom: 10 }}>
-                          <Select allowClear placeholder="Tất cả cơ sở" options={branches.map((branch) => ({ value: branch.id, label: branch.name }))} />
-                        </Form.Item>
-                        <Form.Item name="is_active" label="Trạng thái" style={{ marginBottom: 0 }}>
-                          <Select allowClear placeholder="Tất cả trạng thái" options={PACKAGE_STATUS_OPTIONS} />
-                        </Form.Item>
-                      </Form>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, paddingTop: 12, marginTop: 12, borderTop: '1px solid var(--brand-border-soft)' }}>
-                      <Button disabled={!activeFilterCount && visibleColumns.length === DEFAULT_COLUMNS.length} onClick={clearFilters}>Xóa lọc</Button>
-                      <Button type="primary" onClick={() => filterForm.submit()}>Xác nhận</Button>
-                    </div>
+          {
+            key: 'packages',
+            label: 'Danh mục gói',
+            children: (
+              <>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
+                  <div style={{ minWidth: 0 }}>
+                    <Typography.Title level={5} style={{ margin: 0, color: 'var(--brand-secondary-ink)' }}>
+                      Danh mục gói
+                    </Typography.Title>
+                    <Typography.Text type="secondary" style={{ fontSize: 13 }}>
+                      Các gói liệu trình hiện có, trạng thái bán và giá niêm yết
+                    </Typography.Text>
                   </div>
-                )}
-              >
-                <Button icon={<FilterOutlined />}>Bộ lọc{activeFilterCount ? ' (' + activeFilterCount + ')' : ''}</Button>
-              </Popover>
-              </Space>
-
-              {packagesQuery.isError && <Alert type="error" showIcon message="Không tải được danh mục gói" description={errorMessage(packagesQuery.error)} style={{ margin: '12px 0' }} />}
-              <Table<TreatmentPackageRow>
-                style={{ marginTop: 12 }}
-                rowKey="id"
-                loading={packagesQuery.isLoading}
-                dataSource={visibleRows}
+                  <Space wrap>
+                    <Input
+                      allowClear
+                      prefix={<SearchOutlined style={{ color: 'var(--brand-text-inactive, #A9ADB2)' }} />}
+                      placeholder="Tìm theo tên gói"
+                      style={{ width: 260 }}
+                      value={packageSearch}
+                      onChange={(event) => {
+                        setPackageSearch(event.target.value)
+                        setPackagePage(1)
+                      }}
+                    />
+                    <ListFilterPopover
+                      open={filterOpen}
+                      onOpenChange={openFilters}
+                      activeFilterCount={activeFilterCount}
+                      form={filterForm}
+                      onApply={applyFilters}
+                      onClear={clearFilters}
+                      columnOptions={COLUMN_OPTIONS}
+                      draftVisibleColumns={draftVisibleColumns}
+                      onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as PackageColumnKey[])}
+                      filterItems={(
+                        <>
+                          <Form.Item name="package_type_id" label="Loại gói" style={{ marginBottom: 10 }}>
+                            <Select allowClear placeholder="Tất cả loại gói" options={packageTypes.map((type) => ({ value: type.id, label: type.name }))} />
+                          </Form.Item>
+                          <Form.Item name="branch_id" label="Cơ sở" style={{ marginBottom: 10 }}>
+                            <Select allowClear placeholder="Tất cả cơ sở" options={branches.map((branch) => ({ value: branch.id, label: branch.name }))} />
+                          </Form.Item>
+                          <Form.Item name="is_active" label="Trạng thái" style={{ marginBottom: 0 }}>
+                            <Select allowClear placeholder="Tất cả trạng thái" options={PACKAGE_STATUS_OPTIONS} />
+                          </Form.Item>
+                        </>
+                      )}
+                    />
+                    {canManage && (
+                      <Button type="primary" icon={<PlusOutlined />} onClick={() => openPackageModal()}>
+                        Thêm gói
+                      </Button>
+                    )}
+                  </Space>
+                </div>
+                {packagesQuery.isError && <Alert type="error" showIcon message="Không tải được danh mục gói" description={errorMessage(packagesQuery.error)} style={{ margin: '12px 0' }} />}
+                <Table<TreatmentPackageRow>
+                  rowKey="id"
+                  loading={packagesQuery.isLoading}
+                  dataSource={pagedRows}
+                  scroll={{ x: 1100 }}
+                  pagination={false}
                 columns={[
                   ...visiblePackageColumns,
                   ...(canManage ? [{
-                    title: 'Thao tác',
+                    title: 'Hành động',
                     key: 'actions',
-                    width: 150,
+                    width: 140,
+                    fixed: 'right' as const,
                     render: (_value: unknown, row: TreatmentPackageRow) => (
-                      <Space>
-                        <Button size="small" onClick={() => openPackageModal(row)}>Sửa</Button>
-                        {row.is_active && (
-                          <Popconfirm title="Ẩn gói dịch vụ này?" okText="Ẩn" cancelText="Hủy" onConfirm={() => hidePackage(row)}>
-                            <Button size="small" danger>Ẩn</Button>
-                          </Popconfirm>
-                        )}
-                        {!row.is_active && (
-                          <Button size="small" type="primary" ghost onClick={() => restorePackage(row)}>Bật lại</Button>
-                        )}
-                      </Space>
+                      <RowActionsMenu
+                        items={[
+                          { key: 'edit', icon: <EditOutlined />, label: 'Sửa' },
+                          ...(row.is_active
+                            ? [{ key: 'hide', icon: <EyeInvisibleOutlined />, danger: true, label: 'Ẩn' }]
+                            : [{ key: 'restore', icon: <EyeOutlined />, label: 'Bật lại' }]),
+                        ]}
+                        onSelect={(key) => {
+                          if (key === 'edit') openPackageModal(row)
+                          else if (key === 'hide') {
+                            Modal.confirm({
+                              title: 'Ẩn gói dịch vụ này?',
+                              okText: 'Ẩn',
+                              okButtonProps: { danger: true },
+                              cancelText: 'Hủy',
+                              onOk: () => hidePackage(row),
+                            })
+                          } else if (key === 'restore') void restorePackage(row)
+                        }}
+                      />
                     ),
                   }] : []),
                 ]}
               />
+              <ListPagination page={packagePage} limit={10} total={visibleRows.length} onChange={setPackagePage} noun="gói dịch vụ" />
             </>
           ),
         },
@@ -572,6 +583,21 @@ export default function Treatments() {
           label: 'Loại gói',
           children: (
             <>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
+                <div style={{ minWidth: 0 }}>
+                  <Typography.Title level={5} style={{ margin: 0, color: 'var(--brand-secondary-ink)' }}>
+                    Loại gói
+                  </Typography.Title>
+                  <Typography.Text type="secondary" style={{ fontSize: 13 }}>
+                    Phân nhóm gói liệu trình theo loại
+                  </Typography.Text>
+                </div>
+                {canManage && (
+                  <Button type="primary" icon={<PlusOutlined />} onClick={() => openTypeModal()}>
+                    Thêm loại gói
+                  </Button>
+                )}
+              </div>
               <Table<PackageTypeRow>
                 rowKey="id"
                 loading={packageTypesQuery.isLoading}
@@ -592,7 +618,7 @@ export default function Treatments() {
         confirmLoading={packageSaving}
         okText="Lưu"
         cancelText="Hủy"
-        width={720}
+        width="min(960px, calc(100vw - 24px))"
       >
         {!packageTypes.some((type) => type.is_active !== false) && (
           <Alert type="warning" showIcon message="Hãy tạo hoặc kích hoạt loại gói trước khi tạo gói dịch vụ." style={{ marginBottom: 16 }} />
@@ -781,6 +807,7 @@ export default function Treatments() {
         confirmLoading={typeSaving}
         okText="Lưu"
         cancelText="Hủy"
+        width="min(760px, calc(100vw - 24px))"
       >
         <Form form={typeForm} layout="vertical" style={{ marginTop: 12 }}>
           <Row gutter={16}>

@@ -10,6 +10,8 @@ import { getCustomerProfilesIdHealthMetrics } from '@/api/endpoints/customer-pro
 import { getLookupLists } from '@/api/endpoints/lookup-lists'
 import { errorMessage, pickData } from '@/api/helpers'
 import { useBrandDateTime } from '@/themeRuntime'
+import ListPagination from '@/components/base/ListPagination'
+import { paginateRows } from '@/utils/listTable'
 
 type MetricRow = HealthMetric & {
   session?: { session_no?: number } | null
@@ -28,6 +30,7 @@ export default function CustomerProfileHealthMetricsTab({ profileId, onLoadingCh
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [refresh, setRefresh] = useState(0)
+  const [page, setPage] = useState(1)
 
   useEffect(() => {
     let active = true
@@ -82,10 +85,10 @@ export default function CustomerProfileHealthMetricsTab({ profileId, onLoadingCh
           placeholder="Tất cả chỉ số"
           style={{ minWidth: 220 }}
           options={activeItems.map((item) => ({ value: item.code, label: <Space size={6}>{item.color && <span aria-hidden="true" style={{ width: 10, height: 10, borderRadius: 2, background: item.color, display: 'inline-block' }} />}{item.label}</Space> }))}
-          onChange={(value) => setMetricCode(value || '')}
+          onChange={(value) => { setMetricCode(value || ''); setPage(1) }}
         />
-        <DatePicker.RangePicker value={dateRange} onChange={(value) => setDateRange(value as [dayjs.Dayjs, dayjs.Dayjs] | null)} />
-        <Button icon={<ReloadOutlined />} onClick={() => setRefresh((value) => value + 1)}>Tải lại</Button>
+        <DatePicker.RangePicker value={dateRange} onChange={(value) => { setDateRange(value as [dayjs.Dayjs, dayjs.Dayjs] | null); setPage(1) }} />
+        <Button icon={<ReloadOutlined />} onClick={() => { setPage(1); setRefresh((value) => value + 1) }}>Tải lại</Button>
       </Space>
       {activeItems.length === 0 && <Alert type="info" showIcon message="Chưa có danh mục chỉ số đang hoạt động" description="Quản trị viên có thể cấu hình mã chỉ số trong Cấu hình dữ liệu khách hàng." />}
       {!filteredRows.length ? <Empty description="Chưa có dữ liệu sức khỏe trong bộ lọc này" /> : (
@@ -107,8 +110,8 @@ export default function CustomerProfileHealthMetricsTab({ profileId, onLoadingCh
           <Table<MetricRow>
             rowKey="id"
             size="small"
-            pagination={{ pageSize: 8 }}
-            dataSource={filteredRows}
+            pagination={false}
+            dataSource={paginateRows(filteredRows, page, 8)}
             columns={[
               { title: 'Thời điểm đo', dataIndex: 'measured_at', render: (value: string) => formatDateTime(value) },
               { title: 'Chỉ số', dataIndex: 'metric_code', render: (value: string) => names[value] || value },
@@ -119,6 +122,7 @@ export default function CustomerProfileHealthMetricsTab({ profileId, onLoadingCh
               { title: 'Ghi chú', dataIndex: 'note', render: (value?: string | null) => value || '—' },
             ]}
           />
+          <ListPagination page={page} limit={8} total={filteredRows.length} onChange={setPage} noun="chỉ số sức khỏe" />
         </>
       )}
     </div>

@@ -1,9 +1,11 @@
 import { useMemo, useState } from 'react'
-import { Button, Form, Input, InputNumber, Modal, Popconfirm, Select, Space, Table, Tag, message } from 'antd'
+import { Button, Form, Input, InputNumber, Modal, Popconfirm, Select, Space, Table, Tag, Typography, message } from 'antd'
 import type { TableColumnsType } from 'antd'
 import { PlusOutlined, ReloadOutlined } from '@ant-design/icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import ServiceImageField from '@/components/ServiceImageField'
+import ListPagination from '@/components/base/ListPagination'
+import { paginateRows } from '@/utils/listTable'
 import { errorMessage, pickData } from '@/api/helpers'
 import { Can } from '@casl/react'
 import {
@@ -39,6 +41,7 @@ export default function ServiceCategories() {
   const [saving, setSaving] = useState(false)
   const [editing, setEditing] = useState<ServiceCategoryRow | null>(null)
   const [open, setOpen] = useState(false)
+  const [page, setPage] = useState(1)
   const [form] = Form.useForm()
 
   const categoriesQuery = useQuery({
@@ -155,12 +158,17 @@ export default function ServiceCategories() {
 
   return (
     <>
-      <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 16 }} wrap>
-        <span className="text-[13px] text-[#6F7071]">
-          Danh mục hỗ trợ cây cha/con; chỉ ẩn được khi không còn dịch vụ hoặc danh mục con đang hoạt động.
-        </span>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
+        <div style={{ minWidth: 0 }}>
+          <Typography.Title level={5} style={{ margin: 0, color: 'var(--brand-secondary-ink)' }}>
+            Danh mục dịch vụ
+          </Typography.Title>
+          <Typography.Text type="secondary" style={{ fontSize: 13 }}>
+            Danh mục hỗ trợ cây cha/con; chỉ ẩn được khi không còn dịch vụ hoặc danh mục con đang hoạt động.
+          </Typography.Text>
+        </div>
         <Space>
-          <Button icon={<ReloadOutlined />} onClick={() => void categoriesQuery.refetch()}>
+          <Button icon={<ReloadOutlined />} onClick={() => { setPage(1); void categoriesQuery.refetch() }}>
             Tải lại
           </Button>
           <Can I="CREATE" a="SERVICE">
@@ -169,8 +177,9 @@ export default function ServiceCategories() {
             </Button>
           </Can>
         </Space>
-      </Space>
-      <Table<ServiceCategoryRow> rowKey="id" loading={categoriesQuery.isLoading} dataSource={rows} columns={columns} pagination={{ pageSize: 10 }} />
+      </div>
+      <Table<ServiceCategoryRow> rowKey="id" loading={categoriesQuery.isLoading} dataSource={paginateRows(rows, page, 10)} columns={columns} pagination={false} />
+      <ListPagination page={page} limit={10} total={rows.length} onChange={setPage} noun="danh mục dịch vụ" />
       <Modal
         title={editing ? 'Sửa danh mục dịch vụ' : 'Thêm danh mục dịch vụ'}
         open={open}

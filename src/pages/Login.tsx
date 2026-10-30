@@ -59,7 +59,7 @@ export default function Login() {
   const inputWrapClass =
     'relative flex items-center [&>svg]:pointer-events-none [&>svg]:absolute [&>svg]:left-4 [&>svg]:h-[18px] [&>svg]:w-[18px] [&>svg]:text-[#b3adbd]'
   const inputClass =
-    'h-12 w-full rounded-xl border-[1.5px] border-[var(--brand-border)] bg-[#faf7f3] px-4 pl-11 text-sm text-[#292331] outline-none transition placeholder:text-[#b3adbd] focus:border-[var(--brand-primary)] focus:bg-white focus:shadow-[0_0_0_4px_rgba(var(--brand-rgb),0.1)]'
+    'h-12 w-full rounded-xl border-[1.5px] border-[var(--brand-border)] bg-[var(--brand-bg)] px-4 pl-11 text-sm text-[#292331] outline-none transition placeholder:text-[#b3adbd] focus:border-[var(--brand-primary)] focus:bg-white focus:shadow-[0_0_0_4px_rgba(var(--brand-rgb),0.1)]'
   const labelClass = 'mb-2 block text-xs font-semibold uppercase tracking-[0.06em] text-[#6f6880]'
   const errorClass = 'mt-1.5 text-xs text-[#d4385f]'
 
@@ -74,7 +74,7 @@ export default function Login() {
 
       {/* Tagline góc dưới-trái */}
       <div className="absolute bottom-12 left-14 z-[1] hidden max-w-[460px] max-[720px]:hidden">
-        <div className="mb-[18px] h-[3px] w-14 rounded-full bg-[var(--brand-accent)]" />
+        <div className="mb-[18px] h-[3px] w-14 rounded-full bg-[var(--brand-tertiary)]" />
         <h2 className="m-0 mb-2.5 text-[30px] font-semibold leading-[1.35] text-white drop-shadow-[0_2px_16px_rgba(41,35,49,0.5)]">
           Nâng tầm giá trị — Tự tin tỏa sáng
         </h2>
@@ -94,10 +94,10 @@ export default function Login() {
             />
           )}
           <div className="text-2xl font-bold tracking-[0.08em] text-[var(--brand-dark)] uppercase">{brand.name}</div>
-          <div className="mt-1.5 text-[11px] font-medium tracking-[0.32em] text-[var(--brand-accent)] uppercase">
+          <div className="mt-1.5 text-[11px] font-medium tracking-[0.32em] text-[var(--brand-tertiary)] uppercase">
             Học viện Spa
           </div>
-          <div className="mx-auto mt-[18px] h-0.5 w-10 bg-[var(--brand-accent)]" />
+          <div className="mx-auto mt-[18px] h-0.5 w-10 bg-[var(--brand-tertiary)]" />
         </div>
 
         <div className="mb-7">

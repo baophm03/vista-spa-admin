@@ -3,6 +3,9 @@ import { Button, Card, Form, Input, InputNumber, Modal, Popconfirm, Select, Spac
 import { useBrandCurrency, useBrandDateTime } from '@/themeRuntime'
 import { EditOutlined, PlusOutlined, ReloadOutlined } from '@ant-design/icons'
 import PageTitle from '../components/base/PageTitle'
+import TableEmpty from '../components/base/TableEmpty'
+import ListPagination from '../components/base/ListPagination'
+import { paginateRows } from '../utils/listTable'
 import { useGetBranches } from '../api/endpoints/branches'
 import {
   useDeleteLuckyWheelsId,
@@ -46,6 +49,7 @@ export default function LuckyWheel() {
   const [chosenCustomer, setChosenCustomer] = useState<EligibleCustomer | null>(null)
   const [manualPrizeOpen, setManualPrizeOpen] = useState(false)
   const [manualPrizeId, setManualPrizeId] = useState<string | null>(null)
+  const [spinPage, setSpinPage] = useState(1)
   const [wheelForm] = Form.useForm()
   const [prizeForm] = Form.useForm()
 
@@ -78,6 +82,7 @@ export default function LuckyWheel() {
   const selectWheel = (w: LuckyWheel) => {
     setSelected(w)
     setChosenCustomer(null)
+    setSpinPage(1)
   }
   const loadWheels = () => wheelsQuery.refetch()
 
@@ -206,6 +211,7 @@ export default function LuckyWheel() {
   return (
     <>
       <PageTitle
+        subtitle="Cấu hình vòng quay may mắn và phần thưởng"
         extra={
           <Space className="max-sm:flex! max-sm:w-full! max-sm:flex-wrap!">
             <Button icon={<ReloadOutlined />} onClick={loadWheels} />
@@ -311,7 +317,7 @@ export default function LuckyWheel() {
                   loading={eligibleQuery.isLoading}
                   pagination={false}
                   size="small"
-                  locale={{ emptyText: 'Không có khách đủ điều kiện' }}
+                  locale={{ emptyText: <TableEmpty description="Không có khách đủ điều kiện" /> }}
                   onRow={(row) => ({ onClick: () => setChosenCustomer(row), style: { cursor: 'pointer' } })}
                   columns={[
                     {
@@ -351,8 +357,8 @@ export default function LuckyWheel() {
           <Card title="Lịch sử quay">
             <Table<WheelSpin>
               rowKey="id"
-              dataSource={spins}
-              pagination={{ pageSize: 5 }}
+              dataSource={paginateRows(spins, spinPage, 5)}
+              pagination={false}
               size="small"
               columns={[
                 { title: 'Thời gian', dataIndex: 'spun_at', render: (v) => formatDateTime(v) },
@@ -379,6 +385,7 @@ export default function LuckyWheel() {
                 },
               ]}
             />
+            <ListPagination page={spinPage} limit={5} total={spins.length} onChange={setSpinPage} noun="lượt quay" />
           </Card>
         )}
       </Space>

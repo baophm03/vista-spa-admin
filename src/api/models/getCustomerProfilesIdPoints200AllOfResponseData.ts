@@ -6,8 +6,10 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { MembershipTransaction } from './membershipTransaction';
+import type { GetCustomerProfilesIdPoints200AllOfResponseDataRedemption } from './getCustomerProfilesIdPoints200AllOfResponseDataRedemption';
 
 export type GetCustomerProfilesIdPoints200AllOfResponseData = {
   points?: number;
   history?: MembershipTransaction[];
+  redemption?: GetCustomerProfilesIdPoints200AllOfResponseDataRedemption;
 };

@@ -1,9 +1,14 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { Alert, Button, DatePicker, Form, Input, InputNumber, Modal, Popconfirm, Select, Space, Table, Tag, message } from 'antd'
-import { PlusOutlined } from '@ant-design/icons'
+import { Alert, Button, DatePicker, Form, Input, InputNumber, Modal, Select, Space, Table, Tag, message } from 'antd'
+import { BookOutlined, CheckCircleOutlined, EditOutlined, EyeInvisibleOutlined, PlusOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import type { Dayjs } from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
+import StatCards, { type StatItem } from '@/components/base/StatCards'
+import ListFilterPopover from '@/components/base/ListFilterPopover'
+import RowActionsMenu from '@/components/base/RowActionsMenu'
+import ListPagination from '@/components/base/ListPagination'
+import { paginateRows } from '@/utils/listTable'
 import CustomFieldFormItems, { normalizeCustomFieldValues } from '@/components/CustomFieldFormItems'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { AcademyCourse } from '@/api/models/academyCourse'
@@ -17,7 +22,7 @@ import {
 } from '@/api/endpoints/academy'
 import { useGetBranches } from '@/api/endpoints/branches'
 import useCustomFieldDefinitions from '@/hooks/useCustomFieldDefinitions'
-import { Can } from '@casl/react'
+import { Can, useAbility } from '@casl/react'
 import { useState } from 'react'
 import { useBrandCurrency } from '@/themeRuntime'
 
@@ -39,6 +44,19 @@ const LEVEL_OPTIONS = [
   { value: 'ADVANCED', label: 'Nâng cao' },
 ]
 
+type CourseColumnKey = 'code' | 'name' | 'category' | 'level' | 'tuition' | 'is_active'
+
+const COURSE_COLUMN_OPTIONS: { label: string; value: CourseColumnKey }[] = [
+  { label: 'Mã khóa', value: 'code' },
+  { label: 'Tên khóa học', value: 'name' },
+  { label: 'Danh mục', value: 'category' },
+  { label: 'Trình độ', value: 'level' },
+  { label: 'Học phí', value: 'tuition' },
+  { label: 'Trạng thái', value: 'is_active' },
+]
+
+const DEFAULT_VISIBLE_COLUMNS = COURSE_COLUMN_OPTIONS.map((column) => column.value)
+
 export default function AcademyCourses() {
   const queryClient = useQueryClient()
   const { format: formatMoney } = useBrandCurrency()
@@ -46,18 +64,33 @@ export default function AcademyCourses() {
   const coursesQuery = useGetAcademyCourses()
   const branchesQuery = useGetBranches()
   const rows = (pickData<AcademyCourse[]>(coursesQuery.data) ?? []) as AcademyCourse[]
+  const [page, setPage] = useState(1)
   const branches = (pickData<Branch[]>(branchesQuery.data) ?? []) as Branch[]
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<AcademyCourse | null>(null)
   const [saving, setSaving] = useState(false)
+  const [visibleColumns, setVisibleColumns] = useState<CourseColumnKey[]>(DEFAULT_VISIBLE_COLUMNS)
+  const [draftVisibleColumns, setDraftVisibleColumns] = useState<CourseColumnKey[]>(DEFAULT_VISIBLE_COLUMNS)
+  const [filterOpen, setFilterOpen] = useState(false)
   const [form] = Form.useForm<CourseFormValues>()
   const createMutation = usePostAcademyCourses()
   const updateMutation = usePutAcademyCoursesId()
   const deleteMutation = useDeleteAcademyCoursesId()
+  const ability = useAbility()
+  const canUpdate = ability.can('UPDATE', 'ACADEMY')
+  const canDelete = ability.can('DELETE', 'ACADEMY')
 
   const reload = async () => {
     await queryClient.invalidateQueries({ queryKey: getGetAcademyCoursesQueryKey() })
   }
+
+  // Thống kê đầu trang — rows là danh sách đầy đủ client-side (query không có bộ lọc server)
+  const activeCourseCount = rows.filter((row) => !!row.is_active).length
+  const statItems: StatItem[] = [
+    { key: 'total', label: 'Tổng khóa học', value: rows.length.toLocaleString('vi-VN'), icon: <BookOutlined />, tone: 'primary' },
+    { key: 'active', label: 'Đang mở', value: activeCourseCount.toLocaleString('vi-VN'), icon: <CheckCircleOutlined />, tone: 'secondary' },
+    { key: 'hidden', label: 'Đã ẩn', value: (rows.length - activeCourseCount).toLocaleString('vi-VN'), icon: <EyeInvisibleOutlined />, tone: 'neutral' },
+  ]
 
   const openEditor = (row?: AcademyCourse) => {
     setEditing(row ?? null)
@@ -117,34 +150,88 @@ export default function AcademyCourses() {
 
   return (
     <>
-      <PageTitle>Khóa học đào tạo</PageTitle>
+      <StatCards items={statItems} />
+      <PageTitle
+        subtitle="Khóa học đào tạo spa của trung tâm"
+        extra={
+          <Space wrap>
+            <ListFilterPopover
+              open={filterOpen}
+              onOpenChange={setFilterOpen}
+              activeFilterCount={0}
+              onApply={() => {
+                if (draftVisibleColumns.length === 0) {
+                  message.error('Hãy giữ lại ít nhất một cột hiển thị')
+                  return
+                }
+                setVisibleColumns(draftVisibleColumns)
+                setFilterOpen(false)
+              }}
+              onClear={() => {
+                setDraftVisibleColumns(DEFAULT_VISIBLE_COLUMNS)
+                setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)
+              }}
+              columnOptions={COURSE_COLUMN_OPTIONS}
+              draftVisibleColumns={draftVisibleColumns}
+              onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as CourseColumnKey[])}
+            />
+            <Can I="CREATE" a="ACADEMY">
+              <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor()}>Thêm khóa học</Button>
+            </Can>
+          </Space>
+        }
+      >
+        Khóa học đào tạo
+      </PageTitle>
       {coursesQuery.isError && <Alert type="error" showIcon message="Không tải được danh sách khóa học" description={errorMessage(coursesQuery.error)} style={{ marginBottom: 16 }} />}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
-        <Can I="CREATE" a="ACADEMY"><Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor()}>Thêm khóa học</Button></Can>
-      </div>
       <Table<AcademyCourse>
         rowKey="id"
         loading={coursesQuery.isLoading}
-        dataSource={rows}
+        dataSource={paginateRows(rows, page, 10)}
+        scroll={{ x: 900 }}
+        pagination={false}
         columns={[
-          { title: 'Mã khóa', dataIndex: 'code' },
-          { title: 'Tên khóa học', dataIndex: 'name' },
-          { title: 'Danh mục', dataIndex: 'category', render: (value: string) => CATEGORY_OPTIONS.find((item) => item.value === value)?.label ?? value },
-          { title: 'Trình độ', dataIndex: 'level', render: (value: string) => LEVEL_OPTIONS.find((item) => item.value === value)?.label ?? value },
-          { title: 'Học phí', dataIndex: 'tuition', render: (value: number) => formatMoney(value) },
-          { title: 'Trạng thái', dataIndex: 'is_active', render: (value: boolean) => <Tag color={value ? 'green' : 'default'}>{value ? 'Đang mở' : 'Đã ẩn'}</Tag> },
-          { title: '', key: 'actions', render: (_: unknown, row: AcademyCourse) => (
-            <Space>
-              <Can I="UPDATE" a="ACADEMY"><Button size="small" onClick={() => openEditor(row)}>Sửa</Button></Can>
-              <Can I={row.is_active ? 'DELETE' : 'UPDATE'} a="ACADEMY" passThrough>
-                {(allowed) => allowed ? <Popconfirm title={row.is_active ? 'Ẩn khóa học này?' : 'Mở lại khóa học này?'} okText={row.is_active ? 'Ẩn' : 'Mở'} cancelText="Hủy" onConfirm={() => void toggleActive(row)}>
-                  <Button size="small" type="link">{row.is_active ? 'Ẩn' : 'Mở lại'}</Button>
-                </Popconfirm> : null}
-              </Can>
-            </Space>
-          ) },
-        ]}
+          { key: 'code', title: 'Mã khóa', dataIndex: 'code' },
+          { key: 'name', title: 'Tên khóa học', dataIndex: 'name' },
+          { key: 'category', title: 'Danh mục', dataIndex: 'category', render: (value: string) => CATEGORY_OPTIONS.find((item) => item.value === value)?.label ?? value },
+          { key: 'level', title: 'Trình độ', dataIndex: 'level', render: (value: string) => LEVEL_OPTIONS.find((item) => item.value === value)?.label ?? value },
+          { key: 'tuition', title: 'Học phí', dataIndex: 'tuition', render: (value: number) => formatMoney(value) },
+          { key: 'is_active', title: 'Trạng thái', dataIndex: 'is_active', render: (value: boolean) => <Tag color={value ? 'green' : 'default'}>{value ? 'Đang mở' : 'Đã ẩn'}</Tag> },
+          {
+            key: 'actions',
+            title: 'Hành động',
+            width: 140,
+            fixed: 'right' as const,
+            render: (_: unknown, row: AcademyCourse) => {
+              const canToggle = ability.can(row.is_active ? 'DELETE' : 'UPDATE', 'ACADEMY')
+              return (
+                <RowActionsMenu
+                  items={[
+                    ...(canUpdate ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []),
+                    ...(canToggle ? [{ key: 'toggle', danger: row.is_active, label: row.is_active ? 'Ẩn' : 'Mở lại' }] : []),
+                  ]}
+                  onSelect={(key) => {
+                    if (key === 'edit') openEditor(row)
+                    else if (key === 'toggle') {
+                      Modal.confirm({
+                        title: row.is_active ? 'Ẩn khóa học này?' : 'Mở lại khóa học này?',
+                        okText: row.is_active ? 'Ẩn' : 'Mở',
+                        okButtonProps: row.is_active ? { danger: true } : undefined,
+                        cancelText: 'Hủy',
+                        onOk: () => void toggleActive(row),
+                      })
+                    }
+                  }}
+                />
+              )
+            },
+          },
+        ].filter((column) =>
+          (column.key !== 'actions' || canUpdate || canDelete) &&
+          (column.key === 'actions' || visibleColumns.includes(column.key as CourseColumnKey)),
+        )}
       />
+      <ListPagination page={page} limit={10} total={rows.length} onChange={setPage} noun="khóa học" />
       <Modal
         title={editing ? 'Sửa khóa học' : 'Thêm khóa học'}
         open={open}

@@ -4,7 +4,8 @@ export const brandColors = {
   primary: '#8E63A9',
   primaryDark: '#54316F',
   primaryLight: '#E9DDF0',
-  accent: '#C9A66B',
+  tertiary: '#FFD700',
+  secondary: '#D01A7E',
   background: '#FAF7F3',
   surface: '#FFFFFF',
   text: '#292331',
@@ -33,8 +34,8 @@ export const theme: ThemeConfig = {
     colorSuccess: brandColors.success,
     colorWarning: brandColors.warning,
     colorError: brandColors.danger,
-    colorBorder: 'var(--brand-border-strong)',
-    colorBorderSecondary: 'var(--brand-border)',
+    colorBorder: '#E2E8F0',
+    colorBorderSecondary: '#E2E8F0',
     borderRadius: 12,
     borderRadiusSM: 12,
     borderRadiusLG: 12,
@@ -44,6 +45,12 @@ export const theme: ThemeConfig = {
     Layout: {
       headerHeight: 64,
       headerPadding: '0 24px',
+    },
+    // Tab hoạt động dùng màu phụ (nav active màu hồng như trang gốc)
+    Tabs: {
+      itemSelectedColor: 'var(--brand-secondary-ink)',
+      itemHoverColor: 'var(--brand-secondary-ink)',
+      inkBarColor: 'var(--brand-secondary-ink)',
     },
     Menu: {
       itemHeight: 44,

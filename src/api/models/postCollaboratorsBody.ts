@@ -13,7 +13,7 @@ export type PostCollaboratorsBody = {
   type?: string;
   branch_id?: string;
   user_id?: string;
-  commission_percent?: number | null;
+  commission_percent?: number;
   note?: string;
   is_active?: boolean;
 };

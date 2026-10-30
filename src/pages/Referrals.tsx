@@ -13,10 +13,14 @@ import {
   message,
 } from 'antd'
 import type { TableColumnsType } from 'antd'
-import { PlusOutlined, ReloadOutlined } from '@ant-design/icons'
+import { ClockCircleOutlined, EditOutlined, PayCircleOutlined, PlusOutlined, ReloadOutlined, ShareAltOutlined } from '@ant-design/icons'
 import { useQueryClient } from '@tanstack/react-query'
-import { Can } from '@casl/react'
+import { Can, useAbility } from '@casl/react'
 import PageTitle from '@/components/base/PageTitle'
+import StatCards, { type StatItem } from '@/components/base/StatCards'
+import RowActionsMenu from '@/components/base/RowActionsMenu'
+import ListPagination from '@/components/base/ListPagination'
+import { paginateRows } from '@/utils/listTable'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { PostReferralsBody, PutReferralsIdBody, Referral } from '@/api/models'
 import {
@@ -64,7 +68,10 @@ type ReferralRow = Referral & {
 type CustomerOption = { id: string; full_name?: string; phone?: string; customer_code?: string }
 
 export default function Referrals() {
+  const ability = useAbility()
+  const canUpdate = ability.can('UPDATE', 'REFERRAL')
   const [open, setOpen] = useState(false)
+  const [page, setPage] = useState(1)
   const [editing, setEditing] = useState<ReferralRow | null>(null)
   const [form] = Form.useForm()
   const queryClient = useQueryClient()
@@ -97,6 +104,13 @@ export default function Referrals() {
   const invalidate = async () => {
     await queryClient.invalidateQueries({ queryKey: getGetReferralsQueryKey() })
   }
+
+  // Thống kê đầu trang — rows là danh sách đầy đủ client-side (query không có bộ lọc server)
+  const statItems: StatItem[] = [
+    { key: 'total', label: 'Tổng lượt giới thiệu', value: rows.length.toLocaleString('vi-VN'), icon: <ShareAltOutlined />, tone: 'primary' },
+    { key: 'pending', label: 'Chờ duyệt', value: rows.filter((row) => row.status === 'PENDING').length.toLocaleString('vi-VN'), icon: <ClockCircleOutlined />, tone: 'tertiary' },
+    { key: 'paid', label: 'Đã chi trả hoa hồng', value: rows.filter((row) => row.status === 'PAID').length.toLocaleString('vi-VN'), icon: <PayCircleOutlined />, tone: 'secondary' },
+  ]
 
   const createMutation = usePostReferrals({ mutation: { onSuccess: invalidate } })
   const updateMutation = usePutReferralsId({ mutation: { onSuccess: invalidate } })
@@ -231,11 +245,14 @@ export default function Referrals() {
       render: (v?: string) => v || '—',
     },
     {
-      title: 'Thao tác', key: 'actions', width: 90,
+      key: 'actions', title: 'Hành động', width: 140, fixed: 'right' as const,
       render: (_v, row) => (
-        <Can I="UPDATE" a="REFERRAL">
-          <Button size="small" onClick={() => openEdit(row)}>Sửa</Button>
-        </Can>
+        <RowActionsMenu
+          items={canUpdate ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []}
+          onSelect={(key) => {
+            if (key === 'edit') openEdit(row)
+          }}
+        />
       ),
     },
   ]
@@ -247,13 +264,20 @@ export default function Referrals() {
       {(allowed) =>
         allowed ? (
           <>
-            <PageTitle>Lịch sử giới thiệu</PageTitle>
-            <Space style={{ width: '100%', justifyContent: 'flex-end', marginBottom: 16 }}>
-              <Button icon={<ReloadOutlined />} onClick={() => void listQuery.refetch()}>Tải lại</Button>
-              <Can I="CREATE" a="REFERRAL">
-                <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>Ghi nhận giới thiệu</Button>
-              </Can>
-            </Space>
+            <StatCards items={statItems} />
+            <PageTitle
+            subtitle="Theo dõi lượt giới thiệu và hoa hồng giới thiệu"
+              extra={
+                <Space wrap>
+                  <Button icon={<ReloadOutlined />} onClick={() => void listQuery.refetch()}>Tải lại</Button>
+                  <Can I="CREATE" a="REFERRAL">
+                    <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>Ghi nhận giới thiệu</Button>
+                  </Can>
+                </Space>
+              }
+            >
+              Lịch sử giới thiệu
+            </PageTitle>
             {listQuery.isError && (
               <Alert
                 className="mb-4" type="error" showIcon
@@ -263,9 +287,11 @@ export default function Referrals() {
               />
             )}
             <Table<ReferralRow>
-              rowKey="id" loading={listQuery.isLoading} dataSource={rows} columns={columns}
-              pagination={{ pageSize: 10 }}
+              rowKey="id" loading={listQuery.isLoading} dataSource={paginateRows(rows, page, 10)}
+              columns={columns.filter((column) => column.key !== 'actions' || canUpdate)}
+              pagination={false}
             />
+            <ListPagination page={page} limit={10} total={rows.length} onChange={setPage} noun="lượt giới thiệu" />
             <Modal
               title={editing ? 'Sửa giới thiệu' : 'Ghi nhận giới thiệu'}
               open={open}
@@ -344,7 +370,7 @@ export default function Referrals() {
           </>
         ) : (
           <>
-            <PageTitle>Lịch sử giới thiệu</PageTitle>
+            <PageTitle subtitle="Theo dõi lượt giới thiệu và hoa hồng giới thiệu">Lịch sử giới thiệu</PageTitle>
             <Alert type="warning" showIcon title="Bạn không có quyền xem lịch sử giới thiệu (cần quyền referral.read)" />
           </>
         )

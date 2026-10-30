@@ -6,9 +6,12 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { WarrantyClaimStatus } from './warrantyClaimStatus';
+import type { WarrantyClaimContractFileId } from './warrantyClaimContractFileId';
 import type { WarrantyClaimSessionId } from './warrantyClaimSessionId';
 import type { WarrantyClaimApprovedBy } from './warrantyClaimApprovedBy';
 import type { WarrantyClaimRejectReason } from './warrantyClaimRejectReason';
+import type { WarrantyClaimCustomerTreatment } from './warrantyClaimCustomerTreatment';
+import type { WarrantyClaimSession } from './warrantyClaimSession';
 
 /**
  * Treatment warranty claim
@@ -18,12 +21,12 @@ export interface WarrantyClaim {
   customer_treatment_id: string;
   reason: string;
   status?: WarrantyClaimStatus;
-  contract_file_id?: string | null;
+  contract_file_id?: WarrantyClaimContractFileId;
   session_id?: WarrantyClaimSessionId;
   approved_by?: WarrantyClaimApprovedBy;
   reject_reason?: WarrantyClaimRejectReason;
-  customer_treatment?: Record<string, unknown> | null;
-  session?: Record<string, unknown> | null;
+  customer_treatment?: WarrantyClaimCustomerTreatment;
+  session?: WarrantyClaimSession;
   created_at?: string;
   updated_at?: string;
 }

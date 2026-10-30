@@ -44,11 +44,11 @@ import type {
   PostCardRanks200,
   PostCardRanksBody,
   PostMembershipBody,
-  PostMembershipsUserIdPointsAdjust200,
-  PostMembershipsUserIdPointsAdjustBody,
-  PostMembershipsUserIdRankOverride200,
-  PostMembershipsUserIdRankOverrideBody,
-  PostMembershipsUserIdRecalculate200,
+  PostMembershipsCustomerProfileIdPointsAdjust200,
+  PostMembershipsCustomerProfileIdPointsAdjustBody,
+  PostMembershipsCustomerProfileIdRankOverride200,
+  PostMembershipsCustomerProfileIdRankOverrideBody,
+  PostMembershipsCustomerProfileIdRecalculate200,
   PostReferrals200,
   PostReferralsBody,
   PutCardRanksId200,
@@ -67,7 +67,7 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * **CO-08** — PUT /referrals/{id} — đổi status/commission/note; không DELETE. Cần quyền `referral.update`. Trường body: `status`, `commission_amount`, `note`.
+ * **CO-08** — PUT /referrals/{id} — cập nhật discount_rule_id/note; không DELETE. Cần quyền `referral.update`. Hoa hồng thuộc ledger commission_entry.
  * @summary Cập nhật giới thiệu
  */
 export const putReferralsId = (
@@ -327,7 +327,7 @@ export const prefetchGetReferralsQuery = async <TData = Awaited<ReturnType<typeo
 
 
 /**
- * **CO-07** — POST /referrals — mỗi khách mới chỉ 1 giới thiệu (UNIQUE referred_profile_id). Cần quyền `referral.create`. Trường body: `referrer_type`, `referrer_id`, `referred_profile_id`, `discount_rule_id`, `commission_amount`, `note`.
+ * **CO-07** — POST /referrals — mỗi khách mới chỉ 1 giới thiệu (UNIQUE referred_profile_id). Cần quyền `referral.create`. Trường body: `referrer_type`, `referrer_id`, `referred_profile_id`, `discount_rule_id?`, `note?`. Hoa hồng ghi nhận tại commission_entry.
  * @summary Tạo giới thiệu mới
  */
 export const postReferrals = (
@@ -392,28 +392,28 @@ export const usePostReferrals = <TError = UnauthorizedResponse | ForbiddenRespon
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **MB-01** — POST /memberships/{userId}/recalculate (BR-09). Cần quyền `membership.recalculate`.
+ * **MB-01** — POST /memberships/{customerProfileId}/recalculate (BR-09). Cần quyền `membership.recalculate`.
  * @summary Tính lại hạng thành viên cho khách
  */
-export const postMembershipsUserIdRecalculate = (
-    userId: string,
+export const postMembershipsCustomerProfileIdRecalculate = (
+    customerProfileId: string,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<PostMembershipsUserIdRecalculate200>(
-      {url: `/memberships/${userId}/recalculate`, method: 'POST', signal
+      return customInstance<PostMembershipsCustomerProfileIdRecalculate200>(
+      {url: `/memberships/${customerProfileId}/recalculate`, method: 'POST', signal
     },
       );
     }
   
 
 
-export const getPostMembershipsUserIdRecalculateMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postMembershipsUserIdRecalculate>>, TError,{userId: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postMembershipsUserIdRecalculate>>, TError,{userId: string}, TContext> => {
+export const getPostMembershipsCustomerProfileIdRecalculateMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postMembershipsCustomerProfileIdRecalculate>>, TError,{customerProfileId: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postMembershipsCustomerProfileIdRecalculate>>, TError,{customerProfileId: string}, TContext> => {
 
-const mutationKey = ['postMembershipsUserIdRecalculate'];
+const mutationKey = ['postMembershipsCustomerProfileIdRecalculate'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -423,10 +423,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postMembershipsUserIdRecalculate>>, {userId: string}> = (props) => {
-          const {userId} = props ?? {};
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postMembershipsCustomerProfileIdRecalculate>>, {customerProfileId: string}> = (props) => {
+          const {customerProfileId} = props ?? {};
 
-          return  postMembershipsUserIdRecalculate(userId,)
+          return  postMembershipsCustomerProfileIdRecalculate(customerProfileId,)
         }
 
         
@@ -434,52 +434,52 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PostMembershipsUserIdRecalculateMutationResult = NonNullable<Awaited<ReturnType<typeof postMembershipsUserIdRecalculate>>>
+    export type PostMembershipsCustomerProfileIdRecalculateMutationResult = NonNullable<Awaited<ReturnType<typeof postMembershipsCustomerProfileIdRecalculate>>>
     
-    export type PostMembershipsUserIdRecalculateMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+    export type PostMembershipsCustomerProfileIdRecalculateMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
  * @summary Tính lại hạng thành viên cho khách
  */
-export const usePostMembershipsUserIdRecalculate = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postMembershipsUserIdRecalculate>>, TError,{userId: string}, TContext>, }
+export const usePostMembershipsCustomerProfileIdRecalculate = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postMembershipsCustomerProfileIdRecalculate>>, TError,{customerProfileId: string}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postMembershipsUserIdRecalculate>>,
+        Awaited<ReturnType<typeof postMembershipsCustomerProfileIdRecalculate>>,
         TError,
-        {userId: string},
+        {customerProfileId: string},
         TContext
       > => {
 
-      const mutationOptions = getPostMembershipsUserIdRecalculateMutationOptions(options);
+      const mutationOptions = getPostMembershipsCustomerProfileIdRecalculateMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **MB-02** — POST /memberships/{userId}/rank-override (gán hạng tay + BR-13). Cần quyền `membership.rank_override`. Trường body: `rank_id`, `reason`.
+ * **MB-02** — POST /memberships/{customerProfileId}/rank-override (gán hạng tay + BR-13). Cần quyền `membership.rank_override`. Trường body: `rank_id`, `reason`.
  * @summary Gán hạng thủ công
  */
-export const postMembershipsUserIdRankOverride = (
-    userId: string,
-    postMembershipsUserIdRankOverrideBody: PostMembershipsUserIdRankOverrideBody,
+export const postMembershipsCustomerProfileIdRankOverride = (
+    customerProfileId: string,
+    postMembershipsCustomerProfileIdRankOverrideBody: PostMembershipsCustomerProfileIdRankOverrideBody,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<PostMembershipsUserIdRankOverride200>(
-      {url: `/memberships/${userId}/rank-override`, method: 'POST',
+      return customInstance<PostMembershipsCustomerProfileIdRankOverride200>(
+      {url: `/memberships/${customerProfileId}/rank-override`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: postMembershipsUserIdRankOverrideBody, signal
+      data: postMembershipsCustomerProfileIdRankOverrideBody, signal
     },
       );
     }
   
 
 
-export const getPostMembershipsUserIdRankOverrideMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postMembershipsUserIdRankOverride>>, TError,{userId: string;data: PostMembershipsUserIdRankOverrideBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postMembershipsUserIdRankOverride>>, TError,{userId: string;data: PostMembershipsUserIdRankOverrideBody}, TContext> => {
+export const getPostMembershipsCustomerProfileIdRankOverrideMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postMembershipsCustomerProfileIdRankOverride>>, TError,{customerProfileId: string;data: PostMembershipsCustomerProfileIdRankOverrideBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postMembershipsCustomerProfileIdRankOverride>>, TError,{customerProfileId: string;data: PostMembershipsCustomerProfileIdRankOverrideBody}, TContext> => {
 
-const mutationKey = ['postMembershipsUserIdRankOverride'];
+const mutationKey = ['postMembershipsCustomerProfileIdRankOverride'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -489,10 +489,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postMembershipsUserIdRankOverride>>, {userId: string;data: PostMembershipsUserIdRankOverrideBody}> = (props) => {
-          const {userId,data} = props ?? {};
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postMembershipsCustomerProfileIdRankOverride>>, {customerProfileId: string;data: PostMembershipsCustomerProfileIdRankOverrideBody}> = (props) => {
+          const {customerProfileId,data} = props ?? {};
 
-          return  postMembershipsUserIdRankOverride(userId,data,)
+          return  postMembershipsCustomerProfileIdRankOverride(customerProfileId,data,)
         }
 
         
@@ -500,52 +500,52 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PostMembershipsUserIdRankOverrideMutationResult = NonNullable<Awaited<ReturnType<typeof postMembershipsUserIdRankOverride>>>
-    export type PostMembershipsUserIdRankOverrideMutationBody = PostMembershipsUserIdRankOverrideBody
-    export type PostMembershipsUserIdRankOverrideMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+    export type PostMembershipsCustomerProfileIdRankOverrideMutationResult = NonNullable<Awaited<ReturnType<typeof postMembershipsCustomerProfileIdRankOverride>>>
+    export type PostMembershipsCustomerProfileIdRankOverrideMutationBody = PostMembershipsCustomerProfileIdRankOverrideBody
+    export type PostMembershipsCustomerProfileIdRankOverrideMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
  * @summary Gán hạng thủ công
  */
-export const usePostMembershipsUserIdRankOverride = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postMembershipsUserIdRankOverride>>, TError,{userId: string;data: PostMembershipsUserIdRankOverrideBody}, TContext>, }
+export const usePostMembershipsCustomerProfileIdRankOverride = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postMembershipsCustomerProfileIdRankOverride>>, TError,{customerProfileId: string;data: PostMembershipsCustomerProfileIdRankOverrideBody}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postMembershipsUserIdRankOverride>>,
+        Awaited<ReturnType<typeof postMembershipsCustomerProfileIdRankOverride>>,
         TError,
-        {userId: string;data: PostMembershipsUserIdRankOverrideBody},
+        {customerProfileId: string;data: PostMembershipsCustomerProfileIdRankOverrideBody},
         TContext
       > => {
 
-      const mutationOptions = getPostMembershipsUserIdRankOverrideMutationOptions(options);
+      const mutationOptions = getPostMembershipsCustomerProfileIdRankOverrideMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **MB-03** — POST /memberships/{userId}/points-adjust (cộng/trừ điểm thủ công). Cần quyền `membership.points_adjust`. Trường body: `delta`, `reason`.
+ * **MB-03** — POST /memberships/{customerProfileId}/points-adjust (cộng/trừ điểm thủ công). Cần quyền `membership.points_adjust`. Trường body: `delta`, `reason`.
  * @summary Điều chỉnh điểm
  */
-export const postMembershipsUserIdPointsAdjust = (
-    userId: string,
-    postMembershipsUserIdPointsAdjustBody: PostMembershipsUserIdPointsAdjustBody,
+export const postMembershipsCustomerProfileIdPointsAdjust = (
+    customerProfileId: string,
+    postMembershipsCustomerProfileIdPointsAdjustBody: PostMembershipsCustomerProfileIdPointsAdjustBody,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<PostMembershipsUserIdPointsAdjust200>(
-      {url: `/memberships/${userId}/points-adjust`, method: 'POST',
+      return customInstance<PostMembershipsCustomerProfileIdPointsAdjust200>(
+      {url: `/memberships/${customerProfileId}/points-adjust`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: postMembershipsUserIdPointsAdjustBody, signal
+      data: postMembershipsCustomerProfileIdPointsAdjustBody, signal
     },
       );
     }
   
 
 
-export const getPostMembershipsUserIdPointsAdjustMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postMembershipsUserIdPointsAdjust>>, TError,{userId: string;data: PostMembershipsUserIdPointsAdjustBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postMembershipsUserIdPointsAdjust>>, TError,{userId: string;data: PostMembershipsUserIdPointsAdjustBody}, TContext> => {
+export const getPostMembershipsCustomerProfileIdPointsAdjustMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postMembershipsCustomerProfileIdPointsAdjust>>, TError,{customerProfileId: string;data: PostMembershipsCustomerProfileIdPointsAdjustBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postMembershipsCustomerProfileIdPointsAdjust>>, TError,{customerProfileId: string;data: PostMembershipsCustomerProfileIdPointsAdjustBody}, TContext> => {
 
-const mutationKey = ['postMembershipsUserIdPointsAdjust'];
+const mutationKey = ['postMembershipsCustomerProfileIdPointsAdjust'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -555,10 +555,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postMembershipsUserIdPointsAdjust>>, {userId: string;data: PostMembershipsUserIdPointsAdjustBody}> = (props) => {
-          const {userId,data} = props ?? {};
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postMembershipsCustomerProfileIdPointsAdjust>>, {customerProfileId: string;data: PostMembershipsCustomerProfileIdPointsAdjustBody}> = (props) => {
+          const {customerProfileId,data} = props ?? {};
 
-          return  postMembershipsUserIdPointsAdjust(userId,data,)
+          return  postMembershipsCustomerProfileIdPointsAdjust(customerProfileId,data,)
         }
 
         
@@ -566,23 +566,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PostMembershipsUserIdPointsAdjustMutationResult = NonNullable<Awaited<ReturnType<typeof postMembershipsUserIdPointsAdjust>>>
-    export type PostMembershipsUserIdPointsAdjustMutationBody = PostMembershipsUserIdPointsAdjustBody
-    export type PostMembershipsUserIdPointsAdjustMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+    export type PostMembershipsCustomerProfileIdPointsAdjustMutationResult = NonNullable<Awaited<ReturnType<typeof postMembershipsCustomerProfileIdPointsAdjust>>>
+    export type PostMembershipsCustomerProfileIdPointsAdjustMutationBody = PostMembershipsCustomerProfileIdPointsAdjustBody
+    export type PostMembershipsCustomerProfileIdPointsAdjustMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
  * @summary Điều chỉnh điểm
  */
-export const usePostMembershipsUserIdPointsAdjust = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postMembershipsUserIdPointsAdjust>>, TError,{userId: string;data: PostMembershipsUserIdPointsAdjustBody}, TContext>, }
+export const usePostMembershipsCustomerProfileIdPointsAdjust = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postMembershipsCustomerProfileIdPointsAdjust>>, TError,{customerProfileId: string;data: PostMembershipsCustomerProfileIdPointsAdjustBody}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postMembershipsUserIdPointsAdjust>>,
+        Awaited<ReturnType<typeof postMembershipsCustomerProfileIdPointsAdjust>>,
         TError,
-        {userId: string;data: PostMembershipsUserIdPointsAdjustBody},
+        {customerProfileId: string;data: PostMembershipsCustomerProfileIdPointsAdjustBody},
         TContext
       > => {
 
-      const mutationOptions = getPostMembershipsUserIdPointsAdjustMutationOptions(options);
+      const mutationOptions = getPostMembershipsCustomerProfileIdPointsAdjustMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -1040,7 +1040,7 @@ export const prefetchGetCardRanksIdQuery = async <TData = Awaited<ReturnType<typ
 
 
 /**
- * **CR-04** — PUT /card-ranks/{id} (không tự tính lại hạng cũ). Cần quyền `card_rank.update`. Trường body: `name`, `sort_order`, `min_spent`, `max_spent`, `validity`, `auto_assign`, `benefits`, `is_active`.
+ * **CR-04** — PUT /card-ranks/{id} (không tự tính lại hạng cũ). Cần quyền `card_rank.update`. Trường body: `name`, `sort_order`, `min_spent`, `max_spent`, `discount_percent`, `validity`, `auto_assign`, `benefits`, `is_active`, `color`.
  * @summary Cập nhật hạng thẻ
  */
 export const putCardRanksId = (
@@ -1105,7 +1105,7 @@ export const usePutCardRanksId = <TError = UnauthorizedResponse | ForbiddenRespo
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **CR-05** — DELETE /card-ranks/{id}: soft delete; từ chối nếu đang có khách giữ hạng. Cần quyền `card_rank.delete`.
+ * **CR-05** — DELETE /card-ranks/{id}: soft delete; từ chối nếu đang có khách giữ hạng hoặc có quy tắc ưu đãi bật áp dụng cho hạng. Cần quyền `card_rank.delete`.
  * @summary Xóa hạng thẻ
  */
 export const deleteCardRanksId = (
@@ -1362,7 +1362,7 @@ export const prefetchGetCardRanksQuery = async <TData = Awaited<ReturnType<typeo
 
 
 /**
- * **CR-03** — POST /card-ranks. Cần quyền `card_rank.create`. Trường body: `code`, `name`, `sort_order`, `min_spent`, `max_spent`, `validity`, `auto_assign`, `benefits`.
+ * **CR-03** — POST /card-ranks. Cần quyền `card_rank.create`. Trường body: `code`, `name`, `sort_order`, `min_spent`, `max_spent`, `discount_percent`, `validity`, `auto_assign`, `benefits`, `color`.
  * @summary Tạo hạng thẻ mới
  */
 export const postCardRanks = (
@@ -1426,4 +1426,4 @@ export const usePostCardRanks = <TError = UnauthorizedResponse | ForbiddenRespon
 
       return useMutation(mutationOptions, queryClient);
     }
-
+    

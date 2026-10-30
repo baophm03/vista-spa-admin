@@ -15,11 +15,11 @@ export type PostCommissionsBody = {
   referrer_profile_id?: string;
   customer_profile_id?: string;
   customer_treatment_id?: string;
-  appointment_id?: string;
   session_id?: string;
   branch_id?: string;
   base_amount?: number;
   percent?: number;
+  appointment_id?: string;
   period_date?: string;
   reason: string;
 };

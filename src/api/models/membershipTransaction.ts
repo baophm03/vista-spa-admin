@@ -8,6 +8,7 @@
 import type { MembershipTransactionRefType } from './membershipTransactionRefType';
 import type { MembershipTransactionRefId } from './membershipTransactionRefId';
 import type { MembershipTransactionPointsEarned } from './membershipTransactionPointsEarned';
+import type { MembershipTransactionReason } from './membershipTransactionReason';
 import type { MembershipTransactionSource } from './membershipTransactionSource';
 import type { MembershipTransactionBranchId } from './membershipTransactionBranchId';
 import type { MembershipTransactionCreatedAt } from './membershipTransactionCreatedAt';
@@ -27,7 +28,7 @@ export interface MembershipTransaction {
   /** @minimum 0 */
   amount: number;
   points_earned?: MembershipTransactionPointsEarned;
-  reason?: string | null;
+  reason?: MembershipTransactionReason;
   source?: MembershipTransactionSource;
   branch_id?: MembershipTransactionBranchId;
   created_at?: MembershipTransactionCreatedAt;

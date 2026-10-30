@@ -1432,7 +1432,7 @@ export const usePutAppNotificationsIdRead = <TError = UnauthorizedResponse | Not
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **APP-06** — GET /app/me/membership. Phạm vi khách hàng: chỉ thao tác trên dữ liệu của khách đang đăng nhập. Xử lý bởi `appService.myMembership`.
+ * **APP-06** — GET /app/me/membership. Phạm vi khách hàng: chỉ thao tác trên dữ liệu của khách đang đăng nhập. Trả số dư điểm và tối đa 100 giao dịch điểm mới nhất trong `points_history`. Xử lý bởi `appService.myMembership`.
  * @summary Lấy app theo membership
  */
 export const getAppMeMembership = (

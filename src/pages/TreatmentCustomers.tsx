@@ -1,9 +1,16 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { Alert, Button, Card, Checkbox, Col, DatePicker, Divider, Dropdown, Empty, Form, Image, Input, InputNumber, Modal, Popconfirm, Popover, Progress, Row, Select, Space, Spin, Statistic, Table, Tabs, Tag, Tooltip, Typography, Upload, message } from 'antd'
-import { DeleteOutlined, EditOutlined, FilterOutlined, MoreOutlined, PlusOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons'
+import { Alert, Button, Card, Col, DatePicker, Divider, Empty, Form, Image, Input, InputNumber, Modal, Popconfirm, Progress, Row, Select, Space, Spin, Statistic, Table, Tabs, Tag, Tooltip, Typography, Upload, message } from 'antd'
+import type { MenuProps } from 'antd'
+import { CheckCircleOutlined, DeleteOutlined, EditOutlined, PlayCircleOutlined, PlusOutlined, ReloadOutlined, SearchOutlined, TeamOutlined, WalletOutlined } from '@ant-design/icons'
 import dayjs, { type Dayjs } from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
+import StatCards, { type StatItem } from '@/components/base/StatCards'
+import ListFilterPopover from '@/components/base/ListFilterPopover'
+import RowActionsMenu, { type RowActionItem } from '@/components/base/RowActionsMenu'
+import ListPagination from '@/components/base/ListPagination'
+import TableEmpty from '@/components/base/TableEmpty'
+import { paginateRows } from '@/utils/listTable'
 import CustomFieldFormItems, { normalizeCustomFieldValues, type CustomFieldDefWithOptions } from '@/components/CustomFieldFormItems'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { CustomerTreatment } from '@/api/models/customerTreatment'
@@ -52,7 +59,7 @@ import { useBrandCurrency, useBrandDateTime } from '@/themeRuntime'
 import { useCustomerProfileAccess } from '@/utils/customerProfileAccess'
 import useCustomFieldDefinitions from '@/hooks/useCustomFieldDefinitions'
 import useSessionStatusConfig from '@/hooks/useSessionStatusConfig'
-import { Can } from '@casl/react'
+import { Can, useAbility } from '@casl/react'
 
 interface Slot {
   date?: string
@@ -861,9 +868,13 @@ export default function TreatmentCustomers() {
   const { formatDateTime } = useBrandDateTime()
   const queryClient = useQueryClient()
   const { isAdmin } = useCustomerProfileAccess()
+  const canUpdate = useAbility().can('UPDATE', 'CUSTOMER')
   const customerTreatmentCustomFields = useCustomFieldDefinitions('CUSTOMER_TREATMENT')
   const sessionCustomFields = useCustomFieldDefinitions('SESSION')
+  const [page, setPage] = useState(1)
+  const [limit] = useState(10)
   const [filter, setFilter] = useState<string>('all')
+  const [searchInput, setSearchInput] = useState('')
   const [search, setSearch] = useState('')
   const [pkgFilter, setPkgFilter] = useState<string>()
   const [filterOpen, setFilterOpen] = useState(false)
@@ -959,31 +970,36 @@ export default function TreatmentCustomers() {
     })
   }, [rows, filter, pkgFilter, search, profiles])
 
-  const activeFilterCount = Number(!!search.trim()) + Number(!!pkgFilter) + Number(filter !== 'all')
+  const activeFilterCount = Number(filter !== 'all') + Number(!!pkgFilter) + (search ? 1 : 0)
   const openFilters = (nextOpen: boolean) => {
     setFilterOpen(nextOpen)
     if (!nextOpen) return
-    filterForm.setFieldsValue({ search, package_id: pkgFilter, status: filter })
+    filterForm.setFieldsValue({ package_id: pkgFilter, status: filter })
     setDraftVisibleColumns(visibleColumns)
+  }
+  const applySearch = (nextKeyword: string) => {
+    setSearchInput(nextKeyword)
+    setSearch(nextKeyword.trim())
+    setPage(1)
   }
   const applyFilters = (values: Record<string, unknown>) => {
     if (!draftVisibleColumns.length) {
       message.error('Hãy giữ lại ít nhất một cột hiển thị')
       return
     }
-    setSearch(typeof values.search === 'string' ? values.search.trim() : '')
     setPkgFilter(typeof values.package_id === 'string' ? values.package_id : undefined)
     setFilter(typeof values.status === 'string' ? values.status : 'all')
     setVisibleColumns(draftVisibleColumns)
     setFilterOpen(false)
+    setPage(1)
   }
   const clearFilters = () => {
     filterForm.resetFields()
-    setSearch('')
     setPkgFilter(undefined)
     setFilter('all')
     setDraftVisibleColumns(DEFAULT_VISIBLE_COLUMNS)
     setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)
+    setPage(1)
   }
 
   const stats = useMemo(() => ({
@@ -1125,6 +1141,7 @@ export default function TreatmentCustomers() {
   const convertMutation = usePostCustomerTreatmentsIdConvert()
   const [historyOpen, setHistoryOpen] = useState(false)
   const [historyRow, setHistoryRow] = useState<CustomerTreatment | null>(null)
+  const [adjustHistoryPage, setAdjustHistoryPage] = useState(1)
   const historyQuery = useGetCustomerTreatmentsIdAdjustments(historyRow?.id ?? 'none', {
     query: { enabled: historyOpen && !!historyRow },
   })
@@ -1184,6 +1201,7 @@ export default function TreatmentCustomers() {
   const openHistory = (row: CustomerTreatment) => {
     setHistoryRow(row)
     setHistoryOpen(true)
+    setAdjustHistoryPage(1)
   }
 
   const submitPayment = async () => {
@@ -1290,10 +1308,54 @@ export default function TreatmentCustomers() {
 
   return (
     <>
+      {/* Thống kê đầu trang — cùng số liệu với rows đã tải (limit 500), thay hàng Card/Statistic cũ */}
+      <StatCards
+        items={[
+          { key: 'total', label: 'Tổng lượt đăng ký', value: stats.total.toLocaleString('vi-VN'), icon: <TeamOutlined />, tone: 'primary' },
+          { key: 'ongoing', label: 'Đang thực hiện', value: stats.ongoing.toLocaleString('vi-VN'), icon: <PlayCircleOutlined />, tone: 'secondary' },
+          { key: 'done', label: 'Đã hoàn tất', value: stats.done.toLocaleString('vi-VN'), icon: <CheckCircleOutlined />, tone: 'neutral' },
+          { key: 'debt', label: 'Tổng công nợ', value: formatMoney(stats.debt), icon: <WalletOutlined />, tone: 'tertiary' },
+        ] satisfies StatItem[]}
+      />
+
       <PageTitle
+        subtitle="Khách hàng đang thực hiện liệu trình"
         extra={
-          <Space>
+          <Space wrap>
+            <Input
+              allowClear
+              prefix={<SearchOutlined style={{ color: 'var(--brand-text-inactive, #A9ADB2)' }} />}
+              placeholder="Tìm tên hoặc SĐT khách hàng"
+              style={{ width: 260 }}
+              value={searchInput}
+              onChange={(event) => {
+                setSearchInput(event.target.value)
+                if (!event.target.value) applySearch('')
+              }}
+              onPressEnter={() => applySearch(searchInput)}
+            />
             <Button icon={<ReloadOutlined />} onClick={refresh} />
+            <ListFilterPopover
+              open={filterOpen}
+              onOpenChange={openFilters}
+              activeFilterCount={activeFilterCount}
+              form={filterForm}
+              onApply={applyFilters}
+              onClear={clearFilters}
+              columnOptions={CUSTOMER_TREATMENT_COLUMN_OPTIONS}
+              draftVisibleColumns={draftVisibleColumns}
+              onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as CustomerTreatmentColumnKey[])}
+              filterItems={(
+                <>
+                  <Form.Item name="package_id" label="Liệu trình" style={{ marginBottom: 10 }}>
+                    <Select allowClear showSearch optionFilterProp="label" placeholder="Tất cả liệu trình" options={packages.map((pkg) => ({ value: pkg.id, label: pkg.name }))} />
+                  </Form.Item>
+                  <Form.Item name="status" label="Trạng thái" style={{ marginBottom: 0 }}>
+                    <Select options={FILTERS} />
+                  </Form.Item>
+                </>
+              )}
+            />
             <Can I="UPDATE" a="CUSTOMER">
               <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
                 Thêm khách vào liệu trình
@@ -1305,77 +1367,11 @@ export default function TreatmentCustomers() {
         Khách dùng liệu trình
       </PageTitle>
 
-      <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
-        <Col xs={12} md={6}>
-          <Card styles={{ body: { padding: '16px 20px' } }}>
-            <Statistic title="Tổng lượt đăng ký" value={stats.total} />
-          </Card>
-        </Col>
-        <Col xs={12} md={6}>
-          <Card styles={{ body: { padding: '16px 20px' } }}>
-            <Statistic title="Đang thực hiện" value={stats.ongoing} valueStyle={{ color: 'var(--brand-primary)' }} />
-          </Card>
-        </Col>
-        <Col xs={12} md={6}>
-          <Card styles={{ body: { padding: '16px 20px' } }}>
-            <Statistic title="Đã hoàn tất" value={stats.done} valueStyle={{ color: '#16A34A' }} />
-          </Card>
-        </Col>
-        <Col xs={12} md={6}>
-          <Card styles={{ body: { padding: '16px 20px' } }}>
-            <Statistic title="Tổng công nợ" value={formatMoney(stats.debt)} valueStyle={{ color: '#D97706' }} />
-          </Card>
-        </Col>
-      </Row>
-
-      <Space size={12} style={{ marginBottom: 16 }} wrap>
-        <Popover
-          trigger="click"
-          placement="bottomLeft"
-          open={filterOpen}
-          onOpenChange={openFilters}
-          content={(
-            <div style={{ width: 320, maxHeight: 'min(70vh, 580px)', display: 'flex', flexDirection: 'column' }}>
-              <div style={{ overflowY: 'auto', paddingRight: 4 }}>
-                <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 10 }}>
-                  <Typography.Text strong>Cột hiển thị</Typography.Text>
-                  <Tag style={{ marginInlineEnd: 0 }}>{draftVisibleColumns.length}/{CUSTOMER_TREATMENT_COLUMN_OPTIONS.length} cột</Tag>
-                </Space>
-                <Checkbox.Group
-                  value={draftVisibleColumns}
-                  onChange={(values) => setDraftVisibleColumns(values as CustomerTreatmentColumnKey[])}
-                  style={{ display: 'grid', gap: 10 }}
-                  options={CUSTOMER_TREATMENT_COLUMN_OPTIONS}
-                />
-                <Divider style={{ margin: '14px 0' }} />
-                <Typography.Text strong>Điều kiện lọc</Typography.Text>
-                <Form form={filterForm} layout="vertical" onFinish={applyFilters} style={{ marginTop: 10 }}>
-                  <Form.Item name="search" label="Tìm khách hàng" style={{ marginBottom: 10 }}>
-                    <Input allowClear prefix={<SearchOutlined style={{ color: '#A9ADB2' }} />} placeholder="Tên hoặc số điện thoại" />
-                  </Form.Item>
-                  <Form.Item name="package_id" label="Liệu trình" style={{ marginBottom: 10 }}>
-                    <Select allowClear showSearch optionFilterProp="label" placeholder="Tất cả liệu trình" options={packages.map((pkg) => ({ value: pkg.id, label: pkg.name }))} />
-                  </Form.Item>
-                  <Form.Item name="status" label="Trạng thái" style={{ marginBottom: 0 }}>
-                    <Select options={FILTERS} />
-                  </Form.Item>
-                </Form>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, paddingTop: 12, marginTop: 12, borderTop: '1px solid var(--brand-border-soft)' }}>
-                <Button disabled={!activeFilterCount && visibleColumns.length === DEFAULT_VISIBLE_COLUMNS.length} onClick={clearFilters}>Xóa lọc</Button>
-                <Button type="primary" onClick={() => filterForm.submit()}>Xác nhận</Button>
-              </div>
-            </div>
-          )}
-        >
-          <Button icon={<FilterOutlined />}>Bộ lọc{activeFilterCount ? ` (${activeFilterCount})` : ''}</Button>
-        </Popover>
-      </Space>
-
       <Table<CustomerTreatment>
         rowKey="id"
         loading={treatmentsQuery.isLoading}
-        dataSource={list}
+        dataSource={paginateRows(list, page, limit)}
+        pagination={false}
         onRow={(row) => ({ onClick: () => openDetail(row), style: { cursor: 'pointer' } })}
         columns={[
           {
@@ -1446,130 +1442,124 @@ export default function TreatmentCustomers() {
             render: (v: string) => <Tag color={STATUS_META[v]?.color}>{STATUS_META[v]?.label ?? v}</Tag>,
           },
           {
-            title: '',
+            title: 'Hành động',
             key: 'actions',
-            width: 170,
-            render: (_: unknown, row: CustomerTreatment) => (
-              <Can I="UPDATE" a="CUSTOMER">
-                <Space onClick={(e) => e.stopPropagation()}>
-                  {row.status === 'ACTIVE' && (
-                    <Button size="small" type="primary" ghost disabled={addingSessionId !== null} loading={addingSessionId === row.id} onClick={() => addSession(row)}>
-                      +1 buổi
-                    </Button>
-                  )}
-                  <Dropdown
-                    trigger={['click']}
-                    menu={{
-                      items: [
-                        {
-                          key: 'pay',
-                          label: 'Thu tiền',
-                          disabled: !((row.debt_amount ?? 0) > 0 && row.status !== 'CANCELLED'),
-                        },
-                        { key: 'adjust', label: 'Điều chỉnh gói', disabled: !(row.status === 'ACTIVE' || row.status === 'EXPIRED') },
-                        {
-                          key: 'convert',
-                          label: `Đổi buổi tặng (${bonusRemainingOf(row)})`,
-                          disabled: !(row.status === 'ACTIVE' && bonusRemainingOf(row) > 0),
-                        },
-                        { key: 'history', label: 'Lịch sử điều chỉnh' },
-                        { type: 'divider' as const },
-                        {
-                          key: 'finish',
-                          label: 'Hoàn tất liệu trình (trả da)',
-                          disabled: !(row.status === 'ACTIVE' && row.quota_type === 'UNLIMITED'),
-                        },
-                        { key: 'cancel', label: 'Hủy liệu trình', danger: true, disabled: row.status !== 'ACTIVE' },
-                      ],
-                      onClick: ({ key }) => {
-                        if (key === 'pay') {
-                          setDetail(row)
-                          payForm.setFieldsValue({ amount: row.debt_amount, method: activePaymentMethods.find((item) => item.code === 'CASH')?.code ?? activePaymentMethods[0]?.code })
-                          setPayOpen(true)
-                        } else if (key === 'adjust') {
-                          openAdjust(row)
-                        } else if (key === 'convert') {
-                          openConvert(row)
-                        } else if (key === 'history') {
-                          openHistory(row)
-                        } else if (key === 'finish') {
-                          Modal.confirm({
-                            title: 'Hoàn tất liệu trình (trả da)?',
-                            content: 'Gói sẽ chuyển sang Hoàn tất và bắt đầu tính thời gian bảo hành trọn đời.',
-                            okText: 'Hoàn tất',
-                            cancelText: 'Không',
-                            onOk: () => finishTreatment(row),
-                          })
-                        } else if (key === 'cancel') {
-                          Modal.confirm({
-                            title: 'Hủy liệu trình này?',
-                            content: 'Chỉ được hủy khi chưa có buổi hoàn tất. Các giao dịch thanh toán được giữ nguyên.',
-                            okText: 'Hủy LT',
-                            okButtonProps: { danger: true },
-                            cancelText: 'Không',
-                            onOk: () => cancelTreatment(row),
-                          })
-                        }
-                      },
-                    }}
-                  >
-                    <Button size="small" icon={<MoreOutlined />} aria-label="Thao tác khác" />
-                  </Dropdown>
-                  {row.status === 'ACTIVE' && (
-                    <Button size="small" onClick={() => openPromo(row)}>
-                      Ưu đãi & điểm
-                    </Button>
-                  )}
-                </Space>
-              </Can>
-            ),
-},
-        ].filter((column) => column.key === 'actions' || visibleColumns.includes(column.key as CustomerTreatmentColumnKey))}
+            width: 140,
+            fixed: 'right' as const,
+            render: (_: unknown, row: CustomerTreatment) => {
+              const items: MenuProps['items'] = [
+                ...(row.status === 'ACTIVE' ? [{ key: 'add_session', icon: <PlusOutlined />, label: '+1 buổi', disabled: addingSessionId !== null }] : []),
+                {
+                  key: 'pay',
+                  label: 'Thu tiền',
+                  disabled: !((row.debt_amount ?? 0) > 0 && row.status !== 'CANCELLED'),
+                },
+                { key: 'adjust', label: 'Điều chỉnh gói', disabled: !(row.status === 'ACTIVE' || row.status === 'EXPIRED') },
+                {
+                  key: 'convert',
+                  label: `Đổi buổi tặng (${bonusRemainingOf(row)})`,
+                  disabled: !(row.status === 'ACTIVE' && bonusRemainingOf(row) > 0),
+                },
+                { key: 'history', label: 'Lịch sử điều chỉnh' },
+                { type: 'divider' as const },
+                {
+                  key: 'finish',
+                  label: 'Hoàn tất liệu trình (trả da)',
+                  disabled: !(row.status === 'ACTIVE' && row.quota_type === 'UNLIMITED'),
+                },
+                { key: 'cancel', label: 'Hủy liệu trình', danger: true, disabled: row.status !== 'ACTIVE' },
+                ...(row.status === 'ACTIVE' ? [{ key: 'promo', label: 'Ưu đãi & điểm' }] : []),
+              ]
+              return (
+                <RowActionsMenu
+                  items={items as RowActionItem[]}
+                  onSelect={(key) => {
+                    if (key === 'add_session') addSession(row)
+                    else if (key === 'pay') {
+                      setDetail(row)
+                      payForm.setFieldsValue({ amount: row.debt_amount, method: activePaymentMethods.find((item) => item.code === 'CASH')?.code ?? activePaymentMethods[0]?.code })
+                      setPayOpen(true)
+                    } else if (key === 'adjust') {
+                      openAdjust(row)
+                    } else if (key === 'convert') {
+                      openConvert(row)
+                    } else if (key === 'history') {
+                      openHistory(row)
+                    } else if (key === 'finish') {
+                      Modal.confirm({
+                        title: 'Hoàn tất liệu trình (trả da)?',
+                        content: 'Gói sẽ chuyển sang Hoàn tất và bắt đầu tính thời gian bảo hành trọn đời.',
+                        okText: 'Hoàn tất',
+                        cancelText: 'Không',
+                        onOk: () => finishTreatment(row),
+                      })
+                    } else if (key === 'cancel') {
+                      Modal.confirm({
+                        title: 'Hủy liệu trình này?',
+                        content: 'Chỉ được hủy khi chưa có buổi hoàn tất. Các giao dịch thanh toán được giữ nguyên.',
+                        okText: 'Hủy LT',
+                        okButtonProps: { danger: true },
+                        cancelText: 'Không',
+                        onOk: () => cancelTreatment(row),
+                      })
+                    } else if (key === 'promo') {
+                      openPromo(row)
+                    }
+                  }}
+                />
+              )
+            },
+        },
+        ].filter((column) =>
+          (column.key !== 'actions' || canUpdate) &&
+          (column.key === 'actions' || visibleColumns.includes(column.key as CustomerTreatmentColumnKey)),
+        )}
       />
+      <ListPagination page={page} limit={limit} total={list.length} onChange={setPage} noun="khách điều trị" />
 
-  < Modal
-title = "Thêm khách vào liệu trình"
-open = { open }
-onCancel = {() => setOpen(false)}
-onOk = { submit }
-okText = "Lưu"
-cancelText = "Hủy"
-  >
-  <Form form={form} layout="vertical" style={{ marginTop: 12 }}>
-    <Form.Item name="customer_profile_id" label="Khách hàng" rules={[{ required: true, message: 'Chọn khách hàng' }]}>
-      <Select
-        showSearch
-        filterOption={false}
-        placeholder="Gõ tên hoặc SĐT để tìm khách"
-        onSearch={fetchCustomerOptions}
-        options={customerOptions.map((c) => ({ value: c.id, label: `${c.full_name} — ${c.phone}` }))}
-      />
-    </Form.Item>
-    <Form.Item name="package_id" label="Liệu trình" rules={[{ required: true, message: 'Chọn liệu trình' }]}>
-      <Select
-        showSearch
-        optionFilterProp="label"
-        placeholder="Chọn liệu trình"
-        loading={packagesQuery.isLoading}
-        onChange={onPackageChange}
-        options={packages.filter((p) => p.is_active).map((p) => ({
-          value: p.id,
-          label: `${p.name} (${QUOTA_LABEL[p.quota_type ?? ''] ?? p.quota_type})`,
-        }))}
-      />
-    </Form.Item>
-    <Form.Item name="total_amount" label="Số tiền" rules={[{ required: true, message: 'Nhập số tiền' }]}>
-      <InputNumber min={0} step={100000} suffix={currencySymbol} style={{ width: '100%' }} />
-    </Form.Item>
-    <Form.Item name="sessions_bonus" label="Buổi tặng" extra="Cộng thêm vào số buổi của gói — để trống nếu không tặng">
-      <InputNumber min={0} precision={0} style={{ width: '100%' }} />
-    </Form.Item>
-    <Form.Item name="expires_at" label="Hạn sử dụng" extra="Để trống nếu gói không giới hạn thời gian">
-      <DatePicker style={{ width: '100%' }} />
-    </Form.Item>
-    <CustomFieldFormItems definitions={customerTreatmentCustomFields} />
-  </Form>
-      </Modal >
+      <Modal
+        title="Thêm khách vào liệu trình"
+        open={open}
+        onCancel={() => setOpen(false)}
+        onOk={submit}
+        okText="Lưu"
+        cancelText="Hủy"
+      >
+        <Form form={form} layout="vertical" style={{ marginTop: 12 }}>
+          <Form.Item name="customer_profile_id" label="Khách hàng" rules={[{ required: true, message: 'Chọn khách hàng' }]}>
+            <Select
+              showSearch
+              filterOption={false}
+              placeholder="Gõ tên hoặc SĐT để tìm khách"
+              onSearch={fetchCustomerOptions}
+              options={customerOptions.map((c) => ({ value: c.id, label: `${c.full_name} — ${c.phone}` }))}
+            />
+          </Form.Item>
+          <Form.Item name="package_id" label="Liệu trình" rules={[{ required: true, message: 'Chọn liệu trình' }]}>
+            <Select
+              showSearch
+              optionFilterProp="label"
+              placeholder="Chọn liệu trình"
+              loading={packagesQuery.isLoading}
+              onChange={onPackageChange}
+              options={packages.filter((p) => p.is_active).map((p) => ({
+                value: p.id,
+                label: `${p.name} (${QUOTA_LABEL[p.quota_type ?? ''] ?? p.quota_type})`,
+              }))}
+            />
+          </Form.Item>
+          <Form.Item name="total_amount" label="Số tiền" rules={[{ required: true, message: 'Nhập số tiền' }]}>
+            <InputNumber min={0} step={100000} suffix={currencySymbol} style={{ width: '100%' }} />
+          </Form.Item>
+          <Form.Item name="sessions_bonus" label="Buổi tặng" extra="Cộng thêm vào số buổi của gói — để trống nếu không tặng">
+            <InputNumber min={0} precision={0} style={{ width: '100%' }} />
+          </Form.Item>
+          <Form.Item name="expires_at" label="Hạn sử dụng" extra="Để trống nếu gói không giới hạn thời gian">
+            <DatePicker style={{ width: '100%' }} />
+          </Form.Item>
+          <CustomFieldFormItems definitions={customerTreatmentCustomFields} />
+        </Form>
+      </Modal>
 
       <Modal
         title="Thông tin buổi điều trị mới"
@@ -1899,7 +1889,7 @@ cancelText = "Hủy"
                         loading={payLoading}
                         dataSource={payments}
                         pagination={false}
-                        locale={{ emptyText: 'Chưa có lần thanh toán nào' }}
+                        locale={{ emptyText: <TableEmpty description="Chưa có lần thanh toán nào" /> }}
                         columns={[
                           {
                             title: 'Thời gian',
@@ -2024,45 +2014,48 @@ cancelText = "Hủy"
         ) : (pickData<TreatmentAdjustmentRow[]>(historyQuery.data) ?? []).length === 0 ? (
           <Empty description="Gói chưa từng bị điều chỉnh" style={{ margin: '24px 0' }} />
         ) : (
-          <Table<TreatmentAdjustmentRow>
-            rowKey="id"
-            size="small"
-            loading={historyQuery.isLoading}
-            dataSource={(pickData<TreatmentAdjustmentRow[]>(historyQuery.data) ?? []) as TreatmentAdjustmentRow[]}
-            pagination={{ pageSize: 8 }}
-            columns={[
-              { title: 'Thời gian', dataIndex: 'created_at', width: 130, render: (v: string) => formatDateTime(v) },
-              { title: 'Loại', dataIndex: 'type', width: 140, render: (v: string) => ADJUST_TYPE_LABEL[v] ?? v },
-              {
-                title: 'Giá trị',
-                dataIndex: 'amount',
-                width: 90,
-                render: (v: number | null, row: TreatmentAdjustmentRow) =>
-                  v == null ? '—' : /CONVERT|SESSIONS|BONUS/.test(row.type) ? `${v} buổi` : Number(v).toLocaleString('vi-VN'),
-              },
-              { title: 'Lý do', dataIndex: 'reason', render: (v: string) => v },
-              {
-                title: 'Thay đổi',
-                key: 'diff',
-                width: 280,
-                render: (_: unknown, row: TreatmentAdjustmentRow) => {
-                  const lines = adjustmentDiffLines(row)
-                  return (
-                    <div style={{ fontSize: 12, display: 'grid', gap: 2 }}>
-                      {lines.map((line) => (
-                        <div key={line.label}>
-                          <span style={{ color: '#6F7071' }}>{line.label}: </span>
-                          <span style={{ color: '#8C9091' }}>{line.before}</span>
-                          {' → '}
-                          <span style={{ fontWeight: 600 }}>{line.after}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )
+          <>
+            <Table<TreatmentAdjustmentRow>
+              rowKey="id"
+              size="small"
+              loading={historyQuery.isLoading}
+              dataSource={paginateRows((pickData<TreatmentAdjustmentRow[]>(historyQuery.data) ?? []) as TreatmentAdjustmentRow[], adjustHistoryPage, 8)}
+              pagination={false}
+              columns={[
+                { title: 'Thời gian', dataIndex: 'created_at', width: 130, render: (v: string) => formatDateTime(v) },
+                { title: 'Loại', dataIndex: 'type', width: 140, render: (v: string) => ADJUST_TYPE_LABEL[v] ?? v },
+                {
+                  title: 'Giá trị',
+                  dataIndex: 'amount',
+                  width: 90,
+                  render: (v: number | null, row: TreatmentAdjustmentRow) =>
+                    v == null ? '—' : /CONVERT|SESSIONS|BONUS/.test(row.type) ? `${v} buổi` : Number(v).toLocaleString('vi-VN'),
                 },
-              },
-            ]}
-          />
+                { title: 'Lý do', dataIndex: 'reason', render: (v: string) => v },
+                {
+                  title: 'Thay đổi',
+                  key: 'diff',
+                  width: 280,
+                  render: (_: unknown, row: TreatmentAdjustmentRow) => {
+                    const lines = adjustmentDiffLines(row)
+                    return (
+                      <div style={{ fontSize: 12, display: 'grid', gap: 2 }}>
+                        {lines.map((line) => (
+                          <div key={line.label}>
+                            <span style={{ color: '#6F7071' }}>{line.label}: </span>
+                            <span style={{ color: '#8C9091' }}>{line.before}</span>
+                            {' → '}
+                            <span style={{ fontWeight: 600 }}>{line.after}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )
+                  },
+                },
+              ]}
+            />
+            <ListPagination page={adjustHistoryPage} limit={8} total={(pickData<TreatmentAdjustmentRow[]>(historyQuery.data) ?? []).length} onChange={setAdjustHistoryPage} noun="lần điều chỉnh" />
+          </>
         )}
       </Modal>
     </>
@@ -2072,6 +2065,7 @@ cancelText = "Hủy"
 /** LY-01 — Lịch sử biến động điểm của khách (trong drawer chi tiết). */
 function PointsHistoryPanel({ profileId }: { profileId: string }) {
   const pointsQuery = useGetCustomerProfilesIdPoints(profileId)
+  const [pointPage, setPointPage] = useState(1)
   const data = pickData<{ points?: number; history?: MembershipTransaction[] }>(pointsQuery.data)
   const REF_LABEL: Record<string, string> = {
     PAYMENT: 'Thanh toán',
@@ -2090,27 +2084,30 @@ function PointsHistoryPanel({ profileId }: { profileId: string }) {
       ) : rows.length === 0 ? (
         <Empty description="Chưa có biến động điểm nào" />
       ) : (
-        <Table
-          rowKey={(r) => String(r.id ?? r.trans_code ?? r.trans_date)}
-          size="small"
-          dataSource={rows}
-          pagination={{ pageSize: 8 }}
-          columns={[
-            { title: 'Thời gian', dataIndex: 'created_at', width: 140, render: (v: string) => (v ? dayjs(v).format('DD/MM/YYYY HH:mm') : '—') },
-            { title: 'Loại', dataIndex: 'ref_type', width: 130, render: (v: string) => REF_LABEL[v] ?? v },
-            {
-              title: 'Điểm',
-              dataIndex: 'points_earned',
-              width: 90,
-              render: (v: number) => (
-                <Typography.Text type={Number(v) >= 0 ? 'success' : 'danger'}>
-                  {Number(v) >= 0 ? '+' : ''}{v}
-                </Typography.Text>
-              ),
-            },
-            { title: 'Lý do', dataIndex: 'reason', render: (v: string | null) => v || '—' },
-          ]}
-        />
+        <>
+          <Table
+            rowKey={(r) => String(r.id ?? r.trans_code ?? r.trans_date)}
+            size="small"
+            dataSource={paginateRows(rows, pointPage, 8)}
+            pagination={false}
+            columns={[
+              { title: 'Thời gian', dataIndex: 'created_at', width: 140, render: (v: string) => (v ? dayjs(v).format('DD/MM/YYYY HH:mm') : '—') },
+              { title: 'Loại', dataIndex: 'ref_type', width: 130, render: (v: string) => REF_LABEL[v] ?? v },
+              {
+                title: 'Điểm',
+                dataIndex: 'points_earned',
+                width: 90,
+                render: (v: number) => (
+                  <Typography.Text type={Number(v) >= 0 ? 'success' : 'danger'}>
+                    {Number(v) >= 0 ? '+' : ''}{v}
+                  </Typography.Text>
+                ),
+              },
+              { title: 'Lý do', dataIndex: 'reason', render: (v: string | null) => v || '—' },
+            ]}
+          />
+          <ListPagination page={pointPage} limit={8} total={rows.length} onChange={setPointPage} noun="biến động điểm" />
+        </>
       )}
     </div>
   )

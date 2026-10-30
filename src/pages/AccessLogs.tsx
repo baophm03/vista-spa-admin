@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Alert, Badge, Button, DatePicker, Popover, Select, Space, Table, Tag, Typography } from 'antd'
+import { Alert, Button, DatePicker, Form, Select, Space, Table, Tag, Typography } from 'antd'
 import type { Dayjs } from 'dayjs'
 import dayjs from 'dayjs'
-import { FilterOutlined, ReloadOutlined } from '@ant-design/icons'
+import { ReloadOutlined } from '@ant-design/icons'
 import PageTitle from '@/components/base/PageTitle'
+import ListFilterPopover from '@/components/base/ListFilterPopover'
+import ListPagination from '@/components/base/ListPagination'
+import TableEmpty from '@/components/base/TableEmpty'
 import { errorMessage, pickData, pickMeta } from '@/api/helpers'
 import type { GetAccessLogsParams } from '@/api/models/getAccessLogsParams'
 import type { GetAccessLogsAction } from '@/api/models/getAccessLogsAction'
@@ -60,18 +63,14 @@ function listRows<T>(value: unknown): T[] {
 export default function AccessLogs() {
   const { formatDateTime } = useBrandDateTime()
   const [page, setPage] = useState(1)
-  const [limit, setLimit] = useState(20)
+  const [limit] = useState(10)
   const [userId, setUserId] = useState<string>()
   const [branchId, setBranchId] = useState<string>()
   const [customerProfileId, setCustomerProfileId] = useState<string>()
   const [action, setAction] = useState<GetAccessLogsAction>()
   const [range, setRange] = useState<[Dayjs | null, Dayjs | null] | null>(null)
   const [filterOpen, setFilterOpen] = useState(false)
-  const [draftUserId, setDraftUserId] = useState<string>()
-  const [draftBranchId, setDraftBranchId] = useState<string>()
-  const [draftCustomerProfileId, setDraftCustomerProfileId] = useState<string>()
-  const [draftAction, setDraftAction] = useState<GetAccessLogsAction>()
-  const [draftRange, setDraftRange] = useState<[Dayjs | null, Dayjs | null] | null>(null)
+  const [filterForm] = Form.useForm()
   const [staffSearch, setStaffSearch] = useState('')
   const [customerSearch, setCustomerSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState({ staff: '', customer: '' })
@@ -111,8 +110,6 @@ export default function AccessLogs() {
 
   const activeFilterCount = [branchId, userId, customerProfileId, action, range?.some(Boolean) ? 'date' : undefined]
     .filter(Boolean).length
-  const draftFilterCount = [draftBranchId, draftUserId, draftCustomerProfileId, draftAction, draftRange?.some(Boolean) ? 'date' : undefined]
-    .filter(Boolean).length
 
   const openFilters = (nextOpen: boolean) => {
     setFilterOpen(nextOpen)
@@ -121,34 +118,26 @@ export default function AccessLogs() {
       setCustomerSearch('')
       return
     }
-    setDraftBranchId(branchId)
-    setDraftUserId(userId)
-    setDraftCustomerProfileId(customerProfileId)
-    setDraftAction(action)
-    setDraftRange(range)
+    filterForm.setFieldsValue({ branch_id: branchId, user_id: userId, customer_profile_id: customerProfileId, action, range })
   }
 
-  const applyFilters = () => {
-    setBranchId(draftBranchId)
-    setUserId(draftUserId)
-    setCustomerProfileId(draftCustomerProfileId)
-    setAction(draftAction)
-    setRange(draftRange)
+  const applyFilters = (values: Record<string, unknown>) => {
+    setBranchId(typeof values.branch_id === 'string' && values.branch_id ? values.branch_id : undefined)
+    setUserId(typeof values.user_id === 'string' && values.user_id ? values.user_id : undefined)
+    setCustomerProfileId(typeof values.customer_profile_id === 'string' && values.customer_profile_id ? values.customer_profile_id : undefined)
+    setAction(values.action as GetAccessLogsAction | undefined)
+    setRange((values.range as [Dayjs | null, Dayjs | null] | null | undefined) ?? null)
     setPage(1)
     setFilterOpen(false)
   }
 
-  const resetFilters = () => {
+  const clearFilters = () => {
+    filterForm.resetFields()
     setBranchId(undefined)
     setUserId(undefined)
     setCustomerProfileId(undefined)
     setAction(undefined)
     setRange(null)
-    setDraftBranchId(undefined)
-    setDraftUserId(undefined)
-    setDraftCustomerProfileId(undefined)
-    setDraftAction(undefined)
-    setDraftRange(null)
     setStaffSearch('')
     setCustomerSearch('')
     setPage(1)
@@ -156,107 +145,77 @@ export default function AccessLogs() {
 
   return (
     <>
-      <PageTitle
-        extra={(
+      <PageTitle subtitle="Nhật ký truy cập hệ thống quản trị" extra={(
           <Space wrap>
             <Button icon={<ReloadOutlined />} onClick={() => void logsQuery.refetch()}>Tải lại</Button>
-            <Popover
-              trigger="click"
-              placement="bottomRight"
+            <ListFilterPopover
               open={filterOpen}
               onOpenChange={openFilters}
-              content={(
-                <div style={{ width: 320, maxHeight: 'min(70vh, 580px)', display: 'flex', flexDirection: 'column' }}>
-                  <div style={{ overflowY: 'auto', paddingRight: 4 }}>
-                    <Typography.Text strong>Điều kiện lọc</Typography.Text>
-                    <div style={{ marginTop: 12 }}>
-                      <Typography.Text type="secondary">Cơ sở</Typography.Text>
-                      <Select
-                        allowClear
-                        showSearch
-                        optionFilterProp="label"
-                        loading={branchesQuery.isLoading}
-                        value={draftBranchId}
-                        placeholder="Tất cả cơ sở"
-                        style={{ width: '100%', marginTop: 6 }}
-                        options={branches.map((branch) => ({
-                          value: branch.id,
-                          label: `${branch.code} · ${branch.name}${branch.is_active === false ? ' (Ngừng hoạt động)' : ''}`,
-                        }))}
-                        onChange={setDraftBranchId}
-                      />
-                    </div>
-                    <div style={{ marginTop: 12 }}>
-                      <Typography.Text type="secondary">Nhân viên thực hiện</Typography.Text>
-                      <Select
-                        allowClear
-                        showSearch
-                        filterOption={false}
-                        loading={usersQuery.isLoading}
-                        value={draftUserId}
-                        placeholder="Tất cả nhân viên"
-                        style={{ width: '100%', marginTop: 6 }}
-                        options={users.map((user) => ({ value: user.id, label: user.zalo_name || user.phone_number || user.id }))}
-                        onSearch={setStaffSearch}
-                        onChange={setDraftUserId}
-                      />
-                    </div>
-                    <div style={{ marginTop: 10 }}>
-                      <Typography.Text type="secondary">Khách hàng</Typography.Text>
-                      <Select
-                        allowClear
-                        showSearch
-                        filterOption={false}
-                        loading={customersQuery.isLoading}
-                        value={draftCustomerProfileId}
-                        placeholder="Tất cả khách hàng"
-                        style={{ width: '100%', marginTop: 6 }}
-                        options={customers.map((customer) => ({
-                          value: customer.id,
-                          label: `${customer.customer_code ? `${customer.customer_code} · ` : ''}${customer.full_name}${customer.phone ? ` · ${customer.phone}` : ''}`,
-                        }))}
-                        onSearch={setCustomerSearch}
-                        onChange={setDraftCustomerProfileId}
-                      />
-                    </div>
-                    <div style={{ marginTop: 10 }}>
-                      <Typography.Text type="secondary">Hành động</Typography.Text>
-                      <Select<GetAccessLogsAction>
-                        allowClear
-                        showSearch
-                        optionFilterProp="label"
-                        value={draftAction}
-                        placeholder="Tất cả hành động"
-                        style={{ width: '100%', marginTop: 6 }}
-                        options={(Object.keys(ACTION_META) as GetAccessLogsAction[]).map((value) => ({ value, label: ACTION_META[value].label }))}
-                        onChange={setDraftAction}
-                      />
-                    </div>
-                    <div style={{ marginTop: 10 }}>
-                      <Typography.Text type="secondary">Thời gian</Typography.Text>
-                      <DatePicker.RangePicker
-                        allowEmpty={[true, true]}
-                        value={draftRange}
-                        showTime={{ defaultValue: [dayjs('2000-01-01T00:00:00'), dayjs('2000-01-01T23:59:59')], format: 'HH:mm' }}
-                        format="DD/MM/YYYY HH:mm"
-                        placeholder={["Từ ngày/giờ", "Đến ngày/giờ"]}
-                        style={{ width: '100%', marginTop: 6 }}
-                        onCalendarChange={(value) => setDraftRange(value as [Dayjs | null, Dayjs | null] | null)}
-                        onChange={(value) => setDraftRange(value as [Dayjs | null, Dayjs | null] | null)}
-                      />
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, paddingTop: 12, marginTop: 12, borderTop: '1px solid var(--brand-border-soft)' }}>
-                    <Button disabled={!activeFilterCount && !draftFilterCount} onClick={resetFilters}>Xóa lọc</Button>
-                    <Button type="primary" onClick={applyFilters}>Xác nhận</Button>
-                  </div>
-                </div>
+              activeFilterCount={activeFilterCount}
+              form={filterForm}
+              onApply={applyFilters}
+              onClear={clearFilters}
+              filterItems={(
+                <>
+                  <Form.Item name="branch_id" label="Cơ sở" style={{ marginBottom: 10 }}>
+                    <Select
+                      allowClear
+                      showSearch
+                      optionFilterProp="label"
+                      loading={branchesQuery.isLoading}
+                      placeholder="Tất cả cơ sở"
+                      options={branches.map((branch) => ({
+                        value: branch.id,
+                        label: `${branch.code} · ${branch.name}${branch.is_active === false ? ' (Ngừng hoạt động)' : ''}`,
+                      }))}
+                    />
+                  </Form.Item>
+                  <Form.Item name="user_id" label="Nhân viên thực hiện" style={{ marginBottom: 10 }}>
+                    <Select
+                      allowClear
+                      showSearch
+                      filterOption={false}
+                      loading={usersQuery.isLoading}
+                      placeholder="Tất cả nhân viên"
+                      options={users.map((user) => ({ value: user.id, label: user.zalo_name || user.phone_number || user.id }))}
+                      onSearch={setStaffSearch}
+                    />
+                  </Form.Item>
+                  <Form.Item name="customer_profile_id" label="Khách hàng" style={{ marginBottom: 10 }}>
+                    <Select
+                      allowClear
+                      showSearch
+                      filterOption={false}
+                      loading={customersQuery.isLoading}
+                      placeholder="Tất cả khách hàng"
+                      options={customers.map((customer) => ({
+                        value: customer.id,
+                        label: `${customer.customer_code ? `${customer.customer_code} · ` : ''}${customer.full_name}${customer.phone ? ` · ${customer.phone}` : ''}`,
+                      }))}
+                      onSearch={setCustomerSearch}
+                    />
+                  </Form.Item>
+                  <Form.Item name="action" label="Hành động" style={{ marginBottom: 10 }}>
+                    <Select<GetAccessLogsAction>
+                      allowClear
+                      showSearch
+                      optionFilterProp="label"
+                      placeholder="Tất cả hành động"
+                      options={(Object.keys(ACTION_META) as GetAccessLogsAction[]).map((value) => ({ value, label: ACTION_META[value].label }))}
+                    />
+                  </Form.Item>
+                  <Form.Item name="range" label="Thời gian" style={{ marginBottom: 0 }}>
+                    <DatePicker.RangePicker
+                      allowEmpty={[true, true]}
+                      showTime={{ defaultValue: [dayjs('2000-01-01T00:00:00'), dayjs('2000-01-01T23:59:59')], format: 'HH:mm' }}
+                      format="DD/MM/YYYY HH:mm"
+                      placeholder={['Từ ngày/giờ', 'Đến ngày/giờ']}
+                      style={{ width: '100%' }}
+                    />
+                  </Form.Item>
+                </>
               )}
-            >
-              <Badge count={activeFilterCount} size="small">
-                <Button icon={<FilterOutlined />}>Bộ lọc</Button>
-              </Badge>
-            </Popover>
+            />
           </Space>
         )}
       >
@@ -285,12 +244,8 @@ export default function AccessLogs() {
         loading={logsQuery.isLoading}
         dataSource={logs}
         scroll={{ x: 900 }}
-        locale={{ emptyText: 'Chưa có nhật ký truy cập' }}
-        pagination={{ current: page, pageSize: limit, total, showSizeChanger: true, pageSizeOptions: [10, 20, 50, 100] }}
-        onChange={(pagination) => {
-          setPage(pagination.current ?? 1)
-          setLimit(pagination.pageSize ?? 20)
-        }}
+        locale={{ emptyText: <TableEmpty description="Chưa có nhật ký truy cập" /> }}
+        pagination={false}
         columns={[
           { title: 'Thời gian', dataIndex: 'created_at', width: 180, render: (value?: string) => value ? formatDateTime(value) : '—' },
           { title: 'Nhân viên', dataIndex: 'user_name', width: 210, render: (value: string | null | undefined, row) => value || row.user_id },
@@ -317,6 +272,7 @@ export default function AccessLogs() {
           { title: 'Địa chỉ IP', dataIndex: 'ip', width: 160, render: (value?: string | null) => value || '—' },
         ]}
       />
+      <ListPagination page={page} limit={limit} total={total} onChange={setPage} noun="lượt truy cập" />
     </>
   )
 }

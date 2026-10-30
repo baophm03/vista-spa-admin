@@ -7,6 +7,7 @@
  */
 import type { CommissionRulePayeeType } from './commissionRulePayeeType';
 import type { CommissionRuleBase } from './commissionRuleBase';
+import type { CommissionRulePercent } from './commissionRulePercent';
 import type { CommissionRuleServiceId } from './commissionRuleServiceId';
 import type { CommissionRuleStaffId } from './commissionRuleStaffId';
 import type { CommissionRuleBranchId } from './commissionRuleBranchId';
@@ -28,7 +29,7 @@ export interface CommissionRule {
    * @minimum 0
    * @maximum 100
    */
-  percent?: number | null;
+  percent?: CommissionRulePercent;
   service_id?: CommissionRuleServiceId;
   staff_id?: CommissionRuleStaffId;
   branch_id?: CommissionRuleBranchId;

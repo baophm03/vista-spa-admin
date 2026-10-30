@@ -1710,7 +1710,7 @@ export const prefetchGetCustomerProfilesIdQrQuery = async <TData = Awaited<Retur
 
 
 /**
- * **LY-01** — GET /customer-profiles/{id}/points. Cần quyền `membership.points_adjust`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Trả về `{ points, history }` — history tối đa 100 giao dịch điểm mới nhất.
+ * **LY-01** — GET /customer-profiles/{id}/points. Cần quyền `membership.points_adjust`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Trả `{ points, history, redemption }`; lịch sử tối đa 100 giao dịch. `redemption` cung cấp trạng thái bật và tỷ lệ quy đổi để Admin kiểm tra trước khi đổi.
  * @summary Xem số điểm và lịch sử giao dịch điểm của hồ sơ khách
  */
 export const getCustomerProfilesIdPoints = (

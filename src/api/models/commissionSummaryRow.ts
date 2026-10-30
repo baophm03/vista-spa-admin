@@ -6,6 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { CommissionSummaryRowPayeeType } from './commissionSummaryRowPayeeType';
+import type { CommissionSummaryRowPayeeId } from './commissionSummaryRowPayeeId';
 
 /**
  * Commission summary grouped by period and payee
@@ -13,7 +14,7 @@ import type { CommissionSummaryRowPayeeType } from './commissionSummaryRowPayeeT
 export interface CommissionSummaryRow {
   period: string;
   payee_type: CommissionSummaryRowPayeeType;
-  payee_id?: string | null;
+  payee_id?: CommissionSummaryRowPayeeId;
   entries: number;
   total_amount: number;
 }

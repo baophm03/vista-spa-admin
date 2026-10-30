@@ -1,16 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
-  Badge,
   Button,
-  Checkbox,
   Col,
-  Divider,
   Form,
   Input,
   InputNumber,
   Modal,
-  Popconfirm,
-  Popover,
   Row,
   Select,
   Space,
@@ -21,13 +16,15 @@ import {
   message,
 } from 'antd'
 import type { TableColumnsType } from 'antd'
-import { PlusOutlined, SearchOutlined, FilterOutlined, ReloadOutlined } from '@ant-design/icons'
+import { EditOutlined, EyeInvisibleOutlined, EyeOutlined, PlusOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import PageTitle from '@/components/base/PageTitle'
+import { Can, useAbility } from '@casl/react'
+import ListFilterPopover from '@/components/base/ListFilterPopover'
+import RowActionsMenu from '@/components/base/RowActionsMenu'
+import ListPagination from '@/components/base/ListPagination'
 import ServiceImageField from '@/components/ServiceImageField'
 import CustomFieldFormItems, { normalizeCustomFieldValues } from '@/components/CustomFieldFormItems'
 import { errorMessage, pickData } from '@/api/helpers'
-import { Can } from '@casl/react'
 import {
   deleteServiceId,
   getGetServiceQueryKey,
@@ -78,8 +75,11 @@ function categoryOptions(
     ])
 }
 
-function ServiceListTab() {
+export default function Services() {
   const { currency, symbol: currencySymbol } = useBrandCurrency()
+  const ability = useAbility()
+  const canUpdate = ability.can('UPDATE', 'SERVICE')
+  const canDelete = ability.can('DELETE', 'SERVICE')
   const [total, setTotal] = useState(0)
   const [categories, setCategories] = useState<ServiceCategoryRow[]>([])
   const customFields = useCustomFieldDefinitions('SERVICE')
@@ -87,18 +87,18 @@ function ServiceListTab() {
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<ServiceRow | null>(null)
   const [page, setPage] = useState(1)
-  const [pageSize, setPageSize] = useState(10)
+  const [limit] = useState(10)
   const [searchText, setSearchText] = useState('')
   const [filters, setFilters] = useState<{ q?: string; category_id?: string; is_active?: boolean }>({})
   const [filterOpen, setFilterOpen] = useState(false)
-  const [draftCategory, setDraftCategory] = useState<string | undefined>()
-  const [draftActive, setDraftActive] = useState<string | undefined>()
   const [visibleColumns, setVisibleColumns] = useState<string[]>(DEFAULT_COLUMNS)
+  const [draftVisibleColumns, setDraftVisibleColumns] = useState<string[]>(DEFAULT_COLUMNS)
   const [form] = Form.useForm()
+  const [filterForm] = Form.useForm()
 
   const listQuery = useQuery({
-    queryKey: getGetServiceQueryKey({ ...filters, page, limit: pageSize }),
-    queryFn: async () => pickData<{ services?: ServiceRow[]; total?: number }>(await getService({ ...filters, page, limit: pageSize })),
+    queryKey: getGetServiceQueryKey({ ...filters, page, limit }),
+    queryFn: async () => pickData<{ services?: ServiceRow[]; total?: number }>(await getService({ ...filters, page, limit })),
   })
   const rows = listQuery.data?.services ?? []
   useEffect(() => setTotal(listQuery.data?.total ?? 0), [listQuery.data])
@@ -239,158 +239,153 @@ function ServiceListTab() {
       ...visibleColumns.map((key) => dataColumns[key]).filter(Boolean),
       {
         key: 'actions',
-        title: '',
-        width: 150,
+        title: 'Hành động',
+        width: 140,
         fixed: 'right',
         render: (_value, row) => (
-          <Space>
-            <Can I="UPDATE" a="SERVICE">
-              <Button size="small" onClick={() => void openEditor(row)}>
-                Sửa
-              </Button>
-            </Can>
-            {row.is_active === false ? (
-              <Can I="UPDATE" a="SERVICE">
-                <Button size="small" onClick={() => void restoreService(row)}>
-                  Bật lại
-                </Button>
-              </Can>
-            ) : (
-              <Can I="DELETE" a="SERVICE">
-                <Popconfirm title="Ẩn dịch vụ này?" description="Lịch và gói cũ vẫn sẽ tham chiếu dịch vụ." onConfirm={() => void hideService(row)}>
-                  <Button size="small" danger>
-                    Ẩn
-                  </Button>
-                </Popconfirm>
-              </Can>
-            )}
-          </Space>
+          <RowActionsMenu
+            items={[
+              ...(canUpdate ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []),
+              ...(canUpdate && row.is_active === false ? [{ key: 'restore', icon: <EyeOutlined />, label: 'Bật lại' }] : []),
+              ...(canDelete && row.is_active !== false ? [{ key: 'hide', icon: <EyeInvisibleOutlined />, danger: true, label: 'Ẩn' }] : []),
+            ]}
+            onSelect={(key) => {
+              if (key === 'edit') void openEditor(row)
+              else if (key === 'restore') void restoreService(row)
+              else if (key === 'hide') {
+                Modal.confirm({
+                  title: 'Ẩn dịch vụ này?',
+                  content: 'Lịch và gói cũ vẫn sẽ tham chiếu dịch vụ.',
+                  okText: 'Ẩn',
+                  okButtonProps: { danger: true },
+                  cancelText: 'Hủy',
+                  onOk: () => hideService(row),
+                })
+              }
+            }}
+          />
         ),
       },
     ]
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visibleColumns])
+  }, [visibleColumns, canUpdate, canDelete])
 
-  const conditionCount = Number(Boolean(filters.category_id)) + Number(filters.is_active !== undefined)
-  const applyFilters = () => {
+  const activeFilterCount = Object.values(filters).filter((value) => value !== undefined && value !== '').length
+  const applyFilters = (values: Record<string, unknown>) => {
+    if (!draftVisibleColumns.length) {
+      message.error('Hãy giữ lại ít nhất một cột hiển thị')
+      return
+    }
     setFilters({
       q: searchText.trim() || undefined,
-      category_id: draftCategory || undefined,
-      is_active: draftActive === undefined || draftActive === '' ? undefined : draftActive === 'true',
+      category_id: typeof values.category_id === 'string' && values.category_id ? values.category_id : undefined,
+      is_active: values.is_active === 'true' ? true : values.is_active === 'false' ? false : undefined,
     })
+    setVisibleColumns(draftVisibleColumns)
     setPage(1)
     setFilterOpen(false)
   }
+  const openFilters = (nextOpen: boolean) => {
+    setFilterOpen(nextOpen)
+    if (!nextOpen) return
+    filterForm.setFieldsValue({
+      category_id: filters.category_id,
+      is_active: filters.is_active === undefined ? undefined : String(filters.is_active),
+    })
+    setDraftVisibleColumns(visibleColumns)
+  }
   const clearFilters = () => {
+    filterForm.resetFields()
     setSearchText('')
-    setDraftCategory(undefined)
-    setDraftActive(undefined)
     setFilters({})
+    setDraftVisibleColumns(DEFAULT_COLUMNS)
+    setVisibleColumns(DEFAULT_COLUMNS)
     setPage(1)
-    setFilterOpen(false)
   }
 
   return (
     <>
-      <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 16 }} wrap>
-        <Space wrap>
-          <Input
-            allowClear
-            value={searchText}
-            onChange={(event) => setSearchText(event.target.value)}
-            onPressEnter={() => {
-              setFilters((current) => ({ ...current, q: searchText.trim() || undefined }))
-              setPage(1)
-            }}
-            prefix={<SearchOutlined />}
-            placeholder="Tìm tên hoặc mô tả"
-            style={{ width: 260 }}
-          />
-          <Popover
-            trigger="click"
-            open={filterOpen}
-            onOpenChange={(next) => {
-              setFilterOpen(next)
-              if (next) {
-                setDraftCategory(filters.category_id)
-                setDraftActive(filters.is_active === undefined ? undefined : String(filters.is_active))
-              }
-            }}
-            content={
-              <div style={{ width: 320 }}>
-                <Typography.Text strong>
-                  Cột hiển thị ({visibleColumns.length}/{COLUMN_OPTIONS.length})
-                </Typography.Text>
-                <Checkbox.Group
-                  style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', marginTop: 8, gap: 6 }}
-                  value={visibleColumns}
-                  options={COLUMN_OPTIONS}
-                  onChange={(values) => {
-                    if (values.length) setVisibleColumns(values as string[])
-                  }}
+      <Tabs
+        items={[
+          {
+            key: 'services',
+            label: 'Danh sách dịch vụ',
+            children: (
+              <>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
+                  <div style={{ minWidth: 0 }}>
+                    <Typography.Title level={5} style={{ margin: 0, color: 'var(--brand-secondary-ink)' }}>
+                      Dịch vụ
+                    </Typography.Title>
+                    <Typography.Text type="secondary" style={{ fontSize: 13 }}>
+                      Danh mục dịch vụ và nhóm dịch vụ
+                    </Typography.Text>
+                  </div>
+                  <Space wrap>
+                    <Input
+                      allowClear
+                      prefix={<SearchOutlined style={{ color: 'var(--brand-text-inactive, #A9ADB2)' }} />}
+                      placeholder="Tìm tên hoặc mô tả dịch vụ"
+                      style={{ width: 260 }}
+                      value={searchText}
+                      onChange={(event) => setSearchText(event.target.value)}
+                      onPressEnter={() => {
+                        setFilters((current) => ({ ...current, q: searchText.trim() || undefined }))
+                        setPage(1)
+                      }}
+                    />
+                    <ListFilterPopover
+                      open={filterOpen}
+                      onOpenChange={openFilters}
+                      activeFilterCount={activeFilterCount}
+                      form={filterForm}
+                      onApply={applyFilters}
+                      onClear={clearFilters}
+                      columnOptions={COLUMN_OPTIONS}
+                      draftVisibleColumns={draftVisibleColumns}
+                      onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as string[])}
+                      filterItems={(
+                        <>
+                          <Form.Item name="category_id" label="Danh mục" style={{ marginBottom: 10 }}>
+                            <Select allowClear placeholder="Tất cả danh mục" options={categoryOptions(categories)} />
+                          </Form.Item>
+                          <Form.Item name="is_active" label="Trạng thái" style={{ marginBottom: 0 }}>
+                            <Select
+                              allowClear
+                              placeholder="Tất cả"
+                              options={[
+                                { value: 'true', label: 'Đang hiển thị' },
+                                { value: 'false', label: 'Đã ẩn' },
+                              ]}
+                            />
+                          </Form.Item>
+                        </>
+                      )}
+                    />
+                    <Button icon={<ReloadOutlined />} onClick={reload}>
+                      Tải lại
+                    </Button>
+                    <Can I="CREATE" a="SERVICE">
+                      <Button type="primary" icon={<PlusOutlined />} onClick={() => void openEditor()}>
+                        Thêm dịch vụ
+                      </Button>
+                    </Can>
+                  </Space>
+                </div>
+                <Table<ServiceRow>
+                  rowKey="id"
+                  loading={listQuery.isLoading}
+                  dataSource={rows}
+                  columns={columns}
+                  scroll={{ x: 1000 }}
+                  pagination={false}
                 />
-                <Divider style={{ margin: '14px 0' }} />
-                <Typography.Text strong>Điều kiện lọc</Typography.Text>
-                <Space direction="vertical" style={{ width: '100%', marginTop: 8 }}>
-                  <Select allowClear value={draftCategory} placeholder="Danh mục" options={categoryOptions(categories)} onChange={setDraftCategory} style={{ width: '100%' }} />
-                  <Select
-                    allowClear
-                    value={draftActive}
-                    placeholder="Trạng thái"
-                    options={[
-                      { value: 'true', label: 'Đang hiển thị' },
-                      { value: 'false', label: 'Đã ẩn' },
-                    ]}
-                    onChange={setDraftActive}
-                    style={{ width: '100%' }}
-                  />
-                </Space>
-                <Space style={{ marginTop: 14, width: '100%', justifyContent: 'space-between' }}>
-                  <Button onClick={clearFilters}>Xóa lọc</Button>
-                  <Button type="primary" onClick={applyFilters}>
-                    Xác nhận
-                  </Button>
-                </Space>
-              </div>
-            }
-          >
-            <Badge count={conditionCount} size="small">
-              <Button icon={<FilterOutlined />}>Bộ lọc</Button>
-            </Badge>
-          </Popover>
-        </Space>
-        <Space>
-          <Button icon={<ReloadOutlined />} onClick={reload}>
-            Tải lại
-          </Button>
-          <Can I="CREATE" a="SERVICE">
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => void openEditor()}>
-              Thêm dịch vụ
-            </Button>
-          </Can>
-        </Space>
-      </Space>
-
-      <Table<ServiceRow>
-        rowKey="id"
-        loading={listQuery.isLoading}
-        dataSource={rows}
-        columns={columns}
-        scroll={{ x: 1000 }}
-        pagination={{
-          current: page,
-          pageSize,
-          total,
-          showSizeChanger: true,
-          showTotal: (count) => `${count} dịch vụ`,
-        }}
-        onChange={(pagination) => {
-          if (pagination.current) setPage(pagination.current)
-          if (pagination.pageSize && pagination.pageSize !== pageSize) {
-            setPageSize(pagination.pageSize)
-            setPage(1)
-          }
-        }}
+                <ListPagination page={page} limit={limit} total={total} onChange={setPage} noun="dịch vụ" />
+              </>
+            ),
+          },
+          { key: 'categories', label: 'Danh mục dịch vụ', children: <ServiceCategories /> },
+        ]}
       />
 
       <Modal
@@ -456,20 +451,6 @@ function ServiceListTab() {
           <CustomFieldFormItems definitions={customFields} />
         </Form>
       </Modal>
-    </>
-  )
-}
-
-export default function Services() {
-  return (
-    <>
-      <PageTitle>Dịch vụ</PageTitle>
-      <Tabs
-        items={[
-          { key: 'services', label: 'Danh sách dịch vụ', children: <ServiceListTab /> },
-          { key: 'categories', label: 'Danh mục dịch vụ', children: <ServiceCategories /> },
-        ]}
-      />
     </>
   )
 }

@@ -1,8 +1,12 @@
 import { useState } from 'react'
 import { Alert, Button, Form, Input, Modal, Select, Table, Tag, message } from 'antd'
-import { SendOutlined } from '@ant-design/icons'
+import { BellOutlined, CheckOutlined, MailOutlined, SendOutlined } from '@ant-design/icons'
 import PageTitle from '@/components/base/PageTitle'
-import { errorMessage, pickData, pickMeta } from '@/api/helpers'
+import StatCards, { type StatItem } from '@/components/base/StatCards'
+import ListPagination from '@/components/base/ListPagination'
+import TableEmpty from '@/components/base/TableEmpty'
+import RowActionsMenu from '@/components/base/RowActionsMenu'
+import { errorMessage, pickData } from '@/api/helpers'
 import type { Notification } from '@/api/models/notification'
 import { useGetCustomerProfiles } from '@/api/endpoints/customer-profiles'
 import { useGetNotifications, usePostNotifications, usePutNotificationsId } from '@/api/endpoints/admin'
@@ -42,7 +46,6 @@ export default function Notifications() {
   // Envelope chuẩn: responseData: Notification[] + meta.total
   const payload = pickData<NotificationRow[] | { rows?: NotificationRow[] }>(notificationsQuery.data)
   const rows = (Array.isArray(payload) ? payload : payload?.rows ?? []) as NotificationRow[]
-  const total = pickMeta(notificationsQuery.data)?.total ?? rows.length
   const profilePayload = pickData<CustomerProfile[] | { rows?: CustomerProfile[] }>(profilesQuery.data)
   const profiles = (Array.isArray(profilePayload) ? profilePayload : profilePayload?.rows ?? []) as CustomerProfile[]
   const loading = notificationsQuery.isLoading
@@ -82,9 +85,20 @@ export default function Notifications() {
   const audience = (row: NotificationRow) =>
     row.user_id ? profiles.find((p) => p.user_id === row.user_id)?.full_name ?? 'Một khách hàng' : 'Tất cả khách (broadcast)'
 
+  // Thống kê đầu trang — rows tải toàn bộ, không phân trang server
+  const unreadCount = rows.filter((row) => !row.is_read).length
+  const statItems: StatItem[] = [
+    { key: 'total', label: 'Tổng thông báo', value: rows.length.toLocaleString('vi-VN'), icon: <BellOutlined />, tone: 'primary' },
+    { key: 'unread', label: 'Chưa đọc', value: unreadCount.toLocaleString('vi-VN'), icon: <MailOutlined />, tone: 'tertiary' },
+    { key: 'read', label: 'Đã đọc', value: (rows.length - unreadCount).toLocaleString('vi-VN'), icon: <CheckOutlined />, tone: 'neutral' },
+  ]
+
   return (
     <>
+      <StatCards items={statItems} />
+
       <PageTitle
+        subtitle="Thông báo hệ thống gửi tới khách hàng"
         extra={
           <Can I="CREATE" a="NOTIFICATION">
             <Button
@@ -119,8 +133,8 @@ export default function Notifications() {
         rowKey="id"
         loading={loading}
         dataSource={rows}
-        pagination={{ current: 1, pageSize: rows.length || 10, total }}
-        locale={{ emptyText: 'Chưa có thông báo nào' }}
+        pagination={false}
+        locale={{ emptyText: <TableEmpty description="Chưa có thông báo nào" /> }}
         style={{ marginTop: 4 }}
         columns={[
           {
@@ -150,18 +164,26 @@ export default function Notifications() {
           {
             title: 'Trạng thái',
             key: 'read',
-            width: 160,
-            render: (_, row) =>
-              row.is_read ? (
-                <Tag>Đã đọc</Tag>
-              ) : (
-                <Button size="small" onClick={() => void markRead(row)}>
-                  Đánh dấu đã đọc
-                </Button>
-              ),
+            width: 110,
+            render: (_, row) => (row.is_read ? <Tag>Đã đọc</Tag> : <Tag color="processing">Chưa đọc</Tag>),
+          },
+          {
+            title: 'Hành động',
+            key: 'actions',
+            width: 140,
+            fixed: 'right' as const,
+            render: (_, row) => row.is_read ? undefined : (
+              <RowActionsMenu
+                items={[{ key: 'mark_read', icon: <CheckOutlined />, label: 'Đánh dấu đã đọc' }]}
+                onSelect={(key) => {
+                  if (key === 'mark_read') void markRead(row)
+                }}
+              />
+            ),
           },
         ]}
       />
+      <ListPagination page={1} limit={rows.length || 10} total={rows.length || 0} onChange={() => undefined} noun="thông báo" />
 
       <Modal title="Gửi thông báo" open={open} onCancel={() => setOpen(false)} onOk={() => void submit()} okText="Gửi" cancelText="Hủy">
         <Form form={form} layout="vertical" style={{ marginTop: 12 }}>

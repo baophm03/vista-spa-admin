@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Alert, Button, Checkbox, Input, Modal, Spin, Tag, Typography, message } from 'antd'
+import { Alert, Button, Checkbox, Input, Modal, Spin, Typography, message } from 'antd'
 import {
   CheckOutlined,
   DeleteOutlined,
@@ -290,6 +290,7 @@ export default function Roles() {
   return (
     <>
       <PageTitle
+        subtitle="Vai trò và phân quyền truy cập hệ thống"
         extra={
           <Can I="MANAGE" a="PERMISSION">
             <Button
@@ -350,16 +351,6 @@ export default function Roles() {
                       <Typography.Text strong className="text-[15px] text-[var(--brand-dark)]">
                         {role.role_name}
                       </Typography.Text>
-                      {isSystem && (
-                        <Tag className="m-0 rounded-lg border-[var(--brand-border)] bg-[var(--brand-bg)] text-[11px] text-slate-600">
-                          Hệ thống
-                        </Tag>
-                      )}
-                      {role.receptionist === true && (
-                        <Tag className="m-0 rounded-lg text-[11px]" color="processing">
-                          Lễ tân
-                        </Tag>
-                      )}
                     </div>
                     <p className="mt-1 mb-0 text-sm text-slate-600">
                       {role.description || 'Không có mô tả'}

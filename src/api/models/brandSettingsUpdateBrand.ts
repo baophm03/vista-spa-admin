@@ -6,6 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { BrandSettingsUpdateBrandLogoFileId } from './brandSettingsUpdateBrandLogoFileId';
+import type { BrandSettingsUpdateBrandBackgroundColor } from './brandSettingsUpdateBrandBackgroundColor';
 
 export type BrandSettingsUpdateBrand = {
   /** @maxLength 150 */
@@ -14,4 +15,10 @@ export type BrandSettingsUpdateBrand = {
   logo_file_id?: BrandSettingsUpdateBrandLogoFileId;
   /** @pattern ^#[0-9a-fA-F]{6}$ */
   primary_color: string;
+  /** @pattern ^#[0-9a-fA-F]{6}$ */
+  tertiary_color?: string;
+  /** @pattern ^#[0-9a-fA-F]{6}$ */
+  secondary_color: string;
+  /** @pattern ^#[0-9a-fA-F]{6}$ */
+  background_color: BrandSettingsUpdateBrandBackgroundColor;
 };

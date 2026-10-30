@@ -1,7 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Alert, Button, Form, Input, Modal, Space, Switch, Table, Tag, Typography, message } from 'antd'
-import { EditOutlined, PlusOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons'
+import { DeleteOutlined, EditOutlined, EyeOutlined, PlusOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons'
 import PageTitle from '@/components/base/PageTitle'
+import RowActionsMenu from '@/components/base/RowActionsMenu'
+import ListPagination from '@/components/base/ListPagination'
+import TableEmpty from '@/components/base/TableEmpty'
+import { paginateRows } from '@/utils/listTable'
 import LookupItemsManager from '@/components/LookupItemsManager'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { LookupList } from '@/api/models/lookupList'
@@ -9,11 +13,12 @@ import type { PostLookupListsBody } from '@/api/models/postLookupListsBody'
 import { deleteLookupListsId, getLookupLists, postLookupLists, putLookupListsId } from '@/api/endpoints/lookup-lists'
 import { Can } from '@casl/react'
 
-/** Hai cột: danh sách lookup lists (bên trái) và các mục của list đang chọn (bên phải). */
+/** Bảng danh mục lookup; bấm icon con mắt mở modal quản lý các mục của danh mục đó. */
 export default function LookupLists() {
   const [lists, setLists] = useState<LookupList[]>([])
-  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [viewingList, setViewingList] = useState<LookupList | null>(null)
   const [query, setQuery] = useState('')
+  const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
@@ -27,9 +32,8 @@ export default function LookupLists() {
     setError('')
     try {
       const body = await getLookupLists(search.trim() ? { q: search.trim() } : {})
-      const rows = (pickData<LookupList[]>(body) ?? []) as LookupList[]
-      setLists(rows)
-      setSelectedId((current) => current && rows.some((row) => row.id === current) ? current : rows[0]?.id ?? null)
+      setLists((pickData<LookupList[]>(body) ?? []) as LookupList[])
+      setPage(1)
     } catch (err) {
       setError(errorMessage(err))
     } finally {
@@ -39,19 +43,23 @@ export default function LookupLists() {
 
   useEffect(() => { void load('') }, [load])
 
+  // Nếu danh mục đang mở modal bị xóa/tắt thì đóng modal
+  useEffect(() => {
+    if (viewingList && !lists.some((row) => row.id === viewingList.id)) setViewingList(null)
+  }, [lists, viewingList])
+
   const createList = async () => {
     const values = await form.validateFields()
     setSaving(true)
     try {
-      const created = pickData<LookupList>(await postLookupLists({
+      await postLookupLists({
         key: values.key.trim(),
         name: values.name.trim(),
-      } as PostLookupListsBody))
+      } as PostLookupListsBody)
       setCreateOpen(false)
       form.resetFields()
       message.success('Đã tạo danh mục')
       await load('')
-      setSelectedId(created?.id ?? null)
       setQuery('')
     } catch (err) {
       message.error(errorMessage(err))
@@ -104,7 +112,6 @@ export default function LookupLists() {
     })
   }
 
-  const selected = lists.find((row) => row.id === selectedId) ?? null
 
   // Booleans đọc từ CASL ability một cách reactive qua children-as-function của <Can>
   return (
@@ -114,19 +121,21 @@ export default function LookupLists() {
         const canCreate = ability.can('CREATE' as never, 'LOOKUP')
         const canUpdate = ability.can('UPDATE' as never, 'LOOKUP')
         const canDelete = ability.can('DELETE' as never, 'LOOKUP')
-        const canManageList = canCreate || canUpdate || canDelete
         return (
     <>
-      <PageTitle extra={(
+      <PageTitle subtitle="Danh mục dùng chung cho các trường tùy chỉnh" extra={(
         <Space wrap>
-          <Input.Search
+          <Input
             allowClear
-            value={query}
+            prefix={<SearchOutlined style={{ color: 'var(--brand-text-inactive, #A9ADB2)' }} />}
             placeholder="Tìm tên, mã danh mục hoặc mã mục"
-            onChange={(event) => setQuery(event.target.value)}
-            onSearch={(value) => void load(value)}
-            style={{ width: 300, maxWidth: '70vw' }}
-            enterButton={<SearchOutlined />}
+            style={{ width: 260 }}
+            value={query}
+            onChange={(event) => {
+              setQuery(event.target.value)
+              if (!event.target.value) void load('')
+            }}
+            onPressEnter={() => void load(query)}
           />
           <Button icon={<ReloadOutlined />} onClick={() => void load(query)}>Tải lại</Button>
           {canCreate && <Button type="primary" icon={<PlusOutlined />} onClick={() => { form.resetFields(); setCreateOpen(true) }}>Tạo danh mục</Button>}
@@ -136,50 +145,53 @@ export default function LookupLists() {
       {!canRead && !loading && <Alert className="mb-4" type="error" showIcon message="Tài khoản chưa có quyền xem danh mục" />}
       {error && <Alert className="mb-4" type="error" showIcon message="Không tải được danh mục" description={error} action={<Button size="small" onClick={() => void load(query)}>Thử lại</Button>} />}
 
-      <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 360px), 1fr))' }}>
-        <section aria-label="Danh sách danh mục">
-          <Typography.Title level={5}>Các danh mục</Typography.Title>
-          <Table<LookupList>
-            rowKey="id"
-            size="small"
-            loading={loading}
-            dataSource={lists}
-            pagination={{ pageSize: 8 }}
-            rowClassName={(row) => row.id === selectedId ? 'ant-table-row-selected' : ''}
-            onRow={(row) => ({
-              onClick: () => setSelectedId(row.id),
-              style: { cursor: 'pointer' },
-            })}
-            locale={{ emptyText: query ? 'Không tìm thấy danh mục' : 'Chưa có danh mục' }}
-            columns={[
-              { title: 'Tên / mã', render: (_: unknown, row: LookupList) => (
-                <Button type="link" style={{ paddingInline: 0, textAlign: 'left', height: 'auto' }} onClick={() => setSelectedId(row.id)}>
-                  <Space direction="vertical" size={0} align="start">
-                    <span>{row.name}</span><Typography.Text type="secondary" code>{row.key}</Typography.Text>
-                  </Space>
-                </Button>
-              ) },
-              { title: 'Loại', dataIndex: 'is_system', width: 100, render: (value?: boolean) => <Tag color={value ? 'blue' : 'default'}>{value ? 'Hệ thống' : 'Tự tạo'}</Tag> },
-              { title: 'Trạng thái', dataIndex: 'is_active', width: 120, render: (value?: boolean) => <Tag color={value === false ? 'default' : 'green'}>{value === false ? 'Đã tắt' : 'Đang hoạt động'}</Tag> },
-              ...(canUpdate || canDelete ? [{ title: 'Thao tác', key: 'actions', width: 150, render: (_: unknown, row: LookupList) => (
-                <Space size="small">
-                  {canUpdate && <Button type="link" icon={<EditOutlined />} size="small" onClick={() => openEditList(row)}>Sửa</Button>}
-                  {canDelete && !row.is_system && <Button type="link" danger size="small" onClick={() => removeList(row)}>Xóa</Button>}
-                </Space>
-              ) }] : []),
-            ]}
-          />
-        </section>
+      <Table<LookupList>
+        rowKey="id"
+        loading={loading}
+        dataSource={paginateRows(lists, page, 8)}
+        pagination={false}
+        locale={{ emptyText: <TableEmpty description={query ? 'Không tìm thấy danh mục' : 'Chưa có danh mục'} /> }}
+        columns={[
+          { title: 'Tên / mã', render: (_: unknown, row: LookupList) => (
+            <Space direction="vertical" size={0} align="start">
+              <span>{row.name}</span><Typography.Text type="secondary" code>{row.key}</Typography.Text>
+            </Space>
+          ) },
+          { title: 'Loại', dataIndex: 'is_system', width: 110, render: (value?: boolean) => <Tag color={value ? 'blue' : 'default'}>{value ? 'Hệ thống' : 'Tự tạo'}</Tag> },
+          { title: 'Trạng thái', dataIndex: 'is_active', width: 130, render: (value?: boolean) => <Tag color={value === false ? 'default' : 'green'}>{value === false ? 'Đã tắt' : 'Đang hoạt động'}</Tag> },
+          { title: 'Hành động', key: 'actions', width: 150, fixed: 'right' as const, render: (_: unknown, row: LookupList) => (
+            <RowActionsMenu
+              items={[
+                { key: 'view', label: 'Xem các mục', icon: <EyeOutlined /> },
+                ...(canUpdate ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []),
+                ...(canDelete && !row.is_system ? [{ key: 'delete', icon: <DeleteOutlined />, label: 'Xóa', danger: true }] : []),
+              ]}
+              onSelect={(key) => {
+                if (key === 'view') setViewingList(row)
+                else if (key === 'edit') openEditList(row)
+                else if (key === 'delete') removeList(row)
+              }}
+            />
+          ) },
+        ]}
+      />
+      <ListPagination page={page} limit={8} total={lists.length} onChange={setPage} noun="danh mục dùng chung" />
 
-        <section aria-label="Các mục trong danh mục">
-          <Typography.Title level={5}>{selected ? selected.name : 'Mục chọn'}</Typography.Title>
-          {selected ? (
-            <LookupItemsManager listId={selected.id} />
-          ) : (
-            <Alert type="info" showIcon message="Chọn một danh mục để xem các mục lựa chọn" description={canManageList ? 'Tạo danh mục tự tạo để dùng làm nguồn lựa chọn cho trường tùy chỉnh.' : undefined} />
-          )}
-        </section>
-      </div>
+      <Modal
+        title={`Các mục — ${viewingList?.name ?? ''}`}
+        open={!!viewingList}
+        onCancel={() => setViewingList(null)}
+        footer={null}
+        width="min(1200px, calc(100vw - 24px))"
+        destroyOnHidden
+      >
+        {viewingList && (
+          <>
+            <Typography.Text type="secondary" code style={{ display: 'block', marginBottom: 12 }}>{viewingList.key}</Typography.Text>
+            <LookupItemsManager listId={viewingList.id} />
+          </>
+        )}
+      </Modal>
 
       <Modal
         title="Tạo danh mục tự tạo"
@@ -215,7 +227,7 @@ export default function LookupLists() {
             <Input maxLength={100} />
           </Form.Item>
           <Form.Item name="is_active" label="Trạng thái" valuePropName="checked">
-            <Switch checkedChildren="Đang bật" unCheckedChildren="Đã tắt" />
+            <Switch />
           </Form.Item>
           <Typography.Text type="secondary">Mã danh mục không đổi. Tắt danh mục sẽ ngừng cho phép dùng danh mục này ở các lựa chọn mới.</Typography.Text>
         </Form>

@@ -5,6 +5,8 @@
  * Vista Spa backend API. Uses the NEWSKY+ business error envelope for permission-aware endpoints and the legacy response envelope for existing admin endpoints.
  * OpenAPI spec version: 1.0.0
  */
+import type { MembershipCustomerProfileId } from './membershipCustomerProfileId';
+import type { MembershipUserId } from './membershipUserId';
 import type { MembershipCurrentRank } from './membershipCurrentRank';
 import type { MembershipExternalPatientId } from './membershipExternalPatientId';
 import type { MembershipCurrentPerks } from './membershipCurrentPerks';
@@ -17,8 +19,8 @@ import type { MembershipRankExpiresAt } from './membershipRankExpiresAt';
  */
 export interface Membership {
   id: string;
-  customer_profile_id?: string | null;
-  user_id: string | null;
+  customer_profile_id?: MembershipCustomerProfileId;
+  user_id: MembershipUserId;
   /** @minimum 0 */
   lifetime_spent?: number;
   /** @minimum 0 */

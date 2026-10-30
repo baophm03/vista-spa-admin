@@ -339,7 +339,7 @@ export default function IntegrationSettings() {
     <Can I="UPDATE" a="SETTING" passThrough>
       {({ isAllowed: canEdit }) => (
     <>
-      <PageTitle>Tích hợp dịch vụ</PageTitle>
+      <PageTitle subtitle="Kết nối tích hợp bên ngoài (Zalo, email...)">Tích hợp dịch vụ</PageTitle>
       {!canEdit && <Alert className="mb-4" type="info" showIcon message="Chỉ ADM được xem và quản lý tích hợp." />}
       {query.isError && <Alert className="mb-4" type="error" showIcon message="Không tải được trạng thái tích hợp" description={errorMessage(query.error)} action={<Button size="small" onClick={() => void query.refetch()}>Thử lại</Button>} />}
       <Spin spinning={query.isLoading}>

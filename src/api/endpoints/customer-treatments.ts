@@ -481,7 +481,7 @@ export const prefetchGetWarrantyClaimsQuery = async <TData = Awaited<ReturnType<
 
 
 /**
- * **WC-03** — POST /warranty-claims. Cần quyền `customer.update`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó.
+ * **WC-03** — POST /warranty-claims. Chỉ ADM/REC. Cần quyền `customer.update`. Chỉ nhận liệu trình FINISHED có package_type.has_warranty=true.
  * @summary Tạo yêu cầu bảo hành mới
  */
 export const postWarrantyClaims = (
@@ -546,7 +546,7 @@ export const usePostWarrantyClaims = <TError = UnauthorizedResponse | ForbiddenR
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **WC-05** — PUT /warranty-claims/{id}/reject (ADM, bắt buộc reason). Cần quyền `customer.delete`. Trường body: `reason`.
+ * **WC-05** — PUT /warranty-claims/{id}/reject. Chỉ ADM, cần quyền `customer.update`; bắt buộc nhập reason.
  * @summary Từ chối
  */
 export const putWarrantyClaimsIdReject = (
@@ -611,7 +611,7 @@ export const usePutWarrantyClaimsIdReject = <TError = UnauthorizedResponse | For
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **WC-04** — PUT /warranty-claims/{id}/approve (ADM: tạo session is_warranty). Cần quyền `customer.delete`.
+ * **WC-04** — PUT /warranty-claims/{id}/approve. Chỉ ADM, cần quyền `customer.update`; tạo tối đa một buổi is_warranty và không trừ quota.
  * @summary Duyệt
  */
 export const putWarrantyClaimsIdApprove = (
@@ -3532,3 +3532,4 @@ export const usePutCustomerTreatmentsIdAdjustments = <TError = UnauthorizedRespo
 
       return useMutation(mutationOptions, queryClient);
     }
+    

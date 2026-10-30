@@ -4,13 +4,10 @@ import {
   Button,
   Checkbox,
   Col,
-  Divider,
   Form,
   Input,
   InputNumber,
   Modal,
-  Popconfirm,
-  Popover,
   Row,
   Select,
   Space,
@@ -20,8 +17,22 @@ import {
   Typography,
   message,
 } from 'antd'
-import { FilterOutlined, ReloadOutlined, SearchOutlined, UserOutlined } from '@ant-design/icons'
+import {
+  AppstoreOutlined,
+  EditOutlined,
+  LockOutlined,
+  PlusOutlined,
+  ProfileOutlined,
+  ReloadOutlined,
+  SearchOutlined,
+  UndoOutlined,
+  UserOutlined,
+} from '@ant-design/icons'
 import PageTitle from '@/components/base/PageTitle'
+import ListFilterPopover from '@/components/base/ListFilterPopover'
+import RowActionsMenu from '@/components/base/RowActionsMenu'
+import ListPagination from '@/components/base/ListPagination'
+import TableEmpty from '@/components/base/TableEmpty'
 import ServiceImageField from '@/components/ServiceImageField'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { Branch } from '@/api/models/branch'
@@ -57,7 +68,6 @@ function isTechnicianRole(roleName = ''): boolean {
   return normalized.includes('ktv') || normalized.includes('ky thuat vien') || normalized === 'technician'
 }
 
-const PAGE_SIZE = 10
 type StaffColumnKey = 'staff' | 'role' | 'branch' | 'status' | 'phone' | 'email' | 'profile' | 'in_app'
 const STAFF_COLUMN_OPTIONS: { label: string; value: StaffColumnKey }[] = [
   { label: 'Nhân viên', value: 'staff' },
@@ -73,7 +83,7 @@ const DEFAULT_VISIBLE_COLUMNS = STAFF_COLUMN_OPTIONS.map((column) => column.valu
 
 export default function Staffs() {
   const [page, setPage] = useState(1)
-  const [pageSize, setPageSize] = useState(PAGE_SIZE)
+  const [limit] = useState(10)
   const [searchInput, setSearchInput] = useState('')
   const [search, setSearch] = useState('')
   const [branchFilter, setBranchFilter] = useState<string>()
@@ -92,7 +102,7 @@ export default function Staffs() {
 
   const usersQuery = useGetUsers({
     currentPage: page,
-    pageSize,
+    pageSize: limit,
     has_role: true,
     ...(search ? { q: search } : {}),
     ...(branchFilter ? { branch_id: branchFilter } : {}),
@@ -165,7 +175,7 @@ export default function Staffs() {
   const loading = usersQuery.isLoading
   const selectedRoleName = roles.find((role) => role.id === selectedRoleId)?.role_name ?? ''
   const branchRequired = !isAdmin || !selectedRoleId || !roles.length || isTechnicianRole(selectedRoleName)
-  const activeFilterCount = [branchFilter, roleFilter, statusFilter].filter(Boolean).length
+  const activeFilterCount = [branchFilter, roleFilter, statusFilter].filter(Boolean).length + (search ? 1 : 0)
 
   // Gõ tìm kiếm có debounce 400ms, quay về trang 1.
   useEffect(() => {
@@ -176,6 +186,14 @@ export default function Staffs() {
     }, 400)
     return () => clearTimeout(debounceRef.current)
   }, [searchInput])
+
+  /** Áp dụng ngay từ khóa (Enter hoặc khi xóa hết) mà không chờ debounce. */
+  const applySearch = (value: string) => {
+    clearTimeout(debounceRef.current)
+    setSearchInput(value)
+    setSearch(value.trim())
+    setPage(1)
+  }
 
   const openFilters = (nextOpen: boolean) => {
     setFilterOpen(nextOpen)
@@ -356,51 +374,33 @@ export default function Staffs() {
   return (
     <>
       <PageTitle
+        subtitle="Quản lý thông tin và vai trò của nhân viên"
         extra={
-          <Space>
-            <Button type="primary" onClick={() => openModal()}>
-              Thêm chuyên viên
-            </Button>
-          </Space>
-        }
-      >
-        Chuyên viên / KTV
-      </PageTitle>
-      {usersQuery.isError && (
-        <div className="mb-4">
-          <Typography.Text type="danger">Không tải được danh sách nhân viên: {errorMessage(usersQuery.error)}</Typography.Text>
-        </div>
-      )}
-      <Space wrap style={{ marginBottom: 16 }}>
-        <Input
-          allowClear
-          prefix={<SearchOutlined style={{ color: 'var(--brand-text-inactive, #A9ADB2)' }} />}
-          placeholder="Tìm theo tên, email, SĐT"
-          style={{ width: 260 }}
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-        />
-        <Popover
-          trigger="click"
-          placement="bottomLeft"
-          open={filterOpen}
-          onOpenChange={openFilters}
-          content={(
-            <div className="flex w-[300px] flex-col" style={{ maxHeight: 'min(70vh, 580px)' }}>
-              <div className="overflow-y-auto pr-1">
-                <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 10 }}>
-                  <Typography.Text strong>Cột hiển thị</Typography.Text>
-                  <Tag style={{ marginInlineEnd: 0 }}>{draftVisibleColumns.length}/{STAFF_COLUMN_OPTIONS.length} cột</Tag>
-                </Space>
-                <Checkbox.Group
-                  value={draftVisibleColumns}
-                  onChange={(values) => setDraftVisibleColumns(values as StaffColumnKey[])}
-                  style={{ display: 'grid', gap: 10 }}
-                  options={STAFF_COLUMN_OPTIONS}
-                />
-                <Divider style={{ margin: '14px 0' }} />
-                <Typography.Text strong>Điều kiện lọc</Typography.Text>
-                <Form form={filterForm} layout="vertical" onFinish={applyFilters} style={{ marginTop: 10 }}>
+          <Space wrap>
+            <Input
+              allowClear
+              prefix={<SearchOutlined style={{ color: 'var(--brand-text-inactive, #A9ADB2)' }} />}
+              placeholder="Tìm theo tên, email, SĐT"
+              style={{ width: 260 }}
+              value={searchInput}
+              onChange={(e) => {
+                setSearchInput(e.target.value)
+                if (!e.target.value) applySearch('')
+              }}
+              onPressEnter={() => applySearch(searchInput)}
+            />
+            <ListFilterPopover
+              open={filterOpen}
+              onOpenChange={openFilters}
+              activeFilterCount={activeFilterCount}
+              form={filterForm}
+              onApply={applyFilters}
+              onClear={clearFilters}
+              columnOptions={STAFF_COLUMN_OPTIONS}
+              draftVisibleColumns={draftVisibleColumns}
+              onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as StaffColumnKey[])}
+              filterItems={(
+                <>
                   <Form.Item name="branch_id" label="Cơ sở" style={{ marginBottom: 10 }}>
                     <Select allowClear placeholder="Tất cả cơ sở" options={branches.map((branch) => ({ value: branch.id, label: branch.name }))} />
                   </Form.Item>
@@ -413,33 +413,30 @@ export default function Staffs() {
                       { value: 'inactive', label: 'Đã nghỉ việc' },
                     ]} />
                   </Form.Item>
-                </Form>
-              </div>
-              <div className="mt-3 flex justify-between gap-2 border-t border-[var(--brand-border-soft)] pt-3">
-                <Button disabled={!activeFilterCount && visibleColumns.length === DEFAULT_VISIBLE_COLUMNS.length} onClick={clearFilters}>Xóa lọc</Button>
-                <Button type="primary" onClick={() => filterForm.submit()}>Xác nhận</Button>
-              </div>
-            </div>
-          )}
-        >
-          <Button icon={<FilterOutlined />}>Bộ lọc{activeFilterCount ? ` (${activeFilterCount})` : ''}</Button>
-        </Popover>
-        <Button icon={<ReloadOutlined />} onClick={() => void usersQuery.refetch()} />
-      </Space>
+                </>
+              )}
+            />
+            <Button icon={<ReloadOutlined />} onClick={() => void usersQuery.refetch()} />
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
+              Thêm chuyên viên
+            </Button>
+          </Space>
+        }
+      >
+        Chuyên viên / KTV
+      </PageTitle>
+      {usersQuery.isError && (
+        <div className="mb-4">
+          <Typography.Text type="danger">Không tải được danh sách nhân viên: {errorMessage(usersQuery.error)}</Typography.Text>
+        </div>
+      )}
       <Table<StaffRow>
         rowKey="id"
         loading={loading}
         dataSource={rows}
-        locale={{ emptyText: 'Chưa có nhân viên nào khớp điều kiện.' }}
-        pagination={{
-          current: page,
-          pageSize,
-          total,
-          showSizeChanger: true,
-          pageSizeOptions: [10, 20, 50],
-          showTotal: (t) => `Tổng ${t} nhân viên`,
-          onChange: (p, ps) => { setPage(ps !== pageSize ? 1 : p); setPageSize(ps) },
-        }}
+        locale={{ emptyText: <TableEmpty description="Chưa có nhân viên nào khớp điều kiện." /> }}
+        scroll={{ x: 1280 }}
+        pagination={false}
         columns={[
           {
             title: 'Nhân viên',
@@ -527,48 +524,49 @@ export default function Staffs() {
             },
           },
           {
-            title: 'Thao tác',
+            title: 'Hành động',
             key: 'actions',
-            width: 280,
+            width: 140,
+            fixed: 'right' as const,
             render: (_: unknown, s: StaffRow) => (
-              <Space size={4} wrap>
-                <Button size="small" onClick={() => openModal(s)}>
-                  Sửa
-                </Button>
-                <Button size="small" onClick={() => openProfile(s)}>
-                  Hồ sơ
-                </Button>
-                <Button size="small" onClick={() => openServices(s)}>
-                  Dịch vụ
-                </Button>
-                {s.is_active === false ? (
-                  <Popconfirm
-                    title="Khôi phục tài khoản này?"
-                    description="Nhân viên sẽ đăng nhập lại được và lịch tuần cũ có hiệu lực trở lại."
-                    okText="Khôi phục"
-                    cancelText="Hủy"
-                    onConfirm={() => restore(s)}
-                  >
-                    <Button size="small">Khôi phục</Button>
-                  </Popconfirm>
-                ) : (
-                  <Popconfirm
-                    title="Khóa tài khoản nhân viên này?"
-                    description="Thu hồi phiên đăng nhập, không còn xuất hiện khi xếp ca/slot mới. Hồ sơ và lịch hẹn đã đặt được giữ nguyên."
-                    okText="Khóa"
-                    cancelText="Hủy"
-                    onConfirm={() => deactivate(s)}
-                  >
-                    <Button size="small" danger>
-                      Khóa
-                    </Button>
-                  </Popconfirm>
-                )}
-              </Space>
+              <RowActionsMenu
+                items={[
+                  { key: 'edit', icon: <EditOutlined />, label: 'Sửa' },
+                  { key: 'profile', icon: <ProfileOutlined />, label: 'Hồ sơ' },
+                  { key: 'services', icon: <AppstoreOutlined />, label: 'Dịch vụ' },
+                  ...(s.is_active === false
+                    ? [{ key: 'restore', icon: <UndoOutlined />, label: 'Khôi phục' }]
+                    : [{ key: 'deactivate', icon: <LockOutlined />, danger: true, label: 'Khóa' }]),
+                ]}
+                onSelect={(key) => {
+                  if (key === 'edit') openModal(s)
+                  else if (key === 'profile') openProfile(s)
+                  else if (key === 'services') openServices(s)
+                  else if (key === 'restore') {
+                    Modal.confirm({
+                      title: 'Khôi phục tài khoản này?',
+                      content: 'Nhân viên sẽ đăng nhập lại được và lịch tuần cũ có hiệu lực trở lại.',
+                      okText: 'Khôi phục',
+                      cancelText: 'Hủy',
+                      onOk: () => restore(s),
+                    })
+                  } else if (key === 'deactivate') {
+                    Modal.confirm({
+                      title: 'Khóa tài khoản nhân viên này?',
+                      content: 'Thu hồi phiên đăng nhập, không còn xuất hiện khi xếp ca/slot mới. Hồ sơ và lịch hẹn đã đặt được giữ nguyên.',
+                      okText: 'Khóa',
+                      okButtonProps: { danger: true },
+                      cancelText: 'Hủy',
+                      onOk: () => deactivate(s),
+                    })
+                  }
+                }}
+              />
             ),
           },
         ].filter((column) => column.key === 'actions' || visibleColumns.includes(column.key as StaffColumnKey))}
       />
+      <ListPagination page={page} limit={limit} total={total} onChange={setPage} noun="nhân viên" />
 
       <Modal
         title={editing ? 'Sửa chuyên viên' : 'Thêm chuyên viên'}

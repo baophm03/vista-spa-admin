@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react'
-import { Button, Descriptions, Input, Modal, Popconfirm, Select, Space, Table, Tag, Typography, message } from 'antd'
+import { Button, Descriptions, Form, Input, Modal, Popconfirm, Select, Space, Table, Tag, Typography, message } from 'antd'
 import type { TableColumnsType } from 'antd'
-import { ReloadOutlined, SearchOutlined } from '@ant-design/icons'
+import { CheckOutlined, EyeOutlined, ReloadOutlined, SearchOutlined, StopOutlined } from '@ant-design/icons'
 import { useQuery } from '@tanstack/react-query'
 import PageTitle from '@/components/base/PageTitle'
+import ListFilterPopover from '@/components/base/ListFilterPopover'
+import RowActionsMenu from '@/components/base/RowActionsMenu'
+import ListPagination from '@/components/base/ListPagination'
 import { errorMessage, pickData, pickMeta } from '@/api/helpers'
 import { formatCurrency, formatDateTime, useBrandCurrency } from '@/themeRuntime'
 import { getProductOrders, getGetProductOrdersQueryKey, putProductOrdersId } from '@/api/endpoints/products'
@@ -14,6 +17,19 @@ type ProductOrderStatus = 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED'
 
 /** BE include kèm `items` khi list. */
 type ProductOrderRow = ProductOrder & { items?: ProductOrderItem[] }
+
+type OrderColumnKey = 'code' | 'customer' | 'items' | 'total_amount' | 'status' | 'created_at'
+
+const ORDER_COLUMN_OPTIONS: { label: string; value: OrderColumnKey }[] = [
+  { label: 'Mã đơn', value: 'code' },
+  { label: 'Khách hàng', value: 'customer' },
+  { label: 'Sản phẩm', value: 'items' },
+  { label: 'Tổng tiền', value: 'total_amount' },
+  { label: 'Trạng thái', value: 'status' },
+  { label: 'Ngày đặt', value: 'created_at' },
+]
+
+const DEFAULT_VISIBLE_COLUMNS = ORDER_COLUMN_OPTIONS.map((column) => column.value)
 
 const STATUS_META: Record<ProductOrderStatus, { label: string; color: string }> = {
   PENDING: { label: 'Chờ xử lý', color: 'orange' },
@@ -39,23 +55,27 @@ export default function Orders() {
   const { currency } = useBrandCurrency()
   const formatMoney = (value?: number | string | null) => formatCurrency(value, currency)
   const [page, setPage] = useState(1)
-  const [pageSize, setPageSize] = useState(10)
+  const [limit] = useState(10)
   const [searchText, setSearchText] = useState('')
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<ProductOrderStatus | undefined>()
+  const [filterOpen, setFilterOpen] = useState(false)
+  const [visibleColumns, setVisibleColumns] = useState<OrderColumnKey[]>(DEFAULT_VISIBLE_COLUMNS)
+  const [draftVisibleColumns, setDraftVisibleColumns] = useState<OrderColumnKey[]>(DEFAULT_VISIBLE_COLUMNS)
   const [detail, setDetail] = useState<ProductOrderRow | null>(null)
+  const [filterForm] = Form.useForm()
 
   const ordersQuery = useQuery({
     queryKey: getGetProductOrdersQueryKey({
       page,
-      limit: pageSize,
+      limit,
       ...(search.trim() ? { q: search.trim() } : {}),
       ...(statusFilter ? { status: statusFilter } : {}),
     }),
     queryFn: async () =>
       await getProductOrders({
         page,
-        limit: pageSize,
+        limit,
         ...(search.trim() ? { q: search.trim() } : {}),
         ...(statusFilter ? { status: statusFilter } : {}),
       }),
@@ -69,6 +89,38 @@ export default function Orders() {
     return () => window.clearTimeout(timer)
   }, [searchText])
 
+  const applySearch = (nextKeyword: string) => {
+    setSearchText(nextKeyword)
+    setSearch(nextKeyword.trim())
+    setPage(1)
+  }
+
+  const openFilters = (nextOpen: boolean) => {
+    setFilterOpen(nextOpen)
+    if (!nextOpen) return
+    filterForm.setFieldsValue({ status: statusFilter })
+    setDraftVisibleColumns(visibleColumns)
+  }
+
+  const applyFilters = (values: Record<string, unknown>) => {
+    if (draftVisibleColumns.length === 0) {
+      message.error('Hãy giữ lại ít nhất một cột hiển thị')
+      return
+    }
+    setStatusFilter((values.status as ProductOrderStatus) || undefined)
+    setVisibleColumns(draftVisibleColumns)
+    setPage(1)
+    setFilterOpen(false)
+  }
+
+  const clearFilters = () => {
+    filterForm.resetFields()
+    setStatusFilter(undefined)
+    setDraftVisibleColumns(DEFAULT_VISIBLE_COLUMNS)
+    setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)
+    setPage(1)
+  }
+
   const changeStatus = async (row: ProductOrderRow, status: ProductOrderStatus) => {
     try {
       await putProductOrdersId(row.id, { status })
@@ -81,10 +133,10 @@ export default function Orders() {
   }
 
   const columns: TableColumnsType<ProductOrderRow> = [
-    { title: 'Mã đơn', dataIndex: 'code', width: 160, render: (v: string) => <strong>{v}</strong> },
+    { key: 'code', title: 'Mã đơn', dataIndex: 'code', width: 160, render: (v: string) => <strong>{v}</strong> },
     {
-      title: 'Khách hàng',
       key: 'customer',
+      title: 'Khách hàng',
       render: (_v, row) => (
         <div>
           <div style={{ fontWeight: 500 }}>{row.customer_name}</div>
@@ -93,8 +145,8 @@ export default function Orders() {
       ),
     },
     {
-      title: 'Sản phẩm',
       key: 'items',
+      title: 'Sản phẩm',
       render: (_v, row) => {
         const items = row.items ?? []
         if (!items.length) return '—'
@@ -102,34 +154,55 @@ export default function Orders() {
         return <Typography.Text style={{ fontSize: 13 }} ellipsis={{ tooltip: names }}>{names}</Typography.Text>
       },
     },
-    { title: 'Tổng tiền', dataIndex: 'total_amount', width: 130, render: (v?: number | null) => formatMoney(v) },
+    { key: 'total_amount', title: 'Tổng tiền', dataIndex: 'total_amount', width: 130, render: (v?: number | null) => formatMoney(v) },
     {
+      key: 'status',
       title: 'Trạng thái',
       dataIndex: 'status',
       width: 130,
       render: (v?: string | null) => <Tag color={STATUS_META[v as ProductOrderStatus]?.color}>{STATUS_META[v as ProductOrderStatus]?.label ?? v}</Tag>,
     },
-    { title: 'Ngày đặt', dataIndex: 'created_at', width: 170, render: (v?: string | null) => (v ? formatDateTime(v) : '—') },
+    { key: 'created_at', title: 'Ngày đặt', dataIndex: 'created_at', width: 170, render: (v?: string | null) => (v ? formatDateTime(v) : '—') },
     {
-      title: 'Thao tác',
       key: 'actions',
-      width: 220,
-      render: (_v, row) => (
-        <Space>
-          <Button size="small" onClick={() => setDetail(row)}>Chi tiết</Button>
-          {(NEXT_ACTIONS[(row.status as ProductOrderStatus) ?? 'PENDING'] ?? []).map((action) => (
-            <Popconfirm
-              key={action.status}
-              title={`${action.label} đơn ${row.code}?`}
-              okText={action.label}
-              cancelText="Đóng"
-              onConfirm={() => void changeStatus(row, action.status)}
-            >
-              <Button size="small" danger={action.danger} type={action.danger ? 'default' : 'primary'}>{action.label}</Button>
-            </Popconfirm>
-          ))}
-        </Space>
-      ),
+      title: 'Hành động',
+      width: 140,
+      fixed: 'right' as const,
+      render: (_v, row) => {
+        const nextActions = NEXT_ACTIONS[(row.status as ProductOrderStatus) ?? 'PENDING'] ?? []
+        return (
+          <RowActionsMenu
+            items={[
+              { key: 'detail', icon: <EyeOutlined />, label: 'Chi tiết' },
+              ...nextActions.map((action) => ({
+                key: action.status,
+                icon: action.danger ? <StopOutlined /> : <CheckOutlined />,
+                label: action.label,
+                danger: action.danger,
+              })),
+            ]}
+            onSelect={(key) => {
+              if (key === 'detail') {
+                setDetail(row)
+                return
+              }
+              const action = nextActions.find((item) => item.status === key)
+              if (!action) return
+              if (action.danger) {
+                Modal.confirm({
+                  title: `${action.label} đơn ${row.code}?`,
+                  okText: action.label,
+                  okButtonProps: { danger: true },
+                  cancelText: 'Hủy',
+                  onOk: () => changeStatus(row, action.status),
+                })
+              } else {
+                void changeStatus(row, action.status)
+              }
+            }}
+          />
+        )
+      },
     },
   ]
 
@@ -141,52 +214,65 @@ export default function Orders() {
   ]
 
   const detailStatus = (detail?.status as ProductOrderStatus) ?? 'PENDING'
+  const activeFilterCount = (statusFilter ? 1 : 0) + (search ? 1 : 0)
 
   return (
     <>
-      <PageTitle>Đơn hàng</PageTitle>
-      <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 16 }} wrap>
-        <Space wrap>
-          <Input
-            allowClear
-            value={searchText}
-            onChange={(e) => { setSearchText(e.target.value); setPage(1) }}
-            prefix={<SearchOutlined />}
-            placeholder="Tìm mã đơn, tên, SĐT"
-            style={{ width: 260 }}
-          />
-          <Select
-            allowClear
-            value={statusFilter}
-            placeholder="Trạng thái"
-            style={{ width: 160 }}
-            onChange={(v) => { setStatusFilter(v as ProductOrderStatus | undefined); setPage(1) }}
-            options={Object.entries(STATUS_META).map(([value, meta]) => ({ value, label: meta.label }))}
-          />
-        </Space>
-        <Button icon={<ReloadOutlined />} onClick={() => void ordersQuery.refetch()}>Tải lại</Button>
-      </Space>
+      <PageTitle
+        subtitle="Theo dõi và xử lý đơn hàng từ cửa hàng"
+        extra={
+          <Space wrap>
+            <Input
+              allowClear
+              prefix={<SearchOutlined style={{ color: 'var(--brand-text-inactive, #A9ADB2)' }} />}
+              placeholder="Tìm mã đơn, tên, SĐT"
+              style={{ width: 260 }}
+              value={searchText}
+              onChange={(event) => {
+                setSearchText(event.target.value)
+                setPage(1)
+                if (!event.target.value) setSearch('')
+              }}
+              onPressEnter={() => applySearch(searchText)}
+            />
+            <ListFilterPopover
+              open={filterOpen}
+              onOpenChange={openFilters}
+              activeFilterCount={activeFilterCount}
+              form={filterForm}
+              onApply={applyFilters}
+              onClear={clearFilters}
+              columnOptions={ORDER_COLUMN_OPTIONS}
+              draftVisibleColumns={draftVisibleColumns}
+              onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as OrderColumnKey[])}
+              filterItems={(
+                <Form.Item name="status" label="Trạng thái" style={{ marginBottom: 0 }}>
+                  <Select allowClear placeholder="Tất cả" options={Object.entries(STATUS_META).map(([value, meta]) => ({ value, label: meta.label }))} />
+                </Form.Item>
+              )}
+            />
+            <Button icon={<ReloadOutlined />} onClick={() => void ordersQuery.refetch()}>Tải lại</Button>
+          </Space>
+        }
+      >
+        Đơn hàng
+      </PageTitle>
 
       <Table<ProductOrderRow>
         rowKey="id"
         loading={ordersQuery.isFetching}
         dataSource={rows}
-        columns={columns}
-        pagination={{
-          current: page,
-          pageSize,
-          total,
-          showSizeChanger: true,
-          showTotal: (count) => `${count} đơn`,
-        }}
-        onChange={(pagination) => {
-          if (pagination.current) setPage(pagination.current)
-          if (pagination.pageSize && pagination.pageSize !== pageSize) {
-            setPageSize(pagination.pageSize)
-            setPage(1)
-          }
-        }}
+        scroll={{ x: 1000 }}
+        pagination={false}
+        onRow={(row) => ({
+          onClick: () => setDetail(row),
+          style: { cursor: 'pointer' },
+        })}
+        columns={columns.filter((column) =>
+          column.key === 'actions' || visibleColumns.includes(column.key as OrderColumnKey),
+        )}
       />
+      <ListPagination page={page} limit={limit} total={total} onChange={setPage} noun="đơn hàng" />
 
       <Modal
         title={`Đơn hàng ${detail?.code ?? ''}`}

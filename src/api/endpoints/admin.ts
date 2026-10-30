@@ -1098,7 +1098,7 @@ export const useDeleteCollaboratorsId = <TError = UnauthorizedResponse | Forbidd
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **CO-01** — GET /collaborators. Cần quyền `collaborator.read`. Tham số truy vấn: `is_active`, `q`.
+ * **CO-01** — GET /collaborators. Cần quyền `collaborator.read`. Tham số truy vấn: `is_active`, `q`, `type`.
  * @summary Lấy danh sách cộng tác viên
  */
 export const getCollaborators = (
@@ -1293,7 +1293,7 @@ export const prefetchGetCollaboratorsQuery = async <TData = Awaited<ReturnType<t
 
 
 /**
- * **CO-02** — POST /collaborators. Cần quyền `collaborator.create`. Trường body: `name`, `phone`, `referral_code`, `type`, `branch_id`, `user_id`, `note`.
+ * **CO-03** — POST /collaborators. Cần quyền `collaborator.create`. Trường body: `name`, `phone`, `referral_code`, `type`, `commission_percent`, `branch_id`.
  * @summary Tạo cộng tác viên mới
  */
 export const postCollaborators = (

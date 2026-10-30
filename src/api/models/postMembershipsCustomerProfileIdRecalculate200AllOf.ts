@@ -6,6 +6,6 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type PostMembershipsUserIdRecalculate200AllOf = {
+export type PostMembershipsCustomerProfileIdRecalculate200AllOf = {
   responseData?: unknown;
 };

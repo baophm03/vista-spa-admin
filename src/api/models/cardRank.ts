@@ -9,6 +9,7 @@ import type { CardRankMaxSpent } from './cardRankMaxSpent';
 import type { CardRankValidity } from './cardRankValidity';
 import type { CardRankBenefits } from './cardRankBenefits';
 import type { CardRankDiscountPercent } from './cardRankDiscountPercent';
+import type { CardRankColor } from './cardRankColor';
 
 /**
  * Membership card rank
@@ -31,6 +32,10 @@ export interface CardRank {
    * @maximum 100
    */
   discount_percent?: CardRankDiscountPercent;
+  /** @pattern ^#[0-9A-Fa-f]{6}$ */
+  color?: CardRankColor;
+  /** @minimum 0 */
+  customer_count?: number;
   created_at?: string;
   updated_at?: string;
 }

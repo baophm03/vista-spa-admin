@@ -7,7 +7,6 @@ import {
   Input,
   InputNumber,
   Modal,
-  Popconfirm,
   Select,
   Space,
   Switch,
@@ -18,11 +17,23 @@ import {
   message,
 } from 'antd'
 import type { TableColumnsType } from 'antd'
-import { PlusOutlined, ReloadOutlined } from '@ant-design/icons'
+import {
+  CheckOutlined,
+  EditOutlined,
+  EyeInvisibleOutlined,
+  GiftOutlined,
+  PlusOutlined,
+  ReloadOutlined,
+  StopOutlined,
+} from '@ant-design/icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { useBrandDateTime } from '@/themeRuntime'
 import PageTitle from '@/components/base/PageTitle'
+import ListFilterPopover from '@/components/base/ListFilterPopover'
+import RowActionsMenu from '@/components/base/RowActionsMenu'
+import ListPagination from '@/components/base/ListPagination'
+import { paginateRows } from '@/utils/listTable'
 import { errorMessage, pickData, pickMeta } from '@/api/helpers'
 import type { CustomerProfile } from '@/api/models/customerProfile'
 import type { Reward } from '@/api/models/reward'
@@ -43,7 +54,7 @@ import {
 } from '@/api/endpoints/rewards'
 import { getCustomerProfiles, postCustomerProfilesIdRedeemReward } from '@/api/endpoints/customer-profiles'
 import { getVouchers } from '@/api/endpoints/vouchers'
-import { Can } from '@casl/react'
+import { Can, useAbility } from '@casl/react'
 
 /** GET /rewards trả kèm voucher cấp khi type = VOUCHER (model gen thiếu — mở rộng cục bộ). */
 type RewardRow = Reward & { voucher?: { id?: string; title?: string; description?: string } | null }
@@ -68,6 +79,10 @@ function remainingLabel(row: RewardRow) {
 }
 
 function RewardCatalogTab({ onChanged }: { onChanged: () => void }) {
+  const ability = useAbility()
+  const canRedeem = ability.can('REDEEM_ADMIN', 'REWARD')
+  const canUpdate = ability.can('UPDATE', 'REWARD')
+  const [page, setPage] = useState(1)
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<RewardRow | null>(null)
   const [redeemTarget, setRedeemTarget] = useState<RewardRow | null>(null)
@@ -187,30 +202,43 @@ function RewardCatalogTab({ onChanged }: { onChanged: () => void }) {
 
   const columns: TableColumnsType<RewardRow> = [
     {
+      key: 'name',
       title: 'Quà', dataIndex: 'name',
       render: (v: string, row) => <div>
         <div style={{ fontWeight: 500 }}>{v}</div>
         {row.description ? <Typography.Text type="secondary" style={{ fontSize: 12 }}>{row.description}</Typography.Text> : null}
       </div>,
     },
-    { title: 'Loại', dataIndex: 'type', width: 120, render: (v: RewardType, row) => <Tag color={TYPE_META[v]?.color}>{TYPE_META[v]?.label ?? v}{v === 'VOUCHER' && row.voucher ? `: ${row.voucher.title}` : ''}</Tag> },
-    { title: 'Điểm đổi', dataIndex: 'points_cost', width: 100, render: (v: number) => v.toLocaleString('vi-VN') },
-    { title: 'Còn lại', key: 'remaining', width: 130, render: (_v, row) => remainingLabel(row) },
-    { title: 'Thời hạn', key: 'validity', width: 180, render: (_v, row) => `${row.valid_from ? dayjs(String(row.valid_from)).format('DD/MM/YYYY') : '—'} → ${row.valid_to ? dayjs(String(row.valid_to)).format('DD/MM/YYYY') : '—'}` },
-    { title: 'Trạng thái', dataIndex: 'is_active', width: 110, render: (v: boolean) => (v ? <Tag color="green">Đang đổi</Tag> : <Tag>Đã ẩn</Tag>) },
+    { key: 'type', title: 'Loại', dataIndex: 'type', width: 120, render: (v: RewardType, row) => <Tag color={TYPE_META[v]?.color}>{TYPE_META[v]?.label ?? v}{v === 'VOUCHER' && row.voucher ? `: ${row.voucher.title}` : ''}</Tag> },
+    { key: 'points_cost', title: 'Điểm đổi', dataIndex: 'points_cost', width: 100, render: (v: number) => v.toLocaleString('vi-VN') },
+    { key: 'remaining', title: 'Còn lại', width: 130, render: (_v, row) => remainingLabel(row) },
+    { key: 'validity', title: 'Thời hạn', width: 180, render: (_v, row) => `${row.valid_from ? dayjs(String(row.valid_from)).format('DD/MM/YYYY') : '—'} → ${row.valid_to ? dayjs(String(row.valid_to)).format('DD/MM/YYYY') : '—'}` },
+    { key: 'is_active', title: 'Trạng thái', dataIndex: 'is_active', width: 110, render: (v: boolean) => (v ? <Tag color="green">Đang đổi</Tag> : <Tag>Đã ẩn</Tag>) },
     {
-      title: 'Thao tác', key: 'actions', width: 220,
-      render: (_v, row) => <Space>
-        {row.is_active && <Can I="REDEEM_ADMIN" a="REWARD"><Button size="small" type="primary" onClick={() => void openRedeem(row)}>Đổi hộ khách</Button></Can>}
-        <Can I="UPDATE" a="REWARD">
-          <Button size="small" onClick={() => openEditor(row)}>Sửa</Button>
-          {row.is_active && (
-            <Popconfirm title="Ẩn quà này?" description="Lượt đổi cũ vẫn được giữ." onConfirm={() => void hide(row)}>
-              <Button size="small" danger>Ẩn</Button>
-            </Popconfirm>
-          )}
-        </Can>
-      </Space>,
+      key: 'actions', title: 'Hành động', width: 140, fixed: 'right' as const,
+      render: (_v, row) => (
+        <RowActionsMenu
+          items={[
+            ...(canRedeem && row.is_active ? [{ key: 'redeem', icon: <GiftOutlined />, label: 'Đổi hộ khách' }] : []),
+            ...(canUpdate ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []),
+            ...(canUpdate && row.is_active ? [{ key: 'hide', icon: <EyeInvisibleOutlined />, label: 'Ẩn', danger: true }] : []),
+          ]}
+          onSelect={(key) => {
+            if (key === 'redeem') void openRedeem(row)
+            else if (key === 'edit') openEditor(row)
+            else if (key === 'hide') {
+              Modal.confirm({
+                title: 'Ẩn quà này?',
+                content: 'Lượt đổi cũ vẫn được giữ.',
+                okText: 'Ẩn',
+                okButtonProps: { danger: true },
+                cancelText: 'Hủy',
+                onOk: () => hide(row),
+              })
+            }
+          }}
+        />
+      ),
     },
   ]
 
@@ -225,7 +253,13 @@ function RewardCatalogTab({ onChanged }: { onChanged: () => void }) {
       {rewardsQuery.isError && (
         <Alert className="mb-4" type="error" showIcon message="Không tải được danh mục quà" description={errorMessage(rewardsQuery.error)} action={<Button size="small" onClick={() => void rewardsQuery.refetch()}>Thử lại</Button>} />
       )}
-      <Table<RewardRow> rowKey="id" loading={rewardsQuery.isLoading} dataSource={rewards} columns={columns} pagination={{ pageSize: 10 }} />
+      <Table<RewardRow>
+        rowKey="id" loading={rewardsQuery.isLoading} dataSource={paginateRows(rewards, page, 10)}
+        columns={columns.filter((column) => column.key !== 'actions' || canRedeem || canUpdate)}
+        scroll={{ x: 950 }}
+        pagination={false}
+      />
+      <ListPagination page={page} limit={10} total={rewards.length} onChange={setPage} noun="quà" />
 
       <Modal
         title={editing ? 'Sửa quà' : 'Thêm quà'}
@@ -300,12 +334,28 @@ function RewardCatalogTab({ onChanged }: { onChanged: () => void }) {
   )
 }
 
+type RedemptionColumnKey = 'reward' | 'points_spent' | 'status' | 'created_at' | 'cancel_reason'
+
+const REDEMPTION_COLUMN_OPTIONS: { label: string; value: RedemptionColumnKey }[] = [
+  { label: 'Quà', value: 'reward' },
+  { label: 'Điểm đã trừ', value: 'points_spent' },
+  { label: 'Trạng thái', value: 'status' },
+  { label: 'Ngày đổi', value: 'created_at' },
+  { label: 'Lý do hủy', value: 'cancel_reason' },
+]
+
+const DEFAULT_REDEMPTION_COLUMNS = REDEMPTION_COLUMN_OPTIONS.map((column) => column.value)
+
 function RedemptionsTab({ onChanged }: { onChanged: () => void }) {
   const { formatDateTime } = useBrandDateTime()
   const [page, setPage] = useState(1)
   const [statusFilter, setStatusFilter] = useState<string | undefined>()
+  const [filterOpen, setFilterOpen] = useState(false)
+  const [visibleColumns, setVisibleColumns] = useState<RedemptionColumnKey[]>(DEFAULT_REDEMPTION_COLUMNS)
+  const [draftVisibleColumns, setDraftVisibleColumns] = useState<RedemptionColumnKey[]>(DEFAULT_REDEMPTION_COLUMNS)
   const [cancelTarget, setCancelTarget] = useState<RewardRedemptionRow | null>(null)
   const [cancelForm] = Form.useForm()
+  const [filterForm] = Form.useForm()
   const queryClient = useQueryClient()
 
   const redemptionsQuery = useQuery({
@@ -356,28 +406,78 @@ function RedemptionsTab({ onChanged }: { onChanged: () => void }) {
     }
   }
 
+  const openFilters = (nextOpen: boolean) => {
+    setFilterOpen(nextOpen)
+    if (!nextOpen) return
+    filterForm.setFieldsValue({ status: statusFilter })
+    setDraftVisibleColumns(visibleColumns)
+  }
+
+  const applyFilters = (values: Record<string, unknown>) => {
+    if (draftVisibleColumns.length === 0) {
+      message.error('Hãy giữ lại ít nhất một cột hiển thị')
+      return
+    }
+    setStatusFilter(typeof values.status === 'string' && values.status ? values.status : undefined)
+    setVisibleColumns(draftVisibleColumns)
+    setPage(1)
+    setFilterOpen(false)
+  }
+
+  const clearFilters = () => {
+    filterForm.resetFields()
+    setStatusFilter(undefined)
+    setDraftVisibleColumns(DEFAULT_REDEMPTION_COLUMNS)
+    setVisibleColumns(DEFAULT_REDEMPTION_COLUMNS)
+    setPage(1)
+  }
+
   const columns: TableColumnsType<RewardRedemptionRow> = [
-    { title: 'Quà', key: 'reward', render: (_v, row) => row.reward?.name ?? row.reward_id },
-    { title: 'Điểm đã trừ', dataIndex: 'points_spent', width: 110, render: (v: number) => Number(v).toLocaleString('vi-VN') },
-    { title: 'Trạng thái', dataIndex: 'status', width: 110, render: (v: string) => <Tag color={REDEMPTION_META[v]?.color}>{REDEMPTION_META[v]?.label ?? v}</Tag> },
-    { title: 'Ngày đổi', dataIndex: 'created_at', width: 150, render: (v: string) => formatDateTime(v) },
-    { title: 'Lý do hủy', dataIndex: 'cancel_reason', ellipsis: true, render: (v?: string) => v || '—' },
+    { key: 'reward', title: 'Quà', render: (_v, row) => row.reward?.name ?? row.reward_id },
+    { key: 'points_spent', title: 'Điểm đã trừ', dataIndex: 'points_spent', width: 110, render: (v: number) => Number(v).toLocaleString('vi-VN') },
+    { key: 'status', title: 'Trạng thái', dataIndex: 'status', width: 110, render: (v: string) => <Tag color={REDEMPTION_META[v]?.color}>{REDEMPTION_META[v]?.label ?? v}</Tag> },
+    { key: 'created_at', title: 'Ngày đổi', dataIndex: 'created_at', width: 150, render: (v: string) => formatDateTime(v) },
+    { key: 'cancel_reason', title: 'Lý do hủy', dataIndex: 'cancel_reason', ellipsis: true, render: (v?: string) => v || '—' },
     {
-      title: 'Thao tác', key: 'actions', width: 170,
-      render: (_v, row) => <Space>
-        {row.status === 'ISSUED' && <Button size="small" type="primary" onClick={() => void markUsed(row)}>Đã dùng</Button>}
-        {row.status === 'ISSUED' && <Button size="small" danger onClick={() => { setCancelTarget(row); cancelForm.resetFields() }}>Hủy</Button>}
-      </Space>,
+      key: 'actions', title: 'Hành động', width: 140, fixed: 'right' as const,
+      render: (_v, row) => (
+        <RowActionsMenu
+          items={row.status === 'ISSUED'
+            ? [
+                { key: 'used', icon: <CheckOutlined />, label: 'Đã dùng' },
+                { key: 'cancel', icon: <StopOutlined />, label: 'Hủy lượt đổi', danger: true },
+              ]
+            : []}
+          onSelect={(key) => {
+            if (key === 'used') void markUsed(row)
+            else if (key === 'cancel') {
+              setCancelTarget(row)
+              cancelForm.resetFields()
+            }
+          }}
+        />
+      ),
     },
   ]
 
   return (
     <>
       <Space style={{ width: '100%', justifyContent: 'flex-end', marginBottom: 16 }}>
-        <Select
-          allowClear value={statusFilter} placeholder="Trạng thái" style={{ width: 160 }}
-          onChange={(v) => { setStatusFilter(v); setPage(1) }}
-          options={Object.entries(REDEMPTION_META).map(([value, meta]) => ({ value, label: meta.label }))}
+        <ListFilterPopover
+          open={filterOpen}
+          onOpenChange={openFilters}
+          activeFilterCount={statusFilter ? 1 : 0}
+          form={filterForm}
+          onApply={applyFilters}
+          onClear={clearFilters}
+          columnOptions={REDEMPTION_COLUMN_OPTIONS}
+          draftVisibleColumns={draftVisibleColumns}
+          onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as RedemptionColumnKey[])}
+          filterItems={(
+            <Form.Item name="status" label="Trạng thái" style={{ marginBottom: 0 }}>
+              <Select allowClear placeholder="Tất cả" options={Object.entries(REDEMPTION_META).map(([value, meta]) => ({ value, label: meta.label }))} />
+            </Form.Item>
+          )}
         />
         <Button icon={<ReloadOutlined />} onClick={() => void redemptionsQuery.refetch()}>Tải lại</Button>
       </Space>
@@ -385,10 +485,14 @@ function RedemptionsTab({ onChanged }: { onChanged: () => void }) {
         <Alert className="mb-4" type="error" showIcon message="Không tải được lượt đổi quà" description={errorMessage(redemptionsQuery.error)} action={<Button size="small" onClick={() => void redemptionsQuery.refetch()}>Thử lại</Button>} />
       )}
       <Table<RewardRedemptionRow>
-        rowKey="id" loading={loading} dataSource={rows} columns={columns}
-        pagination={{ current: page, pageSize: 10, total, showTotal: (c) => `${c} lượt` }}
-        onChange={(p) => { if (p.current) setPage(p.current) }}
+        rowKey="id" loading={loading} dataSource={rows}
+        columns={columns.filter((column) =>
+          column.key === 'actions' || visibleColumns.includes(column.key as RedemptionColumnKey),
+        )}
+        scroll={{ x: 850 }}
+        pagination={false}
       />
+      <ListPagination page={page} limit={10} total={total} onChange={setPage} noun="lượt đổi quà" />
       <Modal
         title={`Hủy lượt đổi: ${cancelTarget?.reward?.name ?? ''}`}
         open={!!cancelTarget}
@@ -418,7 +522,7 @@ export default function Rewards() {
 
   return (
     <>
-      <PageTitle>Quà đổi điểm</PageTitle>
+      <PageTitle subtitle="Danh mục quà đổi điểm và lịch sử đổi thưởng">Quà đổi điểm</PageTitle>
       <Tabs
         key={tick}
         items={[

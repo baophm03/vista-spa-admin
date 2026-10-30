@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Card, Col, Empty, Row, Statistic, Table, Tabs, Tag, Typography } from 'antd'
+import { Card, Col, Row, Table, Tabs, Tag } from 'antd'
 import {
   CalendarOutlined,
   DollarOutlined,
@@ -21,6 +21,8 @@ import {
 } from 'recharts'
 import dayjs from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
+import StatCards from '@/components/base/StatCards'
+import TableEmpty from '@/components/base/TableEmpty'
 import { pickData, pickMeta } from '@/api/helpers'
 import { Can } from '@casl/react'
 import { useBrandColors, useBrandCurrency } from '@/themeRuntime'
@@ -42,17 +44,6 @@ const tooltipStyle = {
   fontSize: 13,
 }
 
-const KPI_ICON_STYLE = (bg: string, color: string) => ({
-  width: 42,
-  height: 42,
-  borderRadius: 12,
-  background: bg,
-  color,
-  display: 'flex' as const,
-  alignItems: 'center' as const,
-  justifyContent: 'center' as const,
-  fontSize: 18,
-})
 
 const STATUS_MAP: Record<string, { label: string; color: string }> = {
   pending: { label: 'Chờ duyệt', color: 'orange' },
@@ -67,7 +58,7 @@ const STATUS_MAP: Record<string, { label: string; color: string }> = {
 function Overview() {
   const brand = useBrandColors()
   const { formatCompact: formatCompactMoney } = useBrandCurrency()
-  const rankColors = [brand.primary, '#D9A441', '#3B5BDB', '#16A34A', '#E06666']
+  const rankColors = [brand.primary, brand.tertiary, '#3B5BDB', '#16A34A', '#E06666']
   const [totalCustomers, setTotalCustomers] = useState<number | null>(null)
   const [revenueData, setRevenueData] = useState<{ period: string; revenue: number }[]>([])
   const [rankData, setRankData] = useState<{ name: string; value: number }[]>([])
@@ -118,73 +109,47 @@ function Overview() {
 
   return (
     <>
-      <Row gutter={[16, 16]} style={{ marginBottom: 20 }}>
-        {[
+      <StatCards
+        items={[
           {
             key: 'customers',
-            title: 'Tổng khách hàng',
-            value: totalCustomers ?? '—',
-            suffix: '',
-            note: `${rankData.reduce((s, r) => s + r.value, 0)} thành viên có hạng`,
+            label: 'Tổng khách hàng',
+            value: totalCustomers === null ? '—' : totalCustomers.toLocaleString('vi-VN'),
             icon: <TeamOutlined />,
-            bg: brand.tint,
-            color: brand.primary,
+            tone: 'primary',
+            note: `${rankData.reduce((s, r) => s + r.value, 0)} thành viên có hạng`,
           },
           {
             key: 'pending',
-            title: 'Lịch hẹn chờ duyệt',
-            value: pendingCount,
-            suffix: '',
-            note: `Tổng ${Object.values(apptStatus).reduce((s, v) => s + v, 0)} lịch 6 tháng`,
+            label: 'Lịch hẹn chờ duyệt',
+            value: pendingCount.toLocaleString('vi-VN'),
             icon: <CalendarOutlined />,
-            bg: '#E8EDFB',
-            color: '#3B5BDB',
+            tone: 'secondary',
+            note: `Tổng ${Object.values(apptStatus).reduce((s, v) => s + v, 0)} lịch trong 6 tháng`,
           },
           {
             key: 'revenue',
-            title: 'Doanh thu 6 tháng',
+            label: 'Doanh thu 6 tháng',
             value: formatCompactMoney(totalRevenue * 1_000_000),
-            suffix: '',
-            note: '',
             icon: <DollarOutlined />,
-            bg: '#E4F5EC',
-            color: '#16A34A',
+            tone: 'tertiary',
           },
           {
             key: 'debt',
-            title: 'Công nợ hiện tại',
+            label: 'Công nợ hiện tại',
             value: debtTotal === null ? '—' : formatCompactMoney(debtTotal),
-            suffix: '',
-            note: '',
             icon: <WalletOutlined />,
-            bg: '#FDECEC',
-            color: '#E06666',
+            tone: 'neutral',
           },
-        ].map((kpi) => (
-          <Col key={kpi.key} xs={24} sm={12} lg={6} style={{ display: 'flex' }}>
-            <Card style={{ flex: 1, width: '100%' }} styles={{ body: { padding: '18px 20px', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' } }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div>
-                  <Statistic title={kpi.title} value={kpi.value} suffix={kpi.suffix || undefined} />
-                  {kpi.note && (
-                    <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                      {kpi.note}
-                    </Typography.Text>
-                  )}
-                </div>
-                <div style={KPI_ICON_STYLE(kpi.bg, kpi.color)}>{kpi.icon}</div>
-              </div>
-            </Card>
-          </Col>
-        ))}
-      </Row>
+        ]}
+      />
 
       <Row gutter={[16, 16]} style={{ marginBottom: 20 }}>
         <Col xs={24} lg={16}>
           <Card title="Doanh thu theo tháng (6 tháng gần nhất)">
             {revenueData.length < 2 ? (
               <div style={{ height: 280, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={revenueData.length === 0 ? 'Chưa có dữ liệu doanh thu' : 'Chưa đủ dữ liệu — cần ít nhất 2 tháng'} />
+                <TableEmpty title="Chưa có dữ liệu doanh thu" description={revenueData.length === 0 ? undefined : 'Chưa đủ dữ liệu — cần ít nhất 2 tháng'} />
               </div>
             ) : (
               <ResponsiveContainer width="100%" height={280}>
@@ -217,7 +182,7 @@ function Overview() {
           <Card title="Cơ cấu thành viên theo hạng">
             {rankData.length === 0 ? (
               <div style={{ height: 280, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Chưa có thành viên xếp hạng" />
+                <TableEmpty title="Chưa có thành viên xếp hạng" />
               </div>
             ) : (
               <ResponsiveContainer width="100%" height={280}>
@@ -249,7 +214,6 @@ function Overview() {
           rowKey="id"
           dataSource={recent}
           pagination={false}
-          size="small"
           columns={[
             {
               title: 'Khách hàng',
@@ -289,7 +253,7 @@ export default function Dashboard() {
 
         return (
           <>
-            <PageTitle>Dashboard</PageTitle>
+            <PageTitle subtitle="Tổng quan kinh doanh và hoạt động của spa">Dashboard</PageTitle>
             <Tabs
               defaultActiveKey="overview"
               destroyOnHidden={false}

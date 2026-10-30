@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Alert, Button, Checkbox, Empty, Form, Input, InputNumber, Modal, Select, Space, Spin, Table, Tag, Typography, message } from 'antd'
+import { Alert, Button, Checkbox, Form, Input, InputNumber, Modal, Select, Space, Spin, Table, Tag, Typography, message } from 'antd'
 import { PlusOutlined, ReloadOutlined } from '@ant-design/icons'
 import { Can } from '@casl/react'
 import PageTitle from '@/components/base/PageTitle'
+import ListPagination from '@/components/base/ListPagination'
+import TableEmpty from '@/components/base/TableEmpty'
 import LookupItemsManager from '@/components/LookupItemsManager'
+import { paginateRows } from '@/utils/listTable'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { CustomFieldDef } from '@/api/models/customFieldDef'
 import type { CustomFieldDefEntity } from '@/api/models/customFieldDefEntity'
@@ -53,6 +56,7 @@ function CustomerFieldsConfig({ entity, sectionTitle }: {
 }) {
   const [rows, setRows] = useState<CustomFieldDef[]>([])
   const [lookupLists, setLookupLists] = useState<LookupList[]>([])
+  const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(false)
   const [editing, setEditing] = useState<CustomFieldDef | null>(null)
   const [saving, setSaving] = useState(false)
@@ -68,6 +72,7 @@ function CustomerFieldsConfig({ entity, sectionTitle }: {
       ])
       setRows((pickData<CustomFieldDef[]>(definitions) ?? []) as CustomFieldDef[])
       setLookupLists((pickData<LookupList[]>(catalogs) ?? []) as LookupList[])
+      setPage(1)
     } catch (err) {
       message.error(errorMessage(err))
     } finally {
@@ -190,23 +195,19 @@ function CustomerFieldsConfig({ entity, sectionTitle }: {
       <Table<CustomFieldDef>
         rowKey="id"
         loading={loading}
-        dataSource={rows}
-        pagination={{ pageSize: 10 }}
+        dataSource={paginateRows(rows, page, 10)}
+        pagination={false}
         locale={{
           emptyText: entity === 'SERVICE' ? (
-            <Empty
-              image={Empty.PRESENTED_IMAGE_SIMPLE}
-              description={(
-                <Space direction="vertical" size={0}>
-                  <Typography.Text>Chưa có trường tùy chỉnh cho dịch vụ</Typography.Text>
-                  <Typography.Text type="secondary">Tạo trường nếu cần lưu thêm thông tin ngoài các trường dịch vụ cơ bản.</Typography.Text>
-                </Space>
-              )}
+            <TableEmpty
+              title="Chưa có trường tùy chỉnh cho dịch vụ"
+              description="Tạo trường nếu cần lưu thêm thông tin ngoài các trường dịch vụ cơ bản."
             />
           ) : undefined,
         }}
         columns={columns}
       />
+      <ListPagination page={page} limit={10} total={rows.length} onChange={setPage} noun="trường tùy chỉnh" />
       <Modal
         title={editing ? `Sửa trường ${sectionTitle}` : `Thêm trường ${sectionTitle}`}
         open={open}
@@ -340,16 +341,18 @@ export default function CustomerDataConfig() {
 
   return (
     <>
-      <PageTitle>Cấu hình dữ liệu khách hàng</PageTitle>
-      <div style={{ width: 240, maxWidth: '100%', marginBottom: 20 }}>
-        <Select
-          aria-label="Chọn loại dữ liệu cần cấu hình"
-          value={selectedSection}
-          options={sectionOptions}
-          onChange={(value: CustomFieldDefEntity | 'HEALTH_METRICS') => setSelectedSection(value)}
-          style={{ width: '100%' }}
-        />
-      </div>
+      <PageTitle
+        subtitle="Cấu hình trường dữ liệu khách hàng"
+        extra={(
+          <Select
+            aria-label="Chọn loại dữ liệu cần cấu hình"
+            value={selectedSection}
+            options={sectionOptions}
+            onChange={(value: CustomFieldDefEntity | 'HEALTH_METRICS') => setSelectedSection(value)}
+            style={{ width: 260 }}
+          />
+        )}
+      >Cấu hình dữ liệu khách hàng</PageTitle>
       {selectedSection === 'HEALTH_METRICS'
         ? <HealthMetricsConfig />
         : <CustomerFieldsConfig
