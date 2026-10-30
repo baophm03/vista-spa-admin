@@ -202,7 +202,7 @@ export default function Appointments() {
   }, [page, limit, filter, dateFilter, staffFilter, branchFilter])
 
   const appointmentsQuery = useGetAppointments(listParams as never, { query: { enabled: displayMode === 'list' } })
-  const rows = pickData<AppointmentRow[] | undefined>(appointmentsQuery.data) ?? []
+  const rows = useMemo(() => pickData<AppointmentRow[] | undefined>(appointmentsQuery.data) ?? [], [appointmentsQuery.data])
   const total = pickMeta(appointmentsQuery.data)?.total ?? rows.length
 
   const calendarStart = calendarView === 'week' ? mondayOf(calendarDate) : calendarDate.startOf('day')
@@ -222,7 +222,7 @@ export default function Appointments() {
     return params
   }, [calendarStart, calendarEnd, dateFilter, filter, staffFilter, branchFilter])
   const calendarAppointmentsQuery = useGetAppointments(calendarParams as never, { query: { enabled: displayMode === 'calendar' } })
-  const calendarRows = pickData<AppointmentRow[] | undefined>(calendarAppointmentsQuery.data) ?? []
+  const calendarRows = useMemo(() => pickData<AppointmentRow[] | undefined>(calendarAppointmentsQuery.data) ?? [], [calendarAppointmentsQuery.data])
   const calendarDays = Array.from({ length: calendarView === 'week' ? 7 : 1 }, (_, index) => calendarStart.add(index, 'day'))
 
   useEffect(() => {
@@ -231,7 +231,10 @@ export default function Appointments() {
   }, [customerSearchInput])
 
   const profilesQuery = useGetCustomerProfiles({ page: 1, limit: 50, q: customerSearch || undefined })
-  const profiles = (pickData<ProfileRow[] | undefined>(profilesQuery.data) ?? []) as ProfileRow[]
+  // useMemo để giữ tham chiếu ổn định: fallback [] tạo mảng mới mỗi render, nếu đưa vào
+  // deps của effect (như effect lấy slot bên dưới) sẽ dẫn tới vòng lặp setState vô hạn
+  // ("Maximum update depth exceeded" → React unmount cả cây → trang trắng).
+  const profiles = useMemo(() => (pickData<ProfileRow[] | undefined>(profilesQuery.data) ?? []) as ProfileRow[], [profilesQuery.data])
   const profileOptions = useMemo(() => {
     const options = [...profiles]
     if (selectedProfile && !options.some((profile) => profile.id === selectedProfile.id)) options.unshift(selectedProfile)
@@ -239,15 +242,15 @@ export default function Appointments() {
   }, [profiles, selectedProfile])
   const servicesQuery = useGetService({ page: 1, limit: 200, is_active: true })
   // GET /service trả { services, total, ... } trong responseData
-  const services = (pickData<{ services?: Service[] } | undefined>(servicesQuery.data)?.services ?? []) as Service[]
+  const services = useMemo(() => (pickData<{ services?: Service[] } | undefined>(servicesQuery.data)?.services ?? []) as Service[], [servicesQuery.data])
   const staffsQuery = useGetUsers({ currentPage: 1, pageSize: 200, has_role: true })
-  const staffs = (pickData<{ rows?: StaffRow[] } | undefined>(staffsQuery.data)?.rows ?? []) as StaffRow[]
+  const staffs = useMemo(() => (pickData<{ rows?: StaffRow[] } | undefined>(staffsQuery.data)?.rows ?? []) as StaffRow[], [staffsQuery.data])
   const calendarStaffs = useMemo(() => {
     const assignedIds = [...new Set(calendarRows.map((row) => row.staff_id).filter((id): id is string => !!id))]
     return assignedIds.map((id) => staffs.find((staff) => staff.id === id) ?? { id, zalo_name: 'Nhân viên' })
   }, [calendarRows, staffs])
   const branchesQuery = useGetBranches({ status: 'active' })
-  const branches = (pickData<Branch[] | undefined>(branchesQuery.data) ?? []) as Branch[]
+  const branches = useMemo(() => (pickData<Branch[] | undefined>(branchesQuery.data) ?? []) as Branch[], [branchesQuery.data])
 
   const createMutation = usePostAppointments()
   const rescheduleMutation = usePutAppointmentsId()
