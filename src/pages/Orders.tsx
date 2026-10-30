@@ -166,7 +166,7 @@ export default function Orders() {
     {
       key: 'actions',
       title: 'Hành động',
-      width: 140,
+      width: 90,
       fixed: 'right' as const,
       render: (_v, row) => {
         const nextActions = NEXT_ACTIONS[(row.status as ProductOrderStatus) ?? 'PENDING'] ?? []

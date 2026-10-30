@@ -170,7 +170,7 @@ export default function Notifications() {
           {
             title: 'Hành động',
             key: 'actions',
-            width: 140,
+            width: 90,
             fixed: 'right' as const,
             render: (_, row) => row.is_read ? undefined : (
               <RowActionsMenu

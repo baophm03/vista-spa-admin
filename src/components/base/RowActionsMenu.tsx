@@ -28,9 +28,9 @@ function isViewAction(item: RowActionItem): boolean {
 }
 
 /** Cột hành động chuẩn hóa:
- *  - Hành động xem chi tiết (mắt) luôn ở ngoài, kế bên nút còn lại.
- *  - Còn hơn 2 hành động → gom vào nút chấm chấm (dropdown).
- *  - Còn ≤ 2 hành động → hiển thị nút chữ ra ngoài luôn.
+ *  - Hành động xem chi tiết (mắt) luôn ở ngoài, kế bên nút chấm chấm.
+ *  - Mọi hành động còn lại gom vào nút chấm chấm (dropdown) để cột
+ *    Hành động luôn gọn (~64px), không bị tràn khi bảng nhiều cột.
  *  Tự chặn click lan lên dòng (onRow). */
 export default function RowActionsMenu({ items, onSelect }: RowActionsMenuProps) {
   if (items.length === 0) return null
@@ -56,7 +56,7 @@ export default function RowActionsMenu({ items, onSelect }: RowActionsMenuProps)
           onClick={() => onSelect(item.key)}
         />
       ))}
-      {plain.length > 2 ? (
+      {plain.length === 0 ? null : (
         <Dropdown
           trigger={['click']}
           menu={{
@@ -66,18 +66,6 @@ export default function RowActionsMenu({ items, onSelect }: RowActionsMenuProps)
         >
           <Button size="small" icon={<MoreOutlined />} aria-label="Thao tác khác" />
         </Dropdown>
-      ) : (
-        plain.map((item) => (
-          <Button
-            key={item.key}
-            size="small"
-            danger={item.danger}
-            icon={item.icon}
-            onClick={() => onSelect(item.key)}
-          >
-            {item.label}
-          </Button>
-        ))
       )}
     </span>
   )

@@ -240,7 +240,7 @@ export default function Services() {
       {
         key: 'actions',
         title: 'Hành động',
-        width: 140,
+        width: 90,
         fixed: 'right',
         render: (_value, row) => (
           <RowActionsMenu

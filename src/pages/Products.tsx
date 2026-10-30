@@ -403,7 +403,7 @@ export default function Products() {
           {
             title: 'Hành động',
             key: 'actions',
-            width: 140,
+            width: 90,
             fixed: 'right' as const,
             render: (_, p) => (
               <RowActionsMenu

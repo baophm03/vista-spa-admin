@@ -243,25 +243,25 @@ export default function Collaborators() {
   const columns: TableColumnsType<CollaboratorRow> = ([
     {
       key: 'referral_code',
-      title: 'Mã giới thiệu', dataIndex: 'referral_code', width: 140,
-      render: (v: string) => <Typography.Text code>{v}</Typography.Text>,
+      title: 'Mã giới thiệu', dataIndex: 'referral_code', width: 120,
+      render: (v: string) => <Typography.Text code style={{ fontSize: 12 }}>{v}</Typography.Text>,
     },
     {
       key: 'name',
-      title: 'Tên', dataIndex: 'name',
+      title: 'Tên', dataIndex: 'name', width: 160, ellipsis: true,
       render: (v: string) => <span style={{ fontWeight: 500 }}>{v}</span>,
     },
-    { key: 'phone', title: 'SĐT', dataIndex: 'phone', width: 140, render: (v?: string) => v || '—' },
+    { key: 'phone', title: 'SĐT', dataIndex: 'phone', width: 135, render: (v?: string) => v || '—' },
     {
       key: 'type',
-      title: 'Loại', dataIndex: 'type', width: 120,
+      title: 'Loại', dataIndex: 'type', width: 90,
       render: (v?: string) => {
         const meta = v ? TYPE_META[v] : undefined
         return meta ? <Tag color={meta.color}>{meta.label}</Tag> : <Tag>{v || '—'}</Tag>
       },
     },
-    { key: 'referral_count', title: 'Khách giới thiệu', dataIndex: 'referral_count', width: 135, align: 'right', render: (v?: number) => Number(v ?? 0).toLocaleString('vi-VN') },
-    { key: 'commission_percent', title: '% hoa hồng tham khảo', dataIndex: 'commission_percent', width: 155, align: 'right', render: (v?: number | null) => v != null ? `${Number(v)}%` : '—' },
+    { key: 'referral_count', title: 'Khách GT', dataIndex: 'referral_count', width: 100, align: 'right', render: (v?: number) => Number(v ?? 0).toLocaleString('vi-VN') },
+    { key: 'commission_percent', title: '% hoa hồng', dataIndex: 'commission_percent', width: 100, align: 'right', render: (v?: number | null) => v != null ? `${Number(v)}%` : '—' },
     {
       key: 'note',
       title: 'Ghi chú', dataIndex: 'note', ellipsis: true,
@@ -269,12 +269,12 @@ export default function Collaborators() {
     },
     {
       key: 'is_active',
-      title: 'Trạng thái', dataIndex: 'is_active', width: 110,
+      title: 'Trạng thái', dataIndex: 'is_active', width: 125,
       render: (v?: boolean) => (v !== false ? <Tag color="green">Đang hoạt động</Tag> : <Tag>Đã ẩn</Tag>),
     },
     {
       key: 'actions',
-      title: 'Hành động', width: 140, fixed: 'right',
+      title: 'Hành động', width: 90, fixed: 'right',
       render: (_v, row) => (
         <RowActionsMenu
           items={[

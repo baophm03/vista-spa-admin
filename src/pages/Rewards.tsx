@@ -209,13 +209,23 @@ function RewardCatalogTab({ onChanged }: { onChanged: () => void }) {
         {row.description ? <Typography.Text type="secondary" style={{ fontSize: 12 }}>{row.description}</Typography.Text> : null}
       </div>,
     },
-    { key: 'type', title: 'Loại', dataIndex: 'type', width: 120, render: (v: RewardType, row) => <Tag color={TYPE_META[v]?.color}>{TYPE_META[v]?.label ?? v}{v === 'VOUCHER' && row.voucher ? `: ${row.voucher.title}` : ''}</Tag> },
-    { key: 'points_cost', title: 'Điểm đổi', dataIndex: 'points_cost', width: 100, render: (v: number) => v.toLocaleString('vi-VN') },
-    { key: 'remaining', title: 'Còn lại', width: 130, render: (_v, row) => remainingLabel(row) },
-    { key: 'validity', title: 'Thời hạn', width: 180, render: (_v, row) => `${row.valid_from ? dayjs(String(row.valid_from)).format('DD/MM/YYYY') : '—'} → ${row.valid_to ? dayjs(String(row.valid_to)).format('DD/MM/YYYY') : '—'}` },
-    { key: 'is_active', title: 'Trạng thái', dataIndex: 'is_active', width: 110, render: (v: boolean) => (v ? <Tag color="green">Đang đổi</Tag> : <Tag>Đã ẩn</Tag>) },
     {
-      key: 'actions', title: 'Hành động', width: 140, fixed: 'right' as const,
+      key: 'type', title: 'Loại', dataIndex: 'type', width: 130,
+      render: (v: RewardType, row) => (
+        <div>
+          <Tag color={TYPE_META[v]?.color}>{TYPE_META[v]?.label ?? v}</Tag>
+          {v === 'VOUCHER' && row.voucher ? (
+            <Typography.Text type="secondary" ellipsis style={{ fontSize: 12, display: 'block' }}>{row.voucher.title}</Typography.Text>
+          ) : null}
+        </div>
+      ),
+    },
+    { key: 'points_cost', title: 'Điểm đổi', dataIndex: 'points_cost', width: 90, align: 'right', render: (v: number) => v.toLocaleString('vi-VN') },
+    { key: 'remaining', title: 'Còn lại', width: 110, render: (_v, row) => remainingLabel(row) },
+    { key: 'validity', title: 'Thời hạn', width: 200, render: (_v, row) => `${row.valid_from ? dayjs(String(row.valid_from)).format('DD/MM/YYYY') : '—'} → ${row.valid_to ? dayjs(String(row.valid_to)).format('DD/MM/YYYY') : '—'}` },
+    { key: 'is_active', title: 'Trạng thái', dataIndex: 'is_active', width: 100, render: (v: boolean) => (v ? <Tag color="green">Đang đổi</Tag> : <Tag>Đã ẩn</Tag>) },
+    {
+      key: 'actions', title: 'Hành động', width: 90, fixed: 'right' as const,
       render: (_v, row) => (
         <RowActionsMenu
           items={[
@@ -439,7 +449,7 @@ function RedemptionsTab({ onChanged }: { onChanged: () => void }) {
     { key: 'created_at', title: 'Ngày đổi', dataIndex: 'created_at', width: 150, render: (v: string) => formatDateTime(v) },
     { key: 'cancel_reason', title: 'Lý do hủy', dataIndex: 'cancel_reason', ellipsis: true, render: (v?: string) => v || '—' },
     {
-      key: 'actions', title: 'Hành động', width: 140, fixed: 'right' as const,
+      key: 'actions', title: 'Hành động', width: 90, fixed: 'right' as const,
       render: (_v, row) => (
         <RowActionsMenu
           items={row.status === 'ISSUED'

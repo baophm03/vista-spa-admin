@@ -748,7 +748,7 @@ export default function Appointments() {
           {
             title: 'Hành động',
             key: 'actions',
-            width: 140,
+            width: 90,
             fixed: 'right' as const,
             render: (_, row) => {
               const confirmThen = (title: string, fn: () => Promise<unknown> | void) =>

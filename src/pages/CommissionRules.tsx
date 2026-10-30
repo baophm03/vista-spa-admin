@@ -211,7 +211,7 @@ export default function CommissionRules() {
     },
     {
       key: 'actions',
-      title: 'Hành động', width: 190, fixed: 'right',
+      title: 'Hành động', width: 90, fixed: 'right',
       render: (_v, row) => (
         <RowActionsMenu
           items={[

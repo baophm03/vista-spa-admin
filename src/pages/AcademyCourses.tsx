@@ -200,7 +200,7 @@ export default function AcademyCourses() {
           {
             key: 'actions',
             title: 'Hành động',
-            width: 140,
+            width: 90,
             fixed: 'right' as const,
             render: (_: unknown, row: AcademyCourse) => {
               const canToggle = ability.can(row.is_active ? 'DELETE' : 'UPDATE', 'ACADEMY')

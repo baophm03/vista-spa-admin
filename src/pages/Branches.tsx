@@ -267,7 +267,7 @@ export default function Branches() {
     {
       key: 'actions',
       title: 'Hành động',
-      width: 160,
+      width: 90,
       fixed: 'right' as const,
       render: (_: unknown, row: Branch) => (
         <RowActionsMenu

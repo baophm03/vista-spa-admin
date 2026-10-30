@@ -498,7 +498,7 @@ export default function Points() {
           {
             key: 'actions',
             title: 'Hành động',
-            width: 140,
+            width: 90,
             fixed: 'right' as const,
             render: (_value: unknown, row: MemberRow) => (
               <RowActionsMenu

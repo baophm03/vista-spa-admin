@@ -555,7 +555,7 @@ export default function Users() {
           {
             key: 'actions',
             title: 'Hành động',
-            width: 140,
+            width: 90,
             fixed: 'right' as const,
             render: (_: unknown, row: CustomerProfileRow) => (
               <RowActionsMenu

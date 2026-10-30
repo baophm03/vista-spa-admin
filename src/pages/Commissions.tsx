@@ -39,6 +39,7 @@ import { useGetCollaborators } from '@/api/endpoints/admin'
 import { useGetReferrals } from '@/api/endpoints/membership'
 import { useGetBranches } from '@/api/endpoints/branches'
 import { useGetUsers } from '@/api/endpoints/users'
+import { useGetCustomerProfiles } from '@/api/endpoints/customer-profiles'
 import { useGetCustomerTreatments, useGetCustomerTreatmentsIdSessions } from '@/api/endpoints/customer-treatments'
 import type {
   Branch,
@@ -148,10 +149,28 @@ function LedgerTab() {
   const branchesQuery = useGetBranches()
   const branches = (pickData<Branch[] | undefined>(branchesQuery.data) ?? []) as Branch[]
   const branchNameById = useMemo(() => new Map(branches.map((branch) => [branch.id, branch.name])), [branches])
+  const usersQuery = useGetUsers({ currentPage: 1, pageSize: 200, has_role: true })
+  const collaboratorsQuery = useGetCollaborators({})
+  const customersQuery = useGetCustomerProfiles({ page: 1, limit: 200 })
 
   const listQuery = useGetCommissions({ ...filters, page, limit: 20 })
   const rows = useMemo(() => pickData<CommissionEntry[]>(listQuery.data) ?? [], [listQuery.data])
   const meta = pickMeta(listQuery.data)
+  const users = (pickData<{ rows?: User[] } | undefined>(usersQuery.data)?.rows ?? []) as User[]
+  const collaborators = (pickData<Collaborator[] | undefined>(collaboratorsQuery.data) ?? []) as Collaborator[]
+  const customers = (pickData<{ items?: Array<{ id?: string; full_name?: string }> } | undefined>(customersQuery.data)?.items
+    ?? (pickData<Array<{ id?: string; full_name?: string }> | undefined>(customersQuery.data) ?? [])) as Array<{ id?: string; full_name?: string }>
+  const payeeName = useMemo(() => {
+    const staffById = new Map(users.map((user) => [user.id, user.zalo_name || user.email || undefined]))
+    const collaboratorById = new Map(collaborators.map((row) => [row.id, row.name]))
+    const customerById = new Map(customers.map((row) => [row.id, row.full_name]))
+    return (row: CommissionEntry): string => {
+      if (row.payee_type === 'STAFF') return staffById.get(row.payee_user_id ?? row.staff_id ?? '') ?? '—'
+      if (row.payee_type === 'COLLABORATOR') return collaboratorById.get(row.collaborator_id ?? '') ?? '—'
+      if (row.payee_type === 'CUSTOMER_REFERRER') return customerById.get(row.referrer_profile_id ?? '') ?? '—'
+      return '—'
+    }
+  }, [users, collaborators, customers])
 
   const invalidate = async () => {
     await queryClient.invalidateQueries({ queryKey: getGetCommissionsQueryKey() })
@@ -233,35 +252,35 @@ function LedgerTab() {
   }
 
   const columns: TableColumnsType<CommissionEntry> = [
-    { key: 'period_date', title: 'Ngày', dataIndex: 'period_date', width: 110 },
+    { key: 'period_date', title: 'Ngày', dataIndex: 'period_date', width: 120, render: (v?: string) => (v ? dayjs(v).format('DD/MM/YYYY') : '—') },
     {
-      key: 'payee', title: 'Người nhận', width: 160,
+      key: 'payee', title: 'Người nhận', width: 190,
       render: (_v, row) => (
         <Space size={4}>
           {row.payee_type && <Tag>{PAYEE_LABEL[row.payee_type] ?? row.payee_type}</Tag>}
-          <Typography.Text code>{row.payee_user_id || row.collaborator_id || row.referrer_profile_id || '—'}</Typography.Text>
+          <Typography.Text ellipsis style={{ maxWidth: 110 }}>{payeeName(row)}</Typography.Text>
         </Space>
       ),
     },
-    { key: 'source_type', title: 'Nguồn', dataIndex: 'source_type', width: 100, render: (v?: string) => ({ PAYMENT: 'Thanh toán', SESSION: 'Buổi điều trị', MANUAL: 'Nhập tay' })[v ?? ''] ?? v ?? '—' },
-    { key: 'branch_id', title: 'Chi nhánh', dataIndex: 'branch_id', width: 140, render: (v?: string) => (v ? branchNameById.get(v) ?? v : '—') },
+    { key: 'source_type', title: 'Nguồn', dataIndex: 'source_type', width: 110, render: (v?: string) => ({ PAYMENT: 'Thanh toán', SESSION: 'Buổi điều trị', MANUAL: 'Nhập tay' })[v ?? ''] ?? v ?? '—' },
+    { key: 'branch_id', title: 'Chi nhánh', dataIndex: 'branch_id', width: 120, ellipsis: true, render: (v?: string) => (v ? branchNameById.get(v) ?? v : '—') },
     { key: 'mode', title: 'Chế độ', dataIndex: 'mode', width: 90, render: (v?: string) => <Tag color={v === 'AUTO' ? 'blue' : 'orange'}>{v === 'AUTO' ? 'Tự động' : 'Nhập tay'}</Tag> },
     {
-      key: 'base', title: 'Căn tính', width: 130, align: 'right',
+      key: 'base', title: 'Căn tính', width: 120, align: 'right',
       render: (_v, row) => (row.base_amount != null ? formatVnd(row.base_amount) : '—'),
     },
     { key: 'percent', title: '%', dataIndex: 'percent', width: 70, align: 'right', render: (v?: number | null) => (v != null ? `${v}%` : '—') },
-    { key: 'amount', title: 'Số tiền', dataIndex: 'amount', width: 130, align: 'right', render: (v: number) => <span style={{ fontWeight: 500 }}>{formatVnd(v)}</span> },
+    { key: 'amount', title: 'Số tiền', dataIndex: 'amount', width: 120, align: 'right', render: (v: number) => <span style={{ fontWeight: 500 }}>{formatVnd(v)}</span> },
     { key: 'reason', title: 'Lý do', dataIndex: 'reason', ellipsis: true },
     {
-      key: 'status', title: 'Trạng thái', dataIndex: 'status', width: 120,
+      key: 'status', title: 'Trạng thái', dataIndex: 'status', width: 110,
       render: (v?: string) => {
         const meta = STATUS_META[v ?? 'ACTIVE']
         return meta ? <Tag color={meta.color}>{meta.label}</Tag> : <Tag>{v}</Tag>
       },
     },
     {
-      key: 'actions', title: 'Hành động', width: 140, fixed: 'right' as const,
+      key: 'actions', title: 'Hành động', width: 90, fixed: 'right' as const,
       render: (_v, row) =>
         row.status === 'VOID' ? null : (
           <RowActionsMenu

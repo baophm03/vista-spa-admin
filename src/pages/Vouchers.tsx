@@ -153,7 +153,7 @@ export default function Vouchers() {
           ...(canUpdate ? [{
             title: 'Hành động',
             key: 'actions',
-            width: 140,
+            width: 90,
             fixed: 'right' as const,
             render: (_: unknown, row: VoucherRow) => (
               <RowActionsMenu

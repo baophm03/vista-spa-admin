@@ -183,18 +183,18 @@ export default function Referrals() {
 
   const columns: TableColumnsType<ReferralRow> = [
     {
-      title: 'Người giới thiệu', key: 'referrer',
+      title: 'Người giới thiệu', key: 'referrer', width: 170, ellipsis: true,
       render: (_v, row) => <span style={{ fontWeight: 500 }}>{referrerLabel(row)}</span>,
     },
     {
-      title: 'Loại', dataIndex: 'referrer_type', width: 130,
+      title: 'Loại', dataIndex: 'referrer_type', width: 110,
       render: (v?: string) => {
         const meta = v ? REFERRER_TYPE_META[v] : undefined
         return meta ? <Tag color={meta.color}>{meta.label}</Tag> : <Tag>{v || '—'}</Tag>
       },
     },
     {
-      title: 'Khách được giới thiệu', key: 'referred',
+      title: 'Khách được giới thiệu', key: 'referred', width: 190, ellipsis: true,
       render: (_v, row) => {
         const p = row.referred_profile
         if (!p?.full_name) return <Typography.Text type="secondary">{row.referred_profile_id}</Typography.Text>
@@ -207,32 +207,32 @@ export default function Referrals() {
       },
     },
     {
-      title: 'Ngày', dataIndex: 'created_at', width: 120,
+      title: 'Ngày', dataIndex: 'created_at', width: 115,
       render: (v?: string) => (v ? new Date(v).toLocaleDateString('vi-VN') : '—'),
     },
     {
-      title: 'Ưu đãi', key: 'discount_rule', width: 180,
+      title: 'Ưu đãi', key: 'discount_rule', width: 140, ellipsis: true,
       render: (_v, row) => row.discount_rule?.name ?? discountRules.find((rule: DiscountRule) => rule.id === row.discount_rule_id)?.name ?? '—',
     },
     {
-      title: 'Gói đã mua', key: 'packages', width: 220,
+      title: 'Gói đã mua', key: 'packages', width: 200,
       render: (_v, row) => row.packages?.length
         ? <Space direction="vertical" size={0}>{row.packages.map((pkg) => <span key={pkg.id}>{pkg.name} · {formatVnd(pkg.total_amount)}</span>)}</Space>
         : <Typography.Text type="secondary">Chưa mua gói</Typography.Text>,
     },
     {
-      title: 'Trạng thái giới thiệu', dataIndex: 'status', width: 140,
+      title: 'Trạng thái giới thiệu', dataIndex: 'status', width: 120,
       render: (v?: string) => {
         const meta = v ? STATUS_META[v] : undefined
         return meta ? <Tag color={meta.color}>{meta.label}</Tag> : <Tag>{v || '—'}</Tag>
       },
     },
     {
-      title: 'Hoa hồng đã ghi nhận', key: 'commission_total', width: 160, align: 'right',
+      title: 'Hoa hồng đã ghi nhận', key: 'commission_total', width: 140, align: 'right',
       render: (_v, row) => formatVnd(row.commission_total),
     },
     {
-      title: 'Trạng thái hoa hồng', dataIndex: 'commission_status', width: 145,
+      title: 'Trạng thái hoa hồng', dataIndex: 'commission_status', width: 125,
       render: (v?: string) => {
         if (v === 'ACTIVE') return <Tag color="green">Đã ghi nhận</Tag>
         if (v === 'VOID') return <Tag color="red">Đã hủy</Tag>
@@ -245,7 +245,7 @@ export default function Referrals() {
       render: (v?: string) => v || '—',
     },
     {
-      key: 'actions', title: 'Hành động', width: 140, fixed: 'right' as const,
+      key: 'actions', title: 'Hành động', width: 90, fixed: 'right' as const,
       render: (_v, row) => (
         <RowActionsMenu
           items={canUpdate ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []}
@@ -288,6 +288,7 @@ export default function Referrals() {
             )}
             <Table<ReferralRow>
               rowKey="id" loading={listQuery.isLoading} dataSource={paginateRows(rows, page, 10)}
+              scroll={{ x: 1440 }}
               columns={columns.filter((column) => column.key !== 'actions' || canUpdate)}
               pagination={false}
             />

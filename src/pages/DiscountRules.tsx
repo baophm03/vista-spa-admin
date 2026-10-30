@@ -238,7 +238,7 @@ export default function DiscountRules() {
     },
     {
       key: 'actions',
-      title: 'Hành động', width: 140, fixed: 'right',
+      title: 'Hành động', width: 90, fixed: 'right',
       render: (_v, row) => (
         <RowActionsMenu
           items={[

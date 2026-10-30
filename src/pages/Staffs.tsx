@@ -435,13 +435,14 @@ export default function Staffs() {
         loading={loading}
         dataSource={rows}
         locale={{ emptyText: <TableEmpty description="Chưa có nhân viên nào khớp điều kiện." /> }}
-        scroll={{ x: 1280 }}
+        scroll={{ x: 1240 }}
         pagination={false}
         columns={[
           {
             title: 'Nhân viên',
             key: 'staff',
             dataIndex: 'zalo_name',
+            width: 180,
             render: (_: unknown, s: StaffRow) => {
               const photo = profileByUser.get(s.id)?.photo_file_id
               return (
@@ -459,7 +460,7 @@ export default function Staffs() {
           {
             title: 'Vai trò',
             key: 'role',
-            width: 220,
+            width: 155,
             render: (_: unknown, s: StaffRow) => (
               <Space size={4} wrap>
                 <Tag color="purple">{s.user_roles?.[0]?.role?.role_name || 'Nhân viên'}</Tag>
@@ -482,15 +483,15 @@ export default function Staffs() {
             title: 'Trạng thái',
             key: 'status',
             dataIndex: 'is_active',
-            width: 120,
+            width: 100,
             render: (v: boolean | undefined) => (v === false ? <Tag>Đã nghỉ việc</Tag> : <Tag color="green">Đang làm</Tag>),
           },
-          { title: 'SĐT', key: 'phone', dataIndex: 'phone_number', width: 150, render: (v: string | undefined) => v || '—' },
-          { title: 'Email', key: 'email', dataIndex: 'email', render: (v: string | undefined) => v || '—' },
+          { title: 'SĐT', key: 'phone', dataIndex: 'phone_number', width: 130, render: (v: string | undefined) => v || '—' },
+          { title: 'Email', key: 'email', dataIndex: 'email', width: 185, ellipsis: true, render: (v: string | undefined) => v || '—' },
           {
             title: 'Chức danh & dịch vụ phụ trách',
             key: 'profile',
-            width: 260,
+            width: 230,
             render: (_: unknown, s: StaffRow) => {
               const profile = profileByUser.get(s.id)
               const serviceTags = (profile?.service_ids ?? [])
@@ -510,7 +511,7 @@ export default function Staffs() {
           {
             title: 'Hiện trên app',
             key: 'in_app',
-            width: 120,
+            width: 100,
             render: (_: unknown, s: StaffRow) => {
               const profile = profileByUser.get(s.id)
               return (
@@ -526,7 +527,7 @@ export default function Staffs() {
           {
             title: 'Hành động',
             key: 'actions',
-            width: 140,
+            width: 90,
             fixed: 'right' as const,
             render: (_: unknown, s: StaffRow) => (
               <RowActionsMenu

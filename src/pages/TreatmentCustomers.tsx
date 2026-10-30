@@ -1444,7 +1444,7 @@ export default function TreatmentCustomers() {
           {
             title: 'Hành động',
             key: 'actions',
-            width: 140,
+            width: 90,
             fixed: 'right' as const,
             render: (_: unknown, row: CustomerTreatment) => {
               const items: MenuProps['items'] = [

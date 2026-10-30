@@ -218,20 +218,20 @@ export default function CardRanks() {
   const columns: TableColumnsType<CardRankRow> = ([
     {
       key: 'code',
-      title: 'Mã', dataIndex: 'code', width: 110,
-      render: (v: string) => <Typography.Text code>{v}</Typography.Text>,
+      title: 'Mã', dataIndex: 'code', width: 130,
+      render: (v: string) => <Typography.Text code style={{ fontSize: 12 }}>{v}</Typography.Text>,
     },
-    { key: 'name', title: 'Tên hạng', dataIndex: 'name', width: 210, ellipsis: true, render: (v: string) => <span style={{ fontWeight: 500 }}>{v}</span> },
+    { key: 'name', title: 'Tên hạng', dataIndex: 'name', width: 150, ellipsis: true, render: (v: string) => <span style={{ fontWeight: 500 }}>{v}</span> },
     {
       key: 'color',
-      title: 'Màu thẻ', dataIndex: 'color', width: 90, align: 'center',
+      title: 'Màu', dataIndex: 'color', width: 70, align: 'center',
       render: (v?: string | null) => v
         ? <span title={v} style={{ display: 'inline-block', width: 22, height: 22, borderRadius: 6, background: v, border: '1px solid rgba(0, 0, 0, 0.12)' }} />
         : <Typography.Text type="secondary">—</Typography.Text>,
     },
     {
       key: 'sort_order',
-      title: 'Thứ tự', dataIndex: 'sort_order', width: 160, align: 'center',
+      title: 'Thứ tự', dataIndex: 'sort_order', width: 110, align: 'center',
       render: (v: number | undefined, row) => {
         const rankIndex = ranks.findIndex((rank) => rank.id === row.id)
         return (
@@ -261,7 +261,7 @@ export default function CardRanks() {
     },
     {
       key: 'spent',
-      title: 'Ngưỡng chi tiêu', width: 220,
+      title: 'Ngưỡng chi tiêu', width: 200,
       render: (_v, row) =>
         row.max_spent != null
           ? `${formatVnd(row.min_spent)} → ${formatVnd(row.max_spent)}`
@@ -269,12 +269,12 @@ export default function CardRanks() {
     },
     {
       key: 'discount_percent',
-      title: 'Giảm giá (%)', dataIndex: 'discount_percent', width: 110, align: 'center',
+      title: 'Giảm giá', dataIndex: 'discount_percent', width: 90, align: 'center',
       render: (v?: number | null) => v == null ? '—' : `${v}%`,
     },
     {
       key: 'validity',
-      title: 'Hiệu lực', dataIndex: 'validity', width: 120,
+      title: 'Hiệu lực', dataIndex: 'validity', width: 100,
       render: (v?: string) => {
         const meta = v ? VALIDITY_META[v] : undefined
         return meta ? <Tag color={meta.color}>{meta.label}</Tag> : <Tag>{v ?? '—'}</Tag>
@@ -282,24 +282,24 @@ export default function CardRanks() {
     },
     {
       key: 'auto_assign',
-      title: 'Tự gán hạng', dataIndex: 'auto_assign', width: 110, align: 'center',
+      title: 'Tự gán', dataIndex: 'auto_assign', width: 80, align: 'center',
       render: (v?: boolean) => <Switch size="small" checked={!!v} disabled />,
     },
     ...(showHolders
       ? [{
           key: 'holders',
-          title: 'Khách đang giữ', width: 130, align: 'center' as const,
+          title: 'Đang giữ', width: 90, align: 'center' as const,
           render: (_v: unknown, row: CardRankRow) => holderCount(row)?.toLocaleString('vi-VN') ?? '—',
         } satisfies TableColumnsType<CardRankRow>[number]]
       : []),
     {
       key: 'is_active',
-      title: 'Trạng thái', dataIndex: 'is_active', width: 110,
+      title: 'Trạng thái', dataIndex: 'is_active', width: 100,
       render: (v?: boolean) => (v !== false ? <Tag color="green">Đang dùng</Tag> : <Tag>Đã xóa</Tag>),
     },
     {
       key: 'actions',
-      title: 'Hành động', width: 160, fixed: 'right',
+      title: 'Hành động', width: 90, fixed: 'right',
       render: (_v, row) => (
         <RowActionsMenu
           items={[
@@ -381,7 +381,7 @@ export default function CardRanks() {
             )}
             <Table<CardRankRow>
               rowKey="id" loading={ranksQuery.isLoading} dataSource={paginateRows(ranks, page, 10)} columns={columns}
-              scroll={{ x: 1300 }}
+              scroll={{ x: 1210 }}
               pagination={false}
               onRow={(row) => ({
                 draggable: canReorder && !isReordering,

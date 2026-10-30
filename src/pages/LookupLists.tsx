@@ -159,7 +159,7 @@ export default function LookupLists() {
           ) },
           { title: 'Loại', dataIndex: 'is_system', width: 110, render: (value?: boolean) => <Tag color={value ? 'blue' : 'default'}>{value ? 'Hệ thống' : 'Tự tạo'}</Tag> },
           { title: 'Trạng thái', dataIndex: 'is_active', width: 130, render: (value?: boolean) => <Tag color={value === false ? 'default' : 'green'}>{value === false ? 'Đã tắt' : 'Đang hoạt động'}</Tag> },
-          { title: 'Hành động', key: 'actions', width: 150, fixed: 'right' as const, render: (_: unknown, row: LookupList) => (
+          { title: 'Hành động', key: 'actions', width: 90, fixed: 'right' as const, render: (_: unknown, row: LookupList) => (
             <RowActionsMenu
               items={[
                 { key: 'view', label: 'Xem các mục', icon: <EyeOutlined /> },
