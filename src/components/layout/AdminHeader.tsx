@@ -35,7 +35,7 @@ export default function AdminHeader({
   const roleLabel = isAdminRole ? 'Quản trị viên' : 'Nhân viên'
   return (
     <Header className="flex! h-16! shrink-0! items-center! justify-between! gap-4! border-b! border-[var(--brand-border-soft)]! bg-white! px-4! py-0! leading-normal! lg:px-6!">
-      <Space size={16}>
+      <div className="flex flex-1 items-center justify-start gap-4">
         <button
           type="button"
           aria-label="Mở menu"
@@ -55,7 +55,7 @@ export default function AdminHeader({
         <Typography.Text strong className="text-base text-[#3A2C44]!">
           {pageTitle}
         </Typography.Text>
-      </Space>
+      </div>
 
       <Space size={20}>
         <Badge count={3} size="small">
