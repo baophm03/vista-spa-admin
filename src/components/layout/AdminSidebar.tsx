@@ -1,5 +1,5 @@
 import { Drawer, Layout, Menu, type MenuProps } from 'antd'
-import { hasPagePermission, menuItems, type MenuItem } from './sidebarMenu'
+import { getProfileRoleNames, hasPagePermission, menuItems, type MenuItem } from './sidebarMenu'
 import { useProfileStore } from '../../stores/profile-store'
 import { useBrandRuntime } from '../../themeRuntime'
 
@@ -8,13 +8,16 @@ const { Sider } = Layout
 // Lọc menu theo CASL ability — giống filteredNavigation trong sidebar của meu.
 // Subscribe profile store để re-render khi permission rules được update.
 function useFilteredMenuItems(): MenuItem[] {
-  useProfileStore((s) => s.profile)
+  const profile = useProfileStore((s) => s.profile)
+  const roles = getProfileRoleNames(profile)
   return menuItems
-    .map((entry) =>
-      'children' in entry
-        ? { ...entry, children: (entry.children ?? []).filter(hasPagePermission) }
-        : entry,
-    )
+    .map((entry) => {
+      if ('children' in entry) {
+        return { ...entry, children: (entry.children ?? []).filter((child) => hasPagePermission(child, roles, !!profile?.is_admin)) }
+      }
+      return hasPagePermission(entry, roles, !!profile?.is_admin) ? entry : null
+    })
+    .filter((entry): entry is MenuItem => entry !== null)
     .filter((entry) => !('children' in entry) || (entry.children ?? []).length > 0)
 }
 

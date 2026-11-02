@@ -758,11 +758,11 @@ export default function Appointments() {
                   items={[
                     ...(row.status === 'pending' && canApprove ? [{ key: 'approve', icon: <CheckOutlined />, label: 'Duyệt' }] : []),
                     ...(row.status === 'approved' && canStart ? [{ key: 'start', icon: <PlayCircleOutlined />, label: 'Bắt đầu' }] : []),
-                    ...(row.status === 'in_progress' ? [{ key: 'complete', icon: <CheckCircleOutlined />, label: 'Hoàn tất' }] : []),
+                    ...(row.status === 'in_progress' && canApprove ? [{ key: 'complete', icon: <CheckCircleOutlined />, label: 'Hoàn tất' }] : []),
                     ...(row.status === 'pending' && canApprove ? [{ key: 'reject', icon: <CloseOutlined />, danger: true, label: 'Từ chối' }] : []),
                     ...(canUpdate && ['pending', 'approved'].includes(row.status ?? '') ? [{ key: 'reschedule', icon: <EditOutlined />, label: 'Đổi lịch' }] : []),
-                    ...(row.status === 'approved' && isPastAppointment(row) ? [{ key: 'noshow', icon: <MinusCircleOutlined />, label: 'Đánh dấu không đến' }] : []),
-                    ...(['pending', 'approved'].includes(row.status ?? '') ? [{ key: 'cancel', icon: <StopOutlined />, danger: true, label: 'Hủy lịch hẹn' }] : []),
+                    ...(row.status === 'approved' && canApprove && isPastAppointment(row) ? [{ key: 'noshow', icon: <MinusCircleOutlined />, label: 'Đánh dấu không đến' }] : []),
+                    ...(['pending', 'approved'].includes(row.status ?? '') && canApprove ? [{ key: 'cancel', icon: <StopOutlined />, danger: true, label: 'Hủy lịch hẹn' }] : []),
                   ]}
                   onSelect={(key) => {
                     if (key === 'approve') void approve(row)
@@ -819,7 +819,7 @@ export default function Appointments() {
                 <Button type="primary" onClick={() => { const row = selectedAppointment; setSelectedAppointment(null); beginAppointment(row) }}>Bắt đầu</Button>
               </Can>
             )}
-            {selectedAppointment.status === 'in_progress' && (
+            {selectedAppointment.status === 'in_progress' && canApprove && (
               <Button type="primary" onClick={() => { const row = selectedAppointment; setSelectedAppointment(null); void doAction(() => completeMutation.mutateAsync({ id: row.id }), 'Đã hoàn tất') }}>Hoàn tất</Button>
             )}
           </Space>

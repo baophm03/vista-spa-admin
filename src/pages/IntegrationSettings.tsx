@@ -24,18 +24,7 @@ interface SmtpConfig {
   from_email: string
 }
 
-interface EmailApiConfig {
-  endpoint: string
-  auth_header: string
-  auth_prefix: string
-  from_name: string
-  from_email: string
-  test_email: string
-  request_template: string
-}
-
 const SMTP_PROVIDER: IntegrationStatusProvider = 'EMAIL_SMTP'
-const EMAIL_API_PROVIDER: IntegrationStatusProvider = 'EMAIL_API'
 
 type ZaloProvider = Extract<IntegrationStatusProvider, 'ZALO_OA' | 'ZALO_ZBS'>
 
@@ -186,20 +175,6 @@ function ZaloIntegrationCard({ provider, title, row, canEdit }: {
 }
 
 const emptySmtp: SmtpConfig = { host: 'smtp.gmail.com', port: 587, security: 'STARTTLS', username: '', from_name: '', from_email: '' }
-const emptyEmailApi: EmailApiConfig = {
-  endpoint: '',
-  auth_header: 'Authorization',
-  auth_prefix: 'Bearer',
-  from_name: '',
-  from_email: '',
-  test_email: '',
-  request_template: JSON.stringify({
-    from: { email: '{{from_email}}', name: '{{from_name}}' },
-    to: '{{to}}',
-    subject: '{{subject}}',
-    text: '{{text}}',
-  }, null, 2),
-}
 
 function statusTag(row?: IntegrationStatus) {
   if (!row || row.status === 'NOT_CONFIGURED') return <Tag>Chưa cấu hình</Tag>
@@ -209,7 +184,6 @@ function statusTag(row?: IntegrationStatus) {
 
 export default function IntegrationSettings() {
   const [form] = Form.useForm<SmtpConfig>()
-  const [apiForm] = Form.useForm<EmailApiConfig>()
   const queryClient = useQueryClient()
   const query = useQuery({
     queryKey: getGetIntegrationsQueryKey(),
@@ -219,13 +193,8 @@ export default function IntegrationSettings() {
   const [clearSecret, setClearSecret] = useState(false)
   const [enabled, setEnabled] = useState(false)
   const [testResult, setTestResult] = useState<{ ok: boolean; message: string } | null>(null)
-  const [apiKey, setApiKey] = useState('')
-  const [clearApiSecret, setClearApiSecret] = useState(false)
-  const [apiEnabled, setApiEnabled] = useState(false)
-  const [apiTestResult, setApiTestResult] = useState<{ ok: boolean; message: string } | null>(null)
 
   const smtp = useMemo(() => query.data?.find((row) => row.provider === 'EMAIL_SMTP'), [query.data])
-  const emailApi = useMemo(() => query.data?.find((row) => row.provider === 'EMAIL_API'), [query.data])
   const zaloOa = useMemo(() => query.data?.find((row) => row.provider === 'ZALO_OA'), [query.data])
   const zaloZbs = useMemo(() => query.data?.find((row) => row.provider === 'ZALO_ZBS'), [query.data])
 
@@ -242,16 +211,6 @@ export default function IntegrationSettings() {
     setPassword('')
     setClearSecret(false)
   }, [form, query.data, smtp])
-
-  useEffect(() => {
-    if (!query.data) return
-    const savedConfig = (emailApi?.config_public ?? {}) as Partial<EmailApiConfig>
-    apiForm.setFieldsValue({ ...emptyEmailApi, ...savedConfig })
-    if (!emailApi) return
-    setApiEnabled(emailApi.enabled)
-    setApiKey('')
-    setClearApiSecret(false)
-  }, [apiForm, query.data, emailApi])
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: getGetIntegrationsQueryKey() })
   const testMutation = useMutation({
@@ -278,30 +237,6 @@ export default function IntegrationSettings() {
     onError: (error) => message.error(errorMessage(error)),
   })
 
-  const apiTestMutation = useMutation({
-    mutationFn: async (payload: { config_public: EmailApiConfig; secrets?: { api_key?: string }; clear_secret?: boolean }) => {
-      const result = await postIntegrationsProviderTest(EMAIL_API_PROVIDER, payload as unknown as IntegrationUpdate)
-      return pickData<{ ok?: boolean; message?: string }>(result) ?? {}
-    },
-    onSuccess: (result) => setApiTestResult({ ok: !!result.ok, message: result.message ?? '' }),
-    onError: (error) => setApiTestResult({ ok: false, message: errorMessage(error) }),
-  })
-  const apiSaveMutation = useMutation({
-    mutationFn: async (payload: { config_public: EmailApiConfig; secrets?: { api_key?: string }; clear_secret?: boolean; enabled: boolean }) => {
-      const result = await putIntegrationsProvider(EMAIL_API_PROVIDER, payload as unknown as IntegrationUpdate)
-      return pickData<{ status?: string; message?: string }>(result) ?? {}
-    },
-    onSuccess: async (result) => {
-      await invalidate()
-      setApiKey('')
-      setClearApiSecret(false)
-      setApiTestResult(result.status === 'ERROR' ? { ok: false, message: result.message ?? '' } : { ok: true, message: result.message ?? '' })
-      if (result.status === 'ERROR') message.error(result.message)
-      else message.success(result.message)
-    },
-    onError: (error) => message.error(errorMessage(error)),
-  })
-
   const draft = async () => {
     const values = await form.validateFields()
     return { config_public: values, ...(password ? { secrets: { password } } : {}), ...(clearSecret ? { clear_secret: true } : {}) }
@@ -315,22 +250,6 @@ export default function IntegrationSettings() {
 
   const onSave = async () => {
     try { saveMutation.mutate({ ...(await draft()), enabled }) }
-    catch (error) { message.error(errorMessage(error)) }
-  }
-
-  const apiDraft = async () => {
-    const values = await apiForm.validateFields()
-    return { config_public: values, ...(apiKey ? { secrets: { api_key: apiKey } } : {}), ...(clearApiSecret ? { clear_secret: true } : {}) }
-  }
-
-  const onApiTest = async () => {
-    setApiTestResult(null)
-    try { apiTestMutation.mutate(await apiDraft()) }
-    catch (error) { message.error(errorMessage(error)) }
-  }
-
-  const onApiSave = async () => {
-    try { apiSaveMutation.mutate({ ...(await apiDraft()), enabled: apiEnabled }) }
     catch (error) { message.error(errorMessage(error)) }
   }
 
@@ -369,61 +288,13 @@ export default function IntegrationSettings() {
                   <Col xs={24} md={8}><Form.Item name="from_email" label="Email người gửi" rules={[{ required: true, type: 'email' }]}><Input type="email" /></Form.Item></Col>
                 </Row>
                 <div className="mb-4 flex items-center justify-between rounded-lg border border-[var(--brand-border)] bg-[var(--brand-bg)] p-3">
-                  <div><Typography.Text strong>Cho phép gửi qua SMTP</Typography.Text><br /><Typography.Text type="secondary">Bật sẽ kiểm tra kết nối lại và tự tắt Email API.</Typography.Text></div>
+                  <div><Typography.Text strong>Cho phép gửi qua SMTP</Typography.Text><br /><Typography.Text type="secondary">Bật sẽ kiểm tra kết nối lại trước khi hoạt động.</Typography.Text></div>
                   <Switch checked={enabled} onChange={(value) => { setEnabled(value); setTestResult(null) }} disabled={!canEdit} />
                 </div>
                 {testResult && <Alert className="mb-4!" type={testResult.ok ? 'success' : 'error'} showIcon message={testResult.message} />}
                 <Space wrap>
                   <Button icon={<CheckCircleOutlined />} loading={testMutation.isPending} disabled={!canEdit} onClick={() => void onTest()}>Kiểm tra kết nối</Button>
                   <Button type="primary" icon={<SaveOutlined />} loading={saveMutation.isPending} disabled={!canEdit} onClick={() => void onSave()}>Lưu cấu hình</Button>
-                </Space>
-              </Form>
-            </Card>
-            <Card
-              className="mt-5!"
-              title={<Space><LinkOutlined />Email qua HTTP API</Space>}
-              extra={statusTag(emailApi)}
-            >
-              <Form form={apiForm} layout="vertical" initialValues={emptyEmailApi} disabled={!canEdit} onValuesChange={() => setApiTestResult(null)}>
-                <Form.Item name="endpoint" label="Endpoint gửi email" rules={[{ required: true, type: 'url' }]}>
-                  <Input type="url" placeholder="https://api.example.com/emails" autoComplete="off" />
-                </Form.Item>
-                <Row gutter={16}>
-                  <Col xs={24} md={12}>
-                    <Form.Item name="auth_header" label="Tên header API key" rules={[{ required: true }]}>
-                      <Input placeholder="Authorization hoặc api-key" autoComplete="off" />
-                    </Form.Item>
-                  </Col>
-                  <Col xs={24} md={12}>
-                    <Form.Item name="auth_prefix" label="Tiền tố API key">
-                      <Input placeholder="Bearer (để trống nếu nhà cung cấp không dùng)" autoComplete="off" />
-                    </Form.Item>
-                  </Col>
-                </Row>
-                <Row gutter={16}>
-                  <Col xs={24} md={8}>
-                    <Form.Item label="API key" extra={emailApi?.has_secret && !clearApiSecret ? 'Đã lưu mã hóa. Để trống nếu giữ secret hiện tại.' : undefined}>
-                      <Input.Password value={apiKey} onChange={(event) => { setApiKey(event.target.value); setApiTestResult(null) }} autoComplete="new-password" placeholder={emailApi?.has_secret ? 'Đang lưu an toàn' : 'Nhập API key'} disabled={!canEdit || clearApiSecret} />
-                      {emailApi?.has_secret && <Button type="link" danger className="px-0!" onClick={() => { const next = !clearApiSecret; setClearApiSecret(next); if (next) setApiEnabled(false); setApiKey(''); setApiTestResult(null) }}>{clearApiSecret ? 'Giữ lại secret đã lưu' : 'Xóa secret đã lưu'}</Button>}
-                    </Form.Item>
-                  </Col>
-                  <Col xs={24} md={8}><Form.Item name="from_name" label="Tên người gửi"><Input maxLength={150} /></Form.Item></Col>
-                  <Col xs={24} md={8}><Form.Item name="from_email" label="Email người gửi" rules={[{ required: true, type: 'email' }]}><Input type="email" /></Form.Item></Col>
-                </Row>
-                <Form.Item name="test_email" label="Email nhận thư kiểm tra" rules={[{ required: true, type: 'email' }]}>
-                  <Input type="email" placeholder="you@example.com" />
-                </Form.Item>
-                <Form.Item name="request_template" label="Mẫu JSON gửi email" rules={[{ required: true }]} extra="Biến hỗ trợ: {{from_email}}, {{from_name}}, {{to}}, {{subject}}, {{text}}. Mẫu phải có {{to}}, {{subject}} và {{text}}.">
-                  <Input.TextArea rows={8} spellCheck={false} />
-                </Form.Item>
-                <div className="mb-4 flex items-center justify-between rounded-lg border border-[var(--brand-border)] bg-[var(--brand-bg)] p-3">
-                  <div><Typography.Text strong>Cho phép gửi qua Email API</Typography.Text><br /><Typography.Text type="secondary">Bật sẽ gửi thư thử tới email kiểm tra để xác thực API key và endpoint.</Typography.Text></div>
-                  <Switch checked={apiEnabled} onChange={(value) => { setApiEnabled(value); setApiTestResult(null) }} disabled={!canEdit} />
-                </div>
-                {apiTestResult && <Alert className="mb-4!" type={apiTestResult.ok ? 'success' : 'error'} showIcon message={apiTestResult.message} />}
-                <Space wrap>
-                  <Button icon={<CheckCircleOutlined />} loading={apiTestMutation.isPending} disabled={!canEdit || clearApiSecret} onClick={() => void onApiTest()}>Gửi thư kiểm tra</Button>
-                  <Button type="primary" icon={<SaveOutlined />} loading={apiSaveMutation.isPending} disabled={!canEdit} onClick={() => void onApiSave()}>Lưu cấu hình API</Button>
                 </Space>
               </Form>
             </Card>
@@ -436,14 +307,6 @@ export default function IntegrationSettings() {
                 <Tag color="processing">SMTP Gmail</Tag>
                 <Typography.Text type="secondary">
                   Máy chủ smtp.gmail.com, cổng 587 và STARTTLS đã được điền sẵn trong biểu mẫu Email qua SMTP. Nhập tài khoản và mật khẩu SMTP tại đó, rồi chọn Kiểm tra kết nối.
-                </Typography.Text>
-              </Space>
-            </Card>
-            <Card className="mt-4!" title="Lưu ý Email API">
-              <Space direction="vertical" size={8}>
-                <Tag color="processing">Gửi email thử</Tag>
-                <Typography.Text type="secondary">
-                  Kiểm tra kết nối sẽ gửi một email thử thật. API phải nhận POST HTTPS với JSON. Có thể sửa mẫu JSON bên dưới để khớp định dạng của nhà cung cấp. Chỉ một trong SMTP hoặc Email API được bật; bật API sẽ tự tắt SMTP.
                 </Typography.Text>
               </Space>
             </Card>

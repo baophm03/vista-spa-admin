@@ -2618,7 +2618,7 @@ export const prefetchGetCustomerProfilesIdHealthMetricsQuery = async <TData = Aw
 
 
 /**
- * POST `/customerProfiles/{id}/health-metrics` — hồ sơ khách hàng. Cần quyền `customer.update`. Giới hạn theo hồ sơ khách hàng được phân quyền.
+ * POST `/customerProfiles/{id}/health-metrics` — hồ sơ khách hàng. Cần quyền `health_metric.create`. Giới hạn theo hồ sơ khách hàng được phân quyền.
  * @summary Thêm chỉ số sức khỏe cho khách
  */
 export const postCustomerProfilesIdHealthMetrics = (
@@ -3007,7 +3007,7 @@ export const usePutCustomerProfilesIdHealthRecordsRecordId = <TError = Unauthori
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * PUT `/customerProfiles/{id}/health-metrics/{metricId}` — hồ sơ khách hàng. Cần quyền `customer.update`. Giới hạn theo hồ sơ khách hàng được phân quyền.
+ * PUT `/customerProfiles/{id}/health-metrics/{metricId}` — hồ sơ khách hàng. Cần quyền `health_metric.update`. Giới hạn theo hồ sơ khách hàng được phân quyền.
  * @summary Cập nhật chỉ số sức khỏe
  */
 export const putCustomerProfilesIdHealthMetricsMetricId = (

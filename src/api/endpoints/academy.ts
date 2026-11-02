@@ -51,6 +51,7 @@ import type {
   PostAcademyRegistrationsBody,
   PutAcademyCoursesId200,
   PutAcademyRegistrationsId200,
+  PutAcademyRegistrationsIdStatusBody,
   UnauthorizedResponse,
   UnprocessableEntityResponse
 } from '../models';
@@ -838,6 +839,71 @@ export const prefetchGetAcademyRegistrationsFindStudentQuery = async <TData = Aw
 
 
 /**
+ * **AC-09** — PUT /academy/registrations/{id}/status. Máy trạng thái một chiều: `PENDING` (Mới) → `CONFIRMED` (Đã liên hệ) → `ATTENDED` (Đã nhập học) hoặc `CANCELLED` từ PENDING/CONFIRMED. Không cho nhảy ngược (Test 20). Body: `status`, `assigned_to?`, `note?`. Lần đầu sang CONFIRMED hệ thống tự ghi `contacted_at`.
+ * @summary Cập nhật tiến độ tư vấn của hồ sơ đăng ký
+ */
+export const putAcademyRegistrationsIdStatus = (
+    id: string,
+    putAcademyRegistrationsIdStatusBody: PutAcademyRegistrationsIdStatusBody,
+ ) => {
+      
+      
+      return customInstance<void>(
+      {url: `/academy/registrations/${id}/status`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: putAcademyRegistrationsIdStatusBody
+    },
+      );
+    }
+  
+
+
+export const getPutAcademyRegistrationsIdStatusMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAcademyRegistrationsIdStatus>>, TError,{id: string;data: PutAcademyRegistrationsIdStatusBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putAcademyRegistrationsIdStatus>>, TError,{id: string;data: PutAcademyRegistrationsIdStatusBody}, TContext> => {
+
+const mutationKey = ['putAcademyRegistrationsIdStatus'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putAcademyRegistrationsIdStatus>>, {id: string;data: PutAcademyRegistrationsIdStatusBody}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  putAcademyRegistrationsIdStatus(id,data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PutAcademyRegistrationsIdStatusMutationResult = NonNullable<Awaited<ReturnType<typeof putAcademyRegistrationsIdStatus>>>
+    export type PutAcademyRegistrationsIdStatusMutationBody = PutAcademyRegistrationsIdStatusBody
+    export type PutAcademyRegistrationsIdStatusMutationError = UnauthorizedResponse | ForbiddenResponse | void
+
+    /**
+ * @summary Cập nhật tiến độ tư vấn của hồ sơ đăng ký
+ */
+export const usePutAcademyRegistrationsIdStatus = <TError = UnauthorizedResponse | ForbiddenResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAcademyRegistrationsIdStatus>>, TError,{id: string;data: PutAcademyRegistrationsIdStatusBody}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof putAcademyRegistrationsIdStatus>>,
+        TError,
+        {id: string;data: PutAcademyRegistrationsIdStatusBody},
+        TContext
+      > => {
+
+      const mutationOptions = getPutAcademyRegistrationsIdStatusMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
  * **AC-02** — GET /academy/courses/{id}. Cần quyền `academy.read`.
  * @summary Xem chi tiết khóa học
  */

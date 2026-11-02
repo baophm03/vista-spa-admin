@@ -47,3 +47,16 @@ export async function downloadBlob(path: string, filename: string): Promise<void
   anchor.click()
   window.setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
+
+/** Mở trang HTML in (phiếu hóa đơn 5.39 INV) ở tab mới — trình duyệt tự bật hộp thoại In. */
+export async function openHtmlPrint(path: string): Promise<void> {
+  const { apiClient } = await import('@/api/mutator/custom-instance')
+  const response = await apiClient.get(path, {
+    responseType: 'text',
+    transformResponse: [(data: unknown) => data],
+  } as never)
+  const blob = new Blob([String(response.data)], { type: 'text/html; charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  window.open(url, '_blank')
+  window.setTimeout(() => URL.revokeObjectURL(url), 60000)
+}

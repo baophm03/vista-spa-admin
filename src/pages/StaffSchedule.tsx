@@ -17,23 +17,33 @@ export default function StaffSchedule() {
   const { isAdmin, isReceptionist, isTechnician } = useCustomerProfileAccess()
   const [activeTab, setActiveTab] = useState('weekly')
 
-  const branchesQuery = useGetBranches()
+  const isOwnScheduleOnly = isTechnician && !isAdmin
+  // KTV được xem cơ sở của mình; dữ liệu này cũng giúp hiển thị phạm vi áp dụng của mẫu ca.
+  const branchesQuery = useGetBranches(undefined)
   const branches = (pickData<Branch[] | undefined>(branchesQuery.data) ?? []) as Branch[]
 
-  const staffsQuery = useGetUsers({ currentPage: 1, pageSize: 500, has_role: true })
+  const staffsQuery = useGetUsers({ currentPage: 1, pageSize: 500, has_role: true }, { query: { enabled: !isOwnScheduleOnly } })
   const allUsers = (pickData<{ rows?: ScheduleStaff[] } | undefined>(staffsQuery.data)?.rows ?? []) as ScheduleStaff[]
+  const ownStaff: ScheduleStaff | null = profile?.id ? {
+    id: profile.id,
+    zalo_name: profile.zalo_name,
+    branch_id: typeof profile.branch_id === 'string' ? profile.branch_id : undefined,
+    user_roles: [{ role: { role_name: 'KTV' } }],
+  } : null
   const staff = useMemo(
-    () => allUsers.filter((person) => person.user_roles?.some(({ role }) => {
-      const roleName = normalizeRole(role?.role_name)
-      return roleName.includes('ktv') || roleName.includes('ky thuat vien') || roleName === 'technician'
-    })),
-    [allUsers],
+    () => isOwnScheduleOnly
+      ? (ownStaff ? [ownStaff] : [])
+      : allUsers.filter((person) => person.user_roles?.some(({ role }) => {
+          const roleName = normalizeRole(role?.role_name)
+          return roleName.includes('ktv') || roleName.includes('ky thuat vien') || roleName === 'technician'
+        })),
+    [allUsers, isOwnScheduleOnly, ownStaff],
   )
 
-  const loadingShared = branchesQuery.isLoading || staffsQuery.isLoading
+  const loadingShared = branchesQuery.isLoading || (!isOwnScheduleOnly && staffsQuery.isLoading)
   const sharedError = [
     branchesQuery.isError ? `Cơ sở: ${branchesQuery.error?.message ?? ''}` : '',
-    staffsQuery.isError ? `Danh sách nhân sự: ${staffsQuery.error?.message ?? ''}` : '',
+    !isOwnScheduleOnly && staffsQuery.isError ? `Danh sách nhân sự: ${staffsQuery.error?.message ?? ''}` : '',
   ].filter(Boolean).join(' · ')
 
   const access: ScheduleAccess = useMemo(
@@ -49,10 +59,10 @@ export default function StaffSchedule() {
   const shared = useMemo(
     () => ({ branches, staff, sharedError, retryShared: () => {
       void branchesQuery.refetch()
-      void staffsQuery.refetch()
+      if (!isOwnScheduleOnly) void staffsQuery.refetch()
     }, access }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [branches, staff, sharedError, access],
+    [branches, staff, sharedError, access, isOwnScheduleOnly],
   )
 
   const items = [
@@ -66,7 +76,7 @@ export default function StaffSchedule() {
     <Tabs activeKey={activeTab} onChange={setActiveTab} items={items} />
     {!!sharedError && <Alert style={{ marginTop: 12 }} type="warning" showIcon message="Một phần dữ liệu dùng chung chưa tải được" description={sharedError} action={<a onClick={() => {
       void branchesQuery.refetch()
-      void staffsQuery.refetch()
+      if (!isOwnScheduleOnly) void staffsQuery.refetch()
     }}>Tải lại</a>} />}
   </>
 }

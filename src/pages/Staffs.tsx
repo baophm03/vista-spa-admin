@@ -5,6 +5,7 @@ import {
   Checkbox,
   Col,
   Form,
+  Image,
   Input,
   InputNumber,
   Modal,
@@ -17,6 +18,7 @@ import {
   Typography,
   message,
 } from 'antd'
+import { useAbility } from '@casl/react'
 import {
   AppstoreOutlined,
   EditOutlined,
@@ -39,6 +41,7 @@ import type { Branch } from '@/api/models/branch'
 import type { UserCreate } from '@/api/models/userCreate'
 import type { PutUsersAdminIdBody } from '@/api/models/putUsersAdminIdBody'
 import type { StaffProfileRow } from '@/api/models/staffProfileRow'
+import { useProfileStore } from '@/stores/profile-store'
 import { useDeleteUsersAdminId, usePostUsersAdmin, usePutUsersAdminId, useGetUsers } from '@/api/endpoints/users'
 import { useGetRoles } from '@/api/endpoints/roles'
 import { useGetBranches } from '@/api/endpoints/branches'
@@ -82,6 +85,11 @@ const STAFF_COLUMN_OPTIONS: { label: string; value: StaffColumnKey }[] = [
 const DEFAULT_VISIBLE_COLUMNS = STAFF_COLUMN_OPTIONS.map((column) => column.value)
 
 export default function Staffs() {
+  const ability = useAbility()
+  const currentUser = useProfileStore((state) => state.profile)
+  const isPlatformAdmin = !!currentUser?.is_admin
+  const canReadStaffProfile = isPlatformAdmin || ability.can('READ', 'STAFF_PROFILE')
+  const canUpdateStaffProfile = isPlatformAdmin || ability.can('UPDATE', 'STAFF_PROFILE')
   const [page, setPage] = useState(1)
   const [limit] = useState(10)
   const [searchInput, setSearchInput] = useState('')
@@ -123,7 +131,9 @@ export default function Staffs() {
   const [servicesUser, setServicesUser] = useState<StaffRow | null>(null)
   const [checkedServiceIds, setCheckedServiceIds] = useState<string[]>([])
 
-  const staffProfilesQuery = useGetStaffProfiles(branchFilter ? { branch_id: branchFilter } : undefined)
+  const staffProfilesQuery = useGetStaffProfiles(branchFilter ? { branch_id: branchFilter } : undefined, {
+    query: { enabled: canReadStaffProfile },
+  })
   const profileRows = (pickData<StaffProfileRow[]>(staffProfilesQuery.data) ?? []) as StaffProfileRow[]
   const profileByUser = useMemo(() => new Map(profileRows.map((row) => [row.user_id, row])), [profileRows])
   const servicesQuery = useGetService({ is_active: true, limit: 200 })
@@ -132,11 +142,12 @@ export default function Staffs() {
     title?: string
   }[]
   const profileDetailQuery = useGetStaffProfilesUserId(profileUser?.id ?? 'none', {
-    query: { enabled: profileOpen && !!profileUser },
+    query: { enabled: profileOpen && !!profileUser && canReadStaffProfile },
   })
   const staffServicesQuery = useGetStaffProfilesUserIdServices(servicesUser?.id ?? 'none', {
-    query: { enabled: servicesOpen && !!servicesUser },
+    query: { enabled: servicesOpen && !!servicesUser && canUpdateStaffProfile },
   })
+  const profileDetails = pickData<StaffProfileRow>(profileDetailQuery.data)
   const upsertProfileMutation = usePutStaffProfilesUserId()
   const assignServicesMutation = usePutStaffProfilesUserIdServices()
 
@@ -226,6 +237,7 @@ export default function Staffs() {
   }
 
   const openModal = (s?: StaffRow) => {
+    if (!isPlatformAdmin) return
     setEditing(s ?? null)
     form.setFieldsValue(
       s
@@ -252,6 +264,7 @@ export default function Staffs() {
   }
 
   const submit = async () => {
+    if (!isPlatformAdmin) return
     const values = await form.validateFields()
     try {
       if (editing) {
@@ -289,6 +302,7 @@ export default function Staffs() {
 
   /** LIFE-01 — khóa mềm: giữ hồ sơ/lịch, thu hồi phiên; báo số lịch hẹn tương lai cần xử lý. */
   const deactivate = async (row: StaffRow) => {
+    if (!isPlatformAdmin) return
     try {
       const result = await deleteMutation.mutateAsync({ id: row.id })
       const futureCount = Number(pickData<{ future_appointments?: number }>(result)?.future_appointments ?? 0)
@@ -304,6 +318,7 @@ export default function Staffs() {
   }
 
   const restore = async (row: StaffRow) => {
+    if (!isPlatformAdmin) return
     try {
       await updateMutation.mutateAsync({ id: row.id, data: { is_active: true } })
       message.success('Đã khôi phục tài khoản. Lịch tuần cũ có hiệu lực trở lại.')
@@ -314,13 +329,14 @@ export default function Staffs() {
   }
 
   const openProfile = (row: StaffRow) => {
+    if (!canReadStaffProfile) return
     setProfileUser(row)
     profileForm.resetFields()
     setProfileOpen(true)
   }
 
   const submitProfile = async () => {
-    if (!profileUser) return
+    if (!profileUser || !canUpdateStaffProfile) return
     const values = await profileForm.validateFields()
     try {
       await upsertProfileMutation.mutateAsync({
@@ -344,6 +360,7 @@ export default function Staffs() {
   }
 
   const toggleInApp = async (row: StaffRow, showInApp: boolean) => {
+    if (!canUpdateStaffProfile) return
     try {
       await upsertProfileMutation.mutateAsync({ userId: row.id, data: { show_in_app: showInApp } })
       message.success(showInApp ? 'Đã hiện chuyên viên trên app' : 'Đã ẩn chuyên viên khỏi app')
@@ -354,13 +371,14 @@ export default function Staffs() {
   }
 
   const openServices = (row: StaffRow) => {
+    if (!canUpdateStaffProfile) return
     setServicesUser(row)
     setCheckedServiceIds([])
     setServicesOpen(true)
   }
 
   const submitServices = async () => {
-    if (!servicesUser) return
+    if (!servicesUser || !canUpdateStaffProfile) return
     try {
       await assignServicesMutation.mutateAsync({ userId: servicesUser.id, data: { service_ids: checkedServiceIds } })
       message.success('Đã cập nhật dịch vụ phụ trách')
@@ -417,9 +435,11 @@ export default function Staffs() {
               )}
             />
             <Button icon={<ReloadOutlined />} onClick={() => void usersQuery.refetch()} />
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
-              Thêm chuyên viên
-            </Button>
+            {isPlatformAdmin && (
+              <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
+                Thêm chuyên viên
+              </Button>
+            )}
           </Space>
         }
       >
@@ -514,6 +534,13 @@ export default function Staffs() {
             width: 100,
             render: (_: unknown, s: StaffRow) => {
               const profile = profileByUser.get(s.id)
+              if (!canUpdateStaffProfile) {
+                return (
+                  <Tag color={profile?.show_in_app === false ? 'default' : 'green'}>
+                    {profile?.show_in_app === false ? 'Đã ẩn' : 'Đang hiện'}
+                  </Tag>
+                )
+              }
               return (
                 <Switch
                   checked={profile?.show_in_app !== false}
@@ -529,41 +556,47 @@ export default function Staffs() {
             key: 'actions',
             width: 90,
             fixed: 'right' as const,
-            render: (_: unknown, s: StaffRow) => (
-              <RowActionsMenu
-                items={[
-                  { key: 'edit', icon: <EditOutlined />, label: 'Sửa' },
-                  { key: 'profile', icon: <ProfileOutlined />, label: 'Hồ sơ' },
-                  { key: 'services', icon: <AppstoreOutlined />, label: 'Dịch vụ' },
-                  ...(s.is_active === false
+            render: (_: unknown, s: StaffRow) => {
+              const actionItems = [
+                ...(isPlatformAdmin ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []),
+                ...(canReadStaffProfile ? [{ key: 'profile', icon: <ProfileOutlined />, label: canUpdateStaffProfile ? 'Hồ sơ' : 'Xem hồ sơ' }] : []),
+                ...(canUpdateStaffProfile ? [{ key: 'services', icon: <AppstoreOutlined />, label: 'Dịch vụ' }] : []),
+                ...(isPlatformAdmin
+                  ? s.is_active === false
                     ? [{ key: 'restore', icon: <UndoOutlined />, label: 'Khôi phục' }]
-                    : [{ key: 'deactivate', icon: <LockOutlined />, danger: true, label: 'Khóa' }]),
-                ]}
-                onSelect={(key) => {
-                  if (key === 'edit') openModal(s)
-                  else if (key === 'profile') openProfile(s)
-                  else if (key === 'services') openServices(s)
-                  else if (key === 'restore') {
-                    Modal.confirm({
-                      title: 'Khôi phục tài khoản này?',
-                      content: 'Nhân viên sẽ đăng nhập lại được và lịch tuần cũ có hiệu lực trở lại.',
-                      okText: 'Khôi phục',
-                      cancelText: 'Hủy',
-                      onOk: () => restore(s),
-                    })
-                  } else if (key === 'deactivate') {
-                    Modal.confirm({
-                      title: 'Khóa tài khoản nhân viên này?',
-                      content: 'Thu hồi phiên đăng nhập, không còn xuất hiện khi xếp ca/slot mới. Hồ sơ và lịch hẹn đã đặt được giữ nguyên.',
-                      okText: 'Khóa',
-                      okButtonProps: { danger: true },
-                      cancelText: 'Hủy',
-                      onOk: () => deactivate(s),
-                    })
-                  }
-                }}
-              />
-            ),
+                    : [{ key: 'deactivate', icon: <LockOutlined />, danger: true, label: 'Khóa' }]
+                  : []),
+              ]
+              if (!actionItems.length) return <Typography.Text type="secondary">—</Typography.Text>
+              return (
+                <RowActionsMenu
+                  items={actionItems}
+                  onSelect={(key) => {
+                    if (key === 'edit') openModal(s)
+                    else if (key === 'profile') openProfile(s)
+                    else if (key === 'services') openServices(s)
+                    else if (key === 'restore') {
+                      Modal.confirm({
+                        title: 'Khôi phục tài khoản này?',
+                        content: 'Nhân viên sẽ đăng nhập lại được và lịch tuần cũ có hiệu lực trở lại.',
+                        okText: 'Khôi phục',
+                        cancelText: 'Hủy',
+                        onOk: () => restore(s),
+                      })
+                    } else if (key === 'deactivate') {
+                      Modal.confirm({
+                        title: 'Khóa tài khoản nhân viên này?',
+                        content: 'Thu hồi phiên đăng nhập, không còn xuất hiện khi xếp ca/slot mới. Hồ sơ và lịch hẹn đã đặt được giữ nguyên.',
+                        okText: 'Khóa',
+                        okButtonProps: { danger: true },
+                        cancelText: 'Hủy',
+                        onOk: () => deactivate(s),
+                      })
+                    }
+                  }}
+                />
+              )
+            },
           },
         ].filter((column) => column.key === 'actions' || visibleColumns.includes(column.key as StaffColumnKey))}
       />
@@ -663,7 +696,8 @@ export default function Staffs() {
         title={`Hồ sơ chuyên viên — ${profileUser?.zalo_name || profileUser?.email || ''}`}
         open={profileOpen}
         onCancel={() => setProfileOpen(false)}
-        onOk={() => void submitProfile()}
+        onOk={canUpdateStaffProfile ? () => void submitProfile() : undefined}
+        footer={canUpdateStaffProfile ? undefined : <Button onClick={() => setProfileOpen(false)}>Đóng</Button>}
         okText="Lưu"
         cancelText="Hủy"
         confirmLoading={upsertProfileMutation.isPending}
@@ -674,37 +708,45 @@ export default function Staffs() {
             label="Tên hiển thị trên app"
             rules={[{ required: true, whitespace: true, message: 'Nhập tên hiển thị' }]}
           >
-            <Input maxLength={255} placeholder="VD: KTV Minh" />
+            <Input disabled={!canUpdateStaffProfile} maxLength={255} placeholder="VD: KTV Minh" />
           </Form.Item>
           <Row gutter={12}>
             <Col xs={24} sm={12}>
               <Form.Item name="title" label="Chức danh">
-                <Input maxLength={255} placeholder="VD: Chuyên viên da liễu" />
+                <Input disabled={!canUpdateStaffProfile} maxLength={255} placeholder="VD: Chuyên viên da liễu" />
               </Form.Item>
             </Col>
             <Col xs={24} sm={12}>
               <Form.Item name="expertise" label="Chuyên môn chính">
-                <Input maxLength={500} placeholder="VD: Trị mụn, trẻ hóa" />
+                <Input disabled={!canUpdateStaffProfile} maxLength={500} placeholder="VD: Trị mụn, trẻ hóa" />
               </Form.Item>
             </Col>
           </Row>
           <Form.Item name="bio" label="Giới thiệu tóm tắt">
-            <Input.TextArea rows={3} maxLength={2000} placeholder="Tiểu sử ngắn hiển thị trên Mini App" />
+            <Input.TextArea disabled={!canUpdateStaffProfile} rows={3} maxLength={2000} placeholder="Tiểu sử ngắn hiển thị trên Mini App" />
           </Form.Item>
           <Row gutter={12}>
             <Col xs={24} sm={12}>
-              <Form.Item name="photo_file_id" label="Ảnh đại diện">
-                <ServiceImageField />
-              </Form.Item>
+              {canUpdateStaffProfile ? (
+                <Form.Item name="photo_file_id" label="Ảnh đại diện">
+                  <ServiceImageField />
+                </Form.Item>
+              ) : (
+                <Form.Item label="Ảnh đại diện">
+                  {profileDetails?.photo_file_id ? (
+                    <Image src={profileDetails.photo_file_id} alt="Ảnh đại diện KTV" width={72} height={72} style={{ objectFit: 'cover', borderRadius: 6 }} />
+                  ) : <Typography.Text type="secondary">Chưa có ảnh</Typography.Text>}
+                </Form.Item>
+              )}
             </Col>
             <Col xs={24} sm={12}>
               <Form.Item name="sort_order" label="Thứ tự sắp xếp" initialValue={0}>
-                <InputNumber min={0} style={{ width: '100%' }} />
+                <InputNumber disabled={!canUpdateStaffProfile} min={0} style={{ width: '100%' }} />
               </Form.Item>
             </Col>
           </Row>
           <Form.Item name="show_in_app" label="Hiển thị trên Mini App" valuePropName="checked" initialValue={true}>
-            <Switch />
+            <Switch disabled={!canUpdateStaffProfile} />
           </Form.Item>
         </Form>
       </Modal>

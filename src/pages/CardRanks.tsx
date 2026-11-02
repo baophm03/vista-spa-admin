@@ -26,6 +26,7 @@ import ListFilterPopover from '@/components/base/ListFilterPopover'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
 import { paginateRows } from '@/utils/listTable'
+import { useCustomerProfileAccess } from '@/utils/customerProfileAccess'
 import { errorMessage } from '@/api/helpers'
 import type { CardRank } from '@/api/models/cardRank'
 import type { PostCardRanksBody } from '@/api/models/postCardRanksBody'
@@ -91,6 +92,8 @@ export default function CardRanks() {
   const [form] = Form.useForm()
   const queryClient = useQueryClient()
   const ability = useAbility()
+  const { isAdmin, isReceptionist, isTechnician } = useCustomerProfileAccess()
+  const hideSummaryForTechnician = isTechnician && !isAdmin && !isReceptionist
   const canUpdate = ability.can('UPDATE', 'CARD_RANK')
   const canDelete = ability.can('DELETE', 'CARD_RANK')
   const canReorder = canUpdate
@@ -208,7 +211,7 @@ export default function CardRanks() {
   const showHolders = ranks.some((r) => holderCount(r) != null)
 
   // Thống kê đầu trang — chỉ hiện khi BE trả về số khách giữ hạng, nếu không thì bỏ qua
-  const statItems: StatItem[] = showHolders
+  const statItems: StatItem[] = showHolders && !hideSummaryForTechnician
     ? [
         { key: 'total', label: 'Tổng hạng thẻ', value: ranks.length.toLocaleString('vi-VN'), icon: <CrownOutlined />, tone: 'primary' },
         { key: 'holders', label: 'Khách đang giữ hạng', value: ranks.reduce((sum, row) => sum + (holderCount(row) ?? 0), 0).toLocaleString('vi-VN'), icon: <TeamOutlined />, tone: 'tertiary' },

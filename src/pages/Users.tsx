@@ -13,7 +13,6 @@ import {
   Row,
   Select,
   Space,
-  Spin,
   Table,
   Tag,
   Typography,
@@ -134,8 +133,6 @@ export default function Users() {
   const [qrUrl, setQrUrl] = useState<string>('')
   const [qrLoading, setQrLoading] = useState(false)
   const [qrError, setQrError] = useState('')
-  const [drawerShellLoading, setDrawerShellLoading] = useState(false)
-  const [drawerTabLoading, setDrawerTabLoading] = useState(false)
   const [scannerOpen, setScannerOpen] = useState(false)
   const [qrLookupLoading, setQrLookupLoading] = useState(false)
   const [open, setOpen] = useState(false)
@@ -222,14 +219,10 @@ export default function Users() {
     setSelected(row)
     setSummary(null)
     setQrUrl('')
-    setDrawerShellLoading(true)
-    setDrawerTabLoading(false)
     try {
       await loadProfileDetails(row.id)
     } catch (err) {
       message.error(errorMessage(err))
-    } finally {
-      setDrawerShellLoading(false)
     }
   }
 
@@ -591,12 +584,9 @@ export default function Users() {
         open={!!selected}
         onClose={() => {
           setSelected(null)
-          setDrawerShellLoading(false)
-          setDrawerTabLoading(false)
         }}
       >
         {selected && (
-          <Spin spinning={drawerShellLoading || drawerTabLoading} tip="Đang tải toàn bộ hồ sơ…">
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 18 }}>
               <CustomerAvatar profile={selected} size={60} />
@@ -657,11 +647,9 @@ export default function Users() {
               summary={summary}
               branchName={branchName}
               fieldDefinitions={profileFieldDefs}
-              onLoadingChange={setDrawerTabLoading}
               onMembershipUpdated={refreshSelected}
             />
           </div>
-          </Spin>
         )}
       </Drawer>
 

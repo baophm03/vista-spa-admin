@@ -134,7 +134,12 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
   const ability = useAbility()
   /** report.read là key tổng; các key mịn report.<loại>.read cho role REC.
    *  Dashboard bọc component trong <Can passThrough> nên ability ở đây luôn fresh khi rules đổi. */
-  const canReport = useCallback((key: string) => ability.can('READ' as never, 'REPORT') || ability.can(key as never, 'REPORT'), [ability])
+  const canReport = useCallback((key: string) => {
+    const [module, ...actionParts] = key.split('.')
+    if (module !== 'report' || actionParts.length === 0) return false
+    const action = actionParts.join('.').toUpperCase()
+    return ability.can('READ' as never, 'REPORT') || ability.can(action as never, 'REPORT')
+  }, [ability])
   const canSeeCommission = canReport('report.commission.read')
 
   // Filters (applied)

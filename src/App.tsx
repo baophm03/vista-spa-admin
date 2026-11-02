@@ -8,6 +8,7 @@ import Services from './pages/Services'
 import Appointments from './pages/Appointments'
 import Treatments from './pages/Treatments'
 import TreatmentCustomers from './pages/TreatmentCustomers'
+import MySessions from './pages/MySessions'
 import Payments from './pages/Payments'
 import Staffs from './pages/Staffs'
 import Notifications from './pages/Notifications'
@@ -35,6 +36,9 @@ import Commissions from './pages/Commissions'
 import Collaborators from './pages/Collaborators'
 import Referrals from './pages/Referrals'
 import DiscountRules from './pages/DiscountRules'
+import ContentPosts from './pages/ContentPosts'
+import AcademyRegistrations from './pages/AcademyRegistrations'
+import Imports from './pages/Imports'
 
 export default function App() {
   return (
@@ -49,12 +53,15 @@ export default function App() {
           <Route path="/appointments" element={<Appointments />} />
           <Route path="/treatments" element={<Treatments />} />
           <Route path="/academy/courses" element={<AcademyCourses />} />
+          <Route path="/academy/registrations" element={<AcademyRegistrations />} />
           <Route path="/treatment-customers" element={<TreatmentCustomers />} />
+          <Route path="/my-sessions" element={<MySessions />} />
           <Route path="/payments" element={<Payments />} />
           <Route path="/staffs" element={<Staffs />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/access-logs" element={<AccessLogs />} />
           <Route path="/products" element={<Products />} />
+          <Route path="/content-posts" element={<ContentPosts />} />
           <Route path="/points" element={<Points />} />
           <Route path="/orders" element={<Orders />} />
           <Route path="/schedule" element={<ScheduleErrorBoundary><StaffSchedule /></ScheduleErrorBoundary>} />
@@ -69,6 +76,7 @@ export default function App() {
           <Route path="/referrals" element={<Referrals />} />
           <Route path="/discount-rules" element={<DiscountRules />} />
           <Route path="/branches" element={<Branches />} />
+          <Route path="/imports" element={<Imports />} />
           <Route path="/customer-data-config" element={<CustomerDataConfig />} />
           <Route path="/settings/lookups" element={<LookupLists />} />
           <Route path="/settings/brand" element={<BrandSettings />} />
