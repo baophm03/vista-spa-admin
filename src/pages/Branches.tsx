@@ -8,6 +8,7 @@ import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
 import TableEmpty from '@/components/base/TableEmpty'
 import { paginateRows } from '@/utils/listTable'
+import { useCustomerProfileAccess } from '@/utils/customerProfileAccess'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { Branch } from '@/api/models/branch'
 import type { BranchUpdate } from '@/api/models/branchUpdate'
@@ -65,6 +66,8 @@ export default function Branches() {
   const [form] = Form.useForm<BranchFormValues>()
   const [filterForm] = Form.useForm()
   const queryClient = useQueryClient()
+  const { isAdmin, isReceptionist, isTechnician } = useCustomerProfileAccess()
+  const hideSummaryForTechnician = isTechnician && !isAdmin && !isReceptionist
 
   const branchesQuery = useGetBranches(statusFilter === 'all' ? undefined : { status: statusFilter })
   const nextCodeQuery = useGetBranchesNextCode({ query: { enabled: open && !editing } })
@@ -101,6 +104,7 @@ export default function Branches() {
 
   // Thống kê đầu trang — chỉ đáng tin khi không lọc trạng thái phía server (khi đó rows là danh sách đầy đủ)
   const statItems = useMemo<StatItem[]>(() => {
+    if (hideSummaryForTechnician) return []
     if (statusFilter !== 'all') return []
     const activeCount = rows.filter((row) => !!row.is_active).length
     return [
@@ -108,7 +112,7 @@ export default function Branches() {
       { key: 'active', label: 'Đang hoạt động', value: activeCount.toLocaleString('vi-VN'), icon: <CheckCircleOutlined />, tone: 'secondary' },
       { key: 'inactive', label: 'Đã ngừng', value: (rows.length - activeCount).toLocaleString('vi-VN'), icon: <PauseCircleOutlined />, tone: 'neutral' },
     ]
-  }, [rows, statusFilter])
+  }, [rows, statusFilter, hideSummaryForTechnician])
 
   const applyFilters = (values: Record<string, unknown>) => {
     if (draftVisibleColumns.length === 0) {

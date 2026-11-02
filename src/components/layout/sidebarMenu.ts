@@ -34,6 +34,7 @@ interface MenuLeaf {
   label: string
   hideForKtv?: boolean
   ktvOnly?: boolean
+  brandReadForStaff?: boolean
   // Page không khai báo permission ⇒ hiển thị cho mọi user đã đăng nhập.
   permission?: PagePermission | PagePermission[]
 }
@@ -107,7 +108,7 @@ export const menuItems: MenuItem[] = [
       { key: '/imports', icon: createElement(ProfileOutlined), label: 'Nhập dữ liệu khách cũ', permission: { action: 'RUN', subject: 'IMPORT' } },
       { key: '/customer-data-config', icon: createElement(ProfileOutlined), label: 'Dữ liệu khách hàng', permission: { action: 'READ', subject: 'CUSTOM_FIELD' }, hideForKtv: true },
       { key: '/settings/lookups', icon: createElement(AppstoreOutlined), label: 'Danh mục chọn', permission: { action: 'READ', subject: 'LOOKUP' }, hideForKtv: true },
-      { key: '/settings/brand', icon: createElement(SettingOutlined), label: 'Thương hiệu', permission: { action: 'READ', subject: 'SETTING' } },
+      { key: '/settings/brand', icon: createElement(SettingOutlined), label: 'Thương hiệu', permission: { action: 'READ', subject: 'SETTING' }, brandReadForStaff: true },
       { key: '/settings/system', icon: createElement(SettingOutlined), label: 'Cài đặt hệ thống', permission: { action: 'READ', subject: 'SETTING' } },
       { key: '/settings/integrations', icon: createElement(SettingOutlined), label: 'Tích hợp', permission: { action: 'UPDATE', subject: 'SETTING' } },
       { key: '/notifications', icon: createElement(BellOutlined), label: 'Thông báo', permission: { action: 'READ', subject: 'NOTIFICATION' } },
@@ -131,6 +132,11 @@ export function isKtvRoleName(role: string): boolean {
   return normalized.includes('ktv') || normalized.includes('ky thuat vien') || normalized.includes('technician')
 }
 
+function isReceptionistRoleName(role: string): boolean {
+  const normalized = role.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase()
+  return normalized === 'rec' || normalized === 'le tan' || normalized === 'receptionist'
+}
+
 export function getProfileRoleNames(profile?: {
   roles?: string[]
   user_roles?: { role?: { role_name?: string } | null }[]
@@ -142,12 +148,13 @@ export function getProfileRoleNames(profile?: {
 }
 
 export function hasPagePermission(
-  entry: { permission?: PagePermission | PagePermission[]; hideForKtv?: boolean; ktvOnly?: boolean },
+  entry: { permission?: PagePermission | PagePermission[]; hideForKtv?: boolean; ktvOnly?: boolean; brandReadForStaff?: boolean },
   roles: string[] = [],
   isAdmin = false,
 ): boolean {
   if (entry.hideForKtv && !isAdmin && roles.some(isKtvRoleName)) return false
   if (entry.ktvOnly && !isAdmin && !roles.some(isKtvRoleName)) return false
+  if (entry.brandReadForStaff && roles.some((role) => isKtvRoleName(role) || isReceptionistRoleName(role))) return true
   const perms = entryPermissions(entry)
   if (!perms) return true
   return perms.some((p) => ability.can(p.action as never, p.subject))

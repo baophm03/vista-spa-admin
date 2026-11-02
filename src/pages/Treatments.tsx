@@ -28,6 +28,7 @@ import ListFilterPopover from '@/components/base/ListFilterPopover'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
 import { paginateRows } from '@/utils/listTable'
+import { useCustomerProfileAccess } from '@/utils/customerProfileAccess'
 import CustomFieldFormItems, { normalizeCustomFieldValues } from '@/components/CustomFieldFormItems'
 import useCustomFieldDefinitions from '@/hooks/useCustomFieldDefinitions'
 import { errorMessage, pickData } from '@/api/helpers'
@@ -128,6 +129,8 @@ export default function Treatments() {
   const queryClient = useQueryClient()
   // Trang quản trị liệu trình: chỉ platform admin được quản lý (giữ behavior cũ)
   const canManage = !!useProfileStore((s) => s.profile)?.is_admin
+  const { isAdmin, isReceptionist, isTechnician } = useCustomerProfileAccess()
+  const hideSummaryForTechnician = isTechnician && !isAdmin && !isReceptionist
   const [activeTab, setActiveTab] = useState('packages')
 
   const [packageOpen, setPackageOpen] = useState(false)
@@ -167,7 +170,7 @@ export default function Treatments() {
   // chỉ đáng tin khi không có bộ lọc server (loại gói/cơ sở/trạng thái)
   const hasServerFilters = !!(filters.package_type_id || filters.branch_id || filters.is_active !== undefined)
   const activePackageCount = rows.filter((row) => !!row.is_active).length
-  const statItems: StatItem[] = hasServerFilters
+  const statItems: StatItem[] = hasServerFilters || hideSummaryForTechnician
     ? []
     : [
         { key: 'total', label: 'Tổng gói liệu trình', value: rows.length.toLocaleString('vi-VN'), icon: <ShoppingOutlined />, tone: 'primary' },

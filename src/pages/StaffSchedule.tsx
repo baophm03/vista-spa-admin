@@ -18,7 +18,8 @@ export default function StaffSchedule() {
   const [activeTab, setActiveTab] = useState('weekly')
 
   const isOwnScheduleOnly = isTechnician && !isAdmin
-  const branchesQuery = useGetBranches(undefined, { query: { enabled: !isOwnScheduleOnly } })
+  // KTV được xem cơ sở của mình; dữ liệu này cũng giúp hiển thị phạm vi áp dụng của mẫu ca.
+  const branchesQuery = useGetBranches(undefined)
   const branches = (pickData<Branch[] | undefined>(branchesQuery.data) ?? []) as Branch[]
 
   const staffsQuery = useGetUsers({ currentPage: 1, pageSize: 500, has_role: true }, { query: { enabled: !isOwnScheduleOnly } })
@@ -39,9 +40,9 @@ export default function StaffSchedule() {
     [allUsers, isOwnScheduleOnly, ownStaff],
   )
 
-  const loadingShared = !isOwnScheduleOnly && (branchesQuery.isLoading || staffsQuery.isLoading)
+  const loadingShared = branchesQuery.isLoading || (!isOwnScheduleOnly && staffsQuery.isLoading)
   const sharedError = [
-    !isOwnScheduleOnly && branchesQuery.isError ? `Cơ sở: ${branchesQuery.error?.message ?? ''}` : '',
+    branchesQuery.isError ? `Cơ sở: ${branchesQuery.error?.message ?? ''}` : '',
     !isOwnScheduleOnly && staffsQuery.isError ? `Danh sách nhân sự: ${staffsQuery.error?.message ?? ''}` : '',
   ].filter(Boolean).join(' · ')
 
@@ -58,15 +59,15 @@ export default function StaffSchedule() {
   const shared = useMemo(
     () => ({ branches, staff, sharedError, retryShared: () => {
       void branchesQuery.refetch()
-      void staffsQuery.refetch()
+      if (!isOwnScheduleOnly) void staffsQuery.refetch()
     }, access }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [branches, staff, sharedError, access],
+    [branches, staff, sharedError, access, isOwnScheduleOnly],
   )
 
   const items = [
     { key: 'weekly', label: 'Lịch tuần', children: activeTab === 'weekly' ? <WeeklyScheduleTab {...shared} loadingShared={loadingShared} /> : null },
-    ...(!isOwnScheduleOnly ? [{ key: 'shifts', label: 'Danh mục ca', children: activeTab === 'shifts' ? <ShiftCatalogTab {...shared} loadingShared={loadingShared} /> : null }] : []),
+    { key: 'shifts', label: 'Danh mục ca', children: activeTab === 'shifts' ? <ShiftCatalogTab {...shared} loadingShared={loadingShared} /> : null },
     { key: 'days-off', label: 'Ngày nghỉ', children: activeTab === 'days-off' ? <DayOffTab {...shared} loadingShared={loadingShared} /> : null },
   ]
 
@@ -75,7 +76,7 @@ export default function StaffSchedule() {
     <Tabs activeKey={activeTab} onChange={setActiveTab} items={items} />
     {!!sharedError && <Alert style={{ marginTop: 12 }} type="warning" showIcon message="Một phần dữ liệu dùng chung chưa tải được" description={sharedError} action={<a onClick={() => {
       void branchesQuery.refetch()
-      void staffsQuery.refetch()
+      if (!isOwnScheduleOnly) void staffsQuery.refetch()
     }}>Tải lại</a>} />}
   </>
 }

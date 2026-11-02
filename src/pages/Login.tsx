@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { usePostAuthLogin } from '../api/endpoints/auth'
 import { pickData, errorMessage } from '../api/helpers'
@@ -22,6 +23,7 @@ const LockIcon = () => (
 
 export default function Login() {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const brand = useBrandRuntime()
   const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
@@ -46,6 +48,9 @@ export default function Login() {
       const loginData = pickData<Record<string, any>>(response)
       const tokens = loginData as { accessToken?: string; refreshToken?: string } | undefined
       if (!tokens?.accessToken || !tokens?.refreshToken) throw new Error('Phản hồi đăng nhập không hợp lệ')
+      // Query keys do OpenAPI sinh không gắn theo user; xóa cache trước khi đổi tài khoản.
+      queryClient.removeQueries()
+      useProfileStore.getState().clear()
       useAuthStore.getState().setTokens(tokens.accessToken, tokens.refreshToken)
       // Login response giờ kèm user (roles + permissions [{module, action}] như meu)
       // → set profile sớm để CASL rules sẵn sàng trước khi getMyInfo refresh lại

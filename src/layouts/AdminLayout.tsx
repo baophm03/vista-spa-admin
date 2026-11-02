@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { ConfigProvider, Layout, Result } from 'antd'
+import { useQueryClient } from '@tanstack/react-query'
 import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useGetUsersGetMyInfo } from '../api/endpoints/users'
 import { clearAuth } from '../api/mutator/custom-instance'
@@ -32,6 +33,7 @@ function PermissionGate({ children }: { children: ReactNode }) {
 export default function AdminLayout() {
   const navigate = useNavigate()
   const location = useLocation()
+  const queryClient = useQueryClient()
   const accessToken = useAuthStore((state) => state.accessToken)
   const profile = useProfileStore((state) => state.profile)
   const setProfile = useProfileStore((state) => state.setProfile)
@@ -58,6 +60,7 @@ export default function AdminLayout() {
   }, [profileQuery.data, setProfile])
 
   const logout = () => {
+    queryClient.clear()
     clearAuth()
     navigate('/login', { replace: true })
   }
