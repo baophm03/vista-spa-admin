@@ -10,6 +10,7 @@ import { customInstance } from '@/api/mutator/custom-instance'
 import { usePutSessionsIdDone, usePutSessionsIdStart } from '@/api/endpoints/customer-treatments'
 import type { TreatmentSession } from '@/api/models/treatmentSession'
 import { useBrandDateTime } from '@/themeRuntime'
+import ListPagination from '@/components/base/ListPagination'
 
 type SessionRow = TreatmentSession & {
   appointment?: { appt_date?: string; start_time?: string } | null
@@ -177,14 +178,9 @@ export default function MySessions() {
       columns={columns}
       dataSource={rows}
       scroll={{ x: 850 }}
-      pagination={{
-        current: page,
-        pageSize: 10,
-        total,
-        showSizeChanger: false,
-        onChange: (nextPage) => setPage(nextPage),
-      }}
+      pagination={false}
       locale={{ emptyText: 'Chưa có buổi nào được giao cho bạn' }}
     />
+    <ListPagination page={page} limit={10} total={total} onChange={setPage} noun="buổi điều trị" />
   </>
 }

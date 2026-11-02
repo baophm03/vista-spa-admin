@@ -176,7 +176,9 @@ export default function Treatments() {
         { key: 'active', label: 'Đang bán', value: activePackageCount.toLocaleString('vi-VN'), icon: <EyeOutlined />, tone: 'secondary' },
         { key: 'hidden', label: 'Đã ẩn', value: (rows.length - activePackageCount).toLocaleString('vi-VN'), icon: <EyeInvisibleOutlined />, tone: 'neutral' },
       ]
-  const packageTypes = (pickData<PackageTypeRow[]>(packageTypesQuery.data) ?? []) as PackageTypeRow[]
+  const packageTypeData = pickData<PackageTypeRow[] | { rows?: PackageTypeRow[] }>(packageTypesQuery.data)
+  const packageTypes = (Array.isArray(packageTypeData) ? packageTypeData : packageTypeData?.rows ?? []) as PackageTypeRow[]
+  const packageTypeById = new Map(packageTypes.map((type) => [String(type.id), type]))
   // GET /service trả { services, total, ... } trong responseData
   const services = (pickData<{ services?: Service[] }>(servicesQuery.data)?.services ?? []) as Service[]
   const branches = (pickData<Branch[]>(branchesQuery.data) ?? []) as Branch[]
@@ -184,7 +186,7 @@ export default function Treatments() {
 
   const selectedPackageTypeId = Form.useWatch('package_type_id', packageForm)
   const selectedQuotaType = Form.useWatch('quota_type', packageForm) as QuotaType | undefined
-  const selectedPackageType = packageTypes.find((type) => type.id === selectedPackageTypeId)
+  const selectedPackageType = packageTypeById.get(String(selectedPackageTypeId))
   const packageQuotaOptions = PACKAGE_TYPE_QUOTA_OPTIONS.filter((option) =>
     option.value !== 'UNLIMITED' || selectedPackageType?.allow_unlimited,
   )
@@ -210,9 +212,11 @@ export default function Treatments() {
     if (catalogLoading) return
     setEditingPackage(row ?? null)
     packageForm.resetFields()
-    const type = row?.package_type_id ? packageTypes.find((item) => item.id === row.package_type_id) : undefined
+    const packageTypeId = row?.package_type_id ?? row?.package_type?.id
+    const type = packageTypeId ? packageTypeById.get(String(packageTypeId)) : undefined
     packageForm.setFieldsValue(row ? {
       ...row,
+      package_type_id: packageTypeId ? String(packageTypeId) : undefined,
       quota_type: row.quota_type ?? type?.default_quota_type ?? 'SESSIONS',
       list_price: row.list_price ?? 0,
       bonus_sessions_default: row.bonus_sessions_default ?? 0,
@@ -414,7 +418,9 @@ export default function Treatments() {
       dataIndex: 'package_type_id',
       width: 190,
       render: (_value, row) => {
-        const type = row.package_type ?? packageTypes.find((item) => item.id === row.package_type_id)
+        const type = row.package_type && typeof row.package_type === 'object'
+          ? row.package_type
+          : packageTypeById.get(String(row.package_type_id))
         return <Tag color="purple">{type?.name ?? type?.code ?? 'Chưa phân loại'}</Tag>
       },
     },
@@ -637,10 +643,10 @@ export default function Treatments() {
                   optionFilterProp="label"
                   placeholder="Chọn loại gói"
                   options={packageTypes
-                    .filter((type) => type.is_active !== false || type.id === editingPackage?.package_type_id)
-                    .map((type) => ({ value: type.id, label: type.name + (type.is_active === false ? ' (đã ẩn)' : '') }))}
+                    .filter((type) => type.is_active !== false || String(type.id) === String(editingPackage?.package_type_id ?? editingPackage?.package_type?.id))
+                    .map((type) => ({ value: String(type.id), label: type.name + (type.is_active === false ? ' (đã ẩn)' : '') }))}
                   onChange={(typeId) => {
-                    const type = packageTypes.find((item) => item.id === typeId)
+                    const type = packageTypeById.get(String(typeId))
                     if (!type) return
                     packageForm.setFieldsValue({
                       quota_type: type.default_quota_type,
