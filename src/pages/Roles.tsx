@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Alert, Button, Checkbox, Input, Modal, Spin, Typography, message } from 'antd'
+import { Alert, Button, Checkbox, Input, Modal, Spin, Tag, Typography, message } from 'antd'
 import {
   CheckOutlined,
   DeleteOutlined,
@@ -32,6 +32,7 @@ import { permKey, permissionSetToArray } from '@/config/permissions'
 interface RoleRow {
   id: string
   role_name: string
+  code?: string | null
   description?: string | null
   [k: string]: unknown
 }
@@ -149,6 +150,7 @@ export default function Roles() {
   const [editOpen, setEditOpen] = useState(false)
   const [editingRole, setEditingRole] = useState<RoleRow | null>(null)
   const [roleName, setRoleName] = useState('')
+  const [roleCode, setRoleCode] = useState('')
   const [roleDescription, setRoleDescription] = useState('')
 
   // Dialog phân quyền
@@ -172,12 +174,14 @@ export default function Roles() {
   const openCreate = () => {
     setEditingRole(null)
     setRoleName('')
+    setRoleCode('')
     setRoleDescription('')
     setEditOpen(true)
   }
   const openEdit = (role: RoleRow) => {
     setEditingRole(role)
     setRoleName(role.role_name)
+    setRoleCode(role.code ?? '')
     setRoleDescription(role.description ?? '')
     setEditOpen(true)
   }
@@ -199,6 +203,7 @@ export default function Roles() {
     setSaving(true)
     try {
       if (editingRole) {
+        // code cố định sau khi tạo — không gửi khi sửa
         await updateRoleMutation.mutateAsync({
           id: editingRole.id,
           data: { role_name: roleName.trim(), description: roleDescription.trim() || undefined },
@@ -206,7 +211,11 @@ export default function Roles() {
         message.success('Đã cập nhật vai trò')
       } else {
         await createRoleMutation.mutateAsync({
-          data: { role_name: roleName.trim(), description: roleDescription.trim() || undefined },
+          data: {
+            role_name: roleName.trim(),
+            description: roleDescription.trim() || undefined,
+            ...(roleCode.trim() ? { code: roleCode.trim().toLowerCase() } : {}),
+          } as never,
         })
         message.success('Đã tạo vai trò mới')
       }
@@ -356,6 +365,7 @@ export default function Roles() {
                       <Typography.Text strong className="text-[15px] text-[var(--brand-dark)]">
                         {role.role_name}
                       </Typography.Text>
+                      {role.code && <Tag color="geekblue">{role.code}</Tag>}
                     </div>
                     <p className="mt-1 mb-0 text-sm text-slate-600">
                       {role.description || 'Không có mô tả'}
@@ -438,6 +448,21 @@ export default function Roles() {
               placeholder="VD: Quản lý cơ sở"
               maxLength={100}
             />
+          </label>
+          <label className="block">
+            <span className="mb-1.5 block text-xs font-semibold text-slate-600">Mã vai trò (code)</span>
+            <Input
+              value={roleCode}
+              onChange={(e) => setRoleCode(e.target.value)}
+              placeholder="VD: admin, ktv — bỏ trống nếu không dùng"
+              maxLength={50}
+              disabled={!!editingRole}
+            />
+            {!!editingRole && (
+              <span className="mt-1 block text-xs text-slate-400">
+                Mã vai trò cố định sau khi tạo, không thể sửa.
+              </span>
+            )}
           </label>
           <label className="block">
             <span className="mb-1.5 block text-xs font-semibold text-slate-600">Mô tả</span>

@@ -49,7 +49,6 @@ import {
   usePutTreatmentPackagesId,
 } from '@/api/endpoints/services'
 import { useGetBranches } from '@/api/endpoints/branches'
-import { useProfileStore } from '@/stores/profile-store'
 import { useBrandCurrency } from '@/themeRuntime'
 
 type QuotaType = TreatmentPackage['quota_type']
@@ -127,8 +126,8 @@ function priceLabel(row: TreatmentPackage, formatMoney: (value: unknown) => stri
 export default function Treatments() {
   const { format: formatMoney, symbol: currencySymbol } = useBrandCurrency()
   const queryClient = useQueryClient()
-  // Trang quản trị liệu trình: chỉ platform admin được quản lý (giữ behavior cũ)
-  const canManage = !!useProfileStore((s) => s.profile)?.is_admin
+  // Trang quản trị liệu trình: chỉ admin hệ thống (vai trò Admin) được quản lý (giữ behavior cũ)
+  const canManage = useCustomerProfileAccess().isAdmin
   const { isAdmin, isReceptionist, isTechnician } = useCustomerProfileAccess()
   const hideSummaryForTechnician = isTechnician && !isAdmin && !isReceptionist
   const [activeTab, setActiveTab] = useState('packages')

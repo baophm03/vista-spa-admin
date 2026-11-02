@@ -59,16 +59,19 @@ interface StaffRow {
   zalo_name?: string
   email?: string
   phone_number?: string
-  is_admin?: boolean
   branch_id?: string | null
   is_active?: boolean
-  user_roles?: { role_id?: string; role?: { role_name?: string } }[]
+  user_roles?: { role_id?: string; role?: { role_name?: string; code?: string | null } }[]
 }
 
 /** Nhận diện vai trò KTV (bỏ dấu, lowercase). */
-function isTechnicianRole(roleName = ''): boolean {
-  const normalized = roleName.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase()
-  return normalized.includes('ktv') || normalized.includes('ky thuat vien') || normalized === 'technician'
+function isTechnicianRole(code?: string | null): boolean {
+  return String(code || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase() === 'ktv'
+}
+
+/** Nhận diện vai trò Admin hệ thống qua mã vai trò (roles.code = 'admin'). */
+function isAdminRole(code?: string | null): boolean {
+  return String(code || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase() === 'admin'
 }
 
 type StaffColumnKey = 'staff' | 'role' | 'branch' | 'status' | 'phone' | 'email' | 'profile' | 'in_app'
@@ -105,7 +108,6 @@ export default function Staffs() {
   const [form] = Form.useForm()
   const [filterForm] = Form.useForm()
   const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
-  const isAdmin = Form.useWatch('is_admin', form)
   const selectedRoleId = Form.useWatch('role_id', form)
 
   const usersQuery = useGetUsers({
@@ -177,15 +179,16 @@ export default function Staffs() {
   const rows = (Array.isArray(usersPage) ? [] : usersPage?.rows ?? []) as StaffRow[]
   const total = Array.isArray(usersPage) ? 0 : usersPage?.count ?? rows.length
 
-  const roleRows = (pickData<{ rows?: { id: string; role_name?: string; name?: string }[] }>(rolesQuery.data) as
-    | { rows?: { id: string; role_name?: string; name?: string }[] }
+  const roleRows = (pickData<{ rows?: { id: string; role_name?: string; name?: string; code?: string | null }[] }>(rolesQuery.data) as
+    | { rows?: { id: string; role_name?: string; name?: string; code?: string | null }[] }
     | undefined)?.rows ?? []
-  const roles = roleRows.map((role) => ({ id: role.id, role_name: role.role_name ?? role.name ?? role.id }))
+  const roles = roleRows.map((role) => ({ id: role.id, role_name: role.role_name ?? role.name ?? role.id, code: role.code ?? null }))
   const branches = (pickData<Branch[]>(branchesQuery.data) ?? []) as Branch[]
 
   const loading = usersQuery.isLoading
-  const selectedRoleName = roles.find((role) => role.id === selectedRoleId)?.role_name ?? ''
-  const branchRequired = !isAdmin || !selectedRoleId || !roles.length || isTechnicianRole(selectedRoleName)
+  const selectedRole = roles.find((role) => role.id === selectedRoleId)
+  // Vai trò Admin làm việc toàn hệ thống, không bắt buộc cơ sở
+  const branchRequired = !selectedRoleId || !roles.length || !isAdminRole(selectedRole?.code)
   const activeFilterCount = [branchFilter, roleFilter, statusFilter].filter(Boolean).length + (search ? 1 : 0)
 
   // Gõ tìm kiếm có debounce 400ms, quay về trang 1.
@@ -245,7 +248,6 @@ export default function Staffs() {
             zalo_name: s.zalo_name,
             email: s.email,
             phone_number: s.phone_number,
-            is_admin: s.is_admin,
             branch_id: s.branch_id ?? undefined,
             role_id: s.user_roles?.[0]?.role_id,
             password: '',
@@ -256,7 +258,6 @@ export default function Staffs() {
             phone_number: '',
             password: '',
             role_id: undefined,
-            is_admin: false,
             branch_id: branches.length === 1 ? branches[0].id : undefined,
           },
     )
@@ -273,7 +274,6 @@ export default function Staffs() {
           zalo_name: values.zalo_name,
           email: values.email,
           phone_number: values.phone_number,
-          is_admin: values.is_admin,
           branch_id: (values.branch_id || null) as PutUsersAdminIdBody['branch_id'],
           role_id: values.role_id,
           ...(values.password ? { password: values.password } : {}),
@@ -287,7 +287,6 @@ export default function Staffs() {
           password: values.password,
           role_id: values.role_id,
           full_name: values.zalo_name,
-          is_admin: values.is_admin,
           branch_id: values.branch_id || undefined,
         }
         await createMutation.mutateAsync({ data: payload })
@@ -484,7 +483,7 @@ export default function Staffs() {
             render: (_: unknown, s: StaffRow) => (
               <Space size={4} wrap>
                 <Tag color="purple">{s.user_roles?.[0]?.role?.role_name || 'Nhân viên'}</Tag>
-                {s.is_admin && <Tag color="gold">Quản trị hệ thống</Tag>}
+                {s.user_roles?.some(({ role }) => isAdminRole(role?.code)) && <Tag color="gold">Quản trị hệ thống</Tag>}
               </Space>
             ),
           },
@@ -495,8 +494,9 @@ export default function Staffs() {
             width: 150,
             render: (branchId: string | null | undefined, s: StaffRow) => {
               if (branchId) return branches.find((branch) => branch.id === branchId)?.name || 'Cơ sở'
-              const hasTechnicianRole = s.user_roles?.some(({ role }) => isTechnicianRole(role?.role_name))
-              return s.is_admin && !hasTechnicianRole ? 'Toàn hệ thống' : <Tag color="orange">Chưa gán</Tag>
+              const hasTechnicianRole = s.user_roles?.some(({ role }) => isTechnicianRole(role?.code))
+              const hasAdminRoleTag = s.user_roles?.some(({ role }) => isAdminRole(role?.code))
+              return hasAdminRoleTag && !hasTechnicianRole ? 'Toàn hệ thống' : <Tag color="orange">Chưa gán</Tag>
             },
           },
           {
@@ -674,17 +674,6 @@ export default function Staffs() {
                   allowClear
                   options={roles.map((r) => ({ value: r.id, label: r.role_name }))}
                   placeholder="Chọn vai trò"
-                />
-              </Form.Item>
-            </Col>
-            <Col xs={24} sm={12}>
-              <Form.Item name="is_admin" label="Quyền admin hệ thống">
-                <Select
-                  style={{ width: 130 }}
-                  options={[
-                    { value: true, label: 'Có' },
-                    { value: false, label: 'Không' },
-                  ]}
                 />
               </Form.Item>
             </Col>

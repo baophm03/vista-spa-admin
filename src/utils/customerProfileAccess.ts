@@ -3,11 +3,11 @@ import { useProfileStore, type AdminProfile } from '@/stores/profile-store'
 /** Thông tin tài khoản hiện tại trả về từ GET /users/getMyInfo (responseData). */
 export interface CurrentUserInfo {
   id?: string
-  is_admin?: boolean
   permissions?: string[]
   user_roles?: Array<{
     role?: {
       role_name?: string
+      code?: string | null
       receptionist?: boolean
     } | null
   }>
@@ -50,17 +50,14 @@ function normalizeRoleName(value: unknown) {
 export function getCustomerProfileAccess(user: CurrentUserInfo | null): CustomerProfileAccess {
   if (!user) return NO_CUSTOMER_PROFILE_ACCESS
   const roles = user?.user_roles?.map((item) => item.role).filter(Boolean) ?? []
-  const isAdmin = !!user?.is_admin || roles.some((role) => {
-    const name = normalizeRoleName(role?.role_name)
-    return name === 'admin' || name === 'adm'
-  })
+  // Quyền admin hệ thống xác định theo mã vai trò (roles.code = 'admin').
+  const isAdmin = roles.some((role) => normalizeRoleName(role?.code) === 'admin')
   const isReceptionist = roles.some((role) => {
     const name = normalizeRoleName(role?.role_name)
     return role?.receptionist === true || name === 'le tan' || name === 'rec' || name === 'receptionist'
   })
   const isTechnician = roles.some((role) => {
-    const name = normalizeRoleName(role?.role_name)
-    return name.includes('ktv') || name.includes('ky thuat vien') || name === 'technician'
+    return normalizeRoleName(role?.code) === 'ktv'
   })
   const canRead = isAdmin || isReceptionist || isTechnician
   const canManage = isAdmin || isReceptionist

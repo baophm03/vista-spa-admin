@@ -27,7 +27,12 @@ export default function AdminHeader({
     (profile?.zalo_name as string | undefined) ||
     (profile?.email as string | undefined) ||
     'Admin'
-  const roleLabel = profile?.is_admin ? 'Quản trị viên' : 'Nhân viên'
+  // Quyền admin hệ thống xác định theo mã vai trò (roles.code = 'admin').
+  const roleList = (profile?.user_roles as { role?: { code?: string | null; role_name?: string } }[] | undefined) ?? []
+  const isAdminRole = roleList.some(({ role }) =>
+    String(role?.code || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase() === 'admin',
+  )
+  const roleLabel = isAdminRole ? 'Quản trị viên' : 'Nhân viên'
   return (
     <Header className="flex! h-16! shrink-0! items-center! justify-between! gap-4! border-b! border-[var(--brand-border-soft)]! bg-white! px-4! py-0! leading-normal! lg:px-6!">
       <Space size={16}>

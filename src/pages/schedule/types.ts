@@ -14,7 +14,6 @@ export interface ScheduleStaff {
 
 export interface ScheduleUser {
   id?: string
-  is_admin?: boolean
   user_roles?: { role?: { role_name?: string; receptionist?: boolean } }[]
 }
 

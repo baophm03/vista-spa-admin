@@ -9,7 +9,6 @@ export interface AdminProfile {
   phone_number?: string
   zalo_name?: string
   full_name?: string
-  is_admin?: boolean
   is_active?: boolean
   roles?: string[]
   user_roles?: { role?: { role_name?: string } | null }[]
