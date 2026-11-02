@@ -870,7 +870,7 @@ export const prefetchGetSessionsIdQuery = async <TData = Awaited<ReturnType<type
 
 
 /**
- * **SS-04** — PUT /sessions/{id}. Cần quyền `customer.update`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó.
+ * **SS-04** — PUT /sessions/{id}. Cần quyền `session.update`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó.
  * @summary Cập nhật buổi điều trị
  */
 export const putSessionsId = (
@@ -935,7 +935,7 @@ export const usePutSessionsId = <TError = UnauthorizedResponse | ForbiddenRespon
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **SS-08** — DELETE /sessions/{id} (chỉ scheduled). Cần quyền `customer.update`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó.
+ * **SS-08** — DELETE /sessions/{id} (chỉ scheduled). Cần quyền `session.delete`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó.
  * @summary Xóa buổi điều trị
  */
 export const deleteSessionsId = (
@@ -997,7 +997,7 @@ export const useDeleteSessionsId = <TError = UnauthorizedResponse | ForbiddenRes
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **SS-05** — PUT /sessions/{id}/start (KTV: scheduled → in_progress). Cần quyền `customer.update`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó.
+ * **SS-05** — PUT /sessions/{id}/start (KTV: scheduled → in_progress). Cần quyền `session.start`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó.
  * @summary Bắt đầu
  */
 export const putSessionsIdStart = (
@@ -1059,7 +1059,7 @@ export const usePutSessionsIdStart = <TError = UnauthorizedResponse | ForbiddenR
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **PH-01** — POST /sessions/{id}/photos. Cần quyền `customer.update`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Trường body: `file_id`, `url`, `kind`, `caption`, `taken_at`.
+ * **PH-01** — POST /sessions/{id}/photos. Cần quyền `session.update`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Trường body: `file_id`, `url`, `kind`, `caption`, `taken_at`.
  * @summary Quản lý ảnh buổi điều trị
  */
 export const postSessionsIdPhotos = (
@@ -1319,7 +1319,7 @@ export const prefetchGetSessionsIdPhotosQuery = async <TData = Awaited<ReturnTyp
 
 
 /**
- * **SS-06** — PUT /sessions/{id}/done (KTV: in_progress → done). Cần quyền `customer.update`.
+ * **SS-06** — PUT /sessions/{id}/done (KTV: in_progress → done). Cần quyền `session.done`.
  * @summary Kết thúc
  */
 export const putSessionsIdDone = (
@@ -1384,7 +1384,7 @@ export const usePutSessionsIdDone = <TError = UnauthorizedResponse | ForbiddenRe
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **SS-07** — PUT /sessions/{id}/complete (ADM/REC: done → completed, trừ buổi/giá trị BR-07, idempotent). Cần quyền `customer.update`.
+ * **SS-07** — PUT /sessions/{id}/complete (ADM/REC: done → completed, trừ buổi/giá trị BR-07, idempotent). Cần quyền `session.complete`.
  * @summary Hoàn tất
  */
 export const putSessionsIdComplete = (
@@ -1508,7 +1508,7 @@ export const useDeletePhotosId = <TError = UnauthorizedResponse | ForbiddenRespo
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **PM-03** — GET /payments (theo branch_id, khoảng ngày, người nhập). Cần quyền `customer.read`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Tham số truy vấn: `page`, `limit`, `from_date`, `to_date`, `entered_by`, `branch_id`.
+ * **PM-03** — GET /payments (theo branch_id, khoảng ngày, người nhập). Cần quyền `payment.read`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Tham số truy vấn: `page`, `limit`, `from_date`, `to_date`, `entered_by`, `branch_id`.
  * @summary Lấy danh sách thanh toán
  */
 export const getPayments = (
@@ -2482,7 +2482,7 @@ export const prefetchGetCustomerTreatmentsIdSessionsQuery = async <TData = Await
 
 
 /**
- * **SS-02** — POST /customer-treatments/{id}/sessions (BR-06). Cần quyền `customer.update`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó.
+ * **SS-02** — POST /customer-treatments/{id}/sessions (BR-06). Cần quyền `session.create`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó.
  * @summary Tạo buổi điều trị cho gói liệu trình
  */
 export const postCustomerTreatmentsIdSessions = (
@@ -2680,7 +2680,7 @@ export const usePostCustomerTreatmentsIdPayments = <TError = UnauthorizedRespons
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **PM-02** — GET /customer-treatments/{id}/payments. Cần quyền `customer.read`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó.
+ * **PM-02** — GET /customer-treatments/{id}/payments. Cần quyền `payment.read`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó.
  * @summary Ghi nhận thanh toán
  */
 export const getCustomerTreatmentsIdPayments = (

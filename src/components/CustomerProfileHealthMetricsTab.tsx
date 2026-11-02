@@ -21,7 +21,7 @@ type MetricRow = HealthMetric & {
 
 type LookupListWithItems = LookupList & { lookup_items?: LookupItem[] | null }
 
-export default function CustomerProfileHealthMetricsTab({ profileId, onLoadingChange }: { profileId: string; onLoadingChange?: (loading: boolean) => void }) {
+export default function CustomerProfileHealthMetricsTab({ profileId }: { profileId: string }) {
   const { formatDateTime, getDateTimeParts } = useBrandDateTime()
   const [rows, setRows] = useState<MetricRow[]>([])
   const [items, setItems] = useState<LookupItem[]>([])
@@ -36,7 +36,6 @@ export default function CustomerProfileHealthMetricsTab({ profileId, onLoadingCh
     let active = true
     setLoading(true)
     setError('')
-    onLoadingChange?.(true)
     // API trả toàn bộ chỉ số của hồ sơ; lọc theo chỉ số/khoảng ngày tại client (endpoint không nhận query params trong spec).
     Promise.all([getCustomerProfilesIdHealthMetrics(profileId), getLookupLists({ key: 'health.metrics' })])
       .then(([metricsResult, catalogsResult]) => {
@@ -50,10 +49,9 @@ export default function CustomerProfileHealthMetricsTab({ profileId, onLoadingCh
       .finally(() => {
         if (!active) return
         setLoading(false)
-        onLoadingChange?.(false)
       })
     return () => { active = false }
-  }, [onLoadingChange, profileId, refresh])
+  }, [profileId, refresh])
 
   const names = useMemo(() => Object.fromEntries(items.map((item) => [item.code, item.label])), [items])
   const activeItems = items.filter((item) => item.is_active !== false)

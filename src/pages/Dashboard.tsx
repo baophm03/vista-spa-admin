@@ -21,7 +21,7 @@ import {
 } from 'recharts'
 import dayjs from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
-import StatCards from '@/components/base/StatCards'
+import StatCards, { type StatItem } from '@/components/base/StatCards'
 import TableEmpty from '@/components/base/TableEmpty'
 import { pickData, pickMeta } from '@/api/helpers'
 import { Can } from '@casl/react'
@@ -55,7 +55,13 @@ const STATUS_MAP: Record<string, { label: string; color: string }> = {
   no_show: { label: 'Không đến', color: 'volcano' },
 }
 
-function Overview() {
+function Overview({
+  canReport,
+  canReadAppointments,
+}: {
+  canReport: (key: string) => boolean
+  canReadAppointments: boolean
+}) {
   const brand = useBrandColors()
   const { formatCompact: formatCompactMoney } = useBrandCurrency()
   const rankColors = [brand.primary, brand.tertiary, '#3B5BDB', '#16A34A', '#E06666']
@@ -65,87 +71,102 @@ function Overview() {
   const [apptStatus, setApptStatus] = useState<Record<string, number>>({})
   const [recent, setRecent] = useState<AppointmentRow[]>([])
   const [debtTotal, setDebtTotal] = useState<number | null>(null)
+  const canSeeAllReports = canReport('report.read')
+  const canSeeRevenue = canReport('report.revenue.read')
+  const canSeeDebt = canReport('report.debt.read')
+  const canSeeRanks = canReport('report.rank.read')
+  const canSeeAppointmentStats = canReport('report.appointment.read')
 
   useEffect(() => {
     const today = dayjs().format('YYYY-MM-DD')
     const from = dayjs().subtract(6, 'month').format('YYYY-MM-DD')
-    void getCustomerProfiles({ page: 1, limit: 1 })
-      .then((body) => setTotalCustomers(pickMeta(body)?.total ?? 0))
-      .catch(() => undefined)
-    void getReportsRevenue({ from_date: from, to_date: today, group_by: 'month' })
-      .then((body) => {
-        const rows = (pickData<any[]>(body) ?? []) as any[]
-        const merged = new Map<string, number>()
-        for (const r of rows) merged.set(r.period, (merged.get(r.period) ?? 0) + Number(r.revenue))
-        setRevenueData([...merged.entries()].map(([period, revenue]) => ({ period, revenue: revenue / 1_000_000 })))
-      })
-      .catch(() => undefined)
-    void getReportsRanks({})
-      .then((body) =>
-        setRankData(
-          ((((pickData<any>(body) ?? {}) as any)?.ranks ?? []) as any[])
-            .filter((x) => Number(x.member_count) > 0)
-            .map((x) => ({ name: x.rank_name, value: Number(x.member_count) })),
-        ),
-      )
-      .catch(() => undefined)
-    void getReportsAppointments({ from_date: from, to_date: today })
-      .then((body) => {
-        const map: Record<string, number> = {}
-        for (const s of ((((pickData<any>(body) ?? {}) as any)?.by_status ?? []) as any[])) map[s.status] = Number(s.count)
-        setApptStatus(map)
-      })
-      .catch(() => undefined)
-    void getAppointments({ page: 1, limit: 5 })
-      .then((body) => setRecent((pickData<AppointmentRow[]>(body) ?? []) as AppointmentRow[]))
-      .catch(() => undefined)
-    void getReportsDebts({})
-      .then((body) => setDebtTotal(((pickData<any[]>(body) ?? []) as any[]).reduce((s, r) => s + Number(r.debt_amount ?? 0), 0)))
-      .catch(() => undefined)
-  }, [])
+    if (canSeeAllReports) {
+      void getCustomerProfiles({ page: 1, limit: 1 })
+        .then((body) => setTotalCustomers(pickMeta(body)?.total ?? 0))
+        .catch(() => undefined)
+    }
+    if (canSeeRevenue) {
+      void getReportsRevenue({ from_date: from, to_date: today, group_by: 'month' })
+        .then((body) => {
+          const rows = (pickData<any[]>(body) ?? []) as any[]
+          const merged = new Map<string, number>()
+          for (const r of rows) merged.set(r.period, (merged.get(r.period) ?? 0) + Number(r.revenue))
+          setRevenueData([...merged.entries()].map(([period, revenue]) => ({ period, revenue: revenue / 1_000_000 })))
+        })
+        .catch(() => undefined)
+    }
+    if (canSeeRanks) {
+      void getReportsRanks({})
+        .then((body) =>
+          setRankData(
+            ((((pickData<any>(body) ?? {}) as any)?.ranks ?? []) as any[])
+              .filter((x) => Number(x.member_count) > 0)
+              .map((x) => ({ name: x.rank_name, value: Number(x.member_count) })),
+          ),
+        )
+        .catch(() => undefined)
+    }
+    if (canSeeAppointmentStats) {
+      void getReportsAppointments({ from_date: from, to_date: today })
+        .then((body) => {
+          const map: Record<string, number> = {}
+          for (const s of ((((pickData<any>(body) ?? {}) as any)?.by_status ?? []) as any[])) map[s.status] = Number(s.count)
+          setApptStatus(map)
+        })
+        .catch(() => undefined)
+    }
+    if (canReadAppointments) {
+      void getAppointments({ page: 1, limit: 5 })
+        .then((body) => setRecent((pickData<AppointmentRow[]>(body) ?? []) as AppointmentRow[]))
+        .catch(() => undefined)
+    }
+    if (canSeeDebt) {
+      void getReportsDebts({})
+        .then((body) => setDebtTotal(((pickData<any[]>(body) ?? []) as any[]).reduce((s, r) => s + Number(r.debt_amount ?? 0), 0)))
+        .catch(() => undefined)
+    }
+  }, [canSeeAllReports, canSeeRevenue, canSeeDebt, canSeeRanks, canSeeAppointmentStats, canReadAppointments])
 
   const pendingCount = apptStatus['pending'] ?? 0
   const totalRevenue = revenueData.reduce((s, r) => s + r.revenue, 0)
+  const overviewStats: StatItem[] = []
+  if (canSeeAllReports) overviewStats.push({
+    key: 'customers',
+    label: 'Tổng khách hàng',
+    value: totalCustomers === null ? '—' : totalCustomers.toLocaleString('vi-VN'),
+    icon: <TeamOutlined />,
+    tone: 'primary',
+    note: canSeeRanks ? `${rankData.reduce((s, r) => s + r.value, 0)} thành viên có hạng` : undefined,
+  })
+  if (canSeeAppointmentStats) overviewStats.push({
+    key: 'pending',
+    label: 'Lịch hẹn chờ duyệt',
+    value: pendingCount.toLocaleString('vi-VN'),
+    icon: <CalendarOutlined />,
+    tone: 'secondary',
+    note: `Tổng ${Object.values(apptStatus).reduce((s, v) => s + v, 0)} lịch trong 6 tháng`,
+  })
+  if (canSeeRevenue) overviewStats.push({
+    key: 'revenue',
+    label: 'Doanh thu 6 tháng',
+    value: formatCompactMoney(totalRevenue * 1_000_000),
+    icon: <DollarOutlined />,
+    tone: 'tertiary',
+  })
+  if (canSeeDebt) overviewStats.push({
+    key: 'debt',
+    label: 'Công nợ hiện tại',
+    value: debtTotal === null ? '—' : formatCompactMoney(debtTotal),
+    icon: <WalletOutlined />,
+    tone: 'neutral',
+  })
 
   return (
     <>
-      <StatCards
-        items={[
-          {
-            key: 'customers',
-            label: 'Tổng khách hàng',
-            value: totalCustomers === null ? '—' : totalCustomers.toLocaleString('vi-VN'),
-            icon: <TeamOutlined />,
-            tone: 'primary',
-            note: `${rankData.reduce((s, r) => s + r.value, 0)} thành viên có hạng`,
-          },
-          {
-            key: 'pending',
-            label: 'Lịch hẹn chờ duyệt',
-            value: pendingCount.toLocaleString('vi-VN'),
-            icon: <CalendarOutlined />,
-            tone: 'secondary',
-            note: `Tổng ${Object.values(apptStatus).reduce((s, v) => s + v, 0)} lịch trong 6 tháng`,
-          },
-          {
-            key: 'revenue',
-            label: 'Doanh thu 6 tháng',
-            value: formatCompactMoney(totalRevenue * 1_000_000),
-            icon: <DollarOutlined />,
-            tone: 'tertiary',
-          },
-          {
-            key: 'debt',
-            label: 'Công nợ hiện tại',
-            value: debtTotal === null ? '—' : formatCompactMoney(debtTotal),
-            icon: <WalletOutlined />,
-            tone: 'neutral',
-          },
-        ]}
-      />
+      <StatCards items={overviewStats} />
 
-      <Row gutter={[16, 16]} style={{ marginBottom: 20 }}>
-        <Col xs={24} lg={16}>
+      {(canSeeRevenue || canSeeRanks) && <Row gutter={[16, 16]} style={{ marginBottom: 20 }}>
+        {canSeeRevenue && <Col xs={24} lg={canSeeRanks ? 16 : 24}>
           <Card title="Doanh thu theo tháng (6 tháng gần nhất)">
             {revenueData.length < 2 ? (
               <div style={{ height: 280, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -177,8 +198,8 @@ function Overview() {
               </ResponsiveContainer>
             )}
           </Card>
-        </Col>
-        <Col xs={24} lg={8}>
+        </Col>}
+        {canSeeRanks && <Col xs={24} lg={canSeeRevenue ? 8 : 24}>
           <Card title="Cơ cấu thành viên theo hạng">
             {rankData.length === 0 ? (
               <div style={{ height: 280, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -206,10 +227,10 @@ function Overview() {
               </ResponsiveContainer>
             )}
           </Card>
-        </Col>
-      </Row>
+        </Col>}
+      </Row>}
 
-      <Card title="Lịch hẹn gần đây">
+      {canReadAppointments && <Card title="Lịch hẹn gần đây">
         <Table
           rowKey="id"
           dataSource={recent}
@@ -234,7 +255,7 @@ function Overview() {
             },
           ]}
         />
-      </Card>
+      </Card>}
     </>
   )
 }
@@ -244,7 +265,13 @@ export default function Dashboard() {
   return (
     <Can I="READ" a="REPORT" passThrough>
       {({ ability }) => {
-        const canReport = (key: string) => ability.can('READ' as never, 'REPORT') || ability.can(key as never, 'REPORT')
+        const canReport = (key: string) => {
+          const [module, ...actionParts] = key.split('.')
+          if (module !== 'report' || actionParts.length === 0) return false
+          const action = actionParts.join('.').toUpperCase()
+          return ability.can('READ' as never, 'REPORT') || ability.can(action as never, 'REPORT')
+        }
+        const canReadAppointments = ability.can('READ' as never, 'APPOINTMENT')
         const reportTabs = [
           { key: 'money', label: 'Doanh thu & Công nợ', visible: canReport('report.revenue.read') || canReport('report.debt.read') || canReport('report.commission.read'), children: <ReportsTab section="money" /> },
           { key: 'customers', label: 'Báo cáo khách hàng', visible: canReport('report.customer.read') || canReport('report.rank.read'), children: <ReportsTab section="customers" /> },
@@ -258,7 +285,7 @@ export default function Dashboard() {
               defaultActiveKey="overview"
               destroyOnHidden={false}
               items={[
-                { key: 'overview', label: 'Tổng quan', children: <Overview /> },
+                { key: 'overview', label: 'Tổng quan', children: <Overview canReport={canReport} canReadAppointments={canReadAppointments} /> },
                 ...reportTabs.map(({ key, label, children }) => ({ key, label, children })),
               ]}
             />

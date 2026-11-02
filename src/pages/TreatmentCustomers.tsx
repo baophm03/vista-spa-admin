@@ -12,7 +12,7 @@ import ListPagination from '@/components/base/ListPagination'
 import TableEmpty from '@/components/base/TableEmpty'
 import { paginateRows } from '@/utils/listTable'
 import CustomFieldFormItems, { normalizeCustomFieldValues, type CustomFieldDefWithOptions } from '@/components/CustomFieldFormItems'
-import { errorMessage, pickData } from '@/api/helpers'
+import { errorMessage, openHtmlPrint, pickData } from '@/api/helpers'
 import type { CustomerTreatment } from '@/api/models/customerTreatment'
 import type { SessionPhoto } from '@/api/models/sessionPhoto'
 import type { TreatmentPackage } from '@/api/models/treatmentPackage'
@@ -242,13 +242,15 @@ function SessionPhotos({
   sessionId,
   photos,
   kind,
-  editable,
+  canUpload,
+  canDelete,
   onChanged,
 }: {
   sessionId: string
   photos: SessionPhoto[]
   kind?: string
-  editable?: boolean
+  canUpload?: boolean
+  canDelete?: boolean
   onChanged: () => void
 }) {
   const [deleting, setDeleting] = useState(false)
@@ -264,7 +266,7 @@ function SessionPhotos({
               src={p.url ?? undefined}
               fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
             />
-            {editable && (
+            {canDelete && (
               <Popconfirm
                 title="Xóa ảnh này?"
                 okText="Xóa"
@@ -296,7 +298,7 @@ function SessionPhotos({
           </div>
         ))}
       </Image.PreviewGroup>
-      {editable && (
+      {canUpload && (
         <Upload
           accept="image/*"
           multiple
@@ -403,6 +405,13 @@ function SessionTimeline({
   onFocusSessionHandled?: () => void
 }) {
   const { formatDateTime, getDateTimeParts } = useBrandDateTime()
+  const ability = useAbility()
+  const canEditSession = ability.can('UPDATE', 'SESSION')
+  const canManageSessionSchedule = ability.can('UPDATE', 'CUSTOMER')
+  const canStartSession = ability.can('START' as never, 'SESSION')
+  const canFinishSessionWork = ability.can('DONE' as never, 'SESSION')
+  const canCompleteSession = ability.can('COMPLETE' as never, 'SESSION')
+  const canDeleteSession = ability.can('DELETE', 'SESSION')
   const sessionStatusConfig = useSessionStatusConfig()
   const [sessions, setSessions] = useState<SessionRow[]>([])
   const [photos, setPhotos] = useState<Record<string, SessionPhoto[]>>({})
@@ -542,12 +551,22 @@ function SessionTimeline({
           : null,
         staff_id: sessionValues.staff_id || null,
       }
+    const editableValues = canManageSessionSchedule
+      ? sessionValues
+      : {
+        diary: sessionValues.diary,
+        skin_note: sessionValues.skin_note,
+        concern: sessionValues.concern,
+        products_used: sessionValues.products_used,
+        result: sessionValues.result,
+        custom_fields: sessionValues.custom_fields,
+      }
     await act(
       () =>
         putSessionsId(editOpen!.id, {
-          ...sessionValues,
+          ...editableValues,
           custom_fields: normalizeCustomFieldValues(customFieldDefinitions, sessionValues.custom_fields ?? {}, editOpen?.custom_fields ?? {}),
-          ...scheduleValues,
+          ...(canManageSessionSchedule ? scheduleValues : {}),
         } as never),
       'Đã cập nhật buổi',
     )
@@ -637,9 +656,8 @@ function SessionTimeline({
                   )}
                 </Space>
                 {(ctStatus === 'ACTIVE' || s.is_warranty) && (
-                  <Can I="UPDATE" a="CUSTOMER">
                     <Space size={6} wrap style={{ marginLeft: 'auto' }}>
-                      {s.status === 'scheduled' && !s.is_warranty && (
+                      {canStartSession && s.status === 'scheduled' && !s.is_warranty && (
                         <Tooltip title={canStart(s) ? undefined : 'Hoàn tất các buổi trước theo đúng thứ tự'}>
                           <Button
                             type="primary"
@@ -651,28 +669,27 @@ function SessionTimeline({
                           </Button>
                         </Tooltip>
                       )}
-                      {s.status === 'in_progress' && (
+                      {canFinishSessionWork && s.status === 'in_progress' && (
                         <Button onClick={() => act(() => putSessionsIdDone(s.id, {} as never), 'Đã thực hiện xong')}>
                           Đã làm
                         </Button>
                       )}
-                      {s.status === 'done' && (
+                      {canCompleteSession && s.status === 'done' && (
                         <Button type="primary" onClick={() => act(() => putSessionsIdComplete(s.id), 'Đã hoàn tất buổi')}>
                           Hoàn tất
                         </Button>
                       )}
-                      {s.status !== 'completed' && (
+                      {canEditSession && s.status !== 'completed' && (
                         <Button icon={<EditOutlined />} onClick={() => openEdit(s)}>
                           Sửa
                         </Button>
                       )}
-                      {s.status === 'scheduled' && (
+                      {canDeleteSession && s.status === 'scheduled' && (
                         <Popconfirm title="Xóa buổi này?" okText="Xóa" cancelText="Hủy" onConfirm={() => act(() => deleteSessionsId(s.id), 'Đã xóa buổi')}>
                           <Button danger icon={<DeleteOutlined />} />
                         </Popconfirm>
                       )}
                     </Space>
-                  </Can>
                 )}
               </div>
 
@@ -701,7 +718,8 @@ function SessionTimeline({
                   sessionId={s.id}
                   photos={(photos[s.id] ?? []).filter((p) => p.kind === 'before')}
                   kind="before"
-                  editable={ctStatus === 'ACTIVE' || !!s.is_warranty}
+                  canUpload={canEditSession && (ctStatus === 'ACTIVE' || !!s.is_warranty)}
+                  canDelete={!!isAdmin && (ctStatus === 'ACTIVE' || !!s.is_warranty)}
                   onChanged={load}
                 />
               </TRow>
@@ -717,7 +735,8 @@ function SessionTimeline({
                   sessionId={s.id}
                   photos={midPhotos}
                   kind="process"
-                  editable={ctStatus === 'ACTIVE' || !!s.is_warranty}
+                  canUpload={canEditSession && (ctStatus === 'ACTIVE' || !!s.is_warranty)}
+                  canDelete={!!isAdmin && (ctStatus === 'ACTIVE' || !!s.is_warranty)}
                   onChanged={load}
                 />
               </TRow>
@@ -733,7 +752,8 @@ function SessionTimeline({
                   sessionId={s.id}
                   photos={(photos[s.id] ?? []).filter((p) => p.kind === 'after')}
                   kind="after"
-                  editable={ctStatus === 'ACTIVE' || !!s.is_warranty}
+                  canUpload={canEditSession && (ctStatus === 'ACTIVE' || !!s.is_warranty)}
+                  canDelete={!!isAdmin && (ctStatus === 'ACTIVE' || !!s.is_warranty)}
                   onChanged={load}
                 />
               </TRow>
@@ -757,7 +777,7 @@ function SessionTimeline({
               Buổi này đã gắn với lịch hẹn; KTV và giờ lấy theo lịch hẹn. Muốn đổi, hãy sửa ở tab Lịch hẹn.
             </Typography.Text>
           )}
-          <Row gutter={12}>
+          {canManageSessionSchedule && <Row gutter={12}>
             <Col span={8}>
               <Form.Item name="scheduled_date" label="Ngày hẹn">
                 <DatePicker
@@ -804,8 +824,8 @@ function SessionTimeline({
                 />
               </Form.Item>
             </Col>
-          </Row>
-          {editOpen?.is_warranty ? (
+          </Row>}
+          {canManageSessionSchedule && (editOpen?.is_warranty ? (
             <Alert type="info" showIcon message="Buổi bảo hành miễn phí tiền công và không trừ quota. Phí sản phẩm phát sinh được ghi riêng bên dưới." />
           ) : (
             <Form.Item
@@ -820,7 +840,7 @@ function SessionTimeline({
             >
               <InputNumber min={0} max={maxSessionValue} step={50000} suffix={currencySymbol} style={{ width: '100%' }} />
             </Form.Item>
-          )}
+          ))}
           <Divider plain style={{ fontSize: 11, color: '#A9ADB2', letterSpacing: 1, margin: '4px 0 14px' }}>
             ĐẦU BUỔI
           </Divider>
@@ -839,14 +859,14 @@ function SessionTimeline({
           <Form.Item name="products_used" label="Sản phẩm đã dùng">
             <Input.TextArea rows={2} />
           </Form.Item>
-          <Form.Item
+          {canManageSessionSchedule && <Form.Item
             name="product_amount"
             label="Tiền sản phẩm phát sinh"
             help={editOpen?.is_warranty ? 'Chỉ ghi nhận tiền sản phẩm thêm; không trừ quota và không tính tiền công kỹ thuật.' : 'Số tiền sản phẩm thêm, tách biệt với giá trị buổi và quota liệu trình.'}
             rules={[{ type: 'number', min: 0, message: 'Số tiền không được âm' }]}
           >
             <InputNumber min={0} step={10000} suffix={currencySymbol} style={{ width: '100%' }} />
-          </Form.Item>
+          </Form.Item>}
           <Divider plain style={{ fontSize: 11, color: '#A9ADB2', letterSpacing: 1, margin: '4px 0 14px' }}>
             KẾT QUẢ CUỐI BUỔI
           </Divider>
@@ -868,7 +888,11 @@ export default function TreatmentCustomers() {
   const { formatDateTime } = useBrandDateTime()
   const queryClient = useQueryClient()
   const { isAdmin } = useCustomerProfileAccess()
-  const canUpdate = useAbility().can('UPDATE', 'CUSTOMER')
+  const ability = useAbility()
+  const canUpdate = ability.can('UPDATE', 'CUSTOMER')
+  const canCreateSessions = ability.can('CREATE', 'SESSION')
+  const canReadPayments = ability.can('READ', 'PAYMENT')
+  const canSeeDebtSummary = ability.can('READ' as never, 'REPORT') || ability.can('DEBT.READ' as never, 'REPORT')
   const customerTreatmentCustomFields = useCustomFieldDefinitions('CUSTOMER_TREATMENT')
   const sessionCustomFields = useCustomFieldDefinitions('SESSION')
   const [page, setPage] = useState(1)
@@ -1013,6 +1037,11 @@ export default function TreatmentCustomers() {
 
   const openDetail = (row: CustomerTreatment) => {
     setDetail(row)
+    if (!canReadPayments) {
+      setPayments([])
+      setPayLoading(false)
+      return
+    }
     setPayLoading(true)
     getCustomerTreatmentsIdPayments(row.id)
       .then((response) => setPayments((pickData<PaymentRow[] | undefined>(response) ?? []) as PaymentRow[]))
@@ -1306,17 +1335,17 @@ export default function TreatmentCustomers() {
     }
   }
 
+  const statItems: StatItem[] = [
+    { key: 'total', label: 'Tổng lượt đăng ký', value: stats.total.toLocaleString('vi-VN'), icon: <TeamOutlined />, tone: 'primary' },
+    { key: 'ongoing', label: 'Đang thực hiện', value: stats.ongoing.toLocaleString('vi-VN'), icon: <PlayCircleOutlined />, tone: 'secondary' },
+    { key: 'done', label: 'Đã hoàn tất', value: stats.done.toLocaleString('vi-VN'), icon: <CheckCircleOutlined />, tone: 'neutral' },
+    ...(canSeeDebtSummary ? [{ key: 'debt', label: 'Tổng công nợ', value: formatMoney(stats.debt), icon: <WalletOutlined />, tone: 'tertiary' as const }] : []),
+  ]
+
   return (
     <>
       {/* Thống kê đầu trang — cùng số liệu với rows đã tải (limit 500), thay hàng Card/Statistic cũ */}
-      <StatCards
-        items={[
-          { key: 'total', label: 'Tổng lượt đăng ký', value: stats.total.toLocaleString('vi-VN'), icon: <TeamOutlined />, tone: 'primary' },
-          { key: 'ongoing', label: 'Đang thực hiện', value: stats.ongoing.toLocaleString('vi-VN'), icon: <PlayCircleOutlined />, tone: 'secondary' },
-          { key: 'done', label: 'Đã hoàn tất', value: stats.done.toLocaleString('vi-VN'), icon: <CheckCircleOutlined />, tone: 'neutral' },
-          { key: 'debt', label: 'Tổng công nợ', value: formatMoney(stats.debt), icon: <WalletOutlined />, tone: 'tertiary' },
-        ] satisfies StatItem[]}
-      />
+      <StatCards items={statItems} />
 
       <PageTitle
         subtitle="Khách hàng đang thực hiện liệu trình"
@@ -1418,9 +1447,9 @@ export default function TreatmentCustomers() {
             width: 200,
             render: (_: unknown, row: CustomerTreatment) => (
               <div>
-                <div style={{ fontSize: 13 }}>
+                {canReadPayments && <div style={{ fontSize: 13 }}>
                   {formatMoney(row.paid_amount)} / {formatMoney(row.total_amount)}
-                </div>
+                </div>}
                 <Tag color={(row.debt_amount ?? 0) > 0 ? 'orange' : 'green'} style={{ marginTop: 4 }}>
                   {(row.debt_amount ?? 0) > 0 ? `Còn nợ ${formatMoney(row.debt_amount)}` : 'Đã trả đủ'}
                 </Tag>
@@ -1797,10 +1826,10 @@ export default function TreatmentCustomers() {
                   </div>
                 )}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 9, borderTop: '1px solid var(--brand-border-soft)', paddingTop: 12 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
+                  {canReadPayments && <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
                     <span style={{ color: '#3F4145', fontWeight: 600 }}>Đã trả</span>
                     <b style={{ fontWeight: 700 }}>{formatMoney(detail.paid_amount)}</b>
-                  </div>
+                  </div>}
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
                     <span style={{ color: '#3F4145', fontWeight: 600 }}>Công nợ</span>
                     <b style={{ fontWeight: 700, color: (detail.debt_amount ?? 0) > 0 ? '#D97706' : '#16A34A' }}>
@@ -1827,12 +1856,12 @@ export default function TreatmentCustomers() {
                 )}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 12 }}>
-                {detail.status === 'ACTIVE' && detail.quota_type !== 'UNLIMITED' && (
+                {canCreateSessions && detail.status === 'ACTIVE' && detail.quota_type !== 'UNLIMITED' && (
                   <Button block disabled={addingSessionId !== null} loading={addingSessionId === detail.id} onClick={() => addSession(detail)}>
                     +1 buổi
                   </Button>
                 )}
-                {detail.status !== 'CANCELLED' && (detail.debt_amount ?? 0) > 0 && (
+                {canUpdate && detail.status !== 'CANCELLED' && (detail.debt_amount ?? 0) > 0 && (
                   <Button
                     block
                     type="primary"
@@ -1844,7 +1873,16 @@ export default function TreatmentCustomers() {
                     Thu tiền ({formatMoney(detail.debt_amount)})
                   </Button>
                 )}
-                {detail.status === 'ACTIVE' && (
+                {/* INV-01 — In phiếu hóa đơn gói liệu trình (mở hộp thoại In của trình duyệt) */}
+                {canReadPayments && <Button
+                  block
+                  onClick={() =>
+                    openHtmlPrint(`/invoices/${detail.id}/print`).catch((err) => message.error(errorMessage(err, 'Không mở được phiếu in — kiểm tra setting module.invoice')))
+                  }
+                >
+                  In phiếu
+                </Button>}
+                {canUpdate && detail.status === 'ACTIVE' && (
                   <Popconfirm title="Hủy liệu trình này?" okText="Hủy" cancelText="Không" onConfirm={() => cancelTreatment(detail)}>
                     <Button block danger>
                       Hủy liệu trình
@@ -1879,7 +1917,7 @@ export default function TreatmentCustomers() {
                       />
                     ),
                   },
-                  {
+                  ...(canReadPayments ? [{
                     key: 'payments',
                     label: 'Lịch sử thanh toán',
                     children: (
@@ -1916,7 +1954,7 @@ export default function TreatmentCustomers() {
                         ]}
                       />
                     ),
-                  },
+                  }] : []),
                   {
                     key: 'points',
                     label: 'Điểm thưởng',

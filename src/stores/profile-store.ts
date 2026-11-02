@@ -12,6 +12,7 @@ export interface AdminProfile {
   is_admin?: boolean
   is_active?: boolean
   roles?: string[]
+  user_roles?: { role?: { role_name?: string } | null }[]
   permissions?: Permission[]
   [key: string]: unknown
 }

@@ -22,7 +22,7 @@ const APPOINTMENT_STATUS: Record<string, { label: string; color: string }> = {
   rejected: { label: 'Từ chối', color: 'red' },
 }
 
-export default function CustomerProfileAppointmentsTab({ profileId, onLoadingChange }: { profileId: string; onLoadingChange?: (loading: boolean) => void }) {
+export default function CustomerProfileAppointmentsTab({ profileId }: { profileId: string }) {
   const [rows, setRows] = useState<AppointmentRow[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -33,17 +33,15 @@ export default function CustomerProfileAppointmentsTab({ profileId, onLoadingCha
     let active = true
     setLoading(true)
     setError('')
-    onLoadingChange?.(true)
     getAppointments({ customer_profile_id: profileId, page: 1, limit: 200 })
       .then((result) => { if (active) setRows(pickData<AppointmentRow[]>(result)) })
       .catch((err) => { if (active) setError(errorMessage(err)) })
       .finally(() => {
         if (!active) return
         setLoading(false)
-        onLoadingChange?.(false)
       })
     return () => { active = false }
-  }, [onLoadingChange, profileId, refresh])
+  }, [profileId, refresh])
 
   if (loading) return <div className="py-9 text-center"><Spin tip="Đang tải lịch hẹn…" /></div>
   if (error) return <Alert type="error" showIcon message="Không tải được lịch hẹn" description={error} action={<Button size="small" icon={<ReloadOutlined />} onClick={() => { setPage(1); setRefresh((value) => value + 1) }}>Thử lại</Button>} />

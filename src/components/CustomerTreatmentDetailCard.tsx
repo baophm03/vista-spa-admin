@@ -11,6 +11,7 @@ interface Props {
   sessions: TreatmentSession[]
   payments: PaymentLog[]
   photos: SessionPhoto[]
+  canReadPayments: boolean
 }
 
 const TREATMENT_STATUS: Record<string, { label: string; color: string }> = {
@@ -46,7 +47,7 @@ function localizedLabel(value: unknown, labels: Record<string, string>) {
 /** Ảnh có thể là URL tuyệt đối (MinIO) hoặc đường dẫn tương đối (/images, /files — đã được vite proxy). */
 const mediaSource = (url?: string | null) => (!url ? undefined : url)
 
-export default function CustomerTreatmentDetailCard({ treatment, sessions, payments, photos }: Props) {
+export default function CustomerTreatmentDetailCard({ treatment, sessions, payments, photos, canReadPayments }: Props) {
   const { format: money } = useBrandCurrency()
   const { formatDateTime } = useBrandDateTime()
   const sessionStatusConfig = useSessionStatusConfig()
@@ -65,9 +66,9 @@ export default function CustomerTreatmentDetailCard({ treatment, sessions, payme
         <Descriptions.Item label="Loại hạn mức">{localizedLabel(treatment.quota_type, QUOTA_LABEL)}</Descriptions.Item>
         <Descriptions.Item label="Buổi">{treatment.sessions_used ?? 0}/{treatment.sessions_total ?? '∞'}</Descriptions.Item>
         <Descriptions.Item label="Còn lại">{quota}</Descriptions.Item>
-        <Descriptions.Item label="Thanh toán">{money(treatment.paid_amount)}</Descriptions.Item>
+        {canReadPayments && <Descriptions.Item label="Thanh toán">{money(treatment.paid_amount)}</Descriptions.Item>}
         <Descriptions.Item label="Công nợ">{money(treatment.debt_amount)}</Descriptions.Item>
-        <Descriptions.Item label="Trạng thái thanh toán"><Tag color={paymentStatus.color}>{paymentStatus.label}</Tag></Descriptions.Item>
+        {canReadPayments && <Descriptions.Item label="Trạng thái thanh toán"><Tag color={paymentStatus.color}>{paymentStatus.label}</Tag></Descriptions.Item>}
       </Descriptions>
 
       <Typography.Title level={5} className="mt-[18px]">Lịch sử buổi</Typography.Title>
@@ -88,13 +89,15 @@ export default function CustomerTreatmentDetailCard({ treatment, sessions, payme
         { title: 'Ghi chú', dataIndex: 'diary', ellipsis: true, render: (value: string | null) => value || '—' },
       ]} /> : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Chưa có buổi điều trị" />}
 
-      <Typography.Title level={5} className="mt-[18px]">Thanh toán</Typography.Title>
-      {payments.length ? <Table<PaymentLog> rowKey="id" size="small" pagination={false} dataSource={payments} columns={[
-        { title: 'Thời gian', dataIndex: 'paid_at', render: (value: string | null) => formatDateTime(value) },
-        { title: 'Số tiền', dataIndex: 'amount', render: (value: number) => money(value) },
-        { title: 'Phương thức', dataIndex: 'method', render: (value: string) => localizedLabel(value, PAYMENT_METHOD) },
-        { title: 'Ghi chú', dataIndex: 'note', ellipsis: true, render: (value: string | null) => value || '—' },
-      ]} /> : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Chưa có thanh toán" />}
+      {canReadPayments && <>
+        <Typography.Title level={5} className="mt-[18px]">Thanh toán</Typography.Title>
+        {payments.length ? <Table<PaymentLog> rowKey="id" size="small" pagination={false} dataSource={payments} columns={[
+          { title: 'Thời gian', dataIndex: 'paid_at', render: (value: string | null) => formatDateTime(value) },
+          { title: 'Số tiền', dataIndex: 'amount', render: (value: number) => money(value) },
+          { title: 'Phương thức', dataIndex: 'method', render: (value: string) => localizedLabel(value, PAYMENT_METHOD) },
+          { title: 'Ghi chú', dataIndex: 'note', ellipsis: true, render: (value: string | null) => value || '—' },
+        ]} /> : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Chưa có thanh toán" />}
+      </>}
 
       <Typography.Title level={5} className="mt-[18px]">Ảnh buổi điều trị</Typography.Title>
       {photos.length ? (

@@ -4,10 +4,9 @@ import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useGetUsersGetMyInfo } from '../api/endpoints/users'
 import { clearAuth } from '../api/mutator/custom-instance'
 import { AdminHeader, AdminSidebar, getPageTitle } from '../components/layout'
-import { getPagePermission } from '../components/layout/sidebarMenu'
+import { canAccessPage, getProfileRoleNames, isKtvRoleName } from '../components/layout/sidebarMenu'
 import { ability } from '../config/casl/ability'
 import { AbilityProvider } from '@casl/react'
-import type { Actions } from '../lib/types/permissions'
 import { useAuthStore } from '../stores/auth-store'
 import { useProfileStore } from '../stores/profile-store'
 import { refreshThemeFromServer } from '../themeRuntime'
@@ -18,9 +17,8 @@ const { Content } = Layout
 function PermissionGate({ children }: { children: ReactNode }) {
   const location = useLocation()
   const profile = useProfileStore((s) => s.profile)
-  const permissions = getPagePermission(location.pathname)
-  if (!permissions || !profile) return <>{children}</>
-  const allowed = permissions.some((p) => ability.can(p.action as Actions, p.subject))
+  if (!profile) return <>{children}</>
+  const allowed = canAccessPage(location.pathname, getProfileRoleNames(profile), !!profile.is_admin)
   if (allowed) return <>{children}</>
   return (
     <Result
@@ -35,10 +33,16 @@ export default function AdminLayout() {
   const navigate = useNavigate()
   const location = useLocation()
   const accessToken = useAuthStore((state) => state.accessToken)
+  const profile = useProfileStore((state) => state.profile)
   const setProfile = useProfileStore((state) => state.setProfile)
   const profileQuery = useGetUsersGetMyInfo({ query: { enabled: Boolean(accessToken) } })
   const [collapsed, setCollapsed] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  const responseProfile = profileQuery.data
+    ? ((profileQuery.data.responseData ?? (profileQuery.data as any).data ?? profileQuery.data) as Record<string, unknown>)
+    : null
+  const activeProfile = profile ?? responseProfile
 
   const pageTitle = getPageTitle(location.pathname)
 
@@ -60,6 +64,19 @@ export default function AdminLayout() {
 
   // Chưa login → redirect ngay trong render, KHÔNG mount Outlet (children sẽ không chạy effect/fetch API)
   if (!accessToken) return <Navigate to="/login" replace />
+
+  // KTV không có Dashboard. Đưa tài khoản về trang công việc của họ thay vì để Dashboard trả 403.
+  if (location.pathname === '/' && activeProfile) {
+    const roles = getProfileRoleNames(activeProfile as Parameters<typeof getProfileRoleNames>[0])
+    if (!activeProfile.is_admin && roles.some(isKtvRoleName)) {
+      return <Navigate to="/my-sessions" replace />
+    }
+  }
+
+  // Khi mở thẳng trang chủ sau khi profile chưa được khôi phục, chờ myInfo để chọn đúng trang.
+  if (location.pathname === '/' && !activeProfile && profileQuery.isLoading) {
+    return <div className="grid h-screen place-items-center text-sm text-[#8a8494]">Đang tải tài khoản...</div>
+  }
 
   // AbilityProvider — giống admin/layout của meu, để <Can> trong pages đọc ability từ context
   return (

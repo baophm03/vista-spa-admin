@@ -17,23 +17,32 @@ export default function StaffSchedule() {
   const { isAdmin, isReceptionist, isTechnician } = useCustomerProfileAccess()
   const [activeTab, setActiveTab] = useState('weekly')
 
-  const branchesQuery = useGetBranches()
+  const isOwnScheduleOnly = isTechnician && !isAdmin
+  const branchesQuery = useGetBranches(undefined, { query: { enabled: !isOwnScheduleOnly } })
   const branches = (pickData<Branch[] | undefined>(branchesQuery.data) ?? []) as Branch[]
 
-  const staffsQuery = useGetUsers({ currentPage: 1, pageSize: 500, has_role: true })
+  const staffsQuery = useGetUsers({ currentPage: 1, pageSize: 500, has_role: true }, { query: { enabled: !isOwnScheduleOnly } })
   const allUsers = (pickData<{ rows?: ScheduleStaff[] } | undefined>(staffsQuery.data)?.rows ?? []) as ScheduleStaff[]
+  const ownStaff: ScheduleStaff | null = profile?.id ? {
+    id: profile.id,
+    zalo_name: profile.zalo_name,
+    branch_id: typeof profile.branch_id === 'string' ? profile.branch_id : undefined,
+    user_roles: [{ role: { role_name: 'KTV' } }],
+  } : null
   const staff = useMemo(
-    () => allUsers.filter((person) => person.user_roles?.some(({ role }) => {
-      const roleName = normalizeRole(role?.role_name)
-      return roleName.includes('ktv') || roleName.includes('ky thuat vien') || roleName === 'technician'
-    })),
-    [allUsers],
+    () => isOwnScheduleOnly
+      ? (ownStaff ? [ownStaff] : [])
+      : allUsers.filter((person) => person.user_roles?.some(({ role }) => {
+          const roleName = normalizeRole(role?.role_name)
+          return roleName.includes('ktv') || roleName.includes('ky thuat vien') || roleName === 'technician'
+        })),
+    [allUsers, isOwnScheduleOnly, ownStaff],
   )
 
-  const loadingShared = branchesQuery.isLoading || staffsQuery.isLoading
+  const loadingShared = !isOwnScheduleOnly && (branchesQuery.isLoading || staffsQuery.isLoading)
   const sharedError = [
-    branchesQuery.isError ? `Cơ sở: ${branchesQuery.error?.message ?? ''}` : '',
-    staffsQuery.isError ? `Danh sách nhân sự: ${staffsQuery.error?.message ?? ''}` : '',
+    !isOwnScheduleOnly && branchesQuery.isError ? `Cơ sở: ${branchesQuery.error?.message ?? ''}` : '',
+    !isOwnScheduleOnly && staffsQuery.isError ? `Danh sách nhân sự: ${staffsQuery.error?.message ?? ''}` : '',
   ].filter(Boolean).join(' · ')
 
   const access: ScheduleAccess = useMemo(
@@ -57,7 +66,7 @@ export default function StaffSchedule() {
 
   const items = [
     { key: 'weekly', label: 'Lịch tuần', children: activeTab === 'weekly' ? <WeeklyScheduleTab {...shared} loadingShared={loadingShared} /> : null },
-    { key: 'shifts', label: 'Danh mục ca', children: activeTab === 'shifts' ? <ShiftCatalogTab {...shared} loadingShared={loadingShared} /> : null },
+    ...(!isOwnScheduleOnly ? [{ key: 'shifts', label: 'Danh mục ca', children: activeTab === 'shifts' ? <ShiftCatalogTab {...shared} loadingShared={loadingShared} /> : null }] : []),
     { key: 'days-off', label: 'Ngày nghỉ', children: activeTab === 'days-off' ? <DayOffTab {...shared} loadingShared={loadingShared} /> : null },
   ]
 

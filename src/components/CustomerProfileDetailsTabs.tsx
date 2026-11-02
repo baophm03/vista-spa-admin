@@ -15,31 +15,24 @@ interface Props {
   summary: CustomerProfileSummary | null
   branchName: (id?: string) => string
   fieldDefinitions: CustomFieldDefWithOptions[]
-  onLoadingChange?: (loading: boolean) => void
   onMembershipUpdated?: () => Promise<void> | void
 }
 
-export default function CustomerProfileDetailsTabs({ profile, summary, branchName, fieldDefinitions, onLoadingChange, onMembershipUpdated }: Props) {
+export default function CustomerProfileDetailsTabs({ profile, summary, branchName, fieldDefinitions, onMembershipUpdated }: Props) {
   const [activeTab, setActiveTab] = useState<TabKey>('overview')
   const content = activeTab === 'overview'
     ? <CustomerProfileOverviewTab profile={profile} summary={summary} branchName={branchName} fieldDefinitions={fieldDefinitions} onMembershipUpdated={onMembershipUpdated} />
     : activeTab === 'treatments'
-      ? <CustomerProfileTreatmentsTab key={profile.id} profileId={profile.id} onLoadingChange={onLoadingChange} />
+      ? <CustomerProfileTreatmentsTab key={profile.id} profileId={profile.id} />
       : activeTab === 'appointments'
-        ? <CustomerProfileAppointmentsTab key={profile.id} profileId={profile.id} onLoadingChange={onLoadingChange} />
-        : <CustomerProfileHealthMetricsTab key={profile.id} profileId={profile.id} onLoadingChange={onLoadingChange} />
-
-  const handleTabChange = (key: string) => {
-    const nextTab = key as TabKey
-    setActiveTab(nextTab)
-    onLoadingChange?.(nextTab !== 'overview')
-  }
+        ? <CustomerProfileAppointmentsTab key={profile.id} profileId={profile.id} />
+        : <CustomerProfileHealthMetricsTab key={profile.id} profileId={profile.id} />
 
   return (
     <>
       <Tabs
         activeKey={activeTab}
-        onChange={handleTabChange}
+        onChange={(key) => setActiveTab(key as TabKey)}
         items={[
           { key: 'overview', label: 'Tổng quan', children: null },
           { key: 'treatments', label: 'Gói, buổi, ảnh, thanh toán', children: null },
