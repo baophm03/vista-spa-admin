@@ -1,7 +1,7 @@
 import { Drawer, Layout, Menu, type MenuProps } from 'antd'
 import { getProfileRoleNames, hasPagePermission, menuItems, type MenuItem } from './sidebarMenu'
-import { useProfileStore } from '../../stores/profile-store'
-import { useBrandRuntime } from '../../themeRuntime'
+import { useProfileStore } from '../stores/profile-store'
+import { useBrandRuntime } from '../themeRuntime'
 
 const { Sider } = Layout
 

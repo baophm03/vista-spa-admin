@@ -1,34 +1,19 @@
-import { useEffect, useState, type ReactNode } from 'react'
-import { ConfigProvider, Layout, Result } from 'antd'
+import { useEffect, useState } from 'react'
+import { ConfigProvider, Layout } from 'antd'
 import { useQueryClient } from '@tanstack/react-query'
 import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useGetUsersGetMyInfo } from '../api/endpoints/users'
 import { clearAuth } from '../api/mutator/custom-instance'
-import { AdminHeader, AdminSidebar, getPageTitle } from '../components/layout'
-import { canAccessPage, getProfileRoleNames, isKtvRoleName } from '../components/layout/sidebarMenu'
-import { ability } from '../config/casl/ability'
+import { AdminHeader, AdminSidebar, getPageTitle } from '.'
+import { getProfileRoleNames, isKtvRoleName } from './sidebarMenu'
+import PermissionGate from './PermissionGate'
+import { ability } from '../configs/casl/ability'
 import { AbilityProvider } from '@casl/react'
 import { useAuthStore } from '../stores/auth-store'
 import { useProfileStore } from '../stores/profile-store'
 import { refreshThemeFromServer } from '../themeRuntime'
 
 const { Content } = Layout
-
-// Route guard theo CASL — page có khai báo permission mà user không có ⇒ 403
-function PermissionGate({ children }: { children: ReactNode }) {
-  const location = useLocation()
-  const profile = useProfileStore((s) => s.profile)
-  if (!profile) return <>{children}</>
-  const allowed = canAccessPage(location.pathname, getProfileRoleNames(profile), !!profile.is_admin)
-  if (allowed) return <>{children}</>
-  return (
-    <Result
-      status="403"
-      title="403"
-      subTitle="Bạn không có quyền truy cập trang này."
-    />
-  )
-}
 
 export default function AdminLayout() {
   const navigate = useNavigate()

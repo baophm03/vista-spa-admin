@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { updateCaslAbility } from '@/config/permissions'
+import { updateCaslAbility } from '@/configs/permissions'
 import type { Permission } from '@/lib/types/permissions'
 
 export interface AdminProfile {

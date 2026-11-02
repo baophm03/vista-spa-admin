@@ -1,7 +1,7 @@
 // Giống meu: helper phân quyền — BE vista trả permissions dạng [{module, action}]
 // (giống /auth/me của meu), được normalize rồi map thành CASL rules.
 import type { RawRuleOf } from "@casl/ability";
-import { ability } from "@/config/casl/ability";
+import { ability } from "@/configs/casl/ability";
 import type {
   Actions,
   AppAbility,

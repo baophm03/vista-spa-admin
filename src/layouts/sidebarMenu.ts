@@ -20,7 +20,7 @@ import {
   ThunderboltOutlined,
   UserSwitchOutlined,
 } from '@ant-design/icons'
-import { ability } from '@/config/casl/ability'
+import { ability } from '@/configs/casl/ability'
 
 export interface PagePermission {
   action: string
@@ -170,7 +170,6 @@ function findPageEntry(pathname: string): MenuLeaf | undefined {
   return undefined
 }
 
-// Map route path → permission, dùng cho route guard trong AdminLayout
 export function getPagePermission(pathname: string): PagePermission[] | null {
   const entry = findPageEntry(pathname)
   return entry ? entryPermissions(entry) : null

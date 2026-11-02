@@ -13,7 +13,7 @@ import { useGetBranches } from '@/api/endpoints/branches'
 import type { Branch } from '@/api/models/branch'
 import type { PutSettingsBody } from '@/api/models/putSettingsBody'
 import { errorMessage, pickData } from '@/api/helpers'
-import { ability } from '@/config/casl/ability'
+import { ability } from '@/configs/casl/ability'
 
 const EMPTY_SETTINGS: SystemSetting[] = []
 

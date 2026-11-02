@@ -27,7 +27,7 @@ import {
 } from '@/api/endpoints/roles'
 import { useQueryClient } from '@tanstack/react-query'
 import { Can } from '@casl/react'
-import { permKey, permissionSetToArray } from '@/config/permissions'
+import { permKey, permissionSetToArray } from '@/configs/permissions'
 
 interface RoleRow {
   id: string

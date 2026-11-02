@@ -1,6 +1,6 @@
 import { BellOutlined, LogoutOutlined, MenuFoldOutlined, MenuOutlined, MenuUnfoldOutlined, UserOutlined } from '@ant-design/icons'
 import { Avatar, Badge, Dropdown, Layout, Space, Typography } from 'antd'
-import { useProfileStore } from '../../stores/profile-store'
+import { useProfileStore } from '../stores/profile-store'
 
 const { Header } = Layout
 

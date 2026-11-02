@@ -78,7 +78,6 @@ export function normalizeRole(value: unknown): string {
   return normalizeRoleName(value)
 }
 
-/** Access hiện tại từ profile-store (được AdminLayout nạp từ getMyInfo). */
 export function useCustomerProfileAccess(): CustomerProfileAccess {
   const profile = useProfileStore((s) => s.profile)
   return getCustomerProfileAccess(asCurrentUser(profile))
