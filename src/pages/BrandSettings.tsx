@@ -10,7 +10,7 @@ import type { FileUpload } from '@/api/models/fileUpload'
 import { getGetSettingsBrandQueryKey, getSettingsBrand, putSettingsBrand } from '@/api/endpoints/settings'
 import { postFiles } from '@/api/endpoints/files'
 import { Can } from '@casl/react'
-import { applyBrandSettings, useBrandRuntime } from '@/themeRuntime'
+import { applyBrandSettings, useBrandColors, useBrandRuntime } from '@/themeRuntime'
 
 const FALLBACK_TIMEZONES = [
   'Asia/Ho_Chi_Minh', 'Asia/Bangkok', 'Asia/Singapore', 'Asia/Tokyo', 'Asia/Seoul',
@@ -33,18 +33,22 @@ function supportedValues(key: 'timeZone' | 'currency', fallback: string[]) {
   return Array.from(new Set([...fallback, ...supported])).sort((a, b) => a.localeCompare(b))
 }
 
-function ReadOnlyBrandSettings({ settings }: { settings?: BrandSettings }) {
+function ReadOnlyBrandSettings({ settings, runtime }: { settings?: BrandSettings; runtime: ReturnType<typeof useBrandRuntime> }) {
   const brand = settings?.brand
   const locale = settings?.locale
-  const ColorValue = ({ label, color, note }: { label: string; color?: string | null; note?: string }) => (
-    <Descriptions.Item label={label}>
-      {color ? (
-        <Space size={8}>
-          <span aria-hidden style={{ width: 20, height: 20, borderRadius: 6, background: color, border: '1px solid var(--brand-border)', display: 'inline-block' }} />
-          <Typography.Text code>{color}</Typography.Text>
-        </Space>
-      ) : <Typography.Text type="secondary">{note ?? 'Tự động'}</Typography.Text>}
-    </Descriptions.Item>
+  const runtimeColors = useBrandColors()
+  const primaryColor = brand?.primary_color || runtimeColors.primary || runtime.primaryColor
+  const secondaryColor = brand?.secondary_color || runtimeColors.secondary || runtime.secondaryColor
+  const tertiaryColor = brand?.tertiary_color || runtimeColors.tertiary || runtime.tertiaryColor
+  const backgroundColor = brand?.background_color || runtime.backgroundColor
+
+  const colorValue = (color?: string | null, note?: string) => (
+    color ? (
+      <Space size={8}>
+        <span aria-hidden style={{ width: 20, height: 20, borderRadius: 6, background: color, border: '1px solid var(--brand-border)', display: 'inline-block' }} />
+        <Typography.Text code>{color}</Typography.Text>
+      </Space>
+    ) : <Typography.Text type="secondary">{note ?? 'Tự động'}</Typography.Text>
   )
 
   return (
@@ -58,10 +62,10 @@ function ReadOnlyBrandSettings({ settings }: { settings?: BrandSettings }) {
                 <Avatar shape="square" size={76} src={brand.logo_url} />
               ) : <Typography.Text type="secondary">Chưa cấu hình logo</Typography.Text>}
             </Descriptions.Item>
-            <ColorValue label="Màu chủ đạo" color={brand?.primary_color} />
-            <ColorValue label="Màu bổ trợ" color={brand?.secondary_color} />
-            <ColorValue label="Màu nhấn" color={brand?.tertiary_color} />
-            <ColorValue label="Màu nền trang" color={brand?.background_color} note="Tự động theo thương hiệu" />
+            <Descriptions.Item label="Màu chủ đạo">{colorValue(primaryColor)}</Descriptions.Item>
+            <Descriptions.Item label="Màu bổ trợ">{colorValue(secondaryColor)}</Descriptions.Item>
+            <Descriptions.Item label="Màu nhấn">{colorValue(tertiaryColor)}</Descriptions.Item>
+            <Descriptions.Item label="Màu nền trang">{colorValue(backgroundColor, 'Tự động theo thương hiệu')}</Descriptions.Item>
           </Descriptions>
         </Card>
       </Col>
@@ -74,7 +78,6 @@ function ReadOnlyBrandSettings({ settings }: { settings?: BrandSettings }) {
               {locale?.language === 'vi' ? 'Tiếng Việt' : locale?.language || '—'}
             </Descriptions.Item>
           </Descriptions>
-          <Typography.Text type="secondary">Múi giờ và tiền tệ đang áp dụng cho giao diện.</Typography.Text>
         </Card>
         {!!settings?.modules?.length && (
           <Card style={{ marginTop: 16 }} title="Mô-đun đang bật">
@@ -99,9 +102,13 @@ export default function BrandSettings() {
   const [form] = Form.useForm<BrandFormValues>()
   const queryClient = useQueryClient()
   const runtime = useBrandRuntime()
+  const normalizeSettings = (payload: unknown): BrandSettings => {
+    const body = payload as { responseData?: unknown }
+    return pickData<BrandSettings>(body.responseData ?? body)
+  }
   const settingsQuery = useQuery({
     queryKey: getGetSettingsBrandQueryKey(),
-    queryFn: async () => pickData<BrandSettings>(await getSettingsBrand()) as BrandSettings,
+    queryFn: async () => normalizeSettings(await getSettingsBrand()),
   })
   const [primaryColor, setPrimaryColor] = useState(runtime.primaryColor)
   const [tertiaryColor, setTertiaryColor] = useState(runtime.tertiaryColor || '#FFD700')
@@ -201,7 +208,7 @@ export default function BrandSettings() {
       {!canEdit && <Alert className="mb-4" type="info" showIcon message="Bạn có quyền xem cấu hình thương hiệu; chỉ ADM được chỉnh sửa." />}
       {settingsQuery.isError && <Alert className="mb-4" type="error" showIcon message="Không tải được cấu hình thương hiệu" description={errorMessage(settingsQuery.error)} action={<Button size="small" onClick={() => void settingsQuery.refetch()}>Thử lại</Button>} />}
       <Spin spinning={settingsQuery.isLoading}>
-        {!canEdit ? <ReadOnlyBrandSettings settings={settingsQuery.data} /> : (
+        {!canEdit ? <ReadOnlyBrandSettings settings={settingsQuery.data} runtime={runtime} /> : (
         <Form form={form} layout="vertical" onFinish={save} disabled={!canEdit}>
           <Row gutter={[20, 20]}>
             <Col xs={24} lg={14}>
