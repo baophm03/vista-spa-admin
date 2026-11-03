@@ -3,11 +3,13 @@ import {
   Alert,
   Button,
   DatePicker,
+  Descriptions,
   Form,
   Input,
   InputNumber,
   Modal,
   Select,
+  Spin,
   Space,
   Switch,
   Table,
@@ -16,7 +18,8 @@ import {
   message,
 } from 'antd'
 import type { TableColumnsType } from 'antd'
-import { CheckCircleOutlined, DeleteOutlined, EditOutlined, PlusOutlined, ReloadOutlined, TagsOutlined } from '@ant-design/icons'
+import { CheckCircleOutlined, DeleteOutlined, EditOutlined, EyeOutlined, PlusOutlined, ReloadOutlined, TagsOutlined } from '@ant-design/icons'
+import dayjs from 'dayjs'
 import { useQueryClient } from '@tanstack/react-query'
 import { Can, useAbility } from '@casl/react'
 import PageTitle from '@/components/base/PageTitle'
@@ -30,6 +33,7 @@ import {
   getGetDiscountRulesQueryKey,
   useDeleteDiscountRulesId,
   useGetDiscountRules,
+  useGetDiscountRulesId,
   usePostDiscountRules,
   usePutDiscountRulesId,
 } from '@/api/endpoints/settings'
@@ -76,6 +80,7 @@ export default function DiscountRules() {
   const [page, setPage] = useState(1)
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<DiscountRule | null>(null)
+  const [detailRuleId, setDetailRuleId] = useState<string>()
   const [visibleColumns, setVisibleColumns] = useState<DiscountColumnKey[]>(DEFAULT_VISIBLE_COLUMNS)
   const [draftVisibleColumns, setDraftVisibleColumns] = useState<DiscountColumnKey[]>(DEFAULT_VISIBLE_COLUMNS)
   const [filterOpen, setFilterOpen] = useState(false)
@@ -86,9 +91,13 @@ export default function DiscountRules() {
   const canDelete = ability.can('DELETE', 'DISCOUNT')
 
   const rulesQuery = useGetDiscountRules()
+  const detailQuery = useGetDiscountRulesId(detailRuleId ?? '', {
+    query: { enabled: !!detailRuleId, retry: false },
+  })
   const ranksQuery = useGetCardRanks(undefined, { query: { enabled: open } })
-  const servicesQuery = useGetService({ page: 1, limit: 200, is_active: true }, { query: { enabled: open } })
+  const servicesQuery = useGetService({ page: 1, limit: 200, is_active: true }, { query: { enabled: open || !!detailRuleId } })
   const rules = useMemo(() => rulesQuery.data?.responseData ?? [], [rulesQuery.data])
+  const detailRule = detailQuery.data?.responseData
   const ranks = useMemo(() => ranksQuery.data?.responseData ?? [], [ranksQuery.data])
   const services = useMemo(() => {
     const data = servicesQuery.data?.responseData as unknown
@@ -242,11 +251,13 @@ export default function DiscountRules() {
       render: (_v, row) => (
         <RowActionsMenu
           items={[
+            { key: 'view', icon: <EyeOutlined />, label: 'Xem chi tiết', view: true },
             ...(canUpdate ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []),
             ...(canDelete ? [{ key: 'delete', icon: <DeleteOutlined />, danger: true, label: 'Xóa' }] : []),
           ]}
           onSelect={(key) => {
-            if (key === 'edit') openEditor(row)
+            if (key === 'view') setDetailRuleId(row.id)
+            else if (key === 'edit') openEditor(row)
             else if (key === 'delete') {
               Modal.confirm({
                 title: 'Xóa quy tắc này?',
@@ -262,8 +273,7 @@ export default function DiscountRules() {
       ),
     },
   ] as TableColumnsType<DiscountRule>).filter((column) =>
-    (column.key !== 'actions' || canUpdate || canDelete) &&
-    (column.key === 'actions' || visibleColumns.includes(column.key as DiscountColumnKey)),
+    column.key === 'actions' || visibleColumns.includes(column.key as DiscountColumnKey),
   )
 
   return (
@@ -323,6 +333,74 @@ export default function DiscountRules() {
               pagination={false}
             />
             <ListPagination page={page} limit={10} total={rules.length} onChange={setPage} noun="quyết định giảm giá" />
+            <Modal
+              title="Chi tiết quy tắc giảm giá"
+              open={!!detailRuleId}
+              onCancel={() => setDetailRuleId(undefined)}
+              footer={<Button onClick={() => setDetailRuleId(undefined)}>Đóng</Button>}
+              width={680}
+              destroyOnHidden
+            >
+              {detailQuery.isLoading ? (
+                <div style={{ display: 'grid', placeItems: 'center', minHeight: 160 }}><Spin /></div>
+              ) : detailQuery.isError ? (
+                <Alert
+                  type="error"
+                  showIcon
+                  message="Không tải được chi tiết quy tắc"
+                  description={errorMessage(detailQuery.error)}
+                  action={<Button size="small" onClick={() => void detailQuery.refetch()}>Thử lại</Button>}
+                />
+              ) : detailRule ? (
+                <Descriptions bordered size="small" column={{ xs: 1, sm: 2 }}>
+                  <Descriptions.Item label="Mã">{detailRule.code}</Descriptions.Item>
+                  <Descriptions.Item label="Tên">{detailRule.name}</Descriptions.Item>
+                  <Descriptions.Item label="Đối tượng">
+                    {AUDIENCE_META[detailRule.audience ?? 'RANK']?.label ?? detailRule.audience ?? '—'}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Hạng thẻ">
+                    {detailRule.audience === 'RANK' ? detailRule.requires_rank?.name ?? '—' : 'Không giới hạn theo hạng'}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Áp dụng cho">
+                    {APPLIES_TO_OPTIONS.find((option) => option.value === detailRule.applies_to)?.label ?? 'Tất cả'}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Mức giảm">
+                    {(detailRule.percent_min ?? 0)}–{(detailRule.percent_max ?? 0)}%
+                  </Descriptions.Item>
+                  {detailRule.applies_to === 'SERVICE' && (
+                    <Descriptions.Item label="Dịch vụ áp dụng" span={2}>
+                      {(detailRule.service_ids ?? []).length
+                        ? (detailRule.service_ids ?? []).map((id) => services.find((service) => service.id === id)?.title ?? id).join(', ')
+                        : 'Chưa gắn dịch vụ'}
+                    </Descriptions.Item>
+                  )}
+                  <Descriptions.Item label="Trần giảm tổng">
+                    {detailRule.max_total_percent != null ? `${detailRule.max_total_percent}%` : 'Mặc định 50%'}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Được cộng dồn">
+                    {detailRule.stackable === false ? 'Không' : 'Có'}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Giới hạn mỗi khách">
+                    {detailRule.once_per_customer ? 'Chỉ 1 lần' : 'Không giới hạn'}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Hiển thị trên app">
+                    {detailRule.show_in_app === false ? 'Không' : 'Có'}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Thời hạn">
+                    {detailRule.start_date || detailRule.end_date
+                      ? `${detailRule.start_date ? dayjs(detailRule.start_date).format('DD/MM/YYYY') : 'Không giới hạn'} → ${detailRule.end_date ? dayjs(detailRule.end_date).format('DD/MM/YYYY') : 'Không giới hạn'}`
+                      : 'Không giới hạn'}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Trạng thái">
+                    <Tag color={detailRule.is_active === false ? 'default' : 'green'}>
+                      {detailRule.is_active === false ? 'Đã ẩn' : 'Đang áp dụng'}
+                    </Tag>
+                  </Descriptions.Item>
+                </Descriptions>
+              ) : (
+                <Alert type="warning" showIcon message="Không tìm thấy thông tin quy tắc này." />
+              )}
+            </Modal>
             <Modal
               title={editing ? `Sửa quy tắc: ${editing.name}` : 'Thêm quy tắc giảm giá'}
               open={open}

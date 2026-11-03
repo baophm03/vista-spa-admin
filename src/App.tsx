@@ -12,6 +12,7 @@ import MySessions from './pages/MySessions'
 import Payments from './pages/Payments'
 import Staffs from './pages/Staffs'
 import Notifications from './pages/Notifications'
+import NotificationTemplates from './pages/NotificationTemplates'
 import Products from './pages/Products'
 import Points from './pages/Points'
 import HealthRecords from './pages/HealthRecords'
@@ -59,6 +60,7 @@ export default function App() {
           <Route path="/payments" element={<Payments />} />
           <Route path="/staffs" element={<Staffs />} />
           <Route path="/notifications" element={<Notifications />} />
+          <Route path="/notification-templates" element={<NotificationTemplates />} />
           <Route path="/access-logs" element={<AccessLogs />} />
           <Route path="/products" element={<Products />} />
           <Route path="/content-posts" element={<ContentPosts />} />

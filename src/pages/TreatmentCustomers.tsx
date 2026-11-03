@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useSearchParams } from 'react-router-dom'
 import { Alert, Button, Card, Col, DatePicker, Divider, Empty, Form, Image, Input, InputNumber, Modal, Popconfirm, Progress, Row, Select, Space, Spin, Statistic, Table, Tabs, Tag, Tooltip, Typography, Upload, message } from 'antd'
 import type { MenuProps } from 'antd'
-import { CheckCircleOutlined, DeleteOutlined, EditOutlined, PlayCircleOutlined, PlusOutlined, ReloadOutlined, SearchOutlined, TeamOutlined, WalletOutlined } from '@ant-design/icons'
+import { CheckCircleOutlined, DeleteOutlined, EditOutlined, PlayCircleOutlined, PlusOutlined, ReloadOutlined, RollbackOutlined, SearchOutlined, TeamOutlined, WalletOutlined } from '@ant-design/icons'
 import dayjs, { type Dayjs } from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
 import StatCards, { type StatItem } from '@/components/base/StatCards'
@@ -13,13 +14,16 @@ import TableEmpty from '@/components/base/TableEmpty'
 import { paginateRows } from '@/utils/listTable'
 import CustomFieldFormItems, { normalizeCustomFieldValues, type CustomFieldDefWithOptions } from '@/components/CustomFieldFormItems'
 import { errorMessage, openHtmlPrint, pickData } from '@/api/helpers'
+import { customInstance } from '@/api/mutator/custom-instance'
 import type { CustomerTreatment } from '@/api/models/customerTreatment'
 import type { SessionPhoto } from '@/api/models/sessionPhoto'
 import type { TreatmentPackage } from '@/api/models/treatmentPackage'
 import type { LookupItem } from '@/api/models/lookupItem'
 import type { MembershipTransaction } from '@/api/models/membershipTransaction'
+import type { RewardRedemption } from '@/api/models/rewardRedemption'
 import type { GetCustomerProfilesParams } from '@/api/models/getCustomerProfilesParams'
 import { getCustomerProfiles, useGetCustomerProfiles, useGetCustomerProfilesIdPoints } from '@/api/endpoints/customer-profiles'
+import { getGetRewardRedemptionsQueryKey, getRewardRedemptions } from '@/api/endpoints/rewards'
 import {
   deletePhotosId,
   deleteSessionsId,
@@ -60,6 +64,7 @@ import { useCustomerProfileAccess } from '@/utils/customerProfileAccess'
 import useCustomFieldDefinitions from '@/hooks/useCustomFieldDefinitions'
 import useSessionStatusConfig from '@/hooks/useSessionStatusConfig'
 import { Can, useAbility } from '@casl/react'
+import StandaloneServiceHistory from '@/components/StandaloneServiceHistory'
 
 interface Slot {
   date?: string
@@ -106,9 +111,19 @@ interface TreatmentAdjustmentRow {
   created_by?: string
 }
 
-type CustomerTreatmentColumnKey = 'customer' | 'progress' | 'payment' | 'expiry' | 'status'
+type RewardRedemptionRow = RewardRedemption & {
+  reward?: {
+    name?: string
+    type?: string
+    benefit_amount?: number | null
+    service_id?: string | null
+  } | null
+}
+
+type CustomerTreatmentColumnKey = 'customer' | 'package_code' | 'progress' | 'payment' | 'expiry' | 'status'
 const CUSTOMER_TREATMENT_COLUMN_OPTIONS: { label: string; value: CustomerTreatmentColumnKey }[] = [
   { label: 'Khách hàng', value: 'customer' },
+  { label: 'Mã gói', value: 'package_code' },
   { label: 'Tiến độ', value: 'progress' },
   { label: 'Thanh toán', value: 'payment' },
   { label: 'Hạn sử dụng', value: 'expiry' },
@@ -147,12 +162,14 @@ const sessionUsage = (treatment: CustomerTreatment) => {
 const ADJUST_TYPE_OPTIONS = [
   { value: 'ADJUST_BONUS', label: 'Số buổi tặng' },
   { value: 'ADJUST_SESSIONS', label: 'Số buổi đã dùng' },
+  { value: 'ADJUST_VALUE_TOTAL', label: 'Định mức tiền được dùng' },
   { value: 'ADJUST_VALUE', label: 'Giá trị đã tiêu' },
   { value: 'EXTEND_EXPIRY', label: 'Hạn dùng của gói' },
 ]
 const ADJUST_TYPE_LABEL: Record<string, string> = {
   ADJUST_SESSIONS: 'Sửa số buổi đã dùng',
   ADJUST_BONUS: 'Sửa buổi tặng',
+  ADJUST_VALUE_TOTAL: 'Sửa định mức tiền được dùng',
   ADJUST_VALUE: 'Sửa giá trị đã tiêu',
   EXTEND_EXPIRY: 'Gia hạn hạn dùng',
   CONVERT: 'Chuyển đổi buổi tặng',
@@ -166,7 +183,7 @@ const formatAdjustValue = (field: string, value: unknown): string => {
   if (value === null || value === undefined || value === '') return '—'
   if (field === 'status') return STATUS_META[String(value)]?.label ?? String(value)
   if (field === 'expires_at') return dayjs(String(value)).format('DD/MM/YYYY')
-  if (field === 'value_used') return Number(value).toLocaleString('vi-VN') + ' ₫'
+  if (field === 'value_used' || field === 'value_total') return Number(value).toLocaleString('vi-VN') + ' ₫'
   return String(value)
 }
 
@@ -178,6 +195,7 @@ const adjustmentDiffLines = (row: TreatmentAdjustmentRow): { label: string; befo
   const fields: [string, string][] = [
     ['sessions_bonus', 'Buổi tặng'],
     ['sessions_used', 'Buổi đã dùng'],
+    ['value_total', 'Định mức tiền'],
     ['value_used', 'Giá trị đã tiêu'],
     ['expires_at', 'Hạn dùng'],
     ['status', 'Trạng thái'],
@@ -228,6 +246,16 @@ interface SessionRow {
   custom_fields?: Record<string, unknown>
 }
 
+function sessionScheduledTimestamp(session: SessionRow): number | null {
+  if (session.appointment_id && session.appointment?.appt_date && session.appointment.start_time) {
+    const appointmentTime = dayjs(`${session.appointment.appt_date.slice(0, 10)}T${session.appointment.start_time}`)
+    return appointmentTime.isValid() ? appointmentTime.valueOf() : null
+  }
+  if (!session.scheduled_at) return null
+  const scheduledTime = dayjs(session.scheduled_at)
+  return scheduledTime.isValid() ? scheduledTime.valueOf() : null
+}
+
 interface PaymentRow {
   id: string
   amount?: number
@@ -237,68 +265,144 @@ interface PaymentRow {
   created_at?: string
 }
 
-/** Ảnh của 1 buổi: thumbnail + preview + upload/xóa theo loại (trước/quá trình/sau) */
+/** Số thumb hiển thị chồng lên nhau trước khi gộp vào badge "+N" */
+const PHOTO_VISIBLE_COUNT = 3
+
+/** Ảnh của 1 buổi: tối đa 3 thumb xếp chồng + badge "+N" mở gallery xem tất cả; upload/xóa theo loại (trước/quá trình/sau) */
 function SessionPhotos({
   sessionId,
   photos,
   kind,
+  sessionStatus,
   canUpload,
   canDelete,
+  onPhotoAdded,
   onChanged,
 }: {
   sessionId: string
   photos: SessionPhoto[]
   kind?: string
+  sessionStatus?: string
   canUpload?: boolean
   canDelete?: boolean
+  onPhotoAdded: (photo: SessionPhoto) => void
   onChanged: () => void
 }) {
   const [deleting, setDeleting] = useState(false)
+  const [previewOpen, setPreviewOpen] = useState(false)
+  // Vòng đời buổi: hoàn tất = khóa hồ sơ; chưa bắt đầu chỉ chụp "ảnh trước" (khách khám sớm)
+  const uploadAllowed = !!canUpload && (!sessionStatus
+    || sessionStatus === 'in_progress'
+    || sessionStatus === 'done'
+    || (sessionStatus === 'scheduled' && (kind ?? 'process') === 'before'))
+  const deleteAllowed = !!canDelete && sessionStatus !== 'completed'
+  const visiblePhotos = photos.slice(0, PHOTO_VISIBLE_COUNT)
+  const hiddenCount = photos.length - visiblePhotos.length
+  const badgePhoto = photos[PHOTO_VISIBLE_COUNT]
+  const thumbRing = '0 0 0 2px #fff, 0 1px 6px rgba(0,0,0,0.18)'
+
+  const deletePhoto = async (id?: string) => {
+    if (!id) return
+    setDeleting(true)
+    try {
+      await deletePhotosId(id)
+      message.success('Đã xóa ảnh')
+      onChanged()
+    } catch (err) {
+      message.error(errorMessage(err))
+    } finally {
+      setDeleting(false)
+    }
+  }
+
+  const deleteButton = (photoId?: string) => (
+    <Popconfirm
+      title="Xóa ảnh này?"
+      okText="Xóa"
+      cancelText="Hủy"
+      getPopupContainer={(trigger) => trigger.closest('.ant-image-preview') ?? document.body}
+      onConfirm={() => {
+        void deletePhoto(photoId)
+        setPreviewOpen(false)
+      }}
+    >
+      <Button
+        size="small"
+        danger
+        type="text"
+        loading={deleting}
+        icon={<DeleteOutlined />}
+        style={{ position: 'absolute', top: 0, right: 0 }}
+        aria-label="Xóa ảnh"
+      />
+    </Popconfirm>
+  )
+
   return (
-    <Space wrap size={8}>
-      <Image.PreviewGroup>
-        {photos.map((p) => (
-          <div key={p.id} style={{ position: 'relative' }}>
+    // Ảnh và nút upload phải là item trực tiếp của flex thì mới xếp ngang:
+    // bọc chung trong Space thì mỗi div ảnh thành block con của 1 .ant-space-item → xếp dọc
+    <div className="session-photo-stack" style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+      {/* items = toàn bộ ảnh để gallery điều hướng được cả list, dù chỉ render vài thumb đầu */}
+      <Image.PreviewGroup
+        items={photos.map((p) => p.url ?? '').filter(Boolean)}
+        preview={
+          deleteAllowed
+            ? {
+                open: previewOpen,
+                onOpenChange: setPreviewOpen,
+                actionsRender: (node, info) => (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    {node}
+                    {deleteButton(photos[info.current]?.id)}
+                  </div>
+                ),
+              }
+            : undefined
+        }
+      >
+        {visiblePhotos.map((p, i) => (
+          <div key={p.id} style={{ position: 'relative', flexShrink: 0, marginLeft: i === 0 ? 0 : -36 }}>
             <Image
               width={92}
               height={92}
-              style={{ objectFit: 'cover', borderRadius: 12 }}
+              style={{ objectFit: 'cover', borderRadius: 12, boxShadow: thumbRing }}
               src={p.url ?? undefined}
               fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
             />
-            {canDelete && (
-              <Popconfirm
-                title="Xóa ảnh này?"
-                okText="Xóa"
-                cancelText="Hủy"
-                onConfirm={async () => {
-                  setDeleting(true)
-                  try {
-                    await deletePhotosId(p.id)
-                    message.success('Đã xóa ảnh')
-                    onChanged()
-                  } catch (err) {
-                    message.error(errorMessage(err))
-                  } finally {
-                    setDeleting(false)
-                  }
-                }}
-              >
-                <Button
-                  size="small"
-                  danger
-                  type="text"
-                  loading={deleting}
-                  icon={<DeleteOutlined />}
-                  style={{ position: 'absolute', top: 0, right: 0 }}
-                  aria-label="Xóa ảnh"
-                />
-              </Popconfirm>
-            )}
+            {deleteAllowed && deleteButton(p.id)}
           </div>
         ))}
+        {badgePhoto && (
+          <div style={{ position: 'relative', flexShrink: 0, marginLeft: -36 }}>
+            {/* Badge "+N" là chính ảnh thứ 4: bấm vào mở gallery ngay từ ảnh chưa hiện */}
+            <Image
+              width={92}
+              height={92}
+              style={{ objectFit: 'cover', borderRadius: 12, boxShadow: thumbRing }}
+              src={badgePhoto.url ?? undefined}
+              fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
+            />
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                borderRadius: 12,
+                background: 'rgba(0, 0, 0, 0.45)',
+                color: '#fff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 18,
+                fontWeight: 800,
+                pointerEvents: 'none',
+              }}
+            >
+              +{hiddenCount}
+            </div>
+          </div>
+        )}
       </Image.PreviewGroup>
-      {canUpload && (
+      {uploadAllowed && (
         <Upload
           accept="image/*"
           multiple
@@ -306,9 +410,11 @@ function SessionPhotos({
           beforeUpload={async (file) => {
             try {
               const uploaded = pickData<{ original?: string }>(await postFiles({ file }))
-              await postSessionsIdPhotos(sessionId, { url: uploaded?.original, kind })
+              if (!uploaded?.original) throw new Error('Máy chủ không trả về đường dẫn ảnh')
+              const saved = pickData<SessionPhoto>(await postSessionsIdPhotos(sessionId, { url: uploaded.original, kind }))
+              if (!saved?.id) throw new Error('Máy chủ chưa xác nhận ảnh của buổi')
+              onPhotoAdded({ ...saved, url: saved.url ?? uploaded.original, kind: saved.kind ?? kind })
               message.success('Đã thêm ảnh')
-              onChanged()
             } catch (err) {
               message.error(errorMessage(err))
             }
@@ -318,7 +424,7 @@ function SessionPhotos({
           <Button icon={<PlusOutlined />}>Ảnh</Button>
         </Upload>
       )}
-    </Space>
+    </div>
   )
 }
 
@@ -332,6 +438,20 @@ function customFieldValueText(value: unknown): string | undefined {
   if (Array.isArray(value)) return value.map((item) => String(item)).join(', ')
   if (typeof value === 'object') return JSON.stringify(value)
   return String(value)
+}
+
+const HIDDEN_TREATMENT_SYSTEM_FIELDS = new Set(['target_service_id', 'converted_from_treatment_id'])
+const TREATMENT_SYSTEM_FIELD_LABELS: Record<string, string> = {
+  target_service_name: 'Dịch vụ áp dụng',
+}
+
+function readableCustomFieldLabel(key: string, definitions: CustomFieldDefWithOptions[]): string {
+  const definedLabel = definitions.find((field) => field.key === key)?.label
+  if (definedLabel) return definedLabel
+  return key
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .replace(/[_-]+/g, ' ')
+    .replace(/\b\w/g, (letter) => letter.toUpperCase())
 }
 
 /** Dòng subheader pha nằm trong bảng buổi (tint nhạt, full-width) */
@@ -422,6 +542,7 @@ function SessionTimeline({
   const [sessionSlots, setSessionSlots] = useState<Slot[]>([])
   const [sessionSlotsLoading, setSessionSlotsLoading] = useState(false)
   const [editOpen, setEditOpen] = useState<SessionRow | null>(null)
+  const scheduleEditTouchedRef = useRef(false)
   const [editForm] = Form.useForm()
   const focusSessionIdRef = useRef(focusSessionId)
   const onFocusSessionHandledRef = useRef(onFocusSessionHandled)
@@ -438,7 +559,11 @@ function SessionTimeline({
         exclude_session_id: session.id,
       })
       if (sequence !== sessionSlotSequence.current) return
-      const slots = (pickData<Slot[] | undefined>(response) ?? []) as Slot[]
+      const now = dayjs()
+      const slots = ((pickData<Slot[] | undefined>(response) ?? []) as Slot[]).filter((slot) => {
+        const slotTime = date.hour(Number(slot.start_time.slice(0, 2))).minute(Number(slot.start_time.slice(3, 5))).second(0).millisecond(0)
+        return !slotTime.isBefore(now)
+      })
       setSessionSlots(slots)
       const selectedTime = editForm.getFieldValue('scheduled_time')
       const selectedStaff = editForm.getFieldValue('staff_id')
@@ -457,6 +582,7 @@ function SessionTimeline({
 
   const openEdit = useCallback((s: SessionRow) => {
     setEditOpen(s)
+    scheduleEditTouchedRef.current = false
     sessionSlotSequence.current += 1
     setSessionSlots([])
     const scheduledParts = getDateTimeParts(s.scheduled_at)
@@ -468,8 +594,8 @@ function SessionTimeline({
         ? scheduledParts?.time
         : s.appointment?.start_time?.slice(0, 5),
       staff_id: s.staff_id,
-      session_value: s.session_value,
-      product_amount: s.product_amount ?? 0,
+      session_value: s.session_value == null ? undefined : Number(s.session_value),
+      product_amount: Number(s.product_amount ?? 0),
       skin_note: s.skin_note,
       concern: s.concern,
       diary: s.diary,
@@ -526,6 +652,17 @@ function SessionTimeline({
   }, [ctId, openEdit])
 
   useEffect(() => {
+    loadSequence.current += 1
+    sessionSlotSequence.current += 1
+    hasLoadedSessions.current = false
+    setSessions([])
+    setPhotos({})
+    setEditOpen(null)
+    setSessionSlots([])
+    setLoading(true)
+  }, [ctId])
+
+  useEffect(() => {
     load()
   }, [load, refreshKey])
 
@@ -540,19 +677,74 @@ function SessionTimeline({
     }
   }
 
+  // CT-05b — mở lại buổi đã hoàn tất (chỉ admin): completed → done để bổ sung nội dung/ảnh
+  const reopenSession = async (s: SessionRow) => {
+    try {
+      await customInstance({ url: `/sessions/${s.id}/reopen`, method: 'PUT' })
+      message.success('Đã mở lại buổi — bổ sung xong hãy bấm Hoàn tất lại')
+      await load()
+      onChanged?.()
+    } catch (err) {
+      message.error(errorMessage(err))
+    }
+  }
+
   const submitEdit = async () => {
     const values = await editForm.validateFields()
-    const { scheduled_date, scheduled_time, ...sessionValues } = values
-    const scheduleValues = editOpen?.appointment_id
-      ? {}
-      : {
+    const { scheduled_date, scheduled_time, staff_id, ...sessionValues } = values
+    const hasAnyScheduleValue = !!scheduled_date || !!scheduled_time || !!staff_id
+    if (
+      canManageSessionSchedule &&
+      !editOpen?.appointment_id &&
+      editOpen?.status === 'scheduled' &&
+      scheduleEditTouchedRef.current &&
+      hasAnyScheduleValue &&
+      (!scheduled_date || !scheduled_time || !staff_id)
+    ) {
+      message.error('Để xếp lịch buổi, cần chọn đủ ngày hẹn, giờ hẹn và KTV phụ trách')
+      return
+    }
+    const hasCompleteSchedule = !!scheduled_date && !!scheduled_time && !!staff_id
+    const scheduleIsFuture = hasCompleteSchedule
+      && scheduled_date.hour(Number(scheduled_time.slice(0, 2))).minute(Number(scheduled_time.slice(3, 5))).valueOf() >= Date.now()
+    const shouldSubmitSchedule = canManageSessionSchedule
+      && !editOpen?.appointment_id
+      && editOpen?.status === 'scheduled'
+      && (scheduleEditTouchedRef.current || scheduleIsFuture)
+    const scheduleValues = shouldSubmitSchedule
+      ? {
         scheduled_at: scheduled_date && scheduled_time
           ? scheduled_date.hour(Number(scheduled_time.slice(0, 2))).minute(Number(scheduled_time.slice(3, 5))).second(0).millisecond(0).toISOString()
           : null,
-        staff_id: sessionValues.staff_id || null,
+        staff_id: staff_id || null,
       }
-    const editableValues = canManageSessionSchedule
-      ? sessionValues
+      : {}
+    if (scheduleValues.scheduled_at) {
+      const candidateTimestamp = new Date(scheduleValues.scheduled_at).getTime()
+      if (!Number.isFinite(candidateTimestamp) || candidateTimestamp < Date.now()) {
+        message.error('Không thể xếp buổi vào ngày giờ đã qua')
+        return
+      }
+      const candidateDate = dayjs(scheduleValues.scheduled_at).format('YYYY-MM-DD')
+      for (const sibling of sessions) {
+        if (sibling.id === editOpen?.id) continue
+        const siblingTimestamp = sessionScheduledTimestamp(sibling)
+        if (siblingTimestamp == null) continue
+        const siblingDate = dayjs(siblingTimestamp).format('YYYY-MM-DD')
+        if (sibling.session_no < (editOpen?.session_no ?? 0) && candidateDate <= siblingDate) {
+          message.error(`Buổi #${editOpen?.session_no} phải được xếp sau buổi #${sibling.session_no}`)
+          return
+        }
+        if (sibling.session_no > (editOpen?.session_no ?? 0) && candidateDate >= siblingDate) {
+          message.error(`Buổi #${editOpen?.session_no} phải được xếp trước buổi #${sibling.session_no}`)
+          return
+        }
+      }
+    }
+    // Buổi chưa bắt đầu: gửi lịch hẹn + thông tin đầu buổi — phần diễn ra trong buổi khóa theo vòng đời
+    const isScheduledSession = editOpen?.status === 'scheduled'
+    const contentValues = isScheduledSession
+      ? { skin_note: sessionValues.skin_note, concern: sessionValues.concern }
       : {
         diary: sessionValues.diary,
         skin_note: sessionValues.skin_note,
@@ -561,16 +753,22 @@ function SessionTimeline({
         result: sessionValues.result,
         custom_fields: sessionValues.custom_fields,
       }
-    await act(
-      () =>
-        putSessionsId(editOpen!.id, {
-          ...editableValues,
-          custom_fields: normalizeCustomFieldValues(customFieldDefinitions, sessionValues.custom_fields ?? {}, editOpen?.custom_fields ?? {}),
-          ...(canManageSessionSchedule ? scheduleValues : {}),
-        } as never),
-      'Đã cập nhật buổi',
-    )
-    setEditOpen(null)
+    const editableValues = canManageSessionSchedule
+      ? (isScheduledSession ? contentValues : sessionValues)
+      : contentValues
+    try {
+      await putSessionsId(editOpen!.id, {
+        ...editableValues,
+        custom_fields: normalizeCustomFieldValues(customFieldDefinitions, sessionValues.custom_fields ?? {}, editOpen?.custom_fields ?? {}),
+        ...(canManageSessionSchedule ? scheduleValues : {}),
+      } as never)
+      message.success('Đã cập nhật buổi')
+      setEditOpen(null)
+      await load()
+      onChanged?.()
+    } catch (err) {
+      message.error(errorMessage(err))
+    }
   }
 
   if (loading) return <Spin style={{ display: 'block', margin: '32px auto' }} />
@@ -579,6 +777,21 @@ function SessionTimeline({
   /** Admin toàn quyền; user thường chỉ bắt đầu buổi N khi mọi buổi thường < N đã hoàn tất (bảo hành ngoại lệ) */
   const canStart = (s: SessionRow) =>
     !!isAdmin || !!s.is_warranty || sessions.every((o) => o.is_warranty || o.session_no >= s.session_no || o.status === 'completed')
+  /** Tuần tự buổi: buổi trước chưa completed thì buổi sau chưa được ghi nội dung/ảnh (bảo hành ngoại lệ, admin bỏ qua) */
+  const sequenceBlocked = (s: SessionRow) =>
+    !isAdmin && !s.is_warranty && sessions.some((o) => !o.is_warranty && o.session_no < s.session_no && o.status !== 'completed')
+  const sessionStartAllowedToday = (s: SessionRow) => {
+    if (s.appointment_id) {
+      const date = s.appointment?.appt_date
+      const time = s.appointment?.start_time
+      if (!date || !time) return false
+      const scheduledAt = dayjs(`${String(date).slice(0, 10)}T${String(time).slice(0, 5)}`)
+      return scheduledAt.isValid() && scheduledAt.format('YYYY-MM-DD') === dayjs().format('YYYY-MM-DD') && !scheduledAt.isAfter(dayjs())
+    }
+    if (!s.scheduled_at) return true
+    const scheduledAt = dayjs(s.scheduled_at)
+    return scheduledAt.isValid() && scheduledAt.format('YYYY-MM-DD') === dayjs().format('YYYY-MM-DD') && !scheduledAt.isAfter(dayjs())
+  }
 
   return (
     <>
@@ -658,11 +871,13 @@ function SessionTimeline({
                 {(ctStatus === 'ACTIVE' || s.is_warranty) && (
                     <Space size={6} wrap style={{ marginLeft: 'auto' }}>
                       {canStartSession && s.status === 'scheduled' && !s.is_warranty && (
-                        <Tooltip title={canStart(s) ? undefined : 'Hoàn tất các buổi trước theo đúng thứ tự'}>
+                        <Tooltip title={!sessionStartAllowedToday(s)
+                          ? 'Chỉ bắt đầu được trong ngày hẹn, sau giờ hẹn'
+                          : canStart(s) ? undefined : 'Hoàn tất các buổi trước theo đúng thứ tự'}>
                           <Button
                             type="primary"
                             ghost
-                            disabled={!canStart(s)}
+                            disabled={!canStart(s) || !sessionStartAllowedToday(s)}
                             onClick={() => act(() => putSessionsIdStart(s.id), 'Đã bắt đầu buổi')}
                           >
                             Bắt đầu
@@ -683,6 +898,21 @@ function SessionTimeline({
                         <Button icon={<EditOutlined />} onClick={() => openEdit(s)}>
                           Sửa
                         </Button>
+                      )}
+                      {isAdmin && s.status === 'completed' && (
+                        <Tooltip title="Mở lại buổi để bổ sung nội dung/ảnh, sau đó hoàn tất lại">
+                          <Button icon={<RollbackOutlined />} onClick={() => {
+                            Modal.confirm({
+                              title: `Mở lại buổi #${s.session_no}?`,
+                              content: 'Buổi sẽ quay về trạng thái Đã làm để bổ sung nội dung/ảnh; quota của buổi được tạm hoàn lại và hoa hồng liên quan bị thu hồi (sẽ tạo lại khi hoàn tất lần sau). Hành động được ghi vào nhật ký truy cập.',
+                              okText: 'Mở lại buổi',
+                              cancelText: 'Hủy',
+                              onOk: () => void reopenSession(s),
+                            })
+                          }}>
+                            Mở lại
+                          </Button>
+                        </Tooltip>
                       )}
                       {canDeleteSession && s.status === 'scheduled' && (
                         <Popconfirm title="Xóa buổi này?" okText="Xóa" cancelText="Hủy" onConfirm={() => act(() => deleteSessionsId(s.id), 'Đã xóa buổi')}>
@@ -718,8 +948,10 @@ function SessionTimeline({
                   sessionId={s.id}
                   photos={(photos[s.id] ?? []).filter((p) => p.kind === 'before')}
                   kind="before"
-                  canUpload={canEditSession && (ctStatus === 'ACTIVE' || !!s.is_warranty)}
+                  sessionStatus={s.status}
+                  canUpload={canEditSession && (ctStatus === 'ACTIVE' || !!s.is_warranty) && !sequenceBlocked(s)}
                   canDelete={!!isAdmin && (ctStatus === 'ACTIVE' || !!s.is_warranty)}
+                  onPhotoAdded={(photo) => setPhotos((current) => ({ ...current, [s.id]: [photo, ...(current[s.id] ?? []).filter((item) => item.id !== photo.id)] }))}
                   onChanged={load}
                 />
               </TRow>
@@ -735,8 +967,10 @@ function SessionTimeline({
                   sessionId={s.id}
                   photos={midPhotos}
                   kind="process"
-                  canUpload={canEditSession && (ctStatus === 'ACTIVE' || !!s.is_warranty)}
+                  sessionStatus={s.status}
+                  canUpload={canEditSession && (ctStatus === 'ACTIVE' || !!s.is_warranty) && !sequenceBlocked(s)}
                   canDelete={!!isAdmin && (ctStatus === 'ACTIVE' || !!s.is_warranty)}
+                  onPhotoAdded={(photo) => setPhotos((current) => ({ ...current, [s.id]: [photo, ...(current[s.id] ?? []).filter((item) => item.id !== photo.id)] }))}
                   onChanged={load}
                 />
               </TRow>
@@ -752,8 +986,10 @@ function SessionTimeline({
                   sessionId={s.id}
                   photos={(photos[s.id] ?? []).filter((p) => p.kind === 'after')}
                   kind="after"
-                  canUpload={canEditSession && (ctStatus === 'ACTIVE' || !!s.is_warranty)}
+                  sessionStatus={s.status}
+                  canUpload={canEditSession && (ctStatus === 'ACTIVE' || !!s.is_warranty) && !sequenceBlocked(s)}
                   canDelete={!!isAdmin && (ctStatus === 'ACTIVE' || !!s.is_warranty)}
+                  onPhotoAdded={(photo) => setPhotos((current) => ({ ...current, [s.id]: [photo, ...(current[s.id] ?? []).filter((item) => item.id !== photo.id)] }))}
                   onChanged={load}
                 />
               </TRow>
@@ -778,13 +1014,15 @@ function SessionTimeline({
             </Typography.Text>
           )}
           {canManageSessionSchedule && <Row gutter={12}>
-            <Col span={8}>
+            <Col span={12}>
               <Form.Item name="scheduled_date" label="Ngày hẹn">
                 <DatePicker
                   format="DD/MM/YYYY"
                   style={{ width: '100%' }}
+                  disabledDate={(date) => date.isBefore(dayjs().startOf('day'), 'day')}
                   disabled={!!editOpen?.appointment_id || editOpen?.status !== 'scheduled'}
                   onChange={(date) => {
+                    scheduleEditTouchedRef.current = true
                     editForm.setFieldsValue({ scheduled_time: undefined, staff_id: undefined })
                     setSessionSlots([])
                     if (date && editOpen && !editOpen.appointment_id && editOpen.status === 'scheduled') {
@@ -794,7 +1032,7 @@ function SessionTimeline({
                 />
               </Form.Item>
             </Col>
-            <Col span={8}>
+            <Col span={12}>
               <Form.Item name="scheduled_time" label="Giờ hẹn">
                 <Select
                   disabled={!!editOpen?.appointment_id || editOpen?.status !== 'scheduled' || !selectedSessionDate || sessionSlotsLoading}
@@ -802,6 +1040,7 @@ function SessionTimeline({
                   placeholder={selectedSessionDate ? 'Chọn giờ còn trống' : 'Chọn ngày trước'}
                   options={sessionSlots.map((slot) => ({ value: slot.start_time.slice(0, 5), label: slot.start_time.slice(0, 5) }))}
                   onChange={(time) => {
+                    scheduleEditTouchedRef.current = true
                     const slot = sessionSlots.find((candidate) => candidate.start_time.slice(0, 5) === time)
                     if (!slot?.staff_ids.includes(editForm.getFieldValue('staff_id'))) editForm.setFieldsValue({ staff_id: undefined })
                   }}
@@ -809,13 +1048,14 @@ function SessionTimeline({
                 />
               </Form.Item>
             </Col>
-            <Col span={8}>
+            <Col span={12}>
               <Form.Item name="staff_id" label="KTV phụ trách">
                 <Select
                   allowClear
                   showSearch
                   optionFilterProp="label"
                   disabled={!!editOpen?.appointment_id || editOpen?.status !== 'scheduled' || !selectedSessionTime || sessionSlotsLoading}
+                  onChange={() => { scheduleEditTouchedRef.current = true }}
                   placeholder={selectedSessionTime ? 'Chọn KTV rảnh' : 'Chọn ngày và giờ trước'}
                   options={sessionSlots
                     .find((slot) => slot.start_time.slice(0, 5) === selectedSessionTime)
@@ -824,40 +1064,58 @@ function SessionTimeline({
                 />
               </Form.Item>
             </Col>
+            <Col span={12}>
+              {!editOpen?.is_warranty && (
+                <Form.Item
+                  name="session_value"
+                  label="Giá trị buổi"
+                  tooltip="Dùng cho gói định mức tiền — không được vượt quá số tiền còn lại trong gói."
+                  help={`Tối đa ${formatMoney(maxSessionValue)}`}
+                  rules={[{
+                    type: 'number',
+                    max: maxSessionValue,
+                    message: `Giá trị một buổi không được vượt quá tổng tiền liệu trình (${formatMoney(maxSessionValue)})`,
+                  }]}
+                >
+                  <InputNumber min={0} max={maxSessionValue} step={50000} suffix={currencySymbol} style={{ width: '100%' }} disabled={editOpen?.status === 'scheduled'} />
+                </Form.Item>
+              )}
+            </Col>
           </Row>}
-          {canManageSessionSchedule && (editOpen?.is_warranty ? (
+          {canManageSessionSchedule && editOpen?.is_warranty && (
             <Alert type="info" showIcon message="Buổi bảo hành miễn phí tiền công và không trừ quota. Phí sản phẩm phát sinh được ghi riêng bên dưới." />
-          ) : (
-            <Form.Item
-              name="session_value"
-              label="Giá trị buổi — dùng cho gói định mức tiền"
-              help={`Tối đa ${formatMoney(maxSessionValue)}. Với gói định mức tiền, giá trị buổi này không được vượt quá số tiền còn lại trong gói.`}
-              rules={[{
-                type: 'number',
-                max: maxSessionValue,
-                message: `Giá trị một buổi không được vượt quá tổng tiền liệu trình (${formatMoney(maxSessionValue)})`,
-              }]}
-            >
-              <InputNumber min={0} max={maxSessionValue} step={50000} suffix={currencySymbol} style={{ width: '100%' }} />
-            </Form.Item>
-          ))}
+          )}
+          {editOpen?.status === 'scheduled' && (
+            <Alert
+              type="info"
+              showIcon
+              message="Buổi chưa bắt đầu — lưu ngày giờ và KTV sẽ tự tạo lịch ở mục Lịch hẹn. Có thể ghi thông tin đầu buổi; nhật ký, sản phẩm và kết quả ghi khi buổi diễn ra."
+            />
+          )}
+          {editOpen && sequenceBlocked(editOpen) && (
+            <Alert
+              type="warning"
+              showIcon
+              message="Buổi trước chưa hoàn thành — phải hoàn tất các buổi theo đúng thứ tự trước khi ghi thông tin hoặc thêm ảnh cho buổi này."
+            />
+          )}
           <Divider plain style={{ fontSize: 11, color: '#A9ADB2', letterSpacing: 1, margin: '4px 0 14px' }}>
             ĐẦU BUỔI
           </Divider>
           <Form.Item name="skin_note" label="Tình trạng da">
-            <Input.TextArea rows={2} placeholder="VD: da khô, hơi đỏ vùng má..." />
+            <Input.TextArea rows={2} placeholder="VD: da khô, hơi đỏ vùng má..." disabled={!!editOpen && sequenceBlocked(editOpen)} />
           </Form.Item>
           <Form.Item name="concern" label="Điều cần cải thiện">
-            <Input.TextArea rows={2} placeholder="VD: nám vùng gò má, lỗ chân lông to..." />
+            <Input.TextArea rows={2} placeholder="VD: nám vùng gò má, lỗ chân lông to..." disabled={!!editOpen && sequenceBlocked(editOpen)} />
           </Form.Item>
           <Divider plain style={{ fontSize: 11, color: '#A9ADB2', letterSpacing: 1, margin: '4px 0 14px' }}>
             THỰC HIỆN
           </Divider>
           <Form.Item name="diary" label="Nhật ký buổi làm">
-            <Input.TextArea rows={2} />
+            <Input.TextArea rows={2} disabled={editOpen?.status === 'scheduled' || (!!editOpen && sequenceBlocked(editOpen))} />
           </Form.Item>
           <Form.Item name="products_used" label="Sản phẩm đã dùng">
-            <Input.TextArea rows={2} />
+            <Input.TextArea rows={2} disabled={editOpen?.status === 'scheduled' || (!!editOpen && sequenceBlocked(editOpen))} />
           </Form.Item>
           {canManageSessionSchedule && <Form.Item
             name="product_amount"
@@ -865,18 +1123,18 @@ function SessionTimeline({
             help={editOpen?.is_warranty ? 'Chỉ ghi nhận tiền sản phẩm thêm; không trừ quota và không tính tiền công kỹ thuật.' : 'Số tiền sản phẩm thêm, tách biệt với giá trị buổi và quota liệu trình.'}
             rules={[{ type: 'number', min: 0, message: 'Số tiền không được âm' }]}
           >
-            <InputNumber min={0} step={10000} suffix={currencySymbol} style={{ width: '100%' }} />
+            <InputNumber min={0} step={10000} suffix={currencySymbol} style={{ width: '100%' }} disabled={editOpen?.status === 'scheduled' || (!!editOpen && sequenceBlocked(editOpen))} />
           </Form.Item>}
           <Divider plain style={{ fontSize: 11, color: '#A9ADB2', letterSpacing: 1, margin: '4px 0 14px' }}>
             KẾT QUẢ CUỐI BUỔI
           </Divider>
           <Form.Item name="result" label="Kết quả">
-            <Input.TextArea rows={2} placeholder="VD: da sáng hơn, khách hài lòng..." />
+            <Input.TextArea rows={2} placeholder="VD: da sáng hơn, khách hài lòng..." disabled={editOpen?.status === 'scheduled' || (!!editOpen && sequenceBlocked(editOpen))} />
           </Form.Item>
           <Divider plain style={{ fontSize: 11, color: '#A9ADB2', letterSpacing: 1, margin: '4px 0 14px' }}>
             TRƯỜNG TÙY CHỈNH
           </Divider>
-          <CustomFieldFormItems definitions={customFieldDefinitions} />
+          <CustomFieldFormItems definitions={customFieldDefinitions} disabled={!!editOpen && sequenceBlocked(editOpen)} />
         </Form>
       </Modal>
     </>
@@ -884,15 +1142,40 @@ function SessionTimeline({
 }
 
 export default function TreatmentCustomers() {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [activeMainTab, setActiveMainTab] = useState<'packages' | 'services'>(() => searchParams.get('tab') === 'services' ? 'services' : 'packages')
+  const focusStandaloneAppointmentId = searchParams.get('appointment_id')
+  useEffect(() => {
+    setActiveMainTab(searchParams.get('tab') === 'services' ? 'services' : 'packages')
+  }, [searchParams])
+  const consumeFocusAppointment = () => {
+    const next = new URLSearchParams(searchParams)
+    next.delete('appointment_id')
+    setSearchParams(next, { replace: true })
+  }
+  const changeMainTab = (key: string) => {
+    setActiveMainTab(key as 'packages' | 'services')
+    const next = new URLSearchParams(searchParams)
+    if (key === 'services') next.set('tab', 'services')
+    else {
+      next.delete('tab')
+      next.delete('appointment_id')
+    }
+    if (next.toString() !== searchParams.toString()) {
+      setSearchParams(next, { replace: true })
+    }
+  }
   const { format: formatMoney, symbol: currencySymbol } = useBrandCurrency()
   const { formatDateTime } = useBrandDateTime()
   const queryClient = useQueryClient()
-  const { isAdmin } = useCustomerProfileAccess()
+  const { isAdmin, isReceptionist } = useCustomerProfileAccess()
   const ability = useAbility()
   const canUpdate = ability.can('UPDATE', 'CUSTOMER')
+  const canApplyReward = ability.can('REDEEM_ADMIN', 'REWARD') && ability.can('READ', 'DISCOUNT')
   const canCreateSessions = ability.can('CREATE', 'SESSION')
   const canReadPayments = ability.can('READ', 'PAYMENT')
-  const canSeeDebtSummary = ability.can('READ' as never, 'REPORT') || ability.can('DEBT.READ' as never, 'REPORT')
+  const canSeeDebtSummary = (!isReceptionist || isAdmin)
+    && (ability.can('READ' as never, 'REPORT') || ability.can('DEBT.READ' as never, 'REPORT'))
   const customerTreatmentCustomFields = useCustomFieldDefinitions('CUSTOMER_TREATMENT')
   const sessionCustomFields = useCustomFieldDefinitions('SESSION')
   const [page, setPage] = useState(1)
@@ -918,10 +1201,13 @@ export default function TreatmentCustomers() {
   const [payments, setPayments] = useState<PaymentRow[]>([])
   const [payLoading, setPayLoading] = useState(false)
   const [payOpen, setPayOpen] = useState(false)
+  // Gói đang thu tiền — tách khỏi `detail` để thu tiền từ danh sách không bật drawer chi tiết
+  const [payTargetId, setPayTargetId] = useState<string | null>(null)
   const [payForm] = Form.useForm()
   // Modal ưu đãi & điểm (DC-06/07 + LY-02)
   const [promoOpen, setPromoOpen] = useState(false)
   const [promoRow, setPromoRow] = useState<CustomerTreatment | null>(null)
+  const [applyingRewardId, setApplyingRewardId] = useState<string | null>(null)
   const [promoForm] = Form.useForm()
   const [redeemForm] = Form.useForm()
   const [paymentLookupError, setPaymentLookupError] = useState('')
@@ -933,6 +1219,8 @@ export default function TreatmentCustomers() {
   const profiles = (pickData<ProfileRow[] | undefined>(profilesQuery.data) ?? []) as ProfileRow[]
   const packagesQuery = useGetTreatmentPackages({ page: 1, limit: 200 })
   const packages = (pickData<TreatmentPackage[] | undefined>(packagesQuery.data) ?? []) as TreatmentPackage[]
+  const selectedSalePackageId = Form.useWatch('package_id', form)
+  const selectedSalePackage = packages.find((pkg) => pkg.id === selectedSalePackageId)
   const staffsQuery = useGetUsers({ currentPage: 1, pageSize: 200, has_role: true })
   const staffOptions = useMemo(
     () =>
@@ -960,6 +1248,7 @@ export default function TreatmentCustomers() {
   }, [lookupQuery.isLoading, lookupQuery.isError, lookupQuery.error, paymentLookup])
 
   const createMutation = usePostCustomerTreatments()
+  const createInFlightRef = useRef(false)
   const createPaymentMutation = usePostCustomerTreatmentsIdPayments()
   const cancelMutation = usePutCustomerTreatmentsIdCancel()
   const finishMutation = usePutCustomerTreatmentsIdFinish()
@@ -975,10 +1264,15 @@ export default function TreatmentCustomers() {
     ?? 'Khách hàng'
   const profilePhone = (row: CustomerTreatment) =>
     (row as CustomerTreatment & { customer_profile?: { phone?: string } }).customer_profile?.phone ?? profileOf(row.customer_profile_id)?.phone
-  const packageName = (row: CustomerTreatment) =>
-    (row as CustomerTreatment & { package_type?: { name?: string } }).package_type?.name
-    ?? packages.find((p) => p.id === row.package_id)?.name
-    ?? '—'
+  const treatmentCode = (row: CustomerTreatment) => row.id.replace(/-/g, '').slice(0, 8).toUpperCase()
+  const packageName = (row: CustomerTreatment) => {
+    const snapshotName = (row.package_snapshot as Record<string, unknown> | undefined)?.name
+    const packageTypeName = (row as CustomerTreatment & { package_type?: { name?: string } }).package_type?.name
+    return (typeof snapshotName === 'string' && snapshotName.trim() ? snapshotName : undefined)
+      ?? packages.find((p) => p.id === row.package_id)?.name
+      ?? packageTypeName
+      ?? '—'
+  }
 
   const list = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -987,12 +1281,13 @@ export default function TreatmentCustomers() {
       if (pkgFilter && r.package_id !== pkgFilter) return false
       if (q) {
         const p = profileOf(r.customer_profile_id)
-        const hay = `${p?.full_name ?? ''} ${p?.phone ?? ''}`.toLowerCase()
+        const shortCode = treatmentCode(r)
+        const hay = `${p?.full_name ?? ''} ${p?.phone ?? ''} ${packageName(r)} G-${shortCode} ${shortCode} ${r.id}`.toLowerCase()
         if (!hay.includes(q)) return false
       }
       return true
     })
-  }, [rows, filter, pkgFilter, search, profiles])
+  }, [rows, filter, pkgFilter, search, profiles, packages])
 
   const activeFilterCount = Number(filter !== 'all') + Number(!!pkgFilter) + (search ? 1 : 0)
   const openFilters = (nextOpen: boolean) => {
@@ -1074,8 +1369,10 @@ export default function TreatmentCustomers() {
   }
 
   const submit = async () => {
-    const values = await form.validateFields()
+    if (createInFlightRef.current || createMutation.isPending) return
+    createInFlightRef.current = true
     try {
+      const values = await form.validateFields()
       const dto = {
         ...values,
         sessions_bonus: values.sessions_bonus != null ? Number(values.sessions_bonus) : undefined,
@@ -1087,7 +1384,9 @@ export default function TreatmentCustomers() {
       setOpen(false)
       refresh()
     } catch (err) {
-      message.error(errorMessage(err))
+      if (!(err as { errorFields?: unknown })?.errorFields) message.error(errorMessage(err))
+    } finally {
+      createInFlightRef.current = false
     }
   }
 
@@ -1148,7 +1447,27 @@ export default function TreatmentCustomers() {
   }
 
   const finishTreatment = async (row: CustomerTreatment) => {
+    if ((row.debt_amount ?? 0) > 0) {
+      message.error('Gói còn nợ — phải thu đủ trước khi hoàn tất liệu trình')
+      return
+    }
     try {
+      // CT-05 — trả da sớm là hợp lệ, nhưng cảnh báo khi sổ chưa ghi buổi hoàn thành nào
+      const sessionsRes = await getCustomerTreatmentsIdSessions(row.id)
+      const completedCount = (pickData<{ status?: string }[]>(sessionsRes) ?? []).filter((s) => s.status === 'completed').length
+      if (completedCount === 0) {
+        const confirmed = await new Promise<boolean>((resolve) => {
+          Modal.confirm({
+            title: 'Gói chưa có buổi nào hoàn thành',
+            content: 'Sổ liệu trình chưa ghi nhận buổi hoàn thành nào. Bạn có chắc muốn trả da / hoàn tất ngay từ bây giờ?',
+            okText: 'Vẫn hoàn tất',
+            cancelText: 'Hủy',
+            onOk: () => resolve(true),
+            onCancel: () => resolve(false),
+          })
+        })
+        if (!confirmed) return
+      }
       await finishMutation.mutateAsync({ id: row.id })
       message.success('Đã hoàn tất liệu trình — bắt đầu thời gian bảo hành')
       if (detail?.id === row.id) setDetail(null)
@@ -1163,7 +1482,18 @@ export default function TreatmentCustomers() {
   const [adjustRow, setAdjustRow] = useState<CustomerTreatment | null>(null)
   const [adjustForm] = Form.useForm()
   const adjustType = Form.useWatch('type', adjustForm)
+  const adjustAmount = Form.useWatch('amount', adjustForm)
   const adjustMutation = usePutCustomerTreatmentsIdAdjustments()
+  // TA-01 — đếm buổi "completed" trong sổ liệu trình để đối chiếu khi sửa số buổi đã dùng
+  const adjustSessionsQuery = useQuery({
+    queryKey: ['adjust-sessions', adjustRow?.id],
+    queryFn: ({ signal }) => getCustomerTreatmentsIdSessions(adjustRow!.id, signal),
+    enabled: adjustOpen && adjustType === 'ADJUST_SESSIONS' && !!adjustRow,
+    retry: 1,
+  })
+  const adjustCompletedCount = (pickData<{ status?: string }[]>(adjustSessionsQuery.data) ?? []).filter(
+    (s) => s.status === 'completed',
+  ).length
   const [convertOpen, setConvertOpen] = useState(false)
   const [convertRow, setConvertRow] = useState<CustomerTreatment | null>(null)
   const [convertForm] = Form.useForm()
@@ -1187,6 +1517,20 @@ export default function TreatmentCustomers() {
   const submitAdjust = async () => {
     if (!adjustRow) return
     const values = await adjustForm.validateFields()
+    // TA-01 — cảnh báo khi số buổi đã dùng mới lệch với sổ liệu trình (bộ đếm sẽ lệch sổ)
+    if (values.type === 'ADJUST_SESSIONS' && !adjustSessionsQuery.isLoading && Number(values.amount) !== adjustCompletedCount) {
+      const confirmed = await new Promise<boolean>((resolve) => {
+        Modal.confirm({
+          title: 'Số buổi nhập lệch với sổ liệu trình',
+          content: `Sổ ghi nhận ${adjustCompletedCount} buổi đã hoàn thành nhưng bạn nhập ${values.amount}. Bộ đếm gói sẽ lệch sổ cho đến khi đối chiếu lại. Tiếp tục?`,
+          okText: 'Vẫn ghi điều chỉnh',
+          cancelText: 'Hủy',
+          onOk: () => resolve(true),
+          onCancel: () => resolve(false),
+        })
+      })
+      if (!confirmed) return
+    }
     try {
       await adjustMutation.mutateAsync({
         id: adjustRow.id,
@@ -1234,6 +1578,8 @@ export default function TreatmentCustomers() {
   }
 
   const submitPayment = async () => {
+    const treatmentId = payTargetId ?? detail?.id
+    if (!treatmentId) return
     if (paymentLookupLoading || paymentLookupError || activePaymentMethods.length === 0) {
       message.error(paymentLookupError || 'Danh mục phương thức thanh toán chưa sẵn sàng')
       return
@@ -1244,11 +1590,23 @@ export default function TreatmentCustomers() {
       return
     }
     try {
-      await createPaymentMutation.mutateAsync({ id: detail!.id, data: values as never })
+      await createPaymentMutation.mutateAsync({ id: treatmentId, data: values as never })
       message.success('Đã ghi nhận thanh toán')
       setPayOpen(false)
+      setPayTargetId(null)
       payForm.resetFields()
-      openDetail(detail!)
+      await refreshSelectedDetail()
+      if (canReadPayments) {
+        setPayLoading(true)
+        try {
+          const response = await getCustomerTreatmentsIdPayments(treatmentId)
+          setPayments((pickData<PaymentRow[] | undefined>(response) ?? []) as PaymentRow[])
+        } catch {
+          setPayments([])
+        } finally {
+          setPayLoading(false)
+        }
+      }
       refresh()
     } catch (err) {
       message.error(errorMessage(err))
@@ -1264,6 +1622,26 @@ export default function TreatmentCustomers() {
     () => availableDiscountsQuery.data?.responseData ?? [],
     [availableDiscountsQuery.data],
   )
+  const rewardRedemptionsParams = {
+    page: 1,
+    limit: 100,
+    status: 'ISSUED',
+    ...(promoCustomerProfileId ? { customer_profile_id: promoCustomerProfileId } : {}),
+  }
+  const rewardRedemptionsQuery = useQuery({
+    queryKey: getGetRewardRedemptionsQueryKey(rewardRedemptionsParams),
+    queryFn: async () => getRewardRedemptions(rewardRedemptionsParams),
+    enabled: promoOpen && !!promoCustomerProfileId,
+  })
+  const availableRewardRedemptions = (pickData<RewardRedemptionRow[]>(rewardRedemptionsQuery.data) ?? []) as RewardRedemptionRow[]
+  const promoServiceIds = new Set(
+    ((promoRow as (CustomerTreatment & { allowed_service_ids?: string[] }) | null)?.allowed_service_ids ?? []).map(String),
+  )
+  const applicableRewardRedemptions = availableRewardRedemptions.filter((redemption) => {
+    const reward = redemption.reward
+    if (redemption.status !== 'ISSUED' || reward?.type !== 'BENEFIT' || Number(reward.benefit_amount ?? 0) <= 0) return false
+    return !reward.service_id || promoServiceIds.has(String(reward.service_id))
+  })
   const applyDiscountMutation = usePostCustomerTreatmentsIdApplyDiscount()
   const redeemPointsMutation = usePostCustomerTreatmentsIdRedeemPoints()
   const promoPointsQuery = useGetCustomerProfilesIdPoints(promoCustomerProfileId ?? '', {
@@ -1320,6 +1698,39 @@ export default function TreatmentCustomers() {
     }
   }
 
+  const confirmApplyReward = (redemption: RewardRedemptionRow) => {
+    const target = promoRow
+    const reward = redemption.reward
+    if (!target || !reward?.benefit_amount || applyingRewardId) return
+    Modal.confirm({
+      title: 'Áp dụng quà vào gói liệu trình?',
+      content: `Giảm ${formatMoney(reward.benefit_amount)} vào công nợ gói “${packageName(target)}” và đánh dấu lượt đổi đã dùng. Thao tác này không thể hoàn tác.`,
+      okText: 'Áp dụng quà',
+      cancelText: 'Hủy',
+      onOk: async () => {
+        setApplyingRewardId(redemption.id)
+        try {
+          await customInstance({
+            url: `/customerTreatments/${target.id}/apply-reward`,
+            method: 'POST',
+            data: { redemption_id: redemption.id },
+          })
+          message.success(`Đã trừ ${formatMoney(reward.benefit_amount)} khỏi công nợ và ghi nhận quà đã dùng`)
+          const fresh = pickData<CustomerTreatment>(await getCustomerTreatmentsId(target.id))
+          if (fresh) setPromoRow(fresh)
+          refresh()
+          await refreshSelectedDetail()
+          await queryClient.invalidateQueries({ queryKey: ['/reward-redemptions'] })
+          await rewardRedemptionsQuery.refetch()
+        } catch (err) {
+          message.error(errorMessage(err))
+        } finally {
+          setApplyingRewardId(null)
+        }
+      },
+    })
+  }
+
   const submitRedeemPoints = async () => {
     const target = promoRow
     if (!target || !canSubmitRedeem || redeemPointsMutation.isPending) return
@@ -1341,9 +1752,32 @@ export default function TreatmentCustomers() {
     { key: 'done', label: 'Đã hoàn tất', value: stats.done.toLocaleString('vi-VN'), icon: <CheckCircleOutlined />, tone: 'neutral' },
     ...(canSeeDebtSummary ? [{ key: 'debt', label: 'Tổng công nợ', value: formatMoney(stats.debt), icon: <WalletOutlined />, tone: 'tertiary' as const }] : []),
   ]
+  const detailSupplementalInfo = Object.entries(detail?.custom_fields ?? {})
+    .filter(([key, value]) => !HIDDEN_TREATMENT_SYSTEM_FIELDS.has(key) && value !== null && value !== undefined && value !== '')
+    .map(([key, value]) => ({
+      key,
+      label: TREATMENT_SYSTEM_FIELD_LABELS[key] ?? readableCustomFieldLabel(key, customerTreatmentCustomFields),
+      value: customFieldValueText(value),
+    }))
 
   return (
     <>
+      <Tabs
+        activeKey={activeMainTab}
+        onChange={changeMainTab}
+        items={[
+          { key: 'packages', label: 'Gói liệu trình' },
+          { key: 'services', label: 'Dịch vụ lẻ' },
+        ]}
+        style={{ marginBottom: 12 }}
+      />
+      {activeMainTab === 'services' ? (
+        <>
+          <PageTitle subtitle="Hồ sơ các lần khách dùng dịch vụ riêng, không trừ buổi gói">Dịch vụ lẻ</PageTitle>
+          <StandaloneServiceHistory focusAppointmentId={focusStandaloneAppointmentId} onFocusConsumed={consumeFocusAppointment} />
+        </>
+      ) : (
+        <>
       {/* Thống kê đầu trang — cùng số liệu với rows đã tải (limit 500), thay hàng Card/Statistic cũ */}
       <StatCards items={statItems} />
 
@@ -1416,6 +1850,19 @@ export default function TreatmentCustomers() {
                 </div>
               )
             },
+          },
+          {
+            title: 'Mã gói',
+            key: 'package_code',
+            width: 140,
+            render: (_: unknown, row: CustomerTreatment) => (
+              <div>
+                <Tag color="purple">G-{treatmentCode(row)}</Tag>
+                <div style={{ fontSize: 11, color: '#8A8790', marginTop: 2 }}>
+                  Mua ngày {row.created_at ? dayjs(row.created_at).format('DD/MM/YYYY') : '—'}
+                </div>
+              </div>
+            ),
           },
           {
             title: 'Tiến độ',
@@ -1493,10 +1940,16 @@ export default function TreatmentCustomers() {
                 { type: 'divider' as const },
                 {
                   key: 'finish',
-                  label: 'Hoàn tất liệu trình (trả da)',
-                  disabled: !(row.status === 'ACTIVE' && row.quota_type === 'UNLIMITED'),
+                  label:
+                    row.status === 'ACTIVE' && row.quota_type === 'UNLIMITED' && (row.debt_amount ?? 0) > 0 ? (
+                      <Tooltip title="Phải thu đủ tiền trước khi hoàn tất liệu trình">Hoàn tất liệu trình (trả da)</Tooltip>
+                    ) : (
+                      'Hoàn tất liệu trình (trả da)'
+                    ),
+                  disabled: !(row.status === 'ACTIVE' && row.quota_type === 'UNLIMITED' && (row.debt_amount ?? 0) === 0),
                 },
-                { key: 'cancel', label: 'Hủy liệu trình', danger: true, disabled: row.status !== 'ACTIVE' },
+                // CT-06: chỉ Admin được hủy gói liệu trình
+                ...(isAdmin ? [{ key: 'cancel', label: 'Hủy liệu trình', danger: true, disabled: row.status !== 'ACTIVE' }] : []),
                 ...(row.status === 'ACTIVE' ? [{ key: 'promo', label: 'Ưu đãi & điểm' }] : []),
               ]
               return (
@@ -1505,7 +1958,7 @@ export default function TreatmentCustomers() {
                   onSelect={(key) => {
                     if (key === 'add_session') addSession(row)
                     else if (key === 'pay') {
-                      setDetail(row)
+                      setPayTargetId(row.id)
                       payForm.setFieldsValue({ amount: row.debt_amount, method: activePaymentMethods.find((item) => item.code === 'CASH')?.code ?? activePaymentMethods[0]?.code })
                       setPayOpen(true)
                     } else if (key === 'adjust') {
@@ -1515,6 +1968,14 @@ export default function TreatmentCustomers() {
                     } else if (key === 'history') {
                       openHistory(row)
                     } else if (key === 'finish') {
+                      if (row.status !== 'ACTIVE' || row.quota_type !== 'UNLIMITED') {
+                        message.error('Chỉ có thể hoàn tất thủ công gói không giới hạn')
+                        return
+                      }
+                      if ((row.debt_amount ?? 0) > 0) {
+                        message.error(`Gói còn nợ ${formatMoney(row.debt_amount)} — phải thu đủ trước khi hoàn tất liệu trình`)
+                        return
+                      }
                       Modal.confirm({
                         title: 'Hoàn tất liệu trình (trả da)?',
                         content: 'Gói sẽ chuyển sang Hoàn tất và bắt đầu tính thời gian bảo hành trọn đời.',
@@ -1545,14 +2006,17 @@ export default function TreatmentCustomers() {
         )}
       />
       <ListPagination page={page} limit={limit} total={list.length} onChange={setPage} noun="khách điều trị" />
+        </>
+      )}
 
       <Modal
         title="Thêm khách vào liệu trình"
         open={open}
         onCancel={() => setOpen(false)}
-        onOk={submit}
+        onOk={() => void submit()}
         okText="Lưu"
         cancelText="Hủy"
+        confirmLoading={createMutation.isPending}
       >
         <Form form={form} layout="vertical" style={{ marginTop: 12 }}>
           <Form.Item name="customer_profile_id" label="Khách hàng" rules={[{ required: true, message: 'Chọn khách hàng' }]}>
@@ -1577,7 +2041,12 @@ export default function TreatmentCustomers() {
               }))}
             />
           </Form.Item>
-          <Form.Item name="total_amount" label="Số tiền" rules={[{ required: true, message: 'Nhập số tiền' }]}>
+          <Form.Item
+            name="total_amount"
+            label="Số tiền"
+            extra={selectedSalePackage?.quota_type === 'VALUE' ? 'Định mức sử dụng của gói này sẽ tự bằng số tiền bán.' : undefined}
+            rules={[{ required: true, message: 'Nhập số tiền' }]}
+          >
             <InputNumber min={0} step={100000} suffix={currencySymbol} style={{ width: '100%' }} />
           </Form.Item>
           <Form.Item name="sessions_bonus" label="Buổi tặng" extra="Cộng thêm vào số buổi của gói — để trống nếu không tặng">
@@ -1608,7 +2077,7 @@ export default function TreatmentCustomers() {
       <Modal
         title="Ghi nhận thanh toán"
         open={payOpen}
-        onCancel={() => setPayOpen(false)}
+        onCancel={() => { setPayOpen(false); setPayTargetId(null) }}
         onOk={submitPayment}
         okText="Lưu"
         cancelText="Hủy"
@@ -1754,6 +2223,57 @@ export default function TreatmentCustomers() {
           </Form>
         ),
       },
+      {
+        key: 'rewards',
+        label: 'Quà đã đổi',
+        children: (
+          <Space direction="vertical" size={12} style={{ width: '100%' }}>
+            <Alert
+              type="info"
+              showIcon
+              message="Áp quà sẽ trừ trực tiếp vào công nợ gói này"
+              description="Chỉ hiện lượt đổi còn dùng được và đúng dịch vụ của gói. Gói cần còn công nợ ít nhất bằng mức giảm; nên áp trước khi thu đủ tiền. Khi xác nhận, hệ thống đồng thời đánh dấu quà đã dùng."
+            />
+            {rewardRedemptionsQuery.isLoading && <Spin />}
+            {rewardRedemptionsQuery.isError && (
+              <Alert type="error" showIcon message="Không tải được quà đã đổi" description={errorMessage(rewardRedemptionsQuery.error)} />
+            )}
+            {!rewardRedemptionsQuery.isLoading && !rewardRedemptionsQuery.isError && applicableRewardRedemptions.length === 0 && (
+              <Empty description="Khách chưa có quà giảm tiền phù hợp với dịch vụ của gói này" />
+            )}
+            {applicableRewardRedemptions.map((redemption) => (
+              <Card key={redemption.id} size="small" styles={{ body: { padding: 12 } }}>
+                <Row align="middle" justify="space-between" gutter={[12, 8]}>
+                  <Col flex="auto">
+                    <Typography.Text strong>{redemption.reward?.name ?? 'Quà đổi điểm'}</Typography.Text>
+                    <div>
+                      <Typography.Text type="secondary">
+                        Đã trừ {Number(redemption.points_spent).toLocaleString('vi-VN')} điểm · Giảm {formatMoney(redemption.reward?.benefit_amount)}
+                      </Typography.Text>
+                    </div>
+                  </Col>
+                  <Col>
+                    <Button
+                      type="primary"
+                      disabled={!canApplyReward || (promoRow?.status !== 'ACTIVE') || Number(promoRow?.debt_amount ?? 0) < Number(redemption.reward?.benefit_amount ?? 0)}
+                      loading={applyingRewardId === redemption.id}
+                      onClick={() => confirmApplyReward(redemption)}
+                    >
+                      Áp vào gói
+                    </Button>
+                  </Col>
+                </Row>
+                {!canApplyReward && (
+                  <Typography.Text type="secondary">Tài khoản chưa có quyền áp dụng quà đổi vào hóa đơn.</Typography.Text>
+                )}
+                {promoRow?.status === 'ACTIVE' && Number(promoRow.debt_amount ?? 0) < Number(redemption.reward?.benefit_amount ?? 0) && (
+                  <Typography.Text type="danger">Công nợ gói này thấp hơn mức giảm của quà.</Typography.Text>
+                )}
+              </Card>
+            ))}
+          </Space>
+        ),
+      },
     ]}
   />
 </Modal>
@@ -1843,13 +2363,13 @@ export default function TreatmentCustomers() {
                     </Tag>
                   </div>
                 </div>
-                {Object.keys(detail.custom_fields ?? {}).length > 0 && (
+                {detailSupplementalInfo.length > 0 && (
                   <div style={{ borderTop: '1px solid var(--brand-border-soft)', marginTop: 12, paddingTop: 12 }}>
                     <Typography.Text strong>Thông tin bổ sung</Typography.Text>
-                    {Object.entries(detail.custom_fields ?? {}).map(([key, value]) => (
+                    {detailSupplementalInfo.map(({ key, label, value }) => (
                       <div key={key} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginTop: 6, fontSize: 13 }}>
-                        <span>{customerTreatmentCustomFields.find((field) => field.key === key)?.label ?? key}</span>
-                        <span>{customFieldValueText(value) ?? '—'}</span>
+                        <span style={{ color: '#6F7071' }}>{label}</span>
+                        <span style={{ textAlign: 'right', overflowWrap: 'anywhere' }}>{value ?? '—'}</span>
                       </div>
                     ))}
                   </div>
@@ -1866,6 +2386,7 @@ export default function TreatmentCustomers() {
                     block
                     type="primary"
                     onClick={() => {
+                      setPayTargetId(detail.id)
                       payForm.setFieldsValue({ amount: detail.debt_amount, method: activePaymentMethods.find((item) => item.code === 'CASH')?.code ?? activePaymentMethods[0]?.code })
                       setPayOpen(true)
                     }}
@@ -1882,7 +2403,8 @@ export default function TreatmentCustomers() {
                 >
                   In phiếu
                 </Button>}
-                {canUpdate && detail.status === 'ACTIVE' && (
+                {/* CT-06: chỉ Admin được hủy gói liệu trình */}
+                {isAdmin && canUpdate && detail.status === 'ACTIVE' && (
                   <Popconfirm title="Hủy liệu trình này?" okText="Hủy" cancelText="Không" onConfirm={() => cancelTreatment(detail)}>
                     <Button block danger>
                       Hủy liệu trình
@@ -1979,8 +2501,30 @@ export default function TreatmentCustomers() {
       >
         <Form form={adjustForm} layout="vertical" style={{ marginTop: 12 }}>
           <Form.Item name="type" label="Tham số cần chỉnh" rules={[{ required: true, message: 'Chọn tham số' }]}>
-            <Select options={ADJUST_TYPE_OPTIONS} placeholder="Chọn tham số" />
+            <Select
+              options={ADJUST_TYPE_OPTIONS.filter((option) =>
+                option.value !== 'ADJUST_VALUE_TOTAL' || adjustRow?.quota_type === 'VALUE',
+              )}
+              placeholder="Chọn tham số"
+            />
           </Form.Item>
+          {adjustType === 'ADJUST_SESSIONS' && (
+            <Alert
+              type={adjustSessionsQuery.isLoading ? 'info' : adjustCompletedCount === Number(adjustAmount) ? 'success' : 'warning'}
+              showIcon
+              style={{ marginBottom: 12 }}
+              message={
+                adjustSessionsQuery.isLoading
+                  ? 'Đang đối chiếu sổ liệu trình…'
+                  : `Sổ liệu trình ghi nhận ${adjustCompletedCount} buổi đã hoàn thành${adjustRow?.sessions_used != null ? ` — bộ đếm hiện tại: ${adjustRow.sessions_used}` : ''}`
+              }
+              description={
+                !adjustSessionsQuery.isLoading && adjustCompletedCount !== Number(adjustAmount)
+                  ? 'Giá trị mới lệch với sổ: bộ đếm sẽ không còn khớp số buổi đã hoàn thành trong sổ. Chỉ tiếp tục nếu bạn hiểu rõ sự lệch này (VD: khách làm tay trước khi dùng hệ thống).'
+                  : undefined
+              }
+            />
+          )}
           {adjustType === 'EXTEND_EXPIRY' ? (
             <Form.Item name="expires_at" label="Hạn dùng mới" rules={[{ required: true, message: 'Chọn hạn dùng mới' }]}
               extra="Gói đang Hết hạn sẽ tự mở lại thành Đang làm nếu hạn mới ở tương lai.">
@@ -1989,9 +2533,13 @@ export default function TreatmentCustomers() {
           ) : (
             <Form.Item
               name="amount"
-              label="Giá trị mới"
+              label={adjustType === 'ADJUST_VALUE_TOTAL' ? 'Định mức tiền mới' : 'Giá trị mới'}
               rules={[{ required: true, message: 'Nhập giá trị mới' }]}
-              extra={adjustType === 'ADJUST_BONUS' ? 'Buổi tặng cộng thêm vào số buổi mua chính.' : undefined}
+              extra={adjustType === 'ADJUST_BONUS'
+                ? 'Buổi tặng cộng thêm vào số buổi mua chính.'
+                : adjustType === 'ADJUST_VALUE_TOTAL'
+                  ? 'Tổng giá trị khách được sử dụng; không phải số đã tiêu.'
+                  : undefined}
             >
               <InputNumber min={0} style={{ width: '100%' }} />
             </Form.Item>

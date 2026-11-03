@@ -18,5 +18,4 @@ export interface UserCreate {
   role_id: string;
   /** Required for technicians and non-admin staff */
   branch_id?: string;
-  is_admin?: boolean;
 }

@@ -39,6 +39,7 @@ import type { CustomerProfile } from '@/api/models/customerProfile'
 import type { Reward } from '@/api/models/reward'
 import type { RewardRedemption } from '@/api/models/rewardRedemption'
 import type { Voucher } from '@/api/models/voucher'
+import type { Service } from '@/api/models/service'
 import type { PostCustomerProfilesIdRedeemRewardBody } from '@/api/models/postCustomerProfilesIdRedeemRewardBody'
 import type { PutRewardRedemptionsIdCancelBody } from '@/api/models/putRewardRedemptionsIdCancelBody'
 import {
@@ -54,10 +55,15 @@ import {
 } from '@/api/endpoints/rewards'
 import { getCustomerProfiles, postCustomerProfilesIdRedeemReward } from '@/api/endpoints/customer-profiles'
 import { getVouchers } from '@/api/endpoints/vouchers'
+import { getService } from '@/api/endpoints/services'
 import { Can, useAbility } from '@casl/react'
 
 /** GET /rewards trả kèm voucher cấp khi type = VOUCHER (model gen thiếu — mở rộng cục bộ). */
-type RewardRow = Reward & { voucher?: { id?: string; title?: string; description?: string } | null }
+type RewardRow = Reward & {
+  benefit_amount?: number | null
+  service_id?: string | null
+  voucher?: { id?: string; title?: string; description?: string } | null
+}
 /** GET /reward-redemptions trả kèm reward (model gen thiếu — mở rộng cục bộ). */
 type RewardRedemptionRow = RewardRedemption & { reward?: RewardRow | null }
 type RewardType = 'VOUCHER' | 'GIFT' | 'BENEFIT'
@@ -90,6 +96,11 @@ function RewardCatalogTab({ onChanged }: { onChanged: () => void }) {
   const [form] = Form.useForm()
   const [redeemForm] = Form.useForm()
   const queryClient = useQueryClient()
+  const servicesQuery = useQuery({
+    queryKey: ['services', 'reward-benefit-picker'],
+    queryFn: async () => getService({ page: 1, limit: 200, is_active: true }),
+  })
+  const services = (pickData<Service[]>(servicesQuery.data) ?? []) as Service[]
 
   const rewardsQuery = useQuery({
     queryKey: getGetRewardsQueryKey(),
@@ -129,7 +140,9 @@ function RewardCatalogTab({ onChanged }: { onChanged: () => void }) {
       valid_from: row.valid_from ? dayjs(row.valid_from) : undefined,
       valid_to: row.valid_to ? dayjs(row.valid_to) : undefined,
       quantity_total: row.quantity_total ?? undefined,
-    } : { name: '', type: 'GIFT', points_cost: 100, quantity_total: undefined, is_active: true })
+      benefit_amount: row.benefit_amount ?? undefined,
+      service_id: row.service_id ?? undefined,
+    } : { name: '', type: 'GIFT', points_cost: 100, quantity_total: undefined, benefit_amount: undefined, service_id: undefined, is_active: true })
     setOpen(true)
   }
 
@@ -141,6 +154,8 @@ function RewardCatalogTab({ onChanged }: { onChanged: () => void }) {
         type: values.type,
         voucher_id: values.type === 'VOUCHER' ? values.voucher_id : null,
         points_cost: values.points_cost,
+        benefit_amount: values.type === 'BENEFIT' && values.benefit_amount != null ? values.benefit_amount : null,
+        service_id: values.type === 'BENEFIT' && values.benefit_amount != null ? values.service_id : null,
         quantity_total: values.quantity_total ?? null,
         valid_from: values.valid_from ? values.valid_from.format('YYYY-MM-DD') : null,
         valid_to: values.valid_to ? values.valid_to.format('YYYY-MM-DD') : null,
@@ -207,6 +222,11 @@ function RewardCatalogTab({ onChanged }: { onChanged: () => void }) {
       render: (v: string, row) => <div>
         <div style={{ fontWeight: 500 }}>{v}</div>
         {row.description ? <Typography.Text type="secondary" style={{ fontSize: 12 }}>{row.description}</Typography.Text> : null}
+        {row.type === 'BENEFIT' && row.benefit_amount != null ? (
+          <Typography.Text type="secondary" style={{ display: 'block', fontSize: 12 }}>
+            Giảm {Number(row.benefit_amount).toLocaleString('vi-VN')}đ · áp dụng trong gói đúng dịch vụ
+          </Typography.Text>
+        ) : null}
       </div>,
     },
     {
@@ -305,6 +325,38 @@ function RewardCatalogTab({ onChanged }: { onChanged: () => void }) {
               <InputNumber min={0} precision={0} style={{ width: '100%' }} placeholder="Không giới hạn" />
             </Form.Item>
           </Space>
+          {selectedType === 'BENEFIT' && (
+            <Space style={{ display: 'flex' }} align="start">
+              <Form.Item
+                name="benefit_amount"
+                label="Mức giảm cố định"
+                extra="Để trống nếu quyền lợi không giảm tiền."
+                rules={[{ type: 'number', min: 1, message: 'Mức giảm phải lớn hơn 0' }]}
+                style={{ flex: 1 }}
+              >
+                <InputNumber min={1} precision={0} style={{ width: '100%' }} suffix="đ" />
+              </Form.Item>
+              <Form.Item
+                name="service_id"
+                label="Dịch vụ áp dụng"
+                dependencies={['benefit_amount']}
+                rules={[({ getFieldValue }) => ({
+                  validator: async (_rule, value) => getFieldValue('benefit_amount') != null && !value
+                    ? Promise.reject(new Error('Chọn dịch vụ áp dụng cho mức giảm'))
+                    : Promise.resolve(),
+                })]}
+                style={{ flex: 1 }}
+              >
+                <Select
+                  showSearch
+                  optionFilterProp="label"
+                  loading={servicesQuery.isLoading}
+                  placeholder="Chọn dịch vụ"
+                  options={services.filter((service) => service.is_active !== false).map((service) => ({ value: service.id, label: service.title }))}
+                />
+              </Form.Item>
+            </Space>
+          )}
           <Space style={{ display: 'flex' }} align="start">
             <Form.Item name="valid_from" label="Bắt đầu" style={{ flex: 1 }}>
               <DatePicker style={{ width: '100%' }} format="DD/MM/YYYY" />
@@ -443,7 +495,18 @@ function RedemptionsTab({ onChanged }: { onChanged: () => void }) {
   }
 
   const columns: TableColumnsType<RewardRedemptionRow> = [
-    { key: 'reward', title: 'Quà', render: (_v, row) => row.reward?.name ?? row.reward_id },
+    {
+      key: 'reward', title: 'Quà', render: (_v, row) => (
+        <div>
+          <div>{row.reward?.name ?? row.reward_id}</div>
+          {row.customer_treatment_id && (
+            <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+              Gói #{row.customer_treatment_id.slice(0, 8).toUpperCase()} · giảm {Number(row.applied_discount_amount ?? 0).toLocaleString('vi-VN')}đ
+            </Typography.Text>
+          )}
+        </div>
+      ),
+    },
     { key: 'points_spent', title: 'Điểm đã trừ', dataIndex: 'points_spent', width: 110, render: (v: number) => Number(v).toLocaleString('vi-VN') },
     { key: 'status', title: 'Trạng thái', dataIndex: 'status', width: 110, render: (v: string) => <Tag color={REDEMPTION_META[v]?.color}>{REDEMPTION_META[v]?.label ?? v}</Tag> },
     { key: 'created_at', title: 'Ngày đổi', dataIndex: 'created_at', width: 150, render: (v: string) => formatDateTime(v) },
@@ -454,7 +517,7 @@ function RedemptionsTab({ onChanged }: { onChanged: () => void }) {
         <RowActionsMenu
           items={row.status === 'ISSUED'
             ? [
-                { key: 'used', icon: <CheckOutlined />, label: 'Đã dùng' },
+                ...(Number(row.reward?.benefit_amount ?? 0) > 0 ? [] : [{ key: 'used', icon: <CheckOutlined />, label: 'Đã dùng' }]),
                 { key: 'cancel', icon: <StopOutlined />, label: 'Hủy lượt đổi', danger: true },
               ]
             : []}
@@ -493,6 +556,15 @@ function RedemptionsTab({ onChanged }: { onChanged: () => void }) {
       </Space>
       {redemptionsQuery.isError && (
         <Alert className="mb-4" type="error" showIcon message="Không tải được lượt đổi quà" description={errorMessage(redemptionsQuery.error)} action={<Button size="small" onClick={() => void redemptionsQuery.refetch()}>Thử lại</Button>} />
+      )}
+      {rows.some((row) => row.status === 'ISSUED' && Number(row.reward?.benefit_amount ?? 0) > 0) && (
+        <Alert
+          className="mb-4"
+          type="info"
+          showIcon
+          message="Quà giảm tiền phải áp vào gói liệu trình"
+          description="Mở Khách dùng liệu trình → chọn đúng gói của khách → Ưu đãi & điểm → Quà đã đổi. Hệ thống sẽ trừ công nợ và đánh dấu quà đã dùng cùng lúc."
+        />
       )}
       <Table<RewardRedemptionRow>
         rowKey="id" loading={loading} dataSource={rows}

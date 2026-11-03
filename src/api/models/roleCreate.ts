@@ -11,6 +11,7 @@
  */
 export interface RoleCreate {
   role_name: string;
+  code?: string;
   description?: string;
   receptionist?: boolean;
   membership?: boolean;

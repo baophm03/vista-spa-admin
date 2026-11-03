@@ -37,6 +37,7 @@ import { paginateRows } from '@/utils/listTable'
 import type { CustomerHealthRecord } from '@/api/models/customerHealthRecord'
 import type { CustomerProfileRow } from '@/components/CustomerProfileOverviewTab'
 import type { CustomerTreatment } from '@/api/models/customerTreatment'
+import type { Appointment } from '@/api/models/appointment'
 import {
   getCustomerProfiles,
   getCustomerProfilesIdHealthRecords,
@@ -45,6 +46,7 @@ import {
   putCustomerProfilesIdHealthRecordsRecordId,
 } from '@/api/endpoints/customer-profiles'
 import { getCustomerTreatments } from '@/api/endpoints/customer-treatments'
+import { getAppointments } from '@/api/endpoints/appointments'
 import { getSkinTypes } from '@/api/endpoints/settings'
 import { getTreatmentPackages } from '@/api/endpoints/services'
 import { getUsers } from '@/api/endpoints/users'
@@ -67,6 +69,14 @@ interface HealthFields {
 }
 
 type HealthRow = CustomerProfileRow & { latestRecord?: CustomerHealthRecord | null }
+type ServiceHistoryAppointment = Appointment & {
+  service?: { title?: string; price?: number | string | null } | null
+  staff?: { zalo_name?: string } | null
+  service_amount?: number | string | null
+  visit_done_at?: string | null
+  diary?: string | null
+  result?: string | null
+}
 
 interface SkinTypeOption {
   code: string
@@ -162,6 +172,7 @@ export default function HealthRecords() {
   const [historyError, setHistoryError] = useState(false)
   const [detailRefresh, setDetailRefresh] = useState(0)
   const [detailTreatments, setDetailTreatments] = useState<CustomerTreatment[]>([])
+  const [detailAppointments, setDetailAppointments] = useState<ServiceHistoryAppointment[]>([])
   const [packageNames, setPackageNames] = useState<Record<string, string>>({})
   const [staffs, setStaffs] = useState<ExaminerOption[]>([])
   const [skinTypes, setSkinTypes] = useState<SkinTypeOption[]>([])
@@ -239,14 +250,19 @@ export default function HealthRecords() {
     setHistoryError(false)
     setHistory([])
     setDetailTreatments([])
+    setDetailAppointments([])
     Promise.all([
       getCustomerProfilesIdHealthRecords(detail.id),
       getCustomerTreatments({ customer_profile_id: detail.id, limit: 50 }),
+      getAppointments({ customer_profile_id: detail.id, page: 1, limit: 100 }).catch(() => null),
     ])
-      .then(([recordsResult, treatmentsResult]) => {
+      .then(([recordsResult, treatmentsResult, appointmentsResult]) => {
         if (cancelled) return
         setHistory(pickData<CustomerHealthRecord[]>(recordsResult) ?? [])
         setDetailTreatments(pickData<CustomerTreatment[]>(treatmentsResult) ?? [])
+        setDetailAppointments((pickData<ServiceHistoryAppointment[]>(appointmentsResult) ?? []).filter((appointment) =>
+          !appointment.customer_treatment_id && ['in_progress', 'completed'].includes(String(appointment.status)),
+        ))
       })
       .catch(() => {
         if (!cancelled) setHistoryError(true)
@@ -520,6 +536,32 @@ export default function HealthRecords() {
                           {treatment.status === 'ACTIVE' ? 'Đang dùng' : treatment.status === 'FINISHED' ? 'Hoàn tất' : 'Đã hủy'}
                         </Tag>
                       </div>
+                    ))}
+                  </Space>
+                )}
+              </Card>
+
+              <Card size="small" title={<Space><CalendarOutlined />Lịch sử dịch vụ lẻ</Space>}>
+                {historyLoading ? (
+                  <div style={{ padding: 16, textAlign: 'center' }}>Đang tải lịch sử dịch vụ…</div>
+                ) : detailAppointments.length === 0 ? (
+                  <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Khách chưa có lần làm dịch vụ lẻ" />
+                ) : (
+                  <Space direction="vertical" size={10} style={{ width: '100%' }}>
+                    {detailAppointments.map((appointment) => (
+                      <Card
+                        key={appointment.id}
+                        size="small"
+                        title={`${displayDate(appointment.appt_date)} ${appointment.start_time?.slice(0, 5) || ''} · ${appointment.service?.title || 'Dịch vụ'}`}
+                        extra={<Tag color={appointment.status === 'completed' ? 'green' : appointment.status === 'in_progress' ? 'blue' : 'default'}>{appointment.status === 'completed' ? 'Hoàn tất' : appointment.status === 'in_progress' ? 'Đang làm' : appointment.status || '—'}</Tag>}
+                      >
+                        <Descriptions column={1} size="small" labelStyle={{ width: 110, color: '#7E8581' }}>
+                          <Descriptions.Item label="KTV">{appointment.staff?.zalo_name || '—'}</Descriptions.Item>
+                          <Descriptions.Item label="Giá dịch vụ">{Number(appointment.service_amount ?? appointment.service?.price ?? 0).toLocaleString('vi-VN')} ₫</Descriptions.Item>
+                          {appointment.diary && <Descriptions.Item label="Nhật ký">{appointment.diary}</Descriptions.Item>}
+                          {appointment.result && <Descriptions.Item label="Kết quả / dặn dò">{appointment.result}</Descriptions.Item>}
+                        </Descriptions>
+                      </Card>
                     ))}
                   </Space>
                 )}

@@ -1098,7 +1098,7 @@ export const prefetchGetAcademyCoursesIdQuery = async <TData = Awaited<ReturnTyp
 
 
 /**
- * **AC-04** — PUT /academy/courses/{id}. Cần quyền `academy.update`.
+ * **AC-04** — PUT /academy/courses/{id}. Chỉ ADM, cần quyền `academy.update`.
  * @summary Cập nhật khóa học
  */
 export const putAcademyCoursesId = (
@@ -1163,7 +1163,7 @@ export const usePutAcademyCoursesId = <TError = UnauthorizedResponse | Forbidden
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **AC-05** — DELETE /academy/courses/{id} (soft: is_active=false). Cần quyền `academy.delete`.
+ * **AC-05** — DELETE /academy/courses/{id} (soft: is_active=false). Chỉ ADM, cần quyền `academy.delete`.
  * @summary Xóa khóa học
  */
 export const deleteAcademyCoursesId = (
@@ -1420,7 +1420,7 @@ export const prefetchGetAcademyCoursesQuery = async <TData = Awaited<ReturnType<
 
 
 /**
- * **AC-03** — POST /academy/courses. Cần quyền `academy.create`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Body được chuyển nguyên vẹn vào lớp nghiệp vụ.
+ * **AC-03** — POST /academy/courses. Chỉ ADM, cần quyền `academy.create`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Body được chuyển nguyên vẹn vào lớp nghiệp vụ.
  * @summary Quản lý khóa học
  */
 export const postAcademyCourses = (

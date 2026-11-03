@@ -1,4 +1,4 @@
-import { useSyncExternalStore } from 'react'
+import { useMemo, useSyncExternalStore } from 'react'
 import { brandColors } from './theme'
 import { getSettings, getSettingsBrand } from './api/endpoints/settings'
 import type { BrandSettings } from './api/models/brandSettings'
@@ -315,12 +315,17 @@ export function getConfiguredDateTimeParts(
 
 export function useBrandDateTime() {
   const { timezone } = useBrandRuntime()
-  return {
-    timezone,
-    formatDate: (value: string | Date | null | undefined) => formatDate(value, timezone),
-    formatDateTime: (value: string | Date | null | undefined) => formatDateTime(value, timezone),
-    getDateTimeParts: (value: string | Date | null | undefined) => getConfiguredDateTimeParts(value, timezone),
-  }
+  // Phải useMemo: component nào đưa các hàm này vào deps của useCallback/useEffect
+  // mà identity đổi mỗi render sẽ tạo vòng lặp load vô hạn (ví dụ SessionTimeline tải ảnh buổi).
+  return useMemo(
+    () => ({
+      timezone,
+      formatDate: (value: string | Date | null | undefined) => formatDate(value, timezone),
+      formatDateTime: (value: string | Date | null | undefined) => formatDateTime(value, timezone),
+      getDateTimeParts: (value: string | Date | null | undefined) => getConfiguredDateTimeParts(value, timezone),
+    }),
+    [timezone],
+  )
 }
 
 export function formatCalendarDateTime(date: string, time?: string | null): string {

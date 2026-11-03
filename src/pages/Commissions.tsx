@@ -271,7 +271,7 @@ function LedgerTab() {
     },
     { key: 'percent', title: '%', dataIndex: 'percent', width: 70, align: 'right', render: (v?: number | null) => (v != null ? `${v}%` : '—') },
     { key: 'amount', title: 'Số tiền', dataIndex: 'amount', width: 120, align: 'right', render: (v: number) => <span style={{ fontWeight: 500 }}>{formatVnd(v)}</span> },
-    { key: 'reason', title: 'Lý do', dataIndex: 'reason', ellipsis: true },
+    { key: 'reason', title: 'Lý do', dataIndex: 'reason', width: 180, ellipsis: true },
     {
       key: 'status', title: 'Trạng thái', dataIndex: 'status', width: 110,
       render: (v?: string) => {
@@ -361,6 +361,7 @@ function LedgerTab() {
       )}
       <Table<CommissionEntry>
         rowKey="id" loading={listQuery.isLoading} dataSource={rows}
+        scroll={{ x: 'max-content' }}
         columns={columns.filter((column) =>
           (column.key !== 'actions' || canEdit || canVoid) &&
           (column.key === 'actions' || visibleColumns.includes(column.key as CommissionColumnKey)),

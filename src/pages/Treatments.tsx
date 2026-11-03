@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import {
   Alert,
@@ -186,12 +186,19 @@ export default function Treatments() {
 
   const selectedPackageTypeId = Form.useWatch('package_type_id', packageForm)
   const selectedQuotaType = Form.useWatch('quota_type', packageForm) as QuotaType | undefined
+  const selectedPackageListPrice = Form.useWatch('list_price', packageForm)
   const selectedPackageType = packageTypeById.get(String(selectedPackageTypeId))
   const packageQuotaOptions = PACKAGE_TYPE_QUOTA_OPTIONS.filter((option) =>
     option.value !== 'UNLIMITED' || selectedPackageType?.allow_unlimited,
   )
   const selectedTypeDefaultQuota = Form.useWatch('default_quota_type', typeForm)
   const serviceById = useMemo(() => new Map(services.map((service) => [service.id, service.title])), [services])
+
+  useEffect(() => {
+    if (selectedQuotaType === 'VALUE') {
+      packageForm.setFieldValue('total_value', Number(selectedPackageListPrice ?? 0))
+    }
+  }, [packageForm, selectedPackageListPrice, selectedQuotaType])
 
   const createPackageMutation = usePostTreatmentPackages()
   const updatePackageMutation = usePutTreatmentPackagesId()
@@ -248,7 +255,7 @@ export default function Treatments() {
         package_type_id: values.package_type_id,
         quota_type: quotaType,
         total_sessions: quotaType === 'SESSIONS' ? Number(values.total_sessions) : null,
-        total_value: quotaType === 'VALUE' ? Number(values.total_value) : null,
+        total_value: quotaType === 'VALUE' ? Number(values.list_price) : null,
         service_id: isCombo ? null : (values.service_id || null),
         service_ids: isCombo ? values.service_ids : [],
         warranty_text: selectedPackageType?.has_warranty ? (values.warranty_text?.trim() || null) : null,
@@ -676,8 +683,8 @@ export default function Treatments() {
                 </Form.Item>
               )}
               {selectedQuotaType === 'VALUE' && (
-                <Form.Item name="total_value" label="Định mức tiền" rules={[{ required: true, message: 'Nhập định mức tiền' }]}>
-                  <InputNumber min={1} precision={0} step={1000000} suffix={currencySymbol} style={{ width: '100%' }} />
+                <Form.Item name="total_value" label="Định mức tiền" extra="Tự khớp với giá bán; khi gán khách, định mức lấy theo số tiền bán thực tế.">
+                  <InputNumber min={0} precision={0} suffix={currencySymbol} style={{ width: '100%' }} disabled />
                 </Form.Item>
               )}
             </Col>

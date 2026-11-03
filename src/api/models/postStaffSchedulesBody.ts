@@ -10,5 +10,7 @@ export type PostStaffSchedulesBody = {
   staff_id?: string;
   branch_id?: string;
   weekday?: number;
+  weekdays?: number[];
   shift_template_id?: string;
+  shift_template_ids?: string[];
 };

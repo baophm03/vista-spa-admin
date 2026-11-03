@@ -22,6 +22,10 @@ export interface RewardRedemption {
   status?: string;
   /** @minimum 0 */
   points_spent: number;
+  customer_treatment_id?: string | null;
+  applied_discount_amount?: number | null;
+  applied_at?: string | null;
+  applied_by?: string | null;
   issued_by?: RewardRedemptionIssuedBy;
   used_at?: RewardRedemptionUsedAt;
   cancelled_at?: RewardRedemptionCancelledAt;

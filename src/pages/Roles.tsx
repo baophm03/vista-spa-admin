@@ -46,16 +46,21 @@ interface PermRow {
 
 const SYSTEM_ROLES = ['Admin']
 
-/** Nhãn tiếng Việt cho module quyền (fallback: chính key module). */
+/** Nhãn tiếng Việt cho module quyền. */
 const MODULE_LABELS: Record<string, string> = {
   academy: 'Học viện',
   appointment: 'Lịch hẹn',
   branch: 'Cơ sở',
   card_rank: 'Hạng thẻ',
+  collaborator: 'Cộng tác viên',
+  commission: 'Hoa hồng',
+  content: 'Nội dung app',
   customer: 'Khách hàng',
   custom_field: 'Trường tùy chỉnh',
   day_off: 'Ngày nghỉ',
+  discount: 'Giảm giá & ưu đãi',
   health_metric: 'Chỉ số sức khỏe/da',
+  import: 'Nhập dữ liệu',
   lookup: 'Danh mục chọn',
   membership: 'Thành viên & Điểm',
   notification: 'Thông báo',
@@ -64,6 +69,7 @@ const MODULE_LABELS: Record<string, string> = {
   permission: 'Phân quyền',
   report: 'Báo cáo',
   reward: 'Quà đổi điểm',
+  referral: 'Giới thiệu khách',
   schedule: 'Lịch làm việc',
   service: 'Dịch vụ',
   session: 'Buổi điều trị',
@@ -105,14 +111,24 @@ const ACTION_LABELS: Record<string, string> = {
   convert: 'Chuyển buổi tặng',
 }
 const ACTION_OVERRIDES: Record<string, string> = {
-  'report.customer': 'Khách mới',
+  'report.customer.read': 'Khách mới',
   'report.read': 'Báo cáo tổng hợp',
-  'report.rank': 'Cơ cấu hạng thẻ',
-  'report.session': 'Buổi đã sử dụng',
+  'report.rank.read': 'Cơ cấu hạng thẻ',
+  'report.session.read': 'Buổi đã sử dụng',
 }
 
-const moduleLabel = (module: string) => MODULE_LABELS[module] ?? module
-const actionLabel = (key: string, action: string) => ACTION_OVERRIDES[key] ?? ACTION_LABELS[action] ?? action
+const readableToken = (value: string) =>
+  value
+    .replaceAll('_', ' ')
+    .replaceAll('.', ' ')
+    .replace(/\b\w/g, (character) => character.toLocaleUpperCase('vi-VN'))
+
+const moduleLabel = (module: string) => MODULE_LABELS[module] ?? readableToken(module)
+const actionLabel = (permission: PermRow) =>
+  permission.description?.trim() ||
+  ACTION_OVERRIDES[permission.key] ||
+  ACTION_LABELS[permission.action] ||
+  readableToken(permission.action)
 
 export default function Roles() {
   const queryClient = useQueryClient()
@@ -553,27 +569,23 @@ export default function Roles() {
                       <span className="block text-sm font-semibold text-[var(--brand-dark)]">
                         {moduleLabel(group.module)}
                       </span>
-                      <span className="mt-0.5 block text-[10px] font-medium uppercase tracking-wide text-slate-400">
-                        {group.module} · {checkedCount}/{group.rows.length}
+                      <span className="mt-0.5 block text-[10px] font-medium text-slate-400">
+                        Đã bật {checkedCount}/{group.rows.length} quyền
                       </span>
                     </span>
                   </label>
                 </div>
                 <div className="grid grid-cols-2 gap-x-6 gap-y-3 pt-3 sm:grid-cols-3 lg:grid-cols-4">
                   {group.rows.map((p) => {
-                    const overrideKey = `${p.module}.${p.action}`
                     return (
-                      <label key={p.id} className="flex min-w-0 cursor-pointer items-start gap-2" title={p.description}>
+                      <label key={p.id} className="flex min-w-0 cursor-pointer items-start gap-2">
                         <Checkbox
                           className="mt-0.5 shrink-0"
                           checked={granted.has(permKey(p.module, p.action))}
                           onChange={(e) => togglePerm(permKey(p.module, p.action), e.target.checked)}
                         />
                         <span className="min-w-0 leading-tight">
-                          <span className="block text-sm text-slate-800">{actionLabel(overrideKey, p.action)}</span>
-                          <span className="mt-0.5 block text-[10px] uppercase tracking-wide text-slate-400 [overflow-wrap:anywhere]">
-                            {overrideKey}
-                          </span>
+                          <span className="block text-sm text-slate-800">{actionLabel(p)}</span>
                         </span>
                       </label>
                     )

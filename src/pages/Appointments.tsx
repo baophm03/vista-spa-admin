@@ -1,12 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
+import { useNavigate } from 'react-router-dom'
 import { Can, useAbility } from '@casl/react'
 import {
   Button,
+  Alert,
   Col,
   DatePicker,
   Form,
   Input,
+  InputNumber,
   Modal,
   Row,
   Select,
@@ -20,7 +23,6 @@ import {
 import type { TableColumnsType } from 'antd'
 import {
   CalendarOutlined,
-  CheckCircleOutlined,
   CheckOutlined,
   CloseOutlined,
   EditOutlined,
@@ -50,7 +52,6 @@ import {
   getGetAppointmentsQueryKey,
   useGetAppointments,
   usePostAppointments,
-  usePostAppointmentsIdComplete,
   usePostAppointmentsIdStart,
   usePutAppointmentsId,
   usePutAppointmentsIdApprove,
@@ -59,6 +60,8 @@ import {
   usePutAppointmentsIdReject,
 } from '@/api/endpoints/appointments'
 import { getGetCustomerProfilesQueryKey, postCustomerProfiles, useGetCustomerProfiles } from '@/api/endpoints/customer-profiles'
+import { useGetCustomerTreatments } from '@/api/endpoints/customer-treatments'
+import type { CustomerTreatment } from '@/api/models/customerTreatment'
 import { useGetService } from '@/api/endpoints/services'
 import { useGetUsers } from '@/api/endpoints/users'
 import { useGetBranches } from '@/api/endpoints/branches'
@@ -83,10 +86,54 @@ interface StaffRow {
   email?: string
 }
 
+type TreatmentWithMeta = CustomerTreatment & { package_type?: { name?: string } }
+
+const purchasedTreatmentPackageName = (treatment: TreatmentWithMeta) => {
+  const snapshotName = (treatment.package_snapshot as Record<string, unknown> | undefined)?.name
+  return (typeof snapshotName === 'string' && snapshotName.trim() ? snapshotName : undefined)
+    ?? treatment.package_type?.name
+    ?? 'Gói liệu trình'
+}
+
+const treatmentToOption = (treatment: TreatmentWithMeta) => {
+  const name = purchasedTreatmentPackageName(treatment)
+  const code = treatment.id.replace(/-/g, '').slice(0, 8).toUpperCase()
+  const purchaseDate = treatment.created_at ? dayjs(treatment.created_at).format('DD/MM/YYYY') : null
+  const remaining = treatment.quota_type === 'SESSIONS'
+    ? `còn ${Math.max(0, (treatment.sessions_total ?? 0) + (treatment.sessions_bonus ?? 0) - (treatment.sessions_used ?? 0))} buổi`
+    : treatment.quota_type === 'VALUE'
+      ? `còn ${Math.max(0, (treatment.value_total ?? 0) - (treatment.value_used ?? 0)).toLocaleString('vi-VN')}₫`
+      : 'Trọn gói'
+  return { value: treatment.id, label: `${name} · Mã G-${code}${purchaseDate ? ` · mua ${purchaseDate}` : ''} — ${remaining}` }
+}
+
+// Chỉ giữ gói chứa dịch vụ của lịch (gói không cấu hình dịch vụ nào thì không chặn)
+const treatmentsForService = (treatments: TreatmentWithMeta[], serviceId?: string | null) =>
+  treatments.filter((t) => !serviceId || !t.allowed_service_ids?.length || t.allowed_service_ids.includes(serviceId))
+
 type AppointmentRow = Appointment & {
   customer_profile?: { id?: string; full_name?: string; phone?: string; branch_id?: string | null } | null
-  service?: { title?: string; duration_minutes?: number } | null
+  service?: { title?: string; duration_minutes?: number; price?: number | string | null; price_max?: number | string | null } | null
   staff?: { zalo_name?: string } | null
+  customer_treatment?: {
+    id?: string
+    package_snapshot?: { name?: string } | null
+    package?: { name?: string } | null
+  } | null
+  service_amount?: number | string | null
+  visit_done_at?: string | null
+  skin_note?: string | null
+  concern?: string | null
+  diary?: string | null
+  products_used?: string | null
+  result?: string | null
+}
+
+const treatmentPackageName = (row: AppointmentRow) =>
+  row.customer_treatment?.package_snapshot?.name || row.customer_treatment?.package?.name || null
+const treatmentCode = (row: AppointmentRow) => {
+  const id = row.customer_treatment?.id || row.customer_treatment_id
+  return id ? `G-${id.replace(/-/g, '').slice(0, 8).toUpperCase()}` : null
 }
 
 const CALENDAR_START_HOUR = 7
@@ -143,8 +190,13 @@ function AppointmentCalendarCard({ row, onClick }: { row: AppointmentRow; onClic
         {row.start_time?.slice(0, 5)} · {row.customer_profile?.full_name || 'Khách hàng'}
       </Typography.Text>
       <Typography.Text type="secondary" style={{ display: 'block', fontSize: 11 }}>
-        {row.service?.title || 'Chưa có dịch vụ'} · {row.service?.duration_minutes || 60} phút
+        {row.service?.title || (row.customer_treatment_id ? 'Buổi liệu trình' : 'Chưa có dịch vụ')} · {row.service?.duration_minutes || 60} phút
       </Typography.Text>
+      {treatmentPackageName(row) && (
+        <Typography.Text style={{ display: 'block', fontSize: 11, color: '#71005C' }}>
+          Gói: {treatmentPackageName(row)}{treatmentCode(row) ? ` · ${treatmentCode(row)}` : ''}
+        </Typography.Text>
+      )}
       <Typography.Text type="secondary" style={{ display: 'block', fontSize: 11 }}>
         {row.staff?.zalo_name || 'Chưa gán KTV'} · {STATUS_META[status]?.label || status}
       </Typography.Text>
@@ -164,6 +216,7 @@ const DEFAULT_APPOINTMENT_COLUMNS = APPOINTMENT_COLUMNS.map((column) => column.v
 
 export default function Appointments() {
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
   const ability = useAbility()
   const canApprove = ability.can('APPROVE' as never, 'APPOINTMENT')
   const canUpdate = ability.can('UPDATE' as never, 'APPOINTMENT')
@@ -198,11 +251,14 @@ export default function Appointments() {
   const sessionCustomFields = useCustomFieldDefinitions('SESSION')
   const slotRequest = useRef(0)
   const previousSlotCriteria = useRef('')
+  const appointmentSubmitInFlightRef = useRef(false)
+  const startSubmitInFlightRef = useRef(false)
   const selectedCustomerId = Form.useWatch('customer_profile_id', form)
   const selectedServiceId = Form.useWatch('service_id', form)
   const selectedDateValue = Form.useWatch('appt_date', form)
   const selectedDate = selectedDateValue ? dayjs(selectedDateValue).format('YYYY-MM-DD') : ''
   const selectedStartTime = Form.useWatch('start_time', form)
+  const selectedStartTreatmentId = Form.useWatch('customer_treatment_id', startForm)
 
   const listParams = useMemo(() => {
     const params: Record<string, unknown> = { page, limit }
@@ -272,7 +328,43 @@ export default function Appointments() {
   const noShowMutation = usePutAppointmentsIdNoShow()
   const cancelMutation = usePutAppointmentsIdCancel()
   const startMutation = usePostAppointmentsIdStart()
-  const completeMutation = usePostAppointmentsIdComplete()
+
+  // AP-03/BR-11 — gói liệu trình đang ACTIVE của khách để gắn vào lịch hẹn:
+  // KTV bấm Bắt đầu ca sẽ tự sinh buổi liệu trình và khi hoàn tất sẽ trừ buổi/tiền của gói
+  const activeTreatmentsQuery = useGetCustomerTreatments(
+    { page: 1, limit: 100, customer_profile_id: selectedCustomerId || undefined, status: 'ACTIVE' },
+    { query: { enabled: open && !!selectedCustomerId } },
+  )
+  const activeTreatments = useMemo(() => pickData<TreatmentWithMeta[]>(activeTreatmentsQuery.data) ?? [], [activeTreatmentsQuery.data])
+  const activeTreatmentOptions = useMemo(() => activeTreatments.map(treatmentToOption), [activeTreatments])
+  const selectedTreatmentId = Form.useWatch('customer_treatment_id', form)
+  const selectedTreatment = activeTreatments.find((t) => t.id === selectedTreatmentId)
+  // Chọn gói sẽ giới hạn ô Dịch vụ: chỉ dịch vụ thuộc gói; gói 1 dịch vụ thì khóa ô luôn
+  const packageServiceIds = selectedTreatment?.allowed_service_ids
+  const serviceOptions = packageServiceIds?.length ? services.filter((s) => packageServiceIds.includes(s.id)) : services
+  const serviceLockedByPackage = !!selectedTreatment && !!packageServiceIds?.length && packageServiceIds.length === 1
+
+  // Gói để gắn ngay lúc Bắt đầu ca (lịch chưa gắn gói) — modal hỏi trước khi tạo buổi
+  const startTreatmentsQuery = useGetCustomerTreatments(
+    { page: 1, limit: 100, customer_profile_id: startingAppointment?.customer_profile_id || undefined, status: 'ACTIVE' },
+    { query: { enabled: !!startingAppointment && !startingAppointment.customer_treatment_id } },
+  )
+  const startTreatmentOptions = useMemo(() => {
+    const treatments = pickData<TreatmentWithMeta[]>(startTreatmentsQuery.data) ?? []
+    return treatmentsForService(treatments, startingAppointment?.service_id).map(treatmentToOption)
+  }, [startTreatmentsQuery.data, startingAppointment?.service_id])
+  const startingServicePrice = Number(startingAppointment?.service?.price ?? 0)
+  const startingServicePriceMax = Math.max(startingServicePrice, Number(startingAppointment?.service?.price_max ?? startingServicePrice))
+  const startingServiceHasRange = startingServicePriceMax > startingServicePrice
+  const serviceForAppointmentForm = services.find((service) => service.id === selectedServiceId)
+  const serviceFormPrice = Number(serviceForAppointmentForm?.price ?? 0)
+  const serviceFormPriceMax = Math.max(serviceFormPrice, Number(serviceForAppointmentForm?.price_max ?? serviceFormPrice))
+  const serviceFormHasRange = serviceFormPriceMax > serviceFormPrice
+
+  const isRefreshingAppointments = displayMode === 'calendar'
+    ? calendarAppointmentsQuery.isFetching
+    : appointmentsQuery.isFetching
+  const isSavingAppointment = createMutation.isPending || rescheduleMutation.isPending
 
   const refresh = useCallback(() => {
     void queryClient.invalidateQueries({ queryKey: getGetAppointmentsQueryKey() })
@@ -352,6 +444,7 @@ export default function Appointments() {
             customer_profile_id: appointment.customer_profile_id,
             service_id: appointment.service_id,
             staff_id: appointment.staff_id,
+            customer_treatment_id: appointment.customer_treatment_id ?? undefined,
             appt_date: dayjs(appointment.appt_date),
             start_time: appointment.start_time?.slice(0, 5),
             note: appointment.note,
@@ -388,20 +481,24 @@ export default function Appointments() {
   }
 
   const submit = async () => {
-    const values = await form.validateFields()
-    const profile = profiles.find((p) => p.id === values.customer_profile_id)
-      ?? (selectedProfile?.id === values.customer_profile_id ? selectedProfile : undefined)
-    const payload = {
-      customer_profile_id: values.customer_profile_id,
-      branch_id: profile?.branch_id,
-      service_id: values.service_id,
-      staff_id: values.staff_id || undefined,
-      appt_date: dayjs(values.appt_date).format('YYYY-MM-DD'),
-      start_time: values.start_time,
-      note: values.note,
-      custom_fields: normalizeCustomFieldValues(appointmentCustomFields, values.custom_fields ?? {}, editing?.custom_fields ?? {}),
-    }
+    if (appointmentSubmitInFlightRef.current || isSavingAppointment) return
+    appointmentSubmitInFlightRef.current = true
     try {
+      const values = await form.validateFields()
+      const profile = profiles.find((p) => p.id === values.customer_profile_id)
+        ?? (selectedProfile?.id === values.customer_profile_id ? selectedProfile : undefined)
+      const branchId = profile?.branch_id ?? branchFilter ?? branches[0]?.id
+      const payload = {
+        customer_profile_id: values.customer_profile_id,
+        branch_id: branchId,
+        service_id: values.service_id,
+        staff_id: values.staff_id || undefined,
+        customer_treatment_id: editing ? (values.customer_treatment_id ?? null) : (values.customer_treatment_id || undefined),
+        appt_date: dayjs(values.appt_date).format('YYYY-MM-DD'),
+        start_time: values.start_time,
+        note: values.note,
+        custom_fields: normalizeCustomFieldValues(appointmentCustomFields, values.custom_fields ?? {}, editing?.custom_fields ?? {}),
+      }
       if (editing) {
         await rescheduleMutation.mutateAsync({ id: editing.id, data: payload as never })
         message.success('Đã cập nhật lịch hẹn')
@@ -412,38 +509,62 @@ export default function Appointments() {
       setOpen(false)
       refresh()
     } catch (err) {
+      if ((err as { errorFields?: unknown })?.errorFields) return
       message.error(errorMessage(err))
+    } finally {
+      appointmentSubmitInFlightRef.current = false
     }
   }
 
   const doAction = async (fn: () => Promise<unknown>, msg: string) => {
+    const key = 'appointments-action'
+    message.open({ type: 'loading', content: 'Đang xử lý lịch hẹn, vui lòng chờ…', key, duration: 0 })
     try {
       await fn()
-      message.success(msg)
+      message.open({ type: 'success', content: msg, key, duration: 2 })
       refresh()
     } catch (err) {
-      message.error(errorMessage(err))
+      message.open({ type: 'error', content: errorMessage(err), key, duration: 3 })
     }
   }
 
   const beginAppointment = (row: AppointmentRow) => {
-    if (sessionCustomFields.length === 0) {
+    if (!canStartAppointmentToday(row)) {
+      message.warning('Chỉ bắt đầu được trong ngày hẹn, sau giờ hẹn')
+      return
+    }
+    // Nếu không gắn gói thì đây là dịch vụ lẻ: hồ sơ, ảnh và thanh toán lưu theo lịch hẹn.
+    if (row.customer_treatment_id && sessionCustomFields.length === 0) {
       void doAction(() => startMutation.mutateAsync({ id: row.id, data: {} }), 'Đã bắt đầu')
       return
     }
     startForm.resetFields()
-    startForm.setFieldsValue({ custom_fields: {} })
+    const minimum = Number(row.service?.price ?? 0)
+    const maximum = Math.max(minimum, Number(row.service?.price_max ?? minimum))
+    startForm.setFieldsValue({
+      custom_fields: {},
+      customer_treatment_id: undefined,
+      service_amount: !row.customer_treatment_id && maximum > minimum ? undefined : row.service_amount ?? minimum,
+    })
     setStartingAppointment(row)
   }
 
   const submitStart = async () => {
-    if (!startingAppointment) return
+    if (!startingAppointment || startSubmitInFlightRef.current) return
+    startSubmitInFlightRef.current = true
     try {
       const values = await startForm.validateFields()
       const sessionFields = normalizeCustomFieldValues(sessionCustomFields, values.custom_fields ?? {})
+      const needsPackage = !startingAppointment.customer_treatment_id
       await startMutation.mutateAsync({
         id: startingAppointment.id,
-        data: sessionFields ? { session_custom_fields: sessionFields } : {},
+        data: {
+          ...(sessionFields ? { session_custom_fields: sessionFields } : {}),
+          ...(needsPackage && values.customer_treatment_id ? { customer_treatment_id: values.customer_treatment_id } : {}),
+          ...(!startingAppointment.customer_treatment_id && !values.customer_treatment_id && startingServiceHasRange
+            ? { service_amount: values.service_amount }
+            : {}),
+        },
       })
       message.success('Đã bắt đầu')
       refresh()
@@ -451,6 +572,8 @@ export default function Appointments() {
     } catch (err) {
       if ((err as { errorFields?: unknown })?.errorFields) return
       message.error(errorMessage(err))
+    } finally {
+      startSubmitInFlightRef.current = false
     }
   }
 
@@ -461,6 +584,8 @@ export default function Appointments() {
         message.warning('Lịch hẹn chưa có dịch vụ để kiểm tra KTV rảnh')
         return
       }
+      const loadingKey = 'appointments-approve-check'
+      message.open({ type: 'loading', content: 'Đang kiểm tra giờ và KTV rảnh…', key: loadingKey, duration: 0 })
       const response = await getAppointmentsAvailableSlots({
         branch_id: row.branch_id,
         service_id: row.service_id,
@@ -469,8 +594,9 @@ export default function Appointments() {
       })
       const availableSlots = (pickData<Slot[] | undefined>(response) ?? []) as Slot[]
       availableStaffIds = availableSlots.find((slot) => slot.start_time.slice(0, 5) === row.start_time?.slice(0, 5))?.staff_ids ?? []
+      message.destroy('appointments-approve-check')
     } catch (err) {
-      message.error(errorMessage(err))
+      message.open({ type: 'error', content: errorMessage(err), key: 'appointments-approve-check', duration: 3 })
       return
     }
     if (row.staff_id && availableStaffIds.includes(row.staff_id)) {
@@ -486,27 +612,32 @@ export default function Appointments() {
     Modal.confirm({
       title: 'Chọn KTV đang rảnh ở khung giờ này',
       content: (
-        <Select
-          showSearch
-          optionFilterProp="label"
-          style={{ width: '100%' }}
-          value={staffId}
-          placeholder="Chọn KTV rảnh"
-          options={availableStaff.map((s) => ({
-            value: s.id,
-            label: `${s.zalo_name || 'Nhân viên'} · ${s.email || s.id.slice(0, 8)}`,
-          }))}
-          onChange={(v) => {
-            staffId = v
-          }}
-        />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <Select
+            showSearch
+            optionFilterProp="label"
+            style={{ width: '100%' }}
+            value={staffId}
+            placeholder="Chọn KTV rảnh"
+            options={availableStaff.map((s) => ({
+              value: s.id,
+              label: `${s.zalo_name || 'Nhân viên'} · ${s.email || s.id.slice(0, 8)}`,
+            }))}
+            onChange={(v) => {
+              staffId = v
+            }}
+          />
+        </div>
       ),
       onOk: () => {
         if (!staffId) {
           message.warning('Cần chọn KTV để duyệt')
           return Promise.reject(new Error('no staff'))
         }
-        return doAction(() => approveMutation.mutateAsync({ id: row.id, data: { staff_id: staffId! } as never }), 'Đã duyệt')
+        return doAction(
+          () => approveMutation.mutateAsync({ id: row.id, data: { staff_id: staffId! } as never }),
+          'Đã duyệt',
+        )
       },
     })
   }
@@ -527,8 +658,22 @@ export default function Appointments() {
     })
   }
 
-  const isPastAppointment = (row: AppointmentRow) =>
-    new Date(`${row.appt_date}T${row.start_time}`).getTime() < Date.now()
+  const appointmentScheduledAt = (row: AppointmentRow) => {
+    const date = String(row.appt_date ?? '').slice(0, 10)
+    const time = String(row.start_time ?? '').slice(0, 5)
+    const scheduledAt = dayjs(`${date}T${time}`)
+    return scheduledAt.isValid() ? scheduledAt : null
+  }
+
+  const isPastAppointment = (row: AppointmentRow) => {
+    const scheduledAt = appointmentScheduledAt(row)
+    return !!scheduledAt && scheduledAt.isBefore(dayjs())
+  }
+
+  const canStartAppointmentToday = (row: AppointmentRow) => {
+    const scheduledAt = appointmentScheduledAt(row)
+    return !!scheduledAt && scheduledAt.format('YYYY-MM-DD') === dayjs().format('YYYY-MM-DD') && !scheduledAt.isAfter(dayjs())
+  }
 
   const activeFilterCount = [dateFilter.some(Boolean), staffFilter, branchFilter, filter !== 'all'].filter(Boolean).length
 
@@ -639,7 +784,15 @@ export default function Appointments() {
                 />
               </Space>
             )}
-            <Button icon={<ReloadOutlined />} onClick={refresh} />
+            <Button
+              icon={<ReloadOutlined />}
+              loading={isRefreshingAppointments}
+              aria-label={isRefreshingAppointments ? 'Đang tải lịch hẹn' : 'Tải lại lịch hẹn'}
+              title={isRefreshingAppointments ? 'Đang tải lịch hẹn…' : 'Tải lại lịch hẹn'}
+              onClick={refresh}
+            >
+              {isRefreshingAppointments ? 'Đang tải…' : 'Tải lại'}
+            </Button>
             <Can I="CREATE" a="APPOINTMENT">
               <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
                 Thêm lịch hẹn
@@ -652,7 +805,7 @@ export default function Appointments() {
       </PageTitle>
       {displayMode === 'calendar' ? (
         <div style={{ overflowX: 'auto', border: '1px solid var(--brand-border-soft, #ECEFEA)', borderRadius: 12, background: '#fff' }}>
-          {calendarAppointmentsQuery.isLoading ? (
+          {calendarAppointmentsQuery.isFetching ? (
             <div style={{ padding: 32, textAlign: 'center' }}>Đang tải lịch hẹn…</div>
           ) : calendarView === 'day' ? (
             <div style={{ minWidth: Math.max(760, (calendarStaffs.length + (calendarRows.some((row) => !row.staff_id) ? 1 : 0)) * 210 + 80) }}>
@@ -708,7 +861,7 @@ export default function Appointments() {
         </div>
       ) : <Table<AppointmentRow>
         rowKey="id"
-        loading={appointmentsQuery.isLoading}
+        loading={appointmentsQuery.isFetching}
         dataSource={rows}
         scroll={{ x: 950 }}
         pagination={false}
@@ -728,7 +881,33 @@ export default function Appointments() {
               </div>
             ),
           },
-          { title: 'Dịch vụ', key: 'service', dataIndex: ['service', 'title'] },
+          {
+            title: 'Dịch vụ / Gói',
+            key: 'service',
+            dataIndex: ['service', 'title'],
+            render: (value, row) => (
+              <div>
+                <div>{value || (row.customer_treatment_id ? 'Buổi liệu trình' : '—')}</div>
+                {!row.customer_treatment_id && row.service && (
+                  <Typography.Text type="secondary" style={{ display: 'block', fontSize: 12 }}>
+                    {(() => {
+                      const minimum = Number(row.service?.price ?? 0)
+                      const maximum = Math.max(minimum, Number(row.service?.price_max ?? minimum))
+                      const waitingForPrice = maximum > minimum && ['pending', 'approved'].includes(String(row.status))
+                      return waitingForPrice
+                        ? `Dịch vụ lẻ · Chốt khi bắt đầu: ${minimum.toLocaleString('vi-VN')}–${maximum.toLocaleString('vi-VN')} ₫`
+                        : `Dịch vụ lẻ · Giá chốt ${Number(row.service_amount ?? minimum).toLocaleString('vi-VN')} ₫`
+                    })()}
+                  </Typography.Text>
+                )}
+                {(treatmentPackageName(row) || treatmentCode(row)) && (
+                  <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                    {treatmentPackageName(row) ? `Gói: ${treatmentPackageName(row)}` : 'Gói liệu trình'}{treatmentCode(row) ? ` · ${treatmentCode(row)}` : ''}
+                  </Typography.Text>
+                )}
+              </div>
+            ),
+          },
           { title: 'KTV', key: 'staff', dataIndex: ['staff', 'zalo_name'], render: (v) => v || 'Chưa gán' },
           {
             title: 'Thời gian',
@@ -757,8 +936,12 @@ export default function Appointments() {
                 <RowActionsMenu
                   items={[
                     ...(row.status === 'pending' && canApprove ? [{ key: 'approve', icon: <CheckOutlined />, label: 'Duyệt' }] : []),
-                    ...(row.status === 'approved' && canStart ? [{ key: 'start', icon: <PlayCircleOutlined />, label: 'Bắt đầu' }] : []),
-                    ...(row.status === 'in_progress' && canApprove ? [{ key: 'complete', icon: <CheckCircleOutlined />, label: 'Hoàn tất' }] : []),
+                    ...(row.status === 'approved' && canStart ? [{
+                      key: 'start',
+                      icon: <PlayCircleOutlined />,
+                      label: canStartAppointmentToday(row) ? 'Bắt đầu' : 'Bắt đầu (chưa đến giờ hẹn)',
+                      disabled: !canStartAppointmentToday(row),
+                    }] : []),
                     ...(row.status === 'pending' && canApprove ? [{ key: 'reject', icon: <CloseOutlined />, danger: true, label: 'Từ chối' }] : []),
                     ...(canUpdate && ['pending', 'approved'].includes(row.status ?? '') ? [{ key: 'reschedule', icon: <EditOutlined />, label: 'Đổi lịch' }] : []),
                     ...(row.status === 'approved' && canApprove && isPastAppointment(row) ? [{ key: 'noshow', icon: <MinusCircleOutlined />, label: 'Đánh dấu không đến' }] : []),
@@ -767,7 +950,6 @@ export default function Appointments() {
                   onSelect={(key) => {
                     if (key === 'approve') void approve(row)
                     else if (key === 'start') beginAppointment(row)
-                    else if (key === 'complete') void doAction(() => completeMutation.mutateAsync({ id: row.id }), 'Đã hoàn tất')
                     else if (key === 'reject') reject(row)
                     else if (key === 'reschedule') openModal(row)
                     else if (key === 'noshow') {
@@ -787,11 +969,11 @@ export default function Appointments() {
 
       <Modal
         title="Chi tiết lịch hẹn"
-        width="min(760px, calc(100vw - 24px))"
+        width="min(900px, calc(100vw - 24px))"
         open={!!selectedAppointment}
         onCancel={() => setSelectedAppointment(null)}
         footer={selectedAppointment ? (
-          <Space wrap>
+          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end', gap: 8 }}>
             <Button onClick={() => setSelectedAppointment(null)}>Đóng</Button>
             {['pending', 'approved'].includes(selectedAppointment.status ?? '') && (
               <Can I="UPDATE" a="APPOINTMENT">
@@ -814,26 +996,46 @@ export default function Appointments() {
                 <Button danger onClick={() => { const row = selectedAppointment; setSelectedAppointment(null); void doAction(() => cancelMutation.mutateAsync({ id: row.id }), 'Đã hủy') }}>Hủy lịch</Button>
               </Can>
             )}
-            {selectedAppointment.status === 'approved' && (
+            {selectedAppointment.status === 'approved' && canStart && (
               <Can I="START" a="APPOINTMENT">
-                <Button type="primary" onClick={() => { const row = selectedAppointment; setSelectedAppointment(null); beginAppointment(row) }}>Bắt đầu</Button>
+                <Button
+                  type="primary"
+                  disabled={!canStartAppointmentToday(selectedAppointment)}
+                  title={!canStartAppointmentToday(selectedAppointment) ? 'Chỉ bắt đầu được trong ngày hẹn, sau giờ hẹn' : undefined}
+                  onClick={() => { const row = selectedAppointment; setSelectedAppointment(null); beginAppointment(row) }}
+                >
+                  Bắt đầu
+                </Button>
               </Can>
             )}
-            {selectedAppointment.status === 'in_progress' && canApprove && (
-              <Button type="primary" onClick={() => { const row = selectedAppointment; setSelectedAppointment(null); void doAction(() => completeMutation.mutateAsync({ id: row.id }), 'Đã hoàn tất') }}>Hoàn tất</Button>
-            )}
-          </Space>
+          </div>
         ) : null}
       >
         {selectedAppointment && (
           <Space direction="vertical" size={8} style={{ width: '100%' }}>
             <Typography.Text><strong>Khách hàng:</strong> {selectedAppointment.customer_profile?.full_name || '—'} ({selectedAppointment.customer_profile?.phone || 'không có số điện thoại'})</Typography.Text>
-            <Typography.Text><strong>Dịch vụ:</strong> {selectedAppointment.service?.title || '—'}</Typography.Text>
+            <Typography.Text><strong>Dịch vụ:</strong> {selectedAppointment.service?.title || (selectedAppointment.customer_treatment_id ? 'Buổi liệu trình' : '—')}{!selectedAppointment.customer_treatment_id && selectedAppointment.service && ' · Dịch vụ lẻ'}</Typography.Text>
+            {treatmentPackageName(selectedAppointment) && <Typography.Text><strong>Gói liệu trình:</strong> {treatmentPackageName(selectedAppointment)}</Typography.Text>}
+            {treatmentCode(selectedAppointment) && <Typography.Text><strong>Mã gói:</strong> {treatmentCode(selectedAppointment)}</Typography.Text>}
             <Typography.Text><strong>KTV:</strong> {selectedAppointment.staff?.zalo_name || 'Chưa gán'}</Typography.Text>
             <Typography.Text><strong>Thời gian:</strong> {dayjs(selectedAppointment.appt_date).format('DD/MM/YYYY')} {selectedAppointment.start_time?.slice(0, 5)}</Typography.Text>
             <Typography.Text><strong>Trạng thái:</strong> <Tag color={STATUS_META[selectedAppointment.status as AppointmentStatus]?.color}>{STATUS_META[selectedAppointment.status as AppointmentStatus]?.label || selectedAppointment.status}</Tag></Typography.Text>
             {selectedAppointment.note && <Typography.Text><strong>Ghi chú:</strong> {selectedAppointment.note}</Typography.Text>}
             {selectedAppointment.reject_reason && <Typography.Text><strong>Lý do từ chối:</strong> {selectedAppointment.reject_reason}</Typography.Text>}
+            {!selectedAppointment.customer_treatment_id && (
+              <div style={{ borderTop: '1px solid #eee', paddingTop: 12, marginTop: 4 }}>
+                <Alert
+                  type="info"
+                  showIcon
+                  message="Dịch vụ lẻ — không trừ buổi liệu trình"
+                  description="Hồ sơ làm dịch vụ, ảnh và thanh toán được quản lý trong mục Khách dùng liệu trình → Dịch vụ lẻ."
+                  style={{ marginBottom: 12 }}
+                />
+                <Button type="primary" icon={<EditOutlined />} onClick={() => navigate(`/treatment-customers?tab=services&appointment_id=${encodeURIComponent(selectedAppointment.id)}`)}>
+                  Mở hồ sơ dịch vụ
+                </Button>
+              </div>
+            )}
           </Space>
         )}
       </Modal>
@@ -844,7 +1046,8 @@ export default function Appointments() {
         open={open}
         onCancel={() => setOpen(false)}
         onOk={submit}
-        okText="Lưu"
+        confirmLoading={isSavingAppointment}
+        okText={isSavingAppointment ? (editing ? 'Đang cập nhật…' : 'Đang tạo…') : 'Lưu'}
         cancelText="Hủy"
       >
         <Form form={form} layout="vertical" style={{ marginTop: 12 }}>
@@ -864,7 +1067,10 @@ export default function Appointments() {
               showSearch
               filterOption={false}
               onSearch={setCustomerSearchInput}
-              onChange={(id) => setSelectedProfile(profileOptions.find((profile) => profile.id === id) ?? null)}
+              onChange={(id) => {
+                setSelectedProfile(profileOptions.find((profile) => profile.id === id) ?? null)
+                form.setFieldsValue({ customer_treatment_id: undefined })
+              }}
               loading={profilesQuery.isLoading}
               placeholder="Chọn khách hàng"
               options={profileOptions.map((p) => ({
@@ -880,15 +1086,20 @@ export default function Appointments() {
                 name="service_id"
                 label="Dịch vụ"
                 rules={[{ required: true, message: 'Chọn dịch vụ khách đặt' }]}
-                extra="Dịch vụ quyết định thời lượng và giờ/KTV còn trống."
+                extra={serviceLockedByPackage
+                  ? 'Dịch vụ cố định theo gói đã chọn — bỏ gói nếu muốn chọn dịch vụ khác.'
+                  : serviceFormHasRange && !selectedTreatment
+                    ? `Dịch vụ có khoảng giá ${serviceFormPrice.toLocaleString('vi-VN')}–${serviceFormPriceMax.toLocaleString('vi-VN')} ₫. Lễ tân chốt giá khi bắt đầu lịch.`
+                    : 'Dịch vụ quyết định thời lượng và giờ/KTV còn trống.'}
               >
                 <Select
                   showSearch
                   optionFilterProp="label"
+                  disabled={serviceLockedByPackage}
                   loading={servicesQuery.isLoading}
                   placeholder="Chọn dịch vụ"
                   style={{ width: '100%' }}
-                  options={services.map((s) => ({ value: s.id, label: s.title }))}
+                  options={serviceOptions.map((s) => ({ value: s.id, label: s.title }))}
                   notFoundContent={servicesQuery.isLoading ? 'Đang tải dịch vụ…' : 'Chưa có dịch vụ đang hoạt động'}
                 />
               </Form.Item>
@@ -955,6 +1166,31 @@ export default function Appointments() {
               </Form.Item>
             </Col>
           </Row>
+          <Form.Item
+            name="customer_treatment_id"
+            label="Gói khách đang dùng (không bắt buộc)"
+            extra="Chọn gói đã mua để buổi hẹn dùng gói và trừ buổi/định mức khi hoàn tất. Bỏ trống để làm dịch vụ lẻ; nếu dịch vụ có khoảng giá, lễ tân chốt giá khi bắt đầu."
+          >
+            <Select
+              allowClear
+              showSearch
+              optionFilterProp="label"
+              disabled={!selectedCustomerId}
+              loading={activeTreatmentsQuery.isLoading}
+              placeholder={selectedCustomerId ? 'Chọn gói khách đã mua (nếu có)' : 'Chọn khách trước'}
+              options={activeTreatmentOptions}
+              notFoundContent={activeTreatmentsQuery.isLoading ? 'Đang tải gói…' : 'Khách không có gói đang làm'}
+              onChange={(id) => {
+                const treatment = activeTreatments.find((t) => t.id === id)
+                const allowed = treatment?.allowed_service_ids
+                if (allowed?.length === 1) {
+                  form.setFieldsValue({ service_id: allowed[0] })
+                } else if (allowed?.length && !allowed.includes(form.getFieldValue('service_id'))) {
+                  form.setFieldsValue({ service_id: undefined })
+                }
+              }}
+            />
+          </Form.Item>
           <Form.Item name="note" label="Ghi chú">
             <Input.TextArea rows={2} />
           </Form.Item>
@@ -994,10 +1230,47 @@ export default function Appointments() {
         open={!!startingAppointment}
         onCancel={() => setStartingAppointment(null)}
         onOk={() => void submitStart()}
-        okText="Bắt đầu buổi"
+        confirmLoading={startMutation.isPending}
+        okText={startMutation.isPending ? 'Đang bắt đầu…' : 'Bắt đầu buổi'}
         cancelText="Hủy"
       >
         <Form form={startForm} layout="vertical" style={{ marginTop: 12 }}>
+          {startingAppointment && !startingAppointment.customer_treatment_id && (
+            <Form.Item
+              name="customer_treatment_id"
+              label="Gói khách đang dùng (không bắt buộc)"
+              extra="Chọn gói đã mua để tạo buổi và trừ buổi/định mức của gói khi hoàn tất; không nhập giá dịch vụ. Bỏ trống = dịch vụ lẻ, lễ tân chốt giá nếu dịch vụ có khoảng giá."
+            >
+              <Select
+                allowClear
+                showSearch
+                optionFilterProp="label"
+                loading={startTreatmentsQuery.isLoading}
+              placeholder="Không dùng gói — làm dịch vụ lẻ"
+                options={startTreatmentOptions}
+                notFoundContent={startTreatmentsQuery.isLoading ? 'Đang tải gói…' : 'Khách không có gói phù hợp với dịch vụ này'}
+                onChange={(value) => { if (value) startForm.setFieldValue('service_amount', undefined) }}
+              />
+            </Form.Item>
+          )}
+          {startingAppointment && !startingAppointment.customer_treatment_id && !selectedStartTreatmentId && startingServiceHasRange && (
+            <Form.Item
+              name="service_amount"
+              label="Giá dịch vụ lẻ đã thống nhất"
+              rules={[{ required: true, message: 'Nhập giá chốt trước khi bắt đầu' }]}
+              extra={`Nhập giá khách đã đồng ý trong khoảng ${startingServicePrice.toLocaleString('vi-VN')}–${startingServicePriceMax.toLocaleString('vi-VN')} ₫. Giá này sẽ được dùng khi thu tiền.`}
+            >
+              <InputNumber
+                min={startingServicePrice}
+                max={startingServicePriceMax}
+                precision={0}
+                step={1000}
+                style={{ width: '100%' }}
+                addonAfter="₫"
+                placeholder="Nhập giá chốt"
+              />
+            </Form.Item>
+          )}
           <CustomFieldFormItems definitions={sessionCustomFields} />
         </Form>
       </Modal>

@@ -57,7 +57,7 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * Trả danh sách tài khoản kèm thành viên, voucher và vai trò. Hỗ trợ tìm theo tên/email/số điện thoại, lọc trạng thái, cơ sở, vai trò và `has_role` để chỉ lấy nhân viên nội bộ cùng tài khoản Admin. Người dùng bị giới hạn cơ sở chỉ thấy dữ liệu trong phạm vi được phân công.
+ * Trả danh sách tài khoản kèm thành viên, voucher và vai trò. Hỗ trợ tìm theo tên/email/số điện thoại, lọc trạng thái, cơ sở, vai trò và `has_role` để chỉ lấy nhân viên nội bộ (có vai trò được gắn). Người dùng bị giới hạn cơ sở chỉ thấy dữ liệu trong phạm vi được phân công.
  * @summary Tìm kiếm và lọc danh sách người dùng
  */
 export const getUsers = (
@@ -3762,7 +3762,7 @@ export const prefetchGetUsersMedicalPatientamountQuery = async <TData = Awaited<
 
 
 /**
- * PUT `/users/admin/{id}` — người dùng. Chỉ quản trị viên nền tảng (ADM) được gọi. Trường body: `email`, `phone_number`, `password`, `role_id`, `zalo_name`, `is_admin`, `branch_id`, `is_active`. Xử lý bởi `userProvider.getById`.
+ * PUT `/users/admin/{id}` — người dùng. Chỉ quản trị viên nền tảng (ADM) được gọi. Trường body: `email`, `phone_number`, `password`, `role_id`, `zalo_name`, `branch_id`, `is_active`. Xử lý bởi `userProvider.getById`.
  * @summary Cập nhật admin
  */
 export const putUsersAdminId = (
@@ -3889,7 +3889,7 @@ export const useDeleteUsersAdminId = <TError = LegacyBadRequestResponse | Legacy
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * POST `/users/admin` — người dùng. Chỉ quản trị viên nền tảng (ADM) được gọi. Trường body: `email`, `phone_number`, `password`, `role_id`, `full_name`, `branch_id`, `is_admin`. Xử lý bởi `roleProvider.getById`.
+ * POST `/users/admin` — người dùng. Chỉ quản trị viên nền tảng (ADM) được gọi. Trường body: `email`, `phone_number`, `password`, `role_id`, `full_name`, `branch_id`. Xử lý bởi `roleProvider.getById`.
  * @summary Quản lý tài khoản quản trị
  */
 export const postUsersAdmin = (
