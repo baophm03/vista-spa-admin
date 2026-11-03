@@ -5,6 +5,18 @@ import { useBrandRuntime } from '../themeRuntime'
 
 const { Sider } = Layout
 
+function stripMenuMetadata<T extends MenuItem>(item: T): T {
+  const visibleItem = { ...item } as Record<string, unknown>
+  delete visibleItem.permission
+  delete visibleItem.hideForKtv
+  delete visibleItem.hideForReceptionist
+  delete visibleItem.ktvOnly
+  delete visibleItem.adminOnly
+  delete visibleItem.receptionistOrAdminOnly
+  delete visibleItem.brandReadForStaff
+  return visibleItem as unknown as T
+}
+
 // Lọc menu theo CASL ability — giống filteredNavigation trong sidebar của meu.
 // Subscribe profile store để re-render khi permission rules được update.
 function useFilteredMenuItems(): MenuItem[] {
@@ -13,9 +25,11 @@ function useFilteredMenuItems(): MenuItem[] {
   return menuItems
     .map((entry) => {
       if ('children' in entry) {
-        return { ...entry, children: (entry.children ?? []).filter((child) => hasPagePermission(child, roles, !!profile?.is_admin)) }
+        return stripMenuMetadata({ ...entry, children: (entry.children ?? [])
+          .filter((child) => hasPagePermission(child, roles, !!profile?.is_admin))
+          .map(stripMenuMetadata) })
       }
-      return hasPagePermission(entry, roles, !!profile?.is_admin) ? entry : null
+      return hasPagePermission(entry, roles, !!profile?.is_admin) ? stripMenuMetadata(entry) : null
     })
     .filter((entry): entry is MenuItem => entry !== null)
     .filter((entry) => !('children' in entry) || (entry.children ?? []).length > 0)

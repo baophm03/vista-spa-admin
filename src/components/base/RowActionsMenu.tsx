@@ -9,6 +9,7 @@ export interface RowActionItem {
   label: ReactNode
   icon?: ReactNode
   danger?: boolean
+  disabled?: boolean
   /** Đánh dấu hành động "xem chi tiết" — luôn hiển thị nút icon con mắt ra ngoài. */
   view?: boolean
 }
@@ -39,7 +40,7 @@ export default function RowActionsMenu({ items, onSelect }: RowActionsMenuProps)
   const plain = rest.filter((item) => typeof item.key === 'string')
   if (viewItems.length === 0 && rest.length === 0) return null
 
-  const menuItems = rest.map(({ key, label, icon, danger }) => ({ key, label, icon, danger })) as MenuProps['items']
+  const menuItems = rest.map(({ key, label, icon, danger, disabled }) => ({ key, label, icon, danger, disabled })) as MenuProps['items']
 
   return (
     <span
@@ -61,7 +62,9 @@ export default function RowActionsMenu({ items, onSelect }: RowActionsMenuProps)
           trigger={['click']}
           menu={{
             items: menuItems,
-            onClick: ({ key }) => onSelect(key),
+            onClick: ({ key }) => {
+              if (!rest.find((item) => item.key === key)?.disabled) onSelect(key)
+            },
           }}
         >
           <Button size="small" icon={<MoreOutlined />} aria-label="Thao tác khác" />

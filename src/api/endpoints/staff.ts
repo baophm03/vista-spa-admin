@@ -592,8 +592,8 @@ export const prefetchGetStaffSchedulesQuery = async <TData = Awaited<ReturnType<
 
 
 /**
- * **SC-03** — POST /staff-schedules (unique staff+weekday+shift). Cần quyền `schedule.create`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Trường body: `staff_id`, `branch_id`, `weekday`, `shift_template_id`.
- * @summary Tạo ca làm việc mới
+ * **SC-03** — POST /staff-schedules (unique staff+weekday+shift). Cần quyền `schedule.create`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Trường body: `staff_id`, `branch_id`, `weekday`, `shift_template_id`. Hỗ trợ xếp hàng loạt: truyền `weekdays` (mảng 1..7) và `shift_template_ids` (mảng UUID) để tạo chéo nhiều ngày × nhiều ca trong một lần gọi; các combo đã tồn tại bị bỏ qua, kết quả trả kèm `meta.created_count` / `meta.skipped_count`.
+ * @summary Tạo ca làm việc mới (đơn hoặc hàng loạt)
  */
 export const postStaffSchedules = (
     postStaffSchedulesBody: PostStaffSchedulesBody,
@@ -641,7 +641,7 @@ const {mutation: mutationOptions} = options ?
     export type PostStaffSchedulesMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Tạo ca làm việc mới
+ * @summary Tạo ca làm việc mới (đơn hoặc hàng loạt)
  */
 export const usePostStaffSchedules = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postStaffSchedules>>, TError,{data: PostStaffSchedulesBody}, TContext>, }

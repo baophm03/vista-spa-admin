@@ -282,6 +282,11 @@ h4.ant-typography {
   }
 }
 
+/* ===== Stack ảnh buổi điều trị — thumb hover nổi lên trên để với tới nút xóa bị ảnh kế bên che ===== */
+.session-photo-stack > div:hover {
+  z-index: 30;
+}
+
 /* ===== Modal luôn gọn trong màn hình =====
    - Căn giữa dọc + ngang, không bao giờ cao hơn viewport → không kéo scrollbar trang.
    - Nội dung dài hơn màn hình sẽ cuộn bên trong modal (header/footer ghim tại chỗ). */
@@ -328,3 +333,35 @@ h4.ant-typography {
     max-width: calc(100vw - 16px);
   }
 }
+
+.content-rich-editor .ql-toolbar.ql-snow {
+  border-color: #d9cfe0;
+  border-radius: 0.5rem 0.5rem 0 0;
+  background: #faf7fb;
+}
+
+.content-rich-editor .ql-container.ql-snow {
+  border-color: #d9cfe0;
+  border-radius: 0 0 0.5rem 0.5rem;
+  font-family: inherit;
+  font-size: 0.95rem;
+}
+
+.content-rich-editor .ql-editor {
+  min-height: 16rem;
+  line-height: 1.75;
+}
+
+.content-rich-editor .ql-editor img {
+  max-width: 100%;
+  height: auto;
+}
+
+.content-post-preview {
+  line-height: 1.75;
+  overflow-wrap: anywhere;
+}
+
+.content-post-preview .ql-toolbar.ql-snow { display: none; }
+.content-post-preview .ql-container.ql-snow { border: 0; }
+.content-post-preview .ql-editor { min-height: 0; padding: 0; }

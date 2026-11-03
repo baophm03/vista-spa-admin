@@ -5,6 +5,7 @@
  * Vista Spa backend API. Uses the NEWSKY+ business error envelope for permission-aware endpoints and the legacy response envelope for existing admin endpoints.
  * OpenAPI spec version: 1.0.0
  */
+import type { RoleCode } from './roleCode';
 import type { RoleDescription } from './roleDescription';
 
 /**
@@ -13,6 +14,8 @@ import type { RoleDescription } from './roleDescription';
 export interface Role {
   id: string;
   role_name: string;
+  /** Mã vai trò cố định (admin/ktv/...); null cho vai trò thường */
+  code?: RoleCode;
   description?: RoleDescription;
   receptionist?: boolean;
   membership?: boolean;

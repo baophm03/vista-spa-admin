@@ -58,6 +58,8 @@ export interface CustomerTreatment {
   parent_treatment_id?: CustomerTreatmentParentTreatmentId;
   note?: CustomerTreatmentNote;
   custom_fields?: CustomerTreatmentCustomFields;
+  /** Dịch vụ hợp lệ để đặt lịch theo gói (gói lẻ: service_id trong snapshot; combo: treatment_package_service) */
+  allowed_service_ids?: string[];
   created_at?: string;
   updated_at?: string;
 }

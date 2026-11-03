@@ -47,6 +47,7 @@ import type {
   GetPaymentsParams,
   GetSessionsId200,
   GetSessionsIdPhotos200,
+  GetSessionsParams,
   GetWarrantyClaims200,
   GetWarrantyClaimsId200,
   GetWarrantyClaimsParams,
@@ -676,7 +677,7 @@ export const usePutWarrantyClaimsIdApprove = <TError = UnauthorizedResponse | Fo
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **SS-03** — GET /sessions/{id} (ghi access_log VIEW_SESSION). Cần quyền `customer.read`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó.
+ * **SS-03** — GET /sessions/{id} (ghi access_log VIEW_SESSION). Cần quyền `customer.read`; KTV chỉ xem buổi được giao cho mình. Hồ sơ khách đã ẩn không xuất hiện.
  * @summary Xem chi tiết buổi điều trị
  */
 export const getSessionsId = (
@@ -997,6 +998,201 @@ export const useDeleteSessionsId = <TError = UnauthorizedResponse | ForbiddenRes
       return useMutation(mutationOptions, queryClient);
     }
     /**
+ * **SS-09** — GET /sessions. Cần quyền `customer.read`. KTV chỉ xem buổi được giao cho mình; ADM/REC xem theo phạm vi cơ sở và có thể lọc theo KTV.
+ * @summary Lấy danh sách buổi điều trị
+ */
+export const getSessions = (
+    params?: GetSessionsParams,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<void>(
+      {url: `/sessions`, method: 'GET',
+        params, signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetSessionsInfiniteQueryKey = (params?: GetSessionsParams,) => {
+    return [
+    'infinite', `/sessions`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+export const getGetSessionsQueryKey = (params?: GetSessionsParams,) => {
+    return [
+    `/sessions`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getGetSessionsInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getSessions>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetSessionsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSessions>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetSessionsInfiniteQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSessions>>> = ({ signal }) => getSessions(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSessions>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetSessionsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getSessions>>>
+export type GetSessionsInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+
+
+export function useGetSessionsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getSessions>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetSessionsParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSessions>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getSessions>>,
+          TError,
+          Awaited<ReturnType<typeof getSessions>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetSessionsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getSessions>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetSessionsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSessions>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getSessions>>,
+          TError,
+          Awaited<ReturnType<typeof getSessions>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetSessionsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getSessions>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetSessionsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSessions>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Lấy danh sách buổi điều trị
+ */
+
+export function useGetSessionsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getSessions>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetSessionsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSessions>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetSessionsInfiniteQueryOptions(params,options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Lấy danh sách buổi điều trị
+ */
+export const prefetchGetSessionsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getSessions>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetSessionsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSessions>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetSessionsInfiniteQueryOptions(params,options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetSessionsQueryOptions = <TData = Awaited<ReturnType<typeof getSessions>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetSessionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSessions>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetSessionsQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSessions>>> = ({ signal }) => getSessions(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSessions>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetSessionsQueryResult = NonNullable<Awaited<ReturnType<typeof getSessions>>>
+export type GetSessionsQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+
+
+export function useGetSessions<TData = Awaited<ReturnType<typeof getSessions>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetSessionsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSessions>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getSessions>>,
+          TError,
+          Awaited<ReturnType<typeof getSessions>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetSessions<TData = Awaited<ReturnType<typeof getSessions>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetSessionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSessions>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getSessions>>,
+          TError,
+          Awaited<ReturnType<typeof getSessions>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetSessions<TData = Awaited<ReturnType<typeof getSessions>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetSessionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSessions>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Lấy danh sách buổi điều trị
+ */
+
+export function useGetSessions<TData = Awaited<ReturnType<typeof getSessions>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetSessionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSessions>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetSessionsQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Lấy danh sách buổi điều trị
+ */
+export const prefetchGetSessionsQuery = async <TData = Awaited<ReturnType<typeof getSessions>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetSessionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSessions>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetSessionsQueryOptions(params,options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
  * **SS-05** — PUT /sessions/{id}/start (KTV: scheduled → in_progress). Cần quyền `session.start`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó.
  * @summary Bắt đầu
  */
@@ -1125,7 +1321,7 @@ export const usePostSessionsIdPhotos = <TError = UnauthorizedResponse | Forbidde
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **PH-02** — GET /sessions/{id}/photos (mới nhất trước, ghi access_log VIEW_PHOTO). Cần quyền `customer.read`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó.
+ * **PH-02** — GET /sessions/{id}/photos (mới nhất trước, ghi access_log VIEW_PHOTO). Cần quyền `customer.read`; KTV chỉ xem ảnh buổi được giao cho mình. Hồ sơ khách đã ẩn không xuất hiện.
  * @summary Quản lý ảnh buổi điều trị
  */
 export const getSessionsIdPhotos = (
@@ -1769,7 +1965,7 @@ export const usePostPaymentsIdVoid = <TError = UnauthorizedResponse | ForbiddenR
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **CT-02** — GET /customer-treatments/{id}. Cần quyền `customer.read`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó.
+ * **CT-02** — GET /customer-treatments/{id}. Cần quyền `customer.read`. KTV chỉ xem đúng gói có buổi được phân công cho mình; ADM/REC áp dụng phạm vi cơ sở.
  * @summary Xem chi tiết gói liệu trình của khách
  */
 export const getCustomerTreatmentsId = (
@@ -2028,7 +2224,7 @@ export const usePutCustomerTreatmentsId = <TError = UnauthorizedResponse | Forbi
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **CT-01** — GET /customer-treatments. Cần quyền `customer.read`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Tham số truy vấn: `page`, `limit`, `branch_id`, `customer_profile_id`, `status`, `payment_status`, `has_debt`.
+ * **CT-01** — GET /customer-treatments. Cần quyền `customer.read`. KTV chỉ thấy gói có buổi điều trị được phân công cho mình; ADM/REC áp dụng phạm vi cơ sở. Tham số truy vấn: `page`, `limit`, `branch_id`, `customer_profile_id`, `status`, `payment_status`, `has_debt`.
  * @summary Lấy danh sách gói liệu trình của khách
  */
 export const getCustomerTreatments = (
@@ -2288,7 +2484,7 @@ export const usePostCustomerTreatments = <TError = UnauthorizedResponse | Forbid
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **SS-01** — GET /customer-treatments/{id}/sessions (ghi access_log). Cần quyền `customer.read`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó.
+ * **SS-01** — GET /customer-treatments/{id}/sessions (ghi access_log). Cần quyền `customer.read`; KTV chỉ xem buổi được giao cho mình và không xem hồ sơ khách đã ẩn. Phạm vi cơ sở áp dụng cho người dùng bị giới hạn một cơ sở.
  * @summary Xem buổi điều trị
  */
 export const getCustomerTreatmentsIdSessions = (
@@ -3468,7 +3664,7 @@ export const prefetchGetCustomerTreatmentsIdAdjustmentsQuery = async <TData = Aw
 
 
 /**
- * **TA-01** — PUT /customer-treatments/{id}/adjust (BR-17). Cần quyền `treatment.adjust`. Bắt buộc `reason`. type: `ADJUST_SESSIONS` (số buổi đã dùng), `ADJUST_BONUS` (số buổi tặng), `ADJUST_VALUE` (giá trị đã tiêu), `EXTEND_EXPIRY` (hạn dùng — gửi `expires_at`; gói EXPIRED có hạn mới > now sẽ tự mở lại ACTIVE). Chặn giá trị âm/vượt tổng. Ghi `treatment_adjustment` với before/after.
+ * **TA-01** — PUT /customer-treatments/{id}/adjust (BR-17). Cần quyền `treatment.adjust`. Bắt buộc `reason`. type: `ADJUST_SESSIONS` (số buổi đã dùng), `ADJUST_BONUS` (số buổi tặng), `ADJUST_VALUE` (giá trị đã tiêu), `ADJUST_VALUE_TOTAL` (định mức tiền được dùng), `EXTEND_EXPIRY` (hạn dùng — gửi `expires_at`). Chặn giá trị âm/vượt tổng. Ghi `treatment_adjustment` với before/after.
  * @summary Điều chỉnh thủ công gói của khách
  */
 export const putCustomerTreatmentsIdAdjustments = (

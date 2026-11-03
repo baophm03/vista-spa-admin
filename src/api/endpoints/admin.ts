@@ -261,6 +261,200 @@ export const prefetchGetLogsGetAllWithinTimeRangeQuery = async <TData = Awaited<
 
 
 /**
+ * Chỉ Admin và lễ tân được xem. Trả kèm danh sách biến được phép theo sự kiện.
+ * @summary Xem danh sách mẫu thông báo
+ */
+export const getNotificationTemplates = (
+    
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<void>(
+      {url: `/notificationTemplates`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetNotificationTemplatesInfiniteQueryKey = () => {
+    return [
+    'infinite', `/notificationTemplates`
+    ] as const;
+    }
+
+export const getGetNotificationTemplatesQueryKey = () => {
+    return [
+    `/notificationTemplates`
+    ] as const;
+    }
+
+    
+export const getGetNotificationTemplatesInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getNotificationTemplates>>>, TError = unknown>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getNotificationTemplates>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetNotificationTemplatesInfiniteQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getNotificationTemplates>>> = ({ signal }) => getNotificationTemplates(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getNotificationTemplates>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetNotificationTemplatesInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getNotificationTemplates>>>
+export type GetNotificationTemplatesInfiniteQueryError = unknown
+
+
+export function useGetNotificationTemplatesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getNotificationTemplates>>>, TError = unknown>(
+  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getNotificationTemplates>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getNotificationTemplates>>,
+          TError,
+          Awaited<ReturnType<typeof getNotificationTemplates>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetNotificationTemplatesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getNotificationTemplates>>>, TError = unknown>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getNotificationTemplates>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getNotificationTemplates>>,
+          TError,
+          Awaited<ReturnType<typeof getNotificationTemplates>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetNotificationTemplatesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getNotificationTemplates>>>, TError = unknown>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getNotificationTemplates>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Xem danh sách mẫu thông báo
+ */
+
+export function useGetNotificationTemplatesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getNotificationTemplates>>>, TError = unknown>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getNotificationTemplates>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetNotificationTemplatesInfiniteQueryOptions(options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Xem danh sách mẫu thông báo
+ */
+export const prefetchGetNotificationTemplatesInfiniteQuery = async <TData = Awaited<ReturnType<typeof getNotificationTemplates>>, TError = unknown>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getNotificationTemplates>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetNotificationTemplatesInfiniteQueryOptions(options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetNotificationTemplatesQueryOptions = <TData = Awaited<ReturnType<typeof getNotificationTemplates>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getNotificationTemplates>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetNotificationTemplatesQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getNotificationTemplates>>> = ({ signal }) => getNotificationTemplates(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getNotificationTemplates>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetNotificationTemplatesQueryResult = NonNullable<Awaited<ReturnType<typeof getNotificationTemplates>>>
+export type GetNotificationTemplatesQueryError = unknown
+
+
+export function useGetNotificationTemplates<TData = Awaited<ReturnType<typeof getNotificationTemplates>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getNotificationTemplates>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getNotificationTemplates>>,
+          TError,
+          Awaited<ReturnType<typeof getNotificationTemplates>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetNotificationTemplates<TData = Awaited<ReturnType<typeof getNotificationTemplates>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getNotificationTemplates>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getNotificationTemplates>>,
+          TError,
+          Awaited<ReturnType<typeof getNotificationTemplates>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetNotificationTemplates<TData = Awaited<ReturnType<typeof getNotificationTemplates>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getNotificationTemplates>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Xem danh sách mẫu thông báo
+ */
+
+export function useGetNotificationTemplates<TData = Awaited<ReturnType<typeof getNotificationTemplates>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getNotificationTemplates>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetNotificationTemplatesQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Xem danh sách mẫu thông báo
+ */
+export const prefetchGetNotificationTemplatesQuery = async <TData = Awaited<ReturnType<typeof getNotificationTemplates>>, TError = unknown>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getNotificationTemplates>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetNotificationTemplatesQueryOptions(options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
  * **NT-03** — GET /notifications/{id}. Cần quyền `notification.read`.
  * @summary Xem chi tiết thông báo
  */

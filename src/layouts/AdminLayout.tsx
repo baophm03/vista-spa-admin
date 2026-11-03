@@ -5,7 +5,7 @@ import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useGetUsersGetMyInfo } from '../api/endpoints/users'
 import { clearAuth } from '../api/mutator/custom-instance'
 import { AdminHeader, AdminSidebar, getPageTitle } from '.'
-import { getProfileRoleNames, isKtvRoleName } from './sidebarMenu'
+import { canAccessPage, getProfileRoleNames, isKtvRoleName, isReceptionistRoleName } from './sidebarMenu'
 import PermissionGate from './PermissionGate'
 import { ability } from '../configs/casl/ability'
 import { AbilityProvider } from '@casl/react'
@@ -53,11 +53,16 @@ export default function AdminLayout() {
   // Chưa login → redirect ngay trong render, KHÔNG mount Outlet (children sẽ không chạy effect/fetch API)
   if (!accessToken) return <Navigate to="/login" replace />
 
-  // KTV không có Dashboard. Đưa tài khoản về trang công việc của họ thay vì để Dashboard trả 403.
+  // Chuyển non-admin khỏi trang chủ khi Dashboard không được phép truy cập.
   if (location.pathname === '/' && activeProfile) {
     const roles = getProfileRoleNames(activeProfile as Parameters<typeof getProfileRoleNames>[0])
-    if (!activeProfile.is_admin && roles.some(isKtvRoleName)) {
-      return <Navigate to="/my-sessions" replace />
+    if (!canAccessPage('/', roles, !!activeProfile.is_admin)) {
+      const landingPath = roles.some(isKtvRoleName)
+        ? '/my-sessions'
+        : roles.some(isReceptionistRoleName)
+          ? '/treatment-customers'
+          : '/appointments'
+      return <Navigate to={landingPath} replace />
     }
   }
 

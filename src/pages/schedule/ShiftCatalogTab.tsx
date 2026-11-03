@@ -51,7 +51,10 @@ export default function ShiftCatalogTab({ branches, access, loadingShared }: Pro
     const values = await form.validateFields()
     const start = values.start_time as Dayjs
     const end = values.end_time as Dayjs
-    if (!start || !end || !start.isBefore(end, 'minute')) {
+    // So sánh theo giờ trong ngày: prefill gắn ngày 2000-01-01 nhưng TimePicker trả về
+    // ngày hiện tại khi người dùng chọn — so nguyên timestamp sẽ sai lệch
+    const minuteOfDay = (d: Dayjs) => d.hour() * 60 + d.minute()
+    if (!start || !end || minuteOfDay(start) >= minuteOfDay(end)) {
       form.setFields([{ name: 'end_time', errors: ['Giờ kết thúc phải sau giờ bắt đầu'] }])
       return
     }

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   Button,
   Col,
+  Descriptions,
   Form,
   Image,
   Input,
@@ -59,6 +60,7 @@ import type { ProductUpdate } from '@/api/models/productUpdate'
 import type { PostProductCategoriesBody } from '@/api/models/postProductCategoriesBody'
 import type { PutProductCategoriesIdBody } from '@/api/models/putProductCategoriesIdBody'
 import { formatCurrency, useBrandCurrency } from '@/themeRuntime'
+import { useCustomerProfileAccess } from '@/utils/customerProfileAccess'
 
 /** BE include kèm `category` (id, name) khi list. */
 type ProductRow = Product & { category?: { id?: string; name?: string } }
@@ -80,6 +82,7 @@ const DEFAULT_PRODUCT_COLUMNS = PRODUCT_COLUMNS.map((column) => column.value)
 
 export default function Products() {
   const { currency, symbol: currencySymbol } = useBrandCurrency()
+  const { isAdmin } = useCustomerProfileAccess()
   const queryClient = useQueryClient()
   const [searchInput, setSearchInput] = useState('')
   const [search, setSearch] = useState('')
@@ -93,6 +96,7 @@ export default function Products() {
   const [form] = Form.useForm()
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<ProductRow | null>(null)
+  const [viewing, setViewing] = useState<ProductRow | null>(null)
   const [saving, setSaving] = useState(false)
   const [uploadingCover, setUploadingCover] = useState(false)
   const [uploadingGallery, setUploadingGallery] = useState(false)
@@ -287,9 +291,11 @@ export default function Products() {
                 setPage(1)
               }}
             />
-            <Button icon={<InboxOutlined />} onClick={() => { setEditingCategory(null); catForm.resetFields(); setCatOpen(true) }}>
-              Danh mục
-            </Button>
+            {isAdmin && (
+              <Button icon={<InboxOutlined />} onClick={() => { setEditingCategory(null); catForm.resetFields(); setCatOpen(true) }}>
+                Danh mục
+              </Button>
+            )}
             <ListFilterPopover
               open={filterOpen}
               onOpenChange={(next) => {
@@ -338,9 +344,11 @@ export default function Products() {
               )}
             />
             <Button icon={<ReloadOutlined />} onClick={() => { void productsQuery.refetch(); void categoriesQuery.refetch() }} />
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
-              Thêm sản phẩm
-            </Button>
+            {isAdmin && (
+              <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
+                Thêm sản phẩm
+              </Button>
+            )}
           </Space>
         }
       >
@@ -408,13 +416,19 @@ export default function Products() {
             render: (_, p) => (
               <RowActionsMenu
                 items={[
-                  { key: 'edit', icon: <EditOutlined />, label: 'Sửa' },
-                  p.is_active === false
-                    ? { key: 'show', icon: <EyeOutlined />, label: 'Hiện lại' }
-                    : { key: 'hide', icon: <EyeInvisibleOutlined />, label: 'Ẩn', danger: true },
+                  { key: 'view', icon: <EyeOutlined />, label: 'Chi tiết', view: true },
+                  ...(isAdmin
+                    ? [
+                        { key: 'edit', icon: <EditOutlined />, label: 'Sửa' },
+                        p.is_active === false
+                          ? { key: 'show', icon: <EyeOutlined />, label: 'Hiện lại' }
+                          : { key: 'hide', icon: <EyeInvisibleOutlined />, label: 'Ẩn', danger: true },
+                      ]
+                    : []),
                 ]}
                 onSelect={(key) => {
-                  if (key === 'edit') openModal(p)
+                  if (key === 'view') setViewing(p)
+                  else if (key === 'edit') openModal(p)
                   else if (key === 'show') void toggleVisibility(p)
                   else if (key === 'hide') {
                     Modal.confirm({
@@ -429,14 +443,52 @@ export default function Products() {
               />
             ),
           },
-        ] satisfies TableColumnsType<ProductRow>).filter((column) => column.key === 'actions' || visibleColumns.includes(String(column.key)))}
+        ] satisfies TableColumnsType<ProductRow>).filter((column) =>
+          column.key === 'actions' ? true : visibleColumns.includes(String(column.key)),
+        )}
       />
       <ListPagination page={page} limit={10} total={rows.length} onChange={setPage} noun="sản phẩm" hideOnSinglePage />
+
+      <Modal
+        title="Chi tiết sản phẩm"
+        open={!!viewing}
+        onCancel={() => setViewing(null)}
+        footer={<Button onClick={() => setViewing(null)}>Đóng</Button>}
+        width={680}
+      >
+        {viewing && (
+          <Space direction="vertical" size={16} style={{ width: '100%', marginTop: 12 }}>
+            {(viewing.cover_url || viewing.gallery?.length) ? (
+              <Image.PreviewGroup>
+                <Space wrap>
+                  {viewing.cover_url && <Image src={viewing.cover_url} width={96} height={96} style={{ objectFit: 'cover', borderRadius: 8 }} />}
+                  {(viewing.gallery ?? []).map((url) => (
+                    <Image key={url} src={url} width={96} height={96} style={{ objectFit: 'cover', borderRadius: 8 }} />
+                  ))}
+                </Space>
+              </Image.PreviewGroup>
+            ) : (
+              <Typography.Text type="secondary">Sản phẩm chưa có hình ảnh.</Typography.Text>
+            )}
+            <Descriptions bordered size="small" column={1}>
+              <Descriptions.Item label="Tên sản phẩm">{viewing.name}</Descriptions.Item>
+              <Descriptions.Item label="Mã SKU">{viewing.sku || '—'}</Descriptions.Item>
+              <Descriptions.Item label="Danh mục">{viewing.category?.name || '—'}</Descriptions.Item>
+              <Descriptions.Item label="Giá hiển thị">{formatPrice(viewing.price, currency)}</Descriptions.Item>
+              <Descriptions.Item label="Liên kết mua hàng">
+                {viewing.buy_url ? <a href={viewing.buy_url} target="_blank" rel="noreferrer">{viewing.buy_url}</a> : '—'}
+              </Descriptions.Item>
+              <Descriptions.Item label="Mô tả">{viewing.description || '—'}</Descriptions.Item>
+              <Descriptions.Item label="Trạng thái">{viewing.is_active === false ? 'Đã ẩn' : 'Đang bán'}</Descriptions.Item>
+            </Descriptions>
+          </Space>
+        )}
+      </Modal>
 
       {/* Form sản phẩm */}
       <Modal
         title={editing ? 'Sửa sản phẩm' : 'Thêm sản phẩm'}
-        open={open}
+        open={isAdmin && open}
         onCancel={() => setOpen(false)}
         onOk={() => void submit()}
         confirmLoading={saving}
@@ -567,7 +619,7 @@ export default function Products() {
       {/* Quản lý danh mục */}
       <Modal
         title="Danh mục sản phẩm"
-        open={catOpen}
+        open={isAdmin && catOpen}
         footer={null}
         onCancel={() => { setCatOpen(false); setEditingCategory(null); catForm.resetFields() }}
         width={560}

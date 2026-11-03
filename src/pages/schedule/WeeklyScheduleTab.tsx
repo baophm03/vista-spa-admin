@@ -22,6 +22,14 @@ const WEEKDAYS = [
   { value: 4, label: 'T5' }, { value: 5, label: 'T6' }, { value: 6, label: 'T7' }, { value: 7, label: 'CN' },
 ]
 
+/** Rule bắt buộc cho field có thể là mảng (chọn nhiều) hoặc số đơn (sửa 1 dòng). */
+const requiredValue = (messageText: string) => ({
+  validator: (_: unknown, value: unknown) => {
+    const filled = Array.isArray(value) ? value.length > 0 : value !== undefined && value !== null && value !== ''
+    return filled ? Promise.resolve() : Promise.reject(new Error(messageText))
+  },
+})
+
 interface Props extends SchedulePageData { loadingShared: boolean }
 interface ConflictAppointment { id: string; appt_date: string; start_time: string; customer_profile?: { full_name?: string }; service?: { title?: string } }
 type StaffScheduleWithStaff = StaffScheduleRow & { staff?: { id: string; zalo_name?: string; email?: string; phone_number?: string } | null; shift_template?: ShiftTemplateRow | null }
@@ -77,8 +85,8 @@ export default function WeeklyScheduleTab({ branches, staff, access, loadingShar
     } : {
       staff_id: staffId,
       branch_id: branchId,
-      weekday: undefined,
-      shift_template_id: undefined,
+      weekday: [],
+      shift_template_id: [],
     })
     setOpen(true)
   }
@@ -91,9 +99,27 @@ export default function WeeklyScheduleTab({ branches, staff, access, loadingShar
       return
     }
     try {
-      if (editing) await putStaffSchedulesId(editing.id, values as never)
-      else await postStaffSchedules(values as never)
-      message.success(editing ? 'Đã cập nhật lịch làm' : 'Đã thêm lịch làm')
+      if (editing) {
+        await putStaffSchedulesId(editing.id, {
+          staff_id: values.staff_id,
+          branch_id: values.branch_id,
+          weekday: values.weekday,
+          shift_template_id: values.shift_template_id,
+        } as never)
+        message.success('Đã cập nhật lịch làm')
+      } else {
+        const result = await postStaffSchedules({
+          staff_id: values.staff_id,
+          branch_id: values.branch_id,
+          weekdays: values.weekday as number[],
+          shift_template_ids: values.shift_template_id as string[],
+        } as never)
+        const counts = (result as { meta?: { created_count?: number; skipped_count?: number } })?.meta
+        const created = counts?.created_count ?? 0
+        const skipped = counts?.skipped_count ?? 0
+        if (!created) message.info('Không có ca mới nào được xếp — các ca đã chọn đều có sẵn trong lịch')
+        else message.success(`Đã xếp ${created} ca làm việc${skipped ? ` (bỏ qua ${skipped} ca đã có sẵn)` : ''}`)
+      }
       setOpen(false)
       void queryClient.invalidateQueries({ queryKey: getGetStaffSchedulesQueryKey() })
     } catch (err) { message.error(errorMessage(err)) }
@@ -211,11 +237,15 @@ export default function WeeklyScheduleTab({ branches, staff, access, loadingShar
         <Form.Item name="branch_id" label="Cơ sở" rules={[{ required: true, message: 'Chọn cơ sở' }]}>
           <Select options={(branchFilter ? branches.filter((branch) => branch.id === branchFilter) : branches).map((branch) => ({ value: branch.id, label: branch.name }))} />
         </Form.Item>
-        <Form.Item name="weekday" label="Thứ trong tuần" rules={[{ required: true, message: 'Chọn thứ' }]}>
-          <Select options={WEEKDAYS} />
+        <Form.Item name="weekday" label={editing ? 'Thứ trong tuần' : 'Thứ trong tuần (chọn nhiều)'} rules={[requiredValue('Chọn thứ')]}>
+          <Select mode={editing ? undefined : 'multiple'} placeholder={editing ? 'Chọn thứ' : 'Chọn một hoặc nhiều thứ'} options={WEEKDAYS} />
         </Form.Item>
-        <Form.Item name="shift_template_id" label="Ca" rules={[{ required: true, message: 'Chọn ca' }]}>
-          <Select options={templates.filter((template) => template.is_active !== false && (!template.branch_id || template.branch_id === selectedBranch)).map((template) => ({ value: template.id, label: `${template.name} (${template.start_time.slice(0, 5)}–${template.end_time.slice(0, 5)})` }))} />
+        <Form.Item name="shift_template_id" label={editing ? 'Ca' : 'Ca (chọn nhiều)'} rules={[requiredValue('Chọn ca')]}>
+          <Select
+            mode={editing ? undefined : 'multiple'}
+            placeholder={editing ? 'Chọn ca' : 'Chọn một hoặc nhiều ca'}
+            options={templates.filter((template) => template.is_active !== false && (!template.branch_id || template.branch_id === selectedBranch)).map((template) => ({ value: template.id, label: `${template.name} (${template.start_time.slice(0, 5)}–${template.end_time.slice(0, 5)})` }))}
+          />
         </Form.Item>
       </Form>
     </Modal>

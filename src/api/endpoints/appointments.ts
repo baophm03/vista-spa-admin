@@ -970,7 +970,7 @@ export const usePutAppointmentsIdNoShow = <TError = UnauthorizedResponse | Forbi
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **AP-10** — POST /appointments/{id}/complete (KTV được gán hoặc ADM/REC: in_progress → completed). Cần quyền `appointment.start`.
+ * POST `/appointments/{id}/complete` — ADM/REC finalize the appointment after service. KTV marks their session done through `/sessions/{id}/done`. Cần quyền `appointment.approve`.
  * @summary Hoàn tất
  */
 export const postAppointmentsIdComplete = (

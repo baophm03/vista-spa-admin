@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { Alert, Button, DatePicker, Form, Input, InputNumber, Modal, Select, Space, Table, Tag, message } from 'antd'
-import { BookOutlined, CheckCircleOutlined, EditOutlined, EyeInvisibleOutlined, PlusOutlined } from '@ant-design/icons'
+import { Alert, Button, DatePicker, Descriptions, Form, Input, InputNumber, Modal, Select, Space, Table, Tag, message } from 'antd'
+import { BookOutlined, CheckCircleOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, PlusOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import type { Dayjs } from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
@@ -25,6 +25,7 @@ import useCustomFieldDefinitions from '@/hooks/useCustomFieldDefinitions'
 import { Can, useAbility } from '@casl/react'
 import { useState } from 'react'
 import { useBrandCurrency } from '@/themeRuntime'
+import { useCustomerProfileAccess } from '@/utils/customerProfileAccess'
 
 type CourseFormValues = Omit<AcademyCourse, 'id' | 'created_at' | 'updated_at' | 'custom_fields' | 'start_date' | 'end_date'> & {
   start_date?: Dayjs | null
@@ -65,6 +66,7 @@ export default function AcademyCourses() {
   const branchesQuery = useGetBranches()
   const rows = (pickData<AcademyCourse[]>(coursesQuery.data) ?? []) as AcademyCourse[]
   const [page, setPage] = useState(1)
+  const [detail, setDetail] = useState<AcademyCourse | null>(null)
   const branches = (pickData<Branch[]>(branchesQuery.data) ?? []) as Branch[]
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<AcademyCourse | null>(null)
@@ -77,8 +79,9 @@ export default function AcademyCourses() {
   const updateMutation = usePutAcademyCoursesId()
   const deleteMutation = useDeleteAcademyCoursesId()
   const ability = useAbility()
-  const canUpdate = ability.can('UPDATE', 'ACADEMY')
-  const canDelete = ability.can('DELETE', 'ACADEMY')
+  const { isAdmin } = useCustomerProfileAccess()
+  const canUpdate = isAdmin && ability.can('UPDATE', 'ACADEMY')
+  const canDelete = isAdmin && ability.can('DELETE', 'ACADEMY')
 
   const reload = async () => {
     await queryClient.invalidateQueries({ queryKey: getGetAcademyCoursesQueryKey() })
@@ -175,9 +178,11 @@ export default function AcademyCourses() {
               draftVisibleColumns={draftVisibleColumns}
               onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as CourseColumnKey[])}
             />
-            <Can I="CREATE" a="ACADEMY">
-              <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor()}>Thêm khóa học</Button>
-            </Can>
+            {isAdmin && (
+              <Can I="CREATE" a="ACADEMY">
+                <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor()}>Thêm khóa học</Button>
+              </Can>
+            )}
           </Space>
         }
       >
@@ -203,15 +208,17 @@ export default function AcademyCourses() {
             width: 90,
             fixed: 'right' as const,
             render: (_: unknown, row: AcademyCourse) => {
-              const canToggle = ability.can(row.is_active ? 'DELETE' : 'UPDATE', 'ACADEMY')
+              const canToggle = row.is_active ? canDelete : canUpdate
               return (
                 <RowActionsMenu
                   items={[
+                    { key: 'detail', icon: <EyeOutlined />, label: 'Chi tiết', view: true },
                     ...(canUpdate ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []),
                     ...(canToggle ? [{ key: 'toggle', danger: row.is_active, label: row.is_active ? 'Ẩn' : 'Mở lại' }] : []),
                   ]}
                   onSelect={(key) => {
-                    if (key === 'edit') openEditor(row)
+                    if (key === 'detail') setDetail(row)
+                    else if (key === 'edit') openEditor(row)
                     else if (key === 'toggle') {
                       Modal.confirm({
                         title: row.is_active ? 'Ẩn khóa học này?' : 'Mở lại khóa học này?',
@@ -227,11 +234,46 @@ export default function AcademyCourses() {
             },
           },
         ].filter((column) =>
-          (column.key !== 'actions' || canUpdate || canDelete) &&
-          (column.key === 'actions' || visibleColumns.includes(column.key as CourseColumnKey)),
+          column.key === 'actions' || visibleColumns.includes(column.key as CourseColumnKey),
         )}
       />
       <ListPagination page={page} limit={10} total={rows.length} onChange={setPage} noun="khóa học" />
+      <Modal
+        title="Chi tiết khóa học"
+        open={!!detail}
+        onCancel={() => setDetail(null)}
+        footer={<Button onClick={() => setDetail(null)}>Đóng</Button>}
+        width={720}
+      >
+        {detail && (
+          <Descriptions bordered size="small" column={1} style={{ marginTop: 12 }}>
+            <Descriptions.Item label="Mã khóa">{detail.code}</Descriptions.Item>
+            <Descriptions.Item label="Tên khóa học">{detail.name}</Descriptions.Item>
+            <Descriptions.Item label="Danh mục">{CATEGORY_OPTIONS.find((item) => item.value === detail.category)?.label ?? detail.category}</Descriptions.Item>
+            <Descriptions.Item label="Trình độ">{LEVEL_OPTIONS.find((item) => item.value === detail.level)?.label ?? detail.level}</Descriptions.Item>
+            <Descriptions.Item label="Cơ sở">{branches.find((branch) => branch.id === detail.branch_id)?.name ?? '—'}</Descriptions.Item>
+            <Descriptions.Item label="Học phí tham khảo">{formatMoney(detail.tuition)}</Descriptions.Item>
+            <Descriptions.Item label="Thời lượng">{detail.duration_hours ? `${detail.duration_hours} giờ` : '—'}</Descriptions.Item>
+            <Descriptions.Item label="Số học viên tối đa">{detail.max_students ?? '—'}</Descriptions.Item>
+            <Descriptions.Item label="Ngày bắt đầu">{detail.start_date ? dayjs(detail.start_date).format('DD/MM/YYYY') : '—'}</Descriptions.Item>
+            <Descriptions.Item label="Ngày kết thúc">{detail.end_date ? dayjs(detail.end_date).format('DD/MM/YYYY') : '—'}</Descriptions.Item>
+            <Descriptions.Item label="Mô tả">{detail.description || '—'}</Descriptions.Item>
+            <Descriptions.Item label="Trạng thái"><Tag color={detail.is_active ? 'green' : 'default'}>{detail.is_active ? 'Đang mở' : 'Đã ẩn'}</Tag></Descriptions.Item>
+            {Object.entries(detail.custom_fields ?? {}).map(([key, value]) => {
+              const field = courseFields.find((item) => item.key === key)
+              if (value === undefined || value === null || value === '') return null
+              const text = Array.isArray(value)
+                ? value.map(String).join(', ')
+                : typeof value === 'boolean'
+                  ? value ? 'Có' : 'Không'
+                  : typeof value === 'object'
+                    ? JSON.stringify(value)
+                    : String(value)
+              return <Descriptions.Item key={key} label={field?.label ?? key}>{text}</Descriptions.Item>
+            })}
+          </Descriptions>
+        )}
+      </Modal>
       <Modal
         title={editing ? 'Sửa khóa học' : 'Thêm khóa học'}
         open={open}

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { Alert, Button, DatePicker, Drawer, Form, Input, InputNumber, Modal, Popconfirm, Select, Space, Switch, Table, Tabs, Tag, Typography, message } from 'antd'
-import { PlusOutlined } from '@ant-design/icons'
+import { Alert, Button, DatePicker, Drawer, Form, Image, Input, InputNumber, Modal, Popconfirm, Select, Space, Switch, Table, Tabs, Tag, Typography, Upload, message } from 'antd'
+import { EyeOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons'
 import dayjs, { type Dayjs } from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
 import { errorMessage, pickData, pickMeta } from '@/api/helpers'
@@ -31,6 +31,8 @@ import {
 } from '@/api/endpoints/content'
 import { apiClient } from '@/api/mutator/custom-instance'
 import { Can } from '@casl/react'
+import ContentRichTextEditor from '@/components/ContentRichTextEditor'
+import { usePostFiles } from '@/api/endpoints/files'
 
 const STATUS_META: Record<string, { label: string; color: string }> = {
   DRAFT: { label: 'Nháp', color: 'default' },
@@ -46,6 +48,17 @@ const DISPLAY_TYPE_OPTIONS = [
   { value: 'GRID', label: 'Lưới' },
   { value: 'CAROUSEL', label: 'Trượt ngang' },
 ]
+
+function makePostSlug(value?: string) {
+  return String(value ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[đĐ]/g, 'd')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 255)
+}
 
 interface PostFormValues {
   category_id?: string
@@ -86,8 +99,13 @@ export default function ContentPosts() {
   const [categoryModal, setCategoryModal] = useState(false)
   const [editingCategory, setEditingCategory] = useState<ContentCategory | null>(null)
   const [saving, setSaving] = useState(false)
+  const [uploadingCover, setUploadingCover] = useState(false)
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
+  const [previewOpen, setPreviewOpen] = useState(false)
+  const [previewData, setPreviewData] = useState<PostFormValues | null>(null)
   const [postForm] = Form.useForm<PostFormValues>()
   const [categoryForm] = Form.useForm<CategoryFormValues>()
+  const uploadMutation = usePostFiles()
 
   const postsQuery = useGetContentPosts({ ...postFilter, page: postPage, limit: 20 })
   const categoriesQuery = useGetContentCategories()
@@ -111,6 +129,7 @@ export default function ContentPosts() {
 
   const openPostEditor = (row?: ContentPostRow) => {
     setEditingPost(row ?? null)
+    setSlugManuallyEdited(Boolean(row?.slug))
     postForm.resetFields()
     postForm.setFieldsValue({
       ...row,
@@ -127,6 +146,7 @@ export default function ContentPosts() {
       setSaving(true)
       const payload = {
         ...values,
+        slug: values.slug?.trim() || makePostSlug(values.title),
         publish_at: values.publish_at ? values.publish_at.toISOString() : null,
         expire_at: values.expire_at ? values.expire_at.toISOString() : null,
       }
@@ -145,6 +165,42 @@ export default function ContentPosts() {
     } finally {
       setSaving(false)
     }
+  }
+
+  const uploadCover = async (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      message.error('Vui lòng chọn tệp ảnh')
+      return false
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      message.error('Ảnh bìa không được vượt quá 10 MB')
+      return false
+    }
+    setUploadingCover(true)
+    try {
+      const uploaded = pickData<{ original?: string }>(await uploadMutation.mutateAsync({ data: { file } }))
+      if (!uploaded?.original) throw new Error('Máy chủ không trả về đường dẫn ảnh')
+      postForm.setFieldValue('cover_url', uploaded.original)
+      message.success('Đã tải ảnh bìa lên')
+    } catch (err) {
+      message.error(`Tải ảnh lên thất bại: ${errorMessage(err)}`)
+    } finally {
+      setUploadingCover(false)
+    }
+    return false
+  }
+
+  const uploadContentImage = async (file: File) => {
+    if (!file.type.startsWith('image/')) throw new Error('Tệp nhúng không phải ảnh')
+    if (file.size > 10 * 1024 * 1024) throw new Error('Ảnh không được vượt quá 10 MB')
+    const uploaded = pickData<{ original?: string }>(await uploadMutation.mutateAsync({ data: { file } }))
+    if (!uploaded?.original) throw new Error('Máy chủ không trả về đường dẫn ảnh')
+    return uploaded.original
+  }
+
+  const openPreview = () => {
+    setPreviewData(postForm.getFieldsValue(true))
+    setPreviewOpen(true)
   }
 
   const doPublish = async () => {
@@ -314,27 +370,76 @@ export default function ContentPosts() {
         title={editingPost ? 'Sửa bài viết' : 'Tạo bài viết mới (Nháp)'}
         open={postModal}
         onClose={() => setPostModal(false)}
-        width={640}
-        extra={<Button type="primary" loading={saving} onClick={submitPost}>Lưu</Button>}
+        width={760}
+        extra={(
+          <Space>
+            <Button icon={<EyeOutlined />} onClick={openPreview}>Xem trước</Button>
+            <Button type="primary" loading={saving} onClick={submitPost}>Lưu</Button>
+          </Space>
+        )}
       >
-        <Form form={postForm} layout="vertical">
+        <Form
+          form={postForm}
+          layout="vertical"
+          onValuesChange={(changed) => {
+            if (Object.prototype.hasOwnProperty.call(changed, 'slug')) setSlugManuallyEdited(Boolean(changed.slug))
+            if (typeof changed.title === 'string' && !slugManuallyEdited) postForm.setFieldValue('slug', makePostSlug(changed.title))
+          }}
+        >
           <Form.Item name="category_id" label="Chuyên mục" rules={[{ required: true, message: 'Chọn chuyên mục' }]}>
             <Select options={categories.map((c) => ({ value: c.id, label: c.name }))} placeholder="Chọn chuyên mục" />
           </Form.Item>
           <Form.Item name="title" label="Tiêu đề" rules={[{ required: true, message: 'Nhập tiêu đề' }]}>
             <Input placeholder="Tiêu đề bài viết" />
           </Form.Item>
-          <Form.Item name="slug" label="Đường dẫn (slug)">
-            <Input placeholder="bai-viet-moi (để trống tự sinh)" />
+          <Form.Item name="slug" label="Đường dẫn bài viết" extra="Tự tạo từ tiêu đề. Có thể sửa đường dẫn hoặc tạo lại từ tiêu đề.">
+            <Input
+              placeholder="Tự tạo từ tiêu đề"
+              addonAfter={(
+                <Button
+                  type="text"
+                  size="small"
+                  onClick={() => {
+                    setSlugManuallyEdited(false)
+                    postForm.setFieldValue('slug', makePostSlug(postForm.getFieldValue('title')))
+                  }}
+                >
+                  Tạo lại
+                </Button>
+              )}
+            />
           </Form.Item>
           <Form.Item name="summary" label="Tóm tắt ngắn">
             <Input.TextArea rows={2} placeholder="Hiển thị ở danh sách và thông báo broadcast" />
           </Form.Item>
-          <Form.Item name="content" label="Nội dung chi tiết (HTML)">
-            <Input.TextArea rows={8} placeholder="<p>Nội dung bài viết…</p>" />
+          <Form.Item name="content" label="Nội dung chi tiết" extra="Soạn như văn bản bình thường; dùng thanh công cụ để định dạng. Không cần nhập HTML.">
+            <ContentRichTextEditor onUploadImage={uploadContentImage} />
           </Form.Item>
-          <Form.Item name="cover_url" label="Ảnh bìa (URL)">
-            <Input placeholder="https://…" />
+          <Form.Item name="cover_url" hidden><Input /></Form.Item>
+          <Form.Item label="Ảnh bìa">
+            <Form.Item shouldUpdate noStyle>
+              {() => {
+                const coverUrl: string | undefined = postForm.getFieldValue('cover_url')
+                return (
+                  <Space direction="vertical" className="w-full" size={8}>
+                    <Input
+                      value={coverUrl ?? ''}
+                      onChange={(event) => postForm.setFieldValue('cover_url', event.target.value)}
+                      placeholder="Dán đường dẫn ảnh hoặc tải ảnh lên"
+                    />
+                    <Upload accept="image/*" showUploadList={false} beforeUpload={uploadCover}>
+                      <Button icon={<UploadOutlined />} loading={uploadingCover}>Tải ảnh lên</Button>
+                    </Upload>
+                    {coverUrl ? (
+                    <Space align="start">
+                      <Image src={coverUrl} width={150} height={96} style={{ objectFit: 'cover', borderRadius: 8 }} />
+                      <Button size="small" danger onClick={() => postForm.setFieldValue('cover_url', undefined)}>Gỡ ảnh</Button>
+                    </Space>
+                    ) : <Typography.Text type="secondary">Chưa có ảnh bìa</Typography.Text>}
+                  </Space>
+                )
+              }}
+            </Form.Item>
           </Form.Item>
           <Form.Item name="video_url" label="Video (YouTube/TikTok/Facebook embed URL)">
             <Input placeholder="https://www.youtube.com/embed/…" />
@@ -357,6 +462,27 @@ export default function ContentPosts() {
           </Space>
         </Form>
       </Drawer>
+
+      <Modal
+        title="Xem trước bài viết"
+        open={previewOpen}
+        onCancel={() => setPreviewOpen(false)}
+        footer={<Button onClick={() => setPreviewOpen(false)}>Đóng</Button>}
+        width={760}
+      >
+        <article className="mx-auto max-w-2xl py-2">
+          {previewData?.cover_url && <Image src={previewData.cover_url} alt={previewData.title || 'Ảnh bìa'} className="mb-4 w-full rounded-xl object-cover" />}
+          <Typography.Title level={2}>{previewData?.title || 'Tiêu đề bài viết'}</Typography.Title>
+          {previewData?.summary && <Typography.Paragraph type="secondary">{previewData.summary}</Typography.Paragraph>}
+          {previewData?.video_url && <Typography.Link href={previewData.video_url} target="_blank" rel="noreferrer">Mở video đính kèm</Typography.Link>}
+          <ContentRichTextEditor
+            value={previewData?.content ?? ''}
+            editable={false}
+            showToolbar={false}
+            className="content-post-preview mt-4"
+          />
+        </article>
+      </Modal>
 
       <Modal
         title={editingCategory ? 'Sửa chuyên mục' : 'Tạo chuyên mục'}
