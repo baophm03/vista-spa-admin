@@ -21,8 +21,11 @@ export default function ListPagination({ page, limit, total, onChange, noun, hid
   const from = (current - 1) * limit + 1
   const to = Math.min(current * limit, total)
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginTop: 16 }}>
-      <span>Hiển thị {from} - {to} trong {total} {noun}</span>
+    <div
+      className="list-pagination"
+      style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginTop: 16 }}
+    >
+      <span className="list-pagination-count">Hiển thị {from} - {to} trong {total} {noun}</span>
       <Pagination
         current={current}
         pageSize={limit}

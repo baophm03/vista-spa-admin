@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Alert, Tabs } from 'antd'
+import { Alert, Grid, Select, Tabs } from 'antd'
 import PageTitle from '@/components/base/PageTitle'
 import { pickData } from '@/api/helpers'
 import { useGetBranches } from '@/api/endpoints/branches'
@@ -16,6 +16,8 @@ export default function StaffSchedule() {
   const profile = useProfileStore((s) => s.profile)
   const { isAdmin, isReceptionist, isTechnician } = useCustomerProfileAccess()
   const [activeTab, setActiveTab] = useState('weekly')
+  // Mobile (dưới breakpoint md): chuyển vùng nội dung bằng Select thay vì Tabs
+  const isMobile = !Grid.useBreakpoint().md
 
   const isOwnScheduleOnly = isTechnician && !isAdmin
   // KTV được xem cơ sở của mình; dữ liệu này cũng giúp hiển thị phạm vi áp dụng của mẫu ca.
@@ -73,7 +75,19 @@ export default function StaffSchedule() {
 
   return <>
     <PageTitle subtitle="Lịch làm việc của nhân viên theo tuần">Lịch làm việc KTV</PageTitle>
-    <Tabs activeKey={activeTab} onChange={setActiveTab} items={items} />
+    {isMobile ? (
+      <>
+        <Select
+          style={{ width: '100%', marginBottom: 12 }}
+          value={activeTab}
+          onChange={setActiveTab}
+          options={items.map(({ key, label }) => ({ value: key, label }))}
+        />
+        {items.find((item) => item.key === activeTab)?.children}
+      </>
+    ) : (
+      <Tabs activeKey={activeTab} onChange={setActiveTab} items={items} />
+    )}
     {!!sharedError && <Alert style={{ marginTop: 12 }} type="warning" showIcon message="Một phần dữ liệu dùng chung chưa tải được" description={sharedError} action={<a onClick={() => {
       void branchesQuery.refetch()
       if (!isOwnScheduleOnly) void staffsQuery.refetch()

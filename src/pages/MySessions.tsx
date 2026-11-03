@@ -11,6 +11,7 @@ import { usePutSessionsIdDone, usePutSessionsIdStart } from '@/api/endpoints/cus
 import type { TreatmentSession } from '@/api/models/treatmentSession'
 import { useBrandDateTime } from '@/themeRuntime'
 import ListPagination from '@/components/base/ListPagination'
+import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 
 type SessionRow = TreatmentSession & {
   appointment?: { appt_date?: string; start_time?: string } | null
@@ -158,8 +159,7 @@ export default function MySessions() {
 
   return <>
     <PageTitle subtitle="Danh sách các buổi được giao cho tài khoản KTV">Buổi của tôi</PageTitle>
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 16 }}>
-      <Typography.Text type="secondary">KTV chỉ xem và thao tác trên buổi được phân công.</Typography.Text>
+    <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 16 }}>
       <Space wrap>
         <Select
           value={status}
@@ -179,6 +179,7 @@ export default function MySessions() {
       action={<Button size="small" onClick={() => void sessionsQuery.refetch()}>Thử lại</Button>}
     />}
     <Table<SessionRow>
+      className="desktop-only"
       rowKey="id"
       loading={sessionsQuery.isLoading}
       columns={columns}
@@ -186,6 +187,41 @@ export default function MySessions() {
       scroll={{ x: 950 }}
       pagination={false}
       locale={{ emptyText: 'Chưa có buổi nào được giao cho bạn' }}
+    />
+    <MobileCards
+      rows={rows}
+      rowKey={(row) => row.id}
+      loading={sessionsQuery.isLoading}
+      emptyText="Chưa có buổi nào được giao cho bạn"
+      renderCard={(row) => {
+        const statusInfo = STATUS_META[row.status || ''] ?? { label: row.status || '—', color: 'default' }
+        return (
+          <>
+            <div className="mobile-card-head">
+              <div>
+                <div className="mobile-card-title">{row.is_warranty ? 'Bảo hành' : `Buổi ${row.session_no}`}</div>
+                <div className="mobile-card-sub">{row.customer_treatment?.customer_profile?.full_name || 'Khách hàng'} · {row.customer_treatment?.package?.name || '—'}</div>
+              </div>
+              <Tag color={statusInfo.color}>{statusInfo.label}</Tag>
+            </div>
+            <div className="mobile-card-rows">
+              <MobileCardRow label="Lịch hẹn" value={
+                row.appointment?.appt_date
+                  ? `${dayjs(row.appointment.appt_date).format('DD/MM/YYYY')}${row.appointment.start_time ? ` ${row.appointment.start_time.slice(0, 5)}` : ''}`
+                  : row.scheduled_at ? formatDateTime(row.scheduled_at) : 'Chưa xếp lịch'
+              } />
+              <MobileCardRow label="KTV" value={row.staff?.zalo_name || 'Chưa gán'} />
+            </div>
+            <div className="mobile-card-actions">
+              {row.status === 'scheduled'
+                ? <Button size="small" type="primary" icon={<PlayCircleOutlined />} loading={startingId === row.id} onClick={() => void startSession(row)}>Bắt đầu</Button>
+                : row.status === 'in_progress'
+                  ? <Button size="small" icon={<CheckOutlined />} loading={finishingId === row.id} onClick={() => void finishSession(row)}>Đã làm xong</Button>
+                  : <Typography.Text type="secondary">—</Typography.Text>}
+            </div>
+          </>
+        )
+      }}
     />
     <ListPagination page={page} limit={10} total={total} onChange={setPage} noun="buổi điều trị" />
   </>

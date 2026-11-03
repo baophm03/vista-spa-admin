@@ -5,6 +5,7 @@ import {
   DatePicker,
   Drawer,
   Form,
+  Grid,
   Input,
   InputNumber,
   Modal,
@@ -36,6 +37,7 @@ import type { Dayjs } from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
 import ListFilterPopover from '@/components/base/ListFilterPopover'
 import ListPagination from '@/components/base/ListPagination'
+import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import CustomerCodeHistoryModal from '@/components/CustomerCodeHistoryModal'
 import LinkCustomerAccountModal from '@/components/LinkCustomerAccountModal'
@@ -146,6 +148,10 @@ export default function Users() {
   const [resettingQr, setResettingQr] = useState(false)
   const [form] = Form.useForm()
   const [filterForm] = Form.useForm()
+  // Mobile (dưới breakpoint md): nút công cụ hiện chữ thay vì chỉ icon
+  const isMobile = !Grid.useBreakpoint().md
+  // Mobile: search thu về nút icon, bấm mới mở ô tìm kiếm
+  const [searchOpen, setSearchOpen] = useState(false)
 
   const listParams = buildListParams(filters, keyword, page, limit) as GetCustomerProfilesParams
   const listQuery = useGetCustomerProfiles(listParams)
@@ -438,23 +444,35 @@ export default function Users() {
       >
         Khách hàng
       </PageTitle>
-      <div style={{ display: 'flex', justifyContent: 'flex-end', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
-        <Input
-          allowClear
-          prefix={<SearchOutlined style={{ color: 'var(--brand-text-inactive, #A9ADB2)' }} />}
-          placeholder="Tìm tên, SĐT, email, mã KH..."
-          style={{ width: 260 }}
-          value={searchText}
-          onChange={(event) => {
-            setSearchText(event.target.value)
-            if (!event.target.value) applySearch('')
-          }}
-          onPressEnter={() => applySearch(searchText)}
-        />
+      <div style={{ display: 'flex', justifyContent: 'flex-end', flexWrap: 'nowrap', gap: 8, marginBottom: 12 }}>
+        {/* Mobile: nút icon mở ô tìm kiếm; desktop hiện input luôn */}
+        {isMobile && !searchOpen && (
+          <Button icon={<SearchOutlined />} aria-label="Tìm kiếm" title="Tìm kiếm" onClick={() => setSearchOpen(true)} />
+        )}
+        {(searchOpen || !isMobile) && (
+          <Input
+            allowClear
+            autoFocus={isMobile}
+            prefix={<SearchOutlined style={{ color: 'var(--brand-text-inactive, #A9ADB2)' }} />}
+            placeholder="Tìm tên, SĐT, email, mã KH..."
+            style={isMobile && searchOpen ? { flex: 1, minWidth: 0 } : { width: 260, maxWidth: 'min(260px, 46vw)', minWidth: 140 }}
+            value={searchText}
+            onChange={(event) => {
+              setSearchText(event.target.value)
+              if (!event.target.value) applySearch('')
+            }}
+            onPressEnter={() => applySearch(searchText)}
+            onBlur={() => { if (isMobile && !searchText) setSearchOpen(false) }}
+          />
+        )}
         {profileAccess.canRead && (
-          <Button icon={<QrcodeOutlined />} loading={qrLookupLoading} onClick={() => setScannerOpen(true)}>Quét QR</Button>
+          <Button icon={<QrcodeOutlined />} loading={qrLookupLoading} onClick={() => setScannerOpen(true)} aria-label="Quét QR" title="Quét QR">
+            {/* Desktop: hiện chữ dễ nhận biết; mobile giữ icon gọn thanh công cụ */}
+            {!isMobile ? 'Quét QR' : undefined}
+          </Button>
         )}
         <ListFilterPopover
+          iconOnly={isMobile}
           open={filterOpen}
           onOpenChange={openFilters}
           activeFilterCount={activeFilterCount}
@@ -500,12 +518,11 @@ export default function Users() {
           )}
         />
         {profileAccess.canExport && (
-          <Button icon={<DownloadOutlined />} loading={exporting} onClick={() => void downloadCsv()}>
-            Xuất CSV
-          </Button>
+          <Button icon={<DownloadOutlined />} loading={exporting} onClick={() => void downloadCsv()} aria-label="Xuất CSV" title="Xuất CSV" />
         )}
       </div>
       <Table<CustomerProfileRow>
+        className="desktop-only"
         rowKey="id"
         loading={loading}
         dataSource={rows}
@@ -575,6 +592,46 @@ export default function Users() {
         ].filter((column) =>
           (column.key !== 'actions' || profileAccess.canManage || profileAccess.canDelete) &&
           (column.key === 'actions' || visibleColumns.includes(column.key as CustomerColumnKey)),
+        )}
+      />
+      <MobileCards
+        rows={rows}
+        rowKey={(row) => row.id}
+        onCardClick={profileAccess.canRead ? (row) => void openDetail(row) : undefined}
+        loading={loading}
+        emptyText="Chưa có khách hàng nào"
+        renderCard={(row) => (
+          <>
+            <div className="mobile-card-head">
+              <div>
+                <div className="mobile-card-title">{row.full_name}</div>
+                <div className="mobile-card-sub"><Typography.Text code style={{ fontSize: 12 }}>{row.customer_code}</Typography.Text></div>
+              </div>
+              {row.user_id
+                ? <Tag color="purple">{rowRankName(row) ?? 'Đã liên kết'}</Tag>
+                : <Tag>Chưa liên kết</Tag>}
+            </div>
+            <div className="mobile-card-rows">
+              <MobileCardRow label="Số điện thoại" value={row.phone || '—'} />
+              <MobileCardRow label="Email" value={row.email || row.user?.email || '—'} />
+              <MobileCardRow label="Cơ sở" value={branchName(row.branch_id)} />
+            </div>
+            {(profileAccess.canManage || profileAccess.canDelete) && (
+              <div className="mobile-card-actions">
+                {profileAccess.canManage && <Button size="small" icon={<EditOutlined />} onClick={(event) => { event.stopPropagation(); void openModal(row) }}>Sửa</Button>}
+                {profileAccess.canDelete && <Button size="small" danger icon={<DeleteOutlined />} onClick={(event) => {
+                  event.stopPropagation()
+                  Modal.confirm({
+                    title: 'Xóa (ẩn) khách hàng này?',
+                    okText: 'Xóa',
+                    okButtonProps: { danger: true },
+                    cancelText: 'Hủy',
+                    onOk: () => remove(row),
+                  })
+                }}>Xóa</Button>}
+              </div>
+            )}
+          </>
         )}
       />
       <ListPagination page={page} limit={limit} total={total} onChange={setPage} noun="khách hàng" />

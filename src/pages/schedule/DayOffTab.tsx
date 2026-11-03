@@ -5,6 +5,7 @@ import { Alert, Badge, Button, Checkbox, DatePicker, Divider, Form, Input, Modal
 import { ClearOutlined, FilterOutlined, PlusOutlined, ReloadOutlined } from '@ant-design/icons'
 import { errorMessage, pickData } from '@/api/helpers'
 import ListPagination from '@/components/base/ListPagination'
+import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import TableEmpty from '@/components/base/TableEmpty'
 import { paginateRows } from '@/utils/listTable'
 import {
@@ -243,10 +244,44 @@ export default function DayOffTab({ branches, staff, access, loadingShared }: Pr
     </Space>
     {!!error && <Alert type="error" showIcon message="Không tải được danh sách ngày nghỉ" description={error} action={<Button size="small" icon={<ReloadOutlined />} onClick={() => void daysOffQuery.refetch()}>Thử lại</Button>} style={{ marginBottom: 16 }} />}
     <Table<StaffDayOff>
+      className="desktop-only"
       rowKey="id" size="middle" pagination={false}
       loading={loadingShared || daysOffQuery.isLoading || templatesQuery.isLoading} dataSource={paginateRows(rows, page, 10)}
       columns={columns.filter((column) => column.key === 'actions' || visibleColumns.includes(column.key as DayOffColumnKey))}
       locale={{ emptyText: <TableEmpty description="Chưa có đăng ký nghỉ trong điều kiện đã chọn" /> }}
+    />
+    <MobileCards
+      rows={paginateRows(rows, page, 10)}
+      rowKey={(row) => row.id}
+      loading={loadingShared || daysOffQuery.isLoading || templatesQuery.isLoading}
+      emptyText="Chưa có đăng ký nghỉ trong điều kiện đã chọn"
+      renderCard={(row) => {
+        const staffInfo = (row as StaffDayOff & { staff?: { id: string; zalo_name?: string; email?: string; phone_number?: string } }).staff ?? staff.find((person) => person.id === row.staff_id)
+        return (
+          <>
+            <div className="mobile-card-head">
+              <div>
+                <div className="mobile-card-title">{staffLabel(staffInfo)}</div>
+                <div className="mobile-card-sub">{dayjs(row.off_date).format('DD/MM/YYYY')} · {(row as StaffDayOff & { shift_template?: { name?: string } }).shift_template?.name || templates.find((template) => template.id === row.shift_template_id)?.name || 'Cả ngày'}</div>
+              </div>
+              <Tag color={STATUS[row.status ?? '']?.color}>{STATUS[row.status ?? '']?.label ?? row.status}</Tag>
+            </div>
+            <div className="mobile-card-rows">
+              <MobileCardRow label="Lý do" value={row.reason || '—'} />
+              {row.reject_reason && <MobileCardRow label="Lý do từ chối" value={<span style={{ color: '#cf1322' }}>{row.reject_reason}</span>} />}
+            </div>
+            {((access.isAdmin && row.status === 'pending') || (isTechnician && row.status === 'pending' && row.staff_id === access.currentUserId)) && (
+              <div className="mobile-card-actions">
+                {access.isAdmin && <>
+                  <Button size="small" type="primary" onClick={() => void approve(row)}>Duyệt</Button>
+                  <Button size="small" danger onClick={() => { setRejecting(row); setRejectReason('') }}>Từ chối</Button>
+                </>}
+                {isTechnician && row.status === 'pending' && row.staff_id === access.currentUserId && <Popconfirm title="Rút đăng ký nghỉ này?" okText="Rút" cancelText="Hủy" onConfirm={() => void withdraw(row)}><Button size="small">Rút đơn</Button></Popconfirm>}
+              </div>
+            )}
+          </>
+        )
+      }}
     />
     <ListPagination page={page} limit={10} total={rows.length} onChange={setPage} noun="đăng ký nghỉ" />
 

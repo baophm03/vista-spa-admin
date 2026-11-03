@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAbility } from '@casl/react'
-import { Alert, Button, Divider, Form, Image, Input, InputNumber, Modal, Progress, Select, Space, Table, Tabs, Tag, Typography, Upload, message } from 'antd'
+import { Alert, Button, Divider, Form, Grid, Image, Input, InputNumber, Modal, Progress, Select, Space, Table, Tag, Typography, Upload, message } from 'antd'
 import type { ReactNode } from 'react'
 import type { TableColumnsType } from 'antd'
 import { CheckCircleOutlined, EditOutlined, PlusOutlined, PrinterOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons'
@@ -15,6 +15,7 @@ import { postFiles } from '@/api/endpoints/files'
 import { useGetLookupLists } from '@/api/endpoints/lookup-lists'
 import { resolveFileUrl } from '@/configs/links'
 import ListPagination from '@/components/base/ListPagination'
+import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import { paginateRows } from '@/utils/listTable'
 
@@ -93,6 +94,9 @@ export default function StandaloneServiceHistory({
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   const [search, setSearch] = useState('')
+  // Mobile (dưới breakpoint md): search thu về nút icon, bấm mới mở ô tìm kiếm
+  const isMobile = !Grid.useBreakpoint().md
+  const [searchOpen, setSearchOpen] = useState(false)
   const [statusFilter, setStatusFilter] = useState('all')
   const [page, setPage] = useState(1)
   const [selected, setSelected] = useState<StandaloneAppointment | null>(null)
@@ -188,7 +192,22 @@ export default function StandaloneServiceHistory({
   return (
     <>
       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
-        <Input allowClear prefix={<SearchOutlined />} placeholder="Tìm khách, SĐT, dịch vụ, KTV" style={{ width: 280 }} value={search} onChange={(event) => setSearch(event.target.value)} />
+        {/* Mobile: nút icon mở ô tìm kiếm; desktop hiện input luôn — Select trạng thái giữ nguyên */}
+        {isMobile && !searchOpen && (
+          <Button icon={<SearchOutlined />} aria-label="Tìm kiếm" title="Tìm kiếm" onClick={() => setSearchOpen(true)} />
+        )}
+        {(searchOpen || !isMobile) && (
+          <Input
+            allowClear
+            autoFocus={isMobile}
+            prefix={<SearchOutlined />}
+            placeholder="Tìm khách, SĐT, dịch vụ, KTV"
+            style={isMobile && searchOpen ? { flex: 1, minWidth: 0 } : { width: 280 }}
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            onBlur={() => { if (isMobile && !search) setSearchOpen(false) }}
+          />
+        )}
         <Select value={statusFilter} style={{ width: 160 }} onChange={setStatusFilter} options={[
           { value: 'all', label: 'Mọi trạng thái' },
           { value: 'pending', label: 'Chờ duyệt' },
@@ -200,6 +219,7 @@ export default function StandaloneServiceHistory({
         {!hideCreate && <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate('/appointments?create=1')}>Thêm dịch vụ lẻ</Button>}
       </div>
       <Table<StandaloneAppointment>
+        className="desktop-only"
         rowKey="id"
         loading={appointmentsQuery.isLoading}
         dataSource={paginateRows(visibleRows, page, 10)}
@@ -207,6 +227,44 @@ export default function StandaloneServiceHistory({
         pagination={false}
         onRow={(row) => ({ onClick: () => setSelected(row), style: { cursor: 'pointer' } })}
         locale={{ emptyText: search ? 'Không tìm thấy dịch vụ lẻ phù hợp' : 'Chưa có khách dùng dịch vụ lẻ' }}
+      />
+      <MobileCards
+        rows={paginateRows(visibleRows, page, 10)}
+        rowKey={(row) => row.id}
+        onCardClick={(row) => setSelected(row)}
+        emptyText={search ? 'Không tìm thấy dịch vụ lẻ phù hợp' : 'Chưa có khách dùng dịch vụ lẻ'}
+        renderCard={(row) => {
+          const inProgress = String(row.status) === 'in_progress'
+          return (
+            <>
+              <div className="mobile-card-head">
+                <div>
+                  <div className="mobile-card-title">{row.customer_profile?.full_name || 'Khách hàng'}</div>
+                  <div className="mobile-card-sub">{row.customer_profile?.phone || '—'}</div>
+                </div>
+                <Tag color={VISIT_STATUS[String(row.status)]?.color}>{VISIT_STATUS[String(row.status)]?.label || row.status}</Tag>
+              </div>
+              <div className="mobile-card-rows">
+                <MobileCardRow label="Dịch vụ" value={row.service?.title || '—'} />
+                <MobileCardRow label="KTV" value={row.staff?.zalo_name || 'Chưa gán'} />
+                <MobileCardRow label="Thời gian" value={`${dayjs(row.appt_date).format('DD/MM/YYYY')} ${row.start_time?.slice(0, 5)}`} />
+                <MobileCardRow label="Giá" value={
+                  (() => {
+                    const minimum = Number(row.service?.price ?? 0)
+                    const maximum = Math.max(minimum, Number(row.service?.price_max ?? minimum))
+                    if (maximum > minimum && ['pending', 'approved'].includes(String(row.status))) return `Chưa chốt · ${minimum.toLocaleString('vi-VN')}–${maximum.toLocaleString('vi-VN')} ₫`
+                    return `${Number(row.service_amount ?? minimum).toLocaleString('vi-VN')} ₫`
+                  })()
+                } />
+              </div>
+              <div className="mobile-card-actions">
+                {inProgress && canEditVisit && <Button size="small" icon={<EditOutlined />} onClick={() => { setEditTargetId(row.id); setCompleteTargetId(null); setSelected(row) }}>Chỉnh sửa</Button>}
+                {inProgress && canCompleteVisit && <Button size="small" type="primary" icon={<CheckCircleOutlined />} onClick={() => { setEditTargetId(row.id); setCompleteTargetId(row.id); setSelected(row) }}>Hoàn tất</Button>}
+                <Button size="small" icon={<PrinterOutlined />} onClick={() => void printRow(row)}>In phiếu</Button>
+              </div>
+            </>
+          )
+        }}
       />
       <ListPagination page={page} limit={10} total={visibleRows.length} onChange={setPage} noun="lần làm dịch vụ" />
       <Modal
@@ -434,74 +492,84 @@ function StandaloneServiceVisit({ appointment, onUpdated, autoOpenEdit, complete
         </aside>
 
         <div style={{ flex: '3 1 560px', minWidth: 0 }}>
-          <Tabs
-            activeKey={activeDetailTab}
+          {/* Chuyển vùng nội dung bằng Select — đồng bộ cách các page khác chuyển tab */}
+          <Select
+            style={{ width: '100%', marginBottom: 12 }}
+            value={activeDetailTab}
             onChange={setActiveDetailTab}
-            items={[
-              {
-                key: 'visit',
-                label: 'Lần làm dịch vụ',
-                children: (
-                  <>
-                    <div style={{ border: '1px solid var(--brand-border)', borderRadius: 12, overflow: 'hidden', background: '#fff' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', padding: '13px 16px', background: 'var(--brand-bg)' }}>
-                        <div style={{ width: 40, height: 40, borderRadius: 10, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 17, color: 'var(--brand-primary)', border: '1px solid var(--brand-border)' }}>01</div>
-                        <div style={{ flex: 1, minWidth: 180 }}>
-                          <Space size={8} wrap>
-                            <Typography.Text strong>{dayjs(record.appt_date).format('DD/MM/YYYY')} · {record.start_time?.slice(0, 5)}</Typography.Text>
-                            <Tag color={record.status === 'completed' ? 'green' : record.visit_done_at ? 'orange' : 'blue'}>{record.status === 'completed' ? 'Hoàn tất' : record.visit_done_at ? 'KTV đã làm xong' : 'Đang thực hiện'}</Tag>
-                          </Space>
-                          <Typography.Text type="secondary" style={{ display: 'block', marginTop: 3 }}>{record.service?.title || 'Dịch vụ lẻ'} · {record.staff?.zalo_name || 'Chưa gán KTV'}</Typography.Text>
-                        </div>
-                        {record.status === 'in_progress' && editable && <Button icon={<EditOutlined />} loading={loading} disabled={loading} onClick={() => setEditOpen(true)}>Sửa</Button>}
-                        {canFinalize && <Button type="primary" icon={<CheckCircleOutlined />} loading={saving} onClick={() => void completeVisit()}>Hoàn tất dịch vụ</Button>}
-                      </div>
-                      <TRow label="Giá dịch vụ">{serviceAmount.toLocaleString('vi-VN')} ₫</TRow>
-                      <SubHead>Đầu buổi</SubHead>
-                      <TRow label="Tình trạng da"><span style={{ whiteSpace: 'pre-wrap' }}>{record.skin_note || 'Chưa ghi'}</span></TRow>
-                      <TRow label="Cần cải thiện"><span style={{ whiteSpace: 'pre-wrap' }}>{record.concern || 'Chưa ghi'}</span></TRow>
-                      {photoRow('before', 'Ảnh trước')}
-                      <SubHead>Thực hiện</SubHead>
-                      <TRow label="Nhật ký"><span style={{ whiteSpace: 'pre-wrap' }}>{record.diary || 'Chưa ghi'}</span></TRow>
-                      <TRow label="Sản phẩm đã dùng"><span style={{ whiteSpace: 'pre-wrap' }}>{record.products_used || 'Chưa ghi'}</span></TRow>
-                      {photoRow('process', 'Ảnh quá trình')}
-                      <SubHead>Kết quả cuối buổi</SubHead>
-                      <TRow label="Kết quả / dặn dò"><span style={{ whiteSpace: 'pre-wrap' }}>{record.result || 'Chưa ghi'}</span></TRow>
-                      {photoRow('after', 'Ảnh sau')}
-                    </div>
-                  </>
-                ),
-              },
-              {
-                key: 'payments',
-                label: 'Lịch sử thanh toán',
-                children: (
-                  <div style={{ border: '1px solid var(--brand-border)', borderRadius: 12, overflow: 'hidden', background: '#fff' }}>
-                    <SubHead>Lịch sử thanh toán</SubHead>
-                    {payments.length ? (
-                      <Table<VisitPayment>
-                        rowKey="id"
-                        size="small"
-                        pagination={false}
-                        dataSource={payments}
-                        columns={[
-                          { title: 'Thời gian', dataIndex: 'paid_at', render: (value?: string) => value ? dayjs(value).format('DD/MM/YYYY HH:mm') : '—' },
-                          { title: 'Số tiền', dataIndex: 'amount', align: 'right', render: (value: number | string) => `${Number(value).toLocaleString('vi-VN')} ₫` },
-                          { title: 'Phương thức', dataIndex: 'method' },
-                          { title: 'Trạng thái', key: 'status', render: (_value, row) => <Tag color={row.voided_at ? 'red' : 'green'}>{row.voided_at ? 'Đã hủy' : 'Đã thu'}</Tag> },
-                        ]}
-                      />
-                    ) : <div style={{ padding: 24, textAlign: 'center' }}><Typography.Text type="secondary">Chưa có khoản thu dịch vụ</Typography.Text></div>}
-                  </div>
-                ),
-              },
-              {
-                key: 'points',
-                label: 'Điểm thưởng',
-                children: <ServicePointsHistory profileId={record.customer_profile_id} />,
-              },
+            options={[
+              { value: 'visit', label: 'Lần làm dịch vụ' },
+              { value: 'payments', label: 'Lịch sử thanh toán' },
+              { value: 'points', label: 'Điểm thưởng' },
             ]}
           />
+          {activeDetailTab === 'visit' && (
+            <div style={{ border: '1px solid var(--brand-border)', borderRadius: 12, overflow: 'hidden', background: '#fff' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', padding: '13px 16px', background: 'var(--brand-bg)' }}>
+                <div style={{ width: 40, height: 40, borderRadius: 10, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 17, color: 'var(--brand-primary)', border: '1px solid var(--brand-border)' }}>01</div>
+                <div style={{ flex: 1, minWidth: 180 }}>
+                  <Space size={8} wrap>
+                    <Typography.Text strong>{dayjs(record.appt_date).format('DD/MM/YYYY')} · {record.start_time?.slice(0, 5)}</Typography.Text>
+                    <Tag color={record.status === 'completed' ? 'green' : record.visit_done_at ? 'orange' : 'blue'}>{record.status === 'completed' ? 'Hoàn tất' : record.visit_done_at ? 'KTV đã làm xong' : 'Đang thực hiện'}</Tag>
+                  </Space>
+                  <Typography.Text type="secondary" style={{ display: 'block', marginTop: 3 }}>{record.service?.title || 'Dịch vụ lẻ'} · {record.staff?.zalo_name || 'Chưa gán KTV'}</Typography.Text>
+                </div>
+                {record.status === 'in_progress' && editable && <Button icon={<EditOutlined />} loading={loading} disabled={loading} onClick={() => setEditOpen(true)}>Sửa</Button>}
+                {canFinalize && <Button type="primary" icon={<CheckCircleOutlined />} loading={saving} onClick={() => void completeVisit()}>Hoàn tất dịch vụ</Button>}
+              </div>
+              <TRow label="Giá dịch vụ">{serviceAmount.toLocaleString('vi-VN')} ₫</TRow>
+              <SubHead>Đầu buổi</SubHead>
+              <TRow label="Tình trạng da"><span style={{ whiteSpace: 'pre-wrap' }}>{record.skin_note || 'Chưa ghi'}</span></TRow>
+              <TRow label="Cần cải thiện"><span style={{ whiteSpace: 'pre-wrap' }}>{record.concern || 'Chưa ghi'}</span></TRow>
+              {photoRow('before', 'Ảnh trước')}
+              <SubHead>Thực hiện</SubHead>
+              <TRow label="Nhật ký"><span style={{ whiteSpace: 'pre-wrap' }}>{record.diary || 'Chưa ghi'}</span></TRow>
+              <TRow label="Sản phẩm đã dùng"><span style={{ whiteSpace: 'pre-wrap' }}>{record.products_used || 'Chưa ghi'}</span></TRow>
+              {photoRow('process', 'Ảnh quá trình')}
+              <SubHead>Kết quả cuối buổi</SubHead>
+              <TRow label="Kết quả / dặn dò"><span style={{ whiteSpace: 'pre-wrap' }}>{record.result || 'Chưa ghi'}</span></TRow>
+              {photoRow('after', 'Ảnh sau')}
+            </div>
+          )}
+          {activeDetailTab === 'payments' && (
+            <>
+              <div className="desktop-only" style={{ border: '1px solid var(--brand-border)', borderRadius: 12, overflow: 'hidden', background: '#fff' }}>
+                <SubHead>Lịch sử thanh toán</SubHead>
+                <Table<VisitPayment>
+                  rowKey="id"
+                  size="small"
+                  pagination={false}
+                  dataSource={payments}
+                  locale={{ emptyText: 'Chưa có khoản thu dịch vụ' }}
+                  columns={[
+                    { title: 'Thời gian', dataIndex: 'paid_at', render: (value?: string) => value ? dayjs(value).format('DD/MM/YYYY HH:mm') : '—' },
+                    { title: 'Số tiền', dataIndex: 'amount', align: 'right', render: (value: number | string) => `${Number(value).toLocaleString('vi-VN')} ₫` },
+                    { title: 'Phương thức', dataIndex: 'method' },
+                    { title: 'Trạng thái', key: 'status', render: (_value, row) => <Tag color={row.voided_at ? 'red' : 'green'}>{row.voided_at ? 'Đã hủy' : 'Đã thu'}</Tag> },
+                  ]}
+                />
+              </div>
+              {/* Mobile: card thay table cho dễ đọc/cuộn */}
+              <MobileCards
+                rows={payments}
+                rowKey={(row) => row.id}
+                emptyText="Chưa có khoản thu dịch vụ"
+                renderCard={(row) => (
+                  <>
+                    <div className="mobile-card-head">
+                      <div className="mobile-card-title">{Number(row.amount).toLocaleString('vi-VN')} ₫</div>
+                      <Tag color={row.voided_at ? 'red' : 'green'}>{row.voided_at ? 'Đã hủy' : 'Đã thu'}</Tag>
+                    </div>
+                    <div className="mobile-card-rows">
+                      <MobileCardRow label="Thời gian" value={row.paid_at ? dayjs(row.paid_at).format('DD/MM/YYYY HH:mm') : '—'} />
+                      <MobileCardRow label="Phương thức" value={row.method || '—'} />
+                    </div>
+                  </>
+                )}
+              />
+            </>
+          )}
+          {activeDetailTab === 'points' && <ServicePointsHistory profileId={record.customer_profile_id} />}
         </div>
       </div>
       <Modal

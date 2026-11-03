@@ -40,6 +40,7 @@ import PageTitle from '@/components/base/PageTitle'
 import ListFilterPopover from '@/components/base/ListFilterPopover'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
+import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import CustomFieldFormItems, { normalizeCustomFieldValues } from '@/components/CustomFieldFormItems'
 import useCustomFieldDefinitions from '@/hooks/useCustomFieldDefinitions'
 import { errorMessage, pickData, pickMeta } from '@/api/helpers'
@@ -222,7 +223,10 @@ export default function Appointments() {
   const canApprove = ability.can('APPROVE' as never, 'APPOINTMENT')
   const canUpdate = ability.can('UPDATE' as never, 'APPOINTMENT')
   const canStart = ability.can('START' as never, 'APPOINTMENT')
-  const [displayMode, setDisplayMode] = useState<'calendar' | 'list'>('calendar')
+  // Desktop mở mặc định ở dạng lịch; chỉ mobile (dưới breakpoint md = 768px) mới mặc định danh sách
+  const [displayMode, setDisplayMode] = useState<'calendar' | 'list'>(
+    () => (window.innerWidth < 768 ? 'list' : 'calendar'),
+  )
   const [calendarView, setCalendarView] = useState<'day' | 'week'>('week')
   const [calendarDate, setCalendarDate] = useState(() => dayjs())
   const [page, setPage] = useState(1)
@@ -749,7 +753,7 @@ export default function Appointments() {
       >
         Lịch hẹn
       </PageTitle>
-      <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
+      <div className="desktop-only" style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
         {displayMode === 'calendar' && (
           <Space wrap>
             <Segmented
@@ -874,7 +878,9 @@ export default function Appointments() {
             </div>
           )}
         </div>
-      ) : <Table<AppointmentRow>
+      ) : <>
+        <Table<AppointmentRow>
+        className="desktop-only"
         rowKey="id"
         loading={appointmentsQuery.isFetching}
         dataSource={rows}
@@ -979,7 +985,36 @@ export default function Appointments() {
             },
           },
         ] satisfies TableColumnsType<AppointmentRow>).filter((column) => column.key === 'actions' || visibleColumns.includes(String(column.key)))}
-      />}
+        />
+        {displayMode === 'list' && <MobileCards
+          rows={rows}
+          rowKey={(row) => row.id}
+          onCardClick={(row) => setSelectedAppointment(row)}
+          loading={appointmentsQuery.isFetching}
+          emptyText="Chưa có lịch hẹn"
+          renderCard={(row) => {
+            const status = row.status as AppointmentStatus
+            return (
+              <>
+                <div className="mobile-card-head">
+                  <div>
+                    <div className="mobile-card-title">{row.customer_profile?.full_name || 'Khách hàng'}</div>
+                    <div className="mobile-card-sub">{row.customer_profile?.phone || '—'}</div>
+                  </div>
+                  <Tag color={STATUS_META[status]?.color}>{STATUS_META[status]?.label ?? row.status}</Tag>
+                </div>
+                <div className="mobile-card-rows">
+                  <MobileCardRow label="Dịch vụ" value={row.service?.title || (row.customer_treatment_id ? 'Buổi liệu trình' : '—')} />
+                  {treatmentPackageName(row) && <MobileCardRow label="Gói" value={treatmentPackageName(row)!} />}
+                  <MobileCardRow label="Thời gian" value={`${dayjs(row.appt_date).format('DD/MM/YYYY')} ${row.start_time?.slice(0, 5)}`} />
+                  <MobileCardRow label="KTV" value={row.staff?.zalo_name || 'Chưa gán'} />
+                  <MobileCardRow label="Nguồn" value={row.created_via === 'APP' ? 'Mini App' : 'Nhân viên'} />
+                </div>
+              </>
+            )
+          }}
+        />}
+      </>}
       {displayMode !== 'calendar' && <ListPagination page={page} limit={limit} total={total} onChange={setPage} noun="lịch hẹn" />}
 
       <Modal

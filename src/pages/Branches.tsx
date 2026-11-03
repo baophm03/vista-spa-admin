@@ -6,6 +6,7 @@ import StatCards, { type StatItem } from '@/components/base/StatCards'
 import ListFilterPopover from '@/components/base/ListFilterPopover'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
+import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import TableEmpty from '@/components/base/TableEmpty'
 import { paginateRows } from '@/utils/listTable'
 import { useCustomerProfileAccess } from '@/utils/customerProfileAccess'
@@ -362,6 +363,7 @@ export default function Branches() {
       )}
 
       <Table<Branch>
+        className="desktop-only"
         rowKey="id"
         loading={branchesQuery.isLoading}
         dataSource={paginateRows(visibleRows, page, 10)}
@@ -371,6 +373,27 @@ export default function Branches() {
         locale={{
           emptyText: <TableEmpty description={keyword.trim() || statusFilter !== 'all' ? 'Không tìm thấy cơ sở phù hợp' : 'Chưa có cơ sở nào'} />,
         }}
+      />
+      <MobileCards
+        rows={paginateRows(visibleRows, page, 10)}
+        rowKey={(row) => row.id}
+        loading={branchesQuery.isLoading}
+        emptyText={keyword.trim() || statusFilter !== 'all' ? 'Không tìm thấy cơ sở phù hợp' : 'Chưa có cơ sở nào'}
+        renderCard={(row) => (
+          <>
+            <div className="mobile-card-head">
+              <div>
+                <div className="mobile-card-title">{row.name}</div>
+                <div className="mobile-card-sub"><Typography.Text code style={{ fontSize: 12 }}>{row.code}</Typography.Text></div>
+              </div>
+              <Tag color={row.is_active ? 'green' : 'default'}>{row.is_active ? 'Đang hoạt động' : 'Đã ngừng'}</Tag>
+            </div>
+            <div className="mobile-card-rows">
+              <MobileCardRow label="Địa chỉ" value={row.address?.trim() || '—'} />
+              <MobileCardRow label="Số điện thoại" value={row.phone?.trim() || '—'} />
+            </div>
+          </>
+        )}
       />
       <ListPagination page={page} limit={10} total={visibleRows.length} onChange={setPage} noun="cơ sở" />
 

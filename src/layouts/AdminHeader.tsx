@@ -85,7 +85,8 @@ export default function AdminHeader({
             <Avatar size={34} className="bg-[var(--brand-primary)]!" icon={<UserOutlined />}>
               {displayName.charAt(0).toUpperCase()}
             </Avatar>
-            <div className="leading-[1.2]">
+            {/* Mobile: chỉ còn khung avatar; tên + vai trò chỉ hiện từ lg trở lên */}
+            <div className="hidden leading-[1.2] lg:block">
               <div className="text-[13px] font-semibold">{displayName}</div>
               <div className="text-[11px] text-[#A9ADB2]">{roleLabel}</div>
             </div>
