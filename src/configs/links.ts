@@ -3,6 +3,6 @@ export default {
   // siteUrl: 'http://localhost:5173',
 
   // Production
-  apiEndpoint: 'https://vista-spa.vietprodev.com/api',
+  apiEndpoint: 'https://vista-spa.vietprodev.com',
   siteUrl: 'https://vista-spa.vercel.app'
 }
