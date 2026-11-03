@@ -131,19 +131,7 @@ export default function StandaloneServiceHistory({
   const canEditVisit = ability.can('UPDATE' as never, 'SESSION') || ability.can('START' as never, 'APPOINTMENT')
   const canCompleteVisit = ability.can('APPROVE' as never, 'APPOINTMENT')
   const [editTargetId, setEditTargetId] = useState<string | null>(null)
-
-  // Hoàn tất dịch vụ ngay từ danh sách — backend chặn nếu chưa thu đủ tiền / chưa đến giờ
-  const completeRow = async (row: StandaloneAppointment) => {
-    try {
-      const response = await customInstance<any>({ url: `/appointments/${row.id}/complete`, method: 'POST' })
-      const fresh = pickData<StandaloneAppointment | undefined>(response)
-      message.success('Dịch vụ đã hoàn tất')
-      void queryClient.invalidateQueries({ queryKey: ['/appointments'] })
-      if (selected?.id === row.id && fresh) setSelected({ ...row, ...fresh })
-    } catch (err) {
-      message.error(errorMessage(err))
-    }
-  }
+  const [completeTargetId, setCompleteTargetId] = useState<string | null>(null)
 
   const printRow = async (row: StandaloneAppointment) => {
     try {
@@ -187,16 +175,8 @@ export default function StandaloneServiceHistory({
               { key: 'print', icon: <PrinterOutlined />, label: 'In phiếu' },
             ]}
             onSelect={(key) => {
-              if (key === 'edit') { setEditTargetId(row.id); setSelected(row) }
-              else if (key === 'complete') {
-                Modal.confirm({
-                  title: `Hoàn tất dịch vụ này?`,
-                  content: 'Buổi sẽ chuyển sang trạng thái Hoàn tất; buổi/tiền của khách được ghi nhận và không thể quay lại.',
-                  okText: 'Hoàn tất',
-                  cancelText: 'Hủy',
-                  onOk: () => completeRow(row),
-                })
-              }
+              if (key === 'edit') { setEditTargetId(row.id); setCompleteTargetId(null); setSelected(row) }
+              else if (key === 'complete') { setEditTargetId(row.id); setCompleteTargetId(row.id); setSelected(row) }
               else if (key === 'print') void printRow(row)
             }}
           />
@@ -232,12 +212,12 @@ export default function StandaloneServiceHistory({
       <Modal
         title={selected ? `${selected.customer_profile?.full_name || 'Khách hàng'} · ${selected.service?.title || 'Dịch vụ lẻ'}` : 'Hồ sơ lần làm dịch vụ'}
         open={!!selected}
-        onCancel={() => setSelected(null)}
+        onCancel={() => { setSelected(null); setCompleteTargetId(null) }}
         footer={<Button onClick={() => setSelected(null)}>Đóng</Button>}
         width="min(1200px, calc(100vw - 24px))"
         style={{ top: 20 }}
       >
-        {selected && <StandaloneServiceVisit autoOpenEdit={selected.id === editTargetId} appointment={selected} onUpdated={(updated) => {
+        {selected && <StandaloneServiceVisit autoOpenEdit={selected.id === editTargetId} completeMode={selected.id === completeTargetId} appointment={selected} onUpdated={(updated) => {
           setSelected(updated)
           void queryClient.invalidateQueries({ queryKey: ['/appointments'] })
         }} />}
@@ -246,7 +226,7 @@ export default function StandaloneServiceHistory({
   )
 }
 
-function StandaloneServiceVisit({ appointment, onUpdated, autoOpenEdit }: { appointment: StandaloneAppointment; onUpdated: (row: StandaloneAppointment) => void; autoOpenEdit?: boolean }) {
+function StandaloneServiceVisit({ appointment, onUpdated, autoOpenEdit, completeMode }: { appointment: StandaloneAppointment; onUpdated: (row: StandaloneAppointment) => void; autoOpenEdit?: boolean; completeMode?: boolean }) {
   const ability = useAbility()
   const queryClient = useQueryClient()
   const [record, setRecord] = useState(appointment)
@@ -337,6 +317,13 @@ function StandaloneServiceVisit({ appointment, onUpdated, autoOpenEdit }: { appo
   }
 
   const saveAndClose = async (markDone = false) => { if (await saveVisit(markDone)) setEditOpen(false) }
+
+  // Chế độ "Hoàn tất dịch vụ" từ danh sách: lưu nhật ký + xác nhận làm xong + hoàn tất luôn
+  const finishAndComplete = async () => {
+    if (!(await saveVisit(true))) return
+    setEditOpen(false)
+    await completeVisit()
+  }
 
   const uploadPhoto = async (file: File, kind: 'before' | 'process' | 'after') => {
     try {
@@ -456,7 +443,6 @@ function StandaloneServiceVisit({ appointment, onUpdated, autoOpenEdit }: { appo
                 label: 'Lần làm dịch vụ',
                 children: (
                   <>
-                    <Alert type="info" showIcon style={{ marginBottom: 12 }} message="Dịch vụ lẻ — không trừ buổi gói" description="Hồ sơ này được lưu riêng trong lịch sử dịch vụ của khách." />
                     <div style={{ border: '1px solid var(--brand-border)', borderRadius: 12, overflow: 'hidden', background: '#fff' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', padding: '13px 16px', background: 'var(--brand-bg)' }}>
                         <div style={{ width: 40, height: 40, borderRadius: 10, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 17, color: 'var(--brand-primary)', border: '1px solid var(--brand-border)' }}>01</div>
@@ -545,11 +531,17 @@ function StandaloneServiceVisit({ appointment, onUpdated, autoOpenEdit }: { appo
         </Form>
       </Modal>
       <Modal
-        title="Sửa thông tin buổi dịch vụ lẻ"
+        title={completeMode && !record.visit_done_at ? 'Nhật ký buổi làm — Hoàn tất dịch vụ' : 'Sửa thông tin buổi dịch vụ lẻ'}
         width="min(720px, calc(100vw - 24px))"
         open={editOpen}
         onCancel={() => setEditOpen(false)}
-        footer={<Space wrap><Button onClick={() => setEditOpen(false)}>Hủy</Button><Button loading={saving} onClick={() => void saveAndClose(false)}>Lưu</Button>{!record.visit_done_at && <Button type="primary" icon={<CheckCircleOutlined />} loading={saving} onClick={() => void saveAndClose(true)}>Lưu và xác nhận đã làm xong</Button>}</Space>}
+        footer={completeMode && !record.visit_done_at
+          ? <Space wrap>
+              <Button onClick={() => setEditOpen(false)}>Hủy</Button>
+              <Button loading={saving} onClick={() => void saveAndClose(false)}>Lưu</Button>
+              <Button type="primary" icon={<CheckCircleOutlined />} loading={saving} onClick={() => void finishAndComplete()}>Xong</Button>
+            </Space>
+          : <Space wrap><Button onClick={() => setEditOpen(false)}>Hủy</Button><Button loading={saving} onClick={() => void saveAndClose(false)}>Lưu</Button>{!record.visit_done_at && <Button type="primary" icon={<CheckCircleOutlined />} loading={saving} onClick={() => void saveAndClose(true)}>Lưu và xác nhận đã làm xong</Button>}</Space>}
       >
         <Typography.Text type="secondary" style={{ display: 'block', margin: '4px 0 16px' }}>{record.customer_profile?.full_name || 'Khách hàng'} · {record.service?.title || 'Dịch vụ lẻ'} · {dayjs(record.appt_date).format('DD/MM/YYYY')} {record.start_time?.slice(0, 5)}</Typography.Text>
         <Form form={editForm} layout="vertical" disabled={!editable || record.status !== 'in_progress'}>
@@ -561,7 +553,7 @@ function StandaloneServiceVisit({ appointment, onUpdated, autoOpenEdit }: { appo
           <Form.Item name="products_used" label="Sản phẩm đã dùng"><Input.TextArea rows={2} maxLength={10000} placeholder="Tên sản phẩm hoặc ghi chú sản phẩm" /></Form.Item>
           <Divider plain style={{ fontSize: 11, color: '#A9ADB2', letterSpacing: 1, margin: '4px 0 14px' }}>KẾT QUẢ CUỐI BUỔI</Divider>
           <Form.Item name="result" label="Kết quả / dặn dò sau buổi"><Input.TextArea rows={3} maxLength={10000} placeholder="Kết quả quan sát được, cách chăm sóc tại nhà…" /></Form.Item>
-          {!record.visit_done_at && <Alert type="info" showIcon message="KTV xác nhận xong phần làm tại đây. Lễ tân cần thu đủ tiền rồi mới hoàn tất lịch hẹn." />}
+          {!record.visit_done_at && <Alert type="info" showIcon message={completeMode ? 'Điền đầy đủ nhật ký rồi bấm Xong để hoàn tất dịch vụ.' : 'KTV xác nhận xong phần làm tại đây. Lễ tân cần thu đủ tiền rồi mới hoàn tất lịch hẹn.'} />}
         </Form>
       </Modal>
     </>
