@@ -5,6 +5,7 @@ import { PlusOutlined, ReloadOutlined } from '@ant-design/icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import ServiceImageField from '@/components/ServiceImageField'
 import ListPagination from '@/components/base/ListPagination'
+import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import { paginateRows } from '@/utils/listTable'
 import { errorMessage, pickData } from '@/api/helpers'
 import { Can } from '@casl/react'
@@ -178,7 +179,45 @@ export default function ServiceCategories() {
           </Can>
         </Space>
       </div>
-      <Table<ServiceCategoryRow> rowKey="id" loading={categoriesQuery.isLoading} dataSource={paginateRows(rows, page, 10)} columns={columns} pagination={false} />
+      <Table<ServiceCategoryRow> className="desktop-only" rowKey="id" loading={categoriesQuery.isLoading} dataSource={paginateRows(rows, page, 10)} columns={columns} pagination={false} />
+      <MobileCards
+        rows={paginateRows(rows, page, 10)}
+        rowKey={(row) => row.id}
+        loading={categoriesQuery.isLoading}
+        emptyText="Chưa có danh mục nào"
+        renderCard={(row) => (
+          <>
+            <div className="mobile-card-head">
+              <div className="mobile-card-title">{row.name}</div>
+              <Tag color={row.is_active === false ? 'default' : 'green'}>{row.is_active === false ? 'Đã ẩn' : 'Đang dùng'}</Tag>
+            </div>
+            <div className="mobile-card-rows">
+              <MobileCardRow label="Danh mục cha" value={row.parent?.name || '—'} />
+              <MobileCardRow label="Thứ tự" value={row.sort_order ?? '—'} />
+            </div>
+            <div className="mobile-card-actions">
+              <Can I="UPDATE" a="SERVICE">
+                <Button size="small" onClick={() => openEditor(row)}>Sửa</Button>
+              </Can>
+              {row.is_active === false ? (
+                <Can I="UPDATE" a="SERVICE">
+                  <Button size="small" onClick={() => void restore(row)}>Bật lại</Button>
+                </Can>
+              ) : (
+                <Can I="DELETE" a="SERVICE">
+                  <Popconfirm
+                    title="Ẩn danh mục này?"
+                    description="Chỉ ẩn được khi không còn dịch vụ hoặc danh mục con đang hoạt động."
+                    onConfirm={() => void hide(row)}
+                  >
+                    <Button size="small" danger>Ẩn</Button>
+                  </Popconfirm>
+                </Can>
+              )}
+            </div>
+          </>
+        )}
+      />
       <ListPagination page={page} limit={10} total={rows.length} onChange={setPage} noun="danh mục dịch vụ" />
       <Modal
         title={editing ? 'Sửa danh mục dịch vụ' : 'Thêm danh mục dịch vụ'}

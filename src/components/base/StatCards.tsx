@@ -53,6 +53,7 @@ export default function StatCards({ items }: StatCardsProps) {
   if (items.length === 0) return null
   return (
     <div
+      className="stat-cards"
       style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(205px, 1fr))',

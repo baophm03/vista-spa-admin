@@ -1,5 +1,5 @@
 import { lazy, Suspense, useState } from 'react'
-import { Tabs } from 'antd'
+import { Select, Tabs } from 'antd'
 import type { CustomerProfileRow, CustomerProfileSummary } from '@/components/CustomerProfileOverviewTab'
 import type { CustomFieldDefWithOptions } from '@/components/CustomerProfileCustomFields'
 
@@ -9,6 +9,13 @@ const CustomerProfileOverviewTab = lazy(() => import('@/components/CustomerProfi
 const CustomerProfileTreatmentsTab = lazy(() => import('@/components/CustomerProfileTreatmentsTab'))
 
 type TabKey = 'overview' | 'treatments' | 'appointments' | 'metrics'
+
+const TAB_OPTIONS: { value: TabKey; label: string }[] = [
+  { value: 'overview', label: 'Tổng quan' },
+  { value: 'treatments', label: 'Gói, buổi, thanh toán' },
+  { value: 'appointments', label: 'Lịch hẹn' },
+  { value: 'metrics', label: 'Sức khỏe, chỉ số' },
+]
 
 interface Props {
   profile: CustomerProfileRow
@@ -30,16 +37,21 @@ export default function CustomerProfileDetailsTabs({ profile, summary, branchNam
 
   return (
     <>
+      {/* Desktop: tab navigation — Mobile: select thay cho hàng tab */}
       <Tabs
+        className="desktop-only"
         activeKey={activeTab}
         onChange={(key) => setActiveTab(key as TabKey)}
-        items={[
-          { key: 'overview', label: 'Tổng quan', children: null },
-          { key: 'treatments', label: 'Gói, buổi, thanh toán', children: null },
-          { key: 'appointments', label: 'Lịch hẹn', children: null },
-          { key: 'metrics', label: 'Sức khỏe, chỉ số', children: null },
-        ]}
+        items={TAB_OPTIONS.map((tab) => ({ key: tab.value, label: tab.label, children: null }))}
       />
+      <div className="mobile-only" style={{ marginBottom: 12 }}>
+        <Select
+          style={{ width: '100%' }}
+          value={activeTab}
+          onChange={(key) => setActiveTab(key as TabKey)}
+          options={TAB_OPTIONS}
+        />
+      </div>
       <Suspense fallback={<div className="py-9 text-center">Đang mở hồ sơ…</div>}>
         <div className="pt-1">{content}</div>
       </Suspense>

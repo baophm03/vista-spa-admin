@@ -5,6 +5,7 @@ import { Alert, Button, Form, Input, Modal, Popconfirm, Select, Space, Table, Ta
 import { EditOutlined, PlusOutlined, ReloadOutlined } from '@ant-design/icons'
 import { errorMessage, pickData } from '@/api/helpers'
 import ListPagination from '@/components/base/ListPagination'
+import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import TableEmpty from '@/components/base/TableEmpty'
 import { paginateRows } from '@/utils/listTable'
 import {
@@ -102,9 +103,36 @@ export default function ShiftCatalogTab({ branches, access, loadingShared }: Pro
     </Space>
     {!!error && <Alert type="error" showIcon message="Không tải được danh mục ca" description={error} action={<Button size="small" icon={<ReloadOutlined />} onClick={() => { setPage(1); void templatesQuery.refetch() }}>Thử lại</Button>} style={{ marginBottom: 16 }} />}
     <Table<ShiftTemplate>
+      className="desktop-only"
       rowKey="id" size="middle" pagination={false}
       loading={loadingShared || templatesQuery.isLoading} dataSource={paginateRows(rows, page, 10)} columns={columns}
       locale={{ emptyText: <TableEmpty description="Chưa có ca làm nào được cấu hình" /> }}
+    />
+    <MobileCards
+      rows={paginateRows(rows, page, 10)}
+      rowKey={(row) => row.id}
+      loading={loadingShared || templatesQuery.isLoading}
+      emptyText="Chưa có ca làm nào được cấu hình"
+      renderCard={(row) => (
+        <>
+          <div className="mobile-card-head">
+            <div className="mobile-card-title">{row.name}</div>
+            <Tag color={row.is_active === false ? 'default' : 'green'}>{row.is_active === false ? 'Đã ẩn' : 'Đang dùng'}</Tag>
+          </div>
+          <div className="mobile-card-rows">
+            <MobileCardRow label="Thời gian" value={`${row.start_time.slice(0, 5)}–${row.end_time.slice(0, 5)}`} />
+            <MobileCardRow label="Áp dụng" value={row.branch_id ? branches.find((branch) => branch.id === row.branch_id)?.name || 'Cơ sở' : 'Mọi cơ sở'} />
+          </div>
+          {access.isAdmin && (
+            <div className="mobile-card-actions">
+              <Button icon={<EditOutlined />} size="small" onClick={() => openForm(row)}>Sửa</Button>
+              {row.is_active === false
+                ? <Button size="small" onClick={() => void setActive(row, true)}>Bật lại</Button>
+                : <Popconfirm title="Ẩn ca này?" description="Không thể ẩn nếu lịch KTV còn đang dùng ca." okText="Ẩn ca" cancelText="Hủy" onConfirm={() => void setActive(row, false)}><Button size="small" danger>Ẩn</Button></Popconfirm>}
+            </div>
+          )}
+        </>
+      )}
     />
     <ListPagination page={page} limit={10} total={rows.length} onChange={setPage} noun="ca làm việc" />
 

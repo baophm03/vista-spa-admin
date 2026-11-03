@@ -13,6 +13,7 @@ import { getLookupLists } from '@/api/endpoints/lookup-lists'
 import { errorMessage, pickData } from '@/api/helpers'
 import { useBrandDateTime } from '@/themeRuntime'
 import ListPagination from '@/components/base/ListPagination'
+import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import { paginateRows } from '@/utils/listTable'
 
 type MetricRow = HealthMetric & {
@@ -78,7 +79,7 @@ function HealthRecordBlock({ records, skinTypes }: { records: CustomerHealthReco
           </Space>
         )}
       >
-        <Descriptions size="small" column={2} bordered labelStyle={{ width: 140 }}>
+        <Descriptions size="small" column={{ xs: 1, sm: 2 }} bordered>
           {renderFields(latest).map((field) => (
             <Descriptions.Item key={field.label} label={field.label}>{field.value || '—'}</Descriptions.Item>
           ))}
@@ -94,7 +95,7 @@ function HealthRecordBlock({ records, skinTypes }: { records: CustomerHealthReco
             <Card key={record.id} size="small" type="inner" title={`Phiếu khám — ${recordDate(record.checked_date || record.created_at)}`}
               extra={record.checked_by ? <Tag>{record.checked_by}</Tag> : undefined}
               style={index === older.length - 1 ? { marginBottom: 4 } : undefined}>
-              <Descriptions size="small" column={2} bordered labelStyle={{ width: 140 }}>
+              <Descriptions size="small" column={{ xs: 1, sm: 2 }} bordered>
                 {renderFields(record).map((field) => (
                   <Descriptions.Item key={field.label} label={field.label}>{field.value || '—'}</Descriptions.Item>
                 ))}
@@ -184,7 +185,7 @@ export default function CustomerProfileHealthMetricsTab({ profileId }: { profile
           onChange={(value) => { setMetricCode(value || ''); setPage(1) }}
         />
         <DatePicker.RangePicker value={dateRange} onChange={(value) => { setDateRange(value as [dayjs.Dayjs, dayjs.Dayjs] | null); setPage(1) }} />
-        <Button icon={<ReloadOutlined />} onClick={() => { setPage(1); setRefresh((value) => value + 1) }}>Tải lại</Button>
+        <Button className="desktop-only" icon={<ReloadOutlined />} onClick={() => { setPage(1); setRefresh((value) => value + 1) }}>Tải lại</Button>
       </Space>
       {activeItems.length === 0 && <Alert type="info" showIcon message="Chưa có danh mục chỉ số đang hoạt động" description="Quản trị viên có thể cấu hình mã chỉ số trong Cấu hình dữ liệu khách hàng." />}
       {!filteredRows.length ? <Empty description="Chưa có chỉ số đo trong bộ lọc này" /> : (
@@ -204,6 +205,7 @@ export default function CustomerProfileHealthMetricsTab({ profileId }: { profile
             </Card>
           )}
           <Table<MetricRow>
+            className="desktop-only"
             rowKey="id"
             size="small"
             pagination={false}
@@ -217,6 +219,25 @@ export default function CustomerProfileHealthMetricsTab({ profileId }: { profile
               { title: 'Người ghi', dataIndex: ['created_by_user', 'zalo_name'], render: (value: string, row: MetricRow) => value || row.created_by || '—' },
               { title: 'Ghi chú', dataIndex: 'note', render: (value?: string | null) => value || '—' },
             ]}
+          />
+          <MobileCards
+            rows={paginateRows(filteredRows, page, 8)}
+            rowKey={(row) => row.id}
+            emptyText="Chưa có chỉ số đo trong bộ lọc này"
+            renderCard={(row) => (
+              <>
+                <div className="mobile-card-head">
+                  <div className="mobile-card-title">{names[row.metric_code] || row.metric_code}</div>
+                </div>
+                <div className="mobile-card-rows">
+                  <MobileCardRow label="Giá trị" value={`${row.value_num ?? row.value_text ?? '—'}${row.unit ? ` ${row.unit}` : ''}`} />
+                  <MobileCardRow label="Thời điểm đo" value={formatDateTime(row.measured_at)} />
+                  {row.session?.session_no && <MobileCardRow label="Buổi" value={`Buổi ${row.session.session_no}`} />}
+                  <MobileCardRow label="Người ghi" value={row.created_by_user?.zalo_name || row.created_by || '—'} />
+                  {row.note && <MobileCardRow label="Ghi chú" value={row.note} />}
+                </div>
+              </>
+            )}
           />
           <ListPagination page={page} limit={8} total={filteredRows.length} onChange={setPage} noun="chỉ số sức khỏe" />
         </>

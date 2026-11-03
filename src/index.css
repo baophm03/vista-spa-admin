@@ -207,6 +207,121 @@ h4.ant-typography {
   }
 }
 
+/* ===== Responsive table → card cho mobile (KTV dùng điện thoại) =====
+   Page bọc Table bằng class "desktop-only" và render danh sách card bằng
+   class "mobile-only" — tại mỗi bề rộng CHỈ MỘT TRONG HAI dạng hiển thị. */
+.mobile-card-list {
+  gap: 12px;
+}
+
+/* Ẩn card trên desktop — đặt sau .mobile-card-list để thắng cùng độ ưu tiên */
+.mobile-only {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .desktop-only {
+    display: none !important;
+  }
+  .mobile-only {
+    display: grid !important;
+  }
+  /* Pagination: ẩn dòng đếm "Hiển thị x - y", căn giữa cụm nút chuyển trang */
+  .list-pagination {
+    justify-content: center !important;
+  }
+  .list-pagination-count {
+    display: none;
+  }
+  /* Mobile (KTV dùng điện thoại): gọn màn hình, bỏ hàng stats */
+  .stat-cards {
+    display: none !important;
+  }
+  /* Card header không chật: chữ nhỏ lại, đủ chỗ cho title + tag cùng hàng */
+  .ant-card-head {
+    min-height: unset;
+    padding: 0 12px;
+    font-size: 13.5px;
+  }
+  .ant-card-head-wrapper {
+    align-items: center;
+  }
+  .ant-card-head-title {
+    padding: 10px 0;
+    overflow: visible;
+    white-space: normal;
+  }
+  .ant-card-size-small .ant-card-head {
+    min-height: unset;
+    font-size: 13.5px;
+  }
+  .ant-card .ant-card-head-title > .ant-space {
+    gap: 6px !important;
+  }
+}
+
+.mobile-card {
+  border: 1px solid var(--brand-border);
+  border-radius: 12px;
+  background: #fff;
+  padding: 12px 14px;
+  box-shadow: 0 1px 2px rgba(var(--brand-dark-rgb), 0.04);
+}
+
+.mobile-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.mobile-card-title {
+  font-weight: 700;
+  font-size: 14.5px;
+  color: #26211f;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.mobile-card-sub {
+  font-size: 12.5px;
+  color: #6f7071;
+  overflow-wrap: anywhere;
+}
+
+.mobile-card-rows {
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.mobile-card-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.mobile-card-row .mobile-card-label {
+  color: #849197;
+  flex-shrink: 0;
+}
+
+.mobile-card-row .mobile-card-value {
+  font-weight: 600;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.mobile-card-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--brand-border-soft);
+}
+
 /* ===== Card — viền hairline + shadow mềm cùng tông ===== */
 .ant-card {
   border-color: var(--brand-border);
@@ -229,62 +344,12 @@ h4.ant-typography {
   box-shadow: 0 2px 8px -4px rgba(var(--brand-rgb), 0.4);
 }
 
-/* Header modal chi tiết liệu trình — nền màu chủ đạo */
-.brand-header-modal .ant-modal-content,
-.brand-header-modal .ant-modal-container {
-  padding: 0;
-  overflow: hidden;
-}
-.brand-header-modal .ant-modal-header {
-  background: linear-gradient(120deg, var(--brand-dark), var(--brand-primary));
-  padding: 20px 24px;
-  margin-bottom: 0;
-}
-.brand-header-modal .ant-modal-footer {
-  margin-top: 0;
-  padding: 12px 24px;
-  border-top: 1px solid var(--brand-border-soft);
-  text-align: right;
-}
-/* Thanh tab trong modal chi tiết — ghim khi cuộn */
-.brand-header-modal .ant-tabs-nav {
-  position: sticky;
-  top: 0;
-  z-index: 5;
-  background: #ffffff;
-  margin-bottom: 0;
-  padding-bottom: 10px;
-}
-/* Nút + tab trong modal chi tiết — chữ đậm */
-.brand-header-modal .ant-btn {
-  font-weight: 600;
-}
-.brand-header-modal .ant-tabs-tab {
-  font-weight: 600;
-}
-
 /* Item buổi điều trị — hover cả hàng */
 .session-row {
   transition: background 0.15s;
 }
 .session-row:hover {
   background: var(--brand-hover);
-}
-
-/* Rail trái modal chi tiết liệu trình — ghim khi cuộn (chỉ desktop) */
-.rail-sticky {
-  position: sticky;
-  top: 0;
-}
-@media (max-width: 991px) {
-  .rail-sticky {
-    position: static;
-  }
-}
-
-/* ===== Stack ảnh buổi điều trị — thumb hover nổi lên trên để với tới nút xóa bị ảnh kế bên che ===== */
-.session-photo-stack > div:hover {
-  z-index: 30;
 }
 
 /* ===== Modal luôn gọn trong màn hình =====

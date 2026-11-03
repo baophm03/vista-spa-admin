@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Alert, Button, Card, Col, DatePicker, Divider, Empty, Form, Image, Input, InputNumber, Modal, Popconfirm, Progress, Row, Select, Space, Spin, Statistic, Table, Tabs, Tag, Tooltip, Typography, Upload, message } from 'antd'
+import { Alert, Button, Card, Col, DatePicker, Divider, Empty, Form, Grid, Image, Input, InputNumber, Modal, Popconfirm, Progress, Row, Select, Space, Spin, Statistic, Table, Tabs, Tag, Tooltip, Typography, Upload, message } from 'antd'
 import type { MenuProps } from 'antd'
 import { CheckCircleOutlined, DeleteOutlined, EditOutlined, PlayCircleOutlined, PlusOutlined, ReloadOutlined, RollbackOutlined, SearchOutlined, TeamOutlined, WalletOutlined } from '@ant-design/icons'
 import dayjs, { type Dayjs } from 'dayjs'
@@ -9,6 +9,7 @@ import StatCards, { type StatItem } from '@/components/base/StatCards'
 import ListFilterPopover from '@/components/base/ListFilterPopover'
 import RowActionsMenu, { type RowActionItem } from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
+import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import TableEmpty from '@/components/base/TableEmpty'
 import { paginateRows } from '@/utils/listTable'
 import CustomFieldFormItems, { normalizeCustomFieldValues, type CustomFieldDefWithOptions } from '@/components/CustomFieldFormItems'
@@ -264,10 +265,7 @@ interface PaymentRow {
   created_at?: string
 }
 
-/** Số thumb hiển thị chồng lên nhau trước khi gộp vào badge "+N" */
-const PHOTO_VISIBLE_COUNT = 3
-
-/** Ảnh của 1 buổi: tối đa 3 thumb xếp chồng + badge "+N" mở gallery xem tất cả; upload/xóa theo loại (trước/quá trình/sau) */
+/** Ảnh của 1 buổi: hàng thumb phẳng + nút upload nằm cạnh (giống trang Dịch vụ lẻ); xóa ảnh trong trình xem gallery */
 function SessionPhotos({
   sessionId,
   photos,
@@ -295,10 +293,6 @@ function SessionPhotos({
     || sessionStatus === 'done'
     || (sessionStatus === 'scheduled' && (kind ?? 'process') === 'before'))
   const deleteAllowed = !!canDelete && sessionStatus !== 'completed'
-  const visiblePhotos = photos.slice(0, PHOTO_VISIBLE_COUNT)
-  const hiddenCount = photos.length - visiblePhotos.length
-  const badgePhoto = photos[PHOTO_VISIBLE_COUNT]
-  const thumbRing = '0 0 0 2px #fff, 0 1px 6px rgba(0,0,0,0.18)'
 
   const deletePhoto = async (id?: string) => {
     if (!id) return
@@ -338,69 +332,37 @@ function SessionPhotos({
   )
 
   return (
-    // Ảnh và nút upload phải là item trực tiếp của flex thì mới xếp ngang:
-    // bọc chung trong Space thì mỗi div ảnh thành block con của 1 .ant-space-item → xếp dọc
-    <div className="session-photo-stack" style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-      {/* items = toàn bộ ảnh để gallery điều hướng được cả list, dù chỉ render vài thumb đầu */}
-      <Image.PreviewGroup
-        items={photos.map((p) => p.url ?? '').filter(Boolean)}
-        preview={
-          deleteAllowed
-            ? {
-                open: previewOpen,
-                onOpenChange: setPreviewOpen,
-                actionsRender: (node, info) => (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    {node}
-                    {deleteButton(photos[info.current]?.id)}
-                  </div>
-                ),
-              }
-            : undefined
-        }
-      >
-        {visiblePhotos.map((p, i) => (
-          <div key={p.id} style={{ position: 'relative', flexShrink: 0, marginLeft: i === 0 ? 0 : -36 }}>
+    <Space wrap size={10}>
+      {photos.length > 0 && (
+        <Image.PreviewGroup
+          items={photos.map((p) => p.url ?? '').filter(Boolean)}
+          preview={
+            deleteAllowed
+              ? {
+                  open: previewOpen,
+                  onOpenChange: setPreviewOpen,
+                  actionsRender: (node, info) => (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      {node}
+                      {deleteButton(photos[info.current]?.id)}
+                    </div>
+                  ),
+                }
+              : undefined
+          }
+        >
+          {photos.map((p) => (
             <Image
-              width={92}
-              height={92}
-              style={{ objectFit: 'cover', borderRadius: 12, boxShadow: thumbRing }}
+              key={p.id}
+              width={88}
+              height={88}
+              style={{ objectFit: 'cover', borderRadius: 10 }}
               src={resolveFileUrl(p.url ?? undefined)}
               fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
             />
-            {deleteAllowed && deleteButton(p.id)}
-          </div>
-        ))}
-        {badgePhoto && (
-          <div style={{ position: 'relative', flexShrink: 0, marginLeft: -36 }}>
-            {/* Badge "+N" là chính ảnh thứ 4: bấm vào mở gallery ngay từ ảnh chưa hiện */}
-            <Image
-              width={92}
-              height={92}
-              style={{ objectFit: 'cover', borderRadius: 12, boxShadow: thumbRing }}
-              src={resolveFileUrl(badgePhoto.url ?? undefined)}
-              fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
-            />
-            <div
-              style={{
-                position: 'absolute',
-                inset: 0,
-                borderRadius: 12,
-                background: 'rgba(0, 0, 0, 0.45)',
-                color: '#fff',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: 18,
-                fontWeight: 800,
-                pointerEvents: 'none',
-              }}
-            >
-              +{hiddenCount}
-            </div>
-          </div>
-        )}
-      </Image.PreviewGroup>
+          ))}
+        </Image.PreviewGroup>
+      )}
       {uploadAllowed && (
         <Upload
           accept="image/*"
@@ -423,7 +385,8 @@ function SessionPhotos({
           <Button icon={<PlusOutlined />}>Ảnh</Button>
         </Upload>
       )}
-    </div>
+      {!photos.length && !uploadAllowed && <Typography.Text type="secondary">Chưa có ảnh</Typography.Text>}
+    </Space>
   )
 }
 
@@ -1168,7 +1131,11 @@ export default function TreatmentCustomers() {
   const [open, setOpen] = useState(false)
   const [form] = Form.useForm()
   const [filterForm] = Form.useForm()
+  // Mobile (dưới breakpoint md): search thu về nút icon, bộ lọc/tải lại chỉ icon
+  const isMobile = !Grid.useBreakpoint().md
+  const [searchOpen, setSearchOpen] = useState(false)
   // Modal chi tiết
+  const [detailTab, setDetailTab] = useState<'sessions' | 'payments' | 'points'>('sessions')
   const [detail, setDetail] = useState<CustomerTreatment | null>(null)
   const [sessionsRefreshKey, setSessionsRefreshKey] = useState(0)
   const [sessionToEdit, setSessionToEdit] = useState<{ treatmentId: string; sessionId: string } | null>(null)
@@ -1315,6 +1282,7 @@ export default function TreatmentCustomers() {
 
   const openDetail = (row: CustomerTreatment) => {
     setDetail(row)
+    setDetailTab('sessions')
     if (!canReadPayments) {
       setPayments([])
       setPayLoading(false)
@@ -1428,7 +1396,7 @@ export default function TreatmentCustomers() {
     }
     setAddingSessionId(addSessionFor.id)
     try {
-      const created = pickData<SessionRow>(await postCustomerTreatmentsIdSessions(addSessionFor.id, {
+      await postCustomerTreatmentsIdSessions(addSessionFor.id, {
         ...(scheduledDate && scheduledTime && staffId ? {
           scheduled_at: scheduledDate.hour(Number(scheduledTime.slice(0, 2))).minute(Number(scheduledTime.slice(3, 5))).second(0).millisecond(0).toISOString(),
           staff_id: staffId,
@@ -1437,7 +1405,7 @@ export default function TreatmentCustomers() {
           sessionCustomFields,
           (values.custom_fields ?? {}) as Record<string, unknown>,
         ) ?? {},
-      } as never))
+      } as never)
       openDetail(addSessionFor)
       setSessionsRefreshKey((key) => key + 1)
       message.success('Đã tạo buổi mới')
@@ -1802,20 +1770,29 @@ export default function TreatmentCustomers() {
       </PageTitle>
 
       <div style={{ display: 'flex', justifyContent: 'flex-end', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
-        <Input
-          allowClear
-          prefix={<SearchOutlined style={{ color: 'var(--brand-text-inactive, #A9ADB2)' }} />}
-          placeholder="Tìm tên hoặc SĐT khách hàng"
-          style={{ width: 260 }}
-          value={searchInput}
-          onChange={(event) => {
-            setSearchInput(event.target.value)
-            if (!event.target.value) applySearch('')
-          }}
-          onPressEnter={() => applySearch(searchInput)}
-        />
-        <Button icon={<ReloadOutlined />} onClick={refresh} />
+        {/* Mobile: nút icon mở ô tìm kiếm; desktop hiện input luôn */}
+        {isMobile && !searchOpen && (
+          <Button icon={<SearchOutlined />} aria-label="Tìm kiếm" title="Tìm kiếm" onClick={() => setSearchOpen(true)} />
+        )}
+        {(searchOpen || !isMobile) && (
+          <Input
+            allowClear
+            autoFocus={isMobile}
+            prefix={<SearchOutlined style={{ color: 'var(--brand-text-inactive, #A9ADB2)' }} />}
+            placeholder="Tìm tên hoặc SĐT khách hàng"
+            style={isMobile && searchOpen ? { flex: 1, minWidth: 0 } : { width: 260, maxWidth: 'min(260px, 46vw)', minWidth: 140 }}
+            value={searchInput}
+            onChange={(event) => {
+              setSearchInput(event.target.value)
+              if (!event.target.value) applySearch('')
+            }}
+            onPressEnter={() => applySearch(searchInput)}
+            onBlur={() => { if (isMobile && !searchInput) setSearchOpen(false) }}
+          />
+        )}
+        <Button icon={<ReloadOutlined />} onClick={refresh}>{!isMobile ? 'Tải lại' : undefined}</Button>
         <ListFilterPopover
+          iconOnly={isMobile}
           open={filterOpen}
           onOpenChange={openFilters}
           activeFilterCount={activeFilterCount}
@@ -1839,6 +1816,7 @@ export default function TreatmentCustomers() {
       </div>
 
       <Table<CustomerTreatment>
+        className="desktop-only"
         rowKey="id"
         loading={treatmentsQuery.isLoading}
         dataSource={paginateRows(list, page, limit)}
@@ -1848,11 +1826,12 @@ export default function TreatmentCustomers() {
           {
             title: 'Khách hàng',
             key: 'customer',
+            width: 220,
             render: (_: unknown, row: CustomerTreatment) => {
               return (
                 <div>
-                  <div style={{ fontWeight: 500 }}>{profileName(row)}</div>
-                  <div style={{ fontSize: 12, color: '#6F7071' }}>
+                  <Typography.Text strong>{profileName(row)}</Typography.Text>
+                  <div style={{ color: '#777', fontSize: 12 }}>
                     {packageName(row)}{(profilePhone(row)) ? ` · ${profilePhone(row)}` : ''}
                   </div>
                 </div>
@@ -1862,11 +1841,11 @@ export default function TreatmentCustomers() {
           {
             title: 'Mã gói',
             key: 'package_code',
-            width: 140,
+            width: 200,
             render: (_: unknown, row: CustomerTreatment) => (
               <div>
                 <Tag color="purple">G-{treatmentCode(row)}</Tag>
-                <div style={{ fontSize: 11, color: '#8A8790', marginTop: 2 }}>
+                <div style={{ color: '#777', fontSize: 12, marginTop: 2 }}>
                   Mua ngày {row.created_at ? dayjs(row.created_at).format('DD/MM/YYYY') : '—'}
                 </div>
               </div>
@@ -1878,15 +1857,12 @@ export default function TreatmentCustomers() {
             width: 220,
             render: (_: unknown, row: CustomerTreatment) => {
               if (row.quota_type === 'SESSIONS') {
-                const { total, used, remaining, percent } = sessionUsage(row)
+                const { total, used, percent } = sessionUsage(row)
                 if (!total) return <Tag>Chưa cấu hình số buổi</Tag>
                 return (
                   <div>
                     <Progress percent={percent} size="small" showInfo={false} strokeColor="var(--brand-primary)" style={{ margin: '0 0 4px' }} />
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2, fontSize: 12 }}>
-                      <span>Đã dùng {used}/{total} buổi</span>
-                      <span style={{ fontWeight: 600 }}>Còn lại {remaining} buổi</span>
-                    </div>
+                    <div style={{ color: '#777', fontSize: 12 }}>Đã dùng {used}/{total} buổi</div>
                   </div>
                 )
               }
@@ -1902,7 +1878,7 @@ export default function TreatmentCustomers() {
             width: 200,
             render: (_: unknown, row: CustomerTreatment) => (
               <div>
-                {canReadPayments && <div style={{ fontSize: 13 }}>
+                {canReadPayments && <div>
                   {formatMoney(row.paid_amount)} / {formatMoney(row.total_amount)}
                 </div>}
                 <Tag color={(row.debt_amount ?? 0) > 0 ? 'orange' : 'green'} style={{ marginTop: 4 }}>
@@ -2013,6 +1989,52 @@ export default function TreatmentCustomers() {
           (column.key === 'actions' || visibleColumns.includes(column.key as CustomerTreatmentColumnKey)),
         )}
       />
+      <MobileCards
+        rows={paginateRows(list, page, limit)}
+        rowKey={(row) => row.id}
+        onCardClick={(row) => openDetail(row)}
+        loading={treatmentsQuery.isLoading}
+        emptyText="Chưa có khách nào trong liệu trình"
+        renderCard={(row) => {
+          const usage = row.quota_type === 'SESSIONS' ? sessionUsage(row) : null
+          return (
+            <>
+              <div className="mobile-card-head">
+                <div>
+                  <div className="mobile-card-title">{profileName(row)}</div>
+                  <div className="mobile-card-sub">{packageName(row)} · {profilePhone(row) || '—'} · Mã G-{treatmentCode(row)}</div>
+                </div>
+                <Tag color={STATUS_META[row.status as string]?.color}>{STATUS_META[row.status as string]?.label ?? row.status}</Tag>
+              </div>
+              <div className="mobile-card-rows">
+                {usage
+                  ? <MobileCardRow label="Số buổi" value={`Đã dùng ${usage.used}/${usage.total} · Còn ${usage.remaining}`} />
+                  : row.quota_type === 'VALUE'
+                    ? <MobileCardRow label="Định mức" value={`${formatMoney(row.value_used)} / ${formatMoney(row.value_total)}`} />
+                    : <MobileCardRow label="Loại gói" value="Trọn gói" />}
+                {row.expires_at && <MobileCardRow label="Hạn dùng" value={dayjs(row.expires_at).format('DD/MM/YYYY')} />}
+                {canReadPayments && <MobileCardRow label="Thanh toán" value={
+                  <Tag color={(row.debt_amount ?? 0) > 0 ? 'orange' : 'green'} style={{ margin: 0 }}>
+                    {(row.debt_amount ?? 0) > 0 ? `Còn nợ ${formatMoney(row.debt_amount)}` : 'Đã trả đủ'}
+                  </Tag>
+                } />}
+              </div>
+              <div className="mobile-card-actions">
+                {row.status === 'ACTIVE' && canCreateSessions && (
+                  <Button size="small" type="primary" icon={<PlusOutlined />} disabled={addingSessionId !== null} onClick={() => addSession(row)}>+1 buổi</Button>
+                )}
+                {canReadPayments && (row.debt_amount ?? 0) > 0 && row.status !== 'CANCELLED' && (
+                  <Button size="small" onClick={() => {
+                    setPayTargetId(row.id)
+                    payForm.setFieldsValue({ amount: row.debt_amount, method: activePaymentMethods.find((item) => item.code === 'CASH')?.code ?? activePaymentMethods[0]?.code })
+                    setPayOpen(true)
+                  }}>Thu tiền</Button>
+                )}
+              </div>
+            </>
+          )
+        }}
+      />
       <ListPagination page={page} limit={limit} total={list.length} onChange={setPage} noun="khách điều trị" />
 
       <Modal
@@ -2110,10 +2132,10 @@ export default function TreatmentCustomers() {
                   optionFilterProp="label"
                   disabled={!addSessionTime || addSessionSlotsLoading}
                   placeholder={addSessionTime ? 'Chọn KTV rảnh' : 'Chọn ngày và giờ trước'}
-                  options={addSessionSlots
+                  options={(addSessionSlots
                     .find((slot) => slot.start_time.slice(0, 5) === addSessionTime)
                     ?.staff_ids.map((id) => staffOptions.find((option) => option.value === id))
-                    .filter((option): { value: string; label: string } => !!option)}
+                    .filter((option): option is { value: string; label: string } => !!option) ?? [])}
                 />
               </Form.Item>
             </Col>
@@ -2327,104 +2349,76 @@ export default function TreatmentCustomers() {
   />
 </Modal>
 
-{/* Modal chi tiết — timeline buổi + lịch sử thanh toán */ }
+{/* Modal chi tiết — timeline buổi + lịch sử thanh toán — thiết kế đồng bộ modal lần làm dịch vụ */ }
       <Modal
         open={!!detail && !payOpen}
         onCancel={() => setDetail(null)}
-        closeIcon={null}
-        footer={
-          <Button
-            onClick={() => setDetail(null)}
-            style={{ minWidth: 120, background: '#F0F1F2', borderColor: '#F0F1F2', color: '#57595C', fontWeight: 500 }}
-          >
-            Đóng
-          </Button>
-        }
-        width="min(1400px, 96vw)"
-        style={{ top: 16, maxWidth: '96vw' }}
-        styles={{ body: { height: 'calc(82vh - 56px)', overflowY: 'auto', padding: '0 24px 16px' } }}
-        title={
-          detail ? (
-            <Space direction="vertical" size={2}>
-              <span style={{ fontSize: 20, fontWeight: 600, color: '#FFFFFF' }}>
-                {profileName(detail)}
-              </span>
-              <Typography.Text style={{ fontSize: 13, fontWeight: 400, color: 'rgba(255,255,255,0.78)' }}>
-                {packageName(detail)} · {QUOTA_LABEL[detail.quota_type ?? ''] ?? detail.quota_type}
-              </Typography.Text>
-            </Space>
-          ) : null
-        }
+        title={detail ? `${profileName(detail)} · ${packageName(detail)}` : 'Chi tiết liệu trình'}
+        footer={<Button onClick={() => setDetail(null)}>Đóng</Button>}
+        width="min(1200px, calc(100vw - 24px))"
+        style={{ top: 20 }}
       >
         {detail && (
-          <Row gutter={[20, 16]} style={{ marginTop: 16 }}>
-            {/* Rail trái: tóm tắt + hành động — ghim khi cuộn */}
-            <Col xs={24} lg={7}>
-              <div className="sticky top-2 self-start">
-              <div
-                style={{
-                  border: '1px solid var(--brand-border)',
-                  borderRadius: 12,
-                  padding: 18,
-                  background: 'var(--brand-bg)',
-                }}
-              >
-                <div style={{ fontSize: 12, color: '#6F7071', letterSpacing: 1.5, textTransform: 'uppercase', fontWeight: 700 }}>Tiến độ</div>
-                <div style={{ fontSize: 26, fontWeight: 700, color: 'var(--brand-dark)', marginTop: 2 }}>
-                  {detail.quota_type === 'SESSIONS'
-                    ? `Đã dùng ${sessionUsage(detail).used}/${sessionUsage(detail).total} buổi`
-                    : detail.quota_type === 'VALUE'
-                      ? `${formatMoney(detail.value_used)} / ${formatMoney(detail.value_total)}`
-                      : 'Trọn gói'}
-                </div>
-                {treatmentProgress(detail) !== null && (
-                  <Progress
-                    percent={treatmentProgress(detail) ?? 0}
-                    size="small"
-                    style={{ marginTop: 6, marginBottom: detail.quota_type === 'SESSIONS' ? 4 : 12 }}
-                  />
+          <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+            {/* Rail trái: tóm tắt + hành động — card nền brand-bg như modal lần làm dịch vụ */}
+            <aside style={{ flex: '1 1 260px', maxWidth: 330, padding: 18, border: '1px solid var(--brand-border)', borderRadius: 14, background: 'var(--brand-bg)' }}>
+              <Typography.Text type="secondary" style={{ fontSize: 12, fontWeight: 800, letterSpacing: 1.2 }}>
+                {detail.quota_type === 'UNLIMITED' ? 'LIỆU TRÌNH TRỌN GÓI' : 'TIẾN ĐỘ LIỆU TRÌNH'}
+              </Typography.Text>
+              <Typography.Title level={4} style={{ margin: '5px 0 0' }}>{packageName(detail)}</Typography.Title>
+              <Typography.Text type="secondary" style={{ display: 'block', fontSize: 13 }}>
+                {QUOTA_LABEL[detail.quota_type ?? ''] ?? detail.quota_type}
+              </Typography.Text>
+              {detail.quota_type !== 'UNLIMITED' ? (
+                <>
+                  <Progress percent={treatmentProgress(detail) ?? 0} size="small" showInfo={false} strokeColor="var(--brand-primary)" style={{ marginTop: 10 }} />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, fontSize: 13 }}>
+                    <span>Đã dùng</span>
+                    <strong>
+                      {detail.quota_type === 'SESSIONS'
+                        ? `${sessionUsage(detail).used} / ${sessionUsage(detail).total} buổi`
+                        : `${formatMoney(detail.value_used)} / ${formatMoney(detail.value_total)}`}
+                    </strong>
+                  </div>
+                </>
+              ) : (
+                <Typography.Text type="secondary" style={{ display: 'block', marginTop: 4 }}>Không giới hạn số buổi</Typography.Text>
+              )}
+              <Divider style={{ margin: '12px 0' }} />
+              <div style={{ display: 'grid', gap: 9, fontSize: 13.5 }}>
+                {canReadPayments && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
+                    <span>Đã trả</span><strong>{formatMoney(detail.paid_amount)}</strong>
+                  </div>
                 )}
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
+                  <span>Công nợ</span>
+                  <strong style={{ color: (detail.debt_amount ?? 0) > 0 ? '#D97706' : '#159447' }}>{formatMoney(detail.debt_amount)}</strong>
+                </div>
                 {detail.quota_type === 'SESSIONS' && (
-                  <div style={{ fontSize: 14, color: '#3F4145', marginBottom: 12 }}>
-                    Còn lại <b>{sessionUsage(detail).remaining} buổi</b>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
+                    <span>Còn lại</span><strong>{sessionUsage(detail).remaining} buổi</strong>
                   </div>
                 )}
-                {detail.quota_type === 'UNLIMITED' && (
-                  <div style={{ fontSize: 13, color: '#6F7071', margin: '6px 0 12px' }}>
-                    Không giới hạn số buổi
-                  </div>
-                )}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 9, borderTop: '1px solid var(--brand-border-soft)', paddingTop: 12 }}>
-                  {canReadPayments && <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
-                    <span style={{ color: '#3F4145', fontWeight: 600 }}>Đã trả</span>
-                    <b style={{ fontWeight: 700 }}>{formatMoney(detail.paid_amount)}</b>
-                  </div>}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
-                    <span style={{ color: '#3F4145', fontWeight: 600 }}>Công nợ</span>
-                    <b style={{ fontWeight: 700, color: (detail.debt_amount ?? 0) > 0 ? '#D97706' : '#16A34A' }}>
-                      {formatMoney(detail.debt_amount)}
-                    </b>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
-                    <span style={{ color: '#3F4145', fontWeight: 600 }}>Trạng thái</span>
-                    <Tag color={STATUS_META[detail.status ?? '']?.color} style={{ marginInlineEnd: 0 }}>
-                      {STATUS_META[detail.status ?? '']?.label ?? detail.status}
-                    </Tag>
-                  </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
+                  <span>Trạng thái</span>
+                  <Tag color={STATUS_META[detail.status ?? '']?.color} style={{ marginInlineEnd: 0 }}>
+                    {STATUS_META[detail.status ?? '']?.label ?? detail.status}
+                  </Tag>
                 </div>
-                {detailSupplementalInfo.length > 0 && (
-                  <div style={{ borderTop: '1px solid var(--brand-border-soft)', marginTop: 12, paddingTop: 12 }}>
-                    <Typography.Text strong>Thông tin bổ sung</Typography.Text>
-                    {detailSupplementalInfo.map(({ key, label, value }) => (
-                      <div key={key} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginTop: 6, fontSize: 13 }}>
-                        <span style={{ color: '#6F7071' }}>{label}</span>
-                        <span style={{ textAlign: 'right', overflowWrap: 'anywhere' }}>{value ?? '—'}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 12 }}>
+              {detailSupplementalInfo.length > 0 && (
+                <div style={{ borderTop: '1px solid var(--brand-border-soft)', marginTop: 12, paddingTop: 12 }}>
+                  <Typography.Text strong>Thông tin bổ sung</Typography.Text>
+                  {detailSupplementalInfo.map(({ key, label, value }) => (
+                    <div key={key} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginTop: 6, fontSize: 13 }}>
+                      <span style={{ color: '#6F7071' }}>{label}</span>
+                      <span style={{ textAlign: 'right', overflowWrap: 'anywhere' }}>{value ?? '—'}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 16 }}>
                 {canCreateSessions && detail.status === 'ACTIVE' && detail.quota_type !== 'UNLIMITED' && (
                   <Button block disabled={addingSessionId !== null} loading={addingSessionId === detail.id} onClick={() => addSession(detail)}>
                     +1 buổi
@@ -2461,12 +2455,14 @@ export default function TreatmentCustomers() {
                   </Popconfirm>
                 )}
               </div>
-              </div>
-            </Col>
+            </aside>
 
-            {/* Vùng chính: buổi + thanh toán */}
-            <Col xs={24} lg={17}>
+            {/* Vùng chính: buổi + thanh toán — desktop dùng Tabs, mobile dùng Select */}
+            <div style={{ flex: '3 1 560px', minWidth: 0 }}>
               <Tabs
+                className="desktop-only"
+                activeKey={detailTab}
+                onChange={(key) => setDetailTab(key as typeof detailTab)}
                 items={[
                   {
                     key: 'sessions',
@@ -2492,38 +2488,41 @@ export default function TreatmentCustomers() {
                     key: 'payments',
                     label: 'Lịch sử thanh toán',
                     children: (
-                      <Table<PaymentRow>
-                        rowKey="id"
-                        size="small"
-                        loading={payLoading}
-                        dataSource={payments}
-                        pagination={false}
-                        locale={{ emptyText: <TableEmpty description="Chưa có lần thanh toán nào" /> }}
-                        columns={[
-                          {
-                            title: 'Thời gian',
-                            key: 'time',
-                            width: 170,
-                            render: (_, p) => {
-                              const t = p.paid_at || p.created_at
-                              return formatDateTime(t)
+                      <div style={{ border: '1px solid var(--brand-border)', borderRadius: 12, overflow: 'hidden', background: '#fff' }}>
+                        <SubHead>Lịch sử thanh toán</SubHead>
+                        <Table<PaymentRow>
+                          rowKey="id"
+                          size="small"
+                          loading={payLoading}
+                          dataSource={payments}
+                          pagination={false}
+                          locale={{ emptyText: <TableEmpty description="Chưa có lần thanh toán nào" /> }}
+                          columns={[
+                            {
+                              title: 'Thời gian',
+                              key: 'time',
+                              width: 170,
+                              render: (_, p) => {
+                                const t = p.paid_at || p.created_at
+                                return formatDateTime(t)
+                              },
                             },
-                          },
-                          {
-                            title: 'Số tiền',
-                            dataIndex: 'amount',
-                            width: 140,
-                            render: (v) => <b>{formatMoney(v)}</b>,
-                          },
-                          {
-                            title: 'Phương thức',
-                            dataIndex: 'method',
-                            width: 130,
-                            render: (v: string) => paymentMethodLabels[v] ?? PAY_METHOD[v] ?? v ?? '—',
-                          },
-                          { title: 'Ghi chú', dataIndex: 'note', render: (v) => v || '—' },
-                        ]}
-                      />
+                            {
+                              title: 'Số tiền',
+                              dataIndex: 'amount',
+                              width: 140,
+                              render: (v) => <b>{formatMoney(v)}</b>,
+                            },
+                            {
+                              title: 'Phương thức',
+                              dataIndex: 'method',
+                              width: 130,
+                              render: (v: string) => paymentMethodLabels[v] ?? PAY_METHOD[v] ?? v ?? '—',
+                            },
+                            { title: 'Ghi chú', dataIndex: 'note', render: (v) => v || '—' },
+                          ]}
+                        />
+                      </div>
                     ),
                   }] : []),
                   {
@@ -2533,8 +2532,92 @@ export default function TreatmentCustomers() {
                   },
                 ]}
               />
-            </Col>
-          </Row>
+              <div className="mobile-only" style={{ marginBottom: 12 }}>
+                <Select
+                  style={{ width: '100%' }}
+                  value={detailTab}
+                  onChange={(key) => setDetailTab(key as typeof detailTab)}
+                  options={([
+                    { value: 'sessions', label: 'Buổi điều trị' },
+                    ...(canReadPayments ? [{ value: 'payments', label: 'Lịch sử thanh toán' }] : []),
+                    { value: 'points', label: 'Điểm thưởng' },
+                  ])}
+                />
+              </div>
+              {detailTab === 'sessions' && (
+                <SessionTimeline
+                  ctId={detail.id}
+                  ctStatus={detail.status}
+                  treatmentTotalAmount={detail.total_amount}
+                  formatMoney={formatMoney}
+                  currencySymbol={currencySymbol}
+                  staffOptions={staffOptions}
+                  customFieldDefinitions={sessionCustomFields}
+                  isAdmin={isAdmin}
+                  onChanged={() => { refresh(); void refreshSelectedDetail() }}
+                  refreshKey={sessionsRefreshKey}
+                  focusSessionId={sessionToEdit?.treatmentId === detail.id ? sessionToEdit.sessionId : undefined}
+                  onFocusSessionHandled={handleSessionFocusHandled}
+                />
+              )}
+              {detailTab === 'payments' && canReadPayments && (
+                <>
+                  <Table<PaymentRow>
+                    className="desktop-only"
+                    rowKey="id"
+                    size="small"
+                    loading={payLoading}
+                    dataSource={payments}
+                    pagination={false}
+                    locale={{ emptyText: <TableEmpty description="Chưa có lần thanh toán nào" /> }}
+                    columns={[
+                      {
+                        title: 'Thời gian',
+                        key: 'time',
+                        width: 170,
+                        render: (_, p) => {
+                          const t = p.paid_at || p.created_at
+                          return formatDateTime(t)
+                        },
+                      },
+                      {
+                        title: 'Số tiền',
+                        dataIndex: 'amount',
+                        width: 140,
+                        render: (v) => <b>{formatMoney(v)}</b>,
+                      },
+                      {
+                        title: 'Phương thức',
+                        dataIndex: 'method',
+                        width: 130,
+                        render: (v: string) => paymentMethodLabels[v] ?? PAY_METHOD[v] ?? v ?? '—',
+                      },
+                      { title: 'Ghi chú', dataIndex: 'note', render: (v) => v || '—' },
+                    ]}
+                  />
+                  <MobileCards
+                    rows={payments}
+                    rowKey={(p) => p.id}
+                    loading={payLoading}
+                    emptyText="Chưa có lần thanh toán nào"
+                    renderCard={(p) => (
+                      <>
+                        <div className="mobile-card-head">
+                          <div className="mobile-card-title">{formatMoney(p.amount)}</div>
+                          <Tag color="green">{paymentMethodLabels[p.method ?? ''] ?? PAY_METHOD[p.method ?? ''] ?? p.method ?? '—'}</Tag>
+                        </div>
+                        <div className="mobile-card-rows">
+                          <MobileCardRow label="Thời gian" value={formatDateTime(p.paid_at || p.created_at)} />
+                          {p.note && <MobileCardRow label="Ghi chú" value={p.note} />}
+                        </div>
+                      </>
+                    )}
+                  />
+                </>
+              )}
+              {detailTab === 'points' && <PointsHistoryPanel profileId={detail.customer_profile_id} />}
+            </div>
+          </div>
         )}
       </Modal>
 

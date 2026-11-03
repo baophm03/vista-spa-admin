@@ -25,6 +25,7 @@ import StatCards, { type StatItem } from '@/components/base/StatCards'
 import ListFilterPopover from '@/components/base/ListFilterPopover'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
+import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import { paginateRows } from '@/utils/listTable'
 import { useCustomerProfileAccess } from '@/utils/customerProfileAccess'
 import { errorMessage } from '@/api/helpers'
@@ -383,6 +384,7 @@ export default function CardRanks() {
               </Typography.Text>
             )}
             <Table<CardRankRow>
+              className="desktop-only"
               rowKey="id" loading={ranksQuery.isLoading} dataSource={paginateRows(ranks, page, 10)} columns={columns}
               scroll={{ x: 1210 }}
               pagination={false}
@@ -414,6 +416,31 @@ export default function CardRanks() {
                   opacity: draggedRankId === row.id ? 0.55 : 1,
                 },
               })}
+            />
+            <MobileCards
+              rows={paginateRows(ranks, page, 10)}
+              rowKey={(row) => row.id}
+              loading={ranksQuery.isLoading}
+              emptyText="Chưa có hạng thẻ nào"
+              renderCard={(row) => {
+                const validityMeta = row.validity ? VALIDITY_META[row.validity] : undefined
+                return (
+                  <>
+                    <div className="mobile-card-head">
+                      <div>
+                        <div className="mobile-card-title">{row.name}</div>
+                        <div className="mobile-card-sub"><Typography.Text code style={{ fontSize: 12 }}>{row.code}</Typography.Text></div>
+                      </div>
+                      <Tag color={validityMeta?.color ?? 'default'}>{validityMeta?.label ?? row.validity ?? '—'}</Tag>
+                    </div>
+                    <div className="mobile-card-rows">
+                      <MobileCardRow label="Ngưỡng chi tiêu" value={row.max_spent != null ? `${formatVnd(row.min_spent)} → ${formatVnd(row.max_spent)}` : `${formatVnd(row.min_spent)} trở lên`} />
+                      <MobileCardRow label="Giảm giá" value={row.discount_percent == null ? '—' : `${row.discount_percent}%`} />
+                      {showHolders && <MobileCardRow label="Đang giữ" value={holderCount(row)?.toLocaleString('vi-VN') ?? '—'} />}
+                    </div>
+                  </>
+                )
+              }}
             />
             <ListPagination page={page} limit={10} total={ranks.length} onChange={setPage} noun="hạng thẻ" />
             <Modal

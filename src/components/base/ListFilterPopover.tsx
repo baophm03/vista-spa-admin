@@ -1,4 +1,4 @@
-import { Button, Checkbox, Divider, Form, Popover, Space, Tag, Typography } from 'antd'
+import { Badge, Button, Checkbox, Divider, Form, Popover, Space, Tag, Typography } from 'antd'
 import type { FormInstance } from 'antd'
 import type { ReactNode } from 'react'
 import { FilterOutlined } from '@ant-design/icons'
@@ -22,6 +22,8 @@ interface ListFilterPopoverProps {
   columnOptions?: ListColumnOption[]
   draftVisibleColumns?: string[]
   onDraftVisibleColumnsChange?: (values: string[]) => void
+  /** Chỉ hiện nút icon, số lọc đang bật thành badge — dùng cho thanh công cụ 1 hàng */
+  iconOnly?: boolean
 }
 
 export default function ListFilterPopover({
@@ -35,6 +37,7 @@ export default function ListFilterPopover({
   columnOptions,
   draftVisibleColumns,
   onDraftVisibleColumnsChange,
+  iconOnly,
 }: ListFilterPopoverProps) {
   return (
     <Popover
@@ -76,7 +79,13 @@ export default function ListFilterPopover({
         </div>
       )}
     >
-      <Button icon={<FilterOutlined />}>Bộ lọc{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}</Button>
+      {iconOnly
+        ? (
+          <Badge count={activeFilterCount} size="small" offset={[-4, 4]}>
+            <Button icon={<FilterOutlined />} aria-label="Bộ lọc" title="Bộ lọc" />
+          </Badge>
+        )
+        : <Button icon={<FilterOutlined />}>Bộ lọc{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}</Button>}
     </Popover>
   )
 }

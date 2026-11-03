@@ -6,6 +6,7 @@ import type { Appointment } from '@/api/models/appointment'
 import { getAppointments } from '@/api/endpoints/appointments'
 import { errorMessage, pickData } from '@/api/helpers'
 import ListPagination from '@/components/base/ListPagination'
+import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import { paginateRows } from '@/utils/listTable'
 
 type AppointmentRow = Appointment & {
@@ -49,6 +50,7 @@ export default function CustomerProfileAppointmentsTab({ profileId }: { profileI
 
   return <>
     <Table<AppointmentRow>
+      className="desktop-only"
       rowKey="id"
       size="small"
       pagination={false}
@@ -64,6 +66,27 @@ export default function CustomerProfileAppointmentsTab({ profileId }: { profileI
       } },
       { title: 'Ghi chú', dataIndex: 'note', ellipsis: true, render: (value?: string | null) => value || '—' },
     ]}
+    />
+    <MobileCards
+      rows={paginateRows(rows, page, 8)}
+      rowKey={(row) => row.id}
+      emptyText="Khách chưa có lịch hẹn"
+      renderCard={(row) => {
+        const status = APPOINTMENT_STATUS[row.status?.toLowerCase() ?? '']
+        return (
+          <>
+            <div className="mobile-card-head">
+              <div className="mobile-card-title">{row.service?.title || 'Lịch hẹn'}</div>
+              <Tag color={status?.color ?? 'default'}>{status?.label ?? row.status ?? '—'}</Tag>
+            </div>
+            <div className="mobile-card-rows">
+              <MobileCardRow label="Thời gian" value={`${dayjs(row.appt_date).format('DD/MM/YYYY')}${row.start_time ? ` ${row.start_time.slice(0, 5)}` : ''}`} />
+              <MobileCardRow label="KTV" value={row.staff?.zalo_name || '—'} />
+              <MobileCardRow label="Ghi chú" value={row.note || '—'} />
+            </div>
+          </>
+        )
+      }}
     />
     <ListPagination page={page} limit={8} total={rows.length} onChange={setPage} noun="lịch hẹn" />
   </>

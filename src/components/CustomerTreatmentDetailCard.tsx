@@ -1,4 +1,5 @@
-import { Card, Descriptions, Empty, Image, Space, Table, Tag, Typography } from 'antd'
+import { Card, Descriptions, Empty, Image, Table, Tag, Typography } from 'antd'
+import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import type { CustomerTreatment } from '@/api/models/customerTreatment'
 import type { PaymentLog } from '@/api/models/paymentLog'
 import type { SessionPhoto } from '@/api/models/sessionPhoto'
@@ -72,22 +73,51 @@ export default function CustomerTreatmentDetailCard({ treatment, sessions, payme
       </Descriptions>
 
       <Typography.Title level={5} className="mt-[18px]">Lịch sử buổi</Typography.Title>
-      {sessions.length ? <Table<TreatmentSession> rowKey="id" size="small" pagination={false} dataSource={sessions} columns={[
-        { title: 'Buổi', dataIndex: 'session_no', width: 70 },
-        { title: 'Ngày', dataIndex: 'scheduled_at', render: (value: string | null) => formatDateTime(value) },
-        { title: 'Trạng thái', dataIndex: 'status', render: (value: string | null) => {
-          const status = value ? sessionStatusConfig[value.toLowerCase() as keyof typeof sessionStatusConfig] : undefined
-          return (
-            <Tag
-              color={status ? undefined : 'default'}
-              style={status ? { color: status.color, backgroundColor: `${status.color}1A`, borderColor: `${status.color}55` } : undefined}
-            >
-              {status?.label ?? value ?? '—'}
-            </Tag>
-          )
-        } },
-        { title: 'Ghi chú', dataIndex: 'diary', ellipsis: true, render: (value: string | null) => value || '—' },
-      ]} /> : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Chưa có buổi điều trị" />}
+      {sessions.length ? <>
+        <Table<TreatmentSession>
+          className="desktop-only"
+          rowKey="id" size="small" pagination={false} dataSource={sessions} columns={[
+          { title: 'Buổi', dataIndex: 'session_no', width: 70 },
+          { title: 'Ngày', dataIndex: 'scheduled_at', render: (value: string | null) => formatDateTime(value) },
+          { title: 'Trạng thái', dataIndex: 'status', render: (value: string | null) => {
+            const status = value ? sessionStatusConfig[value.toLowerCase() as keyof typeof sessionStatusConfig] : undefined
+            return (
+              <Tag
+                color={status ? undefined : 'default'}
+                style={status ? { color: status.color, backgroundColor: `${status.color}1A`, borderColor: `${status.color}55` } : undefined}
+              >
+                {status?.label ?? value ?? '—'}
+              </Tag>
+            )
+          } },
+          { title: 'Ghi chú', dataIndex: 'diary', ellipsis: true, render: (value: string | null) => value || '—' },
+        ]} />
+        <MobileCards
+          rows={sessions}
+          rowKey={(row) => row.id}
+          emptyText="Chưa có buổi điều trị"
+          renderCard={(row) => {
+            const status = row.status ? sessionStatusConfig[row.status.toLowerCase() as keyof typeof sessionStatusConfig] : undefined
+            return (
+              <>
+                <div className="mobile-card-head">
+                  <div className="mobile-card-title">{`Buổi ${row.session_no}`}</div>
+                  <Tag
+                    color={status ? undefined : 'default'}
+                    style={status ? { color: status.color, backgroundColor: `${status.color}1A`, borderColor: `${status.color}55` } : undefined}
+                  >
+                    {status?.label ?? row.status ?? '—'}
+                  </Tag>
+                </div>
+                <div className="mobile-card-rows">
+                  <MobileCardRow label="Ngày" value={formatDateTime(row.scheduled_at)} />
+                  <MobileCardRow label="Ghi chú" value={row.diary || '—'} />
+                </div>
+              </>
+            )
+          }}
+        />
+      </> : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Chưa có buổi điều trị" />}
 
       {canReadPayments && <>
         <Typography.Title level={5} className="mt-[18px]">Thanh toán</Typography.Title>
@@ -101,11 +131,11 @@ export default function CustomerTreatmentDetailCard({ treatment, sessions, payme
 
       <Typography.Title level={5} className="mt-[18px]">Ảnh buổi điều trị</Typography.Title>
       {photos.length ? (
-        <Space wrap>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: 8 }}>
           {photos.map((photo) => photo.url
-            ? <Image key={photo.id} width={110} height={110} style={{ objectFit: 'cover', borderRadius: 8 }} src={mediaSource(photo.url)} alt={photo.caption || 'Ảnh buổi điều trị'} />
+            ? <Image key={photo.id} width="100%" height="100%" style={{ aspectRatio: '1 / 1', objectFit: 'cover', borderRadius: 8, border: '1px solid var(--brand-border, #ECEFEA)' }} src={mediaSource(photo.url)} alt={photo.caption || 'Ảnh buổi điều trị'} />
             : <Tag key={photo.id}>{photo.caption || 'Ảnh buổi điều trị'} đã lưu</Tag>)}
-        </Space>
+        </div>
       ) : <Typography.Text type="secondary">Chưa có ảnh buổi điều trị.</Typography.Text>}
     </Card>
   )

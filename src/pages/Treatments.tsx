@@ -6,6 +6,7 @@ import {
   Col,
   Collapse,
   Form,
+  Grid,
   Input,
   InputNumber,
   Modal,
@@ -27,6 +28,7 @@ import StatCards, { type StatItem } from '@/components/base/StatCards'
 import ListFilterPopover from '@/components/base/ListFilterPopover'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
+import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import { paginateRows } from '@/utils/listTable'
 import { useCustomerProfileAccess } from '@/utils/customerProfileAccess'
 import CustomFieldFormItems, { normalizeCustomFieldValues } from '@/components/CustomFieldFormItems'
@@ -131,6 +133,10 @@ export default function Treatments() {
   const { isAdmin, isReceptionist, isTechnician } = useCustomerProfileAccess()
   const hideSummaryForTechnician = isTechnician && !isAdmin && !isReceptionist
   const [activeTab, setActiveTab] = useState('packages')
+  // Mobile (dưới breakpoint md): chuyển vùng nội dung bằng Select thay vì Tabs
+  const isMobile = !Grid.useBreakpoint().md
+  // Mobile: search thu về nút icon, bấm mới mở ô tìm kiếm
+  const [searchOpen, setSearchOpen] = useState(false)
 
   const [packageOpen, setPackageOpen] = useState(false)
   const [editingPackage, setEditingPackage] = useState<TreatmentPackageRow | null>(null)
@@ -485,6 +491,208 @@ export default function Treatments() {
     }] : []),
   ]
 
+  const packagesContent = (
+    <>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
+        <div style={{ minWidth: 0 }}>
+          <Typography.Title level={5} style={{ margin: 0, color: 'var(--brand-secondary-ink)' }}>
+            Danh mục gói
+          </Typography.Title>
+          <Typography.Text type="secondary" style={{ fontSize: 13 }}>
+            Các gói liệu trình hiện có, trạng thái bán và giá niêm yết
+          </Typography.Text>
+        </div>
+        <Space wrap>
+          {/* Mobile: gọn toolbar — search thu về nút icon, bấm mới mở; filter icon + Tải lại; Thêm gói chỉ trên desktop */}
+          {isMobile && !searchOpen && (
+            <Button icon={<SearchOutlined />} aria-label="Tìm kiếm" title="Tìm kiếm" onClick={() => setSearchOpen(true)} />
+          )}
+          {!isMobile && <Input
+            allowClear
+            prefix={<SearchOutlined style={{ color: 'var(--brand-text-inactive, #A9ADB2)' }} />}
+            placeholder="Tìm theo tên gói"
+            style={{ width: 260 }}
+            value={packageSearch}
+            onChange={(event) => {
+              setPackageSearch(event.target.value)
+              setPackagePage(1)
+            }}
+          />}
+          <ListFilterPopover
+            iconOnly={!isMobile}
+            open={filterOpen}
+            onOpenChange={openFilters}
+            activeFilterCount={activeFilterCount}
+            form={filterForm}
+            onApply={applyFilters}
+            onClear={clearFilters}
+            columnOptions={COLUMN_OPTIONS}
+            draftVisibleColumns={draftVisibleColumns}
+            onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as PackageColumnKey[])}
+            filterItems={(
+              <>
+                <Form.Item name="package_type_id" label="Loại gói" style={{ marginBottom: 10 }}>
+                  <Select allowClear placeholder="Tất cả loại gói" options={packageTypes.map((type) => ({ value: type.id, label: type.name }))} />
+                </Form.Item>
+                <Form.Item name="branch_id" label="Cơ sở" style={{ marginBottom: 10 }}>
+                  <Select allowClear placeholder="Tất cả cơ sở" options={branches.map((branch) => ({ value: branch.id, label: branch.name }))} />
+                </Form.Item>
+                <Form.Item name="is_active" label="Trạng thái" style={{ marginBottom: 0 }}>
+                  <Select allowClear placeholder="Tất cả trạng thái" options={PACKAGE_STATUS_OPTIONS} />
+                </Form.Item>
+              </>
+            )}
+          />
+          {!isMobile && canManage && (
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => openPackageModal()}>
+              Thêm gói
+            </Button>
+          )}
+        </Space>
+      </div>
+      {isMobile && searchOpen && (
+        <Input
+          allowClear
+          autoFocus
+          prefix={<SearchOutlined style={{ color: 'var(--brand-text-inactive, #A9ADB2)' }} />}
+          placeholder="Tìm theo tên gói"
+          style={{ width: '100%', marginBottom: 12 }}
+          value={packageSearch}
+          onChange={(event) => {
+            setPackageSearch(event.target.value)
+            setPackagePage(1)
+          }}
+          onBlur={() => { if (!packageSearch) setSearchOpen(false) }}
+        />
+      )}
+      {packagesQuery.isError && <Alert type="error" showIcon message="Không tải được danh mục gói" description={errorMessage(packagesQuery.error)} style={{ margin: '12px 0' }} />}
+      <Table<TreatmentPackageRow>
+        className="desktop-only"
+        rowKey="id"
+        loading={packagesQuery.isLoading}
+        dataSource={pagedRows}
+        scroll={{ x: 1100 }}
+        pagination={false}
+        columns={[
+          ...visiblePackageColumns,
+          ...(canManage ? [{
+            title: 'Hành động', align: 'center' as const,
+            key: 'actions',
+            width: 140,
+            fixed: 'right' as const,
+            render: (_value: unknown, row: TreatmentPackageRow) => (
+              <RowActionsMenu
+                items={[
+                  { key: 'edit', icon: <EditOutlined />, label: 'Sửa' },
+                  ...(row.is_active
+                    ? [{ key: 'hide', icon: <EyeInvisibleOutlined />, danger: true, label: 'Ẩn' }]
+                    : [{ key: 'restore', icon: <EyeOutlined />, label: 'Bật lại' }]),
+                ]}
+                onSelect={(key) => {
+                  if (key === 'edit') openPackageModal(row)
+                  else if (key === 'hide') {
+                    Modal.confirm({
+                      title: 'Ẩn gói dịch vụ này?',
+                      okText: 'Ẩn',
+                      okButtonProps: { danger: true },
+                      cancelText: 'Hủy',
+                      onOk: () => hidePackage(row),
+                    })
+                  } else if (key === 'restore') void restorePackage(row)
+                }}
+              />
+            ),
+          }] : []),
+        ]}
+      />
+      <MobileCards
+        rows={pagedRows}
+        rowKey={(row) => row.id}
+        loading={packagesQuery.isLoading}
+        emptyText="Chưa có gói dịch vụ nào"
+        renderCard={(row) => (
+          <>
+            <div className="mobile-card-head">
+              <div className="mobile-card-title">{row.name}</div>
+              {row.is_active ? <Tag color="green">Đang bán</Tag> : <Tag>Đã ẩn</Tag>}
+            </div>
+            <div className="mobile-card-rows">
+              <MobileCardRow label="Hạn mức" value={quotaLabel(row, formatMoney)} />
+              <MobileCardRow label="Giá niêm yết" value={priceLabel(row, formatMoney)} />
+            </div>
+            {canManage && (
+              <div className="mobile-card-actions">
+                <Button size="small" icon={<EditOutlined />} onClick={() => openPackageModal(row)}>Sửa</Button>
+                {row.is_active
+                  ? <Button size="small" danger onClick={() => Modal.confirm({ title: 'Ẩn gói dịch vụ này?', okText: 'Ẩn', okButtonProps: { danger: true }, cancelText: 'Hủy', onOk: () => hidePackage(row) })}>Ẩn</Button>
+                  : <Button size="small" onClick={() => void restorePackage(row)}>Bật lại</Button>}
+              </div>
+            )}
+          </>
+        )}
+      />
+      <ListPagination page={packagePage} limit={10} total={visibleRows.length} onChange={setPackagePage} noun="gói dịch vụ" />
+    </>
+  )
+
+  const typesContent = (
+    <>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
+        <div style={{ minWidth: 0 }}>
+          <Typography.Title level={5} style={{ margin: 0, color: 'var(--brand-secondary-ink)' }}>
+            Loại gói
+          </Typography.Title>
+          <Typography.Text type="secondary" style={{ fontSize: 13 }}>
+            Phân nhóm gói liệu trình theo loại
+          </Typography.Text>
+        </div>
+        {canManage && (
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => openTypeModal()}>
+            Thêm loại gói
+          </Button>
+        )}
+      </div>
+      <Table<PackageTypeRow>
+        className="desktop-only"
+        rowKey="id"
+        loading={packageTypesQuery.isLoading}
+        dataSource={packageTypes}
+        columns={packageTypeColumns}
+        pagination={false}
+      />
+      <MobileCards
+        rows={packageTypes}
+        rowKey={(row) => row.id}
+        loading={packageTypesQuery.isLoading}
+        emptyText="Chưa có loại gói nào"
+        renderCard={(row) => (
+          <>
+            <div className="mobile-card-head">
+              <div className="mobile-card-title">{row.name}</div>
+              {row.is_active ? <Tag color="green">Đang dùng</Tag> : <Tag>Đã ẩn</Tag>}
+            </div>
+            <div className="mobile-card-rows">
+              <MobileCardRow label="Mã loại" value={row.code || '—'} />
+              <MobileCardRow label="Hạn mức mặc định" value={row.default_quota_type ? (QUOTA_LABEL[row.default_quota_type] ?? row.default_quota_type) : '—'} />
+              <MobileCardRow label="Bảo hành" value={row.has_warranty ? 'Có' : 'Không'} />
+              <MobileCardRow label="Cho phép trọn gói" value={row.allow_unlimited ? 'Có' : 'Không'} />
+            </div>
+            {canManage && (
+              <div className="mobile-card-actions">
+                <Button size="small" onClick={() => openTypeModal(row)}>Sửa</Button>
+                {row.is_active && (
+                  <Popconfirm title="Ẩn loại gói này?" okText="Ẩn" cancelText="Hủy" onConfirm={() => hideType(row)}>
+                    <Button size="small" danger>Ẩn</Button>
+                  </Popconfirm>
+                )}
+              </div>
+            )}
+          </>
+        )}
+      />
+    </>
+  )
+
   return (
     <>
       <PageTitle subtitle="Danh mục gói liệu trình và loại gói dịch vụ">
@@ -492,138 +700,25 @@ export default function Treatments() {
       </PageTitle>
       <StatCards items={statItems} />
 
-      <Tabs activeKey={activeTab} onChange={setActiveTab} items={[
-          {
-            key: 'packages',
-            label: 'Danh mục gói',
-            children: (
-              <>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
-                  <div style={{ minWidth: 0 }}>
-                    <Typography.Title level={5} style={{ margin: 0, color: 'var(--brand-secondary-ink)' }}>
-                      Danh mục gói
-                    </Typography.Title>
-                    <Typography.Text type="secondary" style={{ fontSize: 13 }}>
-                      Các gói liệu trình hiện có, trạng thái bán và giá niêm yết
-                    </Typography.Text>
-                  </div>
-                  <Space wrap>
-                    <Input
-                      allowClear
-                      prefix={<SearchOutlined style={{ color: 'var(--brand-text-inactive, #A9ADB2)' }} />}
-                      placeholder="Tìm theo tên gói"
-                      style={{ width: 260 }}
-                      value={packageSearch}
-                      onChange={(event) => {
-                        setPackageSearch(event.target.value)
-                        setPackagePage(1)
-                      }}
-                    />
-                    <ListFilterPopover
-                      open={filterOpen}
-                      onOpenChange={openFilters}
-                      activeFilterCount={activeFilterCount}
-                      form={filterForm}
-                      onApply={applyFilters}
-                      onClear={clearFilters}
-                      columnOptions={COLUMN_OPTIONS}
-                      draftVisibleColumns={draftVisibleColumns}
-                      onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as PackageColumnKey[])}
-                      filterItems={(
-                        <>
-                          <Form.Item name="package_type_id" label="Loại gói" style={{ marginBottom: 10 }}>
-                            <Select allowClear placeholder="Tất cả loại gói" options={packageTypes.map((type) => ({ value: type.id, label: type.name }))} />
-                          </Form.Item>
-                          <Form.Item name="branch_id" label="Cơ sở" style={{ marginBottom: 10 }}>
-                            <Select allowClear placeholder="Tất cả cơ sở" options={branches.map((branch) => ({ value: branch.id, label: branch.name }))} />
-                          </Form.Item>
-                          <Form.Item name="is_active" label="Trạng thái" style={{ marginBottom: 0 }}>
-                            <Select allowClear placeholder="Tất cả trạng thái" options={PACKAGE_STATUS_OPTIONS} />
-                          </Form.Item>
-                        </>
-                      )}
-                    />
-                    {canManage && (
-                      <Button type="primary" icon={<PlusOutlined />} onClick={() => openPackageModal()}>
-                        Thêm gói
-                      </Button>
-                    )}
-                  </Space>
-                </div>
-                {packagesQuery.isError && <Alert type="error" showIcon message="Không tải được danh mục gói" description={errorMessage(packagesQuery.error)} style={{ margin: '12px 0' }} />}
-                <Table<TreatmentPackageRow>
-                  rowKey="id"
-                  loading={packagesQuery.isLoading}
-                  dataSource={pagedRows}
-                  scroll={{ x: 1100 }}
-                  pagination={false}
-                columns={[
-                  ...visiblePackageColumns,
-                  ...(canManage ? [{
-                    title: 'Hành động', align: 'center' as const,
-                    key: 'actions',
-                    width: 140,
-                    fixed: 'right' as const,
-                    render: (_value: unknown, row: TreatmentPackageRow) => (
-                      <RowActionsMenu
-                        items={[
-                          { key: 'edit', icon: <EditOutlined />, label: 'Sửa' },
-                          ...(row.is_active
-                            ? [{ key: 'hide', icon: <EyeInvisibleOutlined />, danger: true, label: 'Ẩn' }]
-                            : [{ key: 'restore', icon: <EyeOutlined />, label: 'Bật lại' }]),
-                        ]}
-                        onSelect={(key) => {
-                          if (key === 'edit') openPackageModal(row)
-                          else if (key === 'hide') {
-                            Modal.confirm({
-                              title: 'Ẩn gói dịch vụ này?',
-                              okText: 'Ẩn',
-                              okButtonProps: { danger: true },
-                              cancelText: 'Hủy',
-                              onOk: () => hidePackage(row),
-                            })
-                          } else if (key === 'restore') void restorePackage(row)
-                        }}
-                      />
-                    ),
-                  }] : []),
-                ]}
-              />
-              <ListPagination page={packagePage} limit={10} total={visibleRows.length} onChange={setPackagePage} noun="gói dịch vụ" />
-            </>
-          ),
-        },
-        {
-          key: 'types',
-          label: 'Loại gói',
-          children: (
-            <>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
-                <div style={{ minWidth: 0 }}>
-                  <Typography.Title level={5} style={{ margin: 0, color: 'var(--brand-secondary-ink)' }}>
-                    Loại gói
-                  </Typography.Title>
-                  <Typography.Text type="secondary" style={{ fontSize: 13 }}>
-                    Phân nhóm gói liệu trình theo loại
-                  </Typography.Text>
-                </div>
-                {canManage && (
-                  <Button type="primary" icon={<PlusOutlined />} onClick={() => openTypeModal()}>
-                    Thêm loại gói
-                  </Button>
-                )}
-              </div>
-              <Table<PackageTypeRow>
-                rowKey="id"
-                loading={packageTypesQuery.isLoading}
-                dataSource={packageTypes}
-                columns={packageTypeColumns}
-                pagination={false}
-              />
-            </>
-          ),
-        },
-      ]} />
+      {isMobile && (
+        <Select
+          style={{ width: '100%', marginBottom: 12 }}
+          value={activeTab}
+          onChange={setActiveTab}
+          options={[
+            { value: 'packages', label: 'Danh mục gói' },
+            { value: 'types', label: 'Loại gói' },
+          ]}
+        />
+      )}
+      {!isMobile ? (
+        <Tabs activeKey={activeTab} onChange={setActiveTab} items={[
+          { key: 'packages', label: 'Danh mục gói', children: packagesContent },
+          { key: 'types', label: 'Loại gói', children: typesContent },
+        ]} />
+      ) : (
+        activeTab === 'packages' ? packagesContent : typesContent
+      )}
 
       <Modal
         title={editingPackage ? 'Sửa gói dịch vụ' : 'Thêm gói dịch vụ'}

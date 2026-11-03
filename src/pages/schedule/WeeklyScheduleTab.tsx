@@ -4,6 +4,7 @@ import { Alert, Button, Form, Modal, Popconfirm, Select, Space, Table, Tag, mess
 import { DeleteOutlined, ReloadOutlined } from '@ant-design/icons'
 import { errorMessage, pickData } from '@/api/helpers'
 import TableEmpty from '@/components/base/TableEmpty'
+import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import type { StaffSchedule as StaffScheduleRow, ShiftTemplate as ShiftTemplateRow } from './types'
 import {
   deleteStaffSchedulesId,
@@ -33,6 +34,13 @@ const requiredValue = (messageText: string) => ({
 interface Props extends SchedulePageData { loadingShared: boolean }
 interface ConflictAppointment { id: string; appt_date: string; start_time: string; customer_profile?: { full_name?: string }; service?: { title?: string } }
 type StaffScheduleWithStaff = StaffScheduleRow & { staff?: { id: string; zalo_name?: string; email?: string; phone_number?: string } | null; shift_template?: ShiftTemplateRow | null }
+/** 1 card mobile = lịch của 1 KTV trong 1 thứ (hoặc dòng "Chưa xếp ca" khi KTV trống lịch) */
+interface MobileDayRow {
+  key: string
+  person: ScheduleStaff
+  day: { value: number; label: string } | null
+  shifts: StaffScheduleWithStaff[]
+}
 
 export default function WeeklyScheduleTab({ branches, staff, access, loadingShared }: Props) {
   const queryClient = useQueryClient()
@@ -200,9 +208,43 @@ export default function WeeklyScheduleTab({ branches, staff, access, loadingShar
       void queryClient.invalidateQueries({ queryKey: getGetShiftTemplatesQueryKey() })
     }}>Thử lại</Button>} style={{ marginBottom: 16 }} />}
     <Table<ScheduleStaff>
+      className="desktop-only"
       rowKey="id" size="middle" pagination={false} tableLayout="fixed"
       loading={loadingShared || schedulesQuery.isLoading || templatesQuery.isLoading} dataSource={visibleStaff} columns={columns}
       locale={{ emptyText: <TableEmpty description={staff.length ? 'Không có KTV trong bộ lọc này' : 'Chưa có danh sách KTV'} /> }}
+    />
+    <MobileCards<MobileDayRow>
+      rows={visibleStaff.flatMap((person) => {
+        const dayRows: MobileDayRow[] = WEEKDAYS.map((day) => ({
+          key: `${person.id}-${day.value}`,
+          person,
+          day,
+          shifts: rows.filter((row) => row.staff_id === person.id && row.weekday === day.value && row.is_active !== false),
+        })).filter((item) => item.shifts.length > 0)
+        return dayRows.length ? dayRows : [{ key: `${person.id}-empty`, person, day: null, shifts: [] }]
+      })}
+      rowKey={(item) => item.key}
+      loading={loadingShared || schedulesQuery.isLoading || templatesQuery.isLoading}
+      emptyText={staff.length ? 'Không có KTV trong bộ lọc này' : 'Chưa có danh sách KTV'}
+      renderCard={(item) => (
+        <>
+          <div className="mobile-card-head">
+            <div>
+              <div className="mobile-card-title">{staffLabel(visibleStaff.find((entry) => entry.id === item.person.id))}</div>
+              <div className="mobile-card-sub">{item.day ? `Lịch ${item.day.label}` : 'Lịch tuần'}</div>
+            </div>
+            {item.shifts.length
+              ? <Tag color="purple" style={{ marginInlineEnd: 0 }}>{item.shifts.length} ca</Tag>
+              : <Tag style={{ marginInlineEnd: 0 }}>Chưa xếp ca</Tag>}
+          </div>
+          <div className="mobile-card-rows">
+            {item.shifts.map((row) => {
+              const template = templates.find((entry) => entry.id === row.shift_template_id) ?? row.shift_template
+              return <MobileCardRow key={row.id} label="Ca" value={`${template?.name ?? 'Ca'} ${template ? `${template.start_time.slice(0, 5)}–${template.end_time.slice(0, 5)}` : ''}`} />
+            })}
+          </div>
+        </>
+      )}
     />
 
     <Modal title={editing ? 'Sửa lịch tuần' : 'Xếp ca làm việc'} open={open} onCancel={() => setOpen(false)} onOk={() => void submit()} okText="Lưu" cancelText="Hủy" destroyOnHidden>

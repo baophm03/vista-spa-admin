@@ -4,6 +4,7 @@ import { BellOutlined, CheckOutlined, MailOutlined, SendOutlined } from '@ant-de
 import PageTitle from '@/components/base/PageTitle'
 import StatCards, { type StatItem } from '@/components/base/StatCards'
 import ListPagination from '@/components/base/ListPagination'
+import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import TableEmpty from '@/components/base/TableEmpty'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import { errorMessage, pickData } from '@/api/helpers'
@@ -160,6 +161,7 @@ export default function Notifications() {
       )}
 
       <Table
+        className="desktop-only"
         rowKey="id"
         loading={loading}
         dataSource={rows}
@@ -240,6 +242,34 @@ export default function Notifications() {
             ),
           },
         ]}
+      />
+      <MobileCards
+        rows={rows}
+        rowKey={(row) => row.id}
+        loading={loading}
+        emptyText="Chưa có thông báo nào"
+        renderCard={(row) => (
+          <>
+            <div className="mobile-card-head">
+              <div>
+                <div className="mobile-card-title">{row.title || 'Thông báo'}</div>
+                <div className="mobile-card-sub">{row.body}</div>
+              </div>
+              {row.is_read ? <Tag>Đã đọc</Tag> : <Tag color="processing">Chưa đọc</Tag>}
+            </div>
+            <div className="mobile-card-rows">
+              <MobileCardRow label="Loại" value={<Tag color={EVENT_META[row.event_key]?.color} style={{ margin: 0 }}>{EVENT_META[row.event_key]?.label ?? row.event_key}</Tag>} />
+              <MobileCardRow label="Kênh" value={row.channel === 'email' ? 'Email' : 'Trong ứng dụng'} />
+              <MobileCardRow label="Đối tượng" value={audience(row)} />
+              <MobileCardRow label="Thời gian" value={formatDateTime(row.sent_at)} />
+            </div>
+            {!row.is_read && (
+              <div className="mobile-card-actions">
+                <Button size="small" type="primary" icon={<CheckOutlined />} loading={markReadMutation.isPending} onClick={() => void markRead(row)}>Đánh dấu đã đọc</Button>
+              </div>
+            )}
+          </>
+        )}
       />
       <ListPagination page={1} limit={rows.length || 10} total={rows.length || 0} onChange={() => undefined} noun="thông báo" />
 

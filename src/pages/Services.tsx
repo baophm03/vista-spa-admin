@@ -3,6 +3,7 @@ import {
   Button,
   Col,
   Form,
+  Grid,
   Input,
   InputNumber,
   Modal,
@@ -22,6 +23,7 @@ import { Can, useAbility } from '@casl/react'
 import ListFilterPopover from '@/components/base/ListFilterPopover'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
+import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import ServiceImageField from '@/components/ServiceImageField'
 import CustomFieldFormItems, { normalizeCustomFieldValues } from '@/components/CustomFieldFormItems'
 import { errorMessage, pickData } from '@/api/helpers'
@@ -96,6 +98,11 @@ export default function Services() {
   const [draftVisibleColumns, setDraftVisibleColumns] = useState<string[]>(DEFAULT_COLUMNS)
   const [form] = Form.useForm()
   const [filterForm] = Form.useForm()
+  // Mobile (dưới breakpoint md): chuyển vùng nội dung bằng Select thay vì Tabs
+  const isMobile = !Grid.useBreakpoint().md
+  const [activeTab, setActiveTab] = useState<'services' | 'categories'>('services')
+  // Mobile: search thu về nút icon, bấm mới mở ô tìm kiếm
+  const [searchOpen, setSearchOpen] = useState(false)
 
   const listQuery = useQuery({
     queryKey: getGetServiceQueryKey({ ...filters, page, limit }),
@@ -304,90 +311,145 @@ export default function Services() {
     setPage(1)
   }
 
+  const servicesContent = (
+    <>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
+        <div style={{ minWidth: 0 }}>
+          <Typography.Title level={5} style={{ margin: 0, color: 'var(--brand-secondary-ink)' }}>
+            Dịch vụ
+          </Typography.Title>
+          <Typography.Text type="secondary" style={{ fontSize: 13 }}>
+            Danh mục dịch vụ và nhóm dịch vụ
+          </Typography.Text>
+        </div>
+        <Space wrap>
+          {/* Mobile: gọn toolbar — search thu về nút icon, bấm mới mở; filter icon + Tải lại; Thêm dịch vụ chỉ trên desktop */}
+          {isMobile && !searchOpen && (
+            <Button icon={<SearchOutlined />} aria-label="Tìm kiếm" title="Tìm kiếm" onClick={() => setSearchOpen(true)} />
+          )}
+          {!isMobile && <Input
+            allowClear
+            prefix={<SearchOutlined style={{ color: 'var(--brand-text-inactive, #A9ADB2)' }} />}
+            placeholder="Tìm tên hoặc mô tả dịch vụ"
+            style={{ width: 260 }}
+            value={searchText}
+            onChange={(event) => setSearchText(event.target.value)}
+            onPressEnter={() => {
+              setFilters((current) => ({ ...current, q: searchText.trim() || undefined }))
+              setPage(1)
+            }}
+          />}
+          <ListFilterPopover
+            iconOnly={!isMobile}
+            open={filterOpen}
+            onOpenChange={openFilters}
+            activeFilterCount={activeFilterCount}
+            form={filterForm}
+            onApply={applyFilters}
+            onClear={clearFilters}
+            columnOptions={COLUMN_OPTIONS}
+            draftVisibleColumns={draftVisibleColumns}
+            onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as string[])}
+            filterItems={(
+              <>
+                <Form.Item name="category_id" label="Danh mục" style={{ marginBottom: 10 }}>
+                  <Select allowClear placeholder="Tất cả danh mục" options={categoryOptions(categories)} />
+                </Form.Item>
+                <Form.Item name="is_active" label="Trạng thái" style={{ marginBottom: 0 }}>
+                  <Select
+                    allowClear
+                    placeholder="Tất cả"
+                    options={[
+                      { value: 'true', label: 'Đang hiển thị' },
+                      { value: 'false', label: 'Đã ẩn' },
+                    ]}
+                  />
+                </Form.Item>
+              </>
+            )}
+          />
+          <Button icon={<ReloadOutlined />} onClick={reload}>
+            Tải lại
+          </Button>
+          {!isMobile && <Can I="CREATE" a="SERVICE">
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => void openEditor()}>
+              Thêm dịch vụ
+            </Button>
+          </Can>}
+        </Space>
+      </div>
+      {isMobile && searchOpen && (
+        <Input
+          allowClear
+          autoFocus
+          prefix={<SearchOutlined style={{ color: 'var(--brand-text-inactive, #A9ADB2)' }} />}
+          placeholder="Tìm tên hoặc mô tả dịch vụ"
+          style={{ width: '100%', marginBottom: 12 }}
+          value={searchText}
+          onChange={(event) => setSearchText(event.target.value)}
+          onPressEnter={() => {
+            setFilters((current) => ({ ...current, q: searchText.trim() || undefined }))
+            setPage(1)
+          }}
+          onBlur={() => { if (!searchText) setSearchOpen(false) }}
+        />
+      )}
+      <Table<ServiceRow>
+        className="desktop-only"
+        rowKey="id"
+        loading={listQuery.isLoading}
+        dataSource={rows}
+        columns={columns}
+        scroll={{ x: 1000 }}
+        pagination={false}
+      />
+      <MobileCards
+        rows={rows}
+        rowKey={(row) => row.id}
+        loading={listQuery.isLoading}
+        emptyText="Chưa có dịch vụ nào"
+        renderCard={(row) => (
+          <>
+            <div className="mobile-card-head">
+              <div className="mobile-card-title">{row.title || 'Dịch vụ'}</div>
+              {row.is_active === false ? <Tag>Đã ẩn</Tag> : <Tag color="green">Đang dùng</Tag>}
+            </div>
+            <div className="mobile-card-rows">
+              <MobileCardRow label="Thời lượng" value={row.duration_minutes ? `${row.duration_minutes} phút` : '—'} />
+              <MobileCardRow label="Giá" value={row.price_max != null && Number(row.price_max) !== Number(row.price) ? `${formatPrice(row.price, currency)} – ${formatPrice(row.price_max, currency)}` : formatPrice(row.price, currency)} />
+            </div>
+          </>
+        )}
+      />
+      <ListPagination page={page} limit={limit} total={total} onChange={setPage} noun="dịch vụ" />
+    </>
+  )
+
   return (
     <>
-      <Tabs
-        items={[
-          {
-            key: 'services',
-            label: 'Danh sách dịch vụ',
-            children: (
-              <>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
-                  <div style={{ minWidth: 0 }}>
-                    <Typography.Title level={5} style={{ margin: 0, color: 'var(--brand-secondary-ink)' }}>
-                      Dịch vụ
-                    </Typography.Title>
-                    <Typography.Text type="secondary" style={{ fontSize: 13 }}>
-                      Danh mục dịch vụ và nhóm dịch vụ
-                    </Typography.Text>
-                  </div>
-                  <Space wrap>
-                    <Input
-                      allowClear
-                      prefix={<SearchOutlined style={{ color: 'var(--brand-text-inactive, #A9ADB2)' }} />}
-                      placeholder="Tìm tên hoặc mô tả dịch vụ"
-                      style={{ width: 260 }}
-                      value={searchText}
-                      onChange={(event) => setSearchText(event.target.value)}
-                      onPressEnter={() => {
-                        setFilters((current) => ({ ...current, q: searchText.trim() || undefined }))
-                        setPage(1)
-                      }}
-                    />
-                    <ListFilterPopover
-                      open={filterOpen}
-                      onOpenChange={openFilters}
-                      activeFilterCount={activeFilterCount}
-                      form={filterForm}
-                      onApply={applyFilters}
-                      onClear={clearFilters}
-                      columnOptions={COLUMN_OPTIONS}
-                      draftVisibleColumns={draftVisibleColumns}
-                      onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as string[])}
-                      filterItems={(
-                        <>
-                          <Form.Item name="category_id" label="Danh mục" style={{ marginBottom: 10 }}>
-                            <Select allowClear placeholder="Tất cả danh mục" options={categoryOptions(categories)} />
-                          </Form.Item>
-                          <Form.Item name="is_active" label="Trạng thái" style={{ marginBottom: 0 }}>
-                            <Select
-                              allowClear
-                              placeholder="Tất cả"
-                              options={[
-                                { value: 'true', label: 'Đang hiển thị' },
-                                { value: 'false', label: 'Đã ẩn' },
-                              ]}
-                            />
-                          </Form.Item>
-                        </>
-                      )}
-                    />
-                    <Button icon={<ReloadOutlined />} onClick={reload}>
-                      Tải lại
-                    </Button>
-                    <Can I="CREATE" a="SERVICE">
-                      <Button type="primary" icon={<PlusOutlined />} onClick={() => void openEditor()}>
-                        Thêm dịch vụ
-                      </Button>
-                    </Can>
-                  </Space>
-                </div>
-                <Table<ServiceRow>
-                  rowKey="id"
-                  loading={listQuery.isLoading}
-                  dataSource={rows}
-                  columns={columns}
-                  scroll={{ x: 1000 }}
-                  pagination={false}
-                />
-                <ListPagination page={page} limit={limit} total={total} onChange={setPage} noun="dịch vụ" />
-              </>
-            ),
-          },
-          { key: 'categories', label: 'Danh mục dịch vụ', children: <ServiceCategories /> },
-        ]}
-      />
+      {isMobile && (
+        <Select
+          style={{ width: '100%', marginBottom: 12 }}
+          value={activeTab}
+          onChange={(value) => setActiveTab(value as 'services' | 'categories')}
+          options={[
+            { value: 'services', label: 'Danh sách dịch vụ' },
+            { value: 'categories', label: 'Danh mục dịch vụ' },
+          ]}
+        />
+      )}
+      {!isMobile ? (
+        <Tabs
+          activeKey={activeTab}
+          onChange={(key) => setActiveTab(key as 'services' | 'categories')}
+          items={[
+            { key: 'services', label: 'Danh sách dịch vụ', children: servicesContent },
+            { key: 'categories', label: 'Danh mục dịch vụ', children: <ServiceCategories /> },
+          ]}
+        />
+      ) : (
+        activeTab === 'services' ? servicesContent : <ServiceCategories />
+      )}
 
       <Modal
         title={editing ? 'Sửa dịch vụ' : 'Thêm dịch vụ'}
