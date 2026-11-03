@@ -3664,7 +3664,7 @@ export const prefetchGetCustomerTreatmentsIdAdjustmentsQuery = async <TData = Aw
 
 
 /**
- * **TA-01** — PUT /customer-treatments/{id}/adjust (BR-17). Cần quyền `treatment.adjust`. Bắt buộc `reason`. type: `ADJUST_SESSIONS` (số buổi đã dùng), `ADJUST_BONUS` (số buổi tặng), `ADJUST_VALUE` (giá trị đã tiêu), `ADJUST_VALUE_TOTAL` (định mức tiền được dùng), `EXTEND_EXPIRY` (hạn dùng — gửi `expires_at`). Chặn giá trị âm/vượt tổng. Ghi `treatment_adjustment` với before/after.
+ * **TA-01** — PUT /customer-treatments/{id}/adjust (BR-17). Cần quyền `treatment.adjust`. Bắt buộc `reason`. type: `ADJUST_SESSIONS` (số buổi đã dùng), `ADJUST_BONUS` (số buổi tặng), `ADJUST_VALUE` (giá trị đã tiêu), `ADJUST_VALUE_TOTAL` (định mức tiền được dùng), `EXTEND_EXPIRY` (hạn dùng). Chặn giá trị âm/vượt tổng. Ghi `treatment_adjustment` với before/after.
  * @summary Điều chỉnh thủ công gói của khách
  */
 export const putCustomerTreatmentsIdAdjustments = (

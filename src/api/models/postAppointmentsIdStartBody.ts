@@ -9,10 +9,8 @@ import type { PostAppointmentsIdStartBodySessionCustomFields } from './postAppoi
 
 export type PostAppointmentsIdStartBody = {
   session_custom_fields?: PostAppointmentsIdStartBodySessionCustomFields;
-  /**
-   * AP-09 — gắn gói ngay lúc bắt đầu ca nếu lịch chưa có gói (tạo buổi trong cùng transaction)
-   */
+  /** Gói liệu trình chọn gắn tại thời điểm bắt đầu */
   customer_treatment_id?: string;
-  /** Giá đã chốt trong khoảng giá của dịch vụ lẻ trước khi bắt đầu */
+  /** Giá chốt của dịch vụ lẻ có khoảng giá; bắt buộc trước khi bắt đầu */
   service_amount?: number;
 };

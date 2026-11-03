@@ -13,7 +13,7 @@ export type PutCustomerTreatmentsIdAdjustmentsBodyType = typeof PutCustomerTreat
 export const PutCustomerTreatmentsIdAdjustmentsBodyType = {
   ADJUST_SESSIONS: 'ADJUST_SESSIONS',
   ADJUST_BONUS: 'ADJUST_BONUS',
-  ADJUST_VALUE_TOTAL: 'ADJUST_VALUE_TOTAL',
   ADJUST_VALUE: 'ADJUST_VALUE',
+  ADJUST_VALUE_TOTAL: 'ADJUST_VALUE_TOTAL',
   EXTEND_EXPIRY: 'EXTEND_EXPIRY',
 } as const;

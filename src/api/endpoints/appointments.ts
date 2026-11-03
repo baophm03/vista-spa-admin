@@ -777,7 +777,7 @@ export const prefetchGetAppointmentsAvailableSlotsQuery = async <TData = Awaited
 
 
 /**
- * **AP-09** — POST /appointments/{id}/start (KTV được gán, hoặc ADM/REC: approved → in_progress + tạo/gắn session). Cần quyền `appointment.start`.
+ * **AP-09** — POST /appointments/{id}/start (KTV được gán, hoặc ADM/REC: approved → in_progress + tạo/gắn session). Body nhận `customer_treatment_id` tuỳ chọn: nếu lịch chưa gắn gói, gói được gắn ngay lúc bắt đầu và buổi điều trị được tạo trong cùng transaction. Cần quyền `appointment.start`.
  * @summary Bắt đầu
  */
 export const postAppointmentsIdStart = (
@@ -970,7 +970,7 @@ export const usePutAppointmentsIdNoShow = <TError = UnauthorizedResponse | Forbi
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * POST `/appointments/{id}/complete` — ADM/REC finalize the appointment after service. KTV marks their session done through `/sessions/{id}/done`. Cần quyền `appointment.approve`.
+ * POST `/appointments/{id}/complete` — ADM/REC finalize appointments without a linked treatment package. For appointments linked to a treatment package, complete the treatment session after recording notes, products and photos; the appointment is synced automatically. Cần quyền `appointment.approve`.
  * @summary Hoàn tất
  */
 export const postAppointmentsIdComplete = (

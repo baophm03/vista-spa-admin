@@ -6,6 +6,8 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { RewardVoucherId } from './rewardVoucherId';
+import type { RewardBenefitAmount } from './rewardBenefitAmount';
+import type { RewardServiceId } from './rewardServiceId';
 import type { RewardQuantityTotal } from './rewardQuantityTotal';
 import type { RewardValidFrom } from './rewardValidFrom';
 import type { RewardValidTo } from './rewardValidTo';
@@ -22,9 +24,9 @@ export interface Reward {
   voucher_id?: RewardVoucherId;
   /** @minimum 0 */
   points_cost: number;
-  /** Fixed money discount applied to a treatment package when this benefit is used. */
-  benefit_amount?: number | null;
-  service_id?: string | null;
+  /** @minimum 1 */
+  benefit_amount?: RewardBenefitAmount;
+  service_id?: RewardServiceId;
   /** @minimum 0 */
   quantity_total?: RewardQuantityTotal;
   /** @minimum 0 */
