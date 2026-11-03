@@ -28,7 +28,7 @@ type PaymentColumnKey = 'paid_at' | 'customer' | 'package' | 'branch' | 'amount'
 const PAYMENT_COLUMN_OPTIONS: { label: string; value: PaymentColumnKey }[] = [
   { label: 'Thời gian', value: 'paid_at' },
   { label: 'Khách hàng', value: 'customer' },
-  { label: 'Gói dịch vụ', value: 'package' },
+  { label: 'Gói / dịch vụ', value: 'package' },
   { label: 'Cơ sở', value: 'branch' },
   { label: 'Số tiền', value: 'amount' },
   { label: 'Phương thức', value: 'method' },
@@ -38,11 +38,17 @@ const PAYMENT_COLUMN_OPTIONS: { label: string; value: PaymentColumnKey }[] = [
 const DEFAULT_VISIBLE_COLUMNS = PAYMENT_COLUMN_OPTIONS.map((column) => column.value)
 
 interface LedgerRow extends PaymentLog {
+  branch_id?: string
   customer_treatment?: {
     customer_profile?: { full_name?: string; phone?: string }
     package_snapshot?: { name?: string }
     branch_id?: string
-  }
+  } | null
+  appointment?: {
+    branch_id?: string
+    service?: { title?: string }
+    customer_profile?: { full_name?: string; phone?: string }
+  } | null
 }
 
 /** PM-03 — Sổ thanh toán toàn hệ thống + PM-04 hủy giao dịch (Admin). */
@@ -148,7 +154,7 @@ export default function Payments() {
       key: 'customer',
       title: 'Khách hàng',
       render: (_: unknown, row: LedgerRow) => {
-        const profile = row.customer_treatment?.customer_profile
+        const profile = row.customer_treatment?.customer_profile ?? row.appointment?.customer_profile
         return (
           <div>
             <div style={{ fontWeight: 500 }}>{profile?.full_name || '—'}</div>
@@ -159,14 +165,15 @@ export default function Payments() {
     },
     {
       key: 'package',
-      title: 'Gói dịch vụ',
-      render: (_: unknown, row: LedgerRow) => row.customer_treatment?.package_snapshot?.name || '—',
+      title: 'Gói / dịch vụ',
+      render: (_: unknown, row: LedgerRow) => row.customer_treatment?.package_snapshot?.name
+        || (row.appointment?.service?.title ? `Dịch vụ lẻ · ${row.appointment.service.title}` : '—'),
     },
     {
       key: 'branch',
       title: 'Cơ sở',
       width: 150,
-      render: (_: unknown, row: LedgerRow) => branchById.get(row.customer_treatment?.branch_id ?? '') || '—',
+      render: (_: unknown, row: LedgerRow) => branchById.get(row.branch_id ?? row.customer_treatment?.branch_id ?? row.appointment?.branch_id ?? '') || '—',
     },
     {
       key: 'amount',

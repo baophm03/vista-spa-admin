@@ -32,7 +32,6 @@ export interface User {
   email?: UserEmail;
   address?: UserAddress;
   birthday?: UserBirthday;
-  is_admin?: boolean;
   branch_id?: UserBranchId;
   is_active?: boolean;
   created_by?: UserCreatedBy;

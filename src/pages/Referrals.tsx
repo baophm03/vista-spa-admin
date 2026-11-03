@@ -241,7 +241,7 @@ export default function Referrals() {
       },
     },
     {
-      title: 'Ghi chú', dataIndex: 'note', ellipsis: true,
+      title: 'Ghi chú', dataIndex: 'note', width: 180, ellipsis: true,
       render: (v?: string) => v || '—',
     },
     {
@@ -288,7 +288,7 @@ export default function Referrals() {
             )}
             <Table<ReferralRow>
               rowKey="id" loading={listQuery.isLoading} dataSource={paginateRows(rows, page, 10)}
-              scroll={{ x: 1440 }}
+              scroll={{ x: 'max-content' }}
               columns={columns.filter((column) => column.key !== 'actions' || canUpdate)}
               pagination={false}
             />

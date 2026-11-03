@@ -253,14 +253,14 @@ export default function WarrantyClaims() {
       >
         <Alert
           type="info" showIcon style={{ marginTop: 12 }}
-          message="Chỉ gói đã hoàn tất (FINISHED) thuộc loại gói có bảo hành (has_warranty) mới đủ điều kiện. Hệ thống sẽ từ chối nếu gói không hợp lệ."
+          message="Chỉ tiếp nhận bảo hành cho liệu trình đã hoàn tất và có chính sách bảo hành."
         />
         <Form form={createForm} layout="vertical" style={{ marginTop: 12 }}>
           <Form.Item name="customer_treatment_id" label="Gói liệu trình của khách" rules={[{ required: true, message: 'Chọn gói liệu trình' }]}>
             <Select
               showSearch optionFilterProp="label" loading={finishedTreatmentsQuery.isLoading}
               placeholder="Chỉ hiện gói đã hoàn tất"
-              notFoundContent={finishedTreatmentsQuery.isLoading ? 'Đang tải...' : 'Không có gói hoàn tất nào'}
+              notFoundContent={finishedTreatmentsQuery.isLoading ? 'Đang tải...' : 'Không có liệu trình nào đã hoàn tất và có bảo hành'}
               options={eligibleTreatments.map((t) => {
                 const snap = snapshotField(t)
                 const treatment = t as CustomerTreatment & { customer_profile?: { full_name?: string; phone?: string } }
@@ -281,14 +281,17 @@ export default function WarrantyClaims() {
             <Input.TextArea rows={4} maxLength={2000} placeholder="VD: Sau 2 tuần hết liệu trình, vùng điều trị bắt đầu tái phát..." />
           </Form.Item>
           <Form.Item name="contract_file_id" hidden><Input /></Form.Item>
-          <Form.Item label="Hợp đồng cam kết (không bắt buộc)">
+          <Form.Item
+            label="Giấy cam kết bảo hành đã ký (nếu có)"
+            extra="Tải ảnh hoặc PDF giấy khách đã ký để lưu cùng yêu cầu. Không có giấy thì để trống."
+          >
             <Space wrap>
               <Upload
                 accept=".pdf,image/*"
                 showUploadList={false}
                 beforeUpload={(file) => { void uploadContract(file); return false }}
               >
-                <Button icon={<UploadOutlined />} loading={uploadingContract} disabled={uploadingContract}>Tải hợp đồng lên</Button>
+                <Button icon={<UploadOutlined />} loading={uploadingContract} disabled={uploadingContract}>Tải giấy cam kết</Button>
               </Upload>
               {contractFileId && <a href={contractFileId} target="_blank" rel="noreferrer"><FileTextOutlined /> Xem tệp đã tải</a>}
               {contractFileId && <Button type="link" danger onClick={() => createForm.setFieldValue('contract_file_id', undefined)}>Gỡ tệp</Button>}

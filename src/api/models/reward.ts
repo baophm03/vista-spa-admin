@@ -22,6 +22,9 @@ export interface Reward {
   voucher_id?: RewardVoucherId;
   /** @minimum 0 */
   points_cost: number;
+  /** Fixed money discount applied to a treatment package when this benefit is used. */
+  benefit_amount?: number | null;
+  service_id?: string | null;
   /** @minimum 0 */
   quantity_total?: RewardQuantityTotal;
   /** @minimum 0 */

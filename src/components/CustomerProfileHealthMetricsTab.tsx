@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Alert, Button, Card, DatePicker, Empty, Select, Space, Spin, Table, Typography } from 'antd'
-import { ReloadOutlined } from '@ant-design/icons'
+import { Alert, Button, Card, DatePicker, Descriptions, Empty, Select, Space, Spin, Table, Tag, Typography } from 'antd'
+import { HistoryOutlined, ReloadOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import type { CustomerHealthRecord } from '@/api/models/customerHealthRecord'
 import type { HealthMetric } from '@/api/models/healthMetric'
 import type { LookupItem } from '@/api/models/lookupItem'
 import type { LookupList } from '@/api/models/lookupList'
-import { getCustomerProfilesIdHealthMetrics } from '@/api/endpoints/customer-profiles'
+import { getCustomerProfilesIdHealthMetrics, getCustomerProfilesIdHealthRecords } from '@/api/endpoints/customer-profiles'
+import { getSkinTypes } from '@/api/endpoints/settings'
 import { getLookupLists } from '@/api/endpoints/lookup-lists'
 import { errorMessage, pickData } from '@/api/helpers'
 import { useBrandDateTime } from '@/themeRuntime'
@@ -21,9 +23,95 @@ type MetricRow = HealthMetric & {
 
 type LookupListWithItems = LookupList & { lookup_items?: LookupItem[] | null }
 
+interface SkinTypeOption {
+  code: string
+  label: string
+  sort_order?: number
+}
+
+/** Áp mã/nhãn loại da trong danh mục sang nhãn hiển thị (đồng bộ với trang Sổ sức khỏe). */
+function skinTypeLabel(value: string | null | undefined, options: SkinTypeOption[]): string | undefined {
+  if (!value) return undefined
+  const normalizedValue = value.trim().toLocaleLowerCase('vi')
+  const option = options.find((item) =>
+    item.code.trim().toLocaleLowerCase('vi') === normalizedValue
+    || item.label.trim().toLocaleLowerCase('vi') === normalizedValue,
+  )
+  return option?.label ?? value
+}
+
+function recordDate(value?: string | null): string {
+  return value && dayjs(value).isValid() ? dayjs(value).format('DD/MM/YYYY') : '—'
+}
+
+/** Khối phiếu khám sức khỏe (health_records — nguồn của menu "Sổ sức khỏe") hiển thị trong hồ sơ khách. */
+function HealthRecordBlock({ records, skinTypes }: { records: CustomerHealthRecord[]; skinTypes: SkinTypeOption[] }) {
+  const [showHistory, setShowHistory] = useState(false)
+  if (!records.length) {
+    return (
+      <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 8 }}>
+        Chưa có phiếu khám sức khỏe — ghi nhận tại menu "Sổ sức khỏe".
+      </Typography.Text>
+    )
+  }
+  const sorted = records.slice().sort((a, b) => new Date(b.checked_date || b.created_at || 0).getTime() - new Date(a.checked_date || a.created_at || 0).getTime())
+  const latest = sorted[0]
+  const older = sorted.slice(1)
+  const renderFields = (record: CustomerHealthRecord) => [
+    { label: 'Tiền sử bệnh lý', value: record.medical_history },
+    { label: 'Loại da', value: skinTypeLabel(record.skin_type, skinTypes) },
+    { label: 'Tình trạng da', value: record.condition },
+    { label: 'Dị ứng', value: record.allergies },
+    { label: 'Phác đồ điều trị', value: record.protocol },
+    { label: 'Sản phẩm đã dùng', value: record.products_used },
+    { label: 'Lời dặn KTV', value: record.advice },
+    { label: 'Ghi chú', value: record.note },
+  ]
+  return (
+    <div className="grid gap-3" style={{ marginBottom: 8 }}>
+      <Card
+        size="small"
+        title={(
+          <Space size={8} wrap>
+            <span>Phiếu khám gần nhất — {recordDate(latest.checked_date || latest.created_at)}</span>
+            {latest.checked_by && <Tag>{latest.checked_by}</Tag>}
+          </Space>
+        )}
+      >
+        <Descriptions size="small" column={2} bordered labelStyle={{ width: 140 }}>
+          {renderFields(latest).map((field) => (
+            <Descriptions.Item key={field.label} label={field.label}>{field.value || '—'}</Descriptions.Item>
+          ))}
+        </Descriptions>
+      </Card>
+      {older.length > 0 && (
+        <>
+          <Button type="link" size="small" icon={<HistoryOutlined />} style={{ alignSelf: 'flex-start', padding: 0 }}
+            onClick={() => setShowHistory((value) => !value)}>
+            {showHistory ? 'Ẩn các phiếu cũ' : `Xem ${older.length} phiếu cũ hơn`}
+          </Button>
+          {showHistory && older.map((record, index) => (
+            <Card key={record.id} size="small" type="inner" title={`Phiếu khám — ${recordDate(record.checked_date || record.created_at)}`}
+              extra={record.checked_by ? <Tag>{record.checked_by}</Tag> : undefined}
+              style={index === older.length - 1 ? { marginBottom: 4 } : undefined}>
+              <Descriptions size="small" column={2} bordered labelStyle={{ width: 140 }}>
+                {renderFields(record).map((field) => (
+                  <Descriptions.Item key={field.label} label={field.label}>{field.value || '—'}</Descriptions.Item>
+                ))}
+              </Descriptions>
+            </Card>
+          ))}
+        </>
+      )}
+    </div>
+  )
+}
+
 export default function CustomerProfileHealthMetricsTab({ profileId }: { profileId: string }) {
   const { formatDateTime, getDateTimeParts } = useBrandDateTime()
   const [rows, setRows] = useState<MetricRow[]>([])
+  const [records, setRecords] = useState<CustomerHealthRecord[]>([])
+  const [skinTypes, setSkinTypes] = useState<SkinTypeOption[]>([])
   const [items, setItems] = useState<LookupItem[]>([])
   const [metricCode, setMetricCode] = useState('')
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(null)
@@ -36,14 +124,21 @@ export default function CustomerProfileHealthMetricsTab({ profileId }: { profile
     let active = true
     setLoading(true)
     setError('')
-    // API trả toàn bộ chỉ số của hồ sơ; lọc theo chỉ số/khoảng ngày tại client (endpoint không nhận query params trong spec).
-    Promise.all([getCustomerProfilesIdHealthMetrics(profileId), getLookupLists({ key: 'health.metrics' })])
-      .then(([metricsResult, catalogsResult]) => {
+    // API trả toàn bộ dữ liệu của hồ sơ; lọc theo chỉ số/khoảng ngày tại client (endpoint không nhận query params trong spec).
+    Promise.all([
+      getCustomerProfilesIdHealthMetrics(profileId),
+      getLookupLists({ key: 'health.metrics' }),
+      getCustomerProfilesIdHealthRecords(profileId),
+      getSkinTypes(),
+    ])
+      .then(([metricsResult, catalogsResult, recordsResult, skinTypesResult]) => {
         if (!active) return
         setRows(pickData<MetricRow[]>(metricsResult))
         const configuredItems = (pickData<LookupListWithItems[]>(catalogsResult) ?? [])
           .find((row) => row.key === 'health.metrics')?.lookup_items ?? []
         setItems(configuredItems.slice().sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0) || a.code.localeCompare(b.code)))
+        setRecords(pickData<CustomerHealthRecord[]>(recordsResult) ?? [])
+        setSkinTypes(pickData<SkinTypeOption[]>(skinTypesResult) ?? [])
       })
       .catch((err) => { if (active) setError(errorMessage(err)) })
       .finally(() => {
@@ -71,11 +166,14 @@ export default function CustomerProfileHealthMetricsTab({ profileId }: { profile
       .map((row) => ({ date: formatDateTime(row.measured_at), value: Number(row.value_num), unit: row.unit || '' }))
     : []
 
-  if (loading) return <div className="py-9 text-center"><Spin tip="Đang tải chỉ số sức khỏe…" /></div>
+  if (loading) return <div className="py-9 text-center"><Spin tip="Đang tải dữ liệu sức khỏe…" /></div>
   if (error) return <Alert type="error" showIcon message="Không tải được dữ liệu sức khỏe" description={error} action={<Button size="small" icon={<ReloadOutlined />} onClick={() => setRefresh((value) => value + 1)}>Thử lại</Button>} />
 
   return (
     <div className="grid gap-4">
+      <Typography.Title level={5} style={{ marginBottom: 0 }}>Sổ sức khỏe</Typography.Title>
+      <HealthRecordBlock records={records} skinTypes={skinTypes} />
+      <Typography.Title level={5} style={{ marginBottom: 0 }}>Chỉ số theo dõi</Typography.Title>
       <Space wrap>
         <Select
           value={metricCode || undefined}
@@ -89,7 +187,7 @@ export default function CustomerProfileHealthMetricsTab({ profileId }: { profile
         <Button icon={<ReloadOutlined />} onClick={() => { setPage(1); setRefresh((value) => value + 1) }}>Tải lại</Button>
       </Space>
       {activeItems.length === 0 && <Alert type="info" showIcon message="Chưa có danh mục chỉ số đang hoạt động" description="Quản trị viên có thể cấu hình mã chỉ số trong Cấu hình dữ liệu khách hàng." />}
-      {!filteredRows.length ? <Empty description="Chưa có dữ liệu sức khỏe trong bộ lọc này" /> : (
+      {!filteredRows.length ? <Empty description="Chưa có chỉ số đo trong bộ lọc này" /> : (
         <>
           {!metricCode && filteredRows.some((row) => row.value_num !== null && row.value_num !== undefined) && <Typography.Text type="secondary">Chọn một chỉ số để xem biểu đồ theo thời gian.</Typography.Text>}
           {metricCode && chartData.length > 0 && (

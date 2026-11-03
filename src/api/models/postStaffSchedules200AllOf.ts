@@ -5,8 +5,8 @@
  * Vista Spa backend API. Uses the NEWSKY+ business error envelope for permission-aware endpoints and the legacy response envelope for existing admin endpoints.
  * OpenAPI spec version: 1.0.0
  */
-import type { StaffSchedule } from './staffSchedule';
+import type { PostStaffSchedules200AllOfResponseData } from './postStaffSchedules200AllOfResponseData';
 
 export type PostStaffSchedules200AllOf = {
-  responseData?: StaffSchedule;
+  responseData?: PostStaffSchedules200AllOfResponseData;
 };

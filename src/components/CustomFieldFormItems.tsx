@@ -30,19 +30,19 @@ function fieldOptions(definition: CustomFieldDefWithOptions, value: unknown) {
   })
 }
 
-function CustomFieldInput({ definition }: { definition: CustomFieldDefWithOptions }) {
+function CustomFieldInput({ definition, disabled }: { definition: CustomFieldDefWithOptions; disabled?: boolean }) {
   const form = Form.useFormInstance()
   const value = Form.useWatch(['custom_fields', definition.key], form)
   const options = fieldOptions(definition, value)
-  const rules = definition.required ? [{ required: true, message: `Nhập ${definition.label}` }] : []
+  const rules = definition.required && !disabled ? [{ required: true, message: `Nhập ${definition.label}` }] : []
   const name = ['custom_fields', definition.key]
 
-  if (definition.data_type === 'text') return <Form.Item name={name} label={definition.label} rules={rules}><Input maxLength={2000} /></Form.Item>
-  if (definition.data_type === 'number') return <Form.Item name={name} label={definition.label} rules={rules}><InputNumber style={{ width: '100%' }} /></Form.Item>
-  if (definition.data_type === 'date') return <Form.Item name={name} label={definition.label} rules={rules} getValueProps={(current) => ({ value: current ? dayjs(current as string) : undefined })}><DatePicker format="DD/MM/YYYY" style={{ width: '100%' }} /></Form.Item>
-  if (definition.data_type === 'select') return <Form.Item name={name} label={definition.label} rules={rules}><Select allowClear options={options} /></Form.Item>
-  if (definition.data_type === 'multiselect') return <Form.Item name={name} label={definition.label} rules={rules}><Select mode="multiple" allowClear options={options} /></Form.Item>
-  if (definition.data_type === 'bool') return <Form.Item name={name} label={definition.label} valuePropName="checked" rules={rules}><Switch /></Form.Item>
+  if (definition.data_type === 'text') return <Form.Item name={name} label={definition.label} rules={rules}><Input maxLength={2000} disabled={disabled} /></Form.Item>
+  if (definition.data_type === 'number') return <Form.Item name={name} label={definition.label} rules={rules}><InputNumber style={{ width: '100%' }} disabled={disabled} /></Form.Item>
+  if (definition.data_type === 'date') return <Form.Item name={name} label={definition.label} rules={rules} getValueProps={(current) => ({ value: current ? dayjs(current as string) : undefined })}><DatePicker format="DD/MM/YYYY" style={{ width: '100%' }} disabled={disabled} /></Form.Item>
+  if (definition.data_type === 'select') return <Form.Item name={name} label={definition.label} rules={rules}><Select allowClear options={options} disabled={disabled} /></Form.Item>
+  if (definition.data_type === 'multiselect') return <Form.Item name={name} label={definition.label} rules={rules}><Select mode="multiple" allowClear options={options} disabled={disabled} /></Form.Item>
+  if (definition.data_type === 'bool') return <Form.Item name={name} label={definition.label} valuePropName="checked" rules={rules}><Switch disabled={disabled} /></Form.Item>
   return null
 }
 
@@ -65,7 +65,7 @@ export function normalizeCustomFieldValues(
   return Object.keys(result).length ? result : null
 }
 
-export default function CustomFieldFormItems({ definitions }: { definitions: CustomFieldDefWithOptions[] }) {
+export default function CustomFieldFormItems({ definitions, disabled }: { definitions: CustomFieldDefWithOptions[]; disabled?: boolean }) {
   if (definitions.length === 0) return null
-  return <>{definitions.map((definition) => <CustomFieldInput key={definition.id} definition={definition} />)}</>
+  return <>{definitions.map((definition) => <CustomFieldInput key={definition.id} definition={definition} disabled={disabled} />)}</>
 }

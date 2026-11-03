@@ -1,6 +1,7 @@
 import { createElement, type ReactNode } from 'react'
 import {
   AppstoreOutlined,
+  BellOutlined,
   BookOutlined,
   CalendarOutlined,
   ClockCircleOutlined,
@@ -32,7 +33,10 @@ interface MenuLeaf {
   icon: ReactNode
   label: string
   hideForKtv?: boolean
+  hideForReceptionist?: boolean
   ktvOnly?: boolean
+  adminOnly?: boolean
+  receptionistOrAdminOnly?: boolean
   brandReadForStaff?: boolean
   // Page không khai báo permission ⇒ hiển thị cho mọi user đã đăng nhập.
   permission?: PagePermission | PagePermission[]
@@ -46,7 +50,7 @@ interface MenuGroup extends Omit<MenuLeaf, 'permission' | 'key'> {
 export type MenuItem = MenuLeaf | MenuGroup
 
 export const menuItems: MenuItem[] = [
-  { key: '/', icon: createElement(DashboardOutlined), label: 'Dashboard', hideForKtv: true },
+  { key: '/', icon: createElement(DashboardOutlined), label: 'Dashboard', adminOnly: true },
   {
     type: 'group',
     label: 'Khách hàng',
@@ -105,11 +109,13 @@ export const menuItems: MenuItem[] = [
       { key: '/content-posts', icon: createElement(FileTextOutlined), label: 'Nội dung app (CMS)', permission: { action: 'READ', subject: 'CONTENT' } },
       { key: '/branches', icon: createElement(AppstoreOutlined), label: 'Cơ sở', permission: { action: 'READ', subject: 'BRANCH' } },
       { key: '/imports', icon: createElement(ProfileOutlined), label: 'Nhập dữ liệu khách cũ', permission: { action: 'RUN', subject: 'IMPORT' } },
-      { key: '/customer-data-config', icon: createElement(ProfileOutlined), label: 'Dữ liệu khách hàng', permission: { action: 'READ', subject: 'CUSTOM_FIELD' }, hideForKtv: true },
-      { key: '/settings/lookups', icon: createElement(AppstoreOutlined), label: 'Danh mục chọn', permission: { action: 'READ', subject: 'LOOKUP' }, hideForKtv: true },
+      { key: '/customer-data-config', icon: createElement(ProfileOutlined), label: 'Dữ liệu khách hàng', permission: { action: 'READ', subject: 'CUSTOM_FIELD' }, hideForKtv: true, hideForReceptionist: true },
+      { key: '/settings/lookups', icon: createElement(AppstoreOutlined), label: 'Danh mục chọn', permission: { action: 'READ', subject: 'LOOKUP' }, hideForKtv: true, hideForReceptionist: true },
       { key: '/settings/brand', icon: createElement(SettingOutlined), label: 'Thương hiệu', permission: { action: 'READ', subject: 'SETTING' }, brandReadForStaff: true },
       { key: '/settings/system', icon: createElement(SettingOutlined), label: 'Cài đặt hệ thống', permission: { action: 'READ', subject: 'SETTING' } },
       { key: '/settings/integrations', icon: createElement(SettingOutlined), label: 'Tích hợp dịch vụ', permission: { action: 'UPDATE', subject: 'SETTING' } },
+      { key: '/notification-templates', icon: createElement(BellOutlined), label: 'Mẫu thông báo', permission: { action: 'READ', subject: 'NOTIFICATION' }, receptionistOrAdminOnly: true },
+      { key: '/notifications', icon: createElement(BellOutlined), label: 'Thông báo', permission: { action: 'READ', subject: 'NOTIFICATION' } },
       { key: '/roles', icon: createElement(SafetyOutlined), label: 'Phân quyền', permission: { action: 'MANAGE', subject: 'PERMISSION' } },
       { key: '/access-logs', icon: createElement(HistoryOutlined), label: 'Nhật ký truy cập', permission: { action: 'MANAGE', subject: 'PERMISSION' } },
     ],
@@ -130,9 +136,13 @@ export function isKtvRoleName(role: string): boolean {
   return normalized.includes('ktv') || normalized.includes('ky thuat vien') || normalized.includes('technician')
 }
 
-function isReceptionistRoleName(role: string): boolean {
+export function isReceptionistRoleName(role: string): boolean {
   const normalized = role.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase()
   return normalized === 'rec' || normalized === 'le tan' || normalized === 'receptionist'
+}
+
+function isAdminRoleName(role: string): boolean {
+  return role.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase() === 'admin'
 }
 
 export function getProfileRoleNames(profile?: {
@@ -146,12 +156,16 @@ export function getProfileRoleNames(profile?: {
 }
 
 export function hasPagePermission(
-  entry: { permission?: PagePermission | PagePermission[]; hideForKtv?: boolean; ktvOnly?: boolean; brandReadForStaff?: boolean },
+  entry: { permission?: PagePermission | PagePermission[]; hideForKtv?: boolean; hideForReceptionist?: boolean; ktvOnly?: boolean; adminOnly?: boolean; receptionistOrAdminOnly?: boolean; brandReadForStaff?: boolean },
   roles: string[] = [],
   isAdmin = false,
 ): boolean {
-  if (entry.hideForKtv && !isAdmin && roles.some(isKtvRoleName)) return false
-  if (entry.ktvOnly && !isAdmin && !roles.some(isKtvRoleName)) return false
+  const hasAdminRole = isAdmin || roles.some(isAdminRoleName)
+  if (entry.adminOnly && !hasAdminRole) return false
+  if (entry.receptionistOrAdminOnly && !hasAdminRole && !roles.some(isReceptionistRoleName)) return false
+  if (entry.hideForKtv && !hasAdminRole && roles.some(isKtvRoleName)) return false
+  if (entry.hideForReceptionist && !hasAdminRole && roles.some(isReceptionistRoleName)) return false
+  if (entry.ktvOnly && !hasAdminRole && !roles.some(isKtvRoleName)) return false
   if (entry.brandReadForStaff && roles.some((role) => isKtvRoleName(role) || isReceptionistRoleName(role))) return true
   const perms = entryPermissions(entry)
   if (!perms) return true

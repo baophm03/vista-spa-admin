@@ -9,6 +9,7 @@ import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
 import { errorMessage, pickData, pickMeta } from '@/api/helpers'
 import { formatCurrency, formatDateTime, useBrandCurrency } from '@/themeRuntime'
+import { useCustomerProfileAccess } from '@/utils/customerProfileAccess'
 import { getProductOrders, getGetProductOrdersQueryKey, putProductOrdersId } from '@/api/endpoints/products'
 import type { ProductOrder } from '@/api/models/productOrder'
 import type { ProductOrderItem } from '@/api/models/productOrderItem'
@@ -53,6 +54,7 @@ const NEXT_ACTIONS: Record<ProductOrderStatus, { status: ProductOrderStatus; lab
 
 export default function Orders() {
   const { currency } = useBrandCurrency()
+  const { isAdmin } = useCustomerProfileAccess()
   const formatMoney = (value?: number | string | null) => formatCurrency(value, currency)
   const [page, setPage] = useState(1)
   const [limit] = useState(10)
@@ -122,6 +124,7 @@ export default function Orders() {
   }
 
   const changeStatus = async (row: ProductOrderRow, status: ProductOrderStatus) => {
+    if (!isAdmin) return
     try {
       await putProductOrdersId(row.id, { status })
       message.success(`Đã chuyển đơn ${row.code} sang "${STATUS_META[status].label}"`)
@@ -173,19 +176,22 @@ export default function Orders() {
         return (
           <RowActionsMenu
             items={[
-              { key: 'detail', icon: <EyeOutlined />, label: 'Chi tiết' },
-              ...nextActions.map((action) => ({
-                key: action.status,
-                icon: action.danger ? <StopOutlined /> : <CheckOutlined />,
-                label: action.label,
-                danger: action.danger,
-              })),
+              { key: 'detail', icon: <EyeOutlined />, label: 'Chi tiết', view: true },
+              ...(isAdmin
+                ? nextActions.map((action) => ({
+                    key: action.status,
+                    icon: action.danger ? <StopOutlined /> : <CheckOutlined />,
+                    label: action.label,
+                    danger: action.danger,
+                  }))
+                : []),
             ]}
             onSelect={(key) => {
               if (key === 'detail') {
                 setDetail(row)
                 return
               }
+              if (!isAdmin) return
               const action = nextActions.find((item) => item.status === key)
               if (!action) return
               if (action.danger) {
@@ -308,7 +314,7 @@ export default function Orders() {
               )}
             />
             <Space style={{ marginTop: 16 }}>
-              {(NEXT_ACTIONS[detailStatus] ?? []).map((action) => (
+              {(isAdmin ? NEXT_ACTIONS[detailStatus] ?? [] : []).map((action) => (
                 <Popconfirm
                   key={action.status}
                   title={`${action.label} đơn ${detail.code}?`}

@@ -264,7 +264,7 @@ export default function Collaborators() {
     { key: 'commission_percent', title: '% hoa hồng', dataIndex: 'commission_percent', width: 100, align: 'right', render: (v?: number | null) => v != null ? `${Number(v)}%` : '—' },
     {
       key: 'note',
-      title: 'Ghi chú', dataIndex: 'note', ellipsis: true,
+      title: 'Ghi chú', dataIndex: 'note', width: 180, ellipsis: true,
       render: (v?: string) => v || '—',
     },
     {
@@ -364,7 +364,7 @@ export default function Collaborators() {
             )}
             <Table<CollaboratorRow>
               rowKey="id" loading={listQuery.isLoading} dataSource={paginateRows(rows, page, 10)} columns={columns}
-              scroll={{ x: 1100 }}
+              scroll={{ x: 'max-content' }}
               pagination={false}
             />
             <ListPagination page={page} limit={10} total={rows.length} onChange={setPage} noun="cộng tác viên" />

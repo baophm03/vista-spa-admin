@@ -8,8 +8,6 @@
 import type { GetUsersSortOrder } from './getUsersSortOrder';
 
 export type GetUsersParams = {
-IsAdmin?: string;
-is_admin?: boolean;
 q?: string;
 search?: string;
 branch_id?: string;
