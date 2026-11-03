@@ -46,6 +46,7 @@ import { useDeleteUsersAdminId, usePostUsersAdmin, usePutUsersAdminId, useGetUse
 import { useGetRoles } from '@/api/endpoints/roles'
 import { useGetBranches } from '@/api/endpoints/branches'
 import { useGetService } from '@/api/endpoints/services'
+import { resolveFileUrl } from '@/configs/links'
 import {
   useGetStaffProfiles,
   useGetStaffProfilesUserId,
@@ -467,7 +468,7 @@ export default function Staffs() {
               return (
                 <Space>
                   {photo ? (
-                    <img src={photo} alt="" width={36} height={36} style={{ objectFit: 'cover', borderRadius: 18 }} />
+                    <img src={resolveFileUrl(photo)} alt="" width={36} height={36} style={{ objectFit: 'cover', borderRadius: 18 }} />
                   ) : (
                     <Avatar size={36} style={{ backgroundColor: 'var(--brand-primary)' }} icon={<UserOutlined />} />
                   )}

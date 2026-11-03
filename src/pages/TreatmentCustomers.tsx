@@ -65,6 +65,7 @@ import useCustomFieldDefinitions from '@/hooks/useCustomFieldDefinitions'
 import useSessionStatusConfig from '@/hooks/useSessionStatusConfig'
 import { Can, useAbility } from '@casl/react'
 import StandaloneServiceHistory from '@/components/StandaloneServiceHistory'
+import { resolveFileUrl } from '@/configs/links'
 
 interface Slot {
   date?: string
@@ -366,7 +367,7 @@ function SessionPhotos({
               width={92}
               height={92}
               style={{ objectFit: 'cover', borderRadius: 12, boxShadow: thumbRing }}
-              src={p.url ?? undefined}
+              src={resolveFileUrl(p.url ?? undefined)}
               fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
             />
             {deleteAllowed && deleteButton(p.id)}
@@ -379,7 +380,7 @@ function SessionPhotos({
               width={92}
               height={92}
               style={{ objectFit: 'cover', borderRadius: 12, boxShadow: thumbRing }}
-              src={badgePhoto.url ?? undefined}
+              src={resolveFileUrl(badgePhoto.url ?? undefined)}
               fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
             />
             <div

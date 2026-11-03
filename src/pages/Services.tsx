@@ -39,6 +39,7 @@ import useCustomFieldDefinitions from '@/hooks/useCustomFieldDefinitions'
 import type { ServiceCategory } from '@/api/models/serviceCategory'
 import ServiceCategories from './services/ServiceCategories'
 import { formatCurrency, useBrandCurrency } from '@/themeRuntime'
+import { resolveFileUrl } from '@/configs/links'
 
 /** BE list include kèm `service_category`. */
 type ServiceRow = Service & { service_category?: { id?: string; name?: string } }
@@ -209,7 +210,7 @@ export default function Services() {
         dataIndex: 'title',
         render: (value: string, row) => (
           <Space align="start">
-            {row.image_file_id ? <img src={row.image_file_id} alt="" width={44} height={44} style={{ objectFit: 'cover', borderRadius: 6 }} /> : null}
+            {row.image_file_id ? <img src={resolveFileUrl(row.image_file_id)} alt="" width={44} height={44} style={{ objectFit: 'cover', borderRadius: 6 }} /> : null}
             <div>
               <div style={{ fontWeight: 500 }}>{value}</div>
               <Typography.Text type="secondary" style={{ fontSize: 12 }}>

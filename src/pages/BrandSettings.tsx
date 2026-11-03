@@ -10,6 +10,7 @@ import type { FileUpload } from '@/api/models/fileUpload'
 import { getGetSettingsBrandQueryKey, getSettingsBrand, putSettingsBrand } from '@/api/endpoints/settings'
 import { postFiles } from '@/api/endpoints/files'
 import { Can } from '@casl/react'
+import { resolveFileUrl } from '@/configs/links'
 import { applyBrandSettings, useBrandColors, useBrandRuntime } from '@/themeRuntime'
 
 const FALLBACK_TIMEZONES = [
@@ -59,7 +60,7 @@ function ReadOnlyBrandSettings({ settings, runtime }: { settings?: BrandSettings
             <Descriptions.Item label="Tên thương hiệu">{brand?.name || '—'}</Descriptions.Item>
             <Descriptions.Item label="Logo">
               {brand?.logo_url ? (
-                <Avatar shape="square" size={76} src={brand.logo_url} />
+                <Avatar shape="square" size={76} src={resolveFileUrl(brand.logo_url)} />
               ) : <Typography.Text type="secondary">Chưa cấu hình logo</Typography.Text>}
             </Descriptions.Item>
             <Descriptions.Item label="Màu chủ đạo">{colorValue(primaryColor)}</Descriptions.Item>
@@ -133,7 +134,7 @@ export default function BrandSettings() {
     setSecondaryColor(data.brand.secondary_color || '#D01A7E')
     setBackgroundColor(data.brand.background_color || '')
     setLogoFileId(data.brand.logo_file_id ?? '')
-    setLogoPreview(data.brand.logo_url || data.brand.logo_file_id || null)
+    setLogoPreview(resolveFileUrl(data.brand.logo_url || data.brand.logo_file_id) || null)
     applyBrandSettings(data)
   }, [form, settingsQuery.data])
 
@@ -177,7 +178,7 @@ export default function BrandSettings() {
       const uploaded = pickData<{ fileName?: string; original?: string }>(await postFiles({ file } as FileUpload))
       const url = uploaded?.original ?? ''
       setLogoFileId(url)
-      setLogoPreview(url || null)
+      setLogoPreview(resolveFileUrl(url) || null)
       form.setFieldValue(['brand', 'logo_file_id'], url)
       message.success('Đã tải logo lên; nhấn Lưu để áp dụng')
     } catch (error) {

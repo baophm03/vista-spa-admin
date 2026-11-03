@@ -86,7 +86,7 @@ interface StaffRow {
   email?: string
 }
 
-type TreatmentWithMeta = CustomerTreatment & { package_type?: { name?: string } }
+type TreatmentWithMeta = CustomerTreatment & { package_type?: { name?: string }; allowed_service_ids?: string[] }
 
 const purchasedTreatmentPackageName = (treatment: TreatmentWithMeta) => {
   const snapshotName = (treatment.package_snapshot as Record<string, unknown> | undefined)?.name

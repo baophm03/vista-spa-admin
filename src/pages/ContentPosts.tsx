@@ -33,6 +33,7 @@ import { apiClient } from '@/api/mutator/custom-instance'
 import { Can } from '@casl/react'
 import ContentRichTextEditor from '@/components/ContentRichTextEditor'
 import { usePostFiles } from '@/api/endpoints/files'
+import { resolveFileUrl } from '@/configs/links'
 
 const STATUS_META: Record<string, { label: string; color: string }> = {
   DRAFT: { label: 'Nháp', color: 'default' },
@@ -432,7 +433,7 @@ export default function ContentPosts() {
                     </Upload>
                     {coverUrl ? (
                     <Space align="start">
-                      <Image src={coverUrl} width={150} height={96} style={{ objectFit: 'cover', borderRadius: 8 }} />
+                      <Image src={resolveFileUrl(coverUrl)} width={150} height={96} style={{ objectFit: 'cover', borderRadius: 8 }} />
                       <Button size="small" danger onClick={() => postForm.setFieldValue('cover_url', undefined)}>Gỡ ảnh</Button>
                     </Space>
                     ) : <Typography.Text type="secondary">Chưa có ảnh bìa</Typography.Text>}
@@ -471,7 +472,7 @@ export default function ContentPosts() {
         width={760}
       >
         <article className="mx-auto max-w-2xl py-2">
-          {previewData?.cover_url && <Image src={previewData.cover_url} alt={previewData.title || 'Ảnh bìa'} className="mb-4 w-full rounded-xl object-cover" />}
+          {previewData?.cover_url && <Image src={resolveFileUrl(previewData.cover_url)} alt={previewData.title || 'Ảnh bìa'} className="mb-4 w-full rounded-xl object-cover" />}
           <Typography.Title level={2}>{previewData?.title || 'Tiêu đề bài viết'}</Typography.Title>
           {previewData?.summary && <Typography.Paragraph type="secondary">{previewData.summary}</Typography.Paragraph>}
           {previewData?.video_url && <Typography.Link href={previewData.video_url} target="_blank" rel="noreferrer">Mở video đính kèm</Typography.Link>}

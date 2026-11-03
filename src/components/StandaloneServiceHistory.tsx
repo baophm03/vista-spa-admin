@@ -12,6 +12,7 @@ import { getAppointments } from '@/api/endpoints/appointments'
 import { getGetCustomerProfilesIdPointsQueryKey, useGetCustomerProfilesIdPoints } from '@/api/endpoints/customer-profiles'
 import { postFiles } from '@/api/endpoints/files'
 import { useGetLookupLists } from '@/api/endpoints/lookup-lists'
+import { resolveFileUrl } from '@/configs/links'
 
 const SubHead = ({ children }: { children: string }) => (
   <div style={{ padding: '9px 16px', background: 'var(--brand-bg)', borderTop: '1px solid var(--brand-border-soft)', fontSize: 12.5, fontWeight: 800, letterSpacing: 1.2, textTransform: 'uppercase', color: 'var(--brand-dark)' }}>{children}</div>
@@ -312,7 +313,7 @@ function StandaloneServiceVisit({ appointment, onUpdated }: { appointment: Stand
     return (
       <TRow key={kind} label={label}>
         <Space wrap size={10}>
-          {rows.length > 0 && <Image.PreviewGroup items={rows.map((photo) => photo.url!)}>{rows.map((photo) => <Image key={photo.id} src={photo.url!} width={88} height={88} style={{ objectFit: 'cover', borderRadius: 10 }} />)}</Image.PreviewGroup>}
+          {rows.length > 0 && <Image.PreviewGroup items={rows.map((photo) => resolveFileUrl(photo.url)!)}>{rows.map((photo) => <Image key={photo.id} src={resolveFileUrl(photo.url)!} width={88} height={88} style={{ objectFit: 'cover', borderRadius: 10 }} />)}</Image.PreviewGroup>}
           {editable && record.status === 'in_progress' && <Upload accept="image/*" multiple showUploadList={false} beforeUpload={(file) => { void uploadPhoto(file, kind); return false }}><Button icon={<PlusOutlined />}>Ảnh</Button></Upload>}
           {!rows.length && !(editable && record.status === 'in_progress') && <Typography.Text type="secondary">{loading ? 'Đang tải ảnh…' : 'Chưa có ảnh'}</Typography.Text>}
         </Space>

@@ -61,6 +61,7 @@ import type { PostProductCategoriesBody } from '@/api/models/postProductCategori
 import type { PutProductCategoriesIdBody } from '@/api/models/putProductCategoriesIdBody'
 import { formatCurrency, useBrandCurrency } from '@/themeRuntime'
 import { useCustomerProfileAccess } from '@/utils/customerProfileAccess'
+import { resolveFileUrl } from '@/configs/links'
 
 /** BE include kèm `category` (id, name) khi list. */
 type ProductRow = Product & { category?: { id?: string; name?: string } }
@@ -367,7 +368,7 @@ export default function Products() {
             width: 76,
             render: (_, p) =>
               p.cover_url ? (
-                <Image src={p.cover_url} width={48} height={48} style={{ objectFit: 'cover', borderRadius: 8 }} />
+                <Image src={resolveFileUrl(p.cover_url)} width={48} height={48} style={{ objectFit: 'cover', borderRadius: 8 }} />
               ) : (
                 <div style={{ width: 48, height: 48, borderRadius: 8, background: 'var(--brand-bg)', display: 'grid', placeItems: 'center', color: '#B9BDC2' }}>
                   <PictureOutlined />
@@ -461,9 +462,9 @@ export default function Products() {
             {(viewing.cover_url || viewing.gallery?.length) ? (
               <Image.PreviewGroup>
                 <Space wrap>
-                  {viewing.cover_url && <Image src={viewing.cover_url} width={96} height={96} style={{ objectFit: 'cover', borderRadius: 8 }} />}
+                  {viewing.cover_url && <Image src={resolveFileUrl(viewing.cover_url)} width={96} height={96} style={{ objectFit: 'cover', borderRadius: 8 }} />}
                   {(viewing.gallery ?? []).map((url) => (
-                    <Image key={url} src={url} width={96} height={96} style={{ objectFit: 'cover', borderRadius: 8 }} />
+                    <Image key={url} src={resolveFileUrl(url)} width={96} height={96} style={{ objectFit: 'cover', borderRadius: 8 }} />
                   ))}
                 </Space>
               </Image.PreviewGroup>
@@ -555,7 +556,7 @@ export default function Products() {
                   const cover: string | undefined = form.getFieldValue('cover_url')
                   return cover ? (
                     <Space size={4}>
-                      <Image src={cover} width={64} height={64} style={{ objectFit: 'cover', borderRadius: 8 }} />
+                      <Image src={resolveFileUrl(cover)} width={64} height={64} style={{ objectFit: 'cover', borderRadius: 8 }} />
                       <Button size="small" type="text" danger onClick={() => form.setFieldsValue({ cover_url: undefined })}>Gỡ</Button>
                     </Space>
                   ) : (
@@ -575,7 +576,7 @@ export default function Products() {
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: gallery.length ? 8 : 0 }}>
                       {gallery.map((url) => (
                         <div key={url} style={{ position: 'relative' }}>
-                          <Image src={url} width={64} height={64} style={{ objectFit: 'cover', borderRadius: 8 }} />
+                          <Image src={resolveFileUrl(url)} width={64} height={64} style={{ objectFit: 'cover', borderRadius: 8 }} />
                           <Button
                             size="small"
                             type="primary"
