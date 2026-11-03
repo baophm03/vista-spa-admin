@@ -18,8 +18,7 @@ import type { PaymentLogVoidReason } from './paymentLogVoidReason';
  */
 export interface PaymentLog {
   id: string;
-  customer_treatment_id?: string | null;
-  appointment_id?: string | null;
+  customer_treatment_id: string;
   /** @minimum 0 */
   amount: number;
   method: PaymentLogMethod;

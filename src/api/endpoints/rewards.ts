@@ -40,6 +40,7 @@ import type {
   GetRewardsParams,
   InternalErrorResponse,
   NotFoundResponse,
+  PostCustomerTreatmentsIdApplyRewardBody,
   PostRewards200,
   PutRewardRedemptionsIdCancel200,
   PutRewardRedemptionsIdCancelBody,
@@ -833,7 +834,7 @@ export const prefetchGetRewardRedemptionsQuery = async <TData = Awaited<ReturnTy
 
 
 /**
- * **RW-08** — PUT /reward-redemptions/{id}/use (ISSUED → USED). Cần quyền `reward.redeem_admin`.
+ * **RW-08** — PUT /reward-redemptions/{id}/use (ISSUED → USED). Cần quyền `reward.redeem_admin`. Quà giảm tiền phải dùng endpoint áp vào gói liệu trình để ghi giảm công nợ.
  * @summary Đánh dấu quà đã được sử dụng
  */
 export const putRewardRedemptionsIdUse = (
@@ -956,6 +957,72 @@ export const usePutRewardRedemptionsIdCancel = <TError = UnauthorizedResponse | 
       > => {
 
       const mutationOptions = getPutRewardRedemptionsIdCancelMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * Lượt đổi phải thuộc cùng khách, còn hiệu lực, là quyền lợi giảm tiền và dịch vụ phải khớp với gói.
+ * @summary Áp dụng quà đã đổi vào công nợ liệu trình
+ */
+export const postCustomerTreatmentsIdApplyReward = (
+    id: string,
+    postCustomerTreatmentsIdApplyRewardBody: PostCustomerTreatmentsIdApplyRewardBody,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<void>(
+      {url: `/customerTreatments/${id}/apply-reward`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: postCustomerTreatmentsIdApplyRewardBody, signal
+    },
+      );
+    }
+  
+
+
+export const getPostCustomerTreatmentsIdApplyRewardMutationOptions = <TError = void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postCustomerTreatmentsIdApplyReward>>, TError,{id: string;data: PostCustomerTreatmentsIdApplyRewardBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postCustomerTreatmentsIdApplyReward>>, TError,{id: string;data: PostCustomerTreatmentsIdApplyRewardBody}, TContext> => {
+
+const mutationKey = ['postCustomerTreatmentsIdApplyReward'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postCustomerTreatmentsIdApplyReward>>, {id: string;data: PostCustomerTreatmentsIdApplyRewardBody}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  postCustomerTreatmentsIdApplyReward(id,data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostCustomerTreatmentsIdApplyRewardMutationResult = NonNullable<Awaited<ReturnType<typeof postCustomerTreatmentsIdApplyReward>>>
+    export type PostCustomerTreatmentsIdApplyRewardMutationBody = PostCustomerTreatmentsIdApplyRewardBody
+    export type PostCustomerTreatmentsIdApplyRewardMutationError = void
+
+    /**
+ * @summary Áp dụng quà đã đổi vào công nợ liệu trình
+ */
+export const usePostCustomerTreatmentsIdApplyReward = <TError = void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postCustomerTreatmentsIdApplyReward>>, TError,{id: string;data: PostCustomerTreatmentsIdApplyRewardBody}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postCustomerTreatmentsIdApplyReward>>,
+        TError,
+        {id: string;data: PostCustomerTreatmentsIdApplyRewardBody},
+        TContext
+      > => {
+
+      const mutationOptions = getPostCustomerTreatmentsIdApplyRewardMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

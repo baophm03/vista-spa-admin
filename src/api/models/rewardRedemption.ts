@@ -6,6 +6,10 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { RewardRedemptionUserVoucherId } from './rewardRedemptionUserVoucherId';
+import type { RewardRedemptionCustomerTreatmentId } from './rewardRedemptionCustomerTreatmentId';
+import type { RewardRedemptionAppliedDiscountAmount } from './rewardRedemptionAppliedDiscountAmount';
+import type { RewardRedemptionAppliedAt } from './rewardRedemptionAppliedAt';
+import type { RewardRedemptionAppliedBy } from './rewardRedemptionAppliedBy';
 import type { RewardRedemptionIssuedBy } from './rewardRedemptionIssuedBy';
 import type { RewardRedemptionUsedAt } from './rewardRedemptionUsedAt';
 import type { RewardRedemptionCancelledAt } from './rewardRedemptionCancelledAt';
@@ -22,10 +26,11 @@ export interface RewardRedemption {
   status?: string;
   /** @minimum 0 */
   points_spent: number;
-  customer_treatment_id?: string | null;
-  applied_discount_amount?: number | null;
-  applied_at?: string | null;
-  applied_by?: string | null;
+  customer_treatment_id?: RewardRedemptionCustomerTreatmentId;
+  /** @minimum 0 */
+  applied_discount_amount?: RewardRedemptionAppliedDiscountAmount;
+  applied_at?: RewardRedemptionAppliedAt;
+  applied_by?: RewardRedemptionAppliedBy;
   issued_by?: RewardRedemptionIssuedBy;
   used_at?: RewardRedemptionUsedAt;
   cancelled_at?: RewardRedemptionCancelledAt;

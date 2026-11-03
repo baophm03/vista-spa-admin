@@ -1710,7 +1710,7 @@ export const prefetchGetCustomerProfilesIdQrQuery = async <TData = Awaited<Retur
 
 
 /**
- * **LY-01** — GET /customer-profiles/{id}/points. Admin/lễ tân có quyền `customer.read` được xem theo phạm vi hồ sơ/cơ sở; `membership.points_adjust` chỉ cần để cộng/trừ điểm thủ công. Trả `{ points, history, redemption }`; lịch sử tối đa 100 giao dịch.
+ * **LY-01** — GET /customer-profiles/{id}/points. Admin/lễ tân có quyền `customer.read` được xem theo phạm vi hồ sơ/cơ sở. Quyền `membership.points_adjust` chỉ dùng cho thao tác cộng/trừ điểm thủ công. Trả `{ points, history, redemption }`; lịch sử tối đa 100 giao dịch.
  * @summary Xem số điểm và lịch sử giao dịch điểm của hồ sơ khách
  */
 export const getCustomerProfilesIdPoints = (
