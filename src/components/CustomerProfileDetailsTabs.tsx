@@ -35,7 +35,7 @@ export default function CustomerProfileDetailsTabs({ profile, summary, branchNam
         onChange={(key) => setActiveTab(key as TabKey)}
         items={[
           { key: 'overview', label: 'Tổng quan', children: null },
-          { key: 'treatments', label: 'Gói, buổi, ảnh, thanh toán', children: null },
+          { key: 'treatments', label: 'Gói, buổi, thanh toán', children: null },
           { key: 'appointments', label: 'Lịch hẹn', children: null },
           { key: 'metrics', label: 'Sức khỏe, chỉ số', children: null },
         ]}

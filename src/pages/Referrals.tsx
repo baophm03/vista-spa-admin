@@ -245,7 +245,7 @@ export default function Referrals() {
       render: (v?: string) => v || '—',
     },
     {
-      key: 'actions', title: 'Hành động', width: 90, fixed: 'right' as const,
+      key: 'actions', title: 'Hành động', align: 'center' as const, width: 90, fixed: 'right' as const,
       render: (_v, row) => (
         <RowActionsMenu
           items={canUpdate ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []}

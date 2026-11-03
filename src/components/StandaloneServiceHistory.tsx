@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAbility } from '@casl/react'
 import { Alert, Button, Divider, Form, Image, Input, InputNumber, Modal, Progress, Select, Space, Table, Tabs, Tag, Typography, Upload, message } from 'antd'
 import type { ReactNode } from 'react'
 import type { TableColumnsType } from 'antd'
-import { CheckCircleOutlined, EditOutlined, PlusOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons'
+import { CheckCircleOutlined, EditOutlined, PlusOutlined, PrinterOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import { errorMessage, openHtmlPrint, pickData } from '@/api/helpers'
 import { customInstance } from '@/api/mutator/custom-instance'
@@ -13,6 +14,9 @@ import { getGetCustomerProfilesIdPointsQueryKey, useGetCustomerProfilesIdPoints 
 import { postFiles } from '@/api/endpoints/files'
 import { useGetLookupLists } from '@/api/endpoints/lookup-lists'
 import { resolveFileUrl } from '@/configs/links'
+import ListPagination from '@/components/base/ListPagination'
+import RowActionsMenu from '@/components/base/RowActionsMenu'
+import { paginateRows } from '@/utils/listTable'
 
 const SubHead = ({ children }: { children: string }) => (
   <div style={{ padding: '9px 16px', background: 'var(--brand-bg)', borderTop: '1px solid var(--brand-border-soft)', fontSize: 12.5, fontWeight: 800, letterSpacing: 1.2, textTransform: 'uppercase', color: 'var(--brand-dark)' }}>{children}</div>
@@ -44,6 +48,17 @@ interface StandaloneAppointment {
   staff?: { zalo_name?: string } | null
 }
 
+/** Query dùng chung cho trang Dịch vụ lẻ — page và component share cache qua key này */
+export const STANDALONE_SERVICE_QUERY = {
+  queryKey: ['/appointments', 'standalone-service-history'] as const,
+  queryFn: () => getAppointments({ page: 1, limit: 200 } as never),
+}
+
+/** Lọc các lịch hẹn là dịch vụ lẻ (không gắn gói) */
+export const standaloneServiceRows = (data: unknown) =>
+  (pickData<StandaloneAppointment[] | undefined>(data) ?? [])
+    .filter((row) => !row.customer_treatment_id && ['pending', 'approved', 'in_progress', 'completed'].includes(String(row.status)))
+
 interface VisitPhoto {
   id: string
   url?: string | null
@@ -69,20 +84,20 @@ const VISIT_STATUS: Record<string, { label: string; color: string }> = {
 export default function StandaloneServiceHistory({
   focusAppointmentId,
   onFocusConsumed,
+  hideCreate,
 }: {
   focusAppointmentId?: string | null
   onFocusConsumed?: () => void
+  hideCreate?: boolean
 }) {
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
+  const [page, setPage] = useState(1)
   const [selected, setSelected] = useState<StandaloneAppointment | null>(null)
-  const appointmentsQuery = useQuery({
-    queryKey: ['/appointments', 'standalone-service-history'],
-    queryFn: () => getAppointments({ page: 1, limit: 200 } as never),
-  })
-  const rows = (pickData<StandaloneAppointment[]>(appointmentsQuery.data) ?? [])
-    .filter((row) => !row.customer_treatment_id && ['pending', 'approved', 'in_progress', 'completed'].includes(String(row.status)))
+  const appointmentsQuery = useQuery(STANDALONE_SERVICE_QUERY)
+  const rows = standaloneServiceRows(appointmentsQuery.data)
   const visibleRows = useMemo(() => {
     const keyword = search.trim().toLocaleLowerCase('vi-VN')
     return rows.filter((row) => {
@@ -112,6 +127,20 @@ export default function StandaloneServiceHistory({
   }, [focusAppointmentId, appointmentsQuery.data, appointmentsQuery.isLoading])
 
   const refresh = () => void queryClient.invalidateQueries({ queryKey: ['/appointments'] })
+  const ability = useAbility()
+  const canEditVisit = ability.can('UPDATE' as never, 'SESSION') || ability.can('START' as never, 'APPOINTMENT')
+  const canCompleteVisit = ability.can('APPROVE' as never, 'APPOINTMENT')
+  const [editTargetId, setEditTargetId] = useState<string | null>(null)
+  const [completeTargetId, setCompleteTargetId] = useState<string | null>(null)
+
+  const printRow = async (row: StandaloneAppointment) => {
+    try {
+      await openHtmlPrint(`/appointments/${row.id}/print`)
+    } catch (err) {
+      message.error(errorMessage(err, 'Không mở được phiếu in — kiểm tra setting module.invoice'))
+    }
+  }
+
   const columns: TableColumnsType<StandaloneAppointment> = [
     {
       title: 'Khách hàng',
@@ -130,7 +159,30 @@ export default function StandaloneServiceHistory({
       return `${Number(row.service_amount ?? minimum).toLocaleString('vi-VN')} ₫`
     } },
     { title: 'Trạng thái', key: 'status', width: 120, render: (_value, row) => <Tag color={VISIT_STATUS[String(row.status)]?.color}>{VISIT_STATUS[String(row.status)]?.label || row.status}</Tag> },
-    { title: 'Hồ sơ', key: 'action', width: 90, render: (_value, row) => <Button size="small" icon={<EditOutlined />} onClick={(event) => { event.stopPropagation(); setSelected(row) }}>Mở</Button> },
+    {
+      title: 'Hành động', key: 'action', width: 90, align: 'center' as const,
+      render: (_value, row) => {
+        const inProgress = String(row.status) === 'in_progress'
+        return (
+          <RowActionsMenu
+            items={[
+              ...(inProgress && canEditVisit ? [{ key: 'edit', icon: <EditOutlined />, label: 'Chỉnh sửa' }] : []),
+              ...(inProgress && canCompleteVisit ? [{
+                key: 'complete',
+                icon: <CheckCircleOutlined style={{ color: '#159447' }} />,
+                label: <span style={{ color: '#159447', fontWeight: 600 }}>Hoàn tất dịch vụ</span>,
+              }] : []),
+              { key: 'print', icon: <PrinterOutlined />, label: 'In phiếu' },
+            ]}
+            onSelect={(key) => {
+              if (key === 'edit') { setEditTargetId(row.id); setCompleteTargetId(null); setSelected(row) }
+              else if (key === 'complete') { setEditTargetId(row.id); setCompleteTargetId(row.id); setSelected(row) }
+              else if (key === 'print') void printRow(row)
+            }}
+          />
+        )
+      },
+    },
   ]
 
   return (
@@ -145,25 +197,27 @@ export default function StandaloneServiceHistory({
           { value: 'completed', label: 'Hoàn tất' },
         ]} />
         <Button icon={<ReloadOutlined />} loading={appointmentsQuery.isFetching} onClick={refresh}>Tải lại</Button>
+        {!hideCreate && <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate('/appointments?create=1')}>Thêm dịch vụ lẻ</Button>}
       </div>
       <Table<StandaloneAppointment>
         rowKey="id"
         loading={appointmentsQuery.isLoading}
-        dataSource={visibleRows}
+        dataSource={paginateRows(visibleRows, page, 10)}
         columns={columns}
-        pagination={{ pageSize: 10, showSizeChanger: false }}
+        pagination={false}
         onRow={(row) => ({ onClick: () => setSelected(row), style: { cursor: 'pointer' } })}
         locale={{ emptyText: search ? 'Không tìm thấy dịch vụ lẻ phù hợp' : 'Chưa có khách dùng dịch vụ lẻ' }}
       />
+      <ListPagination page={page} limit={10} total={visibleRows.length} onChange={setPage} noun="lần làm dịch vụ" />
       <Modal
         title={selected ? `${selected.customer_profile?.full_name || 'Khách hàng'} · ${selected.service?.title || 'Dịch vụ lẻ'}` : 'Hồ sơ lần làm dịch vụ'}
         open={!!selected}
-        onCancel={() => setSelected(null)}
+        onCancel={() => { setSelected(null); setCompleteTargetId(null) }}
         footer={<Button onClick={() => setSelected(null)}>Đóng</Button>}
         width="min(1200px, calc(100vw - 24px))"
         style={{ top: 20 }}
       >
-        {selected && <StandaloneServiceVisit appointment={selected} onUpdated={(updated) => {
+        {selected && <StandaloneServiceVisit autoOpenEdit={selected.id === editTargetId} completeMode={selected.id === completeTargetId} appointment={selected} onUpdated={(updated) => {
           setSelected(updated)
           void queryClient.invalidateQueries({ queryKey: ['/appointments'] })
         }} />}
@@ -172,7 +226,7 @@ export default function StandaloneServiceHistory({
   )
 }
 
-function StandaloneServiceVisit({ appointment, onUpdated }: { appointment: StandaloneAppointment; onUpdated: (row: StandaloneAppointment) => void }) {
+function StandaloneServiceVisit({ appointment, onUpdated, autoOpenEdit, completeMode }: { appointment: StandaloneAppointment; onUpdated: (row: StandaloneAppointment) => void; autoOpenEdit?: boolean; completeMode?: boolean }) {
   const ability = useAbility()
   const queryClient = useQueryClient()
   const [record, setRecord] = useState(appointment)
@@ -205,7 +259,7 @@ function StandaloneServiceVisit({ appointment, onUpdated }: { appointment: Stand
     setPhotos([])
     setPayments([])
     setActiveDetailTab('visit')
-    setEditOpen(false)
+    setEditOpen(!!autoOpenEdit)
     setPaymentOpen(false)
   }, [appointment.id])
 
@@ -263,6 +317,13 @@ function StandaloneServiceVisit({ appointment, onUpdated }: { appointment: Stand
   }
 
   const saveAndClose = async (markDone = false) => { if (await saveVisit(markDone)) setEditOpen(false) }
+
+  // Chế độ "Hoàn tất dịch vụ" từ danh sách: lưu nhật ký + xác nhận làm xong + hoàn tất luôn
+  const finishAndComplete = async () => {
+    if (!(await saveVisit(true))) return
+    setEditOpen(false)
+    await completeVisit()
+  }
 
   const uploadPhoto = async (file: File, kind: 'before' | 'process' | 'after') => {
     try {
@@ -382,7 +443,6 @@ function StandaloneServiceVisit({ appointment, onUpdated }: { appointment: Stand
                 label: 'Lần làm dịch vụ',
                 children: (
                   <>
-                    <Alert type="info" showIcon style={{ marginBottom: 12 }} message="Dịch vụ lẻ — không trừ buổi gói" description="Hồ sơ này được lưu riêng trong lịch sử dịch vụ của khách." />
                     <div style={{ border: '1px solid var(--brand-border)', borderRadius: 12, overflow: 'hidden', background: '#fff' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', padding: '13px 16px', background: 'var(--brand-bg)' }}>
                         <div style={{ width: 40, height: 40, borderRadius: 10, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 17, color: 'var(--brand-primary)', border: '1px solid var(--brand-border)' }}>01</div>
@@ -471,11 +531,17 @@ function StandaloneServiceVisit({ appointment, onUpdated }: { appointment: Stand
         </Form>
       </Modal>
       <Modal
-        title="Sửa thông tin buổi dịch vụ lẻ"
+        title={completeMode && !record.visit_done_at ? 'Nhật ký buổi làm — Hoàn tất dịch vụ' : 'Sửa thông tin buổi dịch vụ lẻ'}
         width="min(720px, calc(100vw - 24px))"
         open={editOpen}
         onCancel={() => setEditOpen(false)}
-        footer={<Space wrap><Button onClick={() => setEditOpen(false)}>Hủy</Button><Button loading={saving} onClick={() => void saveAndClose(false)}>Lưu</Button>{!record.visit_done_at && <Button type="primary" icon={<CheckCircleOutlined />} loading={saving} onClick={() => void saveAndClose(true)}>Lưu và xác nhận đã làm xong</Button>}</Space>}
+        footer={completeMode && !record.visit_done_at
+          ? <Space wrap>
+              <Button onClick={() => setEditOpen(false)}>Hủy</Button>
+              <Button loading={saving} onClick={() => void saveAndClose(false)}>Lưu</Button>
+              <Button type="primary" icon={<CheckCircleOutlined />} loading={saving} onClick={() => void finishAndComplete()}>Xong</Button>
+            </Space>
+          : <Space wrap><Button onClick={() => setEditOpen(false)}>Hủy</Button><Button loading={saving} onClick={() => void saveAndClose(false)}>Lưu</Button>{!record.visit_done_at && <Button type="primary" icon={<CheckCircleOutlined />} loading={saving} onClick={() => void saveAndClose(true)}>Lưu và xác nhận đã làm xong</Button>}</Space>}
       >
         <Typography.Text type="secondary" style={{ display: 'block', margin: '4px 0 16px' }}>{record.customer_profile?.full_name || 'Khách hàng'} · {record.service?.title || 'Dịch vụ lẻ'} · {dayjs(record.appt_date).format('DD/MM/YYYY')} {record.start_time?.slice(0, 5)}</Typography.Text>
         <Form form={editForm} layout="vertical" disabled={!editable || record.status !== 'in_progress'}>
@@ -487,7 +553,7 @@ function StandaloneServiceVisit({ appointment, onUpdated }: { appointment: Stand
           <Form.Item name="products_used" label="Sản phẩm đã dùng"><Input.TextArea rows={2} maxLength={10000} placeholder="Tên sản phẩm hoặc ghi chú sản phẩm" /></Form.Item>
           <Divider plain style={{ fontSize: 11, color: '#A9ADB2', letterSpacing: 1, margin: '4px 0 14px' }}>KẾT QUẢ CUỐI BUỔI</Divider>
           <Form.Item name="result" label="Kết quả / dặn dò sau buổi"><Input.TextArea rows={3} maxLength={10000} placeholder="Kết quả quan sát được, cách chăm sóc tại nhà…" /></Form.Item>
-          {!record.visit_done_at && <Alert type="info" showIcon message="KTV xác nhận xong phần làm tại đây. Lễ tân cần thu đủ tiền rồi mới hoàn tất lịch hẹn." />}
+          {!record.visit_done_at && <Alert type="info" showIcon message={completeMode ? 'Điền đầy đủ nhật ký rồi bấm Xong để hoàn tất dịch vụ.' : 'KTV xác nhận xong phần làm tại đây. Lễ tân cần thu đủ tiền rồi mới hoàn tất lịch hẹn.'} />}
         </Form>
       </Modal>
     </>
@@ -512,6 +578,7 @@ function ServicePointsHistory({ profileId }: { profileId: string }) {
     redemption?: { enabled?: boolean }
   }>(pointsQuery.data)
   const rows = data?.history ?? []
+  const [pointPage, setPointPage] = useState(1)
   const typeLabels: Record<string, string> = {
     PAYMENT: 'Thanh toán',
     MANUAL: 'Chỉnh tay',
@@ -537,18 +604,21 @@ function ServicePointsHistory({ profileId }: { profileId: string }) {
       ) : rows.length === 0 ? (
         <Typography.Text type="secondary">Chưa có biến động điểm nào.</Typography.Text>
       ) : (
-        <Table<CustomerPointHistoryRow>
-          rowKey={(row) => String(row.id ?? row.trans_code ?? row.trans_date)}
-          size="small"
-          dataSource={rows}
-          pagination={{ pageSize: 8, showSizeChanger: false }}
-          columns={[
-            { title: 'Thời gian', key: 'time', width: 150, render: (_value, row) => row.created_at ? dayjs(row.created_at).format('DD/MM/YYYY HH:mm') : row.trans_date ? dayjs(row.trans_date).format('DD/MM/YYYY') : '—' },
-            { title: 'Loại', dataIndex: 'ref_type', width: 130, render: (value: string) => typeLabels[value] ?? value ?? '—' },
-            { title: 'Điểm', dataIndex: 'points_earned', width: 90, render: (value: number) => <Typography.Text type={Number(value) >= 0 ? 'success' : 'danger'}>{Number(value) >= 0 ? '+' : ''}{Number(value || 0)}</Typography.Text> },
-            { title: 'Lý do', dataIndex: 'reason', render: (value: string | null) => value || '—' },
-          ]}
-        />
+        <>
+          <Table<CustomerPointHistoryRow>
+            rowKey={(row) => String(row.id ?? row.trans_code ?? row.trans_date)}
+            size="small"
+            dataSource={paginateRows(rows, pointPage, 8)}
+            pagination={false}
+            columns={[
+              { title: 'Thời gian', key: 'time', width: 150, render: (_value, row) => row.created_at ? dayjs(row.created_at).format('DD/MM/YYYY HH:mm') : row.trans_date ? dayjs(row.trans_date).format('DD/MM/YYYY') : '—' },
+              { title: 'Loại', dataIndex: 'ref_type', width: 130, render: (value: string) => typeLabels[value] ?? value ?? '—' },
+              { title: 'Điểm', dataIndex: 'points_earned', width: 90, render: (value: number) => <Typography.Text type={Number(value) >= 0 ? 'success' : 'danger'}>{Number(value) >= 0 ? '+' : ''}{Number(value || 0)}</Typography.Text> },
+              { title: 'Lý do', dataIndex: 'reason', render: (value: string | null) => value || '—' },
+            ]}
+          />
+          <ListPagination page={pointPage} limit={8} total={rows.length} onChange={setPointPage} noun="biến động điểm" />
+        </>
       )}
     </div>
   )

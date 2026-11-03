@@ -261,7 +261,7 @@ export default function AccessLogs() {
             ) : row.action === 'EXPORT' ? 'Xuất danh sách khách' : '—',
           },
           {
-            title: 'Hành động',
+            title: 'Hành động', align: 'center' as const,
             dataIndex: 'action',
             width: 230,
             render: (value: string) => {

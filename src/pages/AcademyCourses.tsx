@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { Alert, Button, DatePicker, Descriptions, Form, Input, InputNumber, Modal, Select, Space, Table, Tag, message } from 'antd'
-import { BookOutlined, CheckCircleOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, PlusOutlined } from '@ant-design/icons'
+import { BookOutlined, CheckCircleOutlined, EditOutlined, EyeInvisibleOutlined, PlusOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import type { Dayjs } from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
@@ -195,6 +195,10 @@ export default function AcademyCourses() {
         dataSource={paginateRows(rows, page, 10)}
         scroll={{ x: 900 }}
         pagination={false}
+        onRow={(row) => ({
+          onClick: () => setDetail(row),
+          style: { cursor: 'pointer' },
+        })}
         columns={[
           { key: 'code', title: 'Mã khóa', dataIndex: 'code' },
           { key: 'name', title: 'Tên khóa học', dataIndex: 'name' },
@@ -204,7 +208,7 @@ export default function AcademyCourses() {
           { key: 'is_active', title: 'Trạng thái', dataIndex: 'is_active', render: (value: boolean) => <Tag color={value ? 'green' : 'default'}>{value ? 'Đang mở' : 'Đã ẩn'}</Tag> },
           {
             key: 'actions',
-            title: 'Hành động',
+            title: 'Hành động', align: 'center' as const,
             width: 90,
             fixed: 'right' as const,
             render: (_: unknown, row: AcademyCourse) => {
@@ -212,13 +216,11 @@ export default function AcademyCourses() {
               return (
                 <RowActionsMenu
                   items={[
-                    { key: 'detail', icon: <EyeOutlined />, label: 'Chi tiết', view: true },
                     ...(canUpdate ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []),
                     ...(canToggle ? [{ key: 'toggle', danger: row.is_active, label: row.is_active ? 'Ẩn' : 'Mở lại' }] : []),
                   ]}
                   onSelect={(key) => {
-                    if (key === 'detail') setDetail(row)
-                    else if (key === 'edit') openEditor(row)
+                    if (key === 'edit') openEditor(row)
                     else if (key === 'toggle') {
                       Modal.confirm({
                         title: row.is_active ? 'Ẩn khóa học này?' : 'Mở lại khóa học này?',

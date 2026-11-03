@@ -469,7 +469,7 @@ export default function Treatments() {
     { title: 'Cho phép trọn gói', dataIndex: 'allow_unlimited', render: (value) => value ? 'Có' : 'Không' },
     { title: 'Trạng thái', dataIndex: 'is_active', render: (value) => value ? <Tag color="green">Đang dùng</Tag> : <Tag>Đã ẩn</Tag> },
     ...(canManage ? [{
-      title: 'Thao tác',
+      title: 'Thao tác', align: 'center' as const,
       key: 'actions',
       width: 150,
       render: (_value: unknown, row: PackageTypeRow) => (
@@ -560,7 +560,7 @@ export default function Treatments() {
                 columns={[
                   ...visiblePackageColumns,
                   ...(canManage ? [{
-                    title: 'Hành động',
+                    title: 'Hành động', align: 'center' as const,
                     key: 'actions',
                     width: 140,
                     fixed: 'right' as const,

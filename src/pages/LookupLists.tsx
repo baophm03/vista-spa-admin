@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Alert, Button, Form, Input, Modal, Space, Switch, Table, Tag, Typography, message } from 'antd'
-import { DeleteOutlined, EditOutlined, EyeOutlined, PlusOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons'
+import { DeleteOutlined, EditOutlined, PlusOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons'
 import PageTitle from '@/components/base/PageTitle'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
@@ -151,6 +151,10 @@ export default function LookupLists() {
         dataSource={paginateRows(lists, page, 8)}
         pagination={false}
         locale={{ emptyText: <TableEmpty description={query ? 'Không tìm thấy danh mục' : 'Chưa có danh mục'} /> }}
+        onRow={(row) => ({
+          onClick: () => setViewingList(row),
+          style: { cursor: 'pointer' },
+        })}
         columns={[
           { title: 'Tên / mã', render: (_: unknown, row: LookupList) => (
             <Space direction="vertical" size={0} align="start">
@@ -159,16 +163,14 @@ export default function LookupLists() {
           ) },
           { title: 'Loại', dataIndex: 'is_system', width: 110, render: (value?: boolean) => <Tag color={value ? 'blue' : 'default'}>{value ? 'Hệ thống' : 'Tự tạo'}</Tag> },
           { title: 'Trạng thái', dataIndex: 'is_active', width: 130, render: (value?: boolean) => <Tag color={value === false ? 'default' : 'green'}>{value === false ? 'Đã tắt' : 'Đang hoạt động'}</Tag> },
-          { title: 'Hành động', key: 'actions', width: 90, fixed: 'right' as const, render: (_: unknown, row: LookupList) => (
+          { title: 'Hành động', align: 'center' as const, key: 'actions', width: 90, fixed: 'right' as const, render: (_: unknown, row: LookupList) => (
             <RowActionsMenu
               items={[
-                { key: 'view', label: 'Xem các mục', icon: <EyeOutlined /> },
                 ...(canUpdate ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []),
                 ...(canDelete && !row.is_system ? [{ key: 'delete', icon: <DeleteOutlined />, label: 'Xóa', danger: true }] : []),
               ]}
               onSelect={(key) => {
-                if (key === 'view') setViewingList(row)
-                else if (key === 'edit') openEditList(row)
+                if (key === 'edit') openEditList(row)
                 else if (key === 'delete') removeList(row)
               }}
             />

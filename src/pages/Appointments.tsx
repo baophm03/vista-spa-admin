@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Can, useAbility } from '@casl/react'
 import {
   Button,
@@ -217,6 +217,7 @@ const DEFAULT_APPOINTMENT_COLUMNS = APPOINTMENT_COLUMNS.map((column) => column.v
 export default function Appointments() {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const ability = useAbility()
   const canApprove = ability.can('APPROVE' as never, 'APPOINTMENT')
   const canUpdate = ability.can('UPDATE' as never, 'APPOINTMENT')
@@ -454,6 +455,17 @@ export default function Appointments() {
     )
     setOpen(true)
   }
+
+  // Deep-link ?create=1 (vd. từ tab Dịch vụ lẻ): mở sẵn modal tạo lịch hẹn
+  useEffect(() => {
+    if (searchParams.get('create') !== '1') return
+    const next = new URLSearchParams(searchParams)
+    next.delete('create')
+    setSearchParams(next, { replace: true })
+    openModal()
+    // Chỉ chạy khi lần đầu vào trang với query create=1
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const openQuickCustomer = () => {
     quickCustomerForm.resetFields()
@@ -718,72 +730,6 @@ export default function Appointments() {
         subtitle="Quản lý lịch hẹn dịch vụ theo lịch hoặc danh sách"
         extra={
           <Space wrap>
-            <ListFilterPopover
-              open={filterOpen}
-              onOpenChange={openFilters}
-              activeFilterCount={activeFilterCount}
-              form={filterForm}
-              onApply={applyFilters}
-              onClear={clearFilters}
-              columnOptions={APPOINTMENT_COLUMNS}
-              draftVisibleColumns={draftVisibleColumns}
-              onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as string[])}
-              filterItems={(
-                <>
-                  <Form.Item name="date_range" label="Khoảng ngày" style={{ marginBottom: 10 }}>
-                    <DatePicker.RangePicker allowEmpty={[true, true]} placeholder={['Từ ngày', 'Đến ngày']} style={{ width: '100%' }} />
-                  </Form.Item>
-                  <Form.Item name="staff_id" label="KTV" style={{ marginBottom: 10 }}>
-                    <Select
-                      allowClear
-                      showSearch
-                      optionFilterProp="label"
-                      placeholder="Tất cả KTV"
-                      options={staffs.map((staff) => ({ value: staff.id, label: staff.zalo_name || staff.email }))}
-                    />
-                  </Form.Item>
-                  <Form.Item name="branch_id" label="Cơ sở" style={{ marginBottom: 10 }}>
-                    <Select allowClear placeholder="Tất cả cơ sở" options={branches.map((branch) => ({ value: branch.id, label: branch.name }))} />
-                  </Form.Item>
-                  <Form.Item name="status" label="Trạng thái" style={{ marginBottom: 0 }}>
-                    <Select options={FILTERS} />
-                  </Form.Item>
-                </>
-              )}
-            />
-            <Segmented
-              value={displayMode}
-              options={[
-                { label: 'Lịch', value: 'calendar', icon: <CalendarOutlined /> },
-                { label: 'Danh sách', value: 'list', icon: <UnorderedListOutlined /> },
-              ]}
-              onChange={(value) => setDisplayMode(value as 'calendar' | 'list')}
-            />
-            {displayMode === 'calendar' && (
-              <Space wrap>
-                <Button
-                  aria-label="Khoảng thời gian trước"
-                  icon={<LeftOutlined />}
-                  onClick={() => setCalendarDate((current) => current.add(calendarView === 'week' ? -7 : -1, 'day'))}
-                />
-                <DatePicker
-                  value={calendarView === 'week' ? calendarStart : calendarDate}
-                  format={calendarView === 'week' ? '[Tuần bắt đầu] DD/MM/YYYY' : 'DD/MM/YYYY'}
-                  onChange={(value) => value && setCalendarDate(value)}
-                />
-                <Button onClick={() => setCalendarDate(dayjs())}>Hôm nay</Button>
-                <Button
-                  aria-label="Khoảng thời gian tiếp theo"
-                  icon={<RightOutlined />}
-                  onClick={() => setCalendarDate((current) => current.add(calendarView === 'week' ? 7 : 1, 'day'))}
-                />
-                <Segmented
-                  value={calendarView}
-                  options={[{ label: 'Ngày', value: 'day' }, { label: 'Tuần', value: 'week' }]}
-                  onChange={(value) => setCalendarView(value as 'day' | 'week')}
-                />
-              </Space>
-            )}
             <Button
               icon={<ReloadOutlined />}
               loading={isRefreshingAppointments}
@@ -803,6 +749,75 @@ export default function Appointments() {
       >
         Lịch hẹn
       </PageTitle>
+      <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
+        {displayMode === 'calendar' && (
+          <Space wrap>
+            <Segmented
+              value={calendarView}
+              options={[{ label: 'Ngày', value: 'day' }, { label: 'Tuần', value: 'week' }]}
+              onChange={(value) => setCalendarView(value as 'day' | 'week')}
+            />
+            <Button
+              aria-label="Khoảng thời gian trước"
+              icon={<LeftOutlined />}
+              onClick={() => setCalendarDate((current) => current.add(calendarView === 'week' ? -7 : -1, 'day'))}
+            />
+            <DatePicker
+              value={calendarView === 'week' ? calendarStart : calendarDate}
+              format={calendarView === 'week' ? '[Tuần bắt đầu] DD/MM/YYYY' : 'DD/MM/YYYY'}
+              onChange={(value) => value && setCalendarDate(value)}
+            />
+            <Button
+              aria-label="Khoảng thời gian tiếp theo"
+              icon={<RightOutlined />}
+              onClick={() => setCalendarDate((current) => current.add(calendarView === 'week' ? 7 : 1, 'day'))}
+            />
+          </Space>
+        )}
+        <Space wrap style={{ marginLeft: 'auto' }}>
+          <ListFilterPopover
+            open={filterOpen}
+            onOpenChange={openFilters}
+            activeFilterCount={activeFilterCount}
+            form={filterForm}
+            onApply={applyFilters}
+            onClear={clearFilters}
+            columnOptions={APPOINTMENT_COLUMNS}
+            draftVisibleColumns={draftVisibleColumns}
+            onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as string[])}
+            filterItems={(
+              <>
+                <Form.Item name="date_range" label="Khoảng ngày" style={{ marginBottom: 10 }}>
+                  <DatePicker.RangePicker allowEmpty={[true, true]} placeholder={['Từ ngày', 'Đến ngày']} style={{ width: '100%' }} />
+                </Form.Item>
+                <Form.Item name="staff_id" label="KTV" style={{ marginBottom: 10 }}>
+                  <Select
+                    allowClear
+                    showSearch
+                    optionFilterProp="label"
+                    placeholder="Tất cả KTV"
+                    options={staffs.map((staff) => ({ value: staff.id, label: staff.zalo_name || staff.email }))}
+                  />
+                </Form.Item>
+                <Form.Item name="branch_id" label="Cơ sở" style={{ marginBottom: 10 }}>
+                  <Select allowClear placeholder="Tất cả cơ sở" options={branches.map((branch) => ({ value: branch.id, label: branch.name }))} />
+                </Form.Item>
+                <Form.Item name="status" label="Trạng thái" style={{ marginBottom: 0 }}>
+                  <Select options={FILTERS} />
+                </Form.Item>
+              </>
+            )}
+          />
+          <Segmented
+            value={displayMode}
+            options={[
+              { label: 'Lịch', value: 'calendar', icon: <CalendarOutlined /> },
+              { label: 'Danh sách', value: 'list', icon: <UnorderedListOutlined /> },
+            ]}
+            onChange={(value) => setDisplayMode(value as 'calendar' | 'list')}
+          />
+        </Space>
+      </div>
       {displayMode === 'calendar' ? (
         <div style={{ overflowX: 'auto', border: '1px solid var(--brand-border-soft, #ECEFEA)', borderRadius: 12, background: '#fff' }}>
           {calendarAppointmentsQuery.isFetching ? (
@@ -925,7 +940,7 @@ export default function Appointments() {
             render: (v: AppointmentStatus) => <Tag color={STATUS_META[v]?.color}>{STATUS_META[v]?.label ?? v}</Tag>,
           },
           {
-            title: 'Hành động',
+            title: 'Hành động', align: 'center' as const,
             key: 'actions',
             width: 90,
             fixed: 'right' as const,
@@ -1028,10 +1043,10 @@ export default function Appointments() {
                   type="info"
                   showIcon
                   message="Dịch vụ lẻ — không trừ buổi liệu trình"
-                  description="Hồ sơ làm dịch vụ, ảnh và thanh toán được quản lý trong mục Khách dùng liệu trình → Dịch vụ lẻ."
+                  description="Hồ sơ làm dịch vụ, ảnh và thanh toán được quản lý trong mục Liệu trình của khách → Dịch vụ lẻ."
                   style={{ marginBottom: 12 }}
                 />
-                <Button type="primary" icon={<EditOutlined />} onClick={() => navigate(`/treatment-customers?tab=services&appointment_id=${encodeURIComponent(selectedAppointment.id)}`)}>
+                <Button type="primary" icon={<EditOutlined />} onClick={() => navigate(`/standalone-services?appointment_id=${encodeURIComponent(selectedAppointment.id)}`)}>
                   Mở hồ sơ dịch vụ
                 </Button>
               </div>

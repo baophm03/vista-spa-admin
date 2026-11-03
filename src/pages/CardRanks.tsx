@@ -302,7 +302,7 @@ export default function CardRanks() {
     },
     {
       key: 'actions',
-      title: 'Hành động', width: 90, fixed: 'right',
+      title: 'Hành động', align: 'center' as const, width: 90, fixed: 'right',
       render: (_v, row) => (
         <RowActionsMenu
           items={[

@@ -1,6 +1,8 @@
 import { BellOutlined, LogoutOutlined, MenuFoldOutlined, MenuOutlined, MenuUnfoldOutlined, UserOutlined } from '@ant-design/icons'
 import { Avatar, Badge, Dropdown, Layout, Space, Typography } from 'antd'
 import { useProfileStore } from '../stores/profile-store'
+import { useGetNotifications } from '../api/endpoints/admin'
+import { pickData } from '../api/helpers'
 
 const { Header } = Layout
 
@@ -22,6 +24,11 @@ export default function AdminHeader({
   onLogout,
 }: AdminHeaderProps) {
   const profile = useProfileStore((state) => state.profile)
+  // Số chưa đọc trên chuông = số thông báo is_read=false trong hệ thống
+  const notificationsQuery = useGetNotifications()
+  const notificationRows = pickData<{ is_read?: boolean }[] | { rows?: { is_read?: boolean }[] }>(notificationsQuery.data)
+  const unreadCount = ((Array.isArray(notificationRows) ? notificationRows : notificationRows?.rows ?? []) as { is_read?: boolean }[])
+    .filter((row) => !row.is_read).length
   const displayName =
     (profile?.full_name as string | undefined) ||
     (profile?.zalo_name as string | undefined) ||
@@ -58,7 +65,7 @@ export default function AdminHeader({
       </div>
 
       <Space size={20}>
-        <Badge count={3} size="small">
+        <Badge count={unreadCount} size="small" overflowCount={99}>
           <button
             type="button"
             aria-label="Thông báo"

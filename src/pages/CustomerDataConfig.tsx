@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Alert, Button, Checkbox, Form, Input, InputNumber, Modal, Select, Space, Spin, Table, Tag, Typography, message } from 'antd'
-import { PlusOutlined, ReloadOutlined } from '@ant-design/icons'
-import { Can } from '@casl/react'
+import { EditOutlined, PlusOutlined, ReloadOutlined } from '@ant-design/icons'
+import { Can, useAbility } from '@casl/react'
 import PageTitle from '@/components/base/PageTitle'
 import ListPagination from '@/components/base/ListPagination'
+import RowActionsMenu from '@/components/base/RowActionsMenu'
 import TableEmpty from '@/components/base/TableEmpty'
 import LookupItemsManager from '@/components/LookupItemsManager'
 import { paginateRows } from '@/utils/listTable'
@@ -62,6 +63,10 @@ function CustomerFieldsConfig({ entity, sectionTitle }: {
   const [saving, setSaving] = useState(false)
   const [open, setOpen] = useState(false)
   const [form] = Form.useForm<CustomFieldFormValues>()
+  const ability = useAbility()
+  const canUpdate = ability.can('UPDATE', 'CUSTOM_FIELD')
+  const canToggleRow = (row: CustomFieldDef) =>
+    ability.can(row.is_active === false ? 'UPDATE' : 'DELETE', 'CUSTOM_FIELD')
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -152,14 +157,21 @@ function CustomerFieldsConfig({ entity, sectionTitle }: {
     { title: 'Bắt buộc', dataIndex: 'required', render: (value: boolean) => value ? <Tag color="blue">Có</Tag> : 'Không' },
     ...(entity === 'CUSTOMER_PROFILE' ? [{ title: 'Hiển thị với khách', dataIndex: 'visible_to_customer', render: (value: boolean) => value ? 'Có' : 'Không' }] : []),
     { title: 'Trạng thái', dataIndex: 'is_active', render: (value: boolean) => <Tag color={value === false ? 'default' : 'green'}>{value === false ? 'Đã ẩn' : 'Đang dùng'}</Tag> },
-    { title: '', key: 'actions', render: (_: unknown, row: CustomFieldDef) => (
-      <Space>
-        <Can I="UPDATE" a="CUSTOM_FIELD"><Button size="small" onClick={() => openEditor(row)}>Sửa</Button></Can>
-        <Can I={row.is_active === false ? 'UPDATE' : 'DELETE'} a="CUSTOM_FIELD" passThrough>
-          {(allowed) => allowed ? <Button size="small" type="link" onClick={() => void toggleActive(row)}>{row.is_active === false ? 'Bật lại' : 'Ẩn'}</Button> : null}
-        </Can>
-      </Space>
-    ) },
+    {
+      title: 'Hành động', key: 'actions', align: 'center' as const, width: 90,
+      render: (_: unknown, row: CustomFieldDef) => (
+        <RowActionsMenu
+          items={[
+            ...(canUpdate ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []),
+            ...(canToggleRow(row) ? [{ key: 'toggle', danger: row.is_active !== false, label: row.is_active === false ? 'Bật lại' : 'Ẩn' }] : []),
+          ]}
+          onSelect={(key) => {
+            if (key === 'edit') openEditor(row)
+            else if (key === 'toggle') void toggleActive(row)
+          }}
+        />
+      ),
+    },
   ]
 
   return (

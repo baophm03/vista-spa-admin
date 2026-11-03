@@ -245,7 +245,7 @@ function RewardCatalogTab({ onChanged }: { onChanged: () => void }) {
     { key: 'validity', title: 'Thời hạn', width: 200, render: (_v, row) => `${row.valid_from ? dayjs(String(row.valid_from)).format('DD/MM/YYYY') : '—'} → ${row.valid_to ? dayjs(String(row.valid_to)).format('DD/MM/YYYY') : '—'}` },
     { key: 'is_active', title: 'Trạng thái', dataIndex: 'is_active', width: 100, render: (v: boolean) => (v ? <Tag color="green">Đang đổi</Tag> : <Tag>Đã ẩn</Tag>) },
     {
-      key: 'actions', title: 'Hành động', width: 90, fixed: 'right' as const,
+      key: 'actions', title: 'Hành động', align: 'center' as const, width: 90, fixed: 'right' as const,
       render: (_v, row) => (
         <RowActionsMenu
           items={[
@@ -512,7 +512,7 @@ function RedemptionsTab({ onChanged }: { onChanged: () => void }) {
     { key: 'created_at', title: 'Ngày đổi', dataIndex: 'created_at', width: 150, render: (v: string) => formatDateTime(v) },
     { key: 'cancel_reason', title: 'Lý do hủy', dataIndex: 'cancel_reason', ellipsis: true, render: (v?: string) => v || '—' },
     {
-      key: 'actions', title: 'Hành động', width: 90, fixed: 'right' as const,
+      key: 'actions', title: 'Hành động', align: 'center' as const, width: 90, fixed: 'right' as const,
       render: (_v, row) => (
         <RowActionsMenu
           items={row.status === 'ISSUED'
@@ -563,7 +563,7 @@ function RedemptionsTab({ onChanged }: { onChanged: () => void }) {
           type="info"
           showIcon
           message="Quà giảm tiền phải áp vào gói liệu trình"
-          description="Mở Khách dùng liệu trình → chọn đúng gói của khách → Ưu đãi & điểm → Quà đã đổi. Hệ thống sẽ trừ công nợ và đánh dấu quà đã dùng cùng lúc."
+          description="Mở Liệu trình của khách → chọn đúng gói của khách → Ưu đãi & điểm → Quà đã đổi. Hệ thống sẽ trừ công nợ và đánh dấu quà đã dùng cùng lúc."
         />
       )}
       <Table<RewardRedemptionRow>

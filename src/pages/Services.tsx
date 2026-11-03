@@ -240,7 +240,7 @@ export default function Services() {
       ...visibleColumns.map((key) => dataColumns[key]).filter(Boolean),
       {
         key: 'actions',
-        title: 'Hành động',
+        title: 'Hành động', align: 'center' as const,
         width: 90,
         fixed: 'right',
         render: (_value, row) => (

@@ -497,7 +497,7 @@ export default function Points() {
           },
           {
             key: 'actions',
-            title: 'Hành động',
+            title: 'Hành động', align: 'center' as const,
             width: 90,
             fixed: 'right' as const,
             render: (_value: unknown, row: MemberRow) => (

@@ -14,6 +14,7 @@ import ListPagination from '@/components/base/ListPagination'
 
 type SessionRow = TreatmentSession & {
   appointment?: { appt_date?: string; start_time?: string } | null
+  staff?: { id?: string; zalo_name?: string; email?: string } | null
   customer_treatment?: {
     customer_profile?: { id?: string; customer_code?: string; full_name?: string; phone?: string } | null
     package?: { id?: string; name?: string } | null
@@ -116,6 +117,11 @@ export default function MySessions() {
       render: (_value, row) => row.customer_treatment?.package?.name || '—',
     },
     {
+      title: 'KTV',
+      key: 'staff',
+      render: (_value, row) => row.staff?.zalo_name || row.staff?.email || 'Chưa gán',
+    },
+    {
       title: 'Lịch hẹn',
       key: 'scheduled_at',
       render: (_value, row) => {
@@ -139,7 +145,7 @@ export default function MySessions() {
       },
     },
     {
-      title: 'Thao tác',
+      title: 'Thao tác', align: 'center' as const,
       key: 'actions',
       width: 150,
       render: (_value, row) => row.status === 'scheduled'
@@ -177,7 +183,7 @@ export default function MySessions() {
       loading={sessionsQuery.isLoading}
       columns={columns}
       dataSource={rows}
-      scroll={{ x: 850 }}
+      scroll={{ x: 950 }}
       pagination={false}
       locale={{ emptyText: 'Chưa có buổi nào được giao cho bạn' }}
     />

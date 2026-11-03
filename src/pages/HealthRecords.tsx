@@ -421,7 +421,7 @@ export default function HealthRecords() {
           },
           {
             key: 'actions',
-            title: 'Hành động',
+            title: 'Hành động', align: 'center' as const,
             width: 90,
             fixed: 'right' as const,
             render: (_, row) => (

@@ -87,7 +87,7 @@ export default function ShiftCatalogTab({ branches, access, loadingShared }: Pro
     { title: 'Thời gian', key: 'time', render: (_: unknown, row: ShiftTemplate) => `${row.start_time.slice(0, 5)}–${row.end_time.slice(0, 5)}` },
     { title: 'Áp dụng', key: 'branch', render: (_: unknown, row: ShiftTemplate) => row.branch_id ? branches.find((branch) => branch.id === row.branch_id)?.name || 'Cơ sở' : 'Mọi cơ sở' },
     { title: 'Trạng thái', dataIndex: 'is_active', key: 'status', render: (value: boolean) => <Tag color={value === false ? 'default' : 'green'}>{value === false ? 'Đã ẩn' : 'Đang dùng'}</Tag> },
-    ...(access.isAdmin ? [{ title: 'Thao tác', key: 'actions', width: 180, render: (_: unknown, row: ShiftTemplate) => <Space>
+    ...(access.isAdmin ? [{ title: 'Thao tác', align: 'center' as const, key: 'actions', width: 180, render: (_: unknown, row: ShiftTemplate) => <Space>
       <Button icon={<EditOutlined />} size="small" onClick={() => openForm(row)}>Sửa</Button>
       {row.is_active === false
         ? <Button size="small" onClick={() => void setActive(row, true)}>Bật lại</Button>

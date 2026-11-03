@@ -197,7 +197,7 @@ export default function Payments() {
     },
     {
       key: 'actions',
-      title: 'Hành động',
+      title: 'Hành động', align: 'center' as const,
       width: 90,
       fixed: 'right' as const,
       render: (_: unknown, row: LedgerRow) => (
