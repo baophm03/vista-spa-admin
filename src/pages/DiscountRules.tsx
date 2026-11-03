@@ -359,7 +359,7 @@ export default function DiscountRules() {
                     {AUDIENCE_META[detailRule.audience ?? 'RANK']?.label ?? detailRule.audience ?? '—'}
                   </Descriptions.Item>
                   <Descriptions.Item label="Hạng thẻ">
-                    {detailRule.audience === 'RANK' ? detailRule.requires_rank?.name ?? '—' : 'Không giới hạn theo hạng'}
+                    {detailRule.audience === 'RANK' ? (detailRule.requires_rank?.name ? String(detailRule.requires_rank.name) : '—') : 'Không giới hạn theo hạng'}
                   </Descriptions.Item>
                   <Descriptions.Item label="Áp dụng cho">
                     {APPLIES_TO_OPTIONS.find((option) => option.value === detailRule.applies_to)?.label ?? 'Tất cả'}

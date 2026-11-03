@@ -56,7 +56,7 @@ const PREVIEW_VALUES: Record<string, string> = {
 
 const queryKey = ['notification-templates']
 
-function previewTemplate(text: string | undefined) {
+function previewTemplate(text: string | null | undefined) {
   return String(text ?? '').replace(/\{\{\s*([a-zA-Z][a-zA-Z0-9_]*)\s*\}\}/g, (_match, key: string) => PREVIEW_VALUES[key] ?? `{{${key}}}`)
 }
 
