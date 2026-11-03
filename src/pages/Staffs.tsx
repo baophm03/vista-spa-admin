@@ -553,7 +553,7 @@ export default function Staffs() {
             },
           },
           {
-            title: 'Hành động',
+            title: 'Hành động', align: 'center' as const,
             key: 'actions',
             width: 90,
             fixed: 'right' as const,

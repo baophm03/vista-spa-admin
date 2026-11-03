@@ -280,7 +280,7 @@ function LedgerTab() {
       },
     },
     {
-      key: 'actions', title: 'Hành động', width: 90, fixed: 'right' as const,
+      key: 'actions', title: 'Hành động', align: 'center' as const, width: 90, fixed: 'right' as const,
       render: (_v, row) =>
         row.status === 'VOID' ? null : (
           <RowActionsMenu

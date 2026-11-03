@@ -151,9 +151,9 @@ export default function Vouchers() {
             render: (v) => (v ? <Tag color="green">Hoạt động</Tag> : <Tag>Tắt</Tag>),
           },
           ...(canUpdate ? [{
-            title: 'Hành động',
+            title: 'Hành động', align: 'center' as const,
             key: 'actions',
-            width: 90,
+            width: 120,
             fixed: 'right' as const,
             render: (_: unknown, row: VoucherRow) => (
               <RowActionsMenu

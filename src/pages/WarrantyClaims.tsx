@@ -198,7 +198,7 @@ export default function WarrantyClaims() {
       title: 'Trạng thái', dataIndex: 'status', width: 120,
       render: (v?: string) => <Tag color={STATUS_META[v ?? '']?.color}>{STATUS_META[v ?? '']?.label ?? v ?? '—'}</Tag>,
     },
-    { title: 'Thao tác', key: 'actions', width: 110, render: (_v, row) => <Button size="small" onClick={() => setDetailId(row.id)}>Chi tiết</Button> },
+    { title: 'Thao tác', align: 'center' as const, key: 'actions', width: 110, render: (_v, row) => <Button size="small" onClick={() => setDetailId(row.id)}>Chi tiết</Button> },
   ]
 
   return (

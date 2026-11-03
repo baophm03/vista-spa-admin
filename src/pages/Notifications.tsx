@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Alert, Button, Form, Input, Modal, Select, Table, Tag, message } from 'antd'
+import { Alert, Button, Checkbox, Form, Input, Modal, Select, Space, Table, Tag, message } from 'antd'
 import { BellOutlined, CheckOutlined, MailOutlined, SendOutlined } from '@ant-design/icons'
 import PageTitle from '@/components/base/PageTitle'
 import StatCards, { type StatItem } from '@/components/base/StatCards'
@@ -51,6 +51,9 @@ export default function Notifications() {
   const loading = notificationsQuery.isLoading
   const [open, setOpen] = useState(false)
   const [form] = Form.useForm()
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
+  const [hoveredRowId, setHoveredRowId] = useState<string | null>(null)
+  const [hoverHeaderStt, setHoverHeaderStt] = useState(false)
 
   const submit = async () => {
     const values = await form.validateFields()
@@ -82,6 +85,26 @@ export default function Notifications() {
     }
   }
 
+  // Chọn nhiều thông báo chưa đọc để đánh dấu đã đọc hàng loạt
+  const pageUnreadIds = rows.filter((row) => !row.is_read).map((row) => row.id)
+  const allSelected = pageUnreadIds.length > 0 && pageUnreadIds.every((id) => selectedIds.includes(id))
+  const toggleRowSelect = (row: NotificationRow, checked: boolean) =>
+    setSelectedIds((prev) => (checked ? [...new Set([...prev, row.id])] : prev.filter((id) => id !== row.id)))
+  const toggleSelectAll = (checked: boolean) =>
+    setSelectedIds((prev) => (checked ? [...new Set([...prev, ...pageUnreadIds])] : prev.filter((id) => !pageUnreadIds.includes(id))))
+
+  const markSelectedRead = async () => {
+    if (!selectedIds.length) return
+    try {
+      await Promise.all(selectedIds.map((id) => markReadMutation.mutateAsync({ id })))
+      message.success(`Đã đánh dấu ${selectedIds.length} thông báo đã đọc`)
+      setSelectedIds([])
+      await notificationsQuery.refetch()
+    } catch (err) {
+      message.error(errorMessage(err, 'Không thể cập nhật thông báo'))
+    }
+  }
+
   const audience = (row: NotificationRow) =>
     row.user_id ? profiles.find((p) => p.user_id === row.user_id)?.full_name ?? 'Một khách hàng' : 'Tất cả khách (broadcast)'
 
@@ -100,19 +123,26 @@ export default function Notifications() {
       <PageTitle
         subtitle="Thông báo hệ thống gửi tới khách hàng"
         extra={
-          <Can I="CREATE" a="NOTIFICATION">
-            <Button
-              className="max-sm:w-full"
-              type="primary"
-              icon={<SendOutlined />}
-              onClick={() => {
-                form.setFieldsValue({ event_key: 'SYSTEM', channel: 'app', title: '', body: '', user_id: undefined })
-                setOpen(true)
-              }}
-            >
-              Gửi thông báo
-            </Button>
-          </Can>
+          <Space wrap>
+            {selectedIds.length > 0 && (
+              <Button icon={<CheckOutlined />} onClick={() => void markSelectedRead()}>
+                Đánh dấu đã đọc ({selectedIds.length})
+              </Button>
+            )}
+            <Can I="CREATE" a="NOTIFICATION">
+              <Button
+                className="max-sm:w-full"
+                type="primary"
+                icon={<SendOutlined />}
+                onClick={() => {
+                  form.setFieldsValue({ event_key: 'SYSTEM', channel: 'app', title: '', body: '', user_id: undefined })
+                  setOpen(true)
+                }}
+              >
+                Gửi thông báo
+              </Button>
+            </Can>
+          </Space>
         }
       >
         Thông báo
@@ -136,7 +166,35 @@ export default function Notifications() {
         pagination={false}
         locale={{ emptyText: <TableEmpty description="Chưa có thông báo nào" /> }}
         style={{ marginTop: 4 }}
+        onRow={(row) => ({
+          onMouseEnter: () => setHoveredRowId(row.id),
+          onMouseLeave: () => setHoveredRowId((current) => (current === row.id ? null : current)),
+        })}
         columns={[
+          {
+            title: (
+              <span
+                onMouseEnter={() => setHoverHeaderStt(true)}
+                onMouseLeave={() => setHoverHeaderStt(false)}
+                style={{ display: 'inline-block', minWidth: 32 }}
+              >
+                {hoverHeaderStt || allSelected
+                  ? <Checkbox checked={allSelected} onChange={(e) => toggleSelectAll(e.target.checked)} />
+                  : 'STT'}
+              </span>
+            ),
+            key: 'stt',
+            width: 64,
+            align: 'center' as const,
+            render: (_v, row) => {
+              const checked = selectedIds.includes(row.id)
+              const isHovered = hoveredRowId === row.id
+              const index = rows.indexOf(row) + 1
+              if (row.is_read) return <span style={{ color: '#A9ADB2' }}>{index}</span>
+              if (!isHovered && !checked && !allSelected) return index
+              return <Checkbox checked={checked || allSelected} onChange={(e) => toggleRowSelect(row, e.target.checked)} />
+            },
+          },
           {
             title: 'Thông báo',
             dataIndex: 'title',
@@ -168,7 +226,7 @@ export default function Notifications() {
             render: (_, row) => (row.is_read ? <Tag>Đã đọc</Tag> : <Tag color="processing">Chưa đọc</Tag>),
           },
           {
-            title: 'Hành động',
+            title: 'Hành động', align: 'center' as const,
             key: 'actions',
             width: 90,
             fixed: 'right' as const,

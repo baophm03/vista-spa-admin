@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Button, Descriptions, Form, Input, Modal, Popconfirm, Select, Space, Table, Tag, Typography, message } from 'antd'
 import type { TableColumnsType } from 'antd'
-import { CheckOutlined, EyeOutlined, ReloadOutlined, SearchOutlined, StopOutlined } from '@ant-design/icons'
+import { CheckOutlined, ReloadOutlined, SearchOutlined, StopOutlined } from '@ant-design/icons'
 import { useQuery } from '@tanstack/react-query'
 import PageTitle from '@/components/base/PageTitle'
 import ListFilterPopover from '@/components/base/ListFilterPopover'
@@ -136,10 +136,11 @@ export default function Orders() {
   }
 
   const columns: TableColumnsType<ProductOrderRow> = [
-    { key: 'code', title: 'Mã đơn', dataIndex: 'code', width: 160, render: (v: string) => <strong>{v}</strong> },
+    { key: 'code', title: 'Mã đơn', dataIndex: 'code', width: 160, render: (v: string) => <Typography.Text code>{v}</Typography.Text> },
     {
       key: 'customer',
       title: 'Khách hàng',
+      width: 180,
       render: (_v, row) => (
         <div>
           <div style={{ fontWeight: 500 }}>{row.customer_name}</div>
@@ -150,6 +151,7 @@ export default function Orders() {
     {
       key: 'items',
       title: 'Sản phẩm',
+      width: 260,
       render: (_v, row) => {
         const items = row.items ?? []
         if (!items.length) return '—'
@@ -168,15 +170,14 @@ export default function Orders() {
     { key: 'created_at', title: 'Ngày đặt', dataIndex: 'created_at', width: 170, render: (v?: string | null) => (v ? formatDateTime(v) : '—') },
     {
       key: 'actions',
-      title: 'Hành động',
-      width: 90,
+      title: 'Hành động', align: 'center' as const,
+      width: 120,
       fixed: 'right' as const,
       render: (_v, row) => {
         const nextActions = NEXT_ACTIONS[(row.status as ProductOrderStatus) ?? 'PENDING'] ?? []
         return (
           <RowActionsMenu
             items={[
-              { key: 'detail', icon: <EyeOutlined />, label: 'Chi tiết', view: true },
               ...(isAdmin
                 ? nextActions.map((action) => ({
                     key: action.status,
@@ -187,10 +188,6 @@ export default function Orders() {
                 : []),
             ]}
             onSelect={(key) => {
-              if (key === 'detail') {
-                setDetail(row)
-                return
-              }
               if (!isAdmin) return
               const action = nextActions.find((item) => item.status === key)
               if (!action) return

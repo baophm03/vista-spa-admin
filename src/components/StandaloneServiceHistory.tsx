@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAbility } from '@casl/react'
 import { Alert, Button, Divider, Form, Image, Input, InputNumber, Modal, Progress, Select, Space, Table, Tabs, Tag, Typography, Upload, message } from 'antd'
 import type { ReactNode } from 'react'
 import type { TableColumnsType } from 'antd'
-import { CheckCircleOutlined, EditOutlined, PlusOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons'
+import { CheckCircleOutlined, EditOutlined, PlusOutlined, PrinterOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import { errorMessage, openHtmlPrint, pickData } from '@/api/helpers'
 import { customInstance } from '@/api/mutator/custom-instance'
@@ -13,6 +14,9 @@ import { getGetCustomerProfilesIdPointsQueryKey, useGetCustomerProfilesIdPoints 
 import { postFiles } from '@/api/endpoints/files'
 import { useGetLookupLists } from '@/api/endpoints/lookup-lists'
 import { resolveFileUrl } from '@/configs/links'
+import ListPagination from '@/components/base/ListPagination'
+import RowActionsMenu from '@/components/base/RowActionsMenu'
+import { paginateRows } from '@/utils/listTable'
 
 const SubHead = ({ children }: { children: string }) => (
   <div style={{ padding: '9px 16px', background: 'var(--brand-bg)', borderTop: '1px solid var(--brand-border-soft)', fontSize: 12.5, fontWeight: 800, letterSpacing: 1.2, textTransform: 'uppercase', color: 'var(--brand-dark)' }}>{children}</div>
@@ -44,6 +48,17 @@ interface StandaloneAppointment {
   staff?: { zalo_name?: string } | null
 }
 
+/** Query dùng chung cho trang Dịch vụ lẻ — page và component share cache qua key này */
+export const STANDALONE_SERVICE_QUERY = {
+  queryKey: ['/appointments', 'standalone-service-history'] as const,
+  queryFn: () => getAppointments({ page: 1, limit: 200 } as never),
+}
+
+/** Lọc các lịch hẹn là dịch vụ lẻ (không gắn gói) */
+export const standaloneServiceRows = (data: unknown) =>
+  (pickData<StandaloneAppointment[] | undefined>(data) ?? [])
+    .filter((row) => !row.customer_treatment_id && ['pending', 'approved', 'in_progress', 'completed'].includes(String(row.status)))
+
 interface VisitPhoto {
   id: string
   url?: string | null
@@ -69,20 +84,20 @@ const VISIT_STATUS: Record<string, { label: string; color: string }> = {
 export default function StandaloneServiceHistory({
   focusAppointmentId,
   onFocusConsumed,
+  hideCreate,
 }: {
   focusAppointmentId?: string | null
   onFocusConsumed?: () => void
+  hideCreate?: boolean
 }) {
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
+  const [page, setPage] = useState(1)
   const [selected, setSelected] = useState<StandaloneAppointment | null>(null)
-  const appointmentsQuery = useQuery({
-    queryKey: ['/appointments', 'standalone-service-history'],
-    queryFn: () => getAppointments({ page: 1, limit: 200 } as never),
-  })
-  const rows = (pickData<StandaloneAppointment[]>(appointmentsQuery.data) ?? [])
-    .filter((row) => !row.customer_treatment_id && ['pending', 'approved', 'in_progress', 'completed'].includes(String(row.status)))
+  const appointmentsQuery = useQuery(STANDALONE_SERVICE_QUERY)
+  const rows = standaloneServiceRows(appointmentsQuery.data)
   const visibleRows = useMemo(() => {
     const keyword = search.trim().toLocaleLowerCase('vi-VN')
     return rows.filter((row) => {
@@ -112,6 +127,32 @@ export default function StandaloneServiceHistory({
   }, [focusAppointmentId, appointmentsQuery.data, appointmentsQuery.isLoading])
 
   const refresh = () => void queryClient.invalidateQueries({ queryKey: ['/appointments'] })
+  const ability = useAbility()
+  const canEditVisit = ability.can('UPDATE' as never, 'SESSION') || ability.can('START' as never, 'APPOINTMENT')
+  const canCompleteVisit = ability.can('APPROVE' as never, 'APPOINTMENT')
+  const [editTargetId, setEditTargetId] = useState<string | null>(null)
+
+  // Hoàn tất dịch vụ ngay từ danh sách — backend chặn nếu chưa thu đủ tiền / chưa đến giờ
+  const completeRow = async (row: StandaloneAppointment) => {
+    try {
+      const response = await customInstance<any>({ url: `/appointments/${row.id}/complete`, method: 'POST' })
+      const fresh = pickData<StandaloneAppointment | undefined>(response)
+      message.success('Dịch vụ đã hoàn tất')
+      void queryClient.invalidateQueries({ queryKey: ['/appointments'] })
+      if (selected?.id === row.id && fresh) setSelected({ ...row, ...fresh })
+    } catch (err) {
+      message.error(errorMessage(err))
+    }
+  }
+
+  const printRow = async (row: StandaloneAppointment) => {
+    try {
+      await openHtmlPrint(`/appointments/${row.id}/print`)
+    } catch (err) {
+      message.error(errorMessage(err, 'Không mở được phiếu in — kiểm tra setting module.invoice'))
+    }
+  }
+
   const columns: TableColumnsType<StandaloneAppointment> = [
     {
       title: 'Khách hàng',
@@ -130,7 +171,38 @@ export default function StandaloneServiceHistory({
       return `${Number(row.service_amount ?? minimum).toLocaleString('vi-VN')} ₫`
     } },
     { title: 'Trạng thái', key: 'status', width: 120, render: (_value, row) => <Tag color={VISIT_STATUS[String(row.status)]?.color}>{VISIT_STATUS[String(row.status)]?.label || row.status}</Tag> },
-    { title: 'Hồ sơ', key: 'action', width: 90, render: (_value, row) => <Button size="small" icon={<EditOutlined />} onClick={(event) => { event.stopPropagation(); setSelected(row) }}>Mở</Button> },
+    {
+      title: 'Hành động', key: 'action', width: 90, align: 'center' as const,
+      render: (_value, row) => {
+        const inProgress = String(row.status) === 'in_progress'
+        return (
+          <RowActionsMenu
+            items={[
+              ...(inProgress && canEditVisit ? [{ key: 'edit', icon: <EditOutlined />, label: 'Chỉnh sửa' }] : []),
+              ...(inProgress && canCompleteVisit ? [{
+                key: 'complete',
+                icon: <CheckCircleOutlined style={{ color: '#159447' }} />,
+                label: <span style={{ color: '#159447', fontWeight: 600 }}>Hoàn tất dịch vụ</span>,
+              }] : []),
+              { key: 'print', icon: <PrinterOutlined />, label: 'In phiếu' },
+            ]}
+            onSelect={(key) => {
+              if (key === 'edit') { setEditTargetId(row.id); setSelected(row) }
+              else if (key === 'complete') {
+                Modal.confirm({
+                  title: `Hoàn tất dịch vụ này?`,
+                  content: 'Buổi sẽ chuyển sang trạng thái Hoàn tất; buổi/tiền của khách được ghi nhận và không thể quay lại.',
+                  okText: 'Hoàn tất',
+                  cancelText: 'Hủy',
+                  onOk: () => completeRow(row),
+                })
+              }
+              else if (key === 'print') void printRow(row)
+            }}
+          />
+        )
+      },
+    },
   ]
 
   return (
@@ -145,16 +217,18 @@ export default function StandaloneServiceHistory({
           { value: 'completed', label: 'Hoàn tất' },
         ]} />
         <Button icon={<ReloadOutlined />} loading={appointmentsQuery.isFetching} onClick={refresh}>Tải lại</Button>
+        {!hideCreate && <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate('/appointments?create=1')}>Thêm dịch vụ lẻ</Button>}
       </div>
       <Table<StandaloneAppointment>
         rowKey="id"
         loading={appointmentsQuery.isLoading}
-        dataSource={visibleRows}
+        dataSource={paginateRows(visibleRows, page, 10)}
         columns={columns}
-        pagination={{ pageSize: 10, showSizeChanger: false }}
+        pagination={false}
         onRow={(row) => ({ onClick: () => setSelected(row), style: { cursor: 'pointer' } })}
         locale={{ emptyText: search ? 'Không tìm thấy dịch vụ lẻ phù hợp' : 'Chưa có khách dùng dịch vụ lẻ' }}
       />
+      <ListPagination page={page} limit={10} total={visibleRows.length} onChange={setPage} noun="lần làm dịch vụ" />
       <Modal
         title={selected ? `${selected.customer_profile?.full_name || 'Khách hàng'} · ${selected.service?.title || 'Dịch vụ lẻ'}` : 'Hồ sơ lần làm dịch vụ'}
         open={!!selected}
@@ -163,7 +237,7 @@ export default function StandaloneServiceHistory({
         width="min(1200px, calc(100vw - 24px))"
         style={{ top: 20 }}
       >
-        {selected && <StandaloneServiceVisit appointment={selected} onUpdated={(updated) => {
+        {selected && <StandaloneServiceVisit autoOpenEdit={selected.id === editTargetId} appointment={selected} onUpdated={(updated) => {
           setSelected(updated)
           void queryClient.invalidateQueries({ queryKey: ['/appointments'] })
         }} />}
@@ -172,7 +246,7 @@ export default function StandaloneServiceHistory({
   )
 }
 
-function StandaloneServiceVisit({ appointment, onUpdated }: { appointment: StandaloneAppointment; onUpdated: (row: StandaloneAppointment) => void }) {
+function StandaloneServiceVisit({ appointment, onUpdated, autoOpenEdit }: { appointment: StandaloneAppointment; onUpdated: (row: StandaloneAppointment) => void; autoOpenEdit?: boolean }) {
   const ability = useAbility()
   const queryClient = useQueryClient()
   const [record, setRecord] = useState(appointment)
@@ -205,7 +279,7 @@ function StandaloneServiceVisit({ appointment, onUpdated }: { appointment: Stand
     setPhotos([])
     setPayments([])
     setActiveDetailTab('visit')
-    setEditOpen(false)
+    setEditOpen(!!autoOpenEdit)
     setPaymentOpen(false)
   }, [appointment.id])
 
@@ -512,6 +586,7 @@ function ServicePointsHistory({ profileId }: { profileId: string }) {
     redemption?: { enabled?: boolean }
   }>(pointsQuery.data)
   const rows = data?.history ?? []
+  const [pointPage, setPointPage] = useState(1)
   const typeLabels: Record<string, string> = {
     PAYMENT: 'Thanh toán',
     MANUAL: 'Chỉnh tay',
@@ -537,18 +612,21 @@ function ServicePointsHistory({ profileId }: { profileId: string }) {
       ) : rows.length === 0 ? (
         <Typography.Text type="secondary">Chưa có biến động điểm nào.</Typography.Text>
       ) : (
-        <Table<CustomerPointHistoryRow>
-          rowKey={(row) => String(row.id ?? row.trans_code ?? row.trans_date)}
-          size="small"
-          dataSource={rows}
-          pagination={{ pageSize: 8, showSizeChanger: false }}
-          columns={[
-            { title: 'Thời gian', key: 'time', width: 150, render: (_value, row) => row.created_at ? dayjs(row.created_at).format('DD/MM/YYYY HH:mm') : row.trans_date ? dayjs(row.trans_date).format('DD/MM/YYYY') : '—' },
-            { title: 'Loại', dataIndex: 'ref_type', width: 130, render: (value: string) => typeLabels[value] ?? value ?? '—' },
-            { title: 'Điểm', dataIndex: 'points_earned', width: 90, render: (value: number) => <Typography.Text type={Number(value) >= 0 ? 'success' : 'danger'}>{Number(value) >= 0 ? '+' : ''}{Number(value || 0)}</Typography.Text> },
-            { title: 'Lý do', dataIndex: 'reason', render: (value: string | null) => value || '—' },
-          ]}
-        />
+        <>
+          <Table<CustomerPointHistoryRow>
+            rowKey={(row) => String(row.id ?? row.trans_code ?? row.trans_date)}
+            size="small"
+            dataSource={paginateRows(rows, pointPage, 8)}
+            pagination={false}
+            columns={[
+              { title: 'Thời gian', key: 'time', width: 150, render: (_value, row) => row.created_at ? dayjs(row.created_at).format('DD/MM/YYYY HH:mm') : row.trans_date ? dayjs(row.trans_date).format('DD/MM/YYYY') : '—' },
+              { title: 'Loại', dataIndex: 'ref_type', width: 130, render: (value: string) => typeLabels[value] ?? value ?? '—' },
+              { title: 'Điểm', dataIndex: 'points_earned', width: 90, render: (value: number) => <Typography.Text type={Number(value) >= 0 ? 'success' : 'danger'}>{Number(value) >= 0 ? '+' : ''}{Number(value || 0)}</Typography.Text> },
+              { title: 'Lý do', dataIndex: 'reason', render: (value: string | null) => value || '—' },
+            ]}
+          />
+          <ListPagination page={pointPage} limit={8} total={rows.length} onChange={setPointPage} noun="biến động điểm" />
+        </>
       )}
     </div>
   )

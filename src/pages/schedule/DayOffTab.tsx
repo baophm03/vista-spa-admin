@@ -185,7 +185,7 @@ export default function DayOffTab({ branches, staff, access, loadingShared }: Pr
     { title: 'Thời gian nghỉ', key: 'time', render: (_: unknown, row: StaffDayOff) => (row as StaffDayOff & { shift_template?: { name?: string } }).shift_template?.name || templates.find((template) => template.id === row.shift_template_id)?.name || 'Cả ngày' },
     { title: 'Lý do', dataIndex: 'reason', key: 'reason', render: (value?: string) => value || '—' },
     { title: 'Trạng thái', dataIndex: 'status', key: 'status', render: (value: string, row: StaffDayOff) => <Space direction="vertical" size={0}><Tag color={STATUS[value]?.color}>{STATUS[value]?.label ?? value}</Tag>{row.reject_reason && <span style={{ color: '#cf1322', fontSize: 12 }}>Lý do: {row.reject_reason}</span>}</Space> },
-    { title: 'Thao tác', key: 'actions', width: 230, render: (_: unknown, row: StaffDayOff) => <Space wrap>
+    { title: 'Thao tác', align: 'center' as const, key: 'actions', width: 230, render: (_: unknown, row: StaffDayOff) => <Space wrap>
       {access.isAdmin && row.status === 'pending' && <>
         <Button size="small" type="primary" onClick={() => void approve(row)}>Duyệt</Button>
         <Button size="small" danger onClick={() => { setRejecting(row); setRejectReason('') }}>Từ chối</Button>

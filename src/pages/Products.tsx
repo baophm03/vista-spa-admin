@@ -410,7 +410,7 @@ export default function Products() {
             render: (v?: boolean) => (v === false ? <Tag>Đã ẩn</Tag> : <Tag color="green">Đang bán</Tag>),
           },
           {
-            title: 'Hành động',
+            title: 'Hành động', align: 'center' as const,
             key: 'actions',
             width: 90,
             fixed: 'right' as const,

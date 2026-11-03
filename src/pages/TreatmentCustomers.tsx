@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useSearchParams } from 'react-router-dom'
 import { Alert, Button, Card, Col, DatePicker, Divider, Empty, Form, Image, Input, InputNumber, Modal, Popconfirm, Progress, Row, Select, Space, Spin, Statistic, Table, Tabs, Tag, Tooltip, Typography, Upload, message } from 'antd'
 import type { MenuProps } from 'antd'
 import { CheckCircleOutlined, DeleteOutlined, EditOutlined, PlayCircleOutlined, PlusOutlined, ReloadOutlined, RollbackOutlined, SearchOutlined, TeamOutlined, WalletOutlined } from '@ant-design/icons'
@@ -64,7 +63,6 @@ import { useCustomerProfileAccess } from '@/utils/customerProfileAccess'
 import useCustomFieldDefinitions from '@/hooks/useCustomFieldDefinitions'
 import useSessionStatusConfig from '@/hooks/useSessionStatusConfig'
 import { Can, useAbility } from '@casl/react'
-import StandaloneServiceHistory from '@/components/StandaloneServiceHistory'
 import { resolveFileUrl } from '@/configs/links'
 
 interface Slot {
@@ -872,13 +870,15 @@ function SessionTimeline({
                 {(ctStatus === 'ACTIVE' || s.is_warranty) && (
                     <Space size={6} wrap style={{ marginLeft: 'auto' }}>
                       {canStartSession && s.status === 'scheduled' && !s.is_warranty && (
-                        <Tooltip title={!sessionStartAllowedToday(s)
-                          ? 'Chỉ bắt đầu được trong ngày hẹn, sau giờ hẹn'
-                          : canStart(s) ? undefined : 'Hoàn tất các buổi trước theo đúng thứ tự'}>
+                        <Tooltip title={!s.staff_id
+                          ? 'Buổi chưa có KTV phụ trách — gán KTV trước khi bắt đầu'
+                          : !sessionStartAllowedToday(s)
+                            ? 'Chỉ bắt đầu được trong ngày hẹn, sau giờ hẹn'
+                            : canStart(s) ? undefined : 'Hoàn tất các buổi trước theo đúng thứ tự'}>
                           <Button
                             type="primary"
                             ghost
-                            disabled={!canStart(s) || !sessionStartAllowedToday(s)}
+                            disabled={!s.staff_id || !canStart(s) || !sessionStartAllowedToday(s)}
                             onClick={() => act(() => putSessionsIdStart(s.id), 'Đã bắt đầu buổi')}
                           >
                             Bắt đầu
@@ -1143,29 +1143,6 @@ function SessionTimeline({
 }
 
 export default function TreatmentCustomers() {
-  const [searchParams, setSearchParams] = useSearchParams()
-  const [activeMainTab, setActiveMainTab] = useState<'packages' | 'services'>(() => searchParams.get('tab') === 'services' ? 'services' : 'packages')
-  const focusStandaloneAppointmentId = searchParams.get('appointment_id')
-  useEffect(() => {
-    setActiveMainTab(searchParams.get('tab') === 'services' ? 'services' : 'packages')
-  }, [searchParams])
-  const consumeFocusAppointment = () => {
-    const next = new URLSearchParams(searchParams)
-    next.delete('appointment_id')
-    setSearchParams(next, { replace: true })
-  }
-  const changeMainTab = (key: string) => {
-    setActiveMainTab(key as 'packages' | 'services')
-    const next = new URLSearchParams(searchParams)
-    if (key === 'services') next.set('tab', 'services')
-    else {
-      next.delete('tab')
-      next.delete('appointment_id')
-    }
-    if (next.toString() !== searchParams.toString()) {
-      setSearchParams(next, { replace: true })
-    }
-  }
   const { format: formatMoney, symbol: currencySymbol } = useBrandCurrency()
   const { formatDateTime } = useBrandDateTime()
   const queryClient = useQueryClient()
@@ -1197,6 +1174,11 @@ export default function TreatmentCustomers() {
   const [sessionToEdit, setSessionToEdit] = useState<{ treatmentId: string; sessionId: string } | null>(null)
   const [addSessionFor, setAddSessionFor] = useState<CustomerTreatment | null>(null)
   const [addSessionForm] = Form.useForm()
+  const [addSessionSlots, setAddSessionSlots] = useState<Slot[]>([])
+  const [addSessionSlotsLoading, setAddSessionSlotsLoading] = useState(false)
+  const addSessionSlotSequence = useRef(0)
+  const addSessionDate = Form.useWatch('scheduled_date', addSessionForm)
+  const addSessionTime = Form.useWatch('scheduled_time', addSessionForm)
   const handleSessionFocusHandled = useCallback(() => setSessionToEdit(null), [])
   const [addingSessionId, setAddingSessionId] = useState<string | null>(null)
   const [payments, setPayments] = useState<PaymentRow[]>([])
@@ -1395,8 +1377,38 @@ export default function TreatmentCustomers() {
     if (addingSessionId !== null) return
     addSessionForm.resetFields()
     addSessionForm.setFieldsValue({ custom_fields: {} })
+    addSessionSlotSequence.current += 1
+    setAddSessionSlots([])
     setAddSessionFor(row)
   }
+
+  const loadAddSessionSlots = useCallback(async (date: Dayjs) => {
+    if (!addSessionFor) return
+    const sequence = ++addSessionSlotSequence.current
+    setAddSessionSlotsLoading(true)
+    try {
+      const response = await getCustomerTreatmentsIdAvailableSlots(addSessionFor.id, { date: date.format('YYYY-MM-DD') })
+      if (sequence !== addSessionSlotSequence.current) return
+      const now = dayjs()
+      const slots = ((pickData<Slot[] | undefined>(response) ?? []) as Slot[]).filter((slot) => {
+        const slotTime = date.hour(Number(slot.start_time.slice(0, 2))).minute(Number(slot.start_time.slice(3, 5))).second(0).millisecond(0)
+        return !slotTime.isBefore(now)
+      })
+      setAddSessionSlots(slots)
+      const selectedTime = addSessionForm.getFieldValue('scheduled_time')
+      const selectedStaff = addSessionForm.getFieldValue('staff_id')
+      const matchingSlot = slots.find((slot) => slot.start_time.slice(0, 5) === selectedTime)
+      if (selectedTime && !matchingSlot) addSessionForm.setFieldsValue({ scheduled_time: undefined, staff_id: undefined })
+      else if (selectedStaff && !matchingSlot?.staff_ids.includes(selectedStaff)) addSessionForm.setFieldsValue({ staff_id: undefined })
+    } catch (err) {
+      if (sequence === addSessionSlotSequence.current) {
+        setAddSessionSlots([])
+        message.warning(errorMessage(err))
+      }
+    } finally {
+      if (sequence === addSessionSlotSequence.current) setAddSessionSlotsLoading(false)
+    }
+  }, [addSessionFor, addSessionForm])
 
   const submitNewSession = async () => {
     if (!addSessionFor || addingSessionId !== null) return
@@ -1407,15 +1419,25 @@ export default function TreatmentCustomers() {
       if (!(error as { errorFields?: unknown })?.errorFields) message.error(errorMessage(error))
       return
     }
+    const scheduledDate = values.scheduled_date as Dayjs | undefined
+    const scheduledTime = values.scheduled_time as string | undefined
+    const staffId = values.staff_id as string | undefined
+    if ((!!scheduledDate || !!scheduledTime || !!staffId) && (!scheduledDate || !scheduledTime || !staffId)) {
+      message.error('Để xếp lịch buổi, cần chọn đủ ngày hẹn, giờ hẹn và KTV phụ trách')
+      return
+    }
     setAddingSessionId(addSessionFor.id)
     try {
       const created = pickData<SessionRow>(await postCustomerTreatmentsIdSessions(addSessionFor.id, {
+        ...(scheduledDate && scheduledTime && staffId ? {
+          scheduled_at: scheduledDate.hour(Number(scheduledTime.slice(0, 2))).minute(Number(scheduledTime.slice(3, 5))).second(0).millisecond(0).toISOString(),
+          staff_id: staffId,
+        } : {}),
         custom_fields: normalizeCustomFieldValues(
           sessionCustomFields,
           (values.custom_fields ?? {}) as Record<string, unknown>,
         ) ?? {},
       } as never))
-      setSessionToEdit({ treatmentId: addSessionFor.id, sessionId: created?.id ?? '' })
       openDetail(addSessionFor)
       setSessionsRefreshKey((key) => key + 1)
       message.success('Đã tạo buổi mới')
@@ -1763,73 +1785,58 @@ export default function TreatmentCustomers() {
 
   return (
     <>
-      <Tabs
-        activeKey={activeMainTab}
-        onChange={changeMainTab}
-        items={[
-          { key: 'packages', label: 'Gói liệu trình' },
-          { key: 'services', label: 'Dịch vụ lẻ' },
-        ]}
-        style={{ marginBottom: 12 }}
-      />
-      {activeMainTab === 'services' ? (
-        <>
-          <PageTitle subtitle="Hồ sơ các lần khách dùng dịch vụ riêng, không trừ buổi gói">Dịch vụ lẻ</PageTitle>
-          <StandaloneServiceHistory focusAppointmentId={focusStandaloneAppointmentId} onFocusConsumed={consumeFocusAppointment} />
-        </>
-      ) : (
-        <>
       {/* Thống kê đầu trang — cùng số liệu với rows đã tải (limit 500), thay hàng Card/Statistic cũ */}
       <StatCards items={statItems} />
 
       <PageTitle
         subtitle="Khách hàng đang thực hiện liệu trình"
         extra={
-          <Space wrap>
-            <Input
-              allowClear
-              prefix={<SearchOutlined style={{ color: 'var(--brand-text-inactive, #A9ADB2)' }} />}
-              placeholder="Tìm tên hoặc SĐT khách hàng"
-              style={{ width: 260 }}
-              value={searchInput}
-              onChange={(event) => {
-                setSearchInput(event.target.value)
-                if (!event.target.value) applySearch('')
-              }}
-              onPressEnter={() => applySearch(searchInput)}
-            />
-            <Button icon={<ReloadOutlined />} onClick={refresh} />
-            <ListFilterPopover
-              open={filterOpen}
-              onOpenChange={openFilters}
-              activeFilterCount={activeFilterCount}
-              form={filterForm}
-              onApply={applyFilters}
-              onClear={clearFilters}
-              columnOptions={CUSTOMER_TREATMENT_COLUMN_OPTIONS}
-              draftVisibleColumns={draftVisibleColumns}
-              onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as CustomerTreatmentColumnKey[])}
-              filterItems={(
-                <>
-                  <Form.Item name="package_id" label="Liệu trình" style={{ marginBottom: 10 }}>
-                    <Select allowClear showSearch optionFilterProp="label" placeholder="Tất cả liệu trình" options={packages.map((pkg) => ({ value: pkg.id, label: pkg.name }))} />
-                  </Form.Item>
-                  <Form.Item name="status" label="Trạng thái" style={{ marginBottom: 0 }}>
-                    <Select options={FILTERS} />
-                  </Form.Item>
-                </>
-              )}
-            />
-            <Can I="UPDATE" a="CUSTOMER">
-              <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
-                Thêm khách vào liệu trình
-              </Button>
-            </Can>
-          </Space>
+          <Can I="UPDATE" a="CUSTOMER">
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
+              Thêm khách vào liệu trình
+            </Button>
+          </Can>
         }
       >
-        Khách dùng liệu trình
+        Liệu trình của khách
       </PageTitle>
+
+      <div style={{ display: 'flex', justifyContent: 'flex-end', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
+        <Input
+          allowClear
+          prefix={<SearchOutlined style={{ color: 'var(--brand-text-inactive, #A9ADB2)' }} />}
+          placeholder="Tìm tên hoặc SĐT khách hàng"
+          style={{ width: 260 }}
+          value={searchInput}
+          onChange={(event) => {
+            setSearchInput(event.target.value)
+            if (!event.target.value) applySearch('')
+          }}
+          onPressEnter={() => applySearch(searchInput)}
+        />
+        <Button icon={<ReloadOutlined />} onClick={refresh} />
+        <ListFilterPopover
+          open={filterOpen}
+          onOpenChange={openFilters}
+          activeFilterCount={activeFilterCount}
+          form={filterForm}
+          onApply={applyFilters}
+          onClear={clearFilters}
+          columnOptions={CUSTOMER_TREATMENT_COLUMN_OPTIONS}
+          draftVisibleColumns={draftVisibleColumns}
+          onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as CustomerTreatmentColumnKey[])}
+          filterItems={(
+            <>
+              <Form.Item name="package_id" label="Liệu trình" style={{ marginBottom: 10 }}>
+                <Select allowClear showSearch optionFilterProp="label" placeholder="Tất cả liệu trình" options={packages.map((pkg) => ({ value: pkg.id, label: pkg.name }))} />
+              </Form.Item>
+              <Form.Item name="status" label="Trạng thái" style={{ marginBottom: 0 }}>
+                <Select options={FILTERS} />
+              </Form.Item>
+            </>
+          )}
+        />
+      </div>
 
       <Table<CustomerTreatment>
         rowKey="id"
@@ -1919,7 +1926,7 @@ export default function TreatmentCustomers() {
             render: (v: string) => <Tag color={STATUS_META[v]?.color}>{STATUS_META[v]?.label ?? v}</Tag>,
           },
           {
-            title: 'Hành động',
+            title: 'Hành động', align: 'center' as const,
             key: 'actions',
             width: 90,
             fixed: 'right' as const,
@@ -2007,8 +2014,6 @@ export default function TreatmentCustomers() {
         )}
       />
       <ListPagination page={page} limit={limit} total={list.length} onChange={setPage} noun="khách điều trị" />
-        </>
-      )}
 
       <Modal
         title="Thêm khách vào liệu trình"
@@ -2070,6 +2075,49 @@ export default function TreatmentCustomers() {
         cancelText="Hủy"
       >
         <Form form={addSessionForm} layout="vertical" style={{ marginTop: 12 }}>
+          {canUpdate && <Row gutter={12}>
+            <Col span={12}>
+              <Form.Item name="scheduled_date" label="Ngày hẹn">
+                <DatePicker
+                  format="DD/MM/YYYY"
+                  style={{ width: '100%' }}
+                  disabledDate={(date) => date.isBefore(dayjs().startOf('day'), 'day')}
+                  onChange={(date) => {
+                    addSessionForm.setFieldsValue({ scheduled_time: undefined, staff_id: undefined })
+                    setAddSessionSlots([])
+                    if (date) void loadAddSessionSlots(date)
+                  }}
+                />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item name="scheduled_time" label="Giờ hẹn">
+                <Select
+                  disabled={!addSessionDate || addSessionSlotsLoading}
+                  loading={addSessionSlotsLoading}
+                  placeholder={addSessionDate ? 'Chọn giờ còn trống' : 'Chọn ngày trước'}
+                  options={addSessionSlots.map((slot) => ({ value: slot.start_time.slice(0, 5), label: slot.start_time.slice(0, 5) }))}
+                  onChange={() => addSessionForm.setFieldsValue({ staff_id: undefined })}
+                  allowClear
+                />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item name="staff_id" label="KTV phụ trách">
+                <Select
+                  allowClear
+                  showSearch
+                  optionFilterProp="label"
+                  disabled={!addSessionTime || addSessionSlotsLoading}
+                  placeholder={addSessionTime ? 'Chọn KTV rảnh' : 'Chọn ngày và giờ trước'}
+                  options={addSessionSlots
+                    .find((slot) => slot.start_time.slice(0, 5) === addSessionTime)
+                    ?.staff_ids.map((id) => staffOptions.find((option) => option.value === id))
+                    .filter((option): { value: string; label: string } => !!option)}
+                />
+              </Form.Item>
+            </Col>
+          </Row>}
           <CustomFieldFormItems definitions={sessionCustomFields} />
           {sessionCustomFields.length === 0 && <Typography.Text type="secondary">Chưa có trường tùy chỉnh cho buổi điều trị.</Typography.Text>}
         </Form>

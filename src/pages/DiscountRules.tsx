@@ -8,6 +8,8 @@ import {
   Input,
   InputNumber,
   Modal,
+  Row,
+  Col,
   Select,
   Spin,
   Space,
@@ -18,7 +20,7 @@ import {
   message,
 } from 'antd'
 import type { TableColumnsType } from 'antd'
-import { CheckCircleOutlined, DeleteOutlined, EditOutlined, EyeOutlined, PlusOutlined, ReloadOutlined, TagsOutlined } from '@ant-design/icons'
+import { CheckCircleOutlined, DeleteOutlined, EditOutlined, PlusOutlined, ReloadOutlined, TagsOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import { useQueryClient } from '@tanstack/react-query'
 import { Can, useAbility } from '@casl/react'
@@ -60,10 +62,9 @@ const APPLIES_TO_OPTIONS = [
   { value: 'ALL', label: 'Tất cả' },
 ]
 
-type DiscountColumnKey = 'code' | 'name' | 'audience' | 'percent' | 'max_total_percent' | 'stack' | 'show_in_app' | 'validity' | 'is_active'
+type DiscountColumnKey = 'name' | 'audience' | 'percent' | 'max_total_percent' | 'stack' | 'show_in_app' | 'validity' | 'is_active'
 
 const DISCOUNT_COLUMN_OPTIONS: { label: string; value: DiscountColumnKey }[] = [
-  { label: 'Mã', value: 'code' },
   { label: 'Tên', value: 'name' },
   { label: 'Đối tượng', value: 'audience' },
   { label: 'Khoảng %', value: 'percent' },
@@ -203,11 +204,15 @@ export default function DiscountRules() {
 
   const columns: TableColumnsType<DiscountRule> = ([
     {
-      key: 'code',
-      title: 'Mã', dataIndex: 'code', width: 140,
-      render: (v: string) => <Typography.Text code>{v}</Typography.Text>,
+      key: 'name',
+      title: 'Tên', dataIndex: 'name',
+      render: (v: string, row) => (
+        <div>
+          <div style={{ fontWeight: 500 }}>{v}</div>
+          {row.code && <Typography.Text code style={{ fontSize: 12 }}>{row.code}</Typography.Text>}
+        </div>
+      ),
     },
-    { key: 'name', title: 'Tên', dataIndex: 'name', render: (v: string) => <span style={{ fontWeight: 500 }}>{v}</span> },
     {
       key: 'audience',
       title: 'Đối tượng', dataIndex: 'audience', width: 180,
@@ -224,7 +229,7 @@ export default function DiscountRules() {
       },
     },
     { key: 'percent', title: 'Khoảng %', width: 110, align: 'right', render: (_v, row) => `${row.percent_min ?? 0}–${row.percent_max ?? 0}%` },
-    { key: 'max_total_percent', title: 'Trần tổng', dataIndex: 'max_total_percent', width: 90, align: 'right', render: (v?: number | null) => (v != null ? `${v}%` : '—') },
+    { key: 'max_total_percent', title: 'Trần tổng', dataIndex: 'max_total_percent', width: 110, align: 'right', render: (v?: number | null) => (v != null ? `${v}%` : '—') },
     {
       key: 'stack',
       title: 'Xếp chồng', width: 130, align: 'center',
@@ -237,27 +242,29 @@ export default function DiscountRules() {
     },
     {
       key: 'validity',
-      title: 'Hạn', width: 190,
-      render: (_v, row) => (row.start_date || row.end_date ? `${row.start_date ?? '...'} → ${row.end_date ?? '...'}` : 'Không giới hạn'),
+      title: 'Hạn', width: 130, align: 'center' as const,
+      render: (_v, row) => (row.start_date || row.end_date ? (
+        <Typography.Text style={{ whiteSpace: 'pre-line' }}>
+          {`${row.start_date ?? '...'}\n→\n${row.end_date ?? '...'}`}
+        </Typography.Text>
+      ) : 'Không giới hạn'),
     },
     {
       key: 'is_active',
-      title: 'Trạng thái', dataIndex: 'is_active', width: 100,
+      title: 'Trạng thái', dataIndex: 'is_active', width: 100, align: 'center' as const,
       render: (v?: boolean) => (v !== false ? <Tag color="green">Đang dùng</Tag> : <Tag>Đã xóa</Tag>),
     },
     {
       key: 'actions',
-      title: 'Hành động', width: 90, fixed: 'right',
+      title: 'Hành động', align: 'center' as const, width: 120, fixed: 'right',
       render: (_v, row) => (
         <RowActionsMenu
           items={[
-            { key: 'view', icon: <EyeOutlined />, label: 'Xem chi tiết', view: true },
             ...(canUpdate ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []),
             ...(canDelete ? [{ key: 'delete', icon: <DeleteOutlined />, danger: true, label: 'Xóa' }] : []),
           ]}
           onSelect={(key) => {
-            if (key === 'view') setDetailRuleId(row.id)
-            else if (key === 'edit') openEditor(row)
+            if (key === 'edit') openEditor(row)
             else if (key === 'delete') {
               Modal.confirm({
                 title: 'Xóa quy tắc này?',
@@ -331,6 +338,10 @@ export default function DiscountRules() {
               rowKey="id" loading={rulesQuery.isLoading} dataSource={paginateRows(rules, page, 10)} columns={columns}
               scroll={{ x: 1150 }}
               pagination={false}
+              onRow={(row) => ({
+                onClick: () => setDetailRuleId(row.id),
+                style: { cursor: 'pointer' },
+              })}
             />
             <ListPagination page={page} limit={10} total={rules.length} onChange={setPage} noun="quyết định giảm giá" />
             <Modal
@@ -411,35 +422,43 @@ export default function DiscountRules() {
               width={600}
             >
               <Form form={form} layout="vertical" style={{ marginTop: 12 }}>
-                <Space style={{ display: 'flex' }} align="start">
-                  <Form.Item name="code" label="Mã" rules={[{ required: true, message: 'Nhập mã' }]} style={{ flex: 1 }}>
-                    <Input maxLength={50} placeholder="VD: RANK-VIP-10" disabled={!!editing} />
-                  </Form.Item>
-                  <Form.Item name="name" label="Tên" rules={[{ required: true, message: 'Nhập tên' }]} style={{ flex: 2 }}>
-                    <Input maxLength={150} placeholder="VD: Ưu đãi hạng VIP" />
-                  </Form.Item>
-                </Space>
-                <Space style={{ display: 'flex' }} align="start">
-                  <Form.Item name="audience" label="Đối tượng" rules={[{ required: true }]} style={{ flex: 1 }}>
-                    <Select options={Object.entries(AUDIENCE_META).map(([value, meta]) => ({ value, label: meta.label }))} />
-                  </Form.Item>
-                  <Form.Item noStyle shouldUpdate={(p, c) => p.audience !== c.audience}>
-                    {({ getFieldValue }) =>
-                      getFieldValue('audience') === 'RANK' ? (
-                        <Form.Item name="requires_rank_id" label="Hạng thẻ" rules={[{ required: true, message: 'Chọn hạng' }]} style={{ flex: 1 }}>
-                          <Select
-                            showSearch optionFilterProp="label"
-                            options={ranks.map((r) => ({ value: r.id, label: r.name }))}
-                            placeholder="Chọn hạng thẻ"
-                          />
-                        </Form.Item>
-                      ) : null
-                    }
-                  </Form.Item>
-                  <Form.Item name="applies_to" label="Áp vào" rules={[{ required: true }]} style={{ flex: 1 }}>
-                    <Select options={APPLIES_TO_OPTIONS} />
-                  </Form.Item>
-                </Space>
+                <Form.Item name="code" label="Mã" rules={[{ required: true, message: 'Nhập mã' }]}>
+                  <Input maxLength={50} placeholder="VD: RANK-VIP-10" disabled={!!editing} />
+                </Form.Item>
+                <Form.Item name="name" label="Tên" rules={[{ required: true, message: 'Nhập tên' }]}>
+                  <Input maxLength={150} placeholder="VD: Ưu đãi hạng VIP" />
+                </Form.Item>
+                <Form.Item noStyle shouldUpdate={(p, c) => p.audience !== c.audience}>
+                  {({ getFieldValue }) => {
+                    const isRank = getFieldValue('audience') === 'RANK'
+                    const span = isRank ? 8 : 12
+                    return (
+                      <Row gutter={12}>
+                        <Col span={span}>
+                          <Form.Item name="audience" label="Đối tượng" rules={[{ required: true }]}>
+                            <Select options={Object.entries(AUDIENCE_META).map(([value, meta]) => ({ value, label: meta.label }))} />
+                          </Form.Item>
+                        </Col>
+                        {isRank && (
+                          <Col span={8}>
+                            <Form.Item name="requires_rank_id" label="Hạng thẻ" rules={[{ required: true, message: 'Chọn hạng' }]}>
+                              <Select
+                                showSearch optionFilterProp="label"
+                                options={ranks.map((r) => ({ value: r.id, label: r.name }))}
+                                placeholder="Chọn hạng thẻ"
+                              />
+                            </Form.Item>
+                          </Col>
+                        )}
+                        <Col span={span}>
+                          <Form.Item name="applies_to" label="Áp vào" rules={[{ required: true }]}>
+                            <Select options={APPLIES_TO_OPTIONS} />
+                          </Form.Item>
+                        </Col>
+                      </Row>
+                    )
+                  }}
+                </Form.Item>
                 <Space style={{ display: 'flex' }} align="start">
                   <Form.Item name="percent_min" label="% tối thiểu" rules={[{ required: true, message: 'Nhập % tối thiểu' }]} style={{ flex: 1 }}>
                     <InputNumber min={0} max={100} precision={0} style={{ width: '100%' }} />

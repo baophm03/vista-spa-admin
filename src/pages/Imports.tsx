@@ -178,7 +178,7 @@ export default function Imports() {
       <Steps
         size="small"
         current={report && !report.dry_run ? 2 : report ? 1 : 0}
-        items={[{ title: 'Tải file & ánh xạ cột' }, { title: 'Kiểm tra thử (không ghi DB)' }, { title: 'Nhập vào hệ thống' }]}
+        items={[{ title: 'Tải file' }, { title: 'Kiểm tra thử' }, { title: 'Nhập vào hệ thống' }]}
         style={{ marginBottom: 16 }}
       />
 

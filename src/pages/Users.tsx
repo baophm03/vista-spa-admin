@@ -429,87 +429,87 @@ export default function Users() {
       <PageTitle
         subtitle="Quản lý cơ sở dữ liệu và phân hạng thành viên"
         extra={
-          <Space wrap>
-            <Input
-              allowClear
-              prefix={<SearchOutlined style={{ color: 'var(--brand-text-inactive, #A9ADB2)' }} />}
-              placeholder="Tìm tên, SĐT, email, mã KH..."
-              style={{ width: 260 }}
-              value={searchText}
-              onChange={(event) => {
-                setSearchText(event.target.value)
-                if (!event.target.value) applySearch('')
-              }}
-              onPressEnter={() => applySearch(searchText)}
-            />
-            {profileAccess.canRead && (
-              <Button icon={<QrcodeOutlined />} loading={qrLookupLoading} onClick={() => setScannerOpen(true)}>Quét QR</Button>
-            )}
-            <ListFilterPopover
-              open={filterOpen}
-              onOpenChange={openFilters}
-              activeFilterCount={activeFilterCount}
-              form={filterForm}
-              onApply={applyFilters}
-              onClear={clearFilters}
-              columnOptions={CUSTOMER_COLUMN_OPTIONS}
-              draftVisibleColumns={draftVisibleColumns}
-              onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as CustomerColumnKey[])}
-              filterItems={(
-                <>
-                  <Form.Item name="branch_id" label="Cơ sở" style={{ marginBottom: 10 }}>
-                    <Select allowClear placeholder="Tất cả cơ sở" options={branches.map((branch) => ({ value: branch.id, label: branch.name }))} />
-                  </Form.Item>
-                  <Row gutter={8}>
-                    <Col span={12}>
-                      <Form.Item name="birth_month" label="Tháng sinh" style={{ marginBottom: 10 }}>
-                        <Select allowClear placeholder="Tất cả" options={Array.from({ length: 12 }, (_, index) => ({ value: index + 1, label: `Tháng ${index + 1}` }))} />
-                      </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                      <Form.Item name="rank_id" label="Hạng thành viên" style={{ marginBottom: 10 }}>
-                        <Select allowClear placeholder="Tất cả" options={ranks.map((rank) => ({ value: rank.id, label: rank.name }))} />
-                      </Form.Item>
-                    </Col>
-                  </Row>
-                  <Row gutter={8}>
-                    <Col span={12}>
-                      <Form.Item name="min_spent" label="Chi tiêu từ" style={{ marginBottom: 10 }}>
-                        <InputNumber min={0} step={100000} suffix={currencySymbol} placeholder="Tối thiểu" style={{ width: '100%' }} />
-                      </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                      <Form.Item name="max_spent" label="Chi tiêu đến" style={{ marginBottom: 10 }}>
-                        <InputNumber min={0} step={100000} suffix={currencySymbol} placeholder="Tối đa" style={{ width: '100%' }} />
-                      </Form.Item>
-                    </Col>
-                  </Row>
-                  <Form.Item name="has_debt" label="Công nợ" style={{ marginBottom: 0 }}>
-                    <Select allowClear placeholder="Tất cả" options={[{ value: 'true', label: 'Có nợ' }, { value: 'false', label: 'Không nợ' }]} />
-                  </Form.Item>
-                </>
-              )}
-            />
-            {profileAccess.canExport && (
-              <Button icon={<DownloadOutlined />} loading={exporting} onClick={() => void downloadCsv()}>
-                Xuất CSV
-              </Button>
-            )}
-            {profileAccess.canManage && (
-              <Button type="primary" icon={<PlusOutlined />} onClick={() => void openModal()}>
-                Thêm khách hàng
-              </Button>
-            )}
-          </Space>
+          profileAccess.canManage && (
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => void openModal()}>
+              Thêm khách hàng
+            </Button>
+          )
         }
       >
         Khách hàng
       </PageTitle>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
+        <Input
+          allowClear
+          prefix={<SearchOutlined style={{ color: 'var(--brand-text-inactive, #A9ADB2)' }} />}
+          placeholder="Tìm tên, SĐT, email, mã KH..."
+          style={{ width: 260 }}
+          value={searchText}
+          onChange={(event) => {
+            setSearchText(event.target.value)
+            if (!event.target.value) applySearch('')
+          }}
+          onPressEnter={() => applySearch(searchText)}
+        />
+        {profileAccess.canRead && (
+          <Button icon={<QrcodeOutlined />} loading={qrLookupLoading} onClick={() => setScannerOpen(true)}>Quét QR</Button>
+        )}
+        <ListFilterPopover
+          open={filterOpen}
+          onOpenChange={openFilters}
+          activeFilterCount={activeFilterCount}
+          form={filterForm}
+          onApply={applyFilters}
+          onClear={clearFilters}
+          columnOptions={CUSTOMER_COLUMN_OPTIONS}
+          draftVisibleColumns={draftVisibleColumns}
+          onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as CustomerColumnKey[])}
+          filterItems={(
+            <>
+              <Form.Item name="branch_id" label="Cơ sở" style={{ marginBottom: 10 }}>
+                <Select allowClear placeholder="Tất cả cơ sở" options={branches.map((branch) => ({ value: branch.id, label: branch.name }))} />
+              </Form.Item>
+              <Row gutter={8}>
+                <Col span={12}>
+                  <Form.Item name="birth_month" label="Tháng sinh" style={{ marginBottom: 10 }}>
+                    <Select allowClear placeholder="Tất cả" options={Array.from({ length: 12 }, (_, index) => ({ value: index + 1, label: `Tháng ${index + 1}` }))} />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item name="rank_id" label="Hạng thành viên" style={{ marginBottom: 10 }}>
+                    <Select allowClear placeholder="Tất cả" options={ranks.map((rank) => ({ value: rank.id, label: rank.name }))} />
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Row gutter={8}>
+                <Col span={12}>
+                  <Form.Item name="min_spent" label="Chi tiêu từ" style={{ marginBottom: 10 }}>
+                    <InputNumber min={0} step={100000} suffix={currencySymbol} placeholder="Tối thiểu" style={{ width: '100%' }} />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item name="max_spent" label="Chi tiêu đến" style={{ marginBottom: 10 }}>
+                    <InputNumber min={0} step={100000} suffix={currencySymbol} placeholder="Tối đa" style={{ width: '100%' }} />
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Form.Item name="has_debt" label="Công nợ" style={{ marginBottom: 0 }}>
+                <Select allowClear placeholder="Tất cả" options={[{ value: 'true', label: 'Có nợ' }, { value: 'false', label: 'Không nợ' }]} />
+              </Form.Item>
+            </>
+          )}
+        />
+        {profileAccess.canExport && (
+          <Button icon={<DownloadOutlined />} loading={exporting} onClick={() => void downloadCsv()}>
+            Xuất CSV
+          </Button>
+        )}
+      </div>
       <Table<CustomerProfileRow>
         rowKey="id"
         loading={loading}
         dataSource={rows}
-        scroll={{ x: 850 }}
+        scroll={{ x: 950 }}
         pagination={false}
         onRow={(row) => ({
           onClick: profileAccess.canRead ? () => void openDetail(row) : undefined,
@@ -527,6 +527,7 @@ export default function Users() {
             key: 'full_name',
             title: 'Khách hàng',
             dataIndex: 'full_name',
+            width: 180,
             render: (value: string, row: CustomerProfileRow) => (
               <Space>
                 <CustomerAvatar profile={row} />
@@ -534,20 +535,20 @@ export default function Users() {
               </Space>
             ),
           },
-          { key: 'phone', title: 'Số điện thoại', dataIndex: 'phone' },
-          { key: 'email', title: 'Email', dataIndex: 'email', render: (value: string | undefined, row: CustomerProfileRow) => value || row.user?.email || '—' },
-          { key: 'branch', title: 'Cơ sở', dataIndex: 'branch_id', render: (value?: string) => branchName(value) },
+          { key: 'phone', title: 'Số điện thoại', dataIndex: 'phone', width: 120 },
+          { key: 'email', title: 'Email', dataIndex: 'email', width: 190, render: (value: string | undefined, row: CustomerProfileRow) => value || row.user?.email || '—' },
+          { key: 'branch', title: 'Cơ sở', dataIndex: 'branch_id', width: 120, render: (value?: string) => branchName(value) },
           {
             title: 'Hạng / Tài khoản',
             key: 'rank',
-            width: 160,
+            width: 120,
             render: (_: unknown, row: CustomerProfileRow) => row.user_id
               ? <Tag color="purple">{rowRankName(row) ?? 'Đã liên kết'}</Tag>
               : <Tag>Chưa liên kết</Tag>,
           },
           {
             key: 'actions',
-            title: 'Hành động',
+            title: 'Hành động', align: 'center' as const,
             width: 90,
             fixed: 'right' as const,
             render: (_: unknown, row: CustomerProfileRow) => (
