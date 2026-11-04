@@ -5,6 +5,7 @@ import { Alert, Badge, Button, Checkbox, DatePicker, Divider, Form, Modal, Popco
 import { ClearOutlined, FilterOutlined, PlusOutlined, ReloadOutlined } from '@ant-design/icons'
 import { errorMessage, pickData } from '@/api/helpers'
 import ListPagination from '@/components/base/ListPagination'
+import ToolbarRow from '@/components/base/ToolbarRow'
 import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import TableEmpty from '@/components/base/TableEmpty'
 import { paginateRows } from '@/utils/listTable'
@@ -198,7 +199,7 @@ export default function DayOffTab({ branches, staff, access, loadingShared }: Pr
   ]
 
   return <div>
-    <Space wrap style={{ marginBottom: 16 }}>
+    <ToolbarRow>
       <Popover
         trigger="click" placement="bottomLeft" open={filterOpen} onOpenChange={openFilters}
         title="Bộ lọc"
@@ -243,7 +244,7 @@ export default function DayOffTab({ branches, staff, access, loadingShared }: Pr
         </Badge>
       </Popover>
       {(access.isAdmin || access.isReceptionist || access.isTechnician) && <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>Đăng ký nghỉ</Button>}
-    </Space>
+    </ToolbarRow>
     {!!error && <Alert type="error" showIcon message="Không tải được danh sách ngày nghỉ" description={error} action={<Button size="small" icon={<ReloadOutlined />} onClick={() => void daysOffQuery.refetch()}>Thử lại</Button>} style={{ marginBottom: 16 }} />}
     <Table<StaffDayOff>
       className="desktop-only"

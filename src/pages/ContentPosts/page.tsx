@@ -1,9 +1,12 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { Alert, Button, Form, Input, Popconfirm, Select, Space, Table, Tabs, Tag, Typography, message } from 'antd'
-import { PlusOutlined } from '@ant-design/icons'
+import { Alert, Button, Form, Input, Modal, Select, Space, Table, Tabs, Tag, Typography, message } from 'antd'
+import { DeleteOutlined, EditOutlined, PlusOutlined, SearchOutlined, SendOutlined, UndoOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
+import ToolbarRow from '@/components/base/ToolbarRow'
+import RowActionsMenu from '@/components/base/RowActionsMenu'
+import ListPagination from '@/components/base/ListPagination'
 import { errorMessage, pickData, pickMeta } from '@/api/helpers'
 import type { ContentCategory } from '@/api/models/contentCategory'
 import {
@@ -20,7 +23,7 @@ import {
   usePutContentPostsIdUnpublish,
 } from '@/api/endpoints/content'
 import { apiClient } from '@/api/mutator/custom-instance'
-import { Can } from '@casl/react'
+import { Can, useAbility } from '@casl/react'
 import { usePostFiles } from '@/api/endpoints/files'
 import ContentPostDrawer from './components/ContentPostDrawer'
 import PostPreviewModal from './components/PostPreviewModal'
@@ -42,8 +45,10 @@ async function publishPost(id: string, notify: boolean) {
 
 export default function ContentPosts() {
   const queryClient = useQueryClient()
+  const ability = useAbility()
   const [tab, setTab] = useState('posts')
   const [postFilter, setPostFilter] = useState<{ status?: string; category_id?: string; q?: string }>({})
+  const [postSearchInput, setPostSearchInput] = useState('')
   const [postPage, setPostPage] = useState(1)
   const [postModal, setPostModal] = useState(false)
   const [editingPost, setEditingPost] = useState<ContentPostRow | null>(null)
@@ -55,6 +60,15 @@ export default function ContentPosts() {
   const [uploadingCover, setUploadingCover] = useState(false)
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
   const [previewOpen, setPreviewOpen] = useState(false)
+
+  // Gõ tìm tiêu đề có debounce 400ms — giống các page danh sách khác
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setPostPage(1)
+      setPostFilter((f) => ({ ...f, q: postSearchInput.trim() || undefined }))
+    }, 400)
+    return () => clearTimeout(timer)
+  }, [postSearchInput])
   const [previewData, setPreviewData] = useState<PostFormValues | null>(null)
   const [postForm] = Form.useForm<PostFormValues>()
   const [categoryForm] = Form.useForm<CategoryFormValues>()
@@ -200,32 +214,44 @@ export default function ContentPosts() {
     { title: 'Trạng thái', dataIndex: 'status', key: 'status', width: 120, render: (v: string) => <Tag color={STATUS_META[v]?.color}>{STATUS_META[v]?.label ?? v}</Tag> },
     { title: 'Xuất bản', dataIndex: 'published_at', key: 'published_at', width: 130, render: (v: string) => (v ? dayjs(v).format('DD/MM/YYYY HH:mm') : '—') },
     { title: 'Lượt xem', dataIndex: 'view_count', key: 'view_count', width: 90, align: 'right' as const },
-    { title: '', key: 'actions', width: 240,
+    { title: 'Hành động', key: 'actions', width: 90, align: 'center' as const,
       render: (_: unknown, row: ContentPostRow) => (
-        <Space size={4}>
-          {row.status !== 'PUBLISHED' && (
-            <Can I="UPDATE" a="CONTENT">
-              <Button size="small" type="primary" onClick={() => { setPublishTarget(row); setNotify(!row.notified_at) }}>Xuất bản</Button>
-            </Can>
-          )}
-          {row.status === 'PUBLISHED' && (
-            <Can I="UPDATE" a="CONTENT">
-              <Popconfirm title="Gỡ bài xuất bản?" onConfirm={() => unpublishMutation.mutateAsync({ id: row.id }).then(reload).catch((e) => message.error(errorMessage(e)))}>
-                <Button size="small">Gỡ bài</Button>
-              </Popconfirm>
-            </Can>
-          )}
-          <Can I="UPDATE" a="CONTENT">
-            <Button size="small" onClick={() => openPostEditor(row)}>Sửa</Button>
-          </Can>
-          {row.status !== 'PUBLISHED' && (
-            <Can I="DELETE" a="CONTENT">
-              <Popconfirm title="Lưu trữ bài viết này?" onConfirm={() => deletePostMutation.mutateAsync({ id: row.id }).then(reload).catch((e) => message.error(errorMessage(e)))}>
-                <Button size="small" danger>Xóa</Button>
-              </Popconfirm>
-            </Can>
-          )}
-        </Space>
+        <RowActionsMenu
+          items={[
+            ...(ability.can('UPDATE' as never, 'CONTENT')
+              ? [
+                  ...(row.status !== 'PUBLISHED'
+                    ? [{ key: 'publish', icon: <SendOutlined />, label: 'Xuất bản' }]
+                    : [{ key: 'unpublish', icon: <UndoOutlined />, label: 'Gỡ bài' }]),
+                  { key: 'edit', icon: <EditOutlined />, label: 'Sửa' },
+                ]
+              : []),
+            ...(ability.can('DELETE' as never, 'CONTENT') && row.status !== 'PUBLISHED'
+              ? [{ key: 'delete', icon: <DeleteOutlined />, label: 'Xóa', danger: true }]
+              : []),
+          ]}
+          onSelect={(key) => {
+            if (key === 'publish') { setPublishTarget(row); setNotify(!row.notified_at) }
+            else if (key === 'unpublish') {
+              Modal.confirm({
+                title: 'Gỡ bài xuất bản?',
+                okText: 'Gỡ bài',
+                cancelText: 'Hủy',
+                onOk: () => unpublishMutation.mutateAsync({ id: row.id }).then(reload).catch((e) => message.error(errorMessage(e))),
+              })
+            }
+            else if (key === 'edit') openPostEditor(row)
+            else if (key === 'delete') {
+              Modal.confirm({
+                title: 'Lưu trữ bài viết này?',
+                okText: 'Xóa',
+                okButtonProps: { danger: true },
+                cancelText: 'Hủy',
+                onOk: () => deletePostMutation.mutateAsync({ id: row.id }).then(reload).catch((e) => message.error(errorMessage(e))),
+              })
+            }
+          }}
+        />
       ) },
   ]
 
@@ -237,24 +263,39 @@ export default function ContentPosts() {
     { title: 'Thứ tự', dataIndex: 'sort_order', key: 'sort_order', width: 80, align: 'right' as const },
     { title: 'Trạng thái', dataIndex: 'is_active', key: 'is_active', width: 100,
       render: (v: boolean) => <Tag color={v ? 'green' : 'red'}>{v ? 'Hiện' : 'Ẩn'}</Tag> },
-    { title: '', key: 'actions', width: 140,
+    { title: 'Hành động', key: 'actions', width: 90, align: 'center' as const,
       render: (_: unknown, row: ContentCategory) => (
-        <Space size={4}>
-          <Can I="UPDATE" a="CONTENT">
-            <Button size="small" onClick={() => { setEditingCategory(row); categoryForm.resetFields(); categoryForm.setFieldsValue(row); setCategoryModal(true) }}>Sửa</Button>
-          </Can>
-          <Can I="DELETE" a="CONTENT">
-            <Popconfirm title="Xóa chuyên mục? (Chặn nếu còn bài đang xuất bản)" onConfirm={() => deleteCategoryMutation.mutateAsync({ id: row.id }).then(reload).catch((e) => message.error(errorMessage(e)))}>
-              <Button size="small" danger>Xóa</Button>
-            </Popconfirm>
-          </Can>
-        </Space>
+        <RowActionsMenu
+          items={[
+            ...(ability.can('UPDATE' as never, 'CONTENT')
+              ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }]
+              : []),
+            ...(ability.can('DELETE' as never, 'CONTENT')
+              ? [{ key: 'delete', icon: <DeleteOutlined />, label: 'Xóa', danger: true }]
+              : []),
+          ]}
+          onSelect={(key) => {
+            if (key === 'edit') { setEditingCategory(row); categoryForm.resetFields(); categoryForm.setFieldsValue(row); setCategoryModal(true) }
+            else if (key === 'delete') {
+              Modal.confirm({
+                title: 'Xóa chuyên mục này?',
+                content: 'Bị chặn nếu chuyên mục còn bài đang xuất bản.',
+                okText: 'Xóa',
+                okButtonProps: { danger: true },
+                cancelText: 'Hủy',
+                onOk: () => deleteCategoryMutation.mutateAsync({ id: row.id }).then(reload).catch((e) => message.error(errorMessage(e))),
+              })
+            }
+          }}
+        />
       ) },
   ]
 
   return (
     <div>
-      <PageTitle extra={null}>Nội dung app (CMS)</PageTitle>
+      <PageTitle subtitle="Quản lý bài viết và chuyên mục hiển thị trên app">
+        Nội dung app (CMS)
+      </PageTitle>
       {postsQuery.isError && <Alert type="error" showIcon message={errorMessage(postsQuery.error)} style={{ marginBottom: 12 }} />}
       <Tabs
         activeKey={tab}
@@ -265,11 +306,12 @@ export default function ContentPosts() {
             label: 'Bài viết',
             children: (
               <>
-                <Space wrap style={{ marginBottom: 12 }}>
+                {/* Toolbar của tab — đặt dưới thanh tab */}
+                <ToolbarRow>
                   <Select
                     allowClear
                     placeholder="Chuyên mục"
-                    style={{ width: 200 }}
+                    className="w-[200px]"
                     options={categories.map((c) => ({ value: c.id, label: c.name }))}
                     value={postFilter.category_id}
                     onChange={(v) => { setPostFilter((f) => ({ ...f, category_id: v })); setPostPage(1) }}
@@ -277,28 +319,31 @@ export default function ContentPosts() {
                   <Select
                     allowClear
                     placeholder="Trạng thái"
-                    style={{ width: 150 }}
+                    className="w-[150px]"
                     options={Object.entries(STATUS_META).map(([value, m]) => ({ value, label: m.label }))}
                     value={postFilter.status}
                     onChange={(v) => { setPostFilter((f) => ({ ...f, status: v })); setPostPage(1) }}
                   />
-                  <Input.Search
-                    placeholder="Tìm tiêu đề"
-                    style={{ width: 220 }}
+                  <Input
                     allowClear
-                    onSearch={(v) => { setPostFilter((f) => ({ ...f, q: v || undefined })); setPostPage(1) }}
+                    prefix={<SearchOutlined className="text-[var(--brand-text-inactive,#A9ADB2)]" />}
+                    placeholder="Tìm tiêu đề"
+                    className="w-[220px]!"
+                    value={postSearchInput}
+                    onChange={(event) => setPostSearchInput(event.target.value)}
                   />
                   <Can I="CREATE" a="CONTENT">
                     <Button type="primary" icon={<PlusOutlined />} onClick={() => openPostEditor()}>Tạo bài viết</Button>
                   </Can>
-                </Space>
+                </ToolbarRow>
                 <Table
                   rowKey="id"
                   loading={postsQuery.isLoading}
                   columns={postColumns}
                   dataSource={posts}
-                  pagination={{ current: postPage, pageSize: 20, total: postTotal, showSizeChanger: false, onChange: setPostPage }}
+                  pagination={false}
                 />
+                <ListPagination page={postPage} limit={20} total={postTotal} onChange={setPostPage} noun="bài viết" />
               </>
             ),
           },
@@ -307,11 +352,11 @@ export default function ContentPosts() {
             label: 'Chuyên mục',
             children: (
               <>
-                <Space style={{ marginBottom: 12 }}>
+                <ToolbarRow>
                   <Can I="CREATE" a="CONTENT">
                     <Button type="primary" icon={<PlusOutlined />} onClick={() => { setEditingCategory(null); categoryForm.resetFields(); categoryForm.setFieldsValue({ display_type: 'NEWS', sort_order: 0, is_active: true }); setCategoryModal(true) }}>Tạo chuyên mục</Button>
                   </Can>
-                </Space>
+                </ToolbarRow>
                 <Table rowKey="id" loading={categoriesQuery.isLoading} columns={categoryColumns} dataSource={categories} pagination={false} />
               </>
             ),

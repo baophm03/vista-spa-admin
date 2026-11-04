@@ -7,7 +7,6 @@ import {
   LockOutlined,
   PlusOutlined,
   ProfileOutlined,
-  ReloadOutlined,
   SearchOutlined,
   UndoOutlined,
   UserOutlined,
@@ -54,6 +53,7 @@ export default function Staffs() {
   const isPlatformAdmin = !!currentUser?.is_admin
   const canReadStaffProfile = isPlatformAdmin || ability.can('READ', 'STAFF_PROFILE')
   const canUpdateStaffProfile = isPlatformAdmin || ability.can('UPDATE', 'STAFF_PROFILE')
+  const canCreateStaff = isPlatformAdmin || ability.can('CREATE', 'STAFF_PROFILE')
   const [page, setPage] = useState(1)
   const [limit] = useState(10)
   const [searchInput, setSearchInput] = useState('')
@@ -201,32 +201,32 @@ export default function Staffs() {
   }
 
   const openModal = (s?: StaffRow) => {
-    if (!isPlatformAdmin) return
+    if (s ? !isPlatformAdmin : !canCreateStaff) return
     setEditing(s ?? null)
     form.setFieldsValue(
       s
         ? {
-            zalo_name: s.zalo_name,
-            email: s.email,
-            phone_number: s.phone_number,
-            branch_id: s.branch_id ?? undefined,
-            role_id: s.user_roles?.[0]?.role_id,
-            password: '',
-          }
+          zalo_name: s.zalo_name,
+          email: s.email,
+          phone_number: s.phone_number,
+          branch_id: s.branch_id ?? undefined,
+          role_id: s.user_roles?.[0]?.role_id,
+          password: '',
+        }
         : {
-            zalo_name: '',
-            email: '',
-            phone_number: '',
-            password: '',
-            role_id: undefined,
-            branch_id: branches.length === 1 ? branches[0].id : undefined,
-          },
+          zalo_name: '',
+          email: '',
+          phone_number: '',
+          password: '',
+          role_id: undefined,
+          branch_id: branches.length === 1 ? branches[0].id : undefined,
+        },
     )
     setOpen(true)
   }
 
   const submit = async () => {
-    if (!isPlatformAdmin) return
+    if (editing ? !isPlatformAdmin : !canCreateStaff) return
     const values = await form.validateFields()
     try {
       if (editing) {
@@ -353,13 +353,13 @@ export default function Staffs() {
     <>
       <PageTitle
         subtitle="Quản lý thông tin và vai trò của nhân viên"
-        extra={
-          <Space wrap>
+        left={
+          <>
             <Input
               allowClear
-              prefix={<SearchOutlined style={{ color: 'var(--brand-text-inactive, #A9ADB2)' }} />}
+              prefix={<SearchOutlined className="text-[var(--brand-text-inactive,#A9ADB2)]" />}
               placeholder="Tìm theo tên, email, SĐT"
-              style={{ width: 260 }}
+              className="w-[260px]!"
               value={searchInput}
               onChange={(e) => {
                 setSearchInput(e.target.value)
@@ -379,13 +379,13 @@ export default function Staffs() {
               onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as StaffColumnKey[])}
               filterItems={(
                 <>
-                  <Form.Item name="branch_id" label="Cơ sở" style={{ marginBottom: 10 }}>
+                  <Form.Item name="branch_id" label="Cơ sở" className="mb-2.5!">
                     <Select allowClear placeholder="Tất cả cơ sở" options={branches.map((branch) => ({ value: branch.id, label: branch.name }))} />
                   </Form.Item>
-                  <Form.Item name="role_id" label="Vai trò" style={{ marginBottom: 10 }}>
+                  <Form.Item name="role_id" label="Vai trò" className="mb-2.5!">
                     <Select allowClear placeholder="Tất cả vai trò" options={roles.map((role) => ({ value: role.id, label: role.role_name }))} />
                   </Form.Item>
-                  <Form.Item name="status" label="Trạng thái" style={{ marginBottom: 0 }}>
+                  <Form.Item name="status" label="Trạng thái" className="mb-0!">
                     <Select allowClear placeholder="Tất cả trạng thái" options={[
                       { value: 'active', label: 'Đang làm' },
                       { value: 'inactive', label: 'Đã nghỉ việc' },
@@ -394,14 +394,11 @@ export default function Staffs() {
                 </>
               )}
             />
-            <Button icon={<ReloadOutlined />} onClick={() => void usersQuery.refetch()} />
-            {isPlatformAdmin && (
-              <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
-                Thêm chuyên viên
-              </Button>
-            )}
-          </Space>
+          </>
         }
+        right={canCreateStaff ? (
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>Thêm chuyên viên</Button>
+        ) : undefined}
       >
         Chuyên viên / KTV
       </PageTitle>
@@ -428,11 +425,11 @@ export default function Staffs() {
               return (
                 <Space>
                   {photo ? (
-                    <img src={(links.imageEndpoint + (photo || ""))} alt="" width={36} height={36} style={{ objectFit: 'cover', borderRadius: 18 }} />
+                    <img src={(links.imageEndpoint + (photo || ""))} alt="" width={36} height={36} className="rounded-full object-cover" />
                   ) : (
-                    <Avatar size={36} style={{ backgroundColor: 'var(--brand-primary)' }} icon={<UserOutlined />} />
+                    <Avatar size={36} className="bg-[var(--brand-primary)]!" icon={<UserOutlined />} />
                   )}
-                  <span style={{ fontWeight: 600 }}>{s.zalo_name || s.email || '—'}</span>
+                  <span className="font-semibold">{s.zalo_name || s.email || '—'}</span>
                 </Space>
               )
             },

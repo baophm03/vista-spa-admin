@@ -4,6 +4,7 @@ import { Alert, Button, Form, Modal, Popconfirm, Select, Space, Table, Tag, mess
 import { DeleteOutlined, ReloadOutlined } from '@ant-design/icons'
 import { errorMessage, pickData } from '@/api/helpers'
 import TableEmpty from '@/components/base/TableEmpty'
+import ToolbarRow from '@/components/base/ToolbarRow'
 import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import type { StaffSchedule as StaffScheduleRow, ShiftTemplate as ShiftTemplateRow } from './types'
 import {
@@ -182,7 +183,7 @@ export default function WeeklyScheduleTab({ branches, staff, access, loadingShar
   ]
 
   return <div>
-    {canManage && <Space wrap style={{ marginBottom: 16 }}>
+    {canManage && <ToolbarRow>
       <Select allowClear placeholder="Tất cả cơ sở" style={{ width: 190 }} value={branchFilter} onChange={(value) => {
         setBranchFilter(value)
         const selectedStaff = staff.find((person) => person.id === staffFilter)
@@ -190,7 +191,7 @@ export default function WeeklyScheduleTab({ branches, staff, access, loadingShar
       }} options={branches.map((branch) => ({ value: branch.id, label: branch.name }))} />
       <Select allowClear showSearch optionFilterProp="label" placeholder="Tất cả KTV" style={{ width: 220 }} value={staffFilter} onChange={setStaffFilter} options={staffForBranchFilter.map((person) => ({ value: person.id, label: staffLabel(person) }))} />
       <Button type="primary" onClick={() => openForm()}>Xếp ca</Button>
-    </Space>}
+    </ToolbarRow>}
     {!!error && <Alert type="error" showIcon message="Không tải được lịch tuần" description={error} action={<Button size="small" icon={<ReloadOutlined />} onClick={() => {
       void schedulesQuery.refetch()
       void queryClient.invalidateQueries({ queryKey: getGetShiftTemplatesQueryKey() })

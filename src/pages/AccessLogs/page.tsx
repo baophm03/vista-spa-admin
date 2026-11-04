@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Alert, Button, DatePicker, Form, Select, Space, Table, Tag, Typography } from 'antd'
 import type { Dayjs } from 'dayjs'
 import dayjs from 'dayjs'
-import { ReloadOutlined } from '@ant-design/icons'
+
 import PageTitle from '@/components/base/PageTitle'
 import ListFilterPopover from '@/components/base/ListFilterPopover'
 import ListPagination from '@/components/base/ListPagination'
@@ -145,9 +145,10 @@ export default function AccessLogs() {
 
   return (
     <>
-      <PageTitle subtitle="Nhật ký truy cập hệ thống quản trị" extra={(
-          <Space wrap>
-            <Button icon={<ReloadOutlined />} onClick={() => void logsQuery.refetch()}>Tải lại</Button>
+      <PageTitle
+        subtitle="Nhật ký truy cập hệ thống quản trị"
+        left={(
+          <>
             <ListFilterPopover
               open={filterOpen}
               onOpenChange={openFilters}
@@ -157,7 +158,7 @@ export default function AccessLogs() {
               onClear={clearFilters}
               filterItems={(
                 <>
-                  <Form.Item name="branch_id" label="Cơ sở" style={{ marginBottom: 10 }}>
+                  <Form.Item name="branch_id" label="Cơ sở" className="mb-2.5!">
                     <Select
                       allowClear
                       showSearch
@@ -170,7 +171,7 @@ export default function AccessLogs() {
                       }))}
                     />
                   </Form.Item>
-                  <Form.Item name="user_id" label="Nhân viên thực hiện" style={{ marginBottom: 10 }}>
+                  <Form.Item name="user_id" label="Nhân viên thực hiện" className="mb-2.5!">
                     <Select
                       allowClear
                       showSearch
@@ -181,7 +182,7 @@ export default function AccessLogs() {
                       onSearch={setStaffSearch}
                     />
                   </Form.Item>
-                  <Form.Item name="customer_profile_id" label="Khách hàng" style={{ marginBottom: 10 }}>
+                  <Form.Item name="customer_profile_id" label="Khách hàng" className="mb-2.5!">
                     <Select
                       allowClear
                       showSearch
@@ -195,7 +196,7 @@ export default function AccessLogs() {
                       onSearch={setCustomerSearch}
                     />
                   </Form.Item>
-                  <Form.Item name="action" label="Hành động" style={{ marginBottom: 10 }}>
+                  <Form.Item name="action" label="Hành động" className="mb-2.5!">
                     <Select<GetAccessLogsAction>
                       allowClear
                       showSearch
@@ -204,19 +205,19 @@ export default function AccessLogs() {
                       options={(Object.keys(ACTION_META) as GetAccessLogsAction[]).map((value) => ({ value, label: ACTION_META[value].label }))}
                     />
                   </Form.Item>
-                  <Form.Item name="range" label="Thời gian" style={{ marginBottom: 0 }}>
+                  <Form.Item name="range" label="Thời gian" className="mb-0!">
                     <DatePicker.RangePicker
                       allowEmpty={[true, true]}
                       showTime={{ defaultValue: [dayjs('2000-01-01T00:00:00'), dayjs('2000-01-01T23:59:59')], format: 'HH:mm' }}
                       format="DD/MM/YYYY HH:mm"
                       placeholder={['Từ ngày/giờ', 'Đến ngày/giờ']}
-                      style={{ width: '100%' }}
+                      className="w-full!"
                     />
                   </Form.Item>
                 </>
               )}
             />
-          </Space>
+          </>
         )}
       >
         Nhật ký truy cập

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Alert, Button, Form, Input, Modal, Space, Table, Tag, Typography, message } from 'antd'
-import { DeleteOutlined, EditOutlined, PlusOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons'
+import { DeleteOutlined, EditOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
 import PageTitle from '@/components/base/PageTitle'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
@@ -124,24 +124,28 @@ export default function LookupLists() {
         const canDelete = ability.can('DELETE' as never, 'LOOKUP')
         return (
           <>
-            <PageTitle subtitle="Danh mục dùng chung cho các trường tùy chỉnh" extra={(
-              <Space wrap>
-                <Input
-                  allowClear
-                  prefix={<SearchOutlined style={{ color: 'var(--brand-text-inactive, #A9ADB2)' }} />}
-                  placeholder="Tìm tên, mã danh mục hoặc mã mục"
-                  style={{ width: 260 }}
-                  value={query}
-                  onChange={(event) => {
-                    setQuery(event.target.value)
-                    if (!event.target.value) void load('')
-                  }}
-                  onPressEnter={() => void load(query)}
-                />
-                <Button icon={<ReloadOutlined />} onClick={() => void load(query)}>Tải lại</Button>
-                {canCreate && <Button type="primary" icon={<PlusOutlined />} onClick={() => { form.resetFields(); setCreateOpen(true) }}>Tạo danh mục</Button>}
-              </Space>
-            )}>Danh mục chọn</PageTitle>
+            <PageTitle
+              subtitle="Danh mục dùng chung cho các trường tùy chỉnh"
+              left={(
+                <>
+                  <Input
+                    allowClear
+                    prefix={<SearchOutlined className="text-[var(--brand-text-inactive,#A9ADB2)]" />}
+                    placeholder="Tìm tên, mã danh mục hoặc mã mục"
+                    className="w-[260px]!"
+                    value={query}
+                    onChange={(event) => {
+                      setQuery(event.target.value)
+                      if (!event.target.value) void load('')
+                    }}
+                    onPressEnter={() => void load(query)}
+                  />
+                </>
+              )}
+              right={canCreate ? (
+                <Button type="primary" icon={<PlusOutlined />} onClick={() => { form.resetFields(); setCreateOpen(true) }}>Tạo danh mục</Button>
+              ) : undefined}
+            >Danh mục chọn</PageTitle>
 
             {!canRead && !loading && <Alert className="mb-4" type="error" showIcon message="Tài khoản chưa có quyền xem danh mục" />}
             {error && <Alert className="mb-4" type="error" showIcon message="Không tải được danh mục" description={error} action={<Button size="small" onClick={() => void load(query)}>Thử lại</Button>} />}

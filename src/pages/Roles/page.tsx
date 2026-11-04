@@ -42,7 +42,6 @@ export default function Roles() {
 
   // Legacy envelope: responseData = { count, rows, totalPages, currentPage }
   const roles = (pickData<{ rows?: RoleRow[] }>(rolesQuery.data)?.rows ?? []) as RoleRow[]
-  const totalRoles = pickData<{ count?: number }>(rolesQuery.data)?.count ?? roles.length
   const permissionsPayload = pickData<PermRow[] | { rows?: PermRow[] }>(permissionsQuery.data)
   const perms = (
     Array.isArray(permissionsPayload) ? permissionsPayload : permissionsPayload?.rows ?? []
@@ -219,7 +218,7 @@ export default function Roles() {
     <>
       <PageTitle
         subtitle="Vai trò và phân quyền truy cập hệ thống"
-        extra={
+        right={
           <Can I="MANAGE" a="PERMISSION">
             <Button
               type="primary"
@@ -234,12 +233,6 @@ export default function Roles() {
       >
         Phân quyền
       </PageTitle>
-
-      <div className="mb-5">
-        <p className="m-0 text-sm text-slate-600">
-          Quản lý vai trò và phân quyền cho người dùng ({totalRoles} vai trò)
-        </p>
-      </div>
 
       {loadError && (
         <Alert

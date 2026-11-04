@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Alert, Button, Checkbox, Form, Space, Table, Tag, message } from 'antd'
+import { Alert, Button, Checkbox, Form, Table, Tag, message } from 'antd'
 import { BellOutlined, CheckOutlined, MailOutlined, SendOutlined } from '@ant-design/icons'
 import PageTitle from '@/components/base/PageTitle'
 import StatCards, { type StatItem } from '@/components/base/StatCards'
@@ -124,27 +124,26 @@ export default function Notifications() {
 
       <PageTitle
         subtitle="Thông báo hệ thống gửi tới khách hàng"
-        extra={
-          <Space wrap>
-            {selectedIds.length > 0 && (
-              <Button icon={<CheckOutlined />} onClick={() => void markSelectedRead()}>
-                Đánh dấu đã đọc ({selectedIds.length})
-              </Button>
-            )}
-            <Can I="CREATE" a="NOTIFICATION">
-              <Button
-                className="max-sm:w-full"
-                type="primary"
-                icon={<SendOutlined />}
-                onClick={() => {
-                  form.setFieldsValue({ event_key: 'SYSTEM', channel: 'app', title: '', body: '', user_id: undefined })
-                  setOpen(true)
-                }}
-              >
-                Gửi thông báo
-              </Button>
-            </Can>
-          </Space>
+        left={
+          selectedIds.length > 0 && (
+            <Button icon={<CheckOutlined />} onClick={() => void markSelectedRead()}>
+              Đánh dấu đã đọc ({selectedIds.length})
+            </Button>
+          )
+        }
+        right={
+          <Can I="CREATE" a="NOTIFICATION">
+            <Button
+              type="primary"
+              icon={<SendOutlined />}
+              onClick={() => {
+                form.setFieldsValue({ event_key: 'SYSTEM', channel: 'app', title: '', body: '', user_id: undefined })
+                setOpen(true)
+              }}
+            >
+              Gửi thông báo
+            </Button>
+          </Can>
         }
       >
         Thông báo

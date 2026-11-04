@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import { Button, Form, Input, Modal, Select, Space, Table, Tag, Typography, message } from 'antd'
+import { Form, Input, Modal, Select, Table, Tag, Typography, message } from 'antd'
 import type { TableColumnsType } from 'antd'
-import { CheckOutlined, ReloadOutlined, SearchOutlined, StopOutlined } from '@ant-design/icons'
+import { CheckOutlined, SearchOutlined, StopOutlined } from '@ant-design/icons'
 import { useQuery } from '@tanstack/react-query'
 import PageTitle from '@/components/base/PageTitle'
 import ListFilterPopover from '@/components/base/ListFilterPopover'
@@ -136,7 +136,7 @@ export default function Orders() {
         const items = row.items ?? []
         if (!items.length) return '—'
         const names = items.map((i) => `${i.product_name} ×${i.qty ?? 1}`).join(', ')
-        return <Typography.Text style={{ fontSize: 13 }} ellipsis={{ tooltip: names }}>{names}</Typography.Text>
+        return <Typography.Text ellipsis={{ tooltip: names }}>{names}</Typography.Text>
       },
     },
     { key: 'total_amount', title: 'Tổng tiền', dataIndex: 'total_amount', width: 130, render: (v?: number | null) => formatMoney(v) },
@@ -195,13 +195,13 @@ export default function Orders() {
     <>
       <PageTitle
         subtitle="Theo dõi và xử lý đơn hàng từ cửa hàng"
-        extra={
-          <Space wrap>
+        left={
+          <>
             <Input
               allowClear
-              prefix={<SearchOutlined style={{ color: 'var(--brand-text-inactive, #A9ADB2)' }} />}
+              prefix={<SearchOutlined className="text-[var(--brand-text-inactive,#A9ADB2)]" />}
               placeholder="Tìm mã đơn, tên, SĐT"
-              style={{ width: 260 }}
+              className="w-[260px]!"
               value={searchText}
               onChange={(event) => {
                 setSearchText(event.target.value)
@@ -221,13 +221,12 @@ export default function Orders() {
               draftVisibleColumns={draftVisibleColumns}
               onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as OrderColumnKey[])}
               filterItems={(
-                <Form.Item name="status" label="Trạng thái" style={{ marginBottom: 0 }}>
+                <Form.Item name="status" label="Trạng thái" className="mb-0!">
                   <Select allowClear placeholder="Tất cả" options={Object.entries(STATUS_META).map(([value, meta]) => ({ value, label: meta.label }))} />
                 </Form.Item>
               )}
             />
-            <Button icon={<ReloadOutlined />} onClick={() => void ordersQuery.refetch()}>Tải lại</Button>
-          </Space>
+          </>
         }
       >
         Đơn hàng

@@ -11,7 +11,7 @@ import {
   message,
 } from 'antd'
 import type { TableColumnsType } from 'antd'
-import { CheckCircleOutlined, DeleteOutlined, EditOutlined, PlusOutlined, ReloadOutlined, TagsOutlined } from '@ant-design/icons'
+import { CheckCircleOutlined, DeleteOutlined, EditOutlined, PlusOutlined, TagsOutlined } from '@ant-design/icons'
 import { useQueryClient } from '@tanstack/react-query'
 import { Can, useAbility } from '@casl/react'
 import PageTitle from '@/components/base/PageTitle'
@@ -266,9 +266,8 @@ export default function DiscountRules() {
             <StatCards items={statItems} />
             <PageTitle
               subtitle="Quyết định giảm giá và ưu đãi theo hạng thẻ"
-              extra={
-                <Space wrap>
-                  <Button icon={<ReloadOutlined />} onClick={() => void rulesQuery.refetch()}>Tải lại</Button>
+              left={
+                <>
                   <ListFilterPopover
                     open={filterOpen}
                     onOpenChange={setFilterOpen}
@@ -289,10 +288,12 @@ export default function DiscountRules() {
                     draftVisibleColumns={draftVisibleColumns}
                     onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as DiscountColumnKey[])}
                   />
-                  <Can I="CREATE" a="DISCOUNT">
-                    <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor()}>Thêm quy tắc</Button>
-                  </Can>
-                </Space>
+                </>
+              }
+              right={
+                <Can I="CREATE" a="DISCOUNT">
+                  <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor()}>Thêm quy tắc</Button>
+                </Can>
               }
             >
               Giảm giá & Ưu đãi

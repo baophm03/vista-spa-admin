@@ -7,6 +7,7 @@ import { errorMessage, pickData } from '@/api/helpers'
 import ListPagination from '@/components/base/ListPagination'
 import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import TableEmpty from '@/components/base/TableEmpty'
+import ToolbarRow from '@/components/base/ToolbarRow'
 import { paginateRows } from '@/utils/listTable'
 import {
   deleteShiftTemplatesId,
@@ -97,10 +98,10 @@ export default function ShiftCatalogTab({ branches, access, loadingShared }: Pro
   ]
 
   return <div>
-    <Space wrap style={{ marginBottom: 16 }}>
+    <ToolbarRow>
       {access.isAdmin && <Select allowClear placeholder="Tất cả cơ sở" style={{ width: 190 }} value={branchFilter} onChange={(value) => { setBranchFilter(value); setPage(1) }} options={branches.map((branch) => ({ value: branch.id, label: branch.name }))} />}
       {access.isAdmin && <Button type="primary" icon={<PlusOutlined />} onClick={() => openForm()}>Thêm ca</Button>}
-    </Space>
+    </ToolbarRow>
     {!!error && <Alert type="error" showIcon message="Không tải được danh mục ca" description={error} action={<Button size="small" icon={<ReloadOutlined />} onClick={() => { setPage(1); void templatesQuery.refetch() }}>Thử lại</Button>} style={{ marginBottom: 16 }} />}
     <Table<ShiftTemplate>
       className="desktop-only"

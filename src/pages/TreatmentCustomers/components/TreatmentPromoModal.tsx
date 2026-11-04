@@ -89,7 +89,7 @@ export default function TreatmentPromoModal({
         width={640}
       >
         <Alert
-          type="warning" showIcon style={{ marginBottom: 12 }}
+          type="warning" showIcon className="mb-3"
           message={`Giảm giá hiện tại: ${formatMoney(promoRow?.discount_amount ?? 0)} — Điểm đã dùng: ${promoRow?.points_used ?? 0} (${formatMoney(promoRow?.points_discount ?? 0)})`}
         />
         <Tabs
@@ -100,10 +100,10 @@ export default function TreatmentPromoModal({
               children: (
                 <>
                   {availableDiscounts.length === 0 && (
-                    <Alert type="info" showIcon style={{ marginBottom: 12 }} message="Khách hiện không đủ điều kiện ưu đãi nào, hoặc chưa tải được danh sách." />
+                    <Alert type="info" showIcon className="mb-3" message="Khách hiện không đủ điều kiện ưu đãi nào, hoặc chưa tải được danh sách." />
                   )}
                   {availableDiscounts.length > 0 && (
-                    <Form form={discountForm} layout="vertical" style={{ marginBottom: 16 }}>
+                    <Form form={discountForm} layout="vertical" className="mb-4">
                       <Form.Item name="rule_id" label="Quy tắc ưu đãi đủ điều kiện" rules={[{ required: true, message: 'Chọn quy tắc' }]}>
                         <Select
                           showSearch
@@ -140,7 +140,7 @@ export default function TreatmentPromoModal({
                               ]}
                               extra={`Khoảng cho phép: ${rule.percent_min ?? 0}–${rule.percent_max ?? 0}%. Trần tổng xếp chồng: ${rule.max_total_percent ?? 50}%.`}
                             >
-                              <InputNumber min={0} max={100} precision={0} style={{ width: '100%' }} />
+                              <InputNumber min={0} max={100} precision={0} className="w-full!" />
                             </Form.Item>
                           )
                         }}
@@ -162,13 +162,13 @@ export default function TreatmentPromoModal({
                 <Form form={redeemForm} layout="vertical">
                   {pointsLoading ? <Spin size="small" /> : null}
                   {pointsError ? (
-                    <Alert type="error" showIcon style={{ marginBottom: 12 }} message="Không tải được số dư và cấu hình điểm" description={pointsErrorMessage} />
+                    <Alert type="error" showIcon className="mb-3" message="Không tải được số dư và cấu hình điểm" description={pointsErrorMessage} />
                   ) : null}
                   {pointsLoaded && !isPointsEnabled ? (
-                    <Alert type="warning" showIcon style={{ marginBottom: 12 }} message="Tính năng đổi điểm đang tắt theo cấu hình hệ thống." />
+                    <Alert type="warning" showIcon className="mb-3" message="Tính năng đổi điểm đang tắt theo cấu hình hệ thống." />
                   ) : null}
                   {pointsLoaded && isPointsEnabled && !redemptionConfigReady ? (
-                    <Alert type="error" showIcon style={{ marginBottom: 12 }} message="Cấu hình quy đổi điểm chưa hợp lệ. Kiểm tra giá trị điểm và tỷ lệ tối thiểu/tối đa." />
+                    <Alert type="error" showIcon className="mb-3" message="Cấu hình quy đổi điểm chưa hợp lệ. Kiểm tra giá trị điểm và tỷ lệ tối thiểu/tối đa." />
                   ) : null}
                   <Form.Item
                     name="points"
@@ -178,10 +178,10 @@ export default function TreatmentPromoModal({
                       { validator: async (_, value) => Number.isInteger(Number(value)) && Number(value) > 0 ? Promise.resolve() : Promise.reject(new Error('Số điểm phải là số nguyên dương')) },
                     ]}
                   >
-                    <InputNumber min={1} max={redeemBalance > 0 ? redeemBalance : undefined} precision={0} style={{ width: '100%' }} disabled={!isPointsEnabled || !redemptionConfigReady || redeemBalance <= 0} />
+                    <InputNumber min={1} max={redeemBalance > 0 ? redeemBalance : undefined} precision={0} className="w-full!" disabled={!isPointsEnabled || !redemptionConfigReady || redeemBalance <= 0} />
                   </Form.Item>
                   {pointsLoaded && isPointsEnabled && redemptionConfigReady ? (
-                    <Card size="small" style={{ marginBottom: 12 }}>
+                    <Card size="small" className="mb-3">
                       <Space direction="vertical" size={4}>
                         <Typography.Text>Điểm hiện có: <Typography.Text strong>{redeemBalance.toLocaleString('vi-VN')}</Typography.Text></Typography.Text>
                         <Typography.Text>Giá trị dự kiến: <Typography.Text strong>{redeemPointsValue > 0 ? formatMoney(redeemMoney) : '—'}</Typography.Text></Typography.Text>
@@ -192,7 +192,7 @@ export default function TreatmentPromoModal({
                     </Card>
                   ) : null}
                   {redeemValidationMessage && redeemPointsValue > 0 ? (
-                    <Alert type="error" showIcon style={{ marginBottom: 12 }} message={redeemValidationMessage} />
+                    <Alert type="error" showIcon className="mb-3" message={redeemValidationMessage} />
                   ) : null}
                   <Can I="POINTS_ADJUST" a="MEMBERSHIP">
                     <Button type="primary" loading={redeemSubmitting} disabled={!canSubmitRedeem} onClick={onRedeemPoints}>
@@ -206,7 +206,7 @@ export default function TreatmentPromoModal({
               key: 'rewards',
               label: 'Quà đã đổi',
               children: (
-                <Space direction="vertical" size={12} style={{ width: '100%' }}>
+                <Space direction="vertical" size={12} className="w-full!">
                   <Alert
                     type="info"
                     showIcon

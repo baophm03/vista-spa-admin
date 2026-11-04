@@ -47,7 +47,7 @@ export default function TreatmentCreateModal({
         cancelText="Hủy"
         confirmLoading={submitting}
       >
-        <Form form={form} layout="vertical" style={{ marginTop: 12 }}>
+        <Form form={form} layout="vertical" className="mt-3">
           <Form.Item name="customer_profile_id" label="Khách hàng" rules={[{ required: true, message: 'Chọn khách hàng' }]}>
             <Select
               showSearch
@@ -76,13 +76,13 @@ export default function TreatmentCreateModal({
             extra={selectedSalePackage?.quota_type === 'VALUE' ? 'Định mức sử dụng của gói này sẽ tự bằng số tiền bán.' : undefined}
             rules={[{ required: true, message: 'Nhập số tiền' }]}
           >
-            <InputNumber min={0} step={100000} suffix={currencySymbol} style={{ width: '100%' }} />
+            <InputNumber min={0} step={100000} suffix={currencySymbol} className="w-full!" />
           </Form.Item>
           <Form.Item name="sessions_bonus" label="Buổi tặng" extra="Cộng thêm vào số buổi của gói — để trống nếu không tặng">
-            <InputNumber min={0} precision={0} style={{ width: '100%' }} />
+            <InputNumber min={0} precision={0} className="w-full!" />
           </Form.Item>
           <Form.Item name="expires_at" label="Hạn sử dụng" extra="Để trống nếu gói không giới hạn thời gian">
-            <DatePicker style={{ width: '100%' }} />
+            <DatePicker className="w-full!" />
           </Form.Item>
           <CustomFieldFormItems definitions={customFieldDefs} />
         </Form>

@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Alert, Button, ColorPicker, Form, Input, InputNumber, Modal, Space, Table, Tag, Typography, message } from 'antd'
-import { ArrowDownOutlined, ArrowUpOutlined, PlusOutlined, ReloadOutlined } from '@ant-design/icons'
+import { ArrowDownOutlined, ArrowUpOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons'
 import { errorMessage, pickData } from '@/api/helpers'
 import ListPagination from '@/components/base/ListPagination'
+import RowActionsMenu from '@/components/base/RowActionsMenu'
 import TableEmpty from '@/components/base/TableEmpty'
 import { paginateRows } from '@/utils/listTable'
 import type { LookupItem } from '@/api/models/lookupItem'
@@ -136,7 +137,6 @@ export default function LookupItemsManager({ listId }: { listId: string }) {
       <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 16 }} wrap>
         <Typography.Text type="secondary">Mã mục không đổi sau khi tạo. Mục đã dùng chỉ có thể ẩn.</Typography.Text>
         <Space>
-          <Button icon={<ReloadOutlined />} onClick={() => { setItemsPage(1); void load() }}>Tải lại</Button>
           {canUpdate && <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor()}>Thêm mục</Button>}
         </Space>
       </Space>
@@ -161,20 +161,29 @@ export default function LookupItemsManager({ listId }: { listId: string }) {
           { title: 'Màu', dataIndex: 'color', width: 110, render: (value?: string | null) => { const color = normalizeLookupColor(value); return color ? <Tag color={color}>{color.toUpperCase()}</Tag> : '—' } },
           { title: 'Thứ tự', dataIndex: 'sort_order', width: 90 },
           { title: 'Trạng thái', dataIndex: 'is_active', width: 120, render: (value?: boolean) => <Tag color={value === false ? 'default' : 'green'}>{value === false ? 'Đã ẩn' : 'Đang dùng'}</Tag> },
-          ...(canUpdate || canDelete ? [{ title: 'Thao tác', key: 'actions', width: 220, render: (_: unknown, row: LookupItemWithColor) => {
+          ...(canUpdate || canDelete ? [{ title: 'Hành động', key: 'actions', align: 'center' as const, width: 90, render: (_: unknown, row: LookupItemWithColor) => {
             // index là vị trí trong trang hiện tại; quy đổi về vị trí trong mảng items đầy đủ
             const globalIndex = items.findIndex((item) => item.id === row.id)
+            const toggleItem = { key: 'toggle', label: row.is_active === false ? 'Bật lại' : 'Ẩn', danger: row.is_active !== false, disabled: saving }
             return (
-            <Space size="small">
-              {canUpdate && <>
-                <Button size="small" aria-label="Đưa lên" disabled={saving || globalIndex === 0} icon={<ArrowUpOutlined />} onClick={() => void persistOrder(row.id, items[globalIndex - 1].id)} />
-                <Button size="small" aria-label="Đưa xuống" disabled={saving || globalIndex === items.length - 1} icon={<ArrowDownOutlined />} onClick={() => void persistOrder(row.id, items[globalIndex + 1].id)} />
-                <Button size="small" onClick={() => openEditor(row)}>Sửa</Button>
-              </>}
-              {row.is_active === false
-                ? canUpdate && <Button size="small" type="link" disabled={saving} onClick={() => void toggleActive(row)}>Bật lại</Button>
-                : canDelete && <Button size="small" type="link" disabled={saving} onClick={() => void toggleActive(row)}>Ẩn</Button>}
-            </Space>
+            <RowActionsMenu
+              items={[
+                ...(canUpdate ? [
+                  { key: 'up', icon: <ArrowUpOutlined />, label: 'Đưa lên', disabled: saving || globalIndex === 0 },
+                  { key: 'down', icon: <ArrowDownOutlined />, label: 'Đưa xuống', disabled: saving || globalIndex === items.length - 1 },
+                  { key: 'edit', icon: <EditOutlined />, label: 'Sửa' },
+                ] : []),
+                ...(row.is_active === false
+                  ? (canUpdate ? [toggleItem] : [])
+                  : (canDelete ? [toggleItem] : [])),
+              ]}
+              onSelect={(key) => {
+                if (key === 'up') void persistOrder(row.id, items[globalIndex - 1].id)
+                else if (key === 'down') void persistOrder(row.id, items[globalIndex + 1].id)
+                else if (key === 'edit') openEditor(row)
+                else if (key === 'toggle') void toggleActive(row)
+              }}
+            />
             )
           } }] : []),
         ]}

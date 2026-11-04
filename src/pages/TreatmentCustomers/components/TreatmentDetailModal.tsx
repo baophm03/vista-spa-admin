@@ -82,20 +82,20 @@ export default function TreatmentDetailModal({
         style={{ top: 20 }}
       >
         {detail && (
-          <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+          <div className="flex flex-wrap items-start gap-5">
             {/* Rail trái: tóm tắt + hành động — card nền brand-bg như modal lần làm dịch vụ */}
-            <aside style={{ flex: '1 1 260px', maxWidth: 330, padding: 18, border: '1px solid var(--brand-border)', borderRadius: 14, background: 'var(--brand-bg)' }}>
-              <Typography.Text type="secondary" style={{ fontSize: 12, fontWeight: 800, letterSpacing: 1.2 }}>
+            <aside className="max-w-[330px] flex-[1_1_260px] rounded-[14px] border border-[var(--brand-border)] bg-[var(--brand-bg)] p-[18px]">
+              <Typography.Text type="secondary" className="text-xs font-extrabold tracking-[1.2px]">
                 {detail.quota_type === 'UNLIMITED' ? 'LIỆU TRÌNH TRỌN GÓI' : 'TIẾN ĐỘ LIỆU TRÌNH'}
               </Typography.Text>
-              <Typography.Title level={4} style={{ margin: '5px 0 0' }}>{packageName(detail)}</Typography.Title>
-              <Typography.Text type="secondary" style={{ display: 'block', fontSize: 13 }}>
+              <Typography.Title level={4} className="mt-[5px]! mb-0!">{packageName(detail)}</Typography.Title>
+              <Typography.Text type="secondary" className="block text-[13px]">
                 {QUOTA_LABEL[detail.quota_type ?? ''] ?? detail.quota_type}
               </Typography.Text>
               {detail.quota_type !== 'UNLIMITED' ? (
                 <>
-                  <Progress percent={treatmentProgress(detail) ?? 0} size="small" showInfo={false} strokeColor="var(--brand-primary)" style={{ marginTop: 10 }} />
-                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, fontSize: 13 }}>
+                  <Progress percent={treatmentProgress(detail) ?? 0} size="small" showInfo={false} strokeColor="var(--brand-primary)" className="mt-2.5" />
+                  <div className="flex justify-between gap-2.5 text-[13px]">
                     <span>Đã dùng</span>
                     <strong>
                       {detail.quota_type === 'SESSIONS'
@@ -105,43 +105,43 @@ export default function TreatmentDetailModal({
                   </div>
                 </>
               ) : (
-                <Typography.Text type="secondary" style={{ display: 'block', marginTop: 4 }}>Không giới hạn số buổi</Typography.Text>
+                <Typography.Text type="secondary" className="mt-1 block">Không giới hạn số buổi</Typography.Text>
               )}
-              <Divider style={{ margin: '12px 0' }} />
-              <div style={{ display: 'grid', gap: 9, fontSize: 13.5 }}>
+              <Divider className="my-3!" />
+              <div className="grid gap-[9px] text-[13.5px]">
                 {canReadPayments && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
+                  <div className="flex justify-between gap-2.5">
                     <span>Đã trả</span><strong>{formatMoney(detail.paid_amount)}</strong>
                   </div>
                 )}
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
+                <div className="flex justify-between gap-2.5">
                   <span>Công nợ</span>
-                  <strong style={{ color: (detail.debt_amount ?? 0) > 0 ? '#D97706' : '#159447' }}>{formatMoney(detail.debt_amount)}</strong>
+                  <strong className={(detail.debt_amount ?? 0) > 0 ? 'text-[#D97706]' : 'text-[#159447]'}>{formatMoney(detail.debt_amount)}</strong>
                 </div>
                 {detail.quota_type === 'SESSIONS' && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
+                  <div className="flex justify-between gap-2.5">
                     <span>Còn lại</span><strong>{sessionUsage(detail).remaining} buổi</strong>
                   </div>
                 )}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
+                <div className="flex items-center justify-between gap-2.5">
                   <span>Trạng thái</span>
-                  <Tag color={STATUS_META[detail.status ?? '']?.color} style={{ marginInlineEnd: 0 }}>
+                  <Tag color={STATUS_META[detail.status ?? '']?.color} className="me-0">
                     {STATUS_META[detail.status ?? '']?.label ?? detail.status}
                   </Tag>
                 </div>
               </div>
               {supplementalInfo.length > 0 && (
-                <div style={{ borderTop: '1px solid var(--brand-border-soft)', marginTop: 12, paddingTop: 12 }}>
+                <div className="mt-3 border-t border-[var(--brand-border-soft)] pt-3">
                   <Typography.Text strong>Thông tin bổ sung</Typography.Text>
                   {supplementalInfo.map(({ key, label, value }) => (
-                    <div key={key} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginTop: 6, fontSize: 13 }}>
-                      <span style={{ color: '#6F7071' }}>{label}</span>
-                      <span style={{ textAlign: 'right', overflowWrap: 'anywhere' }}>{value ?? '—'}</span>
+                    <div key={key} className="mt-1.5 flex justify-between gap-3 text-[13px]">
+                      <span className="text-[#6F7071]">{label}</span>
+                      <span className="text-right wrap-anywhere">{value ?? '—'}</span>
                     </div>
                   ))}
                 </div>
               )}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 16 }}>
+              <div className="mt-4 flex flex-col gap-2">
                 {canCreateSessions && detail.status === 'ACTIVE' && detail.quota_type !== 'UNLIMITED' && (
                   <Button block disabled={addingSessionId !== null} loading={addingSessionId === detail.id} onClick={() => onAddSession(detail)}>
                     +1 buổi
@@ -176,93 +176,29 @@ export default function TreatmentDetailModal({
               </div>
             </aside>
 
-            {/* Vùng chính: buổi + thanh toán — desktop dùng Tabs, mobile dùng Select */}
-            <div style={{ flex: '3 1 560px', minWidth: 0 }}>
+            {/* Vùng chính: desktop dùng thanh Tabs, mobile dùng Select — nội dung render DUY NHẤT
+                ở khối phía dưới; trước đây Tabs lẫn khối dưới cùng cùng render nội dung gây double render */}
+            <div className="min-w-0 flex-[3_1_560px]">
               <Tabs
-                className="desktop-only"
+                className="max-md:hidden!"
                 activeKey={detailTab}
                 onChange={(key) => onTabChange(key as typeof detailTab)}
                 items={[
-                  {
-                    key: 'sessions',
-                    label: 'Buổi điều trị',
-                    children: (
-                      <SessionTimeline
-                        ctId={detail.id}
-                        ctStatus={detail.status}
-                        treatmentTotalAmount={detail.total_amount}
-                        formatMoney={formatMoney}
-                        currencySymbol={currencySymbol}
-                        staffOptions={staffOptions}
-                        customFieldDefinitions={sessionCustomFields}
-                        isAdmin={isAdmin}
-                        onChanged={() => { refresh(); void refreshSelectedDetail() }}
-                        refreshKey={sessionsRefreshKey}
-                        focusSessionId={focusSessionId}
-                        onFocusSessionHandled={onFocusSessionHandled}
-                      />
-                    ),
-                  },
-                  ...(canReadPayments ? [{
-                    key: 'payments',
-                    label: 'Lịch sử thanh toán',
-                    children: (
-                      <div style={{ border: '1px solid var(--brand-border)', borderRadius: 12, overflow: 'hidden', background: '#fff' }}>
-                        <SubHead>Lịch sử thanh toán</SubHead>
-                        <Table<PaymentRow>
-                          rowKey="id"
-                          size="small"
-                          loading={payLoading}
-                          dataSource={payments}
-                          pagination={false}
-                          locale={{ emptyText: <TableEmpty description="Chưa có lần thanh toán nào" /> }}
-                          columns={[
-                            {
-                              title: 'Thời gian',
-                              key: 'time',
-                              width: 170,
-                              render: (_, p) => {
-                                const t = p.paid_at || p.created_at
-                                return formatDateTime(t)
-                              },
-                            },
-                            {
-                              title: 'Số tiền',
-                              dataIndex: 'amount',
-                              width: 140,
-                              render: (v) => <b>{formatMoney(v)}</b>,
-                            },
-                            {
-                              title: 'Phương thức',
-                              dataIndex: 'method',
-                              width: 130,
-                              render: (v: string) => paymentMethodLabels[v] ?? PAY_METHOD[v] ?? v ?? '—',
-                            },
-                            { title: 'Ghi chú', dataIndex: 'note', render: (v) => v || '—' },
-                          ]}
-                        />
-                      </div>
-                    ),
-                  }] : []),
-                  {
-                    key: 'points',
-                    label: 'Điểm thưởng',
-                    children: <PointsHistoryPanel profileId={detail.customer_profile_id} />,
-                  },
+                  { key: 'sessions', label: 'Buổi điều trị' },
+                  ...(canReadPayments ? [{ key: 'payments', label: 'Lịch sử thanh toán' }] : []),
+                  { key: 'points', label: 'Điểm thưởng' },
                 ]}
               />
-              <div className="mobile-only" style={{ marginBottom: 12 }}>
-                <Select
-                  style={{ width: '100%' }}
-                  value={detailTab}
-                  onChange={(key) => onTabChange(key as typeof detailTab)}
-                  options={([
-                    { value: 'sessions', label: 'Buổi điều trị' },
-                    ...(canReadPayments ? [{ value: 'payments', label: 'Lịch sử thanh toán' }] : []),
-                    { value: 'points', label: 'Điểm thưởng' },
-                  ])}
-                />
-              </div>
+              <Select
+                className="mb-6! w-full md:hidden!"
+                value={detailTab}
+                onChange={(key) => onTabChange(key as typeof detailTab)}
+                options={([
+                  { value: 'sessions', label: 'Buổi điều trị' },
+                  ...(canReadPayments ? [{ value: 'payments', label: 'Lịch sử thanh toán' }] : []),
+                  { value: 'points', label: 'Điểm thưởng' },
+                ])}
+              />
               {detailTab === 'sessions' && (
                 <SessionTimeline
                   ctId={detail.id}
@@ -281,39 +217,42 @@ export default function TreatmentDetailModal({
               )}
               {detailTab === 'payments' && canReadPayments && (
                 <>
-                  <Table<PaymentRow>
-                    className="desktop-only"
-                    rowKey="id"
-                    size="small"
-                    loading={payLoading}
-                    dataSource={payments}
-                    pagination={false}
-                    locale={{ emptyText: <TableEmpty description="Chưa có lần thanh toán nào" /> }}
-                    columns={[
-                      {
-                        title: 'Thời gian',
-                        key: 'time',
-                        width: 170,
-                        render: (_, p) => {
-                          const t = p.paid_at || p.created_at
-                          return formatDateTime(t)
+                  {/* Desktop: bảng trong khung viền (giữ giao diện tab cũ); MobileCards tự ẩn trên desktop */}
+                  <div className="hidden overflow-hidden rounded-xl border border-[var(--brand-border)] bg-white md:block">
+                    <SubHead>Lịch sử thanh toán</SubHead>
+                    <Table<PaymentRow>
+                      rowKey="id"
+                      size="small"
+                      loading={payLoading}
+                      dataSource={payments}
+                      pagination={false}
+                      locale={{ emptyText: <TableEmpty description="Chưa có lần thanh toán nào" /> }}
+                      columns={[
+                        {
+                          title: 'Thời gian',
+                          key: 'time',
+                          width: 170,
+                          render: (_, p) => {
+                            const t = p.paid_at || p.created_at
+                            return formatDateTime(t)
+                          },
                         },
-                      },
-                      {
-                        title: 'Số tiền',
-                        dataIndex: 'amount',
-                        width: 140,
-                        render: (v) => <b>{formatMoney(v)}</b>,
-                      },
-                      {
-                        title: 'Phương thức',
-                        dataIndex: 'method',
-                        width: 130,
-                        render: (v: string) => paymentMethodLabels[v] ?? PAY_METHOD[v] ?? v ?? '—',
-                      },
-                      { title: 'Ghi chú', dataIndex: 'note', render: (v) => v || '—' },
-                    ]}
-                  />
+                        {
+                          title: 'Số tiền',
+                          dataIndex: 'amount',
+                          width: 140,
+                          render: (v) => <b>{formatMoney(v)}</b>,
+                        },
+                        {
+                          title: 'Phương thức',
+                          dataIndex: 'method',
+                          width: 130,
+                          render: (v: string) => paymentMethodLabels[v] ?? PAY_METHOD[v] ?? v ?? '—',
+                        },
+                        { title: 'Ghi chú', dataIndex: 'note', render: (v) => v || '—' },
+                      ]}
+                    />
+                  </div>
                   <MobileCards
                     rows={payments}
                     rowKey={(p) => p.id}
@@ -339,10 +278,6 @@ export default function TreatmentDetailModal({
           </div>
         )}
       </Modal>
-
-
-
-
   )
 }
 

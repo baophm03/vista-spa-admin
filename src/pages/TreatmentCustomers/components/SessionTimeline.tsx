@@ -299,8 +299,8 @@ export default function SessionTimeline({
     }
   }
 
-  if (loading) return <Spin style={{ display: 'block', margin: '32px auto' }} />
-  if (!sessions.length) return <Empty description="Chưa có buổi nào — bấm +1 buổi ở ngoài bảng để tạo" style={{ padding: '24px 0' }} />
+  if (loading) return <Spin className="mx-auto my-8 block!" />
+  if (!sessions.length) return <Empty description="Chưa có buổi nào — bấm +1 buổi ở ngoài bảng để tạo" className="py-6" />
 
   /** Admin toàn quyền; user thường chỉ bắt đầu buổi N khi mọi buổi thường < N đã hoàn tất (bảo hành ngoại lệ) */
   const canStart = (s: SessionRow) =>
@@ -324,7 +324,7 @@ export default function SessionTimeline({
   return (
     <>
       {/* Mỗi buổi = 1 bảng liền mạch: header tint + dòng subheader pha + dòng dữ liệu */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <div className="flex flex-col gap-3.5">
         {sessions.map((s) => {
           const st = sessionStatusConfig[s.status as keyof typeof sessionStatusConfig] ?? { label: s.status ?? '—', color: '#BFBFBF' }
           // Ảnh quá trình = kind 'process' + ảnh cũ chưa phân loại
@@ -332,24 +332,10 @@ export default function SessionTimeline({
           return (
             <div
               key={s.id}
-              style={{
-                border: '1px solid var(--brand-border)',
-                borderRadius: 12,
-                overflow: 'hidden',
-                background: '#FFFFFF',
-              }}
+              className="overflow-hidden rounded-xl border border-[var(--brand-border)] bg-white"
             >
               {/* Header bảng buổi */}
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 12,
-                  flexWrap: 'wrap',
-                  padding: '13px 16px',
-                  background: 'var(--brand-bg)',
-                }}
-              >
+              <div className="flex flex-wrap items-center gap-3 bg-[var(--brand-bg)] px-4 py-[13px]">
                 <div
                   style={{
                     width: 40,
@@ -369,7 +355,7 @@ export default function SessionTimeline({
                   {String(s.session_no).padStart(2, '0')}
                 </div>
                 <Space size={8} align="center" wrap>
-                  <span style={{ fontWeight: 800, fontSize: 15.5, color: '#26211F' }}>
+                  <span className="text-[15.5px] font-extrabold text-[#26211F]">
                     {s.scheduled_at
                       ? formatDateTime(s.scheduled_at)
                       : s.appointment?.appt_date
@@ -391,13 +377,13 @@ export default function SessionTimeline({
                     {st.label}
                   </span>
                   {!!s.is_warranty && (
-                    <span style={{ fontSize: 13, fontWeight: 700, padding: '3px 12px', borderRadius: 999, background: '#F59E0B1A', color: '#B45309' }}>
+                    <span className="rounded-full bg-[#F59E0B1A] px-3 py-[3px] text-[13px] font-bold text-[#B45309]">
                       Bảo hành
                     </span>
                   )}
                 </Space>
                 {(ctStatus === 'ACTIVE' || s.is_warranty) && (
-                    <Space size={6} wrap style={{ marginLeft: 'auto' }}>
+                    <Space size={6} wrap className="ml-auto">
                       {canStartSession && s.status === 'scheduled' && !s.is_warranty && (
                         <Tooltip title={!s.staff_id
                           ? 'Buổi chưa có KTV phụ trách — gán KTV trước khi bắt đầu'
@@ -455,12 +441,12 @@ export default function SessionTimeline({
 
               {/* Thân bảng — các dòng thông tin */}
               <TRow label="KTV">
-                {s.staff_id ? <span style={{ fontWeight: 600 }}>{staffName(s.staff_id)}</span> : <CellVal v={null} />}
+                {s.staff_id ? <span className="font-semibold">{staffName(s.staff_id)}</span> : <CellVal v={null} />}
               </TRow>
               {s.session_value != null && <TRow label="Giá trị buổi">{formatMoney(s.session_value)}</TRow>}
               {(s.started_at || s.done_at || s.completed_at) && (
                 <TRow label="Thời gian">
-                  <span style={{ fontSize: 13, fontWeight: 600, color: '#5A5C60' }}>
+                  <span className="text-[13px] font-semibold text-[#5A5C60]">
                     {[
                       s.started_at && `Bắt đầu ${formatDateTime(s.started_at)}`,
                       s.done_at && `Xong ${formatDateTime(s.done_at)}`,
@@ -537,9 +523,9 @@ export default function SessionTimeline({
         cancelText="Hủy"
         width={560}
       >
-        <Form form={editForm} layout="vertical" style={{ marginTop: 12 }}>
+        <Form form={editForm} layout="vertical" className="mt-3">
           {editOpen?.appointment_id && (
-            <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 12 }}>
+            <Typography.Text type="secondary" className="mb-3 block">
               Buổi này đã gắn với lịch hẹn; KTV và giờ lấy theo lịch hẹn. Muốn đổi, hãy sửa ở tab Lịch hẹn.
             </Typography.Text>
           )}
@@ -548,7 +534,7 @@ export default function SessionTimeline({
               <Form.Item name="scheduled_date" label="Ngày hẹn">
                 <DatePicker
                   format="DD/MM/YYYY"
-                  style={{ width: '100%' }}
+                  className="w-full!"
                   disabledDate={(date) => date.isBefore(dayjs().startOf('day'), 'day')}
                   disabled={!!editOpen?.appointment_id || editOpen?.status !== 'scheduled'}
                   onChange={(date) => {
@@ -607,7 +593,7 @@ export default function SessionTimeline({
                     message: `Giá trị một buổi không được vượt quá tổng tiền liệu trình (${formatMoney(maxSessionValue)})`,
                   }]}
                 >
-                  <InputNumber min={0} max={maxSessionValue} step={50000} suffix={currencySymbol} style={{ width: '100%' }} disabled={editOpen?.status === 'scheduled'} />
+                  <InputNumber min={0} max={maxSessionValue} step={50000} suffix={currencySymbol} className="w-full!" disabled={editOpen?.status === 'scheduled'} />
                 </Form.Item>
               )}
             </Col>
@@ -629,7 +615,7 @@ export default function SessionTimeline({
               message="Buổi trước chưa hoàn thành — phải hoàn tất các buổi theo đúng thứ tự trước khi ghi thông tin hoặc thêm ảnh cho buổi này."
             />
           )}
-          <Divider plain style={{ fontSize: 11, color: '#A9ADB2', letterSpacing: 1, margin: '4px 0 14px' }}>
+          <Divider plain className="mb-3.5! mt-1! tracking-[1px] text-[11px] text-[#A9ADB2]!">
             ĐẦU BUỔI
           </Divider>
           <Form.Item name="skin_note" label="Tình trạng da">
@@ -638,7 +624,7 @@ export default function SessionTimeline({
           <Form.Item name="concern" label="Điều cần cải thiện">
             <Input.TextArea rows={2} placeholder="VD: nám vùng gò má, lỗ chân lông to..." disabled={!!editOpen && sequenceBlocked(editOpen)} />
           </Form.Item>
-          <Divider plain style={{ fontSize: 11, color: '#A9ADB2', letterSpacing: 1, margin: '4px 0 14px' }}>
+          <Divider plain className="mb-3.5! mt-1! tracking-[1px] text-[11px] text-[#A9ADB2]!">
             THỰC HIỆN
           </Divider>
           <Form.Item name="diary" label="Nhật ký buổi làm">
@@ -653,15 +639,15 @@ export default function SessionTimeline({
             help={editOpen?.is_warranty ? 'Chỉ ghi nhận tiền sản phẩm thêm; không trừ quota và không tính tiền công kỹ thuật.' : 'Số tiền sản phẩm thêm, tách biệt với giá trị buổi và quota liệu trình.'}
             rules={[{ type: 'number', min: 0, message: 'Số tiền không được âm' }]}
           >
-            <InputNumber min={0} step={10000} suffix={currencySymbol} style={{ width: '100%' }} disabled={editOpen?.status === 'scheduled' || (!!editOpen && sequenceBlocked(editOpen))} />
+            <InputNumber min={0} step={10000} suffix={currencySymbol} className="w-full!" disabled={editOpen?.status === 'scheduled' || (!!editOpen && sequenceBlocked(editOpen))} />
           </Form.Item>}
-          <Divider plain style={{ fontSize: 11, color: '#A9ADB2', letterSpacing: 1, margin: '4px 0 14px' }}>
+          <Divider plain className="mb-3.5! mt-1! tracking-[1px] text-[11px] text-[#A9ADB2]!">
             KẾT QUẢ CUỐI BUỔI
           </Divider>
           <Form.Item name="result" label="Kết quả">
             <Input.TextArea rows={2} placeholder="VD: da sáng hơn, khách hài lòng..." disabled={editOpen?.status === 'scheduled' || (!!editOpen && sequenceBlocked(editOpen))} />
           </Form.Item>
-          <Divider plain style={{ fontSize: 11, color: '#A9ADB2', letterSpacing: 1, margin: '4px 0 14px' }}>
+          <Divider plain className="mb-3.5! mt-1! tracking-[1px] text-[11px] text-[#A9ADB2]!">
             TRƯỜNG TÙY CHỈNH
           </Divider>
           <CustomFieldFormItems definitions={customFieldDefinitions} disabled={!!editOpen && sequenceBlocked(editOpen)} />

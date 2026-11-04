@@ -10,7 +10,6 @@ import {
   Modal,
   Select,
   Segmented,
-  Space,
   Table,
   Tag,
   Typography,
@@ -22,12 +21,9 @@ import {
   CheckOutlined,
   CloseOutlined,
   EditOutlined,
-  LeftOutlined,
   MinusCircleOutlined,
   PlayCircleOutlined,
   PlusOutlined,
-  ReloadOutlined,
-  RightOutlined,
   StopOutlined,
   UnorderedListOutlined,
 } from '@ant-design/icons'
@@ -171,7 +167,7 @@ export default function Appointments() {
     () => (window.innerWidth < 768 ? 'list' : 'calendar'),
   )
   const [calendarView, setCalendarView] = useState<'day' | 'week'>('week')
-  const [calendarDate, setCalendarDate] = useState(() => dayjs())
+  const [calendarDate] = useState(() => dayjs())
   const [page, setPage] = useState(1)
   const [limit] = useState(10)
   const [filter, setFilter] = useState('all')
@@ -307,7 +303,6 @@ export default function Appointments() {
   const serviceFormPriceMax = Math.max(serviceFormPrice, Number(serviceForAppointmentForm?.price_max ?? serviceFormPrice))
   const serviceFormHasRange = serviceFormPriceMax > serviceFormPrice
 
-  const isRefreshingAppointments = displayMode === 'calendar'
     ? calendarAppointmentsQuery.isFetching
     : appointmentsQuery.isFetching
   const isSavingAppointment = createMutation.isPending || rescheduleMutation.isPending
@@ -670,96 +665,70 @@ export default function Appointments() {
     <>
       <PageTitle
         subtitle="Quản lý lịch hẹn dịch vụ theo lịch hoặc danh sách"
-        extra={
-          <Space wrap>
-            <Button
-              icon={<ReloadOutlined />}
-              loading={isRefreshingAppointments}
-              aria-label={isRefreshingAppointments ? 'Đang tải lịch hẹn' : 'Tải lại lịch hẹn'}
-              title={isRefreshingAppointments ? 'Đang tải lịch hẹn…' : 'Tải lại lịch hẹn'}
-              onClick={refresh}
-            >
-              {isRefreshingAppointments ? 'Đang tải…' : 'Tải lại'}
+        left={
+          <>
+            {displayMode === 'calendar' && (
+              <>
+                <Segmented
+                  value={calendarView}
+                  options={[{ label: 'Ngày', value: 'day' }, { label: 'Tuần', value: 'week' }]}
+                  onChange={(value) => setCalendarView(value as 'day' | 'week')}
+                />
+              </>
+            )}
+            <Segmented
+              value={displayMode}
+              options={[
+                { label: 'Lịch', value: 'calendar', icon: <CalendarOutlined /> },
+                { label: 'Danh sách', value: 'list', icon: <UnorderedListOutlined /> },
+              ]}
+              onChange={(value) => setDisplayMode(value as 'calendar' | 'list')}
+            />
+            <ListFilterPopover
+              open={filterOpen}
+              onOpenChange={openFilters}
+              activeFilterCount={activeFilterCount}
+              form={filterForm}
+              onApply={applyFilters}
+              onClear={clearFilters}
+              columnOptions={APPOINTMENT_COLUMNS}
+              draftVisibleColumns={draftVisibleColumns}
+              onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as string[])}
+              filterItems={(
+                <>
+                  <Form.Item name="date_range" label="Khoảng ngày" className="mb-2.5!">
+                    <DatePicker.RangePicker allowEmpty={[true, true]} placeholder={['Từ ngày', 'Đến ngày']} className="w-full!" />
+                  </Form.Item>
+                  <Form.Item name="staff_id" label="KTV" className="mb-2.5!">
+                    <Select
+                      allowClear
+                      showSearch
+                      optionFilterProp="label"
+                      placeholder="Tất cả KTV"
+                      options={staffs.map((staff) => ({ value: staff.id, label: staff.zalo_name || staff.email }))}
+                    />
+                  </Form.Item>
+                  <Form.Item name="branch_id" label="Cơ sở" className="mb-2.5!">
+                    <Select allowClear placeholder="Tất cả cơ sở" options={branches.map((branch) => ({ value: branch.id, label: branch.name }))} />
+                  </Form.Item>
+                  <Form.Item name="status" label="Trạng thái" className="mb-0!">
+                    <Select options={FILTERS} />
+                  </Form.Item>
+                </>
+              )}
+            />
+          </>
+        }
+        right={
+          <Can I="CREATE" a="APPOINTMENT">
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
+              Thêm lịch hẹn
             </Button>
-            <Can I="CREATE" a="APPOINTMENT">
-              <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
-                Thêm lịch hẹn
-              </Button>
-            </Can>
-          </Space>
+          </Can>
         }
       >
         Lịch hẹn
       </PageTitle>
-      <div className="desktop-only" style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
-        {displayMode === 'calendar' && (
-          <Space wrap>
-            <Segmented
-              value={calendarView}
-              options={[{ label: 'Ngày', value: 'day' }, { label: 'Tuần', value: 'week' }]}
-              onChange={(value) => setCalendarView(value as 'day' | 'week')}
-            />
-            <Button
-              aria-label="Khoảng thời gian trước"
-              icon={<LeftOutlined />}
-              onClick={() => setCalendarDate((current) => current.add(calendarView === 'week' ? -7 : -1, 'day'))}
-            />
-            <DatePicker
-              value={calendarView === 'week' ? calendarStart : calendarDate}
-              format={calendarView === 'week' ? '[Tuần bắt đầu] DD/MM/YYYY' : 'DD/MM/YYYY'}
-              onChange={(value) => value && setCalendarDate(value)}
-            />
-            <Button
-              aria-label="Khoảng thời gian tiếp theo"
-              icon={<RightOutlined />}
-              onClick={() => setCalendarDate((current) => current.add(calendarView === 'week' ? 7 : 1, 'day'))}
-            />
-          </Space>
-        )}
-        <Space wrap style={{ marginLeft: 'auto' }}>
-          <ListFilterPopover
-            open={filterOpen}
-            onOpenChange={openFilters}
-            activeFilterCount={activeFilterCount}
-            form={filterForm}
-            onApply={applyFilters}
-            onClear={clearFilters}
-            columnOptions={APPOINTMENT_COLUMNS}
-            draftVisibleColumns={draftVisibleColumns}
-            onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as string[])}
-            filterItems={(
-              <>
-                <Form.Item name="date_range" label="Khoảng ngày" style={{ marginBottom: 10 }}>
-                  <DatePicker.RangePicker allowEmpty={[true, true]} placeholder={['Từ ngày', 'Đến ngày']} style={{ width: '100%' }} />
-                </Form.Item>
-                <Form.Item name="staff_id" label="KTV" style={{ marginBottom: 10 }}>
-                  <Select
-                    allowClear
-                    showSearch
-                    optionFilterProp="label"
-                    placeholder="Tất cả KTV"
-                    options={staffs.map((staff) => ({ value: staff.id, label: staff.zalo_name || staff.email }))}
-                  />
-                </Form.Item>
-                <Form.Item name="branch_id" label="Cơ sở" style={{ marginBottom: 10 }}>
-                  <Select allowClear placeholder="Tất cả cơ sở" options={branches.map((branch) => ({ value: branch.id, label: branch.name }))} />
-                </Form.Item>
-                <Form.Item name="status" label="Trạng thái" style={{ marginBottom: 0 }}>
-                  <Select options={FILTERS} />
-                </Form.Item>
-              </>
-            )}
-          />
-          <Segmented
-            value={displayMode}
-            options={[
-              { label: 'Lịch', value: 'calendar', icon: <CalendarOutlined /> },
-              { label: 'Danh sách', value: 'list', icon: <UnorderedListOutlined /> },
-            ]}
-            onChange={(value) => setDisplayMode(value as 'calendar' | 'list')}
-          />
-        </Space>
-      </div>
       {displayMode === 'calendar' ? (
         <div style={{ overflowX: 'auto', border: '1px solid var(--brand-border-soft, #ECEFEA)', borderRadius: 12, background: '#fff' }}>
           {calendarAppointmentsQuery.isFetching ? (

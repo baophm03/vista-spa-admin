@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAbility } from '@casl/react'
 import { Alert, Button, Divider, Form, Grid, Image, Input, InputNumber, Modal, Progress, Select, Space, Table, Tabs, Tag, Typography, Upload, message } from 'antd'
 import type { ReactNode } from 'react'
 import type { TableColumnsType } from 'antd'
-import { CheckCircleOutlined, EditOutlined, PlusOutlined, PrinterOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons'
+import { CheckCircleOutlined, EditOutlined, PlusOutlined, PrinterOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import { errorMessage, openHtmlPrint, pickData } from '@/api/helpers'
 import { customInstance } from '@/api/mutator/custom-instance'
@@ -85,19 +84,15 @@ const VISIT_STATUS: Record<string, { label: string; color: string }> = {
 export default function StandaloneServiceHistory({
   focusAppointmentId,
   onFocusConsumed,
-  hideCreate,
+  search,
+  statusFilter,
 }: {
   focusAppointmentId?: string | null
   onFocusConsumed?: () => void
-  hideCreate?: boolean
+  /** Thanh tìm kiếm & Select trạng thái đã nâng lên page (toolbar chuẩn trong PageTitle) */
+  search: string
+  statusFilter: string
 }) {
-  const queryClient = useQueryClient()
-  const navigate = useNavigate()
-  const [search, setSearch] = useState('')
-  // Mobile (dưới breakpoint md): search thu về nút icon, bấm mới mở ô tìm kiếm
-  const isMobile = !Grid.useBreakpoint().md
-  const [searchOpen, setSearchOpen] = useState(false)
-  const [statusFilter, setStatusFilter] = useState('all')
   const [page, setPage] = useState(1)
   const [selected, setSelected] = useState<StandaloneAppointment | null>(null)
   const appointmentsQuery = useQuery(STANDALONE_SERVICE_QUERY)
@@ -130,7 +125,6 @@ export default function StandaloneServiceHistory({
     }
   }, [focusAppointmentId, appointmentsQuery.data, appointmentsQuery.isLoading])
 
-  const refresh = () => void queryClient.invalidateQueries({ queryKey: ['/appointments'] })
   const ability = useAbility()
   const canEditVisit = ability.can('UPDATE' as never, 'SESSION') || ability.can('START' as never, 'APPOINTMENT')
   const canCompleteVisit = ability.can('APPROVE' as never, 'APPOINTMENT')
@@ -191,33 +185,6 @@ export default function StandaloneServiceHistory({
 
   return (
     <>
-      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
-        {/* Mobile: nút icon mở ô tìm kiếm; desktop hiện input luôn — Select trạng thái giữ nguyên */}
-        {isMobile && !searchOpen && (
-          <Button icon={<SearchOutlined />} aria-label="Tìm kiếm" title="Tìm kiếm" onClick={() => setSearchOpen(true)} />
-        )}
-        {(searchOpen || !isMobile) && (
-          <Input
-            allowClear
-            autoFocus={isMobile}
-            prefix={<SearchOutlined />}
-            placeholder="Tìm khách, SĐT, dịch vụ, KTV"
-            style={isMobile && searchOpen ? { flex: 1, minWidth: 0 } : { width: 280 }}
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            onBlur={() => { if (isMobile && !search) setSearchOpen(false) }}
-          />
-        )}
-        <Select value={statusFilter} style={{ width: 160 }} onChange={setStatusFilter} options={[
-          { value: 'all', label: 'Mọi trạng thái' },
-          { value: 'pending', label: 'Chờ duyệt' },
-          { value: 'approved', label: 'Đã duyệt' },
-          { value: 'in_progress', label: 'Đang làm' },
-          { value: 'completed', label: 'Hoàn tất' },
-        ]} />
-        <Button icon={<ReloadOutlined />} loading={appointmentsQuery.isFetching} onClick={refresh}>Tải lại</Button>
-        {!hideCreate && <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate('/appointments?create=1')}>Thêm dịch vụ lẻ</Button>}
-      </div>
       <Table<StandaloneAppointment>
         className="desktop-only"
         rowKey="id"
@@ -277,7 +244,7 @@ export default function StandaloneServiceHistory({
       >
         {selected && <StandaloneServiceVisit autoOpenEdit={selected.id === editTargetId} completeMode={selected.id === completeTargetId} appointment={selected} onUpdated={(updated) => {
           setSelected(updated)
-          void queryClient.invalidateQueries({ queryKey: ['/appointments'] })
+          void appointmentsQuery.refetch()
         }} />}
       </Modal>
     </>

@@ -1,12 +1,7 @@
 const links = {
-  // apiEndpoint: 'http://localhost:3001',
-  // siteUrl: 'http://localhost:5173',
-  // imageEndpoint: 'http://localhost:3001',
-
-  // Production
-  apiEndpoint: 'https://vista-spa.vietprodev.com',
-  siteUrl: 'https://vista-spa.vercel.app',
-  imageEndpoint: 'https://vista-spa.vietprodev.com',
+  apiEndpoint: import.meta.env.VITE_API_ENDPOINT || 'http://localhost:3001',
+  siteUrl: import.meta.env.VITE_SITE_URL || 'http://localhost:5173',
+  imageEndpoint: import.meta.env.VITE_IMAGE_ENDPOINT || 'http://localhost:3001',
 }
 
 export default links

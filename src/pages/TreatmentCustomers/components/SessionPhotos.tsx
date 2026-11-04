@@ -66,7 +66,7 @@ export default function SessionPhotos({
         type="text"
         loading={deleting}
         icon={<DeleteOutlined />}
-        style={{ position: 'absolute', top: 0, right: 0 }}
+        className="absolute top-0 right-0"
         aria-label="Xóa ảnh"
       />
     </Popconfirm>
@@ -83,7 +83,7 @@ export default function SessionPhotos({
                   open: previewOpen,
                   onOpenChange: setPreviewOpen,
                   actionsRender: (node, info) => (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div className="flex items-center gap-3">
                       {node}
                       {deleteButton(photos[info.current]?.id)}
                     </div>
@@ -97,7 +97,7 @@ export default function SessionPhotos({
               key={p.id}
               width={88}
               height={88}
-              style={{ objectFit: 'cover', borderRadius: 10 }}
+              className="rounded-[10px] object-cover"
               src={(links.imageEndpoint + (p.url || ""))}
               fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
             />

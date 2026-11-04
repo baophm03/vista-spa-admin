@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Alert, Button, Select, Space, Table, Tag, Typography, message } from 'antd'
 import type { TableColumnsType } from 'antd'
-import { CheckOutlined, PlayCircleOutlined, ReloadOutlined } from '@ant-design/icons'
+import { CheckOutlined, PlayCircleOutlined } from '@ant-design/icons'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
@@ -158,18 +158,21 @@ export default function MySessions() {
   ]
 
   return <>
-    <PageTitle subtitle="Danh sách các buổi được giao cho tài khoản KTV">Buổi của tôi</PageTitle>
-    <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 16 }}>
-      <Space wrap>
-        <Select
-          value={status}
-          style={{ minWidth: 180 }}
-          options={STATUS_OPTIONS}
-          onChange={(value) => { setStatus(value); setPage(1) }}
-        />
-        <Button icon={<ReloadOutlined />} loading={sessionsQuery.isFetching} onClick={() => void sessionsQuery.refetch()}>Tải lại</Button>
-      </Space>
-    </div>
+    <PageTitle
+      subtitle="Danh sách các buổi được giao cho tài khoản KTV"
+      left={
+        <>
+          <Select
+            value={status}
+            className="min-w-[180px]"
+            options={STATUS_OPTIONS}
+            onChange={(value) => { setStatus(value); setPage(1) }}
+          />
+        </>
+      }
+    >
+      Buổi của tôi
+    </PageTitle>
     {sessionsQuery.isError && <Alert
       style={{ marginBottom: 16 }}
       type="error"

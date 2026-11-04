@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
-import { Button, Card, Form, Input, Popconfirm, Space, Table, Tag, Typography, message } from 'antd'
+import { Button, Card, Form, Input, Modal, Space, Table, Tag, Typography, message } from 'antd'
 import { useBrandCurrency, useBrandDateTime } from '@/themeRuntime'
-import { EditOutlined, PlusOutlined, ReloadOutlined } from '@ant-design/icons'
+import { DeleteOutlined, EditOutlined, PauseCircleOutlined, PlayCircleOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
 import PageTitle from '../../components/base/PageTitle'
+import RowActionsMenu from '../../components/base/RowActionsMenu'
 import TableEmpty from '../../components/base/TableEmpty'
 import ListPagination from '../../components/base/ListPagination'
 import { paginateRows } from '../../utils/listTable'
@@ -27,10 +28,11 @@ import type {
   WheelPrize,
   WheelSpin,
 } from '../../api/models'
-import { Can } from '@casl/react'
+import { Can, useAbility } from '@casl/react'
 import ManualPrizeModal from './components/ManualPrizeModal'
 import PrizeFormModal from './components/PrizeFormModal'
 import WheelFormModal from './components/WheelFormModal'
+import WheelSpinModal, { type WheelSpinResult } from './components/WheelSpinModal'
 import { PRIZE_TYPE_META as TYPE_META } from './components/constants'
 
 interface LuckyWheel { id: string; branch_id?: string | null; name: string; min_year_spent: number; spins_per_user: number; is_active?: boolean }
@@ -38,14 +40,18 @@ interface LuckyWheel { id: string; branch_id?: string | null; name: string; min_
 export default function LuckyWheel() {
   const { format: formatMoney } = useBrandCurrency()
   const { formatDateTime } = useBrandDateTime()
+  const ability = useAbility()
   const [selected, setSelected] = useState<LuckyWheel | null>(null)
   const [wheelOpen, setWheelOpen] = useState(false)
   const [prizeOpen, setPrizeOpen] = useState(false)
   const [editingPrize, setEditingPrize] = useState<WheelPrize | null>(null)
   const [customerSearch, setCustomerSearch] = useState('')
+  const [customerSearchInput, setCustomerSearchInput] = useState('')
   const [chosenCustomer, setChosenCustomer] = useState<EligibleCustomer | null>(null)
   const [manualPrizeOpen, setManualPrizeOpen] = useState(false)
   const [manualPrizeId, setManualPrizeId] = useState<string | null>(null)
+  const [spinModalOpen, setSpinModalOpen] = useState(false)
+  const [spinResult, setSpinResult] = useState<WheelSpinResult | null>(null)
   const [spinPage, setSpinPage] = useState(1)
   const [wheelForm] = Form.useForm()
   const [prizeForm] = Form.useForm()
@@ -76,12 +82,17 @@ export default function LuckyWheel() {
     if (!selected && wheels.length) setSelected(wheels[0])
   }, [wheels, selected])
 
+  // Gõ tìm khách có debounce 400ms — giống các page danh sách khác
+  useEffect(() => {
+    const timer = setTimeout(() => setCustomerSearch(customerSearchInput.trim()), 400)
+    return () => clearTimeout(timer)
+  }, [customerSearchInput])
+
   const selectWheel = (w: LuckyWheel) => {
     setSelected(w)
     setChosenCustomer(null)
     setSpinPage(1)
   }
-  const loadWheels = () => wheelsQuery.refetch()
 
   const submitWheel = async () => {
     const values = await wheelForm.validateFields()
@@ -165,6 +176,33 @@ export default function LuckyWheel() {
     }
   }
 
+  /** Quay ngẫu nhiên có hiệu ứng: mở modal wheel → gọi API → wheel quay tới ô trúng rồi hiện kết quả */
+  const spinRandomForCustomer = async () => {
+    if (!selected || !chosenCustomer?.customer_profile_id) return
+    setSpinResult(null)
+    setSpinModalOpen(true)
+    try {
+      const res = await spinForCustomerMutation.mutateAsync({
+        id: selected.id,
+        data: {
+          customer_profile_id: chosenCustomer.customer_profile_id ?? '',
+          request_key: `admin-${selected.id}-${chosenCustomer.customer_profile_id}-${Date.now()}`,
+        },
+      })
+      // chờ tối thiểu 1 nhịp cho hiệu ứng quay liên tục thấy rõ trước khi dừng
+      await new Promise((resolve) => setTimeout(resolve, 700))
+      setSpinResult((res.responseData ?? {}) as WheelSpinResult)
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : 'Không thể quay cho khách')
+      setSpinModalOpen(false)
+    }
+  }
+
+  const closeSpinModal = () => {
+    setSpinModalOpen(false)
+    void Promise.all([eligibleQuery.refetch(), spinsQuery.refetch(), prizesQuery.refetch()])
+  }
+
   const spinForCustomer = async (random: boolean) => {
     if (!selected || !chosenCustomer?.customer_profile_id) return
     try {
@@ -209,15 +247,12 @@ export default function LuckyWheel() {
     <>
       <PageTitle
         subtitle="Cấu hình vòng quay may mắn và phần thưởng"
-        extra={
-          <Space className="max-sm:flex! max-sm:w-full! max-sm:flex-wrap!">
-            <Button icon={<ReloadOutlined />} onClick={loadWheels} />
-            <Can I="CREATE" a="WHEEL">
-              <Button className="max-sm:flex-1" type="primary" icon={<PlusOutlined />} onClick={() => setWheelOpen(true)}>
-                Thêm vòng quay
-              </Button>
-            </Can>
-          </Space>
+        right={
+          <Can I="CREATE" a="WHEEL">
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => setWheelOpen(true)}>
+              Thêm vòng quay
+            </Button>
+          </Can>
         }
       >
         Quay số may mắn
@@ -240,19 +275,33 @@ export default function LuckyWheel() {
             { title: 'Lượt/user', dataIndex: 'spins_per_user', width: 90 },
             { title: 'Trạng thái', dataIndex: 'is_active', width: 100, render: (v) => (v ? <Tag color="green">Đang mở</Tag> : <Tag>Tắt</Tag>) },
             {
-              title: '',
-              width: 160,
+              title: 'Hành động',
+              key: 'actions',
+              align: 'center' as const,
+              width: 90,
               render: (_, row) => (
-                <Space onClick={(e) => e.stopPropagation()}>
-                  <Can I="UPDATE" a="WHEEL">
-                    <Button size="small" onClick={() => toggleWheel(row)}>{row.is_active ? 'Tắt' : 'Bật'}</Button>
-                  </Can>
-                  <Can I="DELETE" a="WHEEL">
-                    <Popconfirm title="Xóa vòng quay này?" onConfirm={() => removeWheel(row)}>
-                      <Button size="small" danger>Xóa</Button>
-                    </Popconfirm>
-                  </Can>
-                </Space>
+                <RowActionsMenu
+                  items={[
+                    ...(ability.can('UPDATE' as never, 'WHEEL')
+                      ? [{ key: 'toggle', icon: row.is_active ? <PauseCircleOutlined /> : <PlayCircleOutlined />, label: row.is_active ? 'Tắt' : 'Bật' }]
+                      : []),
+                    ...(ability.can('DELETE' as never, 'WHEEL')
+                      ? [{ key: 'delete', icon: <DeleteOutlined />, label: 'Xóa', danger: true }]
+                      : []),
+                  ]}
+                  onSelect={(key) => {
+                    if (key === 'toggle') toggleWheel(row)
+                    else if (key === 'delete') {
+                      Modal.confirm({
+                        title: 'Xóa vòng quay này?',
+                        okText: 'Xóa',
+                        okButtonProps: { danger: true },
+                        cancelText: 'Hủy',
+                        onOk: () => removeWheel(row),
+                      })
+                    }
+                  }}
+                />
               ),
             },
           ]}
@@ -271,19 +320,34 @@ export default function LuckyWheel() {
                 { title: 'Trọng số', dataIndex: 'weight', width: 90 },
                 { title: 'Số lượng', key: 'qty', width: 120, render: (_, row) => (row.quantity_total != null ? `${row.quantity_given}/${row.quantity_total}` : '∞') },
                 {
-                  title: '',
-                  width: 140,
+                  title: 'Hành động',
+                  key: 'actions',
+                  align: 'center' as const,
+                  width: 90,
                   render: (_, row: WheelPrize) => (
-                    <Space>
-                      <Can I="UPDATE" a="WHEEL">
-                        <Button size="small" icon={<EditOutlined />} onClick={(e) => { e.stopPropagation(); openEditPrize(row) }}>Sửa</Button>
-                      </Can>
-                      <Can I="DELETE" a="WHEEL">
-                        <Popconfirm title="Xóa giải này? (chỉ xóa được khi chưa có lượt quay trúng giải)" onConfirm={() => removePrize(row)}>
-                          <Button size="small" danger>Xóa</Button>
-                        </Popconfirm>
-                      </Can>
-                    </Space>
+                    <RowActionsMenu
+                      items={[
+                        ...(ability.can('UPDATE' as never, 'WHEEL')
+                          ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }]
+                          : []),
+                        ...(ability.can('DELETE' as never, 'WHEEL')
+                          ? [{ key: 'delete', icon: <DeleteOutlined />, label: 'Xóa', danger: true }]
+                          : []),
+                      ]}
+                      onSelect={(key) => {
+                        if (key === 'edit') openEditPrize(row)
+                        else if (key === 'delete') {
+                          Modal.confirm({
+                            title: 'Xóa giải này?',
+                            content: 'Chỉ xóa được khi chưa có lượt quay trúng giải.',
+                            okText: 'Xóa',
+                            okButtonProps: { danger: true },
+                            cancelText: 'Hủy',
+                            onOk: () => removePrize(row),
+                          })
+                        }
+                      }}
+                    />
                   ),
                 },
               ]}
@@ -296,11 +360,13 @@ export default function LuckyWheel() {
             <Card title={`Quay hộ khách — ${selected.name}`}>
               <Space direction="vertical" style={{ width: '100%' }} size={12}>
                 <Space wrap>
-                  <Input.Search
+                  <Input
                     allowClear
+                    prefix={<SearchOutlined className="text-[var(--brand-text-inactive,#A9ADB2)]" />}
                     placeholder="Tìm theo tên / SĐT"
-                    style={{ width: 260 }}
-                    onSearch={(v) => setCustomerSearch(v.trim() || '')}
+                    className="w-[260px]!"
+                    value={customerSearchInput}
+                    onChange={(event) => setCustomerSearchInput(event.target.value)}
                   />
                   {chosenCustomer && (
                     <Typography.Text>
@@ -333,8 +399,7 @@ export default function LuckyWheel() {
                   <Button
                     type="primary"
                     disabled={!chosenCustomer || (chosenCustomer.spins_left ?? 0) <= 0 || spinForCustomerMutation.isPending}
-                    loading={spinForCustomerMutation.isPending && !!manualPrizeId}
-                    onClick={() => spinForCustomer(true)}
+                    onClick={() => void spinRandomForCustomer()}
                   >
                     Quay ngẫu nhiên
                   </Button>
@@ -412,6 +477,15 @@ export default function LuckyWheel() {
         loading={spinForCustomerMutation.isPending}
         onCancel={() => setManualPrizeOpen(false)}
         onSubmit={() => spinForCustomer(false)}
+      />
+
+      <WheelSpinModal
+        open={spinModalOpen}
+        prizes={prizes}
+        customerName={chosenCustomer?.full_name}
+        waiting={spinModalOpen && !spinResult}
+        result={spinResult}
+        onClose={closeSpinModal}
       />
     </>
   )

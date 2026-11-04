@@ -6,7 +6,6 @@ import {
   Input,
   Modal,
   Select,
-  Space,
   Table,
   Tag,
   Typography,
@@ -21,7 +20,6 @@ import {
   LinkOutlined,
   PictureOutlined,
   PlusOutlined,
-  ReloadOutlined,
   SearchOutlined,
   ShoppingOutlined,
 } from '@ant-design/icons'
@@ -260,13 +258,13 @@ export default function Products() {
       <StatCards items={statItems} />
       <PageTitle
         subtitle="Danh mục sản phẩm hiển thị trên ứng dụng"
-        extra={
-          <Space wrap>
+        left={
+          <>
             <Input
               allowClear
-              prefix={<SearchOutlined style={{ color: 'var(--brand-text-inactive, #A9ADB2)' }} />}
+              prefix={<SearchOutlined className="text-[var(--brand-text-inactive,#A9ADB2)]" />}
               placeholder="Tìm theo tên hoặc mã SKU"
-              style={{ width: 260 }}
+              className="w-[260px]!"
               value={searchInput}
               onChange={(event) => setSearchInput(event.target.value)}
               onPressEnter={() => {
@@ -315,10 +313,10 @@ export default function Products() {
               onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as string[])}
               filterItems={(
                 <>
-                  <Form.Item name="category_id" label="Danh mục" style={{ marginBottom: 10 }}>
+                  <Form.Item name="category_id" label="Danh mục" className="mb-2.5!">
                     <Select allowClear placeholder="Tất cả danh mục" options={categories.map((c) => ({ value: c.id, label: c.name }))} />
                   </Form.Item>
-                  <Form.Item name="status" label="Trạng thái" style={{ marginBottom: 0 }}>
+                  <Form.Item name="status" label="Trạng thái" className="mb-0!">
                     <Select allowClear placeholder="Tất cả trạng thái" options={[
                       { value: 'true', label: 'Đang bán' },
                       { value: 'false', label: 'Đã ẩn' },
@@ -327,13 +325,14 @@ export default function Products() {
                 </>
               )}
             />
-            <Button icon={<ReloadOutlined />} onClick={() => { void productsQuery.refetch(); void categoriesQuery.refetch() }} />
-            {isAdmin && (
-              <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
-                Thêm sản phẩm
-              </Button>
-            )}
-          </Space>
+          </>
+        }
+        right={
+          isAdmin ? (
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
+              Thêm sản phẩm
+            </Button>
+          ) : undefined
         }
       >
         Sản phẩm
@@ -344,6 +343,7 @@ export default function Products() {
         dataSource={paginateRows(rows, page, 10)}
         locale={{ emptyText: <TableEmpty description="Chưa có sản phẩm nào khớp điều kiện" /> }}
         pagination={false}
+        onRow={(row) => ({ onClick: () => setViewing(row), style: { cursor: 'pointer' } })}
         columns={([
           {
             title: 'Ảnh',
@@ -400,7 +400,6 @@ export default function Products() {
             render: (_, p) => (
               <RowActionsMenu
                 items={[
-                  { key: 'view', icon: <EyeOutlined />, label: 'Chi tiết', view: true },
                   ...(isAdmin
                     ? [
                         { key: 'edit', icon: <EditOutlined />, label: 'Sửa' },
@@ -411,8 +410,7 @@ export default function Products() {
                     : []),
                 ]}
                 onSelect={(key) => {
-                  if (key === 'view') setViewing(p)
-                  else if (key === 'edit') openModal(p)
+                  if (key === 'edit') openModal(p)
                   else if (key === 'show') void toggleVisibility(p)
                   else if (key === 'hide') {
                     Modal.confirm({

@@ -13,7 +13,7 @@ import {
   message,
 } from 'antd'
 import type { TableColumnsType } from 'antd'
-import { EditOutlined, PlusOutlined, ReloadOutlined, StopOutlined } from '@ant-design/icons'
+import { EditOutlined, PlusOutlined, StopOutlined } from '@ant-design/icons'
 import dayjs, { type Dayjs } from 'dayjs'
 import { useQueryClient } from '@tanstack/react-query'
 import { Can, useAbility } from '@casl/react'
@@ -279,7 +279,7 @@ function LedgerTab() {
 
   return (
     <>
-      <Space style={{ width: '100%', justifyContent: 'flex-end', marginBottom: 16 }} wrap>
+      <Space className="mb-4! w-full! justify-end" wrap>
         <ListFilterPopover
           open={filterOpen}
           onOpenChange={openFilters}
@@ -299,29 +299,28 @@ function LedgerTab() {
           onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as CommissionColumnKey[])}
           filterItems={(
             <>
-              <Form.Item name="payee_type" label="Người nhận" style={{ marginBottom: 10 }}>
+              <Form.Item name="payee_type" label="Người nhận" className="mb-2.5!">
                 <Select allowClear placeholder="Tất cả" options={Object.entries(PAYEE_LABEL).map(([value, label]) => ({ value, label }))} />
               </Form.Item>
-              <Form.Item name="mode" label="Chế độ" style={{ marginBottom: 10 }}>
+              <Form.Item name="mode" label="Chế độ" className="mb-2.5!">
                 <Select allowClear placeholder="Tất cả" options={[{ value: 'AUTO', label: 'Tự động' }, { value: 'MANUAL', label: 'Nhập tay' }]} />
               </Form.Item>
-              <Form.Item name="status" label="Trạng thái" style={{ marginBottom: 10 }}>
+              <Form.Item name="status" label="Trạng thái" className="mb-2.5!">
                 <Select allowClear placeholder="Tất cả" options={Object.entries(STATUS_META).map(([value, meta]) => ({ value, label: meta.label }))} />
               </Form.Item>
-              <Form.Item name="branch_id" label="Chi nhánh" style={{ marginBottom: 10 }}>
+              <Form.Item name="branch_id" label="Chi nhánh" className="mb-2.5!">
                 <Select
                   allowClear showSearch optionFilterProp="label" loading={branchesQuery.isLoading}
                   placeholder="Tất cả"
                   options={branches.map((branch) => ({ value: branch.id, label: branch.name }))}
                 />
               </Form.Item>
-              <Form.Item name="date_range" label="Khoảng thời gian" style={{ marginBottom: 0 }}>
-                <DatePicker.RangePicker style={{ width: '100%' }} placeholder={['Từ ngày', 'Đến ngày']} />
+              <Form.Item name="date_range" label="Khoảng thời gian" className="mb-0!">
+                <DatePicker.RangePicker className="w-full!" placeholder={['Từ ngày', 'Đến ngày']} />
               </Form.Item>
             </>
           )}
         />
-        <Button icon={<ReloadOutlined />} onClick={() => void listQuery.refetch()}>Tải lại</Button>
         <Can I="CREATE" a="COMMISSION">
           <Button type="primary" icon={<PlusOutlined />} onClick={() => setManualOpen(true)}>Nhập tay</Button>
         </Can>
@@ -414,29 +413,29 @@ function SummaryTab() {
 
   return (
     <>
-      <Space style={{ width: '100%', marginBottom: 16 }} wrap>
+      <Space className="mb-4! w-full!" wrap>
         <Select
-          value={groupBy} style={{ width: 140 }}
+          value={groupBy} className="w-[140px]!"
           options={[{ value: 'day', label: 'Theo ngày' }, { value: 'week', label: 'Theo tuần' }, { value: 'month', label: 'Theo tháng' }]}
           onChange={(v) => { setFilters((current) => ({ ...current, group_by: v })); setPage(1) }}
         />
         <Select
-          allowClear placeholder="Người nhận" style={{ width: 170 }}
+          allowClear placeholder="Người nhận" className="w-[170px]!"
           options={Object.entries(PAYEE_LABEL).map(([value, label]) => ({ value, label }))}
           value={filters.payee_type}
           onChange={(v) => { setFilters((current) => ({ ...current, payee_type: v, staff_id: undefined, collaborator_id: undefined })); setPage(1) }}
         />
         {filters.payee_type === 'STAFF' && (
-          <Select allowClear showSearch optionFilterProp="label" placeholder="KTV" style={{ width: 210 }} loading={usersQuery.isLoading}
+          <Select allowClear showSearch optionFilterProp="label" placeholder="KTV" className="w-[210px]!" loading={usersQuery.isLoading}
             value={filters.staff_id} options={users.map((user) => ({ value: user.id, label: user.zalo_name || user.email || user.id }))}
             onChange={(v) => { setFilters((current) => ({ ...current, staff_id: v })); setPage(1) }} />
         )}
         {filters.payee_type === 'COLLABORATOR' && (
-          <Select allowClear showSearch optionFilterProp="label" placeholder="Cộng tác viên" style={{ width: 210 }} loading={collaboratorsQuery.isLoading}
+          <Select allowClear showSearch optionFilterProp="label" placeholder="Cộng tác viên" className="w-[210px]!" loading={collaboratorsQuery.isLoading}
             value={filters.collaborator_id} options={collaborators.map((row) => ({ value: row.id, label: row.name }))}
             onChange={(v) => { setFilters((current) => ({ ...current, collaborator_id: v })); setPage(1) }} />
         )}
-        <Select allowClear showSearch optionFilterProp="label" placeholder="Chi nhánh" style={{ width: 180 }} loading={branchesQuery.isLoading}
+        <Select allowClear showSearch optionFilterProp="label" placeholder="Chi nhánh" className="w-[180px]!" loading={branchesQuery.isLoading}
           value={filters.branch_id} options={branches.map((branch) => ({ value: branch.id, label: branch.name }))}
           onChange={(v) => { setFilters((current) => ({ ...current, branch_id: v })); setPage(1) }} />
         <DatePicker.RangePicker onChange={(dates) => {
@@ -446,7 +445,6 @@ function SummaryTab() {
             date_to: dates?.[1]?.format('YYYY-MM-DD'),
           })); setPage(1)
         }} />
-        <Button icon={<ReloadOutlined />} onClick={() => void summaryQuery.refetch()}>Tải lại</Button>
       </Space>
       <Table<CommissionSummaryRow & { payee_id?: string }>
         rowKey={(r) => `${r.period}-${r.payee_type}-${r.payee_id ?? 'unknown'}`}

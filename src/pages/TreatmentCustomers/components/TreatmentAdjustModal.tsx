@@ -41,7 +41,7 @@ export default function TreatmentAdjustModal({
         confirmLoading={submitting}
         destroyOnHidden
       >
-        <Form form={form} layout="vertical" style={{ marginTop: 12 }}>
+        <Form form={form} layout="vertical" className="mt-3">
           <Form.Item name="type" label="Tham số cần chỉnh" rules={[{ required: true, message: 'Chọn tham số' }]}>
             <Select
               options={ADJUST_TYPE_OPTIONS.filter((option) =>
@@ -54,7 +54,7 @@ export default function TreatmentAdjustModal({
             <Alert
               type={adjustSessionsLoading ? 'info' : adjustCompletedCount === Number(adjustAmount) ? 'success' : 'warning'}
               showIcon
-              style={{ marginBottom: 12 }}
+              className="mb-3"
               message={
                 adjustSessionsLoading
                   ? 'Đang đối chiếu sổ liệu trình…'
@@ -70,7 +70,7 @@ export default function TreatmentAdjustModal({
           {adjustType === 'EXTEND_EXPIRY' ? (
             <Form.Item name="expires_at" label="Hạn dùng mới" rules={[{ required: true, message: 'Chọn hạn dùng mới' }]}
               extra="Gói đang Hết hạn sẽ tự mở lại thành Đang làm nếu hạn mới ở tương lai.">
-              <DatePicker style={{ width: '100%' }} />
+              <DatePicker className="w-full!" />
             </Form.Item>
           ) : (
             <Form.Item
@@ -83,7 +83,7 @@ export default function TreatmentAdjustModal({
                   ? 'Tổng giá trị khách được sử dụng; không phải số đã tiêu.'
                   : undefined}
             >
-              <InputNumber min={0} style={{ width: '100%' }} />
+              <InputNumber min={0} className="w-full!" />
             </Form.Item>
           )}
           <Form.Item name="reason" label="Lý do điều chỉnh (bắt buộc)" rules={[{ required: true, whitespace: true, message: 'Nhập lý do' }]}>

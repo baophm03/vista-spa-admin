@@ -100,7 +100,10 @@ function SettingsEditor({ canEdit }: { canEdit: boolean }) {
 
   return (
     <>
-      <PageTitle subtitle="Thiết lập vận hành của hệ thống" extra={canEdit ? <Button type="primary" icon={<SaveOutlined />} loading={saveMutation.isPending} disabled={!changedSettings.length || settingsQuery.isLoading} onClick={save}>Lưu cấu hình</Button> : undefined}>
+      <PageTitle
+        subtitle="Thiết lập vận hành của hệ thống"
+        right={canEdit ? <Button type="primary" icon={<SaveOutlined />} loading={saveMutation.isPending} disabled={!changedSettings.length || settingsQuery.isLoading} onClick={save}>Lưu cấu hình</Button> : undefined}
+      >
         Cài đặt hệ thống
       </PageTitle>
       {!canEdit && <Alert className="mb-4" type="info" showIcon message="Bạn có quyền xem cấu hình; cần quyền cập nhật để chỉnh sửa." />}
