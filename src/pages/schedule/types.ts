@@ -1,4 +1,4 @@
-import type { Branch } from '@/api/models/branch'
+﻿import type { Branch } from '@/api/models/branch'
 import type { StaffDayOff } from '@/api/models/staffDayOff'
 import type { StaffSchedule } from '@/api/models/staffSchedule'
 import type { ShiftTemplate } from '@/api/models/shiftTemplate'

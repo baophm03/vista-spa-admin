@@ -3,7 +3,7 @@ import { Button, Image, Space, Upload, message } from 'antd'
 import { DeleteOutlined, UploadOutlined } from '@ant-design/icons'
 import { usePostFiles } from '@/api/endpoints/files'
 import { errorMessage, pickData } from '@/api/helpers'
-import { resolveFileUrl } from '@/configs/links'
+import links from '@/configs/links'
 
 interface Props {
   value?: string | string[] | null
@@ -57,7 +57,7 @@ export default function ServiceImageField({ value, onChange, multiple = false }:
       <Space wrap>
         {paths.map((path) => (
           <Space key={path} align="start">
-            <Image src={resolveFileUrl(path)} alt="Ảnh dịch vụ" width={72} height={72} style={{ objectFit: 'cover', borderRadius: 6 }} />
+            <Image src={`${links.imageEndpoint}${path}`} alt="Ảnh dịch vụ" width={72} height={72} style={{ objectFit: 'cover', borderRadius: 6 }} />
             <Button aria-label="Xóa ảnh" size="small" danger icon={<DeleteOutlined />} onClick={() => remove(path)} />
           </Space>
         ))}

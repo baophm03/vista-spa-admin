@@ -11,13 +11,4 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
-  server: {
-    // Ảnh/video/file upload do backend serve tĩnh (MinIO) — proxy để URL tương đối hoạt động ở dev
-    proxy: {
-      '/images': 'http://localhost:3001',
-      '/videos': 'http://localhost:3001',
-      '/files': 'http://localhost:3001',
-    },
-  },
 })
-

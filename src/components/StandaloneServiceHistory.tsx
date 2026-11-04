@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAbility } from '@casl/react'
-import { Alert, Button, Divider, Form, Grid, Image, Input, InputNumber, Modal, Progress, Select, Space, Table, Tag, Typography, Upload, message } from 'antd'
+import { Alert, Button, Divider, Form, Grid, Image, Input, InputNumber, Modal, Progress, Select, Space, Table, Tabs, Tag, Typography, Upload, message } from 'antd'
 import type { ReactNode } from 'react'
 import type { TableColumnsType } from 'antd'
 import { CheckCircleOutlined, EditOutlined, PlusOutlined, PrinterOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons'
@@ -13,7 +13,7 @@ import { getAppointments } from '@/api/endpoints/appointments'
 import { getGetCustomerProfilesIdPointsQueryKey, useGetCustomerProfilesIdPoints } from '@/api/endpoints/customer-profiles'
 import { postFiles } from '@/api/endpoints/files'
 import { useGetLookupLists } from '@/api/endpoints/lookup-lists'
-import { resolveFileUrl } from '@/configs/links'
+import links from '@/configs/links'
 import ListPagination from '@/components/base/ListPagination'
 import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
@@ -432,7 +432,7 @@ function StandaloneServiceVisit({ appointment, onUpdated, autoOpenEdit, complete
     return (
       <TRow key={kind} label={label}>
         <Space wrap size={10}>
-          {rows.length > 0 && <Image.PreviewGroup items={rows.map((photo) => resolveFileUrl(photo.url)!)}>{rows.map((photo) => <Image key={photo.id} src={resolveFileUrl(photo.url)!} width={88} height={88} style={{ objectFit: 'cover', borderRadius: 10 }} />)}</Image.PreviewGroup>}
+          {rows.length > 0 && <Image.PreviewGroup items={rows.map((photo) => `${links.imageEndpoint}${photo.url}`)}>{rows.map((photo) => <Image key={photo.id} src={`${links.imageEndpoint}${photo.url}`} width={88} height={88} style={{ objectFit: 'cover', borderRadius: 10 }} />)}</Image.PreviewGroup>}
           {editable && record.status === 'in_progress' && <Upload accept="image/*" multiple showUploadList={false} beforeUpload={(file) => { void uploadPhoto(file, kind); return false }}><Button icon={<PlusOutlined />}>Ảnh</Button></Upload>}
           {!rows.length && !(editable && record.status === 'in_progress') && <Typography.Text type="secondary">{loading ? 'Đang tải ảnh…' : 'Chưa có ảnh'}</Typography.Text>}
         </Space>
@@ -450,6 +450,76 @@ function StandaloneServiceVisit({ appointment, onUpdated, autoOpenEdit, complete
 
   const scheduledAt = dayjs(`${String(record.appt_date).slice(0, 10)}T${record.start_time?.slice(0, 5)}`)
   const canFinalize = record.status === 'in_progress' && !!record.visit_done_at && paid >= serviceAmount && canComplete && scheduledAt.isBefore(dayjs())
+
+  // Mobile (dưới breakpoint md): chuyển vùng nội dung bằng Select; desktop/tablet dùng Tabs
+  const isMobile = !Grid.useBreakpoint().md
+
+  // Nội dung các tab — dùng chung cho Tabs (desktop) và Select (mobile), mỗi bề width chỉ render một dạng
+  const visitPanel = (
+    <div style={{ border: '1px solid var(--brand-border)', borderRadius: 12, overflow: 'hidden', background: '#fff' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', padding: '13px 16px', background: 'var(--brand-bg)' }}>
+        <div style={{ width: 40, height: 40, borderRadius: 10, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 17, color: 'var(--brand-primary)', border: '1px solid var(--brand-border)' }}>01</div>
+        <div style={{ flex: 1, minWidth: 180 }}>
+          <Space size={8} wrap>
+            <Typography.Text strong>{dayjs(record.appt_date).format('DD/MM/YYYY')} · {record.start_time?.slice(0, 5)}</Typography.Text>
+            <Tag color={record.status === 'completed' ? 'green' : record.visit_done_at ? 'orange' : 'blue'}>{record.status === 'completed' ? 'Hoàn tất' : record.visit_done_at ? 'KTV đã làm xong' : 'Đang thực hiện'}</Tag>
+          </Space>
+          <Typography.Text type="secondary" style={{ display: 'block', marginTop: 3 }}>{record.service?.title || 'Dịch vụ lẻ'} · {record.staff?.zalo_name || 'Chưa gán KTV'}</Typography.Text>
+        </div>
+        {record.status === 'in_progress' && editable && <Button icon={<EditOutlined />} loading={loading} disabled={loading} onClick={() => setEditOpen(true)}>Sửa</Button>}
+        {canFinalize && <Button type="primary" icon={<CheckCircleOutlined />} loading={saving} onClick={() => void completeVisit()}>Hoàn tất dịch vụ</Button>}
+      </div>
+      <TRow label="Giá dịch vụ">{serviceAmount.toLocaleString('vi-VN')} ₫</TRow>
+      <SubHead>Đầu buổi</SubHead>
+      <TRow label="Tình trạng da"><span style={{ whiteSpace: 'pre-wrap' }}>{record.skin_note || 'Chưa ghi'}</span></TRow>
+      <TRow label="Cần cải thiện"><span style={{ whiteSpace: 'pre-wrap' }}>{record.concern || 'Chưa ghi'}</span></TRow>
+      {photoRow('before', 'Ảnh trước')}
+      <SubHead>Thực hiện</SubHead>
+      <TRow label="Nhật ký"><span style={{ whiteSpace: 'pre-wrap' }}>{record.diary || 'Chưa ghi'}</span></TRow>
+      <TRow label="Sản phẩm đã dùng"><span style={{ whiteSpace: 'pre-wrap' }}>{record.products_used || 'Chưa ghi'}</span></TRow>
+      {photoRow('process', 'Ảnh quá trình')}
+      <SubHead>Kết quả cuối buổi</SubHead>
+      <TRow label="Kết quả / dặn dò"><span style={{ whiteSpace: 'pre-wrap' }}>{record.result || 'Chưa ghi'}</span></TRow>
+      {photoRow('after', 'Ảnh sau')}
+    </div>
+  )
+  const paymentsPanel = isMobile ? (
+    <MobileCards
+      rows={payments}
+      rowKey={(row) => row.id}
+      emptyText="Chưa có khoản thu dịch vụ"
+      renderCard={(row) => (
+        <>
+          <div className="mobile-card-head">
+            <div className="mobile-card-title">{Number(row.amount).toLocaleString('vi-VN')} ₫</div>
+            <Tag color={row.voided_at ? 'red' : 'green'}>{row.voided_at ? 'Đã hủy' : 'Đã thu'}</Tag>
+          </div>
+          <div className="mobile-card-rows">
+            <MobileCardRow label="Thời gian" value={row.paid_at ? dayjs(row.paid_at).format('DD/MM/YYYY HH:mm') : '—'} />
+            <MobileCardRow label="Phương thức" value={row.method || '—'} />
+          </div>
+        </>
+      )}
+    />
+  ) : (
+    <div style={{ border: '1px solid var(--brand-border)', borderRadius: 12, overflow: 'hidden', background: '#fff' }}>
+      <SubHead>Lịch sử thanh toán</SubHead>
+      <Table<VisitPayment>
+        rowKey="id"
+        size="small"
+        pagination={false}
+        dataSource={payments}
+        locale={{ emptyText: 'Chưa có khoản thu dịch vụ' }}
+        columns={[
+          { title: 'Thời gian', dataIndex: 'paid_at', render: (value?: string) => value ? dayjs(value).format('DD/MM/YYYY HH:mm') : '—' },
+          { title: 'Số tiền', dataIndex: 'amount', align: 'right', render: (value: number | string) => `${Number(value).toLocaleString('vi-VN')} ₫` },
+          { title: 'Phương thức', dataIndex: 'method' },
+          { title: 'Trạng thái', key: 'status', render: (_value, row) => <Tag color={row.voided_at ? 'red' : 'green'}>{row.voided_at ? 'Đã hủy' : 'Đã thu'}</Tag> },
+        ]}
+      />
+    </div>
+  )
+  const pointsPanel = <ServicePointsHistory profileId={record.customer_profile_id} />
 
   return (
     <>
@@ -491,85 +561,35 @@ function StandaloneServiceVisit({ appointment, onUpdated, autoOpenEdit, complete
           {canReadPayments && !pricePendingConfirmation && <Button block style={{ marginTop: 10 }} onClick={() => void printReceipt()}>In phiếu</Button>}
         </aside>
 
+        {/* Vùng chính: desktop/tablet dùng Tabs, mobile dùng Select — render theo bề width, không ẩn bằng CSS */}
         <div style={{ flex: '3 1 560px', minWidth: 0 }}>
-          {/* Chuyển vùng nội dung bằng Select — đồng bộ cách các page khác chuyển tab */}
-          <Select
-            style={{ width: '100%', marginBottom: 12 }}
-            value={activeDetailTab}
-            onChange={setActiveDetailTab}
-            options={[
-              { value: 'visit', label: 'Lần làm dịch vụ' },
-              { value: 'payments', label: 'Lịch sử thanh toán' },
-              { value: 'points', label: 'Điểm thưởng' },
-            ]}
-          />
-          {activeDetailTab === 'visit' && (
-            <div style={{ border: '1px solid var(--brand-border)', borderRadius: 12, overflow: 'hidden', background: '#fff' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', padding: '13px 16px', background: 'var(--brand-bg)' }}>
-                <div style={{ width: 40, height: 40, borderRadius: 10, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 17, color: 'var(--brand-primary)', border: '1px solid var(--brand-border)' }}>01</div>
-                <div style={{ flex: 1, minWidth: 180 }}>
-                  <Space size={8} wrap>
-                    <Typography.Text strong>{dayjs(record.appt_date).format('DD/MM/YYYY')} · {record.start_time?.slice(0, 5)}</Typography.Text>
-                    <Tag color={record.status === 'completed' ? 'green' : record.visit_done_at ? 'orange' : 'blue'}>{record.status === 'completed' ? 'Hoàn tất' : record.visit_done_at ? 'KTV đã làm xong' : 'Đang thực hiện'}</Tag>
-                  </Space>
-                  <Typography.Text type="secondary" style={{ display: 'block', marginTop: 3 }}>{record.service?.title || 'Dịch vụ lẻ'} · {record.staff?.zalo_name || 'Chưa gán KTV'}</Typography.Text>
-                </div>
-                {record.status === 'in_progress' && editable && <Button icon={<EditOutlined />} loading={loading} disabled={loading} onClick={() => setEditOpen(true)}>Sửa</Button>}
-                {canFinalize && <Button type="primary" icon={<CheckCircleOutlined />} loading={saving} onClick={() => void completeVisit()}>Hoàn tất dịch vụ</Button>}
-              </div>
-              <TRow label="Giá dịch vụ">{serviceAmount.toLocaleString('vi-VN')} ₫</TRow>
-              <SubHead>Đầu buổi</SubHead>
-              <TRow label="Tình trạng da"><span style={{ whiteSpace: 'pre-wrap' }}>{record.skin_note || 'Chưa ghi'}</span></TRow>
-              <TRow label="Cần cải thiện"><span style={{ whiteSpace: 'pre-wrap' }}>{record.concern || 'Chưa ghi'}</span></TRow>
-              {photoRow('before', 'Ảnh trước')}
-              <SubHead>Thực hiện</SubHead>
-              <TRow label="Nhật ký"><span style={{ whiteSpace: 'pre-wrap' }}>{record.diary || 'Chưa ghi'}</span></TRow>
-              <TRow label="Sản phẩm đã dùng"><span style={{ whiteSpace: 'pre-wrap' }}>{record.products_used || 'Chưa ghi'}</span></TRow>
-              {photoRow('process', 'Ảnh quá trình')}
-              <SubHead>Kết quả cuối buổi</SubHead>
-              <TRow label="Kết quả / dặn dò"><span style={{ whiteSpace: 'pre-wrap' }}>{record.result || 'Chưa ghi'}</span></TRow>
-              {photoRow('after', 'Ảnh sau')}
-            </div>
-          )}
-          {activeDetailTab === 'payments' && (
+          {isMobile ? (
             <>
-              <div className="desktop-only" style={{ border: '1px solid var(--brand-border)', borderRadius: 12, overflow: 'hidden', background: '#fff' }}>
-                <SubHead>Lịch sử thanh toán</SubHead>
-                <Table<VisitPayment>
-                  rowKey="id"
-                  size="small"
-                  pagination={false}
-                  dataSource={payments}
-                  locale={{ emptyText: 'Chưa có khoản thu dịch vụ' }}
-                  columns={[
-                    { title: 'Thời gian', dataIndex: 'paid_at', render: (value?: string) => value ? dayjs(value).format('DD/MM/YYYY HH:mm') : '—' },
-                    { title: 'Số tiền', dataIndex: 'amount', align: 'right', render: (value: number | string) => `${Number(value).toLocaleString('vi-VN')} ₫` },
-                    { title: 'Phương thức', dataIndex: 'method' },
-                    { title: 'Trạng thái', key: 'status', render: (_value, row) => <Tag color={row.voided_at ? 'red' : 'green'}>{row.voided_at ? 'Đã hủy' : 'Đã thu'}</Tag> },
-                  ]}
-                />
-              </div>
-              {/* Mobile: card thay table cho dễ đọc/cuộn */}
-              <MobileCards
-                rows={payments}
-                rowKey={(row) => row.id}
-                emptyText="Chưa có khoản thu dịch vụ"
-                renderCard={(row) => (
-                  <>
-                    <div className="mobile-card-head">
-                      <div className="mobile-card-title">{Number(row.amount).toLocaleString('vi-VN')} ₫</div>
-                      <Tag color={row.voided_at ? 'red' : 'green'}>{row.voided_at ? 'Đã hủy' : 'Đã thu'}</Tag>
-                    </div>
-                    <div className="mobile-card-rows">
-                      <MobileCardRow label="Thời gian" value={row.paid_at ? dayjs(row.paid_at).format('DD/MM/YYYY HH:mm') : '—'} />
-                      <MobileCardRow label="Phương thức" value={row.method || '—'} />
-                    </div>
-                  </>
-                )}
+              <Select
+                style={{ width: '100%', marginBottom: 12 }}
+                value={activeDetailTab}
+                onChange={setActiveDetailTab}
+                options={[
+                  { value: 'visit', label: 'Lần làm dịch vụ' },
+                  { value: 'payments', label: 'Lịch sử thanh toán' },
+                  { value: 'points', label: 'Điểm thưởng' },
+                ]}
               />
+              {activeDetailTab === 'visit' && visitPanel}
+              {activeDetailTab === 'payments' && paymentsPanel}
+              {activeDetailTab === 'points' && pointsPanel}
             </>
+          ) : (
+            <Tabs
+              activeKey={activeDetailTab}
+              onChange={setActiveDetailTab}
+              items={[
+                { key: 'visit', label: 'Lần làm dịch vụ', children: visitPanel },
+                { key: 'payments', label: 'Lịch sử thanh toán', children: paymentsPanel },
+                { key: 'points', label: 'Điểm thưởng', children: pointsPanel },
+              ]}
+            />
           )}
-          {activeDetailTab === 'points' && <ServicePointsHistory profileId={record.customer_profile_id} />}
         </div>
       </div>
       <Modal
