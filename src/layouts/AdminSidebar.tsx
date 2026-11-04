@@ -2,6 +2,7 @@ import { Drawer, Layout, Menu, type MenuProps } from 'antd'
 import { getProfileRoleNames, hasPagePermission, menuItems, type MenuItem } from './sidebarMenu'
 import { useProfileStore } from '../stores/profile-store'
 import { useBrandRuntime } from '../themeRuntime'
+import links from '@/configs/links'
 
 const { Sider } = Layout
 
@@ -25,9 +26,11 @@ function useFilteredMenuItems(): MenuItem[] {
   return menuItems
     .map((entry) => {
       if ('children' in entry) {
-        return stripMenuMetadata({ ...entry, children: (entry.children ?? [])
-          .filter((child) => hasPagePermission(child, roles, !!profile?.is_admin))
-          .map(stripMenuMetadata) })
+        return stripMenuMetadata({
+          ...entry, children: (entry.children ?? [])
+            .filter((child) => hasPagePermission(child, roles, !!profile?.is_admin))
+            .map(stripMenuMetadata)
+        })
       }
       return hasPagePermission(entry, roles, !!profile?.is_admin) ? stripMenuMetadata(entry) : null
     })
@@ -54,7 +57,7 @@ function SidebarContent({
       <div className="flex h-16 shrink-0 items-center justify-start gap-2.5 overflow-hidden border-b border-[var(--brand-border-soft)] px-4">
         {brand.logoUrl ? (
           <img
-            src={brand.logoUrl}
+            src={`${links.imageEndpoint}${brand.logoUrl}`}
             alt={brand.name}
             className="h-[34px] w-[34px] shrink-0 rounded-xl object-contain"
           />
