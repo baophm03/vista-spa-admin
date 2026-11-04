@@ -24,7 +24,7 @@ export default function StaffModal({ form, open, editing, branches, roles, branc
       okText="Lưu"
       cancelText="Hủy"
     >
-      <Form form={form} layout="vertical" style={{ marginTop: 12 }}>
+      <Form form={form} layout="vertical" className="mt-3">
         <Form.Item name="zalo_name" label="Họ tên" rules={[{ required: true, message: 'Nhập họ tên' }]}>
           <Input placeholder="VD: Trần Hoa" />
         </Form.Item>
@@ -46,7 +46,7 @@ export default function StaffModal({ form, open, editing, branches, roles, branc
               extra={branchRequired ? undefined : 'Để trống nếu tài khoản quản trị cần truy cập toàn hệ thống.'}
             >
               <Select
-                style={{ width: '100%' }}
+                className="w-full"
                 allowClear={!branchRequired}
                 options={branches.map((branch) => ({ value: branch.id, label: branch.name }))}
                 placeholder={branchRequired ? 'Chọn cơ sở' : 'Chọn cơ sở hoặc để trống'}
@@ -84,7 +84,7 @@ export default function StaffModal({ form, open, editing, branches, roles, branc
           <Col xs={24} sm={12}>
             <Form.Item name="role_id" label="Vai trò" rules={[{ required: true, message: 'Chọn vai trò' }]}>
               <Select
-                style={{ width: '100%' }}
+                className="w-full"
                 allowClear
                 options={roles.map((r) => ({ value: r.id, label: r.role_name }))}
                 placeholder="Chọn vai trò"

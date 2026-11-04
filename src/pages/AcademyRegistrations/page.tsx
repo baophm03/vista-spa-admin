@@ -35,6 +35,7 @@ export default function AcademyRegistrations() {
   const queryClient = useQueryClient()
   const { format: formatMoney } = useBrandCurrency()
   const [filter, setFilter] = useState<{ status?: string; course_id?: string; q?: string }>({})
+  const [searchInput, setSearchInput] = useState('')
   const [page, setPage] = useState(1)
   const [lookupValue, setLookupValue] = useState('')
   const [updateTarget, setUpdateTarget] = useState<RegistrationRow | null>(null)
@@ -44,6 +45,15 @@ export default function AcademyRegistrations() {
   const [creating, setCreating] = useState(false)
   const [lookupOpen, setLookupOpen] = useState(false)
   const [createForm] = Form.useForm()
+
+  // Gõ tìm kiếm có debounce 400ms — giống các page danh sách khác
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setPage(1)
+      setFilter((f) => ({ ...f, q: searchInput.trim() || undefined }))
+    }, 400)
+    return () => clearTimeout(timer)
+  }, [searchInput])
 
   const coursesQuery = useGetAcademyCourses()
   const registrationsQuery = useGetRegistrationsSafe(filter)
@@ -165,43 +175,45 @@ export default function AcademyRegistrations() {
   return (
     <div>
       <PageTitle
-        extra={
-          <Space wrap>
-            <Button icon={<SearchOutlined />} onClick={() => setLookupOpen(true)}>Tra cứu học viên</Button>
-            <Can I="CREATE" a="ACADEMY">
-              <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>Thêm đăng ký</Button>
-            </Can>
-          </Space>
+        left={
+          <>
+            {/* Icon viết dạng children (không qua prop icon) để chữ không bị ẩn trên mobile — giữ nguyên như desktop */}
+            <Button onClick={() => setLookupOpen(true)}><SearchOutlined /> Tra cứu học viên</Button>
+            <Input
+              allowClear
+              prefix={<SearchOutlined className="text-[var(--brand-text-inactive,#A9ADB2)]" />}
+              placeholder="Tìm tên / SĐT / email"
+              className="w-[240px]!"
+              value={searchInput}
+              onChange={(event) => setSearchInput(event.target.value)}
+            />
+            <Select
+              allowClear
+              placeholder="Khóa học"
+              className="w-[220px]"
+              options={courses.map((c) => ({ value: c.id, label: c.name }))}
+              value={filter.course_id}
+              onChange={(v) => setFilter((f) => ({ ...f, course_id: v }))}
+            />
+            <Select
+              allowClear
+              placeholder="Trạng thái"
+              className="w-[160px]"
+              options={Object.entries(STATUS_META).map(([value, m]) => ({ value, label: m.label }))}
+              value={filter.status}
+              onChange={(v) => setFilter((f) => ({ ...f, status: v }))}
+            />
+          </>
+        }
+        right={
+          <Can I="CREATE" a="ACADEMY">
+            <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>Thêm đăng ký</Button>
+          </Can>
         }
       >
         Sổ theo dõi học viên
       </PageTitle>
       {registrationsQuery.isError && <Alert type="error" showIcon message="Không tải được danh sách đăng ký" description={errorMessage(registrationsQuery.error)} style={{ marginBottom: 12 }} />}
-
-      <Space wrap style={{ marginBottom: 12 }}>
-        <Input.Search
-          placeholder="Tìm tên / SĐT / email"
-          style={{ width: 240 }}
-          allowClear
-          onSearch={(v) => setFilter((f) => ({ ...f, q: v || undefined }))}
-        />
-        <Select
-          allowClear
-          placeholder="Khóa học"
-          style={{ width: 220 }}
-          options={courses.map((c) => ({ value: c.id, label: c.name }))}
-          value={filter.course_id}
-          onChange={(v) => setFilter((f) => ({ ...f, course_id: v }))}
-        />
-        <Select
-          allowClear
-          placeholder="Trạng thái"
-          style={{ width: 160 }}
-          options={Object.entries(STATUS_META).map(([value, m]) => ({ value, label: m.label }))}
-          value={filter.status}
-          onChange={(v) => setFilter((f) => ({ ...f, status: v }))}
-        />
-      </Space>
 
       <Table
         rowKey="id"

@@ -38,7 +38,7 @@ export default function TreatmentHistoryModal({
         {loading ? (
           <Typography.Text type="secondary">Đang tải…</Typography.Text>
         ) : rows.length === 0 ? (
-          <Empty description="Gói chưa từng bị điều chỉnh" style={{ margin: '24px 0' }} />
+          <Empty description="Gói chưa từng bị điều chỉnh" className="my-6!" />
         ) : (
           <>
             <Table<TreatmentAdjustmentRow>
@@ -65,13 +65,13 @@ export default function TreatmentHistoryModal({
                   render: (_: unknown, row: TreatmentAdjustmentRow) => {
                     const lines = adjustmentDiffLines(row)
                     return (
-                      <div style={{ fontSize: 12, display: 'grid', gap: 2 }}>
+                      <div className="grid gap-0.5 text-xs">
                         {lines.map((line) => (
                           <div key={line.label}>
-                            <span style={{ color: '#6F7071' }}>{line.label}: </span>
-                            <span style={{ color: '#8C9091' }}>{line.before}</span>
+                            <span className="text-[#6F7071]">{line.label}: </span>
+                            <span className="text-[#8C9091]">{line.before}</span>
                             {' → '}
-                            <span style={{ fontWeight: 600 }}>{line.after}</span>
+                            <span className="font-semibold">{line.after}</span>
                           </div>
                         ))}
                       </div>

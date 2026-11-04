@@ -33,10 +33,10 @@ export default function TreatmentPaymentModal({
         cancelText="Hủy"
         okButtonProps={{ disabled: lookupLoading || !!lookupError || activePaymentMethods.length === 0 }}
       >
-        <Form form={form} layout="vertical" style={{ marginTop: 12 }}>
-          {lookupError && <Alert type="error" showIcon message="Không thể ghi nhận thanh toán" description={lookupError} style={{ marginBottom: 16 }} />}
+        <Form form={form} layout="vertical" className="mt-3">
+          {lookupError && <Alert type="error" showIcon message="Không thể ghi nhận thanh toán" description={lookupError} className="mb-4" />}
           <Form.Item name="amount" label="Số tiền" rules={[{ required: true, message: 'Nhập số tiền' }]}>
-            <InputNumber min={1} step={50000} suffix={currencySymbol} style={{ width: '100%' }} />
+            <InputNumber min={1} step={50000} suffix={currencySymbol} className="w-full!" />
           </Form.Item>
           <Form.Item name="method" label="Phương thức" rules={[{ required: true }]}>
             <Select

@@ -88,9 +88,9 @@ export default function Vouchers() {
       <StatCards items={statItems} />
       <PageTitle
         subtitle="Voucher ưu đãi phát hành cho khách hàng"
-        extra={
+        right={
           <Can I="UPDATE" a="VOUCHER">
-            <Button className="max-sm:w-full" type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
               Thêm voucher
             </Button>
           </Can>

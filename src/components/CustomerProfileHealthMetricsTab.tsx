@@ -185,7 +185,6 @@ export default function CustomerProfileHealthMetricsTab({ profileId }: { profile
           onChange={(value) => { setMetricCode(value || ''); setPage(1) }}
         />
         <DatePicker.RangePicker value={dateRange} onChange={(value) => { setDateRange(value as [dayjs.Dayjs, dayjs.Dayjs] | null); setPage(1) }} />
-        <Button className="desktop-only" icon={<ReloadOutlined />} onClick={() => { setPage(1); setRefresh((value) => value + 1) }}>Tải lại</Button>
       </Space>
       {activeItems.length === 0 && <Alert type="info" showIcon message="Chưa có danh mục chỉ số đang hoạt động" description="Quản trị viên có thể cấu hình mã chỉ số trong Cấu hình dữ liệu khách hàng." />}
       {!filteredRows.length ? <Empty description="Chưa có chỉ số đo trong bộ lọc này" /> : (

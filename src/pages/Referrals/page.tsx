@@ -10,7 +10,7 @@ import {
   message,
 } from 'antd'
 import type { TableColumnsType } from 'antd'
-import { ClockCircleOutlined, EditOutlined, PayCircleOutlined, PlusOutlined, ReloadOutlined, ShareAltOutlined } from '@ant-design/icons'
+import { ClockCircleOutlined, EditOutlined, PayCircleOutlined, PlusOutlined, ShareAltOutlined } from '@ant-design/icons'
 import { useQueryClient } from '@tanstack/react-query'
 import { Can, useAbility } from '@casl/react'
 import PageTitle from '@/components/base/PageTitle'
@@ -187,7 +187,7 @@ export default function Referrals() {
         return (
           <Space direction="vertical" size={2}>
             {list.map((pkg) => (
-              <div key={pkg.id} style={{ fontSize: 13 }}>
+              <div key={pkg.id}>
                 <span style={{ fontWeight: 500 }}>{pkg.name}</span>
                 <span style={{ color: '#888', marginLeft: 6 }}>({formatVnd(pkg.total_amount)})</span>
               </div>
@@ -249,13 +249,10 @@ export default function Referrals() {
             <StatCards items={statItems} />
             <PageTitle
               subtitle="Lịch sử giới thiệu khách hàng từ CTV hoặc khách hàng khác"
-              extra={
-                <Space>
-                  <Button icon={<ReloadOutlined />} onClick={() => void listQuery.refetch()}>Tải lại</Button>
-                  <Can I="CREATE" a="REFERRAL">
-                    <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>Ghi nhận giới thiệu</Button>
-                  </Can>
-                </Space>
+              right={
+                <Can I="CREATE" a="REFERRAL">
+                  <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>Ghi nhận giới thiệu</Button>
+                </Can>
               }
             >
               Lịch sử giới thiệu

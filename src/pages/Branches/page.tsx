@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Alert, Button, Form, Input, Modal, Select, Space, Table, Tag, Typography, message } from 'antd'
+import { Alert, Button, Form, Input, Modal, Select, Table, Tag, Typography, message } from 'antd'
 import { CheckCircleOutlined, EditOutlined, EnvironmentOutlined, PauseCircleOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
 import PageTitle from '@/components/base/PageTitle'
 import StatCards, { type StatItem } from '@/components/base/StatCards'
@@ -299,13 +299,13 @@ export default function Branches() {
 
       <PageTitle
         subtitle="Danh sách cơ sở spa trong hệ thống"
-        extra={
-          <Space wrap>
+        left={
+          <>
             <Input
               allowClear
-              prefix={<SearchOutlined style={{ color: 'var(--brand-text-inactive, #A9ADB2)' }} />}
+              prefix={<SearchOutlined className="text-[var(--brand-text-inactive,#A9ADB2)]" />}
               placeholder="Tìm theo mã hoặc tên cơ sở"
-              style={{ width: 260 }}
+              className="w-[260px]!"
               value={searchText}
               onChange={(event) => {
                 setSearchText(event.target.value)
@@ -324,7 +324,7 @@ export default function Branches() {
               draftVisibleColumns={draftVisibleColumns}
               onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as BranchColumnKey[])}
               filterItems={(
-                <Form.Item name="status" label="Trạng thái" style={{ marginBottom: 0 }}>
+                <Form.Item name="status" label="Trạng thái" className="mb-0!">
                   <Select
                     allowClear
                     placeholder="Tất cả"
@@ -336,12 +336,14 @@ export default function Branches() {
                 </Form.Item>
               )}
             />
-            <Can I="CREATE" a="BRANCH">
-              <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
-                Thêm cơ sở
-              </Button>
-            </Can>
-          </Space>
+          </>
+        }
+        right={
+          <Can I="CREATE" a="BRANCH">
+            <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
+              Thêm cơ sở
+            </Button>
+          </Can>
         }
       >
         Cơ sở

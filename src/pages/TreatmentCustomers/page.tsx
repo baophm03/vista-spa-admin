@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Button, Form, Grid, Input, Modal, Progress, Select, Table, Tag, Tooltip, Typography, message } from 'antd'
 import type { MenuProps } from 'antd'
-import { CheckCircleOutlined, PlayCircleOutlined, PlusOutlined, ReloadOutlined, SearchOutlined, TeamOutlined, WalletOutlined } from '@ant-design/icons'
+import { CheckCircleOutlined, PlayCircleOutlined, PlusOutlined, SearchOutlined, TeamOutlined, WalletOutlined } from '@ant-design/icons'
 import dayjs, { type Dayjs } from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
 import StatCards, { type StatItem } from '@/components/base/StatCards'
@@ -743,7 +743,53 @@ export default function TreatmentCustomers() {
 
       <PageTitle
         subtitle="Khách hàng đang thực hiện liệu trình"
-        extra={
+        left={
+          <>
+            {/* Mobile: nút icon mở ô tìm kiếm; desktop hiện input luôn */}
+            {isMobile && !searchOpen && (
+              <Button icon={<SearchOutlined />} aria-label="Tìm kiếm" title="Tìm kiếm" onClick={() => setSearchOpen(true)} />
+            )}
+            {(searchOpen || !isMobile) && (
+              <Input
+                allowClear
+                autoFocus={isMobile}
+                prefix={<SearchOutlined className="text-[var(--brand-text-inactive,#A9ADB2)]" />}
+                placeholder="Tìm tên hoặc SĐT khách hàng"
+                className={isMobile && searchOpen ? 'min-w-0 flex-1' : 'w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]'}
+                value={searchInput}
+                onChange={(event) => {
+                  setSearchInput(event.target.value)
+                  if (!event.target.value) applySearch('')
+                }}
+                onPressEnter={() => applySearch(searchInput)}
+                onBlur={() => { if (isMobile && !searchInput) setSearchOpen(false) }}
+              />
+            )}
+            <ListFilterPopover
+              iconOnly={isMobile}
+              open={filterOpen}
+              onOpenChange={openFilters}
+              activeFilterCount={activeFilterCount}
+              form={filterForm}
+              onApply={applyFilters}
+              onClear={clearFilters}
+              columnOptions={CUSTOMER_TREATMENT_COLUMN_OPTIONS}
+              draftVisibleColumns={draftVisibleColumns}
+              onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as CustomerTreatmentColumnKey[])}
+              filterItems={(
+                <>
+                  <Form.Item name="package_id" label="Liệu trình" className="mb-2.5!">
+                    <Select allowClear showSearch optionFilterProp="label" placeholder="Tất cả liệu trình" options={packages.map((pkg) => ({ value: pkg.id, label: pkg.name }))} />
+                  </Form.Item>
+                  <Form.Item name="status" label="Trạng thái" className="mb-0!">
+                    <Select options={FILTERS} />
+                  </Form.Item>
+                </>
+              )}
+            />
+          </>
+        }
+        right={
           <Can I="UPDATE" a="CUSTOMER">
             <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
               Thêm khách vào liệu trình
@@ -753,52 +799,6 @@ export default function TreatmentCustomers() {
       >
         Liệu trình của khách
       </PageTitle>
-
-      <div style={{ display: 'flex', justifyContent: 'flex-end', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
-        {/* Mobile: nút icon mở ô tìm kiếm; desktop hiện input luôn */}
-        {isMobile && !searchOpen && (
-          <Button icon={<SearchOutlined />} aria-label="Tìm kiếm" title="Tìm kiếm" onClick={() => setSearchOpen(true)} />
-        )}
-        {(searchOpen || !isMobile) && (
-          <Input
-            allowClear
-            autoFocus={isMobile}
-            prefix={<SearchOutlined style={{ color: 'var(--brand-text-inactive, #A9ADB2)' }} />}
-            placeholder="Tìm tên hoặc SĐT khách hàng"
-            style={isMobile && searchOpen ? { flex: 1, minWidth: 0 } : { width: 260, maxWidth: 'min(260px, 46vw)', minWidth: 140 }}
-            value={searchInput}
-            onChange={(event) => {
-              setSearchInput(event.target.value)
-              if (!event.target.value) applySearch('')
-            }}
-            onPressEnter={() => applySearch(searchInput)}
-            onBlur={() => { if (isMobile && !searchInput) setSearchOpen(false) }}
-          />
-        )}
-        <Button icon={<ReloadOutlined />} onClick={refresh}>{!isMobile ? 'Tải lại' : undefined}</Button>
-        <ListFilterPopover
-          iconOnly={isMobile}
-          open={filterOpen}
-          onOpenChange={openFilters}
-          activeFilterCount={activeFilterCount}
-          form={filterForm}
-          onApply={applyFilters}
-          onClear={clearFilters}
-          columnOptions={CUSTOMER_TREATMENT_COLUMN_OPTIONS}
-          draftVisibleColumns={draftVisibleColumns}
-          onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as CustomerTreatmentColumnKey[])}
-          filterItems={(
-            <>
-              <Form.Item name="package_id" label="Liệu trình" style={{ marginBottom: 10 }}>
-                <Select allowClear showSearch optionFilterProp="label" placeholder="Tất cả liệu trình" options={packages.map((pkg) => ({ value: pkg.id, label: pkg.name }))} />
-              </Form.Item>
-              <Form.Item name="status" label="Trạng thái" style={{ marginBottom: 0 }}>
-                <Select options={FILTERS} />
-              </Form.Item>
-            </>
-          )}
-        />
-      </div>
 
       <Table<CustomerTreatment>
         className="desktop-only"
@@ -816,7 +816,7 @@ export default function TreatmentCustomers() {
               return (
                 <div>
                   <Typography.Text strong>{profileName(row)}</Typography.Text>
-                  <div style={{ color: '#777', fontSize: 12 }}>
+                  <div className="text-xs text-[#777]">
                     {packageName(row)}{(profilePhone(row)) ? ` · ${profilePhone(row)}` : ''}
                   </div>
                 </div>
@@ -830,7 +830,7 @@ export default function TreatmentCustomers() {
             render: (_: unknown, row: CustomerTreatment) => (
               <div>
                 <Tag color="purple">G-{treatmentCode(row)}</Tag>
-                <div style={{ color: '#777', fontSize: 12, marginTop: 2 }}>
+                <div className="mt-0.5 text-xs text-[#777]">
                   Mua ngày {row.created_at ? dayjs(row.created_at).format('DD/MM/YYYY') : '—'}
                 </div>
               </div>
@@ -846,8 +846,8 @@ export default function TreatmentCustomers() {
                 if (!total) return <Tag>Chưa cấu hình số buổi</Tag>
                 return (
                   <div>
-                    <Progress percent={percent} size="small" showInfo={false} strokeColor="var(--brand-primary)" style={{ margin: '0 0 4px' }} />
-                    <div style={{ color: '#777', fontSize: 12 }}>Đã dùng {used}/{total} buổi</div>
+                    <Progress percent={percent} size="small" showInfo={false} strokeColor="var(--brand-primary)" className="mb-1!" />
+                    <div className="text-xs text-[#777]">Đã dùng {used}/{total} buổi</div>
                   </div>
                 )
               }
@@ -866,7 +866,7 @@ export default function TreatmentCustomers() {
                 {canReadPayments && <div>
                   {formatMoney(row.paid_amount)} / {formatMoney(row.total_amount)}
                 </div>}
-                <Tag color={(row.debt_amount ?? 0) > 0 ? 'orange' : 'green'} style={{ marginTop: 4 }}>
+                <Tag color={(row.debt_amount ?? 0) > 0 ? 'orange' : 'green'} className="mt-1">
                   {(row.debt_amount ?? 0) > 0 ? `Còn nợ ${formatMoney(row.debt_amount)}` : 'Đã trả đủ'}
                 </Tag>
               </div>
@@ -999,7 +999,7 @@ export default function TreatmentCustomers() {
                     : <MobileCardRow label="Loại gói" value="Trọn gói" />}
                 {row.expires_at && <MobileCardRow label="Hạn dùng" value={dayjs(row.expires_at).format('DD/MM/YYYY')} />}
                 {canReadPayments && <MobileCardRow label="Thanh toán" value={
-                  <Tag color={(row.debt_amount ?? 0) > 0 ? 'orange' : 'green'} style={{ margin: 0 }}>
+                  <Tag color={(row.debt_amount ?? 0) > 0 ? 'orange' : 'green'} className="m-0!">
                     {(row.debt_amount ?? 0) > 0 ? `Còn nợ ${formatMoney(row.debt_amount)}` : 'Đã trả đủ'}
                   </Tag>
                 } />}

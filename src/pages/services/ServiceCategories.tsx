@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Button, Form, Popconfirm, Space, Table, Tag, Typography, message } from 'antd'
 import type { TableColumnsType } from 'antd'
-import { PlusOutlined, ReloadOutlined } from '@ant-design/icons'
+import { PlusOutlined } from '@ant-design/icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import ServiceCategoryModal from './components/ServiceCategoryModal'
 import ListPagination from '@/components/base/ListPagination'
@@ -154,9 +154,6 @@ export default function ServiceCategories() {
           </Typography.Text>
         </div>
         <Space>
-          <Button icon={<ReloadOutlined />} onClick={() => { setPage(1); void categoriesQuery.refetch() }}>
-            Tải lại
-          </Button>
           <Can I="CREATE" a="SERVICE">
             <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor()}>
               Thêm danh mục

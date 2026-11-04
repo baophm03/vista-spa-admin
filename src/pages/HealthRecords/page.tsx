@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   Form,
   Input,
-  Space,
   Table,
   Tag,
   Typography,
@@ -237,21 +236,19 @@ export default function HealthRecords() {
     <>
       <PageTitle
         subtitle="Hồ sơ sức khỏe và chỉ số của khách hàng"
-        extra={
-          <Space wrap>
-            <Input
-              allowClear
-              prefix={<SearchOutlined style={{ color: 'var(--brand-text-inactive, #A9ADB2)' }} />}
-              placeholder="Tìm khách, SĐT, tình trạng da..."
-              style={{ width: 260 }}
-              value={searchText}
-              onChange={(event) => {
-                setSearchText(event.target.value)
-                if (!event.target.value) applySearch('')
-              }}
-              onPressEnter={() => applySearch(searchText)}
-            />
-          </Space>
+        left={
+          <Input
+            allowClear
+            prefix={<SearchOutlined className="text-[var(--brand-text-inactive,#A9ADB2)]" />}
+            placeholder="Tìm khách, SĐT, tình trạng da..."
+            className="w-[260px]!"
+            value={searchText}
+            onChange={(event) => {
+              setSearchText(event.target.value)
+              if (!event.target.value) applySearch('')
+            }}
+            onPressEnter={() => applySearch(searchText)}
+          />
         }
       >
         Sổ sức khỏe

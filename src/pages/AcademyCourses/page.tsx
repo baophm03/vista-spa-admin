@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { Alert, Button, Form, Modal, Space, Table, Tag, message } from 'antd'
+import { Alert, Button, Form, Modal, Table, Tag, message } from 'antd'
 import { BookOutlined, CheckCircleOutlined, EditOutlined, EyeInvisibleOutlined, PlusOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
@@ -140,34 +140,34 @@ export default function AcademyCourses() {
       <StatCards items={statItems} />
       <PageTitle
         subtitle="Khóa học đào tạo spa của trung tâm"
-        extra={
-          <Space wrap>
-            <ListFilterPopover
-              open={filterOpen}
-              onOpenChange={setFilterOpen}
-              activeFilterCount={0}
-              onApply={() => {
-                if (draftVisibleColumns.length === 0) {
-                  message.error('Hãy giữ lại ít nhất một cột hiển thị')
-                  return
-                }
-                setVisibleColumns(draftVisibleColumns)
-                setFilterOpen(false)
-              }}
-              onClear={() => {
-                setDraftVisibleColumns(DEFAULT_VISIBLE_COLUMNS)
-                setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)
-              }}
-              columnOptions={COURSE_COLUMN_OPTIONS}
-              draftVisibleColumns={draftVisibleColumns}
-              onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as CourseColumnKey[])}
-            />
-            {isAdmin && (
-              <Can I="CREATE" a="ACADEMY">
-                <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor()}>Thêm khóa học</Button>
-              </Can>
-            )}
-          </Space>
+        left={
+          <ListFilterPopover
+            open={filterOpen}
+            onOpenChange={setFilterOpen}
+            activeFilterCount={0}
+            onApply={() => {
+              if (draftVisibleColumns.length === 0) {
+                message.error('Hãy giữ lại ít nhất một cột hiển thị')
+                return
+              }
+              setVisibleColumns(draftVisibleColumns)
+              setFilterOpen(false)
+            }}
+            onClear={() => {
+              setDraftVisibleColumns(DEFAULT_VISIBLE_COLUMNS)
+              setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)
+            }}
+            columnOptions={COURSE_COLUMN_OPTIONS}
+            draftVisibleColumns={draftVisibleColumns}
+            onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as CourseColumnKey[])}
+          />
+        }
+        right={
+          isAdmin ? (
+            <Can I="CREATE" a="ACADEMY">
+              <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor()}>Thêm khóa học</Button>
+            </Can>
+          ) : undefined
         }
       >
         Khóa học đào tạo
@@ -189,7 +189,7 @@ export default function AcademyCourses() {
           { key: 'category', title: 'Danh mục', dataIndex: 'category', render: (value: string) => CATEGORY_OPTIONS.find((item) => item.value === value)?.label ?? value },
           { key: 'level', title: 'Trình độ', dataIndex: 'level', render: (value: string) => LEVEL_OPTIONS.find((item) => item.value === value)?.label ?? value },
           { key: 'tuition', title: 'Học phí', dataIndex: 'tuition', render: (value: number) => formatMoney(value) },
-          { key: 'is_active', title: 'Trạng thái', dataIndex: 'is_active', render: (value: boolean) => <Tag color={value ? 'green' : 'default'}>{value ? 'Đang mở' : 'Đã ẩn'}</Tag> },
+          { key: 'is_active', title: 'Trạng thái', dataIndex: 'is_active', width: 110, render: (value: boolean) => <Tag color={value ? 'green' : 'default'}>{value ? 'Đang mở' : 'Đã ẩn'}</Tag> },
           {
             key: 'actions',
             title: 'Hành động', align: 'center' as const,

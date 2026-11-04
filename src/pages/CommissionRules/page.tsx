@@ -4,13 +4,12 @@ import {
   Button,
   Form,
   Modal,
-  Space,
   Table,
   Tag,
   message,
 } from 'antd'
 import type { TableColumnsType } from 'antd'
-import { CheckCircleOutlined, EditOutlined, PauseCircleOutlined, PercentageOutlined, PlusOutlined, ReloadOutlined } from '@ant-design/icons'
+import { CheckCircleOutlined, EditOutlined, PauseCircleOutlined, PercentageOutlined, PlusOutlined } from '@ant-design/icons'
 import { useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { Can, useAbility } from '@casl/react'
@@ -229,10 +228,9 @@ export default function CommissionRules() {
           <>
             <StatCards items={statItems} />
             <PageTitle
-            subtitle="Quy tắc tính hoa hồng cho nhân viên và cộng tác viên"
-              extra={
-                <Space wrap>
-                  <Button icon={<ReloadOutlined />} onClick={() => void rulesQuery.refetch()}>Tải lại</Button>
+              subtitle="Quy tắc tính hoa hồng cho nhân viên và cộng tác viên"
+              left={
+                <>
                   <ListFilterPopover
                     open={filterOpen}
                     onOpenChange={setFilterOpen}
@@ -253,9 +251,9 @@ export default function CommissionRules() {
                     draftVisibleColumns={draftVisibleColumns}
                     onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as CommissionColumnKey[])}
                   />
-                  <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor()}>Thêm quy tắc</Button>
-                </Space>
+                </>
               }
+              right={<Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor()}>Thêm quy tắc</Button>}
             >
               Quy tắc hoa hồng
             </PageTitle>

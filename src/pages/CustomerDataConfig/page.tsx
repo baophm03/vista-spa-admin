@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Alert, Button, Form, Select, Space, Spin, Table, Tag, Typography, message } from 'antd'
-import { EditOutlined, PlusOutlined, ReloadOutlined } from '@ant-design/icons'
+import { Alert, Button, Form, Spin, Table, Tabs, Tag, Typography, message } from 'antd'
+import { EditOutlined, PlusOutlined } from '@ant-design/icons'
 import { Can, useAbility } from '@casl/react'
 import PageTitle from '@/components/base/PageTitle'
 import ListPagination from '@/components/base/ListPagination'
@@ -164,22 +164,34 @@ function CustomerFieldsConfig({ entity, sectionTitle }: {
     },
   ]
 
+  const canCreate = ability.can('CREATE', 'CUSTOM_FIELD')
+
+  const customFieldsTable = (
+    <Table<CustomFieldDef>
+      rowKey="id"
+      loading={loading}
+      dataSource={paginateRows(rows, page, 10)}
+      pagination={false}
+      locale={{
+        emptyText: entity === 'SERVICE' ? (
+          <TableEmpty
+            title="Chưa có trường tùy chỉnh cho dịch vụ"
+            description="Tạo trường nếu cần lưu thêm thông tin ngoài các trường dịch vụ cơ bản."
+          />
+        ) : undefined,
+      }}
+      columns={columns}
+    />
+  )
+
   return (
     <>
-      <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 16 }} wrap>
-        <Typography.Paragraph type="secondary" style={{ marginBottom: 0 }}>
-          {helperText}
-        </Typography.Paragraph>
-        <Space>
-          <Button icon={<ReloadOutlined />} onClick={() => void load()}>Tải lại</Button>
-          <Can I="CREATE" a="CUSTOM_FIELD"><Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor()}>Thêm trường</Button></Can>
-        </Space>
-      </Space>
-      {entity === 'SERVICE' && (
+      {entity === 'SERVICE' ? (
         <>
-          <Typography.Title level={5} style={{ margin: '0 0 12px' }}>Các trường dịch vụ có sẵn</Typography.Title>
+          <PageTitle subtitle="Các trường cơ bản đã được cấu hình sẵn — chỉnh sửa chi tiết tại mục Dịch vụ.">
+            Các trường dịch vụ có sẵn
+          </PageTitle>
           <Table
-            size="small"
             rowKey="key"
             dataSource={SERVICE_BASE_FIELDS}
             pagination={false}
@@ -191,24 +203,33 @@ function CustomerFieldsConfig({ entity, sectionTitle }: {
               { title: 'Cấu hình tại', render: () => 'Mục Dịch vụ' },
             ]}
           />
-          <Typography.Title level={5} style={{ margin: '24px 0 12px' }}>Trường tùy chỉnh bổ sung</Typography.Title>
+          <PageTitle
+            subtitle={helperText}
+            right={canCreate ? (
+              <Can I="CREATE" a="CUSTOM_FIELD">
+                <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor()}>Thêm trường</Button>
+              </Can>
+            ) : undefined}
+          >
+            Trường tùy chỉnh bổ sung
+          </PageTitle>
+          {customFieldsTable}
+        </>
+      ) : (
+        <>
+          <PageTitle
+            subtitle={helperText}
+            right={canCreate ? (
+              <Can I="CREATE" a="CUSTOM_FIELD">
+                <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor()}>Thêm trường</Button>
+              </Can>
+            ) : undefined}
+          >
+            {sectionTitle ?? 'Trường tùy chỉnh'}
+          </PageTitle>
+          {customFieldsTable}
         </>
       )}
-      <Table<CustomFieldDef>
-        rowKey="id"
-        loading={loading}
-        dataSource={paginateRows(rows, page, 10)}
-        pagination={false}
-        locale={{
-          emptyText: entity === 'SERVICE' ? (
-            <TableEmpty
-              title="Chưa có trường tùy chỉnh cho dịch vụ"
-              description="Tạo trường nếu cần lưu thêm thông tin ngoài các trường dịch vụ cơ bản."
-            />
-          ) : undefined,
-        }}
-        columns={columns}
-      />
       <ListPagination page={page} limit={10} total={rows.length} onChange={setPage} noun="trường tùy chỉnh" />
       <CustomFieldEditorModal
         entity={entity}
@@ -271,7 +292,9 @@ function HealthMetricsConfig() {
 
   return (
     <>
-      <Typography.Paragraph type="secondary">Mã đã ngừng sử dụng không nhận số đo mới; dữ liệu lịch sử được giữ lại.</Typography.Paragraph>
+      <PageTitle subtitle="Mã đã ngừng sử dụng không nhận số đo mới; dữ liệu lịch sử được giữ lại.">
+        Chỉ số sức khỏe (HM)
+      </PageTitle>
       <LookupItemsManager listId={lookup.id} />
     </>
   )
@@ -292,24 +315,19 @@ export default function CustomerDataConfig() {
 
   return (
     <>
-      <PageTitle
-        subtitle="Cấu hình trường dữ liệu khách hàng"
-        extra={(
-          <Select
-            aria-label="Chọn loại dữ liệu cần cấu hình"
-            value={selectedSection}
-            options={sectionOptions}
-            onChange={(value: CustomFieldDefEntity | 'HEALTH_METRICS') => setSelectedSection(value)}
-            style={{ width: 260 }}
-          />
-        )}
-      >Cấu hình dữ liệu khách hàng</PageTitle>
-      {selectedSection === 'HEALTH_METRICS'
-        ? <HealthMetricsConfig />
-        : <CustomerFieldsConfig
-          entity={selectedSection}
-          sectionTitle={sectionOptions.find((option) => option.value === selectedSection)?.label}
-        />}
+      <PageTitle subtitle="Cấu hình trường dữ liệu khách hàng">Cấu hình dữ liệu khách hàng</PageTitle>
+      <Tabs
+        activeKey={selectedSection}
+        onChange={(key) => setSelectedSection(key as CustomFieldDefEntity | 'HEALTH_METRICS')}
+        items={sectionOptions.map((option) => ({
+          key: option.value,
+          label: option.label,
+          // chỉ render tab đang chọn để tránh gọi API 7 section cùng lúc
+          children: selectedSection !== option.value ? null : option.value === 'HEALTH_METRICS'
+            ? <HealthMetricsConfig />
+            : <CustomerFieldsConfig entity={option.value} sectionTitle={option.label} />,
+        }))}
+      />
     </>
   )
 }

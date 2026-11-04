@@ -21,8 +21,8 @@ export default function PointsHistoryPanel({ profileId }: { profileId: string })
   }
   const rows = data?.history ?? []
   return (
-    <div style={{ paddingTop: 8 }}>
-      <Statistic title="Điểm khả dụng" value={data?.points ?? 0} style={{ marginBottom: 16 }} />
+    <div className="pt-2">
+      <Statistic title="Điểm khả dụng" value={data?.points ?? 0} className="mb-4" />
       {pointsQuery.isLoading ? (
         <Typography.Text type="secondary">Đang tải…</Typography.Text>
       ) : rows.length === 0 ? (

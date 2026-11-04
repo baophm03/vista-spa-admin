@@ -6,14 +6,13 @@ import {
   Input,
   Modal,
   Select,
-  Space,
   Table,
   Tag,
   Typography,
   message,
 } from 'antd'
 import type { TableColumnsType } from 'antd'
-import { BarChartOutlined, CheckCircleOutlined, DeleteOutlined, EditOutlined, EyeInvisibleOutlined, PlusOutlined, ReloadOutlined, SearchOutlined, TeamOutlined, UserAddOutlined } from '@ant-design/icons'
+import { BarChartOutlined, CheckCircleOutlined, DeleteOutlined, EditOutlined, EyeInvisibleOutlined, PlusOutlined, SearchOutlined, TeamOutlined, UserAddOutlined } from '@ant-design/icons'
 import { useQueryClient } from '@tanstack/react-query'
 import { Can, useAbility } from '@casl/react'
 import PageTitle from '@/components/base/PageTitle'
@@ -265,14 +264,14 @@ export default function Collaborators() {
           <>
             <StatCards items={statItems} />
             <PageTitle
-            subtitle="Quản lý cộng tác viên giới thiệu dịch vụ"
-              extra={
-                <Space wrap>
+              subtitle="Quản lý cộng tác viên giới thiệu dịch vụ"
+              left={
+                <>
                   <Input
                     allowClear
-                    prefix={<SearchOutlined style={{ color: 'var(--brand-text-inactive, #A9ADB2)' }} />}
+                    prefix={<SearchOutlined className="text-[var(--brand-text-inactive,#A9ADB2)]" />}
                     placeholder="Tìm tên, SĐT, mã giới thiệu"
-                    style={{ width: 260 }}
+                    className="w-[260px]!"
                     value={searchText}
                     onChange={(event) => {
                       setSearchText(event.target.value)
@@ -291,7 +290,7 @@ export default function Collaborators() {
                     draftVisibleColumns={draftVisibleColumns}
                     onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as CollaboratorColumnKey[])}
                     filterItems={(
-                      <Form.Item name="type" label="Loại CTV" style={{ marginBottom: 0 }}>
+                      <Form.Item name="type" label="Loại CTV" className="mb-0!">
                         <Select
                           allowClear
                           placeholder="Tất cả"
@@ -300,11 +299,12 @@ export default function Collaborators() {
                       </Form.Item>
                     )}
                   />
-                  <Button icon={<ReloadOutlined />} onClick={() => void listQuery.refetch()}>Tải lại</Button>
-                  <Can I="CREATE" a="COLLABORATOR">
-                    <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor()}>Thêm CTV</Button>
-                  </Can>
-                </Space>
+                </>
+              }
+              right={
+                <Can I="CREATE" a="COLLABORATOR">
+                  <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor()}>Thêm CTV</Button>
+                </Can>
               }
             >
               Cộng tác viên

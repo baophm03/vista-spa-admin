@@ -19,7 +19,6 @@ import {
   EyeInvisibleOutlined,
   GiftOutlined,
   PlusOutlined,
-  ReloadOutlined,
   StopOutlined,
 } from '@ant-design/icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -278,7 +277,6 @@ function RewardCatalogTab({ onChanged }: { onChanged: () => void }) {
   return (
     <>
       <Space style={{ width: '100%', justifyContent: 'flex-end', marginBottom: 16 }}>
-        <Button icon={<ReloadOutlined />} onClick={() => void rewardsQuery.refetch()}>Tải lại</Button>
         <Can I="CREATE" a="REWARD">
           <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor()}>Thêm quà</Button>
         </Can>
@@ -462,7 +460,6 @@ function RedemptionsTab({ onChanged }: { onChanged: () => void }) {
             </Form.Item>
           )}
         />
-        <Button icon={<ReloadOutlined />} onClick={() => void redemptionsQuery.refetch()}>Tải lại</Button>
       </Space>
       {redemptionsQuery.isError && (
         <Alert className="mb-4" type="error" showIcon message="Không tải được lượt đổi quà" description={errorMessage(redemptionsQuery.error)} action={<Button size="small" onClick={() => void redemptionsQuery.refetch()}>Thử lại</Button>} />

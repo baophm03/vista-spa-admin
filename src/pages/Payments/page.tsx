@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Alert, Button, DatePicker, Form, Input, Select, Space, Table, Typography, message } from 'antd'
-import { ReloadOutlined, StopOutlined } from '@ant-design/icons'
+import { SearchOutlined, StopOutlined } from '@ant-design/icons'
 import dayjs, { type Dayjs } from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
 import ListFilterPopover from '@/components/base/ListFilterPopover'
@@ -30,6 +30,7 @@ export default function Payments() {
   const [branchFilter, setBranchFilter] = useState<string>()
   const [staffFilter, setStaffFilter] = useState<string>()
   const [customerSearch, setCustomerSearch] = useState<string>()
+  const [searchInput, setSearchInput] = useState('')
   const [range, setRange] = useState<[Dayjs | null, Dayjs | null] | null>(null)
   const [filterOpen, setFilterOpen] = useState(false)
   const [visibleColumns, setVisibleColumns] = useState<PaymentColumnKey[]>(DEFAULT_VISIBLE_COLUMNS)
@@ -37,6 +38,15 @@ export default function Payments() {
   const [voidRow, setVoidRow] = useState<LedgerRow | null>(null)
   const [voidForm] = Form.useForm()
   const [filterForm] = Form.useForm()
+
+  // Gõ tìm kiếm có debounce 400ms — giống các page danh sách khác
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setPage(1)
+      setCustomerSearch(searchInput.trim() || undefined)
+    }, 400)
+    return () => clearTimeout(timer)
+  }, [searchInput])
   const queryClient = useQueryClient()
   const canVoid = useAbility().can('DELETE', 'CUSTOMER')
 
@@ -217,14 +227,15 @@ export default function Payments() {
     <>
       <PageTitle
         subtitle="Lịch sử thu tiền thực tế trên toàn chuỗi"
-        extra={
-          <Space wrap>
-            <Input.Search
+        left={
+          <>
+            <Input
               allowClear
+              prefix={<SearchOutlined className="text-[var(--brand-text-inactive,#A9ADB2)]" />}
               placeholder="Tìm khách theo tên / SĐT"
-              defaultValue={customerSearch}
-              style={{ width: 220 }}
-              onSearch={(value) => { setCustomerSearch(value.trim() || undefined); setPage(1) }}
+              className="w-[220px]!"
+              value={searchInput}
+              onChange={(event) => setSearchInput(event.target.value)}
             />
             <ListFilterPopover
               open={filterOpen}
@@ -238,10 +249,10 @@ export default function Payments() {
               onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as PaymentColumnKey[])}
               filterItems={(
                 <>
-                  <Form.Item name="branch_id" label="Cơ sở" style={{ marginBottom: 10 }}>
+                  <Form.Item name="branch_id" label="Cơ sở" className="mb-2.5!">
                     <Select allowClear placeholder="Tất cả cơ sở" options={branches.map((b) => ({ value: b.id, label: b.name }))} />
                   </Form.Item>
-                  <Form.Item name="entered_by" label="Thu ngân" style={{ marginBottom: 10 }}>
+                  <Form.Item name="entered_by" label="Thu ngân" className="mb-2.5!">
                     <Select
                       allowClear
                       showSearch
@@ -250,14 +261,13 @@ export default function Payments() {
                       options={staffRows.map((s) => ({ value: s.id, label: s.zalo_name || s.email || s.id }))}
                     />
                   </Form.Item>
-                  <Form.Item name="date_range" label="Khoảng thời gian" style={{ marginBottom: 0 }}>
-                    <DatePicker.RangePicker placeholder={['Từ ngày', 'Đến ngày']} style={{ width: '100%' }} />
+                  <Form.Item name="date_range" label="Khoảng thời gian" className="mb-0!">
+                    <DatePicker.RangePicker placeholder={['Từ ngày', 'Đến ngày']} className="w-full!" />
                   </Form.Item>
                 </>
               )}
             />
-            <Button icon={<ReloadOutlined />} onClick={() => refresh()}>Tải lại</Button>
-          </Space>
+          </>
         }
       >
         Sổ thanh toán

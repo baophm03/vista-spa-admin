@@ -27,7 +27,7 @@ export default function StaffProfileModal({ form, open, profileUser, canUpdate, 
       cancelText="Hủy"
       confirmLoading={saving}
     >
-      <Form form={form} layout="vertical" style={{ marginTop: 12 }}>
+      <Form form={form} layout="vertical" className="mt-3">
         <Form.Item
           name="display_name"
           label="Tên hiển thị trên app"
@@ -59,14 +59,14 @@ export default function StaffProfileModal({ form, open, profileUser, canUpdate, 
             ) : (
               <Form.Item label="Ảnh đại diện">
                 {profileDetails?.photo_file_id ? (
-                  <Image src={profileDetails.photo_file_id} alt="Ảnh đại diện KTV" width={72} height={72} style={{ objectFit: 'cover', borderRadius: 6 }} />
+                  <Image src={profileDetails.photo_file_id} alt="Ảnh đại diện KTV" width={72} height={72} className="rounded-md object-cover" />
                 ) : <Typography.Text type="secondary">Chưa có ảnh</Typography.Text>}
               </Form.Item>
             )}
           </Col>
           <Col xs={24} sm={12}>
             <Form.Item name="sort_order" label="Thứ tự sắp xếp" initialValue={0}>
-              <InputNumber disabled={!canUpdate} min={0} style={{ width: '100%' }} />
+              <InputNumber disabled={!canUpdate} min={0} className="w-full!" />
             </Form.Item>
           </Col>
         </Row>

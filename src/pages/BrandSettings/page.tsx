@@ -202,7 +202,10 @@ export default function BrandSettings() {
     <Can I="UPDATE" a="SETTING" passThrough>
       {({ isAllowed: canEdit }) => (
         <>
-          <PageTitle subtitle="Thông tin thương hiệu, giao diện và khu vực" extra={canEdit ? <Button type="primary" icon={<SaveOutlined />} loading={saveMutation.isPending} onClick={() => form.submit()}>Lưu cấu hình</Button> : undefined}>
+          <PageTitle
+            subtitle="Thông tin thương hiệu, giao diện và khu vực"
+            right={canEdit ? <Button type="primary" icon={<SaveOutlined />} loading={saveMutation.isPending} onClick={() => form.submit()}>Lưu cấu hình</Button> : undefined}
+          >
             Thương hiệu và khu vực
           </PageTitle>
           {!canEdit && <Alert className="mb-4" type="info" showIcon message="Bạn có quyền xem cấu hình thương hiệu; chỉ ADM được chỉnh sửa." />}

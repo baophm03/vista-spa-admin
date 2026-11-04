@@ -41,11 +41,11 @@ export default function StaffServicesModal({
         <Checkbox.Group
           value={checkedServiceIds}
           onChange={(values) => onCheckedChange(values as string[])}
-          style={{ display: 'grid', gap: 8, maxHeight: '50vh', overflowY: 'auto', marginTop: 8 }}
+          className="mt-2 grid max-h-[50vh] gap-2 overflow-y-auto"
           options={serviceRows.map((service) => ({ value: service.id, label: service.title || service.id }))}
         />
       )}
-      <Typography.Text type="secondary" style={{ display: 'block', marginTop: 12 }}>
+      <Typography.Text type="secondary" className="mt-3 block">
         Lưu sẽ thay thế toàn bộ danh sách dịch vụ KTV này phụ trách. Danh sách dùng để lọc KTV khi đặt lịch.
       </Typography.Text>
     </Modal>

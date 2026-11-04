@@ -1,5 +1,6 @@
-import { Button } from 'antd'
-import { CheckCircleOutlined, ClockCircleOutlined, PlayCircleOutlined, PlusOutlined, TeamOutlined } from '@ant-design/icons'
+import { useState } from 'react'
+import { Button, Grid, Input, Select } from 'antd'
+import { CheckCircleOutlined, ClockCircleOutlined, PlayCircleOutlined, PlusOutlined, SearchOutlined, TeamOutlined } from '@ant-design/icons'
 import { Can } from '@casl/react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate, useSearchParams } from 'react-router-dom'
@@ -18,6 +19,12 @@ export default function StandaloneServices() {
     setSearchParams(next, { replace: true })
   }
 
+  // Mobile (dưới breakpoint md): search thu về nút icon, bấm mới mở ô tìm kiếm
+  const isMobile = !Grid.useBreakpoint().md
+  const [search, setSearch] = useState('')
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [statusFilter, setStatusFilter] = useState('all')
+
   // Share cache với StandaloneServiceHistory qua STANDALONE_SERVICE_QUERY
   const appointmentsQuery = useQuery(STANDALONE_SERVICE_QUERY)
   const rows = standaloneServiceRows(appointmentsQuery.data)
@@ -34,7 +41,34 @@ export default function StandaloneServices() {
       <StatCards items={statItems} />
       <PageTitle
         subtitle="Hồ sơ các lần khách dùng dịch vụ riêng, không trừ buổi gói"
-        extra={
+        left={
+          <>
+            {/* Mobile: nút icon mở ô tìm kiếm; desktop hiện input luôn — Select trạng thái giữ nguyên */}
+            {isMobile && !searchOpen && (
+              <Button icon={<SearchOutlined />} aria-label="Tìm kiếm" title="Tìm kiếm" onClick={() => setSearchOpen(true)} />
+            )}
+            {(searchOpen || !isMobile) && (
+              <Input
+                allowClear
+                autoFocus={isMobile}
+                prefix={<SearchOutlined />}
+                placeholder="Tìm khách, SĐT, dịch vụ, KTV"
+                className={isMobile && searchOpen ? 'min-w-0 flex-1' : 'w-[280px]!'}
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                onBlur={() => { if (isMobile && !search) setSearchOpen(false) }}
+              />
+            )}
+            <Select value={statusFilter} className="w-[160px]" onChange={setStatusFilter} options={[
+              { value: 'all', label: 'Mọi trạng thái' },
+              { value: 'pending', label: 'Chờ duyệt' },
+              { value: 'approved', label: 'Đã duyệt' },
+              { value: 'in_progress', label: 'Đang làm' },
+              { value: 'completed', label: 'Hoàn tất' },
+            ]} />
+          </>
+        }
+        right={
           <Can I="CREATE" a="APPOINTMENT">
             <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate('/appointments?create=1')}>
               Thêm dịch vụ lẻ
@@ -45,9 +79,10 @@ export default function StandaloneServices() {
         Dịch vụ lẻ
       </PageTitle>
       <StandaloneServiceHistory
-        hideCreate
         focusAppointmentId={focusAppointmentId}
         onFocusConsumed={consumeFocusAppointment}
+        search={search}
+        statusFilter={statusFilter}
       />
     </>
   )

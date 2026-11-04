@@ -14,9 +14,10 @@ import {
   message,
 } from 'antd'
 import type { TableColumnsType } from 'antd'
-import { EditOutlined, EyeInvisibleOutlined, EyeOutlined, PlusOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons'
+import { EditOutlined, EyeInvisibleOutlined, EyeOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { Can, useAbility } from '@casl/react'
+import PageTitle from '@/components/base/PageTitle'
 import ListFilterPopover from '@/components/base/ListFilterPopover'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
@@ -135,10 +136,6 @@ export default function Services() {
   })
   const hideMutation = useMutation({ mutationFn: async (id: string) => deleteServiceId(id) })
 
-  const reload = () => {
-    void listQuery.refetch()
-    void loadCategories()
-  }
 
   const openEditor = async (row?: ServiceRow) => {
     setEditing(row ?? null)
@@ -310,87 +307,70 @@ export default function Services() {
 
   const servicesContent = (
     <>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
-        <div style={{ minWidth: 0 }}>
-          <Typography.Title level={5} style={{ margin: 0, color: 'var(--brand-secondary-ink)' }}>
-            Dịch vụ
-          </Typography.Title>
-          <Typography.Text type="secondary" style={{ fontSize: 13 }}>
-            Danh mục dịch vụ và nhóm dịch vụ
-          </Typography.Text>
-        </div>
-        <Space wrap>
-          {/* Mobile: gọn toolbar — search thu về nút icon, bấm mới mở; filter icon + Tải lại; Thêm dịch vụ chỉ trên desktop */}
-          {isMobile && !searchOpen && (
-            <Button icon={<SearchOutlined />} aria-label="Tìm kiếm" title="Tìm kiếm" onClick={() => setSearchOpen(true)} />
-          )}
-          {!isMobile && <Input
-            allowClear
-            prefix={<SearchOutlined style={{ color: 'var(--brand-text-inactive, #A9ADB2)' }} />}
-            placeholder="Tìm tên hoặc mô tả dịch vụ"
-            style={{ width: 260 }}
-            value={searchText}
-            onChange={(event) => setSearchText(event.target.value)}
-            onPressEnter={() => {
-              setFilters((current) => ({ ...current, q: searchText.trim() || undefined }))
-              setPage(1)
-            }}
-          />}
-          <ListFilterPopover
-            iconOnly={!isMobile}
-            open={filterOpen}
-            onOpenChange={openFilters}
-            activeFilterCount={activeFilterCount}
-            form={filterForm}
-            onApply={applyFilters}
-            onClear={clearFilters}
-            columnOptions={COLUMN_OPTIONS}
-            draftVisibleColumns={draftVisibleColumns}
-            onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as string[])}
-            filterItems={(
-              <>
-                <Form.Item name="category_id" label="Danh mục" style={{ marginBottom: 10 }}>
-                  <Select allowClear placeholder="Tất cả danh mục" options={categoryOptions(categories)} />
-                </Form.Item>
-                <Form.Item name="is_active" label="Trạng thái" style={{ marginBottom: 0 }}>
-                  <Select
-                    allowClear
-                    placeholder="Tất cả"
-                    options={[
-                      { value: 'true', label: 'Đang hiển thị' },
-                      { value: 'false', label: 'Đã ẩn' },
-                    ]}
-                  />
-                </Form.Item>
-              </>
+      <PageTitle
+        subtitle="Danh mục dịch vụ và nhóm dịch vụ"
+        left={
+          <>
+            {/* Mobile: gọn toolbar — search thu về nút icon, bấm mới mở */}
+            {isMobile && !searchOpen && (
+              <Button icon={<SearchOutlined />} aria-label="Tìm kiếm" title="Tìm kiếm" onClick={() => setSearchOpen(true)} />
             )}
-          />
-          <Button icon={<ReloadOutlined />} onClick={reload}>
-            Tải lại
-          </Button>
-          {!isMobile && <Can I="CREATE" a="SERVICE">
+            {(searchOpen || !isMobile) && (
+              <Input
+                allowClear
+                prefix={<SearchOutlined className="text-[var(--brand-text-inactive,#A9ADB2)]" />}
+                placeholder="Tìm tên hoặc mô tả dịch vụ"
+                className={isMobile && searchOpen ? 'min-w-0 flex-1' : 'w-[260px]!'}
+                value={searchText}
+                onChange={(event) => setSearchText(event.target.value)}
+                onPressEnter={() => {
+                  setFilters((current) => ({ ...current, q: searchText.trim() || undefined }))
+                  setPage(1)
+                }}
+                onBlur={() => { if (isMobile && !searchText) setSearchOpen(false) }}
+              />
+            )}
+            <ListFilterPopover
+              iconOnly={!isMobile}
+              open={filterOpen}
+              onOpenChange={openFilters}
+              activeFilterCount={activeFilterCount}
+              form={filterForm}
+              onApply={applyFilters}
+              onClear={clearFilters}
+              columnOptions={COLUMN_OPTIONS}
+              draftVisibleColumns={draftVisibleColumns}
+              onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as string[])}
+              filterItems={(
+                <>
+                  <Form.Item name="category_id" label="Danh mục" className="mb-2.5!">
+                    <Select allowClear placeholder="Tất cả danh mục" options={categoryOptions(categories)} />
+                  </Form.Item>
+                  <Form.Item name="is_active" label="Trạng thái" className="mb-0!">
+                    <Select
+                      allowClear
+                      placeholder="Tất cả"
+                      options={[
+                        { value: 'true', label: 'Đang hiển thị' },
+                        { value: 'false', label: 'Đã ẩn' },
+                      ]}
+                    />
+                  </Form.Item>
+                </>
+              )}
+            />
+          </>
+        }
+        right={
+          <Can I="CREATE" a="SERVICE">
             <Button type="primary" icon={<PlusOutlined />} onClick={() => void openEditor()}>
               Thêm dịch vụ
             </Button>
-          </Can>}
-        </Space>
-      </div>
-      {isMobile && searchOpen && (
-        <Input
-          allowClear
-          autoFocus
-          prefix={<SearchOutlined style={{ color: 'var(--brand-text-inactive, #A9ADB2)' }} />}
-          placeholder="Tìm tên hoặc mô tả dịch vụ"
-          style={{ width: '100%', marginBottom: 12 }}
-          value={searchText}
-          onChange={(event) => setSearchText(event.target.value)}
-          onPressEnter={() => {
-            setFilters((current) => ({ ...current, q: searchText.trim() || undefined }))
-            setPage(1)
-          }}
-          onBlur={() => { if (!searchText) setSearchOpen(false) }}
-        />
-      )}
+          </Can>
+        }
+      >
+        Dịch vụ
+      </PageTitle>
       <Table<ServiceRow>
         className="desktop-only"
         rowKey="id"

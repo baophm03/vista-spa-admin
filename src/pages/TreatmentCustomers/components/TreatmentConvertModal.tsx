@@ -38,7 +38,7 @@ export default function TreatmentConvertModal({
         <Alert
           type="info"
           showIcon
-          style={{ marginBottom: 12 }}
+          className="mb-3"
           message={`Còn ${convertRow ? bonusRemainingOf(convertRow) : 0} buổi tặng khả dụng`}
           description="Chỉ chuyển được buổi TẶNG còn lại, không ảnh hưởng buổi đã mua. Thao tác một chiều — không thể đổi ngược."
         />
@@ -55,7 +55,7 @@ export default function TreatmentConvertModal({
               { type: 'number', max: convertRow ? bonusRemainingOf(convertRow) : 0, message: 'Vượt số buổi tặng còn lại' },
             ]}
           >
-            <InputNumber min={1} max={convertRow ? bonusRemainingOf(convertRow) : 0} style={{ width: '100%' }} />
+            <InputNumber min={1} max={convertRow ? bonusRemainingOf(convertRow) : 0} className="w-full!" />
           </Form.Item>
           <Form.Item name="reason" label="Lý do (bắt buộc)" rules={[{ required: true, whitespace: true, message: 'Nhập lý do' }]}>
             <Input.TextArea rows={2} maxLength={500} placeholder="VD: Khách không làm mụn nữa, đổi sang gội đầu dưỡng sinh" />

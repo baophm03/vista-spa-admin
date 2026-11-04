@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Alert, Button, Form, Select, Space, Table, Tag, message } from 'antd'
 import type { TableColumnsType } from 'antd'
-import { PlusOutlined, ReloadOutlined } from '@ant-design/icons'
+import { PlusOutlined } from '@ant-design/icons'
 import { useQueryClient } from '@tanstack/react-query'
 import PageTitle from '@/components/base/PageTitle'
 import ListPagination from '@/components/base/ListPagination'
@@ -158,20 +158,27 @@ export default function WarrantyClaims() {
 
   return (
     <>
-      <PageTitle subtitle="Tiếp nhận và xử lý yêu cầu bảo hành">Bảo hành gói liệu trình</PageTitle>
-      <Space style={{ width: '100%', justifyContent: 'flex-end', marginBottom: 16 }}>
-        <Select
-          allowClear value={statusFilter} placeholder="Trạng thái" style={{ width: 160 }}
-          onChange={(v) => { setStatusFilter(v); setPage(1) }}
-          options={STATUS_FILTER_OPTIONS}
-        />
-        <Button icon={<ReloadOutlined />} onClick={() => void claimsQuery.refetch()}>Tải lại</Button>
-        <Can I="UPDATE" a="CUSTOMER">
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => { createForm.resetFields(); setCreateOpen(true) }}>
-            Tiếp nhận bảo hành
-          </Button>
-        </Can>
-      </Space>
+      <PageTitle
+        subtitle="Tiếp nhận và xử lý yêu cầu bảo hành"
+        left={
+          <>
+            <Select
+              allowClear value={statusFilter} placeholder="Trạng thái" className="w-[160px]"
+              onChange={(v) => { setStatusFilter(v); setPage(1) }}
+              options={STATUS_FILTER_OPTIONS}
+            />
+          </>
+        }
+        right={
+          <Can I="UPDATE" a="CUSTOMER">
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => { createForm.resetFields(); setCreateOpen(true) }}>
+              Tiếp nhận bảo hành
+            </Button>
+          </Can>
+        }
+      >
+        Bảo hành gói liệu trình
+      </PageTitle>
       {claimsQuery.isError && (
         <Alert
           className="mb-4" type="error" showIcon message="Không tải được danh sách bảo hành"

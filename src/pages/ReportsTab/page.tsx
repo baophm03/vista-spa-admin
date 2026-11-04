@@ -9,7 +9,6 @@ import {
   Select,
   Table,
   Tag,
-  Tooltip as AntTooltip,
   Typography,
 } from 'antd'
 import {
@@ -17,7 +16,6 @@ import {
   DollarOutlined,
   DownloadOutlined,
   FilterOutlined,
-  ReloadOutlined,
   TeamOutlined,
   UserAddOutlined,
   WalletOutlined,
@@ -382,9 +380,6 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
             {c.label}
           </Tag>
         ))}
-        <AntTooltip title="Tải lại dữ liệu" placement="left">
-          <Button style={{ marginLeft: 'auto' }} icon={<ReloadOutlined />} onClick={() => void load()} />
-        </AntTooltip>
       </div>
     </Card>
   )

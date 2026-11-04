@@ -47,13 +47,13 @@ export default function TreatmentAddSessionModal({
         okText="Tạo buổi"
         cancelText="Hủy"
       >
-        <Form form={form} layout="vertical" style={{ marginTop: 12 }}>
+        <Form form={form} layout="vertical" className="mt-3">
           {canSchedule && <Row gutter={12}>
             <Col span={12}>
               <Form.Item name="scheduled_date" label="Ngày hẹn">
                 <DatePicker
                   format="DD/MM/YYYY"
-                  style={{ width: '100%' }}
+                  className="w-full!"
                   disabledDate={(date) => date.isBefore(dayjs().startOf('day'), 'day')}
                   onChange={(date) => {
                     form.setFieldsValue({ scheduled_time: undefined, staff_id: undefined })

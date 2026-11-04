@@ -13,7 +13,7 @@ import {
   message,
 } from 'antd'
 import type { TableColumnsType } from 'antd'
-import { ArrowDownOutlined, ArrowUpOutlined, CrownOutlined, DeleteOutlined, EditOutlined, PlusOutlined, ReloadOutlined, TeamOutlined } from '@ant-design/icons'
+import { ArrowDownOutlined, ArrowUpOutlined, CrownOutlined, DeleteOutlined, EditOutlined, PlusOutlined, TeamOutlined } from '@ant-design/icons'
 import { useQueryClient } from '@tanstack/react-query'
 import { Can, useAbility } from '@casl/react'
 import PageTitle from '@/components/base/PageTitle'
@@ -321,9 +321,8 @@ export default function CardRanks() {
             <StatCards items={statItems} />
             <PageTitle
               subtitle="Định nghĩa hạng thẻ, ngưỡng chi tiêu và quyền lợi"
-              extra={
-                <Space wrap>
-                  <Button icon={<ReloadOutlined />} onClick={() => void ranksQuery.refetch()}>Tải lại</Button>
+              left={
+                <>
                   <ListFilterPopover
                     open={filterOpen}
                     onOpenChange={setFilterOpen}
@@ -344,10 +343,12 @@ export default function CardRanks() {
                     draftVisibleColumns={draftVisibleColumns}
                     onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as CardRankColumnKey[])}
                   />
-                  <Can I="CREATE" a="CARD_RANK">
-                    <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor()}>Thêm hạng</Button>
-                  </Can>
-                </Space>
+                </>
+              }
+              right={
+                <Can I="CREATE" a="CARD_RANK">
+                  <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor()}>Thêm hạng</Button>
+                </Can>
               }
             >
               Hạng thẻ thành viên
@@ -360,11 +361,7 @@ export default function CardRanks() {
                 action={<Button size="small" onClick={() => void ranksQuery.refetch()}>Thử lại</Button>}
               />
             )}
-            {canReorder && (
-              <Typography.Text type="secondary" className="mb-2 block">
-                Kéo thả hàng để sắp xếp; có thể dùng các nút mũi tên trong cột Thứ tự bằng bàn phím.
-              </Typography.Text>
-            )}
+
             <Table<CardRankRow>
               className="desktop-only"
               rowKey="id" loading={ranksQuery.isLoading} dataSource={paginateRows(ranks, page, 10)} columns={columns}

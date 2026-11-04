@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Alert, Button, Form, Space, Switch, Table, Tag, Tooltip, Typography, message } from 'antd'
-import { EditOutlined, ReloadOutlined } from '@ant-design/icons'
+import { EditOutlined } from '@ant-design/icons'
 import PageTitle from '@/components/base/PageTitle'
 import TableEmpty from '@/components/base/TableEmpty'
 import { errorMessage, pickData } from '@/api/helpers'
@@ -115,11 +115,6 @@ export default function NotificationTemplates() {
     <>
       <PageTitle
         subtitle="Quản lý nội dung thông báo tự động theo sự kiện và kênh gửi"
-        extra={(
-          <Button icon={<ReloadOutlined />} onClick={() => void templatesQuery.refetch()} loading={templatesQuery.isFetching}>
-            Tải lại
-          </Button>
-        )}
       >
         Mẫu thông báo
       </PageTitle>

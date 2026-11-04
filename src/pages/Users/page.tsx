@@ -391,95 +391,97 @@ export default function Users() {
     <>
       <PageTitle
         subtitle="Quản lý cơ sở dữ liệu và phân hạng thành viên"
-        extra={
-          profileAccess.canManage && (
+        left={
+          <>
+            {/* Mobile: nút icon mở ô tìm kiếm; desktop hiện input luôn */}
+            {isMobile && !searchOpen && (
+              <Button icon={<SearchOutlined />} aria-label="Tìm kiếm" title="Tìm kiếm" onClick={() => setSearchOpen(true)} />
+            )}
+            {(searchOpen || !isMobile) && (
+              <Input
+                allowClear
+                autoFocus={isMobile}
+                prefix={<SearchOutlined className="text-[var(--brand-text-inactive,#A9ADB2)]" />}
+                placeholder="Tìm tên, SĐT, email, mã KH..."
+                className={isMobile && searchOpen ? 'min-w-0 flex-1' : 'w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]'}
+                value={searchText}
+                onChange={(event) => {
+                  setSearchText(event.target.value)
+                  if (!event.target.value) applySearch('')
+                }}
+                onPressEnter={() => applySearch(searchText)}
+                onBlur={() => { if (isMobile && !searchText) setSearchOpen(false) }}
+              />
+            )}
+            {profileAccess.canRead && (
+              <Button icon={<QrcodeOutlined />} loading={qrLookupLoading} onClick={() => setScannerOpen(true)} aria-label="Quét QR" title="Quét QR">
+                {/* Desktop: hiện chữ dễ nhận biết; mobile giữ icon gọn thanh công cụ */}
+                {!isMobile ? 'Quét QR' : undefined}
+              </Button>
+            )}
+            <ListFilterPopover
+              iconOnly={isMobile}
+              open={filterOpen}
+              onOpenChange={openFilters}
+              activeFilterCount={activeFilterCount}
+              form={filterForm}
+              onApply={applyFilters}
+              onClear={clearFilters}
+              columnOptions={CUSTOMER_COLUMN_OPTIONS}
+              draftVisibleColumns={draftVisibleColumns}
+              onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as CustomerColumnKey[])}
+              filterItems={(
+                <>
+                  <Form.Item name="branch_id" label="Cơ sở" className="mb-2.5!">
+                    <Select allowClear placeholder="Tất cả cơ sở" options={branches.map((branch) => ({ value: branch.id, label: branch.name }))} />
+                  </Form.Item>
+                  <Row gutter={8}>
+                    <Col span={12}>
+                      <Form.Item name="birth_month" label="Tháng sinh" className="mb-2.5!">
+                        <Select allowClear placeholder="Tất cả" options={Array.from({ length: 12 }, (_, index) => ({ value: index + 1, label: `Tháng ${index + 1}` }))} />
+                      </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                      <Form.Item name="rank_id" label="Hạng thành viên" className="mb-2.5!">
+                        <Select allowClear placeholder="Tất cả" options={ranks.map((rank) => ({ value: rank.id, label: rank.name }))} />
+                      </Form.Item>
+                    </Col>
+                  </Row>
+                  <Row gutter={8}>
+                    <Col span={12}>
+                      <Form.Item name="min_spent" label="Chi tiêu từ" className="mb-2.5!">
+                        <InputNumber min={0} step={100000} suffix={currencySymbol} placeholder="Tối thiểu" className="w-full!" />
+                      </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                      <Form.Item name="max_spent" label="Chi tiêu đến" className="mb-2.5!">
+                        <InputNumber min={0} step={100000} suffix={currencySymbol} placeholder="Tối đa" className="w-full!" />
+                      </Form.Item>
+                    </Col>
+                  </Row>
+                  <Form.Item name="has_debt" label="Công nợ" className="mb-0!">
+                    <Select allowClear placeholder="Tất cả" options={[{ value: 'true', label: 'Có nợ' }, { value: 'false', label: 'Không nợ' }]} />
+                  </Form.Item>
+                </>
+              )}
+            />
+            {profileAccess.canExport && (
+              <Button icon={<DownloadOutlined />} loading={exporting} onClick={() => void downloadCsv()} aria-label="Xuất CSV" title="Xuất CSV">
+                {!isMobile ? 'Xuất CSV' : undefined}
+              </Button>
+            )}
+          </>
+        }
+        right={
+          profileAccess.canManage ? (
             <Button type="primary" icon={<PlusOutlined />} onClick={() => void openModal()}>
               Thêm khách hàng
             </Button>
-          )
+          ) : undefined
         }
       >
         Khách hàng
       </PageTitle>
-      <div style={{ display: 'flex', justifyContent: 'flex-end', flexWrap: 'nowrap', gap: 8, marginBottom: 12 }}>
-        {/* Mobile: nút icon mở ô tìm kiếm; desktop hiện input luôn */}
-        {isMobile && !searchOpen && (
-          <Button icon={<SearchOutlined />} aria-label="Tìm kiếm" title="Tìm kiếm" onClick={() => setSearchOpen(true)} />
-        )}
-        {(searchOpen || !isMobile) && (
-          <Input
-            allowClear
-            autoFocus={isMobile}
-            prefix={<SearchOutlined style={{ color: 'var(--brand-text-inactive, #A9ADB2)' }} />}
-            placeholder="Tìm tên, SĐT, email, mã KH..."
-            style={isMobile && searchOpen ? { flex: 1, minWidth: 0 } : { width: 260, maxWidth: 'min(260px, 46vw)', minWidth: 140 }}
-            value={searchText}
-            onChange={(event) => {
-              setSearchText(event.target.value)
-              if (!event.target.value) applySearch('')
-            }}
-            onPressEnter={() => applySearch(searchText)}
-            onBlur={() => { if (isMobile && !searchText) setSearchOpen(false) }}
-          />
-        )}
-        {profileAccess.canRead && (
-          <Button icon={<QrcodeOutlined />} loading={qrLookupLoading} onClick={() => setScannerOpen(true)} aria-label="Quét QR" title="Quét QR">
-            {/* Desktop: hiện chữ dễ nhận biết; mobile giữ icon gọn thanh công cụ */}
-            {!isMobile ? 'Quét QR' : undefined}
-          </Button>
-        )}
-        <ListFilterPopover
-          iconOnly={isMobile}
-          open={filterOpen}
-          onOpenChange={openFilters}
-          activeFilterCount={activeFilterCount}
-          form={filterForm}
-          onApply={applyFilters}
-          onClear={clearFilters}
-          columnOptions={CUSTOMER_COLUMN_OPTIONS}
-          draftVisibleColumns={draftVisibleColumns}
-          onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as CustomerColumnKey[])}
-          filterItems={(
-            <>
-              <Form.Item name="branch_id" label="Cơ sở" style={{ marginBottom: 10 }}>
-                <Select allowClear placeholder="Tất cả cơ sở" options={branches.map((branch) => ({ value: branch.id, label: branch.name }))} />
-              </Form.Item>
-              <Row gutter={8}>
-                <Col span={12}>
-                  <Form.Item name="birth_month" label="Tháng sinh" style={{ marginBottom: 10 }}>
-                    <Select allowClear placeholder="Tất cả" options={Array.from({ length: 12 }, (_, index) => ({ value: index + 1, label: `Tháng ${index + 1}` }))} />
-                  </Form.Item>
-                </Col>
-                <Col span={12}>
-                  <Form.Item name="rank_id" label="Hạng thành viên" style={{ marginBottom: 10 }}>
-                    <Select allowClear placeholder="Tất cả" options={ranks.map((rank) => ({ value: rank.id, label: rank.name }))} />
-                  </Form.Item>
-                </Col>
-              </Row>
-              <Row gutter={8}>
-                <Col span={12}>
-                  <Form.Item name="min_spent" label="Chi tiêu từ" style={{ marginBottom: 10 }}>
-                    <InputNumber min={0} step={100000} suffix={currencySymbol} placeholder="Tối thiểu" style={{ width: '100%' }} />
-                  </Form.Item>
-                </Col>
-                <Col span={12}>
-                  <Form.Item name="max_spent" label="Chi tiêu đến" style={{ marginBottom: 10 }}>
-                    <InputNumber min={0} step={100000} suffix={currencySymbol} placeholder="Tối đa" style={{ width: '100%' }} />
-                  </Form.Item>
-                </Col>
-              </Row>
-              <Form.Item name="has_debt" label="Công nợ" style={{ marginBottom: 0 }}>
-                <Select allowClear placeholder="Tất cả" options={[{ value: 'true', label: 'Có nợ' }, { value: 'false', label: 'Không nợ' }]} />
-              </Form.Item>
-            </>
-          )}
-        />
-        {profileAccess.canExport && (
-          <Button icon={<DownloadOutlined />} loading={exporting} onClick={() => void downloadCsv()} aria-label="Xuất CSV" title="Xuất CSV">
-            {!isMobile ? 'Xuất CSV' : undefined}
-          </Button>
-        )}
-      </div>
       <Table<CustomerProfileRow>
         className="desktop-only"
         rowKey="id"

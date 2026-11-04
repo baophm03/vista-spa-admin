@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { Button, Col, Form, Input, Modal, Row, Select, Space, Table, Tag, Typography, message } from 'antd'
-import { ClockCircleOutlined, CrownOutlined, EditOutlined, EyeOutlined, ReloadOutlined, SearchOutlined, SyncOutlined } from '@ant-design/icons'
+import { ClockCircleOutlined, CrownOutlined, EditOutlined, EyeOutlined, SearchOutlined, SyncOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { useBrandCurrency } from '@/themeRuntime'
 import PageTitle from '../../components/base/PageTitle'
@@ -201,13 +201,13 @@ export default function Points() {
     <>
       <PageTitle
         subtitle="Tích điểm, xét hạng và điều chỉnh điểm cho hội viên"
-        extra={
-          <Space wrap>
+        left={
+          <>
             <Input
               allowClear
-              prefix={<SearchOutlined style={{ color: 'var(--brand-text-inactive, #A9ADB2)' }} />}
+              prefix={<SearchOutlined className="text-[var(--brand-text-inactive,#A9ADB2)]" />}
               placeholder="Tìm tên, SĐT, mã khách..."
-              style={{ width: 260 }}
+              className="w-[260px]!"
               value={searchText}
               onChange={(event) => {
                 setSearchText(event.target.value)
@@ -226,13 +226,12 @@ export default function Points() {
               draftVisibleColumns={draftVisibleColumns}
               onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as PointColumnKey[])}
               filterItems={(
-                <Form.Item name="rank_id" label="Hạng thành viên" style={{ marginBottom: 0 }}>
+                <Form.Item name="rank_id" label="Hạng thành viên" className="mb-0!">
                   <Select allowClear placeholder="Tất cả hạng" options={ranks.map((rank) => ({ value: rank.id, label: rank.name }))} />
                 </Form.Item>
               )}
             />
-            <Button icon={<ReloadOutlined />} onClick={() => void memberProfilesQuery.refetch()}>Tải lại</Button>
-          </Space>
+          </>
         }
       >
         Điểm & Hạng thành viên
@@ -248,7 +247,6 @@ export default function Points() {
               Cấu hình tiêu chí nâng hạng và chính sách đặc quyền thưởng lưu danh cho hội viên
             </Typography.Text>
           </div>
-          <Button shape="circle" icon={<ReloadOutlined />} aria-label="Tải lại hạng thẻ" onClick={() => void ranksQuery.refetch()} />
         </div>
 
         <Row gutter={[20, 20]} style={{ marginTop: 22 }}>
