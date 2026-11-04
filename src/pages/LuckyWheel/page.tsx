@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Button, Card, Form, Input, InputNumber, Modal, Popconfirm, Select, Space, Table, Tag, Typography, message } from 'antd'
+import { Button, Card, Form, Input, Popconfirm, Space, Table, Tag, Typography, message } from 'antd'
 import { useBrandCurrency, useBrandDateTime } from '@/themeRuntime'
 import { EditOutlined, PlusOutlined, ReloadOutlined } from '@ant-design/icons'
 import PageTitle from '../../components/base/PageTitle'
@@ -28,18 +28,15 @@ import type {
   WheelSpin,
 } from '../../api/models'
 import { Can } from '@casl/react'
+import ManualPrizeModal from './components/ManualPrizeModal'
+import PrizeFormModal from './components/PrizeFormModal'
+import WheelFormModal from './components/WheelFormModal'
+import { PRIZE_TYPE_META as TYPE_META } from './components/constants'
 
 interface LuckyWheel { id: string; branch_id?: string | null; name: string; min_year_spent: number; spins_per_user: number; is_active?: boolean }
 
-const TYPE_META: Record<string, { label: string; color: string }> = {
-  VOUCHER: { label: 'Voucher', color: 'gold' },
-  SERVICE: { label: 'Dịch vụ', color: 'purple' },
-  POINTS: { label: 'Điểm', color: 'geekblue' },
-  NONE: { label: 'Không trúng', color: 'default' },
-}
-
 export default function LuckyWheel() {
-  const { format: formatMoney, symbol: currencySymbol } = useBrandCurrency()
+  const { format: formatMoney } = useBrandCurrency()
   const { formatDateTime } = useBrandDateTime()
   const [selected, setSelected] = useState<LuckyWheel | null>(null)
   const [wheelOpen, setWheelOpen] = useState(false)
@@ -390,92 +387,32 @@ export default function LuckyWheel() {
         )}
       </Space>
 
-      <Modal title="Thêm vòng quay" open={wheelOpen} onCancel={() => setWheelOpen(false)} onOk={submitWheel} okText="Lưu" cancelText="Hủy">
-        <Form form={wheelForm} layout="vertical" style={{ marginTop: 12 }}>
-          <Form.Item name="name" label="Tên vòng quay" rules={[{ required: true, message: 'Nhập tên' }]}>
-            <Input placeholder="VD: Quay may mắn tháng 10" />
-          </Form.Item>
-          <Space style={{ display: 'flex' }}>
-            <Form.Item name="branch_id" label="Cơ sở (bỏ trống = tất cả)" style={{ flex: 1 }}>
-              <Select allowClear options={branches.map((b) => ({ value: b.id, label: b.name }))} />
-            </Form.Item>
-            <Form.Item name="spins_per_user" label="Lượt/user" rules={[{ required: true }]} style={{ flex: 1 }}>
-              <InputNumber min={1} style={{ width: '100%' }} />
-            </Form.Item>
-          </Space>
-          <Form.Item name="min_year_spent" label="Doanh số tối thiểu năm" rules={[{ required: true }]}>
-            <InputNumber min={0} step={100000} suffix={currencySymbol} style={{ width: '100%' }} />
-          </Form.Item>
-        </Form>
-      </Modal>
+      <WheelFormModal
+        open={wheelOpen}
+        form={wheelForm}
+        branches={branches}
+        onCancel={() => setWheelOpen(false)}
+        onSubmit={submitWheel}
+      />
 
-      <Modal title={editingPrize ? 'Sửa giải thưởng' : 'Thêm giải thưởng'} open={prizeOpen} onCancel={() => setPrizeOpen(false)} onOk={submitPrize} okText="Lưu" cancelText="Hủy">
-        <Form form={prizeForm} layout="vertical" style={{ marginTop: 12 }}>
-          <Form.Item name="name" label="Tên giải" rules={[{ required: true, message: 'Nhập tên giải' }]}>
-            <Input placeholder="VD: Voucher giảm 100k" />
-          </Form.Item>
-          <Space style={{ display: 'flex' }}>
-            <Form.Item name="prize_type" label="Loại giải" rules={[{ required: true }]} style={{ flex: 1 }}>
-              <Select options={Object.keys(TYPE_META).map((k) => ({ value: k, label: TYPE_META[k].label }))} />
-            </Form.Item>
-            <Form.Item name="weight" label="Trọng số" rules={[{ required: true }]} style={{ flex: 1 }}>
-              <InputNumber min={0} style={{ width: '100%' }} />
-            </Form.Item>
-          </Space>
-          <Form.Item noStyle shouldUpdate={(prev, cur) => prev.prize_type !== cur.prize_type}>
-            {({ getFieldValue }) => (
-              <>
-                {getFieldValue('prize_type') === 'POINTS' ? (
-                  <Form.Item name="points" label="Số điểm tặng" rules={[{ required: true }]}>
-                    <InputNumber min={1} style={{ width: '100%' }} />
-                  </Form.Item>
-                ) : null}
-                {getFieldValue('prize_type') === 'VOUCHER' ? (
-                  <Form.Item name="voucher_id" label="Voucher ID (UUID)" rules={[{ required: true, message: 'Nhập voucher ID' }]}>
-                    <Input placeholder="UUID voucher cấp khi trúng" />
-                  </Form.Item>
-                ) : null}
-                {getFieldValue('prize_type') === 'SERVICE' ? (
-                  <Form.Item name="service_id" label="Dịch vụ ID (UUID)" rules={[{ required: true, message: 'Nhập dịch vụ ID' }]}>
-                    <Input placeholder="UUID dịch vụ tặng khi trúng" />
-                  </Form.Item>
-                ) : null}
-              </>
-            )}
-          </Form.Item>
-          <Form.Item name="quantity_total" label="Số lượng (bỏ trống = không giới hạn)">
-            <InputNumber min={1} style={{ width: '100%' }} />
-          </Form.Item>
-          {editingPrize && (
-            <Form.Item name="is_active" label="Đang kích hoạt" valuePropName="checked">
-              <Select options={[{ value: true, label: 'Bật' }, { value: false, label: 'Tắt' }]} />
-            </Form.Item>
-          )}
-        </Form>
-      </Modal>
+      <PrizeFormModal
+        open={prizeOpen}
+        form={prizeForm}
+        editingPrize={editingPrize}
+        onCancel={() => setPrizeOpen(false)}
+        onSubmit={submitPrize}
+      />
 
-      <Modal
-        title="Ghi kết quả tay"
+      <ManualPrizeModal
         open={manualPrizeOpen}
+        prizes={prizes}
+        prizeId={manualPrizeId}
+        onPrizeIdChange={setManualPrizeId}
+        customerName={chosenCustomer?.full_name}
+        loading={spinForCustomerMutation.isPending}
         onCancel={() => setManualPrizeOpen(false)}
-        onOk={() => spinForCustomer(false)}
-        okText="Ghi kết quả"
-        cancelText="Hủy"
-        okButtonProps={{ disabled: !manualPrizeId, loading: spinForCustomerMutation.isPending }}
-      >
-        <Typography.Paragraph type="secondary" style={{ marginTop: 12 }}>
-          Chọn giải trúng cho {chosenCustomer?.full_name} — hệ thống sẽ ghi kết quả và phát thưởng (bỏ qua quay ngẫu nhiên).
-        </Typography.Paragraph>
-        <Select
-          style={{ width: '100%' }}
-          placeholder="Chọn giải trúng"
-          value={manualPrizeId}
-          onChange={setManualPrizeId}
-          options={prizes
-            .filter((p) => p.prize_type !== 'NONE' && (p.quantity_total == null || (p.quantity_given ?? 0) < p.quantity_total))
-            .map((p) => ({ value: p.id!, label: `${p.name} (${TYPE_META[p.prize_type]?.label ?? p.prize_type})` }))}
-        />
-      </Modal>
+        onSubmit={() => spinForCustomer(false)}
+      />
     </>
   )
 }

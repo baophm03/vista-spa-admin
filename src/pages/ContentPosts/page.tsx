@@ -1,21 +1,11 @@
 import { useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { Alert, Button, DatePicker, Drawer, Form, Image, Input, InputNumber, Modal, Popconfirm, Select, Space, Switch, Table, Tabs, Tag, Typography, Upload, message } from 'antd'
-import { EyeOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons'
-import dayjs, { type Dayjs } from 'dayjs'
+import { Alert, Button, Form, Input, Popconfirm, Select, Space, Table, Tabs, Tag, Typography, message } from 'antd'
+import { PlusOutlined } from '@ant-design/icons'
+import dayjs from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
 import { errorMessage, pickData, pickMeta } from '@/api/helpers'
-import type { ContentPost } from '@/api/models/contentPost'
 import type { ContentCategory } from '@/api/models/contentCategory'
-
-/** Các trường mới theo đặc tả 5.33 (chưa có trong client sinh tự động). */
-type ContentPostRow = ContentPost & {
-  publish_at?: string | null
-  expire_at?: string | null
-  is_pinned?: boolean
-  sort_order?: number
-  notified_at?: string | null
-}
 import {
   getGetContentPostsQueryKey,
   getGetContentCategoriesQueryKey,
@@ -31,56 +21,18 @@ import {
 } from '@/api/endpoints/content'
 import { apiClient } from '@/api/mutator/custom-instance'
 import { Can } from '@casl/react'
-import ContentRichTextEditor from '@/components/ContentRichTextEditor'
 import { usePostFiles } from '@/api/endpoints/files'
-import links from '@/configs/links'
+import ContentPostDrawer from './components/ContentPostDrawer'
+import PostPreviewModal from './components/PostPreviewModal'
+import CategoryModal from './components/CategoryModal'
+import PublishModal from './components/PublishModal'
+import { DISPLAY_TYPE_OPTIONS, makePostSlug } from './components/constants'
+import type { ContentPostRow, PostFormValues, CategoryFormValues } from './components/constants'
 
 const STATUS_META: Record<string, { label: string; color: string }> = {
   DRAFT: { label: 'Nháp', color: 'default' },
   PUBLISHED: { label: 'Đã xuất bản', color: 'green' },
   ARCHIVED: { label: 'Đã gỡ', color: 'red' },
-}
-
-const DISPLAY_TYPE_OPTIONS = [
-  { value: 'VIDEO', label: 'Video ngắn (Reels)' },
-  { value: 'ARTICLE', label: 'Bài viết kiến thức' },
-  { value: 'NEWS', label: 'Tin tức & sự kiện' },
-  { value: 'LIST', label: 'Danh sách' },
-  { value: 'GRID', label: 'Lưới' },
-  { value: 'CAROUSEL', label: 'Trượt ngang' },
-]
-
-function makePostSlug(value?: string) {
-  return String(value ?? '')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[đĐ]/g, 'd')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 255)
-}
-
-interface PostFormValues {
-  category_id?: string
-  title?: string
-  slug?: string
-  summary?: string
-  content?: string
-  cover_url?: string
-  video_url?: string
-  publish_at?: Dayjs | null
-  expire_at?: Dayjs | null
-  is_pinned?: boolean
-  sort_order?: number
-}
-
-interface CategoryFormValues {
-  name?: string
-  slug?: string
-  display_type?: string
-  sort_order?: number
-  is_active?: boolean
 }
 
 /** Gửi publish kèm notify — body riêng nên gọi thẳng apiClient (hook chỉ nhận id). */
@@ -367,165 +319,40 @@ export default function ContentPosts() {
         ]}
       />
 
-      <Drawer
-        title={editingPost ? 'Sửa bài viết' : 'Tạo bài viết mới (Nháp)'}
+      <ContentPostDrawer
         open={postModal}
+        editing={editingPost}
+        form={postForm}
+        categories={categories}
+        saving={saving}
+        uploadingCover={uploadingCover}
+        slugManuallyEdited={slugManuallyEdited}
+        setSlugManuallyEdited={setSlugManuallyEdited}
         onClose={() => setPostModal(false)}
-        width={760}
-        extra={(
-          <Space>
-            <Button icon={<EyeOutlined />} onClick={openPreview}>Xem trước</Button>
-            <Button type="primary" loading={saving} onClick={submitPost}>Lưu</Button>
-          </Space>
-        )}
-      >
-        <Form
-          form={postForm}
-          layout="vertical"
-          onValuesChange={(changed) => {
-            if (Object.prototype.hasOwnProperty.call(changed, 'slug')) setSlugManuallyEdited(Boolean(changed.slug))
-            if (typeof changed.title === 'string' && !slugManuallyEdited) postForm.setFieldValue('slug', makePostSlug(changed.title))
-          }}
-        >
-          <Form.Item name="category_id" label="Chuyên mục" rules={[{ required: true, message: 'Chọn chuyên mục' }]}>
-            <Select options={categories.map((c) => ({ value: c.id, label: c.name }))} placeholder="Chọn chuyên mục" />
-          </Form.Item>
-          <Form.Item name="title" label="Tiêu đề" rules={[{ required: true, message: 'Nhập tiêu đề' }]}>
-            <Input placeholder="Tiêu đề bài viết" />
-          </Form.Item>
-          <Form.Item name="slug" label="Đường dẫn bài viết" extra="Tự tạo từ tiêu đề. Có thể sửa đường dẫn hoặc tạo lại từ tiêu đề.">
-            <Input
-              placeholder="Tự tạo từ tiêu đề"
-              addonAfter={(
-                <Button
-                  type="text"
-                  size="small"
-                  onClick={() => {
-                    setSlugManuallyEdited(false)
-                    postForm.setFieldValue('slug', makePostSlug(postForm.getFieldValue('title')))
-                  }}
-                >
-                  Tạo lại
-                </Button>
-              )}
-            />
-          </Form.Item>
-          <Form.Item name="summary" label="Tóm tắt ngắn">
-            <Input.TextArea rows={2} placeholder="Hiển thị ở danh sách và thông báo broadcast" />
-          </Form.Item>
-          <Form.Item name="content" label="Nội dung chi tiết" extra="Soạn như văn bản bình thường; dùng thanh công cụ để định dạng. Không cần nhập HTML.">
-            <ContentRichTextEditor onUploadImage={uploadContentImage} />
-          </Form.Item>
-          <Form.Item name="cover_url" hidden><Input /></Form.Item>
-          <Form.Item label="Ảnh bìa">
-            <Form.Item shouldUpdate noStyle>
-              {() => {
-                const coverUrl: string | undefined = postForm.getFieldValue('cover_url')
-                return (
-                  <Space direction="vertical" className="w-full" size={8}>
-                    <Input
-                      value={coverUrl ?? ''}
-                      onChange={(event) => postForm.setFieldValue('cover_url', event.target.value)}
-                      placeholder="Dán đường dẫn ảnh hoặc tải ảnh lên"
-                    />
-                    <Upload accept="image/*" showUploadList={false} beforeUpload={uploadCover}>
-                      <Button icon={<UploadOutlined />} loading={uploadingCover}>Tải ảnh lên</Button>
-                    </Upload>
-                    {coverUrl ? (
-                    <Space align="start">
-                      <Image src={(links.imageEndpoint + (coverUrl || ""))} width={150} height={96} style={{ objectFit: 'cover', borderRadius: 8 }} />
-                      <Button size="small" danger onClick={() => postForm.setFieldValue('cover_url', undefined)}>Gỡ ảnh</Button>
-                    </Space>
-                    ) : <Typography.Text type="secondary">Chưa có ảnh bìa</Typography.Text>}
-                  </Space>
-                )
-              }}
-            </Form.Item>
-          </Form.Item>
-          <Form.Item name="video_url" label="Video (YouTube/TikTok/Facebook embed URL)">
-            <Input placeholder="https://www.youtube.com/embed/…" />
-          </Form.Item>
-          <Space wrap>
-            <Form.Item name="publish_at" label="Bắt đầu xuất bản">
-              <DatePicker showTime style={{ width: 200 }} />
-            </Form.Item>
-            <Form.Item name="expire_at" label="Tự hạ bài lúc">
-              <DatePicker showTime style={{ width: 200 }} />
-            </Form.Item>
-          </Space>
-          <Space wrap>
-            <Form.Item name="is_pinned" label="Ghim bài" valuePropName="checked">
-              <Switch />
-            </Form.Item>
-            <Form.Item name="sort_order" label="Thứ tự hiển thị">
-              <InputNumber min={0} style={{ width: 120 }} />
-            </Form.Item>
-          </Space>
-        </Form>
-      </Drawer>
+        onPreview={openPreview}
+        onSubmit={() => void submitPost()}
+        uploadCover={uploadCover}
+        uploadContentImage={uploadContentImage}
+      />
 
-      <Modal
-        title="Xem trước bài viết"
-        open={previewOpen}
-        onCancel={() => setPreviewOpen(false)}
-        footer={<Button onClick={() => setPreviewOpen(false)}>Đóng</Button>}
-        width={760}
-      >
-        <article className="mx-auto max-w-2xl py-2">
-          {previewData?.cover_url && <Image src={(links.imageEndpoint + (previewData.cover_url || ""))} alt={previewData.title || 'Ảnh bìa'} className="mb-4 w-full rounded-xl object-cover" />}
-          <Typography.Title level={2}>{previewData?.title || 'Tiêu đề bài viết'}</Typography.Title>
-          {previewData?.summary && <Typography.Paragraph type="secondary">{previewData.summary}</Typography.Paragraph>}
-          {previewData?.video_url && <Typography.Link href={previewData.video_url} target="_blank" rel="noreferrer">Mở video đính kèm</Typography.Link>}
-          <ContentRichTextEditor
-            value={previewData?.content ?? ''}
-            editable={false}
-            showToolbar={false}
-            className="content-post-preview mt-4"
-          />
-        </article>
-      </Modal>
+      <PostPreviewModal open={previewOpen} data={previewData} onClose={() => setPreviewOpen(false)} />
 
-      <Modal
-        title={editingCategory ? 'Sửa chuyên mục' : 'Tạo chuyên mục'}
+      <CategoryModal
         open={categoryModal}
+        editing={editingCategory}
+        form={categoryForm}
+        saving={saving}
         onCancel={() => setCategoryModal(false)}
-        onOk={submitCategory}
-        confirmLoading={saving}
-        okText="Lưu"
-      >
-        <Form form={categoryForm} layout="vertical">
-          <Form.Item name="name" label="Tên chuyên mục" rules={[{ required: true, message: 'Nhập tên' }]}>
-            <Input placeholder="Ví dụ: Góc sức khỏe & làm đẹp" />
-          </Form.Item>
-          <Form.Item name="slug" label="Slug" rules={[{ required: true, message: 'Nhập slug' }]}>
-            <Input placeholder="goc-suc-khoe" />
-          </Form.Item>
-          <Form.Item name="display_type" label="Kiểu hiển thị trên app" rules={[{ required: true }]}>
-            <Select options={DISPLAY_TYPE_OPTIONS} />
-          </Form.Item>
-          <Space wrap>
-            <Form.Item name="sort_order" label="Thứ tự">
-              <InputNumber min={0} style={{ width: 120 }} />
-            </Form.Item>
-            <Form.Item name="is_active" label="Kích hoạt" valuePropName="checked">
-              <Switch />
-            </Form.Item>
-          </Space>
-        </Form>
-      </Modal>
+        onOk={() => void submitCategory()}
+      />
 
-      <Modal
-        title={`Xuất bản: ${publishTarget?.title ?? ''}`}
-        open={!!publishTarget}
-        onOk={doPublish}
+      <PublishModal
+        target={publishTarget}
+        notify={notify}
+        onNotifyChange={setNotify}
+        onOk={() => void doPublish()}
         onCancel={() => setPublishTarget(null)}
-        okText="Xuất bản"
-      >
-        <Space direction="vertical">
-          <Typography.Text type="secondary">Lần đầu xuất bản có thể gửi 1 thông báo quảng bá qua app (không gửi SMS/Email).</Typography.Text>
-          <Space><Switch checked={notify} onChange={setNotify} /><Typography.Text>Gửi thông báo broadcast (chỉ lần đầu)</Typography.Text></Space>
-        </Space>
-      </Modal>
+      />
     </div>
   )
 }

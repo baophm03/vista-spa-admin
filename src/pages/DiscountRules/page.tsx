@@ -2,18 +2,9 @@ import { useMemo, useState } from 'react'
 import {
   Alert,
   Button,
-  DatePicker,
-  Descriptions,
   Form,
-  Input,
-  InputNumber,
   Modal,
-  Row,
-  Col,
-  Select,
-  Spin,
   Space,
-  Switch,
   Table,
   Tag,
   Typography,
@@ -21,7 +12,6 @@ import {
 } from 'antd'
 import type { TableColumnsType } from 'antd'
 import { CheckCircleOutlined, DeleteOutlined, EditOutlined, PlusOutlined, ReloadOutlined, TagsOutlined } from '@ant-design/icons'
-import dayjs from 'dayjs'
 import { useQueryClient } from '@tanstack/react-query'
 import { Can, useAbility } from '@casl/react'
 import PageTitle from '@/components/base/PageTitle'
@@ -35,7 +25,6 @@ import {
   getGetDiscountRulesQueryKey,
   useDeleteDiscountRulesId,
   useGetDiscountRules,
-  useGetDiscountRulesId,
   usePostDiscountRules,
   usePutDiscountRulesId,
 } from '@/api/endpoints/settings'
@@ -48,19 +37,9 @@ import type {
   PostDiscountRulesBody,
   PutDiscountRulesIdBody,
 } from '@/api/models'
-
-const AUDIENCE_META: Record<DiscountRuleAudience, { label: string; color: string }> = {
-  RANK: { label: 'Theo hạng thẻ', color: 'blue' },
-  RETURNING_MEMBER: { label: 'Khách quay lại', color: 'green' },
-  NEW_BY_REFERRAL: { label: 'Khách mới được giới thiệu', color: 'purple' },
-  UPSELL: { label: 'Upsell', color: 'orange' },
-}
-
-const APPLIES_TO_OPTIONS = [
-  { value: 'PACKAGE', label: 'Gói liệu trình' },
-  { value: 'SERVICE', label: 'Dịch vụ' },
-  { value: 'ALL', label: 'Tất cả' },
-]
+import DiscountDetailModal from './components/DiscountDetailModal'
+import DiscountRuleModal from './components/DiscountRuleModal'
+import { AUDIENCE_META } from './components/constants'
 
 type DiscountColumnKey = 'name' | 'audience' | 'percent' | 'max_total_percent' | 'stack' | 'show_in_app' | 'validity' | 'is_active'
 
@@ -92,13 +71,9 @@ export default function DiscountRules() {
   const canDelete = ability.can('DELETE', 'DISCOUNT')
 
   const rulesQuery = useGetDiscountRules()
-  const detailQuery = useGetDiscountRulesId(detailRuleId ?? '', {
-    query: { enabled: !!detailRuleId, retry: false },
-  })
   const ranksQuery = useGetCardRanks(undefined, { query: { enabled: open } })
   const servicesQuery = useGetService({ page: 1, limit: 200, is_active: true }, { query: { enabled: open || !!detailRuleId } })
   const rules = useMemo(() => rulesQuery.data?.responseData ?? [], [rulesQuery.data])
-  const detailRule = detailQuery.data?.responseData
   const ranks = useMemo(() => ranksQuery.data?.responseData ?? [], [ranksQuery.data])
   const services = useMemo(() => {
     const data = servicesQuery.data?.responseData as unknown
@@ -126,21 +101,21 @@ export default function DiscountRules() {
     form.setFieldsValue(
       row
         ? {
-            code: row.code,
-            name: row.name,
-            audience: row.audience,
-            applies_to: row.applies_to ?? 'ALL',
-            requires_rank_id: row.requires_rank_id ?? undefined,
-            percent_min: row.percent_min ?? 0,
-            percent_max: row.percent_max ?? 0,
-            max_total_percent: row.max_total_percent ?? undefined,
-            stackable: row.stackable ?? true,
-            once_per_customer: row.once_per_customer ?? false,
-            show_in_app: row.show_in_app ?? true,
-            valid_range: row.start_date && row.end_date ? [row.start_date, row.end_date] : undefined,
-            service_ids: row.service_ids ?? [],
-            is_active: row.is_active ?? true,
-          }
+          code: row.code,
+          name: row.name,
+          audience: row.audience,
+          applies_to: row.applies_to ?? 'ALL',
+          requires_rank_id: row.requires_rank_id ?? undefined,
+          percent_min: row.percent_min ?? 0,
+          percent_max: row.percent_max ?? 0,
+          max_total_percent: row.max_total_percent ?? undefined,
+          stackable: row.stackable ?? true,
+          once_per_customer: row.once_per_customer ?? false,
+          show_in_app: row.show_in_app ?? true,
+          valid_range: row.start_date && row.end_date ? [row.start_date, row.end_date] : undefined,
+          service_ids: row.service_ids ?? [],
+          is_active: row.is_active ?? true,
+        }
         : { audience: 'RANK', applies_to: 'ALL', percent_min: 10, percent_max: 30, stackable: true, once_per_customer: false, show_in_app: true, is_active: true },
     )
     setOpen(true)
@@ -290,7 +265,7 @@ export default function DiscountRules() {
           <>
             <StatCards items={statItems} />
             <PageTitle
-            subtitle="Quyết định giảm giá và ưu đãi theo hạng thẻ"
+              subtitle="Quyết định giảm giá và ưu đãi theo hạng thẻ"
               extra={
                 <Space wrap>
                   <Button icon={<ReloadOutlined />} onClick={() => void rulesQuery.refetch()}>Tải lại</Button>
@@ -344,168 +319,22 @@ export default function DiscountRules() {
               })}
             />
             <ListPagination page={page} limit={10} total={rules.length} onChange={setPage} noun="quyết định giảm giá" />
-            <Modal
-              title="Chi tiết quy tắc giảm giá"
-              open={!!detailRuleId}
-              onCancel={() => setDetailRuleId(undefined)}
-              footer={<Button onClick={() => setDetailRuleId(undefined)}>Đóng</Button>}
-              width={680}
-              destroyOnHidden
-            >
-              {detailQuery.isLoading ? (
-                <div style={{ display: 'grid', placeItems: 'center', minHeight: 160 }}><Spin /></div>
-              ) : detailQuery.isError ? (
-                <Alert
-                  type="error"
-                  showIcon
-                  message="Không tải được chi tiết quy tắc"
-                  description={errorMessage(detailQuery.error)}
-                  action={<Button size="small" onClick={() => void detailQuery.refetch()}>Thử lại</Button>}
-                />
-              ) : detailRule ? (
-                <Descriptions bordered size="small" column={{ xs: 1, sm: 2 }}>
-                  <Descriptions.Item label="Mã">{detailRule.code}</Descriptions.Item>
-                  <Descriptions.Item label="Tên">{detailRule.name}</Descriptions.Item>
-                  <Descriptions.Item label="Đối tượng">
-                    {AUDIENCE_META[detailRule.audience ?? 'RANK']?.label ?? detailRule.audience ?? '—'}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Hạng thẻ">
-                    {detailRule.audience === 'RANK' ? (detailRule.requires_rank?.name ? String(detailRule.requires_rank.name) : '—') : 'Không giới hạn theo hạng'}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Áp dụng cho">
-                    {APPLIES_TO_OPTIONS.find((option) => option.value === detailRule.applies_to)?.label ?? 'Tất cả'}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Mức giảm">
-                    {(detailRule.percent_min ?? 0)}–{(detailRule.percent_max ?? 0)}%
-                  </Descriptions.Item>
-                  {detailRule.applies_to === 'SERVICE' && (
-                    <Descriptions.Item label="Dịch vụ áp dụng" span={2}>
-                      {(detailRule.service_ids ?? []).length
-                        ? (detailRule.service_ids ?? []).map((id) => services.find((service) => service.id === id)?.title ?? id).join(', ')
-                        : 'Chưa gắn dịch vụ'}
-                    </Descriptions.Item>
-                  )}
-                  <Descriptions.Item label="Trần giảm tổng">
-                    {detailRule.max_total_percent != null ? `${detailRule.max_total_percent}%` : 'Mặc định 50%'}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Được cộng dồn">
-                    {detailRule.stackable === false ? 'Không' : 'Có'}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Giới hạn mỗi khách">
-                    {detailRule.once_per_customer ? 'Chỉ 1 lần' : 'Không giới hạn'}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Hiển thị trên app">
-                    {detailRule.show_in_app === false ? 'Không' : 'Có'}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Thời hạn">
-                    {detailRule.start_date || detailRule.end_date
-                      ? `${detailRule.start_date ? dayjs(detailRule.start_date).format('DD/MM/YYYY') : 'Không giới hạn'} → ${detailRule.end_date ? dayjs(detailRule.end_date).format('DD/MM/YYYY') : 'Không giới hạn'}`
-                      : 'Không giới hạn'}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Trạng thái">
-                    <Tag color={detailRule.is_active === false ? 'default' : 'green'}>
-                      {detailRule.is_active === false ? 'Đã ẩn' : 'Đang áp dụng'}
-                    </Tag>
-                  </Descriptions.Item>
-                </Descriptions>
-              ) : (
-                <Alert type="warning" showIcon message="Không tìm thấy thông tin quy tắc này." />
-              )}
-            </Modal>
-            <Modal
-              title={editing ? `Sửa quy tắc: ${editing.name}` : 'Thêm quy tắc giảm giá'}
+            <DiscountDetailModal
+              ruleId={detailRuleId}
+              services={services}
+              onClose={() => setDetailRuleId(undefined)}
+            />
+            <DiscountRuleModal
               open={open}
+              editing={editing}
+              form={form}
+              saving={createMutation.isPending || updateMutation.isPending}
+              ranks={ranks}
+              services={services}
+              servicesLoading={servicesQuery.isLoading}
               onCancel={() => setOpen(false)}
-              onOk={() => void submit()}
-              confirmLoading={createMutation.isPending || updateMutation.isPending}
-              okText="Lưu" cancelText="Hủy"
-              width={600}
-            >
-              <Form form={form} layout="vertical" style={{ marginTop: 12 }}>
-                <Form.Item name="code" label="Mã" rules={[{ required: true, message: 'Nhập mã' }]}>
-                  <Input maxLength={50} placeholder="VD: RANK-VIP-10" disabled={!!editing} />
-                </Form.Item>
-                <Form.Item name="name" label="Tên" rules={[{ required: true, message: 'Nhập tên' }]}>
-                  <Input maxLength={150} placeholder="VD: Ưu đãi hạng VIP" />
-                </Form.Item>
-                <Form.Item noStyle shouldUpdate={(p, c) => p.audience !== c.audience}>
-                  {({ getFieldValue }) => {
-                    const isRank = getFieldValue('audience') === 'RANK'
-                    const span = isRank ? 8 : 12
-                    return (
-                      <Row gutter={12}>
-                        <Col span={span}>
-                          <Form.Item name="audience" label="Đối tượng" rules={[{ required: true }]}>
-                            <Select options={Object.entries(AUDIENCE_META).map(([value, meta]) => ({ value, label: meta.label }))} />
-                          </Form.Item>
-                        </Col>
-                        {isRank && (
-                          <Col span={8}>
-                            <Form.Item name="requires_rank_id" label="Hạng thẻ" rules={[{ required: true, message: 'Chọn hạng' }]}>
-                              <Select
-                                showSearch optionFilterProp="label"
-                                options={ranks.map((r) => ({ value: r.id, label: r.name }))}
-                                placeholder="Chọn hạng thẻ"
-                              />
-                            </Form.Item>
-                          </Col>
-                        )}
-                        <Col span={span}>
-                          <Form.Item name="applies_to" label="Áp vào" rules={[{ required: true }]}>
-                            <Select options={APPLIES_TO_OPTIONS} />
-                          </Form.Item>
-                        </Col>
-                      </Row>
-                    )
-                  }}
-                </Form.Item>
-                <Space style={{ display: 'flex' }} align="start">
-                  <Form.Item name="percent_min" label="% tối thiểu" rules={[{ required: true, message: 'Nhập % tối thiểu' }]} style={{ flex: 1 }}>
-                    <InputNumber min={0} max={100} precision={0} style={{ width: '100%' }} />
-                  </Form.Item>
-                  <Form.Item name="percent_max" label="% tối đa" rules={[{ required: true, message: 'Nhập % tối đa' }]} style={{ flex: 1 }}>
-                    <InputNumber min={0} max={100} precision={0} style={{ width: '100%' }} />
-                  </Form.Item>
-                  <Form.Item name="max_total_percent" label="Trần tổng % xếp chồng" style={{ flex: 1 }} extra="Mặc định 50%">
-                    <InputNumber min={0} max={100} precision={0} style={{ width: '100%' }} />
-                  </Form.Item>
-                </Space>
-                <Form.Item noStyle shouldUpdate={(p, c) => p.applies_to !== c.applies_to}>
-                  {({ getFieldValue }) =>
-                    getFieldValue('applies_to') === 'SERVICE' ? (
-                      <Form.Item
-                        name="service_ids" label="Dịch vụ áp dụng"
-                        rules={[{ required: true, type: 'array', min: 1, message: 'Chọn ít nhất một dịch vụ' }]}
-                      >
-                        <Select
-                          mode="multiple" showSearch optionFilterProp="label"
-                          loading={servicesQuery.isLoading}
-                          placeholder="Chọn ít nhất một dịch vụ"
-                          options={services.map((service) => ({ value: service.id, label: service.title }))}
-                        />
-                      </Form.Item>
-                    ) : null
-                  }
-                </Form.Item>
-                <Space style={{ display: 'flex' }} align="start">
-                  <Form.Item name="stackable" label="Xếp chồng được" valuePropName="checked" style={{ flex: 1 }}>
-                    <Switch />
-                  </Form.Item>
-                  <Form.Item name="once_per_customer" label="1 lần mỗi khách" valuePropName="checked" style={{ flex: 1 }}>
-                    <Switch />
-                  </Form.Item>
-                  <Form.Item name="show_in_app" label="Hiện trên app" valuePropName="checked" style={{ flex: 1 }}>
-                    <Switch />
-                  </Form.Item>
-                  <Form.Item name="is_active" label="Đang dùng" valuePropName="checked" style={{ flex: 1 }}>
-                    <Switch />
-                  </Form.Item>
-                </Space>
-                <Form.Item name="valid_range" label="Hạn áp dụng">
-                  <DatePicker.RangePicker style={{ width: '100%' }} />
-                </Form.Item>
-              </Form>
-            </Modal>
+              onSubmit={() => void submit()}
+            />
           </>
         ) : (
           <>

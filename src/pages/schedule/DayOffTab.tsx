@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import dayjs, { type Dayjs } from 'dayjs'
-import { Alert, Badge, Button, Checkbox, DatePicker, Divider, Form, Input, Modal, Popconfirm, Popover, Select, Space, Table, Tag, Typography, message } from 'antd'
+import { Alert, Badge, Button, Checkbox, DatePicker, Divider, Form, Modal, Popconfirm, Popover, Select, Space, Table, Tag, Typography, message } from 'antd'
 import { ClearOutlined, FilterOutlined, PlusOutlined, ReloadOutlined } from '@ant-design/icons'
 import { errorMessage, pickData } from '@/api/helpers'
 import ListPagination from '@/components/base/ListPagination'
@@ -21,6 +21,8 @@ import {
 import type { StaffDayOff, StaffSchedule, ShiftTemplate } from './types'
 import type { SchedulePageData } from './types'
 import { staffLabel } from './types'
+import DayOffFormModal from './components/DayOffFormModal'
+import DayOffRejectModal from './components/DayOffRejectModal'
 
 interface Props extends SchedulePageData { loadingShared: boolean }
 interface ApprovalResult { affected_appointments?: { id: string; appt_date: string; start_time: string; customer_profile?: { full_name?: string }; service?: { title?: string } }[] }
@@ -285,23 +287,22 @@ export default function DayOffTab({ branches, staff, access, loadingShared }: Pr
     />
     <ListPagination page={page} limit={10} total={rows.length} onChange={setPage} noun="đăng ký nghỉ" />
 
-    <Modal title="Đăng ký ngày nghỉ" open={open} onCancel={() => setOpen(false)} onOk={() => void submit()} okText="Gửi đăng ký" cancelText="Hủy" destroyOnHidden>
-      <Form form={form} layout="vertical" style={{ marginTop: 16 }} onValuesChange={(changed) => {
-        if (changed.staff_id !== undefined || changed.off_date !== undefined) form.setFieldValue('shift_template_id', undefined)
-      }}>
-        <Form.Item name="staff_id" label="KTV" rules={[{ required: true, message: 'Chọn KTV' }]}>
-          <Select disabled={isTechnician} showSearch optionFilterProp="label" options={staff.map((person) => ({ value: person.id, label: staffLabel(person) }))} />
-        </Form.Item>
-        <Form.Item name="off_date" label="Ngày nghỉ" rules={[{ required: true, message: 'Chọn ngày nghỉ' }]}><DatePicker format="DD/MM/YYYY" style={{ width: '100%' }} /></Form.Item>
-        <Form.Item name="shift_template_id" label="Ca nghỉ (không chọn nghĩa là nghỉ cả ngày)">
-          <Select allowClear placeholder="Cả ngày" options={scheduledTemplates.map((template) => ({ value: template.id, label: `${template.name} (${template.start_time.slice(0, 5)}–${template.end_time.slice(0, 5)})` }))} />
-        </Form.Item>
-        <Form.Item name="reason" label="Lý do"><Input.TextArea maxLength={1000} rows={3} /></Form.Item>
-      </Form>
-    </Modal>
+    <DayOffFormModal
+      open={open}
+      form={form}
+      staff={staff}
+      scheduledTemplates={scheduledTemplates}
+      isTechnician={isTechnician}
+      onCancel={() => setOpen(false)}
+      onSubmit={() => void submit()}
+    />
 
-    <Modal title="Từ chối ngày nghỉ" open={!!rejecting} onCancel={() => setRejecting(null)} onOk={() => void reject()} okText="Từ chối" cancelText="Hủy">
-      <Input.TextArea autoFocus rows={3} maxLength={1000} value={rejectReason} onChange={(event) => setRejectReason(event.target.value)} placeholder="Nhập lý do từ chối" />
-    </Modal>
+    <DayOffRejectModal
+      open={!!rejecting}
+      reason={rejectReason}
+      onReasonChange={setRejectReason}
+      onCancel={() => setRejecting(null)}
+      onSubmit={() => void reject()}
+    />
   </div>
 }

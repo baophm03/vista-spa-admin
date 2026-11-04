@@ -2,14 +2,11 @@ import { useMemo, useState } from 'react'
 import {
   Alert,
   Button,
-  Drawer,
   Form,
   Input,
-  InputNumber,
   Modal,
   Select,
   Space,
-  Spin,
   Table,
   Tag,
   Typography,
@@ -31,12 +28,13 @@ import {
   getGetCollaboratorsQueryKey,
   useDeleteCollaboratorsId,
   useGetCollaborators,
-  useGetCollaboratorsIdSummary,
   usePostCollaborators,
   usePutCollaboratorsId,
 } from '@/api/endpoints/admin'
 import type { PostCollaboratorsBody } from '@/api/models'
 import type { GetCollaboratorsParams } from '@/api/models/getCollaboratorsParams'
+import CollaboratorModal from './components/CollaboratorModal'
+import CollaboratorReportDrawer from './components/CollaboratorReportDrawer'
 
 const COLLABORATOR_TYPES = ['STAFF', 'CUSTOMER', 'EXTERNAL']
 
@@ -44,11 +42,6 @@ const TYPE_META: Record<string, { label: string; color: string }> = {
   STAFF: { label: 'Nhân viên', color: 'blue' },
   CUSTOMER: { label: 'Khách hàng', color: 'green' },
   EXTERNAL: { label: 'Bên ngoài', color: 'orange' },
-}
-
-function formatVnd(v?: number | null): string {
-  if (v == null) return '—'
-  return `${Number(v).toLocaleString('vi-VN')} ₫`
 }
 
 type CollaboratorRow = Collaborator & { referral_count?: number; referral_use_count?: number; commission_percent?: number }
@@ -67,44 +60,6 @@ const COLLABORATOR_COLUMN_OPTIONS: { label: string; value: CollaboratorColumnKey
 ]
 
 const DEFAULT_VISIBLE_COLUMNS = COLLABORATOR_COLUMN_OPTIONS.map((column) => column.value)
-
-function CollaboratorReportDrawer({ id, open, onClose }: { id: string; open: boolean; onClose: () => void }) {
-  const summaryQuery = useGetCollaboratorsIdSummary(id, { query: { enabled: open && !!id } })
-  const summary = pickData<{ referral_count?: number; total_package_value?: number; total_commission?: number }>(
-    summaryQuery.data,
-  )
-
-  return (
-    <Drawer title="Báo cáo cộng tác viên" width={420} open={open} onClose={onClose}>
-      {summaryQuery.isLoading ? (
-        <Spin />
-      ) : summaryQuery.isError ? (
-        <Alert
-          type="error" showIcon
-          title="Không tải được báo cáo"
-          description={errorMessage(summaryQuery.error)}
-          action={<Button size="small" onClick={() => void summaryQuery.refetch()}>Thử lại</Button>}
-        />
-      ) : (
-        <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-          <Alert type="info" showIcon title="Số liệu tổng hợp theo toàn bộ lịch sử giới thiệu của CTV." />
-          <div>
-            <Typography.Text type="secondary">Số khách được giới thiệu</Typography.Text>
-            <div style={{ fontSize: 28, fontWeight: 600 }}>{(summary?.referral_count ?? 0).toLocaleString('vi-VN')}</div>
-          </div>
-          <div>
-            <Typography.Text type="secondary">Tổng giá trị gói điều trị</Typography.Text>
-            <div style={{ fontSize: 28, fontWeight: 600 }}>{formatVnd(summary?.total_package_value)}</div>
-          </div>
-          <div>
-            <Typography.Text type="secondary">Tổng hoa hồng (đang ACTIVE)</Typography.Text>
-            <div style={{ fontSize: 28, fontWeight: 600, color: '#389e0d' }}>{formatVnd(summary?.total_commission)}</div>
-          </div>
-        </Space>
-      )}
-    </Drawer>
-  )
-}
 
 export default function Collaborators() {
   const [page, setPage] = useState(1)
@@ -368,51 +323,16 @@ export default function Collaborators() {
               pagination={false}
             />
             <ListPagination page={page} limit={10} total={rows.length} onChange={setPage} noun="cộng tác viên" />
-            <Modal
-              title={editing ? `Sửa CTV: ${editing.name}` : 'Thêm cộng tác viên'}
+            <CollaboratorModal
+              editing={editing}
               open={open}
-              onCancel={() => setOpen(false)}
-              onOk={() => void submit()}
-              confirmLoading={createMutation.isPending || updateMutation.isPending}
-              okText="Lưu" cancelText="Hủy"
-            >
-              <Form form={form} layout="vertical">
-                <Form.Item
-                  name="referral_code" label="Mã giới thiệu"
-                  rules={[{ required: true, message: 'Nhập mã giới thiệu' }]}
-                  extra={editing ? 'Không thể đổi mã nếu mã này đã được dùng trong lịch sử giới thiệu' : undefined}
-                >
-                  <Input maxLength={50} placeholder="VD: CTV001" disabled={!!editing && Number(editing.referral_use_count ?? editing.referral_count ?? 0) > 0} />
-                </Form.Item>
-                <Form.Item name="name" label="Tên CTV" rules={[{ required: true, message: 'Nhập tên CTV' }]}>
-                  <Input maxLength={255} />
-                </Form.Item>
-                <Space style={{ display: 'flex' }} align="start">
-                  <Form.Item name="phone" label="SĐT" style={{ flex: 1 }}>
-                    <Input maxLength={20} />
-                  </Form.Item>
-                  <Form.Item name="type" label="Loại" style={{ flex: 1 }}>
-                    <Select allowClear placeholder="Chọn loại" options={COLLABORATOR_TYPES.map((t) => ({ value: t, label: TYPE_META[t]?.label ?? t }))} />
-                  </Form.Item>
-                </Space>
-                <Form.Item name="commission_percent" label="% hoa hồng tham khảo" extra="Chỉ gợi ý khi nhập tay trong module Hoa hồng; không tự động tính.">
-                  <InputNumber min={0} max={100} precision={2} style={{ width: '100%' }} />
-                </Form.Item>
-                <Form.Item name="note" label="Ghi chú">
-                  <Input.TextArea rows={3} maxLength={2000} />
-                </Form.Item>
-                {editing && (
-                  <Form.Item name="is_active" label="Trạng thái" rules={[{ required: true }]}>
-                    <Select
-                      options={[
-                        { value: true, label: 'Đang hoạt động' },
-                        { value: false, label: 'Đã ẩn' },
-                      ]}
-                    />
-                  </Form.Item>
-                )}
-              </Form>
-            </Modal>
+              onClose={() => setOpen(false)}
+              onSubmit={() => void submit()}
+              loading={createMutation.isPending || updateMutation.isPending}
+              form={form}
+              collaboratorTypes={COLLABORATOR_TYPES}
+              typeMeta={TYPE_META}
+            />
             {reportRow && (
               <CollaboratorReportDrawer
                 id={reportRow.id}

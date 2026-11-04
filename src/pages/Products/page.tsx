@@ -1,26 +1,19 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   Button,
-  Col,
-  Descriptions,
   Form,
   Image,
   Input,
-  InputNumber,
   Modal,
-  Popconfirm,
-  Row,
   Select,
   Space,
   Table,
   Tag,
   Typography,
-  Upload,
   message,
 } from 'antd'
 import type { TableColumnsType } from 'antd'
 import {
-  DeleteOutlined,
   EditOutlined,
   EyeInvisibleOutlined,
   EyeOutlined,
@@ -53,33 +46,23 @@ import {
   putProductsId,
 } from '@/api/endpoints/products'
 import { usePostFiles } from '@/api/endpoints/files'
-import type { Product } from '@/api/models/product'
-import type { ProductCategory } from '@/api/models/productCategory'
 import type { ProductCreate } from '@/api/models/productCreate'
 import type { ProductUpdate } from '@/api/models/productUpdate'
 import type { PostProductCategoriesBody } from '@/api/models/postProductCategoriesBody'
 import type { PutProductCategoriesIdBody } from '@/api/models/putProductCategoriesIdBody'
-import { formatCurrency, useBrandCurrency } from '@/themeRuntime'
+import { useBrandCurrency } from '@/themeRuntime'
 import { useCustomerProfileAccess } from '@/utils/customerProfileAccess'
 import links from '@/configs/links'
-
-/** BE include kèm `category` (id, name) khi list. */
-type ProductRow = Product & { category?: { id?: string; name?: string } }
-/** BE list trả thêm active_product_count. */
-type ProductCategoryRow = ProductCategory & { active_product_count?: number }
-
-const formatPrice = (price: number | null | undefined, currency: string) =>
-  price === null || price === undefined ? '—' : formatCurrency(price, currency)
-
-const PRODUCT_COLUMNS = [
-  { value: 'cover', label: 'Ảnh' },
-  { value: 'name', label: 'Sản phẩm' },
-  { value: 'category', label: 'Danh mục' },
-  { value: 'price', label: 'Giá hiển thị' },
-  { value: 'link', label: 'Liên kết' },
-  { value: 'status', label: 'Trạng thái' },
-]
-const DEFAULT_PRODUCT_COLUMNS = PRODUCT_COLUMNS.map((column) => column.value)
+import ProductCategoryModal from './components/ProductCategoryModal'
+import ProductDetailModal from './components/ProductDetailModal'
+import ProductFormModal from './components/ProductFormModal'
+import {
+  DEFAULT_PRODUCT_COLUMNS,
+  PRODUCT_COLUMNS,
+  formatPrice,
+  type ProductCategoryRow,
+  type ProductRow,
+} from './components/constants'
 
 export default function Products() {
   const { currency, symbol: currencySymbol } = useBrandCurrency()
@@ -450,227 +433,41 @@ export default function Products() {
       />
       <ListPagination page={page} limit={10} total={rows.length} onChange={setPage} noun="sản phẩm" hideOnSinglePage />
 
-      <Modal
-        title="Chi tiết sản phẩm"
-        open={!!viewing}
-        onCancel={() => setViewing(null)}
-        footer={<Button onClick={() => setViewing(null)}>Đóng</Button>}
-        width={680}
-      >
-        {viewing && (
-          <Space direction="vertical" size={16} style={{ width: '100%', marginTop: 12 }}>
-            {(viewing.cover_url || viewing.gallery?.length) ? (
-              <Image.PreviewGroup>
-                <Space wrap>
-                  {viewing.cover_url && <Image src={(links.imageEndpoint + (viewing.cover_url || ""))} width={96} height={96} style={{ objectFit: 'cover', borderRadius: 8 }} />}
-                  {(viewing.gallery ?? []).map((url) => (
-                    <Image key={url} src={(links.imageEndpoint + (url || ""))} width={96} height={96} style={{ objectFit: 'cover', borderRadius: 8 }} />
-                  ))}
-                </Space>
-              </Image.PreviewGroup>
-            ) : (
-              <Typography.Text type="secondary">Sản phẩm chưa có hình ảnh.</Typography.Text>
-            )}
-            <Descriptions bordered size="small" column={1}>
-              <Descriptions.Item label="Tên sản phẩm">{viewing.name}</Descriptions.Item>
-              <Descriptions.Item label="Mã SKU">{viewing.sku || '—'}</Descriptions.Item>
-              <Descriptions.Item label="Danh mục">{viewing.category?.name || '—'}</Descriptions.Item>
-              <Descriptions.Item label="Giá hiển thị">{formatPrice(viewing.price, currency)}</Descriptions.Item>
-              <Descriptions.Item label="Liên kết mua hàng">
-                {viewing.buy_url ? <a href={viewing.buy_url} target="_blank" rel="noreferrer">{viewing.buy_url}</a> : '—'}
-              </Descriptions.Item>
-              <Descriptions.Item label="Mô tả">{viewing.description || '—'}</Descriptions.Item>
-              <Descriptions.Item label="Trạng thái">{viewing.is_active === false ? 'Đã ẩn' : 'Đang bán'}</Descriptions.Item>
-            </Descriptions>
-          </Space>
-        )}
-      </Modal>
+      <ProductDetailModal
+        viewing={viewing}
+        onClose={() => setViewing(null)}
+        currency={currency}
+      />
 
-      {/* Form sản phẩm */}
-      <Modal
-        title={editing ? 'Sửa sản phẩm' : 'Thêm sản phẩm'}
-        open={isAdmin && open}
+      <ProductFormModal
+        open={open}
+        isAdmin={isAdmin}
+        editing={editing}
         onCancel={() => setOpen(false)}
-        onOk={() => void submit()}
-        confirmLoading={saving}
-        okText="Lưu"
-        cancelText="Hủy"
-        width={680}
-      >
-        <Form form={form} layout="vertical" style={{ marginTop: 12 }}>
-          <Row gutter={12}>
-            <Col xs={24} sm={12}>
-              <Form.Item name="name" label="Tên sản phẩm" rules={[{ required: true, message: 'Nhập tên sản phẩm' }]}>
-                <Input placeholder="VD: Kem dưỡng ẩm" />
-              </Form.Item>
-            </Col>
-            <Col xs={24} sm={12}>
-              <Form.Item name="sku" label="Mã SKU">
-                <Input placeholder="VD: SP-001" />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row gutter={12}>
-            <Col xs={24} sm={12}>
-              <Form.Item name="category_id" label="Danh mục">
-                <Select allowClear placeholder="Chọn danh mục" options={categories.map((c) => ({ value: c.id, label: c.name }))} />
-              </Form.Item>
-            </Col>
-            <Col xs={24} sm={12}>
-              <Form.Item name="price" label="Giá hiển thị">
-                <InputNumber<number>
-                  style={{ width: '100%' }}
-                  min={0}
-                  step={1000}
-                  suffix={currencySymbol}
-                  formatter={(v) => `${v ?? 0}`.replace(/\B(?=(\d{3})+(?!\d))/g, '.')}
-                  parser={(v) => Number((v ?? '').replace(/\./g, ''))}
-                  placeholder="VD: 350000"
-                />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Form.Item name="buy_url" label="Liên kết mua hàng" extra="App chỉ hiển thị và dẫn liên kết; mua trực tiếp trong app chưa bật.">
-            <Input placeholder="https://..." />
-          </Form.Item>
-          <Form.Item name="description" label="Mô tả">
-            <Input.TextArea rows={3} maxLength={2000} placeholder="Mô tả ngắn về sản phẩm" />
-          </Form.Item>
-          <Form.Item label="Ảnh bìa">
-            <Space align="center" wrap>
-              <Upload
-                accept="image/*"
-                showUploadList={false}
-                beforeUpload={async (file) => {
-                  setUploadingCover(true)
-                  const url = await uploadImage(file)
-                  if (url) form.setFieldsValue({ cover_url: url })
-                  setUploadingCover(false)
-                  return false
-                }}
-              >
-                <Button icon={<PictureOutlined />} loading={uploadingCover}>Tải ảnh bìa</Button>
-              </Upload>
-              <Form.Item shouldUpdate noStyle>
-                {() => {
-                  const cover: string | undefined = form.getFieldValue('cover_url')
-                  return cover ? (
-                    <Space size={4}>
-                      <Image src={(links.imageEndpoint + (cover || ""))} width={64} height={64} style={{ objectFit: 'cover', borderRadius: 8 }} />
-                      <Button size="small" type="text" danger onClick={() => form.setFieldsValue({ cover_url: undefined })}>Gỡ</Button>
-                    </Space>
-                  ) : (
-                    <Typography.Text type="secondary">Chưa có ảnh bìa</Typography.Text>
-                  )
-                }}
-              </Form.Item>
-            </Space>
-          </Form.Item>
-          <Form.Item label="Bộ ảnh" extra="Tối đa 12 ảnh.">
-            <Form.Item name="gallery" hidden><Input /></Form.Item>
-            <Form.Item shouldUpdate noStyle>
-              {() => {
-                const gallery: string[] = form.getFieldValue('gallery') ?? []
-                return (
-                  <div>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: gallery.length ? 8 : 0 }}>
-                      {gallery.map((url) => (
-                        <div key={url} style={{ position: 'relative' }}>
-                          <Image src={(links.imageEndpoint + (url || ""))} width={64} height={64} style={{ objectFit: 'cover', borderRadius: 8 }} />
-                          <Button
-                            size="small"
-                            type="primary"
-                            danger
-                            shape="circle"
-                            icon={<DeleteOutlined />}
-                            style={{ position: 'absolute', top: -8, right: -8, width: 22, height: 22, minWidth: 22 }}
-                            onClick={() => form.setFieldsValue({ gallery: gallery.filter((item) => item !== url) })}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                    <Upload
-                      accept="image/*"
-                      multiple
-                      showUploadList={false}
-                      beforeUpload={async (file) => {
-                        setUploadingGallery(true)
-                        const current: string[] = form.getFieldValue('gallery') ?? []
-                        if (current.length >= 12) {
-                          message.error('Tối đa 12 ảnh trong bộ ảnh')
-                          setUploadingGallery(false)
-                          return false
-                        }
-                        const url = await uploadImage(file)
-                        if (url) form.setFieldsValue({ gallery: [...current, url].slice(0, 12) })
-                        setUploadingGallery(false)
-                        return false
-                      }}
-                    >
-                      <Button icon={<PictureOutlined />} loading={uploadingGallery}>Thêm ảnh</Button>
-                    </Upload>
-                  </div>
-                )
-              }}
-            </Form.Item>
-          </Form.Item>
-        </Form>
-      </Modal>
+        onSubmit={() => void submit()}
+        saving={saving}
+        form={form}
+        categories={categories}
+        currencySymbol={currencySymbol}
+        uploadingCover={uploadingCover}
+        setUploadingCover={setUploadingCover}
+        uploadingGallery={uploadingGallery}
+        setUploadingGallery={setUploadingGallery}
+        uploadImage={uploadImage}
+      />
 
-      {/* Quản lý danh mục */}
-      <Modal
-        title="Danh mục sản phẩm"
-        open={isAdmin && catOpen}
-        footer={null}
+      <ProductCategoryModal
+        open={catOpen}
+        isAdmin={isAdmin}
         onCancel={() => { setCatOpen(false); setEditingCategory(null); catForm.resetFields() }}
-        width={560}
-      >
-        <Form form={catForm} layout="inline" style={{ marginTop: 12, marginBottom: 16, gap: 8 }} onFinish={() => void submitCategory()}>
-          <Form.Item name="name" rules={[{ required: true, message: 'Nhập tên danh mục' }]} style={{ flex: 1, minWidth: 180, marginRight: 0, marginBottom: 8 }}>
-            <Input placeholder="Tên danh mục" />
-          </Form.Item>
-          <Form.Item name="sort_order" style={{ marginRight: 0, width: 90, marginBottom: 8 }}>
-            <InputNumber min={0} placeholder="Thứ tự" style={{ width: '100%' }} />
-          </Form.Item>
-          {editingCategory && (
-            <Button style={{ marginBottom: 8 }} onClick={() => { setEditingCategory(null); catForm.resetFields() }}>Hủy</Button>
-          )}
-          <Button type="primary" htmlType="submit" loading={catSaving} icon={editingCategory ? undefined : <PlusOutlined />} style={{ marginBottom: 8 }}>
-            {editingCategory ? 'Lưu' : 'Thêm'}
-          </Button>
-        </Form>
-        <Table<ProductCategoryRow>
-          rowKey="id"
-          size="small"
-          dataSource={categories}
-          pagination={false}
-          locale={{ emptyText: <TableEmpty description="Chưa có danh mục nào" /> }}
-          columns={[
-            { title: 'Tên', dataIndex: 'name', render: (v: string) => <strong>{v}</strong> },
-            { title: 'Thứ tự', dataIndex: 'sort_order', width: 70 },
-            { title: 'SP đang bán', dataIndex: 'active_product_count', width: 100, render: (v?: number) => v ?? 0 },
-            {
-              title: '',
-              key: 'actions',
-              width: 110,
-              render: (_, c) => (
-                <Space size={4}>
-                  <Button size="small" type="text" icon={<EditOutlined />} onClick={() => { setEditingCategory(c); catForm.setFieldsValue({ name: c.name, sort_order: c.sort_order ?? 0 }) }} />
-                  <Popconfirm
-                    title="Xóa danh mục này?"
-                    description="Chỉ xóa được khi không còn sản phẩm đang hoạt động."
-                    okText="Xóa"
-                    cancelText="Hủy"
-                    onConfirm={() => void removeCategory(c)}
-                  >
-                    <Button size="small" type="text" danger icon={<DeleteOutlined />} />
-                  </Popconfirm>
-                </Space>
-              ),
-            },
-          ]}
-        />
-      </Modal>
+        catForm={catForm}
+        editingCategory={editingCategory}
+        setEditingCategory={setEditingCategory}
+        catSaving={catSaving}
+        onSubmitCategory={() => void submitCategory()}
+        onRemoveCategory={(c) => void removeCategory(c)}
+        categories={categories}
+      />
     </>
   )
 }

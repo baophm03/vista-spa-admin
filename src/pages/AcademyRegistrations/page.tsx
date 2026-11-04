@@ -1,13 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { Alert, Button, Descriptions, Empty, Form, Input, Modal, Select, Space, Table, Tag, Typography, message } from 'antd'
+import { Alert, Button, Form, Input, Select, Space, Table, Tag, Typography, message } from 'antd'
 import { PlusOutlined, SearchOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
 import ListPagination from '@/components/base/ListPagination'
 import { paginateRows } from '@/utils/listTable'
 import { errorMessage, pickData } from '@/api/helpers'
-import type { AcademyRegistration } from '@/api/models/academyRegistration'
 import type { AcademyCourse } from '@/api/models/academyCourse'
 import {
   getGetAcademyRegistrationsQueryKey,
@@ -19,29 +18,11 @@ import { useGetUsers } from '@/api/endpoints/users'
 import { apiClient } from '@/api/mutator/custom-instance'
 import { useBrandCurrency } from '@/themeRuntime'
 import { Can } from '@casl/react'
-
-/** Trường mới theo đặc tả 5.34 AC-09 (chưa có trong client sinh tự động). */
-type RegistrationRow = AcademyRegistration & {
-  assigned_to?: string | null
-  contacted_at?: string | null
-  user?: { id: string; zalo_name?: string } | null
-  course?: AcademyCourse | null
-}
-
-const STATUS_META: Record<string, { label: string; color: string }> = {
-  PENDING: { label: 'Mới đăng ký', color: 'gold' },
-  CONFIRMED: { label: 'Đã liên hệ', color: 'blue' },
-  ATTENDED: { label: 'Đã nhập học', color: 'green' },
-  CANCELLED: { label: 'Đã hủy', color: 'red' },
-}
-
-/** Máy trạng thái một chiều: chỉ cho chọn trạng thái phía TRƯỚC. */
-const NEXT_STATUS: Record<string, string[]> = {
-  PENDING: ['CONFIRMED', 'ATTENDED', 'CANCELLED'],
-  CONFIRMED: ['ATTENDED', 'CANCELLED'],
-  ATTENDED: [],
-  CANCELLED: [],
-}
+import RegistrationCreateModal from './components/RegistrationCreateModal'
+import RegistrationUpdateModal from './components/RegistrationUpdateModal'
+import StudentLookupModal from './components/StudentLookupModal'
+import { NEXT_STATUS, STATUS_META } from './components/constants'
+import type { RegistrationRow } from './components/constants'
 
 interface UpdateFormValues {
   status?: string
@@ -156,15 +137,17 @@ export default function AcademyRegistrations() {
   }
 
   const columns = [
-    { title: 'Học viên', dataIndex: 'full_name', key: 'full_name', render: (v: string, row: RegistrationRow) => (
-      <div>
-        <Space size={6} wrap>
-          <Typography.Text strong>{v}</Typography.Text>
-          {!!row.is_returning_student && <Tag color="purple" title="Đã từng đăng ký/khách của spa — xét ưu đãi riêng">Học viên cũ</Tag>}
-        </Space>
-        <Typography.Text type="secondary" style={{ display: 'block', fontSize: 12 }}>{row.phone}</Typography.Text>
-      </div>
-    ) },
+    {
+      title: 'Học viên', dataIndex: 'full_name', key: 'full_name', render: (v: string, row: RegistrationRow) => (
+        <div>
+          <Space size={6} wrap>
+            <Typography.Text strong>{v}</Typography.Text>
+            {!!row.is_returning_student && <Tag color="purple" title="Đã từng đăng ký/khách của spa — xét ưu đãi riêng">Học viên cũ</Tag>}
+          </Space>
+          <Typography.Text type="secondary" style={{ display: 'block', fontSize: 12 }}>{row.phone}</Typography.Text>
+        </div>
+      )
+    },
     { title: 'Khóa học', key: 'course', width: 200, render: (_: unknown, row: RegistrationRow) => row.course?.name ?? courseById.get(row.course_id)?.name ?? '—' },
     { title: 'Trạng thái', dataIndex: 'status', key: 'status', width: 130, render: (v: string) => <Tag color={STATUS_META[v]?.color}>{STATUS_META[v]?.label ?? v}</Tag> },
     { title: 'Ưu đãi', dataIndex: 'discount_percent', key: 'discount', width: 80, align: 'right' as const, render: (v?: number) => (v ? `${v}%` : '—') },
@@ -228,120 +211,36 @@ export default function AcademyRegistrations() {
       />
       <ListPagination page={page} limit={10} total={registrations.length} onChange={setPage} noun="đăng ký" />
 
-      <Modal
-        title="Tra cứu lịch sử học viên"
+      <StudentLookupModal
         open={lookupOpen}
-        onCancel={() => setLookupOpen(false)}
-        footer={<Button onClick={() => setLookupOpen(false)}>Đóng</Button>}
-        width="min(900px, calc(100vw - 24px))"
-      >
-        <Input
-          placeholder="Nhập SĐT hoặc email để tra cứu"
-          style={{ width: 280, marginBottom: 12 }}
-          value={lookupValue}
-          onChange={(e) => setLookupValue(e.target.value)}
-          prefix={<SearchOutlined />}
-        />
-        {lookupPhone || lookupEmail ? (
-          <Table
-            rowKey="id"
-            size="small"
-            loading={lookupQuery.isLoading}
-            columns={[
-              { title: 'Khóa học', key: 'course', render: (_: unknown, row: RegistrationRow) => row.course?.name ?? '—' },
-              { title: 'Họ tên', dataIndex: 'full_name' },
-              { title: 'SĐT', dataIndex: 'phone' },
-              { title: 'Trạng thái', dataIndex: 'status', render: (v: string) => <Tag color={STATUS_META[v]?.color}>{STATUS_META[v]?.label ?? v}</Tag> },
-              { title: '', key: 'act', render: (_: unknown, row: RegistrationRow) => (
-                <Can I="CREATE" a="ACADEMY">
-                  {row.status === 'CANCELLED' && (
-                    <Button size="small" onClick={() => void createFromLookup(row)}>Đăng ký lại khóa này</Button>
-                  )}
-                </Can>
-              ) },
-            ]}
-            dataSource={lookupRows}
-            pagination={false}
-          />
-        ) : (
-          <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Nhập SĐT hoặc email để tra cứu" style={{ padding: '16px 0' }} />
-        )}
-      </Modal>
+        lookupValue={lookupValue}
+        onLookupValueChange={setLookupValue}
+        hasQuery={!!(lookupPhone || lookupEmail)}
+        loading={lookupQuery.isLoading}
+        rows={lookupRows}
+        onClose={() => setLookupOpen(false)}
+        onCreateFromLookup={(row) => void createFromLookup(row)}
+      />
 
-      <Modal
-        title={updateTarget && (NEXT_STATUS[updateTarget.status ?? 'PENDING'] ?? []).length
-          ? `Chi tiết & cập nhật tiến độ — ${updateTarget.full_name}`
-          : `Chi tiết học viên — ${updateTarget?.full_name ?? ''}`}
-        width="min(900px, calc(100vw - 24px))"
-        open={!!updateTarget}
-        onCancel={() => setUpdateTarget(null)}
-        confirmLoading={saving}
-        {...(updateTarget && (NEXT_STATUS[updateTarget.status ?? 'PENDING'] ?? []).length
-          ? { onOk: submitUpdate, okText: 'Lưu' }
-          : { footer: <Button onClick={() => setUpdateTarget(null)}>Đóng</Button> })}
-      >
-        {updateTarget && (
-          <Descriptions size="small" column={2} bordered style={{ marginBottom: 16 }}>
-            <Descriptions.Item label="Trạng thái hiện tại" span={2}>
-              <Tag color={STATUS_META[updateTarget.status ?? '']?.color}>{STATUS_META[updateTarget.status ?? '']?.label ?? updateTarget.status}</Tag>
-            </Descriptions.Item>
-            <Descriptions.Item label="Khóa học" span={2}>{updateTarget.course?.name ?? courseById.get(updateTarget.course_id)?.name ?? '—'}</Descriptions.Item>
-            <Descriptions.Item label="Học phí cuối">{formatMoney(Number(updateTarget.final_tuition ?? 0))}</Descriptions.Item>
-            <Descriptions.Item label="Ưu đãi">{updateTarget.discount_percent ? `${updateTarget.discount_percent}%` : '—'}</Descriptions.Item>
-            <Descriptions.Item label="Người gọi">{updateTarget.user?.zalo_name ?? '—'}</Descriptions.Item>
-            <Descriptions.Item label="Liên hệ lúc">{updateTarget.contacted_at ? dayjs(updateTarget.contacted_at).format('DD/MM HH:mm') : '—'}</Descriptions.Item>
-          </Descriptions>
-        )}
-        {updateTarget && (NEXT_STATUS[updateTarget.status ?? 'PENDING'] ?? []).length ? (
-          <Form form={form} layout="vertical">
-            <Form.Item name="status" label="Trạng thái mới" rules={[{ required: true, message: 'Chọn trạng thái' }]}>
-              <Select
-                options={(NEXT_STATUS[updateTarget?.status ?? 'PENDING'] ?? []).map((s) => ({ value: s, label: STATUS_META[s]?.label ?? s }))}
-                placeholder="Chọn trạng thái"
-              />
-            </Form.Item>
-            <Form.Item name="assigned_to" label="Nhân viên phụ trách gọi">
-              <Select allowClear placeholder="Chọn nhân viên" options={staffs.map((s) => ({ value: s.id, label: s.zalo_name || s.id.slice(0, 8) }))} />
-            </Form.Item>
-            <Form.Item name="note" label="Ghi chú kết quả cuộc trao đổi">
-              <Input.TextArea rows={3} placeholder="Ví dụ: khách hẹn comeback tuần sau, quan tâm khóa peel…" />
-            </Form.Item>
-          </Form>
-        ) : null}
-      </Modal>
+      <RegistrationUpdateModal
+        target={updateTarget}
+        form={form}
+        staffs={staffs}
+        courses={courses}
+        formatMoney={formatMoney}
+        saving={saving}
+        onClose={() => setUpdateTarget(null)}
+        onSubmit={submitUpdate}
+      />
 
-      <Modal
-        title="Thêm đăng ký học viên"
+      <RegistrationCreateModal
         open={createOpen}
-        onOk={() => void submitCreate()}
+        form={createForm}
+        courses={courses}
+        creating={creating}
         onCancel={() => setCreateOpen(false)}
-        confirmLoading={creating}
-        okText="Thêm đăng ký"
-        cancelText="Hủy"
-      >
-        <Form form={createForm} layout="vertical">
-          <Form.Item name="full_name" label="Họ và tên" rules={[{ required: true, message: 'Nhập họ tên học viên' }]}>
-            <Input placeholder="Tên học viên" />
-          </Form.Item>
-          <Form.Item name="phone" label="Số điện thoại" rules={[{ required: true, message: 'Nhập số điện thoại' }]}>
-            <Input placeholder="0901234567" />
-          </Form.Item>
-          <Form.Item name="email" label="Email">
-            <Input type="email" placeholder="email@example.com" />
-          </Form.Item>
-          <Form.Item name="course_id" label="Khóa học" rules={[{ required: true, message: 'Chọn khóa học' }]}>
-            <Select
-              showSearch
-              optionFilterProp="label"
-              placeholder="Chọn khóa học"
-              options={courses.filter((c) => c.is_active !== false).map((c) => ({ value: c.id, label: c.name }))}
-            />
-          </Form.Item>
-          <Form.Item name="note" label="Ghi chú">
-            <Input.TextArea rows={2} placeholder="Nguồn liên hệ, nhu cầu, thời gian thuận tiện gọi…" />
-          </Form.Item>
-        </Form>
-      </Modal>
+        onSubmit={() => void submitCreate()}
+      />
     </div>
   )
 }

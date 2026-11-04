@@ -2,14 +2,9 @@ import { useMemo, useState } from 'react'
 import {
   Alert,
   Button,
-  DatePicker,
   Form,
-  Input,
-  InputNumber,
   Modal,
-  Select,
   Space,
-  Switch,
   Table,
   Tag,
   message,
@@ -36,20 +31,9 @@ import {
 import { useGetBranches } from '@/api/endpoints/branches'
 import { useGetService } from '@/api/endpoints/services'
 import { useGetUsers } from '@/api/endpoints/users'
-import type { Branch, CommissionRule, CommissionRulePayeeType, PostCommissionRulesBody, Service, User } from '@/api/models'
-
-type PayeeType = CommissionRulePayeeType
-
-const PAYEE_META: Record<PayeeType, { label: string; color: string }> = {
-  STAFF: { label: 'KTV', color: 'blue' },
-  COLLABORATOR: { label: 'Cộng tác viên', color: 'purple' },
-  CUSTOMER_REFERRER: { label: 'Khách giới thiệu', color: 'geekblue' },
-}
-
-const BASE_OPTIONS = [
-  { value: 'PAYMENT', label: 'Trên thanh toán' },
-  { value: 'SESSION_VALUE', label: 'Trên giá trị buổi' },
-]
+import type { Branch, CommissionRule, PostCommissionRulesBody, Service, User } from '@/api/models'
+import CommissionRuleModal from './components/CommissionRuleModal'
+import { BASE_OPTIONS, PAYEE_META, type PayeeType } from './components/constants'
 
 type CommissionColumnKey = 'name' | 'payee_type' | 'base' | 'percent' | 'scope' | 'priority' | 'validity' | 'is_active'
 
@@ -89,7 +73,6 @@ export default function CommissionRules() {
   const branches = (pickData<Branch[] | undefined>(branchesQuery.data) ?? []) as Branch[]
   const services = (pickData<{ services?: Service[] } | undefined>(servicesQuery.data)?.services ?? []) as Service[]
   const users = (pickData<{ rows?: User[] } | undefined>(usersQuery.data)?.rows ?? []) as User[]
-  const payeeType = Form.useWatch('payee_type', form) as PayeeType | undefined
   const branchNameById = useMemo(() => new Map(branches.map((branch) => [branch.id, branch.name])), [branches])
   const serviceNameById = useMemo(() => new Map(services.map((service) => [service.id, service.title])), [services])
   const userNameById = useMemo(() => new Map(users.map((user) => [user.id, user.zalo_name || user.email || user.id])), [users])
@@ -294,71 +277,20 @@ export default function CommissionRules() {
               pagination={false}
             />
             <ListPagination page={page} limit={10} total={rules.length} onChange={setPage} noun="quy tắc hoa hồng" />
-            <Modal
-              title={editing ? `Sửa quy tắc: ${editing.name}` : 'Thêm quy tắc hoa hồng'}
+            <CommissionRuleModal
               open={open}
+              editing={editing}
+              form={form}
+              saving={createMutation.isPending || updateMutation.isPending}
+              services={services}
+              servicesLoading={servicesQuery.isLoading}
+              users={users}
+              usersLoading={usersQuery.isLoading}
+              branches={branches}
+              branchesLoading={branchesQuery.isLoading}
               onCancel={() => setOpen(false)}
-              onOk={() => void submit()}
-              confirmLoading={createMutation.isPending || updateMutation.isPending}
-              okText="Lưu" cancelText="Hủy"
-              width={680}
-            >
-              <Form
-                form={form}
-                layout="vertical"
-                style={{ marginTop: 12 }}
-                onValuesChange={(changed) => {
-                  if (changed.payee_type) {
-                    form.setFieldValue('base', changed.payee_type === 'STAFF' ? 'SESSION_VALUE' : 'PAYMENT')
-                    if (changed.payee_type !== 'STAFF') form.setFieldValue('staff_id', undefined)
-                  }
-                }}
-              >
-                <Form.Item name="name" label="Tên quy tắc" rules={[{ required: true, message: 'Nhập tên quy tắc' }]}>
-                  <Input maxLength={150} placeholder="VD: Hoa hồng KTV dịch vụ mặt" />
-                </Form.Item>
-                <Space style={{ display: 'flex' }} align="start">
-                  <Form.Item name="payee_type" label="Người nhận" rules={[{ required: true }]} style={{ flex: 1 }}>
-                    <Select options={Object.entries(PAYEE_META).map(([value, meta]) => ({ value, label: meta.label }))} />
-                  </Form.Item>
-                  <Form.Item name="base" label="Căn tính" rules={[{ required: true }]} style={{ flex: 1 }}>
-                    <Select
-                      options={BASE_OPTIONS.filter((option) => option.value === (payeeType === 'STAFF' ? 'SESSION_VALUE' : 'PAYMENT'))}
-                    />
-                  </Form.Item>
-                  <Form.Item name="percent" label="% hoa hồng" extra="Để trống nếu chưa có tỷ lệ cố định." style={{ flex: 1 }}>
-                    <InputNumber min={0} max={100} precision={2} style={{ width: '100%' }} placeholder="Không tự động tính" />
-                  </Form.Item>
-                </Space>
-                <Space style={{ display: 'flex' }} align="start">
-                  <Form.Item name="service_id" label="Dịch vụ (không bắt buộc)" style={{ flex: 1 }}>
-                    <Select allowClear showSearch optionFilterProp="label" loading={servicesQuery.isLoading} placeholder="Tất cả dịch vụ"
-                      options={services.map((service) => ({ value: service.id, label: service.title }))} />
-                  </Form.Item>
-                  {payeeType === 'STAFF' && (
-                    <Form.Item name="staff_id" label="KTV (không bắt buộc)" style={{ flex: 1 }}>
-                      <Select allowClear showSearch optionFilterProp="label" loading={usersQuery.isLoading} placeholder="Tất cả KTV"
-                        options={users.map((user) => ({ value: user.id, label: user.zalo_name || user.email || user.id }))} />
-                    </Form.Item>
-                  )}
-                  <Form.Item name="branch_id" label="Cơ sở (không bắt buộc)" style={{ flex: 1 }}>
-                    <Select allowClear showSearch optionFilterProp="label" loading={branchesQuery.isLoading} placeholder="Toàn hệ thống"
-                      options={branches.map((branch) => ({ value: branch.id, label: branch.name }))} />
-                  </Form.Item>
-                </Space>
-                <Space style={{ display: 'flex' }} align="start">
-                  <Form.Item name="priority" label="Mức ưu tiên" style={{ flex: 1 }} extra="Số càng cao càng ưu tiên khi nhiều rule khớp">
-                    <InputNumber min={0} precision={0} style={{ width: '100%' }} />
-                  </Form.Item>
-                  <Form.Item name="valid_range" label="Hạn áp dụng" style={{ flex: 2 }}>
-                    <DatePicker.RangePicker allowEmpty={[true, true]} style={{ width: '100%' }} />
-                  </Form.Item>
-                </Space>
-                <Form.Item name="is_active" label="Đang dùng" valuePropName="checked">
-                  <Switch />
-                </Form.Item>
-              </Form>
-            </Modal>
+              onSubmit={() => void submit()}
+            />
           </>
         ) : (
           <>
