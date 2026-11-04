@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Alert, Button, DatePicker, Form, Select, Space, Table, Typography, message } from 'antd'
+import { Alert, Button, DatePicker, Form, Input, Select, Space, Table, Typography, message } from 'antd'
 import { ReloadOutlined, StopOutlined } from '@ant-design/icons'
 import dayjs, { type Dayjs } from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
@@ -29,6 +29,7 @@ export default function Payments() {
   const [limit] = useState(10)
   const [branchFilter, setBranchFilter] = useState<string>()
   const [staffFilter, setStaffFilter] = useState<string>()
+  const [customerSearch, setCustomerSearch] = useState<string>()
   const [range, setRange] = useState<[Dayjs | null, Dayjs | null] | null>(null)
   const [filterOpen, setFilterOpen] = useState(false)
   const [visibleColumns, setVisibleColumns] = useState<PaymentColumnKey[]>(DEFAULT_VISIBLE_COLUMNS)
@@ -44,11 +45,12 @@ export default function Payments() {
     limit,
     ...(branchFilter ? { branch_id: branchFilter } : {}),
     ...(staffFilter ? { entered_by: staffFilter } : {}),
+    ...(customerSearch ? { q: customerSearch } : {}),
     ...(range?.[0] ? { from_date: range[0].format('YYYY-MM-DD') } : {}),
     ...(range?.[1] ? { to_date: range[1].format('YYYY-MM-DD') } : {}),
   }
 
-  const paymentsQuery = useGetPayments(params)
+  const paymentsQuery = useGetPayments(params as unknown as Parameters<typeof useGetPayments>[0])
   const branchesQuery = useGetBranches()
   const staffQuery = useGetUsers({ currentPage: 1, pageSize: 100, has_role: true } as never)
   const voidMutation = usePostPaymentsIdVoid()
@@ -117,7 +119,7 @@ export default function Payments() {
   }
 
   const activeFilterCount =
-    Number(Boolean(branchFilter)) + Number(Boolean(staffFilter)) + Number(Boolean(range?.[0] || range?.[1]))
+    Number(Boolean(branchFilter)) + Number(Boolean(staffFilter)) + Number(Boolean(customerSearch)) + Number(Boolean(range?.[0] || range?.[1]))
 
   const columns = [
     {
@@ -217,6 +219,13 @@ export default function Payments() {
         subtitle="Lịch sử thu tiền thực tế trên toàn chuỗi"
         extra={
           <Space wrap>
+            <Input.Search
+              allowClear
+              placeholder="Tìm khách theo tên / SĐT"
+              defaultValue={customerSearch}
+              style={{ width: 220 }}
+              onSearch={(value) => { setCustomerSearch(value.trim() || undefined); setPage(1) }}
+            />
             <ListFilterPopover
               open={filterOpen}
               onOpenChange={openFilters}

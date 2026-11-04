@@ -91,6 +91,13 @@ export default function AppointmentDetailModal({
           <Typography.Text><strong>Trạng thái:</strong> <Tag color={STATUS_META[selectedAppointment.status as AppointmentStatus]?.color}>{STATUS_META[selectedAppointment.status as AppointmentStatus]?.label || selectedAppointment.status}</Tag></Typography.Text>
           {selectedAppointment.note && <Typography.Text><strong>Ghi chú:</strong> {selectedAppointment.note}</Typography.Text>}
           {selectedAppointment.reject_reason && <Typography.Text><strong>Lý do từ chối:</strong> {selectedAppointment.reject_reason}</Typography.Text>}
+          {selectedAppointment.customer_treatment_id && (
+            <div style={{ borderTop: '1px solid #eee', paddingTop: 12, marginTop: 4 }}>
+              <Button onClick={() => navigate(`/treatment-customers?treatment_id=${encodeURIComponent(selectedAppointment.customer_treatment_id!)}`)}>
+                Mở hồ sơ liệu trình
+              </Button>
+            </div>
+          )}
           {!selectedAppointment.customer_treatment_id && (
             <div style={{ borderTop: '1px solid #eee', paddingTop: 12, marginTop: 4 }}>
               <Alert

@@ -2,7 +2,7 @@ import dayjs from 'dayjs'
 import { Button, Descriptions, Form, Input, Modal, Select, Tag } from 'antd'
 import type { FormInstance } from 'antd'
 import type { AcademyCourse } from '@/api/models/academyCourse'
-import { NEXT_STATUS, STATUS_META, type RegistrationRow } from './constants'
+import { NEXT_STATUS, PAYMENT_STATUS_META, STATUS_META, type RegistrationRow } from './constants'
 
 export default function RegistrationUpdateModal({ target, form, staffs, courses, formatMoney, saving, onClose, onSubmit }: {
   target: RegistrationRow | null
@@ -37,6 +37,9 @@ export default function RegistrationUpdateModal({ target, form, staffs, courses,
           <Descriptions.Item label="Khóa học" span={2}>{target.course?.name ?? courseById(target.course_id) ?? '—'}</Descriptions.Item>
           <Descriptions.Item label="Học phí cuối">{formatMoney(Number(target.final_tuition ?? 0))}</Descriptions.Item>
           <Descriptions.Item label="Ưu đãi">{target.discount_percent ? `${target.discount_percent}%` : '—'}</Descriptions.Item>
+          <Descriptions.Item label="Thanh toán" span={2}>
+            <Tag color={PAYMENT_STATUS_META[target.payment_status ?? '']?.color}>{PAYMENT_STATUS_META[target.payment_status ?? '']?.label ?? target.payment_status ?? '—'}</Tag>
+          </Descriptions.Item>
           <Descriptions.Item label="Người gọi">{target.user?.zalo_name ?? '—'}</Descriptions.Item>
           <Descriptions.Item label="Liên hệ lúc">{target.contacted_at ? dayjs(target.contacted_at).format('DD/MM HH:mm') : '—'}</Descriptions.Item>
         </Descriptions>
@@ -51,6 +54,13 @@ export default function RegistrationUpdateModal({ target, form, staffs, courses,
           </Form.Item>
           <Form.Item name="assigned_to" label="Nhân viên phụ trách gọi">
             <Select allowClear placeholder="Chọn nhân viên" options={staffs.map((s) => ({ value: s.id, label: s.zalo_name || s.id.slice(0, 8) }))} />
+          </Form.Item>
+          <Form.Item name="payment_status" label="Trạng thái thanh toán học phí">
+            <Select
+              allowClear
+              placeholder="Chọn trạng thái"
+              options={Object.entries(PAYMENT_STATUS_META).map(([value, meta]) => ({ value, label: meta.label }))}
+            />
           </Form.Item>
           <Form.Item name="note" label="Ghi chú kết quả cuộc trao đổi">
             <Input.TextArea rows={3} placeholder="Ví dụ: khách hẹn comeback tuần sau, quan tâm khóa peel…" />

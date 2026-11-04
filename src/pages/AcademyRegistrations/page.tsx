@@ -21,11 +21,12 @@ import { Can } from '@casl/react'
 import RegistrationCreateModal from './components/RegistrationCreateModal'
 import RegistrationUpdateModal from './components/RegistrationUpdateModal'
 import StudentLookupModal from './components/StudentLookupModal'
-import { NEXT_STATUS, STATUS_META } from './components/constants'
+import { NEXT_STATUS, PAYMENT_STATUS_META, STATUS_META } from './components/constants'
 import type { RegistrationRow } from './components/constants'
 
 interface UpdateFormValues {
   status?: string
+  payment_status?: string
   assigned_to?: string | null
   note?: string
 }
@@ -69,7 +70,7 @@ export default function AcademyRegistrations() {
   const openUpdate = (row: RegistrationRow) => {
     setUpdateTarget(row)
     form.resetFields()
-    form.setFieldsValue({ status: NEXT_STATUS[row.status ?? 'PENDING']?.[0], assigned_to: row.assigned_to ?? null, note: row.note ?? undefined })
+    form.setFieldsValue({ status: NEXT_STATUS[row.status ?? 'PENDING']?.[0], payment_status: row.payment_status ?? 'UNPAID', assigned_to: row.assigned_to ?? null, note: row.note ?? undefined })
   }
 
   const submitUpdate = async () => {
@@ -79,7 +80,7 @@ export default function AcademyRegistrations() {
       setSaving(true)
       await statusMutation.mutateAsync({
         id: updateTarget.id,
-        data: { status: values.status!, assigned_to: values.assigned_to ?? null, note: values.note ?? null } as never,
+        data: { status: values.status!, payment_status: values.payment_status, assigned_to: values.assigned_to ?? null, note: values.note ?? null } as never,
       })
       message.success('Đã cập nhật tiến độ tư vấn')
       setUpdateTarget(null)
@@ -152,6 +153,10 @@ export default function AcademyRegistrations() {
     { title: 'Trạng thái', dataIndex: 'status', key: 'status', width: 130, render: (v: string) => <Tag color={STATUS_META[v]?.color}>{STATUS_META[v]?.label ?? v}</Tag> },
     { title: 'Ưu đãi', dataIndex: 'discount_percent', key: 'discount', width: 80, align: 'right' as const, render: (v?: number) => (v ? `${v}%` : '—') },
     { title: 'Học phí cuối', dataIndex: 'final_tuition', key: 'final_tuition', width: 130, align: 'right' as const, render: (v?: number) => formatMoney(Number(v ?? 0)) },
+    {
+      title: 'Thanh toán', dataIndex: 'payment_status', key: 'payment_status', width: 150,
+      render: (v?: string) => <Tag color={PAYMENT_STATUS_META[v ?? '']?.color}>{PAYMENT_STATUS_META[v ?? '']?.label ?? v ?? '—'}</Tag>,
+    },
     { title: 'Người gọi', key: 'assigned', width: 130, render: (_: unknown, row: RegistrationRow) => row.user?.zalo_name ?? '—' },
     { title: 'Liên hệ lúc', dataIndex: 'contacted_at', key: 'contacted_at', width: 140, render: (v?: string) => (v ? dayjs(v).format('DD/MM HH:mm') : '—') },
     { title: 'Ghi chú', dataIndex: 'note', key: 'note', ellipsis: true },
@@ -203,6 +208,7 @@ export default function AcademyRegistrations() {
         loading={registrationsQuery.isLoading}
         columns={columns}
         dataSource={paginateRows(registrations, page, 10)}
+        scroll={{ x: 1100 }}
         pagination={false}
         onRow={(row) => ({
           onClick: () => openUpdate(row),

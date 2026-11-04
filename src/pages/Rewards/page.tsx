@@ -244,11 +244,11 @@ function RewardCatalogTab({ onChanged }: { onChanged: () => void }) {
       ),
     },
     { key: 'points_cost', title: 'Điểm đổi', dataIndex: 'points_cost', width: 90, align: 'right', render: (v: number) => v.toLocaleString('vi-VN') },
-    { key: 'remaining', title: 'Còn lại', width: 110, render: (_v, row) => remainingLabel(row) },
+    { key: 'remaining', title: 'Còn lại', width: 140, render: (_v, row) => remainingLabel(row) },
     { key: 'validity', title: 'Thời hạn', width: 200, render: (_v, row) => `${row.valid_from ? dayjs(String(row.valid_from)).format('DD/MM/YYYY') : '—'} → ${row.valid_to ? dayjs(String(row.valid_to)).format('DD/MM/YYYY') : '—'}` },
     { key: 'is_active', title: 'Trạng thái', dataIndex: 'is_active', width: 100, render: (v: boolean) => (v ? <Tag color="green">Đang đổi</Tag> : <Tag>Đã ẩn</Tag>) },
     {
-      key: 'actions', title: 'Hành động', align: 'center' as const, width: 90, fixed: 'right' as const,
+      key: 'actions', title: 'Hành động', align: 'center' as const, width: 110, fixed: 'right' as const,
       render: (_v, row) => (
         <RowActionsMenu
           items={[
@@ -427,9 +427,9 @@ function RedemptionsTab({ onChanged }: { onChanged: () => void }) {
         <RowActionsMenu
           items={row.status === 'ISSUED'
             ? [
-                ...(Number(row.reward?.benefit_amount ?? 0) > 0 ? [] : [{ key: 'used', icon: <CheckOutlined />, label: 'Đã dùng' }]),
-                { key: 'cancel', icon: <StopOutlined />, label: 'Hủy lượt đổi', danger: true },
-              ]
+              ...(Number(row.reward?.benefit_amount ?? 0) > 0 ? [] : [{ key: 'used', icon: <CheckOutlined />, label: 'Đã dùng' }]),
+              { key: 'cancel', icon: <StopOutlined />, label: 'Hủy lượt đổi', danger: true },
+            ]
             : []}
           onSelect={(key) => {
             if (key === 'used') void markUsed(row)

@@ -475,7 +475,9 @@ export default function Users() {
           )}
         />
         {profileAccess.canExport && (
-          <Button icon={<DownloadOutlined />} loading={exporting} onClick={() => void downloadCsv()} aria-label="Xuất CSV" title="Xuất CSV" />
+          <Button icon={<DownloadOutlined />} loading={exporting} onClick={() => void downloadCsv()} aria-label="Xuất CSV" title="Xuất CSV">
+            {!isMobile ? 'Xuất CSV' : undefined}
+          </Button>
         )}
       </div>
       <Table<CustomerProfileRow>

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Alert, Button, Form, Select, Space, Table, Tag, message } from 'antd'
 import type { TableColumnsType } from 'antd'
 import { PlusOutlined, ReloadOutlined } from '@ant-design/icons'
@@ -29,6 +30,7 @@ export default function WarrantyClaims() {
   const [statusFilter, setStatusFilter] = useState<string | undefined>()
   const [detailId, setDetailId] = useState<string | null>(null)
   const [createOpen, setCreateOpen] = useState(false)
+  const navigate = useNavigate()
   const [rejectTarget, setRejectTarget] = useState<ClaimRow | null>(null)
   const [createForm] = Form.useForm()
   const [rejectForm] = Form.useForm()
@@ -138,7 +140,20 @@ export default function WarrantyClaims() {
       title: 'Trạng thái', dataIndex: 'status', width: 120,
       render: (v?: string) => <Tag color={STATUS_META[v ?? '']?.color}>{STATUS_META[v ?? '']?.label ?? v ?? '—'}</Tag>,
     },
-    { title: 'Thao tác', align: 'center' as const, key: 'actions', width: 110, render: (_v, row) => <Button size="small" onClick={() => setDetailId(row.id)}>Chi tiết</Button> },
+    {
+      title: 'Thao tác', align: 'center' as const, key: 'actions', width: 170,
+      render: (_v, row) => (
+        <Space size={6}>
+          <Button size="small" onClick={() => setDetailId(row.id)}>Chi tiết</Button>
+          <Button
+            size="small"
+            onClick={() => navigate(`/treatment-customers?treatment_id=${encodeURIComponent(row.customer_treatment_id)}`)}
+          >
+            Mở gói
+          </Button>
+        </Space>
+      ),
+    },
   ]
 
   return (
