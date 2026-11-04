@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Button, Form, Grid, Input, Modal, Progress, Select, Table, Tag, Tooltip, Typography, message } from 'antd'
 import type { MenuProps } from 'antd'
@@ -265,6 +266,19 @@ export default function TreatmentCustomers() {
       .catch(() => setPayments([]))
       .finally(() => setPayLoading(false))
   }
+
+  const [searchParams, setSearchParams] = useSearchParams()
+  const focusTreatmentId = searchParams.get('treatment_id')
+  useEffect(() => {
+    if (!focusTreatmentId || treatmentsQuery.isLoading) return
+    const row = rows.find((item) => item.id === focusTreatmentId)
+    if (!row) return
+    openDetail(row)
+    const next = new URLSearchParams(searchParams)
+    next.delete('treatment_id')
+    setSearchParams(next, { replace: true })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusTreatmentId, rows, treatmentsQuery.isLoading])
 
   const [customerOptions, setCustomerOptions] = useState<ProfileRow[]>([])
   const custTimer = useRef<ReturnType<typeof setTimeout> | null>(null)

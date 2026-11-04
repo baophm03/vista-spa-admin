@@ -23,3 +23,10 @@ export const NEXT_STATUS: Record<string, string[]> = {
   ATTENDED: [],
   CANCELLED: [],
 }
+
+/** Theo dõi khoản thu (AC-04): trạng thái thanh toán học phí */
+export const PAYMENT_STATUS_META: Record<string, { label: string; color: string }> = {
+  UNPAID: { label: 'Chưa thanh toán', color: 'red' },
+  PARTIAL: { label: 'Thanh toán một phần', color: 'gold' },
+  PAID: { label: 'Đã thanh toán', color: 'green' },
+}
