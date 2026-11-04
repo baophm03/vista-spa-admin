@@ -4,6 +4,7 @@ import type { CustomerTreatment } from '@/api/models/customerTreatment'
 import type { PaymentLog } from '@/api/models/paymentLog'
 import type { SessionPhoto } from '@/api/models/sessionPhoto'
 import type { TreatmentSession } from '@/api/models/treatmentSession'
+import links from '@/configs/links'
 import { useBrandCurrency, useBrandDateTime } from '@/themeRuntime'
 import useSessionStatusConfig from '@/hooks/useSessionStatusConfig'
 
@@ -44,9 +45,6 @@ function localizedLabel(value: unknown, labels: Record<string, string>) {
   const raw = String(value ?? '')
   return labels[raw] ?? labels[raw.toUpperCase()] ?? (raw || '—')
 }
-
-/** Ảnh có thể là URL tuyệt đối (MinIO) hoặc đường dẫn tương đối (/images, /files — đã được vite proxy). */
-const mediaSource = (url?: string | null) => (!url ? undefined : url)
 
 export default function CustomerTreatmentDetailCard({ treatment, sessions, payments, photos, canReadPayments }: Props) {
   const { format: money } = useBrandCurrency()
@@ -133,7 +131,7 @@ export default function CustomerTreatmentDetailCard({ treatment, sessions, payme
       {photos.length ? (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: 8 }}>
           {photos.map((photo) => photo.url
-            ? <Image key={photo.id} width="100%" height="100%" style={{ aspectRatio: '1 / 1', objectFit: 'cover', borderRadius: 8, border: '1px solid var(--brand-border, #ECEFEA)' }} src={mediaSource(photo.url)} alt={photo.caption || 'Ảnh buổi điều trị'} />
+            ? <Image key={photo.id} width="100%" height="100%" style={{ aspectRatio: '1 / 1', objectFit: 'cover', borderRadius: 8, border: '1px solid var(--brand-border, #ECEFEA)' }} src={`${links.imageEndpoint}${photo.url}`} alt={photo.caption || 'Ảnh buổi điều trị'} />
             : <Tag key={photo.id}>{photo.caption || 'Ảnh buổi điều trị'} đã lưu</Tag>)}
         </div>
       ) : <Typography.Text type="secondary">Chưa có ảnh buổi điều trị.</Typography.Text>}
