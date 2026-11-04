@@ -81,7 +81,7 @@ export default function ManualEntryModal({ open, onClose, onDone }: { open: bool
         amount: values.amount ?? Math.round(Number(values.base_amount) * Number(values.percent) / 100),
       }
       await createMutation.mutateAsync({ data })
-      message.success('ÄÃ£ nháº­p bÃºt toÃ¡n hoa há»“ng')
+      message.success('Đã nhập bút toán hoa hồng')
       form.resetFields()
       onDone()
       onClose()
@@ -93,12 +93,12 @@ export default function ManualEntryModal({ open, onClose, onDone }: { open: bool
 
   return (
     <Modal
-      title="Nháº­p hoa há»“ng tay"
+      title="Nhập hoa hồng tay"
       open={open}
       onCancel={onClose}
       onOk={() => void submit()}
       confirmLoading={createMutation.isPending}
-      okText="LÆ°u" cancelText="Há»§y"
+      okText="Lưu" cancelText="Hủy"
       width={560}
     >
       <Form
@@ -118,7 +118,7 @@ export default function ManualEntryModal({ open, onClose, onDone }: { open: bool
           }
         }}
       >
-        <Form.Item label="NgÆ°á»i nháº­n" required>
+        <Form.Item label="Người nhận" required>
           <Select
             value={payeeType}
             onChange={(v) => setPayeeType(v)}
@@ -126,94 +126,94 @@ export default function ManualEntryModal({ open, onClose, onDone }: { open: bool
           />
         </Form.Item>
         {payeeType === 'STAFF' && (
-          <Form.Item name="staff_id" label="KTV" rules={[{ required: true, message: 'Chá»n nhÃ¢n viÃªn' }]}>
-            <Select showSearch optionFilterProp="label" loading={usersQuery.isLoading} placeholder="Chá»n KTV"
+          <Form.Item name="staff_id" label="KTV" rules={[{ required: true, message: 'Chọn nhân viên' }]}>
+            <Select showSearch optionFilterProp="label" loading={usersQuery.isLoading} placeholder="Chọn KTV"
               options={users.map((user) => ({ value: user.id, label: user.zalo_name || user.email || user.id }))} />
           </Form.Item>
         )}
         {payeeType === 'COLLABORATOR' && (
           <>
-            <Form.Item name="collaborator_id" label="Cá»™ng tÃ¡c viÃªn" rules={[{ required: true, message: 'Chá»n cá»™ng tÃ¡c viÃªn' }]}>
+            <Form.Item name="collaborator_id" label="Cộng tác viên" rules={[{ required: true, message: 'Chọn cộng tác viên' }]}>
               <Select
                 showSearch
                 optionFilterProp="label"
                 loading={collaboratorsQuery.isLoading}
-                placeholder="Chá»n cá»™ng tÃ¡c viÃªn"
+                placeholder="Chọn cộng tác viên"
                 options={collaborators.map((row) => ({
                   value: row.id,
-                  label: `${row.name} Â· ${row.referral_code}${row.commission_percent != null ? ` Â· ${row.commission_percent}% tham kháº£o` : ''}`,
+                  label: `${row.name} · ${row.referral_code}${row.commission_percent != null ? ` · ${row.commission_percent}% tham khảo` : ''}`,
                 }))}
               />
             </Form.Item>
-            <Alert type="info" showIcon style={{ marginBottom: 16 }} title="% hoa há»“ng cá»§a CTV chá»‰ lÃ  má»©c tham kháº£o khi nháº­p tay; sá»‘ tiá»n váº«n do báº¡n nháº­p." />
-            <Form.Item name="customer_profile_id" label="KhÃ¡ch Ä‘Æ°á»£c giá»›i thiá»‡u (náº¿u cÃ³)" extra="Gáº¯n bÃºt toÃ¡n vá»›i khÃ¡ch Ä‘á»ƒ hiá»‡n trong lá»‹ch sá»­ giá»›i thiá»‡u.">
+            <Alert type="info" showIcon style={{ marginBottom: 16 }} title="% hoa hồng của CTV chỉ là mức tham khảo khi nhập tay; số tiền vẫn do bạn nhập." />
+            <Form.Item name="customer_profile_id" label="Khách được giới thiệu (nếu có)" extra="Gắn bút toán với khách để hiện trong lịch sử giới thiệu.">
               <Select
                 allowClear
                 showSearch
                 optionFilterProp="label"
                 disabled={!selectedCollaboratorId}
                 loading={referralsQuery.isLoading}
-                placeholder="Chá»n khÃ¡ch Ä‘Æ°á»£c CTV nÃ y giá»›i thiá»‡u"
+                placeholder="Chọn khách được CTV này giới thiệu"
                 options={collaboratorReferrals.map((row) => ({
                   value: row.referred_profile_id,
-                  label: [row.referred_profile?.full_name, row.referred_profile?.phone].filter(Boolean).join(' Â· ') || row.referred_profile_id,
+                  label: [row.referred_profile?.full_name, row.referred_profile?.phone].filter(Boolean).join(' · ') || row.referred_profile_id,
                 }))}
               />
             </Form.Item>
           </>
         )}
         {payeeType === 'CUSTOMER_REFERRER' && (
-          <Form.Item name="referrer_profile_id" label="ID há»“ sÆ¡ khÃ¡ch giá»›i thiá»‡u" rules={[{ required: true, message: 'Nháº­p ID há»“ sÆ¡ khÃ¡ch' }]}>
-            <Input placeholder="UUID cá»§a há»“ sÆ¡ khÃ¡ch" />
+          <Form.Item name="referrer_profile_id" label="ID hồ sơ khách giới thiệu" rules={[{ required: true, message: 'Nhập ID hồ sơ khách' }]}>
+            <Input placeholder="UUID của hồ sơ khách" />
           </Form.Item>
         )}
-        <Form.Item name="customer_treatment_id" label="HÃ³a Ä‘Æ¡n / gÃ³i Ä‘iá»u trá»‹ liÃªn quan">
-          <Select allowClear showSearch optionFilterProp="label" loading={treatmentsQuery.isLoading} placeholder="TÃ¹y chá»n: chá»n gÃ³i Ä‘á»ƒ liÃªn káº¿t bÃºt toÃ¡n"
+        <Form.Item name="customer_treatment_id" label="Hóa đơn / gói điều trị liên quan">
+          <Select allowClear showSearch optionFilterProp="label" loading={treatmentsQuery.isLoading} placeholder="Tùy chọn: chọn gói để liên kết bút toán"
             options={treatments.map((treatment) => ({
               value: treatment.id,
               label: [treatment.customer_profile?.full_name, treatment.customer_profile?.phone, treatment.package_type?.name || (treatment.package_snapshot as Record<string, unknown> | undefined)?.name]
-                .filter(Boolean).join(' Â· ') || treatment.id,
+                .filter(Boolean).join(' · ') || treatment.id,
             }))} />
           </Form.Item>
         <Space style={{ display: 'flex' }} align="start">
-          <Form.Item name="branch_id" label="Chi nhÃ¡nh" style={{ flex: 1 }}>
-            <Select allowClear showSearch optionFilterProp="label" loading={branchesQuery.isLoading} placeholder="Tá»± láº¥y theo buá»•i/gÃ³i náº¿u cÃ³"
+          <Form.Item name="branch_id" label="Chi nhánh" style={{ flex: 1 }}>
+            <Select allowClear showSearch optionFilterProp="label" loading={branchesQuery.isLoading} placeholder="Tự lấy theo buổi/gói nếu có"
               options={branches.map((branch) => ({ value: branch.id, label: branch.name }))} />
           </Form.Item>
-          <Form.Item name="session_id" label="Buá»•i liÃªn quan" style={{ flex: 1 }}>
+          <Form.Item name="session_id" label="Buổi liên quan" style={{ flex: 1 }}>
             <Select allowClear showSearch optionFilterProp="label" disabled={!selectedTreatmentId} loading={sessionsQuery.isLoading}
-              placeholder={selectedTreatmentId ? 'Chá»n buá»•i Ä‘iá»u trá»‹' : 'Chá»n gÃ³i Ä‘iá»u trá»‹ trÆ°á»›c'}
-              options={sessions.map((session) => ({ value: session.id, label: `Buá»•i ${session.session_no} Â· ${session.status ?? 'â€”'}` }))} />
+              placeholder={selectedTreatmentId ? 'Chọn buổi điều trị' : 'Chọn gói điều trị trước'}
+              options={sessions.map((session) => ({ value: session.id, label: `Buổi ${session.session_no} · ${session.status ?? '—'}` }))} />
           </Form.Item>
         </Space>
         <Space style={{ display: 'flex' }} align="start">
           <Form.Item
-            name="amount" label="Sá»‘ tiá»n hoa há»“ng (â‚«)" style={{ flex: 1 }}
+            name="amount" label="Số tiền hoa hồng (₫)" style={{ flex: 1 }}
             rules={[{
               validator: (_rule, value) => {
                 const base = form.getFieldValue('base_amount')
                 const percent = form.getFieldValue('percent')
                 if ((value != null && Number(value) > 0) || (base != null && percent != null && Number(base) >= 0 && Number(percent) > 0)) return Promise.resolve()
-                return Promise.reject(new Error('Nháº­p sá»‘ tiá»n hoáº·c Ä‘á»§ doanh sá»‘ vÃ  tá»· lá»‡ %'))
+                return Promise.reject(new Error('Nhập số tiền hoặc đủ doanh số và tỷ lệ %'))
               },
             }]}
           >
             <InputNumber min={1} precision={0} style={{ width: '100%' }} />
           </Form.Item>
-          <Form.Item name="period_date" label="Ká»³" style={{ flex: 1 }}>
+          <Form.Item name="period_date" label="Kỳ" style={{ flex: 1 }}>
             <DatePicker style={{ width: '100%' }} />
           </Form.Item>
         </Space>
         <Space style={{ display: 'flex' }} align="start">
-          <Form.Item name="base_amount" label="Doanh sá»‘ tham chiáº¿u (â‚«)" style={{ flex: 1 }}>
+          <Form.Item name="base_amount" label="Doanh số tham chiếu (₫)" style={{ flex: 1 }}>
             <InputNumber min={0} precision={0} style={{ width: '100%' }} />
           </Form.Item>
-          <Form.Item name="percent" label="Tá»· lá»‡ (%)" style={{ flex: 1 }}>
+          <Form.Item name="percent" label="Tỷ lệ (%)" style={{ flex: 1 }}>
             <InputNumber min={0} max={100} precision={2} style={{ width: '100%' }} />
           </Form.Item>
         </Space>
-        <Form.Item name="reason" label="LÃ½ do / ghi chÃº" rules={[{ required: true, message: 'Nháº­p lÃ½ do' }]}>
-          <Input.TextArea rows={2} placeholder="VD: Hoa há»“ng bÃ¡n gÃ³i thÃ¢n thiáº¿t thÃ¡ng 10" />
+        <Form.Item name="reason" label="Lý do / ghi chú" rules={[{ required: true, message: 'Nhập lý do' }]}>
+          <Input.TextArea rows={2} placeholder="VD: Hoa hồng bán gói thân thiết tháng 10" />
         </Form.Item>
       </Form>
     </Modal>

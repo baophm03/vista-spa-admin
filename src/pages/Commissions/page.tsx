@@ -50,9 +50,9 @@ import type {
 } from '@/api/models'
 
 const STATUS_META: Record<string, { label: string; color: string }> = {
-  ACTIVE: { label: 'Äang hiá»‡u lá»±c', color: 'green' },
-  CANCELLED: { label: 'ÄÃ£ há»§y', color: 'default' },
-  VOID: { label: 'ÄÃ£ há»§y (VOID)', color: 'red' },
+  ACTIVE: { label: 'Đang hiệu lực', color: 'green' },
+  CANCELLED: { label: 'Đã hủy', color: 'default' },
+  VOID: { label: 'Đã hủy (VOID)', color: 'red' },
 }
 
 type CommissionColumnKey =
@@ -60,23 +60,23 @@ type CommissionColumnKey =
   | 'base' | 'percent' | 'amount' | 'reason' | 'status'
 
 const COMMISSION_COLUMN_OPTIONS: { label: string; value: CommissionColumnKey }[] = [
-  { label: 'NgÃ y', value: 'period_date' },
-  { label: 'NgÆ°á»i nháº­n', value: 'payee' },
-  { label: 'Nguá»“n', value: 'source_type' },
-  { label: 'Chi nhÃ¡nh', value: 'branch_id' },
-  { label: 'Cháº¿ Ä‘á»™', value: 'mode' },
-  { label: 'CÄƒn tÃ­nh', value: 'base' },
-  { label: '% hoa há»“ng', value: 'percent' },
-  { label: 'Sá»‘ tiá»n', value: 'amount' },
-  { label: 'LÃ½ do', value: 'reason' },
-  { label: 'Tráº¡ng thÃ¡i', value: 'status' },
+  { label: 'Ngày', value: 'period_date' },
+  { label: 'Người nhận', value: 'payee' },
+  { label: 'Nguồn', value: 'source_type' },
+  { label: 'Chi nhánh', value: 'branch_id' },
+  { label: 'Chế độ', value: 'mode' },
+  { label: 'Căn tính', value: 'base' },
+  { label: '% hoa hồng', value: 'percent' },
+  { label: 'Số tiền', value: 'amount' },
+  { label: 'Lý do', value: 'reason' },
+  { label: 'Trạng thái', value: 'status' },
 ]
 
 const DEFAULT_VISIBLE_COLUMNS = COMMISSION_COLUMN_OPTIONS.map((column) => column.value)
 
 function formatVnd(v?: number | null): string {
-  if (v == null) return 'â€”'
-  return `${Number(v).toLocaleString('vi-VN')} â‚«`
+  if (v == null) return '—'
+  return `${Number(v).toLocaleString('vi-VN')} ₫`
 }
 
 export default function Commissions() {
@@ -85,19 +85,19 @@ export default function Commissions() {
       {(allowed) =>
         allowed ? (
           <>
-            <PageTitle subtitle="BÃºt toÃ¡n hoa há»“ng vÃ  bÃ¡o cÃ¡o tá»•ng há»£p">Hoa há»“ng</PageTitle>
+            <PageTitle subtitle="Bút toán hoa hồng và báo cáo tổng hợp">Hoa hồng</PageTitle>
             <Tabs
               defaultActiveKey="ledger"
               items={[
-                { key: 'ledger', label: 'Sá»• hoa há»“ng', children: <LedgerTab /> },
-                { key: 'summary', label: 'Tá»•ng há»£p', children: <SummaryTab /> },
+                { key: 'ledger', label: 'Sổ hoa hồng', children: <LedgerTab /> },
+                { key: 'summary', label: 'Tổng hợp', children: <SummaryTab /> },
               ]}
             />
           </>
         ) : (
           <>
-            <PageTitle>Hoa há»“ng</PageTitle>
-            <Alert type="warning" showIcon title="Báº¡n khÃ´ng cÃ³ quyá»n xem hoa há»“ng (cáº§n quyá»n commission.read)" />
+            <PageTitle>Hoa hồng</PageTitle>
+            <Alert type="warning" showIcon title="Bạn không có quyền xem hoa hồng (cần quyền commission.read)" />
           </>
         )
       }
@@ -140,10 +140,10 @@ function LedgerTab() {
     const collaboratorById = new Map(collaborators.map((row) => [row.id, row.name]))
     const customerById = new Map(customers.map((row) => [row.id, row.full_name]))
     return (row: CommissionEntry): string => {
-      if (row.payee_type === 'STAFF') return staffById.get(row.payee_user_id ?? row.staff_id ?? '') ?? 'â€”'
-      if (row.payee_type === 'COLLABORATOR') return collaboratorById.get(row.collaborator_id ?? '') ?? 'â€”'
-      if (row.payee_type === 'CUSTOMER_REFERRER') return customerById.get(row.referrer_profile_id ?? '') ?? 'â€”'
-      return 'â€”'
+      if (row.payee_type === 'STAFF') return staffById.get(row.payee_user_id ?? row.staff_id ?? '') ?? '—'
+      if (row.payee_type === 'COLLABORATOR') return collaboratorById.get(row.collaborator_id ?? '') ?? '—'
+      if (row.payee_type === 'CUSTOMER_REFERRER') return customerById.get(row.referrer_profile_id ?? '') ?? '—'
+      return '—'
     }
   }, [users, collaborators, customers])
 
@@ -172,7 +172,7 @@ function LedgerTab() {
 
   const applyFilters = (values: Record<string, unknown>) => {
     if (draftVisibleColumns.length === 0) {
-      message.error('HÃ£y giá»¯ láº¡i Ã­t nháº¥t má»™t cá»™t hiá»ƒn thá»‹')
+      message.error('Hãy giữ lại ít nhất một cột hiển thị')
       return
     }
     const range = values.date_range as [Dayjs | null, Dayjs | null] | null | undefined
@@ -205,7 +205,7 @@ function LedgerTab() {
         id: editTarget.id,
         data: { amount: values.amount ?? undefined, percent: values.percent ?? undefined, reason: values.reason },
       })
-      message.success('ÄÃ£ cáº­p nháº­t bÃºt toÃ¡n hoa há»“ng')
+      message.success('Đã cập nhật bút toán hoa hồng')
       setEditTarget(null)
     } catch (err) {
       if ((err as { errorFields?: unknown })?.errorFields) return
@@ -218,7 +218,7 @@ function LedgerTab() {
     try {
       const values = await voidForm.validateFields()
       await voidMutation.mutateAsync({ id: voidTarget.id, data: { void_reason: values.void_reason } })
-      message.success('ÄÃ£ há»§y bÃºt toÃ¡n hoa há»“ng')
+      message.success('Đã hủy bút toán hoa hồng')
       setVoidTarget(null)
     } catch (err) {
       if ((err as { errorFields?: unknown })?.errorFields) return
@@ -227,9 +227,9 @@ function LedgerTab() {
   }
 
   const columns: TableColumnsType<CommissionEntry> = [
-    { key: 'period_date', title: 'NgÃ y', dataIndex: 'period_date', width: 120, render: (v?: string) => (v ? dayjs(v).format('DD/MM/YYYY') : 'â€”') },
+    { key: 'period_date', title: 'Ngày', dataIndex: 'period_date', width: 120, render: (v?: string) => (v ? dayjs(v).format('DD/MM/YYYY') : '—') },
     {
-      key: 'payee', title: 'NgÆ°á»i nháº­n', width: 190,
+      key: 'payee', title: 'Người nhận', width: 190,
       render: (_v, row) => (
         <Space size={4}>
           {row.payee_type && <Tag>{PAYEE_LABEL[row.payee_type] ?? row.payee_type}</Tag>}
@@ -237,31 +237,31 @@ function LedgerTab() {
         </Space>
       ),
     },
-    { key: 'source_type', title: 'Nguá»“n', dataIndex: 'source_type', width: 110, render: (v?: string) => ({ PAYMENT: 'Thanh toÃ¡n', SESSION: 'Buá»•i Ä‘iá»u trá»‹', MANUAL: 'Nháº­p tay' })[v ?? ''] ?? v ?? 'â€”' },
-    { key: 'branch_id', title: 'Chi nhÃ¡nh', dataIndex: 'branch_id', width: 120, ellipsis: true, render: (v?: string) => (v ? branchNameById.get(v) ?? v : 'â€”') },
-    { key: 'mode', title: 'Cháº¿ Ä‘á»™', dataIndex: 'mode', width: 90, render: (v?: string) => <Tag color={v === 'AUTO' ? 'blue' : 'orange'}>{v === 'AUTO' ? 'Tá»± Ä‘á»™ng' : 'Nháº­p tay'}</Tag> },
+    { key: 'source_type', title: 'Nguồn', dataIndex: 'source_type', width: 110, render: (v?: string) => ({ PAYMENT: 'Thanh toán', SESSION: 'Buổi điều trị', MANUAL: 'Nhập tay' })[v ?? ''] ?? v ?? '—' },
+    { key: 'branch_id', title: 'Chi nhánh', dataIndex: 'branch_id', width: 120, ellipsis: true, render: (v?: string) => (v ? branchNameById.get(v) ?? v : '—') },
+    { key: 'mode', title: 'Chế độ', dataIndex: 'mode', width: 90, render: (v?: string) => <Tag color={v === 'AUTO' ? 'blue' : 'orange'}>{v === 'AUTO' ? 'Tự động' : 'Nhập tay'}</Tag> },
     {
-      key: 'base', title: 'CÄƒn tÃ­nh', width: 120, align: 'right',
-      render: (_v, row) => (row.base_amount != null ? formatVnd(row.base_amount) : 'â€”'),
+      key: 'base', title: 'Căn tính', width: 120, align: 'right',
+      render: (_v, row) => (row.base_amount != null ? formatVnd(row.base_amount) : '—'),
     },
-    { key: 'percent', title: '%', dataIndex: 'percent', width: 70, align: 'right', render: (v?: number | null) => (v != null ? `${v}%` : 'â€”') },
-    { key: 'amount', title: 'Sá»‘ tiá»n', dataIndex: 'amount', width: 120, align: 'right', render: (v: number) => <span style={{ fontWeight: 500 }}>{formatVnd(v)}</span> },
-    { key: 'reason', title: 'LÃ½ do', dataIndex: 'reason', width: 180, ellipsis: true },
+    { key: 'percent', title: '%', dataIndex: 'percent', width: 70, align: 'right', render: (v?: number | null) => (v != null ? `${v}%` : '—') },
+    { key: 'amount', title: 'Số tiền', dataIndex: 'amount', width: 120, align: 'right', render: (v: number) => <span style={{ fontWeight: 500 }}>{formatVnd(v)}</span> },
+    { key: 'reason', title: 'Lý do', dataIndex: 'reason', width: 180, ellipsis: true },
     {
-      key: 'status', title: 'Tráº¡ng thÃ¡i', dataIndex: 'status', width: 110,
+      key: 'status', title: 'Trạng thái', dataIndex: 'status', width: 110,
       render: (v?: string) => {
         const meta = STATUS_META[v ?? 'ACTIVE']
         return meta ? <Tag color={meta.color}>{meta.label}</Tag> : <Tag>{v}</Tag>
       },
     },
     {
-      key: 'actions', title: 'HÃ nh Ä‘á»™ng', align: 'center' as const, width: 90, fixed: 'right' as const,
+      key: 'actions', title: 'Hành động', align: 'center' as const, width: 90, fixed: 'right' as const,
       render: (_v, row) =>
         row.status === 'VOID' ? null : (
           <RowActionsMenu
             items={[
-              ...(canEdit ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sá»­a' }] : []),
-              ...(canVoid ? [{ key: 'void', icon: <StopOutlined />, label: 'Há»§y bÃºt toÃ¡n', danger: true }] : []),
+              ...(canEdit ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []),
+              ...(canVoid ? [{ key: 'void', icon: <StopOutlined />, label: 'Hủy bút toán', danger: true }] : []),
             ]}
             onSelect={(key) => {
               if (key === 'edit') {
@@ -299,39 +299,39 @@ function LedgerTab() {
           onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as CommissionColumnKey[])}
           filterItems={(
             <>
-              <Form.Item name="payee_type" label="NgÆ°á»i nháº­n" style={{ marginBottom: 10 }}>
-                <Select allowClear placeholder="Táº¥t cáº£" options={Object.entries(PAYEE_LABEL).map(([value, label]) => ({ value, label }))} />
+              <Form.Item name="payee_type" label="Người nhận" style={{ marginBottom: 10 }}>
+                <Select allowClear placeholder="Tất cả" options={Object.entries(PAYEE_LABEL).map(([value, label]) => ({ value, label }))} />
               </Form.Item>
-              <Form.Item name="mode" label="Cháº¿ Ä‘á»™" style={{ marginBottom: 10 }}>
-                <Select allowClear placeholder="Táº¥t cáº£" options={[{ value: 'AUTO', label: 'Tá»± Ä‘á»™ng' }, { value: 'MANUAL', label: 'Nháº­p tay' }]} />
+              <Form.Item name="mode" label="Chế độ" style={{ marginBottom: 10 }}>
+                <Select allowClear placeholder="Tất cả" options={[{ value: 'AUTO', label: 'Tự động' }, { value: 'MANUAL', label: 'Nhập tay' }]} />
               </Form.Item>
-              <Form.Item name="status" label="Tráº¡ng thÃ¡i" style={{ marginBottom: 10 }}>
-                <Select allowClear placeholder="Táº¥t cáº£" options={Object.entries(STATUS_META).map(([value, meta]) => ({ value, label: meta.label }))} />
+              <Form.Item name="status" label="Trạng thái" style={{ marginBottom: 10 }}>
+                <Select allowClear placeholder="Tất cả" options={Object.entries(STATUS_META).map(([value, meta]) => ({ value, label: meta.label }))} />
               </Form.Item>
-              <Form.Item name="branch_id" label="Chi nhÃ¡nh" style={{ marginBottom: 10 }}>
+              <Form.Item name="branch_id" label="Chi nhánh" style={{ marginBottom: 10 }}>
                 <Select
                   allowClear showSearch optionFilterProp="label" loading={branchesQuery.isLoading}
-                  placeholder="Táº¥t cáº£"
+                  placeholder="Tất cả"
                   options={branches.map((branch) => ({ value: branch.id, label: branch.name }))}
                 />
               </Form.Item>
-              <Form.Item name="date_range" label="Khoáº£ng thá»i gian" style={{ marginBottom: 0 }}>
-                <DatePicker.RangePicker style={{ width: '100%' }} placeholder={['Tá»« ngÃ y', 'Äáº¿n ngÃ y']} />
+              <Form.Item name="date_range" label="Khoảng thời gian" style={{ marginBottom: 0 }}>
+                <DatePicker.RangePicker style={{ width: '100%' }} placeholder={['Từ ngày', 'Đến ngày']} />
               </Form.Item>
             </>
           )}
         />
-        <Button icon={<ReloadOutlined />} onClick={() => void listQuery.refetch()}>Táº£i láº¡i</Button>
+        <Button icon={<ReloadOutlined />} onClick={() => void listQuery.refetch()}>Tải lại</Button>
         <Can I="CREATE" a="COMMISSION">
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => setManualOpen(true)}>Nháº­p tay</Button>
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => setManualOpen(true)}>Nhập tay</Button>
         </Can>
       </Space>
       {listQuery.isError && (
         <Alert
           className="mb-4" type="error" showIcon
-          title="KhÃ´ng táº£i Ä‘Æ°á»£c sá»• hoa há»“ng"
+          title="Không tải được sổ hoa hồng"
           description={errorMessage(listQuery.error)}
-          action={<Button size="small" onClick={() => void listQuery.refetch()}>Thá»­ láº¡i</Button>}
+          action={<Button size="small" onClick={() => void listQuery.refetch()}>Thử lại</Button>}
         />
       )}
       <Table<CommissionEntry>
@@ -343,7 +343,7 @@ function LedgerTab() {
         )}
         pagination={false}
       />
-      <ListPagination page={page} limit={20} total={meta?.total ?? 0} onChange={setPage} noun="bÃºt toÃ¡n hoa há»“ng" />
+      <ListPagination page={page} limit={20} total={meta?.total ?? 0} onChange={setPage} noun="bút toán hoa hồng" />
       <ManualEntryModal open={manualOpen} onClose={() => setManualOpen(false)} onDone={invalidate} />
       <EditCommissionModal
         open={!!editTarget}
@@ -382,7 +382,7 @@ function SummaryTab() {
 
   const columns: TableColumnsType<CommissionSummaryRow & { payee_id?: string }> = [
     {
-      title: 'Ká»³', dataIndex: 'period', width: 240,
+      title: 'Kỳ', dataIndex: 'period', width: 240,
       render: (v: string) => {
         const start = new Date(v)
         if (groupBy === 'day') return start.toLocaleDateString('vi-VN', { day: 'numeric', month: 'long', year: 'numeric' })
@@ -390,24 +390,24 @@ function SummaryTab() {
           const end = new Date(start)
           end.setDate(end.getDate() + 6)
           const dayMonth = new Intl.DateTimeFormat('vi-VN', { day: 'numeric', month: 'short' })
-          return `Tuáº§n ${dayMonth.format(start)} â€“ ${dayMonth.format(end)} ${end.getFullYear()}`
+          return `Tuần ${dayMonth.format(start)} – ${dayMonth.format(end)} ${end.getFullYear()}`
         }
         return start.toLocaleDateString('vi-VN', { year: 'numeric', month: 'long' })
       },
     },
     {
-      title: 'NgÆ°á»i nháº­n', key: 'payee', width: 240,
+      title: 'Người nhận', key: 'payee', width: 240,
       render: (_v, row) => {
         const id = row.payee_id
         const name = row.payee_type === 'STAFF' ? staffNameById.get(id ?? '')
           : row.payee_type === 'COLLABORATOR' ? collaboratorNameById.get(id ?? '')
             : undefined
-        return <Space><Tag>{row.payee_type ? PAYEE_LABEL[row.payee_type] : 'â€”'}</Tag><span>{name || id || 'â€”'}</span></Space>
+        return <Space><Tag>{row.payee_type ? PAYEE_LABEL[row.payee_type] : '—'}</Tag><span>{name || id || '—'}</span></Space>
       },
     },
-    { title: 'Sá»‘ bÃºt toÃ¡n', dataIndex: 'entries', width: 120, align: 'right', render: (v: string | number) => Number(v).toLocaleString('vi-VN') },
+    { title: 'Số bút toán', dataIndex: 'entries', width: 120, align: 'right', render: (v: string | number) => Number(v).toLocaleString('vi-VN') },
     {
-      title: 'Tá»•ng hoa há»“ng', dataIndex: 'total_amount', width: 180, align: 'right',
+      title: 'Tổng hoa hồng', dataIndex: 'total_amount', width: 180, align: 'right',
       render: (v: string | number) => <span style={{ fontWeight: 500 }}>{formatVnd(Number(v))}</span>,
     },
   ]
@@ -417,11 +417,11 @@ function SummaryTab() {
       <Space style={{ width: '100%', marginBottom: 16 }} wrap>
         <Select
           value={groupBy} style={{ width: 140 }}
-          options={[{ value: 'day', label: 'Theo ngÃ y' }, { value: 'week', label: 'Theo tuáº§n' }, { value: 'month', label: 'Theo thÃ¡ng' }]}
+          options={[{ value: 'day', label: 'Theo ngày' }, { value: 'week', label: 'Theo tuần' }, { value: 'month', label: 'Theo tháng' }]}
           onChange={(v) => { setFilters((current) => ({ ...current, group_by: v })); setPage(1) }}
         />
         <Select
-          allowClear placeholder="NgÆ°á»i nháº­n" style={{ width: 170 }}
+          allowClear placeholder="Người nhận" style={{ width: 170 }}
           options={Object.entries(PAYEE_LABEL).map(([value, label]) => ({ value, label }))}
           value={filters.payee_type}
           onChange={(v) => { setFilters((current) => ({ ...current, payee_type: v, staff_id: undefined, collaborator_id: undefined })); setPage(1) }}
@@ -432,26 +432,28 @@ function SummaryTab() {
             onChange={(v) => { setFilters((current) => ({ ...current, staff_id: v })); setPage(1) }} />
         )}
         {filters.payee_type === 'COLLABORATOR' && (
-          <Select allowClear showSearch optionFilterProp="label" placeholder="Cá»™ng tÃ¡c viÃªn" style={{ width: 210 }} loading={collaboratorsQuery.isLoading}
+          <Select allowClear showSearch optionFilterProp="label" placeholder="Cộng tác viên" style={{ width: 210 }} loading={collaboratorsQuery.isLoading}
             value={filters.collaborator_id} options={collaborators.map((row) => ({ value: row.id, label: row.name }))}
             onChange={(v) => { setFilters((current) => ({ ...current, collaborator_id: v })); setPage(1) }} />
         )}
-        <Select allowClear showSearch optionFilterProp="label" placeholder="Chi nhÃ¡nh" style={{ width: 180 }} loading={branchesQuery.isLoading}
+        <Select allowClear showSearch optionFilterProp="label" placeholder="Chi nhánh" style={{ width: 180 }} loading={branchesQuery.isLoading}
           value={filters.branch_id} options={branches.map((branch) => ({ value: branch.id, label: branch.name }))}
           onChange={(v) => { setFilters((current) => ({ ...current, branch_id: v })); setPage(1) }} />
-        <DatePicker.RangePicker onChange={(dates) => { setFilters((current) => ({
-          ...current,
-          date_from: dates?.[0]?.format('YYYY-MM-DD'),
-          date_to: dates?.[1]?.format('YYYY-MM-DD'),
-        })); setPage(1) }} />
-        <Button icon={<ReloadOutlined />} onClick={() => void summaryQuery.refetch()}>Táº£i láº¡i</Button>
+        <DatePicker.RangePicker onChange={(dates) => {
+          setFilters((current) => ({
+            ...current,
+            date_from: dates?.[0]?.format('YYYY-MM-DD'),
+            date_to: dates?.[1]?.format('YYYY-MM-DD'),
+          })); setPage(1)
+        }} />
+        <Button icon={<ReloadOutlined />} onClick={() => void summaryQuery.refetch()}>Tải lại</Button>
       </Space>
       <Table<CommissionSummaryRow & { payee_id?: string }>
         rowKey={(r) => `${r.period}-${r.payee_type}-${r.payee_id ?? 'unknown'}`}
         loading={summaryQuery.isLoading} dataSource={paginateRows(rows, page, 15)} columns={columns}
         pagination={false}
       />
-      <ListPagination page={page} limit={15} total={rows.length} onChange={setPage} noun="bÃºt toÃ¡n tá»•ng há»£p" />
+      <ListPagination page={page} limit={15} total={rows.length} onChange={setPage} noun="bút toán tổng hợp" />
     </>
   )
 }

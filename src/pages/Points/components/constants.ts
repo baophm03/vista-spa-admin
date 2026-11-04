@@ -117,3 +117,4 @@ export function rankThemeFromColor(color: string, fallback: RankCardTheme): Rank
     icon: fallback.icon,
   }
 }
+

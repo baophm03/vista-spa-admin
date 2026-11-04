@@ -2,14 +2,10 @@ import { useCallback, useState } from 'react'
 import {
   Alert,
   Button,
-  DatePicker,
   Form,
-  Input,
-  InputNumber,
   Modal,
   Select,
   Space,
-  Switch,
   Table,
   Tabs,
   Tag,
@@ -37,7 +33,6 @@ import { paginateRows } from '@/utils/listTable'
 import { errorMessage, pickData, pickMeta } from '@/api/helpers'
 import type { CustomerProfile } from '@/api/models/customerProfile'
 import type { Reward } from '@/api/models/reward'
-import type { RewardRedemption } from '@/api/models/rewardRedemption'
 import type { Voucher } from '@/api/models/voucher'
 import type { Service } from '@/api/models/service'
 import type { PostCustomerProfilesIdRedeemRewardBody } from '@/api/models/postCustomerProfilesIdRedeemRewardBody'
@@ -57,32 +52,20 @@ import { getCustomerProfiles, postCustomerProfilesIdRedeemReward } from '@/api/e
 import { getVouchers } from '@/api/endpoints/vouchers'
 import { getService } from '@/api/endpoints/services'
 import { Can, useAbility } from '@casl/react'
-
-/** GET /rewards trả kèm voucher cấp khi type = VOUCHER (model gen thiếu — mở rộng cục bộ). */
-type RewardRow = Reward & {
-  benefit_amount?: number | null
-  service_id?: string | null
-  voucher?: { id?: string; title?: string; description?: string } | null
-}
-/** GET /reward-redemptions trả kèm reward (model gen thiếu — mở rộng cục bộ). */
-type RewardRedemptionRow = RewardRedemption & { reward?: RewardRow | null }
-type RewardType = 'VOUCHER' | 'GIFT' | 'BENEFIT'
-
-const TYPE_META: Record<RewardType, { label: string; color: string }> = {
-  VOUCHER: { label: 'Voucher', color: 'purple' },
-  GIFT: { label: 'Quà vật phẩm', color: 'gold' },
-  BENEFIT: { label: 'Quyền lợi', color: 'cyan' },
-}
-const REDEMPTION_META: Record<string, { label: string; color: string }> = {
-  ISSUED: { label: 'Chưa dùng', color: 'orange' },
-  USED: { label: 'Đã dùng', color: 'green' },
-  CANCELLED: { label: 'Đã hủy', color: 'default' },
-}
-
-function remainingLabel(row: RewardRow) {
-  if (row.quantity_total == null) return 'Không giới hạn'
-  return `${Math.max(Number(row.quantity_total) - Number(row.quantity_given ?? 0), 0)}/${row.quantity_total}`
-}
+import CancelRedemptionModal from './components/CancelRedemptionModal'
+import RedeemModal from './components/RedeemModal'
+import RewardModal from './components/RewardModal'
+import {
+  DEFAULT_REDEMPTION_COLUMNS,
+  REDEMPTION_COLUMN_OPTIONS,
+  REDEMPTION_META,
+  TYPE_META,
+  remainingLabel,
+  type RedemptionColumnKey,
+  type RewardRedemptionRow,
+  type RewardRow,
+  type RewardType,
+} from './components/constants'
 
 function RewardCatalogTab({ onChanged }: { onChanged: () => void }) {
   const ability = useAbility()
@@ -98,52 +81,83 @@ function RewardCatalogTab({ onChanged }: { onChanged: () => void }) {
   const queryClient = useQueryClient()
   const servicesQuery = useQuery({
     queryKey: ['services', 'reward-benefit-picker'],
-    queryFn: async () => getService({ page: 1, limit: 200, is_active: true }),
+    queryFn: async () => {
+      const response = await getService({ page: 1, limit: 200, is_active: true })
+      const payload = pickData<{ services?: Service[] } | Service[]>(response)
+      if (Array.isArray(payload)) return payload
+      if (payload && typeof payload === 'object' && Array.isArray(payload.services)) return payload.services
+      return []
+    },
   })
-  const services = (pickData<Service[]>(servicesQuery.data) ?? []) as Service[]
+  const services = servicesQuery.data ?? []
 
   const rewardsQuery = useQuery({
     queryKey: getGetRewardsQueryKey(),
-    queryFn: async () => (pickData<RewardRow[]>(await getRewards()) ?? []) as RewardRow[],
+    queryFn: async () => getRewards(),
   })
-  // Legacy /vouchers: phân trang currentPage/pageSize, responseData = { count, rows, ... }
+  const rawRewards = (pickData<RewardRow[]>(rewardsQuery.data) ?? []) as RewardRow[]
+  const rewards = rawRewards.filter((r) => r.is_active !== false || canUpdate)
+
   const vouchersQuery = useQuery({
-    queryKey: ['vouchers', 'rewards-page'],
+    queryKey: ['vouchers', 'catalog'],
     queryFn: async () => pickData<{ rows?: Voucher[] }>(await getVouchers({ currentPage: 1, pageSize: 100 })),
   })
-  const rewards = rewardsQuery.data ?? []
   const vouchers = vouchersQuery.data?.rows ?? []
 
   const createMutation = useMutation({
-    mutationFn: async (dto: Record<string, unknown>) => postRewards(dto as unknown as Reward),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: getGetRewardsQueryKey() })
-    },
+    mutationFn: async (dto: Partial<Reward>) => postRewards(dto as never),
   })
   const updateMutation = useMutation({
-    mutationFn: async ({ id, dto }: { id: string; dto: Record<string, unknown> }) => putRewardsId(id, dto as unknown as Reward),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: getGetRewardsQueryKey() })
-    },
+    mutationFn: async ({ id, dto }: { id: string; dto: Partial<Reward> }) => putRewardsId(id, dto as never),
   })
-  const hideMutation = useMutation({
+  const deleteMutation = useMutation({
     mutationFn: async (id: string) => deleteRewardsId(id),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: getGetRewardsQueryKey() })
-    },
+  })
+  const redeemMutation = useMutation({
+    mutationFn: async ({ profileId, rewardId }: { profileId: string; rewardId: string }) =>
+      postCustomerProfilesIdRedeemReward(profileId, { reward_id: rewardId } as PostCustomerProfilesIdRedeemRewardBody),
   })
 
   const openEditor = (row?: RewardRow) => {
     setEditing(row ?? null)
-    form.setFieldsValue(row ? {
-      ...row,
-      valid_from: row.valid_from ? dayjs(row.valid_from) : undefined,
-      valid_to: row.valid_to ? dayjs(row.valid_to) : undefined,
-      quantity_total: row.quantity_total ?? undefined,
-      benefit_amount: row.benefit_amount ?? undefined,
-      service_id: row.service_id ?? undefined,
-    } : { name: '', type: 'GIFT', points_cost: 100, quantity_total: undefined, benefit_amount: undefined, service_id: undefined, is_active: true })
+    form.resetFields()
+    if (row) {
+      form.setFieldsValue({
+        name: row.name,
+        type: row.type,
+        points_cost: row.points_cost,
+        quantity_total: row.quantity_total ?? undefined,
+        voucher_id: row.voucher_id ?? undefined,
+        benefit_amount: row.benefit_amount ?? undefined,
+        service_id: row.service_id ?? undefined,
+        valid_from: row.valid_from ? dayjs(String(row.valid_from)) : undefined,
+        valid_to: row.valid_to ? dayjs(String(row.valid_to)) : undefined,
+        description: row.description ?? undefined,
+        is_active: row.is_active !== false,
+      })
+    } else {
+      form.setFieldsValue({
+        type: 'VOUCHER',
+        points_cost: 100,
+        is_active: true,
+      })
+    }
     setOpen(true)
+  }
+
+  const openRedeem = async (row: RewardRow) => {
+    setRedeemTarget(row)
+    redeemForm.resetFields()
+    if (customers.length === 0) {
+      try {
+        const response = await getCustomerProfiles({ page: 1, limit: 200 })
+        const payload = pickData<{ items?: CustomerProfile[] } | CustomerProfile[]>(response)
+        const list = Array.isArray(payload) ? payload : payload?.items ?? []
+        setCustomers(list)
+      } catch (err) {
+        message.error(errorMessage(err))
+      }
+    }
   }
 
   const submit = async () => {
@@ -152,21 +166,26 @@ function RewardCatalogTab({ onChanged }: { onChanged: () => void }) {
       const dto = {
         name: values.name,
         type: values.type,
-        voucher_id: values.type === 'VOUCHER' ? values.voucher_id : null,
         points_cost: values.points_cost,
-        benefit_amount: values.type === 'BENEFIT' && values.benefit_amount != null ? values.benefit_amount : null,
-        service_id: values.type === 'BENEFIT' && values.benefit_amount != null ? values.service_id : null,
         quantity_total: values.quantity_total ?? null,
+        voucher_id: values.type === 'VOUCHER' ? values.voucher_id : null,
+        benefit_amount: values.type === 'BENEFIT' ? (values.benefit_amount ?? null) : null,
+        service_id: values.type === 'BENEFIT' ? (values.service_id ?? null) : null,
         valid_from: values.valid_from ? values.valid_from.format('YYYY-MM-DD') : null,
         valid_to: values.valid_to ? values.valid_to.format('YYYY-MM-DD') : null,
         description: values.description || null,
-        is_active: values.is_active,
+        is_active: values.is_active !== false,
       }
-      if (editing) await updateMutation.mutateAsync({ id: editing.id, dto })
-      else await createMutation.mutateAsync(dto)
+      if (editing) {
+        await updateMutation.mutateAsync({ id: editing.id, dto })
+        message.success('Đã cập nhật quà')
+      } else {
+        await createMutation.mutateAsync(dto)
+        message.success('Đã thêm quà')
+      }
       setOpen(false)
-      message.success(editing ? 'Đã cập nhật quà' : 'Đã tạo quà')
       onChanged()
+      await queryClient.invalidateQueries({ queryKey: getGetRewardsQueryKey() })
     } catch (err) {
       if ((err as { errorFields?: unknown })?.errorFields) return
       message.error(errorMessage(err))
@@ -175,28 +194,14 @@ function RewardCatalogTab({ onChanged }: { onChanged: () => void }) {
 
   const hide = async (row: RewardRow) => {
     try {
-      await hideMutation.mutateAsync(row.id)
-      message.success('Đã ẩn quà; lượt đổi cũ vẫn giữ nguyên')
+      await deleteMutation.mutateAsync(row.id)
+      message.success('Đã ẩn quà')
       onChanged()
+      await queryClient.invalidateQueries({ queryKey: getGetRewardsQueryKey() })
     } catch (err) {
       message.error(errorMessage(err))
     }
   }
-
-  const openRedeem = async (row: RewardRow) => {
-    setRedeemTarget(row)
-    redeemForm.resetFields()
-    try {
-      setCustomers((pickData<CustomerProfile[]>(await getCustomerProfiles({ page: 1, limit: 50 })) ?? []) as CustomerProfile[])
-    } catch {
-      setCustomers([])
-    }
-  }
-
-  const redeemMutation = useMutation({
-    mutationFn: async ({ profileId, rewardId }: { profileId: string; rewardId: string }) =>
-      postCustomerProfilesIdRedeemReward(profileId, { reward_id: rewardId } as PostCustomerProfilesIdRedeemRewardBody),
-  })
 
   const submitRedeem = async () => {
     if (!redeemTarget) return
@@ -212,8 +217,6 @@ function RewardCatalogTab({ onChanged }: { onChanged: () => void }) {
       message.error(errorMessage(err))
     }
   }
-
-  const selectedType = Form.useWatch('type', form) as RewardType | undefined
 
   const columns: TableColumnsType<RewardRow> = [
     {
@@ -291,122 +294,29 @@ function RewardCatalogTab({ onChanged }: { onChanged: () => void }) {
       />
       <ListPagination page={page} limit={10} total={rewards.length} onChange={setPage} noun="quà" />
 
-      <Modal
-        title={editing ? 'Sửa quà' : 'Thêm quà'}
+      <RewardModal
         open={open}
+        editing={editing}
         onCancel={() => setOpen(false)}
-        onOk={() => void submit()}
+        onSubmit={() => void submit()}
         confirmLoading={createMutation.isPending || updateMutation.isPending}
-        okText="Lưu"
-        cancelText="Hủy"
-      >
-        <Form form={form} layout="vertical" style={{ marginTop: 12 }}>
-          <Form.Item name="name" label="Tên quà" rules={[{ required: true, message: 'Nhập tên quà' }]}>
-            <Input maxLength={255} placeholder="VD: Nước tẩy trang Kahanna" />
-          </Form.Item>
-          <Space style={{ display: 'flex' }} align="start">
-            <Form.Item name="type" label="Loại" rules={[{ required: true }]} style={{ flex: 1 }}>
-              <Select options={Object.entries(TYPE_META).map(([value, meta]) => ({ value, label: meta.label }))} />
-            </Form.Item>
-            {selectedType === 'VOUCHER' && (
-              <Form.Item name="voucher_id" label="Voucher cấp" rules={[{ required: true, message: 'Chọn voucher sẽ cấp' }]} style={{ flex: 1 }}>
-                <Select
-                  showSearch optionFilterProp="label"
-                  options={vouchers.filter((v) => v.is_active !== false).map((v) => ({ value: v.id, label: v.title }))}
-                />
-              </Form.Item>
-            )}
-          </Space>
-          <Space style={{ display: 'flex' }} align="start">
-            <Form.Item name="points_cost" label="Điểm đổi" rules={[{ required: true }, { type: 'number', min: 1, message: 'Tối thiểu 1 điểm' }]} style={{ flex: 1 }}>
-              <InputNumber min={1} precision={0} style={{ width: '100%' }} />
-            </Form.Item>
-            <Form.Item name="quantity_total" label="Số lượng (trống = không giới hạn)" rules={[{ type: 'number', min: 0 }]} style={{ flex: 1 }}>
-              <InputNumber min={0} precision={0} style={{ width: '100%' }} placeholder="Không giới hạn" />
-            </Form.Item>
-          </Space>
-          {selectedType === 'BENEFIT' && (
-            <Space style={{ display: 'flex' }} align="start">
-              <Form.Item
-                name="benefit_amount"
-                label="Mức giảm cố định"
-                extra="Để trống nếu quyền lợi không giảm tiền."
-                rules={[{ type: 'number', min: 1, message: 'Mức giảm phải lớn hơn 0' }]}
-                style={{ flex: 1 }}
-              >
-                <InputNumber min={1} precision={0} style={{ width: '100%' }} suffix="đ" />
-              </Form.Item>
-              <Form.Item
-                name="service_id"
-                label="Dịch vụ áp dụng"
-                dependencies={['benefit_amount']}
-                rules={[({ getFieldValue }) => ({
-                  validator: async (_rule, value) => getFieldValue('benefit_amount') != null && !value
-                    ? Promise.reject(new Error('Chọn dịch vụ áp dụng cho mức giảm'))
-                    : Promise.resolve(),
-                })]}
-                style={{ flex: 1 }}
-              >
-                <Select
-                  showSearch
-                  optionFilterProp="label"
-                  loading={servicesQuery.isLoading}
-                  placeholder="Chọn dịch vụ"
-                  options={services.filter((service) => service.is_active !== false).map((service) => ({ value: service.id, label: service.title }))}
-                />
-              </Form.Item>
-            </Space>
-          )}
-          <Space style={{ display: 'flex' }} align="start">
-            <Form.Item name="valid_from" label="Bắt đầu" style={{ flex: 1 }}>
-              <DatePicker style={{ width: '100%' }} format="DD/MM/YYYY" />
-            </Form.Item>
-            <Form.Item name="valid_to" label="Kết thúc" style={{ flex: 1 }}>
-              <DatePicker style={{ width: '100%' }} format="DD/MM/YYYY" />
-            </Form.Item>
-          </Space>
-          <Form.Item name="description" label="Mô tả"><Input.TextArea rows={2} maxLength={1000} /></Form.Item>
-          <Form.Item name="is_active" label="Đang đổi" valuePropName="checked"><Switch /></Form.Item>
-        </Form>
-      </Modal>
+        form={form}
+        vouchers={vouchers}
+        services={services}
+        servicesQueryLoading={servicesQuery.isLoading}
+      />
 
-      <Modal
-        title={`Đổi hộ khách: ${redeemTarget?.name ?? ''}`}
-        open={!!redeemTarget}
+      <RedeemModal
+        redeemTarget={redeemTarget}
         onCancel={() => setRedeemTarget(null)}
-        onOk={() => void submitRedeem()}
+        onSubmit={() => void submitRedeem()}
         confirmLoading={redeemMutation.isPending}
-        okText="Đổi quà"
-        cancelText="Đóng"
-      >
-        <Typography.Paragraph type="secondary">
-          Sẽ trừ <strong>{redeemTarget?.points_cost.toLocaleString('vi-VN')} điểm</strong> của khách và tạo lượt đổi Chưa dùng.
-        </Typography.Paragraph>
-        <Form form={redeemForm} layout="vertical">
-          <Form.Item name="customer_profile_id" label="Khách hàng" rules={[{ required: true, message: 'Chọn khách' }]}>
-            <Select
-              showSearch optionFilterProp="label"
-              placeholder="Tìm theo tên hoặc SĐT"
-              options={customers.map((c) => ({ value: c.id, label: `${c.full_name} — ${c.phone}` }))}
-            />
-          </Form.Item>
-        </Form>
-      </Modal>
+        form={redeemForm}
+        customers={customers}
+      />
     </>
   )
 }
-
-type RedemptionColumnKey = 'reward' | 'points_spent' | 'status' | 'created_at' | 'cancel_reason'
-
-const REDEMPTION_COLUMN_OPTIONS: { label: string; value: RedemptionColumnKey }[] = [
-  { label: 'Quà', value: 'reward' },
-  { label: 'Điểm đã trừ', value: 'points_spent' },
-  { label: 'Trạng thái', value: 'status' },
-  { label: 'Ngày đổi', value: 'created_at' },
-  { label: 'Lý do hủy', value: 'cancel_reason' },
-]
-
-const DEFAULT_REDEMPTION_COLUMNS = REDEMPTION_COLUMN_OPTIONS.map((column) => column.value)
 
 function RedemptionsTab({ onChanged }: { onChanged: () => void }) {
   const { formatDateTime } = useBrandDateTime()
@@ -575,25 +485,14 @@ function RedemptionsTab({ onChanged }: { onChanged: () => void }) {
         pagination={false}
       />
       <ListPagination page={page} limit={10} total={total} onChange={setPage} noun="lượt đổi quà" />
-      <Modal
-        title={`Hủy lượt đổi: ${cancelTarget?.reward?.name ?? ''}`}
-        open={!!cancelTarget}
+
+      <CancelRedemptionModal
+        cancelTarget={cancelTarget}
         onCancel={() => setCancelTarget(null)}
-        onOk={() => void submitCancel()}
+        onSubmit={() => void submitCancel()}
         confirmLoading={cancelMutation.isPending}
-        okText="Hủy lượt đổi"
-        okButtonProps={{ danger: true }}
-        cancelText="Đóng"
-      >
-        <Typography.Paragraph type="secondary">
-          Sẽ hoàn <strong>{Number(cancelTarget?.points_spent ?? 0).toLocaleString('vi-VN')} điểm</strong> và trả lại số lượng quà. Chỉ hủy được lượt chưa sử dụng.
-        </Typography.Paragraph>
-        <Form form={cancelForm} layout="vertical">
-          <Form.Item name="reason" label="Lý do hủy" rules={[{ required: true, message: 'Nhập lý do hủy' }]}>
-            <Input.TextArea rows={2} />
-          </Form.Item>
-        </Form>
-      </Modal>
+        form={cancelForm}
+      />
     </>
   )
 }

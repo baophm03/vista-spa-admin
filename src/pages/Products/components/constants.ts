@@ -21,3 +21,4 @@ export const PRODUCT_COLUMNS = [
 ]
 
 export const DEFAULT_PRODUCT_COLUMNS = PRODUCT_COLUMNS.map((column) => column.value)
+

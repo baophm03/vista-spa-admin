@@ -26,3 +26,4 @@ export default function LookupItemsModal({ viewingList, onCancel }: LookupItemsM
     </Modal>
   )
 }
+

@@ -34,3 +34,4 @@ export interface LedgerRow extends PaymentLog {
     customer_profile?: { full_name?: string; phone?: string }
   } | null
 }
+

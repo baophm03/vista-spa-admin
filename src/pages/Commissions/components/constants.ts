@@ -4,6 +4,6 @@ export type PayeeType = NonNullable<CommissionEntryPayeeType>
 
 export const PAYEE_LABEL: Record<PayeeType, string> = {
   STAFF: 'KTV',
-  COLLABORATOR: 'Cá»™ng tÃ¡c viÃªn',
-  CUSTOMER_REFERRER: 'KhÃ¡ch giá»›i thiá»‡u',
+  COLLABORATOR: 'Cộng tác viên',
+  CUSTOMER_REFERRER: 'Khách giới thiệu',
 }
