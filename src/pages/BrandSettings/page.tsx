@@ -198,89 +198,88 @@ export default function BrandSettings() {
     await saveMutation.mutateAsync(values)
   }
 
-  // canEdit đọc từ CASL ability một cách reactive qua children-as-function của <Can>
   return (
     <Can I="UPDATE" a="SETTING" passThrough>
       {({ isAllowed: canEdit }) => (
-    <>
-      <PageTitle subtitle="Thông tin thương hiệu, giao diện và khu vực" extra={canEdit ? <Button type="primary" icon={<SaveOutlined />} loading={saveMutation.isPending} onClick={() => form.submit()}>Lưu cấu hình</Button> : undefined}>
-        Thương hiệu và khu vực
-      </PageTitle>
-      {!canEdit && <Alert className="mb-4" type="info" showIcon message="Bạn có quyền xem cấu hình thương hiệu; chỉ ADM được chỉnh sửa." />}
-      {settingsQuery.isError && <Alert className="mb-4" type="error" showIcon message="Không tải được cấu hình thương hiệu" description={errorMessage(settingsQuery.error)} action={<Button size="small" onClick={() => void settingsQuery.refetch()}>Thử lại</Button>} />}
-      <Spin spinning={settingsQuery.isLoading}>
-        {!canEdit ? <ReadOnlyBrandSettings settings={settingsQuery.data} runtime={runtime} /> : (
-        <Form form={form} layout="vertical" onFinish={save} disabled={!canEdit}>
-          <Row gutter={[20, 20]}>
-            <Col xs={24} lg={14}>
-              <Card title="Nhận diện thương hiệu">
-                <Form.Item name={['brand', 'name']} label="Tên thương hiệu" rules={[{ required: true, whitespace: true, message: 'Nhập tên thương hiệu' }, { max: 150, message: 'Tên tối đa 150 ký tự' }]}>
-                  <Input placeholder="NewSky Vista" maxLength={150} />
-                </Form.Item>
-                <Form.Item label="Logo">
-                  <Space align="start" size={16} wrap>
-                    <Space direction="vertical" align="center" size={4}>
-                      <Avatar shape="square" size={76} src={logoPreview || undefined} className="border border-[var(--brand-border)] bg-[var(--brand-tint)]! text-[var(--brand-dark)]!">
-                        {form.getFieldValue(['brand', 'name'])?.slice(0, 1) || 'V'}
-                      </Avatar>
-                      {logoPreview && <Button type="link" danger size="small" className="p-0!" onClick={removeLogo} disabled={!canEdit}>Gỡ logo</Button>}
-                    </Space>
-                    <Space direction="vertical">
-                      <Upload accept="image/*" showUploadList={false} beforeUpload={(file) => { void uploadLogo(file); return false }}>
-                        <Button icon={<UploadOutlined />} loading={uploading} disabled={!canEdit}>Tải logo lên</Button>
-                      </Upload>
-                      <Typography.Text type="secondary">Ảnh tối đa 5 MB. Chọn ảnh xong cần lưu cấu hình.</Typography.Text>
-                    </Space>
-                  </Space>
-                </Form.Item>
-                <Form.Item label="Màu chủ đạo">
-                  <ColorPicker value={primaryColor} onChange={(color) => setPrimaryColor(color.toHexString())} showText disabled={!canEdit} />
-                </Form.Item>
-                <Form.Item label="Màu bổ trợ" extra="Filter chips, nút phụ, badge">
-                  <ColorPicker value={secondaryColor} onChange={(color) => setSecondaryColor(color.toHexString())} showText disabled={!canEdit} />
-                </Form.Item>
-                <Form.Item label="Màu nhấn" extra="Điểm nhấn, huy hiệu khuyến mãi, thẻ thông tin đặc biệt">
-                  <ColorPicker value={tertiaryColor} onChange={(color) => setTertiaryColor(color.toHexString())} showText disabled={!canEdit} />
-                </Form.Item>
-                <Form.Item label="Màu nền trang" extra="Bỏ trống để tự suy từ màu chủ đạo">
-                  <Space>
-                    <ColorPicker
-                      value={backgroundColor || undefined}
-                      onChange={(color) => setBackgroundColor(color.toHexString())}
-                      allowClear
-                      onClear={() => setBackgroundColor('')}
-                      showText
-                      disabled={!canEdit}
-                    />
-                    {!backgroundColor && <Typography.Text type="secondary">Tự động</Typography.Text>}
-                  </Space>
-                </Form.Item>
-              </Card>
-            </Col>
-            <Col xs={24} lg={10}>
-              <Card title="Khu vực và định dạng">
-                <Form.Item name={['locale', 'timezone']} label="Múi giờ" rules={[{ required: true, message: 'Chọn múi giờ' }]}>
-                  <Select showSearch optionFilterProp="label" options={timezoneOptions.map((value) => ({ value, label: value }))} />
-                </Form.Item>
-                <Form.Item name={['locale', 'currency']} label="Tiền tệ" rules={[{ required: true, message: 'Chọn tiền tệ' }]}>
-                  <Select showSearch optionFilterProp="label" options={currencyOptions.map((value) => ({ value, label: value }))} />
-                </Form.Item>
-                <Form.Item name={['locale', 'language']} label="Ngôn ngữ mặc định" rules={[{ required: true }]}>
-                  <Select options={[{ value: 'vi', label: 'Tiếng Việt' }]} />
-                </Form.Item>
-                <Typography.Text type="secondary">Admin hiện hỗ trợ giao diện tiếng Việt. Múi giờ và tiền tệ được áp dụng lên các màn hình sau khi lưu.</Typography.Text>
-              </Card>
-              {!!settingsQuery.data?.modules?.length && (
-                <Card style={{ marginTop: 16 }} title="Mô-đun đang bật">
-                  <Space wrap size={24}>{settingsQuery.data.modules.filter((module) => module.enabled).map((module) => <Tag key={module.key} color="blue">{MODULE_LABELS[module.key] ?? module.key.replace(/^module\./, '').replaceAll('_', ' ')}</Tag>)}</Space>
-                </Card>
-              )}
-            </Col>
-          </Row>
-        </Form>
-        )}
-      </Spin>
-    </>
+        <>
+          <PageTitle subtitle="Thông tin thương hiệu, giao diện và khu vực" extra={canEdit ? <Button type="primary" icon={<SaveOutlined />} loading={saveMutation.isPending} onClick={() => form.submit()}>Lưu cấu hình</Button> : undefined}>
+            Thương hiệu và khu vực
+          </PageTitle>
+          {!canEdit && <Alert className="mb-4" type="info" showIcon message="Bạn có quyền xem cấu hình thương hiệu; chỉ ADM được chỉnh sửa." />}
+          {settingsQuery.isError && <Alert className="mb-4" type="error" showIcon message="Không tải được cấu hình thương hiệu" description={errorMessage(settingsQuery.error)} action={<Button size="small" onClick={() => void settingsQuery.refetch()}>Thử lại</Button>} />}
+          <Spin spinning={settingsQuery.isLoading}>
+            {!canEdit ? <ReadOnlyBrandSettings settings={settingsQuery.data} runtime={runtime} /> : (
+              <Form form={form} layout="vertical" onFinish={save} disabled={!canEdit}>
+                <Row gutter={[20, 20]}>
+                  <Col xs={24} lg={14}>
+                    <Card title="Nhận diện thương hiệu">
+                      <Form.Item name={['brand', 'name']} label="Tên thương hiệu" rules={[{ required: true, whitespace: true, message: 'Nhập tên thương hiệu' }, { max: 150, message: 'Tên tối đa 150 ký tự' }]}>
+                        <Input placeholder="NewSky Vista" maxLength={150} />
+                      </Form.Item>
+                      <Form.Item label="Logo">
+                        <Space align="start" size={16} wrap>
+                          <Space direction="vertical" align="center" size={4}>
+                            <Avatar shape="square" size={76} src={logoPreview || undefined} className="border border-[var(--brand-border)] bg-[var(--brand-tint)]! text-[var(--brand-dark)]!">
+                              {form.getFieldValue(['brand', 'name'])?.slice(0, 1) || 'V'}
+                            </Avatar>
+                            {logoPreview && <Button type="link" danger size="small" className="p-0!" onClick={removeLogo} disabled={!canEdit}>Gỡ logo</Button>}
+                          </Space>
+                          <Space direction="vertical">
+                            <Upload accept="image/*" showUploadList={false} beforeUpload={(file) => { void uploadLogo(file); return false }}>
+                              <Button icon={<UploadOutlined />} loading={uploading} disabled={!canEdit}>Tải logo lên</Button>
+                            </Upload>
+                            <Typography.Text type="secondary">Ảnh tối đa 5 MB. Chọn ảnh xong cần lưu cấu hình.</Typography.Text>
+                          </Space>
+                        </Space>
+                      </Form.Item>
+                      <Form.Item label="Màu chủ đạo">
+                        <ColorPicker value={primaryColor} onChange={(color) => setPrimaryColor(color.toHexString())} showText disabled={!canEdit} />
+                      </Form.Item>
+                      <Form.Item label="Màu bổ trợ" extra="Filter chips, nút phụ, badge">
+                        <ColorPicker value={secondaryColor} onChange={(color) => setSecondaryColor(color.toHexString())} showText disabled={!canEdit} />
+                      </Form.Item>
+                      <Form.Item label="Màu nhấn" extra="Điểm nhấn, huy hiệu khuyến mãi, thẻ thông tin đặc biệt">
+                        <ColorPicker value={tertiaryColor} onChange={(color) => setTertiaryColor(color.toHexString())} showText disabled={!canEdit} />
+                      </Form.Item>
+                      <Form.Item label="Màu nền trang" extra="Bỏ trống để tự suy từ màu chủ đạo">
+                        <Space>
+                          <ColorPicker
+                            value={backgroundColor || undefined}
+                            onChange={(color) => setBackgroundColor(color.toHexString())}
+                            allowClear
+                            onClear={() => setBackgroundColor('')}
+                            showText
+                            disabled={!canEdit}
+                          />
+                          {!backgroundColor && <Typography.Text type="secondary">Tự động</Typography.Text>}
+                        </Space>
+                      </Form.Item>
+                    </Card>
+                  </Col>
+                  <Col xs={24} lg={10}>
+                    <Card title="Khu vực và định dạng">
+                      <Form.Item name={['locale', 'timezone']} label="Múi giờ" rules={[{ required: true, message: 'Chọn múi giờ' }]}>
+                        <Select showSearch optionFilterProp="label" options={timezoneOptions.map((value) => ({ value, label: value }))} />
+                      </Form.Item>
+                      <Form.Item name={['locale', 'currency']} label="Tiền tệ" rules={[{ required: true, message: 'Chọn tiền tệ' }]}>
+                        <Select showSearch optionFilterProp="label" options={currencyOptions.map((value) => ({ value, label: value }))} />
+                      </Form.Item>
+                      <Form.Item name={['locale', 'language']} label="Ngôn ngữ mặc định" rules={[{ required: true }]}>
+                        <Select options={[{ value: 'vi', label: 'Tiếng Việt' }]} />
+                      </Form.Item>
+                      <Typography.Text type="secondary">Admin hiện hỗ trợ giao diện tiếng Việt. Múi giờ và tiền tệ được áp dụng lên các màn hình sau khi lưu.</Typography.Text>
+                    </Card>
+                    {!!settingsQuery.data?.modules?.length && (
+                      <Card style={{ marginTop: 16 }} title="Mô-đun đang bật">
+                        <Space wrap size={24}>{settingsQuery.data.modules.filter((module) => module.enabled).map((module) => <Tag key={module.key} color="blue">{MODULE_LABELS[module.key] ?? module.key.replace(/^module\./, '').replaceAll('_', ' ')}</Tag>)}</Space>
+                      </Card>
+                    )}
+                  </Col>
+                </Row>
+              </Form>
+            )}
+          </Spin>
+        </>
       )}
     </Can>
   )

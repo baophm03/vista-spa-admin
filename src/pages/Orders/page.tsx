@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Button, Descriptions, Form, Input, Modal, Popconfirm, Select, Space, Table, Tag, Typography, message } from 'antd'
+import { Button, Form, Input, Modal, Select, Space, Table, Tag, Typography, message } from 'antd'
 import type { TableColumnsType } from 'antd'
 import { CheckOutlined, ReloadOutlined, SearchOutlined, StopOutlined } from '@ant-design/icons'
 import { useQuery } from '@tanstack/react-query'
@@ -11,13 +11,13 @@ import { errorMessage, pickData, pickMeta } from '@/api/helpers'
 import { formatCurrency, formatDateTime, useBrandCurrency } from '@/themeRuntime'
 import { useCustomerProfileAccess } from '@/utils/customerProfileAccess'
 import { getProductOrders, getGetProductOrdersQueryKey, putProductOrdersId } from '@/api/endpoints/products'
-import type { ProductOrder } from '@/api/models/productOrder'
-import type { ProductOrderItem } from '@/api/models/productOrderItem'
-
-type ProductOrderStatus = 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED'
-
-/** BE include kèm `items` khi list. */
-type ProductOrderRow = ProductOrder & { items?: ProductOrderItem[] }
+import OrderDetailModal from './components/OrderDetailModal'
+import {
+  NEXT_ACTIONS,
+  STATUS_META,
+  type ProductOrderRow,
+  type ProductOrderStatus,
+} from './components/constants'
 
 type OrderColumnKey = 'code' | 'customer' | 'items' | 'total_amount' | 'status' | 'created_at'
 
@@ -31,26 +31,6 @@ const ORDER_COLUMN_OPTIONS: { label: string; value: OrderColumnKey }[] = [
 ]
 
 const DEFAULT_VISIBLE_COLUMNS = ORDER_COLUMN_OPTIONS.map((column) => column.value)
-
-const STATUS_META: Record<ProductOrderStatus, { label: string; color: string }> = {
-  PENDING: { label: 'Chờ xử lý', color: 'orange' },
-  CONFIRMED: { label: 'Đã xác nhận', color: 'blue' },
-  COMPLETED: { label: 'Hoàn thành', color: 'green' },
-  CANCELLED: { label: 'Đã hủy', color: 'default' },
-}
-
-const NEXT_ACTIONS: Record<ProductOrderStatus, { status: ProductOrderStatus; label: string; danger?: boolean }[]> = {
-  PENDING: [
-    { status: 'CONFIRMED', label: 'Xác nhận' },
-    { status: 'CANCELLED', label: 'Hủy đơn', danger: true },
-  ],
-  CONFIRMED: [
-    { status: 'COMPLETED', label: 'Hoàn thành' },
-    { status: 'CANCELLED', label: 'Hủy đơn', danger: true },
-  ],
-  COMPLETED: [],
-  CANCELLED: [],
-}
 
 export default function Orders() {
   const { currency } = useBrandCurrency()
@@ -180,11 +160,11 @@ export default function Orders() {
             items={[
               ...(isAdmin
                 ? nextActions.map((action) => ({
-                    key: action.status,
-                    icon: action.danger ? <StopOutlined /> : <CheckOutlined />,
-                    label: action.label,
-                    danger: action.danger,
-                  }))
+                  key: action.status,
+                  icon: action.danger ? <StopOutlined /> : <CheckOutlined />,
+                  label: action.label,
+                  danger: action.danger,
+                }))
                 : []),
             ]}
             onSelect={(key) => {
@@ -209,14 +189,6 @@ export default function Orders() {
     },
   ]
 
-  const itemColumns: TableColumnsType<ProductOrderItem> = [
-    { title: 'Tên', dataIndex: 'product_name' },
-    { title: 'Đơn giá', dataIndex: 'price', width: 120, render: (v?: number | null) => formatMoney(v) },
-    { title: 'SL', dataIndex: 'qty', width: 60 },
-    { title: 'Thành tiền', dataIndex: 'subtotal', width: 130, render: (v?: number | null) => formatMoney(v) },
-  ]
-
-  const detailStatus = (detail?.status as ProductOrderStatus) ?? 'PENDING'
   const activeFilterCount = (statusFilter ? 1 : 0) + (search ? 1 : 0)
 
   return (
@@ -277,55 +249,13 @@ export default function Orders() {
       />
       <ListPagination page={page} limit={limit} total={total} onChange={setPage} noun="đơn hàng" />
 
-      <Modal
-        title={`Đơn hàng ${detail?.code ?? ''}`}
-        open={!!detail}
-        footer={null}
-        onCancel={() => setDetail(null)}
-        width={640}
-      >
-        {detail && (
-          <>
-            <Descriptions size="small" column={2} style={{ marginTop: 12 }}>
-              <Descriptions.Item label="Trạng thái">
-                <Tag color={STATUS_META[detailStatus]?.color}>{STATUS_META[detailStatus]?.label}</Tag>
-              </Descriptions.Item>
-              <Descriptions.Item label="Ngày đặt">{detail.created_at ? formatDateTime(detail.created_at) : '—'}</Descriptions.Item>
-              <Descriptions.Item label="Khách hàng">{detail.customer_name}</Descriptions.Item>
-              <Descriptions.Item label="SĐT">{detail.phone}</Descriptions.Item>
-              <Descriptions.Item label="Địa chỉ" span={2}>{detail.address || '—'}</Descriptions.Item>
-              <Descriptions.Item label="Ghi chú" span={2}>{detail.note || '—'}</Descriptions.Item>
-            </Descriptions>
-            <Typography.Title level={5} style={{ marginTop: 16 }}>Sản phẩm</Typography.Title>
-            <Table<ProductOrderItem>
-              rowKey="id"
-              size="small"
-              pagination={false}
-              dataSource={detail.items ?? []}
-              columns={itemColumns}
-              summary={() => (
-                <Table.Summary.Row>
-                  <Table.Summary.Cell index={0} colSpan={3}><strong>Tổng cộng</strong></Table.Summary.Cell>
-                  <Table.Summary.Cell index={1}><strong>{formatMoney(detail.total_amount)}</strong></Table.Summary.Cell>
-                </Table.Summary.Row>
-              )}
-            />
-            <Space style={{ marginTop: 16 }}>
-              {(isAdmin ? NEXT_ACTIONS[detailStatus] ?? [] : []).map((action) => (
-                <Popconfirm
-                  key={action.status}
-                  title={`${action.label} đơn ${detail.code}?`}
-                  okText={action.label}
-                  cancelText="Đóng"
-                  onConfirm={() => void changeStatus(detail, action.status)}
-                >
-                  <Button danger={action.danger} type={action.danger ? 'default' : 'primary'}>{action.label}</Button>
-                </Popconfirm>
-              ))}
-            </Space>
-          </>
-        )}
-      </Modal>
+      <OrderDetailModal
+        detail={detail}
+        onClose={() => setDetail(null)}
+        isAdmin={isAdmin}
+        onChangeStatus={changeStatus}
+        formatMoney={formatMoney}
+      />
     </>
   )
 }

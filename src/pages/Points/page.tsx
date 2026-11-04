@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
-import { Button, Col, Form, Input, InputNumber, Modal, Row, Select, Space, Table, Tag, Typography, message } from 'antd'
-import { ClockCircleOutlined, CrownOutlined, EditOutlined, EyeOutlined, HeartOutlined, ReloadOutlined, SearchOutlined, StarOutlined, SyncOutlined, ThunderboltOutlined, TrophyOutlined } from '@ant-design/icons'
+import { Button, Col, Form, Input, Modal, Row, Select, Space, Table, Tag, Typography, message } from 'antd'
+import { ClockCircleOutlined, CrownOutlined, EditOutlined, EyeOutlined, ReloadOutlined, SearchOutlined, SyncOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { useBrandCurrency } from '@/themeRuntime'
 import PageTitle from '../../components/base/PageTitle'
@@ -20,118 +20,21 @@ import { useGetCustomerProfilesIdPoints } from '../../api/endpoints/customer-pro
 import type { MembershipTransaction } from '../../api/models'
 import { useGetCustomerProfiles } from '../../api/endpoints/customer-profiles'
 import { useAbility } from '@casl/react'
-
-interface RankRow {
-  id: string
-  code: string
-  name: string
-  sort_order: number
-  min_spent?: number
-  max_spent?: number
-  validity?: string
-  benefits?: string
-  color?: string | null
-  is_active?: boolean
-}
-
-interface MemberRow {
-  id: string
-  full_name?: string
-  phone?: string
-  user_id?: string | null
-  user?: { zalo_name?: string | null; phone_number?: string | null } | null
-  membership?: {
-    id?: string
-    lifetime_points?: number
-    year_spent?: number
-    card_rank_id?: string
-    card_rank?: { name?: string }
-  } | null
-}
-
-interface ProfileLite {
-  id: string
-  user_id?: string | null
-  full_name?: string
-  phone?: string
-}
-
-type PointColumnKey = 'customer' | 'rank' | 'points' | 'year_spent'
-
-const POINT_COLUMN_OPTIONS: { label: string; value: PointColumnKey }[] = [
-  { label: 'Khách hàng', value: 'customer' },
-  { label: 'Hạng', value: 'rank' },
-  { label: 'Điểm', value: 'points' },
-  { label: 'Chi tiêu năm', value: 'year_spent' },
-]
-
-const DEFAULT_VISIBLE_COLUMNS = POINT_COLUMN_OPTIONS.map((column) => column.value)
-
-const REF_TYPE_LABELS: Record<string, string> = {
-  PAYMENT: 'Thanh toán',
-  MANUAL: 'Điều chỉnh tay',
-  RANK: 'Hạng',
-  REWARD: 'Đổi quà',
-  REWARD_CANCEL: 'Hủy đổi quà',
-  REDEEM: 'Trừ vào gói',
-  WHEEL: 'Vòng quay',
-}
-
-/** Theme hiển thị của thẻ hạng: ưu tiên màu admin chọn ở /card-ranks (rank.color),
- *  thiếu thì xoay vòng palette mặc định theo thứ tự hạng. */
-interface RankCardTheme {
-  pillBg: string
-  pillColor: string
-  pillBorder: string
-  cardBorder: string
-  cardBg: string
-  circle: string
-  ink: string
-  icon: typeof CrownOutlined
-}
-
-const RANK_THEMES: RankCardTheme[] = [
-  { pillBg: '#FBF3DE', pillColor: '#8A6A1F', pillBorder: '#EBD9A8', cardBorder: '#EFE7D2', cardBg: 'linear-gradient(135deg, #FCF8EE 0%, #FEFEFC 62%)', circle: 'rgba(213, 178, 94, 0.18)', ink: '#8A6A1F', icon: CrownOutlined },
-  { pillBg: '#E8F2FE', pillColor: '#1E6FD0', pillBorder: '#C4DCFA', cardBorder: '#E3EDF7', cardBg: 'linear-gradient(135deg, #F3F8FE 0%, #FEFEFC 62%)', circle: 'rgba(96, 155, 222, 0.14)', ink: '#1E6FD0', icon: StarOutlined },
-  { pillBg: '#FDF1DE', pillColor: '#C07A10', pillBorder: '#F0D9AC', cardBorder: '#F2EADA', cardBg: 'linear-gradient(135deg, #FCF6EA 0%, #FEFEFC 62%)', circle: 'rgba(224, 150, 60, 0.14)', ink: '#C07A10', icon: ThunderboltOutlined },
-  { pillBg: '#E7F3FE', pillColor: '#2B77C9', pillBorder: '#C3DDF8', cardBorder: '#E0ECF8', cardBg: 'linear-gradient(135deg, #F0F7FE 0%, #FDFEFE 62%)', circle: 'rgba(120, 170, 225, 0.16)', ink: '#2B77C9', icon: TrophyOutlined },
-  { pillBg: '#A11E42', pillColor: '#FFFFFF', pillBorder: '#A11E42', cardBorder: '#F3C7D4', cardBg: 'linear-gradient(135deg, #FDF0F4 0%, #FFFDFD 62%)', circle: 'rgba(212, 90, 130, 0.18)', ink: '#A11E42', icon: HeartOutlined },
-]
-
-/** Chuẩn hóa mã màu từ DB về #RRGGBB (chấp nhận #RGB và không có #). */
-function normalizeHex(color: string): string | null {
-  const raw = color.trim().replace(/^#/, '')
-  const hex = raw.length === 3 ? raw.split('').map((c) => c + c).join('') : raw
-  return /^[0-9A-Fa-f]{6}$/.test(hex) ? `#${hex.toUpperCase()}` : null
-}
-
-function hexChannelAlpha(hex: string, alpha: number): string {
-  const value = Math.round(alpha * 255).toString(16).padStart(2, '0')
-  return `${hex}${value}`
-}
-
-/** Độ sáng 0..1 của màu; dùng để chỉnh chữ pill khi admin chọn màu quá sáng. */
-function hexLuminance(hex: string): number {
-  const [r, g, b] = [1, 3, 5].map((offset) => parseInt(hex.slice(offset, offset + 2), 16) / 255)
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b
-}
-
-function rankThemeFromColor(color: string, fallback: RankCardTheme): RankCardTheme {
-  const hex = normalizeHex(color)
-  if (!hex) return fallback
-  const luminance = hexLuminance(hex)
-  const onColor = luminance > 0.62 ? '#3F3F46' : '#FFFFFF'
-  return {
-    pillBg: hex,
-    pillColor: onColor,
-    pillBorder: hex,
-    cardBorder: hexChannelAlpha(hex, 0.35),
-    cardBg: `linear-gradient(135deg, ${hexChannelAlpha(hex, 0.14)} 0%, #FEFEFC 62%)`,
-    circle: hexChannelAlpha(hex, 0.22),
-    ink: luminance > 0.62 ? '#4B5563' : hex,
-    icon: fallback.icon,
-  }
-}
+import AdjustPointsModal from './components/AdjustPointsModal'
+import RankOverrideModal from './components/RankOverrideModal'
+import {
+  DEFAULT_VISIBLE_COLUMNS,
+  POINT_COLUMN_OPTIONS,
+  RANK_THEMES,
+  REF_TYPE_LABELS,
+  hexLuminance,
+  normalizeHex,
+  rankThemeFromColor,
+  type MemberRow,
+  type PointColumnKey,
+  type ProfileLite,
+  type RankRow,
+} from './components/constants'
 
 /** Badge hạng dùng màu của hạng (giống thẻ ở trên); hạng chưa có màu thì badge màu trung tính. */
 function RankBadge({ rank, label }: { rank?: RankRow; label: string }) {
@@ -620,51 +523,22 @@ export default function Points() {
       />
       <ListPagination page={historyPage} limit={10} total={historyRows.length} onChange={setHistoryPage} noun="giao dịch điểm" />
 
-      <Modal
-        title={`Điều chỉnh điểm — ${adjusting?.full_name || adjusting?.phone || ''}`}
-        open={!!adjusting}
+      <AdjustPointsModal
+        adjusting={adjusting}
         confirmLoading={adjustMutation.isPending}
-        okButtonProps={{ disabled: adjustMutation.isPending }}
         onCancel={() => setAdjusting(null)}
-        onOk={submitAdjust}
-        okText="Lưu"
-        cancelText="Hủy"
-      >
-        <Form form={form} layout="vertical" style={{ marginTop: 12 }}>
-          <Form.Item
-            name="delta"
-            label="Điểm thay đổi (+ cộng, − trừ)"
-            help={Number(adjusting?.membership?.lifetime_points ?? 0) > 0
-              ? `Hiện có ${Number(adjusting?.membership?.lifetime_points ?? 0).toLocaleString('vi-VN')} điểm. Nhập -${Number(adjusting?.membership?.lifetime_points ?? 0).toLocaleString('vi-VN')} để đưa số dư về 0.`
-              : 'Nhập số dương để cộng hoặc số âm để trừ.'}
-            rules={[{ required: true, message: 'Nhập số điểm' }, { validator: async (_, value) => Number.isInteger(Number(value)) ? Promise.resolve() : Promise.reject(new Error('Số điểm phải là số nguyên')) }]}
-          >
-            <InputNumber style={{ width: '100%' }} step={10} precision={0} />
-          </Form.Item>
-          <Form.Item name="reason" label="Lý do" rules={[{ validator: async (_, value) => String(value ?? '').trim() ? Promise.resolve() : Promise.reject(new Error('Nhập lý do')) }]}>
-            <Input placeholder="VD: Bù điểm chương trình ưu đãi" maxLength={500} />
-          </Form.Item>
-        </Form>
-      </Modal>
+        onSubmit={submitAdjust}
+        form={form}
+      />
 
-      <Modal
-        title={`Gán hạng — ${overrideTarget?.row.full_name || overrideTarget?.row.phone || ''}`}
-        open={!!overrideTarget}
+      <RankOverrideModal
+        overrideTarget={overrideTarget}
         confirmLoading={overrideMutation.isPending}
         onCancel={() => setOverrideTarget(null)}
-        onOk={() => void submitOverride()}
-        okText="Gán hạng"
-        cancelText="Hủy"
-      >
-        <Form form={overrideForm} layout="vertical" style={{ marginTop: 12 }}>
-          <Form.Item name="rank_id" label="Hạng mới" rules={[{ required: true, message: 'Chọn hạng mới' }]}>
-            <Select placeholder="Chọn hạng" options={ranks.map((r) => ({ value: r.id, label: r.name }))} />
-          </Form.Item>
-          <Form.Item name="reason" label="Lý do gán hạng" rules={[{ validator: async (_, value) => String(value ?? '').trim() ? Promise.resolve() : Promise.reject(new Error('Nhập lý do')) }]}>
-            <Input.TextArea rows={3} maxLength={500} placeholder="Nhập lý do đặc cách gán hạng" />
-          </Form.Item>
-        </Form>
-      </Modal>
+        onSubmit={() => void submitOverride()}
+        ranks={ranks}
+        form={overrideForm}
+      />
 
       <CustomerCodeHistoryModal
         open={!!historyTarget}

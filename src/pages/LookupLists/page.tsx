@@ -1,17 +1,19 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Alert, Button, Form, Input, Modal, Space, Switch, Table, Tag, Typography, message } from 'antd'
+import { Alert, Button, Form, Input, Modal, Space, Table, Tag, Typography, message } from 'antd'
 import { DeleteOutlined, EditOutlined, PlusOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons'
 import PageTitle from '@/components/base/PageTitle'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
 import TableEmpty from '@/components/base/TableEmpty'
 import { paginateRows } from '@/utils/listTable'
-import LookupItemsManager from '@/components/LookupItemsManager'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { LookupList } from '@/api/models/lookupList'
 import type { PostLookupListsBody } from '@/api/models/postLookupListsBody'
 import { deleteLookupListsId, getLookupLists, postLookupLists, putLookupListsId } from '@/api/endpoints/lookup-lists'
 import { Can } from '@casl/react'
+import LookupItemsModal from './components/LookupItemsModal'
+import LookupListCreateModal from './components/LookupListCreateModal'
+import LookupListEditModal from './components/LookupListEditModal'
 
 /** Bảng danh mục lookup; bấm icon con mắt mở modal quản lý các mục của danh mục đó. */
 export default function LookupLists() {
@@ -112,7 +114,6 @@ export default function LookupLists() {
     })
   }
 
-
   // Booleans đọc từ CASL ability một cách reactive qua children-as-function của <Can>
   return (
     <Can I="UPDATE" a="LOOKUP" passThrough>
@@ -122,119 +123,88 @@ export default function LookupLists() {
         const canUpdate = ability.can('UPDATE' as never, 'LOOKUP')
         const canDelete = ability.can('DELETE' as never, 'LOOKUP')
         return (
-    <>
-      <PageTitle subtitle="Danh mục dùng chung cho các trường tùy chỉnh" extra={(
-        <Space wrap>
-          <Input
-            allowClear
-            prefix={<SearchOutlined style={{ color: 'var(--brand-text-inactive, #A9ADB2)' }} />}
-            placeholder="Tìm tên, mã danh mục hoặc mã mục"
-            style={{ width: 260 }}
-            value={query}
-            onChange={(event) => {
-              setQuery(event.target.value)
-              if (!event.target.value) void load('')
-            }}
-            onPressEnter={() => void load(query)}
-          />
-          <Button icon={<ReloadOutlined />} onClick={() => void load(query)}>Tải lại</Button>
-          {canCreate && <Button type="primary" icon={<PlusOutlined />} onClick={() => { form.resetFields(); setCreateOpen(true) }}>Tạo danh mục</Button>}
-        </Space>
-      )}>Danh mục chọn</PageTitle>
-
-      {!canRead && !loading && <Alert className="mb-4" type="error" showIcon message="Tài khoản chưa có quyền xem danh mục" />}
-      {error && <Alert className="mb-4" type="error" showIcon message="Không tải được danh mục" description={error} action={<Button size="small" onClick={() => void load(query)}>Thử lại</Button>} />}
-
-      <Table<LookupList>
-        rowKey="id"
-        loading={loading}
-        dataSource={paginateRows(lists, page, 8)}
-        pagination={false}
-        locale={{ emptyText: <TableEmpty description={query ? 'Không tìm thấy danh mục' : 'Chưa có danh mục'} /> }}
-        onRow={(row) => ({
-          onClick: () => setViewingList(row),
-          style: { cursor: 'pointer' },
-        })}
-        columns={[
-          { title: 'Tên / mã', render: (_: unknown, row: LookupList) => (
-            <Space direction="vertical" size={0} align="start">
-              <span>{row.name}</span><Typography.Text type="secondary" code>{row.key}</Typography.Text>
-            </Space>
-          ) },
-          { title: 'Loại', dataIndex: 'is_system', width: 110, render: (value?: boolean) => <Tag color={value ? 'blue' : 'default'}>{value ? 'Hệ thống' : 'Tự tạo'}</Tag> },
-          { title: 'Trạng thái', dataIndex: 'is_active', width: 130, render: (value?: boolean) => <Tag color={value === false ? 'default' : 'green'}>{value === false ? 'Đã tắt' : 'Đang hoạt động'}</Tag> },
-          { title: 'Hành động', align: 'center' as const, key: 'actions', width: 90, fixed: 'right' as const, render: (_: unknown, row: LookupList) => (
-            <RowActionsMenu
-              items={[
-                ...(canUpdate ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []),
-                ...(canDelete && !row.is_system ? [{ key: 'delete', icon: <DeleteOutlined />, label: 'Xóa', danger: true }] : []),
-              ]}
-              onSelect={(key) => {
-                if (key === 'edit') openEditList(row)
-                else if (key === 'delete') removeList(row)
-              }}
-            />
-          ) },
-        ]}
-      />
-      <ListPagination page={page} limit={8} total={lists.length} onChange={setPage} noun="danh mục dùng chung" />
-
-      <Modal
-        title={`Các mục — ${viewingList?.name ?? ''}`}
-        open={!!viewingList}
-        onCancel={() => setViewingList(null)}
-        footer={null}
-        width="min(1200px, calc(100vw - 24px))"
-        destroyOnHidden
-      >
-        {viewingList && (
           <>
-            <Typography.Text type="secondary" code style={{ display: 'block', marginBottom: 12 }}>{viewingList.key}</Typography.Text>
-            <LookupItemsManager listId={viewingList.id} />
-          </>
-        )}
-      </Modal>
+            <PageTitle subtitle="Danh mục dùng chung cho các trường tùy chỉnh" extra={(
+              <Space wrap>
+                <Input
+                  allowClear
+                  prefix={<SearchOutlined style={{ color: 'var(--brand-text-inactive, #A9ADB2)' }} />}
+                  placeholder="Tìm tên, mã danh mục hoặc mã mục"
+                  style={{ width: 260 }}
+                  value={query}
+                  onChange={(event) => {
+                    setQuery(event.target.value)
+                    if (!event.target.value) void load('')
+                  }}
+                  onPressEnter={() => void load(query)}
+                />
+                <Button icon={<ReloadOutlined />} onClick={() => void load(query)}>Tải lại</Button>
+                {canCreate && <Button type="primary" icon={<PlusOutlined />} onClick={() => { form.resetFields(); setCreateOpen(true) }}>Tạo danh mục</Button>}
+              </Space>
+            )}>Danh mục chọn</PageTitle>
 
-      <Modal
-        title="Tạo danh mục tự tạo"
-        open={createOpen}
-        onCancel={() => setCreateOpen(false)}
-        onOk={() => void createList()}
-        confirmLoading={saving}
-        okText="Tạo danh mục"
-        cancelText="Hủy"
-        destroyOnHidden
-      >
-        <Form form={form} layout="vertical" style={{ marginTop: 16 }}>
-          <Form.Item name="key" label="Mã danh mục" rules={[{ required: true, message: 'Nhập mã danh mục' }, { max: 50 }, { pattern: /^[a-zA-Z0-9][a-zA-Z0-9_.-]*$/, message: 'Chỉ dùng chữ, số, dấu chấm, gạch dưới hoặc gạch ngang' }]}>
-            <Input maxLength={50} placeholder="vd customer.sources" />
-          </Form.Item>
-          <Form.Item name="name" label="Tên danh mục" rules={[{ required: true, message: 'Nhập tên danh mục' }, { max: 100 }]}>
-            <Input maxLength={100} />
-          </Form.Item>
-        </Form>
-      </Modal>
-      <Modal
-        title="Sửa danh mục"
-        open={!!editingList}
-        onCancel={() => setEditingList(null)}
-        onOk={() => updateList()}
-        confirmLoading={saving}
-        okText="Lưu thay đổi"
-        cancelText="Hủy"
-        destroyOnHidden
-      >
-        <Form form={editForm} layout="vertical" style={{ marginTop: 16 }}>
-          <Form.Item name="name" label="Tên danh mục" rules={[{ required: true, whitespace: true, message: 'Nhập tên danh mục' }, { max: 100 }]}>
-            <Input maxLength={100} />
-          </Form.Item>
-          <Form.Item name="is_active" label="Trạng thái" valuePropName="checked">
-            <Switch />
-          </Form.Item>
-          <Typography.Text type="secondary">Mã danh mục không đổi. Tắt danh mục sẽ ngừng cho phép dùng danh mục này ở các lựa chọn mới.</Typography.Text>
-        </Form>
-      </Modal>
-    </>
+            {!canRead && !loading && <Alert className="mb-4" type="error" showIcon message="Tài khoản chưa có quyền xem danh mục" />}
+            {error && <Alert className="mb-4" type="error" showIcon message="Không tải được danh mục" description={error} action={<Button size="small" onClick={() => void load(query)}>Thử lại</Button>} />}
+
+            <Table<LookupList>
+              rowKey="id"
+              loading={loading}
+              dataSource={paginateRows(lists, page, 8)}
+              pagination={false}
+              locale={{ emptyText: <TableEmpty description={query ? 'Không tìm thấy danh mục' : 'Chưa có danh mục'} /> }}
+              onRow={(row) => ({
+                onClick: () => setViewingList(row),
+                style: { cursor: 'pointer' },
+              })}
+              columns={[
+                {
+                  title: 'Tên / mã', render: (_: unknown, row: LookupList) => (
+                    <Space direction="vertical" size={0} align="start">
+                      <span>{row.name}</span><Typography.Text type="secondary" code>{row.key}</Typography.Text>
+                    </Space>
+                  )
+                },
+                { title: 'Loại', dataIndex: 'is_system', width: 110, render: (value?: boolean) => <Tag color={value ? 'blue' : 'default'}>{value ? 'Hệ thống' : 'Tự tạo'}</Tag> },
+                { title: 'Trạng thái', dataIndex: 'is_active', width: 130, render: (value?: boolean) => <Tag color={value === false ? 'default' : 'green'}>{value === false ? 'Đã tắt' : 'Đang hoạt động'}</Tag> },
+                {
+                  title: 'Hành động', align: 'center' as const, key: 'actions', width: 90, fixed: 'right' as const, render: (_: unknown, row: LookupList) => (
+                    <RowActionsMenu
+                      items={[
+                        ...(canUpdate ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []),
+                        ...(canDelete && !row.is_system ? [{ key: 'delete', icon: <DeleteOutlined />, label: 'Xóa', danger: true }] : []),
+                      ]}
+                      onSelect={(key) => {
+                        if (key === 'edit') openEditList(row)
+                        else if (key === 'delete') removeList(row)
+                      }}
+                    />
+                  )
+                },
+              ]}
+            />
+            <ListPagination page={page} limit={8} total={lists.length} onChange={setPage} noun="danh mục dùng chung" />
+
+            <LookupItemsModal
+              viewingList={viewingList}
+              onCancel={() => setViewingList(null)}
+            />
+
+            <LookupListCreateModal
+              open={createOpen}
+              onCancel={() => setCreateOpen(false)}
+              onSubmit={() => void createList()}
+              confirmLoading={saving}
+              form={form}
+            />
+
+            <LookupListEditModal
+              editingList={editingList}
+              onCancel={() => setEditingList(null)}
+              onSubmit={() => void updateList()}
+              confirmLoading={saving}
+              form={editForm}
+            />
+          </>
         )
       }}
     </Can>

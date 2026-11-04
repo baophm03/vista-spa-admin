@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Alert, Button, DatePicker, Form, Input, Modal, Select, Space, Table, Typography, message } from 'antd'
+import { Alert, Button, DatePicker, Form, Select, Space, Table, Typography, message } from 'antd'
 import { ReloadOutlined, StopOutlined } from '@ant-design/icons'
 import dayjs, { type Dayjs } from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
@@ -9,47 +9,19 @@ import ListPagination from '@/components/base/ListPagination'
 import TableEmpty from '@/components/base/TableEmpty'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { Branch } from '@/api/models/branch'
-import type { PaymentLog } from '@/api/models/paymentLog'
 import { getGetPaymentsQueryKey, useGetPayments, usePostPaymentsIdVoid } from '@/api/endpoints/customer-treatments'
 import { useGetBranches } from '@/api/endpoints/branches'
 import { useGetUsers } from '@/api/endpoints/users'
 import { useAbility } from '@casl/react'
 import { useQueryClient } from '@tanstack/react-query'
-
-const PAY_METHOD: Record<string, string> = {
-  CASH: 'Tiền mặt',
-  BANK: 'Chuyển khoản',
-  POS: 'Quẹt thẻ',
-  OTHER: 'Khác',
-}
-
-type PaymentColumnKey = 'paid_at' | 'customer' | 'package' | 'branch' | 'amount' | 'method' | 'entered_by'
-
-const PAYMENT_COLUMN_OPTIONS: { label: string; value: PaymentColumnKey }[] = [
-  { label: 'Thời gian', value: 'paid_at' },
-  { label: 'Khách hàng', value: 'customer' },
-  { label: 'Gói / dịch vụ', value: 'package' },
-  { label: 'Cơ sở', value: 'branch' },
-  { label: 'Số tiền', value: 'amount' },
-  { label: 'Phương thức', value: 'method' },
-  { label: 'Thu ngân', value: 'entered_by' },
-]
-
-const DEFAULT_VISIBLE_COLUMNS = PAYMENT_COLUMN_OPTIONS.map((column) => column.value)
-
-interface LedgerRow extends PaymentLog {
-  branch_id?: string
-  customer_treatment?: {
-    customer_profile?: { full_name?: string; phone?: string }
-    package_snapshot?: { name?: string }
-    branch_id?: string
-  } | null
-  appointment?: {
-    branch_id?: string
-    service?: { title?: string }
-    customer_profile?: { full_name?: string; phone?: string }
-  } | null
-}
+import PaymentVoidModal from './components/PaymentVoidModal'
+import {
+  DEFAULT_VISIBLE_COLUMNS,
+  PAYMENT_COLUMN_OPTIONS,
+  PAY_METHOD,
+  type LedgerRow,
+  type PaymentColumnKey,
+} from './components/constants'
 
 /** PM-03 — Sổ thanh toán toàn hệ thống + PM-04 hủy giao dịch (Admin). */
 export default function Payments() {
@@ -99,7 +71,11 @@ export default function Payments() {
   const openFilters = (nextOpen: boolean) => {
     setFilterOpen(nextOpen)
     if (!nextOpen) return
-    filterForm.setFieldsValue({ branch_id: branchFilter, entered_by: staffFilter, date_range: range })
+    filterForm.setFieldsValue({
+      branch_id: branchFilter,
+      entered_by: staffFilter,
+      date_range: range,
+    })
     setDraftVisibleColumns(visibleColumns)
   }
 
@@ -108,9 +84,10 @@ export default function Payments() {
       message.error('Hãy giữ lại ít nhất một cột hiển thị')
       return
     }
-    setBranchFilter(typeof values.branch_id === 'string' && values.branch_id ? values.branch_id : undefined)
-    setStaffFilter(typeof values.entered_by === 'string' && values.entered_by ? values.entered_by : undefined)
-    setRange((values.date_range as [Dayjs | null, Dayjs | null] | undefined) ?? null)
+    const dates = values.date_range as [Dayjs | null, Dayjs | null] | undefined
+    setBranchFilter((values.branch_id as string) || undefined)
+    setStaffFilter((values.entered_by as string) || undefined)
+    setRange(dates ?? null)
     setVisibleColumns(draftVisibleColumns)
     setPage(1)
     setFilterOpen(false)
@@ -148,65 +125,85 @@ export default function Payments() {
       title: 'Thời gian',
       dataIndex: 'paid_at',
       width: 140,
-      render: (v: string) => dayjs(v).format('DD/MM/YYYY HH:mm'),
+      render: (v: string) => (v ? dayjs(v).format('DD/MM/YYYY HH:mm') : '—'),
     },
     {
       key: 'customer',
       title: 'Khách hàng',
       render: (_: unknown, row: LedgerRow) => {
-        const profile = row.customer_treatment?.customer_profile ?? row.appointment?.customer_profile
+        const customer = row.customer_treatment?.customer_profile || row.appointment?.customer_profile
+        if (!customer) return '—'
         return (
-          <div>
-            <div style={{ fontWeight: 500 }}>{profile?.full_name || '—'}</div>
-            <div style={{ fontSize: 12, color: '#6F7071' }}>{profile?.phone || ''}</div>
-          </div>
+          <Space direction="vertical" size={0}>
+            <span style={{ fontWeight: 600 }}>{customer.full_name}</span>
+            <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+              {customer.phone}
+            </Typography.Text>
+          </Space>
         )
       },
     },
     {
       key: 'package',
       title: 'Gói / dịch vụ',
-      render: (_: unknown, row: LedgerRow) => row.customer_treatment?.package_snapshot?.name
-        || (row.appointment?.service?.title ? `Dịch vụ lẻ · ${row.appointment.service.title}` : '—'),
+      render: (_: unknown, row: LedgerRow) => {
+        const name = row.customer_treatment?.package_snapshot?.name || row.appointment?.service?.title
+        return name || '—'
+      },
     },
     {
       key: 'branch',
       title: 'Cơ sở',
-      width: 150,
-      render: (_: unknown, row: LedgerRow) => branchById.get(row.branch_id ?? row.customer_treatment?.branch_id ?? row.appointment?.branch_id ?? '') || '—',
+      render: (_: unknown, row: LedgerRow) => {
+        const branchId = row.branch_id || row.customer_treatment?.branch_id || row.appointment?.branch_id
+        return (branchId && branchById.get(branchId)) || '—'
+      },
     },
     {
       key: 'amount',
       title: 'Số tiền',
       dataIndex: 'amount',
-      width: 140,
-      render: (v: number) => <Typography.Text strong>{Number(v).toLocaleString('vi-VN')} ₫</Typography.Text>,
+      width: 130,
+      render: (v: number) => (
+        <span style={{ fontWeight: 600, color: 'var(--brand-primary, #1890ff)' }}>
+          {Number(v).toLocaleString('vi-VN')} ₫
+        </span>
+      ),
     },
     {
       key: 'method',
       title: 'Phương thức',
       dataIndex: 'method',
-      width: 130,
-      render: (v: string) => PAY_METHOD[v] ?? v,
+      width: 120,
+      render: (v: string) => PAY_METHOD[v] || v || '—',
     },
     {
       key: 'entered_by',
       title: 'Thu ngân',
-      width: 150,
-      render: (_: unknown, row: LedgerRow) => staffById.get(row.entered_by ?? '') || '—',
+      dataIndex: 'entered_by',
+      width: 130,
+      render: (v: string) => (v && staffById.get(v)) || v || '—',
     },
     {
       key: 'actions',
-      title: 'Hành động', align: 'center' as const,
+      title: 'Hành động',
       width: 90,
+      align: 'center' as const,
       fixed: 'right' as const,
       render: (_: unknown, row: LedgerRow) => (
         <RowActionsMenu
-          items={canVoid ? [{ key: 'void', icon: <StopOutlined />, label: 'Hủy giao dịch', danger: true }] : []}
+          items={[
+            {
+              key: 'void',
+              icon: <StopOutlined />,
+              label: 'Hủy giao dịch',
+              danger: true,
+            },
+          ]}
           onSelect={(key) => {
             if (key === 'void') {
-              voidForm.resetFields()
               setVoidRow(row)
+              voidForm.resetFields()
             }
           }}
         />
@@ -217,7 +214,7 @@ export default function Payments() {
   return (
     <>
       <PageTitle
-        subtitle="Lịch sử giao dịch thanh toán của khách hàng"
+        subtitle="Lịch sử thu tiền thực tế trên toàn chuỗi"
         extra={
           <Space wrap>
             <ListFilterPopover
@@ -282,34 +279,14 @@ export default function Payments() {
       />
       <ListPagination page={page} limit={limit} total={total} onChange={setPage} noun="khoản thanh toán" />
 
-      <Modal
-        title="Hủy giao dịch thanh toán"
+      <PaymentVoidModal
         open={!!voidRow}
+        voidRow={voidRow}
         onCancel={() => setVoidRow(null)}
-        onOk={() => void submitVoid()}
-        okText="Hủy giao dịch"
-        okButtonProps={{ danger: true }}
-        cancelText="Không"
+        onSubmit={() => void submitVoid()}
         confirmLoading={voidMutation.isPending}
-        destroyOnHidden
-      >
-        {voidRow && (
-          <div style={{ marginBottom: 12 }}>
-            <Typography.Paragraph>
-              Giao dịch <Typography.Text strong>{Number(voidRow.amount).toLocaleString('vi-VN')} ₫</Typography.Text> —
-              ngày {dayjs(String(voidRow.paid_at)).format('DD/MM/YYYY HH:mm')}
-            </Typography.Paragraph>
-            <Typography.Paragraph type="secondary" style={{ fontSize: 12 }}>
-              Hủy mềm: giao dịch được giữ vết (người hủy, lý do), số nợ của khách được tính lại tự động.
-            </Typography.Paragraph>
-          </div>
-        )}
-        <Form form={voidForm} layout="vertical">
-          <Form.Item name="void_reason" label="Lý do hủy (bắt buộc)" rules={[{ required: true, whitespace: true, message: 'Nhập lý do hủy' }]}>
-            <Input.TextArea rows={2} maxLength={500} placeholder="VD: Thu nhầm tiền, khách yêu cầu hoàn trả" />
-          </Form.Item>
-        </Form>
-      </Modal>
+        form={voidForm}
+      />
     </>
   )
 }

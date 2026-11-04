@@ -1,17 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import { Can, useAbility } from '@casl/react'
 import {
   Button,
-  Alert,
-  Col,
   DatePicker,
   Form,
   Input,
-  InputNumber,
   Modal,
-  Row,
   Select,
   Segmented,
   Space,
@@ -41,7 +37,7 @@ import ListFilterPopover from '@/components/base/ListFilterPopover'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
 import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
-import CustomFieldFormItems, { normalizeCustomFieldValues } from '@/components/CustomFieldFormItems'
+import { normalizeCustomFieldValues } from '@/components/CustomFieldFormItems'
 import useCustomFieldDefinitions from '@/hooks/useCustomFieldDefinitions'
 import { errorMessage, pickData, pickMeta } from '@/api/helpers'
 import type { Appointment } from '@/api/models/appointment'
@@ -62,32 +58,15 @@ import {
 } from '@/api/endpoints/appointments'
 import { getGetCustomerProfilesQueryKey, postCustomerProfiles, useGetCustomerProfiles } from '@/api/endpoints/customer-profiles'
 import { useGetCustomerTreatments } from '@/api/endpoints/customer-treatments'
-import type { CustomerTreatment } from '@/api/models/customerTreatment'
 import { useGetService } from '@/api/endpoints/services'
 import { useGetUsers } from '@/api/endpoints/users'
 import { useGetBranches } from '@/api/endpoints/branches'
-
-interface Slot {
-  date?: string
-  start_time: string
-  end_time?: string
-  staff_ids: string[]
-}
-
-interface ProfileRow {
-  id: string
-  full_name?: string
-  phone?: string
-  branch_id?: string | null
-}
-
-interface StaffRow {
-  id: string
-  zalo_name?: string
-  email?: string
-}
-
-type TreatmentWithMeta = CustomerTreatment & { package_type?: { name?: string }; allowed_service_ids?: string[] }
+import AppointmentDetailModal from './components/AppointmentDetailModal'
+import AppointmentFormModal from './components/AppointmentFormModal'
+import QuickCustomerModal from './components/QuickCustomerModal'
+import AppointmentStartModal from './components/AppointmentStartModal'
+import { STATUS_META, treatmentCode, treatmentPackageName } from './components/constants'
+import type { AppointmentRow, ProfileRow, Slot, StaffRow, TreatmentWithMeta } from './components/constants'
 
 const purchasedTreatmentPackageName = (treatment: TreatmentWithMeta) => {
   const snapshotName = (treatment.package_snapshot as Record<string, unknown> | undefined)?.name
@@ -112,47 +91,12 @@ const treatmentToOption = (treatment: TreatmentWithMeta) => {
 const treatmentsForService = (treatments: TreatmentWithMeta[], serviceId?: string | null) =>
   treatments.filter((t) => !serviceId || !t.allowed_service_ids?.length || t.allowed_service_ids.includes(serviceId))
 
-type AppointmentRow = Appointment & {
-  customer_profile?: { id?: string; full_name?: string; phone?: string; branch_id?: string | null } | null
-  service?: { title?: string; duration_minutes?: number; price?: number | string | null; price_max?: number | string | null } | null
-  staff?: { zalo_name?: string } | null
-  customer_treatment?: {
-    id?: string
-    package_snapshot?: { name?: string } | null
-    package?: { name?: string } | null
-  } | null
-  service_amount?: number | string | null
-  visit_done_at?: string | null
-  skin_note?: string | null
-  concern?: string | null
-  diary?: string | null
-  products_used?: string | null
-  result?: string | null
-}
-
-const treatmentPackageName = (row: AppointmentRow) =>
-  row.customer_treatment?.package_snapshot?.name || row.customer_treatment?.package?.name || null
-const treatmentCode = (row: AppointmentRow) => {
-  const id = row.customer_treatment?.id || row.customer_treatment_id
-  return id ? `G-${id.replace(/-/g, '').slice(0, 8).toUpperCase()}` : null
-}
-
 const CALENDAR_START_HOUR = 7
 const CALENDAR_END_HOUR = 22
 const CALENDAR_HOURS = Array.from({ length: CALENDAR_END_HOUR - CALENDAR_START_HOUR }, (_, index) => CALENDAR_START_HOUR + index)
 
 function mondayOf(date: dayjs.Dayjs) {
   return date.startOf('day').subtract((date.day() + 6) % 7, 'day')
-}
-
-const STATUS_META: Record<AppointmentStatus, { label: string; color: string }> = {
-  pending: { label: 'Chờ duyệt', color: 'orange' },
-  approved: { label: 'Đã duyệt', color: 'purple' },
-  in_progress: { label: 'Đang thực hiện', color: 'blue' },
-  completed: { label: 'Hoàn tất', color: 'green' },
-  cancelled: { label: 'Đã hủy', color: 'default' },
-  rejected: { label: 'Từ chối', color: 'red' },
-  no_show: { label: 'Không đến', color: 'volcano' },
 }
 
 const FILTERS = [
@@ -217,7 +161,6 @@ const DEFAULT_APPOINTMENT_COLUMNS = APPOINTMENT_COLUMNS.map((column) => column.v
 
 export default function Appointments() {
   const queryClient = useQueryClient()
-  const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const ability = useAbility()
   const canApprove = ability.can('APPROVE' as never, 'APPOINTMENT')
@@ -305,9 +248,7 @@ export default function Appointments() {
   }, [customerSearchInput])
 
   const profilesQuery = useGetCustomerProfiles({ page: 1, limit: 50, q: customerSearch || undefined })
-  // useMemo để giữ tham chiếu ổn định: fallback [] tạo mảng mới mỗi render, nếu đưa vào
-  // deps của effect (như effect lấy slot bên dưới) sẽ dẫn tới vòng lặp setState vô hạn
-  // ("Maximum update depth exceeded" → React unmount cả cây → trang trắng).
+
   const profiles = useMemo(() => (pickData<ProfileRow[] | undefined>(profilesQuery.data) ?? []) as ProfileRow[], [profilesQuery.data])
   const profileOptions = useMemo(() => {
     const options = [...profiles]
@@ -436,39 +377,36 @@ export default function Appointments() {
     const profileFromAppointment = (appointment as AppointmentRow | undefined)?.customer_profile
     setSelectedProfile(appointment
       ? profiles.find((profile) => profile.id === appointment.customer_profile_id)
-        ?? (profileFromAppointment?.id ? {
-          id: profileFromAppointment.id,
-          full_name: profileFromAppointment.full_name,
-          phone: profileFromAppointment.phone,
-          branch_id: profileFromAppointment.branch_id,
-        } : null)
+      ?? (profileFromAppointment?.id ? {
+        id: profileFromAppointment.id,
+        full_name: profileFromAppointment.full_name,
+        phone: profileFromAppointment.phone,
+        branch_id: profileFromAppointment.branch_id,
+      } : null)
       : null)
     form.setFieldsValue(
       appointment
         ? {
-            customer_profile_id: appointment.customer_profile_id,
-            service_id: appointment.service_id,
-            staff_id: appointment.staff_id,
-            customer_treatment_id: appointment.customer_treatment_id ?? undefined,
-            appt_date: dayjs(appointment.appt_date),
-            start_time: appointment.start_time?.slice(0, 5),
-            note: appointment.note,
-            custom_fields: appointment.custom_fields ?? {},
-          }
+          customer_profile_id: appointment.customer_profile_id,
+          service_id: appointment.service_id,
+          staff_id: appointment.staff_id,
+          customer_treatment_id: appointment.customer_treatment_id ?? undefined,
+          appt_date: dayjs(appointment.appt_date),
+          start_time: appointment.start_time?.slice(0, 5),
+          note: appointment.note,
+          custom_fields: appointment.custom_fields ?? {},
+        }
         : { appt_date: dayjs().add(1, 'day'), custom_fields: {} },
     )
     setOpen(true)
   }
 
-  // Deep-link ?create=1 (vd. từ tab Dịch vụ lẻ): mở sẵn modal tạo lịch hẹn
   useEffect(() => {
     if (searchParams.get('create') !== '1') return
     const next = new URLSearchParams(searchParams)
     next.delete('create')
     setSearchParams(next, { replace: true })
     openModal()
-    // Chỉ chạy khi lần đầu vào trang với query create=1
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const openQuickCustomer = () => {
@@ -880,111 +818,111 @@ export default function Appointments() {
         </div>
       ) : <>
         <Table<AppointmentRow>
-        className="desktop-only"
-        rowKey="id"
-        loading={appointmentsQuery.isFetching}
-        dataSource={rows}
-        scroll={{ x: 950 }}
-        pagination={false}
-        onRow={(row) => ({
-          onClick: () => setSelectedAppointment(row),
-          style: { cursor: 'pointer' },
-        })}
-        columns={([
-          {
-            title: 'Khách hàng',
-            key: 'customer',
-            dataIndex: ['customer_profile', 'full_name'],
-            render: (v, row) => (
-              <div>
-                <div style={{ fontWeight: 500 }}>{v || '—'}</div>
-                <div style={{ fontSize: 12, color: '#6F7071' }}>{row.customer_profile?.phone}</div>
-              </div>
-            ),
-          },
-          {
-            title: 'Dịch vụ / Gói',
-            key: 'service',
-            dataIndex: ['service', 'title'],
-            render: (value, row) => (
-              <div>
-                <div>{value || (row.customer_treatment_id ? 'Buổi liệu trình' : '—')}</div>
-                {!row.customer_treatment_id && row.service && (
-                  <Typography.Text type="secondary" style={{ display: 'block', fontSize: 12 }}>
-                    {(() => {
-                      const minimum = Number(row.service?.price ?? 0)
-                      const maximum = Math.max(minimum, Number(row.service?.price_max ?? minimum))
-                      const waitingForPrice = maximum > minimum && ['pending', 'approved'].includes(String(row.status))
-                      return waitingForPrice
-                        ? `Dịch vụ lẻ · Chốt khi bắt đầu: ${minimum.toLocaleString('vi-VN')}–${maximum.toLocaleString('vi-VN')} ₫`
-                        : `Dịch vụ lẻ · Giá chốt ${Number(row.service_amount ?? minimum).toLocaleString('vi-VN')} ₫`
-                    })()}
-                  </Typography.Text>
-                )}
-                {(treatmentPackageName(row) || treatmentCode(row)) && (
-                  <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                    {treatmentPackageName(row) ? `Gói: ${treatmentPackageName(row)}` : 'Gói liệu trình'}{treatmentCode(row) ? ` · ${treatmentCode(row)}` : ''}
-                  </Typography.Text>
-                )}
-              </div>
-            ),
-          },
-          { title: 'KTV', key: 'staff', dataIndex: ['staff', 'zalo_name'], render: (v) => v || 'Chưa gán' },
-          {
-            title: 'Thời gian',
-            key: 'time',
-            dataIndex: 'appt_date',
-            width: 160,
-            render: (v, row) => `${dayjs(v).format('DD/MM/YYYY')} ${row.start_time?.slice(0, 5)}`,
-          },
-          { title: 'Nguồn', key: 'source', dataIndex: 'created_via', width: 100, render: (v) => (v === 'APP' ? <Tag>Mini App</Tag> : <Tag>Nhân viên</Tag>) },
-          {
-            title: 'Trạng thái',
-            key: 'status',
-            dataIndex: 'status',
-            width: 130,
-            render: (v: AppointmentStatus) => <Tag color={STATUS_META[v]?.color}>{STATUS_META[v]?.label ?? v}</Tag>,
-          },
-          {
-            title: 'Hành động', align: 'center' as const,
-            key: 'actions',
-            width: 90,
-            fixed: 'right' as const,
-            render: (_, row) => {
-              const confirmThen = (title: string, fn: () => Promise<unknown> | void) =>
-                Modal.confirm({ title, okText: 'Đồng ý', okButtonProps: { danger: true }, cancelText: 'Hủy', onOk: () => fn() })
-              return (
-                <RowActionsMenu
-                  items={[
-                    ...(row.status === 'pending' && canApprove ? [{ key: 'approve', icon: <CheckOutlined />, label: 'Duyệt' }] : []),
-                    ...(row.status === 'approved' && canStart ? [{
-                      key: 'start',
-                      icon: <PlayCircleOutlined />,
-                      label: canStartAppointmentToday(row) ? 'Bắt đầu' : 'Bắt đầu (chưa đến giờ hẹn)',
-                      disabled: !canStartAppointmentToday(row),
-                    }] : []),
-                    ...(row.status === 'pending' && canApprove ? [{ key: 'reject', icon: <CloseOutlined />, danger: true, label: 'Từ chối' }] : []),
-                    ...(canUpdate && ['pending', 'approved'].includes(row.status ?? '') ? [{ key: 'reschedule', icon: <EditOutlined />, label: 'Đổi lịch' }] : []),
-                    ...(row.status === 'approved' && canApprove && isPastAppointment(row) ? [{ key: 'noshow', icon: <MinusCircleOutlined />, label: 'Đánh dấu không đến' }] : []),
-                    ...(['pending', 'approved'].includes(row.status ?? '') && canApprove ? [{ key: 'cancel', icon: <StopOutlined />, danger: true, label: 'Hủy lịch hẹn' }] : []),
-                  ]}
-                  onSelect={(key) => {
-                    if (key === 'approve') void approve(row)
-                    else if (key === 'start') beginAppointment(row)
-                    else if (key === 'reject') reject(row)
-                    else if (key === 'reschedule') openModal(row)
-                    else if (key === 'noshow') {
-                      confirmThen('Đánh dấu khách không đến? (Chỉ ghi nhận; không trừ buổi, không tính phí.)', () =>
-                        doAction(() => noShowMutation.mutateAsync({ id: row.id }), 'Đã ghi nhận không đến'))
-                    } else if (key === 'cancel') {
-                      confirmThen('Hủy lịch hẹn này?', () => doAction(() => cancelMutation.mutateAsync({ id: row.id }), 'Đã hủy'))
-                    }
-                  }}
-                />
-              )
+          className="desktop-only"
+          rowKey="id"
+          loading={appointmentsQuery.isFetching}
+          dataSource={rows}
+          scroll={{ x: 950 }}
+          pagination={false}
+          onRow={(row) => ({
+            onClick: () => setSelectedAppointment(row),
+            style: { cursor: 'pointer' },
+          })}
+          columns={([
+            {
+              title: 'Khách hàng',
+              key: 'customer',
+              dataIndex: ['customer_profile', 'full_name'],
+              render: (v, row) => (
+                <div>
+                  <div style={{ fontWeight: 500 }}>{v || '—'}</div>
+                  <div style={{ fontSize: 12, color: '#6F7071' }}>{row.customer_profile?.phone}</div>
+                </div>
+              ),
             },
-          },
-        ] satisfies TableColumnsType<AppointmentRow>).filter((column) => column.key === 'actions' || visibleColumns.includes(String(column.key)))}
+            {
+              title: 'Dịch vụ / Gói',
+              key: 'service',
+              dataIndex: ['service', 'title'],
+              render: (value, row) => (
+                <div>
+                  <div>{value || (row.customer_treatment_id ? 'Buổi liệu trình' : '—')}</div>
+                  {!row.customer_treatment_id && row.service && (
+                    <Typography.Text type="secondary" style={{ display: 'block', fontSize: 12 }}>
+                      {(() => {
+                        const minimum = Number(row.service?.price ?? 0)
+                        const maximum = Math.max(minimum, Number(row.service?.price_max ?? minimum))
+                        const waitingForPrice = maximum > minimum && ['pending', 'approved'].includes(String(row.status))
+                        return waitingForPrice
+                          ? `Dịch vụ lẻ · Chốt khi bắt đầu: ${minimum.toLocaleString('vi-VN')}–${maximum.toLocaleString('vi-VN')} ₫`
+                          : `Dịch vụ lẻ · Giá chốt ${Number(row.service_amount ?? minimum).toLocaleString('vi-VN')} ₫`
+                      })()}
+                    </Typography.Text>
+                  )}
+                  {(treatmentPackageName(row) || treatmentCode(row)) && (
+                    <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                      {treatmentPackageName(row) ? `Gói: ${treatmentPackageName(row)}` : 'Gói liệu trình'}{treatmentCode(row) ? ` · ${treatmentCode(row)}` : ''}
+                    </Typography.Text>
+                  )}
+                </div>
+              ),
+            },
+            { title: 'KTV', key: 'staff', dataIndex: ['staff', 'zalo_name'], render: (v) => v || 'Chưa gán' },
+            {
+              title: 'Thời gian',
+              key: 'time',
+              dataIndex: 'appt_date',
+              width: 160,
+              render: (v, row) => `${dayjs(v).format('DD/MM/YYYY')} ${row.start_time?.slice(0, 5)}`,
+            },
+            { title: 'Nguồn', key: 'source', dataIndex: 'created_via', width: 100, render: (v) => (v === 'APP' ? <Tag>Mini App</Tag> : <Tag>Nhân viên</Tag>) },
+            {
+              title: 'Trạng thái',
+              key: 'status',
+              dataIndex: 'status',
+              width: 130,
+              render: (v: AppointmentStatus) => <Tag color={STATUS_META[v]?.color}>{STATUS_META[v]?.label ?? v}</Tag>,
+            },
+            {
+              title: 'Hành động', align: 'center' as const,
+              key: 'actions',
+              width: 90,
+              fixed: 'right' as const,
+              render: (_, row) => {
+                const confirmThen = (title: string, fn: () => Promise<unknown> | void) =>
+                  Modal.confirm({ title, okText: 'Đồng ý', okButtonProps: { danger: true }, cancelText: 'Hủy', onOk: () => fn() })
+                return (
+                  <RowActionsMenu
+                    items={[
+                      ...(row.status === 'pending' && canApprove ? [{ key: 'approve', icon: <CheckOutlined />, label: 'Duyệt' }] : []),
+                      ...(row.status === 'approved' && canStart ? [{
+                        key: 'start',
+                        icon: <PlayCircleOutlined />,
+                        label: canStartAppointmentToday(row) ? 'Bắt đầu' : 'Bắt đầu (chưa đến giờ hẹn)',
+                        disabled: !canStartAppointmentToday(row),
+                      }] : []),
+                      ...(row.status === 'pending' && canApprove ? [{ key: 'reject', icon: <CloseOutlined />, danger: true, label: 'Từ chối' }] : []),
+                      ...(canUpdate && ['pending', 'approved'].includes(row.status ?? '') ? [{ key: 'reschedule', icon: <EditOutlined />, label: 'Đổi lịch' }] : []),
+                      ...(row.status === 'approved' && canApprove && isPastAppointment(row) ? [{ key: 'noshow', icon: <MinusCircleOutlined />, label: 'Đánh dấu không đến' }] : []),
+                      ...(['pending', 'approved'].includes(row.status ?? '') && canApprove ? [{ key: 'cancel', icon: <StopOutlined />, danger: true, label: 'Hủy lịch hẹn' }] : []),
+                    ]}
+                    onSelect={(key) => {
+                      if (key === 'approve') void approve(row)
+                      else if (key === 'start') beginAppointment(row)
+                      else if (key === 'reject') reject(row)
+                      else if (key === 'reschedule') openModal(row)
+                      else if (key === 'noshow') {
+                        confirmThen('Đánh dấu khách không đến? (Chỉ ghi nhận; không trừ buổi, không tính phí.)', () =>
+                          doAction(() => noShowMutation.mutateAsync({ id: row.id }), 'Đã ghi nhận không đến'))
+                      } else if (key === 'cancel') {
+                        confirmThen('Hủy lịch hẹn này?', () => doAction(() => cancelMutation.mutateAsync({ id: row.id }), 'Đã hủy'))
+                      }
+                    }}
+                  />
+                )
+              },
+            },
+          ] satisfies TableColumnsType<AppointmentRow>).filter((column) => column.key === 'actions' || visibleColumns.includes(String(column.key)))}
         />
         {displayMode === 'list' && <MobileCards
           rows={rows}
@@ -1017,313 +955,72 @@ export default function Appointments() {
       </>}
       {displayMode !== 'calendar' && <ListPagination page={page} limit={limit} total={total} onChange={setPage} noun="lịch hẹn" />}
 
-      <Modal
-        title="Chi tiết lịch hẹn"
-        width="min(900px, calc(100vw - 24px))"
-        open={!!selectedAppointment}
-        onCancel={() => setSelectedAppointment(null)}
-        footer={selectedAppointment ? (
-          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end', gap: 8 }}>
-            <Button onClick={() => setSelectedAppointment(null)}>Đóng</Button>
-            {['pending', 'approved'].includes(selectedAppointment.status ?? '') && (
-              <Can I="UPDATE" a="APPOINTMENT">
-                <Button onClick={() => { const row = selectedAppointment; setSelectedAppointment(null); openModal(row) }}>Đổi lịch</Button>
-              </Can>
-            )}
-            {selectedAppointment.status === 'pending' && (
-              <Can I="APPROVE" a="APPOINTMENT">
-                <Button onClick={() => { const row = selectedAppointment; setSelectedAppointment(null); void approve(row) }}>Duyệt</Button>
-                <Button danger onClick={() => { const row = selectedAppointment; setSelectedAppointment(null); reject(row) }}>Từ chối</Button>
-              </Can>
-            )}
-            {selectedAppointment.status === 'approved' && isPastAppointment(selectedAppointment) && (
-              <Can I="APPROVE" a="APPOINTMENT">
-                <Button onClick={() => { const row = selectedAppointment; setSelectedAppointment(null); void doAction(() => noShowMutation.mutateAsync({ id: row.id }), 'Đã ghi nhận không đến') }}>Không đến</Button>
-              </Can>
-            )}
-            {['pending', 'approved'].includes(selectedAppointment.status ?? '') && (
-              <Can I="APPROVE" a="APPOINTMENT">
-                <Button danger onClick={() => { const row = selectedAppointment; setSelectedAppointment(null); void doAction(() => cancelMutation.mutateAsync({ id: row.id }), 'Đã hủy') }}>Hủy lịch</Button>
-              </Can>
-            )}
-            {selectedAppointment.status === 'approved' && canStart && (
-              <Can I="START" a="APPOINTMENT">
-                <Button
-                  type="primary"
-                  disabled={!canStartAppointmentToday(selectedAppointment)}
-                  title={!canStartAppointmentToday(selectedAppointment) ? 'Chỉ bắt đầu được trong ngày hẹn, sau giờ hẹn' : undefined}
-                  onClick={() => { const row = selectedAppointment; setSelectedAppointment(null); beginAppointment(row) }}
-                >
-                  Bắt đầu
-                </Button>
-              </Can>
-            )}
-          </div>
-        ) : null}
-      >
-        {selectedAppointment && (
-          <Space direction="vertical" size={8} style={{ width: '100%' }}>
-            <Typography.Text><strong>Khách hàng:</strong> {selectedAppointment.customer_profile?.full_name || '—'} ({selectedAppointment.customer_profile?.phone || 'không có số điện thoại'})</Typography.Text>
-            <Typography.Text><strong>Dịch vụ:</strong> {selectedAppointment.service?.title || (selectedAppointment.customer_treatment_id ? 'Buổi liệu trình' : '—')}{!selectedAppointment.customer_treatment_id && selectedAppointment.service && ' · Dịch vụ lẻ'}</Typography.Text>
-            {treatmentPackageName(selectedAppointment) && <Typography.Text><strong>Gói liệu trình:</strong> {treatmentPackageName(selectedAppointment)}</Typography.Text>}
-            {treatmentCode(selectedAppointment) && <Typography.Text><strong>Mã gói:</strong> {treatmentCode(selectedAppointment)}</Typography.Text>}
-            <Typography.Text><strong>KTV:</strong> {selectedAppointment.staff?.zalo_name || 'Chưa gán'}</Typography.Text>
-            <Typography.Text><strong>Thời gian:</strong> {dayjs(selectedAppointment.appt_date).format('DD/MM/YYYY')} {selectedAppointment.start_time?.slice(0, 5)}</Typography.Text>
-            <Typography.Text><strong>Trạng thái:</strong> <Tag color={STATUS_META[selectedAppointment.status as AppointmentStatus]?.color}>{STATUS_META[selectedAppointment.status as AppointmentStatus]?.label || selectedAppointment.status}</Tag></Typography.Text>
-            {selectedAppointment.note && <Typography.Text><strong>Ghi chú:</strong> {selectedAppointment.note}</Typography.Text>}
-            {selectedAppointment.reject_reason && <Typography.Text><strong>Lý do từ chối:</strong> {selectedAppointment.reject_reason}</Typography.Text>}
-            {!selectedAppointment.customer_treatment_id && (
-              <div style={{ borderTop: '1px solid #eee', paddingTop: 12, marginTop: 4 }}>
-                <Alert
-                  type="info"
-                  showIcon
-                  message="Dịch vụ lẻ — không trừ buổi liệu trình"
-                  description="Hồ sơ làm dịch vụ, ảnh và thanh toán được quản lý trong mục Liệu trình của khách → Dịch vụ lẻ."
-                  style={{ marginBottom: 12 }}
-                />
-                <Button type="primary" icon={<EditOutlined />} onClick={() => navigate(`/standalone-services?appointment_id=${encodeURIComponent(selectedAppointment.id)}`)}>
-                  Mở hồ sơ dịch vụ
-                </Button>
-              </div>
-            )}
-          </Space>
-        )}
-      </Modal>
+      <AppointmentDetailModal
+        appointment={selectedAppointment}
+        canStart={canStart}
+        isPast={selectedAppointment ? isPastAppointment(selectedAppointment) : false}
+        canStartToday={selectedAppointment ? canStartAppointmentToday(selectedAppointment) : false}
+        onClose={() => setSelectedAppointment(null)}
+        onEdit={(row) => openModal(row)}
+        onApprove={(row) => void approve(row)}
+        onReject={reject}
+        onNoShow={(row) => void doAction(() => noShowMutation.mutateAsync({ id: row.id }), 'Đã ghi nhận không đến')}
+        onCancelAppointment={(row) => void doAction(() => cancelMutation.mutateAsync({ id: row.id }), 'Đã hủy')}
+        onStart={beginAppointment}
+      />
 
-      <Modal
-        title={editing ? 'Đổi lịch hẹn' : 'Thêm lịch hẹn'}
-        width="min(880px, calc(100vw - 24px))"
+      <AppointmentFormModal
         open={open}
+        editing={editing}
+        form={form}
+        isSaving={isSavingAppointment}
+        slots={slots}
+        slotsLoading={slotsLoading}
+        profilesLoading={profilesQuery.isLoading}
+        onCustomerSearch={setCustomerSearchInput}
+        onSelectProfile={setSelectedProfile}
+        onQuickCustomer={openQuickCustomer}
+        profileOptions={profileOptions}
+        servicesLoading={servicesQuery.isLoading}
+        serviceOptions={serviceOptions}
+        serviceLockedByPackage={serviceLockedByPackage}
+        serviceFormPrice={serviceFormPrice}
+        serviceFormPriceMax={serviceFormPriceMax}
+        serviceFormHasRange={serviceFormHasRange}
+        selectedTreatment={selectedTreatment}
+        activeTreatmentsLoading={activeTreatmentsQuery.isLoading}
+        activeTreatmentOptions={activeTreatmentOptions}
+        activeTreatments={activeTreatments}
+        staffs={staffs}
+        selectedCustomerId={selectedCustomerId}
+        selectedServiceId={selectedServiceId}
+        selectedDate={selectedDate}
+        selectedStartTime={selectedStartTime}
+        appointmentCustomFields={appointmentCustomFields}
         onCancel={() => setOpen(false)}
-        onOk={submit}
-        confirmLoading={isSavingAppointment}
-        okText={isSavingAppointment ? (editing ? 'Đang cập nhật…' : 'Đang tạo…') : 'Lưu'}
-        cancelText="Hủy"
-      >
-        <Form form={form} layout="vertical" style={{ marginTop: 12 }}>
-          <Form.Item
-            name="customer_profile_id"
-            label={(
-              <Space size={4}>
-                <span>Khách hàng</span>
-                <Can I="CREATE" a="CUSTOMER">
-                  <Button type="link" size="small" onClick={openQuickCustomer}>+ Tạo khách mới</Button>
-                </Can>
-              </Space>
-            )}
-            rules={[{ required: true, message: 'Chọn khách' }]}
-          >
-            <Select
-              showSearch
-              filterOption={false}
-              onSearch={setCustomerSearchInput}
-              onChange={(id) => {
-                setSelectedProfile(profileOptions.find((profile) => profile.id === id) ?? null)
-                form.setFieldsValue({ customer_treatment_id: undefined })
-              }}
-              loading={profilesQuery.isLoading}
-              placeholder="Chọn khách hàng"
-              options={profileOptions.map((p) => ({
-                value: p.id,
-                label: `${p.full_name} — ${p.phone}`,
-              }))}
-              notFoundContent={profilesQuery.isLoading ? 'Đang tìm khách hàng…' : 'Không tìm thấy khách'}
-            />
-          </Form.Item>
-          <Row gutter={12}>
-            <Col xs={24} sm={12}>
-              <Form.Item
-                name="service_id"
-                label="Dịch vụ"
-                rules={[{ required: true, message: 'Chọn dịch vụ khách đặt' }]}
-                extra={serviceLockedByPackage
-                  ? 'Dịch vụ cố định theo gói đã chọn — bỏ gói nếu muốn chọn dịch vụ khác.'
-                  : serviceFormHasRange && !selectedTreatment
-                    ? `Dịch vụ có khoảng giá ${serviceFormPrice.toLocaleString('vi-VN')}–${serviceFormPriceMax.toLocaleString('vi-VN')} ₫. Lễ tân chốt giá khi bắt đầu lịch.`
-                    : 'Dịch vụ quyết định thời lượng và giờ/KTV còn trống.'}
-              >
-                <Select
-                  showSearch
-                  optionFilterProp="label"
-                  disabled={serviceLockedByPackage}
-                  loading={servicesQuery.isLoading}
-                  placeholder="Chọn dịch vụ"
-                  style={{ width: '100%' }}
-                  options={serviceOptions.map((s) => ({ value: s.id, label: s.title }))}
-                  notFoundContent={servicesQuery.isLoading ? 'Đang tải dịch vụ…' : 'Chưa có dịch vụ đang hoạt động'}
-                />
-              </Form.Item>
-            </Col>
-            <Col xs={24} sm={12}>
-              <Form.Item name="appt_date" label="Ngày hẹn" rules={[{ required: true, message: 'Chọn ngày hẹn' }]}>
-                <DatePicker format="DD/MM/YYYY" style={{ width: '100%' }} />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row gutter={12}>
-            <Col xs={24} sm={12}>
-              <Form.Item
-                name="start_time"
-                label="Giờ hẹn"
-                rules={[{ required: true, message: 'Chọn giờ hẹn còn trống' }]}
-                extra="Chỉ hiện giờ có KTV rảnh, không trùng lịch."
-              >
-                <Select
-                  disabled={slotsLoading || !selectedDate || !selectedServiceId || !selectedCustomerId}
-                  loading={slotsLoading}
-                  placeholder={
-                    !selectedCustomerId || !selectedServiceId || !selectedDate
-                      ? 'Chọn khách, dịch vụ và ngày trước'
-                      : slotsLoading
-                        ? 'Đang tìm giờ trống…'
-                        : slots.length
-                          ? 'Chọn giờ còn trống'
-                          : 'Không có giờ trống ngày này'
-                  }
-                  options={slots.map((slot) => ({ value: slot.start_time.slice(0, 5), label: slot.start_time.slice(0, 5) }))}
-                  onChange={(time) => {
-                    const slot = slots.find((candidate) => candidate.start_time.slice(0, 5) === time)
-                    if (!slot?.staff_ids.includes(form.getFieldValue('staff_id'))) form.setFieldsValue({ staff_id: undefined })
-                  }}
-                  allowClear
-                  notFoundContent={
-                    <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                      Không có giờ trống — thử ngày khác
-                    </Typography.Text>
-                  }
-                />
-              </Form.Item>
-            </Col>
-            <Col xs={24} sm={12}>
-              <Form.Item name="staff_id" label="KTV phụ trách" extra="Có thể gán KTV ngay hoặc khi duyệt lịch.">
-                <Select
-                  allowClear
-                  showSearch
-                  optionFilterProp="label"
-                  disabled={!selectedStartTime || slotsLoading}
-                  loading={slotsLoading}
-                  placeholder={selectedStartTime ? 'Chọn KTV rảnh' : 'Chọn giờ trước'}
-                  style={{ width: '100%' }}
-                  options={slots
-                    .find((slot) => slot.start_time.slice(0, 5) === selectedStartTime?.slice(0, 5))
-                    ?.staff_ids.map((id) => staffs.find((staff) => staff.id === id))
-                    .filter((staff): staff is StaffRow => !!staff)
-                    .map((staff) => ({
-                      value: staff.id,
-                      label: `${staff.zalo_name || 'Nhân viên'} · ${staff.email || staff.id.slice(0, 8)}`,
-                    }))}
-                />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Form.Item
-            name="customer_treatment_id"
-            label="Gói khách đang dùng (không bắt buộc)"
-            extra="Chọn gói đã mua để buổi hẹn dùng gói và trừ buổi/định mức khi hoàn tất. Bỏ trống để làm dịch vụ lẻ; nếu dịch vụ có khoảng giá, lễ tân chốt giá khi bắt đầu."
-          >
-            <Select
-              allowClear
-              showSearch
-              optionFilterProp="label"
-              disabled={!selectedCustomerId}
-              loading={activeTreatmentsQuery.isLoading}
-              placeholder={selectedCustomerId ? 'Chọn gói khách đã mua (nếu có)' : 'Chọn khách trước'}
-              options={activeTreatmentOptions}
-              notFoundContent={activeTreatmentsQuery.isLoading ? 'Đang tải gói…' : 'Khách không có gói đang làm'}
-              onChange={(id) => {
-                const treatment = activeTreatments.find((t) => t.id === id)
-                const allowed = treatment?.allowed_service_ids
-                if (allowed?.length === 1) {
-                  form.setFieldsValue({ service_id: allowed[0] })
-                } else if (allowed?.length && !allowed.includes(form.getFieldValue('service_id'))) {
-                  form.setFieldsValue({ service_id: undefined })
-                }
-              }}
-            />
-          </Form.Item>
-          <Form.Item name="note" label="Ghi chú">
-            <Input.TextArea rows={2} />
-          </Form.Item>
-          <CustomFieldFormItems definitions={appointmentCustomFields} />
-        </Form>
-      </Modal>
-      <Modal
-        title="Tạo nhanh khách hàng"
-        width="min(640px, calc(100vw - 24px))"
+        onSubmit={submit}
+      />
+      <QuickCustomerModal
         open={quickCustomerOpen}
+        form={quickCustomerForm}
+        branches={branches}
         onCancel={() => setQuickCustomerOpen(false)}
         onOk={() => void submitQuickCustomer()}
-        okText="Tạo khách"
-        cancelText="Hủy"
-      >
-        <Form form={quickCustomerForm} layout="vertical" style={{ marginTop: 12 }}>
-          <Form.Item name="full_name" label="Họ và tên" rules={[{ required: true, message: 'Nhập họ tên' }]}>
-            <Input placeholder="Tên khách hàng" />
-          </Form.Item>
-          <Form.Item name="phone" label="Số điện thoại" rules={[{ required: true, message: 'Nhập số điện thoại' }]}>
-            <Input placeholder="0901234567" />
-          </Form.Item>
-          <Form.Item name="email" label="Email">
-            <Input type="email" placeholder="email@example.com" />
-          </Form.Item>
-          <Form.Item name="branch_id" label="Cơ sở" rules={[{ required: true, message: 'Chọn cơ sở' }]}>
-            <Select
-              placeholder="Chọn cơ sở"
-              options={branches.map((branch) => ({ value: branch.id, label: branch.name }))}
-            />
-          </Form.Item>
-        </Form>
-      </Modal>
-      <Modal
-        title="Thông tin buổi điều trị"
-        width="min(760px, calc(100vw - 24px))"
-        open={!!startingAppointment}
+      />
+      <AppointmentStartModal
+        appointment={startingAppointment}
+        form={startForm}
+        startMutation={startMutation}
+        startTreatmentsQuery={startTreatmentsQuery}
+        startTreatmentOptions={startTreatmentOptions}
+        selectedStartTreatmentId={selectedStartTreatmentId}
+        startingServiceHasRange={startingServiceHasRange}
+        startingServicePrice={startingServicePrice}
+        startingServicePriceMax={startingServicePriceMax}
+        sessionCustomFields={sessionCustomFields}
         onCancel={() => setStartingAppointment(null)}
-        onOk={() => void submitStart()}
-        confirmLoading={startMutation.isPending}
-        okText={startMutation.isPending ? 'Đang bắt đầu…' : 'Bắt đầu buổi'}
-        cancelText="Hủy"
-      >
-        <Form form={startForm} layout="vertical" style={{ marginTop: 12 }}>
-          {startingAppointment && !startingAppointment.customer_treatment_id && (
-            <Form.Item
-              name="customer_treatment_id"
-              label="Gói khách đang dùng (không bắt buộc)"
-              extra="Chọn gói đã mua để tạo buổi và trừ buổi/định mức của gói khi hoàn tất; không nhập giá dịch vụ. Bỏ trống = dịch vụ lẻ, lễ tân chốt giá nếu dịch vụ có khoảng giá."
-            >
-              <Select
-                allowClear
-                showSearch
-                optionFilterProp="label"
-                loading={startTreatmentsQuery.isLoading}
-              placeholder="Không dùng gói — làm dịch vụ lẻ"
-                options={startTreatmentOptions}
-                notFoundContent={startTreatmentsQuery.isLoading ? 'Đang tải gói…' : 'Khách không có gói phù hợp với dịch vụ này'}
-                onChange={(value) => { if (value) startForm.setFieldValue('service_amount', undefined) }}
-              />
-            </Form.Item>
-          )}
-          {startingAppointment && !startingAppointment.customer_treatment_id && !selectedStartTreatmentId && startingServiceHasRange && (
-            <Form.Item
-              name="service_amount"
-              label="Giá dịch vụ lẻ đã thống nhất"
-              rules={[{ required: true, message: 'Nhập giá chốt trước khi bắt đầu' }]}
-              extra={`Nhập giá khách đã đồng ý trong khoảng ${startingServicePrice.toLocaleString('vi-VN')}–${startingServicePriceMax.toLocaleString('vi-VN')} ₫. Giá này sẽ được dùng khi thu tiền.`}
-            >
-              <InputNumber
-                min={startingServicePrice}
-                max={startingServicePriceMax}
-                precision={0}
-                step={1000}
-                style={{ width: '100%' }}
-                addonAfter="₫"
-                placeholder="Nhập giá chốt"
-              />
-            </Form.Item>
-          )}
-          <CustomFieldFormItems definitions={sessionCustomFields} />
-        </Form>
-      </Modal>
+        onSubmit={() => void submitStart()}
+      />
     </>
   )
 }

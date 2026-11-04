@@ -1,23 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import {
-  Avatar,
-  Button,
-  Checkbox,
-  Col,
-  Form,
-  Image,
-  Input,
-  InputNumber,
-  Modal,
-  Row,
-  Select,
-  Space,
-  Switch,
-  Table,
-  Tag,
-  Typography,
-  message,
-} from 'antd'
+import { Avatar, Button, Form, Input, Modal, Select, Space, Switch, Table, Tag, Typography, message } from 'antd'
 import { useAbility } from '@casl/react'
 import {
   AppstoreOutlined,
@@ -35,7 +17,6 @@ import ListFilterPopover from '@/components/base/ListFilterPopover'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
 import TableEmpty from '@/components/base/TableEmpty'
-import ServiceImageField from '@/components/ServiceImageField'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { Branch } from '@/api/models/branch'
 import type { UserCreate } from '@/api/models/userCreate'
@@ -55,38 +36,17 @@ import {
   usePutStaffProfilesUserIdServices,
 } from '@/api/endpoints/staff-profiles'
 
-interface StaffRow {
-  id: string
-  zalo_name?: string
-  email?: string
-  phone_number?: string
-  branch_id?: string | null
-  is_active?: boolean
-  user_roles?: { role_id?: string; role?: { role_name?: string; code?: string | null } }[]
-}
-
-/** Nhận diện vai trò KTV (bỏ dấu, lowercase). */
-function isTechnicianRole(code?: string | null): boolean {
-  return String(code || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase() === 'ktv'
-}
-
-/** Nhận diện vai trò Admin hệ thống qua mã vai trò (roles.code = 'admin'). */
-function isAdminRole(code?: string | null): boolean {
-  return String(code || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase() === 'admin'
-}
-
-type StaffColumnKey = 'staff' | 'role' | 'branch' | 'status' | 'phone' | 'email' | 'profile' | 'in_app'
-const STAFF_COLUMN_OPTIONS: { label: string; value: StaffColumnKey }[] = [
-  { label: 'Nhân viên', value: 'staff' },
-  { label: 'Vai trò', value: 'role' },
-  { label: 'Cơ sở', value: 'branch' },
-  { label: 'Trạng thái', value: 'status' },
-  { label: 'SĐT', value: 'phone' },
-  { label: 'Email', value: 'email' },
-  { label: 'Chức danh & dịch vụ phụ trách', value: 'profile' },
-  { label: 'Hiện trên app', value: 'in_app' },
-]
-const DEFAULT_VISIBLE_COLUMNS = STAFF_COLUMN_OPTIONS.map((column) => column.value)
+import StaffModal from './components/StaffModal'
+import StaffProfileModal from './components/StaffProfileModal'
+import StaffServicesModal from './components/StaffServicesModal'
+import {
+  DEFAULT_VISIBLE_COLUMNS,
+  STAFF_COLUMN_OPTIONS,
+  isAdminRole,
+  isTechnicianRole,
+  type StaffColumnKey,
+  type StaffRow,
+} from './components/constants'
 
 export default function Staffs() {
   const ability = useAbility()
@@ -603,168 +563,39 @@ export default function Staffs() {
       />
       <ListPagination page={page} limit={limit} total={total} onChange={setPage} noun="nhân viên" />
 
-      <Modal
-        title={editing ? 'Sửa chuyên viên' : 'Thêm chuyên viên'}
+      <StaffModal
+        form={form}
         open={open}
+        editing={editing}
+        branches={branches}
+        roles={roles}
+        branchRequired={branchRequired}
         onCancel={() => setOpen(false)}
         onOk={submit}
-        okText="Lưu"
-        cancelText="Hủy"
-      >
-        <Form form={form} layout="vertical" style={{ marginTop: 12 }}>
-          <Form.Item name="zalo_name" label="Họ tên" rules={[{ required: true, message: 'Nhập họ tên' }]}>
-            <Input placeholder="VD: Trần Hoa" />
-          </Form.Item>
-          <Row gutter={12}>
-            <Col xs={24} sm={12}>
-              <Form.Item
-                name="email"
-                label="Email"
-                rules={[{ required: true, message: 'Nhập email' }, { type: 'email', message: 'Email không hợp lệ' }]}
-              >
-                <Input placeholder="nhanvien@vista.vn" />
-              </Form.Item>
-            </Col>
-            <Col xs={24} sm={12}>
-              <Form.Item
-                name="branch_id"
-                label="Cơ sở"
-                rules={branchRequired ? [{ required: true, message: 'Chọn cơ sở cho nhân viên/KTV' }] : []}
-                extra={branchRequired ? undefined : 'Để trống nếu tài khoản quản trị cần truy cập toàn hệ thống.'}
-              >
-                <Select
-                  style={{ width: '100%' }}
-                  allowClear={!branchRequired}
-                  options={branches.map((branch) => ({ value: branch.id, label: branch.name }))}
-                  placeholder={branchRequired ? 'Chọn cơ sở' : 'Chọn cơ sở hoặc để trống'}
-                />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row gutter={12}>
-            <Col xs={24} sm={12}>
-              <Form.Item
-                name="phone_number"
-                label="SĐT (đăng nhập)"
-                rules={[{ required: true, message: 'Nhập SĐT' }]}
-              >
-                <Input placeholder="0901 111 222" />
-              </Form.Item>
-            </Col>
-            <Col xs={24} sm={12}>
-              {editing ? (
-                <Form.Item
-                  name="password"
-                  label="Mật khẩu mới"
-                  extra="Để trống nếu không đổi mật khẩu."
-                >
-                  <Input.Password placeholder="••••••••" autoComplete="new-password" />
-                </Form.Item>
-              ) : (
-                <Form.Item name="password" label="Mật khẩu" rules={[{ required: true, message: 'Nhập mật khẩu' }]}>
-                  <Input.Password autoComplete="new-password" />
-                </Form.Item>
-              )}
-            </Col>
-          </Row>
-          <Row gutter={12}>
-            <Col xs={24} sm={12}>
-              <Form.Item name="role_id" label="Vai trò" rules={[{ required: true, message: 'Chọn vai trò' }]}>
-                <Select
-                  style={{ width: '100%' }}
-                  allowClear
-                  options={roles.map((r) => ({ value: r.id, label: r.role_name }))}
-                  placeholder="Chọn vai trò"
-                />
-              </Form.Item>
-            </Col>
-          </Row>
-        </Form>
-      </Modal>
+      />
 
-      <Modal
-        title={`Hồ sơ chuyên viên — ${profileUser?.zalo_name || profileUser?.email || ''}`}
+      <StaffProfileModal
+        form={profileForm}
         open={profileOpen}
+        profileUser={profileUser}
+        canUpdate={canUpdateStaffProfile}
+        profileDetails={profileDetails}
+        saving={upsertProfileMutation.isPending}
         onCancel={() => setProfileOpen(false)}
-        onOk={canUpdateStaffProfile ? () => void submitProfile() : undefined}
-        footer={canUpdateStaffProfile ? undefined : <Button onClick={() => setProfileOpen(false)}>Đóng</Button>}
-        okText="Lưu"
-        cancelText="Hủy"
-        confirmLoading={upsertProfileMutation.isPending}
-      >
-        <Form form={profileForm} layout="vertical" style={{ marginTop: 12 }}>
-          <Form.Item
-            name="display_name"
-            label="Tên hiển thị trên app"
-            rules={[{ required: true, whitespace: true, message: 'Nhập tên hiển thị' }]}
-          >
-            <Input disabled={!canUpdateStaffProfile} maxLength={255} placeholder="VD: KTV Minh" />
-          </Form.Item>
-          <Row gutter={12}>
-            <Col xs={24} sm={12}>
-              <Form.Item name="title" label="Chức danh">
-                <Input disabled={!canUpdateStaffProfile} maxLength={255} placeholder="VD: Chuyên viên da liễu" />
-              </Form.Item>
-            </Col>
-            <Col xs={24} sm={12}>
-              <Form.Item name="expertise" label="Chuyên môn chính">
-                <Input disabled={!canUpdateStaffProfile} maxLength={500} placeholder="VD: Trị mụn, trẻ hóa" />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Form.Item name="bio" label="Giới thiệu tóm tắt">
-            <Input.TextArea disabled={!canUpdateStaffProfile} rows={3} maxLength={2000} placeholder="Tiểu sử ngắn hiển thị trên Mini App" />
-          </Form.Item>
-          <Row gutter={12}>
-            <Col xs={24} sm={12}>
-              {canUpdateStaffProfile ? (
-                <Form.Item name="photo_file_id" label="Ảnh đại diện">
-                  <ServiceImageField />
-                </Form.Item>
-              ) : (
-                <Form.Item label="Ảnh đại diện">
-                  {profileDetails?.photo_file_id ? (
-                    <Image src={profileDetails.photo_file_id} alt="Ảnh đại diện KTV" width={72} height={72} style={{ objectFit: 'cover', borderRadius: 6 }} />
-                  ) : <Typography.Text type="secondary">Chưa có ảnh</Typography.Text>}
-                </Form.Item>
-              )}
-            </Col>
-            <Col xs={24} sm={12}>
-              <Form.Item name="sort_order" label="Thứ tự sắp xếp" initialValue={0}>
-                <InputNumber disabled={!canUpdateStaffProfile} min={0} style={{ width: '100%' }} />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Form.Item name="show_in_app" label="Hiển thị trên Mini App" valuePropName="checked" initialValue={true}>
-            <Switch disabled={!canUpdateStaffProfile} />
-          </Form.Item>
-        </Form>
-      </Modal>
+        onOk={() => void submitProfile()}
+      />
 
-      <Modal
-        title={`Dịch vụ phụ trách — ${servicesUser?.zalo_name || servicesUser?.email || ''}`}
+      <StaffServicesModal
         open={servicesOpen}
+        servicesUser={servicesUser}
+        serviceRows={serviceRows}
+        checkedServiceIds={checkedServiceIds}
+        loading={staffServicesQuery.isLoading}
+        saving={assignServicesMutation.isPending}
+        onCheckedChange={setCheckedServiceIds}
         onCancel={() => setServicesOpen(false)}
         onOk={() => void submitServices()}
-        okText="Lưu"
-        cancelText="Hủy"
-        confirmLoading={assignServicesMutation.isPending}
-        okButtonProps={{ disabled: staffServicesQuery.isLoading }}
-      >
-        {staffServicesQuery.isLoading ? (
-          <Typography.Text type="secondary">Đang tải dịch vụ hiện tại…</Typography.Text>
-        ) : (
-          <Checkbox.Group
-            value={checkedServiceIds}
-            onChange={(values) => setCheckedServiceIds(values as string[])}
-            style={{ display: 'grid', gap: 8, maxHeight: '50vh', overflowY: 'auto', marginTop: 8 }}
-            options={serviceRows.map((service) => ({ value: service.id, label: service.title || service.id }))}
-          />
-        )}
-        <Typography.Text type="secondary" style={{ display: 'block', marginTop: 12 }}>
-          Lưu sẽ thay thế toàn bộ danh sách dịch vụ KTV này phụ trách. Danh sách dùng để lọc KTV khi đặt lịch.
-        </Typography.Text>
-      </Modal>
+      />
     </>
   )
 }

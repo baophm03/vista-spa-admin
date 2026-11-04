@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Button, DatePicker, Form, Input, InputNumber, Modal, Select, Space, Switch, Table, Tag, Typography, message } from 'antd'
+import { Button, Form, Modal, Table, Tag, Typography, message } from 'antd'
 import { CheckCircleOutlined, ClockCircleOutlined, DeleteOutlined, EditOutlined, GiftOutlined, MinusCircleOutlined, PlusOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import PageTitle from '../../components/base/PageTitle'
@@ -10,24 +10,8 @@ import { paginateRows } from '../../utils/listTable'
 import { useDeleteVouchersId, useGetVouchers, usePostVouchers, usePutVouchersId } from '../../api/endpoints/vouchers'
 import { Can, useAbility } from '@casl/react'
 
-interface VoucherRow {
-  id: string
-  title: string
-  required_points?: number
-  type?: number
-  start_date?: string
-  end_date?: string
-  is_active?: boolean
-}
-
-/** type theo contract BE: hạng thẻ được áp dụng (0=Tất cả, 1=Silver, 2=Gold, 3=Diamond, 4=VIP) */
-const TYPE_LABEL: Record<number, string> = {
-  0: 'Tất cả hạng',
-  1: 'Silver',
-  2: 'Gold',
-  3: 'Diamond',
-  4: 'VIP',
-}
+import VoucherModal from './components/VoucherModal'
+import { TYPE_LABEL, type VoucherRow } from './components/constants'
 
 export default function Vouchers() {
   const canUpdate = useAbility().can('UPDATE', 'VOUCHER')
@@ -180,39 +164,7 @@ export default function Vouchers() {
       />
       <ListPagination page={page} limit={10} total={rows.length} onChange={setPage} noun="voucher" />
 
-      <Modal
-        title={editing ? 'Sửa voucher' : 'Thêm voucher'}
-        open={open}
-        onCancel={() => setOpen(false)}
-        onOk={submit}
-        okText="Lưu"
-        cancelText="Hủy"
-      >
-        <Form form={form} layout="vertical" style={{ marginTop: 12 }}>
-          <Form.Item name="title" label="Tên chương trình" rules={[{ required: true, message: 'Nhập tên' }]}>
-            <Input placeholder="VD: Giảm 50k cho hóa đơn đầu" />
-          </Form.Item>
-          <Space style={{ display: 'flex' }}>
-            <Form.Item name="type" label="Áp dụng hạng" rules={[{ required: true }]} style={{ flex: 1 }}>
-              <Select options={Object.entries(TYPE_LABEL).map(([value, label]) => ({ value: Number(value), label }))} />
-            </Form.Item>
-            <Form.Item name="required_points" label="Điểm đổi" rules={[{ required: true, message: 'Nhập điểm' }]} style={{ flex: 1 }}>
-              <InputNumber min={0} style={{ width: '100%' }} />
-            </Form.Item>
-          </Space>
-          <Space style={{ display: 'flex' }}>
-            <Form.Item name="start_date" label="Bắt đầu" style={{ flex: 1 }}>
-              <DatePicker style={{ width: '100%' }} format="DD/MM/YYYY" />
-            </Form.Item>
-            <Form.Item name="end_date" label="Kết thúc" style={{ flex: 1 }}>
-              <DatePicker style={{ width: '100%' }} format="DD/MM/YYYY" />
-            </Form.Item>
-          </Space>
-          <Form.Item name="is_active" label="Hoạt động" valuePropName="checked">
-            <Switch />
-          </Form.Item>
-        </Form>
-      </Modal>
+      <VoucherModal form={form} open={open} editing={editing} onCancel={() => setOpen(false)} onOk={submit} />
     </>
   )
 }

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Alert, Button, Checkbox, Form, Input, Modal, Select, Space, Table, Tag, message } from 'antd'
+import { Alert, Button, Checkbox, Form, Space, Table, Tag, message } from 'antd'
 import { BellOutlined, CheckOutlined, MailOutlined, SendOutlined } from '@ant-design/icons'
 import PageTitle from '@/components/base/PageTitle'
 import StatCards, { type StatItem } from '@/components/base/StatCards'
@@ -13,6 +13,7 @@ import { useGetCustomerProfiles } from '@/api/endpoints/customer-profiles'
 import { useGetNotifications, usePostNotifications, usePutNotificationsId } from '@/api/endpoints/admin'
 import { Can } from '@casl/react'
 import { useBrandDateTime } from '@/themeRuntime'
+import NotificationModal from './components/NotificationModal'
 
 interface NotificationRow {
   id: string
@@ -273,33 +274,14 @@ export default function Notifications() {
       />
       <ListPagination page={1} limit={rows.length || 10} total={rows.length || 0} onChange={() => undefined} noun="thông báo" />
 
-      <Modal title="Gửi thông báo" open={open} onCancel={() => setOpen(false)} onOk={() => void submit()} okText="Gửi" cancelText="Hủy">
-        <Form form={form} layout="vertical" style={{ marginTop: 12 }}>
-          <Form.Item name="channel" label="Kênh gửi" rules={[{ required: true }]} initialValue="app">
-          <Select options={[{ value: 'app', label: 'Thông báo trong ứng dụng' }, { value: 'email', label: 'Email' }]} />
-          </Form.Item>
-          <Form.Item name="event_key" label="Loại thông báo" rules={[{ required: true }]}>
-            <Select options={Object.entries(EVENT_META).map(([value, meta]) => ({ value, label: meta.label }))} />
-          </Form.Item>
-          <Form.Item name="user_id" label="Đối tượng nhận (bỏ trống = broadcast tất cả)">
-            <Select
-              allowClear
-              showSearch
-              optionFilterProp="label"
-              placeholder="Tất cả khách hàng"
-              options={profiles
-                .filter((p) => p.user_id)
-                .map((c) => ({ value: c.user_id, label: `${c.full_name} — ${c.phone}` }))}
-            />
-          </Form.Item>
-          <Form.Item name="title" label="Tiêu đề" rules={[{ required: true, message: 'Nhập tiêu đề' }]}>
-            <Input placeholder="VD: Ưu đãi tháng 11" />
-          </Form.Item>
-          <Form.Item name="body" label="Nội dung" rules={[{ required: true, message: 'Nhập nội dung' }]}>
-            <Input.TextArea rows={3} placeholder="Nội dung thông báo gửi qua app..." />
-          </Form.Item>
-        </Form>
-      </Modal>
+      <NotificationModal
+        open={open}
+        form={form}
+        profiles={profiles}
+        eventMeta={EVENT_META}
+        onCancel={() => setOpen(false)}
+        onSubmit={() => void submit()}
+      />
     </>
   )
 }

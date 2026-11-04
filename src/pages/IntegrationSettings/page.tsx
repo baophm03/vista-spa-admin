@@ -257,63 +257,63 @@ export default function IntegrationSettings() {
   return (
     <Can I="UPDATE" a="SETTING" passThrough>
       {({ isAllowed: canEdit }) => (
-    <>
-      <PageTitle subtitle="Kết nối tích hợp bên ngoài (Zalo, email...)">Tích hợp dịch vụ</PageTitle>
-      {!canEdit && <Alert className="mb-4" type="info" showIcon message="Chỉ ADM được xem và quản lý tích hợp." />}
-      {query.isError && <Alert className="mb-4" type="error" showIcon message="Không tải được trạng thái tích hợp" description={errorMessage(query.error)} action={<Button size="small" onClick={() => void query.refetch()}>Thử lại</Button>} />}
-      <Spin spinning={query.isLoading}>
-        <Row gutter={[20, 20]}>
-          <Col xs={24} xl={14}>
-            <Card
-              title={<Space><LinkOutlined />Email qua SMTP</Space>}
-              extra={statusTag(smtp)}
-            >
-              <Form form={form} layout="vertical" initialValues={emptySmtp} disabled={!canEdit} onValuesChange={() => setTestResult(null)}>
-                <Row gutter={16}>
-                  <Col xs={24} md={16}><Form.Item name="host" label="Máy chủ SMTP" rules={[{ required: true, whitespace: true }]}><Input placeholder="smtp.example.com" autoComplete="off" /></Form.Item></Col>
-                  <Col xs={24} md={8}><Form.Item name="port" label="Cổng" rules={[{ required: true }]}><InputNumber min={1} max={65535} className="w-full!" /></Form.Item></Col>
-                </Row>
-                <Row gutter={16}>
-                  <Col xs={24} md={12}><Form.Item name="security" label="Bảo mật" rules={[{ required: true }]}><Select options={[{ value: 'STARTTLS', label: 'STARTTLS' }, { value: 'TLS', label: 'TLS/SSL' }, { value: 'NONE', label: 'Không mã hóa' }]} /></Form.Item></Col>
-                  <Col xs={24} md={12}><Form.Item name="username" label="Tài khoản SMTP"><Input autoComplete="off" /></Form.Item></Col>
-                </Row>
-                <Row gutter={16}>
-                  <Col xs={24} md={8}>
-                    <Form.Item label="Mật khẩu SMTP" extra={smtp?.has_secret && !clearSecret ? 'Đã lưu secret. Để trống nếu không muốn thay đổi.' : undefined}>
-                      <Input.Password value={password} onChange={(event) => { setPassword(event.target.value); setTestResult(null) }} autoComplete="new-password" placeholder={smtp?.has_secret ? 'Đang lưu an toàn' : 'Nhập mật khẩu SMTP'} disabled={!canEdit || clearSecret} />
-                      {smtp?.has_secret && <Button type="link" danger className="px-0!" onClick={() => { const next = !clearSecret; setClearSecret(next); if (next) setEnabled(false); setPassword(''); setTestResult(null) }}>{clearSecret ? 'Giữ lại secret đã lưu' : 'Xóa secret đã lưu'}</Button>}
-                    </Form.Item>
-                  </Col>
-                  <Col xs={24} md={8}><Form.Item name="from_name" label="Tên người gửi" rules={[{ required: true, whitespace: true }]}><Input maxLength={150} /></Form.Item></Col>
-                  <Col xs={24} md={8}><Form.Item name="from_email" label="Email người gửi" rules={[{ required: true, type: 'email' }]}><Input type="email" /></Form.Item></Col>
-                </Row>
-                <div className="mb-4 flex items-center justify-between rounded-lg border border-[var(--brand-border)] bg-[var(--brand-bg)] p-3">
-                  <div><Typography.Text strong>Cho phép gửi qua SMTP</Typography.Text><br /><Typography.Text type="secondary">Bật sẽ kiểm tra kết nối lại trước khi hoạt động.</Typography.Text></div>
-                  <Switch checked={enabled} onChange={(value) => { setEnabled(value); setTestResult(null) }} disabled={!canEdit} />
-                </div>
-                {testResult && <Alert className="mb-4!" type={testResult.ok ? 'success' : 'error'} showIcon message={testResult.message} />}
-                <Space wrap>
-                  <Button icon={<CheckCircleOutlined />} loading={testMutation.isPending} disabled={!canEdit} onClick={() => void onTest()}>Kiểm tra kết nối</Button>
-                  <Button type="primary" icon={<SaveOutlined />} loading={saveMutation.isPending} disabled={!canEdit} onClick={() => void onSave()}>Lưu cấu hình</Button>
-                </Space>
-              </Form>
-            </Card>
-            <ZaloIntegrationCard provider="ZALO_OA" title="Zalo Official Account (OA)" row={zaloOa} canEdit={canEdit} />
-            <ZaloIntegrationCard provider="ZALO_ZBS" title="ZBS Template Message" row={zaloZbs} canEdit={canEdit} />
-          </Col>
-          <Col xs={24} xl={10}>
-            <Card title="Gmail SMTP">
-              <Space direction="vertical" size={8}>
-                <Tag color="processing">SMTP Gmail</Tag>
-                <Typography.Text type="secondary">
-                  Máy chủ smtp.gmail.com, cổng 587 và STARTTLS đã được điền sẵn trong biểu mẫu Email qua SMTP. Nhập tài khoản và mật khẩu SMTP tại đó, rồi chọn Kiểm tra kết nối.
-                </Typography.Text>
-              </Space>
-            </Card>
-          </Col>
-        </Row>
-      </Spin>
-    </>
+        <>
+          <PageTitle subtitle="Kết nối tích hợp bên ngoài (Zalo, email...)">Tích hợp dịch vụ</PageTitle>
+          {!canEdit && <Alert className="mb-4" type="info" showIcon message="Chỉ ADM được xem và quản lý tích hợp." />}
+          {query.isError && <Alert className="mb-4" type="error" showIcon message="Không tải được trạng thái tích hợp" description={errorMessage(query.error)} action={<Button size="small" onClick={() => void query.refetch()}>Thử lại</Button>} />}
+          <Spin spinning={query.isLoading}>
+            <Row gutter={[20, 20]}>
+              <Col xs={24} xl={14}>
+                <Card
+                  title={<Space><LinkOutlined />Email qua SMTP</Space>}
+                  extra={statusTag(smtp)}
+                >
+                  <Form form={form} layout="vertical" initialValues={emptySmtp} disabled={!canEdit} onValuesChange={() => setTestResult(null)}>
+                    <Row gutter={16}>
+                      <Col xs={24} md={16}><Form.Item name="host" label="Máy chủ SMTP" rules={[{ required: true, whitespace: true }]}><Input placeholder="smtp.example.com" autoComplete="off" /></Form.Item></Col>
+                      <Col xs={24} md={8}><Form.Item name="port" label="Cổng" rules={[{ required: true }]}><InputNumber min={1} max={65535} className="w-full!" /></Form.Item></Col>
+                    </Row>
+                    <Row gutter={16}>
+                      <Col xs={24} md={12}><Form.Item name="security" label="Bảo mật" rules={[{ required: true }]}><Select options={[{ value: 'STARTTLS', label: 'STARTTLS' }, { value: 'TLS', label: 'TLS/SSL' }, { value: 'NONE', label: 'Không mã hóa' }]} /></Form.Item></Col>
+                      <Col xs={24} md={12}><Form.Item name="username" label="Tài khoản SMTP"><Input autoComplete="off" /></Form.Item></Col>
+                    </Row>
+                    <Row gutter={16}>
+                      <Col xs={24} md={8}>
+                        <Form.Item label="Mật khẩu SMTP" extra={smtp?.has_secret && !clearSecret ? 'Đã lưu secret. Để trống nếu không muốn thay đổi.' : undefined}>
+                          <Input.Password value={password} onChange={(event) => { setPassword(event.target.value); setTestResult(null) }} autoComplete="new-password" placeholder={smtp?.has_secret ? 'Đang lưu an toàn' : 'Nhập mật khẩu SMTP'} disabled={!canEdit || clearSecret} />
+                          {smtp?.has_secret && <Button type="link" danger className="px-0!" onClick={() => { const next = !clearSecret; setClearSecret(next); if (next) setEnabled(false); setPassword(''); setTestResult(null) }}>{clearSecret ? 'Giữ lại secret đã lưu' : 'Xóa secret đã lưu'}</Button>}
+                        </Form.Item>
+                      </Col>
+                      <Col xs={24} md={8}><Form.Item name="from_name" label="Tên người gửi" rules={[{ required: true, whitespace: true }]}><Input maxLength={150} /></Form.Item></Col>
+                      <Col xs={24} md={8}><Form.Item name="from_email" label="Email người gửi" rules={[{ required: true, type: 'email' }]}><Input type="email" /></Form.Item></Col>
+                    </Row>
+                    <div className="mb-4 flex items-center justify-between rounded-lg border border-[var(--brand-border)] bg-[var(--brand-bg)] p-3">
+                      <div><Typography.Text strong>Cho phép gửi qua SMTP</Typography.Text><br /><Typography.Text type="secondary">Bật sẽ kiểm tra kết nối lại trước khi hoạt động.</Typography.Text></div>
+                      <Switch checked={enabled} onChange={(value) => { setEnabled(value); setTestResult(null) }} disabled={!canEdit} />
+                    </div>
+                    {testResult && <Alert className="mb-4!" type={testResult.ok ? 'success' : 'error'} showIcon message={testResult.message} />}
+                    <Space wrap>
+                      <Button icon={<CheckCircleOutlined />} loading={testMutation.isPending} disabled={!canEdit} onClick={() => void onTest()}>Kiểm tra kết nối</Button>
+                      <Button type="primary" icon={<SaveOutlined />} loading={saveMutation.isPending} disabled={!canEdit} onClick={() => void onSave()}>Lưu cấu hình</Button>
+                    </Space>
+                  </Form>
+                </Card>
+                <ZaloIntegrationCard provider="ZALO_OA" title="Zalo Official Account (OA)" row={zaloOa} canEdit={canEdit} />
+                <ZaloIntegrationCard provider="ZALO_ZBS" title="ZBS Template Message" row={zaloZbs} canEdit={canEdit} />
+              </Col>
+              <Col xs={24} xl={10}>
+                <Card title="Gmail SMTP">
+                  <Space direction="vertical" size={8}>
+                    <Tag color="processing">SMTP Gmail</Tag>
+                    <Typography.Text type="secondary">
+                      Máy chủ smtp.gmail.com, cổng 587 và STARTTLS đã được điền sẵn trong biểu mẫu Email qua SMTP. Nhập tài khoản và mật khẩu SMTP tại đó, rồi chọn Kiểm tra kết nối.
+                    </Typography.Text>
+                  </Space>
+                </Card>
+              </Col>
+            </Row>
+          </Spin>
+        </>
       )}
     </Can>
   )

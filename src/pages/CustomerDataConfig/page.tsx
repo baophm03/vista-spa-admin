@@ -307,9 +307,9 @@ export default function CustomerDataConfig() {
       {selectedSection === 'HEALTH_METRICS'
         ? <HealthMetricsConfig />
         : <CustomerFieldsConfig
-            entity={selectedSection}
-            sectionTitle={sectionOptions.find((option) => option.value === selectedSection)?.label}
-          />}
+          entity={selectedSection}
+          sectionTitle={sectionOptions.find((option) => option.value === selectedSection)?.label}
+        />}
     </>
   )
 }
