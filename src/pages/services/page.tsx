@@ -1,13 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
   Button,
-  Col,
   Form,
   Grid,
   Input,
-  InputNumber,
   Modal,
-  Row,
   Select,
   Space,
   Table,
@@ -24,8 +21,8 @@ import ListFilterPopover from '@/components/base/ListFilterPopover'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
 import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
-import ServiceImageField from '@/components/ServiceImageField'
-import CustomFieldFormItems, { normalizeCustomFieldValues } from '@/components/CustomFieldFormItems'
+import { normalizeCustomFieldValues } from '@/components/CustomFieldFormItems'
+import ServiceModal from './components/ServiceModal'
 import { errorMessage, pickData } from '@/api/helpers'
 import {
   deleteServiceId,
@@ -450,70 +447,18 @@ export default function Services() {
       ) : (
         activeTab === 'services' ? servicesContent : <ServiceCategories />
       )}
-
-      <Modal
-        title={editing ? 'Sửa dịch vụ' : 'Thêm dịch vụ'}
+      <ServiceModal
         open={open}
+        editing={editing}
+        form={form}
+        categories={categories}
+        customFields={customFields}
+        currencySymbol={currencySymbol}
+        saving={saving}
+        categoryOptions={categoryOptions}
         onCancel={() => setOpen(false)}
-        onOk={() => void submit()}
-        confirmLoading={saving}
-        okText="Lưu"
-        cancelText="Hủy"
-        destroyOnHidden
-        width={720}
-      >
-        <Form form={form} layout="vertical" style={{ marginTop: 12 }}>
-          <Form.Item name="title" label="Tên dịch vụ" rules={[{ required: true, message: 'Nhập tên dịch vụ' }]}>
-            <Input maxLength={255} placeholder="VD: Chăm sóc da cơ bản" />
-          </Form.Item>
-          <Row gutter={16}>
-            <Col span={8}>
-              <Form.Item name="category_id" label="Danh mục">
-                <Select allowClear placeholder="Chọn danh mục" options={categoryOptions(categories, null, 0, undefined, editing?.category_id ?? undefined)} />
-              </Form.Item>
-            </Col>
-            <Col span={8}>
-              <Form.Item name="duration_minutes" label="Thời lượng (phút)" rules={[{ type: 'number', min: 1, message: 'Thời lượng phải lớn hơn 0' }]}>
-                <InputNumber min={1} style={{ width: '100%' }} placeholder="Để trống dùng mặc định 60 phút" />
-              </Form.Item>
-            </Col>
-            <Col span={8}>
-              <Form.Item name="required_points" label="Điểm đổi dịch vụ" rules={[{ type: 'number', min: 0, message: 'Điểm đổi không được âm' }]}>
-                <InputNumber min={0} style={{ width: '100%' }} />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row gutter={16}>
-            <Col span={8}>
-              <Form.Item name="price" label="Giá niêm yết" rules={[{ type: 'number', min: 0, message: 'Giá không được âm' }]}>
-                <InputNumber min={0} step={1000} suffix={currencySymbol} style={{ width: '100%' }} />
-              </Form.Item>
-            </Col>
-            <Col span={8}>
-              <Form.Item name="price_max" label="Giá tối đa" rules={[{ type: 'number', min: 0, message: 'Giá không được âm' }]}>
-                <InputNumber min={0} step={1000} suffix={currencySymbol} style={{ width: '100%' }} />
-              </Form.Item>
-            </Col>
-            <Col span={8}>
-              <Form.Item name="price_unit" label="Đơn vị giá">
-                <Select allowClear options={[{ value: 'SESSION', label: 'Theo buổi' }, { value: 'PER_LESION', label: 'Theo nốt' }]} />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Form.Item name="description" label="Mô tả">
-            <Input.TextArea rows={3} maxLength={5000} />
-          </Form.Item>
-          <Space style={{ display: 'flex' }} align="start" wrap>
-            <Form.Item name="image_file_id" label="Ảnh bìa">
-              <ServiceImageField />
-            </Form.Item>
-            <Form.Item name="gallery_file_ids" label="Bộ ảnh">
-              <ServiceImageField multiple />
-            </Form.Item>
-          </Space>
-          <CustomFieldFormItems definitions={customFields} />
-        </Form>
-      </Modal>
+        onSubmit={() => void submit()}
+      />
     </>
   )
 }

@@ -1,36 +1,6 @@
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
-import {
-  Avatar,
-  Button,
-  DatePicker,
-  Drawer,
-  Form,
-  Grid,
-  Input,
-  InputNumber,
-  Modal,
-  Popconfirm,
-  Col,
-  Row,
-  Select,
-  Space,
-  Table,
-  Tag,
-  Typography,
-  message,
-} from 'antd'
-import {
-  DeleteOutlined,
-  DownloadOutlined,
-  EditOutlined,
-  HistoryOutlined,
-  LinkOutlined,
-  PlusOutlined,
-  PrinterOutlined,
-  QrcodeOutlined,
-  SearchOutlined,
-  UserOutlined,
-} from '@ant-design/icons'
+import { Button, Form, Grid, Input, InputNumber, Modal, Col, Row, Select, Space, Table, Tag, Typography, message } from 'antd'
+import { DeleteOutlined, DownloadOutlined, EditOutlined, PlusOutlined, QrcodeOutlined, SearchOutlined } from '@ant-design/icons'
 import { useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import type { Dayjs } from 'dayjs'
@@ -41,8 +11,7 @@ import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import CustomerCodeHistoryModal from '@/components/CustomerCodeHistoryModal'
 import LinkCustomerAccountModal from '@/components/LinkCustomerAccountModal'
-import CustomerProfileDetailsTabs from '@/components/CustomerProfileDetailsTabs'
-import CustomerProfileCustomFields, { normalizeCustomerCustomFields, type CustomFieldDefWithOptions } from '@/components/CustomerProfileCustomFields'
+import { normalizeCustomerCustomFields, type CustomFieldDefWithOptions } from '@/components/CustomerProfileCustomFields'
 import type { CustomerProfileRow, CustomerProfileSummary } from '@/components/CustomerProfileOverviewTab'
 import { useBrandCurrency } from '@/themeRuntime'
 import type { Branch } from '@/api/models/branch'
@@ -69,21 +38,9 @@ import { downloadBlob, errorMessage, pickData } from '@/api/helpers'
 import { useCustomerProfileAccess } from '@/utils/customerProfileAccess'
 
 const CustomerQrScannerModal = lazy(() => import('@/components/CustomerQrScannerModal'))
-
-function CustomerAvatar({ profile, size = 32 }: { profile: CustomerProfileRow; size?: number }) {
-  const initial = profile.full_name?.trim().charAt(0).toUpperCase()
-  return (
-    <Avatar
-      size={size}
-      src={profile.user?.zalo_avatar || undefined}
-      icon={initial ? undefined : <UserOutlined />}
-      style={{ backgroundColor: 'var(--brand-primary)', flexShrink: 0 }}
-      alt={`Ảnh đại diện ${profile.full_name}`}
-    >
-      {initial}
-    </Avatar>
-  )
-}
+import CustomerAvatar from './components/CustomerAvatar'
+import CustomerDetailDrawer from './components/CustomerDetailDrawer'
+import CustomerProfileFormModal from './components/CustomerProfileFormModal'
 
 function escapeHtml(value: string) {
   return value.replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char] ?? char)
@@ -636,141 +593,38 @@ export default function Users() {
       />
       <ListPagination page={page} limit={limit} total={total} onChange={setPage} noun="khách hàng" />
 
-      <Drawer
-        title={selected ? `${selected.full_name} — ${selected.customer_code}` : ''}
-        width="min(980px, calc(100vw - 24px))"
-        open={!!selected}
-        onClose={() => {
-          setSelected(null)
-        }}
-      >
-        {selected && (
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 18 }}>
-              <CustomerAvatar profile={selected} size={60} />
-              <div style={{ minWidth: 0 }}>
-                <Typography.Title level={5} style={{ margin: 0 }}>{selected.full_name}</Typography.Title>
-                <Typography.Text type="secondary">{selected.user?.zalo_name || selected.phone}</Typography.Text>
-              </div>
-            </div>
+      <CustomerDetailDrawer
+        selected={selected}
+        summary={summary}
+        qrUrl={qrUrl}
+        qrLoading={qrLoading}
+        qrError={qrError}
+        profileFieldDefs={profileFieldDefs}
+        canViewQr={profileAccess.canViewQr}
+        isAdmin={profileAccess.isAdmin}
+        canManage={profileAccess.canManage}
+        resettingQr={resettingQr}
+        onClose={() => setSelected(null)}
+        onDownloadQr={downloadQr}
+        onPrintQr={printQr}
+        onResetQr={() => void resetQr()}
+        onLink={() => setLinkOpen(true)}
+        onHistory={() => setHistoryOpen(true)}
+        onMembershipUpdated={refreshSelected}
+        branchName={branchName}
+      />
 
-            {profileAccess.canViewQr && <div style={{ textAlign: 'center', padding: '18px 12px', background: '#FAFBFA', border: '1px solid var(--brand-border-soft)', borderRadius: 12 }}>
-              {qrUrl ? (
-                <img src={qrUrl} alt={`Mã QR ${selected.customer_code}`} width={180} height={180} style={{ display: 'block', margin: '0 auto' }} />
-              ) : qrLoading ? (
-                <div role="status" style={{ width: 180, height: 180, margin: '0 auto', display: 'grid', placeItems: 'center', color: '#8A8D93' }}>Đang tải QR…</div>
-              ) : (
-                <div role="alert" style={{ width: 180, height: 180, margin: '0 auto', display: 'grid', placeItems: 'center', color: '#8A8D93' }}>{qrError || 'Chưa có mã QR'}</div>
-              )}
-              <Typography.Text type="secondary" style={{ display: 'block', marginTop: 8 }}>
-                Quét mã để tra cứu khách hàng
-              </Typography.Text>
-              <Space wrap style={{ justifyContent: 'center', marginTop: 12 }}>
-                <Button icon={<DownloadOutlined />} disabled={!qrUrl} onClick={downloadQr}>Tải QR</Button>
-                <Button icon={<PrinterOutlined />} disabled={!qrUrl} onClick={printQr}>In QR</Button>
-                {profileAccess.isAdmin && (
-                  <Popconfirm
-                    title="Tạo mã QR mới?"
-                    description="Mã QR cũ sẽ không còn hiệu lực."
-                    okText="Tạo lại"
-                    cancelText="Hủy"
-                    onConfirm={() => void resetQr()}
-                  >
-                    <Button loading={resettingQr}>Tạo lại QR</Button>
-                  </Popconfirm>
-                )}
-              </Space>
-            </div>}
 
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 16 }}>
-              {profileAccess.canManage && !selected.user_id && (
-                <Button
-                  icon={<LinkOutlined />}
-                  onClick={() => setLinkOpen(true)}
-                  style={{ flex: '1 1 180px', minWidth: 0, justifyContent: 'center' }}
-                >Liên kết tài khoản</Button>
-              )}
-              {profileAccess.canManage && (
-                <Button
-                  icon={<HistoryOutlined />}
-                  onClick={() => setHistoryOpen(true)}
-                  style={{ flex: selected.user_id ? '0 0 auto' : '1 1 180px', minWidth: 0, justifyContent: 'center' }}
-                >Lịch sử mã khách</Button>
-              )}
-            </div>
-
-            <CustomerProfileDetailsTabs
-              key={selected.id}
-              profile={selected}
-              summary={summary}
-              branchName={branchName}
-              fieldDefinitions={profileFieldDefs}
-              onMembershipUpdated={refreshSelected}
-            />
-          </div>
-        )}
-      </Drawer>
-
-      <Modal
-        title={editing ? 'Sửa khách hàng' : 'Thêm khách hàng'}
+      <CustomerProfileFormModal
+        form={form}
         open={open}
+        editing={editing}
+        branches={branches}
+        profileFieldDefs={profileFieldDefs}
         onCancel={() => setOpen(false)}
         onOk={() => void submit()}
-        okText="Lưu"
-        cancelText="Hủy"
-        destroyOnHidden
-      >
-        <Form form={form} layout="vertical" style={{ marginTop: 12, maxHeight: '68vh', overflowY: 'auto', paddingInlineEnd: 8 }}>
-          <Form.Item name="full_name" label="Họ và tên" rules={[{ required: true, message: 'Nhập họ tên' }]}>
-            <Input placeholder="VD: Nguyễn Thu Hà" />
-          </Form.Item>
-          <Row gutter={12}>
-            <Col xs={24} sm={12}>
-              <Form.Item name="phone" label="Số điện thoại" rules={[{ required: true, message: 'Nhập SĐT' }]}>
-                <Input placeholder="0901234568" />
-              </Form.Item>
-            </Col>
-            <Col xs={24} sm={12}>
-              <Form.Item name="email" label="Email">
-                <Input placeholder="email@gmail.com" />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row gutter={12}>
-            <Col xs={24} sm={8}>
-              <Form.Item name="branch_id" label="Cơ sở" rules={[{ required: true, message: 'Chọn cơ sở' }]}>
-                <Select
-                  disabled={!!editing}
-                  options={branches.map((branch) => ({ value: branch.id, label: branch.name }))}
-                  placeholder="Chọn cơ sở"
-                  style={{ width: '100%' }}
-                />
-              </Form.Item>
-            </Col>
-            <Col xs={24} sm={8}>
-              <Form.Item
-                name="birthday"
-                label="Ngày sinh"
-                rules={[{
-                  validator: async (_, value: Dayjs | undefined) => {
-                    if (!value || value.isBefore(dayjs().startOf('day'), 'day')) return
-                    throw new Error('Ngày sinh phải trước ngày hiện tại')
-                  },
-                }]}
-              >
-                <DatePicker
-                  style={{ width: '100%' }}
-                  format="DD/MM/YYYY"
-                  disabledDate={(current) => !!current && !current.isBefore(dayjs().startOf('day'), 'day')}
-                />
-              </Form.Item>
-            </Col>
-          </Row>
-          <CustomerProfileCustomFields definitions={profileFieldDefs} />
-          <Form.Item name="address" label="Địa chỉ"><Input /></Form.Item>
-          <Form.Item name="note" label="Ghi chú"><Input.TextArea rows={2} /></Form.Item>
-        </Form>
-      </Modal>
+      />
+
 
       {scannerOpen && (
         <Suspense fallback={null}>

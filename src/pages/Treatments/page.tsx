@@ -1,26 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import {
-  Alert,
-  Button,
-  Col,
-  Collapse,
-  Form,
-  Grid,
-  Input,
-  InputNumber,
-  Modal,
-  Popconfirm,
-  Row,
-  Select,
-  Space,
-  Switch,
-  Table,
-  Tabs,
-  Tag,
-  Typography,
-  message,
-} from 'antd'
+import { Alert, Button, Form, Grid, Input, Modal, Popconfirm, Select, Space, Table, Tabs, Tag, Typography, message } from 'antd'
 import type { TableColumnsType } from 'antd'
 import { EditOutlined, EyeInvisibleOutlined, EyeOutlined, PlusOutlined, SearchOutlined, ShoppingOutlined } from '@ant-design/icons'
 import PageTitle from '@/components/base/PageTitle'
@@ -31,12 +11,11 @@ import ListPagination from '@/components/base/ListPagination'
 import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import { paginateRows } from '@/utils/listTable'
 import { useCustomerProfileAccess } from '@/utils/customerProfileAccess'
-import CustomFieldFormItems, { normalizeCustomFieldValues } from '@/components/CustomFieldFormItems'
+import { normalizeCustomFieldValues } from '@/components/CustomFieldFormItems'
 import useCustomFieldDefinitions from '@/hooks/useCustomFieldDefinitions'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { Branch } from '@/api/models/branch'
 import type { Service } from '@/api/models/service'
-import type { TreatmentPackage } from '@/api/models/treatmentPackage'
 import {
   getGetPackageTypesQueryKey,
   getGetTreatmentPackagesQueryKey,
@@ -53,77 +32,24 @@ import {
 import { useGetBranches } from '@/api/endpoints/branches'
 import { useBrandCurrency } from '@/themeRuntime'
 
-type QuotaType = TreatmentPackage['quota_type']
-type ValidityUnit = NonNullable<TreatmentPackage['validity_unit']>
-
-interface PackageTypeRow {
-  id: string
-  code: string
-  name: string
-  default_quota_type: QuotaType
-  has_warranty?: boolean
-  allow_unlimited?: boolean
-  sort_order?: number
-  is_active?: boolean
-}
-
-interface TreatmentPackageRow extends TreatmentPackage {
-  service_ids?: string[]
-  package_type?: { id?: string; name?: string; code?: string } | null
-}
-
-type PackageColumnKey = 'name' | 'branch' | 'type' | 'quota' | 'services' | 'price' | 'validity' | 'bonus' | 'status'
-type PackageFiltersForm = { package_type_id?: string; branch_id?: string; is_active?: 'true' | 'false' }
-type PackageTypeForm = {
-  code: string
-  name: string
-  default_quota_type: QuotaType
-  has_warranty: boolean
-  allow_unlimited: boolean
-  sort_order: number
-  is_active: boolean
-}
-
-const QUOTA_LABEL: Record<QuotaType, string> = {
-  SESSIONS: 'Theo số buổi',
-  VALUE: 'Theo định mức tiền',
-  UNLIMITED: 'Trọn gói',
-}
-const VALIDITY_LABEL: Record<ValidityUnit, string> = {
-  DAY: 'ngày',
-  WEEK: 'tuần',
-  MONTH: 'tháng',
-}
-const COLUMN_OPTIONS: { label: string; value: PackageColumnKey }[] = [
-  { label: 'Tên gói', value: 'name' },
-  { label: 'Cơ sở', value: 'branch' },
-  { label: 'Loại gói', value: 'type' },
-  { label: 'Hạn mức', value: 'quota' },
-  { label: 'Dịch vụ', value: 'services' },
-  { label: 'Giá niêm yết', value: 'price' },
-  { label: 'Thời hạn', value: 'validity' },
-  { label: 'Buổi tặng', value: 'bonus' },
-  { label: 'Trạng thái', value: 'status' },
-]
-const DEFAULT_COLUMNS: PackageColumnKey[] = ['name', 'branch', 'type', 'quota', 'price', 'status']
-const PACKAGE_TYPE_QUOTA_OPTIONS = Object.entries(QUOTA_LABEL).map(([value, label]) => ({ value, label }))
-const PACKAGE_STATUS_OPTIONS = [
-  { value: 'true', label: 'Đang bán' },
-  { value: 'false', label: 'Đã ẩn' },
-]
-
-function quotaLabel(row: TreatmentPackage, formatMoney: (value: unknown) => string) {
-  if (row.quota_type === 'SESSIONS') return String(row.total_sessions ?? '—') + ' buổi'
-  if (row.quota_type === 'VALUE') return formatMoney(row.total_value)
-  return 'Không giới hạn'
-}
-
-function priceLabel(row: TreatmentPackage, formatMoney: (value: unknown) => string) {
-  const minimum = formatMoney(row.list_price)
-  return row.list_price_max != null
-    ? minimum + ' – ' + formatMoney(row.list_price_max)
-    : minimum
-}
+import TreatmentPackageModal from './components/TreatmentPackageModal'
+import TreatmentTypeModal from './components/TreatmentTypeModal'
+import {
+  VALIDITY_LABEL,
+  COLUMN_OPTIONS,
+  DEFAULT_COLUMNS,
+  PACKAGE_TYPE_QUOTA_OPTIONS,
+  PACKAGE_STATUS_OPTIONS,
+  QUOTA_LABEL,
+  quotaLabel,
+  priceLabel,
+  type PackageColumnKey,
+  type PackageFiltersForm,
+  type PackageTypeForm,
+  type PackageTypeRow,
+  type QuotaType,
+  type TreatmentPackageRow,
+} from './components/constants'
 
 export default function Treatments() {
   const { format: formatMoney, symbol: currencySymbol } = useBrandCurrency()
@@ -178,10 +104,10 @@ export default function Treatments() {
   const statItems: StatItem[] = hasServerFilters || hideSummaryForTechnician
     ? []
     : [
-        { key: 'total', label: 'Tổng gói liệu trình', value: rows.length.toLocaleString('vi-VN'), icon: <ShoppingOutlined />, tone: 'primary' },
-        { key: 'active', label: 'Đang bán', value: activePackageCount.toLocaleString('vi-VN'), icon: <EyeOutlined />, tone: 'secondary' },
-        { key: 'hidden', label: 'Đã ẩn', value: (rows.length - activePackageCount).toLocaleString('vi-VN'), icon: <EyeInvisibleOutlined />, tone: 'neutral' },
-      ]
+      { key: 'total', label: 'Tổng gói liệu trình', value: rows.length.toLocaleString('vi-VN'), icon: <ShoppingOutlined />, tone: 'primary' },
+      { key: 'active', label: 'Đang bán', value: activePackageCount.toLocaleString('vi-VN'), icon: <EyeOutlined />, tone: 'secondary' },
+      { key: 'hidden', label: 'Đã ẩn', value: (rows.length - activePackageCount).toLocaleString('vi-VN'), icon: <EyeInvisibleOutlined />, tone: 'neutral' },
+    ]
   const packageTypeData = pickData<PackageTypeRow[] | { rows?: PackageTypeRow[] }>(packageTypesQuery.data)
   const packageTypes = (Array.isArray(packageTypeData) ? packageTypeData : packageTypeData?.rows ?? []) as PackageTypeRow[]
   const packageTypeById = new Map(packageTypes.map((type) => [String(type.id), type]))
@@ -720,264 +646,33 @@ export default function Treatments() {
         activeTab === 'packages' ? packagesContent : typesContent
       )}
 
-      <Modal
-        title={editingPackage ? 'Sửa gói dịch vụ' : 'Thêm gói dịch vụ'}
+      <TreatmentPackageModal
+        form={packageForm}
         open={packageOpen}
+        editing={editingPackage}
+        packageTypes={packageTypes}
+        packageTypeById={packageTypeById}
+        services={services}
+        branches={branches}
+        packageQuotaOptions={packageQuotaOptions}
+        selectedQuotaType={selectedQuotaType}
+        selectedPackageType={selectedPackageType}
+        packageCustomFields={packageCustomFields}
+        currencySymbol={currencySymbol}
+        saving={packageSaving}
         onCancel={() => setPackageOpen(false)}
         onOk={submitPackage}
-        confirmLoading={packageSaving}
-        okText="Lưu"
-        cancelText="Hủy"
-        width="min(960px, calc(100vw - 24px))"
-      >
-        {!packageTypes.some((type) => type.is_active !== false) && (
-          <Alert type="warning" showIcon message="Hãy tạo hoặc kích hoạt loại gói trước khi tạo gói dịch vụ." style={{ marginBottom: 16 }} />
-        )}
-        <Form form={packageForm} layout="vertical" style={{ marginTop: 12 }}>
-          <Form.Item name="name" label="Tên gói" rules={[{ required: true, whitespace: true, message: 'Nhập tên gói' }]}>
-            <Input placeholder="VD: Peel Acne chuyên sâu" />
-          </Form.Item>
-          <Row gutter={16}>
-            <Col span={8}>
-              <Form.Item name="package_type_id" label="Loại gói" rules={[{ required: true, message: 'Chọn loại gói' }]}>
-                <Select
-                  showSearch
-                  optionFilterProp="label"
-                  placeholder="Chọn loại gói"
-                  options={packageTypes
-                    .filter((type) => type.is_active !== false || String(type.id) === String(editingPackage?.package_type_id ?? editingPackage?.package_type?.id))
-                    .map((type) => ({ value: String(type.id), label: type.name + (type.is_active === false ? ' (đã ẩn)' : '') }))}
-                  onChange={(typeId) => {
-                    const type = packageTypeById.get(String(typeId))
-                    if (!type) return
-                    packageForm.setFieldsValue({
-                      quota_type: type.default_quota_type,
-                      total_sessions: type.default_quota_type === 'SESSIONS' ? 5 : undefined,
-                      total_value: undefined,
-                      service_id: undefined,
-                      service_ids: [],
-                      warranty_text: undefined,
-                    })
-                  }}
-                />
-              </Form.Item>
-            </Col>
-            <Col span={8}>
-              <Form.Item name="quota_type" label="Cách tính hạn mức" rules={[{ required: true, message: 'Chọn cách tính hạn mức' }]}>
-                <Select options={packageQuotaOptions} onChange={(value: QuotaType) => {
-                  if (value !== 'SESSIONS') packageForm.setFieldValue('total_sessions', undefined)
-                  if (value !== 'VALUE') packageForm.setFieldValue('total_value', undefined)
-                  if (value !== 'UNLIMITED') packageForm.setFieldValue('warranty_text', undefined)
-                }} />
-              </Form.Item>
-            </Col>
-            <Col span={8}>
-              {selectedQuotaType === 'SESSIONS' && (
-                <Form.Item name="total_sessions" label="Số buổi" rules={[{ required: true, message: 'Nhập số buổi' }]}>
-                  <InputNumber min={1} precision={0} style={{ width: '100%' }} />
-                </Form.Item>
-              )}
-              {selectedQuotaType === 'VALUE' && (
-                <Form.Item name="total_value" label="Định mức tiền" extra="Tự khớp với giá bán; khi gán khách, định mức lấy theo số tiền bán thực tế.">
-                  <InputNumber min={0} precision={0} suffix={currencySymbol} style={{ width: '100%' }} disabled />
-                </Form.Item>
-              )}
-            </Col>
-          </Row>
-          <Row gutter={16}>
-            <Col span={8}>
-              <Form.Item name="list_price" label="Giá từ" rules={[{ required: true, message: 'Nhập giá niêm yết' }]}>
-                <InputNumber min={0} precision={0} step={100000} suffix={currencySymbol} style={{ width: '100%' }} />
-              </Form.Item>
-            </Col>
-            <Col span={8}>
-              <Form.Item
-                name="list_price_max"
-                label="Giá đến (tùy chọn)"
-                dependencies={['list_price']}
-                rules={[({ getFieldValue }) => ({
-                  validator: (_rule, value) => value == null || Number(value) >= Number(getFieldValue('list_price') ?? 0)
-                    ? Promise.resolve()
-                    : Promise.reject(new Error('Giá đến phải lớn hơn hoặc bằng giá từ')),
-                })]}
-              >
-                <InputNumber min={0} precision={0} step={100000} suffix={currencySymbol} style={{ width: '100%' }} />
-              </Form.Item>
-            </Col>
-            <Col span={8}>
-              <Form.Item name="branch_id" label="Cơ sở">
-                <Select allowClear placeholder="Tất cả cơ sở" options={branches.map((branch) => ({ value: branch.id, label: branch.name }))} />
-              </Form.Item>
-            </Col>
-          </Row>
-          {selectedQuotaType === 'UNLIMITED' && (
-            <Alert type="info" showIcon message="Gói trọn gói không giới hạn số buổi." style={{ marginBottom: 16 }} />
-          )}
-          {String(selectedPackageType?.code || '').toUpperCase() === 'COMBO' ? (
-            <Form.Item
-              name="service_ids"
-              label="Dịch vụ trong combo"
-              rules={[{
-                validator: (_rule, value: string[] | undefined) => value && value.length >= 2
-                  ? Promise.resolve()
-                  : Promise.reject(new Error('Combo cần chọn ít nhất 2 dịch vụ')),
-              }]}
-            >
-              <Select
-                mode="multiple"
-                showSearch
-                optionFilterProp="label"
-                placeholder="Chọn từ 2 dịch vụ"
-                options={services.map((service) => ({ value: service.id, label: service.title }))}
-              />
-            </Form.Item>
-          ) : (
-            <Form.Item
-              name="service_id"
-              label="Dịch vụ áp dụng"
-              rules={String(selectedPackageType?.code || '').toUpperCase() === 'SINGLE_SESSION' ? [{ required: true, message: 'Gói lẻ cần chọn một dịch vụ' }] : []}
-            >
-              <Select
-                allowClear
-                showSearch
-                optionFilterProp="label"
-                placeholder="Chọn dịch vụ (không bắt buộc)"
-                options={services.map((service) => ({ value: service.id, label: service.title }))}
-              />
-            </Form.Item>
-          )}
-          <Collapse
-            ghost
-            items={[{
-              key: 'advanced',
-              label: 'Tùy chọn nâng cao (mô tả, buổi tặng, thời hạn, bảo hành, điều khoản)',
-              forceRender: true,
-              children: (
-                <>
-                  <Form.Item name="description" label="Mô tả">
-                    <Input.TextArea rows={2} />
-                  </Form.Item>
-                  <Row gutter={16}>
-                    <Col span={8}>
-                      <Form.Item name="bonus_sessions_default" label="Buổi tặng mặc định">
-                        <InputNumber min={0} precision={0} style={{ width: '100%' }} />
-                      </Form.Item>
-                    </Col>
-                    <Col span={8}>
-                      <Form.Item
-                        name="validity_value"
-                        label="Thời hạn (tùy chọn)"
-                        dependencies={['validity_unit']}
-                        rules={[({ getFieldValue }) => ({
-                          validator: (_rule, value) => (value == null) === (getFieldValue('validity_unit') == null)
-                            ? Promise.resolve()
-                            : Promise.reject(new Error('Cần nhập cả thời hạn và đơn vị')),
-                        })]}
-                      >
-                        <InputNumber min={1} precision={0} style={{ width: '100%' }} />
-                      </Form.Item>
-                    </Col>
-                    <Col span={8}>
-                      <Form.Item name="validity_unit" label="Đơn vị">
-                        <Select allowClear options={[
-                          { value: 'DAY', label: 'Ngày' },
-                          { value: 'WEEK', label: 'Tuần' },
-                          { value: 'MONTH', label: 'Tháng' },
-                        ]} />
-                      </Form.Item>
-                    </Col>
-                  </Row>
-                  <Form.Item name="convertible_note" label="Điều kiện đổi buổi tặng">
-                    <Input.TextArea rows={2} />
-                  </Form.Item>
-                  {selectedPackageType?.has_warranty && (
-                    <Form.Item name="warranty_text" label="Nội dung bảo hành">
-                      <Input.TextArea rows={3} />
-                    </Form.Item>
-                  )}
-                  <Form.Item name="terms" label="Điều khoản">
-                    <Input.TextArea rows={3} />
-                  </Form.Item>
-                  <Form.Item name="is_active" label="Đang bán" valuePropName="checked">
-                    <Switch />
-                  </Form.Item>
-                </>
-              ),
-            }]}
-          />
-          <CustomFieldFormItems definitions={packageCustomFields} />
-        </Form>
-      </Modal>
+      />
 
-      <Modal
-        title={editingType ? 'Sửa loại gói' : 'Thêm loại gói'}
+      <TreatmentTypeModal
+        form={typeForm}
         open={typeOpen}
+        editing={editingType}
+        selectedDefaultQuota={selectedTypeDefaultQuota}
+        saving={typeSaving}
         onCancel={() => setTypeOpen(false)}
         onOk={submitType}
-        confirmLoading={typeSaving}
-        okText="Lưu"
-        cancelText="Hủy"
-        width="min(760px, calc(100vw - 24px))"
-      >
-        <Form form={typeForm} layout="vertical" style={{ marginTop: 12 }}>
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="code"
-                label="Mã loại"
-                rules={[
-                  { required: true, whitespace: true, message: 'Nhập mã loại' },
-                  { pattern: /^[A-Z][A-Z0-9_]{0,49}$/, message: 'Dùng chữ in hoa, số hoặc dấu gạch dưới; ví dụ COMBO' },
-                ]}
-              >
-                <Input disabled={!!editingType} placeholder="VD: COMBO" onChange={(event) => typeForm.setFieldValue('code', event.target.value.toUpperCase())} />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item name="name" label="Tên loại" rules={[{ required: true, whitespace: true, message: 'Nhập tên loại' }]}>
-                <Input />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item name="default_quota_type" label="Hạn mức mặc định" rules={[{ required: true }]}>
-                <Select
-                  options={PACKAGE_TYPE_QUOTA_OPTIONS}
-                  onChange={(value: QuotaType) => {
-                    if (value === 'UNLIMITED') typeForm.setFieldsValue({ has_warranty: true, allow_unlimited: true })
-                  }}
-                />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item name="sort_order" label="Thứ tự hiển thị">
-                <InputNumber min={0} precision={0} style={{ width: '100%' }} />
-              </Form.Item>
-            </Col>
-          </Row>
-          {selectedTypeDefaultQuota === 'UNLIMITED' && <Alert type="info" showIcon message="Loại trọn gói cần bật bảo hành và cho phép không giới hạn." style={{ marginBottom: 12 }} />}
-          <Row gutter={16}>
-            <Col span={8}>
-              <Form.Item name="has_warranty" label="Có bảo hành" valuePropName="checked">
-                <Switch />
-              </Form.Item>
-            </Col>
-            <Col span={8}>
-              <Form.Item name="allow_unlimited" label="Cho phép trọn gói" valuePropName="checked">
-                <Switch />
-              </Form.Item>
-            </Col>
-            {editingType && (
-              <Col span={8}>
-                <Form.Item name="is_active" label="Đang sử dụng" valuePropName="checked">
-                  <Switch />
-                </Form.Item>
-              </Col>
-            )}
-          </Row>
-        </Form>
-      </Modal>
+      />
     </>
   )
 }

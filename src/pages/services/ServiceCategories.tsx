@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react'
-import { Button, Form, Input, InputNumber, Modal, Popconfirm, Select, Space, Table, Tag, Typography, message } from 'antd'
+import { Button, Form, Popconfirm, Space, Table, Tag, Typography, message } from 'antd'
 import type { TableColumnsType } from 'antd'
 import { PlusOutlined, ReloadOutlined } from '@ant-design/icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import ServiceImageField from '@/components/ServiceImageField'
+import ServiceCategoryModal from './components/ServiceCategoryModal'
 import ListPagination from '@/components/base/ListPagination'
 import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import { paginateRows } from '@/utils/listTable'
@@ -21,21 +21,6 @@ import type { ServiceCategoryCreate } from '@/api/models/serviceCategoryCreate'
 
 /** BE include kèm `parent` (id, name) khi list. */
 type ServiceCategoryRow = ServiceCategory & { parent?: { id?: string; name?: string } }
-
-function flattenCategories(
-  categories: ServiceCategoryRow[],
-  parentId: string | null = null,
-  depth = 0,
-  includeId?: string,
-): { value: string; label: string }[] {
-  return categories
-    .filter((category) => (category.parent_id ?? null) === parentId && (category.is_active !== false || category.id === includeId))
-    .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0) || a.name.localeCompare(b.name, 'vi'))
-    .flatMap((category) => [
-      { value: category.id, label: `${'　'.repeat(depth)}${category.name}${category.is_active === false ? ' (đã ẩn)' : ''}` },
-      ...flattenCategories(categories, category.id, depth + 1, includeId),
-    ])
-}
 
 export default function ServiceCategories() {
   const queryClient = useQueryClient()
@@ -219,35 +204,15 @@ export default function ServiceCategories() {
         )}
       />
       <ListPagination page={page} limit={10} total={rows.length} onChange={setPage} noun="danh mục dịch vụ" />
-      <Modal
-        title={editing ? 'Sửa danh mục dịch vụ' : 'Thêm danh mục dịch vụ'}
+      <ServiceCategoryModal
         open={open}
+        editing={editing}
+        form={form}
+        rows={rows}
+        saving={saving}
         onCancel={() => setOpen(false)}
         onOk={() => void save()}
-        confirmLoading={saving}
-        okText="Lưu"
-        cancelText="Hủy"
-        destroyOnHidden
-      >
-        <Form form={form} layout="vertical" style={{ marginTop: 16 }}>
-          <Form.Item name="name" label="Tên danh mục" rules={[{ required: true, message: 'Nhập tên danh mục' }]}>
-            <Input maxLength={200} />
-          </Form.Item>
-          <Form.Item name="parent_id" label="Danh mục cha">
-            <Select
-              allowClear
-              placeholder="Danh mục gốc"
-              options={flattenCategories(rows, null, 0, editing?.parent_id ?? undefined).filter((option) => option.value !== editing?.id)}
-            />
-          </Form.Item>
-          <Form.Item name="sort_order" label="Thứ tự hiển thị" rules={[{ type: 'number', min: 0 }]}>
-            <InputNumber min={0} style={{ width: '100%' }} />
-          </Form.Item>
-          <Form.Item name="image_file_id" label="Ảnh danh mục">
-            <ServiceImageField />
-          </Form.Item>
-        </Form>
-      </Modal>
+      />
     </>
   )
 }

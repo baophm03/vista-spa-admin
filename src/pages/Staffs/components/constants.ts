@@ -19,6 +19,7 @@ export function isAdminRole(code?: string | null): boolean {
 }
 
 export type StaffColumnKey = 'staff' | 'role' | 'branch' | 'status' | 'phone' | 'email' | 'profile' | 'in_app'
+
 export const STAFF_COLUMN_OPTIONS: { label: string; value: StaffColumnKey }[] = [
   { label: 'Nhân viên', value: 'staff' },
   { label: 'Vai trò', value: 'role' },
@@ -29,4 +30,5 @@ export const STAFF_COLUMN_OPTIONS: { label: string; value: StaffColumnKey }[] = 
   { label: 'Chức danh & dịch vụ phụ trách', value: 'profile' },
   { label: 'Hiện trên app', value: 'in_app' },
 ]
+
 export const DEFAULT_VISIBLE_COLUMNS = STAFF_COLUMN_OPTIONS.map((column) => column.value)

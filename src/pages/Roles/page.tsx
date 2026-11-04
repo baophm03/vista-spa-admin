@@ -1,11 +1,9 @@
 import { useMemo, useState } from 'react'
-import { Alert, Button, Checkbox, Input, Modal, Spin, Tag, Typography, message } from 'antd'
+import { Alert, Button, Modal, Spin, Tag, Typography, message } from 'antd'
 import {
-  CheckOutlined,
   DeleteOutlined,
   EditOutlined,
   KeyOutlined,
-  LoadingOutlined,
   PlusOutlined,
   SafetyCertificateOutlined,
   SafetyOutlined,
@@ -29,106 +27,9 @@ import { useQueryClient } from '@tanstack/react-query'
 import { Can } from '@casl/react'
 import { permKey, permissionSetToArray } from '@/configs/permissions'
 
-interface RoleRow {
-  id: string
-  role_name: string
-  code?: string | null
-  description?: string | null
-  [k: string]: unknown
-}
-interface PermRow {
-  id: string
-  key: string
-  module: string
-  action: string
-  description?: string
-}
-
-const SYSTEM_ROLES = ['Admin']
-
-/** Nhãn tiếng Việt cho module quyền. */
-const MODULE_LABELS: Record<string, string> = {
-  academy: 'Học viện',
-  appointment: 'Lịch hẹn',
-  branch: 'Cơ sở',
-  card_rank: 'Hạng thẻ',
-  collaborator: 'Cộng tác viên',
-  commission: 'Hoa hồng',
-  content: 'Nội dung app',
-  customer: 'Khách hàng',
-  custom_field: 'Trường tùy chỉnh',
-  day_off: 'Ngày nghỉ',
-  discount: 'Giảm giá & ưu đãi',
-  health_metric: 'Chỉ số sức khỏe/da',
-  import: 'Nhập dữ liệu',
-  lookup: 'Danh mục chọn',
-  membership: 'Thành viên & Điểm',
-  notification: 'Thông báo',
-  payment: 'Thanh toán',
-  package_type: 'Loại gói liệu trình',
-  permission: 'Phân quyền',
-  report: 'Báo cáo',
-  reward: 'Quà đổi điểm',
-  referral: 'Giới thiệu khách',
-  schedule: 'Lịch làm việc',
-  service: 'Dịch vụ',
-  session: 'Buổi điều trị',
-  setting: 'Cấu hình',
-  shift_template: 'Ca làm',
-  staff_profile: 'Hồ sơ chuyên viên/KTV',
-  treatment: 'Điều chỉnh gói khách',
-  treatment_package: 'Gói liệu trình',
-  voucher: 'Voucher',
-  wheel: 'Vòng quay may mắn',
-}
-
-/** Nhãn tiếng Việt cho action; vài cặp (module, action) cần nhãn riêng. */
-const ACTION_LABELS: Record<string, string> = {
-  create: 'Thêm mới',
-  read: 'Xem',
-  update: 'Sửa',
-  delete: 'Xóa',
-  approve: 'Duyệt',
-  start: 'Bắt đầu',
-  done: 'Kết thúc buổi',
-  complete: 'Hoàn tất buổi',
-  export: 'Xuất dữ liệu',
-  all: 'Toàn bộ cơ sở',
-  manage: 'Quản lý',
-  points_adjust: 'Điều chỉnh điểm',
-  rank_override: 'Gán hạng',
-  recalculate: 'Tính lại hạng',
-  redeem_admin: 'Đổi hộ khách',
-  spin_admin: 'Quản lý lượt quay',
-  revenue: 'Doanh thu',
-  debt: 'Công nợ',
-  customer: 'Khách hàng',
-  rank: 'Hạng thẻ',
-  appointment: 'Lịch hẹn',
-  session: 'Buổi điều trị',
-  commission: 'Hoa hồng',
-  adjust: 'Điều chỉnh gói',
-  convert: 'Chuyển buổi tặng',
-}
-const ACTION_OVERRIDES: Record<string, string> = {
-  'report.customer.read': 'Khách mới',
-  'report.read': 'Báo cáo tổng hợp',
-  'report.rank.read': 'Cơ cấu hạng thẻ',
-  'report.session.read': 'Buổi đã sử dụng',
-}
-
-const readableToken = (value: string) =>
-  value
-    .replaceAll('_', ' ')
-    .replaceAll('.', ' ')
-    .replace(/\b\w/g, (character) => character.toLocaleUpperCase('vi-VN'))
-
-const moduleLabel = (module: string) => MODULE_LABELS[module] ?? readableToken(module)
-const actionLabel = (permission: PermRow) =>
-  permission.description?.trim() ||
-  ACTION_OVERRIDES[permission.key] ||
-  ACTION_LABELS[permission.action] ||
-  readableToken(permission.action)
+import RoleEditModal from './components/RoleEditModal'
+import RolePermissionModal from './components/RolePermissionModal'
+import { SYSTEM_ROLES, type PermRow, type RoleRow } from './components/constants'
 
 export default function Roles() {
   const queryClient = useQueryClient()
@@ -314,9 +215,6 @@ export default function Roles() {
     })
   }
 
-  const allChecked = totalPerms > 0 && granted.size === totalPerms
-  const someChecked = granted.size > 0 && !allChecked
-
   return (
     <>
       <PageTitle
@@ -440,162 +338,36 @@ export default function Roles() {
       </Spin>
 
       {/* Dialog tạo/sửa vai trò */}
-      <Modal
+      <RoleEditModal
         open={editOpen}
+        editingRole={editingRole}
+        roleName={roleName}
+        roleCode={roleCode}
+        roleDescription={roleDescription}
+        saving={saving}
+        onRoleNameChange={setRoleName}
+        onRoleCodeChange={setRoleCode}
+        onRoleDescriptionChange={setRoleDescription}
         onCancel={() => setEditOpen(false)}
         onOk={() => void saveRole()}
-        okText={editingRole ? 'Lưu thay đổi' : 'Tạo vai trò'}
-        cancelText="Hủy"
-        confirmLoading={saving}
-        title={
-          <span className="text-lg text-[var(--brand-dark)]">
-            {editingRole ? 'Sửa vai trò' : 'Tạo vai trò mới'}
-          </span>
-        }
-        okButtonProps={{ className: 'rounded-xl' }}
-        cancelButtonProps={{ className: 'rounded-xl' }}
-      >
-        <div className="flex flex-col gap-4 pt-2">
-          <label className="block">
-            <span className="mb-1.5 block text-xs font-semibold text-slate-600">Tên vai trò *</span>
-            <Input
-              value={roleName}
-              onChange={(e) => setRoleName(e.target.value)}
-              placeholder="VD: Quản lý cơ sở"
-              maxLength={100}
-            />
-          </label>
-          <label className="block">
-            <span className="mb-1.5 block text-xs font-semibold text-slate-600">Mã vai trò (code)</span>
-            <Input
-              value={roleCode}
-              onChange={(e) => setRoleCode(e.target.value)}
-              placeholder="VD: admin, ktv — bỏ trống nếu không dùng"
-              maxLength={50}
-              disabled={!!editingRole}
-            />
-            {!!editingRole && (
-              <span className="mt-1 block text-xs text-slate-400">
-                Mã vai trò cố định sau khi tạo, không thể sửa.
-              </span>
-            )}
-          </label>
-          <label className="block">
-            <span className="mb-1.5 block text-xs font-semibold text-slate-600">Mô tả</span>
-            <Input.TextArea
-              value={roleDescription}
-              onChange={(e) => setRoleDescription(e.target.value)}
-              placeholder="Mô tả ngắn về vai trò này"
-              rows={3}
-              maxLength={255}
-            />
-          </label>
-        </div>
-      </Modal>
+      />
 
       {/* Dialog phân quyền */}
-      <Modal
+      <RolePermissionModal
         open={permOpen}
+        permRole={permRole}
+        groups={groups}
+        granted={granted}
+        totalPerms={totalPerms}
+        loading={loading}
+        permsEmpty={permsEmpty}
+        savingPerm={savingPerm}
         onCancel={() => setPermOpen(false)}
-        width={960}
-        styles={{ body: { paddingTop: 8 } }}
-        title={
-          <div>
-            <div className="text-lg text-[var(--brand-dark)]">
-              Phân quyền{permRole ? ` — ${permRole.role_name}` : ''}
-            </div>
-            <div className="text-xs font-normal text-slate-500">
-              Chọn các quyền hạn áp dụng cho vai trò này
-            </div>
-          </div>
-        }
-        footer={
-          <div className="flex items-center justify-end gap-2">
-            <Button className="rounded-xl" onClick={() => setPermOpen(false)}>
-              Hủy
-            </Button>
-            <Button
-              type="primary"
-              className="rounded-xl"
-              icon={<CheckOutlined />}
-              loading={savingPerm}
-              disabled={permsEmpty || loading}
-              onClick={() => void savePermissions()}
-            >
-              Lưu quyền hạn
-            </Button>
-          </div>
-        }
-      >
-        <div className="mb-3 flex items-center justify-between">
-          <Typography.Text strong>Quyền hạn *</Typography.Text>
-          <div className="flex items-center gap-4">
-            <span className="text-xs text-slate-500">
-              Đã chọn: {granted.size}/{totalPerms}
-            </span>
-            <Checkbox
-              checked={allChecked}
-              indeterminate={someChecked}
-              onChange={(e) => setAllPerms(e.target.checked)}
-            >
-              <span className="text-sm font-medium text-[var(--brand-dark)]">Chọn tất cả</span>
-            </Checkbox>
-          </div>
-        </div>
-
-        <div className="space-y-4 rounded-2xl border border-[var(--brand-border-soft)] bg-[var(--brand-bg)] p-4">
-          {loading && (
-            <div className="flex items-center justify-center py-6 text-[var(--brand-primary)]">
-              <LoadingOutlined className="text-xl" />
-            </div>
-          )}
-          {!loading && groups.length === 0 && (
-            <p className="py-4 text-center text-sm text-slate-500">Không tải được danh sách quyền</p>
-          )}
-          {groups.map((group) => {
-            const checkedCount = group.rows.filter((p) => granted.has(permKey(p.module, p.action))).length
-            const groupAll = group.rows.length > 0 && checkedCount === group.rows.length
-            const groupSome = checkedCount > 0 && !groupAll
-            return (
-              <div key={group.module} className="rounded-xl border border-[var(--brand-border-soft)] bg-white p-4">
-                <div className="flex items-center justify-between gap-4 border-b border-[var(--brand-border-soft)] pb-3">
-                  <label className="flex cursor-pointer items-center gap-2.5">
-                    <Checkbox
-                      checked={groupAll}
-                      indeterminate={groupSome}
-                      onChange={(e) => setModulePerms(group.module, e.target.checked)}
-                    />
-                    <span className="leading-tight">
-                      <span className="block text-sm font-semibold text-[var(--brand-dark)]">
-                        {moduleLabel(group.module)}
-                      </span>
-                      <span className="mt-0.5 block text-[10px] font-medium text-slate-400">
-                        Đã bật {checkedCount}/{group.rows.length} quyền
-                      </span>
-                    </span>
-                  </label>
-                </div>
-                <div className="grid grid-cols-2 gap-x-6 gap-y-3 pt-3 sm:grid-cols-3 lg:grid-cols-4">
-                  {group.rows.map((p) => {
-                    return (
-                      <label key={p.id} className="flex min-w-0 cursor-pointer items-start gap-2">
-                        <Checkbox
-                          className="mt-0.5 shrink-0"
-                          checked={granted.has(permKey(p.module, p.action))}
-                          onChange={(e) => togglePerm(permKey(p.module, p.action), e.target.checked)}
-                        />
-                        <span className="min-w-0 leading-tight">
-                          <span className="block text-sm text-slate-800">{actionLabel(p)}</span>
-                        </span>
-                      </label>
-                    )
-                  })}
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      </Modal>
+        onSave={() => void savePermissions()}
+        onTogglePerm={togglePerm}
+        onSetModulePerms={setModulePerms}
+        onSetAllPerms={setAllPerms}
+      />
 
       {/* Xóa vai trò dùng Modal.confirm nhỏ — gọi trực tiếp trong askDelete */}
     </>

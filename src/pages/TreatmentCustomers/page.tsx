@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Alert, Button, Card, Col, DatePicker, Divider, Empty, Form, Grid, Image, Input, InputNumber, Modal, Popconfirm, Progress, Row, Select, Space, Spin, Statistic, Table, Tabs, Tag, Tooltip, Typography, Upload, message } from 'antd'
+import { Button, Form, Grid, Input, Modal, Progress, Select, Table, Tag, Tooltip, Typography, message } from 'antd'
 import type { MenuProps } from 'antd'
-import { CheckCircleOutlined, DeleteOutlined, EditOutlined, PlayCircleOutlined, PlusOutlined, ReloadOutlined, RollbackOutlined, SearchOutlined, TeamOutlined, WalletOutlined } from '@ant-design/icons'
+import { CheckCircleOutlined, PlayCircleOutlined, PlusOutlined, ReloadOutlined, SearchOutlined, TeamOutlined, WalletOutlined } from '@ant-design/icons'
 import dayjs, { type Dayjs } from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
 import StatCards, { type StatItem } from '@/components/base/StatCards'
@@ -10,35 +10,22 @@ import ListFilterPopover from '@/components/base/ListFilterPopover'
 import RowActionsMenu, { type RowActionItem } from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
 import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
-import TableEmpty from '@/components/base/TableEmpty'
 import { paginateRows } from '@/utils/listTable'
-import CustomFieldFormItems, { normalizeCustomFieldValues, type CustomFieldDefWithOptions } from '@/components/CustomFieldFormItems'
-import { errorMessage, openHtmlPrint, pickData } from '@/api/helpers'
+import { normalizeCustomFieldValues } from '@/components/CustomFieldFormItems'
+import { errorMessage, pickData } from '@/api/helpers'
 import { customInstance } from '@/api/mutator/custom-instance'
 import type { CustomerTreatment } from '@/api/models/customerTreatment'
-import type { SessionPhoto } from '@/api/models/sessionPhoto'
 import type { TreatmentPackage } from '@/api/models/treatmentPackage'
-import type { LookupItem } from '@/api/models/lookupItem'
-import type { MembershipTransaction } from '@/api/models/membershipTransaction'
-import type { RewardRedemption } from '@/api/models/rewardRedemption'
 import type { GetCustomerProfilesParams } from '@/api/models/getCustomerProfilesParams'
 import { getCustomerProfiles, useGetCustomerProfiles, useGetCustomerProfilesIdPoints } from '@/api/endpoints/customer-profiles'
 import { getGetRewardRedemptionsQueryKey, getRewardRedemptions } from '@/api/endpoints/rewards'
 import {
-  deletePhotosId,
-  deleteSessionsId,
   getCustomerTreatmentsIdAvailableSlots,
   getCustomerTreatmentsIdPayments,
   getCustomerTreatmentsIdSessions,
   getCustomerTreatmentsId,
   getGetCustomerTreatmentsQueryKey,
-  getSessionsIdPhotos,
   postCustomerTreatmentsIdSessions,
-  postSessionsIdPhotos,
-  putSessionsId,
-  putSessionsIdComplete,
-  putSessionsIdDone,
-  putSessionsIdStart,
   useGetCustomerTreatments,
   useGetCustomerTreatmentsIdAdjustments,
   usePostCustomerTreatments,
@@ -50,7 +37,6 @@ import {
 } from '@/api/endpoints/customer-treatments'
 import { useGetService } from '@/api/endpoints/services'
 import { useGetTreatmentPackages } from '@/api/endpoints/services'
-import { postFiles } from '@/api/endpoints/files'
 import { useGetLookupLists } from '@/api/endpoints/lookup-lists'
 import {
   useGetCustomerProfilesIdAvailableDiscounts,
@@ -59,1055 +45,40 @@ import {
 import type { DiscountRule } from '@/api/models'
 import { usePostCustomerTreatmentsIdRedeemPoints } from '@/api/endpoints/customer-treatments'
 import { useGetUsers } from '@/api/endpoints/users'
-import { useBrandCurrency, useBrandDateTime } from '@/themeRuntime'
+import { useBrandCurrency } from '@/themeRuntime'
 import { useCustomerProfileAccess } from '@/utils/customerProfileAccess'
 import useCustomFieldDefinitions from '@/hooks/useCustomFieldDefinitions'
-import useSessionStatusConfig from '@/hooks/useSessionStatusConfig'
 import { Can, useAbility } from '@casl/react'
-import links from '@/configs/links'
-
-interface Slot {
-  date?: string
-  start_time: string
-  end_time?: string
-  staff_ids: string[]
-}
-
-interface ProfileRow {
-  id: string
-  full_name?: string
-  phone?: string
-}
-
-interface LookupListRow {
-  id: string
-  key: string
-  name: string
-  is_active?: boolean
-  lookup_items?: LookupItem[]
-}
-
-const QUOTA_LABEL: Record<string, string> = {
-  SESSIONS: 'Theo số buổi',
-  VALUE: 'Theo định mức tiền',
-  UNLIMITED: 'Trọn gói',
-}
-
-const FILTERS = [
-  { value: 'all', label: 'Tất cả' },
-  { value: 'ACTIVE', label: 'Đang làm' },
-  { value: 'FINISHED', label: 'Hoàn tất' },
-  { value: 'CANCELLED', label: 'Đã hủy' },
-  { value: 'EXPIRED', label: 'Hết hạn' },
-]
-interface TreatmentAdjustmentRow {
-  id: string
-  type: string
-  reason: string
-  amount?: number | null
-  before_json?: Record<string, unknown> | null
-  after_json?: Record<string, unknown> | null
-  created_at?: string
-  created_by?: string
-}
-
-type RewardRedemptionRow = RewardRedemption & {
-  reward?: {
-    name?: string
-    type?: string
-    benefit_amount?: number | null
-    service_id?: string | null
-  } | null
-}
-
-type CustomerTreatmentColumnKey = 'customer' | 'package_code' | 'progress' | 'payment' | 'expiry' | 'status'
-const CUSTOMER_TREATMENT_COLUMN_OPTIONS: { label: string; value: CustomerTreatmentColumnKey }[] = [
-  { label: 'Khách hàng', value: 'customer' },
-  { label: 'Mã gói', value: 'package_code' },
-  { label: 'Tiến độ', value: 'progress' },
-  { label: 'Thanh toán', value: 'payment' },
-  { label: 'Hạn sử dụng', value: 'expiry' },
-  { label: 'Trạng thái', value: 'status' },
-]
-const DEFAULT_VISIBLE_COLUMNS = CUSTOMER_TREATMENT_COLUMN_OPTIONS.map((column) => column.value)
-
-const STATUS_META: Record<string, { label: string; color: string }> = {
-  ACTIVE: { label: 'Đang làm', color: 'var(--brand-primary)' },
-  FINISHED: { label: 'Hoàn tất', color: 'green' },
-  CANCELLED: { label: 'Đã hủy', color: 'default' },
-  EXPIRED: { label: 'Hết hạn', color: 'orange' },
-}
-
-const PAY_METHOD: Record<string, string> = {
-  CASH: 'Tiền mặt',
-  BANK: 'Chuyển khoản',
-  POS: 'POS',
-  OTHER: 'Khác',
-}
-
-const sessionUsage = (treatment: CustomerTreatment) => {
-  const rawTotal = Number(treatment.sessions_total ?? 0)
-  const rawUsed = Number(treatment.sessions_used ?? 0)
-  const bonus = Number(treatment.sessions_bonus ?? 0)
-  const total = Number.isFinite(rawTotal) ? Math.max(0, rawTotal + bonus) : bonus
-  const used = Number.isFinite(rawUsed) ? Math.max(0, rawUsed) : 0
-  return {
-    total,
-    used,
-    remaining: Math.max(0, total - used),
-    percent: total > 0 ? Math.min(100, Math.round((used / total) * 100)) : 0,
-  }
-}
-
-const ADJUST_TYPE_OPTIONS = [
-  { value: 'ADJUST_BONUS', label: 'Số buổi tặng' },
-  { value: 'ADJUST_SESSIONS', label: 'Số buổi đã dùng' },
-  { value: 'ADJUST_VALUE_TOTAL', label: 'Định mức tiền được dùng' },
-  { value: 'ADJUST_VALUE', label: 'Giá trị đã tiêu' },
-  { value: 'EXTEND_EXPIRY', label: 'Hạn dùng của gói' },
-]
-const ADJUST_TYPE_LABEL: Record<string, string> = {
-  ADJUST_SESSIONS: 'Sửa số buổi đã dùng',
-  ADJUST_BONUS: 'Sửa buổi tặng',
-  ADJUST_VALUE_TOTAL: 'Sửa định mức tiền được dùng',
-  ADJUST_VALUE: 'Sửa giá trị đã tiêu',
-  EXTEND_EXPIRY: 'Gia hạn hạn dùng',
-  CONVERT: 'Chuyển đổi buổi tặng',
-  DISCOUNT: 'Giảm giá',
-}
-const bonusRemainingOf = (row: CustomerTreatment) =>
-  Math.max(0, Number(row.sessions_bonus ?? 0) - Math.max(0, Number(row.sessions_used ?? 0) - Number(row.sessions_total ?? 0)))
-
-/** Đổi 1 giá trị trường lịch sử điều chỉnh thành chữ dễ đọc. */
-const formatAdjustValue = (field: string, value: unknown): string => {
-  if (value === null || value === undefined || value === '') return '—'
-  if (field === 'status') return STATUS_META[String(value)]?.label ?? String(value)
-  if (field === 'expires_at') return dayjs(String(value)).format('DD/MM/YYYY')
-  if (field === 'value_used' || field === 'value_total') return Number(value).toLocaleString('vi-VN') + ' ₫'
-  return String(value)
-}
-
-/** So sánh before/after thành các dòng "Tên trường: cũ → mới" (chỉ hiện field thay đổi). */
-const adjustmentDiffLines = (row: TreatmentAdjustmentRow): { label: string; before: string; after: string }[] => {
-  const before = (row.before_json ?? {}) as Record<string, unknown>
-  const after = (row.after_json ?? {}) as Record<string, unknown>
-  const lines: { label: string; before: string; after: string }[] = []
-  const fields: [string, string][] = [
-    ['sessions_bonus', 'Buổi tặng'],
-    ['sessions_used', 'Buổi đã dùng'],
-    ['value_total', 'Định mức tiền'],
-    ['value_used', 'Giá trị đã tiêu'],
-    ['expires_at', 'Hạn dùng'],
-    ['status', 'Trạng thái'],
-  ]
-  for (const [field, label] of fields) {
-    if (JSON.stringify(before[field]) !== JSON.stringify(after[field])) {
-      lines.push({ label, before: formatAdjustValue(field, before[field]), after: formatAdjustValue(field, after[field]) })
-    }
-  }
-  if (after.target_service) lines.push({ label: 'Dịch vụ đích', before: '—', after: String(after.target_service) })
-  if (!lines.length) {
-    lines.push({ label: 'Ghi nhận', before: '—', after: JSON.stringify(after).slice(0, 80) })
-  }
-  return lines
-}
-
-const treatmentProgress = (treatment: CustomerTreatment): number | null => {
-  if (treatment.quota_type === 'SESSIONS') return sessionUsage(treatment).percent
-  if (treatment.quota_type === 'VALUE') {
-    const total = Number(treatment.value_total ?? 0)
-    const used = Number(treatment.value_used ?? 0)
-    return total > 0 && Number.isFinite(total) && Number.isFinite(used)
-      ? Math.min(100, Math.max(0, Math.round((used / total) * 100)))
-      : 0
-  }
-  return null
-}
-
-interface SessionRow {
-  id: string
-  session_no: number
-  status?: string
-  staff_id?: string
-  appointment_id?: string
-  scheduled_at?: string
-  appointment?: { appt_date?: string; start_time?: string }
-  started_at?: string
-  done_at?: string
-  completed_at?: string
-  diary?: string
-  skin_note?: string
-  concern?: string
-  products_used?: string
-  result?: string
-  session_value?: number
-  product_amount?: number
-  is_warranty?: boolean
-  custom_fields?: Record<string, unknown>
-}
-
-function sessionScheduledTimestamp(session: SessionRow): number | null {
-  if (session.appointment_id && session.appointment?.appt_date && session.appointment.start_time) {
-    const appointmentTime = dayjs(`${session.appointment.appt_date.slice(0, 10)}T${session.appointment.start_time}`)
-    return appointmentTime.isValid() ? appointmentTime.valueOf() : null
-  }
-  if (!session.scheduled_at) return null
-  const scheduledTime = dayjs(session.scheduled_at)
-  return scheduledTime.isValid() ? scheduledTime.valueOf() : null
-}
-
-interface PaymentRow {
-  id: string
-  amount?: number
-  method?: string
-  note?: string
-  paid_at?: string
-  created_at?: string
-}
-
-/** Ảnh của 1 buổi: hàng thumb phẳng + nút upload nằm cạnh (giống trang Dịch vụ lẻ); xóa ảnh trong trình xem gallery */
-function SessionPhotos({
-  sessionId,
-  photos,
-  kind,
-  sessionStatus,
-  canUpload,
-  canDelete,
-  onPhotoAdded,
-  onChanged,
-}: {
-  sessionId: string
-  photos: SessionPhoto[]
-  kind?: string
-  sessionStatus?: string
-  canUpload?: boolean
-  canDelete?: boolean
-  onPhotoAdded: (photo: SessionPhoto) => void
-  onChanged: () => void
-}) {
-  const [deleting, setDeleting] = useState(false)
-  const [previewOpen, setPreviewOpen] = useState(false)
-  // Vòng đời buổi: hoàn tất = khóa hồ sơ; chưa bắt đầu chỉ chụp "ảnh trước" (khách khám sớm)
-  const uploadAllowed = !!canUpload && (!sessionStatus
-    || sessionStatus === 'in_progress'
-    || sessionStatus === 'done'
-    || (sessionStatus === 'scheduled' && (kind ?? 'process') === 'before'))
-  const deleteAllowed = !!canDelete && sessionStatus !== 'completed'
-
-  const deletePhoto = async (id?: string) => {
-    if (!id) return
-    setDeleting(true)
-    try {
-      await deletePhotosId(id)
-      message.success('Đã xóa ảnh')
-      onChanged()
-    } catch (err) {
-      message.error(errorMessage(err))
-    } finally {
-      setDeleting(false)
-    }
-  }
-
-  const deleteButton = (photoId?: string) => (
-    <Popconfirm
-      title="Xóa ảnh này?"
-      okText="Xóa"
-      cancelText="Hủy"
-      getPopupContainer={(trigger) => trigger.closest('.ant-image-preview') ?? document.body}
-      onConfirm={() => {
-        void deletePhoto(photoId)
-        setPreviewOpen(false)
-      }}
-    >
-      <Button
-        size="small"
-        danger
-        type="text"
-        loading={deleting}
-        icon={<DeleteOutlined />}
-        style={{ position: 'absolute', top: 0, right: 0 }}
-        aria-label="Xóa ảnh"
-      />
-    </Popconfirm>
-  )
-
-  return (
-    <Space wrap size={10}>
-      {photos.length > 0 && (
-        <Image.PreviewGroup
-          items={photos.map((p) => p.url ?? '').filter(Boolean)}
-          preview={
-            deleteAllowed
-              ? {
-                  open: previewOpen,
-                  onOpenChange: setPreviewOpen,
-                  actionsRender: (node, info) => (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                      {node}
-                      {deleteButton(photos[info.current]?.id)}
-                    </div>
-                  ),
-                }
-              : undefined
-          }
-        >
-          {photos.map((p) => (
-            <Image
-              key={p.id}
-              width={88}
-              height={88}
-              style={{ objectFit: 'cover', borderRadius: 10 }}
-              src={(links.imageEndpoint + (p.url || ""))}
-              fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
-            />
-          ))}
-        </Image.PreviewGroup>
-      )}
-      {uploadAllowed && (
-        <Upload
-          accept="image/*"
-          multiple
-          showUploadList={false}
-          beforeUpload={async (file) => {
-            try {
-              const uploaded = pickData<{ original?: string }>(await postFiles({ file }))
-              if (!uploaded?.original) throw new Error('Máy chủ không trả về đường dẫn ảnh')
-              const saved = pickData<SessionPhoto>(await postSessionsIdPhotos(sessionId, { url: uploaded.original, kind }))
-              if (!saved?.id) throw new Error('Máy chủ chưa xác nhận ảnh của buổi')
-              onPhotoAdded({ ...saved, url: saved.url ?? uploaded.original, kind: saved.kind ?? kind })
-              message.success('Đã thêm ảnh')
-            } catch (err) {
-              message.error(errorMessage(err))
-            }
-            return false
-          }}
-        >
-          <Button icon={<PlusOutlined />}>Ảnh</Button>
-        </Upload>
-      )}
-      {!photos.length && !uploadAllowed && <Typography.Text type="secondary">Chưa có ảnh</Typography.Text>}
-    </Space>
-  )
-}
-
-/** Giá trị ô bảng — trống thì gạch mờ */
-const CellVal = ({ v }: { v?: string | null }) =>
-  v ? <>{v}</> : <span style={{ color: '#C4C6C9' }}>—</span>
-
-function customFieldValueText(value: unknown): string | undefined {
-  if (value === null || value === undefined || value === '') return undefined
-  if (typeof value === 'boolean') return value ? 'Có' : 'Không'
-  if (Array.isArray(value)) return value.map((item) => String(item)).join(', ')
-  if (typeof value === 'object') return JSON.stringify(value)
-  return String(value)
-}
-
-const HIDDEN_TREATMENT_SYSTEM_FIELDS = new Set(['target_service_id', 'converted_from_treatment_id'])
-const TREATMENT_SYSTEM_FIELD_LABELS: Record<string, string> = {
-  target_service_name: 'Dịch vụ áp dụng',
-}
-
-function readableCustomFieldLabel(key: string, definitions: CustomFieldDefWithOptions[]): string {
-  const definedLabel = definitions.find((field) => field.key === key)?.label
-  if (definedLabel) return definedLabel
-  return key
-    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
-    .replace(/[_-]+/g, ' ')
-    .replace(/\b\w/g, (letter) => letter.toUpperCase())
-}
-
-/** Dòng subheader pha nằm trong bảng buổi (tint nhạt, full-width) */
-const SubHead = ({ children }: { children: string }) => (
-  <div
-    style={{
-      padding: '9px 16px',
-      background: 'var(--brand-bg)',
-      borderTop: '1px solid var(--brand-border-soft)',
-      fontSize: 12.5,
-      fontWeight: 800,
-      letterSpacing: 1.2,
-      textTransform: 'uppercase',
-      color: 'var(--brand-dark)',
-    }}
-  >
-    {children}
-  </div>
-)
-
-/** 1 dòng nhãn | giá trị trong bảng buổi */
-const TRow = ({ label, children }: { label: string; children: ReactNode }) => (
-  <div style={{ display: 'flex', padding: '11px 16px', borderTop: '1px solid var(--brand-border-soft)' }}>
-    <span style={{ width: 150, flexShrink: 0, fontSize: 13.5, fontWeight: 700, color: '#3F4145', paddingTop: 1, paddingRight: 12 }}>{label}</span>
-    <span
-      style={{
-        flex: 1,
-        fontSize: 14.5,
-        fontWeight: 600,
-        color: '#26211F',
-        lineHeight: 1.6,
-        minWidth: 0,
-        borderLeft: '1px solid var(--brand-border-soft)',
-        paddingLeft: 16,
-        margin: '-11px 0',
-        paddingTop: 11,
-        paddingBottom: 11,
-      }}
-    >
-      {children}
-    </span>
-  </div>
-)
-
-/** Timeline các buổi điều trị của 1 lượt — hiển thị trong modal chi tiết */
-function SessionTimeline({
-  ctId,
-  ctStatus,
-  treatmentTotalAmount = 0,
-  formatMoney,
-  currencySymbol,
-  staffOptions,
-  customFieldDefinitions,
-  isAdmin,
-  onChanged,
-  refreshKey,
-  focusSessionId,
-  onFocusSessionHandled,
-}: {
-  ctId: string
-  ctStatus?: string
-  treatmentTotalAmount?: number
-  formatMoney: (value: unknown) => string
-  currencySymbol: string
-  staffOptions: { value: string; label: string }[]
-  customFieldDefinitions: CustomFieldDefWithOptions[]
-  isAdmin?: boolean
-  onChanged?: () => void
-  refreshKey?: number
-  focusSessionId?: string
-  onFocusSessionHandled?: () => void
-}) {
-  const { formatDateTime, getDateTimeParts } = useBrandDateTime()
-  const ability = useAbility()
-  const canEditSession = ability.can('UPDATE', 'SESSION')
-  const canManageSessionSchedule = ability.can('UPDATE', 'CUSTOMER')
-  const canStartSession = ability.can('START' as never, 'SESSION')
-  const canFinishSessionWork = ability.can('DONE' as never, 'SESSION')
-  const canCompleteSession = ability.can('COMPLETE' as never, 'SESSION')
-  const canDeleteSession = ability.can('DELETE', 'SESSION')
-  const sessionStatusConfig = useSessionStatusConfig()
-  const [sessions, setSessions] = useState<SessionRow[]>([])
-  const [photos, setPhotos] = useState<Record<string, SessionPhoto[]>>({})
-  const [loading, setLoading] = useState(true)
-  const hasLoadedSessions = useRef(false)
-  const loadSequence = useRef(0)
-  const sessionSlotSequence = useRef(0)
-  const [sessionSlots, setSessionSlots] = useState<Slot[]>([])
-  const [sessionSlotsLoading, setSessionSlotsLoading] = useState(false)
-  const [editOpen, setEditOpen] = useState<SessionRow | null>(null)
-  const scheduleEditTouchedRef = useRef(false)
-  const [editForm] = Form.useForm()
-  const focusSessionIdRef = useRef(focusSessionId)
-  const onFocusSessionHandledRef = useRef(onFocusSessionHandled)
-  const maxSessionValue = Math.max(0, Number(treatmentTotalAmount) || 0)
-  const selectedSessionTime = Form.useWatch('scheduled_time', editForm)
-  const selectedSessionDate = Form.useWatch('scheduled_date', editForm)
-
-  const loadSessionSlots = useCallback(async (session: SessionRow, date: Dayjs) => {
-    const sequence = ++sessionSlotSequence.current
-    setSessionSlotsLoading(true)
-    try {
-      const response = await getCustomerTreatmentsIdAvailableSlots(ctId, {
-        date: date.format('YYYY-MM-DD'),
-        exclude_session_id: session.id,
-      })
-      if (sequence !== sessionSlotSequence.current) return
-      const now = dayjs()
-      const slots = ((pickData<Slot[] | undefined>(response) ?? []) as Slot[]).filter((slot) => {
-        const slotTime = date.hour(Number(slot.start_time.slice(0, 2))).minute(Number(slot.start_time.slice(3, 5))).second(0).millisecond(0)
-        return !slotTime.isBefore(now)
-      })
-      setSessionSlots(slots)
-      const selectedTime = editForm.getFieldValue('scheduled_time')
-      const selectedStaff = editForm.getFieldValue('staff_id')
-      const matchingSlot = slots.find((slot) => slot.start_time.slice(0, 5) === selectedTime)
-      if (selectedTime && !matchingSlot) editForm.setFieldsValue({ scheduled_time: undefined, staff_id: undefined })
-      else if (selectedStaff && !matchingSlot?.staff_ids.includes(selectedStaff)) editForm.setFieldsValue({ staff_id: undefined })
-    } catch (err) {
-      if (sequence === sessionSlotSequence.current) {
-        setSessionSlots([])
-        message.warning(errorMessage(err))
-      }
-    } finally {
-      if (sequence === sessionSlotSequence.current) setSessionSlotsLoading(false)
-    }
-  }, [ctId, editForm])
-
-  const openEdit = useCallback((s: SessionRow) => {
-    setEditOpen(s)
-    scheduleEditTouchedRef.current = false
-    sessionSlotSequence.current += 1
-    setSessionSlots([])
-    const scheduledParts = getDateTimeParts(s.scheduled_at)
-    editForm.setFieldsValue({
-      scheduled_date: s.scheduled_at
-        ? scheduledParts ? dayjs(scheduledParts.date) : null
-        : s.appointment?.appt_date ? dayjs(s.appointment.appt_date) : null,
-      scheduled_time: s.scheduled_at
-        ? scheduledParts?.time
-        : s.appointment?.start_time?.slice(0, 5),
-      staff_id: s.staff_id,
-      session_value: s.session_value == null ? undefined : Number(s.session_value),
-      product_amount: Number(s.product_amount ?? 0),
-      skin_note: s.skin_note,
-      concern: s.concern,
-      diary: s.diary,
-      products_used: s.products_used,
-      result: s.result,
-      custom_fields: s.custom_fields ?? {},
-    })
-    if (!s.appointment_id && s.status === 'scheduled' && scheduledParts) {
-      void loadSessionSlots(s, dayjs(scheduledParts.date))
-    }
-  }, [editForm, getDateTimeParts, loadSessionSlots])
-
-  const staffName = (id?: string) => staffOptions.find((o) => o.value === id)?.label
-
-  useEffect(() => {
-    focusSessionIdRef.current = focusSessionId
-    onFocusSessionHandledRef.current = onFocusSessionHandled
-  }, [focusSessionId, onFocusSessionHandled])
-
-  const load = useCallback(async () => {
-    const sequence = ++loadSequence.current
-    if (!hasLoadedSessions.current) setLoading(true)
-    try {
-      const response = await getCustomerTreatmentsIdSessions(ctId)
-      if (sequence !== loadSequence.current) return
-      const rows = (pickData<SessionRow[] | undefined>(response) ?? []) as SessionRow[]
-      setSessions(rows)
-      const focusId = focusSessionIdRef.current
-      const sessionToEdit = focusId ? rows.find((session) => session.id === focusId) : undefined
-      if (sessionToEdit) {
-        openEdit(sessionToEdit)
-        onFocusSessionHandledRef.current?.()
-      }
-      hasLoadedSessions.current = true
-      setLoading(false)
-
-      // Ảnh tải nền để việc làm mới buổi không giữ cả danh sách ở trạng thái spinner.
-      const entries = await Promise.all(rows.map(async (s) => {
-        try {
-          return [s.id, (pickData<SessionPhoto[] | undefined>(await getSessionsIdPhotos(s.id)) ?? []) as SessionPhoto[]] as const
-        } catch {
-          return [s.id, [] as SessionPhoto[]] as const
-        }
-      }))
-      if (sequence === loadSequence.current) setPhotos(Object.fromEntries(entries))
-    } catch (err) {
-      if (sequence === loadSequence.current) message.error(errorMessage(err))
-    } finally {
-      if (sequence === loadSequence.current) {
-        hasLoadedSessions.current = true
-        setLoading(false)
-      }
-    }
-  }, [ctId, openEdit])
-
-  useEffect(() => {
-    loadSequence.current += 1
-    sessionSlotSequence.current += 1
-    hasLoadedSessions.current = false
-    setSessions([])
-    setPhotos({})
-    setEditOpen(null)
-    setSessionSlots([])
-    setLoading(true)
-  }, [ctId])
-
-  useEffect(() => {
-    load()
-  }, [load, refreshKey])
-
-  const act = async (fn: () => Promise<unknown>, okText: string) => {
-    try {
-      await fn()
-      message.success(okText)
-      load()
-      onChanged?.()
-    } catch (err) {
-      message.error(errorMessage(err))
-    }
-  }
-
-  // CT-05b — mở lại buổi đã hoàn tất (chỉ admin): completed → done để bổ sung nội dung/ảnh
-  const reopenSession = async (s: SessionRow) => {
-    try {
-      await customInstance({ url: `/sessions/${s.id}/reopen`, method: 'PUT' })
-      message.success('Đã mở lại buổi — bổ sung xong hãy bấm Hoàn tất lại')
-      await load()
-      onChanged?.()
-    } catch (err) {
-      message.error(errorMessage(err))
-    }
-  }
-
-  const submitEdit = async () => {
-    const values = await editForm.validateFields()
-    const { scheduled_date, scheduled_time, staff_id, ...sessionValues } = values
-    const hasAnyScheduleValue = !!scheduled_date || !!scheduled_time || !!staff_id
-    if (
-      canManageSessionSchedule &&
-      !editOpen?.appointment_id &&
-      editOpen?.status === 'scheduled' &&
-      scheduleEditTouchedRef.current &&
-      hasAnyScheduleValue &&
-      (!scheduled_date || !scheduled_time || !staff_id)
-    ) {
-      message.error('Để xếp lịch buổi, cần chọn đủ ngày hẹn, giờ hẹn và KTV phụ trách')
-      return
-    }
-    const hasCompleteSchedule = !!scheduled_date && !!scheduled_time && !!staff_id
-    const scheduleIsFuture = hasCompleteSchedule
-      && scheduled_date.hour(Number(scheduled_time.slice(0, 2))).minute(Number(scheduled_time.slice(3, 5))).valueOf() >= Date.now()
-    const shouldSubmitSchedule = canManageSessionSchedule
-      && !editOpen?.appointment_id
-      && editOpen?.status === 'scheduled'
-      && (scheduleEditTouchedRef.current || scheduleIsFuture)
-    const scheduleValues = shouldSubmitSchedule
-      ? {
-        scheduled_at: scheduled_date && scheduled_time
-          ? scheduled_date.hour(Number(scheduled_time.slice(0, 2))).minute(Number(scheduled_time.slice(3, 5))).second(0).millisecond(0).toISOString()
-          : null,
-        staff_id: staff_id || null,
-      }
-      : {}
-    if (scheduleValues.scheduled_at) {
-      const candidateTimestamp = new Date(scheduleValues.scheduled_at).getTime()
-      if (!Number.isFinite(candidateTimestamp) || candidateTimestamp < Date.now()) {
-        message.error('Không thể xếp buổi vào ngày giờ đã qua')
-        return
-      }
-      const candidateDate = dayjs(scheduleValues.scheduled_at).format('YYYY-MM-DD')
-      for (const sibling of sessions) {
-        if (sibling.id === editOpen?.id) continue
-        const siblingTimestamp = sessionScheduledTimestamp(sibling)
-        if (siblingTimestamp == null) continue
-        const siblingDate = dayjs(siblingTimestamp).format('YYYY-MM-DD')
-        if (sibling.session_no < (editOpen?.session_no ?? 0) && candidateDate <= siblingDate) {
-          message.error(`Buổi #${editOpen?.session_no} phải được xếp sau buổi #${sibling.session_no}`)
-          return
-        }
-        if (sibling.session_no > (editOpen?.session_no ?? 0) && candidateDate >= siblingDate) {
-          message.error(`Buổi #${editOpen?.session_no} phải được xếp trước buổi #${sibling.session_no}`)
-          return
-        }
-      }
-    }
-    // Buổi chưa bắt đầu: gửi lịch hẹn + thông tin đầu buổi — phần diễn ra trong buổi khóa theo vòng đời
-    const isScheduledSession = editOpen?.status === 'scheduled'
-    const contentValues = isScheduledSession
-      ? { skin_note: sessionValues.skin_note, concern: sessionValues.concern }
-      : {
-        diary: sessionValues.diary,
-        skin_note: sessionValues.skin_note,
-        concern: sessionValues.concern,
-        products_used: sessionValues.products_used,
-        result: sessionValues.result,
-        custom_fields: sessionValues.custom_fields,
-      }
-    const editableValues = canManageSessionSchedule
-      ? (isScheduledSession ? contentValues : sessionValues)
-      : contentValues
-    try {
-      await putSessionsId(editOpen!.id, {
-        ...editableValues,
-        custom_fields: normalizeCustomFieldValues(customFieldDefinitions, sessionValues.custom_fields ?? {}, editOpen?.custom_fields ?? {}),
-        ...(canManageSessionSchedule ? scheduleValues : {}),
-      } as never)
-      message.success('Đã cập nhật buổi')
-      setEditOpen(null)
-      await load()
-      onChanged?.()
-    } catch (err) {
-      message.error(errorMessage(err))
-    }
-  }
-
-  if (loading) return <Spin style={{ display: 'block', margin: '32px auto' }} />
-  if (!sessions.length) return <Empty description="Chưa có buổi nào — bấm +1 buổi ở ngoài bảng để tạo" style={{ padding: '24px 0' }} />
-
-  /** Admin toàn quyền; user thường chỉ bắt đầu buổi N khi mọi buổi thường < N đã hoàn tất (bảo hành ngoại lệ) */
-  const canStart = (s: SessionRow) =>
-    !!isAdmin || !!s.is_warranty || sessions.every((o) => o.is_warranty || o.session_no >= s.session_no || o.status === 'completed')
-  /** Tuần tự buổi: buổi trước chưa completed thì buổi sau chưa được ghi nội dung/ảnh (bảo hành ngoại lệ, admin bỏ qua) */
-  const sequenceBlocked = (s: SessionRow) =>
-    !isAdmin && !s.is_warranty && sessions.some((o) => !o.is_warranty && o.session_no < s.session_no && o.status !== 'completed')
-  const sessionStartAllowedToday = (s: SessionRow) => {
-    if (s.appointment_id) {
-      const date = s.appointment?.appt_date
-      const time = s.appointment?.start_time
-      if (!date || !time) return false
-      const scheduledAt = dayjs(`${String(date).slice(0, 10)}T${String(time).slice(0, 5)}`)
-      return scheduledAt.isValid() && scheduledAt.format('YYYY-MM-DD') === dayjs().format('YYYY-MM-DD') && !scheduledAt.isAfter(dayjs())
-    }
-    if (!s.scheduled_at) return true
-    const scheduledAt = dayjs(s.scheduled_at)
-    return scheduledAt.isValid() && scheduledAt.format('YYYY-MM-DD') === dayjs().format('YYYY-MM-DD') && !scheduledAt.isAfter(dayjs())
-  }
-
-  return (
-    <>
-      {/* Mỗi buổi = 1 bảng liền mạch: header tint + dòng subheader pha + dòng dữ liệu */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-        {sessions.map((s) => {
-          const st = sessionStatusConfig[s.status as keyof typeof sessionStatusConfig] ?? { label: s.status ?? '—', color: '#BFBFBF' }
-          // Ảnh quá trình = kind 'process' + ảnh cũ chưa phân loại
-          const midPhotos = (photos[s.id] ?? []).filter((p) => p.kind === 'process' || !p.kind)
-          return (
-            <div
-              key={s.id}
-              style={{
-                border: '1px solid var(--brand-border)',
-                borderRadius: 12,
-                overflow: 'hidden',
-                background: '#FFFFFF',
-              }}
-            >
-              {/* Header bảng buổi */}
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 12,
-                  flexWrap: 'wrap',
-                  padding: '13px 16px',
-                  background: 'var(--brand-bg)',
-                }}
-              >
-                <div
-                  style={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: 10,
-                    flexShrink: 0,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontWeight: 700,
-                    fontSize: 17,
-                    background: `${st.color}14`,
-                    color: st.color,
-                    border: `1px solid ${st.color}33`,
-                  }}
-                >
-                  {String(s.session_no).padStart(2, '0')}
-                </div>
-                <Space size={8} align="center" wrap>
-                  <span style={{ fontWeight: 800, fontSize: 15.5, color: '#26211F' }}>
-                    {s.scheduled_at
-                      ? formatDateTime(s.scheduled_at)
-                      : s.appointment?.appt_date
-                        ? `${dayjs(s.appointment.appt_date).format('DD/MM/YYYY')} · ${s.appointment.start_time?.slice(0, 5) ?? ''}`
-                        : s.started_at || s.done_at || s.completed_at
-                          ? `Thực hiện ${formatDateTime(s.started_at || s.done_at || s.completed_at)}`
-                          : 'Chưa xếp lịch'}
-                  </span>
-                  <span
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 700,
-                      padding: '3px 12px',
-                      borderRadius: 999,
-                      background: `${st.color}1A`,
-                      color: st.color,
-                    }}
-                  >
-                    {st.label}
-                  </span>
-                  {!!s.is_warranty && (
-                    <span style={{ fontSize: 13, fontWeight: 700, padding: '3px 12px', borderRadius: 999, background: '#F59E0B1A', color: '#B45309' }}>
-                      Bảo hành
-                    </span>
-                  )}
-                </Space>
-                {(ctStatus === 'ACTIVE' || s.is_warranty) && (
-                    <Space size={6} wrap style={{ marginLeft: 'auto' }}>
-                      {canStartSession && s.status === 'scheduled' && !s.is_warranty && (
-                        <Tooltip title={!s.staff_id
-                          ? 'Buổi chưa có KTV phụ trách — gán KTV trước khi bắt đầu'
-                          : !sessionStartAllowedToday(s)
-                            ? 'Chỉ bắt đầu được trong ngày hẹn, sau giờ hẹn'
-                            : canStart(s) ? undefined : 'Hoàn tất các buổi trước theo đúng thứ tự'}>
-                          <Button
-                            type="primary"
-                            ghost
-                            disabled={!s.staff_id || !canStart(s) || !sessionStartAllowedToday(s)}
-                            onClick={() => act(() => putSessionsIdStart(s.id), 'Đã bắt đầu buổi')}
-                          >
-                            Bắt đầu
-                          </Button>
-                        </Tooltip>
-                      )}
-                      {canFinishSessionWork && s.status === 'in_progress' && (
-                        <Button onClick={() => act(() => putSessionsIdDone(s.id, {} as never), 'Đã thực hiện xong')}>
-                          Đã làm
-                        </Button>
-                      )}
-                      {canCompleteSession && s.status === 'done' && (
-                        <Button type="primary" onClick={() => act(() => putSessionsIdComplete(s.id), 'Đã hoàn tất buổi')}>
-                          Hoàn tất
-                        </Button>
-                      )}
-                      {canEditSession && s.status !== 'completed' && (
-                        <Button icon={<EditOutlined />} onClick={() => openEdit(s)}>
-                          Sửa
-                        </Button>
-                      )}
-                      {isAdmin && s.status === 'completed' && (
-                        <Tooltip title="Mở lại buổi để bổ sung nội dung/ảnh, sau đó hoàn tất lại">
-                          <Button icon={<RollbackOutlined />} onClick={() => {
-                            Modal.confirm({
-                              title: `Mở lại buổi #${s.session_no}?`,
-                              content: 'Buổi sẽ quay về trạng thái Đã làm để bổ sung nội dung/ảnh; quota của buổi được tạm hoàn lại và hoa hồng liên quan bị thu hồi (sẽ tạo lại khi hoàn tất lần sau). Hành động được ghi vào nhật ký truy cập.',
-                              okText: 'Mở lại buổi',
-                              cancelText: 'Hủy',
-                              onOk: () => void reopenSession(s),
-                            })
-                          }}>
-                            Mở lại
-                          </Button>
-                        </Tooltip>
-                      )}
-                      {canDeleteSession && s.status === 'scheduled' && (
-                        <Popconfirm title="Xóa buổi này?" okText="Xóa" cancelText="Hủy" onConfirm={() => act(() => deleteSessionsId(s.id), 'Đã xóa buổi')}>
-                          <Button danger icon={<DeleteOutlined />} />
-                        </Popconfirm>
-                      )}
-                    </Space>
-                )}
-              </div>
-
-              {/* Thân bảng — các dòng thông tin */}
-              <TRow label="KTV">
-                {s.staff_id ? <span style={{ fontWeight: 600 }}>{staffName(s.staff_id)}</span> : <CellVal v={null} />}
-              </TRow>
-              {s.session_value != null && <TRow label="Giá trị buổi">{formatMoney(s.session_value)}</TRow>}
-              {(s.started_at || s.done_at || s.completed_at) && (
-                <TRow label="Thời gian">
-                  <span style={{ fontSize: 13, fontWeight: 600, color: '#5A5C60' }}>
-                    {[
-                      s.started_at && `Bắt đầu ${formatDateTime(s.started_at)}`,
-                      s.done_at && `Xong ${formatDateTime(s.done_at)}`,
-                      s.completed_at && `Hoàn tất ${formatDateTime(s.completed_at)}`,
-                    ].filter(Boolean).join('  →  ')}
-                  </span>
-                </TRow>
-              )}
-
-              <SubHead>Đầu buổi</SubHead>
-              <TRow label="Tình trạng da"><CellVal v={s.skin_note} /></TRow>
-              <TRow label="Cần cải thiện"><CellVal v={s.concern} /></TRow>
-              <TRow label="Ảnh trước">
-                <SessionPhotos
-                  sessionId={s.id}
-                  photos={(photos[s.id] ?? []).filter((p) => p.kind === 'before')}
-                  kind="before"
-                  sessionStatus={s.status}
-                  canUpload={canEditSession && (ctStatus === 'ACTIVE' || !!s.is_warranty) && !sequenceBlocked(s)}
-                  canDelete={!!isAdmin && (ctStatus === 'ACTIVE' || !!s.is_warranty)}
-                  onPhotoAdded={(photo) => setPhotos((current) => ({ ...current, [s.id]: [photo, ...(current[s.id] ?? []).filter((item) => item.id !== photo.id)] }))}
-                  onChanged={load}
-                />
-              </TRow>
-
-              <SubHead>Thực hiện</SubHead>
-              <TRow label="Nhật ký"><CellVal v={s.diary} /></TRow>
-              <TRow label="Sản phẩm"><CellVal v={s.products_used} /></TRow>
-              {(s.is_warranty || Number(s.product_amount || 0) > 0) && (
-                <TRow label="Tiền sản phẩm phát sinh">{formatMoney(s.product_amount || 0)}</TRow>
-              )}
-              <TRow label="Ảnh quá trình">
-                <SessionPhotos
-                  sessionId={s.id}
-                  photos={midPhotos}
-                  kind="process"
-                  sessionStatus={s.status}
-                  canUpload={canEditSession && (ctStatus === 'ACTIVE' || !!s.is_warranty) && !sequenceBlocked(s)}
-                  canDelete={!!isAdmin && (ctStatus === 'ACTIVE' || !!s.is_warranty)}
-                  onPhotoAdded={(photo) => setPhotos((current) => ({ ...current, [s.id]: [photo, ...(current[s.id] ?? []).filter((item) => item.id !== photo.id)] }))}
-                  onChanged={load}
-                />
-              </TRow>
-
-              <SubHead>Kết quả cuối buổi</SubHead>
-              <TRow label="Kết quả"><CellVal v={s.result} /></TRow>
-              {customFieldDefinitions.map((definition) => {
-                const value = customFieldValueText(s.custom_fields?.[definition.key])
-                return value ? <TRow key={definition.id} label={definition.label}><CellVal v={value} /></TRow> : null
-              })}
-              <TRow label="Ảnh sau">
-                <SessionPhotos
-                  sessionId={s.id}
-                  photos={(photos[s.id] ?? []).filter((p) => p.kind === 'after')}
-                  kind="after"
-                  sessionStatus={s.status}
-                  canUpload={canEditSession && (ctStatus === 'ACTIVE' || !!s.is_warranty) && !sequenceBlocked(s)}
-                  canDelete={!!isAdmin && (ctStatus === 'ACTIVE' || !!s.is_warranty)}
-                  onPhotoAdded={(photo) => setPhotos((current) => ({ ...current, [s.id]: [photo, ...(current[s.id] ?? []).filter((item) => item.id !== photo.id)] }))}
-                  onChanged={load}
-                />
-              </TRow>
-            </div>
-          )
-        })}
-      </div>
-
-      <Modal
-        title={`Sửa buổi #${editOpen?.session_no}`}
-        open={!!editOpen}
-        onCancel={() => setEditOpen(null)}
-        onOk={submitEdit}
-        okText="Lưu"
-        cancelText="Hủy"
-        width={560}
-      >
-        <Form form={editForm} layout="vertical" style={{ marginTop: 12 }}>
-          {editOpen?.appointment_id && (
-            <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 12 }}>
-              Buổi này đã gắn với lịch hẹn; KTV và giờ lấy theo lịch hẹn. Muốn đổi, hãy sửa ở tab Lịch hẹn.
-            </Typography.Text>
-          )}
-          {canManageSessionSchedule && <Row gutter={12}>
-            <Col span={12}>
-              <Form.Item name="scheduled_date" label="Ngày hẹn">
-                <DatePicker
-                  format="DD/MM/YYYY"
-                  style={{ width: '100%' }}
-                  disabledDate={(date) => date.isBefore(dayjs().startOf('day'), 'day')}
-                  disabled={!!editOpen?.appointment_id || editOpen?.status !== 'scheduled'}
-                  onChange={(date) => {
-                    scheduleEditTouchedRef.current = true
-                    editForm.setFieldsValue({ scheduled_time: undefined, staff_id: undefined })
-                    setSessionSlots([])
-                    if (date && editOpen && !editOpen.appointment_id && editOpen.status === 'scheduled') {
-                      void loadSessionSlots(editOpen, date)
-                    }
-                  }}
-                />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item name="scheduled_time" label="Giờ hẹn">
-                <Select
-                  disabled={!!editOpen?.appointment_id || editOpen?.status !== 'scheduled' || !selectedSessionDate || sessionSlotsLoading}
-                  loading={sessionSlotsLoading}
-                  placeholder={selectedSessionDate ? 'Chọn giờ còn trống' : 'Chọn ngày trước'}
-                  options={sessionSlots.map((slot) => ({ value: slot.start_time.slice(0, 5), label: slot.start_time.slice(0, 5) }))}
-                  onChange={(time) => {
-                    scheduleEditTouchedRef.current = true
-                    const slot = sessionSlots.find((candidate) => candidate.start_time.slice(0, 5) === time)
-                    if (!slot?.staff_ids.includes(editForm.getFieldValue('staff_id'))) editForm.setFieldsValue({ staff_id: undefined })
-                  }}
-                  allowClear
-                />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item name="staff_id" label="KTV phụ trách">
-                <Select
-                  allowClear
-                  showSearch
-                  optionFilterProp="label"
-                  disabled={!!editOpen?.appointment_id || editOpen?.status !== 'scheduled' || !selectedSessionTime || sessionSlotsLoading}
-                  onChange={() => { scheduleEditTouchedRef.current = true }}
-                  placeholder={selectedSessionTime ? 'Chọn KTV rảnh' : 'Chọn ngày và giờ trước'}
-                  options={sessionSlots
-                    .find((slot) => slot.start_time.slice(0, 5) === selectedSessionTime)
-                    ?.staff_ids.map((id) => staffOptions.find((option) => option.value === id))
-                    .filter((option): option is { value: string; label: string } => !!option)}
-                />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              {!editOpen?.is_warranty && (
-                <Form.Item
-                  name="session_value"
-                  label="Giá trị buổi"
-                  tooltip="Dùng cho gói định mức tiền — không được vượt quá số tiền còn lại trong gói."
-                  help={`Tối đa ${formatMoney(maxSessionValue)}`}
-                  rules={[{
-                    type: 'number',
-                    max: maxSessionValue,
-                    message: `Giá trị một buổi không được vượt quá tổng tiền liệu trình (${formatMoney(maxSessionValue)})`,
-                  }]}
-                >
-                  <InputNumber min={0} max={maxSessionValue} step={50000} suffix={currencySymbol} style={{ width: '100%' }} disabled={editOpen?.status === 'scheduled'} />
-                </Form.Item>
-              )}
-            </Col>
-          </Row>}
-          {canManageSessionSchedule && editOpen?.is_warranty && (
-            <Alert type="info" showIcon message="Buổi bảo hành miễn phí tiền công và không trừ quota. Phí sản phẩm phát sinh được ghi riêng bên dưới." />
-          )}
-          {editOpen?.status === 'scheduled' && (
-            <Alert
-              type="info"
-              showIcon
-              message="Buổi chưa bắt đầu — lưu ngày giờ và KTV sẽ tự tạo lịch ở mục Lịch hẹn. Có thể ghi thông tin đầu buổi; nhật ký, sản phẩm và kết quả ghi khi buổi diễn ra."
-            />
-          )}
-          {editOpen && sequenceBlocked(editOpen) && (
-            <Alert
-              type="warning"
-              showIcon
-              message="Buổi trước chưa hoàn thành — phải hoàn tất các buổi theo đúng thứ tự trước khi ghi thông tin hoặc thêm ảnh cho buổi này."
-            />
-          )}
-          <Divider plain style={{ fontSize: 11, color: '#A9ADB2', letterSpacing: 1, margin: '4px 0 14px' }}>
-            ĐẦU BUỔI
-          </Divider>
-          <Form.Item name="skin_note" label="Tình trạng da">
-            <Input.TextArea rows={2} placeholder="VD: da khô, hơi đỏ vùng má..." disabled={!!editOpen && sequenceBlocked(editOpen)} />
-          </Form.Item>
-          <Form.Item name="concern" label="Điều cần cải thiện">
-            <Input.TextArea rows={2} placeholder="VD: nám vùng gò má, lỗ chân lông to..." disabled={!!editOpen && sequenceBlocked(editOpen)} />
-          </Form.Item>
-          <Divider plain style={{ fontSize: 11, color: '#A9ADB2', letterSpacing: 1, margin: '4px 0 14px' }}>
-            THỰC HIỆN
-          </Divider>
-          <Form.Item name="diary" label="Nhật ký buổi làm">
-            <Input.TextArea rows={2} disabled={editOpen?.status === 'scheduled' || (!!editOpen && sequenceBlocked(editOpen))} />
-          </Form.Item>
-          <Form.Item name="products_used" label="Sản phẩm đã dùng">
-            <Input.TextArea rows={2} disabled={editOpen?.status === 'scheduled' || (!!editOpen && sequenceBlocked(editOpen))} />
-          </Form.Item>
-          {canManageSessionSchedule && <Form.Item
-            name="product_amount"
-            label="Tiền sản phẩm phát sinh"
-            help={editOpen?.is_warranty ? 'Chỉ ghi nhận tiền sản phẩm thêm; không trừ quota và không tính tiền công kỹ thuật.' : 'Số tiền sản phẩm thêm, tách biệt với giá trị buổi và quota liệu trình.'}
-            rules={[{ type: 'number', min: 0, message: 'Số tiền không được âm' }]}
-          >
-            <InputNumber min={0} step={10000} suffix={currencySymbol} style={{ width: '100%' }} disabled={editOpen?.status === 'scheduled' || (!!editOpen && sequenceBlocked(editOpen))} />
-          </Form.Item>}
-          <Divider plain style={{ fontSize: 11, color: '#A9ADB2', letterSpacing: 1, margin: '4px 0 14px' }}>
-            KẾT QUẢ CUỐI BUỔI
-          </Divider>
-          <Form.Item name="result" label="Kết quả">
-            <Input.TextArea rows={2} placeholder="VD: da sáng hơn, khách hài lòng..." disabled={editOpen?.status === 'scheduled' || (!!editOpen && sequenceBlocked(editOpen))} />
-          </Form.Item>
-          <Divider plain style={{ fontSize: 11, color: '#A9ADB2', letterSpacing: 1, margin: '4px 0 14px' }}>
-            TRƯỜNG TÙY CHỈNH
-          </Divider>
-          <CustomFieldFormItems definitions={customFieldDefinitions} disabled={!!editOpen && sequenceBlocked(editOpen)} />
-        </Form>
-      </Modal>
-    </>
-  )
-}
+import TreatmentAdjustModal from './components/TreatmentAdjustModal'
+import TreatmentConvertModal from './components/TreatmentConvertModal'
+import TreatmentHistoryModal from './components/TreatmentHistoryModal'
+import TreatmentPaymentModal from './components/TreatmentPaymentModal'
+import TreatmentAddSessionModal from './components/TreatmentAddSessionModal'
+import TreatmentCreateModal from './components/TreatmentCreateModal'
+import TreatmentPromoModal from './components/TreatmentPromoModal'
+import TreatmentDetailModal from './components/TreatmentDetailModal'
+import {
+  CUSTOMER_TREATMENT_COLUMN_OPTIONS,
+  DEFAULT_VISIBLE_COLUMNS,
+  FILTERS,
+  HIDDEN_TREATMENT_SYSTEM_FIELDS,
+  STATUS_META,
+  TREATMENT_SYSTEM_FIELD_LABELS,
+  bonusRemainingOf,
+  customFieldValueText,
+  readableCustomFieldLabel,
+  sessionUsage,
+  type CustomerTreatmentColumnKey,
+  type LookupListRow,
+  type PaymentRow,
+  type ProfileRow,
+  type RewardRedemptionRow,
+  type Slot,
+  type TreatmentAdjustmentRow,
+} from './components/constants'
 
 export default function TreatmentCustomers() {
   const { format: formatMoney, symbol: currencySymbol } = useBrandCurrency()
-  const { formatDateTime } = useBrandDateTime()
   const queryClient = useQueryClient()
   const { isAdmin, isReceptionist } = useCustomerProfileAccess()
   const ability = useAbility()
@@ -1983,7 +954,7 @@ export default function TreatmentCustomers() {
                 />
               )
             },
-        },
+          },
         ].filter((column) =>
           (column.key !== 'actions' || canUpdate) &&
           (column.key === 'actions' || visibleColumns.includes(column.key as CustomerTreatmentColumnKey)),
@@ -2037,796 +1008,157 @@ export default function TreatmentCustomers() {
       />
       <ListPagination page={page} limit={limit} total={list.length} onChange={setPage} noun="khách điều trị" />
 
-      <Modal
-        title="Thêm khách vào liệu trình"
+      <TreatmentCreateModal
+        form={form}
         open={open}
+        customerOptions={customerOptions}
+        onSearch={fetchCustomerOptions}
+        packages={packages}
+        packagesLoading={packagesQuery.isLoading}
+        selectedSalePackage={selectedSalePackage}
+        currencySymbol={currencySymbol}
+        customFieldDefs={customerTreatmentCustomFields}
+        submitting={createMutation.isPending}
+        onPackageChange={onPackageChange}
         onCancel={() => setOpen(false)}
         onOk={() => void submit()}
-        okText="Lưu"
-        cancelText="Hủy"
-        confirmLoading={createMutation.isPending}
-      >
-        <Form form={form} layout="vertical" style={{ marginTop: 12 }}>
-          <Form.Item name="customer_profile_id" label="Khách hàng" rules={[{ required: true, message: 'Chọn khách hàng' }]}>
-            <Select
-              showSearch
-              filterOption={false}
-              placeholder="Gõ tên hoặc SĐT để tìm khách"
-              onSearch={fetchCustomerOptions}
-              options={customerOptions.map((c) => ({ value: c.id, label: `${c.full_name} — ${c.phone}` }))}
-            />
-          </Form.Item>
-          <Form.Item name="package_id" label="Liệu trình" rules={[{ required: true, message: 'Chọn liệu trình' }]}>
-            <Select
-              showSearch
-              optionFilterProp="label"
-              placeholder="Chọn liệu trình"
-              loading={packagesQuery.isLoading}
-              onChange={onPackageChange}
-              options={packages.filter((p) => p.is_active).map((p) => ({
-                value: p.id,
-                label: `${p.name} (${QUOTA_LABEL[p.quota_type ?? ''] ?? p.quota_type})`,
-              }))}
-            />
-          </Form.Item>
-          <Form.Item
-            name="total_amount"
-            label="Số tiền"
-            extra={selectedSalePackage?.quota_type === 'VALUE' ? 'Định mức sử dụng của gói này sẽ tự bằng số tiền bán.' : undefined}
-            rules={[{ required: true, message: 'Nhập số tiền' }]}
-          >
-            <InputNumber min={0} step={100000} suffix={currencySymbol} style={{ width: '100%' }} />
-          </Form.Item>
-          <Form.Item name="sessions_bonus" label="Buổi tặng" extra="Cộng thêm vào số buổi của gói — để trống nếu không tặng">
-            <InputNumber min={0} precision={0} style={{ width: '100%' }} />
-          </Form.Item>
-          <Form.Item name="expires_at" label="Hạn sử dụng" extra="Để trống nếu gói không giới hạn thời gian">
-            <DatePicker style={{ width: '100%' }} />
-          </Form.Item>
-          <CustomFieldFormItems definitions={customerTreatmentCustomFields} />
-        </Form>
-      </Modal>
+      />
 
-      <Modal
-        title="Thông tin buổi điều trị mới"
+      <TreatmentAddSessionModal
+        form={addSessionForm}
         open={!!addSessionFor}
+        canSchedule={canUpdate}
+        scheduledDate={addSessionDate}
+        scheduledTime={addSessionTime}
+        slots={addSessionSlots}
+        slotsLoading={addSessionSlotsLoading}
+        onLoadSlots={(date) => void loadAddSessionSlots(date)}
+        staffOptions={staffOptions}
+        customFieldDefs={sessionCustomFields}
+        submitting={addingSessionId !== null}
         onCancel={() => setAddSessionFor(null)}
         onOk={() => void submitNewSession()}
-        confirmLoading={addingSessionId !== null}
-        okText="Tạo buổi"
-        cancelText="Hủy"
-      >
-        <Form form={addSessionForm} layout="vertical" style={{ marginTop: 12 }}>
-          {canUpdate && <Row gutter={12}>
-            <Col span={12}>
-              <Form.Item name="scheduled_date" label="Ngày hẹn">
-                <DatePicker
-                  format="DD/MM/YYYY"
-                  style={{ width: '100%' }}
-                  disabledDate={(date) => date.isBefore(dayjs().startOf('day'), 'day')}
-                  onChange={(date) => {
-                    addSessionForm.setFieldsValue({ scheduled_time: undefined, staff_id: undefined })
-                    setAddSessionSlots([])
-                    if (date) void loadAddSessionSlots(date)
-                  }}
-                />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item name="scheduled_time" label="Giờ hẹn">
-                <Select
-                  disabled={!addSessionDate || addSessionSlotsLoading}
-                  loading={addSessionSlotsLoading}
-                  placeholder={addSessionDate ? 'Chọn giờ còn trống' : 'Chọn ngày trước'}
-                  options={addSessionSlots.map((slot) => ({ value: slot.start_time.slice(0, 5), label: slot.start_time.slice(0, 5) }))}
-                  onChange={() => addSessionForm.setFieldsValue({ staff_id: undefined })}
-                  allowClear
-                />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item name="staff_id" label="KTV phụ trách">
-                <Select
-                  allowClear
-                  showSearch
-                  optionFilterProp="label"
-                  disabled={!addSessionTime || addSessionSlotsLoading}
-                  placeholder={addSessionTime ? 'Chọn KTV rảnh' : 'Chọn ngày và giờ trước'}
-                  options={(addSessionSlots
-                    .find((slot) => slot.start_time.slice(0, 5) === addSessionTime)
-                    ?.staff_ids.map((id) => staffOptions.find((option) => option.value === id))
-                    .filter((option): option is { value: string; label: string } => !!option) ?? [])}
-                />
-              </Form.Item>
-            </Col>
-          </Row>}
-          <CustomFieldFormItems definitions={sessionCustomFields} />
-          {sessionCustomFields.length === 0 && <Typography.Text type="secondary">Chưa có trường tùy chỉnh cho buổi điều trị.</Typography.Text>}
-        </Form>
-      </Modal>
+      />
 
-      <Modal
-        title="Ghi nhận thanh toán"
+      <TreatmentPaymentModal
+        form={payForm}
         open={payOpen}
+        currencySymbol={currencySymbol}
+        lookupLoading={paymentLookupLoading}
+        lookupError={paymentLookupError}
+        activePaymentMethods={activePaymentMethods}
         onCancel={() => { setPayOpen(false); setPayTargetId(null) }}
         onOk={submitPayment}
-        okText="Lưu"
-        cancelText="Hủy"
-        okButtonProps={{ disabled: paymentLookupLoading || !!paymentLookupError || activePaymentMethods.length === 0 }}
-      >
-        <Form form={payForm} layout="vertical" style={{ marginTop: 12 }}>
-          {paymentLookupError && <Alert type="error" showIcon message="Không thể ghi nhận thanh toán" description={paymentLookupError} style={{ marginBottom: 16 }} />}
-          <Form.Item name="amount" label="Số tiền" rules={[{ required: true, message: 'Nhập số tiền' }]}>
-            <InputNumber min={1} step={50000} suffix={currencySymbol} style={{ width: '100%' }} />
-          </Form.Item>
-          <Form.Item name="method" label="Phương thức" rules={[{ required: true }]}>
-            <Select
-              loading={paymentLookupLoading}
-              disabled={paymentLookupLoading || !!paymentLookupError || activePaymentMethods.length === 0}
-              options={activePaymentMethods.map((item) => ({ value: item.code, label: item.label }))}
-            />
-          </Form.Item>
-          <Form.Item name="note" label="Ghi chú">
-            <Input.TextArea rows={2} />
-          </Form.Item>
-        </Form>
-      </Modal>
+      />
 
-{/* Modal Ưu đãi & điểm — áp giảm giá (DC-07) và trừ điểm vào gói (LY-02) */ }
-<Modal
-  title={`Ưu đãi & điểm — gói #${(promoRow?.id ?? '').slice(0, 8)}`}
-  open={promoOpen}
-  onCancel={() => { setPromoOpen(false); setPromoRow(null) }}
-  footer={null}
-  width={640}
->
-  <Alert
-    type="warning" showIcon style={{ marginBottom: 12 }}
-    message={`Giảm giá hiện tại: ${formatMoney(promoRow?.discount_amount ?? 0)} — Điểm đã dùng: ${promoRow?.points_used ?? 0} (${formatMoney(promoRow?.points_discount ?? 0)})`}
-  />
-  <Tabs
-    items={[
-      {
-        key: 'discount',
-        label: 'Áp ưu đãi',
-        children: (
-          <>
-            {availableDiscounts.length === 0 && (
-              <Alert type="info" showIcon style={{ marginBottom: 12 }} message="Khách hiện không đủ điều kiện ưu đãi nào, hoặc chưa tải được danh sách." />
-            )}
-            {availableDiscounts.length > 0 && (
-              <Form form={promoForm} layout="vertical" style={{ marginBottom: 16 }}>
-                <Form.Item name="rule_id" label="Quy tắc ưu đãi đủ điều kiện" rules={[{ required: true, message: 'Chọn quy tắc' }]}>
-                  <Select
-                    showSearch
-                    optionFilterProp="label"
-                    placeholder="Chọn ưu đãi"
-                    options={availableDiscounts.map((rule) => ({
-                      value: rule.id!,
-                      label: `${rule.code} — ${rule.name} (${rule.percent_min ?? 0}–${rule.percent_max ?? 0}%)`,
-                    }))}
-                  />
-                </Form.Item>
-                <Form.Item noStyle shouldUpdate={(p, c) => p.rule_id !== c.rule_id}>
-                  {({ getFieldValue }) => {
-                    const rule = availableDiscounts.find((r) => r.id === getFieldValue('rule_id'))
-                    if (!rule) return null
-                    return (
-                      <Form.Item
-                        name="percent"
-                        label="Mức giảm (%)"
-                        initialValue={rule.percent_max ?? rule.percent_min}
-                        rules={[
-                          { required: true, message: 'Nhập mức giảm' },
-                          {
-                            validator: (_rule_, value) => {
-                              const min = rule.percent_min ?? 0
-                              const max = rule.percent_max ?? 100
-                              if (value == null) return Promise.resolve()
-                              if (value < min || value > max) {
-                                return Promise.reject(new Error(`Ngoài khoảng ${min}–${max}% — vượt khoảng cần quyền discount.override`))
-                              }
-                              return Promise.resolve()
-                            },
-                          },
-                        ]}
-                        extra={`Khoảng cho phép: ${rule.percent_min ?? 0}–${rule.percent_max ?? 0}%. Trần tổng xếp chồng: ${rule.max_total_percent ?? 50}%.`}
-                      >
-                        <InputNumber min={0} max={100} precision={0} style={{ width: '100%' }} />
-                      </Form.Item>
-                    )
-                  }}
-                </Form.Item>
-                <Can I="READ" a="DISCOUNT">
-                  <Button type="primary" loading={applyDiscountMutation.isPending} onClick={() => void submitApplyDiscount()}>
-                    Áp dụng
-                  </Button>
-                </Can>
-              </Form>
-            )}
-          </>
-        ),
-      },
-      {
-        key: 'redeem',
-        label: 'Đổi điểm',
-        children: (
-          <Form form={redeemForm} layout="vertical">
-            {promoPointsQuery.isLoading ? <Spin size="small" /> : null}
-            {promoPointsQuery.isError ? (
-              <Alert type="error" showIcon style={{ marginBottom: 12 }} message="Không tải được số dư và cấu hình điểm" description={errorMessage(promoPointsQuery.error)} />
-            ) : null}
-            {promoPointsQuery.isSuccess && !isPointsEnabled ? (
-              <Alert type="warning" showIcon style={{ marginBottom: 12 }} message="Tính năng đổi điểm đang tắt theo cấu hình hệ thống." />
-            ) : null}
-            {promoPointsQuery.isSuccess && isPointsEnabled && !redemptionConfigReady ? (
-              <Alert type="error" showIcon style={{ marginBottom: 12 }} message="Cấu hình quy đổi điểm chưa hợp lệ. Kiểm tra giá trị điểm và tỷ lệ tối thiểu/tối đa." />
-            ) : null}
-            <Form.Item
-              name="points"
-              label="Số điểm muốn dùng"
-              rules={[
-                { required: true, message: 'Nhập số điểm' },
-                { validator: async (_, value) => Number.isInteger(Number(value)) && Number(value) > 0 ? Promise.resolve() : Promise.reject(new Error('Số điểm phải là số nguyên dương')) },
-              ]}
-            >
-              <InputNumber min={1} max={redeemBalance > 0 ? redeemBalance : undefined} precision={0} style={{ width: '100%' }} disabled={!isPointsEnabled || !redemptionConfigReady || redeemBalance <= 0} />
-            </Form.Item>
-            {promoPointsQuery.isSuccess && isPointsEnabled && redemptionConfigReady ? (
-              <Card size="small" style={{ marginBottom: 12 }}>
-                <Space direction="vertical" size={4}>
-                  <Typography.Text>Điểm hiện có: <Typography.Text strong>{redeemBalance.toLocaleString('vi-VN')}</Typography.Text></Typography.Text>
-                  <Typography.Text>Giá trị dự kiến: <Typography.Text strong>{redeemPointsValue > 0 ? formatMoney(redeemMoney) : '—'}</Typography.Text></Typography.Text>
-                  <Typography.Text type="secondary">
-                    1 điểm = {formatMoney(pointValue)} · Mức được phép: {formatMoney(minRedeemMoney)}–{formatMoney(maxRedeemMoney)} ({minRedeemPercent}–{maxRedeemPercent}% công nợ {formatMoney(redeemDebt)})
-                  </Typography.Text>
-                </Space>
-              </Card>
-            ) : null}
-            {redeemValidationMessage && redeemPointsValue > 0 ? (
-              <Alert type="error" showIcon style={{ marginBottom: 12 }} message={redeemValidationMessage} />
-            ) : null}
-            <Can I="POINTS_ADJUST" a="MEMBERSHIP">
-              <Button type="primary" loading={redeemPointsMutation.isPending} disabled={!canSubmitRedeem} onClick={() => void submitRedeemPoints()}>
-                Đổi điểm
-              </Button>
-            </Can>
-          </Form>
-        ),
-      },
-      {
-        key: 'rewards',
-        label: 'Quà đã đổi',
-        children: (
-          <Space direction="vertical" size={12} style={{ width: '100%' }}>
-            <Alert
-              type="info"
-              showIcon
-              message="Áp quà sẽ trừ trực tiếp vào công nợ gói này"
-              description="Chỉ hiện lượt đổi còn dùng được và đúng dịch vụ của gói. Gói cần còn công nợ ít nhất bằng mức giảm; nên áp trước khi thu đủ tiền. Khi xác nhận, hệ thống đồng thời đánh dấu quà đã dùng."
-            />
-            {rewardRedemptionsQuery.isLoading && <Spin />}
-            {rewardRedemptionsQuery.isError && (
-              <Alert type="error" showIcon message="Không tải được quà đã đổi" description={errorMessage(rewardRedemptionsQuery.error)} />
-            )}
-            {!rewardRedemptionsQuery.isLoading && !rewardRedemptionsQuery.isError && applicableRewardRedemptions.length === 0 && (
-              <Empty description="Khách chưa có quà giảm tiền phù hợp với dịch vụ của gói này" />
-            )}
-            {applicableRewardRedemptions.map((redemption) => (
-              <Card key={redemption.id} size="small" styles={{ body: { padding: 12 } }}>
-                <Row align="middle" justify="space-between" gutter={[12, 8]}>
-                  <Col flex="auto">
-                    <Typography.Text strong>{redemption.reward?.name ?? 'Quà đổi điểm'}</Typography.Text>
-                    <div>
-                      <Typography.Text type="secondary">
-                        Đã trừ {Number(redemption.points_spent).toLocaleString('vi-VN')} điểm · Giảm {formatMoney(redemption.reward?.benefit_amount)}
-                      </Typography.Text>
-                    </div>
-                  </Col>
-                  <Col>
-                    <Button
-                      type="primary"
-                      disabled={!canApplyReward || (promoRow?.status !== 'ACTIVE') || Number(promoRow?.debt_amount ?? 0) < Number(redemption.reward?.benefit_amount ?? 0)}
-                      loading={applyingRewardId === redemption.id}
-                      onClick={() => confirmApplyReward(redemption)}
-                    >
-                      Áp vào gói
-                    </Button>
-                  </Col>
-                </Row>
-                {!canApplyReward && (
-                  <Typography.Text type="secondary">Tài khoản chưa có quyền áp dụng quà đổi vào hóa đơn.</Typography.Text>
-                )}
-                {promoRow?.status === 'ACTIVE' && Number(promoRow.debt_amount ?? 0) < Number(redemption.reward?.benefit_amount ?? 0) && (
-                  <Typography.Text type="danger">Công nợ gói này thấp hơn mức giảm của quà.</Typography.Text>
-                )}
-              </Card>
-            ))}
-          </Space>
-        ),
-      },
-    ]}
-  />
-</Modal>
+      <TreatmentPromoModal
+        open={promoOpen}
+        promoRow={promoRow}
+        formatMoney={formatMoney}
+        availableDiscounts={availableDiscounts}
+        discountForm={promoForm}
+        discountSubmitting={applyDiscountMutation.isPending}
+        onApplyDiscount={() => void submitApplyDiscount()}
+        redeemForm={redeemForm}
+        pointsLoading={promoPointsQuery.isLoading}
+        pointsError={promoPointsQuery.isError}
+        pointsLoaded={promoPointsQuery.isSuccess}
+        pointsErrorMessage={errorMessage(promoPointsQuery.error)}
+        isPointsEnabled={isPointsEnabled}
+        redemptionConfigReady={redemptionConfigReady}
+        redeemBalance={redeemBalance}
+        redeemPointsValue={redeemPointsValue}
+        redeemMoney={redeemMoney}
+        pointValue={pointValue}
+        minRedeemMoney={minRedeemMoney}
+        maxRedeemMoney={maxRedeemMoney}
+        minRedeemPercent={minRedeemPercent}
+        maxRedeemPercent={maxRedeemPercent}
+        redeemDebt={redeemDebt}
+        redeemValidationMessage={redeemValidationMessage}
+        canSubmitRedeem={canSubmitRedeem}
+        redeemSubmitting={redeemPointsMutation.isPending}
+        onRedeemPoints={() => void submitRedeemPoints()}
+        rewardsLoading={rewardRedemptionsQuery.isLoading}
+        rewardsError={rewardRedemptionsQuery.isError}
+        rewardsErrorMessage={errorMessage(rewardRedemptionsQuery.error)}
+        applicableRewardRedemptions={applicableRewardRedemptions}
+        canApplyReward={canApplyReward}
+        applyingRewardId={applyingRewardId}
+        onApplyReward={confirmApplyReward}
+        onCancel={() => { setPromoOpen(false); setPromoRow(null) }}
+      />
 
-{/* Modal chi tiết — timeline buổi + lịch sử thanh toán — thiết kế đồng bộ modal lần làm dịch vụ */ }
-      <Modal
-        open={!!detail && !payOpen}
-        onCancel={() => setDetail(null)}
-        title={detail ? `${profileName(detail)} · ${packageName(detail)}` : 'Chi tiết liệu trình'}
-        footer={<Button onClick={() => setDetail(null)}>Đóng</Button>}
-        width="min(1200px, calc(100vw - 24px))"
-        style={{ top: 20 }}
-      >
-        {detail && (
-          <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', alignItems: 'flex-start' }}>
-            {/* Rail trái: tóm tắt + hành động — card nền brand-bg như modal lần làm dịch vụ */}
-            <aside style={{ flex: '1 1 260px', maxWidth: 330, padding: 18, border: '1px solid var(--brand-border)', borderRadius: 14, background: 'var(--brand-bg)' }}>
-              <Typography.Text type="secondary" style={{ fontSize: 12, fontWeight: 800, letterSpacing: 1.2 }}>
-                {detail.quota_type === 'UNLIMITED' ? 'LIỆU TRÌNH TRỌN GÓI' : 'TIẾN ĐỘ LIỆU TRÌNH'}
-              </Typography.Text>
-              <Typography.Title level={4} style={{ margin: '5px 0 0' }}>{packageName(detail)}</Typography.Title>
-              <Typography.Text type="secondary" style={{ display: 'block', fontSize: 13 }}>
-                {QUOTA_LABEL[detail.quota_type ?? ''] ?? detail.quota_type}
-              </Typography.Text>
-              {detail.quota_type !== 'UNLIMITED' ? (
-                <>
-                  <Progress percent={treatmentProgress(detail) ?? 0} size="small" showInfo={false} strokeColor="var(--brand-primary)" style={{ marginTop: 10 }} />
-                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, fontSize: 13 }}>
-                    <span>Đã dùng</span>
-                    <strong>
-                      {detail.quota_type === 'SESSIONS'
-                        ? `${sessionUsage(detail).used} / ${sessionUsage(detail).total} buổi`
-                        : `${formatMoney(detail.value_used)} / ${formatMoney(detail.value_total)}`}
-                    </strong>
-                  </div>
-                </>
-              ) : (
-                <Typography.Text type="secondary" style={{ display: 'block', marginTop: 4 }}>Không giới hạn số buổi</Typography.Text>
-              )}
-              <Divider style={{ margin: '12px 0' }} />
-              <div style={{ display: 'grid', gap: 9, fontSize: 13.5 }}>
-                {canReadPayments && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
-                    <span>Đã trả</span><strong>{formatMoney(detail.paid_amount)}</strong>
-                  </div>
-                )}
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
-                  <span>Công nợ</span>
-                  <strong style={{ color: (detail.debt_amount ?? 0) > 0 ? '#D97706' : '#159447' }}>{formatMoney(detail.debt_amount)}</strong>
-                </div>
-                {detail.quota_type === 'SESSIONS' && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
-                    <span>Còn lại</span><strong>{sessionUsage(detail).remaining} buổi</strong>
-                  </div>
-                )}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
-                  <span>Trạng thái</span>
-                  <Tag color={STATUS_META[detail.status ?? '']?.color} style={{ marginInlineEnd: 0 }}>
-                    {STATUS_META[detail.status ?? '']?.label ?? detail.status}
-                  </Tag>
-                </div>
-              </div>
-              {detailSupplementalInfo.length > 0 && (
-                <div style={{ borderTop: '1px solid var(--brand-border-soft)', marginTop: 12, paddingTop: 12 }}>
-                  <Typography.Text strong>Thông tin bổ sung</Typography.Text>
-                  {detailSupplementalInfo.map(({ key, label, value }) => (
-                    <div key={key} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginTop: 6, fontSize: 13 }}>
-                      <span style={{ color: '#6F7071' }}>{label}</span>
-                      <span style={{ textAlign: 'right', overflowWrap: 'anywhere' }}>{value ?? '—'}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 16 }}>
-                {canCreateSessions && detail.status === 'ACTIVE' && detail.quota_type !== 'UNLIMITED' && (
-                  <Button block disabled={addingSessionId !== null} loading={addingSessionId === detail.id} onClick={() => addSession(detail)}>
-                    +1 buổi
-                  </Button>
-                )}
-                {canUpdate && detail.status !== 'CANCELLED' && (detail.debt_amount ?? 0) > 0 && (
-                  <Button
-                    block
-                    type="primary"
-                    onClick={() => {
-                      setPayTargetId(detail.id)
-                      payForm.setFieldsValue({ amount: detail.debt_amount, method: activePaymentMethods.find((item) => item.code === 'CASH')?.code ?? activePaymentMethods[0]?.code })
-                      setPayOpen(true)
-                    }}
-                  >
-                    Thu tiền ({formatMoney(detail.debt_amount)})
-                  </Button>
-                )}
-                {/* INV-01 — In phiếu hóa đơn gói liệu trình (mở hộp thoại In của trình duyệt) */}
-                {canReadPayments && <Button
-                  block
-                  onClick={() =>
-                    openHtmlPrint(`/invoices/${detail.id}/print`).catch((err) => message.error(errorMessage(err, 'Không mở được phiếu in — kiểm tra setting module.invoice')))
-                  }
-                >
-                  In phiếu
-                </Button>}
-                {/* CT-06: chỉ Admin được hủy gói liệu trình */}
-                {isAdmin && canUpdate && detail.status === 'ACTIVE' && (
-                  <Popconfirm title="Hủy liệu trình này?" okText="Hủy" cancelText="Không" onConfirm={() => cancelTreatment(detail)}>
-                    <Button block danger>
-                      Hủy liệu trình
-                    </Button>
-                  </Popconfirm>
-                )}
-              </div>
-            </aside>
+      <TreatmentDetailModal
+        detail={detail}
+        payOpen={payOpen}
+        detailTab={detailTab}
+        onTabChange={(tab) => setDetailTab(tab)}
+        profileName={profileName}
+        packageName={packageName}
+        formatMoney={formatMoney}
+        currencySymbol={currencySymbol}
+        canReadPayments={canReadPayments}
+        canUpdate={canUpdate}
+        canCreateSessions={canCreateSessions}
+        isAdmin={isAdmin}
+        addingSessionId={addingSessionId}
+        onAddSession={addSession}
+        onPay={(row) => {
+          setPayTargetId(row.id)
+          payForm.setFieldsValue({ amount: row.debt_amount, method: activePaymentMethods.find((item) => item.code === 'CASH')?.code ?? activePaymentMethods[0]?.code })
+          setPayOpen(true)
+        }}
+        payments={payments}
+        payLoading={payLoading}
+        paymentMethodLabels={paymentMethodLabels}
+        supplementalInfo={detailSupplementalInfo}
+        focusSessionId={sessionToEdit?.treatmentId === detail?.id ? sessionToEdit?.sessionId : undefined}
+        onFocusSessionHandled={handleSessionFocusHandled}
+        staffOptions={staffOptions}
+        sessionCustomFields={sessionCustomFields}
+        sessionsRefreshKey={sessionsRefreshKey}
+        refresh={refresh}
+        refreshSelectedDetail={refreshSelectedDetail}
+        onCancelTreatment={cancelTreatment}
+        onClose={() => setDetail(null)}
+      />
 
-            {/* Vùng chính: buổi + thanh toán — desktop dùng Tabs, mobile dùng Select */}
-            <div style={{ flex: '3 1 560px', minWidth: 0 }}>
-              <Tabs
-                className="desktop-only"
-                activeKey={detailTab}
-                onChange={(key) => setDetailTab(key as typeof detailTab)}
-                items={[
-                  {
-                    key: 'sessions',
-                    label: 'Buổi điều trị',
-                    children: (
-                      <SessionTimeline
-                        ctId={detail.id}
-                        ctStatus={detail.status}
-                        treatmentTotalAmount={detail.total_amount}
-                        formatMoney={formatMoney}
-                        currencySymbol={currencySymbol}
-                        staffOptions={staffOptions}
-                        customFieldDefinitions={sessionCustomFields}
-                        isAdmin={isAdmin}
-                        onChanged={() => { refresh(); void refreshSelectedDetail() }}
-                        refreshKey={sessionsRefreshKey}
-                        focusSessionId={sessionToEdit?.treatmentId === detail.id ? sessionToEdit.sessionId : undefined}
-                        onFocusSessionHandled={handleSessionFocusHandled}
-                      />
-                    ),
-                  },
-                  ...(canReadPayments ? [{
-                    key: 'payments',
-                    label: 'Lịch sử thanh toán',
-                    children: (
-                      <div style={{ border: '1px solid var(--brand-border)', borderRadius: 12, overflow: 'hidden', background: '#fff' }}>
-                        <SubHead>Lịch sử thanh toán</SubHead>
-                        <Table<PaymentRow>
-                          rowKey="id"
-                          size="small"
-                          loading={payLoading}
-                          dataSource={payments}
-                          pagination={false}
-                          locale={{ emptyText: <TableEmpty description="Chưa có lần thanh toán nào" /> }}
-                          columns={[
-                            {
-                              title: 'Thời gian',
-                              key: 'time',
-                              width: 170,
-                              render: (_, p) => {
-                                const t = p.paid_at || p.created_at
-                                return formatDateTime(t)
-                              },
-                            },
-                            {
-                              title: 'Số tiền',
-                              dataIndex: 'amount',
-                              width: 140,
-                              render: (v) => <b>{formatMoney(v)}</b>,
-                            },
-                            {
-                              title: 'Phương thức',
-                              dataIndex: 'method',
-                              width: 130,
-                              render: (v: string) => paymentMethodLabels[v] ?? PAY_METHOD[v] ?? v ?? '—',
-                            },
-                            { title: 'Ghi chú', dataIndex: 'note', render: (v) => v || '—' },
-                          ]}
-                        />
-                      </div>
-                    ),
-                  }] : []),
-                  {
-                    key: 'points',
-                    label: 'Điểm thưởng',
-                    children: <PointsHistoryPanel profileId={detail.customer_profile_id} />,
-                  },
-                ]}
-              />
-              <div className="mobile-only" style={{ marginBottom: 12 }}>
-                <Select
-                  style={{ width: '100%' }}
-                  value={detailTab}
-                  onChange={(key) => setDetailTab(key as typeof detailTab)}
-                  options={([
-                    { value: 'sessions', label: 'Buổi điều trị' },
-                    ...(canReadPayments ? [{ value: 'payments', label: 'Lịch sử thanh toán' }] : []),
-                    { value: 'points', label: 'Điểm thưởng' },
-                  ])}
-                />
-              </div>
-              {detailTab === 'sessions' && (
-                <SessionTimeline
-                  ctId={detail.id}
-                  ctStatus={detail.status}
-                  treatmentTotalAmount={detail.total_amount}
-                  formatMoney={formatMoney}
-                  currencySymbol={currencySymbol}
-                  staffOptions={staffOptions}
-                  customFieldDefinitions={sessionCustomFields}
-                  isAdmin={isAdmin}
-                  onChanged={() => { refresh(); void refreshSelectedDetail() }}
-                  refreshKey={sessionsRefreshKey}
-                  focusSessionId={sessionToEdit?.treatmentId === detail.id ? sessionToEdit.sessionId : undefined}
-                  onFocusSessionHandled={handleSessionFocusHandled}
-                />
-              )}
-              {detailTab === 'payments' && canReadPayments && (
-                <>
-                  <Table<PaymentRow>
-                    className="desktop-only"
-                    rowKey="id"
-                    size="small"
-                    loading={payLoading}
-                    dataSource={payments}
-                    pagination={false}
-                    locale={{ emptyText: <TableEmpty description="Chưa có lần thanh toán nào" /> }}
-                    columns={[
-                      {
-                        title: 'Thời gian',
-                        key: 'time',
-                        width: 170,
-                        render: (_, p) => {
-                          const t = p.paid_at || p.created_at
-                          return formatDateTime(t)
-                        },
-                      },
-                      {
-                        title: 'Số tiền',
-                        dataIndex: 'amount',
-                        width: 140,
-                        render: (v) => <b>{formatMoney(v)}</b>,
-                      },
-                      {
-                        title: 'Phương thức',
-                        dataIndex: 'method',
-                        width: 130,
-                        render: (v: string) => paymentMethodLabels[v] ?? PAY_METHOD[v] ?? v ?? '—',
-                      },
-                      { title: 'Ghi chú', dataIndex: 'note', render: (v) => v || '—' },
-                    ]}
-                  />
-                  <MobileCards
-                    rows={payments}
-                    rowKey={(p) => p.id}
-                    loading={payLoading}
-                    emptyText="Chưa có lần thanh toán nào"
-                    renderCard={(p) => (
-                      <>
-                        <div className="mobile-card-head">
-                          <div className="mobile-card-title">{formatMoney(p.amount)}</div>
-                          <Tag color="green">{paymentMethodLabels[p.method ?? ''] ?? PAY_METHOD[p.method ?? ''] ?? p.method ?? '—'}</Tag>
-                        </div>
-                        <div className="mobile-card-rows">
-                          <MobileCardRow label="Thời gian" value={formatDateTime(p.paid_at || p.created_at)} />
-                          {p.note && <MobileCardRow label="Ghi chú" value={p.note} />}
-                        </div>
-                      </>
-                    )}
-                  />
-                </>
-              )}
-              {detailTab === 'points' && <PointsHistoryPanel profileId={detail.customer_profile_id} />}
-            </div>
-          </div>
-        )}
-      </Modal>
-
-      <Modal
-        title={`Điều chỉnh gói — ${adjustRow ? profileName(adjustRow) : ''}`}
+      <TreatmentAdjustModal
+        form={adjustForm}
         open={adjustOpen}
+        adjustRow={adjustRow}
+        profileName={profileName}
+        adjustType={adjustType}
+        adjustAmount={adjustAmount}
+        adjustSessionsLoading={adjustSessionsQuery.isLoading}
+        adjustCompletedCount={adjustCompletedCount}
+        submitting={adjustMutation.isPending}
         onCancel={() => setAdjustOpen(false)}
         onOk={() => void submitAdjust()}
-        okText="Ghi điều chỉnh"
-        cancelText="Hủy"
-        confirmLoading={adjustMutation.isPending}
-        destroyOnHidden
-      >
-        <Form form={adjustForm} layout="vertical" style={{ marginTop: 12 }}>
-          <Form.Item name="type" label="Tham số cần chỉnh" rules={[{ required: true, message: 'Chọn tham số' }]}>
-            <Select
-              options={ADJUST_TYPE_OPTIONS.filter((option) =>
-                option.value !== 'ADJUST_VALUE_TOTAL' || adjustRow?.quota_type === 'VALUE',
-              )}
-              placeholder="Chọn tham số"
-            />
-          </Form.Item>
-          {adjustType === 'ADJUST_SESSIONS' && (
-            <Alert
-              type={adjustSessionsQuery.isLoading ? 'info' : adjustCompletedCount === Number(adjustAmount) ? 'success' : 'warning'}
-              showIcon
-              style={{ marginBottom: 12 }}
-              message={
-                adjustSessionsQuery.isLoading
-                  ? 'Đang đối chiếu sổ liệu trình…'
-                  : `Sổ liệu trình ghi nhận ${adjustCompletedCount} buổi đã hoàn thành${adjustRow?.sessions_used != null ? ` — bộ đếm hiện tại: ${adjustRow.sessions_used}` : ''}`
-              }
-              description={
-                !adjustSessionsQuery.isLoading && adjustCompletedCount !== Number(adjustAmount)
-                  ? 'Giá trị mới lệch với sổ: bộ đếm sẽ không còn khớp số buổi đã hoàn thành trong sổ. Chỉ tiếp tục nếu bạn hiểu rõ sự lệch này (VD: khách làm tay trước khi dùng hệ thống).'
-                  : undefined
-              }
-            />
-          )}
-          {adjustType === 'EXTEND_EXPIRY' ? (
-            <Form.Item name="expires_at" label="Hạn dùng mới" rules={[{ required: true, message: 'Chọn hạn dùng mới' }]}
-              extra="Gói đang Hết hạn sẽ tự mở lại thành Đang làm nếu hạn mới ở tương lai.">
-              <DatePicker style={{ width: '100%' }} />
-            </Form.Item>
-          ) : (
-            <Form.Item
-              name="amount"
-              label={adjustType === 'ADJUST_VALUE_TOTAL' ? 'Định mức tiền mới' : 'Giá trị mới'}
-              rules={[{ required: true, message: 'Nhập giá trị mới' }]}
-              extra={adjustType === 'ADJUST_BONUS'
-                ? 'Buổi tặng cộng thêm vào số buổi mua chính.'
-                : adjustType === 'ADJUST_VALUE_TOTAL'
-                  ? 'Tổng giá trị khách được sử dụng; không phải số đã tiêu.'
-                  : undefined}
-            >
-              <InputNumber min={0} style={{ width: '100%' }} />
-            </Form.Item>
-          )}
-          <Form.Item name="reason" label="Lý do điều chỉnh (bắt buộc)" rules={[{ required: true, whitespace: true, message: 'Nhập lý do' }]}>
-            <Input.TextArea rows={2} maxLength={500} placeholder="VD: Khách báo salon ghi nhầm số buổi" />
-          </Form.Item>
-        </Form>
-      </Modal>
+      />
 
-      <Modal
-        title={`Đổi buổi tặng — ${convertRow ? profileName(convertRow) : ''}`}
+      <TreatmentConvertModal
+        form={convertForm}
         open={convertOpen}
+        convertRow={convertRow}
+        profileName={profileName}
+        serviceOptions={serviceOptions}
+        submitting={convertMutation.isPending}
         onCancel={() => setConvertOpen(false)}
         onOk={() => void submitConvert()}
-        okText="Chuyển đổi"
-        cancelText="Hủy"
-        confirmLoading={convertMutation.isPending}
-        destroyOnHidden
-      >
-        <Alert
-          type="info"
-          showIcon
-          style={{ marginBottom: 12 }}
-          message={`Còn ${convertRow ? bonusRemainingOf(convertRow) : 0} buổi tặng khả dụng`}
-          description="Chỉ chuyển được buổi TẶNG còn lại, không ảnh hưởng buổi đã mua. Thao tác một chiều — không thể đổi ngược."
-        />
-        <Form form={convertForm} layout="vertical">
-          <Form.Item name="service_id" label="Dịch vụ đích" rules={[{ required: true, message: 'Chọn dịch vụ đích' }]}>
-            <Select showSearch optionFilterProp="label" options={serviceOptions} placeholder="Chọn dịch vụ muốn chuyển sang" />
-          </Form.Item>
-          <Form.Item
-            name="from_sessions"
-            label="Số buổi chuyển"
-            rules={[
-              { required: true, message: 'Nhập số buổi' },
-              { type: 'number', min: 1, message: 'Tối thiểu 1 buổi' },
-              { type: 'number', max: convertRow ? bonusRemainingOf(convertRow) : 0, message: 'Vượt số buổi tặng còn lại' },
-            ]}
-          >
-            <InputNumber min={1} max={convertRow ? bonusRemainingOf(convertRow) : 0} style={{ width: '100%' }} />
-          </Form.Item>
-          <Form.Item name="reason" label="Lý do (bắt buộc)" rules={[{ required: true, whitespace: true, message: 'Nhập lý do' }]}>
-            <Input.TextArea rows={2} maxLength={500} placeholder="VD: Khách không làm mụn nữa, đổi sang gội đầu dưỡng sinh" />
-          </Form.Item>
-        </Form>
-      </Modal>
+      />
 
-      <Modal
-        title={`Lịch sử điều chỉnh — ${historyRow ? profileName(historyRow) : ''}`}
+      <TreatmentHistoryModal
         open={historyOpen}
+        historyRow={historyRow}
+        profileName={profileName}
+        loading={historyQuery.isLoading}
+        rows={(pickData<TreatmentAdjustmentRow[]>(historyQuery.data) ?? []) as TreatmentAdjustmentRow[]}
+        page={adjustHistoryPage}
+        onPageChange={setAdjustHistoryPage}
         onCancel={() => setHistoryOpen(false)}
-        footer={null}
-        width={860}
-      >
-        {historyQuery.isLoading ? (
-          <Typography.Text type="secondary">Đang tải…</Typography.Text>
-        ) : (pickData<TreatmentAdjustmentRow[]>(historyQuery.data) ?? []).length === 0 ? (
-          <Empty description="Gói chưa từng bị điều chỉnh" style={{ margin: '24px 0' }} />
-        ) : (
-          <>
-            <Table<TreatmentAdjustmentRow>
-              rowKey="id"
-              size="small"
-              loading={historyQuery.isLoading}
-              dataSource={paginateRows((pickData<TreatmentAdjustmentRow[]>(historyQuery.data) ?? []) as TreatmentAdjustmentRow[], adjustHistoryPage, 8)}
-              pagination={false}
-              columns={[
-                { title: 'Thời gian', dataIndex: 'created_at', width: 130, render: (v: string) => formatDateTime(v) },
-                { title: 'Loại', dataIndex: 'type', width: 140, render: (v: string) => ADJUST_TYPE_LABEL[v] ?? v },
-                {
-                  title: 'Giá trị',
-                  dataIndex: 'amount',
-                  width: 90,
-                  render: (v: number | null, row: TreatmentAdjustmentRow) =>
-                    v == null ? '—' : /CONVERT|SESSIONS|BONUS/.test(row.type) ? `${v} buổi` : Number(v).toLocaleString('vi-VN'),
-                },
-                { title: 'Lý do', dataIndex: 'reason', render: (v: string) => v },
-                {
-                  title: 'Thay đổi',
-                  key: 'diff',
-                  width: 280,
-                  render: (_: unknown, row: TreatmentAdjustmentRow) => {
-                    const lines = adjustmentDiffLines(row)
-                    return (
-                      <div style={{ fontSize: 12, display: 'grid', gap: 2 }}>
-                        {lines.map((line) => (
-                          <div key={line.label}>
-                            <span style={{ color: '#6F7071' }}>{line.label}: </span>
-                            <span style={{ color: '#8C9091' }}>{line.before}</span>
-                            {' → '}
-                            <span style={{ fontWeight: 600 }}>{line.after}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )
-                  },
-                },
-              ]}
-            />
-            <ListPagination page={adjustHistoryPage} limit={8} total={(pickData<TreatmentAdjustmentRow[]>(historyQuery.data) ?? []).length} onChange={setAdjustHistoryPage} noun="lần điều chỉnh" />
-          </>
-        )}
-      </Modal>
+      />
     </>
-  )
-}
-
-/** LY-01 — Lịch sử biến động điểm của khách (trong drawer chi tiết). */
-function PointsHistoryPanel({ profileId }: { profileId: string }) {
-  const pointsQuery = useGetCustomerProfilesIdPoints(profileId)
-  const [pointPage, setPointPage] = useState(1)
-  const data = pickData<{ points?: number; history?: MembershipTransaction[] }>(pointsQuery.data)
-  const REF_LABEL: Record<string, string> = {
-    PAYMENT: 'Thanh toán',
-    MANUAL: 'Chỉnh tay',
-    RANK: 'Xét hạng',
-    REWARD: 'Đổi quà',
-    WHEEL: 'Quay số',
-    REDEEM: 'Đổi tiền gói',
-  }
-  const rows = data?.history ?? []
-  return (
-    <div style={{ paddingTop: 8 }}>
-      <Statistic title="Điểm khả dụng" value={data?.points ?? 0} style={{ marginBottom: 16 }} />
-      {pointsQuery.isLoading ? (
-        <Typography.Text type="secondary">Đang tải…</Typography.Text>
-      ) : rows.length === 0 ? (
-        <Empty description="Chưa có biến động điểm nào" />
-      ) : (
-        <>
-          <Table
-            rowKey={(r) => String(r.id ?? r.trans_code ?? r.trans_date)}
-            size="small"
-            dataSource={paginateRows(rows, pointPage, 8)}
-            pagination={false}
-            columns={[
-              { title: 'Thời gian', dataIndex: 'created_at', width: 140, render: (v: string) => (v ? dayjs(v).format('DD/MM/YYYY HH:mm') : '—') },
-              { title: 'Loại', dataIndex: 'ref_type', width: 130, render: (v: string) => REF_LABEL[v] ?? v },
-              {
-                title: 'Điểm',
-                dataIndex: 'points_earned',
-                width: 90,
-                render: (v: number) => (
-                  <Typography.Text type={Number(v) >= 0 ? 'success' : 'danger'}>
-                    {Number(v) >= 0 ? '+' : ''}{v}
-                  </Typography.Text>
-                ),
-              },
-              { title: 'Lý do', dataIndex: 'reason', render: (v: string | null) => v || '—' },
-            ]}
-          />
-          <ListPagination page={pointPage} limit={8} total={rows.length} onChange={setPointPage} noun="biến động điểm" />
-        </>
-      )}
-    </div>
   )
 }

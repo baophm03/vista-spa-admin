@@ -11,7 +11,7 @@ import {
 import type { FormInstance } from 'antd'
 import ServiceImageField from '@/components/ServiceImageField'
 import CustomFieldFormItems from '@/components/CustomFieldFormItems'
-import type { CustomFieldDefinition } from '@/hooks/useCustomFieldDefinitions'
+import type { CustomFieldDefWithOptions } from '@/components/CustomFieldFormItems'
 import type { Service } from '@/api/models/service'
 import type { ServiceCategory } from '@/api/models/serviceCategory'
 
@@ -41,7 +41,7 @@ interface ServiceFormModalProps {
   saving: boolean
   categories: ServiceCategoryRow[]
   currencySymbol: string
-  customFields: CustomFieldDefinition[]
+  customFields: CustomFieldDefWithOptions[]
   onCancel: () => void
   onSubmit: () => void
 }

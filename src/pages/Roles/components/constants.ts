@@ -5,6 +5,7 @@ export interface RoleRow {
   description?: string | null
   [k: string]: unknown
 }
+
 export interface PermRow {
   id: string
   key: string
@@ -79,6 +80,7 @@ export const ACTION_LABELS: Record<string, string> = {
   adjust: 'Điều chỉnh gói',
   convert: 'Chuyển buổi tặng',
 }
+
 export const ACTION_OVERRIDES: Record<string, string> = {
   'report.customer.read': 'Khách mới',
   'report.read': 'Báo cáo tổng hợp',
@@ -86,16 +88,16 @@ export const ACTION_OVERRIDES: Record<string, string> = {
   'report.session.read': 'Buổi đã sử dụng',
 }
 
-export const readableToken = (value: string) =>
+const readableToken = (value: string) =>
   value
     .replaceAll('_', ' ')
     .replaceAll('.', ' ')
     .replace(/\b\w/g, (character) => character.toLocaleUpperCase('vi-VN'))
 
 export const moduleLabel = (module: string) => MODULE_LABELS[module] ?? readableToken(module)
+
 export const actionLabel = (permission: PermRow) =>
   permission.description?.trim() ||
   ACTION_OVERRIDES[permission.key] ||
   ACTION_LABELS[permission.action] ||
   readableToken(permission.action)
-
