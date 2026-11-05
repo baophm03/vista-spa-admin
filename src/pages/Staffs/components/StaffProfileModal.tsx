@@ -1,6 +1,7 @@
 import { Button, Col, Form, Image, Input, InputNumber, Modal, Row, Switch, Typography } from 'antd'
 import type { FormInstance } from 'antd'
 import ServiceImageField from '@/components/ServiceImageField'
+import { fileSrc } from '@/hooks/useFileUrl'
 import type { StaffProfileRow } from '@/api/models/staffProfileRow'
 import type { StaffRow } from './constants'
 
@@ -16,6 +17,7 @@ interface StaffProfileModalProps {
 }
 
 export default function StaffProfileModal({ form, open, profileUser, canUpdate, profileDetails, saving, onCancel, onOk }: StaffProfileModalProps) {
+  const avatarSrc = fileSrc((profileDetails as any)?.photo_file)
   return (
     <Modal
       title={`Hồ sơ chuyên viên — ${profileUser?.zalo_name || profileUser?.email || ''}`}
@@ -58,9 +60,17 @@ export default function StaffProfileModal({ form, open, profileUser, canUpdate, 
               </Form.Item>
             ) : (
               <Form.Item label="Ảnh đại diện">
-                {profileDetails?.photo_file_id ? (
-                  <Image src={profileDetails.photo_file_id} alt="Ảnh đại diện KTV" width={72} height={72} className="rounded-md object-cover" />
-                ) : <Typography.Text type="secondary">Chưa có ảnh</Typography.Text>}
+                {avatarSrc ? (
+                  <Image
+                    src={avatarSrc}
+                    alt="Ảnh đại diện KTV"
+                    width={72}
+                    height={72}
+                    className="rounded-md object-cover"
+                  />
+                ) : (
+                  <Typography.Text type="secondary">Chưa có ảnh</Typography.Text>
+                )}
               </Form.Item>
             )}
           </Col>

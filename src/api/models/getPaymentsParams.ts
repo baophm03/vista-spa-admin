@@ -20,4 +20,8 @@ from_date?: string;
 to_date?: string;
 entered_by?: string;
 branch_id?: string;
+/**
+ * Từ khóa tìm kiếm theo tên hoặc số điện thoại khách hàng
+ */
+q?: string;
 };

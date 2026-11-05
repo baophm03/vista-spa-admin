@@ -15,7 +15,7 @@ import {
   message,
 } from 'antd'
 import { DeleteOutlined, PictureOutlined } from '@ant-design/icons'
-import links from '@/configs/links'
+import { resolveFileSrc, useFileUrlMap } from '@/hooks/useFileUrl'
 import type { ProductCategoryRow, ProductRow } from './constants'
 
 interface ProductFormModalProps {
@@ -51,6 +51,7 @@ export default function ProductFormModal({
   setUploadingGallery,
   uploadImage,
 }: ProductFormModalProps) {
+  const urlMap = useFileUrlMap()
   return (
     <Modal
       title={editing ? 'Sửa sản phẩm' : 'Thêm sản phẩm'}
@@ -108,8 +109,8 @@ export default function ProductFormModal({
               showUploadList={false}
               beforeUpload={async (file) => {
                 setUploadingCover(true)
-                const url = await uploadImage(file)
-                if (url) form.setFieldsValue({ cover_url: url })
+                const fileId = await uploadImage(file)
+                if (fileId) form.setFieldsValue({ cover_file_id: fileId })
                 setUploadingCover(false)
                 return false
               }}
@@ -118,11 +119,12 @@ export default function ProductFormModal({
             </Upload>
             <Form.Item shouldUpdate noStyle>
               {() => {
-                const cover: string | undefined = form.getFieldValue('cover_url')
-                return cover ? (
+                const cover: string | undefined = form.getFieldValue('cover_file_id')
+                const coverSrc = resolveFileSrc(urlMap, cover)
+                return coverSrc ? (
                   <Space size={4}>
-                    <Image src={(links.imageEndpoint + (cover || ""))} width={64} height={64} style={{ objectFit: 'cover', borderRadius: 8 }} />
-                    <Button size="small" type="text" danger onClick={() => form.setFieldsValue({ cover_url: undefined })}>Gỡ</Button>
+                    <Image src={coverSrc} width={64} height={64} style={{ objectFit: 'cover', borderRadius: 8 }} />
+                    <Button size="small" type="text" danger onClick={() => form.setFieldsValue({ cover_file_id: undefined })}>Gỡ</Button>
                   </Space>
                 ) : (
                   <Typography.Text type="secondary">Chưa có ảnh bìa</Typography.Text>
@@ -132,16 +134,16 @@ export default function ProductFormModal({
           </Space>
         </Form.Item>
         <Form.Item label="Bộ ảnh" extra="Tối đa 12 ảnh.">
-          <Form.Item name="gallery" hidden><Input /></Form.Item>
+          <Form.Item name="gallery_file_ids" hidden><Input /></Form.Item>
           <Form.Item shouldUpdate noStyle>
             {() => {
-              const gallery: string[] = form.getFieldValue('gallery') ?? []
+              const gallery: string[] = form.getFieldValue('gallery_file_ids') ?? []
               return (
                 <div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: gallery.length ? 8 : 0 }}>
-                    {gallery.map((url) => (
-                      <div key={url} style={{ position: 'relative' }}>
-                        <Image src={(links.imageEndpoint + (url || ""))} width={64} height={64} style={{ objectFit: 'cover', borderRadius: 8 }} />
+                    {gallery.map((fileId) => (
+                      <div key={fileId} style={{ position: 'relative' }}>
+                        <Image src={resolveFileSrc(urlMap, fileId) ?? undefined} width={64} height={64} style={{ objectFit: 'cover', borderRadius: 8 }} fallback="" />
                         <Button
                           size="small"
                           type="primary"
@@ -149,7 +151,7 @@ export default function ProductFormModal({
                           shape="circle"
                           icon={<DeleteOutlined />}
                           style={{ position: 'absolute', top: -8, right: -8, width: 22, height: 22, minWidth: 22 }}
-                          onClick={() => form.setFieldsValue({ gallery: gallery.filter((item) => item !== url) })}
+                          onClick={() => form.setFieldsValue({ gallery_file_ids: gallery.filter((item) => item !== fileId) })}
                         />
                       </div>
                     ))}
@@ -160,14 +162,14 @@ export default function ProductFormModal({
                     showUploadList={false}
                     beforeUpload={async (file) => {
                       setUploadingGallery(true)
-                      const current: string[] = form.getFieldValue('gallery') ?? []
+                      const current: string[] = form.getFieldValue('gallery_file_ids') ?? []
                       if (current.length >= 12) {
                         message.error('Tối đa 12 ảnh trong bộ ảnh')
                         setUploadingGallery(false)
                         return false
                       }
-                      const url = await uploadImage(file)
-                      if (url) form.setFieldsValue({ gallery: [...current, url].slice(0, 12) })
+                      const fileId = await uploadImage(file)
+                      if (fileId) form.setFieldsValue({ gallery_file_ids: [...current, fileId].slice(0, 12) })
                       setUploadingGallery(false)
                       return false
                     }}

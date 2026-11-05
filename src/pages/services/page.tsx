@@ -39,10 +39,14 @@ import useCustomFieldDefinitions from '@/hooks/useCustomFieldDefinitions'
 import type { ServiceCategory } from '@/api/models/serviceCategory'
 import ServiceCategories from './ServiceCategories'
 import { formatCurrency, useBrandCurrency } from '@/themeRuntime'
-import links from '@/configs/links'
+import { fileSrc, resolveFileSrc, useFileUrlMap } from '@/hooks/useFileUrl'
 
-/** BE list include kèm `service_category`. */
-type ServiceRow = Service & { service_category?: { id?: string; name?: string } }
+/** BE list include kèm `service_category`, ảnh bìa `image_file` và bộ ảnh `service_galleries[].file`. */
+type ServiceRow = Service & {
+  service_category?: { id?: string; name?: string }
+  image_file?: { id?: string; path?: string } | null
+  service_galleries?: Array<{ file_id?: string; sort_order?: number; file?: { id?: string; path?: string } | null }>
+}
 type ServiceCategoryRow = ServiceCategory & { parent?: { id?: string; name?: string } }
 
 /** BE trả thêm resolved_options cho field có lookup_list_id. */
@@ -78,6 +82,7 @@ function categoryOptions(
 
 export default function Services() {
   const { currency, symbol: currencySymbol } = useBrandCurrency()
+  const urlMap = useFileUrlMap()
   const ability = useAbility()
   const canUpdate = ability.can('UPDATE', 'SERVICE')
   const canDelete = ability.can('DELETE', 'SERVICE')
@@ -142,11 +147,12 @@ export default function Services() {
     form.resetFields()
     form.setFieldsValue(
       row
-        ? {
+          ? {
             ...row,
+            image_file_id: row.image_file?.id ?? row.image_file_id ?? undefined,
             price: row.price == null ? null : Number(row.price),
             price_max: row.price_max == null ? null : Number(row.price_max),
-            gallery_file_ids: row.gallery_file_ids ?? [],
+            gallery_file_ids: (row.service_galleries ?? []).map((gallery) => gallery.file?.id ?? gallery.file_id),
             custom_fields: row.custom_fields ?? {},
             duration_minutes: row.duration_minutes ?? null,
           }
@@ -211,7 +217,7 @@ export default function Services() {
         dataIndex: 'title',
         render: (value: string, row) => (
           <Space align="start">
-            {row.image_file_id ? <img src={(links.imageEndpoint + (row.image_file_id || ""))} alt="" width={44} height={44} style={{ objectFit: 'cover', borderRadius: 6 }} /> : null}
+            {fileSrc((row as any).image_file) ?? resolveFileSrc(urlMap, row.image_file_id) ? <img src={(fileSrc((row as any).image_file) ?? resolveFileSrc(urlMap, row.image_file_id)) ?? undefined} alt="" width={44} height={44} style={{ objectFit: 'cover', borderRadius: 6 }} /> : null}
             <div>
               <div style={{ fontWeight: 500 }}>{value}</div>
               <Typography.Text type="secondary" style={{ fontSize: 12 }}>
@@ -270,7 +276,7 @@ export default function Services() {
       },
     ]
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visibleColumns, canUpdate, canDelete])
+  }, [visibleColumns, canUpdate, canDelete, urlMap])
 
   const activeFilterCount = Object.values(filters).filter((value) => value !== undefined && value !== '').length
   const applyFilters = (values: Record<string, unknown>) => {

@@ -9,6 +9,7 @@ import {
 } from '@/api/endpoints/customer-treatments'
 import CustomFieldFormItems, { normalizeCustomFieldValues } from '@/components/CustomFieldFormItems'
 import useCustomFieldDefinitions from '@/hooks/useCustomFieldDefinitions'
+import { fileSrc, resolveFileSrc, useFileUrlMap } from '@/hooks/useFileUrl'
 import { useBrandDateTime } from '@/themeRuntime'
 import { STATUS_META, type ClaimRow } from './constants'
 
@@ -28,6 +29,7 @@ interface WarrantyClaimDetailDrawerProps {
 export default function WarrantyClaimDetailDrawer(props: WarrantyClaimDetailDrawerProps) {
   const { claimId, fallback, onClose } = props
   const { formatDateTime } = useBrandDateTime()
+  const urlMap = useFileUrlMap()
   const approveMutation = usePutWarrantyClaimsIdApprove()
   const [approveForm] = Form.useForm()
   const [approveOpen, setApproveOpen] = useState(false)
@@ -35,6 +37,7 @@ export default function WarrantyClaimDetailDrawer(props: WarrantyClaimDetailDraw
 
   const detailQuery = useGetWarrantyClaimsId(claimId ?? '', { query: { enabled: !!claimId } })
   const claim = (detailQuery.data?.responseData as ClaimRow | undefined) ?? fallback
+  const contractSrc = fileSrc((claim as any)?.contract_file) ?? resolveFileSrc(urlMap, claim?.contract_file_id)
 
   const doApprove = async () => {
     if (!claim) return
@@ -70,7 +73,13 @@ export default function WarrantyClaimDetailDrawer(props: WarrantyClaimDetailDraw
               <Tag color={STATUS_META[claim.status ?? '']?.color}>{STATUS_META[claim.status ?? '']?.label ?? claim.status}</Tag>
             </Descriptions.Item>
             <Descriptions.Item label="Lý do bảo hành">{claim.reason || '—'}</Descriptions.Item>
-            {claim.contract_file_id ? <Descriptions.Item label="Hợp đồng cam kết"><a href={claim.contract_file_id} target="_blank" rel="noreferrer"><FileTextOutlined /> Xem hợp đồng</a></Descriptions.Item> : null}
+            {contractSrc ? (
+              <Descriptions.Item label="Hợp đồng cam kết">
+                <a href={contractSrc} target="_blank" rel="noreferrer">
+                  <FileTextOutlined /> Xem hợp đồng
+                </a>
+              </Descriptions.Item>
+            ) : null}
             <Descriptions.Item label="Ngày tạo">{claim.created_at ? formatDateTime(claim.created_at) : '—'}</Descriptions.Item>
             <Descriptions.Item label="Cập nhật">{claim.updated_at ? formatDateTime(claim.updated_at) : '—'}</Descriptions.Item>
           </Descriptions>

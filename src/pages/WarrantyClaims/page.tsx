@@ -18,6 +18,7 @@ import {
 } from '@/api/endpoints/customer-treatments'
 import { STATUS_META } from './components/constants'
 import { usePostFiles } from '@/api/endpoints/files'
+import { registerUploadedFile } from '@/hooks/useFileUrl'
 import { useCustomerProfileAccess } from '@/utils/customerProfileAccess'
 import { useBrandDateTime } from '@/themeRuntime'
 import WarrantyClaimCreateModal from './components/WarrantyClaimCreateModal'
@@ -74,9 +75,10 @@ export default function WarrantyClaims() {
   const uploadContract = async (file: File) => {
     setUploadingContract(true)
     try {
-      const uploaded = pickData<{ original?: string }>(await uploadMutation.mutateAsync({ data: { file } as never }))
-      if (!uploaded?.original) throw new Error('Máy chủ không trả về đường dẫn tệp')
-      createForm.setFieldValue('contract_file_id', uploaded.original)
+      const uploaded = pickData<{ id?: string; path?: string }>(await uploadMutation.mutateAsync({ data: { file } as never }))
+      if (!uploaded?.id) throw new Error('Máy chủ không trả về file')
+      registerUploadedFile(uploaded.id, uploaded.path)
+      createForm.setFieldValue('contract_file_id', uploaded.id)
       message.success('Đã tải hợp đồng lên')
     } catch (error) {
       message.error(errorMessage(error))
