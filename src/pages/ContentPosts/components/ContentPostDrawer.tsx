@@ -3,7 +3,7 @@ import { EyeOutlined, UploadOutlined } from '@ant-design/icons'
 import type { FormInstance } from 'antd'
 import type { ContentCategory } from '@/api/models/contentCategory'
 import ContentRichTextEditor from '@/components/ContentRichTextEditor'
-import links from '@/configs/links'
+import { resolveFileSrc, useFileUrlMap } from '@/hooks/useFileUrl'
 import { makePostSlug } from './constants'
 import type { ContentPostRow, PostFormValues } from './constants'
 
@@ -38,6 +38,7 @@ export default function ContentPostDrawer({
   uploadCover,
   uploadContentImage,
 }: ContentPostDrawerProps) {
+  const urlMap = useFileUrlMap()
   return (
     <Drawer
       title={editing ? 'Sửa bài viết' : 'Tạo bài viết mới (Nháp)'}
@@ -88,25 +89,21 @@ export default function ContentPostDrawer({
         <Form.Item name="content" label="Nội dung chi tiết" extra="Soạn như văn bản bình thường; dùng thanh công cụ để định dạng. Không cần nhập HTML.">
           <ContentRichTextEditor onUploadImage={uploadContentImage} />
         </Form.Item>
-        <Form.Item name="cover_url" hidden><Input /></Form.Item>
+        <Form.Item name="cover_file_id" hidden><Input /></Form.Item>
         <Form.Item label="Ảnh bìa">
           <Form.Item shouldUpdate noStyle>
             {() => {
-              const coverUrl: string | undefined = form.getFieldValue('cover_url')
+              const coverFileId: string | undefined = form.getFieldValue('cover_file_id')
+              const coverSrc = resolveFileSrc(urlMap, coverFileId)
               return (
                 <Space direction="vertical" className="w-full" size={8}>
-                  <Input
-                    value={coverUrl ?? ''}
-                    onChange={(event) => form.setFieldValue('cover_url', event.target.value)}
-                    placeholder="Dán đường dẫn ảnh hoặc tải ảnh lên"
-                  />
                   <Upload accept="image/*" showUploadList={false} beforeUpload={uploadCover}>
                     <Button icon={<UploadOutlined />} loading={uploadingCover}>Tải ảnh lên</Button>
                   </Upload>
-                  {coverUrl ? (
+                  {coverSrc ? (
                   <Space align="start">
-                    <Image src={(links.imageEndpoint + (coverUrl || ""))} width={150} height={96} style={{ objectFit: 'cover', borderRadius: 8 }} />
-                    <Button size="small" danger onClick={() => form.setFieldValue('cover_url', undefined)}>Gỡ ảnh</Button>
+                    <Image src={coverSrc} width={150} height={96} style={{ objectFit: 'cover', borderRadius: 8 }} />
+                    <Button size="small" danger onClick={() => form.setFieldValue('cover_file_id', undefined)}>Gỡ ảnh</Button>
                   </Space>
                   ) : <Typography.Text type="secondary">Chưa có ảnh bìa</Typography.Text>}
                 </Space>

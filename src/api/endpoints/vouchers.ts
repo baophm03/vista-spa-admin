@@ -247,7 +247,7 @@ export const prefetchGetVouchersIdQuery = async <TData = Awaited<ReturnType<type
 
 
 /**
- * PUT `/vouchers/{id}` — voucher. Cần đăng nhập; route không khai báo quyền chi tiết. Trường body: `title`, `description`, `image_filepath`, `required_points`, `type`, `start_date`, `end_date`, `is_active`, `card_rank_id`, `is_loyalty`, `quantity_total`, `updated_by`. Xử lý bởi `voucherProvider.updateVoucher`.
+ * PUT `/vouchers/{id}` — voucher. Cần đăng nhập; route không khai báo quyền chi tiết. Trường body: `title`, `description`, `image_file_id`, `required_points`, `type`, `start_date`, `end_date`, `is_active`, `card_rank_id`, `is_loyalty`, `quantity_total`, `updated_by`. Xử lý bởi `voucherProvider.updateVoucher`.
  * @summary Cập nhật voucher
  */
 export const putVouchersId = (
@@ -1284,7 +1284,7 @@ export const prefetchGetVouchersQuery = async <TData = Awaited<ReturnType<typeof
 
 
 /**
- * POST `/vouchers` — voucher. Cần đăng nhập; route không khai báo quyền chi tiết. Trường body: `title`, `description`, `image_filepath`, `required_points`, `start_date`, `type`, `end_date`, `card_rank_id`, `is_loyalty`, `quantity_total`, `created_by`. Xử lý bởi `voucherProvider.createVoucher`.
+ * POST `/vouchers` — voucher. Cần đăng nhập; route không khai báo quyền chi tiết. Trường body: `title`, `description`, `image_file_id`, `required_points`, `start_date`, `type`, `end_date`, `card_rank_id`, `is_loyalty`, `quantity_total`, `created_by`. Xử lý bởi `voucherProvider.createVoucher`.
  * @summary Tạo voucher mới
  */
 export const postVouchers = (

@@ -44,13 +44,13 @@ import {
   putProductsId,
 } from '@/api/endpoints/products'
 import { usePostFiles } from '@/api/endpoints/files'
+import { fileSrc, registerUploadedFile, resolveFileSrc, useFileUrlMap } from '@/hooks/useFileUrl'
 import type { ProductCreate } from '@/api/models/productCreate'
 import type { ProductUpdate } from '@/api/models/productUpdate'
 import type { PostProductCategoriesBody } from '@/api/models/postProductCategoriesBody'
 import type { PutProductCategoriesIdBody } from '@/api/models/putProductCategoriesIdBody'
 import { useBrandCurrency } from '@/themeRuntime'
 import { useCustomerProfileAccess } from '@/utils/customerProfileAccess'
-import links from '@/configs/links'
 import ProductCategoryModal from './components/ProductCategoryModal'
 import ProductDetailModal from './components/ProductDetailModal'
 import ProductFormModal from './components/ProductFormModal'
@@ -132,6 +132,7 @@ export default function Products() {
   }, [searchInput])
 
   const uploadMutation = usePostFiles()
+  const urlMap = useFileUrlMap()
   const createMutation = useMutation({ mutationFn: async (dto: ProductCreate) => postProducts(dto) })
   const updateMutation = useMutation({
     mutationFn: async ({ id, dto }: { id: string; dto: ProductUpdate }) => putProductsId(id, dto),
@@ -160,10 +161,10 @@ export default function Products() {
             price: p.price ?? undefined,
             buy_url: p.buy_url ?? undefined,
             description: p.description ?? undefined,
-            cover_url: p.cover_url ?? undefined,
-            gallery: p.gallery ?? [],
+            cover_file_id: p.cover_file?.id ?? p.cover_file_id ?? undefined,
+            gallery_file_ids: (p.product_galleries ?? []).map((gallery) => gallery.file?.id ?? gallery.file_id),
           }
-        : { name: '', sku: undefined, category_id: undefined, price: undefined, buy_url: undefined, description: undefined, cover_url: undefined, gallery: [] },
+        : { name: '', sku: undefined, category_id: undefined, price: undefined, buy_url: undefined, description: undefined, cover_file_id: undefined, gallery_file_ids: [] },
     )
     setOpen(true)
   }
@@ -172,16 +173,16 @@ export default function Products() {
     const values = await form.validateFields()
     setSaving(true)
     try {
-      const dto: ProductCreate = {
+      const dto = {
         name: values.name,
         sku: values.sku || undefined,
         category_id: values.category_id || undefined,
         price: values.price ?? undefined,
         buy_url: values.buy_url || undefined,
         description: values.description || undefined,
-        cover_url: values.cover_url || undefined,
-        gallery: values.gallery ?? [],
-      }
+        cover_file_id: values.cover_file_id || undefined,
+        gallery_file_ids: values.gallery_file_ids ?? [],
+      } as unknown as ProductCreate
       if (editing) {
         await updateMutation.mutateAsync({ id: editing.id, dto })
         message.success('Đã cập nhật sản phẩm')
@@ -210,8 +211,10 @@ export default function Products() {
 
   const uploadImage = async (file: File): Promise<string | null> => {
     try {
-      const uploaded = pickData<{ original?: string }>(await uploadMutation.mutateAsync({ data: { file } }))
-      return uploaded?.original ?? null
+      const uploaded = pickData<{ id?: string; path?: string }>(await uploadMutation.mutateAsync({ data: { file } }))
+      if (!uploaded?.id) throw new Error('Máy chủ không trả về file')
+      registerUploadedFile(uploaded.id, uploaded.path)
+      return uploaded.id
     } catch (err) {
       message.error(`Tải ảnh lên thất bại: ${errorMessage(err)}`)
       return null
@@ -349,14 +352,16 @@ export default function Products() {
             title: 'Ảnh',
             key: 'cover',
             width: 76,
-            render: (_, p) =>
-              p.cover_url ? (
-                <Image src={(links.imageEndpoint + (p.cover_url || ""))} width={48} height={48} style={{ objectFit: 'cover', borderRadius: 8 }} />
+            render: (_, p) => {
+              const src = fileSrc((p as any).cover_file) ?? resolveFileSrc(urlMap, p.cover_file_id)
+              return src ? (
+                <Image src={src} width={48} height={48} style={{ objectFit: 'cover', borderRadius: 8 }} />
               ) : (
                 <div style={{ width: 48, height: 48, borderRadius: 8, background: 'var(--brand-bg)', display: 'grid', placeItems: 'center', color: '#B9BDC2' }}>
                   <PictureOutlined />
                 </div>
-              ),
+              )
+            },
           },
           {
             title: 'Sản phẩm',

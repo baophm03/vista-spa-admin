@@ -36,7 +36,7 @@ export interface PostFormValues {
   slug?: string
   summary?: string
   content?: string
-  cover_url?: string
+  cover_file_id?: string
   video_url?: string
   publish_at?: Dayjs | null
   expire_at?: Dayjs | null

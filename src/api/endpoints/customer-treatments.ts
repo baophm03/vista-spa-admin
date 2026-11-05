@@ -1704,7 +1704,7 @@ export const useDeletePhotosId = <TError = UnauthorizedResponse | ForbiddenRespo
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **PM-03** — GET /payments (theo branch_id, khoảng ngày, người nhập). Cần quyền `payment.read`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Tham số truy vấn: `page`, `limit`, `from_date`, `to_date`, `entered_by`, `branch_id`.
+ * **PM-03** — GET /payments (theo branch_id, khoảng ngày, người nhập, từ khóa khách hàng). Cần quyền `payment.read`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Tham số truy vấn: `page`, `limit`, `from_date`, `to_date`, `entered_by`, `branch_id`, `q` (tìm theo tên/số điện thoại khách hàng).
  * @summary Lấy danh sách thanh toán
  */
 export const getPayments = (

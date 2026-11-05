@@ -26,7 +26,7 @@ import { useDeleteUsersAdminId, usePostUsersAdmin, usePutUsersAdminId, useGetUse
 import { useGetRoles } from '@/api/endpoints/roles'
 import { useGetBranches } from '@/api/endpoints/branches'
 import { useGetService } from '@/api/endpoints/services'
-import links from '@/configs/links'
+import { fileSrc, resolveFileSrc, useFileUrlMap } from '@/hooks/useFileUrl'
 import {
   useGetStaffProfiles,
   useGetStaffProfilesUserId,
@@ -49,6 +49,7 @@ import {
 
 export default function Staffs() {
   const ability = useAbility()
+  const urlMap = useFileUrlMap()
   const currentUser = useProfileStore((state) => state.profile)
   const isPlatformAdmin = !!currentUser?.is_admin
   const canReadStaffProfile = isPlatformAdmin || ability.can('READ', 'STAFF_PROFILE')
@@ -121,7 +122,7 @@ export default function Staffs() {
     profileForm.setFieldsValue({
       display_name: profile.display_name,
       title: profile.title ?? '',
-      photo_file_id: profile.photo_file_id ?? '',
+      photo_file_id: (profile as any).photo_file?.id ?? profile.photo_file_id ?? '',
       expertise: profile.expertise ?? '',
       bio: profile.bio ?? '',
       sort_order: profile.sort_order ?? 0,
@@ -421,11 +422,12 @@ export default function Staffs() {
             dataIndex: 'zalo_name',
             width: 180,
             render: (_: unknown, s: StaffRow) => {
-              const photo = profileByUser.get(s.id)?.photo_file_id
+              const profile = profileByUser.get(s.id)
+              const photo = fileSrc((profile as any)?.photo_file) ?? resolveFileSrc(urlMap, profile?.photo_file_id)
               return (
                 <Space>
                   {photo ? (
-                    <img src={(links.imageEndpoint + (photo || ""))} alt="" width={36} height={36} className="rounded-full object-cover" />
+                    <img src={photo} alt="" width={36} height={36} className="rounded-full object-cover" />
                   ) : (
                     <Avatar size={36} className="bg-[var(--brand-primary)]!" icon={<UserOutlined />} />
                   )}

@@ -25,6 +25,7 @@ import {
 import { apiClient } from '@/api/mutator/custom-instance'
 import { Can, useAbility } from '@casl/react'
 import { usePostFiles } from '@/api/endpoints/files'
+import { objectKeySrc, registerUploadedFile } from '@/hooks/useFileUrl'
 import ContentPostDrawer from './components/ContentPostDrawer'
 import PostPreviewModal from './components/PostPreviewModal'
 import CategoryModal from './components/CategoryModal'
@@ -100,6 +101,7 @@ export default function ContentPosts() {
     postForm.resetFields()
     postForm.setFieldsValue({
       ...row,
+      cover_file_id: (row as any)?.cover_file?.id,
       slug: row?.slug ?? undefined,
       publish_at: row?.publish_at ? dayjs(row.publish_at) : null,
       expire_at: row?.expire_at ? dayjs(row.expire_at) : null,
@@ -145,9 +147,10 @@ export default function ContentPosts() {
     }
     setUploadingCover(true)
     try {
-      const uploaded = pickData<{ original?: string }>(await uploadMutation.mutateAsync({ data: { file } }))
-      if (!uploaded?.original) throw new Error('Máy chủ không trả về đường dẫn ảnh')
-      postForm.setFieldValue('cover_url', uploaded.original)
+      const uploaded = pickData<{ id?: string; path?: string }>(await uploadMutation.mutateAsync({ data: { file } }))
+      if (!uploaded?.id) throw new Error('Máy chủ không trả về file')
+      registerUploadedFile(uploaded.id, uploaded.path)
+      postForm.setFieldValue('cover_file_id', uploaded.id)
       message.success('Đã tải ảnh bìa lên')
     } catch (err) {
       message.error(`Tải ảnh lên thất bại: ${errorMessage(err)}`)
@@ -160,9 +163,11 @@ export default function ContentPosts() {
   const uploadContentImage = async (file: File) => {
     if (!file.type.startsWith('image/')) throw new Error('Tệp nhúng không phải ảnh')
     if (file.size > 10 * 1024 * 1024) throw new Error('Ảnh không được vượt quá 10 MB')
-    const uploaded = pickData<{ original?: string }>(await uploadMutation.mutateAsync({ data: { file } }))
-    if (!uploaded?.original) throw new Error('Máy chủ không trả về đường dẫn ảnh')
-    return uploaded.original
+    // Ảnh nhúng trong nội dung HTML cần URL trực tiếp → FE tự ghép imageEndpoint + path
+    const uploaded = pickData<{ id?: string; path?: string }>(await uploadMutation.mutateAsync({ data: { file } }))
+    if (!uploaded?.path) throw new Error('Máy chủ không trả về file')
+    registerUploadedFile(uploaded.id, uploaded.path)
+    return objectKeySrc(uploaded.path) ?? ''
   }
 
   const openPreview = () => {

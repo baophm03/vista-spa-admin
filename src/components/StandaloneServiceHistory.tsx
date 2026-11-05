@@ -7,6 +7,7 @@ import type { TableColumnsType } from 'antd'
 import { CheckCircleOutlined, EditOutlined, PlusOutlined, PrinterOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import { errorMessage, openHtmlPrint, pickData } from '@/api/helpers'
+import { fileSrc, registerUploadedFile } from '@/hooks/useFileUrl'
 import { customInstance } from '@/api/mutator/custom-instance'
 import { getAppointments } from '@/api/endpoints/appointments'
 import { getGetCustomerProfilesIdPointsQueryKey, useGetCustomerProfilesIdPoints } from '@/api/endpoints/customer-profiles'
@@ -352,9 +353,10 @@ function StandaloneServiceVisit({ appointment, onUpdated, autoOpenEdit, complete
 
   const uploadPhoto = async (file: File, kind: 'before' | 'process' | 'after') => {
     try {
-      const uploaded = pickData<{ original?: string }>(await postFiles({ file }))
-      if (!uploaded?.original) throw new Error('Máy chủ không trả về đường dẫn ảnh')
-      const response = await customInstance<any>({ url: `/appointments/${appointment.id}/photos`, method: 'POST', data: { url: uploaded.original, kind } })
+      const uploaded = pickData<{ id?: string; path?: string }>(await postFiles({ file }))
+      if (!uploaded?.id) throw new Error('Máy chủ không trả về file')
+      registerUploadedFile(uploaded.id, uploaded.path)
+      const response = await customInstance<any>({ url: `/appointments/${appointment.id}/photos`, method: 'POST', data: { file_id: uploaded.id, kind } })
       const saved = pickData<VisitPhoto | undefined>(response)
       if (!saved?.id) throw new Error('Máy chủ chưa xác nhận ảnh')
       setPhotos((current) => [saved, ...current])
@@ -394,12 +396,13 @@ function StandaloneServiceVisit({ appointment, onUpdated, autoOpenEdit, complete
     } catch (err) { message.error(errorMessage(err)) } finally { setSaving(false) }
   }
 
+  const photoSrc = (url?: string | null) => (!url ? '' : /^https?:\/\//i.test(url) ? url : `${links.imageEndpoint}${url}`)
   const photoRow = (kind: 'before' | 'process' | 'after', label: string) => {
     const rows = photos.filter((photo) => photo.kind === kind && photo.url)
     return (
       <TRow key={kind} label={label}>
         <Space wrap size={10}>
-          {rows.length > 0 && <Image.PreviewGroup items={rows.map((photo) => `${links.imageEndpoint}${photo.url}`)}>{rows.map((photo) => <Image key={photo.id} src={`${links.imageEndpoint}${photo.url}`} width={88} height={88} style={{ objectFit: 'cover', borderRadius: 10 }} />)}</Image.PreviewGroup>}
+          {rows.length > 0 && <Image.PreviewGroup items={rows.map((photo) => fileSrc((photo as any).file) ?? photoSrc(photo.url))}>{rows.map((photo) => <Image key={photo.id} src={fileSrc((photo as any).file) ?? photoSrc(photo.url)} width={88} height={88} style={{ objectFit: 'cover', borderRadius: 10 }} />)}</Image.PreviewGroup>}
           {editable && record.status === 'in_progress' && <Upload accept="image/*" multiple showUploadList={false} beforeUpload={(file) => { void uploadPhoto(file, kind); return false }}><Button icon={<PlusOutlined />}>Ảnh</Button></Upload>}
           {!rows.length && !(editable && record.status === 'in_progress') && <Typography.Text type="secondary">{loading ? 'Đang tải ảnh…' : 'Chưa có ảnh'}</Typography.Text>}
         </Space>

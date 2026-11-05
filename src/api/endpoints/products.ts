@@ -258,7 +258,7 @@ export const prefetchGetProductsIdQuery = async <TData = Awaited<ReturnType<type
 
 
 /**
- * PUT `/products/{id}` — sản phẩm. Chỉ quản trị viên nền tảng (ADM) được gọi. Trường body: `name`, `sku`, `category_id`, `price`, `description`, `cover_url`, `buy_url`, `is_active`, `gallery`. Xử lý bởi `product.update`.
+ * PUT `/products/{id}` — sản phẩm. Chỉ quản trị viên nền tảng (ADM) được gọi. Trường body: `name`, `sku`, `category_id`, `price`, `description`, `cover_file_id`, `buy_url`, `is_active`, `gallery_file_ids`.
  * @summary Cập nhật sản phẩm
  */
 export const putProductsId = (
@@ -580,7 +580,7 @@ export const prefetchGetProductsQuery = async <TData = Awaited<ReturnType<typeof
 
 
 /**
- * POST `/products` — sản phẩm. Chỉ quản trị viên nền tảng (ADM) được gọi. Trường body: `sku`, `category_id`, `price`, `description`, `cover_url`, `buy_url`, `name`, `gallery`.
+ * POST `/products` — sản phẩm. Chỉ quản trị viên nền tảng (ADM) được gọi. Trường body: `sku`, `category_id`, `price`, `description`, `cover_file_id`, `buy_url`, `name`, `gallery_file_ids`.
  * @summary Tạo sản phẩm mới
  */
 export const postProducts = (
