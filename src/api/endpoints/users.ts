@@ -57,8 +57,8 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * Trả danh sách tài khoản kèm thành viên, voucher và vai trò. Hỗ trợ tìm theo tên/email/số điện thoại, lọc trạng thái, cơ sở, vai trò và `has_role` để chỉ lấy nhân viên nội bộ (có vai trò được gắn). Người dùng bị giới hạn cơ sở chỉ thấy dữ liệu trong phạm vi được phân công.
- * @summary Tìm kiếm và lọc danh sách người dùng
+ * Returns a list of accounts with member, voucher and role data. Supports search by name/email/phone number and filters by status, branch, role, and `has_role` to only return internal staff (with an assigned role). Branch-restricted users only see data within their assigned scope.
+ * @summary Search and filter users
  */
 export const getUsers = (
     params?: GetUsersParams,
@@ -136,7 +136,7 @@ export function useGetUsersInfinite<TData = InfiniteData<Awaited<ReturnType<type
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Tìm kiếm và lọc danh sách người dùng
+ * @summary Search and filter users
  */
 
 export function useGetUsersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsers>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
@@ -154,7 +154,7 @@ export function useGetUsersInfinite<TData = InfiniteData<Awaited<ReturnType<type
 }
 
 /**
- * @summary Tìm kiếm và lọc danh sách người dùng
+ * @summary Search and filter users
  */
 export const prefetchGetUsersInfiniteQuery = async <TData = Awaited<ReturnType<typeof getUsers>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
  queryClient: QueryClient, params?: GetUsersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsers>>, TError, TData>>, }
@@ -217,7 +217,7 @@ export function useGetUsers<TData = Awaited<ReturnType<typeof getUsers>>, TError
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Tìm kiếm và lọc danh sách người dùng
+ * @summary Search and filter users
  */
 
 export function useGetUsers<TData = Awaited<ReturnType<typeof getUsers>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
@@ -235,7 +235,7 @@ export function useGetUsers<TData = Awaited<ReturnType<typeof getUsers>>, TError
 }
 
 /**
- * @summary Tìm kiếm và lọc danh sách người dùng
+ * @summary Search and filter users
  */
 export const prefetchGetUsersQuery = async <TData = Awaited<ReturnType<typeof getUsers>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
  queryClient: QueryClient, params?: GetUsersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsers>>, TError, TData>>, }
@@ -252,8 +252,8 @@ export const prefetchGetUsersQuery = async <TData = Awaited<ReturnType<typeof ge
 
 
 /**
- * Trả thông tin tài khoản gắn với bearer token hiện tại, gồm hồ sơ thành viên và vai trò. Dùng cho cả nhân viên và khách hàng đã đăng nhập.
- * @summary Xem hồ sơ tài khoản của tôi
+ * Returns the account information tied to the current bearer token, including the member profile and roles. Used by both staff and logged-in customers.
+ * @summary View my account profile
  */
 export const getUsersGetMyInfo = (
     
@@ -330,7 +330,7 @@ export function useGetUsersGetMyInfoInfinite<TData = InfiniteData<Awaited<Return
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem hồ sơ tài khoản của tôi
+ * @summary View my account profile
  */
 
 export function useGetUsersGetMyInfoInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersGetMyInfo>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
@@ -348,7 +348,7 @@ export function useGetUsersGetMyInfoInfinite<TData = InfiniteData<Awaited<Return
 }
 
 /**
- * @summary Xem hồ sơ tài khoản của tôi
+ * @summary View my account profile
  */
 export const prefetchGetUsersGetMyInfoInfiniteQuery = async <TData = Awaited<ReturnType<typeof getUsersGetMyInfo>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersGetMyInfo>>, TError, TData>>, }
@@ -411,7 +411,7 @@ export function useGetUsersGetMyInfo<TData = Awaited<ReturnType<typeof getUsersG
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem hồ sơ tài khoản của tôi
+ * @summary View my account profile
  */
 
 export function useGetUsersGetMyInfo<TData = Awaited<ReturnType<typeof getUsersGetMyInfo>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
@@ -429,7 +429,7 @@ export function useGetUsersGetMyInfo<TData = Awaited<ReturnType<typeof getUsersG
 }
 
 /**
- * @summary Xem hồ sơ tài khoản của tôi
+ * @summary View my account profile
  */
 export const prefetchGetUsersGetMyInfoQuery = async <TData = Awaited<ReturnType<typeof getUsersGetMyInfo>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersGetMyInfo>>, TError, TData>>, }
@@ -446,8 +446,8 @@ export const prefetchGetUsersGetMyInfoQuery = async <TData = Awaited<ReturnType<
 
 
 /**
- * PUT `/users/zalo/{id}` — người dùng. Cần đăng nhập; route không khai báo quyền chi tiết. Tham số truy vấn: `currentPage`, `pageSize`, `filters`, `sortField`, `sortOrder`. Xử lý bởi `userProvider.put`.
- * @summary Cập nhật zalo
+ * PUT `/users/zalo/{id}` — user. Requires authentication; route does not declare detailed permissions. Query parameters: `currentPage`, `pageSize`, `filters`, `sortField`, `sortOrder`. Handled by `userProvider.put`.
+ * @summary Update Zalo info
  */
 export const putUsersZaloId = (
     id: string,
@@ -497,7 +497,7 @@ const {mutation: mutationOptions} = options ?
     export type PutUsersZaloIdMutationError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void
 
     /**
- * @summary Cập nhật zalo
+ * @summary Update Zalo info
  */
 export const usePutUsersZaloId = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putUsersZaloId>>, TError,{id: string;data: UserCreate;params?: PutUsersZaloIdParams}, TContext>, }
@@ -513,8 +513,8 @@ export const usePutUsersZaloId = <TError = LegacyBadRequestResponse | LegacyUnau
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * POST `/users/zalo` — người dùng. **Công khai, không cần đăng nhập.** Route này hiện không gắn middleware xác thực hay phân quyền nào. Trường body: `phone_number`, `zalo_name`, `zalo_id`, `zalo_avatar`, `zalo_id_by_oa`. Xử lý bởi `userProvider.getOne`.
- * @summary Liên kết tài khoản Zalo với người dùng
+ * POST `/users/zalo` — user. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Body fields: `phone_number`, `zalo_name`, `zalo_id`, `zalo_avatar`, `zalo_id_by_oa`. Handled by `userProvider.getOne`.
+ * @summary Link a Zalo account to a user
  */
 export const postUsersZalo = (
     postUsersZaloBody: PostUsersZaloBody,
@@ -562,7 +562,7 @@ const {mutation: mutationOptions} = options ?
     export type PostUsersZaloMutationError = LegacyBadRequestResponse
 
     /**
- * @summary Liên kết tài khoản Zalo với người dùng
+ * @summary Link a Zalo account to a user
  */
 export const usePostUsersZalo = <TError = LegacyBadRequestResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postUsersZalo>>, TError,{data: PostUsersZaloBody}, TContext>, }
@@ -578,8 +578,8 @@ export const usePostUsersZalo = <TError = LegacyBadRequestResponse,
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/users/weekly` — người dùng. Công khai, không cần đăng nhập. Xử lý bởi `userProvider.getAll`.
- * @summary Xem thống kê người dùng theo tuần
+ * GET `/users/weekly` — user. Public, no authentication required. Handled by `userProvider.getAll`.
+ * @summary View weekly user statistics
  */
 export const getUsersWeekly = (
     
@@ -656,7 +656,7 @@ export function useGetUsersWeeklyInfinite<TData = InfiniteData<Awaited<ReturnTyp
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem thống kê người dùng theo tuần
+ * @summary View weekly user statistics
  */
 
 export function useGetUsersWeeklyInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersWeekly>>>, TError = LegacyBadRequestResponse>(
@@ -674,7 +674,7 @@ export function useGetUsersWeeklyInfinite<TData = InfiniteData<Awaited<ReturnTyp
 }
 
 /**
- * @summary Xem thống kê người dùng theo tuần
+ * @summary View weekly user statistics
  */
 export const prefetchGetUsersWeeklyInfiniteQuery = async <TData = Awaited<ReturnType<typeof getUsersWeekly>>, TError = LegacyBadRequestResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersWeekly>>, TError, TData>>, }
@@ -737,7 +737,7 @@ export function useGetUsersWeekly<TData = Awaited<ReturnType<typeof getUsersWeek
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem thống kê người dùng theo tuần
+ * @summary View weekly user statistics
  */
 
 export function useGetUsersWeekly<TData = Awaited<ReturnType<typeof getUsersWeekly>>, TError = LegacyBadRequestResponse>(
@@ -755,7 +755,7 @@ export function useGetUsersWeekly<TData = Awaited<ReturnType<typeof getUsersWeek
 }
 
 /**
- * @summary Xem thống kê người dùng theo tuần
+ * @summary View weekly user statistics
  */
 export const prefetchGetUsersWeeklyQuery = async <TData = Awaited<ReturnType<typeof getUsersWeekly>>, TError = LegacyBadRequestResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersWeekly>>, TError, TData>>, }
@@ -772,8 +772,8 @@ export const prefetchGetUsersWeeklyQuery = async <TData = Awaited<ReturnType<typ
 
 
 /**
- * GET `/users/vouchers/{id}` — người dùng. Công khai, không cần đăng nhập. Tham số truy vấn: `user_id`. Xử lý bởi `voucherProvider.getById`.
- * @summary Xem chi tiết voucher
+ * GET `/users/vouchers/{id}` — user. Public, no authentication required. Query parameters: `user_id`. Handled by `voucherProvider.getById`.
+ * @summary View voucher details
  */
 export const getUsersVouchersId = (
     id: string,
@@ -858,7 +858,7 @@ export function useGetUsersVouchersIdInfinite<TData = InfiniteData<Awaited<Retur
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết voucher
+ * @summary View voucher details
  */
 
 export function useGetUsersVouchersIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersVouchersId>>>, TError = LegacyBadRequestResponse | void>(
@@ -877,7 +877,7 @@ export function useGetUsersVouchersIdInfinite<TData = InfiniteData<Awaited<Retur
 }
 
 /**
- * @summary Xem chi tiết voucher
+ * @summary View voucher details
  */
 export const prefetchGetUsersVouchersIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getUsersVouchersId>>, TError = LegacyBadRequestResponse | void>(
  queryClient: QueryClient, id: string,
@@ -945,7 +945,7 @@ export function useGetUsersVouchersId<TData = Awaited<ReturnType<typeof getUsers
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết voucher
+ * @summary View voucher details
  */
 
 export function useGetUsersVouchersId<TData = Awaited<ReturnType<typeof getUsersVouchersId>>, TError = LegacyBadRequestResponse | void>(
@@ -964,7 +964,7 @@ export function useGetUsersVouchersId<TData = Awaited<ReturnType<typeof getUsers
 }
 
 /**
- * @summary Xem chi tiết voucher
+ * @summary View voucher details
  */
 export const prefetchGetUsersVouchersIdQuery = async <TData = Awaited<ReturnType<typeof getUsersVouchersId>>, TError = LegacyBadRequestResponse | void>(
  queryClient: QueryClient, id: string,
@@ -982,8 +982,8 @@ export const prefetchGetUsersVouchersIdQuery = async <TData = Awaited<ReturnType
 
 
 /**
- * GET `/users/vouchers/my-vouchers` — người dùng. Cần đăng nhập; route không khai báo quyền chi tiết. Tham số truy vấn: `status`, `currentPage`, `pageSize`, `filters`, `sortField`, `sortOrder`. Xử lý bởi `membership.findOne`.
- * @summary Xem voucher của tôi
+ * GET `/users/vouchers/my-vouchers` — user. Requires authentication; route does not declare detailed permissions. Query parameters: `status`, `currentPage`, `pageSize`, `filters`, `sortField`, `sortOrder`. Handled by `membership.findOne`.
+ * @summary View my vouchers
  */
 export const getUsersVouchersMyVouchers = (
     params?: GetUsersVouchersMyVouchersParams,
@@ -1061,7 +1061,7 @@ export function useGetUsersVouchersMyVouchersInfinite<TData = InfiniteData<Await
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem voucher của tôi
+ * @summary View my vouchers
  */
 
 export function useGetUsersVouchersMyVouchersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersVouchersMyVouchers>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
@@ -1079,7 +1079,7 @@ export function useGetUsersVouchersMyVouchersInfinite<TData = InfiniteData<Await
 }
 
 /**
- * @summary Xem voucher của tôi
+ * @summary View my vouchers
  */
 export const prefetchGetUsersVouchersMyVouchersInfiniteQuery = async <TData = Awaited<ReturnType<typeof getUsersVouchersMyVouchers>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
  queryClient: QueryClient, params?: GetUsersVouchersMyVouchersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersVouchersMyVouchers>>, TError, TData>>, }
@@ -1142,7 +1142,7 @@ export function useGetUsersVouchersMyVouchers<TData = Awaited<ReturnType<typeof 
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem voucher của tôi
+ * @summary View my vouchers
  */
 
 export function useGetUsersVouchersMyVouchers<TData = Awaited<ReturnType<typeof getUsersVouchersMyVouchers>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
@@ -1160,7 +1160,7 @@ export function useGetUsersVouchersMyVouchers<TData = Awaited<ReturnType<typeof 
 }
 
 /**
- * @summary Xem voucher của tôi
+ * @summary View my vouchers
  */
 export const prefetchGetUsersVouchersMyVouchersQuery = async <TData = Awaited<ReturnType<typeof getUsersVouchersMyVouchers>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
  queryClient: QueryClient, params?: GetUsersVouchersMyVouchersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersVouchersMyVouchers>>, TError, TData>>, }
@@ -1177,8 +1177,8 @@ export const prefetchGetUsersVouchersMyVouchersQuery = async <TData = Awaited<Re
 
 
 /**
- * GET `/users/vouchers` — người dùng. Cần đăng nhập; route không khai báo quyền chi tiết. Tham số truy vấn: `points_max`, `category`, `sort_by`, `currentPage`, `pageSize`, `filters`, `sortField`, `sortOrder`. Xử lý bởi `membership.findOne`.
- * @summary Quản lý voucher của khách
+ * GET `/users/vouchers` — user. Requires authentication; route does not declare detailed permissions. Query parameters: `points_max`, `category`, `sort_by`, `currentPage`, `pageSize`, `filters`, `sortField`, `sortOrder`. Handled by `membership.findOne`.
+ * @summary Manage customer vouchers
  */
 export const getUsersVouchers = (
     params?: GetUsersVouchersParams,
@@ -1256,7 +1256,7 @@ export function useGetUsersVouchersInfinite<TData = InfiniteData<Awaited<ReturnT
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Quản lý voucher của khách
+ * @summary Manage customer vouchers
  */
 
 export function useGetUsersVouchersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersVouchers>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
@@ -1274,7 +1274,7 @@ export function useGetUsersVouchersInfinite<TData = InfiniteData<Awaited<ReturnT
 }
 
 /**
- * @summary Quản lý voucher của khách
+ * @summary Manage customer vouchers
  */
 export const prefetchGetUsersVouchersInfiniteQuery = async <TData = Awaited<ReturnType<typeof getUsersVouchers>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
  queryClient: QueryClient, params?: GetUsersVouchersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersVouchers>>, TError, TData>>, }
@@ -1337,7 +1337,7 @@ export function useGetUsersVouchers<TData = Awaited<ReturnType<typeof getUsersVo
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Quản lý voucher của khách
+ * @summary Manage customer vouchers
  */
 
 export function useGetUsersVouchers<TData = Awaited<ReturnType<typeof getUsersVouchers>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
@@ -1355,7 +1355,7 @@ export function useGetUsersVouchers<TData = Awaited<ReturnType<typeof getUsersVo
 }
 
 /**
- * @summary Quản lý voucher của khách
+ * @summary Manage customer vouchers
  */
 export const prefetchGetUsersVouchersQuery = async <TData = Awaited<ReturnType<typeof getUsersVouchers>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
  queryClient: QueryClient, params?: GetUsersVouchersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersVouchers>>, TError, TData>>, }
@@ -1372,8 +1372,8 @@ export const prefetchGetUsersVouchersQuery = async <TData = Awaited<ReturnType<t
 
 
 /**
- * POST `/users/vouchers/{id}/redeem` — người dùng. Cần đăng nhập; route không khai báo quyền chi tiết. Xử lý bởi `voucherProvider.isVoucherValidForUser`.
- * @summary Đổi
+ * POST `/users/vouchers/{id}/redeem` — user. Requires authentication; route does not declare detailed permissions. Handled by `voucherProvider.isVoucherValidForUser`.
+ * @summary Redeem
  */
 export const postUsersVouchersIdRedeem = (
     id: string,
@@ -1419,7 +1419,7 @@ const {mutation: mutationOptions} = options ?
     export type PostUsersVouchersIdRedeemMutationError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void
 
     /**
- * @summary Đổi
+ * @summary Redeem
  */
 export const usePostUsersVouchersIdRedeem = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postUsersVouchersIdRedeem>>, TError,{id: string}, TContext>, }
@@ -1435,8 +1435,8 @@ export const usePostUsersVouchersIdRedeem = <TError = LegacyBadRequestResponse |
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/users/service` — người dùng. Cần đăng nhập; route không khai báo quyền chi tiết. Tham số truy vấn: `page`, `limit`, `status`, `service_type`. Xử lý bởi `userService.findAndCountAll`.
- * @summary Quản lý dịch vụ của khách
+ * GET `/users/service` — user. Requires authentication; route does not declare detailed permissions. Query parameters: `page`, `limit`, `status`, `service_type`.
+ * @summary List of exchanged services
  */
 export const getUsersService = (
     params?: GetUsersServiceParams,
@@ -1514,7 +1514,7 @@ export function useGetUsersServiceInfinite<TData = InfiniteData<Awaited<ReturnTy
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Quản lý dịch vụ của khách
+ * @summary List of exchanged services
  */
 
 export function useGetUsersServiceInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersService>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
@@ -1532,7 +1532,7 @@ export function useGetUsersServiceInfinite<TData = InfiniteData<Awaited<ReturnTy
 }
 
 /**
- * @summary Quản lý dịch vụ của khách
+ * @summary List of exchanged services
  */
 export const prefetchGetUsersServiceInfiniteQuery = async <TData = Awaited<ReturnType<typeof getUsersService>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
  queryClient: QueryClient, params?: GetUsersServiceParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersService>>, TError, TData>>, }
@@ -1595,7 +1595,7 @@ export function useGetUsersService<TData = Awaited<ReturnType<typeof getUsersSer
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Quản lý dịch vụ của khách
+ * @summary List of exchanged services
  */
 
 export function useGetUsersService<TData = Awaited<ReturnType<typeof getUsersService>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
@@ -1613,7 +1613,7 @@ export function useGetUsersService<TData = Awaited<ReturnType<typeof getUsersSer
 }
 
 /**
- * @summary Quản lý dịch vụ của khách
+ * @summary List of exchanged services
  */
 export const prefetchGetUsersServiceQuery = async <TData = Awaited<ReturnType<typeof getUsersService>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
  queryClient: QueryClient, params?: GetUsersServiceParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersService>>, TError, TData>>, }
@@ -1630,8 +1630,8 @@ export const prefetchGetUsersServiceQuery = async <TData = Awaited<ReturnType<ty
 
 
 /**
- * POST `/users/service/exchange` — người dùng. Cần đăng nhập; route không khai báo quyền chi tiết. Trường body: `service_id`. Xử lý bởi `service.findByPk`.
- * @summary Đổi điểm
+ * POST `/users/service/exchange` — user. Requires authentication; route does not declare detailed permissions. Body field: `service_id`.
+ * @summary Exchange points for a service
  */
 export const postUsersServiceExchange = (
     postUsersServiceExchangeBody: PostUsersServiceExchangeBody,
@@ -1679,7 +1679,7 @@ const {mutation: mutationOptions} = options ?
     export type PostUsersServiceExchangeMutationError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
 
     /**
- * @summary Đổi điểm
+ * @summary Exchange points for a service
  */
 export const usePostUsersServiceExchange = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postUsersServiceExchange>>, TError,{data: PostUsersServiceExchangeBody}, TContext>, }
@@ -1695,8 +1695,8 @@ export const usePostUsersServiceExchange = <TError = LegacyBadRequestResponse | 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/users/service/available` — người dùng. Cần đăng nhập; route không khai báo quyền chi tiết. Tham số truy vấn: `page`, `limit`, `search`. Xử lý bởi `membership.findOne`.
- * @summary Xem dịch vụ khả dụng
+ * GET `/users/service/available` — user. Requires authentication; route does not declare detailed permissions. Query parameters: `page`, `limit`, `search`. Handled by `membership.findOne`.
+ * @summary View available services
  */
 export const getUsersServiceAvailable = (
     params?: GetUsersServiceAvailableParams,
@@ -1774,7 +1774,7 @@ export function useGetUsersServiceAvailableInfinite<TData = InfiniteData<Awaited
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem dịch vụ khả dụng
+ * @summary View available services
  */
 
 export function useGetUsersServiceAvailableInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersServiceAvailable>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
@@ -1792,7 +1792,7 @@ export function useGetUsersServiceAvailableInfinite<TData = InfiniteData<Awaited
 }
 
 /**
- * @summary Xem dịch vụ khả dụng
+ * @summary View available services
  */
 export const prefetchGetUsersServiceAvailableInfiniteQuery = async <TData = Awaited<ReturnType<typeof getUsersServiceAvailable>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
  queryClient: QueryClient, params?: GetUsersServiceAvailableParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersServiceAvailable>>, TError, TData>>, }
@@ -1855,7 +1855,7 @@ export function useGetUsersServiceAvailable<TData = Awaited<ReturnType<typeof ge
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem dịch vụ khả dụng
+ * @summary View available services
  */
 
 export function useGetUsersServiceAvailable<TData = Awaited<ReturnType<typeof getUsersServiceAvailable>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
@@ -1873,7 +1873,7 @@ export function useGetUsersServiceAvailable<TData = Awaited<ReturnType<typeof ge
 }
 
 /**
- * @summary Xem dịch vụ khả dụng
+ * @summary View available services
  */
 export const prefetchGetUsersServiceAvailableQuery = async <TData = Awaited<ReturnType<typeof getUsersServiceAvailable>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
  queryClient: QueryClient, params?: GetUsersServiceAvailableParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersServiceAvailable>>, TError, TData>>, }
@@ -1890,8 +1890,8 @@ export const prefetchGetUsersServiceAvailableQuery = async <TData = Awaited<Retu
 
 
 /**
- * GET `/users/ranks` — người dùng. Công khai, không cần đăng nhập. Xử lý bởi `membershipProvider.getRankStatistics`.
- * @summary Xem hạng thành viên của khách
+ * GET `/users/ranks` — user. Public, no authentication required. Handled by `membershipProvider.getRankStatistics`.
+ * @summary View customer membership ranks
  */
 export const getUsersRanks = (
     
@@ -1968,7 +1968,7 @@ export function useGetUsersRanksInfinite<TData = InfiniteData<Awaited<ReturnType
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem hạng thành viên của khách
+ * @summary View customer membership ranks
  */
 
 export function useGetUsersRanksInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersRanks>>>, TError = LegacyBadRequestResponse>(
@@ -1986,7 +1986,7 @@ export function useGetUsersRanksInfinite<TData = InfiniteData<Awaited<ReturnType
 }
 
 /**
- * @summary Xem hạng thành viên của khách
+ * @summary View customer membership ranks
  */
 export const prefetchGetUsersRanksInfiniteQuery = async <TData = Awaited<ReturnType<typeof getUsersRanks>>, TError = LegacyBadRequestResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersRanks>>, TError, TData>>, }
@@ -2049,7 +2049,7 @@ export function useGetUsersRanks<TData = Awaited<ReturnType<typeof getUsersRanks
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem hạng thành viên của khách
+ * @summary View customer membership ranks
  */
 
 export function useGetUsersRanks<TData = Awaited<ReturnType<typeof getUsersRanks>>, TError = LegacyBadRequestResponse>(
@@ -2067,7 +2067,7 @@ export function useGetUsersRanks<TData = Awaited<ReturnType<typeof getUsersRanks
 }
 
 /**
- * @summary Xem hạng thành viên của khách
+ * @summary View customer membership ranks
  */
 export const prefetchGetUsersRanksQuery = async <TData = Awaited<ReturnType<typeof getUsersRanks>>, TError = LegacyBadRequestResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersRanks>>, TError, TData>>, }
@@ -2084,8 +2084,8 @@ export const prefetchGetUsersRanksQuery = async <TData = Awaited<ReturnType<type
 
 
 /**
- * POST `/users/membershipFee/syncAll` — người dùng. Cần đăng nhập; route không khai báo quyền chi tiết. Xử lý bởi `membershipProvider.syncAllMemberships`.
- * @summary Đồng bộ phí thành viên cho toàn bộ khách
+ * POST `/users/membershipFee/syncAll` — user. Requires authentication; route does not declare detailed permissions. Handled by `membershipProvider.syncAllMemberships`.
+ * @summary Sync all memberships
  */
 export const postUsersMembershipFeeSyncAll = (
     
@@ -2131,7 +2131,7 @@ const {mutation: mutationOptions} = options ?
     export type PostUsersMembershipFeeSyncAllMutationError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
 
     /**
- * @summary Đồng bộ phí thành viên cho toàn bộ khách
+ * @summary Sync all memberships
  */
 export const usePostUsersMembershipFeeSyncAll = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postUsersMembershipFeeSyncAll>>, TError,void, TContext>, }
@@ -2147,8 +2147,8 @@ export const usePostUsersMembershipFeeSyncAll = <TError = LegacyBadRequestRespon
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * POST `/users/membershipFee/sync` — người dùng. **Công khai, không cần đăng nhập.** Route này hiện không gắn middleware xác thực hay phân quyền nào. Trường body: `userId`. Xử lý bởi `user.findOne`.
- * @summary Đồng bộ phí thành viên cho một khách
+ * POST `/users/membershipFee/sync` — user. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Body field: `userId`. Handled by `membershipProvider.syncMembershipData`.
+ * @summary Sync membership data by userId
  */
 export const postUsersMembershipFeeSync = (
     postUsersMembershipFeeSyncBody: PostUsersMembershipFeeSyncBody,
@@ -2166,7 +2166,7 @@ export const postUsersMembershipFeeSync = (
   
 
 
-export const getPostUsersMembershipFeeSyncMutationOptions = <TError = LegacyBadRequestResponse,
+export const getPostUsersMembershipFeeSyncMutationOptions = <TError = LegacyBadRequestResponse | void,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postUsersMembershipFeeSync>>, TError,{data: PostUsersMembershipFeeSyncBody}, TContext>, }
 ): UseMutationOptions<Awaited<ReturnType<typeof postUsersMembershipFeeSync>>, TError,{data: PostUsersMembershipFeeSyncBody}, TContext> => {
 
@@ -2193,12 +2193,12 @@ const {mutation: mutationOptions} = options ?
 
     export type PostUsersMembershipFeeSyncMutationResult = NonNullable<Awaited<ReturnType<typeof postUsersMembershipFeeSync>>>
     export type PostUsersMembershipFeeSyncMutationBody = PostUsersMembershipFeeSyncBody
-    export type PostUsersMembershipFeeSyncMutationError = LegacyBadRequestResponse
+    export type PostUsersMembershipFeeSyncMutationError = LegacyBadRequestResponse | void
 
     /**
- * @summary Đồng bộ phí thành viên cho một khách
+ * @summary Sync membership data by userId
  */
-export const usePostUsersMembershipFeeSync = <TError = LegacyBadRequestResponse,
+export const usePostUsersMembershipFeeSync = <TError = LegacyBadRequestResponse | void,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postUsersMembershipFeeSync>>, TError,{data: PostUsersMembershipFeeSyncBody}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof postUsersMembershipFeeSync>>,
@@ -2212,8 +2212,8 @@ export const usePostUsersMembershipFeeSync = <TError = LegacyBadRequestResponse,
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * POST `/users/membershipFee/resetYearly` — người dùng. **Công khai, không cần đăng nhập.** Route này hiện không gắn middleware xác thực hay phân quyền nào. Xử lý bởi `membershipProvider.resetYearlyRanks`.
- * @summary Đặt lại phí thành viên theo năm
+ * POST `/users/membershipFee/resetYearly` — user. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `membershipProvider.resetYearlyRanks`.
+ * @summary Reset membership ranks yearly
  */
 export const postUsersMembershipFeeResetYearly = (
     
@@ -2259,7 +2259,7 @@ const {mutation: mutationOptions} = options ?
     export type PostUsersMembershipFeeResetYearlyMutationError = LegacyBadRequestResponse
 
     /**
- * @summary Đặt lại phí thành viên theo năm
+ * @summary Reset membership ranks yearly
  */
 export const usePostUsersMembershipFeeResetYearly = <TError = LegacyBadRequestResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postUsersMembershipFeeResetYearly>>, TError,void, TContext>, }
@@ -2275,8 +2275,8 @@ export const usePostUsersMembershipFeeResetYearly = <TError = LegacyBadRequestRe
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/users/membershipFee` — người dùng. Cần đăng nhập; route không khai báo quyền chi tiết. Xử lý bởi `membershipProvider.getMembershipInfo`.
- * @summary Xem phí và hạng thành viên của khách
+ * GET `/users/membershipFee` — user. Requires authentication; route does not declare detailed permissions. Handled by `membershipProvider.getMembershipInfo`.
+ * @summary View my membership information
  */
 export const getUsersMembershipFee = (
     
@@ -2353,7 +2353,7 @@ export function useGetUsersMembershipFeeInfinite<TData = InfiniteData<Awaited<Re
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem phí và hạng thành viên của khách
+ * @summary View my membership information
  */
 
 export function useGetUsersMembershipFeeInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersMembershipFee>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
@@ -2371,7 +2371,7 @@ export function useGetUsersMembershipFeeInfinite<TData = InfiniteData<Awaited<Re
 }
 
 /**
- * @summary Xem phí và hạng thành viên của khách
+ * @summary View my membership information
  */
 export const prefetchGetUsersMembershipFeeInfiniteQuery = async <TData = Awaited<ReturnType<typeof getUsersMembershipFee>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMembershipFee>>, TError, TData>>, }
@@ -2434,7 +2434,7 @@ export function useGetUsersMembershipFee<TData = Awaited<ReturnType<typeof getUs
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem phí và hạng thành viên của khách
+ * @summary View my membership information
  */
 
 export function useGetUsersMembershipFee<TData = Awaited<ReturnType<typeof getUsersMembershipFee>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
@@ -2452,7 +2452,7 @@ export function useGetUsersMembershipFee<TData = Awaited<ReturnType<typeof getUs
 }
 
 /**
- * @summary Xem phí và hạng thành viên của khách
+ * @summary View my membership information
  */
 export const prefetchGetUsersMembershipFeeQuery = async <TData = Awaited<ReturnType<typeof getUsersMembershipFee>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMembershipFee>>, TError, TData>>, }
@@ -2469,8 +2469,8 @@ export const prefetchGetUsersMembershipFeeQuery = async <TData = Awaited<ReturnT
 
 
 /**
- * POST `/users/membershipFee` — người dùng. Cần đăng nhập; route không khai báo quyền chi tiết. Xử lý bởi `userProvider.getOne`.
- * @summary Quản lý phí thành viên
+ * POST `/users/membershipFee` — user. Requires authentication; route does not declare detailed permissions. Handled by `membershipProvider.syncMembershipData`.
+ * @summary Sync my membership data
  */
 export const postUsersMembershipFee = (
     
@@ -2516,7 +2516,7 @@ const {mutation: mutationOptions} = options ?
     export type PostUsersMembershipFeeMutationError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
 
     /**
- * @summary Quản lý phí thành viên
+ * @summary Sync my membership data
  */
 export const usePostUsersMembershipFee = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postUsersMembershipFee>>, TError,void, TContext>, }
@@ -2532,8 +2532,8 @@ export const usePostUsersMembershipFee = <TError = LegacyBadRequestResponse | Le
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * POST `/users/membershipFee/exchangePoints` — người dùng. Cần đăng nhập; route không khai báo quyền chi tiết. Trường body: `action`. Xử lý bởi `membership.findOne`.
- * @summary Tạo exchangePoints cho người dùng
+ * POST `/users/membershipFee/exchangePoints` — user. Requires authentication; route does not declare detailed permissions. Body field: `action`. Handled by `membership.findOne`.
+ * @summary Create exchangePoints for user
  */
 export const postUsersMembershipFeeExchangePoints = (
     postUsersMembershipFeeExchangePointsBody: PostUsersMembershipFeeExchangePointsBody,
@@ -2581,7 +2581,7 @@ const {mutation: mutationOptions} = options ?
     export type PostUsersMembershipFeeExchangePointsMutationError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
 
     /**
- * @summary Tạo exchangePoints cho người dùng
+ * @summary Create exchangePoints for user
  */
 export const usePostUsersMembershipFeeExchangePoints = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postUsersMembershipFeeExchangePoints>>, TError,{data: PostUsersMembershipFeeExchangePointsBody}, TContext>, }
@@ -2597,8 +2597,8 @@ export const usePostUsersMembershipFeeExchangePoints = <TError = LegacyBadReques
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/users/medical/patients` — người dùng. Công khai, không cần đăng nhập. Xử lý bởi `externalAPIService.get`.
- * @summary Tra cứu bệnh nhân
+ * GET `/users/medical/patients` — users. Public, no authentication required. Handled by `externalAPIService.get`.
+ * @summary Look up patients
  */
 export const getUsersMedicalPatients = (
     
@@ -2675,7 +2675,7 @@ export function useGetUsersMedicalPatientsInfinite<TData = InfiniteData<Awaited<
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Tra cứu bệnh nhân
+ * @summary Look up patients
  */
 
 export function useGetUsersMedicalPatientsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersMedicalPatients>>>, TError = LegacyBadRequestResponse>(
@@ -2693,7 +2693,7 @@ export function useGetUsersMedicalPatientsInfinite<TData = InfiniteData<Awaited<
 }
 
 /**
- * @summary Tra cứu bệnh nhân
+ * @summary Look up patients
  */
 export const prefetchGetUsersMedicalPatientsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getUsersMedicalPatients>>, TError = LegacyBadRequestResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatients>>, TError, TData>>, }
@@ -2756,7 +2756,7 @@ export function useGetUsersMedicalPatients<TData = Awaited<ReturnType<typeof get
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Tra cứu bệnh nhân
+ * @summary Look up patients
  */
 
 export function useGetUsersMedicalPatients<TData = Awaited<ReturnType<typeof getUsersMedicalPatients>>, TError = LegacyBadRequestResponse>(
@@ -2774,7 +2774,7 @@ export function useGetUsersMedicalPatients<TData = Awaited<ReturnType<typeof get
 }
 
 /**
- * @summary Tra cứu bệnh nhân
+ * @summary Look up patients
  */
 export const prefetchGetUsersMedicalPatientsQuery = async <TData = Awaited<ReturnType<typeof getUsersMedicalPatients>>, TError = LegacyBadRequestResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatients>>, TError, TData>>, }
@@ -2791,8 +2791,8 @@ export const prefetchGetUsersMedicalPatientsQuery = async <TData = Awaited<Retur
 
 
 /**
- * GET `/users/medical/patientparaclinicals` — người dùng. Công khai, không cần đăng nhập. Xử lý bởi `externalAPIService.get`.
- * @summary Xem kết quả cận lâm sàng
+ * GET `/users/medical/patientparaclinicals` — users. Public, no authentication required. Handled by `externalAPIService.get`.
+ * @summary View paraclinical results
  */
 export const getUsersMedicalPatientparaclinicals = (
     
@@ -2869,7 +2869,7 @@ export function useGetUsersMedicalPatientparaclinicalsInfinite<TData = InfiniteD
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem kết quả cận lâm sàng
+ * @summary View paraclinical results
  */
 
 export function useGetUsersMedicalPatientparaclinicalsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersMedicalPatientparaclinicals>>>, TError = LegacyBadRequestResponse>(
@@ -2887,7 +2887,7 @@ export function useGetUsersMedicalPatientparaclinicalsInfinite<TData = InfiniteD
 }
 
 /**
- * @summary Xem kết quả cận lâm sàng
+ * @summary View paraclinical results
  */
 export const prefetchGetUsersMedicalPatientparaclinicalsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getUsersMedicalPatientparaclinicals>>, TError = LegacyBadRequestResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientparaclinicals>>, TError, TData>>, }
@@ -2950,7 +2950,7 @@ export function useGetUsersMedicalPatientparaclinicals<TData = Awaited<ReturnTyp
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem kết quả cận lâm sàng
+ * @summary View paraclinical results
  */
 
 export function useGetUsersMedicalPatientparaclinicals<TData = Awaited<ReturnType<typeof getUsersMedicalPatientparaclinicals>>, TError = LegacyBadRequestResponse>(
@@ -2968,7 +2968,7 @@ export function useGetUsersMedicalPatientparaclinicals<TData = Awaited<ReturnTyp
 }
 
 /**
- * @summary Xem kết quả cận lâm sàng
+ * @summary View paraclinical results
  */
 export const prefetchGetUsersMedicalPatientparaclinicalsQuery = async <TData = Awaited<ReturnType<typeof getUsersMedicalPatientparaclinicals>>, TError = LegacyBadRequestResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientparaclinicals>>, TError, TData>>, }
@@ -2985,8 +2985,8 @@ export const prefetchGetUsersMedicalPatientparaclinicalsQuery = async <TData = A
 
 
 /**
- * GET `/users/medical/patientexams` — người dùng. Công khai, không cần đăng nhập. Xử lý bởi `externalAPIService.get`.
- * @summary Xem kết quả khám của bệnh nhân
+ * GET `/users/medical/patientexams` — users. Public, no authentication required. Handled by `externalAPIService.get`.
+ * @summary View patient exam results
  */
 export const getUsersMedicalPatientexams = (
     
@@ -3063,7 +3063,7 @@ export function useGetUsersMedicalPatientexamsInfinite<TData = InfiniteData<Awai
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem kết quả khám của bệnh nhân
+ * @summary View patient exam results
  */
 
 export function useGetUsersMedicalPatientexamsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersMedicalPatientexams>>>, TError = LegacyBadRequestResponse>(
@@ -3081,7 +3081,7 @@ export function useGetUsersMedicalPatientexamsInfinite<TData = InfiniteData<Awai
 }
 
 /**
- * @summary Xem kết quả khám của bệnh nhân
+ * @summary View patient exam results
  */
 export const prefetchGetUsersMedicalPatientexamsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getUsersMedicalPatientexams>>, TError = LegacyBadRequestResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientexams>>, TError, TData>>, }
@@ -3144,7 +3144,7 @@ export function useGetUsersMedicalPatientexams<TData = Awaited<ReturnType<typeof
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem kết quả khám của bệnh nhân
+ * @summary View patient exam results
  */
 
 export function useGetUsersMedicalPatientexams<TData = Awaited<ReturnType<typeof getUsersMedicalPatientexams>>, TError = LegacyBadRequestResponse>(
@@ -3162,7 +3162,7 @@ export function useGetUsersMedicalPatientexams<TData = Awaited<ReturnType<typeof
 }
 
 /**
- * @summary Xem kết quả khám của bệnh nhân
+ * @summary View patient exam results
  */
 export const prefetchGetUsersMedicalPatientexamsQuery = async <TData = Awaited<ReturnType<typeof getUsersMedicalPatientexams>>, TError = LegacyBadRequestResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientexams>>, TError, TData>>, }
@@ -3179,8 +3179,8 @@ export const prefetchGetUsersMedicalPatientexamsQuery = async <TData = Awaited<R
 
 
 /**
- * GET `/users/medical/patientdocs` — người dùng. Công khai, không cần đăng nhập. Xử lý bởi `externalAPIService.get`.
- * @summary Xem tài liệu bệnh án
+ * GET `/users/medical/patientdocs` — users. Public, no authentication required. Handled by `externalAPIService.get`.
+ * @summary View medical record documents
  */
 export const getUsersMedicalPatientdocs = (
     
@@ -3257,7 +3257,7 @@ export function useGetUsersMedicalPatientdocsInfinite<TData = InfiniteData<Await
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem tài liệu bệnh án
+ * @summary View medical record documents
  */
 
 export function useGetUsersMedicalPatientdocsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersMedicalPatientdocs>>>, TError = LegacyBadRequestResponse>(
@@ -3275,7 +3275,7 @@ export function useGetUsersMedicalPatientdocsInfinite<TData = InfiniteData<Await
 }
 
 /**
- * @summary Xem tài liệu bệnh án
+ * @summary View medical record documents
  */
 export const prefetchGetUsersMedicalPatientdocsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getUsersMedicalPatientdocs>>, TError = LegacyBadRequestResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientdocs>>, TError, TData>>, }
@@ -3338,7 +3338,7 @@ export function useGetUsersMedicalPatientdocs<TData = Awaited<ReturnType<typeof 
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem tài liệu bệnh án
+ * @summary View medical record documents
  */
 
 export function useGetUsersMedicalPatientdocs<TData = Awaited<ReturnType<typeof getUsersMedicalPatientdocs>>, TError = LegacyBadRequestResponse>(
@@ -3356,7 +3356,7 @@ export function useGetUsersMedicalPatientdocs<TData = Awaited<ReturnType<typeof 
 }
 
 /**
- * @summary Xem tài liệu bệnh án
+ * @summary View medical record documents
  */
 export const prefetchGetUsersMedicalPatientdocsQuery = async <TData = Awaited<ReturnType<typeof getUsersMedicalPatientdocs>>, TError = LegacyBadRequestResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientdocs>>, TError, TData>>, }
@@ -3373,8 +3373,8 @@ export const prefetchGetUsersMedicalPatientdocsQuery = async <TData = Awaited<Re
 
 
 /**
- * GET `/users/medical/patientdocs/imaging` — người dùng. Công khai, không cần đăng nhập. Tham số truy vấn: `docUrl`. Trường body: `docUrl`. Xử lý bởi `externalAPIService.get`.
- * @summary Xem chẩn đoán hình ảnh
+ * GET `/users/medical/patientdocs/imaging` — users. Public, no authentication required. Query parameters: `docUrl`. Body fields: `docUrl`. Handled by `externalAPIService.get`.
+ * @summary View imaging documents
  */
 export const getUsersMedicalPatientdocsImaging = (
     params?: GetUsersMedicalPatientdocsImagingParams,
@@ -3452,7 +3452,7 @@ export function useGetUsersMedicalPatientdocsImagingInfinite<TData = InfiniteDat
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chẩn đoán hình ảnh
+ * @summary View imaging documents
  */
 
 export function useGetUsersMedicalPatientdocsImagingInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersMedicalPatientdocsImaging>>>, TError = LegacyBadRequestResponse>(
@@ -3470,7 +3470,7 @@ export function useGetUsersMedicalPatientdocsImagingInfinite<TData = InfiniteDat
 }
 
 /**
- * @summary Xem chẩn đoán hình ảnh
+ * @summary View imaging documents
  */
 export const prefetchGetUsersMedicalPatientdocsImagingInfiniteQuery = async <TData = Awaited<ReturnType<typeof getUsersMedicalPatientdocsImaging>>, TError = LegacyBadRequestResponse>(
  queryClient: QueryClient, params?: GetUsersMedicalPatientdocsImagingParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientdocsImaging>>, TError, TData>>, }
@@ -3533,7 +3533,7 @@ export function useGetUsersMedicalPatientdocsImaging<TData = Awaited<ReturnType<
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chẩn đoán hình ảnh
+ * @summary View imaging documents
  */
 
 export function useGetUsersMedicalPatientdocsImaging<TData = Awaited<ReturnType<typeof getUsersMedicalPatientdocsImaging>>, TError = LegacyBadRequestResponse>(
@@ -3551,7 +3551,7 @@ export function useGetUsersMedicalPatientdocsImaging<TData = Awaited<ReturnType<
 }
 
 /**
- * @summary Xem chẩn đoán hình ảnh
+ * @summary View imaging documents
  */
 export const prefetchGetUsersMedicalPatientdocsImagingQuery = async <TData = Awaited<ReturnType<typeof getUsersMedicalPatientdocsImaging>>, TError = LegacyBadRequestResponse>(
  queryClient: QueryClient, params?: GetUsersMedicalPatientdocsImagingParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientdocsImaging>>, TError, TData>>, }
@@ -3568,8 +3568,8 @@ export const prefetchGetUsersMedicalPatientdocsImagingQuery = async <TData = Awa
 
 
 /**
- * GET `/users/medical/patientamount` — người dùng. Công khai, không cần đăng nhập. Xử lý bởi `externalAPIService.get`.
- * @summary Xem số tiền đã thanh toán của bệnh nhân
+ * GET `/users/medical/patientamount` — users. Public, no authentication required. Handled by `externalAPIService.get`.
+ * @summary View patient's paid amount
  */
 export const getUsersMedicalPatientamount = (
     
@@ -3646,7 +3646,7 @@ export function useGetUsersMedicalPatientamountInfinite<TData = InfiniteData<Awa
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem số tiền đã thanh toán của bệnh nhân
+ * @summary View patient's paid amount
  */
 
 export function useGetUsersMedicalPatientamountInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersMedicalPatientamount>>>, TError = LegacyBadRequestResponse>(
@@ -3664,7 +3664,7 @@ export function useGetUsersMedicalPatientamountInfinite<TData = InfiniteData<Awa
 }
 
 /**
- * @summary Xem số tiền đã thanh toán của bệnh nhân
+ * @summary View patient's paid amount
  */
 export const prefetchGetUsersMedicalPatientamountInfiniteQuery = async <TData = Awaited<ReturnType<typeof getUsersMedicalPatientamount>>, TError = LegacyBadRequestResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientamount>>, TError, TData>>, }
@@ -3727,7 +3727,7 @@ export function useGetUsersMedicalPatientamount<TData = Awaited<ReturnType<typeo
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem số tiền đã thanh toán của bệnh nhân
+ * @summary View patient's paid amount
  */
 
 export function useGetUsersMedicalPatientamount<TData = Awaited<ReturnType<typeof getUsersMedicalPatientamount>>, TError = LegacyBadRequestResponse>(
@@ -3745,7 +3745,7 @@ export function useGetUsersMedicalPatientamount<TData = Awaited<ReturnType<typeo
 }
 
 /**
- * @summary Xem số tiền đã thanh toán của bệnh nhân
+ * @summary View patient's paid amount
  */
 export const prefetchGetUsersMedicalPatientamountQuery = async <TData = Awaited<ReturnType<typeof getUsersMedicalPatientamount>>, TError = LegacyBadRequestResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientamount>>, TError, TData>>, }
@@ -3762,8 +3762,8 @@ export const prefetchGetUsersMedicalPatientamountQuery = async <TData = Awaited<
 
 
 /**
- * PUT `/users/admin/{id}` — người dùng. Chỉ quản trị viên nền tảng (ADM) được gọi. Trường body: `email`, `phone_number`, `password`, `role_id`, `zalo_name`, `branch_id`, `is_active`. Xử lý bởi `userProvider.getById`.
- * @summary Cập nhật admin
+ * PUT `/users/admin/{id}` — users. Only platform administrators (ADM) may call this. Body fields: `email`, `phone_number`, `password`, `role_id`, `zalo_name`, `branch_id`, `is_active`. Handled by `userProvider.getById`.
+ * @summary Update an admin
  */
 export const putUsersAdminId = (
     id: string,
@@ -3811,7 +3811,7 @@ const {mutation: mutationOptions} = options ?
     export type PutUsersAdminIdMutationError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void
 
     /**
- * @summary Cập nhật admin
+ * @summary Update an admin
  */
 export const usePutUsersAdminId = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putUsersAdminId>>, TError,{id: string;data: PutUsersAdminIdBody}, TContext>, }
@@ -3827,8 +3827,8 @@ export const usePutUsersAdminId = <TError = LegacyBadRequestResponse | LegacyUna
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * DELETE `/users/admin/{id}` — người dùng. Chỉ quản trị viên nền tảng (ADM) được gọi. Xử lý bởi `userProvider.getById`.
- * @summary Xóa admin
+ * DELETE `/users/admin/{id}` — users. Only platform administrators (ADM) may call this. Handled by `userProvider.getById`.
+ * @summary Delete an admin
  */
 export const deleteUsersAdminId = (
     id: string,
@@ -3873,7 +3873,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteUsersAdminIdMutationError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void
 
     /**
- * @summary Xóa admin
+ * @summary Delete an admin
  */
 export const useDeleteUsersAdminId = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteUsersAdminId>>, TError,{id: string}, TContext>, }
@@ -3889,8 +3889,8 @@ export const useDeleteUsersAdminId = <TError = LegacyBadRequestResponse | Legacy
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * POST `/users/admin` — người dùng. Chỉ quản trị viên nền tảng (ADM) được gọi. Trường body: `email`, `phone_number`, `password`, `role_id`, `full_name`, `branch_id`. Xử lý bởi `roleProvider.getById`.
- * @summary Quản lý tài khoản quản trị
+ * POST `/users/admin` — users. Only platform administrators (ADM) may call this. Body fields: `email`, `phone_number`, `password`, `role_id`, `full_name`, `branch_id`. Handled by `roleProvider.getById`.
+ * @summary Manage admin accounts
  */
 export const postUsersAdmin = (
     userCreate: UserCreate,
@@ -3938,7 +3938,7 @@ const {mutation: mutationOptions} = options ?
     export type PostUsersAdminMutationError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void
 
     /**
- * @summary Quản lý tài khoản quản trị
+ * @summary Manage admin accounts
  */
 export const usePostUsersAdmin = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postUsersAdmin>>, TError,{data: UserCreate}, TContext>, }

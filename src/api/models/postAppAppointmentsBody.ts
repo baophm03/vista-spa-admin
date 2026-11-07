@@ -7,6 +7,6 @@
  */
 
 /**
- * Payload nghiệp vụ tuỳ endpoint
+ * Business payload, endpoint-specific
  */
 export type PostAppAppointmentsBody = { [key: string]: unknown };

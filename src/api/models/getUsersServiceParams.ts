@@ -7,15 +7,8 @@
  */
 
 export type GetUsersServiceParams = {
-/**
- * @minimum 1
- */
 page?: number;
-/**
- * @minimum 1
- * @maximum 200
- */
 limit?: number;
-status?: string;
-service_type?: string;
+status?: number;
+service_type?: number;
 };

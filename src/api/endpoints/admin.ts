@@ -66,8 +66,8 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * GET `/logs/getAllWithinTimeRange` — nhật ký. Cần đăng nhập; route không khai báo quyền chi tiết. Tham số truy vấn: `fromDate`, `toDate`.
- * @summary Xem nhật ký theo khoảng thời gian
+ * GET `/logs/getAllWithinTimeRange` — logs. Requires authentication; route does not declare detailed permissions. Query parameters: `fromDate`, `toDate`.
+ * @summary View logs within a time range
  */
 export const getLogsGetAllWithinTimeRange = (
     params?: GetLogsGetAllWithinTimeRangeParams,
@@ -145,7 +145,7 @@ export function useGetLogsGetAllWithinTimeRangeInfinite<TData = InfiniteData<Awa
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem nhật ký theo khoảng thời gian
+ * @summary View logs within a time range
  */
 
 export function useGetLogsGetAllWithinTimeRangeInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getLogsGetAllWithinTimeRange>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
@@ -163,7 +163,7 @@ export function useGetLogsGetAllWithinTimeRangeInfinite<TData = InfiniteData<Awa
 }
 
 /**
- * @summary Xem nhật ký theo khoảng thời gian
+ * @summary View logs within a time range
  */
 export const prefetchGetLogsGetAllWithinTimeRangeInfiniteQuery = async <TData = Awaited<ReturnType<typeof getLogsGetAllWithinTimeRange>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
  queryClient: QueryClient, params?: GetLogsGetAllWithinTimeRangeParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLogsGetAllWithinTimeRange>>, TError, TData>>, }
@@ -226,7 +226,7 @@ export function useGetLogsGetAllWithinTimeRange<TData = Awaited<ReturnType<typeo
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem nhật ký theo khoảng thời gian
+ * @summary View logs within a time range
  */
 
 export function useGetLogsGetAllWithinTimeRange<TData = Awaited<ReturnType<typeof getLogsGetAllWithinTimeRange>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
@@ -244,7 +244,7 @@ export function useGetLogsGetAllWithinTimeRange<TData = Awaited<ReturnType<typeo
 }
 
 /**
- * @summary Xem nhật ký theo khoảng thời gian
+ * @summary View logs within a time range
  */
 export const prefetchGetLogsGetAllWithinTimeRangeQuery = async <TData = Awaited<ReturnType<typeof getLogsGetAllWithinTimeRange>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
  queryClient: QueryClient, params?: GetLogsGetAllWithinTimeRangeParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLogsGetAllWithinTimeRange>>, TError, TData>>, }
@@ -261,8 +261,8 @@ export const prefetchGetLogsGetAllWithinTimeRangeQuery = async <TData = Awaited<
 
 
 /**
- * Chỉ Admin và lễ tân được xem. Trả kèm danh sách biến được phép theo sự kiện.
- * @summary Xem danh sách mẫu thông báo
+ * Only Admin and receptionist can view. Returns the list of allowed variables per event.
+ * @summary View notification template list
  */
 export const getNotificationTemplates = (
     
@@ -339,7 +339,7 @@ export function useGetNotificationTemplatesInfinite<TData = InfiniteData<Awaited
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem danh sách mẫu thông báo
+ * @summary View notification template list
  */
 
 export function useGetNotificationTemplatesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getNotificationTemplates>>>, TError = unknown>(
@@ -357,7 +357,7 @@ export function useGetNotificationTemplatesInfinite<TData = InfiniteData<Awaited
 }
 
 /**
- * @summary Xem danh sách mẫu thông báo
+ * @summary View notification template list
  */
 export const prefetchGetNotificationTemplatesInfiniteQuery = async <TData = Awaited<ReturnType<typeof getNotificationTemplates>>, TError = unknown>(
  queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getNotificationTemplates>>, TError, TData>>, }
@@ -420,7 +420,7 @@ export function useGetNotificationTemplates<TData = Awaited<ReturnType<typeof ge
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem danh sách mẫu thông báo
+ * @summary View notification template list
  */
 
 export function useGetNotificationTemplates<TData = Awaited<ReturnType<typeof getNotificationTemplates>>, TError = unknown>(
@@ -438,7 +438,7 @@ export function useGetNotificationTemplates<TData = Awaited<ReturnType<typeof ge
 }
 
 /**
- * @summary Xem danh sách mẫu thông báo
+ * @summary View notification template list
  */
 export const prefetchGetNotificationTemplatesQuery = async <TData = Awaited<ReturnType<typeof getNotificationTemplates>>, TError = unknown>(
  queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getNotificationTemplates>>, TError, TData>>, }
@@ -455,8 +455,8 @@ export const prefetchGetNotificationTemplatesQuery = async <TData = Awaited<Retu
 
 
 /**
- * **NT-03** — GET /notifications/{id}. Cần quyền `notification.read`.
- * @summary Xem chi tiết thông báo
+ * **NT-03** — GET /notifications/{id}. Requires `notification.read` permission.
+ * @summary View notification detail
  */
 export const getNotificationsId = (
     id: string,
@@ -533,7 +533,7 @@ export function useGetNotificationsIdInfinite<TData = InfiniteData<Awaited<Retur
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết thông báo
+ * @summary View notification detail
  */
 
 export function useGetNotificationsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getNotificationsId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -551,7 +551,7 @@ export function useGetNotificationsIdInfinite<TData = InfiniteData<Awaited<Retur
 }
 
 /**
- * @summary Xem chi tiết thông báo
+ * @summary View notification detail
  */
 export const prefetchGetNotificationsIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getNotificationsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getNotificationsId>>, TError, TData>>, }
@@ -614,7 +614,7 @@ export function useGetNotificationsId<TData = Awaited<ReturnType<typeof getNotif
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết thông báo
+ * @summary View notification detail
  */
 
 export function useGetNotificationsId<TData = Awaited<ReturnType<typeof getNotificationsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -632,7 +632,7 @@ export function useGetNotificationsId<TData = Awaited<ReturnType<typeof getNotif
 }
 
 /**
- * @summary Xem chi tiết thông báo
+ * @summary View notification detail
  */
 export const prefetchGetNotificationsIdQuery = async <TData = Awaited<ReturnType<typeof getNotificationsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getNotificationsId>>, TError, TData>>, }
@@ -649,8 +649,8 @@ export const prefetchGetNotificationsIdQuery = async <TData = Awaited<ReturnType
 
 
 /**
- * **NT-04** — PUT /notifications/{id} (đánh dấu đã đọc). Cần quyền `notification.read`.
- * @summary Cập nhật thông báo
+ * **NT-04** — PUT /notifications/{id} (mark as read). Requires `notification.read` permission.
+ * @summary Update a notification
  */
 export const putNotificationsId = (
     id: string,
@@ -695,7 +695,7 @@ const {mutation: mutationOptions} = options ?
     export type PutNotificationsIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Cập nhật thông báo
+ * @summary Update a notification
  */
 export const usePutNotificationsId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putNotificationsId>>, TError,{id: string}, TContext>, }
@@ -711,8 +711,8 @@ export const usePutNotificationsId = <TError = UnauthorizedResponse | ForbiddenR
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **NT-01** — GET /notifications (danh sách, gồm broadcast). Cần quyền `notification.read`. Tham số truy vấn: `page`, `limit`, `user_id`, `event_key`.
- * @summary Lấy danh sách thông báo
+ * **NT-01** — GET /notifications (list, including broadcast). Requires `notification.read` permission. Query parameters: `page`, `limit`, `user_id`, `event_key`.
+ * @summary Get notification list
  */
 export const getNotifications = (
     params?: GetNotificationsParams,
@@ -790,7 +790,7 @@ export function useGetNotificationsInfinite<TData = InfiniteData<Awaited<ReturnT
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách thông báo
+ * @summary Get notification list
  */
 
 export function useGetNotificationsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getNotifications>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -808,7 +808,7 @@ export function useGetNotificationsInfinite<TData = InfiniteData<Awaited<ReturnT
 }
 
 /**
- * @summary Lấy danh sách thông báo
+ * @summary Get notification list
  */
 export const prefetchGetNotificationsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getNotifications>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetNotificationsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getNotifications>>, TError, TData>>, }
@@ -871,7 +871,7 @@ export function useGetNotifications<TData = Awaited<ReturnType<typeof getNotific
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách thông báo
+ * @summary Get notification list
  */
 
 export function useGetNotifications<TData = Awaited<ReturnType<typeof getNotifications>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -889,7 +889,7 @@ export function useGetNotifications<TData = Awaited<ReturnType<typeof getNotific
 }
 
 /**
- * @summary Lấy danh sách thông báo
+ * @summary Get notification list
  */
 export const prefetchGetNotificationsQuery = async <TData = Awaited<ReturnType<typeof getNotifications>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetNotificationsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getNotifications>>, TError, TData>>, }
@@ -906,8 +906,8 @@ export const prefetchGetNotificationsQuery = async <TData = Awaited<ReturnType<t
 
 
 /**
- * **NT-02** — POST /notifications (gửi thủ công, user_id null = broadcast). Cần quyền `notification.create`.
- * @summary Tạo thông báo mới
+ * **NT-02** — POST /notifications (manual send, user_id null = broadcast). Requires `notification.create` permission.
+ * @summary Create a new notification
  */
 export const postNotifications = (
     notification: Notification,
@@ -955,7 +955,7 @@ const {mutation: mutationOptions} = options ?
     export type PostNotificationsMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Tạo thông báo mới
+ * @summary Create a new notification
  */
 export const usePostNotifications = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postNotifications>>, TError,{data: Notification}, TContext>, }
@@ -971,8 +971,8 @@ export const usePostNotifications = <TError = UnauthorizedResponse | ForbiddenRe
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **CO-03** — GET /collaborators/{id}. Cần quyền `collaborator.read`.
- * @summary Xem chi tiết cộng tác viên
+ * **CO-03** — GET /collaborators/{id}. Requires `collaborator.read` permission.
+ * @summary Get collaborator details
  */
 export const getCollaboratorsId = (
     id: string,
@@ -1049,7 +1049,7 @@ export function useGetCollaboratorsIdInfinite<TData = InfiniteData<Awaited<Retur
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết cộng tác viên
+ * @summary Get collaborator details
  */
 
 export function useGetCollaboratorsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCollaboratorsId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -1067,7 +1067,7 @@ export function useGetCollaboratorsIdInfinite<TData = InfiniteData<Awaited<Retur
 }
 
 /**
- * @summary Xem chi tiết cộng tác viên
+ * @summary Get collaborator details
  */
 export const prefetchGetCollaboratorsIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getCollaboratorsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCollaboratorsId>>, TError, TData>>, }
@@ -1130,7 +1130,7 @@ export function useGetCollaboratorsId<TData = Awaited<ReturnType<typeof getColla
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết cộng tác viên
+ * @summary Get collaborator details
  */
 
 export function useGetCollaboratorsId<TData = Awaited<ReturnType<typeof getCollaboratorsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -1148,7 +1148,7 @@ export function useGetCollaboratorsId<TData = Awaited<ReturnType<typeof getColla
 }
 
 /**
- * @summary Xem chi tiết cộng tác viên
+ * @summary Get collaborator details
  */
 export const prefetchGetCollaboratorsIdQuery = async <TData = Awaited<ReturnType<typeof getCollaboratorsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCollaboratorsId>>, TError, TData>>, }
@@ -1165,8 +1165,8 @@ export const prefetchGetCollaboratorsIdQuery = async <TData = Awaited<ReturnType
 
 
 /**
- * **CO-04** — PUT /collaborators/{id} — không đổi referral_code nếu đã có referral dùng. Cần quyền `collaborator.update`. Trường body: `name`, `phone`, `referral_code`, `type`, `branch_id`, `user_id`, `note`, `is_active`.
- * @summary Cập nhật cộng tác viên
+ * **CO-04** — PUT /collaborators/{id} — the referral_code cannot be changed once it has been used by a referral. Requires `collaborator.update` permission. Body fields: `name`, `phone`, `referral_code`, `type`, `branch_id`, `user_id`, `note`, `is_active`.
+ * @summary Update a collaborator
  */
 export const putCollaboratorsId = (
     id: string,
@@ -1214,7 +1214,7 @@ const {mutation: mutationOptions} = options ?
     export type PutCollaboratorsIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Cập nhật cộng tác viên
+ * @summary Update a collaborator
  */
 export const usePutCollaboratorsId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putCollaboratorsId>>, TError,{id: string;data: PutCollaboratorsIdBody}, TContext>, }
@@ -1230,8 +1230,8 @@ export const usePutCollaboratorsId = <TError = UnauthorizedResponse | ForbiddenR
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **CO-05** — DELETE /collaborators/{id} — ẩn (is_active=false). Cần quyền `collaborator.delete`.
- * @summary Xóa cộng tác viên
+ * **CO-05** — DELETE /collaborators/{id} — hides the collaborator (is_active=false). Requires `collaborator.delete` permission.
+ * @summary Delete a collaborator
  */
 export const deleteCollaboratorsId = (
     id: string,
@@ -1276,7 +1276,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteCollaboratorsIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Xóa cộng tác viên
+ * @summary Delete a collaborator
  */
 export const useDeleteCollaboratorsId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteCollaboratorsId>>, TError,{id: string}, TContext>, }
@@ -1292,8 +1292,8 @@ export const useDeleteCollaboratorsId = <TError = UnauthorizedResponse | Forbidd
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **CO-01** — GET /collaborators. Cần quyền `collaborator.read`. Tham số truy vấn: `is_active`, `q`, `type`.
- * @summary Lấy danh sách cộng tác viên
+ * **CO-01** — GET /collaborators. Requires `collaborator.read` permission. Query parameters: `is_active`, `q`, `type`.
+ * @summary List collaborators
  */
 export const getCollaborators = (
     params?: GetCollaboratorsParams,
@@ -1371,7 +1371,7 @@ export function useGetCollaboratorsInfinite<TData = InfiniteData<Awaited<ReturnT
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách cộng tác viên
+ * @summary List collaborators
  */
 
 export function useGetCollaboratorsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCollaborators>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -1389,7 +1389,7 @@ export function useGetCollaboratorsInfinite<TData = InfiniteData<Awaited<ReturnT
 }
 
 /**
- * @summary Lấy danh sách cộng tác viên
+ * @summary List collaborators
  */
 export const prefetchGetCollaboratorsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getCollaborators>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetCollaboratorsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCollaborators>>, TError, TData>>, }
@@ -1452,7 +1452,7 @@ export function useGetCollaborators<TData = Awaited<ReturnType<typeof getCollabo
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách cộng tác viên
+ * @summary List collaborators
  */
 
 export function useGetCollaborators<TData = Awaited<ReturnType<typeof getCollaborators>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -1470,7 +1470,7 @@ export function useGetCollaborators<TData = Awaited<ReturnType<typeof getCollabo
 }
 
 /**
- * @summary Lấy danh sách cộng tác viên
+ * @summary List collaborators
  */
 export const prefetchGetCollaboratorsQuery = async <TData = Awaited<ReturnType<typeof getCollaborators>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetCollaboratorsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCollaborators>>, TError, TData>>, }
@@ -1487,8 +1487,8 @@ export const prefetchGetCollaboratorsQuery = async <TData = Awaited<ReturnType<t
 
 
 /**
- * **CO-03** — POST /collaborators. Cần quyền `collaborator.create`. Trường body: `name`, `phone`, `referral_code`, `type`, `commission_percent`, `branch_id`.
- * @summary Tạo cộng tác viên mới
+ * **CO-03** — POST /collaborators. Requires `collaborator.create` permission. Body fields: `name`, `phone`, `referral_code`, `type`, `commission_percent`, `branch_id`.
+ * @summary Create a new collaborator
  */
 export const postCollaborators = (
     postCollaboratorsBody: PostCollaboratorsBody,
@@ -1536,7 +1536,7 @@ const {mutation: mutationOptions} = options ?
     export type PostCollaboratorsMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Tạo cộng tác viên mới
+ * @summary Create a new collaborator
  */
 export const usePostCollaborators = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postCollaborators>>, TError,{data: PostCollaboratorsBody}, TContext>, }
@@ -1552,8 +1552,8 @@ export const usePostCollaborators = <TError = UnauthorizedResponse | ForbiddenRe
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **CO** — GET /collaborators/{id}/summary. Trả về `referral_count` (số khách được giới thiệu), `total_package_value` (Σ giá trị gói điều trị ACTIVE/FINISHED của các khách được giới thiệu) và `total_commission` (Σ hoa hồng ACTIVE). Cần quyền `collaborator.read`.
- * @summary Báo cáo tổng hợp của cộng tác viên
+ * **CO** — GET /collaborators/{id}/summary. Returns `referral_count` (number of referred customers), `total_package_value` (Σ value of ACTIVE/FINISHED treatment packages of referred customers) and `total_commission` (Σ ACTIVE commissions). Requires `collaborator.read` permission.
+ * @summary Collaborator summary report
  */
 export const getCollaboratorsIdSummary = (
     id: string,
@@ -1630,7 +1630,7 @@ export function useGetCollaboratorsIdSummaryInfinite<TData = InfiniteData<Awaite
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Báo cáo tổng hợp của cộng tác viên
+ * @summary Collaborator summary report
  */
 
 export function useGetCollaboratorsIdSummaryInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCollaboratorsIdSummary>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -1648,7 +1648,7 @@ export function useGetCollaboratorsIdSummaryInfinite<TData = InfiniteData<Awaite
 }
 
 /**
- * @summary Báo cáo tổng hợp của cộng tác viên
+ * @summary Collaborator summary report
  */
 export const prefetchGetCollaboratorsIdSummaryInfiniteQuery = async <TData = Awaited<ReturnType<typeof getCollaboratorsIdSummary>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCollaboratorsIdSummary>>, TError, TData>>, }
@@ -1711,7 +1711,7 @@ export function useGetCollaboratorsIdSummary<TData = Awaited<ReturnType<typeof g
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Báo cáo tổng hợp của cộng tác viên
+ * @summary Collaborator summary report
  */
 
 export function useGetCollaboratorsIdSummary<TData = Awaited<ReturnType<typeof getCollaboratorsIdSummary>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -1729,7 +1729,7 @@ export function useGetCollaboratorsIdSummary<TData = Awaited<ReturnType<typeof g
 }
 
 /**
- * @summary Báo cáo tổng hợp của cộng tác viên
+ * @summary Collaborator summary report
  */
 export const prefetchGetCollaboratorsIdSummaryQuery = async <TData = Awaited<ReturnType<typeof getCollaboratorsIdSummary>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCollaboratorsIdSummary>>, TError, TData>>, }
@@ -1746,8 +1746,8 @@ export const prefetchGetCollaboratorsIdSummaryQuery = async <TData = Awaited<Ret
 
 
 /**
- * **AL-01** — GET /access-logs (ADM). Cần quyền `permission.manage`. Tham số truy vấn: `page`, `limit`, `branch_id` (cơ sở của hồ sơ khách; nếu nhật ký không có hồ sơ thì dùng cơ sở nhân viên), `user_id`, `customer_profile_id`, `action`, `from`, `to`. Người dùng bị giới hạn cơ sở chỉ xem được nhật ký của cơ sở đó.
- * @summary Lấy danh sách nhật ký truy cập
+ * **AL-01** — GET /access-logs (ADM). Requires the `permission.manage` permission. Query parameters: `page`, `limit`, `branch_id` (the customer profile's branch; logs without a profile use the staff member's branch), `user_id`, `customer_profile_id`, `action`, `from`, `to`. Branch-limited users can only view logs of that branch.
+ * @summary List access logs
  */
 export const getAccessLogs = (
     params?: GetAccessLogsParams,
@@ -1825,7 +1825,7 @@ export function useGetAccessLogsInfinite<TData = InfiniteData<Awaited<ReturnType
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách nhật ký truy cập
+ * @summary List access logs
  */
 
 export function useGetAccessLogsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAccessLogs>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -1843,7 +1843,7 @@ export function useGetAccessLogsInfinite<TData = InfiniteData<Awaited<ReturnType
 }
 
 /**
- * @summary Lấy danh sách nhật ký truy cập
+ * @summary List access logs
  */
 export const prefetchGetAccessLogsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAccessLogs>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetAccessLogsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAccessLogs>>, TError, TData>>, }
@@ -1906,7 +1906,7 @@ export function useGetAccessLogs<TData = Awaited<ReturnType<typeof getAccessLogs
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách nhật ký truy cập
+ * @summary List access logs
  */
 
 export function useGetAccessLogs<TData = Awaited<ReturnType<typeof getAccessLogs>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -1924,7 +1924,7 @@ export function useGetAccessLogs<TData = Awaited<ReturnType<typeof getAccessLogs
 }
 
 /**
- * @summary Lấy danh sách nhật ký truy cập
+ * @summary List access logs
  */
 export const prefetchGetAccessLogsQuery = async <TData = Awaited<ReturnType<typeof getAccessLogs>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetAccessLogsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAccessLogs>>, TError, TData>>, }

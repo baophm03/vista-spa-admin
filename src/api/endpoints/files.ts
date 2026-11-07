@@ -44,8 +44,8 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * GET `/files` — tệp. Cần đăng nhập; route không khai báo quyền chi tiết. Xử lý bởi `minioStorage.listObjects`.
- * @summary Lấy danh sách tệp
+ * GET `/files` — files. Requires authentication; the route does not declare granular permissions. Handled by `minioStorage.listObjects`.
+ * @summary List files
  */
 export const getFiles = (
     
@@ -122,7 +122,7 @@ export function useGetFilesInfinite<TData = InfiniteData<Awaited<ReturnType<type
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách tệp
+ * @summary List files
  */
 
 export function useGetFilesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getFiles>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
@@ -140,7 +140,7 @@ export function useGetFilesInfinite<TData = InfiniteData<Awaited<ReturnType<type
 }
 
 /**
- * @summary Lấy danh sách tệp
+ * @summary List files
  */
 export const prefetchGetFilesInfiniteQuery = async <TData = Awaited<ReturnType<typeof getFiles>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getFiles>>, TError, TData>>, }
@@ -203,7 +203,7 @@ export function useGetFiles<TData = Awaited<ReturnType<typeof getFiles>>, TError
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách tệp
+ * @summary List files
  */
 
 export function useGetFiles<TData = Awaited<ReturnType<typeof getFiles>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
@@ -221,7 +221,7 @@ export function useGetFiles<TData = Awaited<ReturnType<typeof getFiles>>, TError
 }
 
 /**
- * @summary Lấy danh sách tệp
+ * @summary List files
  */
 export const prefetchGetFilesQuery = async <TData = Awaited<ReturnType<typeof getFiles>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getFiles>>, TError, TData>>, }
@@ -238,8 +238,8 @@ export const prefetchGetFilesQuery = async <TData = Awaited<ReturnType<typeof ge
 
 
 /**
- * POST `/files` — tệp. Cần đăng nhập; route không khai báo quyền chi tiết. Tải tệp lên bằng `multipart/form-data`. Xử lý bởi `minioStorage.putObject`.
- * @summary Tạo tệp mới
+ * POST `/files` — files. Requires authentication; the route does not declare granular permissions. Upload the file using `multipart/form-data`. Handled by `minioStorage.putObject`.
+ * @summary Upload a new file
  */
 export const postFiles = (
     fileUpload: FileUpload,
@@ -250,6 +250,9 @@ export const postFiles = (
 formData.append(`file`, fileUpload.file)
 if(fileUpload.extendName !== undefined) {
  formData.append(`extendName`, fileUpload.extendName)
+ }
+if(fileUpload.created_by !== undefined && fileUpload.created_by !== null) {
+ formData.append(`created_by`, fileUpload.created_by)
  }
 
       return customInstance<Response>(
@@ -292,7 +295,7 @@ const {mutation: mutationOptions} = options ?
     export type PostFilesMutationError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
 
     /**
- * @summary Tạo tệp mới
+ * @summary Upload a new file
  */
 export const usePostFiles = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postFiles>>, TError,{data: FileUpload}, TContext>, }
@@ -308,8 +311,8 @@ export const usePostFiles = <TError = LegacyBadRequestResponse | LegacyUnauthori
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * DELETE `/files` — tệp. Cần đăng nhập; route không khai báo quyền chi tiết. Trường body: `filePath`. Xử lý bởi `minioStorage.objectExists`.
- * @summary Xóa tệp hàng loạt
+ * DELETE `/files` — files. Requires authentication; the route does not declare granular permissions. Body field: `filePath`. Handled by `minioStorage.objectExists`.
+ * @summary Delete files in bulk
  */
 export const deleteFiles = (
     deleteFilesBody: DeleteFilesBody,
@@ -356,7 +359,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteFilesMutationError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void
 
     /**
- * @summary Xóa tệp hàng loạt
+ * @summary Delete files in bulk
  */
 export const useDeleteFiles = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteFiles>>, TError,{data: DeleteFilesBody}, TContext>, }

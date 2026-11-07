@@ -60,8 +60,8 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * **CM-08** — PUT /commissions/{id}. Body: percent?, amount?, reason (bắt buộc). Bút toán AUTO chuyển thành MANUAL vĩnh viễn.
- * @summary Sửa bút toán hoa hồng
+ * **CM-08** — PUT /commissions/{id}. Body: percent?, amount?, reason (required). An AUTO entry is permanently converted to MANUAL.
+ * @summary Update a commission entry
  */
 export const putCommissionsId = (
     id: string,
@@ -109,7 +109,7 @@ const {mutation: mutationOptions} = options ?
     export type PutCommissionsIdMutationError = NotFoundResponse | UnprocessableEntityResponse
 
     /**
- * @summary Sửa bút toán hoa hồng
+ * @summary Update a commission entry
  */
 export const usePutCommissionsId = <TError = NotFoundResponse | UnprocessableEntityResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putCommissionsId>>, TError,{id: string;data: PutCommissionsIdBody}, TContext>, }
@@ -126,7 +126,7 @@ export const usePutCommissionsId = <TError = NotFoundResponse | UnprocessableEnt
     }
     /**
  * **CM-10** — GET /commissions/summary. Filters: group_by (day|week|month), payee_type, staff_id, collaborator_id, branch_id, date_from, date_to. Results are grouped by recipient.
- * @summary Báo cáo tổng hợp hoa hồng
+ * @summary Commission summary report
  */
 export const getCommissionsSummary = (
     params?: GetCommissionsSummaryParams,
@@ -204,7 +204,7 @@ export function useGetCommissionsSummaryInfinite<TData = InfiniteData<Awaited<Re
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Báo cáo tổng hợp hoa hồng
+ * @summary Commission summary report
  */
 
 export function useGetCommissionsSummaryInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCommissionsSummary>>>, TError = unknown>(
@@ -222,7 +222,7 @@ export function useGetCommissionsSummaryInfinite<TData = InfiniteData<Awaited<Re
 }
 
 /**
- * @summary Báo cáo tổng hợp hoa hồng
+ * @summary Commission summary report
  */
 export const prefetchGetCommissionsSummaryInfiniteQuery = async <TData = Awaited<ReturnType<typeof getCommissionsSummary>>, TError = unknown>(
  queryClient: QueryClient, params?: GetCommissionsSummaryParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCommissionsSummary>>, TError, TData>>, }
@@ -285,7 +285,7 @@ export function useGetCommissionsSummary<TData = Awaited<ReturnType<typeof getCo
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Báo cáo tổng hợp hoa hồng
+ * @summary Commission summary report
  */
 
 export function useGetCommissionsSummary<TData = Awaited<ReturnType<typeof getCommissionsSummary>>, TError = unknown>(
@@ -303,7 +303,7 @@ export function useGetCommissionsSummary<TData = Awaited<ReturnType<typeof getCo
 }
 
 /**
- * @summary Báo cáo tổng hợp hoa hồng
+ * @summary Commission summary report
  */
 export const prefetchGetCommissionsSummaryQuery = async <TData = Awaited<ReturnType<typeof getCommissionsSummary>>, TError = unknown>(
  queryClient: QueryClient, params?: GetCommissionsSummaryParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissionsSummary>>, TError, TData>>, }
@@ -321,7 +321,7 @@ export const prefetchGetCommissionsSummaryQuery = async <TData = Awaited<ReturnT
 
 /**
  * **CM-06** — GET /commissions. Filters: payee_type, staff_id, collaborator_id, customer_profile_id, branch_id, date_from, date_to, mode, status, page, limit.
- * @summary Sổ hoa hồng
+ * @summary Commission ledger
  */
 export const getCommissions = (
     params?: GetCommissionsParams,
@@ -399,7 +399,7 @@ export function useGetCommissionsInfinite<TData = InfiniteData<Awaited<ReturnTyp
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Sổ hoa hồng
+ * @summary Commission ledger
  */
 
 export function useGetCommissionsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCommissions>>>, TError = unknown>(
@@ -417,7 +417,7 @@ export function useGetCommissionsInfinite<TData = InfiniteData<Awaited<ReturnTyp
 }
 
 /**
- * @summary Sổ hoa hồng
+ * @summary Commission ledger
  */
 export const prefetchGetCommissionsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getCommissions>>, TError = unknown>(
  queryClient: QueryClient, params?: GetCommissionsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCommissions>>, TError, TData>>, }
@@ -480,7 +480,7 @@ export function useGetCommissions<TData = Awaited<ReturnType<typeof getCommissio
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Sổ hoa hồng
+ * @summary Commission ledger
  */
 
 export function useGetCommissions<TData = Awaited<ReturnType<typeof getCommissions>>, TError = unknown>(
@@ -498,7 +498,7 @@ export function useGetCommissions<TData = Awaited<ReturnType<typeof getCommissio
 }
 
 /**
- * @summary Sổ hoa hồng
+ * @summary Commission ledger
  */
 export const prefetchGetCommissionsQuery = async <TData = Awaited<ReturnType<typeof getCommissions>>, TError = unknown>(
  queryClient: QueryClient, params?: GetCommissionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissions>>, TError, TData>>, }
@@ -515,8 +515,8 @@ export const prefetchGetCommissionsQuery = async <TData = Awaited<ReturnType<typ
 
 
 /**
- * **CM-07** — POST /commissions. Nhập amount hoặc base_amount + percent; hỗ trợ gắn customer_treatment_id/session_id và chi nhánh.
- * @summary Nhập bút toán hoa hồng tay
+ * **CM-07** — POST /commissions. Provide either `amount` or `base_amount` + `percent`; supports attaching `customer_treatment_id`/`session_id` and a branch.
+ * @summary Create a manual commission entry
  */
 export const postCommissions = (
     postCommissionsBody: PostCommissionsBody,
@@ -564,7 +564,7 @@ const {mutation: mutationOptions} = options ?
     export type PostCommissionsMutationError = UnprocessableEntityResponse
 
     /**
- * @summary Nhập bút toán hoa hồng tay
+ * @summary Create a manual commission entry
  */
 export const usePostCommissions = <TError = UnprocessableEntityResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postCommissions>>, TError,{data: PostCommissionsBody}, TContext>, }
@@ -580,8 +580,8 @@ export const usePostCommissions = <TError = UnprocessableEntityResponse,
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **CM-09** — POST /commissions/{id}/void. Body: void_reason (bắt buộc). Không xóa dữ liệu.
- * @summary Hủy bút toán hoa hồng
+ * **CM-09** — POST /commissions/{id}/void. Body: void_reason (required). No data is deleted.
+ * @summary Void a commission entry
  */
 export const postCommissionsIdVoid = (
     id: string,
@@ -630,7 +630,7 @@ const {mutation: mutationOptions} = options ?
     export type PostCommissionsIdVoidMutationError = NotFoundResponse | UnprocessableEntityResponse
 
     /**
- * @summary Hủy bút toán hoa hồng
+ * @summary Void a commission entry
  */
 export const usePostCommissionsIdVoid = <TError = NotFoundResponse | UnprocessableEntityResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postCommissionsIdVoid>>, TError,{id: string;data: PostCommissionsIdVoidBody}, TContext>, }
@@ -647,7 +647,7 @@ export const usePostCommissionsIdVoid = <TError = NotFoundResponse | Unprocessab
     }
     /**
  * **CM-02** — GET /commission-rules/{id}.
- * @summary Chi tiết quy tắc hoa hồng
+ * @summary Get commission rule details
  */
 export const getCommissionRulesId = (
     id: string,
@@ -724,7 +724,7 @@ export function useGetCommissionRulesIdInfinite<TData = InfiniteData<Awaited<Ret
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Chi tiết quy tắc hoa hồng
+ * @summary Get commission rule details
  */
 
 export function useGetCommissionRulesIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCommissionRulesId>>>, TError = NotFoundResponse>(
@@ -742,7 +742,7 @@ export function useGetCommissionRulesIdInfinite<TData = InfiniteData<Awaited<Ret
 }
 
 /**
- * @summary Chi tiết quy tắc hoa hồng
+ * @summary Get commission rule details
  */
 export const prefetchGetCommissionRulesIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getCommissionRulesId>>, TError = NotFoundResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCommissionRulesId>>, TError, TData>>, }
@@ -805,7 +805,7 @@ export function useGetCommissionRulesId<TData = Awaited<ReturnType<typeof getCom
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Chi tiết quy tắc hoa hồng
+ * @summary Get commission rule details
  */
 
 export function useGetCommissionRulesId<TData = Awaited<ReturnType<typeof getCommissionRulesId>>, TError = NotFoundResponse>(
@@ -823,7 +823,7 @@ export function useGetCommissionRulesId<TData = Awaited<ReturnType<typeof getCom
 }
 
 /**
- * @summary Chi tiết quy tắc hoa hồng
+ * @summary Get commission rule details
  */
 export const prefetchGetCommissionRulesIdQuery = async <TData = Awaited<ReturnType<typeof getCommissionRulesId>>, TError = NotFoundResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissionRulesId>>, TError, TData>>, }
@@ -840,8 +840,8 @@ export const prefetchGetCommissionRulesIdQuery = async <TData = Awaited<ReturnTy
 
 
 /**
- * **CM-04** — PUT /commission-rules/{id}. Không ảnh hưởng bút toán đã settle.
- * @summary Sửa quy tắc hoa hồng
+ * **CM-04** — PUT /commission-rules/{id}. Does not affect entries that have already been settled.
+ * @summary Update a commission rule
  */
 export const putCommissionRulesId = (
     id: string,
@@ -889,7 +889,7 @@ const {mutation: mutationOptions} = options ?
     export type PutCommissionRulesIdMutationError = NotFoundResponse
 
     /**
- * @summary Sửa quy tắc hoa hồng
+ * @summary Update a commission rule
  */
 export const usePutCommissionRulesId = <TError = NotFoundResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putCommissionRulesId>>, TError,{id: string;data: PutCommissionRulesIdBody}, TContext>, }
@@ -905,8 +905,8 @@ export const usePutCommissionRulesId = <TError = NotFoundResponse,
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **CM-05** — DELETE /commission-rules/{id}. Đặt is_active=false.
- * @summary Ngừng quy tắc hoa hồng (soft delete)
+ * **CM-05** — DELETE /commission-rules/{id}. Sets is_active=false.
+ * @summary Deactivate a commission rule (soft delete)
  */
 export const deleteCommissionRulesId = (
     id: string,
@@ -951,7 +951,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteCommissionRulesIdMutationError = NotFoundResponse
 
     /**
- * @summary Ngừng quy tắc hoa hồng (soft delete)
+ * @summary Deactivate a commission rule (soft delete)
  */
 export const useDeleteCommissionRulesId = <TError = NotFoundResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteCommissionRulesId>>, TError,{id: string}, TContext>, }
@@ -967,8 +967,8 @@ export const useDeleteCommissionRulesId = <TError = NotFoundResponse,
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **CM-01** — GET /commission-rules. Cần quyền `commission.rule_manage`.
- * @summary Danh sách quy tắc hoa hồng
+ * **CM-01** — GET /commission-rules. Requires `commission.rule_manage` permission.
+ * @summary List commission rules
  */
 export const getCommissionRules = (
     
@@ -1045,7 +1045,7 @@ export function useGetCommissionRulesInfinite<TData = InfiniteData<Awaited<Retur
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Danh sách quy tắc hoa hồng
+ * @summary List commission rules
  */
 
 export function useGetCommissionRulesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCommissionRules>>>, TError = UnauthorizedResponse | ForbiddenResponse>(
@@ -1063,7 +1063,7 @@ export function useGetCommissionRulesInfinite<TData = InfiniteData<Awaited<Retur
 }
 
 /**
- * @summary Danh sách quy tắc hoa hồng
+ * @summary List commission rules
  */
 export const prefetchGetCommissionRulesInfiniteQuery = async <TData = Awaited<ReturnType<typeof getCommissionRules>>, TError = UnauthorizedResponse | ForbiddenResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCommissionRules>>, TError, TData>>, }
@@ -1126,7 +1126,7 @@ export function useGetCommissionRules<TData = Awaited<ReturnType<typeof getCommi
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Danh sách quy tắc hoa hồng
+ * @summary List commission rules
  */
 
 export function useGetCommissionRules<TData = Awaited<ReturnType<typeof getCommissionRules>>, TError = UnauthorizedResponse | ForbiddenResponse>(
@@ -1144,7 +1144,7 @@ export function useGetCommissionRules<TData = Awaited<ReturnType<typeof getCommi
 }
 
 /**
- * @summary Danh sách quy tắc hoa hồng
+ * @summary List commission rules
  */
 export const prefetchGetCommissionRulesQuery = async <TData = Awaited<ReturnType<typeof getCommissionRules>>, TError = UnauthorizedResponse | ForbiddenResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissionRules>>, TError, TData>>, }
@@ -1162,7 +1162,7 @@ export const prefetchGetCommissionRulesQuery = async <TData = Awaited<ReturnType
 
 /**
  * **CM-03** — POST /commission-rules. Body: name, payee_type (STAFF|COLLABORATOR|CUSTOMER_REFERRER), base (PAYMENT|SESSION_VALUE), percent, service_id?, staff_id?, branch_id?, priority, valid_from?, valid_to?.
- * @summary Tạo quy tắc hoa hồng
+ * @summary Create a commission rule
  */
 export const postCommissionRules = (
     postCommissionRulesBody: PostCommissionRulesBody,
@@ -1210,7 +1210,7 @@ const {mutation: mutationOptions} = options ?
     export type PostCommissionRulesMutationError = UnprocessableEntityResponse
 
     /**
- * @summary Tạo quy tắc hoa hồng
+ * @summary Create a commission rule
  */
 export const usePostCommissionRules = <TError = UnprocessableEntityResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postCommissionRules>>, TError,{data: PostCommissionRulesBody}, TContext>, }

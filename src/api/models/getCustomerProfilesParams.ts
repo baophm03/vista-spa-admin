@@ -17,7 +17,7 @@ page?: number;
  */
 limit?: number;
 /**
- * Tìm theo mã, tên hoặc số điện thoại khách hàng
+ * Search by customer code, name, or phone number
  */
 q?: string;
 };

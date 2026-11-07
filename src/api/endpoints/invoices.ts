@@ -38,8 +38,8 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * **INV-01** — GET /invoices/{customerTreatmentId}/print. Trả HTML phiếu in (khổ nhiệt K80 / A5) chứa thông tin thương hiệu, khách hàng, gói dịch vụ, tài chính, cam kết bảo hành và mã QR. Chỉ hoạt động khi setting `module.invoice = true` (mặc định false — bật trong Cài đặt hệ thống). Cần quyền `customer.read`.
- * @summary Phiếu in hóa đơn gói liệu trình (HTML sẵn sàng in)
+ * **INV-01** — GET /invoices/{customerTreatmentId}/print. Returns the print sheet HTML (thermal K80 / A5 sizes) containing brand, customer, service package, financial, warranty commitment and QR code information. Only works when the `module.invoice` setting is true (default false — enable it in System Settings). Requires the `customer.read` permission.
+ * @summary Invoice print sheet for a treatment package (print-ready HTML)
  */
 export const getInvoicesCustomerTreatmentIdPrint = (
     customerTreatmentId: string,
@@ -124,7 +124,7 @@ export function useGetInvoicesCustomerTreatmentIdPrintInfinite<TData = InfiniteD
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Phiếu in hóa đơn gói liệu trình (HTML sẵn sàng in)
+ * @summary Invoice print sheet for a treatment package (print-ready HTML)
  */
 
 export function useGetInvoicesCustomerTreatmentIdPrintInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrint>>>, TError = UnauthorizedResponse | NotFoundResponse>(
@@ -143,7 +143,7 @@ export function useGetInvoicesCustomerTreatmentIdPrintInfinite<TData = InfiniteD
 }
 
 /**
- * @summary Phiếu in hóa đơn gói liệu trình (HTML sẵn sàng in)
+ * @summary Invoice print sheet for a treatment package (print-ready HTML)
  */
 export const prefetchGetInvoicesCustomerTreatmentIdPrintInfiniteQuery = async <TData = Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrint>>, TError = UnauthorizedResponse | NotFoundResponse>(
  queryClient: QueryClient, customerTreatmentId: string,
@@ -211,7 +211,7 @@ export function useGetInvoicesCustomerTreatmentIdPrint<TData = Awaited<ReturnTyp
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Phiếu in hóa đơn gói liệu trình (HTML sẵn sàng in)
+ * @summary Invoice print sheet for a treatment package (print-ready HTML)
  */
 
 export function useGetInvoicesCustomerTreatmentIdPrint<TData = Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrint>>, TError = UnauthorizedResponse | NotFoundResponse>(
@@ -230,7 +230,7 @@ export function useGetInvoicesCustomerTreatmentIdPrint<TData = Awaited<ReturnTyp
 }
 
 /**
- * @summary Phiếu in hóa đơn gói liệu trình (HTML sẵn sàng in)
+ * @summary Invoice print sheet for a treatment package (print-ready HTML)
  */
 export const prefetchGetInvoicesCustomerTreatmentIdPrintQuery = async <TData = Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrint>>, TError = UnauthorizedResponse | NotFoundResponse>(
  queryClient: QueryClient, customerTreatmentId: string,

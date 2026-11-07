@@ -44,8 +44,8 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * **DC-07** — POST /customer-treatments/{id}/apply-discount. Body: rule_id, percent (% trong khoảng rule; vượt cần quyền `discount.override`).
- * @summary Áp giảm giá vào gói liệu trình
+ * **DC-07** — POST /customer-treatments/{id}/apply-discount. Body: rule_id, percent (% within the rule's range; exceeding it requires permission `discount.override`).
+ * @summary Apply a discount to the treatment package
  */
 export const postCustomerTreatmentsIdApplyDiscount = (
     id: string,
@@ -94,7 +94,7 @@ const {mutation: mutationOptions} = options ?
     export type PostCustomerTreatmentsIdApplyDiscountMutationError = void
 
     /**
- * @summary Áp giảm giá vào gói liệu trình
+ * @summary Apply a discount to the treatment package
  */
 export const usePostCustomerTreatmentsIdApplyDiscount = <TError = void,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postCustomerTreatmentsIdApplyDiscount>>, TError,{id: string;data: PostCustomerTreatmentsIdApplyDiscountBody}, TContext>, }
@@ -110,8 +110,8 @@ export const usePostCustomerTreatmentsIdApplyDiscount = <TError = void,
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **DC-08** — DELETE /customer-treatments/{id}/discounts/{discountId}. Chỉ gỡ được khi chưa có thanh toán sau lúc áp dụng.
- * @summary Gỡ giảm giá khỏi gói
+ * **DC-08** — DELETE /customer-treatments/{id}/discounts/{discountId}. Can only be removed if no payment was made after it was applied.
+ * @summary Remove a discount from the package
  */
 export const deleteCustomerTreatmentsIdDiscountsDiscountId = (
     id: string,
@@ -157,7 +157,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteCustomerTreatmentsIdDiscountsDiscountIdMutationError = void
 
     /**
- * @summary Gỡ giảm giá khỏi gói
+ * @summary Remove a discount from the package
  */
 export const useDeleteCustomerTreatmentsIdDiscountsDiscountId = <TError = void,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteCustomerTreatmentsIdDiscountsDiscountId>>, TError,{id: string;discountId: string}, TContext>, }
@@ -173,8 +173,8 @@ export const useDeleteCustomerTreatmentsIdDiscountsDiscountId = <TError = void,
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **DC-06** — GET /customer-profiles/{id}/available-discounts. Lọc rule theo hạng thẻ / khách quay lại / được giới thiệu / upsell.
- * @summary Ưu đãi khách đủ điều kiện
+ * **DC-06** — GET /customer-profiles/{id}/available-discounts. Filters rules by membership tier / returning customer / referral / upsell.
+ * @summary Discounts the customer is eligible for
  */
 export const getCustomerProfilesIdAvailableDiscounts = (
     id: string,
@@ -251,7 +251,7 @@ export function useGetCustomerProfilesIdAvailableDiscountsInfinite<TData = Infin
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Ưu đãi khách đủ điều kiện
+ * @summary Discounts the customer is eligible for
  */
 
 export function useGetCustomerProfilesIdAvailableDiscountsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscounts>>>, TError = NotFoundResponse>(
@@ -269,7 +269,7 @@ export function useGetCustomerProfilesIdAvailableDiscountsInfinite<TData = Infin
 }
 
 /**
- * @summary Ưu đãi khách đủ điều kiện
+ * @summary Discounts the customer is eligible for
  */
 export const prefetchGetCustomerProfilesIdAvailableDiscountsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscounts>>, TError = NotFoundResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscounts>>, TError, TData>>, }
@@ -332,7 +332,7 @@ export function useGetCustomerProfilesIdAvailableDiscounts<TData = Awaited<Retur
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Ưu đãi khách đủ điều kiện
+ * @summary Discounts the customer is eligible for
  */
 
 export function useGetCustomerProfilesIdAvailableDiscounts<TData = Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscounts>>, TError = NotFoundResponse>(
@@ -350,7 +350,7 @@ export function useGetCustomerProfilesIdAvailableDiscounts<TData = Awaited<Retur
 }
 
 /**
- * @summary Ưu đãi khách đủ điều kiện
+ * @summary Discounts the customer is eligible for
  */
 export const prefetchGetCustomerProfilesIdAvailableDiscountsQuery = async <TData = Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscounts>>, TError = NotFoundResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscounts>>, TError, TData>>, }

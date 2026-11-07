@@ -75,8 +75,8 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * GET `/healthRecords/latest` — hồ sơ sức khỏe. Cần quyền `customer.read`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Tham số truy vấn: `branch_id`.
- * @summary Xem hồ sơ sức khỏe
+ * GET `/healthRecords/latest` — health records. Requires the `customer.read` permission. Branch scope: users limited to one branch only see that branch's data. Query parameters: `branch_id`.
+ * @summary View latest health records
  */
 export const getHealthRecordsLatest = (
     params?: GetHealthRecordsLatestParams,
@@ -154,7 +154,7 @@ export function useGetHealthRecordsLatestInfinite<TData = InfiniteData<Awaited<R
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem hồ sơ sức khỏe
+ * @summary View latest health records
  */
 
 export function useGetHealthRecordsLatestInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getHealthRecordsLatest>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -172,7 +172,7 @@ export function useGetHealthRecordsLatestInfinite<TData = InfiniteData<Awaited<R
 }
 
 /**
- * @summary Xem hồ sơ sức khỏe
+ * @summary View latest health records
  */
 export const prefetchGetHealthRecordsLatestInfiniteQuery = async <TData = Awaited<ReturnType<typeof getHealthRecordsLatest>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetHealthRecordsLatestParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getHealthRecordsLatest>>, TError, TData>>, }
@@ -235,7 +235,7 @@ export function useGetHealthRecordsLatest<TData = Awaited<ReturnType<typeof getH
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem hồ sơ sức khỏe
+ * @summary View latest health records
  */
 
 export function useGetHealthRecordsLatest<TData = Awaited<ReturnType<typeof getHealthRecordsLatest>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -253,7 +253,7 @@ export function useGetHealthRecordsLatest<TData = Awaited<ReturnType<typeof getH
 }
 
 /**
- * @summary Xem hồ sơ sức khỏe
+ * @summary View latest health records
  */
 export const prefetchGetHealthRecordsLatestQuery = async <TData = Awaited<ReturnType<typeof getHealthRecordsLatest>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetHealthRecordsLatestParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getHealthRecordsLatest>>, TError, TData>>, }
@@ -270,8 +270,8 @@ export const prefetchGetHealthRecordsLatestQuery = async <TData = Awaited<Return
 
 
 /**
- * **CP-02** — GET /customer-profiles/{id} (ghi access_log VIEW_PROFILE). Cần quyền `customer.read`. Vai trò được phép: receptionist, technician. Giới hạn theo hồ sơ khách hàng được phân quyền.
- * @summary Xem chi tiết hồ sơ khách hàng
+ * **CP-02** — GET /customer-profiles/{id} (writes a VIEW_PROFILE access_log). Requires permission `customer.read`. Allowed roles: receptionist, technician. Scoped to customer profiles the user has access to.
+ * @summary View customer profile detail
  */
 export const getCustomerProfilesId = (
     id: string,
@@ -348,7 +348,7 @@ export function useGetCustomerProfilesIdInfinite<TData = InfiniteData<Awaited<Re
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết hồ sơ khách hàng
+ * @summary View customer profile detail
  */
 
 export function useGetCustomerProfilesIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCustomerProfilesId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -366,7 +366,7 @@ export function useGetCustomerProfilesIdInfinite<TData = InfiniteData<Awaited<Re
 }
 
 /**
- * @summary Xem chi tiết hồ sơ khách hàng
+ * @summary View customer profile detail
  */
 export const prefetchGetCustomerProfilesIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getCustomerProfilesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesId>>, TError, TData>>, }
@@ -429,7 +429,7 @@ export function useGetCustomerProfilesId<TData = Awaited<ReturnType<typeof getCu
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết hồ sơ khách hàng
+ * @summary View customer profile detail
  */
 
 export function useGetCustomerProfilesId<TData = Awaited<ReturnType<typeof getCustomerProfilesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -447,7 +447,7 @@ export function useGetCustomerProfilesId<TData = Awaited<ReturnType<typeof getCu
 }
 
 /**
- * @summary Xem chi tiết hồ sơ khách hàng
+ * @summary View customer profile detail
  */
 export const prefetchGetCustomerProfilesIdQuery = async <TData = Awaited<ReturnType<typeof getCustomerProfilesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesId>>, TError, TData>>, }
@@ -464,8 +464,8 @@ export const prefetchGetCustomerProfilesIdQuery = async <TData = Awaited<ReturnT
 
 
 /**
- * **CP-04** — PUT /customer-profiles/{id}. Cần quyền `customer.update`. Vai trò được phép: receptionist. Giới hạn theo hồ sơ khách hàng được phân quyền.
- * @summary Cập nhật hồ sơ khách hàng
+ * **CP-04** — PUT /customer-profiles/{id}. Requires permission `customer.update`. Allowed roles: receptionist. Scoped to customer profiles the user has access to.
+ * @summary Update customer profile
  */
 export const putCustomerProfilesId = (
     id: string,
@@ -513,7 +513,7 @@ const {mutation: mutationOptions} = options ?
     export type PutCustomerProfilesIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Cập nhật hồ sơ khách hàng
+ * @summary Update customer profile
  */
 export const usePutCustomerProfilesId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putCustomerProfilesId>>, TError,{id: string;data: CustomerProfileCreate}, TContext>, }
@@ -529,8 +529,8 @@ export const usePutCustomerProfilesId = <TError = UnauthorizedResponse | Forbidd
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **CP-05** — DELETE /customer-profiles/{id} (soft delete, ADM). Cần quyền `customer.delete`. Vai trò được phép: admin. Giới hạn theo hồ sơ khách hàng được phân quyền.
- * @summary Xóa hồ sơ khách hàng
+ * **CP-05** — DELETE /customer-profiles/{id} (soft delete, ADM). Requires permission `customer.delete`. Allowed roles: admin. Scoped to customer profiles the user has access to.
+ * @summary Delete customer profile
  */
 export const deleteCustomerProfilesId = (
     id: string,
@@ -575,7 +575,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteCustomerProfilesIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Xóa hồ sơ khách hàng
+ * @summary Delete customer profile
  */
 export const useDeleteCustomerProfilesId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteCustomerProfilesId>>, TError,{id: string}, TContext>, }
@@ -591,8 +591,8 @@ export const useDeleteCustomerProfilesId = <TError = UnauthorizedResponse | Forb
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **CP-01** — GET /customer-profiles. Cần quyền `customer.read`. Vai trò được phép: receptionist, technician. Giới hạn theo hồ sơ khách hàng được phân quyền. Tham số truy vấn: `page`, `limit`, `q`.
- * @summary Lấy danh sách hồ sơ khách hàng
+ * **CP-01** — GET /customer-profiles. Requires permission `customer.read`. Allowed roles: receptionist, technician. Scoped to customer profiles the user has access to. Query parameters: `page`, `limit`, `q`.
+ * @summary List customer profiles
  */
 export const getCustomerProfiles = (
     params?: GetCustomerProfilesParams,
@@ -670,7 +670,7 @@ export function useGetCustomerProfilesInfinite<TData = InfiniteData<Awaited<Retu
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách hồ sơ khách hàng
+ * @summary List customer profiles
  */
 
 export function useGetCustomerProfilesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCustomerProfiles>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -688,7 +688,7 @@ export function useGetCustomerProfilesInfinite<TData = InfiniteData<Awaited<Retu
 }
 
 /**
- * @summary Lấy danh sách hồ sơ khách hàng
+ * @summary List customer profiles
  */
 export const prefetchGetCustomerProfilesInfiniteQuery = async <TData = Awaited<ReturnType<typeof getCustomerProfiles>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetCustomerProfilesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomerProfiles>>, TError, TData>>, }
@@ -751,7 +751,7 @@ export function useGetCustomerProfiles<TData = Awaited<ReturnType<typeof getCust
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách hồ sơ khách hàng
+ * @summary List customer profiles
  */
 
 export function useGetCustomerProfiles<TData = Awaited<ReturnType<typeof getCustomerProfiles>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -769,7 +769,7 @@ export function useGetCustomerProfiles<TData = Awaited<ReturnType<typeof getCust
 }
 
 /**
- * @summary Lấy danh sách hồ sơ khách hàng
+ * @summary List customer profiles
  */
 export const prefetchGetCustomerProfilesQuery = async <TData = Awaited<ReturnType<typeof getCustomerProfiles>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetCustomerProfilesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerProfiles>>, TError, TData>>, }
@@ -786,8 +786,8 @@ export const prefetchGetCustomerProfilesQuery = async <TData = Awaited<ReturnTyp
 
 
 /**
- * **CP-03** — POST /customer-profiles. Cần quyền `customer.create`. Vai trò được phép: receptionist. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Body được chuyển nguyên vẹn vào lớp nghiệp vụ.
- * @summary Tạo hồ sơ khách hàng mới
+ * **CP-03** — POST /customer-profiles. Requires permission `customer.create`. Allowed roles: receptionist. Branch scope: users limited to a single branch only see that branch's data. The request body is passed as-is to the business layer.
+ * @summary Create a new customer profile
  */
 export const postCustomerProfiles = (
     postCustomerProfilesBody: PostCustomerProfilesBody,
@@ -835,7 +835,7 @@ const {mutation: mutationOptions} = options ?
     export type PostCustomerProfilesMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Tạo hồ sơ khách hàng mới
+ * @summary Create a new customer profile
  */
 export const usePostCustomerProfiles = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postCustomerProfiles>>, TError,{data: PostCustomerProfilesBody}, TContext>, }
@@ -851,8 +851,8 @@ export const usePostCustomerProfiles = <TError = UnauthorizedResponse | Forbidde
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **CP-08** — GET /customer-profiles/export (CSV, ghi access_log EXPORT). Cần quyền `customer.export`. Vai trò được phép: receptionist. Giới hạn theo hồ sơ khách hàng được phân quyền.
- * @summary Xuất dữ liệu
+ * **CP-08** — GET /customer-profiles/export (CSV, writes an EXPORT access_log). Requires permission `customer.export`. Allowed roles: receptionist. Scoped to customer profiles the user has access to.
+ * @summary Export data
  */
 export const getCustomerProfilesExport = (
     
@@ -929,7 +929,7 @@ export function useGetCustomerProfilesExportInfinite<TData = InfiniteData<Awaite
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xuất dữ liệu
+ * @summary Export data
  */
 
 export function useGetCustomerProfilesExportInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCustomerProfilesExport>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -947,7 +947,7 @@ export function useGetCustomerProfilesExportInfinite<TData = InfiniteData<Awaite
 }
 
 /**
- * @summary Xuất dữ liệu
+ * @summary Export data
  */
 export const prefetchGetCustomerProfilesExportInfiniteQuery = async <TData = Awaited<ReturnType<typeof getCustomerProfilesExport>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesExport>>, TError, TData>>, }
@@ -1010,7 +1010,7 @@ export function useGetCustomerProfilesExport<TData = Awaited<ReturnType<typeof g
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xuất dữ liệu
+ * @summary Export data
  */
 
 export function useGetCustomerProfilesExport<TData = Awaited<ReturnType<typeof getCustomerProfilesExport>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -1028,7 +1028,7 @@ export function useGetCustomerProfilesExport<TData = Awaited<ReturnType<typeof g
 }
 
 /**
- * @summary Xuất dữ liệu
+ * @summary Export data
  */
 export const prefetchGetCustomerProfilesExportQuery = async <TData = Awaited<ReturnType<typeof getCustomerProfilesExport>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesExport>>, TError, TData>>, }
@@ -1045,8 +1045,8 @@ export const prefetchGetCustomerProfilesExportQuery = async <TData = Awaited<Ret
 
 
 /**
- * GET `/customerProfiles/by-qr` — hồ sơ khách hàng. Cần quyền `customer.read`. Vai trò được phép: receptionist, technician. Giới hạn theo hồ sơ khách hàng được phân quyền. Tham số truy vấn: `token`.
- * @summary Tra cứu theo mã QR
+ * GET `/customerProfiles/by-qr` — customer profile. Requires `customer.read` permission. Allowed roles: receptionist, technician. Scoped to customer profiles the user is authorized for. Query parameters: `token`.
+ * @summary Look up by QR code
  */
 export const getCustomerProfilesByQr = (
     params?: GetCustomerProfilesByQrParams,
@@ -1124,7 +1124,7 @@ export function useGetCustomerProfilesByQrInfinite<TData = InfiniteData<Awaited<
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Tra cứu theo mã QR
+ * @summary Look up by QR code
  */
 
 export function useGetCustomerProfilesByQrInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCustomerProfilesByQr>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -1142,7 +1142,7 @@ export function useGetCustomerProfilesByQrInfinite<TData = InfiniteData<Awaited<
 }
 
 /**
- * @summary Tra cứu theo mã QR
+ * @summary Look up by QR code
  */
 export const prefetchGetCustomerProfilesByQrInfiniteQuery = async <TData = Awaited<ReturnType<typeof getCustomerProfilesByQr>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetCustomerProfilesByQrParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesByQr>>, TError, TData>>, }
@@ -1205,7 +1205,7 @@ export function useGetCustomerProfilesByQr<TData = Awaited<ReturnType<typeof get
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Tra cứu theo mã QR
+ * @summary Look up by QR code
  */
 
 export function useGetCustomerProfilesByQr<TData = Awaited<ReturnType<typeof getCustomerProfilesByQr>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -1223,7 +1223,7 @@ export function useGetCustomerProfilesByQr<TData = Awaited<ReturnType<typeof get
 }
 
 /**
- * @summary Tra cứu theo mã QR
+ * @summary Look up by QR code
  */
 export const prefetchGetCustomerProfilesByQrQuery = async <TData = Awaited<ReturnType<typeof getCustomerProfilesByQr>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetCustomerProfilesByQrParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesByQr>>, TError, TData>>, }
@@ -1240,8 +1240,8 @@ export const prefetchGetCustomerProfilesByQrQuery = async <TData = Awaited<Retur
 
 
 /**
- * **CP-06** — GET /customer-profiles/{id}/summary (ghi access_log). Cần quyền `customer.read`. Vai trò được phép: receptionist, technician. Giới hạn theo hồ sơ khách hàng được phân quyền.
- * @summary Xem tổng quan
+ * **CP-06** — GET /customer-profiles/{id}/summary (writes an access_log). Requires permission `customer.read`. Allowed roles: receptionist, technician. Scoped to customer profiles the user has access to.
+ * @summary View profile summary
  */
 export const getCustomerProfilesIdSummary = (
     id: string,
@@ -1318,7 +1318,7 @@ export function useGetCustomerProfilesIdSummaryInfinite<TData = InfiniteData<Awa
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem tổng quan
+ * @summary View profile summary
  */
 
 export function useGetCustomerProfilesIdSummaryInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCustomerProfilesIdSummary>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -1336,7 +1336,7 @@ export function useGetCustomerProfilesIdSummaryInfinite<TData = InfiniteData<Awa
 }
 
 /**
- * @summary Xem tổng quan
+ * @summary View profile summary
  */
 export const prefetchGetCustomerProfilesIdSummaryInfiniteQuery = async <TData = Awaited<ReturnType<typeof getCustomerProfilesIdSummary>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdSummary>>, TError, TData>>, }
@@ -1399,7 +1399,7 @@ export function useGetCustomerProfilesIdSummary<TData = Awaited<ReturnType<typeo
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem tổng quan
+ * @summary View profile summary
  */
 
 export function useGetCustomerProfilesIdSummary<TData = Awaited<ReturnType<typeof getCustomerProfilesIdSummary>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -1417,7 +1417,7 @@ export function useGetCustomerProfilesIdSummary<TData = Awaited<ReturnType<typeo
 }
 
 /**
- * @summary Xem tổng quan
+ * @summary View profile summary
  */
 export const prefetchGetCustomerProfilesIdSummaryQuery = async <TData = Awaited<ReturnType<typeof getCustomerProfilesIdSummary>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdSummary>>, TError, TData>>, }
@@ -1434,8 +1434,8 @@ export const prefetchGetCustomerProfilesIdSummaryQuery = async <TData = Awaited<
 
 
 /**
- * **RW-07** — POST /customer-profiles/{id}/redeem-reward: đổi quà hộ khách (BR-26). Cần quyền `reward.redeem_admin`. Trường body: `reward_id`.
- * @summary Đổi quà cho khách
+ * **RW-07** — POST /customer-profiles/{id}/redeem-reward: redeem a reward for the customer (BR-26). Requires permission `reward.redeem_admin`. Body field: `reward_id`.
+ * @summary Redeem a reward on behalf of the customer
  */
 export const postCustomerProfilesIdRedeemReward = (
     id: string,
@@ -1484,7 +1484,7 @@ const {mutation: mutationOptions} = options ?
     export type PostCustomerProfilesIdRedeemRewardMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Đổi quà cho khách
+ * @summary Redeem a reward on behalf of the customer
  */
 export const usePostCustomerProfilesIdRedeemReward = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postCustomerProfilesIdRedeemReward>>, TError,{id: string;data: PostCustomerProfilesIdRedeemRewardBody}, TContext>, }
@@ -1500,8 +1500,8 @@ export const usePostCustomerProfilesIdRedeemReward = <TError = UnauthorizedRespo
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/customerProfiles/{id}/qr` — hồ sơ khách hàng. Phạm vi khách hàng: chỉ thao tác trên dữ liệu của khách đang đăng nhập. Tham số truy vấn: `format`. Xử lý bởi `QRCode.toString`.
- * @summary Lấy mã QR của hồ sơ khách hàng
+ * GET `/customerProfiles/{id}/qr` — customer profile. Customer scope: only operates on the logged-in customer's own data. Query parameters: `format`. Handled by `QRCode.toString`.
+ * @summary Get the customer profile QR code
  */
 export const getCustomerProfilesIdQr = (
     id: string,
@@ -1586,7 +1586,7 @@ export function useGetCustomerProfilesIdQrInfinite<TData = InfiniteData<Awaited<
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy mã QR của hồ sơ khách hàng
+ * @summary Get the customer profile QR code
  */
 
 export function useGetCustomerProfilesIdQrInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCustomerProfilesIdQr>>>, TError = UnauthorizedResponse | NotFoundResponse | InternalErrorResponse>(
@@ -1605,7 +1605,7 @@ export function useGetCustomerProfilesIdQrInfinite<TData = InfiniteData<Awaited<
 }
 
 /**
- * @summary Lấy mã QR của hồ sơ khách hàng
+ * @summary Get the customer profile QR code
  */
 export const prefetchGetCustomerProfilesIdQrInfiniteQuery = async <TData = Awaited<ReturnType<typeof getCustomerProfilesIdQr>>, TError = UnauthorizedResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string,
@@ -1673,7 +1673,7 @@ export function useGetCustomerProfilesIdQr<TData = Awaited<ReturnType<typeof get
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy mã QR của hồ sơ khách hàng
+ * @summary Get the customer profile QR code
  */
 
 export function useGetCustomerProfilesIdQr<TData = Awaited<ReturnType<typeof getCustomerProfilesIdQr>>, TError = UnauthorizedResponse | NotFoundResponse | InternalErrorResponse>(
@@ -1692,7 +1692,7 @@ export function useGetCustomerProfilesIdQr<TData = Awaited<ReturnType<typeof get
 }
 
 /**
- * @summary Lấy mã QR của hồ sơ khách hàng
+ * @summary Get the customer profile QR code
  */
 export const prefetchGetCustomerProfilesIdQrQuery = async <TData = Awaited<ReturnType<typeof getCustomerProfilesIdQr>>, TError = UnauthorizedResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string,
@@ -1710,8 +1710,8 @@ export const prefetchGetCustomerProfilesIdQrQuery = async <TData = Awaited<Retur
 
 
 /**
- * **LY-01** — GET /customer-profiles/{id}/points. Admin/lễ tân có quyền `customer.read` được xem theo phạm vi hồ sơ/cơ sở. Quyền `membership.points_adjust` chỉ dùng cho thao tác cộng/trừ điểm thủ công. Trả `{ points, history, redemption }`; lịch sử tối đa 100 giao dịch.
- * @summary Xem số điểm và lịch sử giao dịch điểm của hồ sơ khách
+ * **LY-01** — GET /customer-profiles/{id}/points. Admins/receptionists with permission `customer.read` can view within their profile/branch scope. Permission `membership.points_adjust` is only used for manual point add/deduct operations. Returns `{ points, history, redemption }`; history is limited to the last 100 transactions.
+ * @summary View points balance and points transaction history for a customer profile
  */
 export const getCustomerProfilesIdPoints = (
     id: string,
@@ -1788,7 +1788,7 @@ export function useGetCustomerProfilesIdPointsInfinite<TData = InfiniteData<Awai
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem số điểm và lịch sử giao dịch điểm của hồ sơ khách
+ * @summary View points balance and points transaction history for a customer profile
  */
 
 export function useGetCustomerProfilesIdPointsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCustomerProfilesIdPoints>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -1806,7 +1806,7 @@ export function useGetCustomerProfilesIdPointsInfinite<TData = InfiniteData<Awai
 }
 
 /**
- * @summary Xem số điểm và lịch sử giao dịch điểm của hồ sơ khách
+ * @summary View points balance and points transaction history for a customer profile
  */
 export const prefetchGetCustomerProfilesIdPointsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getCustomerProfilesIdPoints>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdPoints>>, TError, TData>>, }
@@ -1869,7 +1869,7 @@ export function useGetCustomerProfilesIdPoints<TData = Awaited<ReturnType<typeof
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem số điểm và lịch sử giao dịch điểm của hồ sơ khách
+ * @summary View points balance and points transaction history for a customer profile
  */
 
 export function useGetCustomerProfilesIdPoints<TData = Awaited<ReturnType<typeof getCustomerProfilesIdPoints>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -1887,7 +1887,7 @@ export function useGetCustomerProfilesIdPoints<TData = Awaited<ReturnType<typeof
 }
 
 /**
- * @summary Xem số điểm và lịch sử giao dịch điểm của hồ sơ khách
+ * @summary View points balance and points transaction history for a customer profile
  */
 export const prefetchGetCustomerProfilesIdPointsQuery = async <TData = Awaited<ReturnType<typeof getCustomerProfilesIdPoints>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdPoints>>, TError, TData>>, }
@@ -1904,8 +1904,8 @@ export const prefetchGetCustomerProfilesIdPointsQuery = async <TData = Awaited<R
 
 
 /**
- * GET `/customerProfiles/{id}/link-user` — hồ sơ khách hàng. Cần quyền `customer.update`. Vai trò được phép: receptionist. Giới hạn theo hồ sơ khách hàng được phân quyền.
- * @summary Liên kết tài khoản
+ * GET `/customerProfiles/{id}/link-user` — customer profile. Requires permission `customer.update`. Allowed roles: receptionist. Scoped to customer profiles the user has access to.
+ * @summary Link user account
  */
 export const getCustomerProfilesIdLinkUser = (
     id: string,
@@ -1982,7 +1982,7 @@ export function useGetCustomerProfilesIdLinkUserInfinite<TData = InfiniteData<Aw
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Liên kết tài khoản
+ * @summary Link user account
  */
 
 export function useGetCustomerProfilesIdLinkUserInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCustomerProfilesIdLinkUser>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -2000,7 +2000,7 @@ export function useGetCustomerProfilesIdLinkUserInfinite<TData = InfiniteData<Aw
 }
 
 /**
- * @summary Liên kết tài khoản
+ * @summary Link user account
  */
 export const prefetchGetCustomerProfilesIdLinkUserInfiniteQuery = async <TData = Awaited<ReturnType<typeof getCustomerProfilesIdLinkUser>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdLinkUser>>, TError, TData>>, }
@@ -2063,7 +2063,7 @@ export function useGetCustomerProfilesIdLinkUser<TData = Awaited<ReturnType<type
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Liên kết tài khoản
+ * @summary Link user account
  */
 
 export function useGetCustomerProfilesIdLinkUser<TData = Awaited<ReturnType<typeof getCustomerProfilesIdLinkUser>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -2081,7 +2081,7 @@ export function useGetCustomerProfilesIdLinkUser<TData = Awaited<ReturnType<type
 }
 
 /**
- * @summary Liên kết tài khoản
+ * @summary Link user account
  */
 export const prefetchGetCustomerProfilesIdLinkUserQuery = async <TData = Awaited<ReturnType<typeof getCustomerProfilesIdLinkUser>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdLinkUser>>, TError, TData>>, }
@@ -2098,8 +2098,8 @@ export const prefetchGetCustomerProfilesIdLinkUserQuery = async <TData = Awaited
 
 
 /**
- * **CP-09** — POST /customer-profiles/{id}/link-user. Cần quyền `customer.update`. Vai trò được phép: receptionist. Giới hạn theo hồ sơ khách hàng được phân quyền.
- * @summary Liên kết tài khoản
+ * **CP-09** — POST /customer-profiles/{id}/link-user. Requires permission `customer.update`. Allowed roles: receptionist. Scoped to customer profiles the user has access to.
+ * @summary Link user account
  */
 export const postCustomerProfilesIdLinkUser = (
     id: string,
@@ -2148,7 +2148,7 @@ const {mutation: mutationOptions} = options ?
     export type PostCustomerProfilesIdLinkUserMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Liên kết tài khoản
+ * @summary Link user account
  */
 export const usePostCustomerProfilesIdLinkUser = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postCustomerProfilesIdLinkUser>>, TError,{id: string;data: CustomerProfileCreate}, TContext>, }
@@ -2164,8 +2164,8 @@ export const usePostCustomerProfilesIdLinkUser = <TError = UnauthorizedResponse 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/customerProfiles/{id}/health-records` — hồ sơ khách hàng. Cần quyền `customer.read`. Giới hạn theo hồ sơ khách hàng được phân quyền.
- * @summary Quản lý hồ sơ sức khỏe
+ * GET `/customerProfiles/{id}/health-records` — customer profile. Requires permission `customer.read`. Scoped to customer profiles the user has access to.
+ * @summary Manage health records
  */
 export const getCustomerProfilesIdHealthRecords = (
     id: string,
@@ -2242,7 +2242,7 @@ export function useGetCustomerProfilesIdHealthRecordsInfinite<TData = InfiniteDa
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Quản lý hồ sơ sức khỏe
+ * @summary Manage health records
  */
 
 export function useGetCustomerProfilesIdHealthRecordsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCustomerProfilesIdHealthRecords>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -2260,7 +2260,7 @@ export function useGetCustomerProfilesIdHealthRecordsInfinite<TData = InfiniteDa
 }
 
 /**
- * @summary Quản lý hồ sơ sức khỏe
+ * @summary Manage health records
  */
 export const prefetchGetCustomerProfilesIdHealthRecordsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getCustomerProfilesIdHealthRecords>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdHealthRecords>>, TError, TData>>, }
@@ -2323,7 +2323,7 @@ export function useGetCustomerProfilesIdHealthRecords<TData = Awaited<ReturnType
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Quản lý hồ sơ sức khỏe
+ * @summary Manage health records
  */
 
 export function useGetCustomerProfilesIdHealthRecords<TData = Awaited<ReturnType<typeof getCustomerProfilesIdHealthRecords>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -2341,7 +2341,7 @@ export function useGetCustomerProfilesIdHealthRecords<TData = Awaited<ReturnType
 }
 
 /**
- * @summary Quản lý hồ sơ sức khỏe
+ * @summary Manage health records
  */
 export const prefetchGetCustomerProfilesIdHealthRecordsQuery = async <TData = Awaited<ReturnType<typeof getCustomerProfilesIdHealthRecords>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdHealthRecords>>, TError, TData>>, }
@@ -2358,8 +2358,8 @@ export const prefetchGetCustomerProfilesIdHealthRecordsQuery = async <TData = Aw
 
 
 /**
- * POST `/customerProfiles/{id}/health-records` — hồ sơ khách hàng. Cần quyền `customer.update`. Giới hạn theo hồ sơ khách hàng được phân quyền.
- * @summary Thêm hồ sơ sức khỏe cho khách
+ * POST `/customerProfiles/{id}/health-records` — customer profile. Requires permission `customer.update`. Scoped to customer profiles the user has access to.
+ * @summary Add a health record for the customer
  */
 export const postCustomerProfilesIdHealthRecords = (
     id: string,
@@ -2408,7 +2408,7 @@ const {mutation: mutationOptions} = options ?
     export type PostCustomerProfilesIdHealthRecordsMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Thêm hồ sơ sức khỏe cho khách
+ * @summary Add a health record for the customer
  */
 export const usePostCustomerProfilesIdHealthRecords = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postCustomerProfilesIdHealthRecords>>, TError,{id: string;data: CustomerProfileCreate}, TContext>, }
@@ -2424,8 +2424,8 @@ export const usePostCustomerProfilesIdHealthRecords = <TError = UnauthorizedResp
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/customerProfiles/{id}/health-metrics` — hồ sơ khách hàng. Cần quyền `customer.read`. Giới hạn theo hồ sơ khách hàng được phân quyền.
- * @summary Quản lý chỉ số sức khỏe
+ * GET `/customerProfiles/{id}/health-metrics` — customer profile. Requires permission `customer.read`. Scoped to customer profiles the user has access to.
+ * @summary Manage health metrics
  */
 export const getCustomerProfilesIdHealthMetrics = (
     id: string,
@@ -2502,7 +2502,7 @@ export function useGetCustomerProfilesIdHealthMetricsInfinite<TData = InfiniteDa
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Quản lý chỉ số sức khỏe
+ * @summary Manage health metrics
  */
 
 export function useGetCustomerProfilesIdHealthMetricsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCustomerProfilesIdHealthMetrics>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -2520,7 +2520,7 @@ export function useGetCustomerProfilesIdHealthMetricsInfinite<TData = InfiniteDa
 }
 
 /**
- * @summary Quản lý chỉ số sức khỏe
+ * @summary Manage health metrics
  */
 export const prefetchGetCustomerProfilesIdHealthMetricsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getCustomerProfilesIdHealthMetrics>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdHealthMetrics>>, TError, TData>>, }
@@ -2583,7 +2583,7 @@ export function useGetCustomerProfilesIdHealthMetrics<TData = Awaited<ReturnType
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Quản lý chỉ số sức khỏe
+ * @summary Manage health metrics
  */
 
 export function useGetCustomerProfilesIdHealthMetrics<TData = Awaited<ReturnType<typeof getCustomerProfilesIdHealthMetrics>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -2601,7 +2601,7 @@ export function useGetCustomerProfilesIdHealthMetrics<TData = Awaited<ReturnType
 }
 
 /**
- * @summary Quản lý chỉ số sức khỏe
+ * @summary Manage health metrics
  */
 export const prefetchGetCustomerProfilesIdHealthMetricsQuery = async <TData = Awaited<ReturnType<typeof getCustomerProfilesIdHealthMetrics>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdHealthMetrics>>, TError, TData>>, }
@@ -2618,8 +2618,8 @@ export const prefetchGetCustomerProfilesIdHealthMetricsQuery = async <TData = Aw
 
 
 /**
- * POST `/customerProfiles/{id}/health-metrics` — hồ sơ khách hàng. Cần quyền `health_metric.create`. Giới hạn theo hồ sơ khách hàng được phân quyền.
- * @summary Thêm chỉ số sức khỏe cho khách
+ * POST `/customerProfiles/{id}/health-metrics` — customer profile. Requires permission `health_metric.create`. Scoped to customer profiles the user has access to.
+ * @summary Add a health metric for the customer
  */
 export const postCustomerProfilesIdHealthMetrics = (
     id: string,
@@ -2668,7 +2668,7 @@ const {mutation: mutationOptions} = options ?
     export type PostCustomerProfilesIdHealthMetricsMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Thêm chỉ số sức khỏe cho khách
+ * @summary Add a health metric for the customer
  */
 export const usePostCustomerProfilesIdHealthMetrics = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postCustomerProfilesIdHealthMetrics>>, TError,{id: string;data: CustomerProfileCreate}, TContext>, }
@@ -2684,8 +2684,8 @@ export const usePostCustomerProfilesIdHealthMetrics = <TError = UnauthorizedResp
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **CP-07** — GET /customer-profiles/{id}/code-history. Cần quyền `customer.read`. Vai trò được phép: receptionist. Giới hạn theo hồ sơ khách hàng được phân quyền.
- * @summary Xem lịch sử mã khách
+ * **CP-07** — GET /customer-profiles/{id}/code-history. Requires permission `customer.read`. Allowed roles: receptionist. Scoped to customer profiles the user has access to.
+ * @summary View customer code history
  */
 export const getCustomerProfilesIdCodeHistory = (
     id: string,
@@ -2762,7 +2762,7 @@ export function useGetCustomerProfilesIdCodeHistoryInfinite<TData = InfiniteData
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem lịch sử mã khách
+ * @summary View customer code history
  */
 
 export function useGetCustomerProfilesIdCodeHistoryInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCustomerProfilesIdCodeHistory>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -2780,7 +2780,7 @@ export function useGetCustomerProfilesIdCodeHistoryInfinite<TData = InfiniteData
 }
 
 /**
- * @summary Xem lịch sử mã khách
+ * @summary View customer code history
  */
 export const prefetchGetCustomerProfilesIdCodeHistoryInfiniteQuery = async <TData = Awaited<ReturnType<typeof getCustomerProfilesIdCodeHistory>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdCodeHistory>>, TError, TData>>, }
@@ -2843,7 +2843,7 @@ export function useGetCustomerProfilesIdCodeHistory<TData = Awaited<ReturnType<t
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem lịch sử mã khách
+ * @summary View customer code history
  */
 
 export function useGetCustomerProfilesIdCodeHistory<TData = Awaited<ReturnType<typeof getCustomerProfilesIdCodeHistory>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -2861,7 +2861,7 @@ export function useGetCustomerProfilesIdCodeHistory<TData = Awaited<ReturnType<t
 }
 
 /**
- * @summary Xem lịch sử mã khách
+ * @summary View customer code history
  */
 export const prefetchGetCustomerProfilesIdCodeHistoryQuery = async <TData = Awaited<ReturnType<typeof getCustomerProfilesIdCodeHistory>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdCodeHistory>>, TError, TData>>, }
@@ -2878,8 +2878,8 @@ export const prefetchGetCustomerProfilesIdCodeHistoryQuery = async <TData = Awai
 
 
 /**
- * POST `/customerProfiles/{id}/qr/reset` — hồ sơ khách hàng. Cần quyền `customer.delete`. Vai trò được phép: admin. Giới hạn theo hồ sơ khách hàng được phân quyền.
- * @summary Đặt lại
+ * POST `/customerProfiles/{id}/qr/reset` — customer profile. Requires permission `customer.delete`. Allowed roles: admin. Scoped to customer profiles the user has access to.
+ * @summary Reset QR token
  */
 export const postCustomerProfilesIdQrReset = (
     id: string,
@@ -2925,7 +2925,7 @@ const {mutation: mutationOptions} = options ?
     export type PostCustomerProfilesIdQrResetMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Đặt lại
+ * @summary Reset QR token
  */
 export const usePostCustomerProfilesIdQrReset = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postCustomerProfilesIdQrReset>>, TError,{id: string}, TContext>, }
@@ -2941,8 +2941,8 @@ export const usePostCustomerProfilesIdQrReset = <TError = UnauthorizedResponse |
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * PUT `/customerProfiles/{id}/health-records/{recordId}` — hồ sơ khách hàng. Cần quyền `customer.update`. Giới hạn theo hồ sơ khách hàng được phân quyền.
- * @summary Cập nhật hồ sơ sức khỏe
+ * PUT `/customerProfiles/{id}/health-records/{recordId}` — customer profile. Requires permission `customer.update`. Scoped to customer profiles the user has access to.
+ * @summary Update a health record
  */
 export const putCustomerProfilesIdHealthRecordsRecordId = (
     id: string,
@@ -2991,7 +2991,7 @@ const {mutation: mutationOptions} = options ?
     export type PutCustomerProfilesIdHealthRecordsRecordIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Cập nhật hồ sơ sức khỏe
+ * @summary Update a health record
  */
 export const usePutCustomerProfilesIdHealthRecordsRecordId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putCustomerProfilesIdHealthRecordsRecordId>>, TError,{id: string;recordId: string;data: CustomerProfileCreate}, TContext>, }
@@ -3007,8 +3007,8 @@ export const usePutCustomerProfilesIdHealthRecordsRecordId = <TError = Unauthori
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * PUT `/customerProfiles/{id}/health-metrics/{metricId}` — hồ sơ khách hàng. Cần quyền `health_metric.update`. Giới hạn theo hồ sơ khách hàng được phân quyền.
- * @summary Cập nhật chỉ số sức khỏe
+ * PUT `/customerProfiles/{id}/health-metrics/{metricId}` — customer profile. Requires permission `health_metric.update`. Scoped to customer profiles the user has access to.
+ * @summary Update a health metric
  */
 export const putCustomerProfilesIdHealthMetricsMetricId = (
     id: string,
@@ -3057,7 +3057,7 @@ const {mutation: mutationOptions} = options ?
     export type PutCustomerProfilesIdHealthMetricsMetricIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Cập nhật chỉ số sức khỏe
+ * @summary Update a health metric
  */
 export const usePutCustomerProfilesIdHealthMetricsMetricId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putCustomerProfilesIdHealthMetricsMetricId>>, TError,{id: string;metricId: string;data: CustomerProfileCreate}, TContext>, }
@@ -3073,8 +3073,8 @@ export const usePutCustomerProfilesIdHealthMetricsMetricId = <TError = Unauthori
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * DELETE `/customerProfiles/{id}/health-metrics/{metricId}` — hồ sơ khách hàng. Chỉ quản trị viên nền tảng (ADM) được gọi. Giới hạn theo hồ sơ khách hàng được phân quyền.
- * @summary Xóa chỉ số sức khỏe
+ * DELETE `/customerProfiles/{id}/health-metrics/{metricId}` — customer profile. Only platform admins (ADM) can call this. Scoped to customer profiles the user has access to.
+ * @summary Delete a health metric
  */
 export const deleteCustomerProfilesIdHealthMetricsMetricId = (
     id: string,
@@ -3120,7 +3120,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteCustomerProfilesIdHealthMetricsMetricIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Xóa chỉ số sức khỏe
+ * @summary Delete a health metric
  */
 export const useDeleteCustomerProfilesIdHealthMetricsMetricId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteCustomerProfilesIdHealthMetricsMetricId>>, TError,{id: string;metricId: string}, TContext>, }

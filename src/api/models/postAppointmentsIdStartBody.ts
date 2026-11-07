@@ -9,8 +9,8 @@ import type { PostAppointmentsIdStartBodySessionCustomFields } from './postAppoi
 
 export type PostAppointmentsIdStartBody = {
   session_custom_fields?: PostAppointmentsIdStartBodySessionCustomFields;
-  /** Gói liệu trình chọn gắn tại thời điểm bắt đầu */
+  /** Treatment package chosen to attach at start time */
   customer_treatment_id?: string;
-  /** Giá chốt của dịch vụ lẻ có khoảng giá; bắt buộc trước khi bắt đầu */
+  /** Finalized price of the standalone service that has a price range; required before starting */
   service_amount?: number;
 };

@@ -8,22 +8,9 @@
 import type { GetRolesSortOrder } from './getRolesSortOrder';
 
 export type GetRolesParams = {
-/**
- * @minimum 1
- */
 currentPage?: number;
-/**
- * @minimum 1
- * @maximum 200
- */
 pageSize?: number;
-/**
- * Biểu thức lọc của sequelize-api-paginate
- */
 filters?: string;
-/**
- * Tên trường sắp xếp (sequelize-api-paginate)
- */
 sortField?: string;
 sortOrder?: GetRolesSortOrder;
 };

@@ -6,13 +6,13 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { BrandSettingsBrandLogoFileId } from './brandSettingsBrandLogoFileId';
-import type { BrandSettingsBrandLogoUrl } from './brandSettingsBrandLogoUrl';
+import type { BrandSettingsBrandLogoFile } from './brandSettingsBrandLogoFile';
 
 export interface BrandSettingsBrand {
   name: string;
-  /** Đường dẫn/logo file đã upload qua POST /files */
+  /** Id of the file uploaded via POST /files (FK to files table) */
   logo_file_id?: BrandSettingsBrandLogoFileId;
-  /** URL logo (đọc từ logo_file_id) */
-  logo_url?: BrandSettingsBrandLogoUrl;
+  /** File object referenced by logo_file_id; FE builds URL from path + image endpoint */
+  logo_file?: BrandSettingsBrandLogoFile;
   primary_color: string;
 }

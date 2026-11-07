@@ -12,7 +12,6 @@ export type GetUsersServiceAvailableParams = {
  */
 page?: number;
 /**
- * @minimum 1
  * @maximum 200
  */
 limit?: number;

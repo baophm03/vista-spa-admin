@@ -7,6 +7,6 @@
  */
 
 /**
- * Payload nghiệp vụ được chuyển nguyên vẹn cho lớp xử lý
+ * Business payload passed as-is to the processing layer
  */
 export type PostAppOrdersBody = { [key: string]: unknown };

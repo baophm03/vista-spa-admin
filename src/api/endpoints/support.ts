@@ -42,8 +42,8 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * GET `/support/schedules` — nội dung hỗ trợ. Công khai, không cần đăng nhập. Xử lý bởi `supportScheduleProvider.getAll`.
- * @summary Liệt kê lịch hỗ trợ
+ * GET `/support/schedules` — support content. Public, no authentication required. Handled by `supportScheduleProvider.getAll`.
+ * @summary List support schedules
  */
 export const getSupportSchedules = (
     
@@ -120,7 +120,7 @@ export function useGetSupportSchedulesInfinite<TData = InfiniteData<Awaited<Retu
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Liệt kê lịch hỗ trợ
+ * @summary List support schedules
  */
 
 export function useGetSupportSchedulesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getSupportSchedules>>>, TError = LegacyBadRequestResponse>(
@@ -138,7 +138,7 @@ export function useGetSupportSchedulesInfinite<TData = InfiniteData<Awaited<Retu
 }
 
 /**
- * @summary Liệt kê lịch hỗ trợ
+ * @summary List support schedules
  */
 export const prefetchGetSupportSchedulesInfiniteQuery = async <TData = Awaited<ReturnType<typeof getSupportSchedules>>, TError = LegacyBadRequestResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSupportSchedules>>, TError, TData>>, }
@@ -201,7 +201,7 @@ export function useGetSupportSchedules<TData = Awaited<ReturnType<typeof getSupp
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Liệt kê lịch hỗ trợ
+ * @summary List support schedules
  */
 
 export function useGetSupportSchedules<TData = Awaited<ReturnType<typeof getSupportSchedules>>, TError = LegacyBadRequestResponse>(
@@ -219,7 +219,7 @@ export function useGetSupportSchedules<TData = Awaited<ReturnType<typeof getSupp
 }
 
 /**
- * @summary Liệt kê lịch hỗ trợ
+ * @summary List support schedules
  */
 export const prefetchGetSupportSchedulesQuery = async <TData = Awaited<ReturnType<typeof getSupportSchedules>>, TError = LegacyBadRequestResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSupportSchedules>>, TError, TData>>, }
@@ -236,8 +236,8 @@ export const prefetchGetSupportSchedulesQuery = async <TData = Awaited<ReturnTyp
 
 
 /**
- * POST `/support/schedules` — nội dung hỗ trợ. **Công khai, không cần đăng nhập.** Route này hiện không gắn middleware xác thực hay phân quyền nào. Xử lý bởi `supportScheduleProvider.post`.
- * @summary Tạo lịch hỗ trợ
+ * POST `/support/schedules` — support content. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `supportScheduleProvider.post`.
+ * @summary Create a support schedule
  */
 export const postSupportSchedules = (
     supportChannelCreate: SupportChannelCreate,
@@ -285,7 +285,7 @@ const {mutation: mutationOptions} = options ?
     export type PostSupportSchedulesMutationError = LegacyBadRequestResponse
 
     /**
- * @summary Tạo lịch hỗ trợ
+ * @summary Create a support schedule
  */
 export const usePostSupportSchedules = <TError = LegacyBadRequestResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postSupportSchedules>>, TError,{data: SupportChannelCreate}, TContext>, }
@@ -301,8 +301,8 @@ export const usePostSupportSchedules = <TError = LegacyBadRequestResponse,
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/support/schedules/{id}` — nội dung hỗ trợ. Công khai, không cần đăng nhập. Xử lý bởi `supportScheduleProvider.getById`.
- * @summary Xem chi tiết lịch hỗ trợ
+ * GET `/support/schedules/{id}` — support content. Public, no authentication required. Handled by `supportScheduleProvider.getById`.
+ * @summary View support schedule details
  */
 export const getSupportSchedulesId = (
     id: string,
@@ -379,7 +379,7 @@ export function useGetSupportSchedulesIdInfinite<TData = InfiniteData<Awaited<Re
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết lịch hỗ trợ
+ * @summary View support schedule details
  */
 
 export function useGetSupportSchedulesIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getSupportSchedulesId>>>, TError = LegacyBadRequestResponse | void>(
@@ -397,7 +397,7 @@ export function useGetSupportSchedulesIdInfinite<TData = InfiniteData<Awaited<Re
 }
 
 /**
- * @summary Xem chi tiết lịch hỗ trợ
+ * @summary View support schedule details
  */
 export const prefetchGetSupportSchedulesIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getSupportSchedulesId>>, TError = LegacyBadRequestResponse | void>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSupportSchedulesId>>, TError, TData>>, }
@@ -460,7 +460,7 @@ export function useGetSupportSchedulesId<TData = Awaited<ReturnType<typeof getSu
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết lịch hỗ trợ
+ * @summary View support schedule details
  */
 
 export function useGetSupportSchedulesId<TData = Awaited<ReturnType<typeof getSupportSchedulesId>>, TError = LegacyBadRequestResponse | void>(
@@ -478,7 +478,7 @@ export function useGetSupportSchedulesId<TData = Awaited<ReturnType<typeof getSu
 }
 
 /**
- * @summary Xem chi tiết lịch hỗ trợ
+ * @summary View support schedule details
  */
 export const prefetchGetSupportSchedulesIdQuery = async <TData = Awaited<ReturnType<typeof getSupportSchedulesId>>, TError = LegacyBadRequestResponse | void>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSupportSchedulesId>>, TError, TData>>, }
@@ -495,8 +495,8 @@ export const prefetchGetSupportSchedulesIdQuery = async <TData = Awaited<ReturnT
 
 
 /**
- * PUT `/support/schedules/{id}` — nội dung hỗ trợ. **Công khai, không cần đăng nhập.** Route này hiện không gắn middleware xác thực hay phân quyền nào. Xử lý bởi `supportScheduleProvider.put`.
- * @summary Cập nhật lịch hỗ trợ
+ * PUT `/support/schedules/{id}` — support content. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `supportScheduleProvider.put`.
+ * @summary Update a support schedule
  */
 export const putSupportSchedulesId = (
     id: string,
@@ -544,7 +544,7 @@ const {mutation: mutationOptions} = options ?
     export type PutSupportSchedulesIdMutationError = LegacyBadRequestResponse | void
 
     /**
- * @summary Cập nhật lịch hỗ trợ
+ * @summary Update a support schedule
  */
 export const usePutSupportSchedulesId = <TError = LegacyBadRequestResponse | void,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putSupportSchedulesId>>, TError,{id: string;data: SupportChannelCreate}, TContext>, }
@@ -560,8 +560,8 @@ export const usePutSupportSchedulesId = <TError = LegacyBadRequestResponse | voi
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * DELETE `/support/schedules/{id}` — nội dung hỗ trợ. **Công khai, không cần đăng nhập.** Route này hiện không gắn middleware xác thực hay phân quyền nào. Xử lý bởi `supportScheduleProvider.delete`.
- * @summary Xóa lịch hỗ trợ
+ * DELETE `/support/schedules/{id}` — support content. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `supportScheduleProvider.delete`.
+ * @summary Delete a support schedule
  */
 export const deleteSupportSchedulesId = (
     id: string,
@@ -606,7 +606,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteSupportSchedulesIdMutationError = LegacyBadRequestResponse | void
 
     /**
- * @summary Xóa lịch hỗ trợ
+ * @summary Delete a support schedule
  */
 export const useDeleteSupportSchedulesId = <TError = LegacyBadRequestResponse | void,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSupportSchedulesId>>, TError,{id: string}, TContext>, }
@@ -622,8 +622,8 @@ export const useDeleteSupportSchedulesId = <TError = LegacyBadRequestResponse | 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/support/locations` — nội dung hỗ trợ. Công khai, không cần đăng nhập. Xử lý bởi `supportLocationProvider.getAll`.
- * @summary Liệt kê địa điểm hỗ trợ
+ * GET `/support/locations` — support content. Public, no authentication required. Handled by `supportLocationProvider.getAll`.
+ * @summary List support locations
  */
 export const getSupportLocations = (
     
@@ -700,7 +700,7 @@ export function useGetSupportLocationsInfinite<TData = InfiniteData<Awaited<Retu
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Liệt kê địa điểm hỗ trợ
+ * @summary List support locations
  */
 
 export function useGetSupportLocationsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getSupportLocations>>>, TError = LegacyBadRequestResponse>(
@@ -718,7 +718,7 @@ export function useGetSupportLocationsInfinite<TData = InfiniteData<Awaited<Retu
 }
 
 /**
- * @summary Liệt kê địa điểm hỗ trợ
+ * @summary List support locations
  */
 export const prefetchGetSupportLocationsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getSupportLocations>>, TError = LegacyBadRequestResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSupportLocations>>, TError, TData>>, }
@@ -781,7 +781,7 @@ export function useGetSupportLocations<TData = Awaited<ReturnType<typeof getSupp
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Liệt kê địa điểm hỗ trợ
+ * @summary List support locations
  */
 
 export function useGetSupportLocations<TData = Awaited<ReturnType<typeof getSupportLocations>>, TError = LegacyBadRequestResponse>(
@@ -799,7 +799,7 @@ export function useGetSupportLocations<TData = Awaited<ReturnType<typeof getSupp
 }
 
 /**
- * @summary Liệt kê địa điểm hỗ trợ
+ * @summary List support locations
  */
 export const prefetchGetSupportLocationsQuery = async <TData = Awaited<ReturnType<typeof getSupportLocations>>, TError = LegacyBadRequestResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSupportLocations>>, TError, TData>>, }
@@ -816,8 +816,8 @@ export const prefetchGetSupportLocationsQuery = async <TData = Awaited<ReturnTyp
 
 
 /**
- * POST `/support/locations` — nội dung hỗ trợ. **Công khai, không cần đăng nhập.** Route này hiện không gắn middleware xác thực hay phân quyền nào. Xử lý bởi `supportLocationProvider.post`.
- * @summary Tạo địa điểm hỗ trợ
+ * POST `/support/locations` — support content. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `supportLocationProvider.post`.
+ * @summary Create a support location
  */
 export const postSupportLocations = (
     supportChannelCreate: SupportChannelCreate,
@@ -865,7 +865,7 @@ const {mutation: mutationOptions} = options ?
     export type PostSupportLocationsMutationError = LegacyBadRequestResponse
 
     /**
- * @summary Tạo địa điểm hỗ trợ
+ * @summary Create a support location
  */
 export const usePostSupportLocations = <TError = LegacyBadRequestResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postSupportLocations>>, TError,{data: SupportChannelCreate}, TContext>, }
@@ -881,8 +881,8 @@ export const usePostSupportLocations = <TError = LegacyBadRequestResponse,
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/support/locations/{id}` — nội dung hỗ trợ. Công khai, không cần đăng nhập. Xử lý bởi `supportLocationProvider.getById`.
- * @summary Xem chi tiết địa điểm hỗ trợ
+ * GET `/support/locations/{id}` — support content. Public, no authentication required. Handled by `supportLocationProvider.getById`.
+ * @summary View support location details
  */
 export const getSupportLocationsId = (
     id: string,
@@ -959,7 +959,7 @@ export function useGetSupportLocationsIdInfinite<TData = InfiniteData<Awaited<Re
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết địa điểm hỗ trợ
+ * @summary View support location details
  */
 
 export function useGetSupportLocationsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getSupportLocationsId>>>, TError = LegacyBadRequestResponse | void>(
@@ -977,7 +977,7 @@ export function useGetSupportLocationsIdInfinite<TData = InfiniteData<Awaited<Re
 }
 
 /**
- * @summary Xem chi tiết địa điểm hỗ trợ
+ * @summary View support location details
  */
 export const prefetchGetSupportLocationsIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getSupportLocationsId>>, TError = LegacyBadRequestResponse | void>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSupportLocationsId>>, TError, TData>>, }
@@ -1040,7 +1040,7 @@ export function useGetSupportLocationsId<TData = Awaited<ReturnType<typeof getSu
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết địa điểm hỗ trợ
+ * @summary View support location details
  */
 
 export function useGetSupportLocationsId<TData = Awaited<ReturnType<typeof getSupportLocationsId>>, TError = LegacyBadRequestResponse | void>(
@@ -1058,7 +1058,7 @@ export function useGetSupportLocationsId<TData = Awaited<ReturnType<typeof getSu
 }
 
 /**
- * @summary Xem chi tiết địa điểm hỗ trợ
+ * @summary View support location details
  */
 export const prefetchGetSupportLocationsIdQuery = async <TData = Awaited<ReturnType<typeof getSupportLocationsId>>, TError = LegacyBadRequestResponse | void>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSupportLocationsId>>, TError, TData>>, }
@@ -1075,8 +1075,8 @@ export const prefetchGetSupportLocationsIdQuery = async <TData = Awaited<ReturnT
 
 
 /**
- * PUT `/support/locations/{id}` — nội dung hỗ trợ. **Công khai, không cần đăng nhập.** Route này hiện không gắn middleware xác thực hay phân quyền nào. Xử lý bởi `supportLocationProvider.put`.
- * @summary Cập nhật địa điểm hỗ trợ
+ * PUT `/support/locations/{id}` — support content. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `supportLocationProvider.put`.
+ * @summary Update a support location
  */
 export const putSupportLocationsId = (
     id: string,
@@ -1124,7 +1124,7 @@ const {mutation: mutationOptions} = options ?
     export type PutSupportLocationsIdMutationError = LegacyBadRequestResponse | void
 
     /**
- * @summary Cập nhật địa điểm hỗ trợ
+ * @summary Update a support location
  */
 export const usePutSupportLocationsId = <TError = LegacyBadRequestResponse | void,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putSupportLocationsId>>, TError,{id: string;data: SupportChannelCreate}, TContext>, }
@@ -1140,8 +1140,8 @@ export const usePutSupportLocationsId = <TError = LegacyBadRequestResponse | voi
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * DELETE `/support/locations/{id}` — nội dung hỗ trợ. **Công khai, không cần đăng nhập.** Route này hiện không gắn middleware xác thực hay phân quyền nào. Xử lý bởi `supportLocationProvider.delete`.
- * @summary Xóa địa điểm hỗ trợ
+ * DELETE `/support/locations/{id}` — support content. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `supportLocationProvider.delete`.
+ * @summary Delete a support location
  */
 export const deleteSupportLocationsId = (
     id: string,
@@ -1186,7 +1186,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteSupportLocationsIdMutationError = LegacyBadRequestResponse | void
 
     /**
- * @summary Xóa địa điểm hỗ trợ
+ * @summary Delete a support location
  */
 export const useDeleteSupportLocationsId = <TError = LegacyBadRequestResponse | void,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSupportLocationsId>>, TError,{id: string}, TContext>, }
@@ -1202,8 +1202,8 @@ export const useDeleteSupportLocationsId = <TError = LegacyBadRequestResponse | 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/support/channels` — nội dung hỗ trợ. Công khai, không cần đăng nhập. Xử lý bởi `supportChannelProvider.getAll`.
- * @summary Liệt kê kênh hỗ trợ
+ * GET `/support/channels` — support content. Public, no authentication required. Handled by `supportChannelProvider.getAll`.
+ * @summary List support channels
  */
 export const getSupportChannels = (
     
@@ -1280,7 +1280,7 @@ export function useGetSupportChannelsInfinite<TData = InfiniteData<Awaited<Retur
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Liệt kê kênh hỗ trợ
+ * @summary List support channels
  */
 
 export function useGetSupportChannelsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getSupportChannels>>>, TError = LegacyBadRequestResponse>(
@@ -1298,7 +1298,7 @@ export function useGetSupportChannelsInfinite<TData = InfiniteData<Awaited<Retur
 }
 
 /**
- * @summary Liệt kê kênh hỗ trợ
+ * @summary List support channels
  */
 export const prefetchGetSupportChannelsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getSupportChannels>>, TError = LegacyBadRequestResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSupportChannels>>, TError, TData>>, }
@@ -1361,7 +1361,7 @@ export function useGetSupportChannels<TData = Awaited<ReturnType<typeof getSuppo
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Liệt kê kênh hỗ trợ
+ * @summary List support channels
  */
 
 export function useGetSupportChannels<TData = Awaited<ReturnType<typeof getSupportChannels>>, TError = LegacyBadRequestResponse>(
@@ -1379,7 +1379,7 @@ export function useGetSupportChannels<TData = Awaited<ReturnType<typeof getSuppo
 }
 
 /**
- * @summary Liệt kê kênh hỗ trợ
+ * @summary List support channels
  */
 export const prefetchGetSupportChannelsQuery = async <TData = Awaited<ReturnType<typeof getSupportChannels>>, TError = LegacyBadRequestResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSupportChannels>>, TError, TData>>, }
@@ -1396,8 +1396,8 @@ export const prefetchGetSupportChannelsQuery = async <TData = Awaited<ReturnType
 
 
 /**
- * POST `/support/channels` — nội dung hỗ trợ. **Công khai, không cần đăng nhập.** Route này hiện không gắn middleware xác thực hay phân quyền nào. Xử lý bởi `supportChannelProvider.post`.
- * @summary Tạo kênh hỗ trợ
+ * POST `/support/channels` — support content. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `supportChannelProvider.post`.
+ * @summary Create a support channel
  */
 export const postSupportChannels = (
     supportChannelCreate: SupportChannelCreate,
@@ -1445,7 +1445,7 @@ const {mutation: mutationOptions} = options ?
     export type PostSupportChannelsMutationError = LegacyBadRequestResponse
 
     /**
- * @summary Tạo kênh hỗ trợ
+ * @summary Create a support channel
  */
 export const usePostSupportChannels = <TError = LegacyBadRequestResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postSupportChannels>>, TError,{data: SupportChannelCreate}, TContext>, }
@@ -1461,8 +1461,8 @@ export const usePostSupportChannels = <TError = LegacyBadRequestResponse,
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/support/channels/{id}` — nội dung hỗ trợ. Công khai, không cần đăng nhập. Xử lý bởi `supportChannelProvider.getById`.
- * @summary Xem chi tiết kênh hỗ trợ
+ * GET `/support/channels/{id}` — support content. Public, no authentication required. Handled by `supportChannelProvider.getById`.
+ * @summary View support channel details
  */
 export const getSupportChannelsId = (
     id: string,
@@ -1539,7 +1539,7 @@ export function useGetSupportChannelsIdInfinite<TData = InfiniteData<Awaited<Ret
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết kênh hỗ trợ
+ * @summary View support channel details
  */
 
 export function useGetSupportChannelsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getSupportChannelsId>>>, TError = LegacyBadRequestResponse | void>(
@@ -1557,7 +1557,7 @@ export function useGetSupportChannelsIdInfinite<TData = InfiniteData<Awaited<Ret
 }
 
 /**
- * @summary Xem chi tiết kênh hỗ trợ
+ * @summary View support channel details
  */
 export const prefetchGetSupportChannelsIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getSupportChannelsId>>, TError = LegacyBadRequestResponse | void>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSupportChannelsId>>, TError, TData>>, }
@@ -1620,7 +1620,7 @@ export function useGetSupportChannelsId<TData = Awaited<ReturnType<typeof getSup
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết kênh hỗ trợ
+ * @summary View support channel details
  */
 
 export function useGetSupportChannelsId<TData = Awaited<ReturnType<typeof getSupportChannelsId>>, TError = LegacyBadRequestResponse | void>(
@@ -1638,7 +1638,7 @@ export function useGetSupportChannelsId<TData = Awaited<ReturnType<typeof getSup
 }
 
 /**
- * @summary Xem chi tiết kênh hỗ trợ
+ * @summary View support channel details
  */
 export const prefetchGetSupportChannelsIdQuery = async <TData = Awaited<ReturnType<typeof getSupportChannelsId>>, TError = LegacyBadRequestResponse | void>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSupportChannelsId>>, TError, TData>>, }
@@ -1655,8 +1655,8 @@ export const prefetchGetSupportChannelsIdQuery = async <TData = Awaited<ReturnTy
 
 
 /**
- * PUT `/support/channels/{id}` — nội dung hỗ trợ. **Công khai, không cần đăng nhập.** Route này hiện không gắn middleware xác thực hay phân quyền nào. Xử lý bởi `supportChannelProvider.put`.
- * @summary Cập nhật kênh hỗ trợ
+ * PUT `/support/channels/{id}` — support content. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `supportChannelProvider.put`.
+ * @summary Update a support channel
  */
 export const putSupportChannelsId = (
     id: string,
@@ -1704,7 +1704,7 @@ const {mutation: mutationOptions} = options ?
     export type PutSupportChannelsIdMutationError = LegacyBadRequestResponse | void
 
     /**
- * @summary Cập nhật kênh hỗ trợ
+ * @summary Update a support channel
  */
 export const usePutSupportChannelsId = <TError = LegacyBadRequestResponse | void,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putSupportChannelsId>>, TError,{id: string;data: SupportChannelCreate}, TContext>, }
@@ -1720,8 +1720,8 @@ export const usePutSupportChannelsId = <TError = LegacyBadRequestResponse | void
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * DELETE `/support/channels/{id}` — nội dung hỗ trợ. **Công khai, không cần đăng nhập.** Route này hiện không gắn middleware xác thực hay phân quyền nào. Xử lý bởi `supportChannelProvider.delete`.
- * @summary Xóa kênh hỗ trợ
+ * DELETE `/support/channels/{id}` — support content. Public, no authentication required. Handled by `supportChannelProvider.delete`.
+ * @summary Delete a support channel
  */
 export const deleteSupportChannelsId = (
     id: string,
@@ -1766,7 +1766,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteSupportChannelsIdMutationError = LegacyBadRequestResponse | void
 
     /**
- * @summary Xóa kênh hỗ trợ
+ * @summary Delete a support channel
  */
 export const useDeleteSupportChannelsId = <TError = LegacyBadRequestResponse | void,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSupportChannelsId>>, TError,{id: string}, TContext>, }

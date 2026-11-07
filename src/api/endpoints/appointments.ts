@@ -63,8 +63,8 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * **AP-02** — GET /appointments/{id}. Cần quyền `appointment.read`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó.
- * @summary Xem chi tiết lịch hẹn
+ * **AP-02** — GET /appointments/{id}. Requires the `appointment.read` permission. Branch scope: users limited to a single branch only see that branch's data.
+ * @summary View appointment details
  */
 export const getAppointmentsId = (
     id: string,
@@ -141,7 +141,7 @@ export function useGetAppointmentsIdInfinite<TData = InfiniteData<Awaited<Return
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết lịch hẹn
+ * @summary View appointment details
  */
 
 export function useGetAppointmentsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppointmentsId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -159,7 +159,7 @@ export function useGetAppointmentsIdInfinite<TData = InfiniteData<Awaited<Return
 }
 
 /**
- * @summary Xem chi tiết lịch hẹn
+ * @summary View appointment details
  */
 export const prefetchGetAppointmentsIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAppointmentsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppointmentsId>>, TError, TData>>, }
@@ -222,7 +222,7 @@ export function useGetAppointmentsId<TData = Awaited<ReturnType<typeof getAppoin
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết lịch hẹn
+ * @summary View appointment details
  */
 
 export function useGetAppointmentsId<TData = Awaited<ReturnType<typeof getAppointmentsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -240,7 +240,7 @@ export function useGetAppointmentsId<TData = Awaited<ReturnType<typeof getAppoin
 }
 
 /**
- * @summary Xem chi tiết lịch hẹn
+ * @summary View appointment details
  */
 export const prefetchGetAppointmentsIdQuery = async <TData = Awaited<ReturnType<typeof getAppointmentsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointmentsId>>, TError, TData>>, }
@@ -257,8 +257,8 @@ export const prefetchGetAppointmentsIdQuery = async <TData = Awaited<ReturnType<
 
 
 /**
- * **AP-04** — PUT /appointments/{id} (đổi ngày/giờ/KTV, kiểm tra lại slot). Cần quyền `appointment.update`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó.
- * @summary Cập nhật lịch hẹn
+ * **AP-04** — PUT /appointments/{id} (change date/time/technician, re-check the slot). Requires the `appointment.update` permission. Branch scope: users limited to a single branch only see that branch's data.
+ * @summary Update appointment
  */
 export const putAppointmentsId = (
     id: string,
@@ -306,7 +306,7 @@ const {mutation: mutationOptions} = options ?
     export type PutAppointmentsIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Cập nhật lịch hẹn
+ * @summary Update appointment
  */
 export const usePutAppointmentsId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAppointmentsId>>, TError,{id: string;data: PutAppointmentsIdBody}, TContext>, }
@@ -322,8 +322,8 @@ export const usePutAppointmentsId = <TError = UnauthorizedResponse | ForbiddenRe
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **AP-01** — GET /appointments (KTV chỉ thấy lịch của mình). Cần quyền `appointment.read`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Tham số truy vấn: `page`, `limit`, `branch_id`, `date`, `from_date`, `to_date`, `status`, `staff_id`, `customer_profile_id`.
- * @summary Lấy danh sách lịch hẹn
+ * **AP-01** — GET /appointments (technicians only see their own appointments). Requires the `appointment.read` permission. Branch scope: users limited to a single branch only see that branch's data. Query parameters: `page`, `limit`, `branch_id`, `date`, `from_date`, `to_date`, `status`, `staff_id`, `customer_profile_id`.
+ * @summary List appointments
  */
 export const getAppointments = (
     params?: GetAppointmentsParams,
@@ -401,7 +401,7 @@ export function useGetAppointmentsInfinite<TData = InfiniteData<Awaited<ReturnTy
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách lịch hẹn
+ * @summary List appointments
  */
 
 export function useGetAppointmentsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppointments>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -419,7 +419,7 @@ export function useGetAppointmentsInfinite<TData = InfiniteData<Awaited<ReturnTy
 }
 
 /**
- * @summary Lấy danh sách lịch hẹn
+ * @summary List appointments
  */
 export const prefetchGetAppointmentsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAppointments>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetAppointmentsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppointments>>, TError, TData>>, }
@@ -482,7 +482,7 @@ export function useGetAppointments<TData = Awaited<ReturnType<typeof getAppointm
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách lịch hẹn
+ * @summary List appointments
  */
 
 export function useGetAppointments<TData = Awaited<ReturnType<typeof getAppointments>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -500,7 +500,7 @@ export function useGetAppointments<TData = Awaited<ReturnType<typeof getAppointm
 }
 
 /**
- * @summary Lấy danh sách lịch hẹn
+ * @summary List appointments
  */
 export const prefetchGetAppointmentsQuery = async <TData = Awaited<ReturnType<typeof getAppointments>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetAppointmentsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointments>>, TError, TData>>, }
@@ -517,8 +517,8 @@ export const prefetchGetAppointmentsQuery = async <TData = Awaited<ReturnType<ty
 
 
 /**
- * **AP-03** — POST /appointments (đặt hộ khách, cùng kiểm tra slot như app). Cần quyền `appointment.create`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Body được chuyển nguyên vẹn vào lớp nghiệp vụ.
- * @summary Tạo lịch hẹn mới
+ * **AP-03** — POST /appointments (book on behalf of a customer, with the same slot check as the app). Requires the `appointment.create` permission. Branch scope: users limited to a single branch only see that branch's data. The body is passed as-is to the business layer.
+ * @summary Create a new appointment
  */
 export const postAppointments = (
     postAppointmentsBody: PostAppointmentsBody,
@@ -566,7 +566,7 @@ const {mutation: mutationOptions} = options ?
     export type PostAppointmentsMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Tạo lịch hẹn mới
+ * @summary Create a new appointment
  */
 export const usePostAppointments = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAppointments>>, TError,{data: PostAppointmentsBody}, TContext>, }
@@ -582,8 +582,8 @@ export const usePostAppointments = <TError = UnauthorizedResponse | ForbiddenRes
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **AP-08** — GET /appointments/available-slots?branch_id&service_id&date&staff_id?. Cần quyền `appointment.read`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Tham số truy vấn: `branch_id`, `service_id`, `date`, `staff_id`, `exclude_appointment_id`.
- * @summary Xem khung giờ trống
+ * **AP-08** — GET /appointments/available-slots?branch_id&service_id&date&staff_id?. Requires the `appointment.read` permission. Branch scope: users limited to a single branch only see that branch's data. Query parameters: `branch_id`, `service_id`, `date`, `staff_id`, `exclude_appointment_id`.
+ * @summary View available time slots
  */
 export const getAppointmentsAvailableSlots = (
     params?: GetAppointmentsAvailableSlotsParams,
@@ -661,7 +661,7 @@ export function useGetAppointmentsAvailableSlotsInfinite<TData = InfiniteData<Aw
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem khung giờ trống
+ * @summary View available time slots
  */
 
 export function useGetAppointmentsAvailableSlotsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -679,7 +679,7 @@ export function useGetAppointmentsAvailableSlotsInfinite<TData = InfiniteData<Aw
 }
 
 /**
- * @summary Xem khung giờ trống
+ * @summary View available time slots
  */
 export const prefetchGetAppointmentsAvailableSlotsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetAppointmentsAvailableSlotsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>, TError, TData>>, }
@@ -742,7 +742,7 @@ export function useGetAppointmentsAvailableSlots<TData = Awaited<ReturnType<type
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem khung giờ trống
+ * @summary View available time slots
  */
 
 export function useGetAppointmentsAvailableSlots<TData = Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -760,7 +760,7 @@ export function useGetAppointmentsAvailableSlots<TData = Awaited<ReturnType<type
 }
 
 /**
- * @summary Xem khung giờ trống
+ * @summary View available time slots
  */
 export const prefetchGetAppointmentsAvailableSlotsQuery = async <TData = Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetAppointmentsAvailableSlotsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>, TError, TData>>, }
@@ -777,8 +777,8 @@ export const prefetchGetAppointmentsAvailableSlotsQuery = async <TData = Awaited
 
 
 /**
- * **AP-09** — POST /appointments/{id}/start (KTV được gán, hoặc ADM/REC: approved → in_progress + tạo/gắn session). Body nhận `customer_treatment_id` tuỳ chọn: nếu lịch chưa gắn gói, gói được gắn ngay lúc bắt đầu và buổi điều trị được tạo trong cùng transaction. Cần quyền `appointment.start`.
- * @summary Bắt đầu
+ * **AP-09** — POST /appointments/{id}/start (assigned technician, or ADM/REC: approved → in_progress + create/attach session). The body accepts an optional `customer_treatment_id`: if the appointment has no package attached yet, the package is attached at start time and the treatment session is created in the same transaction. Requires `appointment.start` permission.
+ * @summary Start appointment
  */
 export const postAppointmentsIdStart = (
     id: string,
@@ -827,7 +827,7 @@ const {mutation: mutationOptions} = options ?
     export type PostAppointmentsIdStartMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Bắt đầu
+ * @summary Start appointment
  */
 export const usePostAppointmentsIdStart = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAppointmentsIdStart>>, TError,{id: string;data: PostAppointmentsIdStartBody}, TContext>, }
@@ -843,8 +843,8 @@ export const usePostAppointmentsIdStart = <TError = UnauthorizedResponse | Forbi
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **AP-06** — PUT /appointments/{id}/reject (ADM/REC, bắt buộc reason). Cần quyền `appointment.approve`. Trường body: `reason`.
- * @summary Từ chối
+ * **AP-06** — PUT /appointments/{id}/reject (ADM/REC, `reason` is required). Requires `appointment.approve` permission. Body field: `reason`.
+ * @summary Reject appointment
  */
 export const putAppointmentsIdReject = (
     id: string,
@@ -892,7 +892,7 @@ const {mutation: mutationOptions} = options ?
     export type PutAppointmentsIdRejectMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Từ chối
+ * @summary Reject appointment
  */
 export const usePutAppointmentsIdReject = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAppointmentsIdReject>>, TError,{id: string;data: PutAppointmentsIdRejectBody}, TContext>, }
@@ -908,8 +908,8 @@ export const usePutAppointmentsIdReject = <TError = UnauthorizedResponse | Forbi
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **AP-09** — PUT /appointments/{id}/no-show (ADM/REC: approved quá giờ → no_show,. Cần quyền `appointment.approve`.
- * @summary Đánh dấu khách không đến
+ * **AP-09** — PUT /appointments/{id}/no-show (ADM/REC: approved appointment past its time → no_show). Requires `appointment.approve` permission.
+ * @summary Mark customer as no-show
  */
 export const putAppointmentsIdNoShow = (
     id: string,
@@ -954,7 +954,7 @@ const {mutation: mutationOptions} = options ?
     export type PutAppointmentsIdNoShowMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Đánh dấu khách không đến
+ * @summary Mark customer as no-show
  */
 export const usePutAppointmentsIdNoShow = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAppointmentsIdNoShow>>, TError,{id: string}, TContext>, }
@@ -970,8 +970,8 @@ export const usePutAppointmentsIdNoShow = <TError = UnauthorizedResponse | Forbi
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * POST `/appointments/{id}/complete` — ADM/REC finalize appointments without a linked treatment package. For appointments linked to a treatment package, complete the treatment session after recording notes, products and photos; the appointment is synced automatically. Cần quyền `appointment.approve`.
- * @summary Hoàn tất
+ * POST `/appointments/{id}/complete` — ADM/REC finalize appointments without a linked treatment package. For appointments linked to a treatment package, complete the treatment session after recording notes, products and photos; the appointment is synced automatically. Requires `appointment.approve` permission.
+ * @summary Complete appointment
  */
 export const postAppointmentsIdComplete = (
     id: string,
@@ -1017,7 +1017,7 @@ const {mutation: mutationOptions} = options ?
     export type PostAppointmentsIdCompleteMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Hoàn tất
+ * @summary Complete appointment
  */
 export const usePostAppointmentsIdComplete = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAppointmentsIdComplete>>, TError,{id: string}, TContext>, }
@@ -1033,8 +1033,8 @@ export const usePostAppointmentsIdComplete = <TError = UnauthorizedResponse | Fo
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **AP-07** — PUT /appointments/{id}/cancel (ADM/REC: hủy pending/approved). Cần quyền `appointment.approve`.
- * @summary Hủy
+ * **AP-07** — PUT /appointments/{id}/cancel (ADM/REC: cancel pending/approved appointments). Requires the `appointment.approve` permission.
+ * @summary Cancel appointment
  */
 export const putAppointmentsIdCancel = (
     id: string,
@@ -1079,7 +1079,7 @@ const {mutation: mutationOptions} = options ?
     export type PutAppointmentsIdCancelMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Hủy
+ * @summary Cancel appointment
  */
 export const usePutAppointmentsIdCancel = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAppointmentsIdCancel>>, TError,{id: string}, TContext>, }
@@ -1095,8 +1095,8 @@ export const usePutAppointmentsIdCancel = <TError = UnauthorizedResponse | Forbi
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **AP-05** — PUT /appointments/{id}/approve (ADM/REC; KTV không được gọi — test 18). Cần quyền `appointment.approve`.
- * @summary Duyệt
+ * **AP-05** — PUT /appointments/{id}/approve (ADM/REC only; technicians cannot call this — test 18). Requires the `appointment.approve` permission.
+ * @summary Approve appointment
  */
 export const putAppointmentsIdApprove = (
     id: string,
@@ -1144,7 +1144,7 @@ const {mutation: mutationOptions} = options ?
     export type PutAppointmentsIdApproveMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Duyệt
+ * @summary Approve appointment
  */
 export const usePutAppointmentsIdApprove = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAppointmentsIdApprove>>, TError,{id: string;data: PutAppointmentsIdApproveBody}, TContext>, }

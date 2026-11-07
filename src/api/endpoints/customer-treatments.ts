@@ -93,8 +93,8 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * **WC-02** — GET /warranty-claims/{id}. Cần quyền `customer.read`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó.
- * @summary Xem chi tiết yêu cầu bảo hành
+ * **WC-02** — GET /warranty-claims/{id}. Requires the `customer.read` permission. Branch scope: users restricted to one branch only see that branch's data.
+ * @summary View warranty claim details
  */
 export const getWarrantyClaimsId = (
     id: string,
@@ -171,7 +171,7 @@ export function useGetWarrantyClaimsIdInfinite<TData = InfiniteData<Awaited<Retu
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết yêu cầu bảo hành
+ * @summary View warranty claim details
  */
 
 export function useGetWarrantyClaimsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getWarrantyClaimsId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -189,7 +189,7 @@ export function useGetWarrantyClaimsIdInfinite<TData = InfiniteData<Awaited<Retu
 }
 
 /**
- * @summary Xem chi tiết yêu cầu bảo hành
+ * @summary View warranty claim details
  */
 export const prefetchGetWarrantyClaimsIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getWarrantyClaimsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getWarrantyClaimsId>>, TError, TData>>, }
@@ -252,7 +252,7 @@ export function useGetWarrantyClaimsId<TData = Awaited<ReturnType<typeof getWarr
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết yêu cầu bảo hành
+ * @summary View warranty claim details
  */
 
 export function useGetWarrantyClaimsId<TData = Awaited<ReturnType<typeof getWarrantyClaimsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -270,7 +270,7 @@ export function useGetWarrantyClaimsId<TData = Awaited<ReturnType<typeof getWarr
 }
 
 /**
- * @summary Xem chi tiết yêu cầu bảo hành
+ * @summary View warranty claim details
  */
 export const prefetchGetWarrantyClaimsIdQuery = async <TData = Awaited<ReturnType<typeof getWarrantyClaimsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getWarrantyClaimsId>>, TError, TData>>, }
@@ -287,8 +287,8 @@ export const prefetchGetWarrantyClaimsIdQuery = async <TData = Awaited<ReturnTyp
 
 
 /**
- * **WC-01** — GET /warranty-claims. Cần quyền `customer.read`. Tham số truy vấn: `page`, `limit`, `status`, `customer_treatment_id`, `branch_id`.
- * @summary Lấy danh sách yêu cầu bảo hành
+ * **WC-01** — GET /warranty-claims. Requires the `customer.read` permission. Query parameters: `page`, `limit`, `status`, `customer_treatment_id`, `branch_id`.
+ * @summary List warranty claims
  */
 export const getWarrantyClaims = (
     params?: GetWarrantyClaimsParams,
@@ -366,7 +366,7 @@ export function useGetWarrantyClaimsInfinite<TData = InfiniteData<Awaited<Return
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách yêu cầu bảo hành
+ * @summary List warranty claims
  */
 
 export function useGetWarrantyClaimsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getWarrantyClaims>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -384,7 +384,7 @@ export function useGetWarrantyClaimsInfinite<TData = InfiniteData<Awaited<Return
 }
 
 /**
- * @summary Lấy danh sách yêu cầu bảo hành
+ * @summary List warranty claims
  */
 export const prefetchGetWarrantyClaimsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getWarrantyClaims>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetWarrantyClaimsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getWarrantyClaims>>, TError, TData>>, }
@@ -447,7 +447,7 @@ export function useGetWarrantyClaims<TData = Awaited<ReturnType<typeof getWarran
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách yêu cầu bảo hành
+ * @summary List warranty claims
  */
 
 export function useGetWarrantyClaims<TData = Awaited<ReturnType<typeof getWarrantyClaims>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -465,7 +465,7 @@ export function useGetWarrantyClaims<TData = Awaited<ReturnType<typeof getWarran
 }
 
 /**
- * @summary Lấy danh sách yêu cầu bảo hành
+ * @summary List warranty claims
  */
 export const prefetchGetWarrantyClaimsQuery = async <TData = Awaited<ReturnType<typeof getWarrantyClaims>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetWarrantyClaimsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getWarrantyClaims>>, TError, TData>>, }
@@ -482,8 +482,8 @@ export const prefetchGetWarrantyClaimsQuery = async <TData = Awaited<ReturnType<
 
 
 /**
- * **WC-03** — POST /warranty-claims. Chỉ ADM/REC. Cần quyền `customer.update`. Chỉ nhận liệu trình FINISHED có package_type.has_warranty=true.
- * @summary Tạo yêu cầu bảo hành mới
+ * **WC-03** — POST /warranty-claims. ADM/REC only. Requires the `customer.update` permission. Only accepts FINISHED treatment courses with package_type.has_warranty=true.
+ * @summary Create a new warranty claim
  */
 export const postWarrantyClaims = (
     warrantyClaimCreate: WarrantyClaimCreate,
@@ -531,7 +531,7 @@ const {mutation: mutationOptions} = options ?
     export type PostWarrantyClaimsMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Tạo yêu cầu bảo hành mới
+ * @summary Create a new warranty claim
  */
 export const usePostWarrantyClaims = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postWarrantyClaims>>, TError,{data: WarrantyClaimCreate}, TContext>, }
@@ -547,8 +547,8 @@ export const usePostWarrantyClaims = <TError = UnauthorizedResponse | ForbiddenR
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **WC-05** — PUT /warranty-claims/{id}/reject. Chỉ ADM, cần quyền `customer.update`; bắt buộc nhập reason.
- * @summary Từ chối
+ * **WC-05** — PUT /warranty-claims/{id}/reject. ADM only, requires the `customer.update` permission; a reason is required.
+ * @summary Reject
  */
 export const putWarrantyClaimsIdReject = (
     id: string,
@@ -596,7 +596,7 @@ const {mutation: mutationOptions} = options ?
     export type PutWarrantyClaimsIdRejectMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Từ chối
+ * @summary Reject
  */
 export const usePutWarrantyClaimsIdReject = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putWarrantyClaimsIdReject>>, TError,{id: string;data: PutWarrantyClaimsIdRejectBody}, TContext>, }
@@ -612,8 +612,8 @@ export const usePutWarrantyClaimsIdReject = <TError = UnauthorizedResponse | For
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **WC-04** — PUT /warranty-claims/{id}/approve. Chỉ ADM, cần quyền `customer.update`; tạo tối đa một buổi is_warranty và không trừ quota.
- * @summary Duyệt
+ * **WC-04** — PUT /warranty-claims/{id}/approve. ADM only, requires the `customer.update` permission; creates at most one is_warranty session and does not deduct quota.
+ * @summary Approve
  */
 export const putWarrantyClaimsIdApprove = (
     id: string,
@@ -661,7 +661,7 @@ const {mutation: mutationOptions} = options ?
     export type PutWarrantyClaimsIdApproveMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Duyệt
+ * @summary Approve
  */
 export const usePutWarrantyClaimsIdApprove = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putWarrantyClaimsIdApprove>>, TError,{id: string;data: PutWarrantyClaimsIdApproveBody}, TContext>, }
@@ -677,8 +677,8 @@ export const usePutWarrantyClaimsIdApprove = <TError = UnauthorizedResponse | Fo
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **SS-03** — GET /sessions/{id} (ghi access_log VIEW_SESSION). Cần quyền `customer.read`; KTV chỉ xem buổi được giao cho mình. Hồ sơ khách đã ẩn không xuất hiện.
- * @summary Xem chi tiết buổi điều trị
+ * **SS-03** — GET /sessions/{id} (writes access_log VIEW_SESSION). Requires `customer.read` permission; technicians can only view sessions assigned to them. Hidden customer profiles do not appear.
+ * @summary View treatment session details
  */
 export const getSessionsId = (
     id: string,
@@ -755,7 +755,7 @@ export function useGetSessionsIdInfinite<TData = InfiniteData<Awaited<ReturnType
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết buổi điều trị
+ * @summary View treatment session details
  */
 
 export function useGetSessionsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getSessionsId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -773,7 +773,7 @@ export function useGetSessionsIdInfinite<TData = InfiniteData<Awaited<ReturnType
 }
 
 /**
- * @summary Xem chi tiết buổi điều trị
+ * @summary View treatment session details
  */
 export const prefetchGetSessionsIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getSessionsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSessionsId>>, TError, TData>>, }
@@ -836,7 +836,7 @@ export function useGetSessionsId<TData = Awaited<ReturnType<typeof getSessionsId
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết buổi điều trị
+ * @summary View treatment session details
  */
 
 export function useGetSessionsId<TData = Awaited<ReturnType<typeof getSessionsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -854,7 +854,7 @@ export function useGetSessionsId<TData = Awaited<ReturnType<typeof getSessionsId
 }
 
 /**
- * @summary Xem chi tiết buổi điều trị
+ * @summary View treatment session details
  */
 export const prefetchGetSessionsIdQuery = async <TData = Awaited<ReturnType<typeof getSessionsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSessionsId>>, TError, TData>>, }
@@ -871,8 +871,8 @@ export const prefetchGetSessionsIdQuery = async <TData = Awaited<ReturnType<type
 
 
 /**
- * **SS-04** — PUT /sessions/{id}. Cần quyền `session.update`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó.
- * @summary Cập nhật buổi điều trị
+ * **SS-04** — PUT /sessions/{id}. Requires `session.update` permission. Branch scope: users restricted to a single branch only see that branch's data.
+ * @summary Update a treatment session
  */
 export const putSessionsId = (
     id: string,
@@ -920,7 +920,7 @@ const {mutation: mutationOptions} = options ?
     export type PutSessionsIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Cập nhật buổi điều trị
+ * @summary Update a treatment session
  */
 export const usePutSessionsId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putSessionsId>>, TError,{id: string;data: TreatmentSession}, TContext>, }
@@ -936,8 +936,8 @@ export const usePutSessionsId = <TError = UnauthorizedResponse | ForbiddenRespon
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **SS-08** — DELETE /sessions/{id} (chỉ scheduled). Cần quyền `session.delete`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó.
- * @summary Xóa buổi điều trị
+ * **SS-08** — DELETE /sessions/{id} (scheduled only). Requires `session.delete` permission. Branch scope: users restricted to a single branch only see that branch's data.
+ * @summary Delete a treatment session
  */
 export const deleteSessionsId = (
     id: string,
@@ -982,7 +982,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteSessionsIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Xóa buổi điều trị
+ * @summary Delete a treatment session
  */
 export const useDeleteSessionsId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSessionsId>>, TError,{id: string}, TContext>, }
@@ -998,8 +998,8 @@ export const useDeleteSessionsId = <TError = UnauthorizedResponse | ForbiddenRes
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **SS-09** — GET /sessions. Cần quyền `customer.read`. KTV chỉ xem buổi được giao cho mình; ADM/REC xem theo phạm vi cơ sở và có thể lọc theo KTV.
- * @summary Lấy danh sách buổi điều trị
+ * **SS-09** — GET /sessions. Requires `customer.read` permission. Technicians can only see sessions assigned to them; admins/receptionists see sessions within their branch scope and can filter by technician.
+ * @summary Get list of treatment sessions
  */
 export const getSessions = (
     params?: GetSessionsParams,
@@ -1077,7 +1077,7 @@ export function useGetSessionsInfinite<TData = InfiniteData<Awaited<ReturnType<t
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách buổi điều trị
+ * @summary Get list of treatment sessions
  */
 
 export function useGetSessionsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getSessions>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -1095,7 +1095,7 @@ export function useGetSessionsInfinite<TData = InfiniteData<Awaited<ReturnType<t
 }
 
 /**
- * @summary Lấy danh sách buổi điều trị
+ * @summary Get list of treatment sessions
  */
 export const prefetchGetSessionsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getSessions>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetSessionsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSessions>>, TError, TData>>, }
@@ -1158,7 +1158,7 @@ export function useGetSessions<TData = Awaited<ReturnType<typeof getSessions>>, 
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách buổi điều trị
+ * @summary Get list of treatment sessions
  */
 
 export function useGetSessions<TData = Awaited<ReturnType<typeof getSessions>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -1176,7 +1176,7 @@ export function useGetSessions<TData = Awaited<ReturnType<typeof getSessions>>, 
 }
 
 /**
- * @summary Lấy danh sách buổi điều trị
+ * @summary Get list of treatment sessions
  */
 export const prefetchGetSessionsQuery = async <TData = Awaited<ReturnType<typeof getSessions>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetSessionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSessions>>, TError, TData>>, }
@@ -1193,8 +1193,8 @@ export const prefetchGetSessionsQuery = async <TData = Awaited<ReturnType<typeof
 
 
 /**
- * **SS-05** — PUT /sessions/{id}/start (KTV: scheduled → in_progress). Cần quyền `session.start`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó.
- * @summary Bắt đầu
+ * **SS-05** — PUT /sessions/{id}/start (technician: scheduled → in_progress). Requires `session.start` permission. Branch scope: users restricted to a single branch only see that branch's data.
+ * @summary Start a session
  */
 export const putSessionsIdStart = (
     id: string,
@@ -1239,7 +1239,7 @@ const {mutation: mutationOptions} = options ?
     export type PutSessionsIdStartMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Bắt đầu
+ * @summary Start a session
  */
 export const usePutSessionsIdStart = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putSessionsIdStart>>, TError,{id: string}, TContext>, }
@@ -1255,8 +1255,8 @@ export const usePutSessionsIdStart = <TError = UnauthorizedResponse | ForbiddenR
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **PH-01** — POST /sessions/{id}/photos. Cần quyền `session.update`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Trường body: `file_id`, `url`, `kind`, `caption`, `taken_at`.
- * @summary Quản lý ảnh buổi điều trị
+ * **PH-01** — POST /sessions/{id}/photos. Requires `session.update` permission. Branch scope: users restricted to a single branch only see that branch's data. Body fields: `file_id`, `url`, `kind`, `caption`, `taken_at`.
+ * @summary Manage treatment session photos
  */
 export const postSessionsIdPhotos = (
     id: string,
@@ -1305,7 +1305,7 @@ const {mutation: mutationOptions} = options ?
     export type PostSessionsIdPhotosMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Quản lý ảnh buổi điều trị
+ * @summary Manage treatment session photos
  */
 export const usePostSessionsIdPhotos = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postSessionsIdPhotos>>, TError,{id: string;data: PostSessionsIdPhotosBody}, TContext>, }
@@ -1321,8 +1321,8 @@ export const usePostSessionsIdPhotos = <TError = UnauthorizedResponse | Forbidde
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **PH-02** — GET /sessions/{id}/photos (mới nhất trước, ghi access_log VIEW_PHOTO). Cần quyền `customer.read`; KTV chỉ xem ảnh buổi được giao cho mình. Hồ sơ khách đã ẩn không xuất hiện.
- * @summary Quản lý ảnh buổi điều trị
+ * **PH-02** — GET /sessions/{id}/photos (newest first, writes access_log VIEW_PHOTO). Requires `customer.read` permission; technicians can only view photos of sessions assigned to them. Hidden customer profiles do not appear.
+ * @summary Manage treatment session photos
  */
 export const getSessionsIdPhotos = (
     id: string,
@@ -1399,7 +1399,7 @@ export function useGetSessionsIdPhotosInfinite<TData = InfiniteData<Awaited<Retu
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Quản lý ảnh buổi điều trị
+ * @summary Manage treatment session photos
  */
 
 export function useGetSessionsIdPhotosInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getSessionsIdPhotos>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -1417,7 +1417,7 @@ export function useGetSessionsIdPhotosInfinite<TData = InfiniteData<Awaited<Retu
 }
 
 /**
- * @summary Quản lý ảnh buổi điều trị
+ * @summary Manage treatment session photos
  */
 export const prefetchGetSessionsIdPhotosInfiniteQuery = async <TData = Awaited<ReturnType<typeof getSessionsIdPhotos>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSessionsIdPhotos>>, TError, TData>>, }
@@ -1480,7 +1480,7 @@ export function useGetSessionsIdPhotos<TData = Awaited<ReturnType<typeof getSess
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Quản lý ảnh buổi điều trị
+ * @summary Manage treatment session photos
  */
 
 export function useGetSessionsIdPhotos<TData = Awaited<ReturnType<typeof getSessionsIdPhotos>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -1498,7 +1498,7 @@ export function useGetSessionsIdPhotos<TData = Awaited<ReturnType<typeof getSess
 }
 
 /**
- * @summary Quản lý ảnh buổi điều trị
+ * @summary Manage treatment session photos
  */
 export const prefetchGetSessionsIdPhotosQuery = async <TData = Awaited<ReturnType<typeof getSessionsIdPhotos>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSessionsIdPhotos>>, TError, TData>>, }
@@ -1515,8 +1515,8 @@ export const prefetchGetSessionsIdPhotosQuery = async <TData = Awaited<ReturnTyp
 
 
 /**
- * **SS-06** — PUT /sessions/{id}/done (KTV: in_progress → done). Cần quyền `session.done`.
- * @summary Kết thúc
+ * **SS-06** — PUT /sessions/{id}/done (technician: in_progress → done). Requires `session.done` permission.
+ * @summary Mark a session as done
  */
 export const putSessionsIdDone = (
     id: string,
@@ -1564,7 +1564,7 @@ const {mutation: mutationOptions} = options ?
     export type PutSessionsIdDoneMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Kết thúc
+ * @summary Mark a session as done
  */
 export const usePutSessionsIdDone = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putSessionsIdDone>>, TError,{id: string;data: TreatmentSession}, TContext>, }
@@ -1580,8 +1580,8 @@ export const usePutSessionsIdDone = <TError = UnauthorizedResponse | ForbiddenRe
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **SS-07** — PUT /sessions/{id}/complete (ADM/REC: done → completed, trừ buổi/giá trị BR-07, idempotent). Cần quyền `session.complete`.
- * @summary Hoàn tất
+ * **SS-07** — PUT /sessions/{id}/complete (admins/receptionists: done → completed, except sessions/values under BR-07, idempotent). Requires `session.complete` permission.
+ * @summary Complete a session
  */
 export const putSessionsIdComplete = (
     id: string,
@@ -1626,7 +1626,7 @@ const {mutation: mutationOptions} = options ?
     export type PutSessionsIdCompleteMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Hoàn tất
+ * @summary Complete a session
  */
 export const usePutSessionsIdComplete = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putSessionsIdComplete>>, TError,{id: string}, TContext>, }
@@ -1642,8 +1642,8 @@ export const usePutSessionsIdComplete = <TError = UnauthorizedResponse | Forbidd
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **PH-03** — DELETE /photos/{id} (soft, ghi access_log DELETE_PHOTO, ADM). Cần quyền `customer.delete`.
- * @summary Xóa ảnh tình trạng da
+ * **PH-03** — DELETE /photos/{id} (soft, writes access_log DELETE_PHOTO, ADM). Requires `customer.delete` permission.
+ * @summary Delete a skin condition photo
  */
 export const deletePhotosId = (
     id: string,
@@ -1688,7 +1688,7 @@ const {mutation: mutationOptions} = options ?
     export type DeletePhotosIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Xóa ảnh tình trạng da
+ * @summary Delete a skin condition photo
  */
 export const useDeletePhotosId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deletePhotosId>>, TError,{id: string}, TContext>, }
@@ -1704,8 +1704,8 @@ export const useDeletePhotosId = <TError = UnauthorizedResponse | ForbiddenRespo
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **PM-03** — GET /payments (theo branch_id, khoảng ngày, người nhập, từ khóa khách hàng). Cần quyền `payment.read`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Tham số truy vấn: `page`, `limit`, `from_date`, `to_date`, `entered_by`, `branch_id`, `q` (tìm theo tên/số điện thoại khách hàng).
- * @summary Lấy danh sách thanh toán
+ * **PM-03** — GET /payments (by branch_id, date range, entered by, customer keyword). Requires `payment.read` permission. Branch scope: users limited to one branch only see that branch's data. Query parameters: `page`, `limit`, `from_date`, `to_date`, `entered_by`, `branch_id`, `q` (search by customer name/phone number).
+ * @summary Get payment list
  */
 export const getPayments = (
     params?: GetPaymentsParams,
@@ -1783,7 +1783,7 @@ export function useGetPaymentsInfinite<TData = InfiniteData<Awaited<ReturnType<t
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách thanh toán
+ * @summary Get payment list
  */
 
 export function useGetPaymentsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getPayments>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -1801,7 +1801,7 @@ export function useGetPaymentsInfinite<TData = InfiniteData<Awaited<ReturnType<t
 }
 
 /**
- * @summary Lấy danh sách thanh toán
+ * @summary Get payment list
  */
 export const prefetchGetPaymentsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getPayments>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetPaymentsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getPayments>>, TError, TData>>, }
@@ -1864,7 +1864,7 @@ export function useGetPayments<TData = Awaited<ReturnType<typeof getPayments>>, 
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách thanh toán
+ * @summary Get payment list
  */
 
 export function useGetPayments<TData = Awaited<ReturnType<typeof getPayments>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -1882,7 +1882,7 @@ export function useGetPayments<TData = Awaited<ReturnType<typeof getPayments>>, 
 }
 
 /**
- * @summary Lấy danh sách thanh toán
+ * @summary Get payment list
  */
 export const prefetchGetPaymentsQuery = async <TData = Awaited<ReturnType<typeof getPayments>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetPaymentsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPayments>>, TError, TData>>, }
@@ -1899,8 +1899,8 @@ export const prefetchGetPaymentsQuery = async <TData = Awaited<ReturnType<typeof
 
 
 /**
- * **PM-04** — POST /payments/{id}/void (ADM: hủy mềm + tính lại nợ + hạng). Cần quyền `customer.delete`. Trường body: `void_reason`.
- * @summary Hủy bút toán thanh toán
+ * **PM-04** — POST /payments/{id}/void (ADM: soft void + recalculate debt + rank). Requires `customer.delete` permission. Body field: `void_reason`.
+ * @summary Void a payment entry
  */
 export const postPaymentsIdVoid = (
     id: string,
@@ -1949,7 +1949,7 @@ const {mutation: mutationOptions} = options ?
     export type PostPaymentsIdVoidMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Hủy bút toán thanh toán
+ * @summary Void a payment entry
  */
 export const usePostPaymentsIdVoid = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postPaymentsIdVoid>>, TError,{id: string;data: PostPaymentsIdVoidBody}, TContext>, }
@@ -1965,8 +1965,8 @@ export const usePostPaymentsIdVoid = <TError = UnauthorizedResponse | ForbiddenR
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **CT-02** — GET /customer-treatments/{id}. Cần quyền `customer.read`. KTV chỉ xem đúng gói có buổi được phân công cho mình; ADM/REC áp dụng phạm vi cơ sở.
- * @summary Xem chi tiết gói liệu trình của khách
+ * **CT-02** — GET /customer-treatments/{id}. Requires permission `customer.read`. Technicians only view packages with sessions assigned to them; ADM/REC get branch-scoped access.
+ * @summary View customer treatment package detail
  */
 export const getCustomerTreatmentsId = (
     id: string,
@@ -2043,7 +2043,7 @@ export function useGetCustomerTreatmentsIdInfinite<TData = InfiniteData<Awaited<
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết gói liệu trình của khách
+ * @summary View customer treatment package detail
  */
 
 export function useGetCustomerTreatmentsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCustomerTreatmentsId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -2061,7 +2061,7 @@ export function useGetCustomerTreatmentsIdInfinite<TData = InfiniteData<Awaited<
 }
 
 /**
- * @summary Xem chi tiết gói liệu trình của khách
+ * @summary View customer treatment package detail
  */
 export const prefetchGetCustomerTreatmentsIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getCustomerTreatmentsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomerTreatmentsId>>, TError, TData>>, }
@@ -2124,7 +2124,7 @@ export function useGetCustomerTreatmentsId<TData = Awaited<ReturnType<typeof get
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết gói liệu trình của khách
+ * @summary View customer treatment package detail
  */
 
 export function useGetCustomerTreatmentsId<TData = Awaited<ReturnType<typeof getCustomerTreatmentsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -2142,7 +2142,7 @@ export function useGetCustomerTreatmentsId<TData = Awaited<ReturnType<typeof get
 }
 
 /**
- * @summary Xem chi tiết gói liệu trình của khách
+ * @summary View customer treatment package detail
  */
 export const prefetchGetCustomerTreatmentsIdQuery = async <TData = Awaited<ReturnType<typeof getCustomerTreatmentsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerTreatmentsId>>, TError, TData>>, }
@@ -2159,8 +2159,8 @@ export const prefetchGetCustomerTreatmentsIdQuery = async <TData = Awaited<Retur
 
 
 /**
- * **CT-04** — PUT /customer-treatments/{id}. Cần quyền `customer.update`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó.
- * @summary Cập nhật gói liệu trình của khách
+ * **CT-04** — PUT /customer-treatments/{id}. Requires permission `customer.update`. Branch scope: users limited to a single branch only see that branch's data.
+ * @summary Update customer treatment package
  */
 export const putCustomerTreatmentsId = (
     id: string,
@@ -2208,7 +2208,7 @@ const {mutation: mutationOptions} = options ?
     export type PutCustomerTreatmentsIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Cập nhật gói liệu trình của khách
+ * @summary Update customer treatment package
  */
 export const usePutCustomerTreatmentsId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putCustomerTreatmentsId>>, TError,{id: string;data: CustomerTreatment}, TContext>, }
@@ -2224,8 +2224,8 @@ export const usePutCustomerTreatmentsId = <TError = UnauthorizedResponse | Forbi
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **CT-01** — GET /customer-treatments. Cần quyền `customer.read`. KTV chỉ thấy gói có buổi điều trị được phân công cho mình; ADM/REC áp dụng phạm vi cơ sở. Tham số truy vấn: `page`, `limit`, `branch_id`, `customer_profile_id`, `status`, `payment_status`, `has_debt`.
- * @summary Lấy danh sách gói liệu trình của khách
+ * **CT-01** — GET /customer-treatments. Requires permission `customer.read`. Technicians only see packages with treatment sessions assigned to them; ADM/REC get branch-scoped access. Query parameters: `page`, `limit`, `branch_id`, `customer_profile_id`, `status`, `payment_status`, `has_debt`.
+ * @summary List customer treatment packages
  */
 export const getCustomerTreatments = (
     params?: GetCustomerTreatmentsParams,
@@ -2303,7 +2303,7 @@ export function useGetCustomerTreatmentsInfinite<TData = InfiniteData<Awaited<Re
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách gói liệu trình của khách
+ * @summary List customer treatment packages
  */
 
 export function useGetCustomerTreatmentsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCustomerTreatments>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -2321,7 +2321,7 @@ export function useGetCustomerTreatmentsInfinite<TData = InfiniteData<Awaited<Re
 }
 
 /**
- * @summary Lấy danh sách gói liệu trình của khách
+ * @summary List customer treatment packages
  */
 export const prefetchGetCustomerTreatmentsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getCustomerTreatments>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetCustomerTreatmentsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomerTreatments>>, TError, TData>>, }
@@ -2384,7 +2384,7 @@ export function useGetCustomerTreatments<TData = Awaited<ReturnType<typeof getCu
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách gói liệu trình của khách
+ * @summary List customer treatment packages
  */
 
 export function useGetCustomerTreatments<TData = Awaited<ReturnType<typeof getCustomerTreatments>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -2402,7 +2402,7 @@ export function useGetCustomerTreatments<TData = Awaited<ReturnType<typeof getCu
 }
 
 /**
- * @summary Lấy danh sách gói liệu trình của khách
+ * @summary List customer treatment packages
  */
 export const prefetchGetCustomerTreatmentsQuery = async <TData = Awaited<ReturnType<typeof getCustomerTreatments>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetCustomerTreatmentsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerTreatments>>, TError, TData>>, }
@@ -2419,8 +2419,8 @@ export const prefetchGetCustomerTreatmentsQuery = async <TData = Awaited<ReturnT
 
 
 /**
- * **CT-03** — POST /customer-treatments (bán gói, +initial_payment). Cần quyền `customer.create`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Body được chuyển nguyên vẹn vào lớp nghiệp vụ.
- * @summary Tạo gói liệu trình của khách mới
+ * **CT-03** — POST /customer-treatments (sell package, +initial_payment). Requires permission `customer.create`. Branch scope: users limited to a single branch only see that branch's data. The request body is passed as-is to the business layer.
+ * @summary Create a new customer treatment package
  */
 export const postCustomerTreatments = (
     postCustomerTreatmentsBody: PostCustomerTreatmentsBody,
@@ -2468,7 +2468,7 @@ const {mutation: mutationOptions} = options ?
     export type PostCustomerTreatmentsMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Tạo gói liệu trình của khách mới
+ * @summary Create a new customer treatment package
  */
 export const usePostCustomerTreatments = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postCustomerTreatments>>, TError,{data: PostCustomerTreatmentsBody}, TContext>, }
@@ -2484,8 +2484,8 @@ export const usePostCustomerTreatments = <TError = UnauthorizedResponse | Forbid
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **SS-01** — GET /customer-treatments/{id}/sessions (ghi access_log). Cần quyền `customer.read`; KTV chỉ xem buổi được giao cho mình và không xem hồ sơ khách đã ẩn. Phạm vi cơ sở áp dụng cho người dùng bị giới hạn một cơ sở.
- * @summary Xem buổi điều trị
+ * **SS-01** — GET /customer-treatments/{id}/sessions (writes an access_log entry). Requires the `customer.read` permission; technicians only see sessions assigned to them and cannot view hidden customer profiles. Branch scope applies to users limited to one branch.
+ * @summary View treatment sessions
  */
 export const getCustomerTreatmentsIdSessions = (
     id: string,
@@ -2562,7 +2562,7 @@ export function useGetCustomerTreatmentsIdSessionsInfinite<TData = InfiniteData<
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem buổi điều trị
+ * @summary View treatment sessions
  */
 
 export function useGetCustomerTreatmentsIdSessionsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCustomerTreatmentsIdSessions>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -2580,7 +2580,7 @@ export function useGetCustomerTreatmentsIdSessionsInfinite<TData = InfiniteData<
 }
 
 /**
- * @summary Xem buổi điều trị
+ * @summary View treatment sessions
  */
 export const prefetchGetCustomerTreatmentsIdSessionsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getCustomerTreatmentsIdSessions>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomerTreatmentsIdSessions>>, TError, TData>>, }
@@ -2643,7 +2643,7 @@ export function useGetCustomerTreatmentsIdSessions<TData = Awaited<ReturnType<ty
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem buổi điều trị
+ * @summary View treatment sessions
  */
 
 export function useGetCustomerTreatmentsIdSessions<TData = Awaited<ReturnType<typeof getCustomerTreatmentsIdSessions>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -2661,7 +2661,7 @@ export function useGetCustomerTreatmentsIdSessions<TData = Awaited<ReturnType<ty
 }
 
 /**
- * @summary Xem buổi điều trị
+ * @summary View treatment sessions
  */
 export const prefetchGetCustomerTreatmentsIdSessionsQuery = async <TData = Awaited<ReturnType<typeof getCustomerTreatmentsIdSessions>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerTreatmentsIdSessions>>, TError, TData>>, }
@@ -2678,8 +2678,8 @@ export const prefetchGetCustomerTreatmentsIdSessionsQuery = async <TData = Await
 
 
 /**
- * **SS-02** — POST /customer-treatments/{id}/sessions (BR-06). Cần quyền `session.create`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó.
- * @summary Tạo buổi điều trị cho gói liệu trình
+ * **SS-02** — POST /customer-treatments/{id}/sessions (BR-06). Requires the `session.create` permission. Branch scope: users limited to one branch only see that branch's data.
+ * @summary Create a treatment session for a treatment package
  */
 export const postCustomerTreatmentsIdSessions = (
     id: string,
@@ -2728,7 +2728,7 @@ const {mutation: mutationOptions} = options ?
     export type PostCustomerTreatmentsIdSessionsMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Tạo buổi điều trị cho gói liệu trình
+ * @summary Create a treatment session for a treatment package
  */
 export const usePostCustomerTreatmentsIdSessions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postCustomerTreatmentsIdSessions>>, TError,{id: string;data: TreatmentSession}, TContext>, }
@@ -2744,8 +2744,8 @@ export const usePostCustomerTreatmentsIdSessions = <TError = UnauthorizedRespons
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **LY-02** — POST /customer-treatments/{id}/redeem-points (BR-16). Cần quyền `membership.points_adjust`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Body: `points` (số nguyên dương) — số điểm dùng để giảm nợ. Số tiền giảm = points × `points.point_value`, phải nằm trong khoảng [% tối thiểu, % tối đa] của nợ còn lại theo cấu hình `points.redeem_min_percent` / `points.redeem_max_percent`.
- * @summary Đổi điểm giảm nợ trên gói liệu trình
+ * **LY-02** — POST /customer-treatments/{id}/redeem-points (BR-16). Requires the `membership.points_adjust` permission. Branch scope: users limited to one branch only see that branch's data. Body: `points` (positive integer) — the number of points used to reduce the debt. The redeemed amount = points × `points.point_value`, and must fall within the [minimum %, maximum %] of the remaining debt as configured by `points.redeem_min_percent` / `points.redeem_max_percent`.
+ * @summary Redeem points to reduce the debt on a treatment package
  */
 export const postCustomerTreatmentsIdRedeemPoints = (
     id: string,
@@ -2794,7 +2794,7 @@ const {mutation: mutationOptions} = options ?
     export type PostCustomerTreatmentsIdRedeemPointsMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Đổi điểm giảm nợ trên gói liệu trình
+ * @summary Redeem points to reduce the debt on a treatment package
  */
 export const usePostCustomerTreatmentsIdRedeemPoints = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postCustomerTreatmentsIdRedeemPoints>>, TError,{id: string;data: PostCustomerTreatmentsIdRedeemPointsBody}, TContext>, }
@@ -2810,8 +2810,8 @@ export const usePostCustomerTreatmentsIdRedeemPoints = <TError = UnauthorizedRes
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **PM-01** — POST /customer-treatments/{id}/payments (BR-08). Cần quyền `customer.update`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó.
- * @summary Ghi nhận thanh toán cho gói liệu trình
+ * **PM-01** — POST /customer-treatments/{id}/payments (BR-08). Requires the `customer.update` permission. Branch scope: users limited to one branch only see that branch's data.
+ * @summary Record a payment for a treatment package
  */
 export const postCustomerTreatmentsIdPayments = (
     id: string,
@@ -2860,7 +2860,7 @@ const {mutation: mutationOptions} = options ?
     export type PostCustomerTreatmentsIdPaymentsMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Ghi nhận thanh toán cho gói liệu trình
+ * @summary Record a payment for a treatment package
  */
 export const usePostCustomerTreatmentsIdPayments = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postCustomerTreatmentsIdPayments>>, TError,{id: string;data: PaymentLog}, TContext>, }
@@ -2876,8 +2876,8 @@ export const usePostCustomerTreatmentsIdPayments = <TError = UnauthorizedRespons
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **PM-02** — GET /customer-treatments/{id}/payments. Cần quyền `payment.read`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó.
- * @summary Ghi nhận thanh toán
+ * **PM-02** — GET /customer-treatments/{id}/payments. Requires the `payment.read` permission. Branch scope: users limited to one branch only see that branch's data.
+ * @summary Record a payment
  */
 export const getCustomerTreatmentsIdPayments = (
     id: string,
@@ -2954,7 +2954,7 @@ export function useGetCustomerTreatmentsIdPaymentsInfinite<TData = InfiniteData<
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Ghi nhận thanh toán
+ * @summary Record a payment
  */
 
 export function useGetCustomerTreatmentsIdPaymentsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCustomerTreatmentsIdPayments>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -2972,7 +2972,7 @@ export function useGetCustomerTreatmentsIdPaymentsInfinite<TData = InfiniteData<
 }
 
 /**
- * @summary Ghi nhận thanh toán
+ * @summary Record a payment
  */
 export const prefetchGetCustomerTreatmentsIdPaymentsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getCustomerTreatmentsIdPayments>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomerTreatmentsIdPayments>>, TError, TData>>, }
@@ -3035,7 +3035,7 @@ export function useGetCustomerTreatmentsIdPayments<TData = Awaited<ReturnType<ty
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Ghi nhận thanh toán
+ * @summary Record a payment
  */
 
 export function useGetCustomerTreatmentsIdPayments<TData = Awaited<ReturnType<typeof getCustomerTreatmentsIdPayments>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -3053,7 +3053,7 @@ export function useGetCustomerTreatmentsIdPayments<TData = Awaited<ReturnType<ty
 }
 
 /**
- * @summary Ghi nhận thanh toán
+ * @summary Record a payment
  */
 export const prefetchGetCustomerTreatmentsIdPaymentsQuery = async <TData = Awaited<ReturnType<typeof getCustomerTreatmentsIdPayments>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerTreatmentsIdPayments>>, TError, TData>>, }
@@ -3070,8 +3070,8 @@ export const prefetchGetCustomerTreatmentsIdPaymentsQuery = async <TData = Await
 
 
 /**
- * **CT-05** — PUT /customer-treatments/{id}/finish. Cần quyền `customer.update`. Chỉ từ ACTIVE -> FINISHED, ghi `finished_at` làm mốc bắt đầu bảo hành trọn đời. Bắt buộc đối với gói UNLIMITED; gói SESSIONS/VALUE tự kết thúc khi hết quota (BR-07).
- * @summary Hoàn tất liệu trình / trả da
+ * **CT-05** — PUT /customer-treatments/{id}/finish. Requires permission `customer.update`. Only ACTIVE -> FINISHED; records `finished_at` as the start of the lifetime warranty. Mandatory for UNLIMITED packages; SESSIONS/VALUE packages end automatically when their quota is used up (BR-07).
+ * @summary Finish treatment / complete the skin treatment
  */
 export const putCustomerTreatmentsIdFinish = (
     id: string,
@@ -3116,7 +3116,7 @@ const {mutation: mutationOptions} = options ?
     export type PutCustomerTreatmentsIdFinishMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | InternalErrorResponse
 
     /**
- * @summary Hoàn tất liệu trình / trả da
+ * @summary Finish treatment / complete the skin treatment
  */
 export const usePutCustomerTreatmentsIdFinish = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putCustomerTreatmentsIdFinish>>, TError,{id: string}, TContext>, }
@@ -3132,8 +3132,8 @@ export const usePutCustomerTreatmentsIdFinish = <TError = UnauthorizedResponse |
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **TA-02** — POST /customer-treatments/{id}/convert (BR-18). Chỉ chuyển **buổi tặng còn lại** (bonus_remaining = sessions_bonus − max(0, sessions_used − sessions_total)), không đổi buổi mua chính. Điều kiện: gói có `convertible_note` HOẶC người dùng có quyền `treatment.convert`. Tạo gói con `parent_treatment_id`, `total_amount = 0`, trừ buổi tặng gói nguồn, ghi audit CONVERT. Một chiều.
- * @summary Chuyển đổi buổi tặng sang dịch vụ khác
+ * **TA-02** — POST /customer-treatments/{id}/convert (BR-18). Only **remaining bonus sessions** are converted (bonus_remaining = sessions_bonus − max(0, sessions_used − sessions_total)); purchased sessions are not changed. Conditions: the package has `convertible_note` OR the user has permission `treatment.convert`. Creates a child package with `parent_treatment_id` and `total_amount = 0`, deducts bonus sessions from the source package, writes a CONVERT audit log. One-way.
+ * @summary Convert bonus sessions to another service
  */
 export const postCustomerTreatmentsIdConvert = (
     id: string,
@@ -3182,7 +3182,7 @@ const {mutation: mutationOptions} = options ?
     export type PostCustomerTreatmentsIdConvertMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Chuyển đổi buổi tặng sang dịch vụ khác
+ * @summary Convert bonus sessions to another service
  */
 export const usePostCustomerTreatmentsIdConvert = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postCustomerTreatmentsIdConvert>>, TError,{id: string;data: PostCustomerTreatmentsIdConvertBody}, TContext>, }
@@ -3198,8 +3198,8 @@ export const usePostCustomerTreatmentsIdConvert = <TError = UnauthorizedResponse
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **CT-05** — PUT /customer-treatments/{id}/cancel (ADM). Cần quyền `customer.delete`.
- * @summary Hủy
+ * **CT-05** — PUT /customer-treatments/{id}/cancel (ADM). Requires permission `customer.delete`.
+ * @summary Cancel treatment package
  */
 export const putCustomerTreatmentsIdCancel = (
     id: string,
@@ -3244,7 +3244,7 @@ const {mutation: mutationOptions} = options ?
     export type PutCustomerTreatmentsIdCancelMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Hủy
+ * @summary Cancel treatment package
  */
 export const usePutCustomerTreatmentsIdCancel = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putCustomerTreatmentsIdCancel>>, TError,{id: string}, TContext>, }
@@ -3260,8 +3260,8 @@ export const usePutCustomerTreatmentsIdCancel = <TError = UnauthorizedResponse |
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/customerTreatments/{id}/available-slots` — gói liệu trình của khách. Cần quyền `customer.read`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Tham số truy vấn: `date`, `exclude_session_id`, `staff_id`.
- * @summary Xem khung giờ trống
+ * GET `/customerTreatments/{id}/available-slots` — customer treatment package. Requires permission `customer.read`. Branch scope: users limited to a single branch only see that branch's data. Query parameters: `date`, `exclude_session_id`, `staff_id`.
+ * @summary View available time slots
  */
 export const getCustomerTreatmentsIdAvailableSlots = (
     id: string,
@@ -3346,7 +3346,7 @@ export function useGetCustomerTreatmentsIdAvailableSlotsInfinite<TData = Infinit
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem khung giờ trống
+ * @summary View available time slots
  */
 
 export function useGetCustomerTreatmentsIdAvailableSlotsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCustomerTreatmentsIdAvailableSlots>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -3365,7 +3365,7 @@ export function useGetCustomerTreatmentsIdAvailableSlotsInfinite<TData = Infinit
 }
 
 /**
- * @summary Xem khung giờ trống
+ * @summary View available time slots
  */
 export const prefetchGetCustomerTreatmentsIdAvailableSlotsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getCustomerTreatmentsIdAvailableSlots>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string,
@@ -3433,7 +3433,7 @@ export function useGetCustomerTreatmentsIdAvailableSlots<TData = Awaited<ReturnT
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem khung giờ trống
+ * @summary View available time slots
  */
 
 export function useGetCustomerTreatmentsIdAvailableSlots<TData = Awaited<ReturnType<typeof getCustomerTreatmentsIdAvailableSlots>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -3452,7 +3452,7 @@ export function useGetCustomerTreatmentsIdAvailableSlots<TData = Awaited<ReturnT
 }
 
 /**
- * @summary Xem khung giờ trống
+ * @summary View available time slots
  */
 export const prefetchGetCustomerTreatmentsIdAvailableSlotsQuery = async <TData = Awaited<ReturnType<typeof getCustomerTreatmentsIdAvailableSlots>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string,
@@ -3470,8 +3470,8 @@ export const prefetchGetCustomerTreatmentsIdAvailableSlotsQuery = async <TData =
 
 
 /**
- * **TA-01** — GET /customer-treatments/{id}/adjustments — lịch sử điều chỉnh (chỉ đọc). Cần quyền `customer.read`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó.
- * @summary Điều chỉnh buổi
+ * **TA-01** — GET /customer-treatments/{id}/adjustments — adjustment history (read-only). Requires permission `customer.read`. Branch scope: users limited to a single branch only see that branch's data.
+ * @summary Session adjustments
  */
 export const getCustomerTreatmentsIdAdjustments = (
     id: string,
@@ -3548,7 +3548,7 @@ export function useGetCustomerTreatmentsIdAdjustmentsInfinite<TData = InfiniteDa
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Điều chỉnh buổi
+ * @summary Session adjustments
  */
 
 export function useGetCustomerTreatmentsIdAdjustmentsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCustomerTreatmentsIdAdjustments>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -3566,7 +3566,7 @@ export function useGetCustomerTreatmentsIdAdjustmentsInfinite<TData = InfiniteDa
 }
 
 /**
- * @summary Điều chỉnh buổi
+ * @summary Session adjustments
  */
 export const prefetchGetCustomerTreatmentsIdAdjustmentsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getCustomerTreatmentsIdAdjustments>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomerTreatmentsIdAdjustments>>, TError, TData>>, }
@@ -3629,7 +3629,7 @@ export function useGetCustomerTreatmentsIdAdjustments<TData = Awaited<ReturnType
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Điều chỉnh buổi
+ * @summary Session adjustments
  */
 
 export function useGetCustomerTreatmentsIdAdjustments<TData = Awaited<ReturnType<typeof getCustomerTreatmentsIdAdjustments>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -3647,7 +3647,7 @@ export function useGetCustomerTreatmentsIdAdjustments<TData = Awaited<ReturnType
 }
 
 /**
- * @summary Điều chỉnh buổi
+ * @summary Session adjustments
  */
 export const prefetchGetCustomerTreatmentsIdAdjustmentsQuery = async <TData = Awaited<ReturnType<typeof getCustomerTreatmentsIdAdjustments>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerTreatmentsIdAdjustments>>, TError, TData>>, }
@@ -3664,8 +3664,8 @@ export const prefetchGetCustomerTreatmentsIdAdjustmentsQuery = async <TData = Aw
 
 
 /**
- * **TA-01** — PUT /customer-treatments/{id}/adjust (BR-17). Cần quyền `treatment.adjust`. Bắt buộc `reason`. type: `ADJUST_SESSIONS` (số buổi đã dùng), `ADJUST_BONUS` (số buổi tặng), `ADJUST_VALUE` (giá trị đã tiêu), `ADJUST_VALUE_TOTAL` (định mức tiền được dùng), `EXTEND_EXPIRY` (hạn dùng). Chặn giá trị âm/vượt tổng. Ghi `treatment_adjustment` với before/after.
- * @summary Điều chỉnh thủ công gói của khách
+ * **TA-01** — PUT /customer-treatments/{id}/adjust (BR-17). Requires permission `treatment.adjust`. `reason` is required. type: `ADJUST_SESSIONS` (sessions used), `ADJUST_BONUS` (bonus sessions), `ADJUST_VALUE` (value spent), `ADJUST_VALUE_TOTAL` (monetary quota allowed to be used), `EXTEND_EXPIRY` (expiry date). Blocks negative values / amounts exceeding the total. Writes a `treatment_adjustment` record with before/after.
+ * @summary Manually adjust a customer's package
  */
 export const putCustomerTreatmentsIdAdjustments = (
     id: string,
@@ -3713,7 +3713,7 @@ const {mutation: mutationOptions} = options ?
     export type PutCustomerTreatmentsIdAdjustmentsMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Điều chỉnh thủ công gói của khách
+ * @summary Manually adjust a customer's package
  */
 export const usePutCustomerTreatmentsIdAdjustments = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putCustomerTreatmentsIdAdjustments>>, TError,{id: string;data: PutCustomerTreatmentsIdAdjustmentsBody}, TContext>, }

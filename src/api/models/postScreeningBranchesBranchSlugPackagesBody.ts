@@ -7,6 +7,6 @@
  */
 
 /**
- * Payload nghiệp vụ tuỳ endpoint
+ * Business payload, endpoint-specific
  */
 export type PostScreeningBranchesBranchSlugPackagesBody = { [key: string]: unknown };

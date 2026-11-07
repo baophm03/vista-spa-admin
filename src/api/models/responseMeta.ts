@@ -7,7 +7,7 @@
  */
 
 /**
- * Thông tin phân trang cho endpoint danh sách
+ * Pagination info for list endpoints
  * @nullable
  */
 export type ResponseMeta = unknown | null;

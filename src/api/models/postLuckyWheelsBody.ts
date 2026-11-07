@@ -7,6 +7,6 @@
  */
 
 /**
- * Payload nghiệp vụ tuỳ endpoint
+ * Endpoint-specific business payload
  */
 export type PostLuckyWheelsBody = { [key: string]: unknown };

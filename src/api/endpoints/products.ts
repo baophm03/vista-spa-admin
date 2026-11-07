@@ -64,8 +64,8 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * GET `/products/{id}` — sản phẩm. Cần đăng nhập; route không khai báo quyền chi tiết.
- * @summary Xem chi tiết sản phẩm
+ * GET `/products/{id}` — products. Requires authentication; the route does not declare detailed permissions.
+ * @summary View product detail
  */
 export const getProductsId = (
     id: string,
@@ -142,7 +142,7 @@ export function useGetProductsIdInfinite<TData = InfiniteData<Awaited<ReturnType
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết sản phẩm
+ * @summary View product detail
  */
 
 export function useGetProductsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProductsId>>>, TError = UnauthorizedResponse | NotFoundResponse | InternalErrorResponse>(
@@ -160,7 +160,7 @@ export function useGetProductsIdInfinite<TData = InfiniteData<Awaited<ReturnType
 }
 
 /**
- * @summary Xem chi tiết sản phẩm
+ * @summary View product detail
  */
 export const prefetchGetProductsIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getProductsId>>, TError = UnauthorizedResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductsId>>, TError, TData>>, }
@@ -223,7 +223,7 @@ export function useGetProductsId<TData = Awaited<ReturnType<typeof getProductsId
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết sản phẩm
+ * @summary View product detail
  */
 
 export function useGetProductsId<TData = Awaited<ReturnType<typeof getProductsId>>, TError = UnauthorizedResponse | NotFoundResponse | InternalErrorResponse>(
@@ -241,7 +241,7 @@ export function useGetProductsId<TData = Awaited<ReturnType<typeof getProductsId
 }
 
 /**
- * @summary Xem chi tiết sản phẩm
+ * @summary View product detail
  */
 export const prefetchGetProductsIdQuery = async <TData = Awaited<ReturnType<typeof getProductsId>>, TError = UnauthorizedResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductsId>>, TError, TData>>, }
@@ -258,8 +258,8 @@ export const prefetchGetProductsIdQuery = async <TData = Awaited<ReturnType<type
 
 
 /**
- * PUT `/products/{id}` — sản phẩm. Chỉ quản trị viên nền tảng (ADM) được gọi. Trường body: `name`, `sku`, `category_id`, `price`, `description`, `cover_file_id`, `buy_url`, `is_active`, `gallery_file_ids`.
- * @summary Cập nhật sản phẩm
+ * PUT `/products/{id}` — products. Only platform administrators (ADM) can call this. Body fields: `name`, `sku`, `category_id`, `price`, `description`, `cover_file_id`, `buy_url`, `is_active`, `gallery_file_ids`.
+ * @summary Update a product
  */
 export const putProductsId = (
     id: string,
@@ -307,7 +307,7 @@ const {mutation: mutationOptions} = options ?
     export type PutProductsIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Cập nhật sản phẩm
+ * @summary Update a product
  */
 export const usePutProductsId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putProductsId>>, TError,{id: string;data: ProductUpdate}, TContext>, }
@@ -323,8 +323,8 @@ export const usePutProductsId = <TError = UnauthorizedResponse | ForbiddenRespon
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * DELETE `/products/{id}` — sản phẩm. Chỉ quản trị viên nền tảng (ADM) được gọi. Xử lý bởi `product.update`.
- * @summary Xóa sản phẩm
+ * DELETE `/products/{id}` — products. Only platform administrators (ADM) can call this. Handled by `product.update`.
+ * @summary Delete a product
  */
 export const deleteProductsId = (
     id: string,
@@ -369,7 +369,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteProductsIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Xóa sản phẩm
+ * @summary Delete a product
  */
 export const useDeleteProductsId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteProductsId>>, TError,{id: string}, TContext>, }
@@ -385,8 +385,8 @@ export const useDeleteProductsId = <TError = UnauthorizedResponse | ForbiddenRes
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/products` — sản phẩm. Cần đăng nhập; route không khai báo quyền chi tiết. Tham số truy vấn: `q`, `category_id`, `is_active`.
- * @summary Lấy danh sách sản phẩm
+ * GET `/products` — products. Requires authentication; the route does not declare detailed permissions. Query parameters: `q`, `category_id`, `is_active`.
+ * @summary Get product list
  */
 export const getProducts = (
     params?: GetProductsParams,
@@ -464,7 +464,7 @@ export function useGetProductsInfinite<TData = InfiniteData<Awaited<ReturnType<t
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách sản phẩm
+ * @summary Get product list
  */
 
 export function useGetProductsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProducts>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
@@ -482,7 +482,7 @@ export function useGetProductsInfinite<TData = InfiniteData<Awaited<ReturnType<t
 }
 
 /**
- * @summary Lấy danh sách sản phẩm
+ * @summary Get product list
  */
 export const prefetchGetProductsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getProducts>>, TError = UnauthorizedResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetProductsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProducts>>, TError, TData>>, }
@@ -545,7 +545,7 @@ export function useGetProducts<TData = Awaited<ReturnType<typeof getProducts>>, 
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách sản phẩm
+ * @summary Get product list
  */
 
 export function useGetProducts<TData = Awaited<ReturnType<typeof getProducts>>, TError = UnauthorizedResponse | InternalErrorResponse>(
@@ -563,7 +563,7 @@ export function useGetProducts<TData = Awaited<ReturnType<typeof getProducts>>, 
 }
 
 /**
- * @summary Lấy danh sách sản phẩm
+ * @summary Get product list
  */
 export const prefetchGetProductsQuery = async <TData = Awaited<ReturnType<typeof getProducts>>, TError = UnauthorizedResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetProductsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProducts>>, TError, TData>>, }
@@ -580,8 +580,8 @@ export const prefetchGetProductsQuery = async <TData = Awaited<ReturnType<typeof
 
 
 /**
- * POST `/products` — sản phẩm. Chỉ quản trị viên nền tảng (ADM) được gọi. Trường body: `sku`, `category_id`, `price`, `description`, `cover_file_id`, `buy_url`, `name`, `gallery_file_ids`.
- * @summary Tạo sản phẩm mới
+ * POST `/products` — products. Only platform administrators (ADM) can call this. Body fields: `sku`, `category_id`, `price`, `description`, `cover_file_id`, `buy_url`, `name`, `gallery_file_ids`.
+ * @summary Create a new product
  */
 export const postProducts = (
     productCreate: ProductCreate,
@@ -629,7 +629,7 @@ const {mutation: mutationOptions} = options ?
     export type PostProductsMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Tạo sản phẩm mới
+ * @summary Create a new product
  */
 export const usePostProducts = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postProducts>>, TError,{data: ProductCreate}, TContext>, }
@@ -645,8 +645,8 @@ export const usePostProducts = <TError = UnauthorizedResponse | ForbiddenRespons
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * PUT `/productCategories/{id}` — danh mục sản phẩm. Chỉ quản trị viên nền tảng (ADM) được gọi. Trường body: `name`, `sort_order`, `is_active`. Xử lý bởi `category.update`.
- * @summary Cập nhật danh mục sản phẩm
+ * PUT `/productCategories/{id}` — product categories. Only platform administrators (ADM) can call this. Body fields: `name`, `sort_order`, `is_active`. Handled by `category.update`.
+ * @summary Update a product category
  */
 export const putProductCategoriesId = (
     id: string,
@@ -694,7 +694,7 @@ const {mutation: mutationOptions} = options ?
     export type PutProductCategoriesIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Cập nhật danh mục sản phẩm
+ * @summary Update a product category
  */
 export const usePutProductCategoriesId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putProductCategoriesId>>, TError,{id: string;data: PutProductCategoriesIdBody}, TContext>, }
@@ -710,8 +710,8 @@ export const usePutProductCategoriesId = <TError = UnauthorizedResponse | Forbid
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * DELETE `/productCategories/{id}` — danh mục sản phẩm. Chỉ quản trị viên nền tảng (ADM) được gọi. Xử lý bởi `category.destroy`.
- * @summary Xóa danh mục sản phẩm
+ * DELETE `/productCategories/{id}` — product categories. Only platform administrators (ADM) can call this. Handled by `category.destroy`.
+ * @summary Delete a product category
  */
 export const deleteProductCategoriesId = (
     id: string,
@@ -756,7 +756,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteProductCategoriesIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Xóa danh mục sản phẩm
+ * @summary Delete a product category
  */
 export const useDeleteProductCategoriesId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteProductCategoriesId>>, TError,{id: string}, TContext>, }
@@ -772,8 +772,8 @@ export const useDeleteProductCategoriesId = <TError = UnauthorizedResponse | For
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/productCategories` — danh mục sản phẩm. Cần đăng nhập; route không khai báo quyền chi tiết.
- * @summary Lấy danh sách danh mục sản phẩm
+ * GET `/productCategories` — product categories. Requires authentication; the route does not declare detailed permissions.
+ * @summary Get product category list
  */
 export const getProductCategories = (
     
@@ -850,7 +850,7 @@ export function useGetProductCategoriesInfinite<TData = InfiniteData<Awaited<Ret
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách danh mục sản phẩm
+ * @summary Get product category list
  */
 
 export function useGetProductCategoriesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProductCategories>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
@@ -868,7 +868,7 @@ export function useGetProductCategoriesInfinite<TData = InfiniteData<Awaited<Ret
 }
 
 /**
- * @summary Lấy danh sách danh mục sản phẩm
+ * @summary Get product category list
  */
 export const prefetchGetProductCategoriesInfiniteQuery = async <TData = Awaited<ReturnType<typeof getProductCategories>>, TError = UnauthorizedResponse | InternalErrorResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductCategories>>, TError, TData>>, }
@@ -931,7 +931,7 @@ export function useGetProductCategories<TData = Awaited<ReturnType<typeof getPro
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách danh mục sản phẩm
+ * @summary Get product category list
  */
 
 export function useGetProductCategories<TData = Awaited<ReturnType<typeof getProductCategories>>, TError = UnauthorizedResponse | InternalErrorResponse>(
@@ -949,7 +949,7 @@ export function useGetProductCategories<TData = Awaited<ReturnType<typeof getPro
 }
 
 /**
- * @summary Lấy danh sách danh mục sản phẩm
+ * @summary Get product category list
  */
 export const prefetchGetProductCategoriesQuery = async <TData = Awaited<ReturnType<typeof getProductCategories>>, TError = UnauthorizedResponse | InternalErrorResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductCategories>>, TError, TData>>, }
@@ -966,8 +966,8 @@ export const prefetchGetProductCategoriesQuery = async <TData = Awaited<ReturnTy
 
 
 /**
- * POST `/productCategories` — danh mục sản phẩm. Chỉ quản trị viên nền tảng (ADM) được gọi. Trường body: `name`, `sort_order`.
- * @summary Tạo danh mục sản phẩm mới
+ * POST `/productCategories` — product categories. Only platform administrators (ADM) can call this. Body fields: `name`, `sort_order`.
+ * @summary Create a new product category
  */
 export const postProductCategories = (
     postProductCategoriesBody: PostProductCategoriesBody,
@@ -1015,7 +1015,7 @@ const {mutation: mutationOptions} = options ?
     export type PostProductCategoriesMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Tạo danh mục sản phẩm mới
+ * @summary Create a new product category
  */
 export const usePostProductCategories = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postProductCategories>>, TError,{data: PostProductCategoriesBody}, TContext>, }
@@ -1031,8 +1031,8 @@ export const usePostProductCategories = <TError = UnauthorizedResponse | Forbidd
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/product-orders/{id}` — đơn hàng. Cần đăng nhập; route không khai báo quyền chi tiết.
- * @summary Xem chi tiết đơn hàng
+ * GET `/product-orders/{id}` — orders. Requires authentication; the route does not declare detailed permissions.
+ * @summary View order detail
  */
 export const getProductOrdersId = (
     id: string,
@@ -1109,7 +1109,7 @@ export function useGetProductOrdersIdInfinite<TData = InfiniteData<Awaited<Retur
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết đơn hàng
+ * @summary View order detail
  */
 
 export function useGetProductOrdersIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProductOrdersId>>>, TError = UnauthorizedResponse | NotFoundResponse | InternalErrorResponse>(
@@ -1127,7 +1127,7 @@ export function useGetProductOrdersIdInfinite<TData = InfiniteData<Awaited<Retur
 }
 
 /**
- * @summary Xem chi tiết đơn hàng
+ * @summary View order detail
  */
 export const prefetchGetProductOrdersIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getProductOrdersId>>, TError = UnauthorizedResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductOrdersId>>, TError, TData>>, }
@@ -1190,7 +1190,7 @@ export function useGetProductOrdersId<TData = Awaited<ReturnType<typeof getProdu
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết đơn hàng
+ * @summary View order detail
  */
 
 export function useGetProductOrdersId<TData = Awaited<ReturnType<typeof getProductOrdersId>>, TError = UnauthorizedResponse | NotFoundResponse | InternalErrorResponse>(
@@ -1208,7 +1208,7 @@ export function useGetProductOrdersId<TData = Awaited<ReturnType<typeof getProdu
 }
 
 /**
- * @summary Xem chi tiết đơn hàng
+ * @summary View order detail
  */
 export const prefetchGetProductOrdersIdQuery = async <TData = Awaited<ReturnType<typeof getProductOrdersId>>, TError = UnauthorizedResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductOrdersId>>, TError, TData>>, }
@@ -1225,8 +1225,8 @@ export const prefetchGetProductOrdersIdQuery = async <TData = Awaited<ReturnType
 
 
 /**
- * PUT `/product-orders/{id}` — đơn hàng. Chỉ quản trị viên nền tảng (ADM) được gọi. Trường body: `status`. Xử lý bởi `row.update`.
- * @summary Cập nhật đơn hàng
+ * PUT `/product-orders/{id}` — orders. Only platform administrators (ADM) can call this. Body field: `status`. Handled by `row.update`.
+ * @summary Update an order
  */
 export const putProductOrdersId = (
     id: string,
@@ -1274,7 +1274,7 @@ const {mutation: mutationOptions} = options ?
     export type PutProductOrdersIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Cập nhật đơn hàng
+ * @summary Update an order
  */
 export const usePutProductOrdersId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putProductOrdersId>>, TError,{id: string;data: PutProductOrdersIdBody}, TContext>, }
@@ -1290,8 +1290,8 @@ export const usePutProductOrdersId = <TError = UnauthorizedResponse | ForbiddenR
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/product-orders` — đơn hàng. Cần đăng nhập; route không khai báo quyền chi tiết. Tham số truy vấn: `page`, `limit`, `status`, `q`.
- * @summary Lấy danh sách đơn hàng
+ * GET `/product-orders` — orders. Requires authentication; the route does not declare detailed permissions. Query parameters: `page`, `limit`, `status`, `q`.
+ * @summary Get order list
  */
 export const getProductOrders = (
     params?: GetProductOrdersParams,
@@ -1369,7 +1369,7 @@ export function useGetProductOrdersInfinite<TData = InfiniteData<Awaited<ReturnT
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách đơn hàng
+ * @summary Get order list
  */
 
 export function useGetProductOrdersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProductOrders>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
@@ -1387,7 +1387,7 @@ export function useGetProductOrdersInfinite<TData = InfiniteData<Awaited<ReturnT
 }
 
 /**
- * @summary Lấy danh sách đơn hàng
+ * @summary Get order list
  */
 export const prefetchGetProductOrdersInfiniteQuery = async <TData = Awaited<ReturnType<typeof getProductOrders>>, TError = UnauthorizedResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetProductOrdersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductOrders>>, TError, TData>>, }
@@ -1450,7 +1450,7 @@ export function useGetProductOrders<TData = Awaited<ReturnType<typeof getProduct
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách đơn hàng
+ * @summary Get order list
  */
 
 export function useGetProductOrders<TData = Awaited<ReturnType<typeof getProductOrders>>, TError = UnauthorizedResponse | InternalErrorResponse>(
@@ -1468,7 +1468,7 @@ export function useGetProductOrders<TData = Awaited<ReturnType<typeof getProduct
 }
 
 /**
- * @summary Lấy danh sách đơn hàng
+ * @summary Get order list
  */
 export const prefetchGetProductOrdersQuery = async <TData = Awaited<ReturnType<typeof getProductOrders>>, TError = UnauthorizedResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetProductOrdersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductOrders>>, TError, TData>>, }

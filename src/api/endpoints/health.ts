@@ -36,8 +36,8 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * GET `/health`. Công khai, không cần đăng nhập.
- * @summary Kiểm tra tình trạng API và cơ sở dữ liệu
+ * GET `/health`. Public, no authentication required.
+ * @summary Check API and database health
  */
 export const getHealth = (
     
@@ -114,7 +114,7 @@ export function useGetHealthInfinite<TData = InfiniteData<Awaited<ReturnType<typ
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Kiểm tra tình trạng API và cơ sở dữ liệu
+ * @summary Check API and database health
  */
 
 export function useGetHealthInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getHealth>>>, TError = unknown>(
@@ -132,7 +132,7 @@ export function useGetHealthInfinite<TData = InfiniteData<Awaited<ReturnType<typ
 }
 
 /**
- * @summary Kiểm tra tình trạng API và cơ sở dữ liệu
+ * @summary Check API and database health
  */
 export const prefetchGetHealthInfiniteQuery = async <TData = Awaited<ReturnType<typeof getHealth>>, TError = unknown>(
  queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getHealth>>, TError, TData>>, }
@@ -195,7 +195,7 @@ export function useGetHealth<TData = Awaited<ReturnType<typeof getHealth>>, TErr
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Kiểm tra tình trạng API và cơ sở dữ liệu
+ * @summary Check API and database health
  */
 
 export function useGetHealth<TData = Awaited<ReturnType<typeof getHealth>>, TError = unknown>(
@@ -213,7 +213,7 @@ export function useGetHealth<TData = Awaited<ReturnType<typeof getHealth>>, TErr
 }
 
 /**
- * @summary Kiểm tra tình trạng API và cơ sở dữ liệu
+ * @summary Check API and database health
  */
 export const prefetchGetHealthQuery = async <TData = Awaited<ReturnType<typeof getHealth>>, TError = unknown>(
  queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getHealth>>, TError, TData>>, }

@@ -53,8 +53,8 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * **KT-02** — GET /staff-profiles/{userId}. Cần quyền `staff_profile.read`. Trả hồ sơ hiển thị kèm tài khoản và dịch vụ phụ trách; nếu chưa có hồ sơ thì trả giá trị mặc định để phục vụ form chỉnh sửa.
- * @summary Chi tiết hồ sơ chuyên viên/KTV
+ * **KT-02** — GET /staff-profiles/{userId}. Requires `staff_profile.read` permission. Returns the display profile along with the account and the services the staff member is responsible for; if no profile exists yet, default values are returned for use in edit forms.
+ * @summary Specialist/technician profile details
  */
 export const getStaffProfilesUserId = (
     userId: string,
@@ -131,7 +131,7 @@ export function useGetStaffProfilesUserIdInfinite<TData = InfiniteData<Awaited<R
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Chi tiết hồ sơ chuyên viên/KTV
+ * @summary Specialist/technician profile details
  */
 
 export function useGetStaffProfilesUserIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffProfilesUserId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -149,7 +149,7 @@ export function useGetStaffProfilesUserIdInfinite<TData = InfiniteData<Awaited<R
 }
 
 /**
- * @summary Chi tiết hồ sơ chuyên viên/KTV
+ * @summary Specialist/technician profile details
  */
 export const prefetchGetStaffProfilesUserIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getStaffProfilesUserId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, userId: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserId>>, TError, TData>>, }
@@ -212,7 +212,7 @@ export function useGetStaffProfilesUserId<TData = Awaited<ReturnType<typeof getS
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Chi tiết hồ sơ chuyên viên/KTV
+ * @summary Specialist/technician profile details
  */
 
 export function useGetStaffProfilesUserId<TData = Awaited<ReturnType<typeof getStaffProfilesUserId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -230,7 +230,7 @@ export function useGetStaffProfilesUserId<TData = Awaited<ReturnType<typeof getS
 }
 
 /**
- * @summary Chi tiết hồ sơ chuyên viên/KTV
+ * @summary Specialist/technician profile details
  */
 export const prefetchGetStaffProfilesUserIdQuery = async <TData = Awaited<ReturnType<typeof getStaffProfilesUserId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, userId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserId>>, TError, TData>>, }
@@ -247,8 +247,8 @@ export const prefetchGetStaffProfilesUserIdQuery = async <TData = Awaited<Return
 
 
 /**
- * **KT-03** — PUT /staff-profiles/{userId}. Cần quyền `staff_profile.update`. Upsert theo tài khoản user: `display_name`, `photo_file_id`, `title`, `expertise`, `bio`, `show_in_app`, `sort_order`.
- * @summary Tạo/cập nhật hồ sơ chuyên viên (upsert)
+ * **KT-03** — PUT /staff-profiles/{userId}. Requires `staff_profile.update` permission. Upserts by user account: `display_name`, `photo_file_id`, `title`, `expertise`, `bio`, `show_in_app`, `sort_order`.
+ * @summary Create/update a specialist profile (upsert)
  */
 export const putStaffProfilesUserId = (
     userId: string,
@@ -296,7 +296,7 @@ const {mutation: mutationOptions} = options ?
     export type PutStaffProfilesUserIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Tạo/cập nhật hồ sơ chuyên viên (upsert)
+ * @summary Create/update a specialist profile (upsert)
  */
 export const usePutStaffProfilesUserId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putStaffProfilesUserId>>, TError,{userId: string;data: StaffProfileUpsert}, TContext>, }
@@ -312,8 +312,8 @@ export const usePutStaffProfilesUserId = <TError = UnauthorizedResponse | Forbid
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **KT-04** — DELETE /staff-profiles/{userId}. Cần quyền `staff_profile.delete`. Đặt `is_active=false` trên hồ sơ (tạo hồ sơ nếu chưa có). Không xóa tài khoản, không ảnh hưởng ca làm và lịch hẹn đã đặt.
- * @summary Ẩn chuyên viên khỏi Mini App
+ * **KT-04** — DELETE /staff-profiles/{userId}. Requires `staff_profile.delete` permission. Sets `is_active=false` on the profile (creating the profile if it does not exist). Does not delete the account, and does not affect shifts or booked appointments.
+ * @summary Hide a specialist from the Mini App
  */
 export const deleteStaffProfilesUserId = (
     userId: string,
@@ -358,7 +358,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteStaffProfilesUserIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
 
     /**
- * @summary Ẩn chuyên viên khỏi Mini App
+ * @summary Hide a specialist from the Mini App
  */
 export const useDeleteStaffProfilesUserId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteStaffProfilesUserId>>, TError,{userId: string}, TContext>, }
@@ -374,8 +374,8 @@ export const useDeleteStaffProfilesUserId = <TError = UnauthorizedResponse | For
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **KT-01** — GET /staff-profiles. Cần quyền `staff_profile.read`. Danh sách nhân viên nội bộ kèm hồ sơ hiển thị và dịch vụ phụ trách. Tham số: `branch_id`, `service_id`, `show_in_app`, `role_id`, `q`.
- * @summary Danh sách hồ sơ chuyên viên/KTV
+ * **KT-01** — GET /staff-profiles. Requires `staff_profile.read` permission. List of internal staff with display profiles and the services they are responsible for. Parameters: `branch_id`, `service_id`, `show_in_app`, `role_id`, `q`.
+ * @summary List specialist/technician profiles
  */
 export const getStaffProfiles = (
     params?: GetStaffProfilesParams,
@@ -453,7 +453,7 @@ export function useGetStaffProfilesInfinite<TData = InfiniteData<Awaited<ReturnT
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Danh sách hồ sơ chuyên viên/KTV
+ * @summary List specialist/technician profiles
  */
 
 export function useGetStaffProfilesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffProfiles>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -471,7 +471,7 @@ export function useGetStaffProfilesInfinite<TData = InfiniteData<Awaited<ReturnT
 }
 
 /**
- * @summary Danh sách hồ sơ chuyên viên/KTV
+ * @summary List specialist/technician profiles
  */
 export const prefetchGetStaffProfilesInfiniteQuery = async <TData = Awaited<ReturnType<typeof getStaffProfiles>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetStaffProfilesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffProfiles>>, TError, TData>>, }
@@ -534,7 +534,7 @@ export function useGetStaffProfiles<TData = Awaited<ReturnType<typeof getStaffPr
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Danh sách hồ sơ chuyên viên/KTV
+ * @summary List specialist/technician profiles
  */
 
 export function useGetStaffProfiles<TData = Awaited<ReturnType<typeof getStaffProfiles>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -552,7 +552,7 @@ export function useGetStaffProfiles<TData = Awaited<ReturnType<typeof getStaffPr
 }
 
 /**
- * @summary Danh sách hồ sơ chuyên viên/KTV
+ * @summary List specialist/technician profiles
  */
 export const prefetchGetStaffProfilesQuery = async <TData = Awaited<ReturnType<typeof getStaffProfiles>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetStaffProfilesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffProfiles>>, TError, TData>>, }
@@ -569,8 +569,8 @@ export const prefetchGetStaffProfilesQuery = async <TData = Awaited<ReturnType<t
 
 
 /**
- * **KT-05** — GET /staff-profiles/{userId}/services. Cần quyền `staff_profile.read`. Trả danh sách `service_ids` đang gán cho KTV.
- * @summary Danh sách dịch vụ KTV phụ trách
+ * **KT-05** — GET /staff-profiles/{userId}/services. Requires `staff_profile.read` permission. Returns the `service_ids` currently assigned to the technician.
+ * @summary List services a technician is responsible for
  */
 export const getStaffProfilesUserIdServices = (
     userId: string,
@@ -647,7 +647,7 @@ export function useGetStaffProfilesUserIdServicesInfinite<TData = InfiniteData<A
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Danh sách dịch vụ KTV phụ trách
+ * @summary List services a technician is responsible for
  */
 
 export function useGetStaffProfilesUserIdServicesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffProfilesUserIdServices>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -665,7 +665,7 @@ export function useGetStaffProfilesUserIdServicesInfinite<TData = InfiniteData<A
 }
 
 /**
- * @summary Danh sách dịch vụ KTV phụ trách
+ * @summary List services a technician is responsible for
  */
 export const prefetchGetStaffProfilesUserIdServicesInfiniteQuery = async <TData = Awaited<ReturnType<typeof getStaffProfilesUserIdServices>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, userId: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserIdServices>>, TError, TData>>, }
@@ -728,7 +728,7 @@ export function useGetStaffProfilesUserIdServices<TData = Awaited<ReturnType<typ
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Danh sách dịch vụ KTV phụ trách
+ * @summary List services a technician is responsible for
  */
 
 export function useGetStaffProfilesUserIdServices<TData = Awaited<ReturnType<typeof getStaffProfilesUserIdServices>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -746,7 +746,7 @@ export function useGetStaffProfilesUserIdServices<TData = Awaited<ReturnType<typ
 }
 
 /**
- * @summary Danh sách dịch vụ KTV phụ trách
+ * @summary List services a technician is responsible for
  */
 export const prefetchGetStaffProfilesUserIdServicesQuery = async <TData = Awaited<ReturnType<typeof getStaffProfilesUserIdServices>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, userId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserIdServices>>, TError, TData>>, }
@@ -763,8 +763,8 @@ export const prefetchGetStaffProfilesUserIdServicesQuery = async <TData = Awaite
 
 
 /**
- * **KT-06** — PUT /staff-profiles/{userId}/services. Cần quyền `staff_profile.update`. Thay toàn bộ `service_ids[]` (N-N user–service) trong một lần gọi; phục vụ lọc KTV phụ trách khi đặt lịch (BR-10).
- * @summary Thay thế danh sách dịch vụ KTV phụ trách
+ * **KT-06** — PUT /staff-profiles/{userId}/services. Requires `staff_profile.update` permission. Replaces the entire `service_ids[]` (N-N user–service mapping) in a single call; supports filtering responsible technicians when booking (BR-10).
+ * @summary Replace the list of services a technician is responsible for
  */
 export const putStaffProfilesUserIdServices = (
     userId: string,
@@ -812,7 +812,7 @@ const {mutation: mutationOptions} = options ?
     export type PutStaffProfilesUserIdServicesMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Thay thế danh sách dịch vụ KTV phụ trách
+ * @summary Replace the list of services a technician is responsible for
  */
 export const usePutStaffProfilesUserIdServices = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putStaffProfilesUserIdServices>>, TError,{userId: string;data: PutStaffProfilesUserIdServicesBody}, TContext>, }

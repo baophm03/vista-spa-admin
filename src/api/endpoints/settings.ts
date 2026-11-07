@@ -73,8 +73,8 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * GET `/skinTypes` — loại da. Cần quyền `customer.read`.
- * @summary Lấy danh sách loại da
+ * GET `/skinTypes` — skin types. Requires `customer.read` permission.
+ * @summary Get list of skin types
  */
 export const getSkinTypes = (
     
@@ -151,7 +151,7 @@ export function useGetSkinTypesInfinite<TData = InfiniteData<Awaited<ReturnType<
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách loại da
+ * @summary Get list of skin types
  */
 
 export function useGetSkinTypesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getSkinTypes>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -169,7 +169,7 @@ export function useGetSkinTypesInfinite<TData = InfiniteData<Awaited<ReturnType<
 }
 
 /**
- * @summary Lấy danh sách loại da
+ * @summary Get list of skin types
  */
 export const prefetchGetSkinTypesInfiniteQuery = async <TData = Awaited<ReturnType<typeof getSkinTypes>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSkinTypes>>, TError, TData>>, }
@@ -232,7 +232,7 @@ export function useGetSkinTypes<TData = Awaited<ReturnType<typeof getSkinTypes>>
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách loại da
+ * @summary Get list of skin types
  */
 
 export function useGetSkinTypes<TData = Awaited<ReturnType<typeof getSkinTypes>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -250,7 +250,7 @@ export function useGetSkinTypes<TData = Awaited<ReturnType<typeof getSkinTypes>>
 }
 
 /**
- * @summary Lấy danh sách loại da
+ * @summary Get list of skin types
  */
 export const prefetchGetSkinTypesQuery = async <TData = Awaited<ReturnType<typeof getSkinTypes>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSkinTypes>>, TError, TData>>, }
@@ -267,8 +267,8 @@ export const prefetchGetSkinTypesQuery = async <TData = Awaited<ReturnType<typeo
 
 
 /**
- * **ST-01** — GET /settings. Cần quyền `setting.read`. Tham số truy vấn: `branch_id`. Xử lý bởi `settingsService.list`.
- * @summary Lấy danh sách cấu hình
+ * **ST-01** — GET /settings. Requires `setting.read` permission. Query parameters: `branch_id`. Handled by `settingsService.list`.
+ * @summary Get list of settings
  */
 export const getSettings = (
     params?: GetSettingsParams,
@@ -346,7 +346,7 @@ export function useGetSettingsInfinite<TData = InfiniteData<Awaited<ReturnType<t
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách cấu hình
+ * @summary Get list of settings
  */
 
 export function useGetSettingsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getSettings>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -364,7 +364,7 @@ export function useGetSettingsInfinite<TData = InfiniteData<Awaited<ReturnType<t
 }
 
 /**
- * @summary Lấy danh sách cấu hình
+ * @summary Get list of settings
  */
 export const prefetchGetSettingsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getSettings>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetSettingsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSettings>>, TError, TData>>, }
@@ -427,7 +427,7 @@ export function useGetSettings<TData = Awaited<ReturnType<typeof getSettings>>, 
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách cấu hình
+ * @summary Get list of settings
  */
 
 export function useGetSettings<TData = Awaited<ReturnType<typeof getSettings>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -445,7 +445,7 @@ export function useGetSettings<TData = Awaited<ReturnType<typeof getSettings>>, 
 }
 
 /**
- * @summary Lấy danh sách cấu hình
+ * @summary Get list of settings
  */
 export const prefetchGetSettingsQuery = async <TData = Awaited<ReturnType<typeof getSettings>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetSettingsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSettings>>, TError, TData>>, }
@@ -462,8 +462,8 @@ export const prefetchGetSettingsQuery = async <TData = Awaited<ReturnType<typeof
 
 
 /**
- * **ST-02** — PUT /settings. Cần quyền `setting.update`. Trường body: `items`. Xử lý bởi `settingsService.update`.
- * @summary Cập nhật cấu hình
+ * **ST-02** — PUT /settings. Requires `setting.update` permission. Body fields: `items`. Handled by `settingsService.update`.
+ * @summary Update settings
  */
 export const putSettings = (
     putSettingsBody: PutSettingsBody,
@@ -510,7 +510,7 @@ const {mutation: mutationOptions} = options ?
     export type PutSettingsMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Cập nhật cấu hình
+ * @summary Update settings
  */
 export const usePutSettings = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putSettings>>, TError,{data: PutSettingsBody}, TContext>, }
@@ -526,8 +526,8 @@ export const usePutSettings = <TError = UnauthorizedResponse | ForbiddenResponse
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/settings/brand` — cấu hình. Cần quyền `brand.read`. Xử lý bởi `brandSettingsService.get`.
- * @summary Xem cấu hình thương hiệu và khu vực
+ * GET `/settings/brand` — settings. Requires `brand.read` permission. Handled by `brandSettingsService.get`.
+ * @summary View brand and region settings
  */
 export const getSettingsBrand = (
     
@@ -604,7 +604,7 @@ export function useGetSettingsBrandInfinite<TData = InfiniteData<Awaited<ReturnT
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem cấu hình thương hiệu và khu vực
+ * @summary View brand and region settings
  */
 
 export function useGetSettingsBrandInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getSettingsBrand>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -622,7 +622,7 @@ export function useGetSettingsBrandInfinite<TData = InfiniteData<Awaited<ReturnT
 }
 
 /**
- * @summary Xem cấu hình thương hiệu và khu vực
+ * @summary View brand and region settings
  */
 export const prefetchGetSettingsBrandInfiniteQuery = async <TData = Awaited<ReturnType<typeof getSettingsBrand>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSettingsBrand>>, TError, TData>>, }
@@ -685,7 +685,7 @@ export function useGetSettingsBrand<TData = Awaited<ReturnType<typeof getSetting
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem cấu hình thương hiệu và khu vực
+ * @summary View brand and region settings
  */
 
 export function useGetSettingsBrand<TData = Awaited<ReturnType<typeof getSettingsBrand>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -703,7 +703,7 @@ export function useGetSettingsBrand<TData = Awaited<ReturnType<typeof getSetting
 }
 
 /**
- * @summary Xem cấu hình thương hiệu và khu vực
+ * @summary View brand and region settings
  */
 export const prefetchGetSettingsBrandQuery = async <TData = Awaited<ReturnType<typeof getSettingsBrand>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSettingsBrand>>, TError, TData>>, }
@@ -720,8 +720,8 @@ export const prefetchGetSettingsBrandQuery = async <TData = Awaited<ReturnType<t
 
 
 /**
- * PUT `/settings/brand` — cấu hình. Cần quyền `brand.admin`. Xử lý bởi `brandSettingsService.update`.
- * @summary Cập nhật cấu hình thương hiệu và khu vực
+ * PUT `/settings/brand` — settings. Requires `brand.admin` permission. Handled by `brandSettingsService.update`.
+ * @summary Update brand and region settings
  */
 export const putSettingsBrand = (
     brandSettingsUpdate: BrandSettingsUpdate,
@@ -768,7 +768,7 @@ const {mutation: mutationOptions} = options ?
     export type PutSettingsBrandMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Cập nhật cấu hình thương hiệu và khu vực
+ * @summary Update brand and region settings
  */
 export const usePutSettingsBrand = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putSettingsBrand>>, TError,{data: BrandSettingsUpdate}, TContext>, }
@@ -784,8 +784,8 @@ export const usePutSettingsBrand = <TError = UnauthorizedResponse | ForbiddenRes
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * PUT `/integrations/{provider}` — tích hợp. Cần quyền `brand.admin`. Xử lý bởi `integrationService.update`.
- * @summary Cập nhật cấu hình tích hợp
+ * PUT `/integrations/{provider}` — integrations. Requires the `brand.admin` permission. Handled by `integrationService.update`.
+ * @summary Update an integration configuration
  */
 export const putIntegrationsProvider = (
     provider: 'ZALO_OA' | 'ZALO_ZBS' | 'EMAIL_SMTP' | 'EMAIL_API',
@@ -833,7 +833,7 @@ const {mutation: mutationOptions} = options ?
     export type PutIntegrationsProviderMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Cập nhật cấu hình tích hợp
+ * @summary Update an integration configuration
  */
 export const usePutIntegrationsProvider = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putIntegrationsProvider>>, TError,{provider: 'ZALO_OA' | 'ZALO_ZBS' | 'EMAIL_SMTP' | 'EMAIL_API';data: IntegrationUpdate}, TContext>, }
@@ -849,8 +849,8 @@ export const usePutIntegrationsProvider = <TError = UnauthorizedResponse | Forbi
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/integrations` — tích hợp. Cần quyền `brand.admin`. Xử lý bởi `integrationService.list`.
- * @summary Liệt kê trạng thái các tích hợp
+ * GET `/integrations` — integrations. Requires the `brand.admin` permission. Handled by `integrationService.list`.
+ * @summary List integration statuses
  */
 export const getIntegrations = (
     
@@ -927,7 +927,7 @@ export function useGetIntegrationsInfinite<TData = InfiniteData<Awaited<ReturnTy
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Liệt kê trạng thái các tích hợp
+ * @summary List integration statuses
  */
 
 export function useGetIntegrationsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getIntegrations>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -945,7 +945,7 @@ export function useGetIntegrationsInfinite<TData = InfiniteData<Awaited<ReturnTy
 }
 
 /**
- * @summary Liệt kê trạng thái các tích hợp
+ * @summary List integration statuses
  */
 export const prefetchGetIntegrationsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getIntegrations>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getIntegrations>>, TError, TData>>, }
@@ -1008,7 +1008,7 @@ export function useGetIntegrations<TData = Awaited<ReturnType<typeof getIntegrat
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Liệt kê trạng thái các tích hợp
+ * @summary List integration statuses
  */
 
 export function useGetIntegrations<TData = Awaited<ReturnType<typeof getIntegrations>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -1026,7 +1026,7 @@ export function useGetIntegrations<TData = Awaited<ReturnType<typeof getIntegrat
 }
 
 /**
- * @summary Liệt kê trạng thái các tích hợp
+ * @summary List integration statuses
  */
 export const prefetchGetIntegrationsQuery = async <TData = Awaited<ReturnType<typeof getIntegrations>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getIntegrations>>, TError, TData>>, }
@@ -1043,8 +1043,8 @@ export const prefetchGetIntegrationsQuery = async <TData = Awaited<ReturnType<ty
 
 
 /**
- * POST `/integrations/{provider}/test` — tích hợp. Với EMAIL_API, request gửi một thư kiểm tra thật tới `config_public.test_email`. Cần quyền `brand.admin`. Xử lý bởi `integrationService.test`.
- * @summary Kiểm tra kết nối của tích hợp
+ * POST `/integrations/{provider}/test` — integrations. With EMAIL_API, the request sends a real test email to `config_public.test_email`. Requires the `brand.admin` permission. Handled by `integrationService.test`.
+ * @summary Test an integration connection
  */
 export const postIntegrationsProviderTest = (
     provider: 'ZALO_OA' | 'ZALO_ZBS' | 'EMAIL_SMTP' | 'EMAIL_API',
@@ -1093,7 +1093,7 @@ const {mutation: mutationOptions} = options ?
     export type PostIntegrationsProviderTestMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Kiểm tra kết nối của tích hợp
+ * @summary Test an integration connection
  */
 export const usePostIntegrationsProviderTest = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postIntegrationsProviderTest>>, TError,{provider: 'ZALO_OA' | 'ZALO_ZBS' | 'EMAIL_SMTP' | 'EMAIL_API';data: IntegrationUpdate}, TContext>, }
@@ -1109,8 +1109,8 @@ export const usePostIntegrationsProviderTest = <TError = UnauthorizedResponse | 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **DC-03** — GET /discount-rules/{id}. Cần quyền `discount.read`.
- * @summary Xem chi tiết quy tắc giảm giá
+ * **DC-03** — GET /discount-rules/{id}. Requires the `discount.read` permission.
+ * @summary View discount rule details
  */
 export const getDiscountRulesId = (
     id: string,
@@ -1187,7 +1187,7 @@ export function useGetDiscountRulesIdInfinite<TData = InfiniteData<Awaited<Retur
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết quy tắc giảm giá
+ * @summary View discount rule details
  */
 
 export function useGetDiscountRulesIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getDiscountRulesId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -1205,7 +1205,7 @@ export function useGetDiscountRulesIdInfinite<TData = InfiniteData<Awaited<Retur
 }
 
 /**
- * @summary Xem chi tiết quy tắc giảm giá
+ * @summary View discount rule details
  */
 export const prefetchGetDiscountRulesIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getDiscountRulesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getDiscountRulesId>>, TError, TData>>, }
@@ -1268,7 +1268,7 @@ export function useGetDiscountRulesId<TData = Awaited<ReturnType<typeof getDisco
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết quy tắc giảm giá
+ * @summary View discount rule details
  */
 
 export function useGetDiscountRulesId<TData = Awaited<ReturnType<typeof getDiscountRulesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -1286,7 +1286,7 @@ export function useGetDiscountRulesId<TData = Awaited<ReturnType<typeof getDisco
 }
 
 /**
- * @summary Xem chi tiết quy tắc giảm giá
+ * @summary View discount rule details
  */
 export const prefetchGetDiscountRulesIdQuery = async <TData = Awaited<ReturnType<typeof getDiscountRulesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDiscountRulesId>>, TError, TData>>, }
@@ -1303,8 +1303,8 @@ export const prefetchGetDiscountRulesIdQuery = async <TData = Awaited<ReturnType
 
 
 /**
- * **DC-04** — PUT /discount-rules/{id}. Cần quyền `discount.update`. Trường body: `code`, `name`, `audience`, `applies_to`, `requires_rank_id`, `percent_min`, `percent_max`, `max_total_percent`, `start_date`, `end_date`, `is_active`.
- * @summary Cập nhật quy tắc giảm giá
+ * **DC-04** — PUT /discount-rules/{id}. Requires the `discount.update` permission. Body fields: `code`, `name`, `audience`, `applies_to`, `requires_rank_id`, `percent_min`, `percent_max`, `max_total_percent`, `start_date`, `end_date`, `is_active`.
+ * @summary Update a discount rule
  */
 export const putDiscountRulesId = (
     id: string,
@@ -1352,7 +1352,7 @@ const {mutation: mutationOptions} = options ?
     export type PutDiscountRulesIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Cập nhật quy tắc giảm giá
+ * @summary Update a discount rule
  */
 export const usePutDiscountRulesId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putDiscountRulesId>>, TError,{id: string;data: PutDiscountRulesIdBody}, TContext>, }
@@ -1368,8 +1368,8 @@ export const usePutDiscountRulesId = <TError = UnauthorizedResponse | ForbiddenR
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **DC-05** — DELETE /discount-rules/{id} — ẩn (is_active=false). Cần quyền `discount.delete`.
- * @summary Xóa quy tắc giảm giá
+ * **DC-05** — DELETE /discount-rules/{id} — soft delete (is_active=false). Requires the `discount.delete` permission.
+ * @summary Delete a discount rule
  */
 export const deleteDiscountRulesId = (
     id: string,
@@ -1414,7 +1414,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteDiscountRulesIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Xóa quy tắc giảm giá
+ * @summary Delete a discount rule
  */
 export const useDeleteDiscountRulesId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDiscountRulesId>>, TError,{id: string}, TContext>, }
@@ -1430,8 +1430,8 @@ export const useDeleteDiscountRulesId = <TError = UnauthorizedResponse | Forbidd
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **DC-01** — GET /discount-rules. Cần quyền `discount.read`. Tham số truy vấn: `is_active`, `audience`.
- * @summary Lấy danh sách quy tắc giảm giá
+ * **DC-01** — GET /discount-rules. Requires the `discount.read` permission. Query parameters: `is_active`, `audience`.
+ * @summary List discount rules
  */
 export const getDiscountRules = (
     params?: GetDiscountRulesParams,
@@ -1509,7 +1509,7 @@ export function useGetDiscountRulesInfinite<TData = InfiniteData<Awaited<ReturnT
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách quy tắc giảm giá
+ * @summary List discount rules
  */
 
 export function useGetDiscountRulesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getDiscountRules>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -1527,7 +1527,7 @@ export function useGetDiscountRulesInfinite<TData = InfiniteData<Awaited<ReturnT
 }
 
 /**
- * @summary Lấy danh sách quy tắc giảm giá
+ * @summary List discount rules
  */
 export const prefetchGetDiscountRulesInfiniteQuery = async <TData = Awaited<ReturnType<typeof getDiscountRules>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetDiscountRulesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getDiscountRules>>, TError, TData>>, }
@@ -1590,7 +1590,7 @@ export function useGetDiscountRules<TData = Awaited<ReturnType<typeof getDiscoun
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách quy tắc giảm giá
+ * @summary List discount rules
  */
 
 export function useGetDiscountRules<TData = Awaited<ReturnType<typeof getDiscountRules>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -1608,7 +1608,7 @@ export function useGetDiscountRules<TData = Awaited<ReturnType<typeof getDiscoun
 }
 
 /**
- * @summary Lấy danh sách quy tắc giảm giá
+ * @summary List discount rules
  */
 export const prefetchGetDiscountRulesQuery = async <TData = Awaited<ReturnType<typeof getDiscountRules>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetDiscountRulesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDiscountRules>>, TError, TData>>, }
@@ -1625,8 +1625,8 @@ export const prefetchGetDiscountRulesQuery = async <TData = Awaited<ReturnType<t
 
 
 /**
- * **DC-02** — POST /discount-rules. Cần quyền `discount.create`. Trường body: `code`, `name`, `audience`, `applies_to`, `requires_rank_id`, `percent_min`, `percent_max`, `max_total_percent`, `start_date`, `end_date`.
- * @summary Tạo quy tắc giảm giá mới
+ * **DC-02** — POST /discount-rules. Requires the `discount.create` permission. Body fields: `code`, `name`, `audience`, `applies_to`, `requires_rank_id`, `percent_min`, `percent_max`, `max_total_percent`, `start_date`, `end_date`.
+ * @summary Create a new discount rule
  */
 export const postDiscountRules = (
     postDiscountRulesBody: PostDiscountRulesBody,
@@ -1674,7 +1674,7 @@ const {mutation: mutationOptions} = options ?
     export type PostDiscountRulesMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Tạo quy tắc giảm giá mới
+ * @summary Create a new discount rule
  */
 export const usePostDiscountRules = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postDiscountRules>>, TError,{data: PostDiscountRulesBody}, TContext>, }
@@ -1690,8 +1690,8 @@ export const usePostDiscountRules = <TError = UnauthorizedResponse | ForbiddenRe
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **CF-02** — GET /custom-field-defs/{id}. Cần quyền `custom_field.read`.
- * @summary Xem chi tiết trường tùy chỉnh
+ * **CF-02** — GET /custom-field-defs/{id}. Requires `custom_field.read` permission.
+ * @summary Get custom field details
  */
 export const getCustomFieldDefsId = (
     id: string,
@@ -1768,7 +1768,7 @@ export function useGetCustomFieldDefsIdInfinite<TData = InfiniteData<Awaited<Ret
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết trường tùy chỉnh
+ * @summary Get custom field details
  */
 
 export function useGetCustomFieldDefsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCustomFieldDefsId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -1786,7 +1786,7 @@ export function useGetCustomFieldDefsIdInfinite<TData = InfiniteData<Awaited<Ret
 }
 
 /**
- * @summary Xem chi tiết trường tùy chỉnh
+ * @summary Get custom field details
  */
 export const prefetchGetCustomFieldDefsIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getCustomFieldDefsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomFieldDefsId>>, TError, TData>>, }
@@ -1849,7 +1849,7 @@ export function useGetCustomFieldDefsId<TData = Awaited<ReturnType<typeof getCus
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết trường tùy chỉnh
+ * @summary Get custom field details
  */
 
 export function useGetCustomFieldDefsId<TData = Awaited<ReturnType<typeof getCustomFieldDefsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -1867,7 +1867,7 @@ export function useGetCustomFieldDefsId<TData = Awaited<ReturnType<typeof getCus
 }
 
 /**
- * @summary Xem chi tiết trường tùy chỉnh
+ * @summary Get custom field details
  */
 export const prefetchGetCustomFieldDefsIdQuery = async <TData = Awaited<ReturnType<typeof getCustomFieldDefsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomFieldDefsId>>, TError, TData>>, }
@@ -1884,8 +1884,8 @@ export const prefetchGetCustomFieldDefsIdQuery = async <TData = Awaited<ReturnTy
 
 
 /**
- * **CF-04** — PUT /custom-field-defs/{id} (không đổi key, data_type nếu đã có dữ liệu — kiểm tra ở tầng service khi áp dụng). Cần quyền `custom_field.update`. Trường body: `label`, `options`, `lookup_list_id`, `required`, `visible_to_customer`, `sort_order`, `is_active`, `data_type`.
- * @summary Cập nhật trường tùy chỉnh
+ * **CF-04** — PUT /custom-field-defs/{id} (key and data_type cannot be changed once data exists — checked at the service layer on apply). Requires `custom_field.update` permission. Body fields: `label`, `options`, `lookup_list_id`, `required`, `visible_to_customer`, `sort_order`, `is_active`, `data_type`.
+ * @summary Update a custom field
  */
 export const putCustomFieldDefsId = (
     id: string,
@@ -1933,7 +1933,7 @@ const {mutation: mutationOptions} = options ?
     export type PutCustomFieldDefsIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Cập nhật trường tùy chỉnh
+ * @summary Update a custom field
  */
 export const usePutCustomFieldDefsId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putCustomFieldDefsId>>, TError,{id: string;data: PutCustomFieldDefsIdBody}, TContext>, }
@@ -1949,8 +1949,8 @@ export const usePutCustomFieldDefsId = <TError = UnauthorizedResponse | Forbidde
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **CF-05** — DELETE /custom-field-defs/{id}: ẩn trường, không xóa dữ liệu đã nhập. Cần quyền `custom_field.delete`.
- * @summary Xóa trường tùy chỉnh
+ * **CF-05** — DELETE /custom-field-defs/{id}: hides the field without deleting previously entered data. Requires `custom_field.delete` permission.
+ * @summary Delete a custom field
  */
 export const deleteCustomFieldDefsId = (
     id: string,
@@ -1995,7 +1995,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteCustomFieldDefsIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Xóa trường tùy chỉnh
+ * @summary Delete a custom field
  */
 export const useDeleteCustomFieldDefsId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteCustomFieldDefsId>>, TError,{id: string}, TContext>, }
@@ -2011,8 +2011,8 @@ export const useDeleteCustomFieldDefsId = <TError = UnauthorizedResponse | Forbi
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **CF-01** — GET /custom-field-defs. Cần quyền `custom_field.read`. Tham số truy vấn: `entity`, `is_active`.
- * @summary Lấy danh sách trường tùy chỉnh
+ * **CF-01** — GET /custom-field-defs. Requires `custom_field.read` permission. Query parameters: `entity`, `is_active`.
+ * @summary List custom fields
  */
 export const getCustomFieldDefs = (
     params?: GetCustomFieldDefsParams,
@@ -2090,7 +2090,7 @@ export function useGetCustomFieldDefsInfinite<TData = InfiniteData<Awaited<Retur
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách trường tùy chỉnh
+ * @summary List custom fields
  */
 
 export function useGetCustomFieldDefsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCustomFieldDefs>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -2108,7 +2108,7 @@ export function useGetCustomFieldDefsInfinite<TData = InfiniteData<Awaited<Retur
 }
 
 /**
- * @summary Lấy danh sách trường tùy chỉnh
+ * @summary List custom fields
  */
 export const prefetchGetCustomFieldDefsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getCustomFieldDefs>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetCustomFieldDefsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomFieldDefs>>, TError, TData>>, }
@@ -2171,7 +2171,7 @@ export function useGetCustomFieldDefs<TData = Awaited<ReturnType<typeof getCusto
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách trường tùy chỉnh
+ * @summary List custom fields
  */
 
 export function useGetCustomFieldDefs<TData = Awaited<ReturnType<typeof getCustomFieldDefs>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -2189,7 +2189,7 @@ export function useGetCustomFieldDefs<TData = Awaited<ReturnType<typeof getCusto
 }
 
 /**
- * @summary Lấy danh sách trường tùy chỉnh
+ * @summary List custom fields
  */
 export const prefetchGetCustomFieldDefsQuery = async <TData = Awaited<ReturnType<typeof getCustomFieldDefs>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetCustomFieldDefsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomFieldDefs>>, TError, TData>>, }
@@ -2206,8 +2206,8 @@ export const prefetchGetCustomFieldDefsQuery = async <TData = Awaited<ReturnType
 
 
 /**
- * **CF-03** — POST /custom-field-defs. Cần quyền `custom_field.create`. Trường body: `entity`, `key`, `label`, `data_type`, `options`, `lookup_list_id`, `required`, `visible_to_customer`, `sort_order`.
- * @summary Tạo trường tùy chỉnh mới
+ * **CF-03** — POST /custom-field-defs. Requires `custom_field.create` permission. Body fields: `entity`, `key`, `label`, `data_type`, `options`, `lookup_list_id`, `required`, `visible_to_customer`, `sort_order`.
+ * @summary Create a new custom field
  */
 export const postCustomFieldDefs = (
     postCustomFieldDefsBody: PostCustomFieldDefsBody,
@@ -2255,7 +2255,7 @@ const {mutation: mutationOptions} = options ?
     export type PostCustomFieldDefsMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Tạo trường tùy chỉnh mới
+ * @summary Create a new custom field
  */
 export const usePostCustomFieldDefs = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postCustomFieldDefs>>, TError,{data: PostCustomFieldDefsBody}, TContext>, }

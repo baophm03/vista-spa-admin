@@ -19,7 +19,7 @@ page?: number;
 limit?: number;
 user_id?: string;
 /**
- * Lọc theo cơ sở của hồ sơ khách; nhật ký không có hồ sơ dùng cơ sở nhân viên thực hiện
+ * Filter by the customer profile's branch; logs without a profile use the branch of the staff member who performed the action
  */
 branch_id?: string;
 customer_profile_id?: string;

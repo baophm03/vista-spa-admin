@@ -53,8 +53,8 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * **LK-04** — GET /lookup-lists/{id} (kèm items). Cần quyền `lookup.read`.
- * @summary Xem chi tiết danh mục chọn
+ * **LK-04** — GET /lookup-lists/{id} (including items). Requires the `lookup.read` permission.
+ * @summary View lookup list details
  */
 export const getLookupListsId = (
     id: string,
@@ -131,7 +131,7 @@ export function useGetLookupListsIdInfinite<TData = InfiniteData<Awaited<ReturnT
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết danh mục chọn
+ * @summary View lookup list details
  */
 
 export function useGetLookupListsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getLookupListsId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -149,7 +149,7 @@ export function useGetLookupListsIdInfinite<TData = InfiniteData<Awaited<ReturnT
 }
 
 /**
- * @summary Xem chi tiết danh mục chọn
+ * @summary View lookup list details
  */
 export const prefetchGetLookupListsIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getLookupListsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLookupListsId>>, TError, TData>>, }
@@ -212,7 +212,7 @@ export function useGetLookupListsId<TData = Awaited<ReturnType<typeof getLookupL
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết danh mục chọn
+ * @summary View lookup list details
  */
 
 export function useGetLookupListsId<TData = Awaited<ReturnType<typeof getLookupListsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -230,7 +230,7 @@ export function useGetLookupListsId<TData = Awaited<ReturnType<typeof getLookupL
 }
 
 /**
- * @summary Xem chi tiết danh mục chọn
+ * @summary View lookup list details
  */
 export const prefetchGetLookupListsIdQuery = async <TData = Awaited<ReturnType<typeof getLookupListsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLookupListsId>>, TError, TData>>, }
@@ -247,8 +247,8 @@ export const prefetchGetLookupListsIdQuery = async <TData = Awaited<ReturnType<t
 
 
 /**
- * **LK-05** — PUT /lookup-lists/{id} — chỉ đổi name/is_active (key bất biến). Cần quyền `lookup.update`. Trường body: `name`, `is_active`, `item_order`.
- * @summary Cập nhật danh mục chọn
+ * **LK-05** — PUT /lookup-lists/{id} — only name/is_active can be changed (key is immutable). Requires the `lookup.update` permission. Body fields: `name`, `is_active`, `item_order`.
+ * @summary Update a lookup list
  */
 export const putLookupListsId = (
     id: string,
@@ -296,7 +296,7 @@ const {mutation: mutationOptions} = options ?
     export type PutLookupListsIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Cập nhật danh mục chọn
+ * @summary Update a lookup list
  */
 export const usePutLookupListsId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putLookupListsId>>, TError,{id: string;data: PutLookupListsIdBody}, TContext>, }
@@ -312,8 +312,8 @@ export const usePutLookupListsId = <TError = UnauthorizedResponse | ForbiddenRes
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **LK-06** — DELETE /lookup-lists/{id} — chặn is_system. Cần quyền `lookup.delete`.
- * @summary Xóa danh mục chọn
+ * **LK-06** — DELETE /lookup-lists/{id} — blocked for is_system lists. Requires the `lookup.delete` permission.
+ * @summary Delete a lookup list
  */
 export const deleteLookupListsId = (
     id: string,
@@ -358,7 +358,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteLookupListsIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Xóa danh mục chọn
+ * @summary Delete a lookup list
  */
 export const useDeleteLookupListsId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteLookupListsId>>, TError,{id: string}, TContext>, }
@@ -374,8 +374,8 @@ export const useDeleteLookupListsId = <TError = UnauthorizedResponse | Forbidden
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/lookupLists` — danh mục chọn. Cần quyền `lookup.read`. Tham số truy vấn: `is_active`, `key`, `items_is_active`, `q`.
- * @summary Lấy danh sách danh mục chọn
+ * GET `/lookupLists` — lookup lists. Requires the `lookup.read` permission. Query parameters: `is_active`, `key`, `items_is_active`, `q`.
+ * @summary List lookup lists
  */
 export const getLookupLists = (
     params?: GetLookupListsParams,
@@ -453,7 +453,7 @@ export function useGetLookupListsInfinite<TData = InfiniteData<Awaited<ReturnTyp
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách danh mục chọn
+ * @summary List lookup lists
  */
 
 export function useGetLookupListsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getLookupLists>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -471,7 +471,7 @@ export function useGetLookupListsInfinite<TData = InfiniteData<Awaited<ReturnTyp
 }
 
 /**
- * @summary Lấy danh sách danh mục chọn
+ * @summary List lookup lists
  */
 export const prefetchGetLookupListsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getLookupLists>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetLookupListsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLookupLists>>, TError, TData>>, }
@@ -534,7 +534,7 @@ export function useGetLookupLists<TData = Awaited<ReturnType<typeof getLookupLis
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách danh mục chọn
+ * @summary List lookup lists
  */
 
 export function useGetLookupLists<TData = Awaited<ReturnType<typeof getLookupLists>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -552,7 +552,7 @@ export function useGetLookupLists<TData = Awaited<ReturnType<typeof getLookupLis
 }
 
 /**
- * @summary Lấy danh sách danh mục chọn
+ * @summary List lookup lists
  */
 export const prefetchGetLookupListsQuery = async <TData = Awaited<ReturnType<typeof getLookupLists>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetLookupListsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLookupLists>>, TError, TData>>, }
@@ -569,8 +569,8 @@ export const prefetchGetLookupListsQuery = async <TData = Awaited<ReturnType<typ
 
 
 /**
- * POST `/lookupLists` — danh mục chọn. Cần quyền `lookup.create`. Trường body: `key`, `name`, `is_system`, `items`.
- * @summary Tạo danh mục chọn mới
+ * POST `/lookupLists` — lookup lists. Requires the `lookup.create` permission. Body fields: `key`, `name`, `is_system`, `items`.
+ * @summary Create a new lookup list
  */
 export const postLookupLists = (
     postLookupListsBody: PostLookupListsBody,
@@ -618,7 +618,7 @@ const {mutation: mutationOptions} = options ?
     export type PostLookupListsMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Tạo danh mục chọn mới
+ * @summary Create a new lookup list
  */
 export const usePostLookupLists = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postLookupLists>>, TError,{data: PostLookupListsBody}, TContext>, }
