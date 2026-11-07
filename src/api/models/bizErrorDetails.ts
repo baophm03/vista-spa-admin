@@ -6,4 +6,8 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type BizErrorDetails = { [key: string]: unknown };
+/**
+ * Extra details attached to BizError (e.g. affected_appointments)
+ * @nullable
+ */
+export type BizErrorDetails = { [key: string]: unknown } | null;

@@ -70,8 +70,8 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * GET `/policy/{id}` — trang chính sách. Công khai, không cần đăng nhập. Xử lý bởi `cmsContentProvider.getById`.
- * @summary Xem chi tiết trang chính sách
+ * GET `/policy/{id}` — policy pages. Public, no authentication required. Handled by `cmsContentProvider.getById`.
+ * @summary View policy page detail
  */
 export const getPolicyId = (
     id: string,
@@ -148,7 +148,7 @@ export function useGetPolicyIdInfinite<TData = InfiniteData<Awaited<ReturnType<t
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết trang chính sách
+ * @summary View policy page detail
  */
 
 export function useGetPolicyIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getPolicyId>>>, TError = LegacyBadRequestResponse | void>(
@@ -166,7 +166,7 @@ export function useGetPolicyIdInfinite<TData = InfiniteData<Awaited<ReturnType<t
 }
 
 /**
- * @summary Xem chi tiết trang chính sách
+ * @summary View policy page detail
  */
 export const prefetchGetPolicyIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getPolicyId>>, TError = LegacyBadRequestResponse | void>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getPolicyId>>, TError, TData>>, }
@@ -229,7 +229,7 @@ export function useGetPolicyId<TData = Awaited<ReturnType<typeof getPolicyId>>, 
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết trang chính sách
+ * @summary View policy page detail
  */
 
 export function useGetPolicyId<TData = Awaited<ReturnType<typeof getPolicyId>>, TError = LegacyBadRequestResponse | void>(
@@ -247,7 +247,7 @@ export function useGetPolicyId<TData = Awaited<ReturnType<typeof getPolicyId>>, 
 }
 
 /**
- * @summary Xem chi tiết trang chính sách
+ * @summary View policy page detail
  */
 export const prefetchGetPolicyIdQuery = async <TData = Awaited<ReturnType<typeof getPolicyId>>, TError = LegacyBadRequestResponse | void>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPolicyId>>, TError, TData>>, }
@@ -264,8 +264,8 @@ export const prefetchGetPolicyIdQuery = async <TData = Awaited<ReturnType<typeof
 
 
 /**
- * PUT `/policy/{id}` — trang chính sách. **Công khai, không cần đăng nhập.** Route này hiện không gắn middleware xác thực hay phân quyền nào. Xử lý bởi `cmsContentProvider.put`.
- * @summary Cập nhật trang chính sách
+ * PUT `/policy/{id}` — policy pages. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `cmsContentProvider.put`.
+ * @summary Update a policy page
  */
 export const putPolicyId = (
     id: string,
@@ -313,7 +313,7 @@ const {mutation: mutationOptions} = options ?
     export type PutPolicyIdMutationError = LegacyBadRequestResponse | void
 
     /**
- * @summary Cập nhật trang chính sách
+ * @summary Update a policy page
  */
 export const usePutPolicyId = <TError = LegacyBadRequestResponse | void,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putPolicyId>>, TError,{id: string;data: CmsContentCreate}, TContext>, }
@@ -329,8 +329,8 @@ export const usePutPolicyId = <TError = LegacyBadRequestResponse | void,
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * DELETE `/policy/{id}` — trang chính sách. **Công khai, không cần đăng nhập.** Route này hiện không gắn middleware xác thực hay phân quyền nào. Xử lý bởi `cmsContentProvider.delete`.
- * @summary Xóa trang chính sách
+ * DELETE `/policy/{id}` — policy pages. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `cmsContentProvider.delete`.
+ * @summary Delete a policy page
  */
 export const deletePolicyId = (
     id: string,
@@ -375,7 +375,7 @@ const {mutation: mutationOptions} = options ?
     export type DeletePolicyIdMutationError = LegacyBadRequestResponse | void
 
     /**
- * @summary Xóa trang chính sách
+ * @summary Delete a policy page
  */
 export const useDeletePolicyId = <TError = LegacyBadRequestResponse | void,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deletePolicyId>>, TError,{id: string}, TContext>, }
@@ -391,8 +391,8 @@ export const useDeletePolicyId = <TError = LegacyBadRequestResponse | void,
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/policy` — trang chính sách. Công khai, không cần đăng nhập. Xử lý bởi `cmsContentProvider.getAll`.
- * @summary Liệt kê trang chính sách
+ * GET `/policy` — policy pages. Public, no authentication required. Handled by `cmsContentProvider.getAll`.
+ * @summary List policy pages
  */
 export const getPolicy = (
     
@@ -469,7 +469,7 @@ export function useGetPolicyInfinite<TData = InfiniteData<Awaited<ReturnType<typ
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Liệt kê trang chính sách
+ * @summary List policy pages
  */
 
 export function useGetPolicyInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getPolicy>>>, TError = LegacyBadRequestResponse>(
@@ -487,7 +487,7 @@ export function useGetPolicyInfinite<TData = InfiniteData<Awaited<ReturnType<typ
 }
 
 /**
- * @summary Liệt kê trang chính sách
+ * @summary List policy pages
  */
 export const prefetchGetPolicyInfiniteQuery = async <TData = Awaited<ReturnType<typeof getPolicy>>, TError = LegacyBadRequestResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getPolicy>>, TError, TData>>, }
@@ -550,7 +550,7 @@ export function useGetPolicy<TData = Awaited<ReturnType<typeof getPolicy>>, TErr
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Liệt kê trang chính sách
+ * @summary List policy pages
  */
 
 export function useGetPolicy<TData = Awaited<ReturnType<typeof getPolicy>>, TError = LegacyBadRequestResponse>(
@@ -568,7 +568,7 @@ export function useGetPolicy<TData = Awaited<ReturnType<typeof getPolicy>>, TErr
 }
 
 /**
- * @summary Liệt kê trang chính sách
+ * @summary List policy pages
  */
 export const prefetchGetPolicyQuery = async <TData = Awaited<ReturnType<typeof getPolicy>>, TError = LegacyBadRequestResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPolicy>>, TError, TData>>, }
@@ -585,8 +585,8 @@ export const prefetchGetPolicyQuery = async <TData = Awaited<ReturnType<typeof g
 
 
 /**
- * POST `/policy` — trang chính sách. **Công khai, không cần đăng nhập.** Route này hiện không gắn middleware xác thực hay phân quyền nào. Xử lý bởi `cmsContentProvider.post`.
- * @summary Tạo trang chính sách
+ * POST `/policy` — policy pages. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `cmsContentProvider.post`.
+ * @summary Create a policy page
  */
 export const postPolicy = (
     cmsContentCreate: CmsContentCreate,
@@ -634,7 +634,7 @@ const {mutation: mutationOptions} = options ?
     export type PostPolicyMutationError = LegacyBadRequestResponse
 
     /**
- * @summary Tạo trang chính sách
+ * @summary Create a policy page
  */
 export const usePostPolicy = <TError = LegacyBadRequestResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postPolicy>>, TError,{data: CmsContentCreate}, TContext>, }
@@ -650,8 +650,8 @@ export const usePostPolicy = <TError = LegacyBadRequestResponse,
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * PUT `/pageConfig/{id}` — cấu hình trang. Cần đăng nhập; route không khai báo quyền chi tiết. Trường body: `content`. Xử lý bởi `pageConfigProvider.put`.
- * @summary Cập nhật cấu hình trang
+ * PUT `/pageConfig/{id}` — page configuration. Requires authentication; the route does not declare detailed permissions. Body field: `content`. Handled by `pageConfigProvider.put`.
+ * @summary Update page configuration
  */
 export const putPageConfigId = (
     id: string,
@@ -699,7 +699,7 @@ const {mutation: mutationOptions} = options ?
     export type PutPageConfigIdMutationError = LegacyUnauthorizedResponse | void
 
     /**
- * @summary Cập nhật cấu hình trang
+ * @summary Update page configuration
  */
 export const usePutPageConfigId = <TError = LegacyUnauthorizedResponse | void,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putPageConfigId>>, TError,{id: string;data: PutPageConfigIdBody}, TContext>, }
@@ -715,8 +715,8 @@ export const usePutPageConfigId = <TError = LegacyUnauthorizedResponse | void,
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/pageConfig` — cấu hình trang. Công khai, không cần đăng nhập. Tham số truy vấn: `currentPage`, `pageSize`, `filters`, `sortField`, `sortOrder`. Xử lý bởi `pageConfigProvider.getAll`.
- * @summary Liệt kê cấu hình trang
+ * GET `/pageConfig` — page configuration. Public, no authentication required. Query parameters: `currentPage`, `pageSize`, `filters`, `sortField`, `sortOrder`. Handled by `pageConfigProvider.getAll`.
+ * @summary List page configurations
  */
 export const getPageConfig = (
     params?: GetPageConfigParams,
@@ -794,7 +794,7 @@ export function useGetPageConfigInfinite<TData = InfiniteData<Awaited<ReturnType
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Liệt kê cấu hình trang
+ * @summary List page configurations
  */
 
 export function useGetPageConfigInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getPageConfig>>>, TError = LegacyBadRequestResponse>(
@@ -812,7 +812,7 @@ export function useGetPageConfigInfinite<TData = InfiniteData<Awaited<ReturnType
 }
 
 /**
- * @summary Liệt kê cấu hình trang
+ * @summary List page configurations
  */
 export const prefetchGetPageConfigInfiniteQuery = async <TData = Awaited<ReturnType<typeof getPageConfig>>, TError = LegacyBadRequestResponse>(
  queryClient: QueryClient, params?: GetPageConfigParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getPageConfig>>, TError, TData>>, }
@@ -875,7 +875,7 @@ export function useGetPageConfig<TData = Awaited<ReturnType<typeof getPageConfig
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Liệt kê cấu hình trang
+ * @summary List page configurations
  */
 
 export function useGetPageConfig<TData = Awaited<ReturnType<typeof getPageConfig>>, TError = LegacyBadRequestResponse>(
@@ -893,7 +893,7 @@ export function useGetPageConfig<TData = Awaited<ReturnType<typeof getPageConfig
 }
 
 /**
- * @summary Liệt kê cấu hình trang
+ * @summary List page configurations
  */
 export const prefetchGetPageConfigQuery = async <TData = Awaited<ReturnType<typeof getPageConfig>>, TError = LegacyBadRequestResponse>(
  queryClient: QueryClient, params?: GetPageConfigParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPageConfig>>, TError, TData>>, }
@@ -910,8 +910,8 @@ export const prefetchGetPageConfigQuery = async <TData = Awaited<ReturnType<type
 
 
 /**
- * POST `/pageConfig` — cấu hình trang. **Công khai, không cần đăng nhập.** Route này hiện không gắn middleware xác thực hay phân quyền nào. Trường body: `name`, `code`, `content`. Xử lý bởi `pageConfigProvider.post`.
- * @summary Tạo cấu hình trang
+ * POST `/pageConfig` — page configuration. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Body fields: `name`, `code`, `content`. Handled by `pageConfigProvider.post`.
+ * @summary Create page configuration
  */
 export const postPageConfig = (
     postPageConfigBody: PostPageConfigBody,
@@ -959,7 +959,7 @@ const {mutation: mutationOptions} = options ?
     export type PostPageConfigMutationError = LegacyBadRequestResponse
 
     /**
- * @summary Tạo cấu hình trang
+ * @summary Create page configuration
  */
 export const usePostPageConfig = <TError = LegacyBadRequestResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postPageConfig>>, TError,{data: PostPageConfigBody}, TContext>, }
@@ -975,8 +975,8 @@ export const usePostPageConfig = <TError = LegacyBadRequestResponse,
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **CMS-08** — GET /content-posts/{id}. Cần quyền `content.read`.
- * @summary Xem chi tiết bài viết
+ * **CMS-08** — GET /content-posts/{id}. Requires `content.read` permission.
+ * @summary Get post details
  */
 export const getContentPostsId = (
     id: string,
@@ -1053,7 +1053,7 @@ export function useGetContentPostsIdInfinite<TData = InfiniteData<Awaited<Return
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết bài viết
+ * @summary Get post details
  */
 
 export function useGetContentPostsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getContentPostsId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -1071,7 +1071,7 @@ export function useGetContentPostsIdInfinite<TData = InfiniteData<Awaited<Return
 }
 
 /**
- * @summary Xem chi tiết bài viết
+ * @summary Get post details
  */
 export const prefetchGetContentPostsIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getContentPostsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentPostsId>>, TError, TData>>, }
@@ -1134,7 +1134,7 @@ export function useGetContentPostsId<TData = Awaited<ReturnType<typeof getConten
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết bài viết
+ * @summary Get post details
  */
 
 export function useGetContentPostsId<TData = Awaited<ReturnType<typeof getContentPostsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -1152,7 +1152,7 @@ export function useGetContentPostsId<TData = Awaited<ReturnType<typeof getConten
 }
 
 /**
- * @summary Xem chi tiết bài viết
+ * @summary Get post details
  */
 export const prefetchGetContentPostsIdQuery = async <TData = Awaited<ReturnType<typeof getContentPostsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getContentPostsId>>, TError, TData>>, }
@@ -1169,8 +1169,8 @@ export const prefetchGetContentPostsIdQuery = async <TData = Awaited<ReturnType<
 
 
 /**
- * **CMS-09** — PUT /content-posts/{id} — không sửa khi ARCHIVED. Cần quyền `content.update`. Trường body: `category_id`, `title`, `slug`, `summary`, `content`, `cover_url`, `video_url`, `branch_id`, `is_active`.
- * @summary Cập nhật bài viết
+ * **CMS-09** — PUT /content-posts/{id} — cannot be edited when ARCHIVED. Requires `content.update` permission. Body fields: `category_id`, `title`, `slug`, `summary`, `content`, `cover_url`, `video_url`, `branch_id`, `is_active`.
+ * @summary Update a post
  */
 export const putContentPostsId = (
     id: string,
@@ -1218,7 +1218,7 @@ const {mutation: mutationOptions} = options ?
     export type PutContentPostsIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Cập nhật bài viết
+ * @summary Update a post
  */
 export const usePutContentPostsId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putContentPostsId>>, TError,{id: string;data: PutContentPostsIdBody}, TContext>, }
@@ -1234,8 +1234,8 @@ export const usePutContentPostsId = <TError = UnauthorizedResponse | ForbiddenRe
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **CMS-10** — DELETE /content-posts/{id} — ẩn (is_active=false). Cần quyền `content.delete`.
- * @summary Xóa bài viết
+ * **CMS-10** — DELETE /content-posts/{id} — hides the post (is_active=false). Requires `content.delete` permission.
+ * @summary Delete a post
  */
 export const deleteContentPostsId = (
     id: string,
@@ -1280,7 +1280,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteContentPostsIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Xóa bài viết
+ * @summary Delete a post
  */
 export const useDeleteContentPostsId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteContentPostsId>>, TError,{id: string}, TContext>, }
@@ -1296,8 +1296,8 @@ export const useDeleteContentPostsId = <TError = UnauthorizedResponse | Forbidde
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **CMS-06** — GET /content-posts. Cần quyền `content.read`. Tham số truy vấn: `status`, `category_id`, `q`, `page`, `limit`.
- * @summary Lấy danh sách bài viết
+ * **CMS-06** — GET /content-posts. Requires `content.read` permission. Query parameters: `status`, `category_id`, `q`, `page`, `limit`.
+ * @summary List posts
  */
 export const getContentPosts = (
     params?: GetContentPostsParams,
@@ -1375,7 +1375,7 @@ export function useGetContentPostsInfinite<TData = InfiniteData<Awaited<ReturnTy
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách bài viết
+ * @summary List posts
  */
 
 export function useGetContentPostsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getContentPosts>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -1393,7 +1393,7 @@ export function useGetContentPostsInfinite<TData = InfiniteData<Awaited<ReturnTy
 }
 
 /**
- * @summary Lấy danh sách bài viết
+ * @summary List posts
  */
 export const prefetchGetContentPostsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getContentPosts>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetContentPostsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentPosts>>, TError, TData>>, }
@@ -1456,7 +1456,7 @@ export function useGetContentPosts<TData = Awaited<ReturnType<typeof getContentP
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách bài viết
+ * @summary List posts
  */
 
 export function useGetContentPosts<TData = Awaited<ReturnType<typeof getContentPosts>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -1474,7 +1474,7 @@ export function useGetContentPosts<TData = Awaited<ReturnType<typeof getContentP
 }
 
 /**
- * @summary Lấy danh sách bài viết
+ * @summary List posts
  */
 export const prefetchGetContentPostsQuery = async <TData = Awaited<ReturnType<typeof getContentPosts>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetContentPostsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getContentPosts>>, TError, TData>>, }
@@ -1491,8 +1491,8 @@ export const prefetchGetContentPostsQuery = async <TData = Awaited<ReturnType<ty
 
 
 /**
- * **CMS-07** — POST /content-posts. Cần quyền `content.create`. Trường body: `category_id`, `title`, `slug`, `summary`, `content`, `cover_url`, `video_url`, `branch_id`.
- * @summary Tạo bài viết mới
+ * **CMS-07** — POST /content-posts. Requires `content.create` permission. Body fields: `category_id`, `title`, `slug`, `summary`, `content`, `cover_url`, `video_url`, `branch_id`.
+ * @summary Create a new post
  */
 export const postContentPosts = (
     postContentPostsBody: PostContentPostsBody,
@@ -1540,7 +1540,7 @@ const {mutation: mutationOptions} = options ?
     export type PostContentPostsMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Tạo bài viết mới
+ * @summary Create a new post
  */
 export const usePostContentPosts = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postContentPosts>>, TError,{data: PostContentPostsBody}, TContext>, }
@@ -1556,8 +1556,8 @@ export const usePostContentPosts = <TError = UnauthorizedResponse | ForbiddenRes
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **CMS-12** — PUT /content-posts/{id}/unpublish — PUBLISHED → DRAFT. Cần quyền `content.update`.
- * @summary Gỡ xuất bản
+ * **CMS-12** — PUT /content-posts/{id}/unpublish — PUBLISHED → DRAFT. Requires `content.update` permission.
+ * @summary Unpublish a post
  */
 export const putContentPostsIdUnpublish = (
     id: string,
@@ -1602,7 +1602,7 @@ const {mutation: mutationOptions} = options ?
     export type PutContentPostsIdUnpublishMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Gỡ xuất bản
+ * @summary Unpublish a post
  */
 export const usePutContentPostsIdUnpublish = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putContentPostsIdUnpublish>>, TError,{id: string}, TContext>, }
@@ -1618,8 +1618,8 @@ export const usePutContentPostsIdUnpublish = <TError = UnauthorizedResponse | Fo
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **CMS-11** — PUT /content-posts/{id}/publish — DRAFT/ARCHIVED → PUBLISHED. Cần quyền `content.update`.
- * @summary Xuất bản
+ * **CMS-11** — PUT /content-posts/{id}/publish — DRAFT/ARCHIVED → PUBLISHED. Requires `content.update` permission.
+ * @summary Publish a post
  */
 export const putContentPostsIdPublish = (
     id: string,
@@ -1664,7 +1664,7 @@ const {mutation: mutationOptions} = options ?
     export type PutContentPostsIdPublishMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Xuất bản
+ * @summary Publish a post
  */
 export const usePutContentPostsIdPublish = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putContentPostsIdPublish>>, TError,{id: string}, TContext>, }
@@ -1680,8 +1680,8 @@ export const usePutContentPostsIdPublish = <TError = UnauthorizedResponse | Forb
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **CMS-03** — GET /content-categories/{id}. Cần quyền `content.read`.
- * @summary Xem chi tiết danh mục nội dung
+ * **CMS-03** — GET /content-categories/{id}. Requires `content.read` permission.
+ * @summary Get content category details
  */
 export const getContentCategoriesId = (
     id: string,
@@ -1758,7 +1758,7 @@ export function useGetContentCategoriesIdInfinite<TData = InfiniteData<Awaited<R
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết danh mục nội dung
+ * @summary Get content category details
  */
 
 export function useGetContentCategoriesIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getContentCategoriesId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -1776,7 +1776,7 @@ export function useGetContentCategoriesIdInfinite<TData = InfiniteData<Awaited<R
 }
 
 /**
- * @summary Xem chi tiết danh mục nội dung
+ * @summary Get content category details
  */
 export const prefetchGetContentCategoriesIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getContentCategoriesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentCategoriesId>>, TError, TData>>, }
@@ -1839,7 +1839,7 @@ export function useGetContentCategoriesId<TData = Awaited<ReturnType<typeof getC
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết danh mục nội dung
+ * @summary Get content category details
  */
 
 export function useGetContentCategoriesId<TData = Awaited<ReturnType<typeof getContentCategoriesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -1857,7 +1857,7 @@ export function useGetContentCategoriesId<TData = Awaited<ReturnType<typeof getC
 }
 
 /**
- * @summary Xem chi tiết danh mục nội dung
+ * @summary Get content category details
  */
 export const prefetchGetContentCategoriesIdQuery = async <TData = Awaited<ReturnType<typeof getContentCategoriesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getContentCategoriesId>>, TError, TData>>, }
@@ -1874,8 +1874,8 @@ export const prefetchGetContentCategoriesIdQuery = async <TData = Awaited<Return
 
 
 /**
- * **CMS-04** — PUT /content-categories/{id}. Cần quyền `content.update`. Trường body: `name`, `slug`, `display_type`, `sort_order`, `is_active`.
- * @summary Cập nhật danh mục nội dung
+ * **CMS-04** — PUT /content-categories/{id}. Requires `content.update` permission. Body fields: `name`, `slug`, `display_type`, `sort_order`, `is_active`.
+ * @summary Update a content category
  */
 export const putContentCategoriesId = (
     id: string,
@@ -1923,7 +1923,7 @@ const {mutation: mutationOptions} = options ?
     export type PutContentCategoriesIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Cập nhật danh mục nội dung
+ * @summary Update a content category
  */
 export const usePutContentCategoriesId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putContentCategoriesId>>, TError,{id: string;data: PutContentCategoriesIdBody}, TContext>, }
@@ -1939,8 +1939,8 @@ export const usePutContentCategoriesId = <TError = UnauthorizedResponse | Forbid
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **CMS-05** — DELETE /content-categories/{id} — chặn khi còn bài PUBLISHED. Cần quyền `content.delete`.
- * @summary Xóa danh mục nội dung
+ * **CMS-05** — DELETE /content-categories/{id} — blocked while the category still has PUBLISHED posts. Requires `content.delete` permission.
+ * @summary Delete a content category
  */
 export const deleteContentCategoriesId = (
     id: string,
@@ -1985,7 +1985,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteContentCategoriesIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Xóa danh mục nội dung
+ * @summary Delete a content category
  */
 export const useDeleteContentCategoriesId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteContentCategoriesId>>, TError,{id: string}, TContext>, }
@@ -2001,8 +2001,8 @@ export const useDeleteContentCategoriesId = <TError = UnauthorizedResponse | For
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **CMS-01** — GET /content-categories. Cần quyền `content.read`. Tham số truy vấn: `is_active`.
- * @summary Lấy danh sách danh mục nội dung
+ * **CMS-01** — GET /content-categories. Requires `content.read` permission. Query parameters: `is_active`.
+ * @summary List content categories
  */
 export const getContentCategories = (
     params?: GetContentCategoriesParams,
@@ -2080,7 +2080,7 @@ export function useGetContentCategoriesInfinite<TData = InfiniteData<Awaited<Ret
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách danh mục nội dung
+ * @summary List content categories
  */
 
 export function useGetContentCategoriesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getContentCategories>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -2098,7 +2098,7 @@ export function useGetContentCategoriesInfinite<TData = InfiniteData<Awaited<Ret
 }
 
 /**
- * @summary Lấy danh sách danh mục nội dung
+ * @summary List content categories
  */
 export const prefetchGetContentCategoriesInfiniteQuery = async <TData = Awaited<ReturnType<typeof getContentCategories>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetContentCategoriesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentCategories>>, TError, TData>>, }
@@ -2161,7 +2161,7 @@ export function useGetContentCategories<TData = Awaited<ReturnType<typeof getCon
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách danh mục nội dung
+ * @summary List content categories
  */
 
 export function useGetContentCategories<TData = Awaited<ReturnType<typeof getContentCategories>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -2179,7 +2179,7 @@ export function useGetContentCategories<TData = Awaited<ReturnType<typeof getCon
 }
 
 /**
- * @summary Lấy danh sách danh mục nội dung
+ * @summary List content categories
  */
 export const prefetchGetContentCategoriesQuery = async <TData = Awaited<ReturnType<typeof getContentCategories>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetContentCategoriesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getContentCategories>>, TError, TData>>, }
@@ -2196,8 +2196,8 @@ export const prefetchGetContentCategoriesQuery = async <TData = Awaited<ReturnTy
 
 
 /**
- * **CMS-02** — POST /content-categories. Cần quyền `content.create`. Trường body: `name`, `slug`, `display_type`, `sort_order`.
- * @summary Tạo danh mục nội dung mới
+ * **CMS-02** — POST /content-categories. Requires `content.create` permission. Body fields: `name`, `slug`, `display_type`, `sort_order`.
+ * @summary Create a new content category
  */
 export const postContentCategories = (
     postContentCategoriesBody: PostContentCategoriesBody,
@@ -2245,7 +2245,7 @@ const {mutation: mutationOptions} = options ?
     export type PostContentCategoriesMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Tạo danh mục nội dung mới
+ * @summary Create a new content category
  */
 export const usePostContentCategories = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postContentCategories>>, TError,{data: PostContentCategoriesBody}, TContext>, }

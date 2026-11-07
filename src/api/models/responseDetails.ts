@@ -7,7 +7,7 @@
  */
 
 /**
- * Chi tiết bổ sung kèm BizError (vd: affected_appointments)
+ * Extra details attached to BizError (e.g. affected_appointments)
  * @nullable
  */
 export type ResponseDetails = { [key: string]: unknown } | null;

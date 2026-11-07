@@ -21,11 +21,7 @@ currentPage?: number;
  */
 pageSize?: number;
 /**
- * Biểu thức lọc của sequelize-api-paginate
- */
-filters?: string;
-/**
- * Tên trường sắp xếp (sequelize-api-paginate)
+ * Sort field name (sequelize-api-paginate)
  */
 sortField?: string;
 sortOrder?: GetUsersVouchersSortOrder;

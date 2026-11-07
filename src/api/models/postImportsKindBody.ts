@@ -10,6 +10,6 @@ export type PostImportsKindBody = {
   file?: Blob;
   dry_run?: boolean;
   branch_id?: string;
-  /** JSON map field -> chỉ số cột (0-based) */
+  /** JSON map of field -> column index (0-based) */
   column_mapping?: string;
 };

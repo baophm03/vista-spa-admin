@@ -52,8 +52,8 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * **RP-06** — GET /reports/sessionsUsed. Cần một trong các quyền: `report.read`, `report.session.read`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Tham số truy vấn: `from_date`, `to_date`, `branch_id`, `group_by`, `staff_id`, `customer_profile_id`.
- * @summary Xem báo cáo
+ * **RP-06** — GET /reports/sessionsUsed. Requires one of the permissions: `report.read`, `report.session.read`. Branch scope: users limited to one branch only see that branch's data. Query parameters: `from_date`, `to_date`, `branch_id`, `group_by`, `staff_id`, `customer_profile_id`.
+ * @summary View sessions used report
  */
 export const getReportsSessionsUsed = (
     params?: GetReportsSessionsUsedParams,
@@ -131,7 +131,7 @@ export function useGetReportsSessionsUsedInfinite<TData = InfiniteData<Awaited<R
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem báo cáo
+ * @summary View sessions used report
  */
 
 export function useGetReportsSessionsUsedInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsSessionsUsed>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -149,7 +149,7 @@ export function useGetReportsSessionsUsedInfinite<TData = InfiniteData<Awaited<R
 }
 
 /**
- * @summary Xem báo cáo
+ * @summary View sessions used report
  */
 export const prefetchGetReportsSessionsUsedInfiniteQuery = async <TData = Awaited<ReturnType<typeof getReportsSessionsUsed>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetReportsSessionsUsedParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsSessionsUsed>>, TError, TData>>, }
@@ -212,7 +212,7 @@ export function useGetReportsSessionsUsed<TData = Awaited<ReturnType<typeof getR
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem báo cáo
+ * @summary View sessions used report
  */
 
 export function useGetReportsSessionsUsed<TData = Awaited<ReturnType<typeof getReportsSessionsUsed>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -230,7 +230,7 @@ export function useGetReportsSessionsUsed<TData = Awaited<ReturnType<typeof getR
 }
 
 /**
- * @summary Xem báo cáo
+ * @summary View sessions used report
  */
 export const prefetchGetReportsSessionsUsedQuery = async <TData = Awaited<ReturnType<typeof getReportsSessionsUsed>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetReportsSessionsUsedParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsSessionsUsed>>, TError, TData>>, }
@@ -247,8 +247,8 @@ export const prefetchGetReportsSessionsUsedQuery = async <TData = Awaited<Return
 
 
 /**
- * **RP-01** — GET /reports/revenue?branch_id&from_date&to_date&group_by=day|month. Cần một trong các quyền: `report.read`, `report.revenue.read`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Tham số truy vấn: `from_date`, `to_date`, `branch_id`, `group_by`, `customer_profile_id`, `staff_id`.
- * @summary Xem báo cáo
+ * **RP-01** — GET /reports/revenue?branch_id&from_date&to_date&group_by=day|month. Requires one of the permissions: `report.read`, `report.revenue.read`. Branch scope: users limited to one branch only see that branch's data. Query parameters: `from_date`, `to_date`, `branch_id`, `group_by`, `customer_profile_id`, `staff_id`.
+ * @summary View revenue report
  */
 export const getReportsRevenue = (
     params?: GetReportsRevenueParams,
@@ -326,7 +326,7 @@ export function useGetReportsRevenueInfinite<TData = InfiniteData<Awaited<Return
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem báo cáo
+ * @summary View revenue report
  */
 
 export function useGetReportsRevenueInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsRevenue>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -344,7 +344,7 @@ export function useGetReportsRevenueInfinite<TData = InfiniteData<Awaited<Return
 }
 
 /**
- * @summary Xem báo cáo
+ * @summary View revenue report
  */
 export const prefetchGetReportsRevenueInfiniteQuery = async <TData = Awaited<ReturnType<typeof getReportsRevenue>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetReportsRevenueParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsRevenue>>, TError, TData>>, }
@@ -407,7 +407,7 @@ export function useGetReportsRevenue<TData = Awaited<ReturnType<typeof getReport
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem báo cáo
+ * @summary View revenue report
  */
 
 export function useGetReportsRevenue<TData = Awaited<ReturnType<typeof getReportsRevenue>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -425,7 +425,7 @@ export function useGetReportsRevenue<TData = Awaited<ReturnType<typeof getReport
 }
 
 /**
- * @summary Xem báo cáo
+ * @summary View revenue report
  */
 export const prefetchGetReportsRevenueQuery = async <TData = Awaited<ReturnType<typeof getReportsRevenue>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetReportsRevenueParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsRevenue>>, TError, TData>>, }
@@ -442,8 +442,8 @@ export const prefetchGetReportsRevenueQuery = async <TData = Awaited<ReturnType<
 
 
 /**
- * **RP-03** — GET /reports/ranks?branch_id&from_date&to_date&group_by — phân bố + nâng hạng theo kỳ. Cần một trong các quyền: `report.read`, `report.rank.read`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Tham số truy vấn: `branch_id`, `from_date`, `to_date`, `group_by`.
- * @summary Xem hạng thành viên
+ * **RP-03** — GET /reports/ranks?branch_id&from_date&to_date&group_by — distribution + rank upgrades per period. Requires one of the permissions: `report.read`, `report.rank.read`. Branch scope: users limited to one branch only see that branch's data. Query parameters: `branch_id`, `from_date`, `to_date`, `group_by`.
+ * @summary View membership ranks
  */
 export const getReportsRanks = (
     params?: GetReportsRanksParams,
@@ -521,7 +521,7 @@ export function useGetReportsRanksInfinite<TData = InfiniteData<Awaited<ReturnTy
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem hạng thành viên
+ * @summary View membership ranks
  */
 
 export function useGetReportsRanksInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsRanks>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -539,7 +539,7 @@ export function useGetReportsRanksInfinite<TData = InfiniteData<Awaited<ReturnTy
 }
 
 /**
- * @summary Xem hạng thành viên
+ * @summary View membership ranks
  */
 export const prefetchGetReportsRanksInfiniteQuery = async <TData = Awaited<ReturnType<typeof getReportsRanks>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetReportsRanksParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsRanks>>, TError, TData>>, }
@@ -602,7 +602,7 @@ export function useGetReportsRanks<TData = Awaited<ReturnType<typeof getReportsR
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem hạng thành viên
+ * @summary View membership ranks
  */
 
 export function useGetReportsRanks<TData = Awaited<ReturnType<typeof getReportsRanks>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -620,7 +620,7 @@ export function useGetReportsRanks<TData = Awaited<ReturnType<typeof getReportsR
 }
 
 /**
- * @summary Xem hạng thành viên
+ * @summary View membership ranks
  */
 export const prefetchGetReportsRanksQuery = async <TData = Awaited<ReturnType<typeof getReportsRanks>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetReportsRanksParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsRanks>>, TError, TData>>, }
@@ -637,8 +637,8 @@ export const prefetchGetReportsRanksQuery = async <TData = Awaited<ReturnType<ty
 
 
 /**
- * **RP-05** — GET /reports/newCustomers. Cần một trong các quyền: `report.read`, `report.customer.read`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Tham số truy vấn: `from_date`, `to_date`, `branch_id`, `group_by`.
- * @summary Xem báo cáo
+ * **RP-05** — GET /reports/newCustomers. Requires one of the permissions: `report.read`, `report.customer.read`. Branch scope: users limited to one branch only see that branch's data. Query parameters: `from_date`, `to_date`, `branch_id`, `group_by`.
+ * @summary View new customers report
  */
 export const getReportsNewCustomers = (
     params?: GetReportsNewCustomersParams,
@@ -716,7 +716,7 @@ export function useGetReportsNewCustomersInfinite<TData = InfiniteData<Awaited<R
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem báo cáo
+ * @summary View new customers report
  */
 
 export function useGetReportsNewCustomersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsNewCustomers>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -734,7 +734,7 @@ export function useGetReportsNewCustomersInfinite<TData = InfiniteData<Awaited<R
 }
 
 /**
- * @summary Xem báo cáo
+ * @summary View new customers report
  */
 export const prefetchGetReportsNewCustomersInfiniteQuery = async <TData = Awaited<ReturnType<typeof getReportsNewCustomers>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetReportsNewCustomersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsNewCustomers>>, TError, TData>>, }
@@ -797,7 +797,7 @@ export function useGetReportsNewCustomers<TData = Awaited<ReturnType<typeof getR
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem báo cáo
+ * @summary View new customers report
  */
 
 export function useGetReportsNewCustomers<TData = Awaited<ReturnType<typeof getReportsNewCustomers>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -815,7 +815,7 @@ export function useGetReportsNewCustomers<TData = Awaited<ReturnType<typeof getR
 }
 
 /**
- * @summary Xem báo cáo
+ * @summary View new customers report
  */
 export const prefetchGetReportsNewCustomersQuery = async <TData = Awaited<ReturnType<typeof getReportsNewCustomers>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetReportsNewCustomersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsNewCustomers>>, TError, TData>>, }
@@ -832,8 +832,8 @@ export const prefetchGetReportsNewCustomersQuery = async <TData = Awaited<Return
 
 
 /**
- * **RP-02** — GET /reports/debts?branch_id&customer_profile_id. Cần một trong các quyền: `report.read`, `report.debt.read`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Tham số truy vấn: `branch_id`, `customer_profile_id`.
- * @summary Xem báo cáo
+ * **RP-02** — GET /reports/debts?branch_id&customer_profile_id. Requires one of the permissions: `report.read`, `report.debt.read`. Branch scope: users limited to one branch only see that branch's data. Query parameters: `branch_id`, `customer_profile_id`.
+ * @summary View debt report
  */
 export const getReportsDebts = (
     params?: GetReportsDebtsParams,
@@ -911,7 +911,7 @@ export function useGetReportsDebtsInfinite<TData = InfiniteData<Awaited<ReturnTy
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem báo cáo
+ * @summary View debt report
  */
 
 export function useGetReportsDebtsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsDebts>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -929,7 +929,7 @@ export function useGetReportsDebtsInfinite<TData = InfiniteData<Awaited<ReturnTy
 }
 
 /**
- * @summary Xem báo cáo
+ * @summary View debt report
  */
 export const prefetchGetReportsDebtsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getReportsDebts>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetReportsDebtsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsDebts>>, TError, TData>>, }
@@ -992,7 +992,7 @@ export function useGetReportsDebts<TData = Awaited<ReturnType<typeof getReportsD
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem báo cáo
+ * @summary View debt report
  */
 
 export function useGetReportsDebts<TData = Awaited<ReturnType<typeof getReportsDebts>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -1010,7 +1010,7 @@ export function useGetReportsDebts<TData = Awaited<ReturnType<typeof getReportsD
 }
 
 /**
- * @summary Xem báo cáo
+ * @summary View debt report
  */
 export const prefetchGetReportsDebtsQuery = async <TData = Awaited<ReturnType<typeof getReportsDebts>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetReportsDebtsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsDebts>>, TError, TData>>, }
@@ -1027,8 +1027,8 @@ export const prefetchGetReportsDebtsQuery = async <TData = Awaited<ReturnType<ty
 
 
 /**
- * **RP-07** — GET /reports/commissions (chỉ ADM — quyền riêng). Cần quyền `report.commission.read`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Tham số truy vấn: `from_date`, `to_date`, `branch_id`, `group_by`, `staff_id`, `customer_profile_id`.
- * @summary Xem báo cáo
+ * **RP-07** — GET /reports/commissions (ADM only — dedicated permission). Requires `report.commission.read` permission. Branch scope: users limited to one branch only see that branch's data. Query parameters: `from_date`, `to_date`, `branch_id`, `group_by`, `staff_id`, `customer_profile_id`.
+ * @summary View commission report
  */
 export const getReportsCommissions = (
     params?: GetReportsCommissionsParams,
@@ -1106,7 +1106,7 @@ export function useGetReportsCommissionsInfinite<TData = InfiniteData<Awaited<Re
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem báo cáo
+ * @summary View commission report
  */
 
 export function useGetReportsCommissionsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsCommissions>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -1124,7 +1124,7 @@ export function useGetReportsCommissionsInfinite<TData = InfiniteData<Awaited<Re
 }
 
 /**
- * @summary Xem báo cáo
+ * @summary View commission report
  */
 export const prefetchGetReportsCommissionsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getReportsCommissions>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetReportsCommissionsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsCommissions>>, TError, TData>>, }
@@ -1187,7 +1187,7 @@ export function useGetReportsCommissions<TData = Awaited<ReturnType<typeof getRe
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem báo cáo
+ * @summary View commission report
  */
 
 export function useGetReportsCommissions<TData = Awaited<ReturnType<typeof getReportsCommissions>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -1205,7 +1205,7 @@ export function useGetReportsCommissions<TData = Awaited<ReturnType<typeof getRe
 }
 
 /**
- * @summary Xem báo cáo
+ * @summary View commission report
  */
 export const prefetchGetReportsCommissionsQuery = async <TData = Awaited<ReturnType<typeof getReportsCommissions>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetReportsCommissionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsCommissions>>, TError, TData>>, }
@@ -1222,8 +1222,8 @@ export const prefetchGetReportsCommissionsQuery = async <TData = Awaited<ReturnT
 
 
 /**
- * **RP-04** — GET /reports/appointments?branch_id&from_date&to_date&staff_id. Cần một trong các quyền: `report.read`, `report.appointment.read`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Tham số truy vấn: `from_date`, `to_date`, `branch_id`, `staff_id`.
- * @summary Xem lịch hẹn
+ * **RP-04** — GET /reports/appointments?branch_id&from_date&to_date&staff_id. Requires one of the permissions: `report.read`, `report.appointment.read`. Branch scope: users limited to one branch only see that branch's data. Query parameters: `from_date`, `to_date`, `branch_id`, `staff_id`.
+ * @summary View appointments
  */
 export const getReportsAppointments = (
     params?: GetReportsAppointmentsParams,
@@ -1301,7 +1301,7 @@ export function useGetReportsAppointmentsInfinite<TData = InfiniteData<Awaited<R
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem lịch hẹn
+ * @summary View appointments
  */
 
 export function useGetReportsAppointmentsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsAppointments>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -1319,7 +1319,7 @@ export function useGetReportsAppointmentsInfinite<TData = InfiniteData<Awaited<R
 }
 
 /**
- * @summary Xem lịch hẹn
+ * @summary View appointments
  */
 export const prefetchGetReportsAppointmentsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getReportsAppointments>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetReportsAppointmentsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsAppointments>>, TError, TData>>, }
@@ -1382,7 +1382,7 @@ export function useGetReportsAppointments<TData = Awaited<ReturnType<typeof getR
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem lịch hẹn
+ * @summary View appointments
  */
 
 export function useGetReportsAppointments<TData = Awaited<ReturnType<typeof getReportsAppointments>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -1400,7 +1400,7 @@ export function useGetReportsAppointments<TData = Awaited<ReturnType<typeof getR
 }
 
 /**
- * @summary Xem lịch hẹn
+ * @summary View appointments
  */
 export const prefetchGetReportsAppointmentsQuery = async <TData = Awaited<ReturnType<typeof getReportsAppointments>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetReportsAppointmentsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsAppointments>>, TError, TData>>, }

@@ -173,7 +173,9 @@ export function applyCssVars() {
 export function applyBrandSettings(settings: BrandSettings) {
   const { brand, locale } = settings
   const name = brand.name || 'Vista Spa'
-  const logoUrl = brand.logo_url || brand.logo_file_id || null
+  // BE trả logo_file object (id/path trong bảng file) — path ghép imageEndpoint khi render
+  const logoPath = (brand as { logo_file?: { path?: string | null } | null })?.logo_file?.path || null
+  const logoUrl = logoPath
   const primaryColor = brand.primary_color || brandColors.primary
   const tertiaryColor = (brand as { tertiary_color?: string }).tertiary_color || getTertiaryColor()
   const secondaryColor = (brand as { secondary_color?: string }).secondary_color || getSecondaryColor()

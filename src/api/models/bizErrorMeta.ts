@@ -7,6 +7,6 @@
  */
 
 /**
- * URL logo (đọc từ logo_file_id)
+ * @nullable
  */
-export type BrandSettingsBrandLogoUrl = string | null;
+export type BizErrorMeta = unknown | null;

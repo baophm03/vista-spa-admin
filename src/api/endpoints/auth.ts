@@ -31,8 +31,8 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * POST `/auth/register` — phiên đăng nhập. **Công khai, không cần đăng nhập.** Route này hiện không gắn middleware xác thực hay phân quyền nào. Trường body: `password`. Xử lý bởi `userProvider.getOne`.
- * @summary Đăng ký tài khoản khách hàng
+ * POST `/auth/register` — login session. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Body fields: `password`. Handled by `userProvider.getOne`.
+ * @summary Register a customer account
  */
 export const postAuthRegister = (
     postAuthRegisterBody: PostAuthRegisterBody,
@@ -80,7 +80,7 @@ const {mutation: mutationOptions} = options ?
     export type PostAuthRegisterMutationError = LegacyBadRequestResponse
 
     /**
- * @summary Đăng ký tài khoản khách hàng
+ * @summary Register a customer account
  */
 export const usePostAuthRegister = <TError = LegacyBadRequestResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAuthRegister>>, TError,{data: PostAuthRegisterBody}, TContext>, }
@@ -96,8 +96,8 @@ export const usePostAuthRegister = <TError = LegacyBadRequestResponse,
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * POST `/auth/loginMedical` — phiên đăng nhập. **Công khai, không cần đăng nhập.** Route này hiện không gắn middleware xác thực hay phân quyền nào. Trường body: `account`, `password`. Xử lý bởi `externalAPIService.login`.
- * @summary Đăng nhập hệ thống y tế
+ * POST `/auth/loginMedical` — login session. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Body fields: `account`, `password`. Handled by `externalAPIService.login`.
+ * @summary Log in to the medical system
  */
 export const postAuthLoginMedical = (
     postAuthLoginMedicalBody: PostAuthLoginMedicalBody,
@@ -145,7 +145,7 @@ const {mutation: mutationOptions} = options ?
     export type PostAuthLoginMedicalMutationError = LegacyBadRequestResponse
 
     /**
- * @summary Đăng nhập hệ thống y tế
+ * @summary Log in to the medical system
  */
 export const usePostAuthLoginMedical = <TError = LegacyBadRequestResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAuthLoginMedical>>, TError,{data: PostAuthLoginMedicalBody}, TContext>, }
@@ -161,8 +161,8 @@ export const usePostAuthLoginMedical = <TError = LegacyBadRequestResponse,
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * POST `/auth/login` — phiên đăng nhập. **Công khai, không cần đăng nhập.** Route này hiện không gắn middleware xác thực hay phân quyền nào. Trường body: `identifier`, `password`. Xử lý bởi `userProvider.getUserByEmailOrPhone`.
- * @summary Đăng nhập bằng email, số điện thoại hoặc tên Zalo
+ * POST `/auth/login` — login session. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Body fields: `identifier`, `password`. Handled by `userProvider.getUserByEmailOrPhone`.
+ * @summary Log in with email, phone number or Zalo name
  */
 export const postAuthLogin = (
     postAuthLoginBody: PostAuthLoginBody,
@@ -210,7 +210,7 @@ const {mutation: mutationOptions} = options ?
     export type PostAuthLoginMutationError = LegacyBadRequestResponse
 
     /**
- * @summary Đăng nhập bằng email, số điện thoại hoặc tên Zalo
+ * @summary Log in with email, phone number or Zalo name
  */
 export const usePostAuthLogin = <TError = LegacyBadRequestResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAuthLogin>>, TError,{data: PostAuthLoginBody}, TContext>, }
@@ -226,8 +226,8 @@ export const usePostAuthLogin = <TError = LegacyBadRequestResponse,
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * POST `/auth/genNewAccessToken` — phiên đăng nhập. **Công khai, không cần đăng nhập.** Route này hiện không gắn middleware xác thực hay phân quyền nào. Trường body: `refreshToken`. Xử lý bởi `userProvider.validateSession`.
- * @summary Cấp lại access token từ refresh token
+ * POST `/auth/genNewAccessToken` — login session. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Body fields: `refreshToken`. Handled by `userProvider.validateSession`.
+ * @summary Issue a new access token from a refresh token
  */
 export const postAuthGenNewAccessToken = (
     postAuthGenNewAccessTokenBody: PostAuthGenNewAccessTokenBody,
@@ -275,7 +275,7 @@ const {mutation: mutationOptions} = options ?
     export type PostAuthGenNewAccessTokenMutationError = LegacyBadRequestResponse
 
     /**
- * @summary Cấp lại access token từ refresh token
+ * @summary Issue a new access token from a refresh token
  */
 export const usePostAuthGenNewAccessToken = <TError = LegacyBadRequestResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAuthGenNewAccessToken>>, TError,{data: PostAuthGenNewAccessTokenBody}, TContext>, }

@@ -74,8 +74,8 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * **TP-02** — GET /treatment-packages/{id}. Cần quyền `treatment_package.read`.
- * @summary Xem chi tiết gói dịch vụ
+ * **TP-02** — GET /treatment-packages/{id}. Requires permission `treatment_package.read`.
+ * @summary View treatment package details
  */
 export const getTreatmentPackagesId = (
     id: string,
@@ -152,7 +152,7 @@ export function useGetTreatmentPackagesIdInfinite<TData = InfiniteData<Awaited<R
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết gói dịch vụ
+ * @summary View treatment package details
  */
 
 export function useGetTreatmentPackagesIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentPackagesId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -170,7 +170,7 @@ export function useGetTreatmentPackagesIdInfinite<TData = InfiniteData<Awaited<R
 }
 
 /**
- * @summary Xem chi tiết gói dịch vụ
+ * @summary View treatment package details
  */
 export const prefetchGetTreatmentPackagesIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getTreatmentPackagesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackagesId>>, TError, TData>>, }
@@ -233,7 +233,7 @@ export function useGetTreatmentPackagesId<TData = Awaited<ReturnType<typeof getT
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết gói dịch vụ
+ * @summary View treatment package details
  */
 
 export function useGetTreatmentPackagesId<TData = Awaited<ReturnType<typeof getTreatmentPackagesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -251,7 +251,7 @@ export function useGetTreatmentPackagesId<TData = Awaited<ReturnType<typeof getT
 }
 
 /**
- * @summary Xem chi tiết gói dịch vụ
+ * @summary View treatment package details
  */
 export const prefetchGetTreatmentPackagesIdQuery = async <TData = Awaited<ReturnType<typeof getTreatmentPackagesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackagesId>>, TError, TData>>, }
@@ -268,8 +268,8 @@ export const prefetchGetTreatmentPackagesIdQuery = async <TData = Awaited<Return
 
 
 /**
- * **TP-04** — PUT /treatment-packages/{id}; sold package snapshots stay unchanged.. Cần quyền `treatment_package.update`. Trường body: `custom_fields`. Body được chuyển nguyên vẹn vào lớp nghiệp vụ.
- * @summary Cập nhật gói dịch vụ
+ * **TP-04** — PUT /treatment-packages/{id}; sold package snapshots stay unchanged.. Requires permission `treatment_package.update`. Body fields: `custom_fields`. The body is passed as-is to the business layer.
+ * @summary Update a treatment package
  */
 export const putTreatmentPackagesId = (
     id: string,
@@ -317,7 +317,7 @@ const {mutation: mutationOptions} = options ?
     export type PutTreatmentPackagesIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Cập nhật gói dịch vụ
+ * @summary Update a treatment package
  */
 export const usePutTreatmentPackagesId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putTreatmentPackagesId>>, TError,{id: string;data: PutTreatmentPackagesIdBody}, TContext>, }
@@ -333,8 +333,8 @@ export const usePutTreatmentPackagesId = <TError = UnauthorizedResponse | Forbid
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **TP-05** — DELETE /treatment-packages/{id} (soft delete). Cần quyền `treatment_package.delete`.
- * @summary Xóa gói dịch vụ
+ * **TP-05** — DELETE /treatment-packages/{id} (soft delete). Requires permission `treatment_package.delete`.
+ * @summary Delete a treatment package
  */
 export const deleteTreatmentPackagesId = (
     id: string,
@@ -379,7 +379,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteTreatmentPackagesIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Xóa gói dịch vụ
+ * @summary Delete a treatment package
  */
 export const useDeleteTreatmentPackagesId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTreatmentPackagesId>>, TError,{id: string}, TContext>, }
@@ -395,8 +395,8 @@ export const useDeleteTreatmentPackagesId = <TError = UnauthorizedResponse | For
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **TP-01** — GET /treatment-packages. Cần quyền `treatment_package.read`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Tham số truy vấn: `page`, `limit`, `is_active`, `quota_type`, `package_type_id`, `branch_id`.
- * @summary Lấy danh sách gói dịch vụ
+ * **TP-01** — GET /treatment-packages. Requires permission `treatment_package.read`. Branch scope: users restricted to a single branch only see that branch's data. Query parameters: `page`, `limit`, `is_active`, `quota_type`, `package_type_id`, `branch_id`.
+ * @summary List treatment packages
  */
 export const getTreatmentPackages = (
     params?: GetTreatmentPackagesParams,
@@ -474,7 +474,7 @@ export function useGetTreatmentPackagesInfinite<TData = InfiniteData<Awaited<Ret
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách gói dịch vụ
+ * @summary List treatment packages
  */
 
 export function useGetTreatmentPackagesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentPackages>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -492,7 +492,7 @@ export function useGetTreatmentPackagesInfinite<TData = InfiniteData<Awaited<Ret
 }
 
 /**
- * @summary Lấy danh sách gói dịch vụ
+ * @summary List treatment packages
  */
 export const prefetchGetTreatmentPackagesInfiniteQuery = async <TData = Awaited<ReturnType<typeof getTreatmentPackages>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetTreatmentPackagesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackages>>, TError, TData>>, }
@@ -555,7 +555,7 @@ export function useGetTreatmentPackages<TData = Awaited<ReturnType<typeof getTre
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách gói dịch vụ
+ * @summary List treatment packages
  */
 
 export function useGetTreatmentPackages<TData = Awaited<ReturnType<typeof getTreatmentPackages>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -573,7 +573,7 @@ export function useGetTreatmentPackages<TData = Awaited<ReturnType<typeof getTre
 }
 
 /**
- * @summary Lấy danh sách gói dịch vụ
+ * @summary List treatment packages
  */
 export const prefetchGetTreatmentPackagesQuery = async <TData = Awaited<ReturnType<typeof getTreatmentPackages>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetTreatmentPackagesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackages>>, TError, TData>>, }
@@ -590,8 +590,8 @@ export const prefetchGetTreatmentPackagesQuery = async <TData = Awaited<ReturnTy
 
 
 /**
- * **TP-03** — POST /treatment-packages (BR-05). Cần quyền `treatment_package.create`.
- * @summary Tạo gói dịch vụ mới
+ * **TP-03** — POST /treatment-packages (BR-05). Requires permission `treatment_package.create`.
+ * @summary Create a new treatment package
  */
 export const postTreatmentPackages = (
     treatmentPackage: TreatmentPackage,
@@ -639,7 +639,7 @@ const {mutation: mutationOptions} = options ?
     export type PostTreatmentPackagesMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Tạo gói dịch vụ mới
+ * @summary Create a new treatment package
  */
 export const usePostTreatmentPackages = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postTreatmentPackages>>, TError,{data: TreatmentPackage}, TContext>, }
@@ -655,8 +655,8 @@ export const usePostTreatmentPackages = <TError = UnauthorizedResponse | Forbidd
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/service-categories/{id}` — danh mục dịch vụ. Cần quyền `service.read`.
- * @summary Xem chi tiết danh mục dịch vụ
+ * GET `/service-categories/{id}` — service categories. Requires `service.read` permission.
+ * @summary View service category details
  */
 export const getServiceCategoriesId = (
     id: string,
@@ -733,7 +733,7 @@ export function useGetServiceCategoriesIdInfinite<TData = InfiniteData<Awaited<R
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết danh mục dịch vụ
+ * @summary View service category details
  */
 
 export function useGetServiceCategoriesIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getServiceCategoriesId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -751,7 +751,7 @@ export function useGetServiceCategoriesIdInfinite<TData = InfiniteData<Awaited<R
 }
 
 /**
- * @summary Xem chi tiết danh mục dịch vụ
+ * @summary View service category details
  */
 export const prefetchGetServiceCategoriesIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getServiceCategoriesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getServiceCategoriesId>>, TError, TData>>, }
@@ -814,7 +814,7 @@ export function useGetServiceCategoriesId<TData = Awaited<ReturnType<typeof getS
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết danh mục dịch vụ
+ * @summary View service category details
  */
 
 export function useGetServiceCategoriesId<TData = Awaited<ReturnType<typeof getServiceCategoriesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -832,7 +832,7 @@ export function useGetServiceCategoriesId<TData = Awaited<ReturnType<typeof getS
 }
 
 /**
- * @summary Xem chi tiết danh mục dịch vụ
+ * @summary View service category details
  */
 export const prefetchGetServiceCategoriesIdQuery = async <TData = Awaited<ReturnType<typeof getServiceCategoriesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getServiceCategoriesId>>, TError, TData>>, }
@@ -849,8 +849,8 @@ export const prefetchGetServiceCategoriesIdQuery = async <TData = Awaited<Return
 
 
 /**
- * PUT `/service-categories/{id}` — danh mục dịch vụ. Cần quyền `service.update`. Xử lý bởi `row.update`.
- * @summary Cập nhật danh mục dịch vụ
+ * PUT `/service-categories/{id}` — service categories. Requires `service.update` permission. Handled by `row.update`.
+ * @summary Update a service category
  */
 export const putServiceCategoriesId = (
     id: string,
@@ -898,7 +898,7 @@ const {mutation: mutationOptions} = options ?
     export type PutServiceCategoriesIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Cập nhật danh mục dịch vụ
+ * @summary Update a service category
  */
 export const usePutServiceCategoriesId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putServiceCategoriesId>>, TError,{id: string;data: ServiceCategoryCreate}, TContext>, }
@@ -914,8 +914,8 @@ export const usePutServiceCategoriesId = <TError = UnauthorizedResponse | Forbid
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * DELETE `/service-categories/{id}` — danh mục dịch vụ. Cần quyền `service.delete`. Xử lý bởi `row.update`.
- * @summary Xóa danh mục dịch vụ
+ * DELETE `/service-categories/{id}` — service categories. Requires `service.delete` permission. Handled by `row.update`.
+ * @summary Delete a service category
  */
 export const deleteServiceCategoriesId = (
     id: string,
@@ -960,7 +960,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteServiceCategoriesIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Xóa danh mục dịch vụ
+ * @summary Delete a service category
  */
 export const useDeleteServiceCategoriesId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteServiceCategoriesId>>, TError,{id: string}, TContext>, }
@@ -976,8 +976,8 @@ export const useDeleteServiceCategoriesId = <TError = UnauthorizedResponse | For
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/service-categories` — danh mục dịch vụ. Cần quyền `service.read`. Tham số truy vấn: `is_active`, `parent_id`.
- * @summary Lấy danh sách danh mục dịch vụ
+ * GET `/service-categories` — service categories. Requires `service.read` permission. Query parameters: `is_active`, `parent_id`.
+ * @summary Get list of service categories
  */
 export const getServiceCategories = (
     params?: GetServiceCategoriesParams,
@@ -1055,7 +1055,7 @@ export function useGetServiceCategoriesInfinite<TData = InfiniteData<Awaited<Ret
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách danh mục dịch vụ
+ * @summary Get list of service categories
  */
 
 export function useGetServiceCategoriesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getServiceCategories>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -1073,7 +1073,7 @@ export function useGetServiceCategoriesInfinite<TData = InfiniteData<Awaited<Ret
 }
 
 /**
- * @summary Lấy danh sách danh mục dịch vụ
+ * @summary Get list of service categories
  */
 export const prefetchGetServiceCategoriesInfiniteQuery = async <TData = Awaited<ReturnType<typeof getServiceCategories>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetServiceCategoriesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getServiceCategories>>, TError, TData>>, }
@@ -1136,7 +1136,7 @@ export function useGetServiceCategories<TData = Awaited<ReturnType<typeof getSer
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách danh mục dịch vụ
+ * @summary Get list of service categories
  */
 
 export function useGetServiceCategories<TData = Awaited<ReturnType<typeof getServiceCategories>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -1154,7 +1154,7 @@ export function useGetServiceCategories<TData = Awaited<ReturnType<typeof getSer
 }
 
 /**
- * @summary Lấy danh sách danh mục dịch vụ
+ * @summary Get list of service categories
  */
 export const prefetchGetServiceCategoriesQuery = async <TData = Awaited<ReturnType<typeof getServiceCategories>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetServiceCategoriesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getServiceCategories>>, TError, TData>>, }
@@ -1171,8 +1171,8 @@ export const prefetchGetServiceCategoriesQuery = async <TData = Awaited<ReturnTy
 
 
 /**
- * POST `/service-categories` — danh mục dịch vụ. Cần quyền `service.create`.
- * @summary Tạo danh mục dịch vụ mới
+ * POST `/service-categories` — service categories. Requires `service.create` permission.
+ * @summary Create a new service category
  */
 export const postServiceCategories = (
     serviceCategoryCreate: ServiceCategoryCreate,
@@ -1220,7 +1220,7 @@ const {mutation: mutationOptions} = options ?
     export type PostServiceCategoriesMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Tạo danh mục dịch vụ mới
+ * @summary Create a new service category
  */
 export const usePostServiceCategories = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postServiceCategories>>, TError,{data: ServiceCategoryCreate}, TContext>, }
@@ -1236,8 +1236,8 @@ export const usePostServiceCategories = <TError = UnauthorizedResponse | Forbidd
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/service/{id}` — dịch vụ. Cần quyền `service.read`. Xử lý bởi `service.findByPk`.
- * @summary Xem chi tiết dịch vụ
+ * GET `/service/{id}` — services. Requires `service.read` permission. Handled by `service.findByPk`.
+ * @summary View service details
  */
 export const getServiceId = (
     id: string,
@@ -1314,7 +1314,7 @@ export function useGetServiceIdInfinite<TData = InfiniteData<Awaited<ReturnType<
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết dịch vụ
+ * @summary View service details
  */
 
 export function useGetServiceIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getServiceId>>>, TError = LegacyBadRequestResponse | UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -1332,7 +1332,7 @@ export function useGetServiceIdInfinite<TData = InfiniteData<Awaited<ReturnType<
 }
 
 /**
- * @summary Xem chi tiết dịch vụ
+ * @summary View service details
  */
 export const prefetchGetServiceIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getServiceId>>, TError = LegacyBadRequestResponse | UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getServiceId>>, TError, TData>>, }
@@ -1395,7 +1395,7 @@ export function useGetServiceId<TData = Awaited<ReturnType<typeof getServiceId>>
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết dịch vụ
+ * @summary View service details
  */
 
 export function useGetServiceId<TData = Awaited<ReturnType<typeof getServiceId>>, TError = LegacyBadRequestResponse | UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -1413,7 +1413,7 @@ export function useGetServiceId<TData = Awaited<ReturnType<typeof getServiceId>>
 }
 
 /**
- * @summary Xem chi tiết dịch vụ
+ * @summary View service details
  */
 export const prefetchGetServiceIdQuery = async <TData = Awaited<ReturnType<typeof getServiceId>>, TError = LegacyBadRequestResponse | UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getServiceId>>, TError, TData>>, }
@@ -1430,8 +1430,8 @@ export const prefetchGetServiceIdQuery = async <TData = Awaited<ReturnType<typeo
 
 
 /**
- * PUT `/service/{id}` — dịch vụ. Cần quyền `service.update`. Xử lý bởi `service.findByPk`.
- * @summary Cập nhật dịch vụ
+ * PUT `/service/{id}` — services. Requires `service.update` permission. Handled by `service.findByPk`.
+ * @summary Update a service
  */
 export const putServiceId = (
     id: string,
@@ -1479,7 +1479,7 @@ const {mutation: mutationOptions} = options ?
     export type PutServiceIdMutationError = LegacyBadRequestResponse | UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Cập nhật dịch vụ
+ * @summary Update a service
  */
 export const usePutServiceId = <TError = LegacyBadRequestResponse | UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putServiceId>>, TError,{id: string;data: ServiceCreate}, TContext>, }
@@ -1495,8 +1495,8 @@ export const usePutServiceId = <TError = LegacyBadRequestResponse | Unauthorized
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * DELETE `/service/{id}` — dịch vụ. Cần quyền `service.delete`. Xử lý bởi `service.findByPk`.
- * @summary Xóa dịch vụ
+ * DELETE `/service/{id}` — services. Requires `service.delete` permission. Handled by `service.findByPk`.
+ * @summary Delete a service
  */
 export const deleteServiceId = (
     id: string,
@@ -1541,7 +1541,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteServiceIdMutationError = LegacyBadRequestResponse | UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Xóa dịch vụ
+ * @summary Delete a service
  */
 export const useDeleteServiceId = <TError = LegacyBadRequestResponse | UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteServiceId>>, TError,{id: string}, TContext>, }
@@ -1557,8 +1557,8 @@ export const useDeleteServiceId = <TError = LegacyBadRequestResponse | Unauthori
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/service` — dịch vụ. Cần quyền `service.read`. Tham số truy vấn: `page`, `limit`, `q`, `search`, `category_id`, `is_active`. Xử lý bởi `service.findAndCountAll`.
- * @summary Lấy danh sách dịch vụ
+ * GET `/service` — services. Requires `service.read` permission. Query parameters: `page`, `limit`, `q`, `search`, `category_id`, `is_active`. Handled by `service.findAndCountAll`.
+ * @summary Get list of services
  */
 export const getService = (
     params?: GetServiceParams,
@@ -1636,7 +1636,7 @@ export function useGetServiceInfinite<TData = InfiniteData<Awaited<ReturnType<ty
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách dịch vụ
+ * @summary Get list of services
  */
 
 export function useGetServiceInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getService>>>, TError = LegacyBadRequestResponse | UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -1654,7 +1654,7 @@ export function useGetServiceInfinite<TData = InfiniteData<Awaited<ReturnType<ty
 }
 
 /**
- * @summary Lấy danh sách dịch vụ
+ * @summary Get list of services
  */
 export const prefetchGetServiceInfiniteQuery = async <TData = Awaited<ReturnType<typeof getService>>, TError = LegacyBadRequestResponse | UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetServiceParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getService>>, TError, TData>>, }
@@ -1717,7 +1717,7 @@ export function useGetService<TData = Awaited<ReturnType<typeof getService>>, TE
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách dịch vụ
+ * @summary Get list of services
  */
 
 export function useGetService<TData = Awaited<ReturnType<typeof getService>>, TError = LegacyBadRequestResponse | UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -1735,7 +1735,7 @@ export function useGetService<TData = Awaited<ReturnType<typeof getService>>, TE
 }
 
 /**
- * @summary Lấy danh sách dịch vụ
+ * @summary Get list of services
  */
 export const prefetchGetServiceQuery = async <TData = Awaited<ReturnType<typeof getService>>, TError = LegacyBadRequestResponse | UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetServiceParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getService>>, TError, TData>>, }
@@ -1752,8 +1752,8 @@ export const prefetchGetServiceQuery = async <TData = Awaited<ReturnType<typeof 
 
 
 /**
- * POST `/service` — dịch vụ. Cần quyền `service.create`. Xử lý bởi `service.create`.
- * @summary Tạo dịch vụ mới
+ * POST `/service` — services. Requires `service.create` permission. Handled by `service.create`.
+ * @summary Create a new service
  */
 export const postService = (
     serviceCreate: ServiceCreate,
@@ -1801,7 +1801,7 @@ const {mutation: mutationOptions} = options ?
     export type PostServiceMutationError = LegacyBadRequestResponse | UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Tạo dịch vụ mới
+ * @summary Create a new service
  */
 export const usePostService = <TError = LegacyBadRequestResponse | UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postService>>, TError,{data: ServiceCreate}, TContext>, }
@@ -1817,8 +1817,8 @@ export const usePostService = <TError = LegacyBadRequestResponse | UnauthorizedR
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * POST `/service/exchangePointsAdmin` — dịch vụ. Cần đăng nhập; route không khai báo quyền chi tiết. Trường body: `user_id`, `service_id`, `reason`. Xử lý bởi `user.findByPk`.
- * @summary Đổi điểm cho khách
+ * POST `/service/exchangePointsAdmin` — services. Requires authentication; the route does not declare a specific permission. Body fields: `user_id`, `service_id`, `reason`. Handled by `user.findByPk`.
+ * @summary Exchange points for a customer
  */
 export const postServiceExchangePointsAdmin = (
     postServiceExchangePointsAdminBody: PostServiceExchangePointsAdminBody,
@@ -1866,7 +1866,7 @@ const {mutation: mutationOptions} = options ?
     export type PostServiceExchangePointsAdminMutationError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
 
     /**
- * @summary Đổi điểm cho khách
+ * @summary Exchange points for a customer
  */
 export const usePostServiceExchangePointsAdmin = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postServiceExchangePointsAdmin>>, TError,{data: PostServiceExchangePointsAdminBody}, TContext>, }
@@ -1882,8 +1882,8 @@ export const usePostServiceExchangePointsAdmin = <TError = LegacyBadRequestRespo
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **PT-02** — GET /package-types/{id}. Cần quyền `package_type.read`. Xử lý bởi `packageTypeProvider.getById`.
- * @summary Xem chi tiết loại gói dịch vụ
+ * **PT-02** — GET /package-types/{id}. Requires `package_type.read` permission. Handled by `packageTypeProvider.getById`.
+ * @summary View package type detail
  */
 export const getPackageTypesId = (
     id: string,
@@ -1960,7 +1960,7 @@ export function useGetPackageTypesIdInfinite<TData = InfiniteData<Awaited<Return
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết loại gói dịch vụ
+ * @summary View package type detail
  */
 
 export function useGetPackageTypesIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getPackageTypesId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -1978,7 +1978,7 @@ export function useGetPackageTypesIdInfinite<TData = InfiniteData<Awaited<Return
 }
 
 /**
- * @summary Xem chi tiết loại gói dịch vụ
+ * @summary View package type detail
  */
 export const prefetchGetPackageTypesIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getPackageTypesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getPackageTypesId>>, TError, TData>>, }
@@ -2041,7 +2041,7 @@ export function useGetPackageTypesId<TData = Awaited<ReturnType<typeof getPackag
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết loại gói dịch vụ
+ * @summary View package type detail
  */
 
 export function useGetPackageTypesId<TData = Awaited<ReturnType<typeof getPackageTypesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -2059,7 +2059,7 @@ export function useGetPackageTypesId<TData = Awaited<ReturnType<typeof getPackag
 }
 
 /**
- * @summary Xem chi tiết loại gói dịch vụ
+ * @summary View package type detail
  */
 export const prefetchGetPackageTypesIdQuery = async <TData = Awaited<ReturnType<typeof getPackageTypesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackageTypesId>>, TError, TData>>, }
@@ -2076,8 +2076,8 @@ export const prefetchGetPackageTypesIdQuery = async <TData = Awaited<ReturnType<
 
 
 /**
- * **PT-04** — PUT /package-types/{id}. Cần quyền `package_type.update`. Trường body: `name`, `default_quota_type`, `has_warranty`, `allow_unlimited`, `sort_order`, `is_active`. Xử lý bởi `packageTypeProvider.getById`.
- * @summary Cập nhật loại gói dịch vụ
+ * **PT-04** — PUT /package-types/{id}. Requires `package_type.update` permission. Body fields: `name`, `default_quota_type`, `has_warranty`, `allow_unlimited`, `sort_order`, `is_active`. Handled by `packageTypeProvider.getById`.
+ * @summary Update a package type
  */
 export const putPackageTypesId = (
     id: string,
@@ -2125,7 +2125,7 @@ const {mutation: mutationOptions} = options ?
     export type PutPackageTypesIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Cập nhật loại gói dịch vụ
+ * @summary Update a package type
  */
 export const usePutPackageTypesId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putPackageTypesId>>, TError,{id: string;data: PutPackageTypesIdBody}, TContext>, }
@@ -2141,8 +2141,8 @@ export const usePutPackageTypesId = <TError = UnauthorizedResponse | ForbiddenRe
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **PT-05** — DELETE /package-types/{id} (soft delete). Cần quyền `package_type.delete`. Xử lý bởi `packageTypeProvider.getById`.
- * @summary Xóa loại gói dịch vụ
+ * **PT-05** — DELETE /package-types/{id} (soft delete). Requires `package_type.delete` permission. Handled by `packageTypeProvider.getById`.
+ * @summary Delete a package type
  */
 export const deletePackageTypesId = (
     id: string,
@@ -2187,7 +2187,7 @@ const {mutation: mutationOptions} = options ?
     export type DeletePackageTypesIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Xóa loại gói dịch vụ
+ * @summary Delete a package type
  */
 export const useDeletePackageTypesId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deletePackageTypesId>>, TError,{id: string}, TContext>, }
@@ -2203,8 +2203,8 @@ export const useDeletePackageTypesId = <TError = UnauthorizedResponse | Forbidde
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **PT-01** — GET /package-types. Cần quyền `package_type.read`. Tham số truy vấn: `page`, `limit`, `is_active`, `codes`. Xử lý bởi `packageTypeProvider.getAll`.
- * @summary Lấy danh sách loại gói dịch vụ
+ * **PT-01** — GET /package-types. Requires `package_type.read` permission. Query parameters: `page`, `limit`, `is_active`, `codes`. Handled by `packageTypeProvider.getAll`.
+ * @summary Get package type list
  */
 export const getPackageTypes = (
     params?: GetPackageTypesParams,
@@ -2282,7 +2282,7 @@ export function useGetPackageTypesInfinite<TData = InfiniteData<Awaited<ReturnTy
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách loại gói dịch vụ
+ * @summary Get package type list
  */
 
 export function useGetPackageTypesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getPackageTypes>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -2300,7 +2300,7 @@ export function useGetPackageTypesInfinite<TData = InfiniteData<Awaited<ReturnTy
 }
 
 /**
- * @summary Lấy danh sách loại gói dịch vụ
+ * @summary Get package type list
  */
 export const prefetchGetPackageTypesInfiniteQuery = async <TData = Awaited<ReturnType<typeof getPackageTypes>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetPackageTypesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getPackageTypes>>, TError, TData>>, }
@@ -2363,7 +2363,7 @@ export function useGetPackageTypes<TData = Awaited<ReturnType<typeof getPackageT
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách loại gói dịch vụ
+ * @summary Get package type list
  */
 
 export function useGetPackageTypes<TData = Awaited<ReturnType<typeof getPackageTypes>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -2381,7 +2381,7 @@ export function useGetPackageTypes<TData = Awaited<ReturnType<typeof getPackageT
 }
 
 /**
- * @summary Lấy danh sách loại gói dịch vụ
+ * @summary Get package type list
  */
 export const prefetchGetPackageTypesQuery = async <TData = Awaited<ReturnType<typeof getPackageTypes>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetPackageTypesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackageTypes>>, TError, TData>>, }
@@ -2398,8 +2398,8 @@ export const prefetchGetPackageTypesQuery = async <TData = Awaited<ReturnType<ty
 
 
 /**
- * **PT-03** — POST /package-types. Cần quyền `package_type.create`. Trường body: `code`, `name`, `default_quota_type`, `has_warranty`, `allow_unlimited`, `sort_order`. Xử lý bởi `packageTypeProvider.getAll`.
- * @summary Tạo loại gói dịch vụ mới
+ * **PT-03** — POST /package-types. Requires `package_type.create` permission. Body fields: `code`, `name`, `default_quota_type`, `has_warranty`, `allow_unlimited`, `sort_order`. Handled by `packageTypeProvider.getAll`.
+ * @summary Create a new package type
  */
 export const postPackageTypes = (
     postPackageTypesBody: PostPackageTypesBody,
@@ -2447,7 +2447,7 @@ const {mutation: mutationOptions} = options ?
     export type PostPackageTypesMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Tạo loại gói dịch vụ mới
+ * @summary Create a new package type
  */
 export const usePostPackageTypes = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postPackageTypes>>, TError,{data: PostPackageTypesBody}, TContext>, }

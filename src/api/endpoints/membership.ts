@@ -67,8 +67,8 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * **CO-08** — PUT /referrals/{id} — cập nhật discount_rule_id/note; không DELETE. Cần quyền `referral.update`. Hoa hồng thuộc ledger commission_entry.
- * @summary Cập nhật giới thiệu
+ * **CO-08** — PUT /referrals/{id} — update discount_rule_id/note; no DELETE. Requires `referral.update` permission. Commissions belong to the commission_entry ledger.
+ * @summary Update a referral
  */
 export const putReferralsId = (
     id: string,
@@ -116,7 +116,7 @@ const {mutation: mutationOptions} = options ?
     export type PutReferralsIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Cập nhật giới thiệu
+ * @summary Update a referral
  */
 export const usePutReferralsId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putReferralsId>>, TError,{id: string;data: PutReferralsIdBody}, TContext>, }
@@ -132,8 +132,8 @@ export const usePutReferralsId = <TError = UnauthorizedResponse | ForbiddenRespo
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **CO-06** — GET /referrals. Cần quyền `referral.read`. Tham số truy vấn: `status`, `referrer_type`.
- * @summary Lấy danh sách giới thiệu
+ * **CO-06** — GET /referrals. Requires `referral.read` permission. Query parameters: `status`, `referrer_type`.
+ * @summary Get referral list
  */
 export const getReferrals = (
     params?: GetReferralsParams,
@@ -211,7 +211,7 @@ export function useGetReferralsInfinite<TData = InfiniteData<Awaited<ReturnType<
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách giới thiệu
+ * @summary Get referral list
  */
 
 export function useGetReferralsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReferrals>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -229,7 +229,7 @@ export function useGetReferralsInfinite<TData = InfiniteData<Awaited<ReturnType<
 }
 
 /**
- * @summary Lấy danh sách giới thiệu
+ * @summary Get referral list
  */
 export const prefetchGetReferralsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getReferrals>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetReferralsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReferrals>>, TError, TData>>, }
@@ -292,7 +292,7 @@ export function useGetReferrals<TData = Awaited<ReturnType<typeof getReferrals>>
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách giới thiệu
+ * @summary Get referral list
  */
 
 export function useGetReferrals<TData = Awaited<ReturnType<typeof getReferrals>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -310,7 +310,7 @@ export function useGetReferrals<TData = Awaited<ReturnType<typeof getReferrals>>
 }
 
 /**
- * @summary Lấy danh sách giới thiệu
+ * @summary Get referral list
  */
 export const prefetchGetReferralsQuery = async <TData = Awaited<ReturnType<typeof getReferrals>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetReferralsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReferrals>>, TError, TData>>, }
@@ -327,8 +327,8 @@ export const prefetchGetReferralsQuery = async <TData = Awaited<ReturnType<typeo
 
 
 /**
- * **CO-07** — POST /referrals — mỗi khách mới chỉ 1 giới thiệu (UNIQUE referred_profile_id). Cần quyền `referral.create`. Trường body: `referrer_type`, `referrer_id`, `referred_profile_id`, `discount_rule_id?`, `note?`. Hoa hồng ghi nhận tại commission_entry.
- * @summary Tạo giới thiệu mới
+ * **CO-07** — POST /referrals — each new customer has only one referral (UNIQUE referred_profile_id). Requires `referral.create` permission. Body fields: `referrer_type`, `referrer_id`, `referred_profile_id`, `discount_rule_id?`, `note?`. Commission is recorded in commission_entry.
+ * @summary Create a new referral
  */
 export const postReferrals = (
     postReferralsBody: PostReferralsBody,
@@ -376,7 +376,7 @@ const {mutation: mutationOptions} = options ?
     export type PostReferralsMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Tạo giới thiệu mới
+ * @summary Create a new referral
  */
 export const usePostReferrals = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postReferrals>>, TError,{data: PostReferralsBody}, TContext>, }
@@ -392,8 +392,8 @@ export const usePostReferrals = <TError = UnauthorizedResponse | ForbiddenRespon
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **MB-01** — POST /memberships/{customerProfileId}/recalculate (BR-09). Cần quyền `membership.recalculate`.
- * @summary Tính lại hạng thành viên cho khách
+ * **MB-01** — POST /memberships/{customerProfileId}/recalculate (BR-09). Requires the `membership.recalculate` permission.
+ * @summary Recalculate the membership rank for a customer
  */
 export const postMembershipsCustomerProfileIdRecalculate = (
     customerProfileId: string,
@@ -439,7 +439,7 @@ const {mutation: mutationOptions} = options ?
     export type PostMembershipsCustomerProfileIdRecalculateMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Tính lại hạng thành viên cho khách
+ * @summary Recalculate the membership rank for a customer
  */
 export const usePostMembershipsCustomerProfileIdRecalculate = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postMembershipsCustomerProfileIdRecalculate>>, TError,{customerProfileId: string}, TContext>, }
@@ -455,8 +455,8 @@ export const usePostMembershipsCustomerProfileIdRecalculate = <TError = Unauthor
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **MB-02** — POST /memberships/{customerProfileId}/rank-override (gán hạng tay + BR-13). Cần quyền `membership.rank_override`. Trường body: `rank_id`, `reason`.
- * @summary Gán hạng thủ công
+ * **MB-02** — POST /memberships/{customerProfileId}/rank-override (manual rank assignment + BR-13). Requires the `membership.rank_override` permission. Body fields: `rank_id`, `reason`.
+ * @summary Manually assign a membership rank
  */
 export const postMembershipsCustomerProfileIdRankOverride = (
     customerProfileId: string,
@@ -505,7 +505,7 @@ const {mutation: mutationOptions} = options ?
     export type PostMembershipsCustomerProfileIdRankOverrideMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Gán hạng thủ công
+ * @summary Manually assign a membership rank
  */
 export const usePostMembershipsCustomerProfileIdRankOverride = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postMembershipsCustomerProfileIdRankOverride>>, TError,{customerProfileId: string;data: PostMembershipsCustomerProfileIdRankOverrideBody}, TContext>, }
@@ -521,8 +521,8 @@ export const usePostMembershipsCustomerProfileIdRankOverride = <TError = Unautho
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **MB-03** — POST /memberships/{customerProfileId}/points-adjust (cộng/trừ điểm thủ công). Cần quyền `membership.points_adjust`. Trường body: `delta`, `reason`.
- * @summary Điều chỉnh điểm
+ * **MB-03** — POST /memberships/{customerProfileId}/points-adjust (manual add/deduct points). Requires the `membership.points_adjust` permission. Body fields: `delta`, `reason`.
+ * @summary Adjust points
  */
 export const postMembershipsCustomerProfileIdPointsAdjust = (
     customerProfileId: string,
@@ -571,7 +571,7 @@ const {mutation: mutationOptions} = options ?
     export type PostMembershipsCustomerProfileIdPointsAdjustMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Điều chỉnh điểm
+ * @summary Adjust points
  */
 export const usePostMembershipsCustomerProfileIdPointsAdjust = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postMembershipsCustomerProfileIdPointsAdjust>>, TError,{customerProfileId: string;data: PostMembershipsCustomerProfileIdPointsAdjustBody}, TContext>, }
@@ -587,8 +587,8 @@ export const usePostMembershipsCustomerProfileIdPointsAdjust = <TError = Unautho
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/membership/rank-tier-info` — hạng thành viên. Công khai, không cần đăng nhập.
- * @summary Xem thông tin hạng và quyền lợi thành viên
+ * GET `/membership/rank-tier-info` — membership rank. Public, no authentication required.
+ * @summary View membership rank and tier benefits information
  */
 export const getMembershipRankTierInfo = (
     
@@ -665,7 +665,7 @@ export function useGetMembershipRankTierInfoInfinite<TData = InfiniteData<Awaite
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem thông tin hạng và quyền lợi thành viên
+ * @summary View membership rank and tier benefits information
  */
 
 export function useGetMembershipRankTierInfoInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getMembershipRankTierInfo>>>, TError = LegacyBadRequestResponse>(
@@ -683,7 +683,7 @@ export function useGetMembershipRankTierInfoInfinite<TData = InfiniteData<Awaite
 }
 
 /**
- * @summary Xem thông tin hạng và quyền lợi thành viên
+ * @summary View membership rank and tier benefits information
  */
 export const prefetchGetMembershipRankTierInfoInfiniteQuery = async <TData = Awaited<ReturnType<typeof getMembershipRankTierInfo>>, TError = LegacyBadRequestResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getMembershipRankTierInfo>>, TError, TData>>, }
@@ -746,7 +746,7 @@ export function useGetMembershipRankTierInfo<TData = Awaited<ReturnType<typeof g
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem thông tin hạng và quyền lợi thành viên
+ * @summary View membership rank and tier benefits information
  */
 
 export function useGetMembershipRankTierInfo<TData = Awaited<ReturnType<typeof getMembershipRankTierInfo>>, TError = LegacyBadRequestResponse>(
@@ -764,7 +764,7 @@ export function useGetMembershipRankTierInfo<TData = Awaited<ReturnType<typeof g
 }
 
 /**
- * @summary Xem thông tin hạng và quyền lợi thành viên
+ * @summary View membership rank and tier benefits information
  */
 export const prefetchGetMembershipRankTierInfoQuery = async <TData = Awaited<ReturnType<typeof getMembershipRankTierInfo>>, TError = LegacyBadRequestResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMembershipRankTierInfo>>, TError, TData>>, }
@@ -781,8 +781,8 @@ export const prefetchGetMembershipRankTierInfoQuery = async <TData = Awaited<Ret
 
 
 /**
- * POST `/membership` — hạng thành viên. **Công khai, không cần đăng nhập.** Route này hiện không gắn middleware xác thực hay phân quyền nào. Trường body: `user_id`. Xử lý bởi `userProvider.getOne`.
- * @summary Đồng bộ hạng thành viên theo người dùng
+ * POST `/membership` — membership rank. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Body field: `user_id`. Handled by `userProvider.getOne`.
+ * @summary Sync membership rank by user
  */
 export const postMembership = (
     postMembershipBody: PostMembershipBody,
@@ -830,7 +830,7 @@ const {mutation: mutationOptions} = options ?
     export type PostMembershipMutationError = LegacyBadRequestResponse
 
     /**
- * @summary Đồng bộ hạng thành viên theo người dùng
+ * @summary Sync membership rank by user
  */
 export const usePostMembership = <TError = LegacyBadRequestResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postMembership>>, TError,{data: PostMembershipBody}, TContext>, }
@@ -846,8 +846,8 @@ export const usePostMembership = <TError = LegacyBadRequestResponse,
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **CR-02** — GET /card-ranks/{id}. Cần quyền `card_rank.read`.
- * @summary Xem chi tiết hạng thẻ
+ * **CR-02** — GET /card-ranks/{id}. Requires `card_rank.read` permission.
+ * @summary Get card rank details
  */
 export const getCardRanksId = (
     id: string,
@@ -924,7 +924,7 @@ export function useGetCardRanksIdInfinite<TData = InfiniteData<Awaited<ReturnTyp
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết hạng thẻ
+ * @summary Get card rank details
  */
 
 export function useGetCardRanksIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCardRanksId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -942,7 +942,7 @@ export function useGetCardRanksIdInfinite<TData = InfiniteData<Awaited<ReturnTyp
 }
 
 /**
- * @summary Xem chi tiết hạng thẻ
+ * @summary Get card rank details
  */
 export const prefetchGetCardRanksIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getCardRanksId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCardRanksId>>, TError, TData>>, }
@@ -1005,7 +1005,7 @@ export function useGetCardRanksId<TData = Awaited<ReturnType<typeof getCardRanks
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết hạng thẻ
+ * @summary Get card rank details
  */
 
 export function useGetCardRanksId<TData = Awaited<ReturnType<typeof getCardRanksId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -1023,7 +1023,7 @@ export function useGetCardRanksId<TData = Awaited<ReturnType<typeof getCardRanks
 }
 
 /**
- * @summary Xem chi tiết hạng thẻ
+ * @summary Get card rank details
  */
 export const prefetchGetCardRanksIdQuery = async <TData = Awaited<ReturnType<typeof getCardRanksId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCardRanksId>>, TError, TData>>, }
@@ -1040,8 +1040,8 @@ export const prefetchGetCardRanksIdQuery = async <TData = Awaited<ReturnType<typ
 
 
 /**
- * **CR-04** — PUT /card-ranks/{id} (không tự tính lại hạng cũ). Cần quyền `card_rank.update`. Trường body: `name`, `sort_order`, `min_spent`, `max_spent`, `discount_percent`, `validity`, `auto_assign`, `benefits`, `is_active`, `color`.
- * @summary Cập nhật hạng thẻ
+ * **CR-04** — PUT /card-ranks/{id} (does not automatically recalculate existing customers' ranks). Requires `card_rank.update` permission. Body fields: `name`, `sort_order`, `min_spent`, `max_spent`, `discount_percent`, `validity`, `auto_assign`, `benefits`, `is_active`, `color`.
+ * @summary Update a card rank
  */
 export const putCardRanksId = (
     id: string,
@@ -1089,7 +1089,7 @@ const {mutation: mutationOptions} = options ?
     export type PutCardRanksIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Cập nhật hạng thẻ
+ * @summary Update a card rank
  */
 export const usePutCardRanksId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putCardRanksId>>, TError,{id: string;data: PutCardRanksIdBody}, TContext>, }
@@ -1105,8 +1105,8 @@ export const usePutCardRanksId = <TError = UnauthorizedResponse | ForbiddenRespo
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **CR-05** — DELETE /card-ranks/{id}: soft delete; từ chối nếu đang có khách giữ hạng hoặc có quy tắc ưu đãi bật áp dụng cho hạng. Cần quyền `card_rank.delete`.
- * @summary Xóa hạng thẻ
+ * **CR-05** — DELETE /card-ranks/{id}: soft delete; rejected if any customer currently holds this rank or if a benefit rule targeting this rank is enabled. Requires `card_rank.delete` permission.
+ * @summary Delete a card rank
  */
 export const deleteCardRanksId = (
     id: string,
@@ -1151,7 +1151,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteCardRanksIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Xóa hạng thẻ
+ * @summary Delete a card rank
  */
 export const useDeleteCardRanksId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteCardRanksId>>, TError,{id: string}, TContext>, }
@@ -1167,8 +1167,8 @@ export const useDeleteCardRanksId = <TError = UnauthorizedResponse | ForbiddenRe
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **CR-01** — GET /card-ranks. Cần quyền `card_rank.read`. Tham số truy vấn: `is_active`.
- * @summary Lấy danh sách hạng thẻ
+ * **CR-01** — GET /card-ranks. Requires `card_rank.read` permission. Query parameters: `is_active`.
+ * @summary List card ranks
  */
 export const getCardRanks = (
     params?: GetCardRanksParams,
@@ -1246,7 +1246,7 @@ export function useGetCardRanksInfinite<TData = InfiniteData<Awaited<ReturnType<
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách hạng thẻ
+ * @summary List card ranks
  */
 
 export function useGetCardRanksInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCardRanks>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -1264,7 +1264,7 @@ export function useGetCardRanksInfinite<TData = InfiniteData<Awaited<ReturnType<
 }
 
 /**
- * @summary Lấy danh sách hạng thẻ
+ * @summary List card ranks
  */
 export const prefetchGetCardRanksInfiniteQuery = async <TData = Awaited<ReturnType<typeof getCardRanks>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetCardRanksParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCardRanks>>, TError, TData>>, }
@@ -1327,7 +1327,7 @@ export function useGetCardRanks<TData = Awaited<ReturnType<typeof getCardRanks>>
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách hạng thẻ
+ * @summary List card ranks
  */
 
 export function useGetCardRanks<TData = Awaited<ReturnType<typeof getCardRanks>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -1345,7 +1345,7 @@ export function useGetCardRanks<TData = Awaited<ReturnType<typeof getCardRanks>>
 }
 
 /**
- * @summary Lấy danh sách hạng thẻ
+ * @summary List card ranks
  */
 export const prefetchGetCardRanksQuery = async <TData = Awaited<ReturnType<typeof getCardRanks>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetCardRanksParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCardRanks>>, TError, TData>>, }
@@ -1362,8 +1362,8 @@ export const prefetchGetCardRanksQuery = async <TData = Awaited<ReturnType<typeo
 
 
 /**
- * **CR-03** — POST /card-ranks. Cần quyền `card_rank.create`. Trường body: `code`, `name`, `sort_order`, `min_spent`, `max_spent`, `discount_percent`, `validity`, `auto_assign`, `benefits`, `color`.
- * @summary Tạo hạng thẻ mới
+ * **CR-03** — POST /card-ranks. Requires `card_rank.create` permission. Body fields: `code`, `name`, `sort_order`, `min_spent`, `max_spent`, `discount_percent`, `validity`, `auto_assign`, `benefits`, `color`.
+ * @summary Create a new card rank
  */
 export const postCardRanks = (
     postCardRanksBody: PostCardRanksBody,
@@ -1411,7 +1411,7 @@ const {mutation: mutationOptions} = options ?
     export type PostCardRanksMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Tạo hạng thẻ mới
+ * @summary Create a new card rank
  */
 export const usePostCardRanks = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postCardRanks>>, TError,{data: PostCardRanksBody}, TContext>, }

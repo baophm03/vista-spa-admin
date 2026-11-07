@@ -65,8 +65,8 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * **LW-02** — GET /lucky-wheels/{id}. Cần quyền `wheel.read`.
- * @summary Xem chi tiết vòng quay may mắn
+ * **LW-02** — GET /lucky-wheels/{id}. Requires the `wheel.read` permission.
+ * @summary View lucky wheel details
  */
 export const getLuckyWheelsId = (
     id: string,
@@ -143,7 +143,7 @@ export function useGetLuckyWheelsIdInfinite<TData = InfiniteData<Awaited<ReturnT
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết vòng quay may mắn
+ * @summary View lucky wheel details
  */
 
 export function useGetLuckyWheelsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getLuckyWheelsId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -161,7 +161,7 @@ export function useGetLuckyWheelsIdInfinite<TData = InfiniteData<Awaited<ReturnT
 }
 
 /**
- * @summary Xem chi tiết vòng quay may mắn
+ * @summary View lucky wheel details
  */
 export const prefetchGetLuckyWheelsIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getLuckyWheelsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLuckyWheelsId>>, TError, TData>>, }
@@ -224,7 +224,7 @@ export function useGetLuckyWheelsId<TData = Awaited<ReturnType<typeof getLuckyWh
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết vòng quay may mắn
+ * @summary View lucky wheel details
  */
 
 export function useGetLuckyWheelsId<TData = Awaited<ReturnType<typeof getLuckyWheelsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -242,7 +242,7 @@ export function useGetLuckyWheelsId<TData = Awaited<ReturnType<typeof getLuckyWh
 }
 
 /**
- * @summary Xem chi tiết vòng quay may mắn
+ * @summary View lucky wheel details
  */
 export const prefetchGetLuckyWheelsIdQuery = async <TData = Awaited<ReturnType<typeof getLuckyWheelsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLuckyWheelsId>>, TError, TData>>, }
@@ -259,8 +259,8 @@ export const prefetchGetLuckyWheelsIdQuery = async <TData = Awaited<ReturnType<t
 
 
 /**
- * **LW-04** — PUT /lucky-wheels/{id}. Cần quyền `wheel.update`.
- * @summary Cập nhật vòng quay may mắn
+ * **LW-04** — PUT /lucky-wheels/{id}. Requires the `wheel.update` permission.
+ * @summary Update a lucky wheel
  */
 export const putLuckyWheelsId = (
     id: string,
@@ -308,7 +308,7 @@ const {mutation: mutationOptions} = options ?
     export type PutLuckyWheelsIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Cập nhật vòng quay may mắn
+ * @summary Update a lucky wheel
  */
 export const usePutLuckyWheelsId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putLuckyWheelsId>>, TError,{id: string;data: PutLuckyWheelsIdBody}, TContext>, }
@@ -324,8 +324,8 @@ export const usePutLuckyWheelsId = <TError = UnauthorizedResponse | ForbiddenRes
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **LW-05** — DELETE /lucky-wheels/{id} (soft). Cần quyền `wheel.delete`.
- * @summary Xóa vòng quay may mắn
+ * **LW-05** — DELETE /lucky-wheels/{id} (soft). Requires the `wheel.delete` permission.
+ * @summary Delete a lucky wheel
  */
 export const deleteLuckyWheelsId = (
     id: string,
@@ -370,7 +370,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteLuckyWheelsIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Xóa vòng quay may mắn
+ * @summary Delete a lucky wheel
  */
 export const useDeleteLuckyWheelsId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteLuckyWheelsId>>, TError,{id: string}, TContext>, }
@@ -386,8 +386,8 @@ export const useDeleteLuckyWheelsId = <TError = UnauthorizedResponse | Forbidden
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **LW-01** — GET /lucky-wheels. Cần quyền `wheel.read`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Tham số truy vấn: `branch_id`.
- * @summary Lấy danh sách vòng quay may mắn
+ * **LW-01** — GET /lucky-wheels. Requires the `wheel.read` permission. Branch scope: users limited to one branch only see that branch's data. Query parameters: `branch_id`.
+ * @summary List lucky wheels
  */
 export const getLuckyWheels = (
     params?: GetLuckyWheelsParams,
@@ -465,7 +465,7 @@ export function useGetLuckyWheelsInfinite<TData = InfiniteData<Awaited<ReturnTyp
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách vòng quay may mắn
+ * @summary List lucky wheels
  */
 
 export function useGetLuckyWheelsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getLuckyWheels>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -483,7 +483,7 @@ export function useGetLuckyWheelsInfinite<TData = InfiniteData<Awaited<ReturnTyp
 }
 
 /**
- * @summary Lấy danh sách vòng quay may mắn
+ * @summary List lucky wheels
  */
 export const prefetchGetLuckyWheelsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getLuckyWheels>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetLuckyWheelsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLuckyWheels>>, TError, TData>>, }
@@ -546,7 +546,7 @@ export function useGetLuckyWheels<TData = Awaited<ReturnType<typeof getLuckyWhee
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách vòng quay may mắn
+ * @summary List lucky wheels
  */
 
 export function useGetLuckyWheels<TData = Awaited<ReturnType<typeof getLuckyWheels>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -564,7 +564,7 @@ export function useGetLuckyWheels<TData = Awaited<ReturnType<typeof getLuckyWhee
 }
 
 /**
- * @summary Lấy danh sách vòng quay may mắn
+ * @summary List lucky wheels
  */
 export const prefetchGetLuckyWheelsQuery = async <TData = Awaited<ReturnType<typeof getLuckyWheels>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetLuckyWheelsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLuckyWheels>>, TError, TData>>, }
@@ -581,8 +581,8 @@ export const prefetchGetLuckyWheelsQuery = async <TData = Awaited<ReturnType<typ
 
 
 /**
- * **LW-03** — POST /lucky-wheels. Cần quyền `wheel.create`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Body được chuyển nguyên vẹn vào lớp nghiệp vụ.
- * @summary Tạo vòng quay may mắn mới
+ * **LW-03** — POST /lucky-wheels. Requires the `wheel.create` permission. Branch scope: users limited to one branch only see that branch's data. The body is passed as-is to the business layer.
+ * @summary Create a new lucky wheel
  */
 export const postLuckyWheels = (
     postLuckyWheelsBody: PostLuckyWheelsBody,
@@ -630,7 +630,7 @@ const {mutation: mutationOptions} = options ?
     export type PostLuckyWheelsMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Tạo vòng quay may mắn mới
+ * @summary Create a new lucky wheel
  */
 export const usePostLuckyWheels = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postLuckyWheels>>, TError,{data: PostLuckyWheelsBody}, TContext>, }
@@ -646,8 +646,8 @@ export const usePostLuckyWheels = <TError = UnauthorizedResponse | ForbiddenResp
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **LW-11** — GET /lucky-wheels/{id}/spins (lịch sử quay). Cần quyền `wheel.read`.
- * @summary Xem lịch sử quay
+ * **LW-11** — GET /lucky-wheels/{id}/spins (spin history). Requires the `wheel.read` permission.
+ * @summary View spin history
  */
 export const getLuckyWheelsIdSpins = (
     id: string,
@@ -724,7 +724,7 @@ export function useGetLuckyWheelsIdSpinsInfinite<TData = InfiniteData<Awaited<Re
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem lịch sử quay
+ * @summary View spin history
  */
 
 export function useGetLuckyWheelsIdSpinsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getLuckyWheelsIdSpins>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -742,7 +742,7 @@ export function useGetLuckyWheelsIdSpinsInfinite<TData = InfiniteData<Awaited<Re
 }
 
 /**
- * @summary Xem lịch sử quay
+ * @summary View spin history
  */
 export const prefetchGetLuckyWheelsIdSpinsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getLuckyWheelsIdSpins>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLuckyWheelsIdSpins>>, TError, TData>>, }
@@ -805,7 +805,7 @@ export function useGetLuckyWheelsIdSpins<TData = Awaited<ReturnType<typeof getLu
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem lịch sử quay
+ * @summary View spin history
  */
 
 export function useGetLuckyWheelsIdSpins<TData = Awaited<ReturnType<typeof getLuckyWheelsIdSpins>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -823,7 +823,7 @@ export function useGetLuckyWheelsIdSpins<TData = Awaited<ReturnType<typeof getLu
 }
 
 /**
- * @summary Xem lịch sử quay
+ * @summary View spin history
  */
 export const prefetchGetLuckyWheelsIdSpinsQuery = async <TData = Awaited<ReturnType<typeof getLuckyWheelsIdSpins>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLuckyWheelsIdSpins>>, TError, TData>>, }
@@ -840,8 +840,8 @@ export const prefetchGetLuckyWheelsIdSpinsQuery = async <TData = Awaited<ReturnT
 
 
 /**
- * **LW-12** — POST /lucky-wheels/{id}/spins. Cần quyền `wheel.spin_admin`. Body: `customer_profile_id` (bắt buộc), `request_key` (idempotency — lặp lại trả kết quả cũ, không trừ số lượng), `prize_id` (tùy chọn — quay vật lý/ghi kết quả tay, bỏ qua weighted random nhưng vẫn kiểm số lượng). Trả `{ spin, prize }`.
- * @summary Quay hộ khách
+ * **LW-12** — POST /lucky-wheels/{id}/spins. Requires the `wheel.spin_admin` permission. Body: `customer_profile_id` (required), `request_key` (idempotency — repeating it returns the previous result without decrementing the count), `prize_id` (optional — physical spin/manual result entry, skips weighted random but still checks the quantity). Returns `{ spin, prize }`.
+ * @summary Spin on behalf of a customer
  */
 export const postLuckyWheelsIdSpins = (
     id: string,
@@ -890,7 +890,7 @@ const {mutation: mutationOptions} = options ?
     export type PostLuckyWheelsIdSpinsMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Quay hộ khách
+ * @summary Spin on behalf of a customer
  */
 export const usePostLuckyWheelsIdSpins = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postLuckyWheelsIdSpins>>, TError,{id: string;data: PostLuckyWheelsIdSpinsBody}, TContext>, }
@@ -906,8 +906,8 @@ export const usePostLuckyWheelsIdSpins = <TError = UnauthorizedResponse | Forbid
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **LW-06** — GET /lucky-wheels/{id}/prizes. Cần quyền `wheel.read`.
- * @summary Cấu hình giải thưởng
+ * **LW-06** — GET /lucky-wheels/{id}/prizes. Requires the `wheel.read` permission.
+ * @summary Configure prizes
  */
 export const getLuckyWheelsIdPrizes = (
     id: string,
@@ -984,7 +984,7 @@ export function useGetLuckyWheelsIdPrizesInfinite<TData = InfiniteData<Awaited<R
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Cấu hình giải thưởng
+ * @summary Configure prizes
  */
 
 export function useGetLuckyWheelsIdPrizesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getLuckyWheelsIdPrizes>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -1002,7 +1002,7 @@ export function useGetLuckyWheelsIdPrizesInfinite<TData = InfiniteData<Awaited<R
 }
 
 /**
- * @summary Cấu hình giải thưởng
+ * @summary Configure prizes
  */
 export const prefetchGetLuckyWheelsIdPrizesInfiniteQuery = async <TData = Awaited<ReturnType<typeof getLuckyWheelsIdPrizes>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLuckyWheelsIdPrizes>>, TError, TData>>, }
@@ -1065,7 +1065,7 @@ export function useGetLuckyWheelsIdPrizes<TData = Awaited<ReturnType<typeof getL
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Cấu hình giải thưởng
+ * @summary Configure prizes
  */
 
 export function useGetLuckyWheelsIdPrizes<TData = Awaited<ReturnType<typeof getLuckyWheelsIdPrizes>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -1083,7 +1083,7 @@ export function useGetLuckyWheelsIdPrizes<TData = Awaited<ReturnType<typeof getL
 }
 
 /**
- * @summary Cấu hình giải thưởng
+ * @summary Configure prizes
  */
 export const prefetchGetLuckyWheelsIdPrizesQuery = async <TData = Awaited<ReturnType<typeof getLuckyWheelsIdPrizes>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLuckyWheelsIdPrizes>>, TError, TData>>, }
@@ -1100,8 +1100,8 @@ export const prefetchGetLuckyWheelsIdPrizesQuery = async <TData = Awaited<Return
 
 
 /**
- * **LW-07** — POST /lucky-wheels/{id}/prizes. Cần quyền `wheel.create`. Trường body: `name`, `weight`, `prize_type`, `voucher_id`, `points`, `quantity_total`.
- * @summary Cấu hình giải thưởng
+ * **LW-07** — POST /lucky-wheels/{id}/prizes. Requires the `wheel.create` permission. Body fields: `name`, `weight`, `prize_type`, `voucher_id`, `points`, `quantity_total`.
+ * @summary Configure prizes
  */
 export const postLuckyWheelsIdPrizes = (
     id: string,
@@ -1150,7 +1150,7 @@ const {mutation: mutationOptions} = options ?
     export type PostLuckyWheelsIdPrizesMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Cấu hình giải thưởng
+ * @summary Configure prizes
  */
 export const usePostLuckyWheelsIdPrizes = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postLuckyWheelsIdPrizes>>, TError,{id: string;data: PostLuckyWheelsIdPrizesBody}, TContext>, }
@@ -1166,8 +1166,8 @@ export const usePostLuckyWheelsIdPrizes = <TError = UnauthorizedResponse | Forbi
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **LW-10** — GET /lucky-wheels/{id}/eligible-customers. Cần quyền `wheel.read`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Trả khách đủ điều kiện kèm tổng chi tiêu thực (payment_log) và số lượt đã dùng/còn lại. Tham số truy vấn: `search` (tên/SĐT), `limit` (mặc định 50).
- * @summary Danh sách khách đủ điều kiện quay (BR-27)
+ * **LW-10** — GET /lucky-wheels/{id}/eligible-customers. Requires the `wheel.read` permission. Branch scope: users limited to one branch only see that branch's data. Returns eligible customers along with their actual total spend (payment_log) and used/remaining spins. Query parameters: `search` (name/phone), `limit` (default 50).
+ * @summary List customers eligible to spin (BR-27)
  */
 export const getLuckyWheelsIdEligibleCustomers = (
     id: string,
@@ -1252,7 +1252,7 @@ export function useGetLuckyWheelsIdEligibleCustomersInfinite<TData = InfiniteDat
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Danh sách khách đủ điều kiện quay (BR-27)
+ * @summary List customers eligible to spin (BR-27)
  */
 
 export function useGetLuckyWheelsIdEligibleCustomersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getLuckyWheelsIdEligibleCustomers>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -1271,7 +1271,7 @@ export function useGetLuckyWheelsIdEligibleCustomersInfinite<TData = InfiniteDat
 }
 
 /**
- * @summary Danh sách khách đủ điều kiện quay (BR-27)
+ * @summary List customers eligible to spin (BR-27)
  */
 export const prefetchGetLuckyWheelsIdEligibleCustomersInfiniteQuery = async <TData = Awaited<ReturnType<typeof getLuckyWheelsIdEligibleCustomers>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string,
@@ -1339,7 +1339,7 @@ export function useGetLuckyWheelsIdEligibleCustomers<TData = Awaited<ReturnType<
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Danh sách khách đủ điều kiện quay (BR-27)
+ * @summary List customers eligible to spin (BR-27)
  */
 
 export function useGetLuckyWheelsIdEligibleCustomers<TData = Awaited<ReturnType<typeof getLuckyWheelsIdEligibleCustomers>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -1358,7 +1358,7 @@ export function useGetLuckyWheelsIdEligibleCustomers<TData = Awaited<ReturnType<
 }
 
 /**
- * @summary Danh sách khách đủ điều kiện quay (BR-27)
+ * @summary List customers eligible to spin (BR-27)
  */
 export const prefetchGetLuckyWheelsIdEligibleCustomersQuery = async <TData = Awaited<ReturnType<typeof getLuckyWheelsIdEligibleCustomers>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string,
@@ -1376,8 +1376,8 @@ export const prefetchGetLuckyWheelsIdEligibleCustomersQuery = async <TData = Awa
 
 
 /**
- * **LW-13** — PUT /lucky-wheels/{id}/spins/{spinId}/claim. Cần quyền `wheel.spin_admin`. Chuyển trạng thái lượt quay ISSUED → CLAIMED, ghi claimed_at/claimed_by. Idempotent nếu đã CLAIMED.
- * @summary Xác nhận khách nhận giải
+ * **LW-13** — PUT /lucky-wheels/{id}/spins/{spinId}/claim. Requires the `wheel.spin_admin` permission. Transitions the spin status from ISSUED to CLAIMED and records claimed_at/claimed_by. Idempotent when already CLAIMED.
+ * @summary Confirm a customer has claimed their prize
  */
 export const putLuckyWheelsIdSpinsSpinIdClaim = (
     id: string,
@@ -1423,7 +1423,7 @@ const {mutation: mutationOptions} = options ?
     export type PutLuckyWheelsIdSpinsSpinIdClaimMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | InternalErrorResponse
 
     /**
- * @summary Xác nhận khách nhận giải
+ * @summary Confirm a customer has claimed their prize
  */
 export const usePutLuckyWheelsIdSpinsSpinIdClaim = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putLuckyWheelsIdSpinsSpinIdClaim>>, TError,{id: string;spinId: string}, TContext>, }
@@ -1439,8 +1439,8 @@ export const usePutLuckyWheelsIdSpinsSpinIdClaim = <TError = UnauthorizedRespons
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **LW-08** — PUT /lucky-wheels/{id}/prizes/{prizeId}. Cần quyền `wheel.update`. Chỉ các trường được truyền mới được cập nhật.
- * @summary Cập nhật giải thưởng của vòng quay
+ * **LW-08** — PUT /lucky-wheels/{id}/prizes/{prizeId}. Requires the `wheel.update` permission. Only the fields provided are updated.
+ * @summary Update a wheel prize
  */
 export const putLuckyWheelsIdPrizesPrizeId = (
     id: string,
@@ -1489,7 +1489,7 @@ const {mutation: mutationOptions} = options ?
     export type PutLuckyWheelsIdPrizesPrizeIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Cập nhật giải thưởng của vòng quay
+ * @summary Update a wheel prize
  */
 export const usePutLuckyWheelsIdPrizesPrizeId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putLuckyWheelsIdPrizesPrizeId>>, TError,{id: string;prizeId: string;data: PutLuckyWheelsIdPrizesPrizeIdBody}, TContext>, }
@@ -1505,8 +1505,8 @@ export const usePutLuckyWheelsIdPrizesPrizeId = <TError = UnauthorizedResponse |
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **LW-09** — DELETE /lucky-wheels/{id}/prizes/{prizeId}. Cần quyền `wheel.update`. Chỉ xóa được khi chưa từng có lượt quay trúng giải này (409 nếu đã có).
- * @summary Xóa giải thưởng khỏi vòng quay
+ * **LW-09** — DELETE /lucky-wheels/{id}/prizes/{prizeId}. Requires the `wheel.update` permission. Deletion is only allowed if no spin has ever won this prize (409 if it has).
+ * @summary Remove a prize from the wheel
  */
 export const deleteLuckyWheelsIdPrizesPrizeId = (
     id: string,
@@ -1552,7 +1552,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteLuckyWheelsIdPrizesPrizeIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | InternalErrorResponse
 
     /**
- * @summary Xóa giải thưởng khỏi vòng quay
+ * @summary Remove a prize from the wheel
  */
 export const useDeleteLuckyWheelsIdPrizesPrizeId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteLuckyWheelsIdPrizesPrizeId>>, TError,{id: string;prizeId: string}, TContext>, }

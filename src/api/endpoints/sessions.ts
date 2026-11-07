@@ -30,8 +30,8 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * **CT-05b** — PUT /sessions/{id}/reopen. Chỉ platform admin. Buổi completed → done để bổ sung nội dung/ảnh, hoàn tất lại sau. Trừ lại quota đã cộng lúc hoàn tất, thu hồi hoa hồng gắn với buổi, gói SESSIONS/VALUE tự FINISHED mở lại ACTIVE. Ghi access log REOPEN_SESSION.
- * @summary Mở lại buổi đã hoàn tất (chỉ admin)
+ * **CT-05b** — PUT /sessions/{id}/reopen. Platform admins only. Moves a completed session back to done to add content/photos, to be completed again later. Deducts the quota added at completion, revokes commissions attached to the session, and reopens SESSIONS/VALUE packages from FINISHED to ACTIVE. Writes access log REOPEN_SESSION.
+ * @summary Reopen a completed session (admins only)
  */
 export const putSessionsIdReopen = (
     id: string,
@@ -76,7 +76,7 @@ const {mutation: mutationOptions} = options ?
     export type PutSessionsIdReopenMutationError = ForbiddenResponse | NotFoundResponse | ConflictResponse | InternalErrorResponse
 
     /**
- * @summary Mở lại buổi đã hoàn tất (chỉ admin)
+ * @summary Reopen a completed session (admins only)
  */
 export const usePutSessionsIdReopen = <TError = ForbiddenResponse | NotFoundResponse | ConflictResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putSessionsIdReopen>>, TError,{id: string}, TContext>, }

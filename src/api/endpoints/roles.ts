@@ -53,8 +53,8 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * GET `/roles/{id}` — vai trò. Công khai, không cần đăng nhập. Xử lý bởi `roleProvider.getById`.
- * @summary Xem chi tiết vai trò
+ * GET `/roles/{id}` — roles. Public, no authentication required. Handled by `roleProvider.getById`.
+ * @summary View role details
  */
 export const getRolesId = (
     id: string,
@@ -131,7 +131,7 @@ export function useGetRolesIdInfinite<TData = InfiniteData<Awaited<ReturnType<ty
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết vai trò
+ * @summary View role details
  */
 
 export function useGetRolesIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRolesId>>>, TError = LegacyBadRequestResponse | void>(
@@ -149,7 +149,7 @@ export function useGetRolesIdInfinite<TData = InfiniteData<Awaited<ReturnType<ty
 }
 
 /**
- * @summary Xem chi tiết vai trò
+ * @summary View role details
  */
 export const prefetchGetRolesIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getRolesId>>, TError = LegacyBadRequestResponse | void>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRolesId>>, TError, TData>>, }
@@ -212,7 +212,7 @@ export function useGetRolesId<TData = Awaited<ReturnType<typeof getRolesId>>, TE
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết vai trò
+ * @summary View role details
  */
 
 export function useGetRolesId<TData = Awaited<ReturnType<typeof getRolesId>>, TError = LegacyBadRequestResponse | void>(
@@ -230,7 +230,7 @@ export function useGetRolesId<TData = Awaited<ReturnType<typeof getRolesId>>, TE
 }
 
 /**
- * @summary Xem chi tiết vai trò
+ * @summary View role details
  */
 export const prefetchGetRolesIdQuery = async <TData = Awaited<ReturnType<typeof getRolesId>>, TError = LegacyBadRequestResponse | void>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRolesId>>, TError, TData>>, }
@@ -247,8 +247,8 @@ export const prefetchGetRolesIdQuery = async <TData = Awaited<ReturnType<typeof 
 
 
 /**
- * PUT `/roles/{id}` — vai trò. **Công khai, không cần đăng nhập.** Route này hiện không gắn middleware xác thực hay phân quyền nào. Xử lý bởi `roleProvider.getById`.
- * @summary Cập nhật vai trò
+ * PUT `/roles/{id}` — roles. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `roleProvider.getById`.
+ * @summary Update role
  */
 export const putRolesId = (
     id: string,
@@ -296,7 +296,7 @@ const {mutation: mutationOptions} = options ?
     export type PutRolesIdMutationError = LegacyBadRequestResponse | void
 
     /**
- * @summary Cập nhật vai trò
+ * @summary Update role
  */
 export const usePutRolesId = <TError = LegacyBadRequestResponse | void,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putRolesId>>, TError,{id: string;data: RoleCreate}, TContext>, }
@@ -312,8 +312,8 @@ export const usePutRolesId = <TError = LegacyBadRequestResponse | void,
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * DELETE `/roles/{id}` — vai trò. **Công khai, không cần đăng nhập.** Route này hiện không gắn middleware xác thực hay phân quyền nào. Xử lý bởi `roleProvider.getById`.
- * @summary Xóa vai trò
+ * DELETE `/roles/{id}` — roles. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `roleProvider.getById`.
+ * @summary Delete role
  */
 export const deleteRolesId = (
     id: string,
@@ -358,7 +358,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteRolesIdMutationError = LegacyBadRequestResponse | void
 
     /**
- * @summary Xóa vai trò
+ * @summary Delete role
  */
 export const useDeleteRolesId = <TError = LegacyBadRequestResponse | void,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteRolesId>>, TError,{id: string}, TContext>, }
@@ -374,8 +374,8 @@ export const useDeleteRolesId = <TError = LegacyBadRequestResponse | void,
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/roles` — vai trò. Công khai, không cần đăng nhập. Tham số truy vấn: `currentPage`, `pageSize`, `filters`, `sortField`, `sortOrder`. Xử lý bởi `roleProvider.getAllWithOptions`.
- * @summary Liệt kê vai trò
+ * GET `/roles` — roles. Public, no authentication required. Query parameters: `currentPage`, `pageSize`, `filters`, `sortField`, `sortOrder`.
+ * @summary Get list of roles
  */
 export const getRoles = (
     params?: GetRolesParams,
@@ -453,7 +453,7 @@ export function useGetRolesInfinite<TData = InfiniteData<Awaited<ReturnType<type
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Liệt kê vai trò
+ * @summary Get list of roles
  */
 
 export function useGetRolesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRoles>>>, TError = LegacyBadRequestResponse>(
@@ -471,7 +471,7 @@ export function useGetRolesInfinite<TData = InfiniteData<Awaited<ReturnType<type
 }
 
 /**
- * @summary Liệt kê vai trò
+ * @summary Get list of roles
  */
 export const prefetchGetRolesInfiniteQuery = async <TData = Awaited<ReturnType<typeof getRoles>>, TError = LegacyBadRequestResponse>(
  queryClient: QueryClient, params?: GetRolesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRoles>>, TError, TData>>, }
@@ -534,7 +534,7 @@ export function useGetRoles<TData = Awaited<ReturnType<typeof getRoles>>, TError
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Liệt kê vai trò
+ * @summary Get list of roles
  */
 
 export function useGetRoles<TData = Awaited<ReturnType<typeof getRoles>>, TError = LegacyBadRequestResponse>(
@@ -552,7 +552,7 @@ export function useGetRoles<TData = Awaited<ReturnType<typeof getRoles>>, TError
 }
 
 /**
- * @summary Liệt kê vai trò
+ * @summary Get list of roles
  */
 export const prefetchGetRolesQuery = async <TData = Awaited<ReturnType<typeof getRoles>>, TError = LegacyBadRequestResponse>(
  queryClient: QueryClient, params?: GetRolesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRoles>>, TError, TData>>, }
@@ -569,8 +569,8 @@ export const prefetchGetRolesQuery = async <TData = Awaited<ReturnType<typeof ge
 
 
 /**
- * POST `/roles` — vai trò. **Công khai, không cần đăng nhập.** Route này hiện không gắn middleware xác thực hay phân quyền nào. Xử lý bởi `roleProvider.post`.
- * @summary Tạo vai trò mới
+ * POST `/roles` — roles. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `roleProvider.post`.
+ * @summary Create a new role
  */
 export const postRoles = (
     roleCreate: RoleCreate,
@@ -618,7 +618,7 @@ const {mutation: mutationOptions} = options ?
     export type PostRolesMutationError = LegacyBadRequestResponse
 
     /**
- * @summary Tạo vai trò mới
+ * @summary Create a new role
  */
 export const usePostRoles = <TError = LegacyBadRequestResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postRoles>>, TError,{data: RoleCreate}, TContext>, }
@@ -634,8 +634,8 @@ export const usePostRoles = <TError = LegacyBadRequestResponse,
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **PR-02** — GET /roles/{id}/permissions. Cần quyền `permission.manage`. Xử lý bởi `RolePermission.findAll`.
- * @summary Lấy vai trò theo permissions
+ * **PR-02** — GET /roles/{id}/permissions. Requires `permission.manage` permission. Handled by `RolePermission.findAll`.
+ * @summary Get role permissions
  */
 export const getRolesIdPermissions = (
     id: string,
@@ -712,7 +712,7 @@ export function useGetRolesIdPermissionsInfinite<TData = InfiniteData<Awaited<Re
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy vai trò theo permissions
+ * @summary Get role permissions
  */
 
 export function useGetRolesIdPermissionsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRolesIdPermissions>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -730,7 +730,7 @@ export function useGetRolesIdPermissionsInfinite<TData = InfiniteData<Awaited<Re
 }
 
 /**
- * @summary Lấy vai trò theo permissions
+ * @summary Get role permissions
  */
 export const prefetchGetRolesIdPermissionsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getRolesIdPermissions>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRolesIdPermissions>>, TError, TData>>, }
@@ -793,7 +793,7 @@ export function useGetRolesIdPermissions<TData = Awaited<ReturnType<typeof getRo
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy vai trò theo permissions
+ * @summary Get role permissions
  */
 
 export function useGetRolesIdPermissions<TData = Awaited<ReturnType<typeof getRolesIdPermissions>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -811,7 +811,7 @@ export function useGetRolesIdPermissions<TData = Awaited<ReturnType<typeof getRo
 }
 
 /**
- * @summary Lấy vai trò theo permissions
+ * @summary Get role permissions
  */
 export const prefetchGetRolesIdPermissionsQuery = async <TData = Awaited<ReturnType<typeof getRolesIdPermissions>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRolesIdPermissions>>, TError, TData>>, }
@@ -828,8 +828,8 @@ export const prefetchGetRolesIdPermissionsQuery = async <TData = Awaited<ReturnT
 
 
 /**
- * **PR-03** — PUT /roles/{id}/permissions: ghi đè danh sách quyền của vai trò. Cần quyền `permission.manage`. Trường body: `permissions`. Xử lý bởi `Role.findByPk`.
- * @summary Gán quyền cho vai trò
+ * **PR-03** — PUT /roles/{id}/permissions: overwrites the role's permission list. Requires `permission.manage` permission. Body field: `permissions`. Handled by `Role.findByPk`.
+ * @summary Assign permissions to a role
  */
 export const putRolesIdPermissions = (
     id: string,
@@ -877,7 +877,7 @@ const {mutation: mutationOptions} = options ?
     export type PutRolesIdPermissionsMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Gán quyền cho vai trò
+ * @summary Assign permissions to a role
  */
 export const usePutRolesIdPermissions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putRolesIdPermissions>>, TError,{id: string;data: PutRolesIdPermissionsBody}, TContext>, }
@@ -893,8 +893,8 @@ export const usePutRolesIdPermissions = <TError = UnauthorizedResponse | Forbidd
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **PR-01** — GET /permissions: danh mục permission key do code khai báo. Cần quyền `permission.manage`. Xử lý bởi `Permission.findAll`.
- * @summary Lấy danh sách quyền
+ * **PR-01** — GET /permissions: catalog of permission keys declared by the code. Requires `permission.manage` permission. Handled by `Permission.findAll`.
+ * @summary Get permission list
  */
 export const getPermissions = (
     
@@ -971,7 +971,7 @@ export function useGetPermissionsInfinite<TData = InfiniteData<Awaited<ReturnTyp
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách quyền
+ * @summary Get permission list
  */
 
 export function useGetPermissionsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getPermissions>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -989,7 +989,7 @@ export function useGetPermissionsInfinite<TData = InfiniteData<Awaited<ReturnTyp
 }
 
 /**
- * @summary Lấy danh sách quyền
+ * @summary Get permission list
  */
 export const prefetchGetPermissionsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getPermissions>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getPermissions>>, TError, TData>>, }
@@ -1052,7 +1052,7 @@ export function useGetPermissions<TData = Awaited<ReturnType<typeof getPermissio
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách quyền
+ * @summary Get permission list
  */
 
 export function useGetPermissions<TData = Awaited<ReturnType<typeof getPermissions>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -1070,7 +1070,7 @@ export function useGetPermissions<TData = Awaited<ReturnType<typeof getPermissio
 }
 
 /**
- * @summary Lấy danh sách quyền
+ * @summary Get permission list
  */
 export const prefetchGetPermissionsQuery = async <TData = Awaited<ReturnType<typeof getPermissions>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPermissions>>, TError, TData>>, }

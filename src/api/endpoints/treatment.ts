@@ -43,8 +43,8 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * GET `/treatment/specialties` — chuyên khoa điều trị. Công khai, không cần đăng nhập. Xử lý bởi `specialtyProvider.getAll`.
- * @summary Liệt kê chuyên khoa điều trị
+ * GET `/treatment/specialties` — treatment specialties. Public, no authentication required. Handled by `specialtyProvider.getAll`.
+ * @summary List treatment specialties
  */
 export const getTreatmentSpecialties = (
     
@@ -121,7 +121,7 @@ export function useGetTreatmentSpecialtiesInfinite<TData = InfiniteData<Awaited<
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Liệt kê chuyên khoa điều trị
+ * @summary List treatment specialties
  */
 
 export function useGetTreatmentSpecialtiesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentSpecialties>>>, TError = LegacyBadRequestResponse>(
@@ -139,7 +139,7 @@ export function useGetTreatmentSpecialtiesInfinite<TData = InfiniteData<Awaited<
 }
 
 /**
- * @summary Liệt kê chuyên khoa điều trị
+ * @summary List treatment specialties
  */
 export const prefetchGetTreatmentSpecialtiesInfiniteQuery = async <TData = Awaited<ReturnType<typeof getTreatmentSpecialties>>, TError = LegacyBadRequestResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentSpecialties>>, TError, TData>>, }
@@ -202,7 +202,7 @@ export function useGetTreatmentSpecialties<TData = Awaited<ReturnType<typeof get
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Liệt kê chuyên khoa điều trị
+ * @summary List treatment specialties
  */
 
 export function useGetTreatmentSpecialties<TData = Awaited<ReturnType<typeof getTreatmentSpecialties>>, TError = LegacyBadRequestResponse>(
@@ -220,7 +220,7 @@ export function useGetTreatmentSpecialties<TData = Awaited<ReturnType<typeof get
 }
 
 /**
- * @summary Liệt kê chuyên khoa điều trị
+ * @summary List treatment specialties
  */
 export const prefetchGetTreatmentSpecialtiesQuery = async <TData = Awaited<ReturnType<typeof getTreatmentSpecialties>>, TError = LegacyBadRequestResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentSpecialties>>, TError, TData>>, }
@@ -237,8 +237,8 @@ export const prefetchGetTreatmentSpecialtiesQuery = async <TData = Awaited<Retur
 
 
 /**
- * POST `/treatment/specialties` — chuyên khoa điều trị. **Công khai, không cần đăng nhập.** Route này hiện không gắn middleware xác thực hay phân quyền nào. Xử lý bởi `specialtyProvider.post`.
- * @summary Tạo chuyên khoa điều trị
+ * POST `/treatment/specialties` — treatment specialties. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `specialtyProvider.post`.
+ * @summary Create a treatment specialty
  */
 export const postTreatmentSpecialties = (
     treatmentSpecialtyCreate: TreatmentSpecialtyCreate,
@@ -286,7 +286,7 @@ const {mutation: mutationOptions} = options ?
     export type PostTreatmentSpecialtiesMutationError = LegacyBadRequestResponse
 
     /**
- * @summary Tạo chuyên khoa điều trị
+ * @summary Create a treatment specialty
  */
 export const usePostTreatmentSpecialties = <TError = LegacyBadRequestResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postTreatmentSpecialties>>, TError,{data: TreatmentSpecialtyCreate}, TContext>, }
@@ -302,8 +302,8 @@ export const usePostTreatmentSpecialties = <TError = LegacyBadRequestResponse,
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/treatment/specialties/{specialtySlug}` — chuyên khoa điều trị. Công khai, không cần đăng nhập. Xử lý bởi `specialtyProvider.getOne`.
- * @summary Xem chi tiết chuyên khoa
+ * GET `/treatment/specialties/{specialtySlug}` — treatment specialties. Public, no authentication required. Handled by `specialtyProvider.getOne`.
+ * @summary View specialty details
  */
 export const getTreatmentSpecialtiesSpecialtySlug = (
     specialtySlug: string,
@@ -380,7 +380,7 @@ export function useGetTreatmentSpecialtiesSpecialtySlugInfinite<TData = Infinite
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết chuyên khoa
+ * @summary View specialty details
  */
 
 export function useGetTreatmentSpecialtiesSpecialtySlugInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentSpecialtiesSpecialtySlug>>>, TError = LegacyBadRequestResponse | void>(
@@ -398,7 +398,7 @@ export function useGetTreatmentSpecialtiesSpecialtySlugInfinite<TData = Infinite
 }
 
 /**
- * @summary Xem chi tiết chuyên khoa
+ * @summary View specialty details
  */
 export const prefetchGetTreatmentSpecialtiesSpecialtySlugInfiniteQuery = async <TData = Awaited<ReturnType<typeof getTreatmentSpecialtiesSpecialtySlug>>, TError = LegacyBadRequestResponse | void>(
  queryClient: QueryClient, specialtySlug: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentSpecialtiesSpecialtySlug>>, TError, TData>>, }
@@ -461,7 +461,7 @@ export function useGetTreatmentSpecialtiesSpecialtySlug<TData = Awaited<ReturnTy
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết chuyên khoa
+ * @summary View specialty details
  */
 
 export function useGetTreatmentSpecialtiesSpecialtySlug<TData = Awaited<ReturnType<typeof getTreatmentSpecialtiesSpecialtySlug>>, TError = LegacyBadRequestResponse | void>(
@@ -479,7 +479,7 @@ export function useGetTreatmentSpecialtiesSpecialtySlug<TData = Awaited<ReturnTy
 }
 
 /**
- * @summary Xem chi tiết chuyên khoa
+ * @summary View specialty details
  */
 export const prefetchGetTreatmentSpecialtiesSpecialtySlugQuery = async <TData = Awaited<ReturnType<typeof getTreatmentSpecialtiesSpecialtySlug>>, TError = LegacyBadRequestResponse | void>(
  queryClient: QueryClient, specialtySlug: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentSpecialtiesSpecialtySlug>>, TError, TData>>, }
@@ -496,8 +496,8 @@ export const prefetchGetTreatmentSpecialtiesSpecialtySlugQuery = async <TData = 
 
 
 /**
- * PUT `/treatment/specialties/{specialtySlug}` — chuyên khoa điều trị. **Công khai, không cần đăng nhập.** Route này hiện không gắn middleware xác thực hay phân quyền nào. Xử lý bởi `specialtyProvider.getOne`.
- * @summary Cập nhật chuyên khoa
+ * PUT `/treatment/specialties/{specialtySlug}` — treatment specialties. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `specialtyProvider.getOne`.
+ * @summary Update a specialty
  */
 export const putTreatmentSpecialtiesSpecialtySlug = (
     specialtySlug: string,
@@ -545,7 +545,7 @@ const {mutation: mutationOptions} = options ?
     export type PutTreatmentSpecialtiesSpecialtySlugMutationError = LegacyBadRequestResponse | void
 
     /**
- * @summary Cập nhật chuyên khoa
+ * @summary Update a specialty
  */
 export const usePutTreatmentSpecialtiesSpecialtySlug = <TError = LegacyBadRequestResponse | void,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putTreatmentSpecialtiesSpecialtySlug>>, TError,{specialtySlug: string;data: TreatmentSpecialtyCreate}, TContext>, }
@@ -561,8 +561,8 @@ export const usePutTreatmentSpecialtiesSpecialtySlug = <TError = LegacyBadReques
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * DELETE `/treatment/specialties/{specialtySlug}` — chuyên khoa điều trị. **Công khai, không cần đăng nhập.** Route này hiện không gắn middleware xác thực hay phân quyền nào. Xử lý bởi `specialtyProvider.getOne`.
- * @summary Xóa chuyên khoa
+ * DELETE `/treatment/specialties/{specialtySlug}` — treatment specialties. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `specialtyProvider.getOne`.
+ * @summary Delete a specialty
  */
 export const deleteTreatmentSpecialtiesSpecialtySlug = (
     specialtySlug: string,
@@ -607,7 +607,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteTreatmentSpecialtiesSpecialtySlugMutationError = LegacyBadRequestResponse | void
 
     /**
- * @summary Xóa chuyên khoa
+ * @summary Delete a specialty
  */
 export const useDeleteTreatmentSpecialtiesSpecialtySlug = <TError = LegacyBadRequestResponse | void,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTreatmentSpecialtiesSpecialtySlug>>, TError,{specialtySlug: string}, TContext>, }
@@ -623,8 +623,8 @@ export const useDeleteTreatmentSpecialtiesSpecialtySlug = <TError = LegacyBadReq
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/treatment/specialties/{specialtySlug}/topics/{topicSlug}` — chuyên khoa điều trị. Công khai, không cần đăng nhập. Xử lý bởi `specialtyProvider.getOne`.
- * @summary Xem chi tiết chủ đề
+ * GET `/treatment/specialties/{specialtySlug}/topics/{topicSlug}` — treatment specialties. Public, no authentication required. Handled by `specialtyProvider.getOne`.
+ * @summary View topic details
  */
 export const getTreatmentSpecialtiesSpecialtySlugTopicsTopicSlug = (
     specialtySlug: string,
@@ -708,7 +708,7 @@ export function useGetTreatmentSpecialtiesSpecialtySlugTopicsTopicSlugInfinite<T
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết chủ đề
+ * @summary View topic details
  */
 
 export function useGetTreatmentSpecialtiesSpecialtySlugTopicsTopicSlugInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentSpecialtiesSpecialtySlugTopicsTopicSlug>>>, TError = LegacyBadRequestResponse | void>(
@@ -727,7 +727,7 @@ export function useGetTreatmentSpecialtiesSpecialtySlugTopicsTopicSlugInfinite<T
 }
 
 /**
- * @summary Xem chi tiết chủ đề
+ * @summary View topic details
  */
 export const prefetchGetTreatmentSpecialtiesSpecialtySlugTopicsTopicSlugInfiniteQuery = async <TData = Awaited<ReturnType<typeof getTreatmentSpecialtiesSpecialtySlugTopicsTopicSlug>>, TError = LegacyBadRequestResponse | void>(
  queryClient: QueryClient, specialtySlug: string,
@@ -795,7 +795,7 @@ export function useGetTreatmentSpecialtiesSpecialtySlugTopicsTopicSlug<TData = A
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết chủ đề
+ * @summary View topic details
  */
 
 export function useGetTreatmentSpecialtiesSpecialtySlugTopicsTopicSlug<TData = Awaited<ReturnType<typeof getTreatmentSpecialtiesSpecialtySlugTopicsTopicSlug>>, TError = LegacyBadRequestResponse | void>(
@@ -814,7 +814,7 @@ export function useGetTreatmentSpecialtiesSpecialtySlugTopicsTopicSlug<TData = A
 }
 
 /**
- * @summary Xem chi tiết chủ đề
+ * @summary View topic details
  */
 export const prefetchGetTreatmentSpecialtiesSpecialtySlugTopicsTopicSlugQuery = async <TData = Awaited<ReturnType<typeof getTreatmentSpecialtiesSpecialtySlugTopicsTopicSlug>>, TError = LegacyBadRequestResponse | void>(
  queryClient: QueryClient, specialtySlug: string,
@@ -832,8 +832,8 @@ export const prefetchGetTreatmentSpecialtiesSpecialtySlugTopicsTopicSlugQuery = 
 
 
 /**
- * PUT `/treatment/specialties/{specialtySlug}/topics/{topicSlug}` — chuyên khoa điều trị. **Công khai, không cần đăng nhập.** Route này hiện không gắn middleware xác thực hay phân quyền nào. Xử lý bởi `specialtyProvider.getOne`.
- * @summary Cập nhật chủ đề
+ * PUT `/treatment/specialties/{specialtySlug}/topics/{topicSlug}` — treatment specialties. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `specialtyProvider.getOne`.
+ * @summary Update a topic
  */
 export const putTreatmentSpecialtiesSpecialtySlugTopicsTopicSlug = (
     specialtySlug: string,
@@ -882,7 +882,7 @@ const {mutation: mutationOptions} = options ?
     export type PutTreatmentSpecialtiesSpecialtySlugTopicsTopicSlugMutationError = LegacyBadRequestResponse | void
 
     /**
- * @summary Cập nhật chủ đề
+ * @summary Update a topic
  */
 export const usePutTreatmentSpecialtiesSpecialtySlugTopicsTopicSlug = <TError = LegacyBadRequestResponse | void,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putTreatmentSpecialtiesSpecialtySlugTopicsTopicSlug>>, TError,{specialtySlug: string;topicSlug: string;data: TreatmentSpecialtyCreate}, TContext>, }
@@ -898,8 +898,8 @@ export const usePutTreatmentSpecialtiesSpecialtySlugTopicsTopicSlug = <TError = 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * DELETE `/treatment/specialties/{specialtySlug}/topics/{topicSlug}` — chuyên khoa điều trị. **Công khai, không cần đăng nhập.** Route này hiện không gắn middleware xác thực hay phân quyền nào. Xử lý bởi `specialtyProvider.getOne`.
- * @summary Xóa chủ đề
+ * DELETE `/treatment/specialties/{specialtySlug}/topics/{topicSlug}` — treatment specialties. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `specialtyProvider.getOne`.
+ * @summary Delete a topic
  */
 export const deleteTreatmentSpecialtiesSpecialtySlugTopicsTopicSlug = (
     specialtySlug: string,
@@ -945,7 +945,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteTreatmentSpecialtiesSpecialtySlugTopicsTopicSlugMutationError = LegacyBadRequestResponse | void
 
     /**
- * @summary Xóa chủ đề
+ * @summary Delete a topic
  */
 export const useDeleteTreatmentSpecialtiesSpecialtySlugTopicsTopicSlug = <TError = LegacyBadRequestResponse | void,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTreatmentSpecialtiesSpecialtySlugTopicsTopicSlug>>, TError,{specialtySlug: string;topicSlug: string}, TContext>, }
@@ -961,8 +961,8 @@ export const useDeleteTreatmentSpecialtiesSpecialtySlugTopicsTopicSlug = <TError
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/treatment/specialties/{specialtySlug}/topics` — chuyên khoa điều trị. Công khai, không cần đăng nhập. Xử lý bởi `specialtyProvider.getOne`.
- * @summary Liệt kê chủ đề của chuyên khoa
+ * GET `/treatment/specialties/{specialtySlug}/topics` — treatment specialties. Public, no authentication required. Handled by `specialtyProvider.getOne`.
+ * @summary List topics of a specialty
  */
 export const getTreatmentSpecialtiesSpecialtySlugTopics = (
     specialtySlug: string,
@@ -1039,7 +1039,7 @@ export function useGetTreatmentSpecialtiesSpecialtySlugTopicsInfinite<TData = In
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Liệt kê chủ đề của chuyên khoa
+ * @summary List topics of a specialty
  */
 
 export function useGetTreatmentSpecialtiesSpecialtySlugTopicsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentSpecialtiesSpecialtySlugTopics>>>, TError = LegacyBadRequestResponse | void>(
@@ -1057,7 +1057,7 @@ export function useGetTreatmentSpecialtiesSpecialtySlugTopicsInfinite<TData = In
 }
 
 /**
- * @summary Liệt kê chủ đề của chuyên khoa
+ * @summary List topics of a specialty
  */
 export const prefetchGetTreatmentSpecialtiesSpecialtySlugTopicsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getTreatmentSpecialtiesSpecialtySlugTopics>>, TError = LegacyBadRequestResponse | void>(
  queryClient: QueryClient, specialtySlug: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentSpecialtiesSpecialtySlugTopics>>, TError, TData>>, }
@@ -1120,7 +1120,7 @@ export function useGetTreatmentSpecialtiesSpecialtySlugTopics<TData = Awaited<Re
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Liệt kê chủ đề của chuyên khoa
+ * @summary List topics of a specialty
  */
 
 export function useGetTreatmentSpecialtiesSpecialtySlugTopics<TData = Awaited<ReturnType<typeof getTreatmentSpecialtiesSpecialtySlugTopics>>, TError = LegacyBadRequestResponse | void>(
@@ -1138,7 +1138,7 @@ export function useGetTreatmentSpecialtiesSpecialtySlugTopics<TData = Awaited<Re
 }
 
 /**
- * @summary Liệt kê chủ đề của chuyên khoa
+ * @summary List topics of a specialty
  */
 export const prefetchGetTreatmentSpecialtiesSpecialtySlugTopicsQuery = async <TData = Awaited<ReturnType<typeof getTreatmentSpecialtiesSpecialtySlugTopics>>, TError = LegacyBadRequestResponse | void>(
  queryClient: QueryClient, specialtySlug: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentSpecialtiesSpecialtySlugTopics>>, TError, TData>>, }
@@ -1155,8 +1155,8 @@ export const prefetchGetTreatmentSpecialtiesSpecialtySlugTopicsQuery = async <TD
 
 
 /**
- * POST `/treatment/specialties/{specialtySlug}/topics` — chuyên khoa điều trị. **Công khai, không cần đăng nhập.** Route này hiện không gắn middleware xác thực hay phân quyền nào. Body được chuyển nguyên vẹn vào lớp nghiệp vụ. Xử lý bởi `specialtyProvider.getOne`.
- * @summary Tạo chủ đề cho chuyên khoa
+ * POST `/treatment/specialties/{specialtySlug}/topics` — treatment specialties. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. The body is passed as-is to the business layer. Handled by `specialtyProvider.getOne`.
+ * @summary Create a topic for a specialty
  */
 export const postTreatmentSpecialtiesSpecialtySlugTopics = (
     specialtySlug: string,
@@ -1205,7 +1205,7 @@ const {mutation: mutationOptions} = options ?
     export type PostTreatmentSpecialtiesSpecialtySlugTopicsMutationError = LegacyBadRequestResponse | void
 
     /**
- * @summary Tạo chủ đề cho chuyên khoa
+ * @summary Create a topic for a specialty
  */
 export const usePostTreatmentSpecialtiesSpecialtySlugTopics = <TError = LegacyBadRequestResponse | void,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postTreatmentSpecialtiesSpecialtySlugTopics>>, TError,{specialtySlug: string;data: PostTreatmentSpecialtiesSpecialtySlugTopicsBody}, TContext>, }

@@ -78,7 +78,9 @@ export default function SessionPhotos({
     <Space wrap size={10}>
       {photos.length > 0 && (
         <Image.PreviewGroup
-          items={photos.map((p) => p.url ?? '').filter(Boolean)}
+          items={photos
+            .map((p) => fileSrc((p as any).file) ?? resolveFileSrc(urlMap, p.file_id) ?? (p.url?.startsWith('http') ? p.url : `${links.imageEndpoint}${p.url ?? ''}`))
+            .filter(Boolean)}
           preview={
             deleteAllowed
               ? {

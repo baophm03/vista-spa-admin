@@ -58,8 +58,8 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * **RW-02** — GET /rewards/{id}. Chỉ quản trị viên nền tảng (ADM) được gọi.
- * @summary Xem chi tiết quà tặng
+ * **RW-02** — GET /rewards/{id}. Only platform administrators (ADM) can call this.
+ * @summary View reward detail
  */
 export const getRewardsId = (
     id: string,
@@ -136,7 +136,7 @@ export function useGetRewardsIdInfinite<TData = InfiniteData<Awaited<ReturnType<
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết quà tặng
+ * @summary View reward detail
  */
 
 export function useGetRewardsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRewardsId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -154,7 +154,7 @@ export function useGetRewardsIdInfinite<TData = InfiniteData<Awaited<ReturnType<
 }
 
 /**
- * @summary Xem chi tiết quà tặng
+ * @summary View reward detail
  */
 export const prefetchGetRewardsIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getRewardsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRewardsId>>, TError, TData>>, }
@@ -217,7 +217,7 @@ export function useGetRewardsId<TData = Awaited<ReturnType<typeof getRewardsId>>
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết quà tặng
+ * @summary View reward detail
  */
 
 export function useGetRewardsId<TData = Awaited<ReturnType<typeof getRewardsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -235,7 +235,7 @@ export function useGetRewardsId<TData = Awaited<ReturnType<typeof getRewardsId>>
 }
 
 /**
- * @summary Xem chi tiết quà tặng
+ * @summary View reward detail
  */
 export const prefetchGetRewardsIdQuery = async <TData = Awaited<ReturnType<typeof getRewardsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRewardsId>>, TError, TData>>, }
@@ -252,8 +252,8 @@ export const prefetchGetRewardsIdQuery = async <TData = Awaited<ReturnType<typeo
 
 
 /**
- * **RW-04** — PUT /rewards/{id} (không ảnh hưởng lượt đã đổi). Chỉ quản trị viên nền tảng (ADM) được gọi. Xử lý bởi `row.update`.
- * @summary Cập nhật quà tặng
+ * **RW-04** — PUT /rewards/{id} (does not affect already-redeemed entries). Only platform administrators (ADM) can call this. Handled by `row.update`.
+ * @summary Update a reward
  */
 export const putRewardsId = (
     id: string,
@@ -301,7 +301,7 @@ const {mutation: mutationOptions} = options ?
     export type PutRewardsIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Cập nhật quà tặng
+ * @summary Update a reward
  */
 export const usePutRewardsId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putRewardsId>>, TError,{id: string;data: Reward}, TContext>, }
@@ -317,8 +317,8 @@ export const usePutRewardsId = <TError = UnauthorizedResponse | ForbiddenRespons
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **RW-05** — DELETE /rewards/{id} = ẩn. Chỉ quản trị viên nền tảng (ADM) được gọi. Xử lý bởi `row.update`.
- * @summary Xóa quà tặng
+ * **RW-05** — DELETE /rewards/{id} = hide. Only platform administrators (ADM) can call this. Handled by `row.update`.
+ * @summary Delete a reward
  */
 export const deleteRewardsId = (
     id: string,
@@ -363,7 +363,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteRewardsIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Xóa quà tặng
+ * @summary Delete a reward
  */
 export const useDeleteRewardsId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteRewardsId>>, TError,{id: string}, TContext>, }
@@ -379,8 +379,8 @@ export const useDeleteRewardsId = <TError = UnauthorizedResponse | ForbiddenResp
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **RW-01** — GET /rewards. Cần quyền `reward.read`. Tham số truy vấn: `is_active`, `available`.
- * @summary Lấy danh sách quà tặng
+ * **RW-01** — GET /rewards. Requires `reward.read` permission. Query parameters: `is_active`, `available`.
+ * @summary Get reward list
  */
 export const getRewards = (
     params?: GetRewardsParams,
@@ -458,7 +458,7 @@ export function useGetRewardsInfinite<TData = InfiniteData<Awaited<ReturnType<ty
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách quà tặng
+ * @summary Get reward list
  */
 
 export function useGetRewardsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRewards>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -476,7 +476,7 @@ export function useGetRewardsInfinite<TData = InfiniteData<Awaited<ReturnType<ty
 }
 
 /**
- * @summary Lấy danh sách quà tặng
+ * @summary Get reward list
  */
 export const prefetchGetRewardsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getRewards>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetRewardsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRewards>>, TError, TData>>, }
@@ -539,7 +539,7 @@ export function useGetRewards<TData = Awaited<ReturnType<typeof getRewards>>, TE
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách quà tặng
+ * @summary Get reward list
  */
 
 export function useGetRewards<TData = Awaited<ReturnType<typeof getRewards>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -557,7 +557,7 @@ export function useGetRewards<TData = Awaited<ReturnType<typeof getRewards>>, TE
 }
 
 /**
- * @summary Lấy danh sách quà tặng
+ * @summary Get reward list
  */
 export const prefetchGetRewardsQuery = async <TData = Awaited<ReturnType<typeof getRewards>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetRewardsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRewards>>, TError, TData>>, }
@@ -574,8 +574,8 @@ export const prefetchGetRewardsQuery = async <TData = Awaited<ReturnType<typeof 
 
 
 /**
- * **RW-03** — POST /rewards. Chỉ quản trị viên nền tảng (ADM) được gọi.
- * @summary Tạo quà tặng mới
+ * **RW-03** — POST /rewards. Only platform administrators (ADM) can call this.
+ * @summary Create a new reward
  */
 export const postRewards = (
     reward: Reward,
@@ -623,7 +623,7 @@ const {mutation: mutationOptions} = options ?
     export type PostRewardsMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Tạo quà tặng mới
+ * @summary Create a new reward
  */
 export const usePostRewards = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postRewards>>, TError,{data: Reward}, TContext>, }
@@ -639,8 +639,8 @@ export const usePostRewards = <TError = UnauthorizedResponse | ForbiddenResponse
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **RW-06** — GET /reward-redemptions: lọc khách, quà, status, khoảng ngày. Cần quyền `reward.read`. Tham số truy vấn: `page`, `limit`, `status`, `reward_id`, `customer_profile_id`, `from`, `to`.
- * @summary Lấy danh sách lượt đổi quà
+ * **RW-06** — GET /reward-redemptions: filter by customer, reward, status, date range. Requires `reward.read` permission. Query parameters: `page`, `limit`, `status`, `reward_id`, `customer_profile_id`, `from`, `to`.
+ * @summary Get reward redemption list
  */
 export const getRewardRedemptions = (
     params?: GetRewardRedemptionsParams,
@@ -718,7 +718,7 @@ export function useGetRewardRedemptionsInfinite<TData = InfiniteData<Awaited<Ret
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách lượt đổi quà
+ * @summary Get reward redemption list
  */
 
 export function useGetRewardRedemptionsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRewardRedemptions>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -736,7 +736,7 @@ export function useGetRewardRedemptionsInfinite<TData = InfiniteData<Awaited<Ret
 }
 
 /**
- * @summary Lấy danh sách lượt đổi quà
+ * @summary Get reward redemption list
  */
 export const prefetchGetRewardRedemptionsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getRewardRedemptions>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetRewardRedemptionsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRewardRedemptions>>, TError, TData>>, }
@@ -799,7 +799,7 @@ export function useGetRewardRedemptions<TData = Awaited<ReturnType<typeof getRew
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách lượt đổi quà
+ * @summary Get reward redemption list
  */
 
 export function useGetRewardRedemptions<TData = Awaited<ReturnType<typeof getRewardRedemptions>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -817,7 +817,7 @@ export function useGetRewardRedemptions<TData = Awaited<ReturnType<typeof getRew
 }
 
 /**
- * @summary Lấy danh sách lượt đổi quà
+ * @summary Get reward redemption list
  */
 export const prefetchGetRewardRedemptionsQuery = async <TData = Awaited<ReturnType<typeof getRewardRedemptions>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetRewardRedemptionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRewardRedemptions>>, TError, TData>>, }
@@ -834,8 +834,8 @@ export const prefetchGetRewardRedemptionsQuery = async <TData = Awaited<ReturnTy
 
 
 /**
- * **RW-08** — PUT /reward-redemptions/{id}/use (ISSUED → USED). Cần quyền `reward.redeem_admin`. Quà giảm tiền phải dùng endpoint áp vào gói liệu trình để ghi giảm công nợ.
- * @summary Đánh dấu quà đã được sử dụng
+ * **RW-08** — PUT /reward-redemptions/{id}/use (ISSUED → USED). Requires `reward.redeem_admin` permission. Money-discount rewards must use the apply-to-treatment-package endpoint to reduce debt.
+ * @summary Mark a reward as used
  */
 export const putRewardRedemptionsIdUse = (
     id: string,
@@ -880,7 +880,7 @@ const {mutation: mutationOptions} = options ?
     export type PutRewardRedemptionsIdUseMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Đánh dấu quà đã được sử dụng
+ * @summary Mark a reward as used
  */
 export const usePutRewardRedemptionsIdUse = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putRewardRedemptionsIdUse>>, TError,{id: string}, TContext>, }
@@ -896,8 +896,8 @@ export const usePutRewardRedemptionsIdUse = <TError = UnauthorizedResponse | For
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **RW-09** — PUT /reward-redemptions/{id}/cancel: hoàn điểm + hoàn số lượng. Cần quyền `reward.update`. Trường body: `reason`.
- * @summary Hủy lượt đổi quà
+ * **RW-09** — PUT /reward-redemptions/{id}/cancel: refund points + restore quantity. Requires `reward.update` permission. Body field: `reason`.
+ * @summary Cancel a reward redemption
  */
 export const putRewardRedemptionsIdCancel = (
     id: string,
@@ -945,7 +945,7 @@ const {mutation: mutationOptions} = options ?
     export type PutRewardRedemptionsIdCancelMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Hủy lượt đổi quà
+ * @summary Cancel a reward redemption
  */
 export const usePutRewardRedemptionsIdCancel = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putRewardRedemptionsIdCancel>>, TError,{id: string;data: PutRewardRedemptionsIdCancelBody}, TContext>, }
@@ -961,8 +961,8 @@ export const usePutRewardRedemptionsIdCancel = <TError = UnauthorizedResponse | 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * Lượt đổi phải thuộc cùng khách, còn hiệu lực, là quyền lợi giảm tiền và dịch vụ phải khớp với gói.
- * @summary Áp dụng quà đã đổi vào công nợ liệu trình
+ * The redemption must belong to the same customer, still be valid, be a money-discount benefit, and the service must match the package.
+ * @summary Apply a redeemed reward to the treatment balance
  */
 export const postCustomerTreatmentsIdApplyReward = (
     id: string,
@@ -1011,7 +1011,7 @@ const {mutation: mutationOptions} = options ?
     export type PostCustomerTreatmentsIdApplyRewardMutationError = void
 
     /**
- * @summary Áp dụng quà đã đổi vào công nợ liệu trình
+ * @summary Apply a redeemed reward to the treatment balance
  */
 export const usePostCustomerTreatmentsIdApplyReward = <TError = void,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postCustomerTreatmentsIdApplyReward>>, TError,{id: string;data: PostCustomerTreatmentsIdApplyRewardBody}, TContext>, }

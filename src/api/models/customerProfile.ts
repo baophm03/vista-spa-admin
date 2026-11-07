@@ -14,7 +14,7 @@ import type { CustomerProfileNote } from './customerProfileNote';
 import type { CustomerProfileCreatedBy } from './customerProfileCreatedBy';
 
 /**
- * Customer profile (hồ sơ khách hàng)
+ * Customer profile
  */
 export interface CustomerProfile {
   id: string;

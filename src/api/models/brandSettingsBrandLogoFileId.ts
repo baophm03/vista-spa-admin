@@ -7,6 +7,6 @@
  */
 
 /**
- * Đường dẫn/logo file đã upload qua POST /files
+ * Id of the file uploaded via POST /files (FK to files table)
  */
 export type BrandSettingsBrandLogoFileId = string | null;

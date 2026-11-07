@@ -63,8 +63,8 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * **AR-02** — GET /academy/registrations/{id}. Cần quyền `academy.read`.
- * @summary Xem chi tiết đăng ký khóa học
+ * **AR-02** — GET /academy/registrations/{id}. Requires the `academy.read` permission.
+ * @summary View course registration details
  */
 export const getAcademyRegistrationsId = (
     id: string,
@@ -141,7 +141,7 @@ export function useGetAcademyRegistrationsIdInfinite<TData = InfiniteData<Awaite
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết đăng ký khóa học
+ * @summary View course registration details
  */
 
 export function useGetAcademyRegistrationsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyRegistrationsId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -159,7 +159,7 @@ export function useGetAcademyRegistrationsIdInfinite<TData = InfiniteData<Awaite
 }
 
 /**
- * @summary Xem chi tiết đăng ký khóa học
+ * @summary View course registration details
  */
 export const prefetchGetAcademyRegistrationsIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAcademyRegistrationsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsId>>, TError, TData>>, }
@@ -222,7 +222,7 @@ export function useGetAcademyRegistrationsId<TData = Awaited<ReturnType<typeof g
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết đăng ký khóa học
+ * @summary View course registration details
  */
 
 export function useGetAcademyRegistrationsId<TData = Awaited<ReturnType<typeof getAcademyRegistrationsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -240,7 +240,7 @@ export function useGetAcademyRegistrationsId<TData = Awaited<ReturnType<typeof g
 }
 
 /**
- * @summary Xem chi tiết đăng ký khóa học
+ * @summary View course registration details
  */
 export const prefetchGetAcademyRegistrationsIdQuery = async <TData = Awaited<ReturnType<typeof getAcademyRegistrationsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsId>>, TError, TData>>, }
@@ -257,8 +257,8 @@ export const prefetchGetAcademyRegistrationsIdQuery = async <TData = Awaited<Ret
 
 
 /**
- * **AR-04** — PUT /academy/registrations/{id} (confirm/attended/cancel + payment_status). Cần quyền `academy.update`.
- * @summary Cập nhật đăng ký khóa học
+ * **AR-04** — PUT /academy/registrations/{id} (confirm/attended/cancel + payment_status). Requires the `academy.update` permission.
+ * @summary Update course registration
  */
 export const putAcademyRegistrationsId = (
     id: string,
@@ -306,7 +306,7 @@ const {mutation: mutationOptions} = options ?
     export type PutAcademyRegistrationsIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Cập nhật đăng ký khóa học
+ * @summary Update course registration
  */
 export const usePutAcademyRegistrationsId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAcademyRegistrationsId>>, TError,{id: string;data: AcademyCourse}, TContext>, }
@@ -322,8 +322,8 @@ export const usePutAcademyRegistrationsId = <TError = UnauthorizedResponse | For
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **AR-05** — DELETE /academy/registrations/{id} → status=CANCELLED. Cần quyền `academy.delete`.
- * @summary Xóa đăng ký khóa học
+ * **AR-05** — DELETE /academy/registrations/{id} → status=CANCELLED. Requires the `academy.delete` permission.
+ * @summary Delete course registration
  */
 export const deleteAcademyRegistrationsId = (
     id: string,
@@ -368,7 +368,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteAcademyRegistrationsIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Xóa đăng ký khóa học
+ * @summary Delete course registration
  */
 export const useDeleteAcademyRegistrationsId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAcademyRegistrationsId>>, TError,{id: string}, TContext>, }
@@ -384,8 +384,8 @@ export const useDeleteAcademyRegistrationsId = <TError = UnauthorizedResponse | 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **AR-01** — GET /academy/registrations. Cần quyền `academy.read`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Tham số truy vấn: `branch_id`, `course_id`, `status`, `phone`.
- * @summary Quản lý đăng ký khóa học
+ * **AR-01** — GET /academy/registrations. Requires the `academy.read` permission. Branch scope: users limited to a single branch only see that branch's data. Query parameters: `branch_id`, `course_id`, `status`, `phone`.
+ * @summary Manage course registrations
  */
 export const getAcademyRegistrations = (
     params?: GetAcademyRegistrationsParams,
@@ -463,7 +463,7 @@ export function useGetAcademyRegistrationsInfinite<TData = InfiniteData<Awaited<
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Quản lý đăng ký khóa học
+ * @summary Manage course registrations
  */
 
 export function useGetAcademyRegistrationsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyRegistrations>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -481,7 +481,7 @@ export function useGetAcademyRegistrationsInfinite<TData = InfiniteData<Awaited<
 }
 
 /**
- * @summary Quản lý đăng ký khóa học
+ * @summary Manage course registrations
  */
 export const prefetchGetAcademyRegistrationsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAcademyRegistrations>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetAcademyRegistrationsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrations>>, TError, TData>>, }
@@ -544,7 +544,7 @@ export function useGetAcademyRegistrations<TData = Awaited<ReturnType<typeof get
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Quản lý đăng ký khóa học
+ * @summary Manage course registrations
  */
 
 export function useGetAcademyRegistrations<TData = Awaited<ReturnType<typeof getAcademyRegistrations>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -562,7 +562,7 @@ export function useGetAcademyRegistrations<TData = Awaited<ReturnType<typeof get
 }
 
 /**
- * @summary Quản lý đăng ký khóa học
+ * @summary Manage course registrations
  */
 export const prefetchGetAcademyRegistrationsQuery = async <TData = Awaited<ReturnType<typeof getAcademyRegistrations>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetAcademyRegistrationsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrations>>, TError, TData>>, }
@@ -579,8 +579,8 @@ export const prefetchGetAcademyRegistrationsQuery = async <TData = Awaited<Retur
 
 
 /**
- * **AR-03** — POST /academy/registrations (nhận diện học viên cũ → ưu đãi). Cần quyền `academy.create`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Body được chuyển nguyên vẹn vào lớp nghiệp vụ.
- * @summary Quản lý đăng ký khóa học
+ * **AR-03** — POST /academy/registrations (identify a returning student, apply benefits). Requires the `academy.create` permission. Branch scope: users limited to a single branch only see that branch's data. The body is passed as-is to the business layer.
+ * @summary Manage course registrations
  */
 export const postAcademyRegistrations = (
     postAcademyRegistrationsBody: PostAcademyRegistrationsBody,
@@ -628,7 +628,7 @@ const {mutation: mutationOptions} = options ?
     export type PostAcademyRegistrationsMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Quản lý đăng ký khóa học
+ * @summary Manage course registrations
  */
 export const usePostAcademyRegistrations = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAcademyRegistrations>>, TError,{data: PostAcademyRegistrationsBody}, TContext>, }
@@ -644,8 +644,8 @@ export const usePostAcademyRegistrations = <TError = UnauthorizedResponse | Forb
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **AR-06** — GET /academy/registrations/find-student?phone|email (nhận diện học viên cũ). Cần quyền `academy.read`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Tham số truy vấn: `branch_id`, `phone`, `email`.
- * @summary Tìm học viên cũ
+ * **AR-06** — GET /academy/registrations/find-student?phone|email (identify a returning student). Requires the `academy.read` permission. Branch scope: users limited to a single branch only see that branch's data. Query parameters: `branch_id`, `phone`, `email`.
+ * @summary Find returning student
  */
 export const getAcademyRegistrationsFindStudent = (
     params?: GetAcademyRegistrationsFindStudentParams,
@@ -723,7 +723,7 @@ export function useGetAcademyRegistrationsFindStudentInfinite<TData = InfiniteDa
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Tìm học viên cũ
+ * @summary Find returning student
  */
 
 export function useGetAcademyRegistrationsFindStudentInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyRegistrationsFindStudent>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -741,7 +741,7 @@ export function useGetAcademyRegistrationsFindStudentInfinite<TData = InfiniteDa
 }
 
 /**
- * @summary Tìm học viên cũ
+ * @summary Find returning student
  */
 export const prefetchGetAcademyRegistrationsFindStudentInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAcademyRegistrationsFindStudent>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetAcademyRegistrationsFindStudentParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsFindStudent>>, TError, TData>>, }
@@ -804,7 +804,7 @@ export function useGetAcademyRegistrationsFindStudent<TData = Awaited<ReturnType
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Tìm học viên cũ
+ * @summary Find returning student
  */
 
 export function useGetAcademyRegistrationsFindStudent<TData = Awaited<ReturnType<typeof getAcademyRegistrationsFindStudent>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -822,7 +822,7 @@ export function useGetAcademyRegistrationsFindStudent<TData = Awaited<ReturnType
 }
 
 /**
- * @summary Tìm học viên cũ
+ * @summary Find returning student
  */
 export const prefetchGetAcademyRegistrationsFindStudentQuery = async <TData = Awaited<ReturnType<typeof getAcademyRegistrationsFindStudent>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetAcademyRegistrationsFindStudentParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsFindStudent>>, TError, TData>>, }
@@ -839,8 +839,8 @@ export const prefetchGetAcademyRegistrationsFindStudentQuery = async <TData = Aw
 
 
 /**
- * **AC-09** — PUT /academy/registrations/{id}/status. Máy trạng thái một chiều: `PENDING` (Mới) → `CONFIRMED` (Đã liên hệ) → `ATTENDED` (Đã nhập học) hoặc `CANCELLED` từ PENDING/CONFIRMED. Không cho nhảy ngược (Test 20). Body: `status`, `assigned_to?`, `note?`. Lần đầu sang CONFIRMED hệ thống tự ghi `contacted_at`.
- * @summary Cập nhật tiến độ tư vấn của hồ sơ đăng ký
+ * **AC-09** — PUT /academy/registrations/{id}/status. One-way state machine: `PENDING` (New) → `CONFIRMED` (Contacted) → `ATTENDED` (Enrolled), or `CANCELLED` from PENDING/CONFIRMED. Backward transitions are not allowed (Test 20). Body: `status`, `assigned_to?`, `note?`. On the first transition to CONFIRMED the system automatically records `contacted_at`.
+ * @summary Update the consultation progress of a registration
  */
 export const putAcademyRegistrationsIdStatus = (
     id: string,
@@ -888,7 +888,7 @@ const {mutation: mutationOptions} = options ?
     export type PutAcademyRegistrationsIdStatusMutationError = UnauthorizedResponse | ForbiddenResponse | void
 
     /**
- * @summary Cập nhật tiến độ tư vấn của hồ sơ đăng ký
+ * @summary Update the consultation progress of a registration
  */
 export const usePutAcademyRegistrationsIdStatus = <TError = UnauthorizedResponse | ForbiddenResponse | void,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAcademyRegistrationsIdStatus>>, TError,{id: string;data: PutAcademyRegistrationsIdStatusBody}, TContext>, }
@@ -904,8 +904,8 @@ export const usePutAcademyRegistrationsIdStatus = <TError = UnauthorizedResponse
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **AC-02** — GET /academy/courses/{id}. Cần quyền `academy.read`.
- * @summary Xem chi tiết khóa học
+ * **AC-02** — GET /academy/courses/{id}. Requires the `academy.read` permission.
+ * @summary View course details
  */
 export const getAcademyCoursesId = (
     id: string,
@@ -982,7 +982,7 @@ export function useGetAcademyCoursesIdInfinite<TData = InfiniteData<Awaited<Retu
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết khóa học
+ * @summary View course details
  */
 
 export function useGetAcademyCoursesIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCoursesId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -1000,7 +1000,7 @@ export function useGetAcademyCoursesIdInfinite<TData = InfiniteData<Awaited<Retu
 }
 
 /**
- * @summary Xem chi tiết khóa học
+ * @summary View course details
  */
 export const prefetchGetAcademyCoursesIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAcademyCoursesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCoursesId>>, TError, TData>>, }
@@ -1063,7 +1063,7 @@ export function useGetAcademyCoursesId<TData = Awaited<ReturnType<typeof getAcad
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết khóa học
+ * @summary View course details
  */
 
 export function useGetAcademyCoursesId<TData = Awaited<ReturnType<typeof getAcademyCoursesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -1081,7 +1081,7 @@ export function useGetAcademyCoursesId<TData = Awaited<ReturnType<typeof getAcad
 }
 
 /**
- * @summary Xem chi tiết khóa học
+ * @summary View course details
  */
 export const prefetchGetAcademyCoursesIdQuery = async <TData = Awaited<ReturnType<typeof getAcademyCoursesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCoursesId>>, TError, TData>>, }
@@ -1098,8 +1098,8 @@ export const prefetchGetAcademyCoursesIdQuery = async <TData = Awaited<ReturnTyp
 
 
 /**
- * **AC-04** — PUT /academy/courses/{id}. Chỉ ADM, cần quyền `academy.update`.
- * @summary Cập nhật khóa học
+ * **AC-04** — PUT /academy/courses/{id}. Admin only, requires the `academy.update` permission.
+ * @summary Update course
  */
 export const putAcademyCoursesId = (
     id: string,
@@ -1147,7 +1147,7 @@ const {mutation: mutationOptions} = options ?
     export type PutAcademyCoursesIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Cập nhật khóa học
+ * @summary Update course
  */
 export const usePutAcademyCoursesId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAcademyCoursesId>>, TError,{id: string;data: AcademyCourse}, TContext>, }
@@ -1163,8 +1163,8 @@ export const usePutAcademyCoursesId = <TError = UnauthorizedResponse | Forbidden
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **AC-05** — DELETE /academy/courses/{id} (soft: is_active=false). Chỉ ADM, cần quyền `academy.delete`.
- * @summary Xóa khóa học
+ * **AC-05** — DELETE /academy/courses/{id} (soft: is_active=false). Admin only, requires the `academy.delete` permission.
+ * @summary Delete course
  */
 export const deleteAcademyCoursesId = (
     id: string,
@@ -1209,7 +1209,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteAcademyCoursesIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Xóa khóa học
+ * @summary Delete course
  */
 export const useDeleteAcademyCoursesId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAcademyCoursesId>>, TError,{id: string}, TContext>, }
@@ -1225,8 +1225,8 @@ export const useDeleteAcademyCoursesId = <TError = UnauthorizedResponse | Forbid
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **AC-01** — GET /academy/courses. Cần quyền `academy.read`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Tham số truy vấn: `branch_id`, `category`, `level`, `is_active`.
- * @summary Quản lý khóa học
+ * **AC-01** — GET /academy/courses. Requires the `academy.read` permission. Branch scope: users limited to a single branch only see that branch's data. Query parameters: `branch_id`, `category`, `level`, `is_active`.
+ * @summary Manage courses
  */
 export const getAcademyCourses = (
     params?: GetAcademyCoursesParams,
@@ -1304,7 +1304,7 @@ export function useGetAcademyCoursesInfinite<TData = InfiniteData<Awaited<Return
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Quản lý khóa học
+ * @summary Manage courses
  */
 
 export function useGetAcademyCoursesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCourses>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -1322,7 +1322,7 @@ export function useGetAcademyCoursesInfinite<TData = InfiniteData<Awaited<Return
 }
 
 /**
- * @summary Quản lý khóa học
+ * @summary Manage courses
  */
 export const prefetchGetAcademyCoursesInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAcademyCourses>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetAcademyCoursesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourses>>, TError, TData>>, }
@@ -1385,7 +1385,7 @@ export function useGetAcademyCourses<TData = Awaited<ReturnType<typeof getAcadem
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Quản lý khóa học
+ * @summary Manage courses
  */
 
 export function useGetAcademyCourses<TData = Awaited<ReturnType<typeof getAcademyCourses>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -1403,7 +1403,7 @@ export function useGetAcademyCourses<TData = Awaited<ReturnType<typeof getAcadem
 }
 
 /**
- * @summary Quản lý khóa học
+ * @summary Manage courses
  */
 export const prefetchGetAcademyCoursesQuery = async <TData = Awaited<ReturnType<typeof getAcademyCourses>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetAcademyCoursesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourses>>, TError, TData>>, }
@@ -1420,8 +1420,8 @@ export const prefetchGetAcademyCoursesQuery = async <TData = Awaited<ReturnType<
 
 
 /**
- * **AC-03** — POST /academy/courses. Chỉ ADM, cần quyền `academy.create`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Body được chuyển nguyên vẹn vào lớp nghiệp vụ.
- * @summary Quản lý khóa học
+ * **AC-03** — POST /academy/courses. Admin only, requires the `academy.create` permission. Branch scope: users limited to a single branch only see that branch's data. The body is passed as-is to the business layer.
+ * @summary Manage courses
  */
 export const postAcademyCourses = (
     postAcademyCoursesBody: PostAcademyCoursesBody,
@@ -1469,7 +1469,7 @@ const {mutation: mutationOptions} = options ?
     export type PostAcademyCoursesMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Quản lý khóa học
+ * @summary Manage courses
  */
 export const usePostAcademyCourses = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAcademyCourses>>, TError,{data: PostAcademyCoursesBody}, TContext>, }

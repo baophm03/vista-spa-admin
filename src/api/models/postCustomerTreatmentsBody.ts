@@ -7,6 +7,6 @@
  */
 
 /**
- * Payload nghiệp vụ tuỳ endpoint
+ * Business payload, endpoint-specific
  */
 export type PostCustomerTreatmentsBody = { [key: string]: unknown };

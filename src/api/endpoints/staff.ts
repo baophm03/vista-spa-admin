@@ -71,8 +71,8 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * GET `/staffSchedules/{id}` — ca làm việc. Cần quyền `schedule.read`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó.
- * @summary Xem chi tiết ca làm việc
+ * GET `/staffSchedules/{id}` — work shifts. Requires permission `schedule.read`. Branch scope: users restricted to a single branch only see that branch's data.
+ * @summary View work shift details
  */
 export const getStaffSchedulesId = (
     id: string,
@@ -149,7 +149,7 @@ export function useGetStaffSchedulesIdInfinite<TData = InfiniteData<Awaited<Retu
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết ca làm việc
+ * @summary View work shift details
  */
 
 export function useGetStaffSchedulesIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffSchedulesId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -167,7 +167,7 @@ export function useGetStaffSchedulesIdInfinite<TData = InfiniteData<Awaited<Retu
 }
 
 /**
- * @summary Xem chi tiết ca làm việc
+ * @summary View work shift details
  */
 export const prefetchGetStaffSchedulesIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getStaffSchedulesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffSchedulesId>>, TError, TData>>, }
@@ -230,7 +230,7 @@ export function useGetStaffSchedulesId<TData = Awaited<ReturnType<typeof getStaf
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết ca làm việc
+ * @summary View work shift details
  */
 
 export function useGetStaffSchedulesId<TData = Awaited<ReturnType<typeof getStaffSchedulesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -248,7 +248,7 @@ export function useGetStaffSchedulesId<TData = Awaited<ReturnType<typeof getStaf
 }
 
 /**
- * @summary Xem chi tiết ca làm việc
+ * @summary View work shift details
  */
 export const prefetchGetStaffSchedulesIdQuery = async <TData = Awaited<ReturnType<typeof getStaffSchedulesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffSchedulesId>>, TError, TData>>, }
@@ -265,8 +265,8 @@ export const prefetchGetStaffSchedulesIdQuery = async <TData = Awaited<ReturnTyp
 
 
 /**
- * PUT `/staffSchedules/{id}` — ca làm việc. Cần quyền `schedule.update`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó.
- * @summary Cập nhật ca làm việc
+ * PUT `/staffSchedules/{id}` — work shifts. Requires permission `schedule.update`. Branch scope: users restricted to a single branch only see that branch's data.
+ * @summary Update a work shift
  */
 export const putStaffSchedulesId = (
     id: string,
@@ -314,7 +314,7 @@ const {mutation: mutationOptions} = options ?
     export type PutStaffSchedulesIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Cập nhật ca làm việc
+ * @summary Update a work shift
  */
 export const usePutStaffSchedulesId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putStaffSchedulesId>>, TError,{id: string;data: StaffSchedule}, TContext>, }
@@ -330,8 +330,8 @@ export const usePutStaffSchedulesId = <TError = UnauthorizedResponse | Forbidden
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * DELETE `/staffSchedules/{id}` — ca làm việc. Cần quyền `schedule.delete`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Tham số truy vấn: `confirm_future_appointments`. Trường body: `confirm_future_appointments`.
- * @summary Xóa ca làm việc
+ * DELETE `/staffSchedules/{id}` — work shifts. Requires permission `schedule.delete`. Branch scope: users restricted to a single branch only see that branch's data. Query parameters: `confirm_future_appointments`. Body fields: `confirm_future_appointments`.
+ * @summary Delete a work shift
  */
 export const deleteStaffSchedulesId = (
     id: string,
@@ -381,7 +381,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteStaffSchedulesIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Xóa ca làm việc
+ * @summary Delete a work shift
  */
 export const useDeleteStaffSchedulesId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteStaffSchedulesId>>, TError,{id: string;data: DeleteStaffSchedulesIdBody;params?: DeleteStaffSchedulesIdParams}, TContext>, }
@@ -397,8 +397,8 @@ export const useDeleteStaffSchedulesId = <TError = UnauthorizedResponse | Forbid
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **SC-01** — GET /staff-schedules. Cần quyền `schedule.read`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Tham số truy vấn: `branch_id`, `staff_id`, `weekday`.
- * @summary Lấy danh sách ca làm việc
+ * **SC-01** — GET /staff-schedules. Requires permission `schedule.read`. Branch scope: users restricted to a single branch only see that branch's data. Query parameters: `branch_id`, `staff_id`, `weekday`.
+ * @summary List work shifts
  */
 export const getStaffSchedules = (
     params?: GetStaffSchedulesParams,
@@ -476,7 +476,7 @@ export function useGetStaffSchedulesInfinite<TData = InfiniteData<Awaited<Return
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách ca làm việc
+ * @summary List work shifts
  */
 
 export function useGetStaffSchedulesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffSchedules>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -494,7 +494,7 @@ export function useGetStaffSchedulesInfinite<TData = InfiniteData<Awaited<Return
 }
 
 /**
- * @summary Lấy danh sách ca làm việc
+ * @summary List work shifts
  */
 export const prefetchGetStaffSchedulesInfiniteQuery = async <TData = Awaited<ReturnType<typeof getStaffSchedules>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetStaffSchedulesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffSchedules>>, TError, TData>>, }
@@ -557,7 +557,7 @@ export function useGetStaffSchedules<TData = Awaited<ReturnType<typeof getStaffS
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách ca làm việc
+ * @summary List work shifts
  */
 
 export function useGetStaffSchedules<TData = Awaited<ReturnType<typeof getStaffSchedules>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -575,7 +575,7 @@ export function useGetStaffSchedules<TData = Awaited<ReturnType<typeof getStaffS
 }
 
 /**
- * @summary Lấy danh sách ca làm việc
+ * @summary List work shifts
  */
 export const prefetchGetStaffSchedulesQuery = async <TData = Awaited<ReturnType<typeof getStaffSchedules>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetStaffSchedulesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffSchedules>>, TError, TData>>, }
@@ -592,8 +592,8 @@ export const prefetchGetStaffSchedulesQuery = async <TData = Awaited<ReturnType<
 
 
 /**
- * **SC-03** — POST /staff-schedules (unique staff+weekday+shift). Cần quyền `schedule.create`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Trường body: `staff_id`, `branch_id`, `weekday`, `shift_template_id`. Hỗ trợ xếp hàng loạt: truyền `weekdays` (mảng 1..7) và `shift_template_ids` (mảng UUID) để tạo chéo nhiều ngày × nhiều ca trong một lần gọi; các combo đã tồn tại bị bỏ qua, kết quả trả kèm `meta.created_count` / `meta.skipped_count`.
- * @summary Tạo ca làm việc mới (đơn hoặc hàng loạt)
+ * **SC-03** — POST /staff-schedules (unique staff+weekday+shift). Requires permission `schedule.create`. Branch scope: users restricted to a single branch only see that branch's data. Body fields: `staff_id`, `branch_id`, `weekday`, `shift_template_id`. Supports bulk scheduling: pass `weekdays` (array 1..7) and `shift_template_ids` (array of UUIDs) to create a cross product of multiple days × multiple shifts in a single call; existing combinations are skipped, and the result includes `meta.created_count` / `meta.skipped_count`.
+ * @summary Create new work shifts (single or bulk)
  */
 export const postStaffSchedules = (
     postStaffSchedulesBody: PostStaffSchedulesBody,
@@ -641,7 +641,7 @@ const {mutation: mutationOptions} = options ?
     export type PostStaffSchedulesMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Tạo ca làm việc mới (đơn hoặc hàng loạt)
+ * @summary Create new work shifts (single or bulk)
  */
 export const usePostStaffSchedules = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postStaffSchedules>>, TError,{data: PostStaffSchedulesBody}, TContext>, }
@@ -657,8 +657,8 @@ export const usePostStaffSchedules = <TError = UnauthorizedResponse | ForbiddenR
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * DELETE `/staffDaysOff/{id}` — ngày nghỉ. Cần quyền `day_off.delete`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó.
- * @summary Xóa ngày nghỉ
+ * DELETE `/staffDaysOff/{id}` — days off. Requires permission `day_off.delete`. Branch scope: users restricted to a single branch only see that branch's data.
+ * @summary Delete a day off
  */
 export const deleteStaffDaysOffId = (
     id: string,
@@ -703,7 +703,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteStaffDaysOffIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Xóa ngày nghỉ
+ * @summary Delete a day off
  */
 export const useDeleteStaffDaysOffId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteStaffDaysOffId>>, TError,{id: string}, TContext>, }
@@ -719,8 +719,8 @@ export const useDeleteStaffDaysOffId = <TError = UnauthorizedResponse | Forbidde
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/staffDaysOff` — ngày nghỉ. Cần quyền `day_off.read`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Tham số truy vấn: `from_date`, `to_date`, `status`, `staff_id`, `branch_id`.
- * @summary Lấy danh sách ngày nghỉ
+ * GET `/staffDaysOff` — days off. Requires permission `day_off.read`. Branch scope: users restricted to a single branch only see that branch's data. Query parameters: `from_date`, `to_date`, `status`, `staff_id`, `branch_id`.
+ * @summary List staff days off
  */
 export const getStaffDaysOff = (
     params?: GetStaffDaysOffParams,
@@ -798,7 +798,7 @@ export function useGetStaffDaysOffInfinite<TData = InfiniteData<Awaited<ReturnTy
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách ngày nghỉ
+ * @summary List staff days off
  */
 
 export function useGetStaffDaysOffInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffDaysOff>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -816,7 +816,7 @@ export function useGetStaffDaysOffInfinite<TData = InfiniteData<Awaited<ReturnTy
 }
 
 /**
- * @summary Lấy danh sách ngày nghỉ
+ * @summary List staff days off
  */
 export const prefetchGetStaffDaysOffInfiniteQuery = async <TData = Awaited<ReturnType<typeof getStaffDaysOff>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetStaffDaysOffParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffDaysOff>>, TError, TData>>, }
@@ -879,7 +879,7 @@ export function useGetStaffDaysOff<TData = Awaited<ReturnType<typeof getStaffDay
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách ngày nghỉ
+ * @summary List staff days off
  */
 
 export function useGetStaffDaysOff<TData = Awaited<ReturnType<typeof getStaffDaysOff>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -897,7 +897,7 @@ export function useGetStaffDaysOff<TData = Awaited<ReturnType<typeof getStaffDay
 }
 
 /**
- * @summary Lấy danh sách ngày nghỉ
+ * @summary List staff days off
  */
 export const prefetchGetStaffDaysOffQuery = async <TData = Awaited<ReturnType<typeof getStaffDaysOff>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetStaffDaysOffParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffDaysOff>>, TError, TData>>, }
@@ -914,8 +914,8 @@ export const prefetchGetStaffDaysOffQuery = async <TData = Awaited<ReturnType<ty
 
 
 /**
- * POST `/staffDaysOff` — ngày nghỉ. Cần quyền `day_off.create`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Trường body: `off_date`, `staff_id`, `shift_template_id`, `reason`.
- * @summary Tạo ngày nghỉ mới
+ * POST `/staffDaysOff` — days off. Requires permission `day_off.create`. Branch scope: users restricted to a single branch only see that branch's data. Body fields: `off_date`, `staff_id`, `shift_template_id`, `reason`.
+ * @summary Create a new day off
  */
 export const postStaffDaysOff = (
     postStaffDaysOffBody: PostStaffDaysOffBody,
@@ -963,7 +963,7 @@ const {mutation: mutationOptions} = options ?
     export type PostStaffDaysOffMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Tạo ngày nghỉ mới
+ * @summary Create a new day off
  */
 export const usePostStaffDaysOff = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postStaffDaysOff>>, TError,{data: PostStaffDaysOffBody}, TContext>, }
@@ -979,8 +979,8 @@ export const usePostStaffDaysOff = <TError = UnauthorizedResponse | ForbiddenRes
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * PUT `/staffDaysOff/{id}/reject` — ngày nghỉ. Cần quyền `day_off.approve`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Trường body: `reason`.
- * @summary Từ chối
+ * PUT `/staffDaysOff/{id}/reject` — days off. Requires permission `day_off.approve`. Branch scope: users restricted to a single branch only see that branch's data. Body fields: `reason`.
+ * @summary Reject
  */
 export const putStaffDaysOffIdReject = (
     id: string,
@@ -1028,7 +1028,7 @@ const {mutation: mutationOptions} = options ?
     export type PutStaffDaysOffIdRejectMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Từ chối
+ * @summary Reject
  */
 export const usePutStaffDaysOffIdReject = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putStaffDaysOffIdReject>>, TError,{id: string;data: PutStaffDaysOffIdRejectBody}, TContext>, }
@@ -1044,8 +1044,8 @@ export const usePutStaffDaysOffIdReject = <TError = UnauthorizedResponse | Forbi
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * PUT `/staffDaysOff/{id}/approve` — ngày nghỉ. Cần quyền `day_off.approve`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó.
- * @summary Duyệt
+ * PUT `/staffDaysOff/{id}/approve` — days off. Requires permission `day_off.approve`. Branch scope: users restricted to a single branch only see that branch's data.
+ * @summary Approve
  */
 export const putStaffDaysOffIdApprove = (
     id: string,
@@ -1090,7 +1090,7 @@ const {mutation: mutationOptions} = options ?
     export type PutStaffDaysOffIdApproveMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Duyệt
+ * @summary Approve
  */
 export const usePutStaffDaysOffIdApprove = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putStaffDaysOffIdApprove>>, TError,{id: string}, TContext>, }
@@ -1106,8 +1106,8 @@ export const usePutStaffDaysOffIdApprove = <TError = UnauthorizedResponse | Forb
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/shiftTemplates/{id}` — mẫu ca làm. Cần quyền `shift_template.read`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó.
- * @summary Xem chi tiết mẫu ca làm
+ * GET `/shiftTemplates/{id}` — shift templates. Requires `shift_template.read` permission. Branch scope: users restricted to a single branch only see that branch's data.
+ * @summary View shift template details
  */
 export const getShiftTemplatesId = (
     id: string,
@@ -1184,7 +1184,7 @@ export function useGetShiftTemplatesIdInfinite<TData = InfiniteData<Awaited<Retu
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết mẫu ca làm
+ * @summary View shift template details
  */
 
 export function useGetShiftTemplatesIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getShiftTemplatesId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -1202,7 +1202,7 @@ export function useGetShiftTemplatesIdInfinite<TData = InfiniteData<Awaited<Retu
 }
 
 /**
- * @summary Xem chi tiết mẫu ca làm
+ * @summary View shift template details
  */
 export const prefetchGetShiftTemplatesIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getShiftTemplatesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getShiftTemplatesId>>, TError, TData>>, }
@@ -1265,7 +1265,7 @@ export function useGetShiftTemplatesId<TData = Awaited<ReturnType<typeof getShif
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết mẫu ca làm
+ * @summary View shift template details
  */
 
 export function useGetShiftTemplatesId<TData = Awaited<ReturnType<typeof getShiftTemplatesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
@@ -1283,7 +1283,7 @@ export function useGetShiftTemplatesId<TData = Awaited<ReturnType<typeof getShif
 }
 
 /**
- * @summary Xem chi tiết mẫu ca làm
+ * @summary View shift template details
  */
 export const prefetchGetShiftTemplatesIdQuery = async <TData = Awaited<ReturnType<typeof getShiftTemplatesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getShiftTemplatesId>>, TError, TData>>, }
@@ -1300,8 +1300,8 @@ export const prefetchGetShiftTemplatesIdQuery = async <TData = Awaited<ReturnTyp
 
 
 /**
- * PUT `/shiftTemplates/{id}` — mẫu ca làm. Cần quyền `shift_template.update`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Trường body: `name`, `start_time`, `end_time`, `is_active`.
- * @summary Cập nhật mẫu ca làm
+ * PUT `/shiftTemplates/{id}` — shift templates. Requires `shift_template.update` permission. Branch scope: users restricted to a single branch only see that branch's data. Body fields: `name`, `start_time`, `end_time`, `is_active`.
+ * @summary Update a shift template
  */
 export const putShiftTemplatesId = (
     id: string,
@@ -1349,7 +1349,7 @@ const {mutation: mutationOptions} = options ?
     export type PutShiftTemplatesIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Cập nhật mẫu ca làm
+ * @summary Update a shift template
  */
 export const usePutShiftTemplatesId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putShiftTemplatesId>>, TError,{id: string;data: PutShiftTemplatesIdBody}, TContext>, }
@@ -1365,8 +1365,8 @@ export const usePutShiftTemplatesId = <TError = UnauthorizedResponse | Forbidden
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * DELETE `/shiftTemplates/{id}` — mẫu ca làm. Cần quyền `shift_template.delete`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó.
- * @summary Xóa mẫu ca làm
+ * DELETE `/shiftTemplates/{id}` — shift templates. Requires `shift_template.delete` permission. Branch scope: users restricted to a single branch only see that branch's data.
+ * @summary Delete a shift template
  */
 export const deleteShiftTemplatesId = (
     id: string,
@@ -1411,7 +1411,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteShiftTemplatesIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Xóa mẫu ca làm
+ * @summary Delete a shift template
  */
 export const useDeleteShiftTemplatesId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteShiftTemplatesId>>, TError,{id: string}, TContext>, }
@@ -1427,8 +1427,8 @@ export const useDeleteShiftTemplatesId = <TError = UnauthorizedResponse | Forbid
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **SH-01** — GET /shift-templates. Cần quyền `shift_template.read`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Tham số truy vấn: `branch_id`, `active`.
- * @summary Lấy danh sách mẫu ca làm
+ * **SH-01** — GET /shift-templates. Requires `shift_template.read` permission. Branch scope: users restricted to a single branch only see that branch's data. Query parameters: `branch_id`, `active`.
+ * @summary Get list of shift templates
  */
 export const getShiftTemplates = (
     params?: GetShiftTemplatesParams,
@@ -1506,7 +1506,7 @@ export function useGetShiftTemplatesInfinite<TData = InfiniteData<Awaited<Return
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách mẫu ca làm
+ * @summary Get list of shift templates
  */
 
 export function useGetShiftTemplatesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getShiftTemplates>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -1524,7 +1524,7 @@ export function useGetShiftTemplatesInfinite<TData = InfiniteData<Awaited<Return
 }
 
 /**
- * @summary Lấy danh sách mẫu ca làm
+ * @summary Get list of shift templates
  */
 export const prefetchGetShiftTemplatesInfiniteQuery = async <TData = Awaited<ReturnType<typeof getShiftTemplates>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetShiftTemplatesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getShiftTemplates>>, TError, TData>>, }
@@ -1587,7 +1587,7 @@ export function useGetShiftTemplates<TData = Awaited<ReturnType<typeof getShiftT
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách mẫu ca làm
+ * @summary Get list of shift templates
  */
 
 export function useGetShiftTemplates<TData = Awaited<ReturnType<typeof getShiftTemplates>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -1605,7 +1605,7 @@ export function useGetShiftTemplates<TData = Awaited<ReturnType<typeof getShiftT
 }
 
 /**
- * @summary Lấy danh sách mẫu ca làm
+ * @summary Get list of shift templates
  */
 export const prefetchGetShiftTemplatesQuery = async <TData = Awaited<ReturnType<typeof getShiftTemplates>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetShiftTemplatesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getShiftTemplates>>, TError, TData>>, }
@@ -1622,8 +1622,8 @@ export const prefetchGetShiftTemplatesQuery = async <TData = Awaited<ReturnType<
 
 
 /**
- * **SH-03** — POST /shift-templates. Cần quyền `shift_template.create`. Phạm vi cơ sở: người dùng bị giới hạn một cơ sở chỉ thấy dữ liệu cơ sở đó. Trường body: `name`, `start_time`, `end_time`, `branch_id`.
- * @summary Tạo mẫu ca làm mới
+ * **SH-03** — POST /shift-templates. Requires `shift_template.create` permission. Branch scope: users restricted to a single branch only see that branch's data. Body fields: `name`, `start_time`, `end_time`, `branch_id`.
+ * @summary Create a new shift template
  */
 export const postShiftTemplates = (
     postShiftTemplatesBody: PostShiftTemplatesBody,
@@ -1671,7 +1671,7 @@ const {mutation: mutationOptions} = options ?
     export type PostShiftTemplatesMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Tạo mẫu ca làm mới
+ * @summary Create a new shift template
  */
 export const usePostShiftTemplates = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postShiftTemplates>>, TError,{data: PostShiftTemplatesBody}, TContext>, }

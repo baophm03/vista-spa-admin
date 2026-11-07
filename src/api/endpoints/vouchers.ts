@@ -53,8 +53,8 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * GET `/vouchers/{id}` — voucher. Cần đăng nhập; route không khai báo quyền chi tiết. Xử lý bởi `voucherProvider.getVoucherWithStats`.
- * @summary Xem chi tiết voucher
+ * GET `/vouchers/{id}` — voucher. Requires authentication; route does not declare detailed permissions. Handled by `voucherProvider.getVoucherWithStats`.
+ * @summary View voucher details
  */
 export const getVouchersId = (
     id: string,
@@ -131,7 +131,7 @@ export function useGetVouchersIdInfinite<TData = InfiniteData<Awaited<ReturnType
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết voucher
+ * @summary View voucher details
  */
 
 export function useGetVouchersIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getVouchersId>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void>(
@@ -149,7 +149,7 @@ export function useGetVouchersIdInfinite<TData = InfiniteData<Awaited<ReturnType
 }
 
 /**
- * @summary Xem chi tiết voucher
+ * @summary View voucher details
  */
 export const prefetchGetVouchersIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getVouchersId>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersId>>, TError, TData>>, }
@@ -212,7 +212,7 @@ export function useGetVouchersId<TData = Awaited<ReturnType<typeof getVouchersId
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết voucher
+ * @summary View voucher details
  */
 
 export function useGetVouchersId<TData = Awaited<ReturnType<typeof getVouchersId>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void>(
@@ -230,7 +230,7 @@ export function useGetVouchersId<TData = Awaited<ReturnType<typeof getVouchersId
 }
 
 /**
- * @summary Xem chi tiết voucher
+ * @summary View voucher details
  */
 export const prefetchGetVouchersIdQuery = async <TData = Awaited<ReturnType<typeof getVouchersId>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersId>>, TError, TData>>, }
@@ -247,8 +247,8 @@ export const prefetchGetVouchersIdQuery = async <TData = Awaited<ReturnType<type
 
 
 /**
- * PUT `/vouchers/{id}` — voucher. Cần đăng nhập; route không khai báo quyền chi tiết. Trường body: `title`, `description`, `image_file_id`, `required_points`, `type`, `start_date`, `end_date`, `is_active`, `card_rank_id`, `is_loyalty`, `quantity_total`, `updated_by`. Xử lý bởi `voucherProvider.updateVoucher`.
- * @summary Cập nhật voucher
+ * PUT `/vouchers/{id}` — voucher. Requires authentication; route does not declare detailed permissions. Body fields: `title`, `description`, `image_file_id`, `required_points`, `type`, `start_date`, `end_date`, `is_active`, `card_rank_id`, `is_loyalty`, `quantity_total`, `updated_by`. Handled by `voucherProvider.updateVoucher`.
+ * @summary Update voucher
  */
 export const putVouchersId = (
     id: string,
@@ -296,7 +296,7 @@ const {mutation: mutationOptions} = options ?
     export type PutVouchersIdMutationError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void
 
     /**
- * @summary Cập nhật voucher
+ * @summary Update voucher
  */
 export const usePutVouchersId = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putVouchersId>>, TError,{id: string;data: VoucherUpdate}, TContext>, }
@@ -312,8 +312,8 @@ export const usePutVouchersId = <TError = LegacyBadRequestResponse | LegacyUnaut
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * DELETE `/vouchers/{id}` — voucher. Cần đăng nhập; route không khai báo quyền chi tiết. Xử lý bởi `voucherProvider.softDeleteVoucher`.
- * @summary Xóa voucher
+ * DELETE `/vouchers/{id}` — voucher. Requires authentication; route does not declare detailed permissions. Handled by `voucherProvider.softDeleteVoucher`.
+ * @summary Delete voucher
  */
 export const deleteVouchersId = (
     id: string,
@@ -358,7 +358,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteVouchersIdMutationError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void
 
     /**
- * @summary Xóa voucher
+ * @summary Delete voucher
  */
 export const useDeleteVouchersId = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteVouchersId>>, TError,{id: string}, TContext>, }
@@ -374,8 +374,8 @@ export const useDeleteVouchersId = <TError = LegacyBadRequestResponse | LegacyUn
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/vouchers/statistics` — voucher. Cần đăng nhập; route không khai báo quyền chi tiết. Tham số truy vấn: `date_from`, `date_to`. Xử lý bởi `voucherProvider.getAll`.
- * @summary Xem thống kê
+ * GET `/vouchers/statistics` — voucher. Requires authentication; route does not declare detailed permissions. Query parameters: `date_from`, `date_to`. Handled by `voucherProvider.getAll`.
+ * @summary View statistics
  */
 export const getVouchersStatistics = (
     params?: GetVouchersStatisticsParams,
@@ -453,7 +453,7 @@ export function useGetVouchersStatisticsInfinite<TData = InfiniteData<Awaited<Re
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem thống kê
+ * @summary View statistics
  */
 
 export function useGetVouchersStatisticsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getVouchersStatistics>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
@@ -471,7 +471,7 @@ export function useGetVouchersStatisticsInfinite<TData = InfiniteData<Awaited<Re
 }
 
 /**
- * @summary Xem thống kê
+ * @summary View statistics
  */
 export const prefetchGetVouchersStatisticsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getVouchersStatistics>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
  queryClient: QueryClient, params?: GetVouchersStatisticsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersStatistics>>, TError, TData>>, }
@@ -534,7 +534,7 @@ export function useGetVouchersStatistics<TData = Awaited<ReturnType<typeof getVo
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem thống kê
+ * @summary View statistics
  */
 
 export function useGetVouchersStatistics<TData = Awaited<ReturnType<typeof getVouchersStatistics>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
@@ -552,7 +552,7 @@ export function useGetVouchersStatistics<TData = Awaited<ReturnType<typeof getVo
 }
 
 /**
- * @summary Xem thống kê
+ * @summary View statistics
  */
 export const prefetchGetVouchersStatisticsQuery = async <TData = Awaited<ReturnType<typeof getVouchersStatistics>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
  queryClient: QueryClient, params?: GetVouchersStatisticsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersStatistics>>, TError, TData>>, }
@@ -569,8 +569,8 @@ export const prefetchGetVouchersStatisticsQuery = async <TData = Awaited<ReturnT
 
 
 /**
- * GET `/vouchers/search` — voucher. Cần đăng nhập; route không khai báo quyền chi tiết. Tham số truy vấn: `q`, `points_min`, `points_max`, `start_date`, `end_date`, `is_active`, `created_by`, `limit`, `offset`. Xử lý bởi `voucherProvider.getAll`.
- * @summary Tìm kiếm
+ * GET `/vouchers/search` — voucher. Requires authentication; route does not declare detailed permissions. Query parameters: `q`, `points_min`, `points_max`, `start_date`, `end_date`, `is_active`, `created_by`, `limit`, `offset`. Handled by `voucherProvider.getAll`.
+ * @summary Search
  */
 export const getVouchersSearch = (
     params?: GetVouchersSearchParams,
@@ -648,7 +648,7 @@ export function useGetVouchersSearchInfinite<TData = InfiniteData<Awaited<Return
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Tìm kiếm
+ * @summary Search
  */
 
 export function useGetVouchersSearchInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getVouchersSearch>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
@@ -666,7 +666,7 @@ export function useGetVouchersSearchInfinite<TData = InfiniteData<Awaited<Return
 }
 
 /**
- * @summary Tìm kiếm
+ * @summary Search
  */
 export const prefetchGetVouchersSearchInfiniteQuery = async <TData = Awaited<ReturnType<typeof getVouchersSearch>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
  queryClient: QueryClient, params?: GetVouchersSearchParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersSearch>>, TError, TData>>, }
@@ -729,7 +729,7 @@ export function useGetVouchersSearch<TData = Awaited<ReturnType<typeof getVouche
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Tìm kiếm
+ * @summary Search
  */
 
 export function useGetVouchersSearch<TData = Awaited<ReturnType<typeof getVouchersSearch>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
@@ -747,7 +747,7 @@ export function useGetVouchersSearch<TData = Awaited<ReturnType<typeof getVouche
 }
 
 /**
- * @summary Tìm kiếm
+ * @summary Search
  */
 export const prefetchGetVouchersSearchQuery = async <TData = Awaited<ReturnType<typeof getVouchersSearch>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
  queryClient: QueryClient, params?: GetVouchersSearchParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersSearch>>, TError, TData>>, }
@@ -764,8 +764,8 @@ export const prefetchGetVouchersSearchQuery = async <TData = Awaited<ReturnType<
 
 
 /**
- * POST `/vouchers/revoke` — voucher. Cần đăng nhập; route không khai báo quyền chi tiết. Trường body: `user_voucher_id`, `reason`. Xử lý bởi `userVoucher.findByPk`.
- * @summary Thu hồi
+ * POST `/vouchers/revoke` — voucher. Requires authentication; route does not declare detailed permissions. Body fields: `user_voucher_id`, `reason`. Handled by `userVoucher.findByPk`.
+ * @summary Revoke
  */
 export const postVouchersRevoke = (
     postVouchersRevokeBody: PostVouchersRevokeBody,
@@ -813,7 +813,7 @@ const {mutation: mutationOptions} = options ?
     export type PostVouchersRevokeMutationError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
 
     /**
- * @summary Thu hồi
+ * @summary Revoke
  */
 export const usePostVouchersRevoke = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postVouchersRevoke>>, TError,{data: PostVouchersRevokeBody}, TContext>, }
@@ -829,8 +829,8 @@ export const usePostVouchersRevoke = <TError = LegacyBadRequestResponse | Legacy
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/vouchers/redeemed` — voucher. Cần đăng nhập; route không khai báo quyền chi tiết. Tham số truy vấn: `user_id`, `voucher_id`, `status`, `currentPage`, `pageSize`, `filters`, `sortField`, `sortOrder`. Xử lý bởi `userVoucherProvider.getAll`.
- * @summary Xem voucher đã đổi
+ * GET `/vouchers/redeemed` — voucher. Requires authentication; route does not declare detailed permissions. Query parameters: `user_id`, `voucher_id`, `status`, `currentPage`, `pageSize`, `filters`, `sortField`, `sortOrder`. Handled by `userVoucherProvider.getAll`.
+ * @summary View redeemed vouchers
  */
 export const getVouchersRedeemed = (
     params?: GetVouchersRedeemedParams,
@@ -908,7 +908,7 @@ export function useGetVouchersRedeemedInfinite<TData = InfiniteData<Awaited<Retu
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem voucher đã đổi
+ * @summary View redeemed vouchers
  */
 
 export function useGetVouchersRedeemedInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getVouchersRedeemed>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
@@ -926,7 +926,7 @@ export function useGetVouchersRedeemedInfinite<TData = InfiniteData<Awaited<Retu
 }
 
 /**
- * @summary Xem voucher đã đổi
+ * @summary View redeemed vouchers
  */
 export const prefetchGetVouchersRedeemedInfiniteQuery = async <TData = Awaited<ReturnType<typeof getVouchersRedeemed>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
  queryClient: QueryClient, params?: GetVouchersRedeemedParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersRedeemed>>, TError, TData>>, }
@@ -989,7 +989,7 @@ export function useGetVouchersRedeemed<TData = Awaited<ReturnType<typeof getVouc
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem voucher đã đổi
+ * @summary View redeemed vouchers
  */
 
 export function useGetVouchersRedeemed<TData = Awaited<ReturnType<typeof getVouchersRedeemed>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
@@ -1007,7 +1007,7 @@ export function useGetVouchersRedeemed<TData = Awaited<ReturnType<typeof getVouc
 }
 
 /**
- * @summary Xem voucher đã đổi
+ * @summary View redeemed vouchers
  */
 export const prefetchGetVouchersRedeemedQuery = async <TData = Awaited<ReturnType<typeof getVouchersRedeemed>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
  queryClient: QueryClient, params?: GetVouchersRedeemedParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersRedeemed>>, TError, TData>>, }
@@ -1024,8 +1024,8 @@ export const prefetchGetVouchersRedeemedQuery = async <TData = Awaited<ReturnTyp
 
 
 /**
- * POST `/vouchers/mark-used` — voucher. Cần quyền `voucher.update`. Trường body: `user_voucher_id`, `note`. Xử lý bởi `userVoucher.findByPk`.
- * @summary Đánh dấu đã dùng
+ * POST `/vouchers/mark-used` — voucher. Requires the `voucher.update` permission. Body fields: `user_voucher_id`, `note`. Handled by `userVoucher.findByPk`.
+ * @summary Mark as used
  */
 export const postVouchersMarkUsed = (
     postVouchersMarkUsedBody: PostVouchersMarkUsedBody,
@@ -1073,7 +1073,7 @@ const {mutation: mutationOptions} = options ?
     export type PostVouchersMarkUsedMutationError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
 
     /**
- * @summary Đánh dấu đã dùng
+ * @summary Mark as used
  */
 export const usePostVouchersMarkUsed = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postVouchersMarkUsed>>, TError,{data: PostVouchersMarkUsedBody}, TContext>, }
@@ -1089,8 +1089,8 @@ export const usePostVouchersMarkUsed = <TError = LegacyBadRequestResponse | Lega
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/vouchers` — voucher. Cần đăng nhập; route không khai báo quyền chi tiết. Tham số truy vấn: `currentPage`, `pageSize`, `filters`, `sortField`, `sortOrder`. Xử lý bởi `voucherProvider.getAllWithOptions`.
- * @summary Lấy danh sách voucher
+ * GET `/vouchers` — voucher. Requires authentication; route does not declare detailed permissions. Query parameters: `currentPage`, `pageSize`, `filters`, `sortField`, `sortOrder`. Handled by `voucherProvider.getAllWithOptions`.
+ * @summary List vouchers
  */
 export const getVouchers = (
     params?: GetVouchersParams,
@@ -1168,7 +1168,7 @@ export function useGetVouchersInfinite<TData = InfiniteData<Awaited<ReturnType<t
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách voucher
+ * @summary List vouchers
  */
 
 export function useGetVouchersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getVouchers>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
@@ -1186,7 +1186,7 @@ export function useGetVouchersInfinite<TData = InfiniteData<Awaited<ReturnType<t
 }
 
 /**
- * @summary Lấy danh sách voucher
+ * @summary List vouchers
  */
 export const prefetchGetVouchersInfiniteQuery = async <TData = Awaited<ReturnType<typeof getVouchers>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
  queryClient: QueryClient, params?: GetVouchersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchers>>, TError, TData>>, }
@@ -1249,7 +1249,7 @@ export function useGetVouchers<TData = Awaited<ReturnType<typeof getVouchers>>, 
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy danh sách voucher
+ * @summary List vouchers
  */
 
 export function useGetVouchers<TData = Awaited<ReturnType<typeof getVouchers>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
@@ -1267,7 +1267,7 @@ export function useGetVouchers<TData = Awaited<ReturnType<typeof getVouchers>>, 
 }
 
 /**
- * @summary Lấy danh sách voucher
+ * @summary List vouchers
  */
 export const prefetchGetVouchersQuery = async <TData = Awaited<ReturnType<typeof getVouchers>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
  queryClient: QueryClient, params?: GetVouchersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchers>>, TError, TData>>, }
@@ -1284,8 +1284,8 @@ export const prefetchGetVouchersQuery = async <TData = Awaited<ReturnType<typeof
 
 
 /**
- * POST `/vouchers` — voucher. Cần đăng nhập; route không khai báo quyền chi tiết. Trường body: `title`, `description`, `image_file_id`, `required_points`, `start_date`, `type`, `end_date`, `card_rank_id`, `is_loyalty`, `quantity_total`, `created_by`. Xử lý bởi `voucherProvider.createVoucher`.
- * @summary Tạo voucher mới
+ * POST `/vouchers` — voucher. Requires authentication; route does not declare detailed permissions. Body fields: `title`, `description`, `image_file_id`, `required_points`, `start_date`, `type`, `end_date`, `card_rank_id`, `is_loyalty`, `quantity_total`, `created_by`. Handled by `voucherProvider.createVoucher`.
+ * @summary Create a new voucher
  */
 export const postVouchers = (
     voucherCreate: VoucherCreate,
@@ -1333,7 +1333,7 @@ const {mutation: mutationOptions} = options ?
     export type PostVouchersMutationError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
 
     /**
- * @summary Tạo voucher mới
+ * @summary Create a new voucher
  */
 export const usePostVouchers = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postVouchers>>, TError,{data: VoucherCreate}, TContext>, }
@@ -1349,8 +1349,8 @@ export const usePostVouchers = <TError = LegacyBadRequestResponse | LegacyUnauth
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * PUT `/vouchers/bulk` — voucher. Cần đăng nhập; route không khai báo quyền chi tiết. Trường body: `voucher_ids`, `action`, `updated_by`. Xử lý bởi `voucherProvider.bulkUpdate`.
- * @summary Bật hoặc tắt voucher hàng loạt
+ * PUT `/vouchers/bulk` — voucher. Requires authentication; route does not declare detailed permissions. Body fields: `voucher_ids`, `action`, `updated_by`. Handled by `voucherProvider.bulkUpdate`.
+ * @summary Enable or disable vouchers in bulk
  */
 export const putVouchersBulk = (
     putVouchersBulkBody: PutVouchersBulkBody,
@@ -1397,7 +1397,7 @@ const {mutation: mutationOptions} = options ?
     export type PutVouchersBulkMutationError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
 
     /**
- * @summary Bật hoặc tắt voucher hàng loạt
+ * @summary Enable or disable vouchers in bulk
  */
 export const usePutVouchersBulk = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putVouchersBulk>>, TError,{data: PutVouchersBulkBody}, TContext>, }
@@ -1413,8 +1413,8 @@ export const usePutVouchersBulk = <TError = LegacyBadRequestResponse | LegacyUna
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * DELETE `/vouchers/bulk` — voucher. Cần đăng nhập; route không khai báo quyền chi tiết. Trường body: `voucher_ids`, `updated_by`. Xử lý bởi `voucherProvider.bulkUpdate`.
- * @summary Xóa voucher hàng loạt
+ * DELETE `/vouchers/bulk` — voucher. Requires authentication; route does not declare detailed permissions. Body fields: `voucher_ids`, `updated_by`. Handled by `voucherProvider.bulkUpdate`.
+ * @summary Delete vouchers in bulk
  */
 export const deleteVouchersBulk = (
     deleteVouchersBulkBody: DeleteVouchersBulkBody,
@@ -1461,7 +1461,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteVouchersBulkMutationError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
 
     /**
- * @summary Xóa voucher hàng loạt
+ * @summary Delete vouchers in bulk
  */
 export const useDeleteVouchersBulk = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteVouchersBulk>>, TError,{data: DeleteVouchersBulkBody}, TContext>, }
@@ -1477,8 +1477,8 @@ export const useDeleteVouchersBulk = <TError = LegacyBadRequestResponse | Legacy
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * POST `/vouchers/{id}/redeem` — voucher. Cần đăng nhập; route không khai báo quyền chi tiết. Trường body: `user_id`, `membership_id`, `note`. Xử lý bởi `voucherProvider.isVoucherValidForUser`.
- * @summary Đổi
+ * POST `/vouchers/{id}/redeem` — voucher. Requires authentication; route does not declare detailed permissions. Body fields: `user_id`, `membership_id`, `note`. Handled by `voucherProvider.isVoucherValidForUser`.
+ * @summary Redeem
  */
 export const postVouchersIdRedeem = (
     id: string,
@@ -1527,7 +1527,7 @@ const {mutation: mutationOptions} = options ?
     export type PostVouchersIdRedeemMutationError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void
 
     /**
- * @summary Đổi
+ * @summary Redeem
  */
 export const usePostVouchersIdRedeem = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postVouchersIdRedeem>>, TError,{id: string;data: PostVouchersIdRedeemBody}, TContext>, }

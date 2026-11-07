@@ -5,11 +5,30 @@
  * Vista Spa backend API. Uses the NEWSKY+ business error envelope for permission-aware endpoints and the legacy response envelope for existing admin endpoints.
  * OpenAPI spec version: 1.0.0
  */
+import type { BizErrorResponseData } from './bizErrorResponseData';
+import type { BizErrorViolationsItem } from './bizErrorViolationsItem';
 import type { BizErrorDetails } from './bizErrorDetails';
+import type { BizErrorMeta } from './bizErrorMeta';
 
+/**
+ * Standard error envelope (status = fail)
+ */
 export interface BizError {
-  success: boolean;
-  code: string;
-  message: string;
+  message?: string;
+  /** @nullable */
+  message_en?: string | null;
+  /** @nullable */
+  responseData?: BizErrorResponseData;
+  status: string;
+  timeStamp?: string;
+  violations?: BizErrorViolationsItem[];
+  /** Business error code (BizError) */
+  code?: string;
+  /**
+   * Extra details attached to BizError (e.g. affected_appointments)
+   * @nullable
+   */
   details?: BizErrorDetails;
+  /** @nullable */
+  meta?: BizErrorMeta;
 }

@@ -10,4 +10,9 @@ export interface FileUpload {
   file: Blob;
   /** Optional filename suffix */
   extendName?: string;
+  /**
+   * User id who uploaded the file
+   * @nullable
+   */
+  created_by?: string | null;
 }

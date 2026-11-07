@@ -28,8 +28,8 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * POST `/webhook` — webhook. **Công khai, không cần đăng nhập.** Route này hiện không gắn middleware xác thực hay phân quyền nào. Trường body: `event`, `user_id`. Xử lý bởi `userProvider.delete`.
- * @summary Nhận webhook thu hồi đồng ý của người dùng
+ * POST `/webhook` — webhook. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Body fields: `event`, `user_id`. Handled by `userProvider.delete`.
+ * @summary Receive user consent revocation webhook
  */
 export const postWebhook = (
     postWebhookBody: PostWebhookBody,
@@ -77,7 +77,7 @@ const {mutation: mutationOptions} = options ?
     export type PostWebhookMutationError = LegacyBadRequestResponse
 
     /**
- * @summary Nhận webhook thu hồi đồng ý của người dùng
+ * @summary Receive user consent revocation webhook
  */
 export const usePostWebhook = <TError = LegacyBadRequestResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postWebhook>>, TError,{data: PostWebhookBody}, TContext>, }

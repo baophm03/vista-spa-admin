@@ -22,17 +22,17 @@ export interface Response {
   /** @nullable */
   violations?: ResponseViolationsItem[] | null;
   /**
-   * Mã lỗi nghiệp vụ (BizError) khi status = fail
+   * Business error code (BizError) when status = fail
    * @nullable
    */
   code?: string | null;
   /**
-   * Chi tiết bổ sung kèm BizError (vd: affected_appointments)
+   * Extra details attached to BizError (e.g. affected_appointments)
    * @nullable
    */
   details?: ResponseDetails;
   /**
-   * Thông tin phân trang cho endpoint danh sách
+   * Pagination info for list endpoints
    * @nullable
    */
   meta?: ResponseMeta;

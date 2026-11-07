@@ -44,8 +44,8 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * GET `/screening/branches` — nội dung tầm soát. Công khai, không cần đăng nhập. Xử lý bởi `screeningBranchProvider.getAll`.
- * @summary Liệt kê khu vực tầm soát đang hoạt động
+ * GET `/screening/branches` — screening content. Public, no authentication required. Handled by `screeningBranchProvider.getAll`.
+ * @summary List active screening branches
  */
 export const getScreeningBranches = (
     
@@ -122,7 +122,7 @@ export function useGetScreeningBranchesInfinite<TData = InfiniteData<Awaited<Ret
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Liệt kê khu vực tầm soát đang hoạt động
+ * @summary List active screening branches
  */
 
 export function useGetScreeningBranchesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getScreeningBranches>>>, TError = LegacyBadRequestResponse>(
@@ -140,7 +140,7 @@ export function useGetScreeningBranchesInfinite<TData = InfiniteData<Awaited<Ret
 }
 
 /**
- * @summary Liệt kê khu vực tầm soát đang hoạt động
+ * @summary List active screening branches
  */
 export const prefetchGetScreeningBranchesInfiniteQuery = async <TData = Awaited<ReturnType<typeof getScreeningBranches>>, TError = LegacyBadRequestResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getScreeningBranches>>, TError, TData>>, }
@@ -203,7 +203,7 @@ export function useGetScreeningBranches<TData = Awaited<ReturnType<typeof getScr
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Liệt kê khu vực tầm soát đang hoạt động
+ * @summary List active screening branches
  */
 
 export function useGetScreeningBranches<TData = Awaited<ReturnType<typeof getScreeningBranches>>, TError = LegacyBadRequestResponse>(
@@ -221,7 +221,7 @@ export function useGetScreeningBranches<TData = Awaited<ReturnType<typeof getScr
 }
 
 /**
- * @summary Liệt kê khu vực tầm soát đang hoạt động
+ * @summary List active screening branches
  */
 export const prefetchGetScreeningBranchesQuery = async <TData = Awaited<ReturnType<typeof getScreeningBranches>>, TError = LegacyBadRequestResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getScreeningBranches>>, TError, TData>>, }
@@ -238,8 +238,8 @@ export const prefetchGetScreeningBranchesQuery = async <TData = Awaited<ReturnTy
 
 
 /**
- * POST `/screening/branches` — nội dung tầm soát. **Công khai, không cần đăng nhập.** Route này hiện không gắn middleware xác thực hay phân quyền nào. Xử lý bởi `screeningBranchProvider.post`.
- * @summary Tạo khu vực tầm soát
+ * POST `/screening/branches` — screening content. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `screeningBranchProvider.post`.
+ * @summary Create a screening branch
  */
 export const postScreeningBranches = (
     branchCreate: BranchCreate,
@@ -287,7 +287,7 @@ const {mutation: mutationOptions} = options ?
     export type PostScreeningBranchesMutationError = LegacyBadRequestResponse
 
     /**
- * @summary Tạo khu vực tầm soát
+ * @summary Create a screening branch
  */
 export const usePostScreeningBranches = <TError = LegacyBadRequestResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postScreeningBranches>>, TError,{data: BranchCreate}, TContext>, }
@@ -303,8 +303,8 @@ export const usePostScreeningBranches = <TError = LegacyBadRequestResponse,
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/screening/branches/{branchSlug}` — nội dung tầm soát. Công khai, không cần đăng nhập. Xử lý bởi `screeningBranchProvider.getOne`.
- * @summary Xem chi tiết cơ sở
+ * GET `/screening/branches/{branchSlug}` — screening content. Public, no authentication required. Handled by `screeningBranchProvider.getOne`.
+ * @summary View branch details
  */
 export const getScreeningBranchesBranchSlug = (
     branchSlug: string,
@@ -381,7 +381,7 @@ export function useGetScreeningBranchesBranchSlugInfinite<TData = InfiniteData<A
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết cơ sở
+ * @summary View branch details
  */
 
 export function useGetScreeningBranchesBranchSlugInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getScreeningBranchesBranchSlug>>>, TError = LegacyBadRequestResponse | void>(
@@ -399,7 +399,7 @@ export function useGetScreeningBranchesBranchSlugInfinite<TData = InfiniteData<A
 }
 
 /**
- * @summary Xem chi tiết cơ sở
+ * @summary View branch details
  */
 export const prefetchGetScreeningBranchesBranchSlugInfiniteQuery = async <TData = Awaited<ReturnType<typeof getScreeningBranchesBranchSlug>>, TError = LegacyBadRequestResponse | void>(
  queryClient: QueryClient, branchSlug: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getScreeningBranchesBranchSlug>>, TError, TData>>, }
@@ -462,7 +462,7 @@ export function useGetScreeningBranchesBranchSlug<TData = Awaited<ReturnType<typ
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết cơ sở
+ * @summary View branch details
  */
 
 export function useGetScreeningBranchesBranchSlug<TData = Awaited<ReturnType<typeof getScreeningBranchesBranchSlug>>, TError = LegacyBadRequestResponse | void>(
@@ -480,7 +480,7 @@ export function useGetScreeningBranchesBranchSlug<TData = Awaited<ReturnType<typ
 }
 
 /**
- * @summary Xem chi tiết cơ sở
+ * @summary View branch details
  */
 export const prefetchGetScreeningBranchesBranchSlugQuery = async <TData = Awaited<ReturnType<typeof getScreeningBranchesBranchSlug>>, TError = LegacyBadRequestResponse | void>(
  queryClient: QueryClient, branchSlug: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getScreeningBranchesBranchSlug>>, TError, TData>>, }
@@ -497,8 +497,8 @@ export const prefetchGetScreeningBranchesBranchSlugQuery = async <TData = Awaite
 
 
 /**
- * PUT `/screening/branches/{branchSlug}` — nội dung tầm soát. **Công khai, không cần đăng nhập.** Route này hiện không gắn middleware xác thực hay phân quyền nào. Xử lý bởi `screeningBranchProvider.getOne`.
- * @summary Cập nhật cơ sở
+ * PUT `/screening/branches/{branchSlug}` — screening content. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `screeningBranchProvider.getOne`.
+ * @summary Update a branch
  */
 export const putScreeningBranchesBranchSlug = (
     branchSlug: string,
@@ -546,7 +546,7 @@ const {mutation: mutationOptions} = options ?
     export type PutScreeningBranchesBranchSlugMutationError = LegacyBadRequestResponse | void
 
     /**
- * @summary Cập nhật cơ sở
+ * @summary Update a branch
  */
 export const usePutScreeningBranchesBranchSlug = <TError = LegacyBadRequestResponse | void,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putScreeningBranchesBranchSlug>>, TError,{branchSlug: string;data: BranchCreate}, TContext>, }
@@ -562,8 +562,8 @@ export const usePutScreeningBranchesBranchSlug = <TError = LegacyBadRequestRespo
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * DELETE `/screening/branches/{branchSlug}` — nội dung tầm soát. **Công khai, không cần đăng nhập.** Route này hiện không gắn middleware xác thực hay phân quyền nào. Xử lý bởi `screeningBranchProvider.getOne`.
- * @summary Xóa cơ sở
+ * DELETE `/screening/branches/{branchSlug}` — screening content. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `screeningBranchProvider.getOne`.
+ * @summary Delete a branch
  */
 export const deleteScreeningBranchesBranchSlug = (
     branchSlug: string,
@@ -608,7 +608,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteScreeningBranchesBranchSlugMutationError = LegacyBadRequestResponse | void
 
     /**
- * @summary Xóa cơ sở
+ * @summary Delete a branch
  */
 export const useDeleteScreeningBranchesBranchSlug = <TError = LegacyBadRequestResponse | void,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteScreeningBranchesBranchSlug>>, TError,{branchSlug: string}, TContext>, }
@@ -624,8 +624,8 @@ export const useDeleteScreeningBranchesBranchSlug = <TError = LegacyBadRequestRe
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/screening/branches/{branchSlug}/packages/{packageSlug}` — nội dung tầm soát. Công khai, không cần đăng nhập. Xử lý bởi `screeningBranchProvider.getOne`.
- * @summary Xem chi tiết gói tầm soát
+ * GET `/screening/branches/{branchSlug}/packages/{packageSlug}` — screening content. Public, no authentication required. Handled by `screeningBranchProvider.getOne`.
+ * @summary View screening package details
  */
 export const getScreeningBranchesBranchSlugPackagesPackageSlug = (
     branchSlug: string,
@@ -709,7 +709,7 @@ export function useGetScreeningBranchesBranchSlugPackagesPackageSlugInfinite<TDa
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết gói tầm soát
+ * @summary View screening package details
  */
 
 export function useGetScreeningBranchesBranchSlugPackagesPackageSlugInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getScreeningBranchesBranchSlugPackagesPackageSlug>>>, TError = LegacyBadRequestResponse | void>(
@@ -728,7 +728,7 @@ export function useGetScreeningBranchesBranchSlugPackagesPackageSlugInfinite<TDa
 }
 
 /**
- * @summary Xem chi tiết gói tầm soát
+ * @summary View screening package details
  */
 export const prefetchGetScreeningBranchesBranchSlugPackagesPackageSlugInfiniteQuery = async <TData = Awaited<ReturnType<typeof getScreeningBranchesBranchSlugPackagesPackageSlug>>, TError = LegacyBadRequestResponse | void>(
  queryClient: QueryClient, branchSlug: string,
@@ -796,7 +796,7 @@ export function useGetScreeningBranchesBranchSlugPackagesPackageSlug<TData = Awa
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết gói tầm soát
+ * @summary View screening package details
  */
 
 export function useGetScreeningBranchesBranchSlugPackagesPackageSlug<TData = Awaited<ReturnType<typeof getScreeningBranchesBranchSlugPackagesPackageSlug>>, TError = LegacyBadRequestResponse | void>(
@@ -815,7 +815,7 @@ export function useGetScreeningBranchesBranchSlugPackagesPackageSlug<TData = Awa
 }
 
 /**
- * @summary Xem chi tiết gói tầm soát
+ * @summary View screening package details
  */
 export const prefetchGetScreeningBranchesBranchSlugPackagesPackageSlugQuery = async <TData = Awaited<ReturnType<typeof getScreeningBranchesBranchSlugPackagesPackageSlug>>, TError = LegacyBadRequestResponse | void>(
  queryClient: QueryClient, branchSlug: string,
@@ -833,8 +833,8 @@ export const prefetchGetScreeningBranchesBranchSlugPackagesPackageSlugQuery = as
 
 
 /**
- * PUT `/screening/branches/{branchSlug}/packages/{packageSlug}` — nội dung tầm soát. **Công khai, không cần đăng nhập.** Route này hiện không gắn middleware xác thực hay phân quyền nào. Xử lý bởi `screeningBranchProvider.getOne`.
- * @summary Cập nhật gói tầm soát
+ * PUT `/screening/branches/{branchSlug}/packages/{packageSlug}` — screening content. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `screeningBranchProvider.getOne`.
+ * @summary Update a screening package
  */
 export const putScreeningBranchesBranchSlugPackagesPackageSlug = (
     branchSlug: string,
@@ -883,7 +883,7 @@ const {mutation: mutationOptions} = options ?
     export type PutScreeningBranchesBranchSlugPackagesPackageSlugMutationError = LegacyBadRequestResponse | void
 
     /**
- * @summary Cập nhật gói tầm soát
+ * @summary Update a screening package
  */
 export const usePutScreeningBranchesBranchSlugPackagesPackageSlug = <TError = LegacyBadRequestResponse | void,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putScreeningBranchesBranchSlugPackagesPackageSlug>>, TError,{branchSlug: string;packageSlug: string;data: BranchCreate}, TContext>, }
@@ -899,8 +899,8 @@ export const usePutScreeningBranchesBranchSlugPackagesPackageSlug = <TError = Le
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * DELETE `/screening/branches/{branchSlug}/packages/{packageSlug}` — nội dung tầm soát. **Công khai, không cần đăng nhập.** Route này hiện không gắn middleware xác thực hay phân quyền nào. Xử lý bởi `screeningBranchProvider.getOne`.
- * @summary Xóa gói tầm soát
+ * DELETE `/screening/branches/{branchSlug}/packages/{packageSlug}` — screening content. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `screeningBranchProvider.getOne`.
+ * @summary Delete a screening package
  */
 export const deleteScreeningBranchesBranchSlugPackagesPackageSlug = (
     branchSlug: string,
@@ -946,7 +946,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteScreeningBranchesBranchSlugPackagesPackageSlugMutationError = LegacyBadRequestResponse | void
 
     /**
- * @summary Xóa gói tầm soát
+ * @summary Delete a screening package
  */
 export const useDeleteScreeningBranchesBranchSlugPackagesPackageSlug = <TError = LegacyBadRequestResponse | void,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteScreeningBranchesBranchSlugPackagesPackageSlug>>, TError,{branchSlug: string;packageSlug: string}, TContext>, }
@@ -962,8 +962,8 @@ export const useDeleteScreeningBranchesBranchSlugPackagesPackageSlug = <TError =
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/screening/branches/{branchSlug}/packages` — nội dung tầm soát. Công khai, không cần đăng nhập. Xử lý bởi `screeningBranchProvider.getOne`.
- * @summary Liệt kê gói tầm soát của khu vực
+ * GET `/screening/branches/{branchSlug}/packages` — screening content. Public, no authentication required. Handled by `screeningBranchProvider.getOne`.
+ * @summary List screening packages of a branch
  */
 export const getScreeningBranchesBranchSlugPackages = (
     branchSlug: string,
@@ -1040,7 +1040,7 @@ export function useGetScreeningBranchesBranchSlugPackagesInfinite<TData = Infini
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Liệt kê gói tầm soát của khu vực
+ * @summary List screening packages of a branch
  */
 
 export function useGetScreeningBranchesBranchSlugPackagesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getScreeningBranchesBranchSlugPackages>>>, TError = LegacyBadRequestResponse | void>(
@@ -1058,7 +1058,7 @@ export function useGetScreeningBranchesBranchSlugPackagesInfinite<TData = Infini
 }
 
 /**
- * @summary Liệt kê gói tầm soát của khu vực
+ * @summary List screening packages of a branch
  */
 export const prefetchGetScreeningBranchesBranchSlugPackagesInfiniteQuery = async <TData = Awaited<ReturnType<typeof getScreeningBranchesBranchSlugPackages>>, TError = LegacyBadRequestResponse | void>(
  queryClient: QueryClient, branchSlug: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getScreeningBranchesBranchSlugPackages>>, TError, TData>>, }
@@ -1121,7 +1121,7 @@ export function useGetScreeningBranchesBranchSlugPackages<TData = Awaited<Return
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Liệt kê gói tầm soát của khu vực
+ * @summary List screening packages of a branch
  */
 
 export function useGetScreeningBranchesBranchSlugPackages<TData = Awaited<ReturnType<typeof getScreeningBranchesBranchSlugPackages>>, TError = LegacyBadRequestResponse | void>(
@@ -1139,7 +1139,7 @@ export function useGetScreeningBranchesBranchSlugPackages<TData = Awaited<Return
 }
 
 /**
- * @summary Liệt kê gói tầm soát của khu vực
+ * @summary List screening packages of a branch
  */
 export const prefetchGetScreeningBranchesBranchSlugPackagesQuery = async <TData = Awaited<ReturnType<typeof getScreeningBranchesBranchSlugPackages>>, TError = LegacyBadRequestResponse | void>(
  queryClient: QueryClient, branchSlug: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getScreeningBranchesBranchSlugPackages>>, TError, TData>>, }
@@ -1156,8 +1156,8 @@ export const prefetchGetScreeningBranchesBranchSlugPackagesQuery = async <TData 
 
 
 /**
- * POST `/screening/branches/{branchSlug}/packages` — nội dung tầm soát. **Công khai, không cần đăng nhập.** Route này hiện không gắn middleware xác thực hay phân quyền nào. Body được chuyển nguyên vẹn vào lớp nghiệp vụ. Xử lý bởi `screeningBranchProvider.getOne`.
- * @summary Tạo gói tầm soát cho khu vực
+ * POST `/screening/branches/{branchSlug}/packages` — screening content. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. The body is passed as-is to the business layer. Handled by `screeningBranchProvider.getOne`.
+ * @summary Create a screening package for a branch
  */
 export const postScreeningBranchesBranchSlugPackages = (
     branchSlug: string,
@@ -1206,7 +1206,7 @@ const {mutation: mutationOptions} = options ?
     export type PostScreeningBranchesBranchSlugPackagesMutationError = LegacyBadRequestResponse | void
 
     /**
- * @summary Tạo gói tầm soát cho khu vực
+ * @summary Create a screening package for a branch
  */
 export const usePostScreeningBranchesBranchSlugPackages = <TError = LegacyBadRequestResponse | void,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postScreeningBranchesBranchSlugPackages>>, TError,{branchSlug: string;data: PostScreeningBranchesBranchSlugPackagesBody}, TContext>, }
@@ -1222,8 +1222,8 @@ export const usePostScreeningBranchesBranchSlugPackages = <TError = LegacyBadReq
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/screening/branches/{branchSlug}/packages/{packageSlug}/items/{id}` — nội dung tầm soát. Công khai, không cần đăng nhập. Xử lý bởi `screeningPackageItemProvider.getById`.
- * @summary Xem chi tiết hạng mục
+ * GET `/screening/branches/{branchSlug}/packages/{packageSlug}/items/{id}` — screening content. Public, no authentication required. Handled by `screeningPackageItemProvider.getById`.
+ * @summary View item details
  */
 export const getScreeningBranchesBranchSlugPackagesPackageSlugItemsId = (
     branchSlug: string,
@@ -1314,7 +1314,7 @@ export function useGetScreeningBranchesBranchSlugPackagesPackageSlugItemsIdInfin
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết hạng mục
+ * @summary View item details
  */
 
 export function useGetScreeningBranchesBranchSlugPackagesPackageSlugItemsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getScreeningBranchesBranchSlugPackagesPackageSlugItemsId>>>, TError = LegacyBadRequestResponse | void>(
@@ -1334,7 +1334,7 @@ export function useGetScreeningBranchesBranchSlugPackagesPackageSlugItemsIdInfin
 }
 
 /**
- * @summary Xem chi tiết hạng mục
+ * @summary View item details
  */
 export const prefetchGetScreeningBranchesBranchSlugPackagesPackageSlugItemsIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getScreeningBranchesBranchSlugPackagesPackageSlugItemsId>>, TError = LegacyBadRequestResponse | void>(
  queryClient: QueryClient, branchSlug: string,
@@ -1407,7 +1407,7 @@ export function useGetScreeningBranchesBranchSlugPackagesPackageSlugItemsId<TDat
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết hạng mục
+ * @summary View item details
  */
 
 export function useGetScreeningBranchesBranchSlugPackagesPackageSlugItemsId<TData = Awaited<ReturnType<typeof getScreeningBranchesBranchSlugPackagesPackageSlugItemsId>>, TError = LegacyBadRequestResponse | void>(
@@ -1427,7 +1427,7 @@ export function useGetScreeningBranchesBranchSlugPackagesPackageSlugItemsId<TDat
 }
 
 /**
- * @summary Xem chi tiết hạng mục
+ * @summary View item details
  */
 export const prefetchGetScreeningBranchesBranchSlugPackagesPackageSlugItemsIdQuery = async <TData = Awaited<ReturnType<typeof getScreeningBranchesBranchSlugPackagesPackageSlugItemsId>>, TError = LegacyBadRequestResponse | void>(
  queryClient: QueryClient, branchSlug: string,
@@ -1446,8 +1446,8 @@ export const prefetchGetScreeningBranchesBranchSlugPackagesPackageSlugItemsIdQue
 
 
 /**
- * PUT `/screening/branches/{branchSlug}/packages/{packageSlug}/items/{id}` — nội dung tầm soát. **Công khai, không cần đăng nhập.** Route này hiện không gắn middleware xác thực hay phân quyền nào. Xử lý bởi `screeningPackageItemProvider.getById`.
- * @summary Cập nhật hạng mục
+ * PUT `/screening/branches/{branchSlug}/packages/{packageSlug}/items/{id}` — screening content. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `screeningPackageItemProvider.getById`.
+ * @summary Update an item
  */
 export const putScreeningBranchesBranchSlugPackagesPackageSlugItemsId = (
     branchSlug: string,
@@ -1497,7 +1497,7 @@ const {mutation: mutationOptions} = options ?
     export type PutScreeningBranchesBranchSlugPackagesPackageSlugItemsIdMutationError = LegacyBadRequestResponse | void
 
     /**
- * @summary Cập nhật hạng mục
+ * @summary Update an item
  */
 export const usePutScreeningBranchesBranchSlugPackagesPackageSlugItemsId = <TError = LegacyBadRequestResponse | void,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putScreeningBranchesBranchSlugPackagesPackageSlugItemsId>>, TError,{branchSlug: string;packageSlug: string;id: string;data: BranchCreate}, TContext>, }
@@ -1513,8 +1513,8 @@ export const usePutScreeningBranchesBranchSlugPackagesPackageSlugItemsId = <TErr
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * DELETE `/screening/branches/{branchSlug}/packages/{packageSlug}/items/{id}` — nội dung tầm soát. **Công khai, không cần đăng nhập.** Route này hiện không gắn middleware xác thực hay phân quyền nào. Xử lý bởi `screeningPackageItemProvider.getById`.
- * @summary Xóa hạng mục
+ * DELETE `/screening/branches/{branchSlug}/packages/{packageSlug}/items/{id}` — screening content. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `screeningPackageItemProvider.getById`.
+ * @summary Delete an item
  */
 export const deleteScreeningBranchesBranchSlugPackagesPackageSlugItemsId = (
     branchSlug: string,
@@ -1561,7 +1561,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteScreeningBranchesBranchSlugPackagesPackageSlugItemsIdMutationError = LegacyBadRequestResponse | void
 
     /**
- * @summary Xóa hạng mục
+ * @summary Delete an item
  */
 export const useDeleteScreeningBranchesBranchSlugPackagesPackageSlugItemsId = <TError = LegacyBadRequestResponse | void,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteScreeningBranchesBranchSlugPackagesPackageSlugItemsId>>, TError,{branchSlug: string;packageSlug: string;id: string}, TContext>, }
@@ -1577,8 +1577,8 @@ export const useDeleteScreeningBranchesBranchSlugPackagesPackageSlugItemsId = <T
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/screening/branches/{branchSlug}/packages/{packageSlug}/items` — nội dung tầm soát. Công khai, không cần đăng nhập. Xử lý bởi `screeningBranchProvider.getOne`.
- * @summary Liệt kê hạng mục của gói tầm soát
+ * GET `/screening/branches/{branchSlug}/packages/{packageSlug}/items` — screening content. Public, no authentication required. Handled by `screeningBranchProvider.getOne`.
+ * @summary List items of a screening package
  */
 export const getScreeningBranchesBranchSlugPackagesPackageSlugItems = (
     branchSlug: string,
@@ -1662,7 +1662,7 @@ export function useGetScreeningBranchesBranchSlugPackagesPackageSlugItemsInfinit
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Liệt kê hạng mục của gói tầm soát
+ * @summary List items of a screening package
  */
 
 export function useGetScreeningBranchesBranchSlugPackagesPackageSlugItemsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getScreeningBranchesBranchSlugPackagesPackageSlugItems>>>, TError = LegacyBadRequestResponse | void>(
@@ -1681,7 +1681,7 @@ export function useGetScreeningBranchesBranchSlugPackagesPackageSlugItemsInfinit
 }
 
 /**
- * @summary Liệt kê hạng mục của gói tầm soát
+ * @summary List items of a screening package
  */
 export const prefetchGetScreeningBranchesBranchSlugPackagesPackageSlugItemsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getScreeningBranchesBranchSlugPackagesPackageSlugItems>>, TError = LegacyBadRequestResponse | void>(
  queryClient: QueryClient, branchSlug: string,
@@ -1749,7 +1749,7 @@ export function useGetScreeningBranchesBranchSlugPackagesPackageSlugItems<TData 
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Liệt kê hạng mục của gói tầm soát
+ * @summary List items of a screening package
  */
 
 export function useGetScreeningBranchesBranchSlugPackagesPackageSlugItems<TData = Awaited<ReturnType<typeof getScreeningBranchesBranchSlugPackagesPackageSlugItems>>, TError = LegacyBadRequestResponse | void>(
@@ -1768,7 +1768,7 @@ export function useGetScreeningBranchesBranchSlugPackagesPackageSlugItems<TData 
 }
 
 /**
- * @summary Liệt kê hạng mục của gói tầm soát
+ * @summary List items of a screening package
  */
 export const prefetchGetScreeningBranchesBranchSlugPackagesPackageSlugItemsQuery = async <TData = Awaited<ReturnType<typeof getScreeningBranchesBranchSlugPackagesPackageSlugItems>>, TError = LegacyBadRequestResponse | void>(
  queryClient: QueryClient, branchSlug: string,
@@ -1786,8 +1786,8 @@ export const prefetchGetScreeningBranchesBranchSlugPackagesPackageSlugItemsQuery
 
 
 /**
- * POST `/screening/branches/{branchSlug}/packages/{packageSlug}/items` — nội dung tầm soát. **Công khai, không cần đăng nhập.** Route này hiện không gắn middleware xác thực hay phân quyền nào. Body được chuyển nguyên vẹn vào lớp nghiệp vụ. Xử lý bởi `screeningBranchProvider.getOne`.
- * @summary Thêm hạng mục vào gói tầm soát
+ * POST `/screening/branches/{branchSlug}/packages/{packageSlug}/items` — screening content. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. The body is passed as-is to the business layer. Handled by `screeningBranchProvider.getOne`.
+ * @summary Add an item to a screening package
  */
 export const postScreeningBranchesBranchSlugPackagesPackageSlugItems = (
     branchSlug: string,
@@ -1837,7 +1837,7 @@ const {mutation: mutationOptions} = options ?
     export type PostScreeningBranchesBranchSlugPackagesPackageSlugItemsMutationError = LegacyBadRequestResponse | void
 
     /**
- * @summary Thêm hạng mục vào gói tầm soát
+ * @summary Add an item to a screening package
  */
 export const usePostScreeningBranchesBranchSlugPackagesPackageSlugItems = <TError = LegacyBadRequestResponse | void,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postScreeningBranchesBranchSlugPackagesPackageSlugItems>>, TError,{branchSlug: string;packageSlug: string;data: PostScreeningBranchesBranchSlugPackagesPackageSlugItemsBody}, TContext>, }

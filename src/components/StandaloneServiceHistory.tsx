@@ -7,7 +7,7 @@ import type { TableColumnsType } from 'antd'
 import { CheckCircleOutlined, EditOutlined, PlusOutlined, PrinterOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import { errorMessage, openHtmlPrint, pickData } from '@/api/helpers'
-import { fileSrc, registerUploadedFile } from '@/hooks/useFileUrl'
+import { fileSrc, registerUploadedFile, resolveFileSrc, useFileUrlMap } from '@/hooks/useFileUrl'
 import { customInstance } from '@/api/mutator/custom-instance'
 import { getAppointments } from '@/api/endpoints/appointments'
 import { getGetCustomerProfilesIdPointsQueryKey, useGetCustomerProfilesIdPoints } from '@/api/endpoints/customer-profiles'
@@ -396,13 +396,16 @@ function StandaloneServiceVisit({ appointment, onUpdated, autoOpenEdit, complete
     } catch (err) { message.error(errorMessage(err)) } finally { setSaving(false) }
   }
 
+  const urlMap = useFileUrlMap()
   const photoSrc = (url?: string | null) => (!url ? '' : /^https?:\/\//i.test(url) ? url : `${links.imageEndpoint}${url}`)
+  const photoSrcOf = (photo: VisitPhoto) =>
+    fileSrc((photo as any).file) ?? resolveFileSrc(urlMap, (photo as any).file_id) ?? photoSrc((photo as any).url)
   const photoRow = (kind: 'before' | 'process' | 'after', label: string) => {
-    const rows = photos.filter((photo) => photo.kind === kind && photo.url)
+    const rows = photos.filter((photo) => photo.kind === kind && photoSrcOf(photo))
     return (
       <TRow key={kind} label={label}>
         <Space wrap size={10}>
-          {rows.length > 0 && <Image.PreviewGroup items={rows.map((photo) => fileSrc((photo as any).file) ?? photoSrc(photo.url))}>{rows.map((photo) => <Image key={photo.id} src={fileSrc((photo as any).file) ?? photoSrc(photo.url)} width={88} height={88} style={{ objectFit: 'cover', borderRadius: 10 }} />)}</Image.PreviewGroup>}
+          {rows.length > 0 && <Image.PreviewGroup items={rows.map((photo) => photoSrcOf(photo)!)}>{rows.map((photo) => <Image key={photo.id} src={photoSrcOf(photo) ?? undefined} width={88} height={88} style={{ objectFit: 'cover', borderRadius: 10 }} />)}</Image.PreviewGroup>}
           {editable && record.status === 'in_progress' && <Upload accept="image/*" multiple showUploadList={false} beforeUpload={(file) => { void uploadPhoto(file, kind); return false }}><Button icon={<PlusOutlined />}>Ảnh</Button></Upload>}
           {!rows.length && !(editable && record.status === 'in_progress') && <Typography.Text type="secondary">{loading ? 'Đang tải ảnh…' : 'Chưa có ảnh'}</Typography.Text>}
         </Space>

@@ -44,8 +44,8 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * **IMP-01** — POST /imports/{kind}. Multipart file (.csv/.xlsx) hoặc JSON `rows`. `dry_run=true` (mặc định) chỉ kiểm tra và trả báo cáo lỗi từng dòng, không ghi DB. Cần quyền `import.run`.
- * @summary Import dữ liệu khách cũ (customer-profiles / customer-treatments)
+ * **IMP-01** — POST /imports/{kind}. Multipart file (.csv/.xlsx) or JSON `rows`. `dry_run=true` (default) only validates and returns a per-row error report without writing to the DB. Requires the `import.run` permission.
+ * @summary Import legacy customer data (customer-profiles / customer-treatments)
  */
 export const postImportsKind = (
     kind: 'customer-profiles' | 'customer-treatments',
@@ -107,7 +107,7 @@ const {mutation: mutationOptions} = options ?
     export type PostImportsKindMutationError = UnauthorizedResponse | ForbiddenResponse | UnprocessableEntityResponse
 
     /**
- * @summary Import dữ liệu khách cũ (customer-profiles / customer-treatments)
+ * @summary Import legacy customer data (customer-profiles / customer-treatments)
  */
 export const usePostImportsKind = <TError = UnauthorizedResponse | ForbiddenResponse | UnprocessableEntityResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postImportsKind>>, TError,{kind: 'customer-profiles' | 'customer-treatments';data: PostImportsKindBody}, TContext>, }
@@ -123,8 +123,8 @@ export const usePostImportsKind = <TError = UnauthorizedResponse | ForbiddenResp
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **IMP-02** — GET /imports/{id}. `id=all` trả tối đa 50 lượt import gần nhất. Cần quyền `import.run`.
- * @summary Xem báo cáo một lượt import (id) hoặc danh sách gần đây với id=all
+ * **IMP-02** — GET /imports/{id}. `id=all` returns up to the 50 most recent imports. Requires the `import.run` permission.
+ * @summary View an import report by id, or recent imports with id=all
  */
 export const getImportsId = (
     id: string,
@@ -201,7 +201,7 @@ export function useGetImportsIdInfinite<TData = InfiniteData<Awaited<ReturnType<
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem báo cáo một lượt import (id) hoặc danh sách gần đây với id=all
+ * @summary View an import report by id, or recent imports with id=all
  */
 
 export function useGetImportsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getImportsId>>>, TError = NotFoundResponse>(
@@ -219,7 +219,7 @@ export function useGetImportsIdInfinite<TData = InfiniteData<Awaited<ReturnType<
 }
 
 /**
- * @summary Xem báo cáo một lượt import (id) hoặc danh sách gần đây với id=all
+ * @summary View an import report by id, or recent imports with id=all
  */
 export const prefetchGetImportsIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getImportsId>>, TError = NotFoundResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportsId>>, TError, TData>>, }
@@ -282,7 +282,7 @@ export function useGetImportsId<TData = Awaited<ReturnType<typeof getImportsId>>
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem báo cáo một lượt import (id) hoặc danh sách gần đây với id=all
+ * @summary View an import report by id, or recent imports with id=all
  */
 
 export function useGetImportsId<TData = Awaited<ReturnType<typeof getImportsId>>, TError = NotFoundResponse>(
@@ -300,7 +300,7 @@ export function useGetImportsId<TData = Awaited<ReturnType<typeof getImportsId>>
 }
 
 /**
- * @summary Xem báo cáo một lượt import (id) hoặc danh sách gần đây với id=all
+ * @summary View an import report by id, or recent imports with id=all
  */
 export const prefetchGetImportsIdQuery = async <TData = Awaited<ReturnType<typeof getImportsId>>, TError = NotFoundResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportsId>>, TError, TData>>, }

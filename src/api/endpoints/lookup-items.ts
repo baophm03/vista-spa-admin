@@ -36,8 +36,8 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * **LK-07** — POST /lookup-lists/{id}/items. Cần quyền `lookup.update`. Trường body: `code`, `label`, `sort_order`, `color`.
- * @summary Quản lý mục danh mục
+ * **LK-07** — POST /lookup-lists/{id}/items. Requires the `lookup.update` permission. Body fields: `code`, `label`, `sort_order`, `color`.
+ * @summary Manage lookup items
  */
 export const postLookupListsIdItems = (
     id: string,
@@ -86,7 +86,7 @@ const {mutation: mutationOptions} = options ?
     export type PostLookupListsIdItemsMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Quản lý mục danh mục
+ * @summary Manage lookup items
  */
 export const usePostLookupListsIdItems = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postLookupListsIdItems>>, TError,{id: string;data: PostLookupListsIdItemsBody}, TContext>, }
@@ -102,8 +102,8 @@ export const usePostLookupListsIdItems = <TError = UnauthorizedResponse | Forbid
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **LK-08** — PUT /lookup-items/{id} — chỉ đổi label/sort_order/is_active. Cần quyền `lookup.update`. Trường body: `label`, `color`, `sort_order`, `is_active`.
- * @summary Cập nhật mục danh mục
+ * **LK-08** — PUT /lookup-items/{id} — only label/sort_order/is_active can be changed. Requires the `lookup.update` permission. Body fields: `label`, `color`, `sort_order`, `is_active`.
+ * @summary Update a lookup item
  */
 export const putLookupItemsId = (
     id: string,
@@ -151,7 +151,7 @@ const {mutation: mutationOptions} = options ?
     export type PutLookupItemsIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Cập nhật mục danh mục
+ * @summary Update a lookup item
  */
 export const usePutLookupItemsId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putLookupItemsId>>, TError,{id: string;data: PutLookupItemsIdBody}, TContext>, }
@@ -167,8 +167,8 @@ export const usePutLookupItemsId = <TError = UnauthorizedResponse | ForbiddenRes
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **LK-09** — DELETE /lookup-items/{id} — ẩn (is_active=false), không xóa cứng. Cần quyền `lookup.delete`.
- * @summary Xóa mục danh mục
+ * **LK-09** — DELETE /lookup-items/{id} — soft delete (is_active=false), not a hard delete. Requires the `lookup.delete` permission.
+ * @summary Delete a lookup item
  */
 export const deleteLookupItemsId = (
     id: string,
@@ -213,7 +213,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteLookupItemsIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Xóa mục danh mục
+ * @summary Delete a lookup item
  */
 export const useDeleteLookupItemsId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteLookupItemsId>>, TError,{id: string}, TContext>, }

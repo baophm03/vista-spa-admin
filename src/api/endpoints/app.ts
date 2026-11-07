@@ -74,8 +74,8 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * **APP-08** — GET /app/ranks. Công khai, không cần đăng nhập. Xử lý bởi `appService.publicRanks`.
- * @summary Xem hạng thành viên
+ * **APP-08** — GET /app/ranks. Public, no authentication required. Handled by `appService.publicRanks`.
+ * @summary View membership ranks
  */
 export const getAppRanks = (
     
@@ -152,7 +152,7 @@ export function useGetAppRanksInfinite<TData = InfiniteData<Awaited<ReturnType<t
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem hạng thành viên
+ * @summary View membership ranks
  */
 
 export function useGetAppRanksInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppRanks>>>, TError = InternalErrorResponse>(
@@ -170,7 +170,7 @@ export function useGetAppRanksInfinite<TData = InfiniteData<Awaited<ReturnType<t
 }
 
 /**
- * @summary Xem hạng thành viên
+ * @summary View membership ranks
  */
 export const prefetchGetAppRanksInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAppRanks>>, TError = InternalErrorResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppRanks>>, TError, TData>>, }
@@ -233,7 +233,7 @@ export function useGetAppRanks<TData = Awaited<ReturnType<typeof getAppRanks>>, 
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem hạng thành viên
+ * @summary View membership ranks
  */
 
 export function useGetAppRanks<TData = Awaited<ReturnType<typeof getAppRanks>>, TError = InternalErrorResponse>(
@@ -251,7 +251,7 @@ export function useGetAppRanks<TData = Awaited<ReturnType<typeof getAppRanks>>, 
 }
 
 /**
- * @summary Xem hạng thành viên
+ * @summary View membership ranks
  */
 export const prefetchGetAppRanksQuery = async <TData = Awaited<ReturnType<typeof getAppRanks>>, TError = InternalErrorResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppRanks>>, TError, TData>>, }
@@ -268,8 +268,8 @@ export const prefetchGetAppRanksQuery = async <TData = Awaited<ReturnType<typeof
 
 
 /**
- * **APP-07** — GET /app/packages (chỉ đọc, không cần đăng nhập). Công khai, không cần đăng nhập. Xử lý bởi `appService.publicPackages`.
- * @summary Xem gói dịch vụ
+ * **APP-07** — GET /app/packages (read-only, no authentication required). Public, no authentication required. Handled by `appService.publicPackages`.
+ * @summary View service packages
  */
 export const getAppPackages = (
     
@@ -346,7 +346,7 @@ export function useGetAppPackagesInfinite<TData = InfiniteData<Awaited<ReturnTyp
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem gói dịch vụ
+ * @summary View service packages
  */
 
 export function useGetAppPackagesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppPackages>>>, TError = InternalErrorResponse>(
@@ -364,7 +364,7 @@ export function useGetAppPackagesInfinite<TData = InfiniteData<Awaited<ReturnTyp
 }
 
 /**
- * @summary Xem gói dịch vụ
+ * @summary View service packages
  */
 export const prefetchGetAppPackagesInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAppPackages>>, TError = InternalErrorResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppPackages>>, TError, TData>>, }
@@ -427,7 +427,7 @@ export function useGetAppPackages<TData = Awaited<ReturnType<typeof getAppPackag
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem gói dịch vụ
+ * @summary View service packages
  */
 
 export function useGetAppPackages<TData = Awaited<ReturnType<typeof getAppPackages>>, TError = InternalErrorResponse>(
@@ -445,7 +445,7 @@ export function useGetAppPackages<TData = Awaited<ReturnType<typeof getAppPackag
 }
 
 /**
- * @summary Xem gói dịch vụ
+ * @summary View service packages
  */
 export const prefetchGetAppPackagesQuery = async <TData = Awaited<ReturnType<typeof getAppPackages>>, TError = InternalErrorResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppPackages>>, TError, TData>>, }
@@ -462,8 +462,8 @@ export const prefetchGetAppPackagesQuery = async <TData = Awaited<ReturnType<typ
 
 
 /**
- * **APP-09** — GET /app/config (cấu hình công khai, app dựng UI theo đây). Công khai, không cần đăng nhập. Tham số truy vấn: `branch_id`. Xử lý bởi `appService.publicConfig`.
- * @summary Xem cấu hình công khai cho ứng dụng khách
+ * **APP-09** — GET /app/config (public configuration; the app builds its UI from this). Public, no authentication required. Query parameters: `branch_id`. Handled by `appService.publicConfig`.
+ * @summary View the public configuration for the client app
  */
 export const getAppConfig = (
     params?: GetAppConfigParams,
@@ -541,7 +541,7 @@ export function useGetAppConfigInfinite<TData = InfiniteData<Awaited<ReturnType<
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem cấu hình công khai cho ứng dụng khách
+ * @summary View the public configuration for the client app
  */
 
 export function useGetAppConfigInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppConfig>>>, TError = InternalErrorResponse>(
@@ -559,7 +559,7 @@ export function useGetAppConfigInfinite<TData = InfiniteData<Awaited<ReturnType<
 }
 
 /**
- * @summary Xem cấu hình công khai cho ứng dụng khách
+ * @summary View the public configuration for the client app
  */
 export const prefetchGetAppConfigInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAppConfig>>, TError = InternalErrorResponse>(
  queryClient: QueryClient, params?: GetAppConfigParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppConfig>>, TError, TData>>, }
@@ -622,7 +622,7 @@ export function useGetAppConfig<TData = Awaited<ReturnType<typeof getAppConfig>>
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem cấu hình công khai cho ứng dụng khách
+ * @summary View the public configuration for the client app
  */
 
 export function useGetAppConfig<TData = Awaited<ReturnType<typeof getAppConfig>>, TError = InternalErrorResponse>(
@@ -640,7 +640,7 @@ export function useGetAppConfig<TData = Awaited<ReturnType<typeof getAppConfig>>
 }
 
 /**
- * @summary Xem cấu hình công khai cho ứng dụng khách
+ * @summary View the public configuration for the client app
  */
 export const prefetchGetAppConfigQuery = async <TData = Awaited<ReturnType<typeof getAppConfig>>, TError = InternalErrorResponse>(
  queryClient: QueryClient, params?: GetAppConfigParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppConfig>>, TError, TData>>, }
@@ -657,8 +657,8 @@ export const prefetchGetAppConfigQuery = async <TData = Awaited<ReturnType<typeo
 
 
 /**
- * **APP-10** — GET /app/available-slots (BR-10). Phạm vi khách hàng: chỉ thao tác trên dữ liệu của khách đang đăng nhập. Tham số truy vấn: `branch_id`, `service_id`, `date`.
- * @summary Xem khung giờ trống
+ * **APP-10** — GET /app/available-slots (BR-10). Customer scope: only operate on the data of the logged-in customer. Query parameters: `branch_id`, `service_id`, `date`.
+ * @summary View available time slots
  */
 export const getAppAvailableSlots = (
     params?: GetAppAvailableSlotsParams,
@@ -736,7 +736,7 @@ export function useGetAppAvailableSlotsInfinite<TData = InfiniteData<Awaited<Ret
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem khung giờ trống
+ * @summary View available time slots
  */
 
 export function useGetAppAvailableSlotsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppAvailableSlots>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
@@ -754,7 +754,7 @@ export function useGetAppAvailableSlotsInfinite<TData = InfiniteData<Awaited<Ret
 }
 
 /**
- * @summary Xem khung giờ trống
+ * @summary View available time slots
  */
 export const prefetchGetAppAvailableSlotsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAppAvailableSlots>>, TError = UnauthorizedResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetAppAvailableSlotsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppAvailableSlots>>, TError, TData>>, }
@@ -817,7 +817,7 @@ export function useGetAppAvailableSlots<TData = Awaited<ReturnType<typeof getApp
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem khung giờ trống
+ * @summary View available time slots
  */
 
 export function useGetAppAvailableSlots<TData = Awaited<ReturnType<typeof getAppAvailableSlots>>, TError = UnauthorizedResponse | InternalErrorResponse>(
@@ -835,7 +835,7 @@ export function useGetAppAvailableSlots<TData = Awaited<ReturnType<typeof getApp
 }
 
 /**
- * @summary Xem khung giờ trống
+ * @summary View available time slots
  */
 export const prefetchGetAppAvailableSlotsQuery = async <TData = Awaited<ReturnType<typeof getAppAvailableSlots>>, TError = UnauthorizedResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetAppAvailableSlotsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppAvailableSlots>>, TError, TData>>, }
@@ -852,8 +852,8 @@ export const prefetchGetAppAvailableSlotsQuery = async <TData = Awaited<ReturnTy
 
 
 /**
- * **APP-17** — GET /app/wheels (vòng quay đang mở). Phạm vi khách hàng: chỉ thao tác trên dữ liệu của khách đang đăng nhập. Tham số truy vấn: `branch_id`.
- * @summary Xem vòng quay đang mở
+ * **APP-17** — GET /app/wheels (active wheels). Customer scope: only operate on the data of the logged-in customer. Query parameters: `branch_id`.
+ * @summary View active wheels
  */
 export const getAppWheels = (
     params?: GetAppWheelsParams,
@@ -931,7 +931,7 @@ export function useGetAppWheelsInfinite<TData = InfiniteData<Awaited<ReturnType<
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem vòng quay đang mở
+ * @summary View active wheels
  */
 
 export function useGetAppWheelsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppWheels>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
@@ -949,7 +949,7 @@ export function useGetAppWheelsInfinite<TData = InfiniteData<Awaited<ReturnType<
 }
 
 /**
- * @summary Xem vòng quay đang mở
+ * @summary View active wheels
  */
 export const prefetchGetAppWheelsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAppWheels>>, TError = UnauthorizedResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetAppWheelsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppWheels>>, TError, TData>>, }
@@ -1012,7 +1012,7 @@ export function useGetAppWheels<TData = Awaited<ReturnType<typeof getAppWheels>>
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem vòng quay đang mở
+ * @summary View active wheels
  */
 
 export function useGetAppWheels<TData = Awaited<ReturnType<typeof getAppWheels>>, TError = UnauthorizedResponse | InternalErrorResponse>(
@@ -1030,7 +1030,7 @@ export function useGetAppWheels<TData = Awaited<ReturnType<typeof getAppWheels>>
 }
 
 /**
- * @summary Xem vòng quay đang mở
+ * @summary View active wheels
  */
 export const prefetchGetAppWheelsQuery = async <TData = Awaited<ReturnType<typeof getAppWheels>>, TError = UnauthorizedResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetAppWheelsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppWheels>>, TError, TData>>, }
@@ -1047,8 +1047,8 @@ export const prefetchGetAppWheelsQuery = async <TData = Awaited<ReturnType<typeo
 
 
 /**
- * **APP-18** — POST /app/wheels/{id}/spin (quay theo trọng số; lọc theo doanh số năm). Phạm vi khách hàng: chỉ thao tác trên dữ liệu của khách đang đăng nhập.
- * @summary Quay
+ * **APP-18** — POST /app/wheels/{id}/spin (spin by weight; filtered by yearly revenue). Customer scope: only operate on the data of the logged-in customer.
+ * @summary Spin the wheel
  */
 export const postAppWheelsIdSpin = (
     id: string,
@@ -1094,7 +1094,7 @@ const {mutation: mutationOptions} = options ?
     export type PostAppWheelsIdSpinMutationError = UnauthorizedResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Quay
+ * @summary Spin the wheel
  */
 export const usePostAppWheelsIdSpin = <TError = UnauthorizedResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAppWheelsIdSpin>>, TError,{id: string}, TContext>, }
@@ -1110,8 +1110,8 @@ export const usePostAppWheelsIdSpin = <TError = UnauthorizedResponse | NotFoundR
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * POST `/app/orders` — app. Phạm vi khách hàng: chỉ thao tác trên dữ liệu của khách đang đăng nhập.
- * @summary Khách đặt mua sản phẩm
+ * POST `/app/orders` — app. Customer scope: only operate on the data of the logged-in customer.
+ * @summary Customer places a product order
  */
 export const postAppOrders = (
     postAppOrdersBody: PostAppOrdersBody,
@@ -1159,7 +1159,7 @@ const {mutation: mutationOptions} = options ?
     export type PostAppOrdersMutationError = UnauthorizedResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Khách đặt mua sản phẩm
+ * @summary Customer places a product order
  */
 export const usePostAppOrders = <TError = UnauthorizedResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAppOrders>>, TError,{data: PostAppOrdersBody}, TContext>, }
@@ -1175,8 +1175,8 @@ export const usePostAppOrders = <TError = UnauthorizedResponse | ConflictRespons
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **APP-19** — GET /app/notifications (thông báo của tôi + broadcast). Phạm vi khách hàng: chỉ thao tác trên dữ liệu của khách đang đăng nhập. Tham số truy vấn: `page`, `limit`.
- * @summary Xem app
+ * **APP-19** — GET /app/notifications (my notifications + broadcast). Customer scope: only operate on the data of the logged-in customer. Query parameters: `page`, `limit`.
+ * @summary View my notifications
  */
 export const getAppNotifications = (
     params?: GetAppNotificationsParams,
@@ -1254,7 +1254,7 @@ export function useGetAppNotificationsInfinite<TData = InfiniteData<Awaited<Retu
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem app
+ * @summary View my notifications
  */
 
 export function useGetAppNotificationsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppNotifications>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
@@ -1272,7 +1272,7 @@ export function useGetAppNotificationsInfinite<TData = InfiniteData<Awaited<Retu
 }
 
 /**
- * @summary Xem app
+ * @summary View my notifications
  */
 export const prefetchGetAppNotificationsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAppNotifications>>, TError = UnauthorizedResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetAppNotificationsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppNotifications>>, TError, TData>>, }
@@ -1335,7 +1335,7 @@ export function useGetAppNotifications<TData = Awaited<ReturnType<typeof getAppN
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem app
+ * @summary View my notifications
  */
 
 export function useGetAppNotifications<TData = Awaited<ReturnType<typeof getAppNotifications>>, TError = UnauthorizedResponse | InternalErrorResponse>(
@@ -1353,7 +1353,7 @@ export function useGetAppNotifications<TData = Awaited<ReturnType<typeof getAppN
 }
 
 /**
- * @summary Xem app
+ * @summary View my notifications
  */
 export const prefetchGetAppNotificationsQuery = async <TData = Awaited<ReturnType<typeof getAppNotifications>>, TError = UnauthorizedResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetAppNotificationsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppNotifications>>, TError, TData>>, }
@@ -1370,8 +1370,8 @@ export const prefetchGetAppNotificationsQuery = async <TData = Awaited<ReturnTyp
 
 
 /**
- * **APP-20** — PUT /app/notifications/{id}/read (đánh dấu đã đọc). Phạm vi khách hàng: chỉ thao tác trên dữ liệu của khách đang đăng nhập.
- * @summary Đánh dấu đã đọc
+ * **APP-20** — PUT /app/notifications/{id}/read (mark as read). Customer scope: only operate on the data of the logged-in customer.
+ * @summary Mark as read
  */
 export const putAppNotificationsIdRead = (
     id: string,
@@ -1416,7 +1416,7 @@ const {mutation: mutationOptions} = options ?
     export type PutAppNotificationsIdReadMutationError = UnauthorizedResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Đánh dấu đã đọc
+ * @summary Mark as read
  */
 export const usePutAppNotificationsIdRead = <TError = UnauthorizedResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAppNotificationsIdRead>>, TError,{id: string}, TContext>, }
@@ -1432,8 +1432,8 @@ export const usePutAppNotificationsIdRead = <TError = UnauthorizedResponse | Not
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **APP-06** — GET /app/me/membership. Phạm vi khách hàng: chỉ thao tác trên dữ liệu của khách đang đăng nhập. Trả số dư điểm và tối đa 100 giao dịch điểm mới nhất trong `points_history`. Xử lý bởi `appService.myMembership`.
- * @summary Lấy app theo membership
+ * **APP-06** — GET /app/me/membership. Customer scope: only operate on the data of the logged-in customer. Returns the point balance and the latest up to 100 point transactions in `points_history`. Handled by `appService.myMembership`.
+ * @summary Get membership information
  */
 export const getAppMeMembership = (
     
@@ -1510,7 +1510,7 @@ export function useGetAppMeMembershipInfinite<TData = InfiniteData<Awaited<Retur
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy app theo membership
+ * @summary Get membership information
  */
 
 export function useGetAppMeMembershipInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppMeMembership>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
@@ -1528,7 +1528,7 @@ export function useGetAppMeMembershipInfinite<TData = InfiniteData<Awaited<Retur
 }
 
 /**
- * @summary Lấy app theo membership
+ * @summary Get membership information
  */
 export const prefetchGetAppMeMembershipInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAppMeMembership>>, TError = UnauthorizedResponse | InternalErrorResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeMembership>>, TError, TData>>, }
@@ -1591,7 +1591,7 @@ export function useGetAppMeMembership<TData = Awaited<ReturnType<typeof getAppMe
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy app theo membership
+ * @summary Get membership information
  */
 
 export function useGetAppMeMembership<TData = Awaited<ReturnType<typeof getAppMeMembership>>, TError = UnauthorizedResponse | InternalErrorResponse>(
@@ -1609,7 +1609,7 @@ export function useGetAppMeMembership<TData = Awaited<ReturnType<typeof getAppMe
 }
 
 /**
- * @summary Lấy app theo membership
+ * @summary Get membership information
  */
 export const prefetchGetAppMeMembershipQuery = async <TData = Awaited<ReturnType<typeof getAppMeMembership>>, TError = UnauthorizedResponse | InternalErrorResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMeMembership>>, TError, TData>>, }
@@ -1626,8 +1626,8 @@ export const prefetchGetAppMeMembershipQuery = async <TData = Awaited<ReturnType
 
 
 /**
- * **APP-02** — POST /app/me/link-profile (BR-02: liên kết hồ sơ theo SĐT Zalo). Phạm vi khách hàng: chỉ thao tác trên dữ liệu của khách đang đăng nhập. Trường body: `phone`. Xử lý bởi `appService.linkProfile`.
- * @summary Liên kết hồ sơ khách hàng theo số điện thoại Zalo
+ * **APP-02** — POST /app/me/link-profile (BR-02: link profile by Zalo phone number). Customer scope: only operate on the data of the logged-in customer. Body field: `phone`. Handled by `appService.linkProfile`.
+ * @summary Link a customer profile by Zalo phone number
  */
 export const postAppMeLinkProfile = (
     postAppMeLinkProfileBody: PostAppMeLinkProfileBody,
@@ -1675,7 +1675,7 @@ const {mutation: mutationOptions} = options ?
     export type PostAppMeLinkProfileMutationError = UnauthorizedResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Liên kết hồ sơ khách hàng theo số điện thoại Zalo
+ * @summary Link a customer profile by Zalo phone number
  */
 export const usePostAppMeLinkProfile = <TError = UnauthorizedResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAppMeLinkProfile>>, TError,{data: PostAppMeLinkProfileBody}, TContext>, }
@@ -1691,8 +1691,8 @@ export const usePostAppMeLinkProfile = <TError = UnauthorizedResponse | Conflict
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **APP-01** — GET /app/me. Phạm vi khách hàng: chỉ thao tác trên dữ liệu của khách đang đăng nhập. Xử lý bởi `appService.getMe`.
- * @summary Xem hồ sơ khách hàng của tôi
+ * **APP-01** — GET /app/me. Customer scope: only operate on the data of the logged-in customer. Handled by `appService.getMe`.
+ * @summary View my customer profile
  */
 export const getAppMe = (
     
@@ -1769,7 +1769,7 @@ export function useGetAppMeInfinite<TData = InfiniteData<Awaited<ReturnType<type
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem hồ sơ khách hàng của tôi
+ * @summary View my customer profile
  */
 
 export function useGetAppMeInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppMe>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
@@ -1787,7 +1787,7 @@ export function useGetAppMeInfinite<TData = InfiniteData<Awaited<ReturnType<type
 }
 
 /**
- * @summary Xem hồ sơ khách hàng của tôi
+ * @summary View my customer profile
  */
 export const prefetchGetAppMeInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAppMe>>, TError = UnauthorizedResponse | InternalErrorResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMe>>, TError, TData>>, }
@@ -1850,7 +1850,7 @@ export function useGetAppMe<TData = Awaited<ReturnType<typeof getAppMe>>, TError
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem hồ sơ khách hàng của tôi
+ * @summary View my customer profile
  */
 
 export function useGetAppMe<TData = Awaited<ReturnType<typeof getAppMe>>, TError = UnauthorizedResponse | InternalErrorResponse>(
@@ -1868,7 +1868,7 @@ export function useGetAppMe<TData = Awaited<ReturnType<typeof getAppMe>>, TError
 }
 
 /**
- * @summary Xem hồ sơ khách hàng của tôi
+ * @summary View my customer profile
  */
 export const prefetchGetAppMeQuery = async <TData = Awaited<ReturnType<typeof getAppMe>>, TError = UnauthorizedResponse | InternalErrorResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMe>>, TError, TData>>, }
@@ -1885,8 +1885,8 @@ export const prefetchGetAppMeQuery = async <TData = Awaited<ReturnType<typeof ge
 
 
 /**
- * **APP-04** — GET /app/me/treatments/{id}. Phạm vi khách hàng: chỉ thao tác trên dữ liệu của khách đang đăng nhập. Xử lý bởi `appService.myTreatmentDetail`.
- * @summary Xem chi tiết treatments
+ * **APP-04** — GET /app/me/treatments/{id}. Customer scope: only operate on the data of the logged-in customer. Handled by `appService.myTreatmentDetail`.
+ * @summary View treatment details
  */
 export const getAppMeTreatmentsId = (
     id: string,
@@ -1963,7 +1963,7 @@ export function useGetAppMeTreatmentsIdInfinite<TData = InfiniteData<Awaited<Ret
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết treatments
+ * @summary View treatment details
  */
 
 export function useGetAppMeTreatmentsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppMeTreatmentsId>>>, TError = UnauthorizedResponse | NotFoundResponse | InternalErrorResponse>(
@@ -1981,7 +1981,7 @@ export function useGetAppMeTreatmentsIdInfinite<TData = InfiniteData<Awaited<Ret
 }
 
 /**
- * @summary Xem chi tiết treatments
+ * @summary View treatment details
  */
 export const prefetchGetAppMeTreatmentsIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAppMeTreatmentsId>>, TError = UnauthorizedResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeTreatmentsId>>, TError, TData>>, }
@@ -2044,7 +2044,7 @@ export function useGetAppMeTreatmentsId<TData = Awaited<ReturnType<typeof getApp
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem chi tiết treatments
+ * @summary View treatment details
  */
 
 export function useGetAppMeTreatmentsId<TData = Awaited<ReturnType<typeof getAppMeTreatmentsId>>, TError = UnauthorizedResponse | NotFoundResponse | InternalErrorResponse>(
@@ -2062,7 +2062,7 @@ export function useGetAppMeTreatmentsId<TData = Awaited<ReturnType<typeof getApp
 }
 
 /**
- * @summary Xem chi tiết treatments
+ * @summary View treatment details
  */
 export const prefetchGetAppMeTreatmentsIdQuery = async <TData = Awaited<ReturnType<typeof getAppMeTreatmentsId>>, TError = UnauthorizedResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMeTreatmentsId>>, TError, TData>>, }
@@ -2079,8 +2079,8 @@ export const prefetchGetAppMeTreatmentsIdQuery = async <TData = Awaited<ReturnTy
 
 
 /**
- * **APP-03** — GET /app/me/treatments. Phạm vi khách hàng: chỉ thao tác trên dữ liệu của khách đang đăng nhập. Xử lý bởi `appService.myTreatments`.
- * @summary Lấy app theo treatments
+ * **APP-03** — GET /app/me/treatments. Customer scope: only operate on the data of the logged-in customer. Handled by `appService.myTreatments`.
+ * @summary Get my treatments
  */
 export const getAppMeTreatments = (
     
@@ -2157,7 +2157,7 @@ export function useGetAppMeTreatmentsInfinite<TData = InfiniteData<Awaited<Retur
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy app theo treatments
+ * @summary Get my treatments
  */
 
 export function useGetAppMeTreatmentsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppMeTreatments>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
@@ -2175,7 +2175,7 @@ export function useGetAppMeTreatmentsInfinite<TData = InfiniteData<Awaited<Retur
 }
 
 /**
- * @summary Lấy app theo treatments
+ * @summary Get my treatments
  */
 export const prefetchGetAppMeTreatmentsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAppMeTreatments>>, TError = UnauthorizedResponse | InternalErrorResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeTreatments>>, TError, TData>>, }
@@ -2238,7 +2238,7 @@ export function useGetAppMeTreatments<TData = Awaited<ReturnType<typeof getAppMe
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy app theo treatments
+ * @summary Get my treatments
  */
 
 export function useGetAppMeTreatments<TData = Awaited<ReturnType<typeof getAppMeTreatments>>, TError = UnauthorizedResponse | InternalErrorResponse>(
@@ -2256,7 +2256,7 @@ export function useGetAppMeTreatments<TData = Awaited<ReturnType<typeof getAppMe
 }
 
 /**
- * @summary Lấy app theo treatments
+ * @summary Get my treatments
  */
 export const prefetchGetAppMeTreatmentsQuery = async <TData = Awaited<ReturnType<typeof getAppMeTreatments>>, TError = UnauthorizedResponse | InternalErrorResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMeTreatments>>, TError, TData>>, }
@@ -2273,8 +2273,8 @@ export const prefetchGetAppMeTreatmentsQuery = async <TData = Awaited<ReturnType
 
 
 /**
- * **APP-05** — GET /app/me/treatments/{id}/sessions (sổ điều trị, mới nhất trước). Phạm vi khách hàng: chỉ thao tác trên dữ liệu của khách đang đăng nhập. Xử lý bởi `appService.myTreatmentSessions`.
- * @summary Xem buổi điều trị
+ * **APP-05** — GET /app/me/treatments/{id}/sessions (treatment log, newest first). Customer scope: only operate on the data of the logged-in customer. Handled by `appService.myTreatmentSessions`.
+ * @summary View treatment sessions
  */
 export const getAppMeTreatmentsIdSessions = (
     id: string,
@@ -2351,7 +2351,7 @@ export function useGetAppMeTreatmentsIdSessionsInfinite<TData = InfiniteData<Awa
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem buổi điều trị
+ * @summary View treatment sessions
  */
 
 export function useGetAppMeTreatmentsIdSessionsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppMeTreatmentsIdSessions>>>, TError = UnauthorizedResponse | NotFoundResponse | InternalErrorResponse>(
@@ -2369,7 +2369,7 @@ export function useGetAppMeTreatmentsIdSessionsInfinite<TData = InfiniteData<Awa
 }
 
 /**
- * @summary Xem buổi điều trị
+ * @summary View treatment sessions
  */
 export const prefetchGetAppMeTreatmentsIdSessionsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAppMeTreatmentsIdSessions>>, TError = UnauthorizedResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeTreatmentsIdSessions>>, TError, TData>>, }
@@ -2432,7 +2432,7 @@ export function useGetAppMeTreatmentsIdSessions<TData = Awaited<ReturnType<typeo
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem buổi điều trị
+ * @summary View treatment sessions
  */
 
 export function useGetAppMeTreatmentsIdSessions<TData = Awaited<ReturnType<typeof getAppMeTreatmentsIdSessions>>, TError = UnauthorizedResponse | NotFoundResponse | InternalErrorResponse>(
@@ -2450,7 +2450,7 @@ export function useGetAppMeTreatmentsIdSessions<TData = Awaited<ReturnType<typeo
 }
 
 /**
- * @summary Xem buổi điều trị
+ * @summary View treatment sessions
  */
 export const prefetchGetAppMeTreatmentsIdSessionsQuery = async <TData = Awaited<ReturnType<typeof getAppMeTreatmentsIdSessions>>, TError = UnauthorizedResponse | NotFoundResponse | InternalErrorResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMeTreatmentsIdSessions>>, TError, TData>>, }
@@ -2467,8 +2467,8 @@ export const prefetchGetAppMeTreatmentsIdSessionsQuery = async <TData = Awaited<
 
 
 /**
- * GET `/app/me/orders` — app. Phạm vi khách hàng: chỉ thao tác trên dữ liệu của khách đang đăng nhập.
- * @summary Lấy app theo orders
+ * GET `/app/me/orders` — app. Customer scope: only operate on the data of the logged-in customer.
+ * @summary Get my orders
  */
 export const getAppMeOrders = (
     
@@ -2545,7 +2545,7 @@ export function useGetAppMeOrdersInfinite<TData = InfiniteData<Awaited<ReturnTyp
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy app theo orders
+ * @summary Get my orders
  */
 
 export function useGetAppMeOrdersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppMeOrders>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
@@ -2563,7 +2563,7 @@ export function useGetAppMeOrdersInfinite<TData = InfiniteData<Awaited<ReturnTyp
 }
 
 /**
- * @summary Lấy app theo orders
+ * @summary Get my orders
  */
 export const prefetchGetAppMeOrdersInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAppMeOrders>>, TError = UnauthorizedResponse | InternalErrorResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeOrders>>, TError, TData>>, }
@@ -2626,7 +2626,7 @@ export function useGetAppMeOrders<TData = Awaited<ReturnType<typeof getAppMeOrde
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lấy app theo orders
+ * @summary Get my orders
  */
 
 export function useGetAppMeOrders<TData = Awaited<ReturnType<typeof getAppMeOrders>>, TError = UnauthorizedResponse | InternalErrorResponse>(
@@ -2644,7 +2644,7 @@ export function useGetAppMeOrders<TData = Awaited<ReturnType<typeof getAppMeOrde
 }
 
 /**
- * @summary Lấy app theo orders
+ * @summary Get my orders
  */
 export const prefetchGetAppMeOrdersQuery = async <TData = Awaited<ReturnType<typeof getAppMeOrders>>, TError = UnauthorizedResponse | InternalErrorResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMeOrders>>, TError, TData>>, }
@@ -2661,8 +2661,8 @@ export const prefetchGetAppMeOrdersQuery = async <TData = Awaited<ReturnType<typ
 
 
 /**
- * **APP-11** — Tạo lịch hẹn trạng thái `pending` từ mini-app. Hồ sơ khách được suy ra từ tài khoản đang đăng nhập; nếu gửi `branch_id`, hồ sơ phải thuộc cơ sở đó. Slot đã kín trả `SLOT_UNAVAILABLE` (409).
- * @summary Đặt lịch hẹn cho khách đang đăng nhập
+ * **APP-11** — Create an appointment with `pending` status from the mini-app. The customer profile is inferred from the logged-in account; if `branch_id` is provided, the profile must belong to that branch. A fully booked slot returns `SLOT_UNAVAILABLE` (409).
+ * @summary Book an appointment for the logged-in customer
  */
 export const postAppAppointments = (
     postAppAppointmentsBody: PostAppAppointmentsBody,
@@ -2710,7 +2710,7 @@ const {mutation: mutationOptions} = options ?
     export type PostAppAppointmentsMutationError = UnauthorizedResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Đặt lịch hẹn cho khách đang đăng nhập
+ * @summary Book an appointment for the logged-in customer
  */
 export const usePostAppAppointments = <TError = UnauthorizedResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAppAppointments>>, TError,{data: PostAppAppointmentsBody}, TContext>, }
@@ -2726,8 +2726,8 @@ export const usePostAppAppointments = <TError = UnauthorizedResponse | ConflictR
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **APP-12** — Trả toàn bộ lịch hẹn của các hồ sơ khách liên kết với tài khoản đang đăng nhập, kèm dịch vụ và nhân viên phụ trách. Sắp xếp theo ngày và giờ bắt đầu giảm dần.
- * @summary Xem lịch hẹn của tôi
+ * **APP-12** — Returns all appointments of the customer profiles linked to the logged-in account, including services and the assigned staff. Sorted by start date and time in descending order.
+ * @summary View my appointments
  */
 export const getAppAppointments = (
     
@@ -2804,7 +2804,7 @@ export function useGetAppAppointmentsInfinite<TData = InfiniteData<Awaited<Retur
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem lịch hẹn của tôi
+ * @summary View my appointments
  */
 
 export function useGetAppAppointmentsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppAppointments>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
@@ -2822,7 +2822,7 @@ export function useGetAppAppointmentsInfinite<TData = InfiniteData<Awaited<Retur
 }
 
 /**
- * @summary Xem lịch hẹn của tôi
+ * @summary View my appointments
  */
 export const prefetchGetAppAppointmentsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAppAppointments>>, TError = UnauthorizedResponse | InternalErrorResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppAppointments>>, TError, TData>>, }
@@ -2885,7 +2885,7 @@ export function useGetAppAppointments<TData = Awaited<ReturnType<typeof getAppAp
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Xem lịch hẹn của tôi
+ * @summary View my appointments
  */
 
 export function useGetAppAppointments<TData = Awaited<ReturnType<typeof getAppAppointments>>, TError = UnauthorizedResponse | InternalErrorResponse>(
@@ -2903,7 +2903,7 @@ export function useGetAppAppointments<TData = Awaited<ReturnType<typeof getAppAp
 }
 
 /**
- * @summary Xem lịch hẹn của tôi
+ * @summary View my appointments
  */
 export const prefetchGetAppAppointmentsQuery = async <TData = Awaited<ReturnType<typeof getAppAppointments>>, TError = UnauthorizedResponse | InternalErrorResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppAppointments>>, TError, TData>>, }
@@ -2920,8 +2920,8 @@ export const prefetchGetAppAppointmentsQuery = async <TData = Awaited<ReturnType
 
 
 /**
- * **APP-13** — PUT /app/appointments/{id}/cancel (khách hủy lịch của mình, trước giờ tối thiểu). Phạm vi khách hàng: chỉ thao tác trên dữ liệu của khách đang đăng nhập.
- * @summary Hủy
+ * **APP-13** — PUT /app/appointments/{id}/cancel (customer cancels their own appointment, before the minimum lead time). Customer scope: only operate on the data of the logged-in customer.
+ * @summary Cancel appointment
  */
 export const putAppAppointmentsIdCancel = (
     id: string,
@@ -2966,7 +2966,7 @@ const {mutation: mutationOptions} = options ?
     export type PutAppAppointmentsIdCancelMutationError = UnauthorizedResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Hủy
+ * @summary Cancel appointment
  */
 export const usePutAppAppointmentsIdCancel = <TError = UnauthorizedResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAppAppointmentsIdCancel>>, TError,{id: string}, TContext>, }
@@ -2982,8 +2982,8 @@ export const usePutAppAppointmentsIdCancel = <TError = UnauthorizedResponse | No
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **APP-15** — GET /app/academy/registrations (khóa học của tôi). Phạm vi khách hàng: chỉ thao tác trên dữ liệu của khách đang đăng nhập.
- * @summary Quản lý đăng ký khóa học
+ * **APP-15** — GET /app/academy/registrations (my courses). Customer scope: only operate on the data of the logged-in customer.
+ * @summary Manage course registrations
  */
 export const getAppAcademyRegistrations = (
     
@@ -3060,7 +3060,7 @@ export function useGetAppAcademyRegistrationsInfinite<TData = InfiniteData<Await
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Quản lý đăng ký khóa học
+ * @summary Manage course registrations
  */
 
 export function useGetAppAcademyRegistrationsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppAcademyRegistrations>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
@@ -3078,7 +3078,7 @@ export function useGetAppAcademyRegistrationsInfinite<TData = InfiniteData<Await
 }
 
 /**
- * @summary Quản lý đăng ký khóa học
+ * @summary Manage course registrations
  */
 export const prefetchGetAppAcademyRegistrationsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAppAcademyRegistrations>>, TError = UnauthorizedResponse | InternalErrorResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppAcademyRegistrations>>, TError, TData>>, }
@@ -3141,7 +3141,7 @@ export function useGetAppAcademyRegistrations<TData = Awaited<ReturnType<typeof 
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Quản lý đăng ký khóa học
+ * @summary Manage course registrations
  */
 
 export function useGetAppAcademyRegistrations<TData = Awaited<ReturnType<typeof getAppAcademyRegistrations>>, TError = UnauthorizedResponse | InternalErrorResponse>(
@@ -3159,7 +3159,7 @@ export function useGetAppAcademyRegistrations<TData = Awaited<ReturnType<typeof 
 }
 
 /**
- * @summary Quản lý đăng ký khóa học
+ * @summary Manage course registrations
  */
 export const prefetchGetAppAcademyRegistrationsQuery = async <TData = Awaited<ReturnType<typeof getAppAcademyRegistrations>>, TError = UnauthorizedResponse | InternalErrorResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppAcademyRegistrations>>, TError, TData>>, }
@@ -3176,8 +3176,8 @@ export const prefetchGetAppAcademyRegistrationsQuery = async <TData = Awaited<Re
 
 
 /**
- * **APP-16** — POST /app/academy/registrations (khách tự đăng ký; nhận diện học viên cũ → ưu đãi). Phạm vi khách hàng: chỉ thao tác trên dữ liệu của khách đang đăng nhập. Body được chuyển nguyên vẹn vào lớp nghiệp vụ.
- * @summary Quản lý đăng ký khóa học
+ * **APP-16** — POST /app/academy/registrations (customer self-registers; returning students are identified for benefits). Customer scope: only operate on the data of the logged-in customer. The body is passed as-is to the business layer.
+ * @summary Manage course registrations
  */
 export const postAppAcademyRegistrations = (
     postAppAcademyRegistrationsBody: PostAppAcademyRegistrationsBody,
@@ -3225,7 +3225,7 @@ const {mutation: mutationOptions} = options ?
     export type PostAppAcademyRegistrationsMutationError = UnauthorizedResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Quản lý đăng ký khóa học
+ * @summary Manage course registrations
  */
 export const usePostAppAcademyRegistrations = <TError = UnauthorizedResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAppAcademyRegistrations>>, TError,{data: PostAppAcademyRegistrationsBody}, TContext>, }
@@ -3241,8 +3241,8 @@ export const usePostAppAcademyRegistrations = <TError = UnauthorizedResponse | C
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **APP-14** — GET /app/academy/courses (khóa học đang mở). Phạm vi khách hàng: chỉ thao tác trên dữ liệu của khách đang đăng nhập.
- * @summary Quản lý khóa học
+ * **APP-14** — GET /app/academy/courses (currently open courses). Customer scope: only operate on the data of the logged-in customer.
+ * @summary List courses
  */
 export const getAppAcademyCourses = (
     
@@ -3319,7 +3319,7 @@ export function useGetAppAcademyCoursesInfinite<TData = InfiniteData<Awaited<Ret
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Quản lý khóa học
+ * @summary List courses
  */
 
 export function useGetAppAcademyCoursesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppAcademyCourses>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
@@ -3337,7 +3337,7 @@ export function useGetAppAcademyCoursesInfinite<TData = InfiniteData<Awaited<Ret
 }
 
 /**
- * @summary Quản lý khóa học
+ * @summary List courses
  */
 export const prefetchGetAppAcademyCoursesInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAppAcademyCourses>>, TError = UnauthorizedResponse | InternalErrorResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppAcademyCourses>>, TError, TData>>, }
@@ -3400,7 +3400,7 @@ export function useGetAppAcademyCourses<TData = Awaited<ReturnType<typeof getApp
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Quản lý khóa học
+ * @summary List courses
  */
 
 export function useGetAppAcademyCourses<TData = Awaited<ReturnType<typeof getAppAcademyCourses>>, TError = UnauthorizedResponse | InternalErrorResponse>(
@@ -3418,7 +3418,7 @@ export function useGetAppAcademyCourses<TData = Awaited<ReturnType<typeof getApp
 }
 
 /**
- * @summary Quản lý khóa học
+ * @summary List courses
  */
 export const prefetchGetAppAcademyCoursesQuery = async <TData = Awaited<ReturnType<typeof getAppAcademyCourses>>, TError = UnauthorizedResponse | InternalErrorResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppAcademyCourses>>, TError, TData>>, }
