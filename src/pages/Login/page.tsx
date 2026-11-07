@@ -6,6 +6,7 @@ import { pickData, errorMessage } from '../../api/helpers'
 import { useAuthStore } from '../../stores/auth-store'
 import { useProfileStore, type AdminProfile } from '../../stores/profile-store'
 import { useBrandRuntime } from '../../themeRuntime'
+import links from '../../configs/links'
 
 const UserIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -93,7 +94,7 @@ export default function Login() {
         <div className="mb-9 text-center">
           {brand.logoUrl && (
             <img
-              src={brand.logoUrl}
+              src={`${links.imageEndpoint}${brand.logoUrl}`}
               alt={brand.name}
               className="mx-auto mb-3 block h-14 max-w-[160px] object-contain"
             />

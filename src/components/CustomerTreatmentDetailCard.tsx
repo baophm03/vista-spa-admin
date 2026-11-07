@@ -4,8 +4,8 @@ import type { CustomerTreatment } from '@/api/models/customerTreatment'
 import type { PaymentLog } from '@/api/models/paymentLog'
 import type { SessionPhoto } from '@/api/models/sessionPhoto'
 import type { TreatmentSession } from '@/api/models/treatmentSession'
-import links from '@/configs/links'
 import { useBrandCurrency, useBrandDateTime } from '@/themeRuntime'
+import { fileSrc, resolveFileSrc, useFileUrlMap } from '@/hooks/useFileUrl'
 import useSessionStatusConfig from '@/hooks/useSessionStatusConfig'
 
 interface Props {
@@ -50,6 +50,8 @@ export default function CustomerTreatmentDetailCard({ treatment, sessions, payme
   const { format: money } = useBrandCurrency()
   const { formatDateTime } = useBrandDateTime()
   const sessionStatusConfig = useSessionStatusConfig()
+  const urlMap = useFileUrlMap()
+  const photoSrcOf = (photo: SessionPhoto) => fileSrc((photo as any).file) ?? resolveFileSrc(urlMap, (photo as any).file_id)
   const title = (treatment.package_snapshot?.name as string | undefined) || treatment.package_type?.name || 'Gói dịch vụ'
   const treatmentStatus = TREATMENT_STATUS[String(treatment.status ?? '').toUpperCase()] ?? { label: treatment.status || '—', color: 'default' }
   const paymentStatus = PAYMENT_STATUS[String(treatment.payment_status ?? '').toUpperCase()] ?? { label: treatment.payment_status || '—', color: 'default' }
@@ -130,8 +132,8 @@ export default function CustomerTreatmentDetailCard({ treatment, sessions, payme
       <Typography.Title level={5} className="mt-[18px]">Ảnh buổi điều trị</Typography.Title>
       {photos.length ? (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: 8 }}>
-          {photos.map((photo) => photo.url
-            ? <Image key={photo.id} width="100%" height="100%" style={{ aspectRatio: '1 / 1', objectFit: 'cover', borderRadius: 8, border: '1px solid var(--brand-border, #ECEFEA)' }} src={`${links.imageEndpoint}${photo.url}`} alt={photo.caption || 'Ảnh buổi điều trị'} />
+          {photos.map((photo) => photoSrcOf(photo)
+            ? <Image key={photo.id} width="100%" height="100%" style={{ aspectRatio: '1 / 1', objectFit: 'cover', borderRadius: 8, border: '1px solid var(--brand-border, #ECEFEA)' }} src={photoSrcOf(photo) ?? undefined} alt={photo.caption || 'Ảnh buổi điều trị'} />
             : <Tag key={photo.id}>{photo.caption || 'Ảnh buổi điều trị'} đã lưu</Tag>)}
         </div>
       ) : <Typography.Text type="secondary">Chưa có ảnh buổi điều trị.</Typography.Text>}
