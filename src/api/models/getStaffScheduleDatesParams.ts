@@ -6,11 +6,9 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type PostStaffSchedulesBody = {
-  staff_id?: string;
-  branch_id?: string;
-  weekday?: number;
-  weekdays?: number[];
-  shift_template_id?: string;
-  shift_template_ids?: string[];
+export type GetStaffScheduleDatesParams = {
+branch_id?: string;
+staff_id?: string;
+from_date?: string;
+to_date?: string;
 };

@@ -8,14 +8,14 @@ import type { Branch } from '@/api/models/branch'
 import { useCustomerProfileAccess, normalizeRole } from '@/utils/customerProfileAccess'
 import { useProfileStore } from '@/stores/profile-store'
 import type { ScheduleAccess, ScheduleStaff } from '../schedule/types'
-import WeeklyScheduleTab from '../schedule/WeeklyScheduleTab'
+import DateScheduleTab from '../schedule/DateScheduleTab'
 import ShiftCatalogTab from '../schedule/ShiftCatalogTab'
 import DayOffTab from '../schedule/DayOffTab'
 
 export default function StaffSchedule() {
   const profile = useProfileStore((s) => s.profile)
   const { isAdmin, isReceptionist, isTechnician } = useCustomerProfileAccess()
-  const [activeTab, setActiveTab] = useState('weekly')
+  const [activeTab, setActiveTab] = useState('dates')
   // Mobile (dưới breakpoint md): chuyển vùng nội dung bằng Select thay vì Tabs
   const isMobile = !Grid.useBreakpoint().md
 
@@ -68,13 +68,13 @@ export default function StaffSchedule() {
   )
 
   const items = [
-    { key: 'weekly', label: 'Lịch tuần', children: activeTab === 'weekly' ? <WeeklyScheduleTab {...shared} loadingShared={loadingShared} /> : null },
+    { key: 'dates', label: 'Lịch làm việc', children: activeTab === 'dates' ? <DateScheduleTab {...shared} loadingShared={loadingShared} /> : null },
     { key: 'shifts', label: 'Danh mục ca', children: activeTab === 'shifts' ? <ShiftCatalogTab {...shared} loadingShared={loadingShared} /> : null },
     { key: 'days-off', label: 'Ngày nghỉ', children: activeTab === 'days-off' ? <DayOffTab {...shared} loadingShared={loadingShared} /> : null },
   ]
 
   return <>
-    <PageTitle subtitle="Lịch làm việc của nhân viên theo tuần">Lịch làm việc KTV</PageTitle>
+    <PageTitle subtitle="Xếp lịch làm việc KTV theo từng ngày cụ thể">Lịch làm việc KTV</PageTitle>
     {isMobile ? (
       <>
         <Select

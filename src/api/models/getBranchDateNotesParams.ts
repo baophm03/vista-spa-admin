@@ -6,6 +6,8 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type DeleteStaffSchedulesIdParams = {
-confirm_future_appointments?: string;
+export type GetBranchDateNotesParams = {
+branch_id?: string;
+from_date?: string;
+to_date?: string;
 };

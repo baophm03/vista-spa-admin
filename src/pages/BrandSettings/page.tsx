@@ -224,7 +224,7 @@ export default function BrandSettings() {
                   <Col xs={24} lg={14}>
                     <Card title="Nhận diện thương hiệu">
                       <Form.Item name={['brand', 'name']} label="Tên thương hiệu" rules={[{ required: true, whitespace: true, message: 'Nhập tên thương hiệu' }, { max: 150, message: 'Tên tối đa 150 ký tự' }]}>
-                        <Input placeholder="NewSky Vista" maxLength={150} />
+                        <Input placeholder="NewSky Vista®" maxLength={150} />
                       </Form.Item>
                       <Form.Item label="Logo">
                         <Space align="start" size={16} wrap>

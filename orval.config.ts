@@ -27,7 +27,11 @@ const orvalConfig = defineConfig({
       }
     },
     input: {
-      target: `${links.apiEndpoint}/swagger/swagger-output.json`,
+      // Mặc định lấy swagger từ BE đang chạy; có thể trỏ vào file JSON tĩnh
+      // (sinh bằng `node lib/swagger/generate.js` ở vista-spa-be) qua ORVAL_TARGET
+      // khi không tiện bật server, ví dụ:
+      //   ORVAL_TARGET=../vista-spa-be/storage/swagger/swagger-output.json pnpm gen:api
+      target: process.env.ORVAL_TARGET || `${links.apiEndpoint}/swagger/swagger-output.json`,
       filters: {
         tags: undefined
       }

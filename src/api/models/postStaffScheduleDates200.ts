@@ -6,6 +6,6 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { Response } from './response';
-import type { PostStaffSchedules200AllOf } from './postStaffSchedules200AllOf';
+import type { PostStaffScheduleDates200AllOf } from './postStaffScheduleDates200AllOf';
 
-export type PostStaffSchedules200 = Response & PostStaffSchedules200AllOf;
+export type PostStaffScheduleDates200 = Response & PostStaffScheduleDates200AllOf;
