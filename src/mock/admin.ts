@@ -299,7 +299,7 @@ export const HEALTH_RECORDS: HealthRecord[] = [
 ]
 
 export const SITE_CONFIG = {
-  spa_name: 'NewSky Vista — Học viện Spa',
+  spa_name: 'NewSky Vista® — Học viện Spa',
   hotline: '0987 654 321',
   address: '123 Nguyễn Văn Trỗi, Q. Phú Nhuận, TP.HCM',
   open_hours: '08:00 - 21:00',

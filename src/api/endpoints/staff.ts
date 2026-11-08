@@ -33,33 +33,36 @@ import type {
   ConflictResponse,
   DeleteShiftTemplatesId200,
   DeleteStaffDaysOffId200,
-  DeleteStaffSchedulesId200,
-  DeleteStaffSchedulesIdBody,
-  DeleteStaffSchedulesIdParams,
+  DeleteStaffScheduleDatesId200,
+  DeleteStaffScheduleDatesIdParams,
   ForbiddenResponse,
+  GetBranchDateNotes200,
+  GetBranchDateNotesParams,
   GetShiftTemplates200,
   GetShiftTemplatesId200,
   GetShiftTemplatesParams,
   GetStaffDaysOff200,
   GetStaffDaysOffParams,
-  GetStaffSchedules200,
-  GetStaffSchedulesId200,
-  GetStaffSchedulesParams,
+  GetStaffScheduleDates200,
+  GetStaffScheduleDatesId200,
+  GetStaffScheduleDatesParams,
   InternalErrorResponse,
   NotFoundResponse,
+  PostBranchDateNotes200,
+  PostBranchDateNotesBody,
   PostShiftTemplates200,
   PostShiftTemplatesBody,
   PostStaffDaysOff200,
   PostStaffDaysOffBody,
-  PostStaffSchedules200,
-  PostStaffSchedulesBody,
+  PostStaffScheduleDates200,
+  PostStaffScheduleDatesBody,
   PutShiftTemplatesId200,
   PutShiftTemplatesIdBody,
   PutStaffDaysOffIdApprove200,
   PutStaffDaysOffIdReject200,
   PutStaffDaysOffIdRejectBody,
-  PutStaffSchedulesId200,
-  StaffSchedule,
+  PutStaffScheduleDatesId200,
+  PutStaffScheduleDatesIdBody,
   UnauthorizedResponse,
   UnprocessableEntityResponse
 } from '../models';
@@ -71,17 +74,17 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * GET `/staffSchedules/{id}` — work shifts. Requires permission `schedule.read`. Branch scope: users restricted to a single branch only see that branch's data.
- * @summary View work shift details
+ * GET `/staffScheduleDates/{id}` — date-specific work schedules. Requires permission `schedule.read`. Branch scope: users restricted to a single branch only see that branch's data.
+ * @summary View date-specific work schedule details
  */
-export const getStaffSchedulesId = (
+export const getStaffScheduleDatesId = (
     id: string,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<GetStaffSchedulesId200>(
-      {url: `/staffSchedules/${id}`, method: 'GET', signal
+      return customInstance<GetStaffScheduleDatesId200>(
+      {url: `/staffScheduleDates/${id}`, method: 'GET', signal
     },
       );
     }
@@ -89,75 +92,75 @@ export const getStaffSchedulesId = (
 
 
 
-export const getGetStaffSchedulesIdInfiniteQueryKey = (id?: string,) => {
+export const getGetStaffScheduleDatesIdInfiniteQueryKey = (id?: string,) => {
     return [
-    'infinite', `/staffSchedules/${id}`
+    'infinite', `/staffScheduleDates/${id}`
     ] as const;
     }
 
-export const getGetStaffSchedulesIdQueryKey = (id?: string,) => {
+export const getGetStaffScheduleDatesIdQueryKey = (id?: string,) => {
     return [
-    `/staffSchedules/${id}`
+    `/staffScheduleDates/${id}`
     ] as const;
     }
 
     
-export const getGetStaffSchedulesIdInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getStaffSchedulesId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffSchedulesId>>, TError, TData>>, }
+export const getGetStaffScheduleDatesIdInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getStaffScheduleDatesId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffScheduleDatesId>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetStaffSchedulesIdInfiniteQueryKey(id);
+  const queryKey =  queryOptions?.queryKey ?? getGetStaffScheduleDatesIdInfiniteQueryKey(id);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getStaffSchedulesId>>> = ({ signal }) => getStaffSchedulesId(id, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getStaffScheduleDatesId>>> = ({ signal }) => getStaffScheduleDatesId(id, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffSchedulesId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffScheduleDatesId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetStaffSchedulesIdInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getStaffSchedulesId>>>
-export type GetStaffSchedulesIdInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+export type GetStaffScheduleDatesIdInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getStaffScheduleDatesId>>>
+export type GetStaffScheduleDatesIdInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
 
 
-export function useGetStaffSchedulesIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffSchedulesId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffSchedulesId>>, TError, TData>> & Pick<
+export function useGetStaffScheduleDatesIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffScheduleDatesId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffScheduleDatesId>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getStaffSchedulesId>>,
+          Awaited<ReturnType<typeof getStaffScheduleDatesId>>,
           TError,
-          Awaited<ReturnType<typeof getStaffSchedulesId>>
+          Awaited<ReturnType<typeof getStaffScheduleDatesId>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetStaffSchedulesIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffSchedulesId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffSchedulesId>>, TError, TData>> & Pick<
+export function useGetStaffScheduleDatesIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffScheduleDatesId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffScheduleDatesId>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getStaffSchedulesId>>,
+          Awaited<ReturnType<typeof getStaffScheduleDatesId>>,
           TError,
-          Awaited<ReturnType<typeof getStaffSchedulesId>>
+          Awaited<ReturnType<typeof getStaffScheduleDatesId>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetStaffSchedulesIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffSchedulesId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffSchedulesId>>, TError, TData>>, }
+export function useGetStaffScheduleDatesIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffScheduleDatesId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffScheduleDatesId>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary View work shift details
+ * @summary View date-specific work schedule details
  */
 
-export function useGetStaffSchedulesIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffSchedulesId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffSchedulesId>>, TError, TData>>, }
+export function useGetStaffScheduleDatesIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffScheduleDatesId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffScheduleDatesId>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetStaffSchedulesIdInfiniteQueryOptions(id,options)
+  const queryOptions = getGetStaffScheduleDatesIdInfiniteQueryOptions(id,options)
 
   const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -167,14 +170,14 @@ export function useGetStaffSchedulesIdInfinite<TData = InfiniteData<Awaited<Retu
 }
 
 /**
- * @summary View work shift details
+ * @summary View date-specific work schedule details
  */
-export const prefetchGetStaffSchedulesIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getStaffSchedulesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffSchedulesId>>, TError, TData>>, }
+export const prefetchGetStaffScheduleDatesIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getStaffScheduleDatesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffScheduleDatesId>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetStaffSchedulesIdInfiniteQueryOptions(id,options)
+  const queryOptions = getGetStaffScheduleDatesIdInfiniteQueryOptions(id,options)
 
   await queryClient.prefetchInfiniteQuery(queryOptions);
 
@@ -183,62 +186,62 @@ export const prefetchGetStaffSchedulesIdInfiniteQuery = async <TData = Awaited<R
 
 
 
-export const getGetStaffSchedulesIdQueryOptions = <TData = Awaited<ReturnType<typeof getStaffSchedulesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffSchedulesId>>, TError, TData>>, }
+export const getGetStaffScheduleDatesIdQueryOptions = <TData = Awaited<ReturnType<typeof getStaffScheduleDatesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffScheduleDatesId>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetStaffSchedulesIdQueryKey(id);
+  const queryKey =  queryOptions?.queryKey ?? getGetStaffScheduleDatesIdQueryKey(id);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getStaffSchedulesId>>> = ({ signal }) => getStaffSchedulesId(id, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getStaffScheduleDatesId>>> = ({ signal }) => getStaffScheduleDatesId(id, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getStaffSchedulesId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getStaffScheduleDatesId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetStaffSchedulesIdQueryResult = NonNullable<Awaited<ReturnType<typeof getStaffSchedulesId>>>
-export type GetStaffSchedulesIdQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+export type GetStaffScheduleDatesIdQueryResult = NonNullable<Awaited<ReturnType<typeof getStaffScheduleDatesId>>>
+export type GetStaffScheduleDatesIdQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
 
 
-export function useGetStaffSchedulesId<TData = Awaited<ReturnType<typeof getStaffSchedulesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffSchedulesId>>, TError, TData>> & Pick<
+export function useGetStaffScheduleDatesId<TData = Awaited<ReturnType<typeof getStaffScheduleDatesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffScheduleDatesId>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getStaffSchedulesId>>,
+          Awaited<ReturnType<typeof getStaffScheduleDatesId>>,
           TError,
-          Awaited<ReturnType<typeof getStaffSchedulesId>>
+          Awaited<ReturnType<typeof getStaffScheduleDatesId>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetStaffSchedulesId<TData = Awaited<ReturnType<typeof getStaffSchedulesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffSchedulesId>>, TError, TData>> & Pick<
+export function useGetStaffScheduleDatesId<TData = Awaited<ReturnType<typeof getStaffScheduleDatesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffScheduleDatesId>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getStaffSchedulesId>>,
+          Awaited<ReturnType<typeof getStaffScheduleDatesId>>,
           TError,
-          Awaited<ReturnType<typeof getStaffSchedulesId>>
+          Awaited<ReturnType<typeof getStaffScheduleDatesId>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetStaffSchedulesId<TData = Awaited<ReturnType<typeof getStaffSchedulesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffSchedulesId>>, TError, TData>>, }
+export function useGetStaffScheduleDatesId<TData = Awaited<ReturnType<typeof getStaffScheduleDatesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffScheduleDatesId>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary View work shift details
+ * @summary View date-specific work schedule details
  */
 
-export function useGetStaffSchedulesId<TData = Awaited<ReturnType<typeof getStaffSchedulesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffSchedulesId>>, TError, TData>>, }
+export function useGetStaffScheduleDatesId<TData = Awaited<ReturnType<typeof getStaffScheduleDatesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffScheduleDatesId>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetStaffSchedulesIdQueryOptions(id,options)
+  const queryOptions = getGetStaffScheduleDatesIdQueryOptions(id,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -248,14 +251,14 @@ export function useGetStaffSchedulesId<TData = Awaited<ReturnType<typeof getStaf
 }
 
 /**
- * @summary View work shift details
+ * @summary View date-specific work schedule details
  */
-export const prefetchGetStaffSchedulesIdQuery = async <TData = Awaited<ReturnType<typeof getStaffSchedulesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffSchedulesId>>, TError, TData>>, }
+export const prefetchGetStaffScheduleDatesIdQuery = async <TData = Awaited<ReturnType<typeof getStaffScheduleDatesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffScheduleDatesId>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetStaffSchedulesIdQueryOptions(id,options)
+  const queryOptions = getGetStaffScheduleDatesIdQueryOptions(id,options)
 
   await queryClient.prefetchQuery(queryOptions);
 
@@ -265,30 +268,30 @@ export const prefetchGetStaffSchedulesIdQuery = async <TData = Awaited<ReturnTyp
 
 
 /**
- * PUT `/staffSchedules/{id}` — work shifts. Requires permission `schedule.update`. Branch scope: users restricted to a single branch only see that branch's data.
- * @summary Update a work shift
+ * PUT `/staffScheduleDates/{id}` — date-specific work schedules. Body fields: `work_date` (YYYY-MM-DD), `shift_template_id`, `note`, `is_active`. Requires permission `schedule.update`. Branch scope: users restricted to a single branch only see that branch's data.
+ * @summary Update a date-specific work schedule
  */
-export const putStaffSchedulesId = (
+export const putStaffScheduleDatesId = (
     id: string,
-    staffSchedule: StaffSchedule,
+    putStaffScheduleDatesIdBody: PutStaffScheduleDatesIdBody,
  ) => {
       
       
-      return customInstance<PutStaffSchedulesId200>(
-      {url: `/staffSchedules/${id}`, method: 'PUT',
+      return customInstance<PutStaffScheduleDatesId200>(
+      {url: `/staffScheduleDates/${id}`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
-      data: staffSchedule
+      data: putStaffScheduleDatesIdBody
     },
       );
     }
   
 
 
-export const getPutStaffSchedulesIdMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putStaffSchedulesId>>, TError,{id: string;data: StaffSchedule}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putStaffSchedulesId>>, TError,{id: string;data: StaffSchedule}, TContext> => {
+export const getPutStaffScheduleDatesIdMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putStaffScheduleDatesId>>, TError,{id: string;data: PutStaffScheduleDatesIdBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putStaffScheduleDatesId>>, TError,{id: string;data: PutStaffScheduleDatesIdBody}, TContext> => {
 
-const mutationKey = ['putStaffSchedulesId'];
+const mutationKey = ['putStaffScheduleDatesId'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -298,10 +301,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putStaffSchedulesId>>, {id: string;data: StaffSchedule}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putStaffScheduleDatesId>>, {id: string;data: PutStaffScheduleDatesIdBody}> = (props) => {
           const {id,data} = props ?? {};
 
-          return  putStaffSchedulesId(id,data,)
+          return  putStaffScheduleDatesId(id,data,)
         }
 
         
@@ -309,41 +312,38 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PutStaffSchedulesIdMutationResult = NonNullable<Awaited<ReturnType<typeof putStaffSchedulesId>>>
-    export type PutStaffSchedulesIdMutationBody = StaffSchedule
-    export type PutStaffSchedulesIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+    export type PutStaffScheduleDatesIdMutationResult = NonNullable<Awaited<ReturnType<typeof putStaffScheduleDatesId>>>
+    export type PutStaffScheduleDatesIdMutationBody = PutStaffScheduleDatesIdBody
+    export type PutStaffScheduleDatesIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Update a work shift
+ * @summary Update a date-specific work schedule
  */
-export const usePutStaffSchedulesId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putStaffSchedulesId>>, TError,{id: string;data: StaffSchedule}, TContext>, }
+export const usePutStaffScheduleDatesId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putStaffScheduleDatesId>>, TError,{id: string;data: PutStaffScheduleDatesIdBody}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putStaffSchedulesId>>,
+        Awaited<ReturnType<typeof putStaffScheduleDatesId>>,
         TError,
-        {id: string;data: StaffSchedule},
+        {id: string;data: PutStaffScheduleDatesIdBody},
         TContext
       > => {
 
-      const mutationOptions = getPutStaffSchedulesIdMutationOptions(options);
+      const mutationOptions = getPutStaffScheduleDatesIdMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * DELETE `/staffSchedules/{id}` — work shifts. Requires permission `schedule.delete`. Branch scope: users restricted to a single branch only see that branch's data. Query parameters: `confirm_future_appointments`. Body fields: `confirm_future_appointments`.
- * @summary Delete a work shift
+ * DELETE `/staffScheduleDates/{id}` — date-specific work schedules. If appointments exist for that staff on that date inside the shift window, returns `409 FUTURE_APPOINTMENTS_EXIST` with `details.affected_appointments` unless `confirm_future_appointments=true`; confirmed deletion keeps the existing appointments. Requires permission `schedule.delete`. Branch scope: users restricted to a single branch only see that branch's data. Query parameters: `confirm_future_appointments`.
+ * @summary Delete a date-specific work schedule
  */
-export const deleteStaffSchedulesId = (
+export const deleteStaffScheduleDatesId = (
     id: string,
-    deleteStaffSchedulesIdBody: DeleteStaffSchedulesIdBody,
-    params?: DeleteStaffSchedulesIdParams,
+    params?: DeleteStaffScheduleDatesIdParams,
  ) => {
       
       
-      return customInstance<DeleteStaffSchedulesId200>(
-      {url: `/staffSchedules/${id}`, method: 'DELETE',
-      headers: {'Content-Type': 'application/json', },
-      data: deleteStaffSchedulesIdBody,
+      return customInstance<DeleteStaffScheduleDatesId200>(
+      {url: `/staffScheduleDates/${id}`, method: 'DELETE',
         params
     },
       );
@@ -351,11 +351,11 @@ export const deleteStaffSchedulesId = (
   
 
 
-export const getDeleteStaffSchedulesIdMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteStaffSchedulesId>>, TError,{id: string;data: DeleteStaffSchedulesIdBody;params?: DeleteStaffSchedulesIdParams}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof deleteStaffSchedulesId>>, TError,{id: string;data: DeleteStaffSchedulesIdBody;params?: DeleteStaffSchedulesIdParams}, TContext> => {
+export const getDeleteStaffScheduleDatesIdMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteStaffScheduleDatesId>>, TError,{id: string;params?: DeleteStaffScheduleDatesIdParams}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteStaffScheduleDatesId>>, TError,{id: string;params?: DeleteStaffScheduleDatesIdParams}, TContext> => {
 
-const mutationKey = ['deleteStaffSchedulesId'];
+const mutationKey = ['deleteStaffScheduleDatesId'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -365,10 +365,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteStaffSchedulesId>>, {id: string;data: DeleteStaffSchedulesIdBody;params?: DeleteStaffSchedulesIdParams}> = (props) => {
-          const {id,data,params} = props ?? {};
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteStaffScheduleDatesId>>, {id: string;params?: DeleteStaffScheduleDatesIdParams}> = (props) => {
+          const {id,params} = props ?? {};
 
-          return  deleteStaffSchedulesId(id,data,params,)
+          return  deleteStaffScheduleDatesId(id,params,)
         }
 
         
@@ -376,38 +376,38 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type DeleteStaffSchedulesIdMutationResult = NonNullable<Awaited<ReturnType<typeof deleteStaffSchedulesId>>>
-    export type DeleteStaffSchedulesIdMutationBody = DeleteStaffSchedulesIdBody
-    export type DeleteStaffSchedulesIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+    export type DeleteStaffScheduleDatesIdMutationResult = NonNullable<Awaited<ReturnType<typeof deleteStaffScheduleDatesId>>>
+    
+    export type DeleteStaffScheduleDatesIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Delete a work shift
+ * @summary Delete a date-specific work schedule
  */
-export const useDeleteStaffSchedulesId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteStaffSchedulesId>>, TError,{id: string;data: DeleteStaffSchedulesIdBody;params?: DeleteStaffSchedulesIdParams}, TContext>, }
+export const useDeleteStaffScheduleDatesId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteStaffScheduleDatesId>>, TError,{id: string;params?: DeleteStaffScheduleDatesIdParams}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteStaffSchedulesId>>,
+        Awaited<ReturnType<typeof deleteStaffScheduleDatesId>>,
         TError,
-        {id: string;data: DeleteStaffSchedulesIdBody;params?: DeleteStaffSchedulesIdParams},
+        {id: string;params?: DeleteStaffScheduleDatesIdParams},
         TContext
       > => {
 
-      const mutationOptions = getDeleteStaffSchedulesIdMutationOptions(options);
+      const mutationOptions = getDeleteStaffScheduleDatesIdMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **SC-01** — GET /staff-schedules. Requires permission `schedule.read`. Branch scope: users restricted to a single branch only see that branch's data. Query parameters: `branch_id`, `staff_id`, `weekday`.
- * @summary List work shifts
+ * **SC-05** — GET /staffScheduleDates. Work schedules registered for specific dates (extra shifts on top of the recurring weekly schedule). Requires permission `schedule.read`. Branch scope: users restricted to a single branch only see that branch's data. Query parameters: `branch_id`, `staff_id`, `from_date`, `to_date` (YYYY-MM-DD). Technicians only see their own schedules.
+ * @summary List date-specific work schedules
  */
-export const getStaffSchedules = (
-    params?: GetStaffSchedulesParams,
+export const getStaffScheduleDates = (
+    params?: GetStaffScheduleDatesParams,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<GetStaffSchedules200>(
-      {url: `/staffSchedules`, method: 'GET',
+      return customInstance<GetStaffScheduleDates200>(
+      {url: `/staffScheduleDates`, method: 'GET',
         params, signal
     },
       );
@@ -416,75 +416,75 @@ export const getStaffSchedules = (
 
 
 
-export const getGetStaffSchedulesInfiniteQueryKey = (params?: GetStaffSchedulesParams,) => {
+export const getGetStaffScheduleDatesInfiniteQueryKey = (params?: GetStaffScheduleDatesParams,) => {
     return [
-    'infinite', `/staffSchedules`, ...(params ? [params]: [])
+    'infinite', `/staffScheduleDates`, ...(params ? [params]: [])
     ] as const;
     }
 
-export const getGetStaffSchedulesQueryKey = (params?: GetStaffSchedulesParams,) => {
+export const getGetStaffScheduleDatesQueryKey = (params?: GetStaffScheduleDatesParams,) => {
     return [
-    `/staffSchedules`, ...(params ? [params]: [])
+    `/staffScheduleDates`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetStaffSchedulesInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getStaffSchedules>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetStaffSchedulesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffSchedules>>, TError, TData>>, }
+export const getGetStaffScheduleDatesInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getStaffScheduleDates>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetStaffScheduleDatesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffScheduleDates>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetStaffSchedulesInfiniteQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getGetStaffScheduleDatesInfiniteQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getStaffSchedules>>> = ({ signal }) => getStaffSchedules(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getStaffScheduleDates>>> = ({ signal }) => getStaffScheduleDates(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffSchedules>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffScheduleDates>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetStaffSchedulesInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getStaffSchedules>>>
-export type GetStaffSchedulesInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+export type GetStaffScheduleDatesInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getStaffScheduleDates>>>
+export type GetStaffScheduleDatesInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
 
 
-export function useGetStaffSchedulesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffSchedules>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params: undefined |  GetStaffSchedulesParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffSchedules>>, TError, TData>> & Pick<
+export function useGetStaffScheduleDatesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffScheduleDates>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetStaffScheduleDatesParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffScheduleDates>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getStaffSchedules>>,
+          Awaited<ReturnType<typeof getStaffScheduleDates>>,
           TError,
-          Awaited<ReturnType<typeof getStaffSchedules>>
+          Awaited<ReturnType<typeof getStaffScheduleDates>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetStaffSchedulesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffSchedules>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetStaffSchedulesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffSchedules>>, TError, TData>> & Pick<
+export function useGetStaffScheduleDatesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffScheduleDates>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetStaffScheduleDatesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffScheduleDates>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getStaffSchedules>>,
+          Awaited<ReturnType<typeof getStaffScheduleDates>>,
           TError,
-          Awaited<ReturnType<typeof getStaffSchedules>>
+          Awaited<ReturnType<typeof getStaffScheduleDates>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetStaffSchedulesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffSchedules>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetStaffSchedulesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffSchedules>>, TError, TData>>, }
+export function useGetStaffScheduleDatesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffScheduleDates>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetStaffScheduleDatesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffScheduleDates>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary List work shifts
+ * @summary List date-specific work schedules
  */
 
-export function useGetStaffSchedulesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffSchedules>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetStaffSchedulesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffSchedules>>, TError, TData>>, }
+export function useGetStaffScheduleDatesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffScheduleDates>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetStaffScheduleDatesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffScheduleDates>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetStaffSchedulesInfiniteQueryOptions(params,options)
+  const queryOptions = getGetStaffScheduleDatesInfiniteQueryOptions(params,options)
 
   const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -494,14 +494,14 @@ export function useGetStaffSchedulesInfinite<TData = InfiniteData<Awaited<Return
 }
 
 /**
- * @summary List work shifts
+ * @summary List date-specific work schedules
  */
-export const prefetchGetStaffSchedulesInfiniteQuery = async <TData = Awaited<ReturnType<typeof getStaffSchedules>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient, params?: GetStaffSchedulesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffSchedules>>, TError, TData>>, }
+export const prefetchGetStaffScheduleDatesInfiniteQuery = async <TData = Awaited<ReturnType<typeof getStaffScheduleDates>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetStaffScheduleDatesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffScheduleDates>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetStaffSchedulesInfiniteQueryOptions(params,options)
+  const queryOptions = getGetStaffScheduleDatesInfiniteQueryOptions(params,options)
 
   await queryClient.prefetchInfiniteQuery(queryOptions);
 
@@ -510,62 +510,62 @@ export const prefetchGetStaffSchedulesInfiniteQuery = async <TData = Awaited<Ret
 
 
 
-export const getGetStaffSchedulesQueryOptions = <TData = Awaited<ReturnType<typeof getStaffSchedules>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetStaffSchedulesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffSchedules>>, TError, TData>>, }
+export const getGetStaffScheduleDatesQueryOptions = <TData = Awaited<ReturnType<typeof getStaffScheduleDates>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetStaffScheduleDatesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffScheduleDates>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetStaffSchedulesQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getGetStaffScheduleDatesQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getStaffSchedules>>> = ({ signal }) => getStaffSchedules(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getStaffScheduleDates>>> = ({ signal }) => getStaffScheduleDates(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getStaffSchedules>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getStaffScheduleDates>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetStaffSchedulesQueryResult = NonNullable<Awaited<ReturnType<typeof getStaffSchedules>>>
-export type GetStaffSchedulesQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+export type GetStaffScheduleDatesQueryResult = NonNullable<Awaited<ReturnType<typeof getStaffScheduleDates>>>
+export type GetStaffScheduleDatesQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
 
 
-export function useGetStaffSchedules<TData = Awaited<ReturnType<typeof getStaffSchedules>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params: undefined |  GetStaffSchedulesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffSchedules>>, TError, TData>> & Pick<
+export function useGetStaffScheduleDates<TData = Awaited<ReturnType<typeof getStaffScheduleDates>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetStaffScheduleDatesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffScheduleDates>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getStaffSchedules>>,
+          Awaited<ReturnType<typeof getStaffScheduleDates>>,
           TError,
-          Awaited<ReturnType<typeof getStaffSchedules>>
+          Awaited<ReturnType<typeof getStaffScheduleDates>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetStaffSchedules<TData = Awaited<ReturnType<typeof getStaffSchedules>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetStaffSchedulesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffSchedules>>, TError, TData>> & Pick<
+export function useGetStaffScheduleDates<TData = Awaited<ReturnType<typeof getStaffScheduleDates>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetStaffScheduleDatesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffScheduleDates>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getStaffSchedules>>,
+          Awaited<ReturnType<typeof getStaffScheduleDates>>,
           TError,
-          Awaited<ReturnType<typeof getStaffSchedules>>
+          Awaited<ReturnType<typeof getStaffScheduleDates>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetStaffSchedules<TData = Awaited<ReturnType<typeof getStaffSchedules>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetStaffSchedulesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffSchedules>>, TError, TData>>, }
+export function useGetStaffScheduleDates<TData = Awaited<ReturnType<typeof getStaffScheduleDates>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetStaffScheduleDatesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffScheduleDates>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary List work shifts
+ * @summary List date-specific work schedules
  */
 
-export function useGetStaffSchedules<TData = Awaited<ReturnType<typeof getStaffSchedules>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetStaffSchedulesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffSchedules>>, TError, TData>>, }
+export function useGetStaffScheduleDates<TData = Awaited<ReturnType<typeof getStaffScheduleDates>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetStaffScheduleDatesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffScheduleDates>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetStaffSchedulesQueryOptions(params,options)
+  const queryOptions = getGetStaffScheduleDatesQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -575,14 +575,14 @@ export function useGetStaffSchedules<TData = Awaited<ReturnType<typeof getStaffS
 }
 
 /**
- * @summary List work shifts
+ * @summary List date-specific work schedules
  */
-export const prefetchGetStaffSchedulesQuery = async <TData = Awaited<ReturnType<typeof getStaffSchedules>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient, params?: GetStaffSchedulesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffSchedules>>, TError, TData>>, }
+export const prefetchGetStaffScheduleDatesQuery = async <TData = Awaited<ReturnType<typeof getStaffScheduleDates>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetStaffScheduleDatesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffScheduleDates>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetStaffSchedulesQueryOptions(params,options)
+  const queryOptions = getGetStaffScheduleDatesQueryOptions(params,options)
 
   await queryClient.prefetchQuery(queryOptions);
 
@@ -592,30 +592,30 @@ export const prefetchGetStaffSchedulesQuery = async <TData = Awaited<ReturnType<
 
 
 /**
- * **SC-03** — POST /staff-schedules (unique staff+weekday+shift). Requires permission `schedule.create`. Branch scope: users restricted to a single branch only see that branch's data. Body fields: `staff_id`, `branch_id`, `weekday`, `shift_template_id`. Supports bulk scheduling: pass `weekdays` (array 1..7) and `shift_template_ids` (array of UUIDs) to create a cross product of multiple days × multiple shifts in a single call; existing combinations are skipped, and the result includes `meta.created_count` / `meta.skipped_count`.
- * @summary Create new work shifts (single or bulk)
+ * **SC-06** — POST /staffScheduleDates (unique staff+work_date+shift). Adds shifts for specific dates on top of the recurring weekly schedule. Requires permission `schedule.create`. Branch scope: users restricted to a single branch only see that branch's data. Body fields: `staff_id`, `branch_id`, `dates` (array of YYYY-MM-DD), `shift_template_ids` (array of UUIDs), `note`. Creates the cross product dates × shifts; existing combinations are skipped, and the result includes `meta.created_count` / `meta.skipped_count`.
+ * @summary Create date-specific work schedules (single or bulk)
  */
-export const postStaffSchedules = (
-    postStaffSchedulesBody: PostStaffSchedulesBody,
+export const postStaffScheduleDates = (
+    postStaffScheduleDatesBody: PostStaffScheduleDatesBody,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<PostStaffSchedules200>(
-      {url: `/staffSchedules`, method: 'POST',
+      return customInstance<PostStaffScheduleDates200>(
+      {url: `/staffScheduleDates`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: postStaffSchedulesBody, signal
+      data: postStaffScheduleDatesBody, signal
     },
       );
     }
   
 
 
-export const getPostStaffSchedulesMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postStaffSchedules>>, TError,{data: PostStaffSchedulesBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postStaffSchedules>>, TError,{data: PostStaffSchedulesBody}, TContext> => {
+export const getPostStaffScheduleDatesMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postStaffScheduleDates>>, TError,{data: PostStaffScheduleDatesBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postStaffScheduleDates>>, TError,{data: PostStaffScheduleDatesBody}, TContext> => {
 
-const mutationKey = ['postStaffSchedules'];
+const mutationKey = ['postStaffScheduleDates'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -625,10 +625,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postStaffSchedules>>, {data: PostStaffSchedulesBody}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postStaffScheduleDates>>, {data: PostStaffScheduleDatesBody}> = (props) => {
           const {data} = props ?? {};
 
-          return  postStaffSchedules(data,)
+          return  postStaffScheduleDates(data,)
         }
 
         
@@ -636,23 +636,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PostStaffSchedulesMutationResult = NonNullable<Awaited<ReturnType<typeof postStaffSchedules>>>
-    export type PostStaffSchedulesMutationBody = PostStaffSchedulesBody
-    export type PostStaffSchedulesMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+    export type PostStaffScheduleDatesMutationResult = NonNullable<Awaited<ReturnType<typeof postStaffScheduleDates>>>
+    export type PostStaffScheduleDatesMutationBody = PostStaffScheduleDatesBody
+    export type PostStaffScheduleDatesMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Create new work shifts (single or bulk)
+ * @summary Create date-specific work schedules (single or bulk)
  */
-export const usePostStaffSchedules = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postStaffSchedules>>, TError,{data: PostStaffSchedulesBody}, TContext>, }
+export const usePostStaffScheduleDates = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postStaffScheduleDates>>, TError,{data: PostStaffScheduleDatesBody}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postStaffSchedules>>,
+        Awaited<ReturnType<typeof postStaffScheduleDates>>,
         TError,
-        {data: PostStaffSchedulesBody},
+        {data: PostStaffScheduleDatesBody},
         TContext
       > => {
 
-      const mutationOptions = getPostStaffSchedulesMutationOptions(options);
+      const mutationOptions = getPostStaffScheduleDatesMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -1683,6 +1683,266 @@ export const usePostShiftTemplates = <TError = UnauthorizedResponse | ForbiddenR
       > => {
 
       const mutationOptions = getPostShiftTemplatesMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * **SC-07** — GET /branchDateNotes. Free-text notes attached to specific dates of a branch (holidays, events, meetings) shown on the date-schedule calendar. Requires permission `schedule.read`. Branch scope: users restricted to a single branch only see that branch's notes. Query parameters: `branch_id`, `from_date`, `to_date` (YYYY-MM-DD).
+ * @summary List date notes of branches
+ */
+export const getBranchDateNotes = (
+    params?: GetBranchDateNotesParams,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetBranchDateNotes200>(
+      {url: `/branchDateNotes`, method: 'GET',
+        params, signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetBranchDateNotesInfiniteQueryKey = (params?: GetBranchDateNotesParams,) => {
+    return [
+    'infinite', `/branchDateNotes`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+export const getGetBranchDateNotesQueryKey = (params?: GetBranchDateNotesParams,) => {
+    return [
+    `/branchDateNotes`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getGetBranchDateNotesInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getBranchDateNotes>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetBranchDateNotesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranchDateNotes>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetBranchDateNotesInfiniteQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getBranchDateNotes>>> = ({ signal }) => getBranchDateNotes(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranchDateNotes>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetBranchDateNotesInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getBranchDateNotes>>>
+export type GetBranchDateNotesInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+
+
+export function useGetBranchDateNotesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getBranchDateNotes>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetBranchDateNotesParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranchDateNotes>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getBranchDateNotes>>,
+          TError,
+          Awaited<ReturnType<typeof getBranchDateNotes>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetBranchDateNotesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getBranchDateNotes>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetBranchDateNotesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranchDateNotes>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getBranchDateNotes>>,
+          TError,
+          Awaited<ReturnType<typeof getBranchDateNotes>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetBranchDateNotesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getBranchDateNotes>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetBranchDateNotesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranchDateNotes>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List date notes of branches
+ */
+
+export function useGetBranchDateNotesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getBranchDateNotes>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetBranchDateNotesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranchDateNotes>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetBranchDateNotesInfiniteQueryOptions(params,options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary List date notes of branches
+ */
+export const prefetchGetBranchDateNotesInfiniteQuery = async <TData = Awaited<ReturnType<typeof getBranchDateNotes>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetBranchDateNotesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranchDateNotes>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetBranchDateNotesInfiniteQueryOptions(params,options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetBranchDateNotesQueryOptions = <TData = Awaited<ReturnType<typeof getBranchDateNotes>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetBranchDateNotesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranchDateNotes>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetBranchDateNotesQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getBranchDateNotes>>> = ({ signal }) => getBranchDateNotes(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getBranchDateNotes>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetBranchDateNotesQueryResult = NonNullable<Awaited<ReturnType<typeof getBranchDateNotes>>>
+export type GetBranchDateNotesQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+
+
+export function useGetBranchDateNotes<TData = Awaited<ReturnType<typeof getBranchDateNotes>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetBranchDateNotesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranchDateNotes>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getBranchDateNotes>>,
+          TError,
+          Awaited<ReturnType<typeof getBranchDateNotes>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetBranchDateNotes<TData = Awaited<ReturnType<typeof getBranchDateNotes>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetBranchDateNotesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranchDateNotes>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getBranchDateNotes>>,
+          TError,
+          Awaited<ReturnType<typeof getBranchDateNotes>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetBranchDateNotes<TData = Awaited<ReturnType<typeof getBranchDateNotes>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetBranchDateNotesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranchDateNotes>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List date notes of branches
+ */
+
+export function useGetBranchDateNotes<TData = Awaited<ReturnType<typeof getBranchDateNotes>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetBranchDateNotesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranchDateNotes>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetBranchDateNotesQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary List date notes of branches
+ */
+export const prefetchGetBranchDateNotesQuery = async <TData = Awaited<ReturnType<typeof getBranchDateNotes>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetBranchDateNotesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranchDateNotes>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetBranchDateNotesQueryOptions(params,options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * **SC-08** — POST /branchDateNotes. Creates or updates the note for one (branch, date); an empty/whitespace `note` deletes the row. Requires permission `schedule.create`. Branch scope: users restricted to a single branch only operate on that branch's notes. Body fields: `branch_id`, `note_date` (YYYY-MM-DD), `note`.
+ * @summary Upsert a branch date note
+ */
+export const postBranchDateNotes = (
+    postBranchDateNotesBody: PostBranchDateNotesBody,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<PostBranchDateNotes200>(
+      {url: `/branchDateNotes`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: postBranchDateNotesBody, signal
+    },
+      );
+    }
+  
+
+
+export const getPostBranchDateNotesMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postBranchDateNotes>>, TError,{data: PostBranchDateNotesBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postBranchDateNotes>>, TError,{data: PostBranchDateNotesBody}, TContext> => {
+
+const mutationKey = ['postBranchDateNotes'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postBranchDateNotes>>, {data: PostBranchDateNotesBody}> = (props) => {
+          const {data} = props ?? {};
+
+          return  postBranchDateNotes(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostBranchDateNotesMutationResult = NonNullable<Awaited<ReturnType<typeof postBranchDateNotes>>>
+    export type PostBranchDateNotesMutationBody = PostBranchDateNotesBody
+    export type PostBranchDateNotesMutationError = UnauthorizedResponse | ForbiddenResponse | UnprocessableEntityResponse | InternalErrorResponse
+
+    /**
+ * @summary Upsert a branch date note
+ */
+export const usePostBranchDateNotes = <TError = UnauthorizedResponse | ForbiddenResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postBranchDateNotes>>, TError,{data: PostBranchDateNotesBody}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postBranchDateNotes>>,
+        TError,
+        {data: PostBranchDateNotesBody},
+        TContext
+      > => {
+
+      const mutationOptions = getPostBranchDateNotesMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

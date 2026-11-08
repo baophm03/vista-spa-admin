@@ -17,9 +17,9 @@ import {
   putStaffDaysOffIdReject,
   useGetShiftTemplates,
   useGetStaffDaysOff,
-  useGetStaffSchedules,
+  useGetStaffScheduleDates,
 } from '@/api/endpoints/staff'
-import type { StaffDayOff, StaffSchedule, ShiftTemplate } from './types'
+import type { StaffDayOff, StaffScheduleDate, ShiftTemplate } from './types'
 import type { SchedulePageData } from './types'
 import { staffLabel } from './types'
 import DayOffFormModal from './components/DayOffFormModal'
@@ -108,17 +108,19 @@ export default function DayOffTab({ branches, staff, access, loadingShared }: Pr
     .filter(Boolean)
     .join(' · ')
 
-  // Gợi ý ca mà KTV được xếp trong ngày nghỉ đã chọn
-  const schedulesQuery = useGetStaffSchedules(
-    selectedStaff ? { staff_id: selectedStaff } : undefined,
+  // Gợi ý ca mà KTV được xếp trong ngày nghỉ đã chọn (lịch 100% theo ngày cụ thể)
+  const schedulesQuery = useGetStaffScheduleDates(
+    selectedStaff && selectedDate
+      ? { staff_id: selectedStaff, from_date: selectedDate.format('YYYY-MM-DD'), to_date: selectedDate.format('YYYY-MM-DD') }
+      : undefined,
     { query: { enabled: !!selectedStaff && !!selectedDate } },
   )
-  const staffSchedules = (pickData<StaffSchedule[] | undefined>(schedulesQuery.data) ?? []) as StaffSchedule[]
+  const staffSchedules = (pickData<StaffScheduleDate[] | undefined>(schedulesQuery.data) ?? []) as StaffScheduleDate[]
 
   const scheduledTemplates = useMemo(() => {
     if (!selectedStaff || !selectedDate) return []
-    const weekday = selectedDate.day() === 0 ? 7 : selectedDate.day()
-    const ids = new Set(staffSchedules.filter((schedule) => schedule.weekday === weekday && schedule.is_active !== false).map((schedule) => schedule.shift_template_id))
+    const iso = selectedDate.format('YYYY-MM-DD')
+    const ids = new Set(staffSchedules.filter((schedule) => schedule.work_date?.slice(0, 10) === iso && schedule.is_active !== false).map((schedule) => schedule.shift_template_id))
     return templates.filter((template) => ids.has(template.id) && template.is_active !== false)
   }, [selectedStaff, selectedDate, staffSchedules, templates])
 

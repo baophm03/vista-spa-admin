@@ -34,7 +34,7 @@ export const VARIABLE_LABELS: Record<string, string> = {
 
 export const PREVIEW_VALUES: Record<string, string> = {
   customer_name: 'Nguyễn Minh Anh', appt_date: '05/11/2026', appt_time: '09:00', service_name: 'Peel da sinh học',
-  branch_name: 'NewSky Vista', rank_name: 'Vàng', progress_percent: '90', remaining_amount: '1.000.000 ₫',
+  branch_name: 'NewSky Vista®', rank_name: 'Vàng', progress_percent: '90', remaining_amount: '1.000.000 ₫',
   session_date: '05/11/2026', session_time: '09:00', staff_name: 'Nguyễn Minh Anh', prize_name: 'Giảm 50.000 ₫',
   content_title: 'Chăm sóc da mùa hanh khô', content_summary: 'Khám phá các bước chăm sóc da phù hợp trong mùa hanh khô.',
 }

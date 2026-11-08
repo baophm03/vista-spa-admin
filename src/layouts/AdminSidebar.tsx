@@ -68,8 +68,8 @@ function SidebarContent({
         )}
         {!collapsed && (
           <div className="leading-[1.2] whitespace-nowrap">
-            <div className="text-[15px] font-bold text-[var(--brand-dark)]">{brand.name}</div>
             <div className="text-[11px] text-[#A9ADB2]">Học viện Spa</div>
+            <div className="text-[15px] font-bold text-[var(--brand-dark)]">{brand.name}</div>
           </div>
         )}
       </div>

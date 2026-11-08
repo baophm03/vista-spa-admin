@@ -1,6 +1,6 @@
 ﻿import type { Branch } from '@/api/models/branch'
 import type { StaffDayOff } from '@/api/models/staffDayOff'
-import type { StaffSchedule } from '@/api/models/staffSchedule'
+import type { StaffScheduleDate } from '@/api/models/staffScheduleDate'
 import type { ShiftTemplate } from '@/api/models/shiftTemplate'
 
 export interface ScheduleStaff {
@@ -32,7 +32,7 @@ export interface SchedulePageData {
   access: ScheduleAccess
 }
 
-export type { StaffDayOff, StaffSchedule, ShiftTemplate }
+export type { StaffDayOff, StaffScheduleDate, ShiftTemplate }
 
 export function staffLabel(staff?: ScheduleStaff | { id: string; zalo_name?: string; email?: string; phone_number?: string }): string {
   if (!staff) return 'KTV';
