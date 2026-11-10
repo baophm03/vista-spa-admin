@@ -7,14 +7,14 @@ import { customInstance } from '@/api/mutator/custom-instance'
 import CustomFieldFormItems, { normalizeCustomFieldValues, type CustomFieldDefWithOptions } from '@/components/CustomFieldFormItems'
 import {
   deleteSessionsId,
-  getCustomerTreatmentsIdAvailableSlots,
-  getCustomerTreatmentsIdSessions,
+  getTreatmentCustomersIdAvailableSlots,
+  getTreatmentCustomersIdSessions,
   getSessionsIdPhotos,
   putSessionsId,
   putSessionsIdComplete,
   putSessionsIdDone,
   putSessionsIdStart,
-} from '@/api/endpoints/customer-treatments'
+} from '@/api/endpoints/treatment-customers'
 import { useBrandDateTime } from '@/themeRuntime'
 import useSessionStatusConfig from '@/hooks/useSessionStatusConfig'
 import { useAbility } from '@casl/react'
@@ -82,7 +82,7 @@ export default function SessionTimeline({
     const sequence = ++sessionSlotSequence.current
     setSessionSlotsLoading(true)
     try {
-      const response = await getCustomerTreatmentsIdAvailableSlots(ctId, {
+      const response = await getTreatmentCustomersIdAvailableSlots(ctId, {
         date: date.format('YYYY-MM-DD'),
         exclude_session_id: session.id,
       })
@@ -147,7 +147,7 @@ export default function SessionTimeline({
     const sequence = ++loadSequence.current
     if (!hasLoadedSessions.current) setLoading(true)
     try {
-      const response = await getCustomerTreatmentsIdSessions(ctId)
+      const response = await getTreatmentCustomersIdSessions(ctId)
       if (sequence !== loadSequence.current) return
       const rows = (pickData<SessionRow[] | undefined>(response) ?? []) as SessionRow[]
       setSessions(rows)

@@ -86,7 +86,6 @@ export default function AppointmentDetailModal({
           <Typography.Text><strong>Dịch vụ:</strong> {selectedAppointment.service?.title || (selectedAppointment.customer_treatment_id ? 'Buổi liệu trình' : '—')}{!selectedAppointment.customer_treatment_id && selectedAppointment.service && ' · Dịch vụ lẻ'}</Typography.Text>
           {treatmentPackageName(selectedAppointment) && <Typography.Text><strong>Gói liệu trình:</strong> {treatmentPackageName(selectedAppointment)}</Typography.Text>}
           {treatmentCode(selectedAppointment) && <Typography.Text><strong>Mã gói:</strong> {treatmentCode(selectedAppointment)}</Typography.Text>}
-          <Typography.Text><strong>KTV:</strong> {selectedAppointment.staff?.zalo_name || 'Chưa gán'}</Typography.Text>
           <Typography.Text><strong>Thời gian:</strong> {dayjs(selectedAppointment.appt_date).format('DD/MM/YYYY')} {selectedAppointment.start_time?.slice(0, 5)}</Typography.Text>
           <Typography.Text><strong>Trạng thái:</strong> <Tag color={STATUS_META[selectedAppointment.status as AppointmentStatus]?.color}>{STATUS_META[selectedAppointment.status as AppointmentStatus]?.label || selectedAppointment.status}</Tag></Typography.Text>
           {selectedAppointment.note && <Typography.Text><strong>Ghi chú:</strong> {selectedAppointment.note}</Typography.Text>}
@@ -103,8 +102,8 @@ export default function AppointmentDetailModal({
               <Alert
                 type="info"
                 showIcon
-                message="Dịch vụ lẻ — không trừ buổi liệu trình"
-                description="Hồ sơ làm dịch vụ, ảnh và thanh toán được quản lý trong mục Liệu trình của khách → Dịch vụ lẻ."
+                message="Dịch vụ KH — không gắn gói liệu trình"
+                description="Hồ sơ làm dịch vụ, ảnh và thanh toán được quản lý trong mục Dịch vụ KH."
                 style={{ marginBottom: 12 }}
               />
               <Button type="primary" icon={<EditOutlined />} onClick={() => navigate(`/standalone-services?appointment_id=${encodeURIComponent(selectedAppointment.id)}`)}>

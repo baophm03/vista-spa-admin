@@ -1,27 +1,35 @@
 import { useRef, useState } from 'react'
-import { Button, Col, Form, Input, Modal, Row, Select, Space, Table, Tag, Typography, message } from 'antd'
-import { ClockCircleOutlined, CrownOutlined, EditOutlined, EyeOutlined, SearchOutlined, SyncOutlined } from '@ant-design/icons'
-import { useNavigate } from 'react-router-dom'
+import { Button, Col, Form, Input, Modal, Row, Select, Space, Table, Tabs, Tag, Typography, message } from 'antd'
+import { ArrowDownOutlined, ArrowUpOutlined, ClockCircleOutlined, CrownOutlined, DeleteOutlined, EditOutlined, EyeOutlined, PlusOutlined, SearchOutlined, SyncOutlined } from '@ant-design/icons'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { Can, useAbility } from '@casl/react'
 import { useBrandCurrency } from '@/themeRuntime'
+import { customInstance } from '../../api/mutator/custom-instance'
 import PageTitle from '../../components/base/PageTitle'
 import ListFilterPopover from '../../components/base/ListFilterPopover'
 import RowActionsMenu from '../../components/base/RowActionsMenu'
 import ListPagination from '../../components/base/ListPagination'
 import TableEmpty from '../../components/base/TableEmpty'
-import { paginateRows } from '../../utils/listTable'
 import CustomerCodeHistoryModal from '../../components/CustomerCodeHistoryModal'
+import { errorMessage } from '../../api/helpers'
 import {
+  getGetCardRanksQueryKey,
+  useDeleteCardRanksId,
   useGetCardRanks,
+  usePostCardRanks,
   usePostMembershipsCustomerProfileIdPointsAdjust,
   usePostMembershipsCustomerProfileIdRankOverride,
   usePostMembershipsCustomerProfileIdRecalculate,
+  usePutCardRanksId,
 } from '../../api/endpoints/membership'
-import { useGetCustomerProfilesIdPoints } from '../../api/endpoints/customer-profiles'
 import type { MembershipTransaction } from '../../api/models'
+import type { PostCardRanksBody } from '../../api/models/postCardRanksBody'
+import type { PutCardRanksIdBody } from '../../api/models/putCardRanksIdBody'
 import { useGetCustomerProfiles } from '../../api/endpoints/customer-profiles'
-import { useAbility } from '@casl/react'
+
 import AdjustPointsModal from './components/AdjustPointsModal'
 import RankOverrideModal from './components/RankOverrideModal'
+import CardRankModal from './components/CardRankModal'
 import {
   DEFAULT_VISIBLE_COLUMNS,
   POINT_COLUMN_OPTIONS,
@@ -30,6 +38,7 @@ import {
   hexLuminance,
   normalizeHex,
   rankThemeFromColor,
+  type CardRankRow,
   type MemberRow,
   type PointColumnKey,
   type ProfileLite,
@@ -63,9 +72,15 @@ function RankBadge({ rank, label }: { rank?: RankRow; label: string }) {
   )
 }
 
+/** 1 dòng log điểm: transaction + membership khách (LY-03 trả về include membership.customer_profile) */
+type HistoryRow = MembershipTransaction & {
+  reason?: string
+  membership?: { lifetime_points?: number; customer_profile?: { id?: string; customer_code?: string; full_name?: string; phone?: string } | null } | null
+}
+
 export default function Points() {
   const { format: formatMoney } = useBrandCurrency()
-  const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const ability = useAbility()
   const canAdjust = ability.can('POINTS_ADJUST', 'MEMBERSHIP')
   const canOverride = ability.can('RANK_OVERRIDE', 'MEMBERSHIP')
@@ -86,6 +101,8 @@ export default function Points() {
   const [form] = Form.useForm()
   const [overrideForm] = Form.useForm()
   const [filterForm] = Form.useForm()
+  // Tabs chính: bảng thành viên / lịch sử điểm (khu card hạng nằm ngoài, hiện chung cho cả 2 tab)
+  const [activeTab, setActiveTab] = useState('members')
   const adjustSubmitLock = useRef(false)
   const memberProfilesQuery = useGetCustomerProfiles({ page, limit, ...filters } as Parameters<typeof useGetCustomerProfiles>[0])
   const ranksQuery = useGetCardRanks()
@@ -98,6 +115,115 @@ export default function Points() {
   const ranks = Array.isArray(ranksData) ? [...ranksData].sort((a, b) => a.sort_order - b.sort_order) : []
   const loading = memberProfilesQuery.isLoading
   const activeFilterCount = Number(Boolean(filters.q)) + Number(Boolean(filters.rank_id))
+
+  // ===== CRUD hạng thẻ ngay trên card (gộp từ page /card-ranks) =====
+
+  const canUpdateRank = ability.can('UPDATE' as never, 'CARD_RANK' as never)
+  const canDeleteRank = ability.can('DELETE' as never, 'CARD_RANK' as never)
+  const [rankModalOpen, setRankModalOpen] = useState(false)
+  const [editingRank, setEditingRank] = useState<CardRankRow | null>(null)
+  const [rankReordering, setRankReordering] = useState(false)
+  const [rankForm] = Form.useForm()
+  const invalidateRanks = async () => {
+    await queryClient.invalidateQueries({ queryKey: getGetCardRanksQueryKey() })
+  }
+  const createRankMutation = usePostCardRanks({ mutation: { onSuccess: invalidateRanks } })
+  const updateRankMutation = usePutCardRanksId({ mutation: { onSuccess: invalidateRanks } })
+  const deleteRankMutation = useDeleteCardRanksId({ mutation: { onSuccess: invalidateRanks } })
+
+  const openRankEditor = (row?: CardRankRow) => {
+    setEditingRank(row ?? null)
+    rankForm.setFieldsValue(
+      row
+        ? {
+          code: row.code,
+          name: row.name,
+          color: row.color ?? undefined,
+          sort_order: row.sort_order ?? 0,
+          min_spent: row.min_spent ?? 0,
+          max_spent: row.max_spent ?? undefined,
+          discount_percent: row.discount_percent ?? undefined,
+          validity: row.validity ?? 'PERMANENT',
+          auto_assign: row.auto_assign ?? false,
+          benefits: row.benefits ?? '',
+        }
+        : { code: '', name: '', color: undefined, sort_order: (ranks.length ? Math.max(...ranks.map((r) => r.sort_order ?? 0)) : 0) + 1, min_spent: 0, max_spent: undefined, discount_percent: undefined, validity: 'PERMANENT', auto_assign: false, benefits: '' },
+    )
+    setRankModalOpen(true)
+  }
+
+  const submitRank = async () => {
+    try {
+      const values = await rankForm.validateFields()
+      const dto = {
+        name: values.name,
+        color: values.color || null,
+        sort_order: values.sort_order ?? 0,
+        min_spent: values.min_spent ?? 0,
+        max_spent: values.max_spent ?? undefined,
+        discount_percent: values.discount_percent ?? undefined,
+        validity: values.validity,
+        auto_assign: !!values.auto_assign,
+        benefits: values.benefits || undefined,
+      }
+      if (editingRank) {
+        await updateRankMutation.mutateAsync({ id: editingRank.id, data: dto as PutCardRanksIdBody })
+        message.success('Đã cập nhật hạng thẻ')
+      } else {
+        await createRankMutation.mutateAsync({ data: { ...dto, code: values.code } as PostCardRanksBody })
+        message.success('Đã tạo hạng thẻ')
+      }
+      setRankModalOpen(false)
+    } catch (err) {
+      if ((err as { errorFields?: unknown })?.errorFields) return
+      message.error(errorMessage(err))
+    }
+  }
+
+  const removeRank = (row: CardRankRow) => {
+    Modal.confirm({
+      title: 'Xóa hạng thẻ này?',
+      content: 'Xóa mềm. Không xóa được nếu còn khách giữ hạng hoặc có ưu đãi đang áp dụng.',
+      okText: 'Xóa',
+      okButtonProps: { danger: true },
+      cancelText: 'Hủy',
+      onOk: async () => {
+        try {
+          await deleteRankMutation.mutateAsync({ id: row.id })
+          message.success('Đã xóa hạng thẻ')
+        } catch (err) {
+          message.error(errorMessage(err, 'Không xóa được hạng thẻ'))
+        }
+      },
+    })
+  }
+
+  /** Đổi thứ tự hạng: đổi chỗ trong mảng rồi persist lại sort_order tuần tự (như page /card-ranks cũ) */
+  const moveRankBy = async (row: CardRankRow, direction: -1 | 1) => {
+    if (rankReordering || !canUpdateRank) return
+    const reordered = [...ranks]
+    const from = reordered.findIndex((rank) => rank.id === row.id)
+    const to = from + direction
+    if (from < 0 || to < 0 || to >= reordered.length) return
+    const [moved] = reordered.splice(from, 1)
+    reordered.splice(to, 0, moved)
+    setRankReordering(true)
+    try {
+      await Promise.all(
+        reordered.map((rank, index) => {
+          const sort_order = index + 1
+          if (rank.sort_order === sort_order) return Promise.resolve()
+          return updateRankMutation.mutateAsync({ id: rank.id, data: { sort_order } as PutCardRanksIdBody })
+        }),
+      )
+      await invalidateRanks()
+      message.success('Đã cập nhật thứ tự hạng thẻ')
+    } catch (err) {
+      message.error(errorMessage(err, 'Không cập nhật được thứ tự hạng thẻ'))
+    } finally {
+      setRankReordering(false)
+    }
+  }
 
   const applySearch = (nextKeyword: string) => {
     setSearchText(nextKeyword)
@@ -135,12 +261,20 @@ export default function Points() {
     setPage(1)
   }
 
-  // Lịch sử điểm: map user id → customer profile id để gọi LY-01
+  // Lịch sử điểm: log toàn bộ biến động điểm của mọi khách (LY-03) — có thể lọc theo khách / nhận-trừ
+  const [historyDirection, setHistoryDirection] = useState<'' | 'plus' | 'minus'>('')
   const profilesQuery = useGetCustomerProfiles({ page: 1, limit: 200 })
   const profilesData = (profilesQuery.data?.responseData ?? (profilesQuery.data as any)?.data ?? []) as ProfileLite[]
-  const pointsQuery = useGetCustomerProfilesIdPoints(historyProfileId ?? '')
-  const pointsData = pointsQuery.data?.responseData ?? null
-  const historyRows = (pointsData?.history ?? []) as Array<MembershipTransaction & { reason?: string }>
+  const historyParams: Record<string, unknown> = { page: historyPage, limit: 10 }
+  if (historyProfileId) historyParams.customer_profile_id = historyProfileId
+  if (historyDirection) historyParams.direction = historyDirection
+  const historyQuery = useQuery({
+    queryKey: ['membership-transactions', historyParams],
+    queryFn: () => customInstance<any>({ url: '/membershipTransactions', method: 'GET', params: historyParams }),
+  })
+  const historyData = (historyQuery.data?.responseData ?? (historyQuery.data as any)?.data ?? null) as { rows?: HistoryRow[]; count?: number } | null
+  const historyRows = historyData?.rows ?? []
+  const historyTotal = historyQuery.data?.meta?.total ?? historyData?.count ?? historyRows.length
 
   const rankName = (id?: string) => ranks.find((r) => r.id === id)?.name ?? '—'
 
@@ -156,7 +290,7 @@ export default function Points() {
       }
       await adjustMutation.mutateAsync({ customerProfileId: adjusting!.id, data: { delta: values.delta, reason: values.reason } })
       message.success('Đã điều chỉnh điểm')
-      if (historyProfileId === adjusting!.id) await pointsQuery.refetch()
+      await queryClient.invalidateQueries({ queryKey: ['membership-transactions'] })
       setAdjusting(null)
       form.resetFields()
       await memberProfilesQuery.refetch()
@@ -247,6 +381,11 @@ export default function Points() {
               Cấu hình tiêu chí nâng hạng và chính sách đặc quyền thưởng lưu danh cho hội viên
             </Typography.Text>
           </div>
+          <Can I="CREATE" a="CARD_RANK">
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => openRankEditor()} style={{ flexShrink: 0 }}>
+              Thêm hạng
+            </Button>
+          </Can>
         </div>
 
         <Row gutter={[20, 20]} style={{ marginTop: 22 }}>
@@ -291,9 +430,33 @@ export default function Points() {
                       <RankIcon style={{ fontSize: 13, flexShrink: 0 }} />
                       {r.name}
                     </span>
-                    <Typography.Text type="secondary" style={{ fontSize: 12, flexShrink: 0 }}>
-                      Điều kiện
-                    </Typography.Text>
+                    <Space size={0} style={{ flexShrink: 0 }}>
+                      {(canUpdateRank || canDeleteRank) && (
+                        <>
+                          {canUpdateRank && (
+                            <>
+                              <Button type="text" size="small" title="Đưa lên" disabled={rankReordering || index === 0}
+                                icon={<ArrowUpOutlined style={{ color: '#8A8D93' }} />}
+                                onClick={() => void moveRankBy(r, -1)} />
+                              <Button type="text" size="small" title="Đưa xuống" disabled={rankReordering || index === ranks.length - 1}
+                                icon={<ArrowDownOutlined style={{ color: '#8A8D93' }} />}
+                                onClick={() => void moveRankBy(r, 1)} />
+                              <Button type="text" size="small" title="Sửa hạng" icon={<EditOutlined style={{ color: theme.ink }} />}
+                                onClick={() => openRankEditor(r)} />
+                            </>
+                          )}
+                          {canDeleteRank && (
+                            <Button type="text" size="small" title="Xóa hạng" danger icon={<DeleteOutlined />}
+                              onClick={() => removeRank(r)} />
+                          )}
+                        </>
+                      )}
+                      {!canUpdateRank && !canDeleteRank && (
+                        <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                          Điều kiện
+                        </Typography.Text>
+                      )}
+                    </Space>
                   </div>
                   <div style={{ position: 'relative', textAlign: 'right', marginTop: 4, fontSize: 22, fontWeight: 700, color: 'var(--brand-dark, #26352D)' }}>
                     {r.min_spent ? `Từ ${formatMoney(r.min_spent)}` : 'Không ngưỡng'}
@@ -325,14 +488,6 @@ export default function Points() {
                     <Typography.Text type="secondary" style={{ fontSize: 13, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {r.benefits || 'Chưa mô tả quyền lợi'}
                     </Typography.Text>
-                    <Button
-                      type="link"
-                      size="small"
-                      style={{ color: theme.ink, fontWeight: 700, padding: 0, flexShrink: 0 }}
-                      onClick={() => navigate('/card-ranks')}
-                    >
-                      + Thêm
-                    </Button>
                   </div>
                 </div>
               </Col>
@@ -346,12 +501,19 @@ export default function Points() {
         )}
       </div>
 
-      <Typography.Title level={5} style={{ marginTop: 28, marginBottom: 12, color: 'var(--brand-secondary-ink)' }}>
-        Thành viên & điểm hiện có
-      </Typography.Title>
-      <Table
-        rowKey="id"
-        loading={loading}
+      <Tabs
+        activeKey={activeTab}
+        onChange={setActiveTab}
+        style={{ marginTop: 16 }}
+        items={[
+          {
+            key: 'members',
+            label: 'Thành viên & điểm hiện có',
+            children: (
+              <>
+                <Table
+                  rowKey="id"
+                  loading={loading}
         dataSource={rows}
         pagination={false}
         onRow={(row) => ({
@@ -436,23 +598,30 @@ export default function Points() {
         )}
       />
       <ListPagination page={page} limit={limit} total={total} onChange={setPage} noun="thành viên" />
-
-      <div style={{ marginTop: 28, marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
-        <Typography.Title level={5} style={{ margin: 0, color: 'var(--brand-secondary-ink)' }}>
-          Lịch sử điểm
-        </Typography.Title>
+              </>
+            ),
+          },
+          {
+            key: 'history',
+            label: 'Lịch sử điểm',
+            children: (
+              <>
+      <div style={{ marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 12, flexWrap: 'wrap' }}>
         <Space wrap>
-          {historyProfileId && (
-            <span style={{ fontSize: 13 }}>
-              Số điểm hiện tại:{' '}
-              <b style={{ color: 'var(--brand-primary)' }}>
-                {Number(pointsData?.points ?? 0).toLocaleString('vi-VN')}
-              </b>
-            </span>
-          )}
           <Select
-            placeholder="Chọn khách hàng"
-            style={{ width: 280 }}
+            placeholder="Tất cả biến động"
+            style={{ width: 170 }}
+            allowClear
+            value={historyDirection || undefined}
+            onChange={(v) => { setHistoryDirection((v as 'plus' | 'minus' | undefined) ?? ''); setHistoryPage(1) }}
+            options={[
+              { value: 'plus', label: 'Nhận điểm' },
+              { value: 'minus', label: 'Bị trừ điểm' },
+            ]}
+          />
+          <Select
+            placeholder="Tất cả khách hàng"
+            style={{ width: 260 }}
             allowClear
             showSearch
             optionFilterProp="label"
@@ -462,13 +631,27 @@ export default function Points() {
           />
         </Space>
       </div>
-      <Table
+      <Table<HistoryRow>
         rowKey="id"
-        loading={!!historyProfileId && pointsQuery.isLoading}
-        dataSource={paginateRows(historyRows, historyPage, 10)}
+        loading={historyQuery.isLoading}
+        dataSource={historyRows}
         pagination={false}
-        locale={{ emptyText: <TableEmpty description={historyProfileId ? 'Không có giao dịch điểm' : 'Chọn khách hàng để xem lịch sử điểm'} /> }}
+        locale={{ emptyText: <TableEmpty description="Chưa có giao dịch điểm nào" /> }}
         columns={[
+          {
+            title: 'Khách hàng',
+            key: 'customer',
+            render: (_, row: HistoryRow) => {
+              const customer = row.membership?.customer_profile
+              if (!customer) return '—'
+              return (
+                <div>
+                  <div style={{ fontWeight: 500 }}>{customer.full_name || '—'}</div>
+                  <div style={{ fontSize: 12, color: '#6F7071' }}>{customer.customer_code || customer.phone || ''}</div>
+                </div>
+              )
+            },
+          },
           {
             title: 'Thời gian',
             width: 170,
@@ -519,7 +702,12 @@ export default function Points() {
           },
         ]}
       />
-      <ListPagination page={historyPage} limit={10} total={historyRows.length} onChange={setHistoryPage} noun="giao dịch điểm" />
+      <ListPagination page={historyPage} limit={10} total={historyTotal} onChange={setHistoryPage} noun="giao dịch điểm" />
+              </>
+            ),
+          },
+        ]}
+      />
 
       <AdjustPointsModal
         adjusting={adjusting}
@@ -545,6 +733,15 @@ export default function Points() {
         emptyDescription="Chưa có lịch sử gán hoặc đổi hạng"
         includePointsHistory
         onClose={() => setHistoryTarget(null)}
+      />
+
+      <CardRankModal
+        open={rankModalOpen}
+        editing={editingRank}
+        form={rankForm}
+        saving={createRankMutation.isPending || updateRankMutation.isPending}
+        onCancel={() => setRankModalOpen(false)}
+        onSubmit={() => void submitRank()}
       />
     </>
   )

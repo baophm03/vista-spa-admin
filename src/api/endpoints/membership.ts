@@ -36,6 +36,8 @@ import type {
   GetCardRanks200,
   GetCardRanksId200,
   GetCardRanksParams,
+  GetMembershipTransactions200,
+  GetMembershipTransactionsParams,
   GetReferrals200,
   GetReferralsParams,
   InternalErrorResponse,
@@ -392,6 +394,201 @@ export const usePostReferrals = <TError = UnauthorizedResponse | ForbiddenRespon
       return useMutation(mutationOptions, queryClient);
     }
     /**
+ * **LY-03** — GET /membershipTransactions. Requires `membership.points_adjust` or `customer.read`. Branch scope: users limited to one branch only see that branch's transactions. Query: `page`, `limit`, `customer_profile_id?`, `ref_type?`, `direction?` (`plus` | `minus`).
+ * @summary List all membership point transactions (global log)
+ */
+export const getMembershipTransactions = (
+    params?: GetMembershipTransactionsParams,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetMembershipTransactions200>(
+      {url: `/membershipTransactions`, method: 'GET',
+        params, signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetMembershipTransactionsInfiniteQueryKey = (params?: GetMembershipTransactionsParams,) => {
+    return [
+    'infinite', `/membershipTransactions`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+export const getGetMembershipTransactionsQueryKey = (params?: GetMembershipTransactionsParams,) => {
+    return [
+    `/membershipTransactions`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getGetMembershipTransactionsInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getMembershipTransactions>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetMembershipTransactionsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getMembershipTransactions>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetMembershipTransactionsInfiniteQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMembershipTransactions>>> = ({ signal }) => getMembershipTransactions(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getMembershipTransactions>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetMembershipTransactionsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getMembershipTransactions>>>
+export type GetMembershipTransactionsInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+
+
+export function useGetMembershipTransactionsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getMembershipTransactions>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetMembershipTransactionsParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getMembershipTransactions>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getMembershipTransactions>>,
+          TError,
+          Awaited<ReturnType<typeof getMembershipTransactions>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetMembershipTransactionsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getMembershipTransactions>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetMembershipTransactionsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getMembershipTransactions>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getMembershipTransactions>>,
+          TError,
+          Awaited<ReturnType<typeof getMembershipTransactions>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetMembershipTransactionsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getMembershipTransactions>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetMembershipTransactionsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getMembershipTransactions>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List all membership point transactions (global log)
+ */
+
+export function useGetMembershipTransactionsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getMembershipTransactions>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetMembershipTransactionsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getMembershipTransactions>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetMembershipTransactionsInfiniteQueryOptions(params,options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary List all membership point transactions (global log)
+ */
+export const prefetchGetMembershipTransactionsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getMembershipTransactions>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetMembershipTransactionsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getMembershipTransactions>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetMembershipTransactionsInfiniteQueryOptions(params,options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetMembershipTransactionsQueryOptions = <TData = Awaited<ReturnType<typeof getMembershipTransactions>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetMembershipTransactionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMembershipTransactions>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetMembershipTransactionsQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMembershipTransactions>>> = ({ signal }) => getMembershipTransactions(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getMembershipTransactions>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetMembershipTransactionsQueryResult = NonNullable<Awaited<ReturnType<typeof getMembershipTransactions>>>
+export type GetMembershipTransactionsQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+
+
+export function useGetMembershipTransactions<TData = Awaited<ReturnType<typeof getMembershipTransactions>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetMembershipTransactionsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMembershipTransactions>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getMembershipTransactions>>,
+          TError,
+          Awaited<ReturnType<typeof getMembershipTransactions>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetMembershipTransactions<TData = Awaited<ReturnType<typeof getMembershipTransactions>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetMembershipTransactionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMembershipTransactions>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getMembershipTransactions>>,
+          TError,
+          Awaited<ReturnType<typeof getMembershipTransactions>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetMembershipTransactions<TData = Awaited<ReturnType<typeof getMembershipTransactions>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetMembershipTransactionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMembershipTransactions>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List all membership point transactions (global log)
+ */
+
+export function useGetMembershipTransactions<TData = Awaited<ReturnType<typeof getMembershipTransactions>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetMembershipTransactionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMembershipTransactions>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetMembershipTransactionsQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary List all membership point transactions (global log)
+ */
+export const prefetchGetMembershipTransactionsQuery = async <TData = Awaited<ReturnType<typeof getMembershipTransactions>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetMembershipTransactionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMembershipTransactions>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetMembershipTransactionsQueryOptions(params,options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
  * **MB-01** — POST /memberships/{customerProfileId}/recalculate (BR-09). Requires the `membership.recalculate` permission.
  * @summary Recalculate the membership rank for a customer
  */

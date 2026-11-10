@@ -91,11 +91,6 @@ export default function DateScheduleFormModal({ open, form, editing, staff, bran
         <Form.Item name="note" label="Ghi chú (ví dụ: làm thêm tuần sự kiện)">
           <Input.TextArea rows={2} placeholder="Ghi chú cho lịch ngày cụ thể" />
         </Form.Item>
-        {!editing && (
-          <p style={{ color: '#849197', fontSize: 12, marginBottom: 0 }}>
-            Lịch ngày cụ thể chỉ thêm ca vào ngày đã chọn; lịch lặp theo thứ vẫn giữ nguyên. Muốn bỏ ca trong ngày, dùng tab Ngày nghỉ.
-          </p>
-        )}
       </Form>
     </Modal>
   )

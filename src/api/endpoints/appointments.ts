@@ -41,12 +41,10 @@ import type {
   NotFoundResponse,
   PostAppointments200,
   PostAppointmentsBody,
-  PostAppointmentsIdComplete200,
   PostAppointmentsIdStart200,
   PostAppointmentsIdStartBody,
   PutAppointmentsId200,
   PutAppointmentsIdApprove200,
-  PutAppointmentsIdApproveBody,
   PutAppointmentsIdBody,
   PutAppointmentsIdCancel200,
   PutAppointmentsIdNoShow200,
@@ -970,69 +968,6 @@ export const usePutAppointmentsIdNoShow = <TError = UnauthorizedResponse | Forbi
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * POST `/appointments/{id}/complete` — ADM/REC finalize appointments without a linked treatment package. For appointments linked to a treatment package, complete the treatment session after recording notes, products and photos; the appointment is synced automatically. Requires `appointment.approve` permission.
- * @summary Complete appointment
- */
-export const postAppointmentsIdComplete = (
-    id: string,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<PostAppointmentsIdComplete200>(
-      {url: `/appointments/${id}/complete`, method: 'POST', signal
-    },
-      );
-    }
-  
-
-
-export const getPostAppointmentsIdCompleteMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAppointmentsIdComplete>>, TError,{id: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postAppointmentsIdComplete>>, TError,{id: string}, TContext> => {
-
-const mutationKey = ['postAppointmentsIdComplete'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAppointmentsIdComplete>>, {id: string}> = (props) => {
-          const {id} = props ?? {};
-
-          return  postAppointmentsIdComplete(id,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostAppointmentsIdCompleteMutationResult = NonNullable<Awaited<ReturnType<typeof postAppointmentsIdComplete>>>
-    
-    export type PostAppointmentsIdCompleteMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
-
-    /**
- * @summary Complete appointment
- */
-export const usePostAppointmentsIdComplete = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAppointmentsIdComplete>>, TError,{id: string}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postAppointmentsIdComplete>>,
-        TError,
-        {id: string},
-        TContext
-      > => {
-
-      const mutationOptions = getPostAppointmentsIdCompleteMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
  * **AP-07** — PUT /appointments/{id}/cancel (ADM/REC: cancel pending/approved appointments). Requires the `appointment.approve` permission.
  * @summary Cancel appointment
  */
@@ -1095,19 +1030,16 @@ export const usePutAppointmentsIdCancel = <TError = UnauthorizedResponse | Forbi
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **AP-05** — PUT /appointments/{id}/approve (ADM/REC only; technicians cannot call this — test 18). Requires the `appointment.approve` permission.
+ * **AP-05** — PUT /appointments/{id}/approve (ADM/REC only). Duyệt lịch hẹn, không gán KTV. Requires the `appointment.approve` permission.
  * @summary Approve appointment
  */
 export const putAppointmentsIdApprove = (
     id: string,
-    putAppointmentsIdApproveBody: PutAppointmentsIdApproveBody,
  ) => {
       
       
       return customInstance<PutAppointmentsIdApprove200>(
-      {url: `/appointments/${id}/approve`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: putAppointmentsIdApproveBody
+      {url: `/appointments/${id}/approve`, method: 'PUT'
     },
       );
     }
@@ -1115,8 +1047,8 @@ export const putAppointmentsIdApprove = (
 
 
 export const getPutAppointmentsIdApproveMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAppointmentsIdApprove>>, TError,{id: string;data: PutAppointmentsIdApproveBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putAppointmentsIdApprove>>, TError,{id: string;data: PutAppointmentsIdApproveBody}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAppointmentsIdApprove>>, TError,{id: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putAppointmentsIdApprove>>, TError,{id: string}, TContext> => {
 
 const mutationKey = ['putAppointmentsIdApprove'];
 const {mutation: mutationOptions} = options ?
@@ -1128,10 +1060,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putAppointmentsIdApprove>>, {id: string;data: PutAppointmentsIdApproveBody}> = (props) => {
-          const {id,data} = props ?? {};
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putAppointmentsIdApprove>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
 
-          return  putAppointmentsIdApprove(id,data,)
+          return  putAppointmentsIdApprove(id,)
         }
 
         
@@ -1140,18 +1072,18 @@ const {mutation: mutationOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type PutAppointmentsIdApproveMutationResult = NonNullable<Awaited<ReturnType<typeof putAppointmentsIdApprove>>>
-    export type PutAppointmentsIdApproveMutationBody = PutAppointmentsIdApproveBody
+    
     export type PutAppointmentsIdApproveMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
  * @summary Approve appointment
  */
 export const usePutAppointmentsIdApprove = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAppointmentsIdApprove>>, TError,{id: string;data: PutAppointmentsIdApproveBody}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAppointmentsIdApprove>>, TError,{id: string}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof putAppointmentsIdApprove>>,
         TError,
-        {id: string;data: PutAppointmentsIdApproveBody},
+        {id: string},
         TContext
       > => {
 

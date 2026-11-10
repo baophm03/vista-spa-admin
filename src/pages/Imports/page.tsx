@@ -149,7 +149,7 @@ export default function Imports() {
       if (!dryRun) {
         message.success(`Đã nhập: tạo ${data?.created_count ?? 0}, cập nhật ${data?.updated_count ?? 0}`)
         await queryClient.invalidateQueries({ queryKey: ['getCustomerProfiles'] })
-        await queryClient.invalidateQueries({ queryKey: ['getCustomerTreatments'] })
+        await queryClient.invalidateQueries({ queryKey: ['getTreatmentCustomers'] })
       }
     } catch (err) {
       message.error(errorMessage(err))

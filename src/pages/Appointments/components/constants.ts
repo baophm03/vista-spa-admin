@@ -28,6 +28,7 @@ export type AppointmentRow = Appointment & {
   customer_profile?: { id?: string; full_name?: string; phone?: string; branch_id?: string | null } | null
   service?: { title?: string; duration_minutes?: number; price?: number | string | null; price_max?: number | string | null } | null
   staff?: { zalo_name?: string } | null
+  treatment_package?: { id?: string; name?: string } | null
   customer_treatment?: {
     id?: string
     package_snapshot?: { name?: string } | null

@@ -11,11 +11,11 @@ import { Can } from '@casl/react'
 import type { PutWarrantyClaimsIdRejectBody } from '@/api/models/putWarrantyClaimsIdRejectBody'
 import {
   getGetWarrantyClaimsQueryKey,
-  useGetCustomerTreatments,
+  useGetTreatmentCustomers,
   useGetWarrantyClaims,
   usePostWarrantyClaims,
   usePutWarrantyClaimsIdReject,
-} from '@/api/endpoints/customer-treatments'
+} from '@/api/endpoints/treatment-customers'
 import { STATUS_META } from './components/constants'
 import { usePostFiles } from '@/api/endpoints/files'
 import { registerUploadedFile } from '@/hooks/useFileUrl'
@@ -48,7 +48,7 @@ export default function WarrantyClaims() {
 
   // Lookup: khách hàng + gói liệu trình để hiển thị tên (claim chỉ trả customer_treatment_id)
   // Gói FINISHED (dùng trong form tiếp nhận — chỉ gói hoàn tất mới được bảo hành)
-  const finishedTreatmentsQuery = useGetCustomerTreatments(
+  const finishedTreatmentsQuery = useGetTreatmentCustomers(
     { page: 1, limit: 200, status: 'FINISHED' },
     { query: { enabled: createOpen } },
   )

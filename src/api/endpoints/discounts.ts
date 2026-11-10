@@ -30,11 +30,11 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  DeleteCustomerTreatmentsIdDiscountsDiscountId200,
+  DeleteTreatmentCustomersIdDiscountsDiscountId200,
   GetCustomerProfilesIdAvailableDiscounts200,
   NotFoundResponse,
-  PostCustomerTreatmentsIdApplyDiscount200,
-  PostCustomerTreatmentsIdApplyDiscountBody
+  PostTreatmentCustomersIdApplyDiscount200,
+  PostTreatmentCustomersIdApplyDiscountBody
 } from '../models';
 
 import { customInstance } from '../mutator/custom-instance';
@@ -47,28 +47,28 @@ import { customInstance } from '../mutator/custom-instance';
  * **DC-07** — POST /customer-treatments/{id}/apply-discount. Body: rule_id, percent (% within the rule's range; exceeding it requires permission `discount.override`).
  * @summary Apply a discount to the treatment package
  */
-export const postCustomerTreatmentsIdApplyDiscount = (
+export const postTreatmentCustomersIdApplyDiscount = (
     id: string,
-    postCustomerTreatmentsIdApplyDiscountBody: PostCustomerTreatmentsIdApplyDiscountBody,
+    postTreatmentCustomersIdApplyDiscountBody: PostTreatmentCustomersIdApplyDiscountBody,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<PostCustomerTreatmentsIdApplyDiscount200>(
-      {url: `/customerTreatments/${id}/apply-discount`, method: 'POST',
+      return customInstance<PostTreatmentCustomersIdApplyDiscount200>(
+      {url: `/treatmentCustomers/${id}/apply-discount`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: postCustomerTreatmentsIdApplyDiscountBody, signal
+      data: postTreatmentCustomersIdApplyDiscountBody, signal
     },
       );
     }
   
 
 
-export const getPostCustomerTreatmentsIdApplyDiscountMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postCustomerTreatmentsIdApplyDiscount>>, TError,{id: string;data: PostCustomerTreatmentsIdApplyDiscountBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postCustomerTreatmentsIdApplyDiscount>>, TError,{id: string;data: PostCustomerTreatmentsIdApplyDiscountBody}, TContext> => {
+export const getPostTreatmentCustomersIdApplyDiscountMutationOptions = <TError = void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postTreatmentCustomersIdApplyDiscount>>, TError,{id: string;data: PostTreatmentCustomersIdApplyDiscountBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postTreatmentCustomersIdApplyDiscount>>, TError,{id: string;data: PostTreatmentCustomersIdApplyDiscountBody}, TContext> => {
 
-const mutationKey = ['postCustomerTreatmentsIdApplyDiscount'];
+const mutationKey = ['postTreatmentCustomersIdApplyDiscount'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -78,10 +78,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postCustomerTreatmentsIdApplyDiscount>>, {id: string;data: PostCustomerTreatmentsIdApplyDiscountBody}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postTreatmentCustomersIdApplyDiscount>>, {id: string;data: PostTreatmentCustomersIdApplyDiscountBody}> = (props) => {
           const {id,data} = props ?? {};
 
-          return  postCustomerTreatmentsIdApplyDiscount(id,data,)
+          return  postTreatmentCustomersIdApplyDiscount(id,data,)
         }
 
         
@@ -89,23 +89,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PostCustomerTreatmentsIdApplyDiscountMutationResult = NonNullable<Awaited<ReturnType<typeof postCustomerTreatmentsIdApplyDiscount>>>
-    export type PostCustomerTreatmentsIdApplyDiscountMutationBody = PostCustomerTreatmentsIdApplyDiscountBody
-    export type PostCustomerTreatmentsIdApplyDiscountMutationError = void
+    export type PostTreatmentCustomersIdApplyDiscountMutationResult = NonNullable<Awaited<ReturnType<typeof postTreatmentCustomersIdApplyDiscount>>>
+    export type PostTreatmentCustomersIdApplyDiscountMutationBody = PostTreatmentCustomersIdApplyDiscountBody
+    export type PostTreatmentCustomersIdApplyDiscountMutationError = void
 
     /**
  * @summary Apply a discount to the treatment package
  */
-export const usePostCustomerTreatmentsIdApplyDiscount = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postCustomerTreatmentsIdApplyDiscount>>, TError,{id: string;data: PostCustomerTreatmentsIdApplyDiscountBody}, TContext>, }
+export const usePostTreatmentCustomersIdApplyDiscount = <TError = void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postTreatmentCustomersIdApplyDiscount>>, TError,{id: string;data: PostTreatmentCustomersIdApplyDiscountBody}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postCustomerTreatmentsIdApplyDiscount>>,
+        Awaited<ReturnType<typeof postTreatmentCustomersIdApplyDiscount>>,
         TError,
-        {id: string;data: PostCustomerTreatmentsIdApplyDiscountBody},
+        {id: string;data: PostTreatmentCustomersIdApplyDiscountBody},
         TContext
       > => {
 
-      const mutationOptions = getPostCustomerTreatmentsIdApplyDiscountMutationOptions(options);
+      const mutationOptions = getPostTreatmentCustomersIdApplyDiscountMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -113,25 +113,25 @@ export const usePostCustomerTreatmentsIdApplyDiscount = <TError = void,
  * **DC-08** — DELETE /customer-treatments/{id}/discounts/{discountId}. Can only be removed if no payment was made after it was applied.
  * @summary Remove a discount from the package
  */
-export const deleteCustomerTreatmentsIdDiscountsDiscountId = (
+export const deleteTreatmentCustomersIdDiscountsDiscountId = (
     id: string,
     discountId: string,
  ) => {
       
       
-      return customInstance<DeleteCustomerTreatmentsIdDiscountsDiscountId200>(
-      {url: `/customerTreatments/${id}/discounts/${discountId}`, method: 'DELETE'
+      return customInstance<DeleteTreatmentCustomersIdDiscountsDiscountId200>(
+      {url: `/treatmentCustomers/${id}/discounts/${discountId}`, method: 'DELETE'
     },
       );
     }
   
 
 
-export const getDeleteCustomerTreatmentsIdDiscountsDiscountIdMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteCustomerTreatmentsIdDiscountsDiscountId>>, TError,{id: string;discountId: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof deleteCustomerTreatmentsIdDiscountsDiscountId>>, TError,{id: string;discountId: string}, TContext> => {
+export const getDeleteTreatmentCustomersIdDiscountsDiscountIdMutationOptions = <TError = void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTreatmentCustomersIdDiscountsDiscountId>>, TError,{id: string;discountId: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteTreatmentCustomersIdDiscountsDiscountId>>, TError,{id: string;discountId: string}, TContext> => {
 
-const mutationKey = ['deleteCustomerTreatmentsIdDiscountsDiscountId'];
+const mutationKey = ['deleteTreatmentCustomersIdDiscountsDiscountId'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -141,10 +141,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteCustomerTreatmentsIdDiscountsDiscountId>>, {id: string;discountId: string}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteTreatmentCustomersIdDiscountsDiscountId>>, {id: string;discountId: string}> = (props) => {
           const {id,discountId} = props ?? {};
 
-          return  deleteCustomerTreatmentsIdDiscountsDiscountId(id,discountId,)
+          return  deleteTreatmentCustomersIdDiscountsDiscountId(id,discountId,)
         }
 
         
@@ -152,23 +152,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type DeleteCustomerTreatmentsIdDiscountsDiscountIdMutationResult = NonNullable<Awaited<ReturnType<typeof deleteCustomerTreatmentsIdDiscountsDiscountId>>>
+    export type DeleteTreatmentCustomersIdDiscountsDiscountIdMutationResult = NonNullable<Awaited<ReturnType<typeof deleteTreatmentCustomersIdDiscountsDiscountId>>>
     
-    export type DeleteCustomerTreatmentsIdDiscountsDiscountIdMutationError = void
+    export type DeleteTreatmentCustomersIdDiscountsDiscountIdMutationError = void
 
     /**
  * @summary Remove a discount from the package
  */
-export const useDeleteCustomerTreatmentsIdDiscountsDiscountId = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteCustomerTreatmentsIdDiscountsDiscountId>>, TError,{id: string;discountId: string}, TContext>, }
+export const useDeleteTreatmentCustomersIdDiscountsDiscountId = <TError = void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTreatmentCustomersIdDiscountsDiscountId>>, TError,{id: string;discountId: string}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteCustomerTreatmentsIdDiscountsDiscountId>>,
+        Awaited<ReturnType<typeof deleteTreatmentCustomersIdDiscountsDiscountId>>,
         TError,
         {id: string;discountId: string},
         TContext
       > => {
 
-      const mutationOptions = getDeleteCustomerTreatmentsIdDiscountsDiscountIdMutationOptions(options);
+      const mutationOptions = getDeleteTreatmentCustomersIdDiscountsDiscountIdMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

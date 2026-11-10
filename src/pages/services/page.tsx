@@ -14,11 +14,11 @@ import {
   message,
 } from 'antd'
 import type { TableColumnsType } from 'antd'
-import { EditOutlined, EyeInvisibleOutlined, EyeOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { AppstoreOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Can, useAbility } from '@casl/react'
 import PageTitle from '@/components/base/PageTitle'
-import ListFilterPopover from '@/components/base/ListFilterPopover'
+import StatCards, { type StatItem } from '@/components/base/StatCards'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
 import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
@@ -51,14 +51,6 @@ type ServiceCategoryRow = ServiceCategory & { parent?: { id?: string; name?: str
 
 /** BE trả thêm resolved_options cho field có lookup_list_id. */
 const DEFAULT_COLUMNS = ['service', 'category', 'price', 'duration', 'points', 'status']
-const COLUMN_OPTIONS = [
-  { value: 'service', label: 'Dịch vụ' },
-  { value: 'category', label: 'Danh mục' },
-  { value: 'price', label: 'Giá' },
-  { value: 'duration', label: 'Thời lượng' },
-  { value: 'points', label: 'Điểm đổi' },
-  { value: 'status', label: 'Trạng thái' },
-]
 
 function formatPrice(value: number | string | null | undefined, currency: string) {
   if (value === null || value === undefined || value === '') return '—'
@@ -96,11 +88,8 @@ export default function Services() {
   const [limit] = useState(10)
   const [searchText, setSearchText] = useState('')
   const [filters, setFilters] = useState<{ q?: string; category_id?: string; is_active?: boolean }>({})
-  const [filterOpen, setFilterOpen] = useState(false)
-  const [visibleColumns, setVisibleColumns] = useState<string[]>(DEFAULT_COLUMNS)
-  const [draftVisibleColumns, setDraftVisibleColumns] = useState<string[]>(DEFAULT_COLUMNS)
+  const [visibleColumns] = useState<string[]>(DEFAULT_COLUMNS)
   const [form] = Form.useForm()
-  const [filterForm] = Form.useForm()
   // Mobile (dưới breakpoint md): chuyển vùng nội dung bằng Select thay vì Tabs
   const isMobile = !Grid.useBreakpoint().md
   const [activeTab, setActiveTab] = useState<'services' | 'categories'>('services')
@@ -113,6 +102,24 @@ export default function Services() {
   })
   const rows = listQuery.data?.services ?? []
   useEffect(() => setTotal(listQuery.data?.total ?? 0), [listQuery.data])
+
+  // Thống kê đầu trang — đếm server-side (total) nên đúng cả khi đang tìm kiếm/phân trang
+  const queryClient = useQueryClient()
+  const statsQuery = useQuery({
+    queryKey: ['service-stats'],
+    queryFn: async () => {
+      const [all, active] = await Promise.all([
+        pickData<{ total?: number }>(await getService({ page: 1, limit: 1 })),
+        pickData<{ total?: number }>(await getService({ page: 1, limit: 1, is_active: true })),
+      ])
+      return { total: Number(all?.total ?? 0), active: Number(active?.total ?? 0) }
+    },
+  })
+  const statItems: StatItem[] = [
+    { key: 'total', label: 'Tổng dịch vụ', value: statsQuery.data?.total.toLocaleString('vi-VN') ?? '—', icon: <AppstoreOutlined />, tone: 'primary' },
+    { key: 'active', label: 'Đang hiển thị', value: statsQuery.data?.active.toLocaleString('vi-VN') ?? '—', icon: <EyeOutlined />, tone: 'secondary' },
+    { key: 'hidden', label: 'Đã ẩn', value: statsQuery.data ? Math.max(statsQuery.data.total - statsQuery.data.active, 0).toLocaleString('vi-VN') : '—', icon: <EyeInvisibleOutlined />, tone: 'neutral' },
+  ]
 
   const loadCategories = async () => {
     try {
@@ -181,6 +188,7 @@ export default function Services() {
       setOpen(false)
       message.success(editing ? 'Đã cập nhật dịch vụ' : 'Đã thêm dịch vụ')
       await listQuery.refetch()
+      void queryClient.invalidateQueries({ queryKey: ["service-stats"] })
     } catch (err) {
       if ((err as { errorFields?: unknown })?.errorFields) return
       message.error(errorMessage(err))
@@ -194,6 +202,7 @@ export default function Services() {
       await hideMutation.mutateAsync(row.id)
       message.success('Đã ẩn dịch vụ; lịch và gói cũ vẫn được giữ')
       await listQuery.refetch()
+      void queryClient.invalidateQueries({ queryKey: ["service-stats"] })
     } catch (err) {
       message.error(errorMessage(err))
     }
@@ -204,6 +213,7 @@ export default function Services() {
       await updateMutation.mutateAsync({ id: row.id, dto: { is_active: true } })
       message.success('Đã bật lại dịch vụ')
       await listQuery.refetch()
+      void queryClient.invalidateQueries({ queryKey: ["service-stats"] })
     } catch (err) {
       message.error(errorMessage(err))
     }
@@ -278,105 +288,36 @@ export default function Services() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visibleColumns, canUpdate, canDelete, urlMap])
 
-  const activeFilterCount = Object.values(filters).filter((value) => value !== undefined && value !== '').length
-  const applyFilters = (values: Record<string, unknown>) => {
-    if (!draftVisibleColumns.length) {
-      message.error('Hãy giữ lại ít nhất một cột hiển thị')
-      return
-    }
-    setFilters({
-      q: searchText.trim() || undefined,
-      category_id: typeof values.category_id === 'string' && values.category_id ? values.category_id : undefined,
-      is_active: values.is_active === 'true' ? true : values.is_active === 'false' ? false : undefined,
-    })
-    setVisibleColumns(draftVisibleColumns)
-    setPage(1)
-    setFilterOpen(false)
-  }
-  const openFilters = (nextOpen: boolean) => {
-    setFilterOpen(nextOpen)
-    if (!nextOpen) return
-    filterForm.setFieldsValue({
-      category_id: filters.category_id,
-      is_active: filters.is_active === undefined ? undefined : String(filters.is_active),
-    })
-    setDraftVisibleColumns(visibleColumns)
-  }
-  const clearFilters = () => {
-    filterForm.resetFields()
-    setSearchText('')
-    setFilters({})
-    setDraftVisibleColumns(DEFAULT_COLUMNS)
-    setVisibleColumns(DEFAULT_COLUMNS)
-    setPage(1)
-  }
-
   const servicesContent = (
     <>
-      <PageTitle
-        subtitle="Danh mục dịch vụ và nhóm dịch vụ"
-        left={
-          <>
-            {/* Mobile: gọn toolbar — search thu về nút icon, bấm mới mở */}
-            {isMobile && !searchOpen && (
-              <Button icon={<SearchOutlined />} aria-label="Tìm kiếm" title="Tìm kiếm" onClick={() => setSearchOpen(true)} />
-            )}
-            {(searchOpen || !isMobile) && (
-              <Input
-                allowClear
-                prefix={<SearchOutlined className="text-[var(--brand-text-inactive,#A9ADB2)]" />}
-                placeholder="Tìm tên hoặc mô tả dịch vụ"
-                className={isMobile && searchOpen ? 'min-w-0 flex-1' : 'w-[260px]!'}
-                value={searchText}
-                onChange={(event) => setSearchText(event.target.value)}
-                onPressEnter={() => {
-                  setFilters((current) => ({ ...current, q: searchText.trim() || undefined }))
-                  setPage(1)
-                }}
-                onBlur={() => { if (isMobile && !searchText) setSearchOpen(false) }}
-              />
-            )}
-            <ListFilterPopover
-              iconOnly={!isMobile}
-              open={filterOpen}
-              onOpenChange={openFilters}
-              activeFilterCount={activeFilterCount}
-              form={filterForm}
-              onApply={applyFilters}
-              onClear={clearFilters}
-              columnOptions={COLUMN_OPTIONS}
-              draftVisibleColumns={draftVisibleColumns}
-              onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as string[])}
-              filterItems={(
-                <>
-                  <Form.Item name="category_id" label="Danh mục" className="mb-2.5!">
-                    <Select allowClear placeholder="Tất cả danh mục" options={categoryOptions(categories)} />
-                  </Form.Item>
-                  <Form.Item name="is_active" label="Trạng thái" className="mb-0!">
-                    <Select
-                      allowClear
-                      placeholder="Tất cả"
-                      options={[
-                        { value: 'true', label: 'Đang hiển thị' },
-                        { value: 'false', label: 'Đã ẩn' },
-                      ]}
-                    />
-                  </Form.Item>
-                </>
-              )}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', minWidth: 0 }}>
+          {/* Mobile: gọn toolbar — search thu về nút icon, bấm mới mở */}
+          {isMobile && !searchOpen && (
+            <Button icon={<SearchOutlined />} aria-label="Tìm kiếm" title="Tìm kiếm" onClick={() => setSearchOpen(true)} />
+          )}
+          {(searchOpen || !isMobile) && (
+            <Input
+              allowClear
+              prefix={<SearchOutlined className="text-[var(--brand-text-inactive,#A9ADB2)]" />}
+              placeholder="Tìm tên hoặc mô tả dịch vụ"
+              className={isMobile && searchOpen ? 'min-w-0 flex-1' : 'w-[260px]!'}
+              value={searchText}
+              onChange={(event) => setSearchText(event.target.value)}
+              onPressEnter={() => {
+                setFilters((current) => ({ ...current, q: searchText.trim() || undefined }))
+                setPage(1)
+              }}
+              onBlur={() => { if (isMobile && !searchText) setSearchOpen(false) }}
             />
-          </>
-        }
-        right={
-          <Can I="CREATE" a="SERVICE">
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => void openEditor()}>
-              Thêm dịch vụ
-            </Button>
-          </Can>
-        }
-      >
-        Dịch vụ
-      </PageTitle>
+          )}
+        </div>
+        <Can I="CREATE" a="SERVICE">
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => void openEditor()}>
+            Thêm dịch vụ
+          </Button>
+        </Can>
+      </div>
       <Table<ServiceRow>
         className="desktop-only"
         rowKey="id"
@@ -410,6 +351,11 @@ export default function Services() {
 
   return (
     <>
+      <PageTitle subtitle="Danh mục dịch vụ và nhóm dịch vụ">
+        Dịch vụ
+      </PageTitle>
+      <StatCards items={statItems} />
+
       {isMobile && (
         <Select
           style={{ width: '100%', marginBottom: 12 }}
