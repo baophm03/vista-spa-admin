@@ -58,18 +58,20 @@ export const menuItems: MenuItem[] = [
     children: [
       { key: '/users', icon: createElement(TeamOutlined), label: 'Danh sách khách', permission: { action: 'READ', subject: 'CUSTOMER' } },
       { key: '/appointments', icon: createElement(CalendarOutlined), label: 'Lịch hẹn', permission: { action: 'READ', subject: 'APPOINTMENT' } },
-      { key: '/treatment-customers', icon: createElement(SolutionOutlined), label: 'Liệu trình của khách', permission: { action: 'READ', subject: 'TREATMENT_PACKAGE' } },
-      { key: '/standalone-services', icon: createElement(ProfileOutlined), label: 'Dịch vụ lẻ', permission: { action: 'READ', subject: 'APPOINTMENT' } },
+      { key: '/standalone-services', icon: createElement(ProfileOutlined), label: 'Dịch vụ KH', permission: { action: 'READ', subject: 'APPOINTMENT' } },
+      { key: '/treatment-customers', icon: createElement(SolutionOutlined), label: 'Liệu trình KH', permission: { action: 'READ', subject: 'TREATMENT_PACKAGE' } },
       { key: '/my-sessions', icon: createElement(ExperimentOutlined), label: 'Buổi của tôi', permission: { action: 'READ', subject: 'CUSTOMER' }, ktvOnly: true },
       { key: '/health-records', icon: createElement(FileTextOutlined), label: 'Sổ sức khỏe', permission: { action: 'READ', subject: 'CUSTOMER' }, hideForKtv: true },
-      { key: '/points', icon: createElement(StarOutlined), label: 'Điểm & Hạng', permission: [
-        { action: 'RECALCULATE', subject: 'MEMBERSHIP' },
-        { action: 'RANK_OVERRIDE', subject: 'MEMBERSHIP' },
-        { action: 'POINTS_ADJUST', subject: 'MEMBERSHIP' },
-      ] },
+      {
+        key: '/points', icon: createElement(StarOutlined), label: 'Điểm & Hạng', permission: [
+          { action: 'RECALCULATE', subject: 'MEMBERSHIP' },
+          { action: 'RANK_OVERRIDE', subject: 'MEMBERSHIP' },
+          { action: 'POINTS_ADJUST', subject: 'MEMBERSHIP' },
+          { action: 'READ', subject: 'CARD_RANK' },
+        ]
+      },
       { key: '/rewards', icon: createElement(GiftOutlined), label: 'Quà & Lượt đổi', permission: { action: 'READ', subject: 'REWARD' } },
       { key: '/warranty-claims', icon: createElement(FileTextOutlined), label: 'Bảo hành gói liệu trình', permission: { action: 'READ', subject: 'CUSTOMER' }, hideForKtv: true },
-      { key: '/card-ranks', icon: createElement(StarOutlined), label: 'Hạng thẻ thành viên', permission: { action: 'READ', subject: 'CARD_RANK' } },
     ],
   },
   {
@@ -77,8 +79,8 @@ export const menuItems: MenuItem[] = [
     label: 'Kinh doanh',
     icon: null,
     children: [
-      { key: '/services', icon: createElement(ShoppingOutlined), label: 'Dịch vụ', permission: { action: 'READ', subject: 'SERVICE' } },
-      { key: '/treatments', icon: createElement(ExperimentOutlined), label: 'Liệu trình', permission: { action: 'READ', subject: 'TREATMENT_PACKAGE' } },
+      { key: '/services', icon: createElement(ShoppingOutlined), label: 'Gói dịch vụ', permission: { action: 'READ', subject: 'SERVICE' } },
+      { key: '/treatments', icon: createElement(ExperimentOutlined), label: 'Gói liệu trình', permission: { action: 'READ', subject: 'TREATMENT_PACKAGE' } },
       { key: '/payments', icon: createElement(AccountBookOutlined), label: 'Sổ thanh toán', permission: { action: 'READ', subject: 'PAYMENT' } },
       { key: '/products', icon: createElement(ShoppingOutlined), label: 'Sản phẩm', hideForKtv: true },
       { key: '/orders', icon: createElement(ProfileOutlined), label: 'Đơn hàng', hideForKtv: true },
@@ -107,7 +109,7 @@ export const menuItems: MenuItem[] = [
     label: 'Hệ thống',
     icon: null,
     children: [
-      { key: '/content-posts', icon: createElement(FileTextOutlined), label: 'Nội dung app (CMS)', permission: { action: 'READ', subject: 'CONTENT' } },
+      { key: '/content-posts', icon: createElement(FileTextOutlined), label: 'Nội dung App', permission: { action: 'READ', subject: 'CONTENT' } },
       { key: '/branches', icon: createElement(AppstoreOutlined), label: 'Cơ sở', permission: { action: 'READ', subject: 'BRANCH' } },
       { key: '/imports', icon: createElement(ProfileOutlined), label: 'Nhập dữ liệu khách cũ', permission: { action: 'RUN', subject: 'IMPORT' } },
       { key: '/customer-data-config', icon: createElement(ProfileOutlined), label: 'Dữ liệu khách hàng', permission: { action: 'READ', subject: 'CUSTOM_FIELD' }, hideForKtv: true, hideForReceptionist: true },

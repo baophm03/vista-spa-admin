@@ -26,7 +26,7 @@ import {
   postCustomerProfilesIdHealthRecords,
   putCustomerProfilesIdHealthRecordsRecordId,
 } from '@/api/endpoints/customer-profiles'
-import { getCustomerTreatments } from '@/api/endpoints/customer-treatments'
+import { getTreatmentCustomers } from '@/api/endpoints/treatment-customers'
 import { getAppointments } from '@/api/endpoints/appointments'
 import { getSkinTypes } from '@/api/endpoints/settings'
 import { getTreatmentPackages } from '@/api/endpoints/services'
@@ -137,7 +137,7 @@ export default function HealthRecords() {
     setDetailAppointments([])
     Promise.all([
       getCustomerProfilesIdHealthRecords(detail.id),
-      getCustomerTreatments({ customer_profile_id: detail.id, limit: 50 }),
+      getTreatmentCustomers({ customer_profile_id: detail.id, limit: 50 }),
       getAppointments({ customer_profile_id: detail.id, page: 1, limit: 100 }).catch(() => null),
     ])
       .then(([recordsResult, treatmentsResult, appointmentsResult]) => {

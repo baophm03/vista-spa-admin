@@ -210,26 +210,29 @@ export default function ContentPosts() {
   }
 
   const postColumns = [
-    { title: 'Tiêu đề', dataIndex: 'title', key: 'title', render: (v: string, row: ContentPostRow) => (
-      <Space size={6}>
-        <Typography.Text strong={!!row.is_pinned}>{v}{row.is_pinned ? ' 📌' : ''}</Typography.Text>
-      </Space>
-    ) },
+    {
+      title: 'Tiêu đề', dataIndex: 'title', key: 'title', render: (v: string, row: ContentPostRow) => (
+        <Space size={6}>
+          <Typography.Text strong={!!row.is_pinned}>{v}{row.is_pinned ? ' 📌' : ''}</Typography.Text>
+        </Space>
+      )
+    },
     { title: 'Chuyên mục', key: 'category', width: 160, render: (_: unknown, row: ContentPostRow) => categoryById.get(row.category_id)?.name ?? '—' },
     { title: 'Trạng thái', dataIndex: 'status', key: 'status', width: 120, render: (v: string) => <Tag color={STATUS_META[v]?.color}>{STATUS_META[v]?.label ?? v}</Tag> },
     { title: 'Xuất bản', dataIndex: 'published_at', key: 'published_at', width: 130, render: (v: string) => (v ? dayjs(v).format('DD/MM/YYYY HH:mm') : '—') },
     { title: 'Lượt xem', dataIndex: 'view_count', key: 'view_count', width: 90, align: 'right' as const },
-    { title: 'Hành động', key: 'actions', width: 90, align: 'center' as const,
+    {
+      title: 'Hành động', key: 'actions', width: 90, align: 'center' as const,
       render: (_: unknown, row: ContentPostRow) => (
         <RowActionsMenu
           items={[
             ...(ability.can('UPDATE' as never, 'CONTENT')
               ? [
-                  ...(row.status !== 'PUBLISHED'
-                    ? [{ key: 'publish', icon: <SendOutlined />, label: 'Xuất bản' }]
-                    : [{ key: 'unpublish', icon: <UndoOutlined />, label: 'Gỡ bài' }]),
-                  { key: 'edit', icon: <EditOutlined />, label: 'Sửa' },
-                ]
+                ...(row.status !== 'PUBLISHED'
+                  ? [{ key: 'publish', icon: <SendOutlined />, label: 'Xuất bản' }]
+                  : [{ key: 'unpublish', icon: <UndoOutlined />, label: 'Gỡ bài' }]),
+                { key: 'edit', icon: <EditOutlined />, label: 'Sửa' },
+              ]
               : []),
             ...(ability.can('DELETE' as never, 'CONTENT') && row.status !== 'PUBLISHED'
               ? [{ key: 'delete', icon: <DeleteOutlined />, label: 'Xóa', danger: true }]
@@ -257,18 +260,24 @@ export default function ContentPosts() {
             }
           }}
         />
-      ) },
+      )
+    },
   ]
 
   const categoryColumns = [
     { title: 'Tên chuyên mục', dataIndex: 'name', key: 'name' },
     { title: 'Slug', dataIndex: 'slug', key: 'slug', width: 180 },
-    { title: 'Kiểu hiển thị', dataIndex: 'display_type', key: 'display_type', width: 170,
-      render: (v: string) => DISPLAY_TYPE_OPTIONS.find((o) => o.value === v)?.label ?? v },
+    {
+      title: 'Kiểu hiển thị', dataIndex: 'display_type', key: 'display_type', width: 170,
+      render: (v: string) => DISPLAY_TYPE_OPTIONS.find((o) => o.value === v)?.label ?? v
+    },
     { title: 'Thứ tự', dataIndex: 'sort_order', key: 'sort_order', width: 80, align: 'right' as const },
-    { title: 'Trạng thái', dataIndex: 'is_active', key: 'is_active', width: 100,
-      render: (v: boolean) => <Tag color={v ? 'green' : 'red'}>{v ? 'Hiện' : 'Ẩn'}</Tag> },
-    { title: 'Hành động', key: 'actions', width: 90, align: 'center' as const,
+    {
+      title: 'Trạng thái', dataIndex: 'is_active', key: 'is_active', width: 100,
+      render: (v: boolean) => <Tag color={v ? 'green' : 'red'}>{v ? 'Hiện' : 'Ẩn'}</Tag>
+    },
+    {
+      title: 'Hành động', key: 'actions', width: 90, align: 'center' as const,
       render: (_: unknown, row: ContentCategory) => (
         <RowActionsMenu
           items={[
@@ -293,13 +302,14 @@ export default function ContentPosts() {
             }
           }}
         />
-      ) },
+      )
+    },
   ]
 
   return (
     <div>
       <PageTitle subtitle="Quản lý bài viết và chuyên mục hiển thị trên app">
-        Nội dung app (CMS)
+        Nội dung App
       </PageTitle>
       {postsQuery.isError && <Alert type="error" showIcon message={errorMessage(postsQuery.error)} style={{ marginBottom: 12 }} />}
       <Tabs

@@ -634,7 +634,7 @@ export const usePostRoles = <TError = LegacyBadRequestResponse,
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **PR-02** — GET /roles/{id}/permissions. Requires `permission.manage` permission. Handled by `RolePermission.findAll`.
+ * **PR-02** — GET /roles/{id}/permissions: returns array of `{module, action}` pairs. Requires `permission.manage` permission. Handled by `RolePermission.findAll`.
  * @summary Get role permissions
  */
 export const getRolesIdPermissions = (
@@ -828,7 +828,7 @@ export const prefetchGetRolesIdPermissionsQuery = async <TData = Awaited<ReturnT
 
 
 /**
- * **PR-03** — PUT /roles/{id}/permissions: overwrites the role's permission list. Requires `permission.manage` permission. Body field: `permissions`. Handled by `Role.findByPk`.
+ * **PR-03** — PUT /roles/{id}/permissions: overwrites the role's permission list. Requires `permission.manage` permission. Body field: `permissions` — array of `{module, action}` pairs validated against the code registry (constants/permissions.ts).
  * @summary Assign permissions to a role
  */
 export const putRolesIdPermissions = (
@@ -893,7 +893,7 @@ export const usePutRolesIdPermissions = <TError = UnauthorizedResponse | Forbidd
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **PR-01** — GET /permissions: catalog of permission keys declared by the code. Requires `permission.manage` permission. Handled by `Permission.findAll`.
+ * **PR-01** — GET /permissions: catalog of permission keys declared by the code (src/constants/permissions.ts) — no DB query. Requires `permission.manage` permission.
  * @summary Get permission list
  */
 export const getPermissions = (

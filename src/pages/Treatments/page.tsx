@@ -5,7 +5,6 @@ import type { TableColumnsType } from 'antd'
 import { EditOutlined, EyeInvisibleOutlined, EyeOutlined, PlusOutlined, SearchOutlined, ShoppingOutlined } from '@ant-design/icons'
 import PageTitle from '@/components/base/PageTitle'
 import StatCards, { type StatItem } from '@/components/base/StatCards'
-import ListFilterPopover from '@/components/base/ListFilterPopover'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
 import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
@@ -36,15 +35,10 @@ import TreatmentPackageModal from './components/TreatmentPackageModal'
 import TreatmentTypeModal from './components/TreatmentTypeModal'
 import {
   VALIDITY_LABEL,
-  COLUMN_OPTIONS,
-  DEFAULT_COLUMNS,
   PACKAGE_TYPE_QUOTA_OPTIONS,
-  PACKAGE_STATUS_OPTIONS,
   QUOTA_LABEL,
   quotaLabel,
   priceLabel,
-  type PackageColumnKey,
-  type PackageFiltersForm,
   type PackageTypeForm,
   type PackageTypeRow,
   type QuotaType,
@@ -75,13 +69,7 @@ export default function Treatments() {
   const [typeForm] = Form.useForm<PackageTypeForm>()
   const [typeSaving, setTypeSaving] = useState(false)
 
-  const [filterOpen, setFilterOpen] = useState(false)
-  const [filterForm] = Form.useForm<PackageFiltersForm>()
-  const [visibleColumns, setVisibleColumns] = useState<PackageColumnKey[]>(DEFAULT_COLUMNS)
-  const [draftVisibleColumns, setDraftVisibleColumns] = useState<PackageColumnKey[]>(DEFAULT_COLUMNS)
-  const [filters, setFilters] = useState<{ package_type_id?: string; branch_id?: string; is_active?: boolean }>({})
-
-  const packagesQuery = useGetTreatmentPackages({ ...filters, page: 1, limit: 200 })
+  const packagesQuery = useGetTreatmentPackages({ page: 1, limit: 200 })
   const packageTypesQuery = useGetPackageTypes({ limit: 200 })
   const servicesQuery = useGetService({ page: 1, limit: 200 })
   const branchesQuery = useGetBranches()
@@ -98,10 +86,10 @@ export default function Treatments() {
   }, [rows, packageSearch])
   const pagedRows = paginateRows(visibleRows, packagePage, 10)
   // Thống kê đầu tab gói — đếm trên TẤT CẢ gói (rows) trước khi phân trang;
-  // chỉ đáng tin khi không có bộ lọc server (loại gói/cơ sở/trạng thái)
-  const hasServerFilters = !!(filters.package_type_id || filters.branch_id || filters.is_active !== undefined)
+
+
   const activePackageCount = rows.filter((row) => !!row.is_active).length
-  const statItems: StatItem[] = hasServerFilters || hideSummaryForTechnician
+  const statItems: StatItem[] = hideSummaryForTechnician
     ? []
     : [
       { key: 'total', label: 'Tổng gói liệu trình', value: rows.length.toLocaleString('vi-VN'), icon: <ShoppingOutlined />, tone: 'primary' },
@@ -110,6 +98,13 @@ export default function Treatments() {
     ]
   const packageTypeData = pickData<PackageTypeRow[] | { rows?: PackageTypeRow[] }>(packageTypesQuery.data)
   const packageTypes = (Array.isArray(packageTypeData) ? packageTypeData : packageTypeData?.rows ?? []) as PackageTypeRow[]
+  // Tìm kiếm loại gói (client-side) + phân trang tab loại
+  const [typeSearch, setTypeSearch] = useState('')
+  const filteredPackageTypes = useMemo(() => {
+    const keyword = typeSearch.trim().toLocaleLowerCase('vi-VN')
+    if (!keyword) return packageTypes
+    return packageTypes.filter((row) => [row.name, row.code].filter(Boolean).join(' ').toLocaleLowerCase('vi-VN').includes(keyword))
+  }, [packageTypes, typeSearch])
   const packageTypeById = new Map(packageTypes.map((type) => [String(type.id), type]))
   // GET /service trả { services, total, ... } trong responseData
   const services = (pickData<{ services?: Service[] }>(servicesQuery.data)?.services ?? []) as Service[]
@@ -299,43 +294,6 @@ export default function Treatments() {
     }
   }
 
-  const applyFilters = (values: Record<string, unknown>) => {
-    if (!draftVisibleColumns.length) {
-      message.error('Hãy giữ lại ít nhất một cột hiển thị')
-      return
-    }
-    const next: { package_type_id?: string; branch_id?: string; is_active?: boolean } = {}
-    if (typeof values.package_type_id === 'string' && values.package_type_id) next.package_type_id = values.package_type_id
-    if (typeof values.branch_id === 'string' && values.branch_id) next.branch_id = values.branch_id
-    if (values.is_active === 'true' || values.is_active === 'false') next.is_active = values.is_active === 'true'
-    setFilters(next)
-    setVisibleColumns(draftVisibleColumns)
-    setPackagePage(1)
-    setFilterOpen(false)
-  }
-
-  const openFilters = (open: boolean) => {
-    if (open) {
-      setDraftVisibleColumns(visibleColumns)
-      filterForm.setFieldsValue({
-        package_type_id: filters.package_type_id,
-        branch_id: filters.branch_id,
-        is_active: filters.is_active === undefined ? undefined : String(filters.is_active) as 'true' | 'false',
-      })
-    }
-    setFilterOpen(open)
-  }
-
-  const clearFilters = () => {
-    filterForm.resetFields()
-    setPackageSearch('')
-    setPackagePage(1)
-    setFilters({})
-    setVisibleColumns(DEFAULT_COLUMNS)
-    setDraftVisibleColumns(DEFAULT_COLUMNS)
-  }
-
-  const activeFilterCount = Object.values(filters).filter((value) => value !== undefined && value !== '').length + (packageSearch.trim() ? 1 : 0)
 
   const packageColumns: TableColumnsType<TreatmentPackageRow> = [
     {
@@ -391,7 +349,7 @@ export default function Treatments() {
     { title: 'Trạng thái', key: 'status', dataIndex: 'is_active', width: 110, render: (active) => active ? <Tag color="green">Đang bán</Tag> : <Tag>Đã ẩn</Tag> },
   ]
 
-  const visiblePackageColumns = packageColumns.filter((column) => visibleColumns.includes(column.key as PackageColumnKey))
+  const visiblePackageColumns = packageColumns
 
   const packageTypeColumns: TableColumnsType<PackageTypeRow> = [
     { title: 'Tên loại gói', dataIndex: 'name', render: (value) => <Typography.Text strong>{value}</Typography.Text> },
@@ -419,65 +377,33 @@ export default function Treatments() {
 
   const packagesContent = (
     <>
-      <PageTitle
-        subtitle="Các gói liệu trình hiện có, trạng thái bán và giá niêm yết"
-        left={
-          <>
-            {/* Mobile: gọn toolbar — search thu về nút icon, bấm mới mở */}
-            {isMobile && !searchOpen && (
-              <Button icon={<SearchOutlined />} aria-label="Tìm kiếm" title="Tìm kiếm" onClick={() => setSearchOpen(true)} />
-            )}
-            {(searchOpen || !isMobile) && (
-              <Input
-                allowClear
-                prefix={<SearchOutlined className="text-[var(--brand-text-inactive,#A9ADB2)]" />}
-                placeholder="Tìm theo tên gói"
-                className={isMobile && searchOpen ? 'min-w-0 flex-1' : 'w-[260px]!'}
-                value={packageSearch}
-                onChange={(event) => {
-                  setPackageSearch(event.target.value)
-                  setPackagePage(1)
-                }}
-                onBlur={() => { if (isMobile && !packageSearch) setSearchOpen(false) }}
-              />
-            )}
-            <ListFilterPopover
-              iconOnly={!isMobile}
-              open={filterOpen}
-              onOpenChange={openFilters}
-              activeFilterCount={activeFilterCount}
-              form={filterForm}
-              onApply={applyFilters}
-              onClear={clearFilters}
-              columnOptions={COLUMN_OPTIONS}
-              draftVisibleColumns={draftVisibleColumns}
-              onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as PackageColumnKey[])}
-              filterItems={(
-                <>
-                  <Form.Item name="package_type_id" label="Loại gói" className="mb-2.5!">
-                    <Select allowClear placeholder="Tất cả loại gói" options={packageTypes.map((type) => ({ value: type.id, label: type.name }))} />
-                  </Form.Item>
-                  <Form.Item name="branch_id" label="Cơ sở" className="mb-2.5!">
-                    <Select allowClear placeholder="Tất cả cơ sở" options={branches.map((branch) => ({ value: branch.id, label: branch.name }))} />
-                  </Form.Item>
-                  <Form.Item name="is_active" label="Trạng thái" className="mb-0!">
-                    <Select allowClear placeholder="Tất cả trạng thái" options={PACKAGE_STATUS_OPTIONS} />
-                  </Form.Item>
-                </>
-              )}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', minWidth: 0 }}>
+          {/* Mobile: gọn toolbar — search thu về nút icon, bấm mới mở */}
+          {isMobile && !searchOpen && (
+            <Button icon={<SearchOutlined />} aria-label="Tìm kiếm" title="Tìm kiếm" onClick={() => setSearchOpen(true)} />
+          )}
+          {(searchOpen || !isMobile) && (
+            <Input
+              allowClear
+              prefix={<SearchOutlined className="text-[var(--brand-text-inactive,#A9ADB2)]" />}
+              placeholder="Tìm theo tên gói"
+              className={isMobile && searchOpen ? 'min-w-0 flex-1' : 'w-[260px]!'}
+              value={packageSearch}
+              onChange={(event) => {
+                setPackageSearch(event.target.value)
+                setPackagePage(1)
+              }}
+              onBlur={() => { if (isMobile && !packageSearch) setSearchOpen(false) }}
             />
-          </>
-        }
-        right={
-          canManage ? (
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => openPackageModal()}>
-              Thêm gói
-            </Button>
-          ) : undefined
-        }
-      >
-        Danh mục gói
-      </PageTitle>
+          )}
+        </div>
+        {canManage && (
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => openPackageModal()}>
+            Thêm gói
+          </Button>
+        )}
+      </div>
       {packagesQuery.isError && <Alert type="error" showIcon message="Không tải được danh mục gói" description={errorMessage(packagesQuery.error)} style={{ margin: '12px 0' }} />}
       <Table<TreatmentPackageRow>
         className="desktop-only"
@@ -550,28 +476,31 @@ export default function Treatments() {
 
   const typesContent = (
     <>
-      <PageTitle
-        subtitle="Phân nhóm gói liệu trình theo loại"
-        right={
-          canManage ? (
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => openTypeModal()}>
-              Thêm loại gói
-            </Button>
-          ) : undefined
-        }
-      >
-        Loại gói
-      </PageTitle>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
+        <Input
+          allowClear
+          prefix={<SearchOutlined className="text-[var(--brand-text-inactive,#A9ADB2)]" />}
+          placeholder="Tìm theo tên hoặc mã loại gói"
+          style={{ width: 260 }}
+          value={typeSearch}
+          onChange={(event) => setTypeSearch(event.target.value)}
+        />
+        {canManage && (
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => openTypeModal()}>
+            Thêm loại gói
+          </Button>
+        )}
+      </div>
       <Table<PackageTypeRow>
         className="desktop-only"
         rowKey="id"
         loading={packageTypesQuery.isLoading}
-        dataSource={packageTypes}
+        dataSource={filteredPackageTypes}
         columns={packageTypeColumns}
         pagination={false}
       />
       <MobileCards
-        rows={packageTypes}
+        rows={filteredPackageTypes}
         rowKey={(row) => row.id}
         loading={packageTypesQuery.isLoading}
         emptyText="Chưa có loại gói nào"

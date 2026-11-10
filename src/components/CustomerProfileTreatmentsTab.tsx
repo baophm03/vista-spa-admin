@@ -5,7 +5,7 @@ import type { CustomerTreatment } from '@/api/models/customerTreatment'
 import type { PaymentLog } from '@/api/models/paymentLog'
 import type { SessionPhoto } from '@/api/models/sessionPhoto'
 import type { TreatmentSession } from '@/api/models/treatmentSession'
-import { getCustomerTreatments, getCustomerTreatmentsIdPayments, getCustomerTreatmentsIdSessions, getSessionsIdPhotos } from '@/api/endpoints/customer-treatments'
+import { getTreatmentCustomers, getTreatmentCustomersIdPayments, getTreatmentCustomersIdSessions, getSessionsIdPhotos } from '@/api/endpoints/treatment-customers'
 import { errorMessage, pickData } from '@/api/helpers'
 import CustomerTreatmentDetailCard from '@/components/CustomerTreatmentDetailCard'
 import { useAbility } from '@casl/react'
@@ -35,12 +35,12 @@ export default function CustomerProfileTreatmentsTab({ profileId }: { profileId:
     setLoading(true)
     setError('')
     const load = async () => {
-      const result = await getCustomerTreatments({ customer_profile_id: profileId, page: 1, limit: 200 })
+      const result = await getTreatmentCustomers({ customer_profile_id: profileId, page: 1, limit: 200 })
       const treatments = rowsOf<CustomerTreatment>(pickData(result))
       const details = await Promise.all(treatments.map(async (treatment) => {
         const [sessionResult, paymentResult] = await Promise.all([
-          getCustomerTreatmentsIdSessions(treatment.id),
-          canReadPayments ? getCustomerTreatmentsIdPayments(treatment.id) : Promise.resolve(undefined),
+          getTreatmentCustomersIdSessions(treatment.id),
+          canReadPayments ? getTreatmentCustomersIdPayments(treatment.id) : Promise.resolve(undefined),
         ])
         return {
           treatment,

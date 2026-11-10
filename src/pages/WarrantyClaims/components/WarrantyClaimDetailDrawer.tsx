@@ -6,7 +6,7 @@ import { Can } from '@casl/react'
 import {
   useGetWarrantyClaimsId,
   usePutWarrantyClaimsIdApprove,
-} from '@/api/endpoints/customer-treatments'
+} from '@/api/endpoints/treatment-customers'
 import CustomFieldFormItems, { normalizeCustomFieldValues } from '@/components/CustomFieldFormItems'
 import useCustomFieldDefinitions from '@/hooks/useCustomFieldDefinitions'
 import { fileSrc, resolveFileSrc, useFileUrlMap } from '@/hooks/useFileUrl'

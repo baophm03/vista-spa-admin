@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import dayjs, { type Dayjs } from 'dayjs'
-import { Alert, Button, DatePicker, Form, Input, Modal, Popconfirm, Select, Space, Table, Tag, Tooltip, message } from 'antd'
+import { Alert, Button, DatePicker, Form, Input, Modal, Popconfirm, Select, Space, Table, Tag, Tooltip, Typography, message } from 'antd'
 import { DeleteOutlined, EditOutlined, LeftOutlined, PlusOutlined, RightOutlined } from '@ant-design/icons'
 import { errorMessage, pickData } from '@/api/helpers'
 import TableEmpty from '@/components/base/TableEmpty'
@@ -278,15 +278,25 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
   const renderShiftTags = (shifts: DateCellShift[], compact: boolean) => (
     <Space direction="vertical" size={4} style={{ display: 'flex' }}>
       {shifts.map((item) => (
-        <Space key={item.key} size={2} style={{ display: 'flex' }}>
-          <Tooltip title={item.note ? `Ghi chú: ${item.note}` : undefined}>
-            <Tag color="geekblue" style={{ margin: 0, whiteSpace: 'normal', textAlign: 'left', cursor: canManage ? 'pointer' : undefined }} onClick={() => canManage && openForm(item.row)}>
-              {shiftLabel(item.template)}{item.note ? ' •' : ''}
-            </Tag>
-          </Tooltip>
-          {canManage && <Popconfirm title="Xóa lịch ngày này?" okText="Kiểm tra và xóa" cancelText="Hủy" onConfirm={() => remove(item.row)}>
-            <Button aria-label="Xóa lịch theo ngày" type="text" size="small" danger icon={<DeleteOutlined />} />
-          </Popconfirm>}
+        <Space key={item.key} direction="vertical" size={2} style={{ display: 'flex' }}>
+          <Space size={2} style={{ display: 'flex' }}>
+            <Tooltip title={item.note ? `Ghi chú: ${item.note}` : undefined}>
+              <Tag color="geekblue" style={{ margin: 0, whiteSpace: 'normal', textAlign: 'left', cursor: canManage ? 'pointer' : undefined }} onClick={() => canManage && openForm(item.row)}>
+                {shiftLabel(item.template)}
+              </Tag>
+            </Tooltip>
+            {canManage && <Popconfirm title="Xóa lịch ngày này?" okText="Kiểm tra và xóa" cancelText="Hủy" onConfirm={() => remove(item.row)}>
+              <Button aria-label="Xóa lịch theo ngày" type="text" size="small" danger icon={<DeleteOutlined />} />
+            </Popconfirm>}
+          </Space>
+          {item.note && (
+            <Typography.Text
+              type="secondary"
+              style={{ display: 'block', fontSize: 11, lineHeight: 1.35, color: '#71005C', whiteSpace: 'normal', overflowWrap: 'anywhere', paddingLeft: 2 }}
+            >
+              📝 {item.note}
+            </Typography.Text>
+          )}
         </Space>
       ))}
       {!shifts.length && !compact && <span style={{ color: '#aaa' }}>—</span>}
@@ -338,10 +348,15 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
       <Select allowClear showSearch optionFilterProp="label" placeholder="Tất cả KTV" style={{ width: 220 }} value={staffFilter} onChange={setStaffFilter} options={staffForBranchFilter.map((person) => ({ value: person.id, label: staffLabel(person) }))} />
       <Space.Compact>
         <Button icon={<LeftOutlined />} aria-label="Tuần trước" onClick={() => setWeekStart((week) => week.subtract(1, 'week'))} />
-        <Button onClick={() => setWeekStart(mondayOf(dayjs()))}>Tuần này</Button>
+        <DatePicker.RangePicker
+          allowClear={false}
+          format="DD/MM"
+          style={{ width: 170 }}
+          value={[weekStart, weekStart.add(6, 'day')]}
+          onChange={(value) => { const start = value?.[0]; if (start) setWeekStart(mondayOf(start)) }}
+        />
         <Button icon={<RightOutlined />} aria-label="Tuần sau" onClick={() => setWeekStart((week) => week.add(1, 'week'))} />
       </Space.Compact>
-      <DatePicker picker="week" allowClear={false} format="DD/MM" value={weekStart} onChange={(value) => value && setWeekStart(mondayOf(value))} />
       <Button type="primary" icon={<PlusOutlined />} onClick={() => openForm()}>Đăng ký theo ngày</Button>
     </ToolbarRow>}
     {!!error && <Alert type="error" showIcon message="Không tải được lịch theo ngày" description={error} action={<Button size="small" onClick={refreshShared}>Thử lại</Button>} style={{ marginBottom: 16 }} />}
@@ -402,9 +417,6 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
         </>
       )}
     />
-    <p style={{ color: '#849197', fontSize: 12, marginTop: 8 }}>
-      Giờ trống khi đặt lịch hẹn được tính từ các ca xếp theo ngày này (trừ ngày nghỉ đã duyệt). Muốn KTV nghỉ, thêm đăng ký ở tab Ngày nghỉ.
-    </p>
 
     <DateScheduleFormModal
       open={open}

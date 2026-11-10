@@ -1,4 +1,4 @@
-import { Button, Divider, message, Modal, Popconfirm, Progress, Select, Table, Tabs, Tag, Typography } from 'antd'
+import { Button, Divider, Grid, message, Modal, Popconfirm, Progress, Select, Table, Tabs, Tag, Typography } from 'antd'
 import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import TableEmpty from '@/components/base/TableEmpty'
 import { openHtmlPrint, errorMessage } from '@/api/helpers'
@@ -72,6 +72,7 @@ export default function TreatmentDetailModal({
   onClose,
 }: TreatmentDetailModalProps) {
   const { formatDateTime } = useBrandDateTime()
+  const isMobile = !Grid.useBreakpoint().md
   return (
       <Modal
         open={!!detail && !payOpen}
@@ -84,7 +85,11 @@ export default function TreatmentDetailModal({
         {detail && (
           <div className="flex flex-wrap items-start gap-5">
             {/* Rail trái: tóm tắt + hành động — card nền brand-bg như modal lần làm dịch vụ */}
-            <aside className="max-w-[330px] flex-[1_1_260px] rounded-[14px] border border-[var(--brand-border)] bg-[var(--brand-bg)] p-[18px]">
+            {/* Cố định rail trái: scroll cột phải thì aside đứng yên (trừ mobile xếp chồng) */}
+            <aside
+              className="max-w-[330px] flex-[1_1_260px] rounded-[14px] border border-[var(--brand-border)] bg-[var(--brand-bg)] p-[18px]"
+              style={isMobile ? undefined : { position: 'sticky', top: 0, maxHeight: 'calc(100vh - 140px)', overflowY: 'auto' }}
+            >
               <Typography.Text type="secondary" className="text-xs font-extrabold tracking-[1.2px]">
                 {detail.quota_type === 'UNLIMITED' ? 'LIỆU TRÌNH TRỌN GÓI' : 'TIẾN ĐỘ LIỆU TRÌNH'}
               </Typography.Text>

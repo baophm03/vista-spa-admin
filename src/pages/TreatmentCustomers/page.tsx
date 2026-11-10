@@ -17,34 +17,33 @@ import { errorMessage, pickData } from '@/api/helpers'
 import { customInstance } from '@/api/mutator/custom-instance'
 import type { CustomerTreatment } from '@/api/models/customerTreatment'
 import type { TreatmentPackage } from '@/api/models/treatmentPackage'
-import type { GetCustomerProfilesParams } from '@/api/models/getCustomerProfilesParams'
 import { getCustomerProfiles, useGetCustomerProfiles, useGetCustomerProfilesIdPoints } from '@/api/endpoints/customer-profiles'
 import { getGetRewardRedemptionsQueryKey, getRewardRedemptions } from '@/api/endpoints/rewards'
 import {
-  getCustomerTreatmentsIdAvailableSlots,
-  getCustomerTreatmentsIdPayments,
-  getCustomerTreatmentsIdSessions,
-  getCustomerTreatmentsId,
-  getGetCustomerTreatmentsQueryKey,
-  postCustomerTreatmentsIdSessions,
-  useGetCustomerTreatments,
-  useGetCustomerTreatmentsIdAdjustments,
-  usePostCustomerTreatments,
-  usePostCustomerTreatmentsIdConvert,
-  usePostCustomerTreatmentsIdPayments,
-  usePutCustomerTreatmentsIdAdjustments,
-  usePutCustomerTreatmentsIdCancel,
-  usePutCustomerTreatmentsIdFinish,
-} from '@/api/endpoints/customer-treatments'
+  getTreatmentCustomersIdAvailableSlots,
+  getTreatmentCustomersIdPayments,
+  getTreatmentCustomersIdSessions,
+  getTreatmentCustomersId,
+  getGetTreatmentCustomersQueryKey,
+  postTreatmentCustomersIdSessions,
+  useGetTreatmentCustomers,
+  useGetTreatmentCustomersIdAdjustments,
+  usePostTreatmentCustomers,
+  usePostTreatmentCustomersIdConvert,
+  usePostTreatmentCustomersIdPayments,
+  usePutTreatmentCustomersIdAdjustments,
+  usePutTreatmentCustomersIdCancel,
+  usePutTreatmentCustomersIdFinish,
+} from '@/api/endpoints/treatment-customers'
 import { useGetService } from '@/api/endpoints/services'
 import { useGetTreatmentPackages } from '@/api/endpoints/services'
 import { useGetLookupLists } from '@/api/endpoints/lookup-lists'
 import {
   useGetCustomerProfilesIdAvailableDiscounts,
-  usePostCustomerTreatmentsIdApplyDiscount,
+  usePostTreatmentCustomersIdApplyDiscount,
 } from '@/api/endpoints/discounts'
 import type { DiscountRule } from '@/api/models'
-import { usePostCustomerTreatmentsIdRedeemPoints } from '@/api/endpoints/customer-treatments'
+import { usePostTreatmentCustomersIdRedeemPoints } from '@/api/endpoints/treatment-customers'
 import { useGetUsers } from '@/api/endpoints/users'
 import { useBrandCurrency } from '@/themeRuntime'
 import { useCustomerProfileAccess } from '@/utils/customerProfileAccess'
@@ -100,8 +99,8 @@ export default function TreatmentCustomers() {
   const [filterOpen, setFilterOpen] = useState(false)
   const [visibleColumns, setVisibleColumns] = useState<CustomerTreatmentColumnKey[]>(DEFAULT_VISIBLE_COLUMNS)
   const [draftVisibleColumns, setDraftVisibleColumns] = useState<CustomerTreatmentColumnKey[]>(DEFAULT_VISIBLE_COLUMNS)
-  const [open, setOpen] = useState(false)
-  const [form] = Form.useForm()
+  const [createOpen, setCreateOpen] = useState(false)
+  const [createForm] = Form.useForm()
   const [filterForm] = Form.useForm()
   // Mobile (dưới breakpoint md): search thu về nút icon, bộ lọc/tải lại chỉ icon
   const isMobile = !Grid.useBreakpoint().md
@@ -134,14 +133,14 @@ export default function TreatmentCustomers() {
   const [redeemForm] = Form.useForm()
   const [paymentLookupError, setPaymentLookupError] = useState('')
 
-  const treatmentsQuery = useGetCustomerTreatments({ page: 1, limit: 500 })
+  const treatmentsQuery = useGetTreatmentCustomers({ page: 1, limit: 500 })
   const rows = (pickData<CustomerTreatment[] | undefined>(treatmentsQuery.data) ?? []) as CustomerTreatment[]
 
   const profilesQuery = useGetCustomerProfiles({ page: 1, limit: 200 })
   const profiles = (pickData<ProfileRow[] | undefined>(profilesQuery.data) ?? []) as ProfileRow[]
   const packagesQuery = useGetTreatmentPackages({ page: 1, limit: 200 })
   const packages = (pickData<TreatmentPackage[] | undefined>(packagesQuery.data) ?? []) as TreatmentPackage[]
-  const selectedSalePackageId = Form.useWatch('package_id', form)
+  const selectedSalePackageId = Form.useWatch('package_id', createForm)
   const selectedSalePackage = packages.find((pkg) => pkg.id === selectedSalePackageId)
   const staffsQuery = useGetUsers({ currentPage: 1, pageSize: 200, has_role: true })
   const staffOptions = useMemo(
@@ -169,14 +168,14 @@ export default function TreatmentCustomers() {
     } else setPaymentLookupError('')
   }, [lookupQuery.isLoading, lookupQuery.isError, lookupQuery.error, paymentLookup])
 
-  const createMutation = usePostCustomerTreatments()
+  const createMutation = usePostTreatmentCustomers()
   const createInFlightRef = useRef(false)
-  const createPaymentMutation = usePostCustomerTreatmentsIdPayments()
-  const cancelMutation = usePutCustomerTreatmentsIdCancel()
-  const finishMutation = usePutCustomerTreatmentsIdFinish()
+  const createPaymentMutation = usePostTreatmentCustomersIdPayments()
+  const cancelMutation = usePutTreatmentCustomersIdCancel()
+  const finishMutation = usePutTreatmentCustomersIdFinish()
 
   const refresh = useCallback(() => {
-    void queryClient.invalidateQueries({ queryKey: getGetCustomerTreatmentsQueryKey() })
+    void queryClient.invalidateQueries({ queryKey: getGetTreatmentCustomersQueryKey() })
   }, [queryClient])
 
   const profileOf = (id: string) => profiles.find((p) => p.id === id)
@@ -261,7 +260,7 @@ export default function TreatmentCustomers() {
       return
     }
     setPayLoading(true)
-    getCustomerTreatmentsIdPayments(row.id)
+    getTreatmentCustomersIdPayments(row.id)
       .then((response) => setPayments((pickData<PaymentRow[] | undefined>(response) ?? []) as PaymentRow[]))
       .catch(() => setPayments([]))
       .finally(() => setPayLoading(false))
@@ -287,28 +286,28 @@ export default function TreatmentCustomers() {
   const fetchCustomerOptions = useCallback((q: string) => {
     if (custTimer.current) clearTimeout(custTimer.current)
     custTimer.current = setTimeout(() => {
-      getCustomerProfiles({ page: 1, limit: 50, ...(q ? { q } : {}) } as GetCustomerProfilesParams)
+      getCustomerProfiles({ page: 1, limit: 50, ...(q ? { q } : {}) } as never)
         .then((response) => setCustomerOptions((pickData<ProfileRow[] | undefined>(response) ?? []) as ProfileRow[]))
         .catch(() => undefined)
     }, 300)
   }, [])
 
-  const openModal = () => {
-    form.setFieldsValue({ customer_profile_id: undefined, package_id: undefined, total_amount: undefined, custom_fields: {} })
-    setOpen(true)
+  const openCreateModal = () => {
+    createForm.setFieldsValue({ customer_profile_id: undefined, package_id: undefined, total_amount: undefined, custom_fields: {} })
+    setCreateOpen(true)
     fetchCustomerOptions('')
   }
 
-  const onPackageChange = (id: string) => {
+  const onCreatePackageChange = (id: string) => {
     const pkg = packages.find((p) => p.id === id)
-    if (pkg) form.setFieldsValue({ total_amount: pkg.list_price ?? undefined })
+    if (pkg) createForm.setFieldsValue({ total_amount: pkg.list_price ?? undefined })
   }
 
-  const submit = async () => {
+  const submitCreate = async () => {
     if (createInFlightRef.current || createMutation.isPending) return
     createInFlightRef.current = true
     try {
-      const values = await form.validateFields()
+      const values = await createForm.validateFields()
       const dto = {
         ...values,
         sessions_bonus: values.sessions_bonus != null ? Number(values.sessions_bonus) : undefined,
@@ -317,7 +316,7 @@ export default function TreatmentCustomers() {
       }
       await createMutation.mutateAsync({ data: dto as never })
       message.success('Đã thêm khách vào liệu trình')
-      setOpen(false)
+      setCreateOpen(false)
       refresh()
     } catch (err) {
       if (!(err as { errorFields?: unknown })?.errorFields) message.error(errorMessage(err))
@@ -340,7 +339,7 @@ export default function TreatmentCustomers() {
     const sequence = ++addSessionSlotSequence.current
     setAddSessionSlotsLoading(true)
     try {
-      const response = await getCustomerTreatmentsIdAvailableSlots(addSessionFor.id, { date: date.format('YYYY-MM-DD') })
+      const response = await getTreatmentCustomersIdAvailableSlots(addSessionFor.id, { date: date.format('YYYY-MM-DD') })
       if (sequence !== addSessionSlotSequence.current) return
       const now = dayjs()
       const slots = ((pickData<Slot[] | undefined>(response) ?? []) as Slot[]).filter((slot) => {
@@ -381,7 +380,7 @@ export default function TreatmentCustomers() {
     }
     setAddingSessionId(addSessionFor.id)
     try {
-      await postCustomerTreatmentsIdSessions(addSessionFor.id, {
+      await postTreatmentCustomersIdSessions(addSessionFor.id, {
         ...(scheduledDate && scheduledTime && staffId ? {
           scheduled_at: scheduledDate.hour(Number(scheduledTime.slice(0, 2))).minute(Number(scheduledTime.slice(3, 5))).second(0).millisecond(0).toISOString(),
           staff_id: staffId,
@@ -417,7 +416,7 @@ export default function TreatmentCustomers() {
   const refreshSelectedDetail = async () => {
     if (!detail) return
     try {
-      const fresh = pickData<CustomerTreatment>(await getCustomerTreatmentsId(detail.id))
+      const fresh = pickData<CustomerTreatment>(await getTreatmentCustomersId(detail.id))
       if (fresh) setDetail(fresh)
     } catch { /* bỏ qua — drawer giữ dữ liệu cũ */ }
   }
@@ -429,7 +428,7 @@ export default function TreatmentCustomers() {
     }
     try {
       // CT-05 — trả da sớm là hợp lệ, nhưng cảnh báo khi sổ chưa ghi buổi hoàn thành nào
-      const sessionsRes = await getCustomerTreatmentsIdSessions(row.id)
+      const sessionsRes = await getTreatmentCustomersIdSessions(row.id)
       const completedCount = (pickData<{ status?: string }[]>(sessionsRes) ?? []).filter((s) => s.status === 'completed').length
       if (completedCount === 0) {
         const confirmed = await new Promise<boolean>((resolve) => {
@@ -459,11 +458,11 @@ export default function TreatmentCustomers() {
   const [adjustForm] = Form.useForm()
   const adjustType = Form.useWatch('type', adjustForm)
   const adjustAmount = Form.useWatch('amount', adjustForm)
-  const adjustMutation = usePutCustomerTreatmentsIdAdjustments()
+  const adjustMutation = usePutTreatmentCustomersIdAdjustments()
   // TA-01 — đếm buổi "completed" trong sổ liệu trình để đối chiếu khi sửa số buổi đã dùng
   const adjustSessionsQuery = useQuery({
     queryKey: ['adjust-sessions', adjustRow?.id],
-    queryFn: ({ signal }) => getCustomerTreatmentsIdSessions(adjustRow!.id, signal),
+    queryFn: ({ signal }) => getTreatmentCustomersIdSessions(adjustRow!.id, signal),
     enabled: adjustOpen && adjustType === 'ADJUST_SESSIONS' && !!adjustRow,
     retry: 1,
   })
@@ -473,11 +472,11 @@ export default function TreatmentCustomers() {
   const [convertOpen, setConvertOpen] = useState(false)
   const [convertRow, setConvertRow] = useState<CustomerTreatment | null>(null)
   const [convertForm] = Form.useForm()
-  const convertMutation = usePostCustomerTreatmentsIdConvert()
+  const convertMutation = usePostTreatmentCustomersIdConvert()
   const [historyOpen, setHistoryOpen] = useState(false)
   const [historyRow, setHistoryRow] = useState<CustomerTreatment | null>(null)
   const [adjustHistoryPage, setAdjustHistoryPage] = useState(1)
-  const historyQuery = useGetCustomerTreatmentsIdAdjustments(historyRow?.id ?? 'none', {
+  const historyQuery = useGetTreatmentCustomersIdAdjustments(historyRow?.id ?? 'none', {
     query: { enabled: historyOpen && !!historyRow },
   })
   const servicesQuery = useGetService({ is_active: true, limit: 200 })
@@ -575,7 +574,7 @@ export default function TreatmentCustomers() {
       if (canReadPayments) {
         setPayLoading(true)
         try {
-          const response = await getCustomerTreatmentsIdPayments(treatmentId)
+          const response = await getTreatmentCustomersIdPayments(treatmentId)
           setPayments((pickData<PaymentRow[] | undefined>(response) ?? []) as PaymentRow[])
         } catch {
           setPayments([])
@@ -618,8 +617,8 @@ export default function TreatmentCustomers() {
     if (redemption.status !== 'ISSUED' || reward?.type !== 'BENEFIT' || Number(reward.benefit_amount ?? 0) <= 0) return false
     return !reward.service_id || promoServiceIds.has(String(reward.service_id))
   })
-  const applyDiscountMutation = usePostCustomerTreatmentsIdApplyDiscount()
-  const redeemPointsMutation = usePostCustomerTreatmentsIdRedeemPoints()
+  const applyDiscountMutation = usePostTreatmentCustomersIdApplyDiscount()
+  const redeemPointsMutation = usePostTreatmentCustomersIdRedeemPoints()
   const promoPointsQuery = useGetCustomerProfilesIdPoints(promoCustomerProfileId ?? '', {
     query: { enabled: promoOpen && Boolean(promoCustomerProfileId) },
   })
@@ -687,12 +686,12 @@ export default function TreatmentCustomers() {
         setApplyingRewardId(redemption.id)
         try {
           await customInstance({
-            url: `/customerTreatments/${target.id}/apply-reward`,
+            url: `/treatmentCustomers/${target.id}/apply-reward`,
             method: 'POST',
             data: { redemption_id: redemption.id },
           })
           message.success(`Đã trừ ${formatMoney(reward.benefit_amount)} khỏi công nợ và ghi nhận quà đã dùng`)
-          const fresh = pickData<CustomerTreatment>(await getCustomerTreatmentsId(target.id))
+          const fresh = pickData<CustomerTreatment>(await getTreatmentCustomersId(target.id))
           if (fresh) setPromoRow(fresh)
           refresh()
           await refreshSelectedDetail()
@@ -791,13 +790,13 @@ export default function TreatmentCustomers() {
         }
         right={
           <Can I="UPDATE" a="CUSTOMER">
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => openCreateModal()}>
               Thêm khách vào liệu trình
             </Button>
           </Can>
         }
       >
-        Liệu trình của khách
+        Liệu trình khách hàng
       </PageTitle>
 
       <Table<CustomerTreatment>
@@ -1023,8 +1022,8 @@ export default function TreatmentCustomers() {
       <ListPagination page={page} limit={limit} total={list.length} onChange={setPage} noun="khách điều trị" />
 
       <TreatmentCreateModal
-        form={form}
-        open={open}
+        form={createForm}
+        open={createOpen}
         customerOptions={customerOptions}
         onSearch={fetchCustomerOptions}
         packages={packages}
@@ -1033,9 +1032,9 @@ export default function TreatmentCustomers() {
         currencySymbol={currencySymbol}
         customFieldDefs={customerTreatmentCustomFields}
         submitting={createMutation.isPending}
-        onPackageChange={onPackageChange}
-        onCancel={() => setOpen(false)}
-        onOk={() => void submit()}
+        onPackageChange={onCreatePackageChange}
+        onCancel={() => setCreateOpen(false)}
+        onOk={() => void submitCreate()}
       />
 
       <TreatmentAddSessionModal

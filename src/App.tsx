@@ -32,7 +32,6 @@ import Rewards from './pages/Rewards/page'
 import AcademyCourses from './pages/AcademyCourses/page'
 import AccessLogs from './pages/AccessLogs/page'
 import WarrantyClaims from './pages/WarrantyClaims/page'
-import CardRanks from './pages/CardRanks/page'
 import CommissionRules from './pages/CommissionRules/page'
 import Commissions from './pages/Commissions/page'
 import Collaborators from './pages/Collaborators/page'
@@ -73,7 +72,7 @@ export default function App() {
           <Route path="/health-records" element={<HealthRecords />} />
           <Route path="/rewards" element={<Rewards />} />
           <Route path="/warranty-claims" element={<WarrantyClaims />} />
-          <Route path="/card-ranks" element={<CardRanks />} />
+          <Route path="/card-ranks" element={<Navigate to="/points" replace />} />
           <Route path="/commission-rules" element={<CommissionRules />} />
           <Route path="/commissions" element={<Commissions />} />
           <Route path="/collaborators" element={<Collaborators />} />

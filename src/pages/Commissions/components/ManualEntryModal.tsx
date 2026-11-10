@@ -16,7 +16,7 @@ import { useGetCollaborators } from '@/api/endpoints/admin'
 import { useGetReferrals } from '@/api/endpoints/membership'
 import { useGetBranches } from '@/api/endpoints/branches'
 import { useGetUsers } from '@/api/endpoints/users'
-import { useGetCustomerTreatments, useGetCustomerTreatmentsIdSessions } from '@/api/endpoints/customer-treatments'
+import { useGetTreatmentCustomers, useGetTreatmentCustomersIdSessions } from '@/api/endpoints/treatment-customers'
 import type {
   Branch,
   Collaborator,
@@ -46,7 +46,7 @@ export default function ManualEntryModal({ open, onClose, onDone }: { open: bool
   const collaboratorsQuery = useGetCollaborators({})
   const branchesQuery = useGetBranches()
   const usersQuery = useGetUsers({ currentPage: 1, pageSize: 200, has_role: true })
-  const treatmentsQuery = useGetCustomerTreatments({ page: 1, limit: 100 })
+  const treatmentsQuery = useGetTreatmentCustomers({ page: 1, limit: 100 })
   const collaborators = useMemo(() => pickData<(Collaborator & { commission_percent?: number })[]>(collaboratorsQuery.data) ?? [], [collaboratorsQuery.data])
   const branches = (pickData<Branch[] | undefined>(branchesQuery.data) ?? []) as Branch[]
   const users = (pickData<{ rows?: User[] } | undefined>(usersQuery.data)?.rows ?? []) as User[]
@@ -55,7 +55,7 @@ export default function ManualEntryModal({ open, onClose, onDone }: { open: bool
   const referrals = useMemo(() => pickData<ReferralOption[]>(referralsQuery.data) ?? [], [referralsQuery.data])
   const selectedCollaboratorId = Form.useWatch('collaborator_id', form)
   const selectedTreatmentId = Form.useWatch('customer_treatment_id', form) as string | undefined
-  const sessionsQuery = useGetCustomerTreatmentsIdSessions(selectedTreatmentId ?? '', { query: { enabled: !!selectedTreatmentId } })
+  const sessionsQuery = useGetTreatmentCustomersIdSessions(selectedTreatmentId ?? '', { query: { enabled: !!selectedTreatmentId } })
   const sessions = (pickData<TreatmentSession[] | undefined>(sessionsQuery.data) ?? []) as TreatmentSession[]
   const collaboratorReferrals = useMemo(
     () => referrals.filter((row) => row.referrer_type === 'COLLABORATOR' && row.referrer_id === selectedCollaboratorId && ['APPROVED', 'PAID'].includes(row.status ?? '')),

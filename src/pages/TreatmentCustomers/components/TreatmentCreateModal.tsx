@@ -73,7 +73,17 @@ export default function TreatmentCreateModal({
           <Form.Item
             name="total_amount"
             label="Số tiền"
-            extra={selectedSalePackage?.quota_type === 'VALUE' ? 'Định mức sử dụng của gói này sẽ tự bằng số tiền bán.' : undefined}
+            extra={(() => {
+              const listMin = Number(selectedSalePackage?.list_price ?? 0)
+              const listMax = Math.max(listMin, Number(selectedSalePackage?.list_price_max ?? listMin))
+              const listNote = !selectedSalePackage
+                ? 'Chọn liệu trình để xem giá niêm yết gói.'
+                : listMin > 0
+                  ? `Giá niêm yết gói: ${listMin.toLocaleString('vi-VN')}${listMax > listMin ? `–${listMax.toLocaleString('vi-VN')}` : ''} ₫`
+                  : 'Gói này chưa có giá niêm yết — nhập số tiền bán.'
+              const valueNote = selectedSalePackage?.quota_type === 'VALUE' ? 'Định mức sử dụng của gói này sẽ tự bằng số tiền bán.' : undefined
+              return [listNote, valueNote].filter(Boolean).join(' · ') || undefined
+            })()}
             rules={[{ required: true, message: 'Nhập số tiền' }]}
           >
             <InputNumber min={0} step={100000} suffix={currencySymbol} className="w-full!" />
