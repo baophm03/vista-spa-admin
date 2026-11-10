@@ -25,6 +25,7 @@ export interface Appointment {
   service_id?: AppointmentServiceId;
   staff_id?: AppointmentStaffId;
   customer_treatment_id?: AppointmentCustomerTreatmentId;
+  treatment_package_id?: string;
   appt_date: string;
   start_time: string;
   end_time?: AppointmentEndTime;
