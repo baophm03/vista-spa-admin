@@ -3,6 +3,7 @@ import { Avatar, Badge, Dropdown, Layout, Space, Typography } from 'antd'
 import { useProfileStore } from '../stores/profile-store'
 import { useGetNotifications } from '../api/endpoints/admin'
 import { pickData } from '../api/helpers'
+import { groupNotifications, type NotificationLike } from '../utils/notificationGroups'
 
 const { Header } = Layout
 
@@ -24,11 +25,12 @@ export default function AdminHeader({
   onLogout,
 }: AdminHeaderProps) {
   const profile = useProfileStore((state) => state.profile)
-  // Số chưa đọc trên chuông = số thông báo is_read=false trong hệ thống
+  // Số chưa đọc trên chuông = số sự kiện có ít nhất 1 bản ghi is_read=false
+  // (1 sự kiện gửi N người → N bản ghi trong bảng, gộp lại để đếm 1 lần)
   const notificationsQuery = useGetNotifications()
-  const notificationRows = pickData<{ is_read?: boolean }[] | { rows?: { is_read?: boolean }[] }>(notificationsQuery.data)
-  const unreadCount = ((Array.isArray(notificationRows) ? notificationRows : notificationRows?.rows ?? []) as { is_read?: boolean }[])
-    .filter((row) => !row.is_read).length
+  const notificationRows = pickData<NotificationLike[] | { rows?: NotificationLike[] }>(notificationsQuery.data)
+  const unreadCount = groupNotifications(Array.isArray(notificationRows) ? notificationRows : notificationRows?.rows ?? [])
+    .filter((group) => group.unreadIds.length > 0).length
   const displayName =
     (profile?.full_name as string | undefined) ||
     (profile?.zalo_name as string | undefined) ||
