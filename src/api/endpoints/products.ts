@@ -645,7 +645,7 @@ export const usePostProducts = <TError = UnauthorizedResponse | ForbiddenRespons
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * PUT `/productCategories/{id}` — product categories. Only platform administrators (ADM) can call this. Body fields: `name`, `sort_order`, `is_active`. Handled by `category.update`.
+ * PUT `/productCategories/{id}` — product categories. Only platform administrators (ADM) can call this. Body fields: `name`, `sort_order`, `is_active`, `image_file_id`. Handled by `category.update`.
  * @summary Update a product category
  */
 export const putProductCategoriesId = (
@@ -966,7 +966,7 @@ export const prefetchGetProductCategoriesQuery = async <TData = Awaited<ReturnTy
 
 
 /**
- * POST `/productCategories` — product categories. Only platform administrators (ADM) can call this. Body fields: `name`, `sort_order`.
+ * POST `/productCategories` — product categories. Only platform administrators (ADM) can call this. Body fields: `name`, `sort_order`, `image_file_id`.
  * @summary Create a new product category
  */
 export const postProductCategories = (

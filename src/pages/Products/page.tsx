@@ -226,10 +226,10 @@ export default function Products() {
     setCatSaving(true)
     try {
       if (editingCategory) {
-        await updateCategoryMutation.mutateAsync({ id: editingCategory.id, dto: { name: values.name, sort_order: String(values.sort_order ?? 0) } })
+        await updateCategoryMutation.mutateAsync({ id: editingCategory.id, dto: { name: values.name, sort_order: String(values.sort_order ?? 0), image_file_id: values.image_file_id ?? null } })
         message.success('Đã cập nhật danh mục')
       } else {
-        await createCategoryMutation.mutateAsync({ name: values.name, sort_order: String(values.sort_order ?? 0) })
+        await createCategoryMutation.mutateAsync({ name: values.name, sort_order: String(values.sort_order ?? 0), image_file_id: values.image_file_id ?? null })
         message.success('Đã thêm danh mục')
       }
       catForm.resetFields()

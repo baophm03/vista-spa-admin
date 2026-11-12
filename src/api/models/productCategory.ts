@@ -5,6 +5,7 @@
  * Vista Spa backend API. Uses the NEWSKY+ business error envelope for permission-aware endpoints and the legacy response envelope for existing admin endpoints.
  * OpenAPI spec version: 1.0.0
  */
+import type { ProductCategoryImageFileId } from './productCategoryImageFileId';
 
 /**
  * Product category
@@ -13,6 +14,7 @@ export interface ProductCategory {
   id: string;
   name: string;
   sort_order?: number;
+  image_file_id?: ProductCategoryImageFileId;
   is_active?: boolean;
   created_at?: string;
   updated_at?: string;
