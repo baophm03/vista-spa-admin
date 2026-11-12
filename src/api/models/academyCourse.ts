@@ -11,6 +11,7 @@ import type { AcademyCourseLevel } from './academyCourseLevel';
 import type { AcademyCourseDescription } from './academyCourseDescription';
 import type { AcademyCourseStartDate } from './academyCourseStartDate';
 import type { AcademyCourseEndDate } from './academyCourseEndDate';
+import type { AcademyCourseCoverFileId } from './academyCourseCoverFileId';
 import type { AcademyCourseCustomFields } from './academyCourseCustomFields';
 
 /**
@@ -32,6 +33,7 @@ export interface AcademyCourse {
   end_date?: AcademyCourseEndDate;
   /** @minimum 1 */
   max_students?: number;
+  cover_file_id?: AcademyCourseCoverFileId;
   is_active: boolean;
   custom_fields?: AcademyCourseCustomFields;
   created_at?: string;
