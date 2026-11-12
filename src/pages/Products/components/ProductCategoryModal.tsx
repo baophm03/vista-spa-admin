@@ -11,6 +11,8 @@ import {
 } from 'antd'
 import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons'
 import TableEmpty from '@/components/base/TableEmpty'
+import ServiceImageField from '@/components/ServiceImageField'
+import { fileSrc } from '@/hooks/useFileUrl'
 import type { ProductCategoryRow } from './constants'
 
 interface ProductCategoryModalProps {
@@ -59,6 +61,9 @@ export default function ProductCategoryModal({
         <Button type="primary" htmlType="submit" loading={catSaving} icon={editingCategory ? undefined : <PlusOutlined />} style={{ marginBottom: 8 }}>
           {editingCategory ? 'Lưu' : 'Thêm'}
         </Button>
+        <Form.Item name="image_file_id" style={{ width: '100%', marginBottom: 8 }}>
+          <ServiceImageField />
+        </Form.Item>
       </Form>
       <Table<ProductCategoryRow>
         rowKey="id"
@@ -67,7 +72,15 @@ export default function ProductCategoryModal({
         pagination={false}
         locale={{ emptyText: <TableEmpty description="Chưa có danh mục nào" /> }}
         columns={[
-          { title: 'Tên', dataIndex: 'name', render: (v: string) => <strong>{v}</strong> },
+          { title: 'Tên', dataIndex: 'name', render: (v: string, c) => {
+              const src = fileSrc((c as { image_file?: { path?: string } }).image_file)
+              return (
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                  {src ? <img src={src} alt="" width={32} height={32} style={{ objectFit: 'cover', borderRadius: '50%' }} /> : null}
+                  <strong>{v}</strong>
+                </span>
+              )
+            } },
           { title: 'Thứ tự', dataIndex: 'sort_order', width: 70 },
           { title: 'SP đang bán', dataIndex: 'active_product_count', width: 100, render: (v?: number) => v ?? 0 },
           {
@@ -76,7 +89,7 @@ export default function ProductCategoryModal({
             width: 110,
             render: (_, c) => (
               <Space size={4}>
-                <Button size="small" type="text" icon={<EditOutlined />} onClick={() => { setEditingCategory(c); catForm.setFieldsValue({ name: c.name, sort_order: c.sort_order ?? 0 }) }} />
+                <Button size="small" type="text" icon={<EditOutlined />} onClick={() => { setEditingCategory(c); catForm.setFieldsValue({ name: c.name, sort_order: c.sort_order ?? 0, image_file_id: (c as { image_file?: { id?: string } }).image_file?.id ?? c.image_file_id ?? null }) }} />
                 <Popconfirm
                   title="Xóa danh mục này?"
                   description="Chỉ xóa được khi không còn sản phẩm đang hoạt động."
