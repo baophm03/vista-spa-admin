@@ -10,6 +10,7 @@ import ListPagination from '@/components/base/ListPagination'
 import { paginateRows } from '@/utils/listTable'
 import { normalizeCustomFieldValues } from '@/components/CustomFieldFormItems'
 import { errorMessage, pickData } from '@/api/helpers'
+import { fileSrc } from '@/hooks/useFileUrl'
 import type { AcademyCourse } from '@/api/models/academyCourse'
 import type { Branch } from '@/api/models/branch'
 import {
@@ -86,6 +87,7 @@ export default function AcademyCourses() {
       ...row,
       start_date: row.start_date ? dayjs(row.start_date) : undefined,
       end_date: row.end_date ? dayjs(row.end_date) : undefined,
+      cover_file_id: (row as { cover_file?: { id?: string } }).cover_file?.id ?? (row as { cover_file_id?: string }).cover_file_id ?? null,
       custom_fields: row.custom_fields ?? {},
     } : {
       code: '',
@@ -185,7 +187,15 @@ export default function AcademyCourses() {
         })}
         columns={[
           { key: 'code', title: 'Mã khóa', dataIndex: 'code' },
-          { key: 'name', title: 'Tên khóa học', dataIndex: 'name' },
+          { key: 'name', title: 'Tên khóa học', dataIndex: 'name', render: (value: string, row: AcademyCourse) => {
+              const src = fileSrc((row as { cover_file?: { path?: string } }).cover_file)
+              return (
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                  {src ? <img src={src} alt="" width={44} height={44} style={{ objectFit: 'cover', borderRadius: 6 }} /> : null}
+                  <span>{value}</span>
+                </span>
+              )
+            } },
           { key: 'category', title: 'Danh mục', dataIndex: 'category', render: (value: string) => CATEGORY_OPTIONS.find((item) => item.value === value)?.label ?? value },
           { key: 'level', title: 'Trình độ', dataIndex: 'level', render: (value: string) => LEVEL_OPTIONS.find((item) => item.value === value)?.label ?? value },
           { key: 'tuition', title: 'Học phí', dataIndex: 'tuition', render: (value: number) => formatMoney(value) },

@@ -31,24 +31,38 @@ import type {
 
 import type {
   ConflictResponse,
+  DeleteAppMeFavoritesProductId200,
   GetAppAcademyCourses200,
   GetAppAcademyRegistrations200,
   GetAppAppointments200,
   GetAppAvailableSlots200,
   GetAppAvailableSlotsParams,
+  GetAppBranches200,
   GetAppConfig200,
   GetAppConfigParams,
   GetAppMe200,
+  GetAppMeCtv200,
+  GetAppMeFavorites200,
+  GetAppMeHealthRecord200,
   GetAppMeMembership200,
   GetAppMeOrders200,
+  GetAppMeReferrals200,
   GetAppMeTreatments200,
   GetAppMeTreatmentsId200,
   GetAppMeTreatmentsIdSessions200,
+  GetAppMeWarrantyClaims200,
   GetAppNotifications200,
   GetAppNotificationsParams,
   GetAppPackages200,
+  GetAppPosts200,
+  GetAppPostsParams,
   GetAppRanks200,
+  GetAppServices200,
+  GetAppStaff200,
+  GetAppStaffParams,
+  GetAppVouchers200,
   GetAppWheels200,
+  GetAppWheelsMySpins200,
   GetAppWheelsParams,
   InternalErrorResponse,
   NotFoundResponse,
@@ -56,12 +70,23 @@ import type {
   PostAppAcademyRegistrationsBody,
   PostAppAppointments200,
   PostAppAppointmentsBody,
+  PostAppMeCtv200,
+  PostAppMeCtvBody,
+  PostAppMeFavorites200,
+  PostAppMeFavoritesBody,
   PostAppMeLinkProfile200,
   PostAppMeLinkProfileBody,
+  PostAppMeWarrantyClaims200,
+  PostAppMeWarrantyClaimsBody,
   PostAppOrders200,
   PostAppOrdersBody,
+  PostAppSupportQuestions200,
+  PostAppSupportQuestionsBody,
+  PostAppVouchersIdRedeem200,
   PostAppWheelsIdSpin200,
   PutAppAppointmentsIdCancel200,
+  PutAppAppointmentsIdReschedule200,
+  PutAppAppointmentsIdRescheduleBody,
   PutAppNotificationsIdRead200,
   UnauthorizedResponse,
   UnprocessableEntityResponse
@@ -70,6 +95,654 @@ import type {
 import { customInstance } from '../mutator/custom-instance';
 
 
+
+
+
+/**
+ * GET /app/vouchers — active voucher programs for the logged-in customer. Each item includes `mine`/`my_status` flags indicating whether the customer already owns it. Handled by `appService.publicVouchers`.
+ * @summary View active vouchers
+ */
+export const getAppVouchers = (
+    
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetAppVouchers200>(
+      {url: `/app/vouchers`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetAppVouchersInfiniteQueryKey = () => {
+    return [
+    'infinite', `/app/vouchers`
+    ] as const;
+    }
+
+export const getGetAppVouchersQueryKey = () => {
+    return [
+    `/app/vouchers`
+    ] as const;
+    }
+
+    
+export const getGetAppVouchersInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAppVouchers>>>, TError = UnauthorizedResponse | InternalErrorResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppVouchers>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAppVouchersInfiniteQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAppVouchers>>> = ({ signal }) => getAppVouchers(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppVouchers>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAppVouchersInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAppVouchers>>>
+export type GetAppVouchersInfiniteQueryError = UnauthorizedResponse | InternalErrorResponse
+
+
+export function useGetAppVouchersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppVouchers>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppVouchers>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppVouchers>>,
+          TError,
+          Awaited<ReturnType<typeof getAppVouchers>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppVouchersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppVouchers>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppVouchers>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppVouchers>>,
+          TError,
+          Awaited<ReturnType<typeof getAppVouchers>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppVouchersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppVouchers>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppVouchers>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary View active vouchers
+ */
+
+export function useGetAppVouchersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppVouchers>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppVouchers>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAppVouchersInfiniteQueryOptions(options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary View active vouchers
+ */
+export const prefetchGetAppVouchersInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAppVouchers>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppVouchers>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetAppVouchersInfiniteQueryOptions(options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetAppVouchersQueryOptions = <TData = Awaited<ReturnType<typeof getAppVouchers>>, TError = UnauthorizedResponse | InternalErrorResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppVouchers>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAppVouchersQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAppVouchers>>> = ({ signal }) => getAppVouchers(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAppVouchers>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAppVouchersQueryResult = NonNullable<Awaited<ReturnType<typeof getAppVouchers>>>
+export type GetAppVouchersQueryError = UnauthorizedResponse | InternalErrorResponse
+
+
+export function useGetAppVouchers<TData = Awaited<ReturnType<typeof getAppVouchers>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppVouchers>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppVouchers>>,
+          TError,
+          Awaited<ReturnType<typeof getAppVouchers>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppVouchers<TData = Awaited<ReturnType<typeof getAppVouchers>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppVouchers>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppVouchers>>,
+          TError,
+          Awaited<ReturnType<typeof getAppVouchers>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppVouchers<TData = Awaited<ReturnType<typeof getAppVouchers>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppVouchers>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary View active vouchers
+ */
+
+export function useGetAppVouchers<TData = Awaited<ReturnType<typeof getAppVouchers>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppVouchers>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAppVouchersQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary View active vouchers
+ */
+export const prefetchGetAppVouchersQuery = async <TData = Awaited<ReturnType<typeof getAppVouchers>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppVouchers>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetAppVouchersQueryOptions(options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * Customer submits a question from the mini-app support page. Creates in-app notifications for staff (admin + receptionist). Body: `topic?`, `question`.
+ * @summary Submit a support question
+ */
+export const postAppSupportQuestions = (
+    postAppSupportQuestionsBody: PostAppSupportQuestionsBody,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<PostAppSupportQuestions200>(
+      {url: `/app/support-questions`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: postAppSupportQuestionsBody, signal
+    },
+      );
+    }
+  
+
+
+export const getPostAppSupportQuestionsMutationOptions = <TError = UnauthorizedResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAppSupportQuestions>>, TError,{data: PostAppSupportQuestionsBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postAppSupportQuestions>>, TError,{data: PostAppSupportQuestionsBody}, TContext> => {
+
+const mutationKey = ['postAppSupportQuestions'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAppSupportQuestions>>, {data: PostAppSupportQuestionsBody}> = (props) => {
+          const {data} = props ?? {};
+
+          return  postAppSupportQuestions(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostAppSupportQuestionsMutationResult = NonNullable<Awaited<ReturnType<typeof postAppSupportQuestions>>>
+    export type PostAppSupportQuestionsMutationBody = PostAppSupportQuestionsBody
+    export type PostAppSupportQuestionsMutationError = UnauthorizedResponse | UnprocessableEntityResponse | InternalErrorResponse
+
+    /**
+ * @summary Submit a support question
+ */
+export const usePostAppSupportQuestions = <TError = UnauthorizedResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAppSupportQuestions>>, TError,{data: PostAppSupportQuestionsBody}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postAppSupportQuestions>>,
+        TError,
+        {data: PostAppSupportQuestionsBody},
+        TContext
+      > => {
+
+      const mutationOptions = getPostAppSupportQuestionsMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * GET /app/staff (read-only, no authentication required). Public list of staff profiles flagged `show_in_app` (technicians), with photo, branch and the services they are responsible for. Query parameters: `branch_id`. Handled by `appService.publicStaff`.
+ * @summary View technicians shown in the app
+ */
+export const getAppStaff = (
+    params?: GetAppStaffParams,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetAppStaff200>(
+      {url: `/app/staff`, method: 'GET',
+        params, signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetAppStaffInfiniteQueryKey = (params?: GetAppStaffParams,) => {
+    return [
+    'infinite', `/app/staff`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+export const getGetAppStaffQueryKey = (params?: GetAppStaffParams,) => {
+    return [
+    `/app/staff`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getGetAppStaffInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAppStaff>>>, TError = InternalErrorResponse>(params?: GetAppStaffParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppStaff>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAppStaffInfiniteQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAppStaff>>> = ({ signal }) => getAppStaff(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppStaff>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAppStaffInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAppStaff>>>
+export type GetAppStaffInfiniteQueryError = InternalErrorResponse
+
+
+export function useGetAppStaffInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppStaff>>>, TError = InternalErrorResponse>(
+ params: undefined |  GetAppStaffParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppStaff>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppStaff>>,
+          TError,
+          Awaited<ReturnType<typeof getAppStaff>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppStaffInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppStaff>>>, TError = InternalErrorResponse>(
+ params?: GetAppStaffParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppStaff>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppStaff>>,
+          TError,
+          Awaited<ReturnType<typeof getAppStaff>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppStaffInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppStaff>>>, TError = InternalErrorResponse>(
+ params?: GetAppStaffParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppStaff>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary View technicians shown in the app
+ */
+
+export function useGetAppStaffInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppStaff>>>, TError = InternalErrorResponse>(
+ params?: GetAppStaffParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppStaff>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAppStaffInfiniteQueryOptions(params,options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary View technicians shown in the app
+ */
+export const prefetchGetAppStaffInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAppStaff>>, TError = InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetAppStaffParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppStaff>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetAppStaffInfiniteQueryOptions(params,options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetAppStaffQueryOptions = <TData = Awaited<ReturnType<typeof getAppStaff>>, TError = InternalErrorResponse>(params?: GetAppStaffParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppStaff>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAppStaffQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAppStaff>>> = ({ signal }) => getAppStaff(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAppStaff>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAppStaffQueryResult = NonNullable<Awaited<ReturnType<typeof getAppStaff>>>
+export type GetAppStaffQueryError = InternalErrorResponse
+
+
+export function useGetAppStaff<TData = Awaited<ReturnType<typeof getAppStaff>>, TError = InternalErrorResponse>(
+ params: undefined |  GetAppStaffParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppStaff>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppStaff>>,
+          TError,
+          Awaited<ReturnType<typeof getAppStaff>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppStaff<TData = Awaited<ReturnType<typeof getAppStaff>>, TError = InternalErrorResponse>(
+ params?: GetAppStaffParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppStaff>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppStaff>>,
+          TError,
+          Awaited<ReturnType<typeof getAppStaff>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppStaff<TData = Awaited<ReturnType<typeof getAppStaff>>, TError = InternalErrorResponse>(
+ params?: GetAppStaffParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppStaff>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary View technicians shown in the app
+ */
+
+export function useGetAppStaff<TData = Awaited<ReturnType<typeof getAppStaff>>, TError = InternalErrorResponse>(
+ params?: GetAppStaffParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppStaff>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAppStaffQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary View technicians shown in the app
+ */
+export const prefetchGetAppStaffQuery = async <TData = Awaited<ReturnType<typeof getAppStaff>>, TError = InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetAppStaffParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppStaff>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetAppStaffQueryOptions(params,options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * GET /app/services (read-only, no authentication required). Public list of active services with category and image. Handled by `appService.publicServices`.
+ * @summary View active services
+ */
+export const getAppServices = (
+    
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetAppServices200>(
+      {url: `/app/services`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetAppServicesInfiniteQueryKey = () => {
+    return [
+    'infinite', `/app/services`
+    ] as const;
+    }
+
+export const getGetAppServicesQueryKey = () => {
+    return [
+    `/app/services`
+    ] as const;
+    }
+
+    
+export const getGetAppServicesInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAppServices>>>, TError = InternalErrorResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppServices>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAppServicesInfiniteQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAppServices>>> = ({ signal }) => getAppServices(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppServices>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAppServicesInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAppServices>>>
+export type GetAppServicesInfiniteQueryError = InternalErrorResponse
+
+
+export function useGetAppServicesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppServices>>>, TError = InternalErrorResponse>(
+  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppServices>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppServices>>,
+          TError,
+          Awaited<ReturnType<typeof getAppServices>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppServicesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppServices>>>, TError = InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppServices>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppServices>>,
+          TError,
+          Awaited<ReturnType<typeof getAppServices>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppServicesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppServices>>>, TError = InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppServices>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary View active services
+ */
+
+export function useGetAppServicesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppServices>>>, TError = InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppServices>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAppServicesInfiniteQueryOptions(options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary View active services
+ */
+export const prefetchGetAppServicesInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAppServices>>, TError = InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppServices>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetAppServicesInfiniteQueryOptions(options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetAppServicesQueryOptions = <TData = Awaited<ReturnType<typeof getAppServices>>, TError = InternalErrorResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppServices>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAppServicesQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAppServices>>> = ({ signal }) => getAppServices(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAppServices>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAppServicesQueryResult = NonNullable<Awaited<ReturnType<typeof getAppServices>>>
+export type GetAppServicesQueryError = InternalErrorResponse
+
+
+export function useGetAppServices<TData = Awaited<ReturnType<typeof getAppServices>>, TError = InternalErrorResponse>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppServices>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppServices>>,
+          TError,
+          Awaited<ReturnType<typeof getAppServices>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppServices<TData = Awaited<ReturnType<typeof getAppServices>>, TError = InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppServices>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppServices>>,
+          TError,
+          Awaited<ReturnType<typeof getAppServices>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppServices<TData = Awaited<ReturnType<typeof getAppServices>>, TError = InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppServices>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary View active services
+ */
+
+export function useGetAppServices<TData = Awaited<ReturnType<typeof getAppServices>>, TError = InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppServices>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAppServicesQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary View active services
+ */
+export const prefetchGetAppServicesQuery = async <TData = Awaited<ReturnType<typeof getAppServices>>, TError = InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppServices>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetAppServicesQueryOptions(options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
 
 
 
@@ -259,6 +932,201 @@ export const prefetchGetAppRanksQuery = async <TData = Awaited<ReturnType<typeof
   ): Promise<QueryClient> => {
 
   const queryOptions = getGetAppRanksQueryOptions(options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * GET /app/posts (read-only, no authentication required). Published CMS posts for the app home screen (Bí quyết da đẹp). Optional `limit` query (default 8, max 20). Pinned first, then sort_order, then newest.
+ * @summary View published content posts
+ */
+export const getAppPosts = (
+    params?: GetAppPostsParams,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetAppPosts200>(
+      {url: `/app/posts`, method: 'GET',
+        params, signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetAppPostsInfiniteQueryKey = (params?: GetAppPostsParams,) => {
+    return [
+    'infinite', `/app/posts`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+export const getGetAppPostsQueryKey = (params?: GetAppPostsParams,) => {
+    return [
+    `/app/posts`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getGetAppPostsInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAppPosts>>>, TError = InternalErrorResponse>(params?: GetAppPostsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppPosts>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAppPostsInfiniteQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAppPosts>>> = ({ signal }) => getAppPosts(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppPosts>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAppPostsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAppPosts>>>
+export type GetAppPostsInfiniteQueryError = InternalErrorResponse
+
+
+export function useGetAppPostsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppPosts>>>, TError = InternalErrorResponse>(
+ params: undefined |  GetAppPostsParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppPosts>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppPosts>>,
+          TError,
+          Awaited<ReturnType<typeof getAppPosts>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppPostsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppPosts>>>, TError = InternalErrorResponse>(
+ params?: GetAppPostsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppPosts>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppPosts>>,
+          TError,
+          Awaited<ReturnType<typeof getAppPosts>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppPostsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppPosts>>>, TError = InternalErrorResponse>(
+ params?: GetAppPostsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppPosts>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary View published content posts
+ */
+
+export function useGetAppPostsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppPosts>>>, TError = InternalErrorResponse>(
+ params?: GetAppPostsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppPosts>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAppPostsInfiniteQueryOptions(params,options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary View published content posts
+ */
+export const prefetchGetAppPostsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAppPosts>>, TError = InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetAppPostsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppPosts>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetAppPostsInfiniteQueryOptions(params,options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetAppPostsQueryOptions = <TData = Awaited<ReturnType<typeof getAppPosts>>, TError = InternalErrorResponse>(params?: GetAppPostsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppPosts>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAppPostsQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAppPosts>>> = ({ signal }) => getAppPosts(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAppPosts>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAppPostsQueryResult = NonNullable<Awaited<ReturnType<typeof getAppPosts>>>
+export type GetAppPostsQueryError = InternalErrorResponse
+
+
+export function useGetAppPosts<TData = Awaited<ReturnType<typeof getAppPosts>>, TError = InternalErrorResponse>(
+ params: undefined |  GetAppPostsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppPosts>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppPosts>>,
+          TError,
+          Awaited<ReturnType<typeof getAppPosts>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppPosts<TData = Awaited<ReturnType<typeof getAppPosts>>, TError = InternalErrorResponse>(
+ params?: GetAppPostsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppPosts>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppPosts>>,
+          TError,
+          Awaited<ReturnType<typeof getAppPosts>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppPosts<TData = Awaited<ReturnType<typeof getAppPosts>>, TError = InternalErrorResponse>(
+ params?: GetAppPostsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppPosts>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary View published content posts
+ */
+
+export function useGetAppPosts<TData = Awaited<ReturnType<typeof getAppPosts>>, TError = InternalErrorResponse>(
+ params?: GetAppPostsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppPosts>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAppPostsQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary View published content posts
+ */
+export const prefetchGetAppPostsQuery = async <TData = Awaited<ReturnType<typeof getAppPosts>>, TError = InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetAppPostsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppPosts>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetAppPostsQueryOptions(params,options)
 
   await queryClient.prefetchQuery(queryOptions);
 
@@ -657,6 +1525,200 @@ export const prefetchGetAppConfigQuery = async <TData = Awaited<ReturnType<typeo
 
 
 /**
+ * Returns active branches the customer can book appointments at (branches linked to their customer profiles).
+ * @summary List branches where the logged-in customer has a profile
+ */
+export const getAppBranches = (
+    
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetAppBranches200>(
+      {url: `/app/branches`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetAppBranchesInfiniteQueryKey = () => {
+    return [
+    'infinite', `/app/branches`
+    ] as const;
+    }
+
+export const getGetAppBranchesQueryKey = () => {
+    return [
+    `/app/branches`
+    ] as const;
+    }
+
+    
+export const getGetAppBranchesInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAppBranches>>>, TError = UnauthorizedResponse | InternalErrorResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppBranches>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAppBranchesInfiniteQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAppBranches>>> = ({ signal }) => getAppBranches(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppBranches>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAppBranchesInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAppBranches>>>
+export type GetAppBranchesInfiniteQueryError = UnauthorizedResponse | InternalErrorResponse
+
+
+export function useGetAppBranchesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppBranches>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppBranches>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppBranches>>,
+          TError,
+          Awaited<ReturnType<typeof getAppBranches>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppBranchesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppBranches>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppBranches>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppBranches>>,
+          TError,
+          Awaited<ReturnType<typeof getAppBranches>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppBranchesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppBranches>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppBranches>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List branches where the logged-in customer has a profile
+ */
+
+export function useGetAppBranchesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppBranches>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppBranches>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAppBranchesInfiniteQueryOptions(options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary List branches where the logged-in customer has a profile
+ */
+export const prefetchGetAppBranchesInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAppBranches>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppBranches>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetAppBranchesInfiniteQueryOptions(options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetAppBranchesQueryOptions = <TData = Awaited<ReturnType<typeof getAppBranches>>, TError = UnauthorizedResponse | InternalErrorResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppBranches>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAppBranchesQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAppBranches>>> = ({ signal }) => getAppBranches(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAppBranches>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAppBranchesQueryResult = NonNullable<Awaited<ReturnType<typeof getAppBranches>>>
+export type GetAppBranchesQueryError = UnauthorizedResponse | InternalErrorResponse
+
+
+export function useGetAppBranches<TData = Awaited<ReturnType<typeof getAppBranches>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppBranches>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppBranches>>,
+          TError,
+          Awaited<ReturnType<typeof getAppBranches>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppBranches<TData = Awaited<ReturnType<typeof getAppBranches>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppBranches>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppBranches>>,
+          TError,
+          Awaited<ReturnType<typeof getAppBranches>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppBranches<TData = Awaited<ReturnType<typeof getAppBranches>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppBranches>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List branches where the logged-in customer has a profile
+ */
+
+export function useGetAppBranches<TData = Awaited<ReturnType<typeof getAppBranches>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppBranches>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAppBranchesQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary List branches where the logged-in customer has a profile
+ */
+export const prefetchGetAppBranchesQuery = async <TData = Awaited<ReturnType<typeof getAppBranches>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppBranches>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetAppBranchesQueryOptions(options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
  * **APP-10** — GET /app/available-slots (BR-10). Customer scope: only operate on the data of the logged-in customer. Query parameters: `branch_id`, `service_id`, `date`.
  * @summary View available time slots
  */
@@ -843,6 +1905,200 @@ export const prefetchGetAppAvailableSlotsQuery = async <TData = Awaited<ReturnTy
   ): Promise<QueryClient> => {
 
   const queryOptions = getGetAppAvailableSlotsQueryOptions(params,options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * **APP-17b** — GET /app/wheels/my-spins (lịch sử quay của khách đang đăng nhập, mới nhất trước, tối đa 30). Customer scope: only operate on the data of the logged-in customer.
+ * @summary My spin history
+ */
+export const getAppWheelsMySpins = (
+    
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetAppWheelsMySpins200>(
+      {url: `/app/wheels/my-spins`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetAppWheelsMySpinsInfiniteQueryKey = () => {
+    return [
+    'infinite', `/app/wheels/my-spins`
+    ] as const;
+    }
+
+export const getGetAppWheelsMySpinsQueryKey = () => {
+    return [
+    `/app/wheels/my-spins`
+    ] as const;
+    }
+
+    
+export const getGetAppWheelsMySpinsInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAppWheelsMySpins>>>, TError = UnauthorizedResponse | InternalErrorResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppWheelsMySpins>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAppWheelsMySpinsInfiniteQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAppWheelsMySpins>>> = ({ signal }) => getAppWheelsMySpins(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppWheelsMySpins>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAppWheelsMySpinsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAppWheelsMySpins>>>
+export type GetAppWheelsMySpinsInfiniteQueryError = UnauthorizedResponse | InternalErrorResponse
+
+
+export function useGetAppWheelsMySpinsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppWheelsMySpins>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppWheelsMySpins>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppWheelsMySpins>>,
+          TError,
+          Awaited<ReturnType<typeof getAppWheelsMySpins>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppWheelsMySpinsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppWheelsMySpins>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppWheelsMySpins>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppWheelsMySpins>>,
+          TError,
+          Awaited<ReturnType<typeof getAppWheelsMySpins>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppWheelsMySpinsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppWheelsMySpins>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppWheelsMySpins>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary My spin history
+ */
+
+export function useGetAppWheelsMySpinsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppWheelsMySpins>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppWheelsMySpins>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAppWheelsMySpinsInfiniteQueryOptions(options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary My spin history
+ */
+export const prefetchGetAppWheelsMySpinsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAppWheelsMySpins>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppWheelsMySpins>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetAppWheelsMySpinsInfiniteQueryOptions(options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetAppWheelsMySpinsQueryOptions = <TData = Awaited<ReturnType<typeof getAppWheelsMySpins>>, TError = UnauthorizedResponse | InternalErrorResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppWheelsMySpins>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAppWheelsMySpinsQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAppWheelsMySpins>>> = ({ signal }) => getAppWheelsMySpins(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAppWheelsMySpins>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAppWheelsMySpinsQueryResult = NonNullable<Awaited<ReturnType<typeof getAppWheelsMySpins>>>
+export type GetAppWheelsMySpinsQueryError = UnauthorizedResponse | InternalErrorResponse
+
+
+export function useGetAppWheelsMySpins<TData = Awaited<ReturnType<typeof getAppWheelsMySpins>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppWheelsMySpins>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppWheelsMySpins>>,
+          TError,
+          Awaited<ReturnType<typeof getAppWheelsMySpins>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppWheelsMySpins<TData = Awaited<ReturnType<typeof getAppWheelsMySpins>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppWheelsMySpins>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppWheelsMySpins>>,
+          TError,
+          Awaited<ReturnType<typeof getAppWheelsMySpins>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppWheelsMySpins<TData = Awaited<ReturnType<typeof getAppWheelsMySpins>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppWheelsMySpins>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary My spin history
+ */
+
+export function useGetAppWheelsMySpins<TData = Awaited<ReturnType<typeof getAppWheelsMySpins>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppWheelsMySpins>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAppWheelsMySpinsQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary My spin history
+ */
+export const prefetchGetAppWheelsMySpinsQuery = async <TData = Awaited<ReturnType<typeof getAppWheelsMySpins>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppWheelsMySpins>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetAppWheelsMySpinsQueryOptions(options)
 
   await queryClient.prefetchQuery(queryOptions);
 
@@ -1106,6 +2362,69 @@ export const usePostAppWheelsIdSpin = <TError = UnauthorizedResponse | NotFoundR
       > => {
 
       const mutationOptions = getPostAppWheelsIdSpinMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * POST /app/vouchers/{id}/redeem — customer claims a voucher. If `required_points > 0`, deducts points from membership and records a membership transaction. Creates a `user_voucher` with status `redeemed`. Handled by `appService.redeemVoucher`.
+ * @summary Redeem a voucher
+ */
+export const postAppVouchersIdRedeem = (
+    id: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<PostAppVouchersIdRedeem200>(
+      {url: `/app/vouchers/${id}/redeem`, method: 'POST', signal
+    },
+      );
+    }
+  
+
+
+export const getPostAppVouchersIdRedeemMutationOptions = <TError = UnauthorizedResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAppVouchersIdRedeem>>, TError,{id: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postAppVouchersIdRedeem>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['postAppVouchersIdRedeem'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAppVouchersIdRedeem>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  postAppVouchersIdRedeem(id,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostAppVouchersIdRedeemMutationResult = NonNullable<Awaited<ReturnType<typeof postAppVouchersIdRedeem>>>
+    
+    export type PostAppVouchersIdRedeemMutationError = UnauthorizedResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+
+    /**
+ * @summary Redeem a voucher
+ */
+export const usePostAppVouchersIdRedeem = <TError = UnauthorizedResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAppVouchersIdRedeem>>, TError,{id: string}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postAppVouchersIdRedeem>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+
+      const mutationOptions = getPostAppVouchersIdRedeemMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -1432,6 +2751,459 @@ export const usePutAppNotificationsIdRead = <TError = UnauthorizedResponse | Not
       return useMutation(mutationOptions, queryClient);
     }
     /**
+ * **APP-23** — GET /app/me/warranty-claims. Customer scope: chỉ claim trên các `customer_profile` của user đang login. Trả `rows` (kèm `customer_treatment` + `package` + `session` + `contract_file`).
+ * @summary Danh sách yêu cầu bảo hành của khách
+ */
+export const getAppMeWarrantyClaims = (
+    
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetAppMeWarrantyClaims200>(
+      {url: `/app/me/warranty-claims`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetAppMeWarrantyClaimsInfiniteQueryKey = () => {
+    return [
+    'infinite', `/app/me/warranty-claims`
+    ] as const;
+    }
+
+export const getGetAppMeWarrantyClaimsQueryKey = () => {
+    return [
+    `/app/me/warranty-claims`
+    ] as const;
+    }
+
+    
+export const getGetAppMeWarrantyClaimsInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAppMeWarrantyClaims>>>, TError = UnauthorizedResponse | InternalErrorResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeWarrantyClaims>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAppMeWarrantyClaimsInfiniteQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAppMeWarrantyClaims>>> = ({ signal }) => getAppMeWarrantyClaims(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeWarrantyClaims>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAppMeWarrantyClaimsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAppMeWarrantyClaims>>>
+export type GetAppMeWarrantyClaimsInfiniteQueryError = UnauthorizedResponse | InternalErrorResponse
+
+
+export function useGetAppMeWarrantyClaimsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppMeWarrantyClaims>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeWarrantyClaims>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppMeWarrantyClaims>>,
+          TError,
+          Awaited<ReturnType<typeof getAppMeWarrantyClaims>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppMeWarrantyClaimsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppMeWarrantyClaims>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeWarrantyClaims>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppMeWarrantyClaims>>,
+          TError,
+          Awaited<ReturnType<typeof getAppMeWarrantyClaims>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppMeWarrantyClaimsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppMeWarrantyClaims>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeWarrantyClaims>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Danh sách yêu cầu bảo hành của khách
+ */
+
+export function useGetAppMeWarrantyClaimsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppMeWarrantyClaims>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeWarrantyClaims>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAppMeWarrantyClaimsInfiniteQueryOptions(options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Danh sách yêu cầu bảo hành của khách
+ */
+export const prefetchGetAppMeWarrantyClaimsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAppMeWarrantyClaims>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeWarrantyClaims>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetAppMeWarrantyClaimsInfiniteQueryOptions(options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetAppMeWarrantyClaimsQueryOptions = <TData = Awaited<ReturnType<typeof getAppMeWarrantyClaims>>, TError = UnauthorizedResponse | InternalErrorResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMeWarrantyClaims>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAppMeWarrantyClaimsQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAppMeWarrantyClaims>>> = ({ signal }) => getAppMeWarrantyClaims(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAppMeWarrantyClaims>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAppMeWarrantyClaimsQueryResult = NonNullable<Awaited<ReturnType<typeof getAppMeWarrantyClaims>>>
+export type GetAppMeWarrantyClaimsQueryError = UnauthorizedResponse | InternalErrorResponse
+
+
+export function useGetAppMeWarrantyClaims<TData = Awaited<ReturnType<typeof getAppMeWarrantyClaims>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMeWarrantyClaims>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppMeWarrantyClaims>>,
+          TError,
+          Awaited<ReturnType<typeof getAppMeWarrantyClaims>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppMeWarrantyClaims<TData = Awaited<ReturnType<typeof getAppMeWarrantyClaims>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMeWarrantyClaims>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppMeWarrantyClaims>>,
+          TError,
+          Awaited<ReturnType<typeof getAppMeWarrantyClaims>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppMeWarrantyClaims<TData = Awaited<ReturnType<typeof getAppMeWarrantyClaims>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMeWarrantyClaims>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Danh sách yêu cầu bảo hành của khách
+ */
+
+export function useGetAppMeWarrantyClaims<TData = Awaited<ReturnType<typeof getAppMeWarrantyClaims>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMeWarrantyClaims>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAppMeWarrantyClaimsQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Danh sách yêu cầu bảo hành của khách
+ */
+export const prefetchGetAppMeWarrantyClaimsQuery = async <TData = Awaited<ReturnType<typeof getAppMeWarrantyClaims>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMeWarrantyClaims>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetAppMeWarrantyClaimsQueryOptions(options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * **APP-24** — POST /app/me/warranty-claims. Customer scope: `customer_treatment_id` phải thuộc hồ sơ của khách. Flow `createWarrantyClaim`: chỉ nhận gói `FINISHED` + `package_type.has_warranty`. Body fields: `customer_treatment_id`, `reason`, `contract_file_id` (ảnh đính kèm — upload trước qua `POST /files`).
+ * @summary Tạo yêu cầu bảo hành
+ */
+export const postAppMeWarrantyClaims = (
+    postAppMeWarrantyClaimsBody: PostAppMeWarrantyClaimsBody,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<PostAppMeWarrantyClaims200>(
+      {url: `/app/me/warranty-claims`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: postAppMeWarrantyClaimsBody, signal
+    },
+      );
+    }
+  
+
+
+export const getPostAppMeWarrantyClaimsMutationOptions = <TError = UnauthorizedResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAppMeWarrantyClaims>>, TError,{data: PostAppMeWarrantyClaimsBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postAppMeWarrantyClaims>>, TError,{data: PostAppMeWarrantyClaimsBody}, TContext> => {
+
+const mutationKey = ['postAppMeWarrantyClaims'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAppMeWarrantyClaims>>, {data: PostAppMeWarrantyClaimsBody}> = (props) => {
+          const {data} = props ?? {};
+
+          return  postAppMeWarrantyClaims(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostAppMeWarrantyClaimsMutationResult = NonNullable<Awaited<ReturnType<typeof postAppMeWarrantyClaims>>>
+    export type PostAppMeWarrantyClaimsMutationBody = PostAppMeWarrantyClaimsBody
+    export type PostAppMeWarrantyClaimsMutationError = UnauthorizedResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse
+
+    /**
+ * @summary Tạo yêu cầu bảo hành
+ */
+export const usePostAppMeWarrantyClaims = <TError = UnauthorizedResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAppMeWarrantyClaims>>, TError,{data: PostAppMeWarrantyClaimsBody}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postAppMeWarrantyClaims>>,
+        TError,
+        {data: PostAppMeWarrantyClaimsBody},
+        TContext
+      > => {
+
+      const mutationOptions = getPostAppMeWarrantyClaimsMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * **APP-22** — GET /app/me/referrals. Customer scope. Trả `code` (customer_code của hồ sơ đầu tiên), `friend_reward` (discount_rule NEW_BY_REFERRAL đang bật, null nếu chưa cấu hình) và `referrals` (các lượt giới thiệu referrer_type=CUSTOMER kèm trạng thái + hoa hồng).
+ * @summary Giới thiệu bạn bè của khách
+ */
+export const getAppMeReferrals = (
+    
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetAppMeReferrals200>(
+      {url: `/app/me/referrals`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetAppMeReferralsInfiniteQueryKey = () => {
+    return [
+    'infinite', `/app/me/referrals`
+    ] as const;
+    }
+
+export const getGetAppMeReferralsQueryKey = () => {
+    return [
+    `/app/me/referrals`
+    ] as const;
+    }
+
+    
+export const getGetAppMeReferralsInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAppMeReferrals>>>, TError = UnauthorizedResponse | InternalErrorResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeReferrals>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAppMeReferralsInfiniteQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAppMeReferrals>>> = ({ signal }) => getAppMeReferrals(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeReferrals>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAppMeReferralsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAppMeReferrals>>>
+export type GetAppMeReferralsInfiniteQueryError = UnauthorizedResponse | InternalErrorResponse
+
+
+export function useGetAppMeReferralsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppMeReferrals>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeReferrals>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppMeReferrals>>,
+          TError,
+          Awaited<ReturnType<typeof getAppMeReferrals>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppMeReferralsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppMeReferrals>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeReferrals>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppMeReferrals>>,
+          TError,
+          Awaited<ReturnType<typeof getAppMeReferrals>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppMeReferralsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppMeReferrals>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeReferrals>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Giới thiệu bạn bè của khách
+ */
+
+export function useGetAppMeReferralsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppMeReferrals>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeReferrals>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAppMeReferralsInfiniteQueryOptions(options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Giới thiệu bạn bè của khách
+ */
+export const prefetchGetAppMeReferralsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAppMeReferrals>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeReferrals>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetAppMeReferralsInfiniteQueryOptions(options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetAppMeReferralsQueryOptions = <TData = Awaited<ReturnType<typeof getAppMeReferrals>>, TError = UnauthorizedResponse | InternalErrorResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMeReferrals>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAppMeReferralsQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAppMeReferrals>>> = ({ signal }) => getAppMeReferrals(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAppMeReferrals>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAppMeReferralsQueryResult = NonNullable<Awaited<ReturnType<typeof getAppMeReferrals>>>
+export type GetAppMeReferralsQueryError = UnauthorizedResponse | InternalErrorResponse
+
+
+export function useGetAppMeReferrals<TData = Awaited<ReturnType<typeof getAppMeReferrals>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMeReferrals>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppMeReferrals>>,
+          TError,
+          Awaited<ReturnType<typeof getAppMeReferrals>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppMeReferrals<TData = Awaited<ReturnType<typeof getAppMeReferrals>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMeReferrals>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppMeReferrals>>,
+          TError,
+          Awaited<ReturnType<typeof getAppMeReferrals>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppMeReferrals<TData = Awaited<ReturnType<typeof getAppMeReferrals>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMeReferrals>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Giới thiệu bạn bè của khách
+ */
+
+export function useGetAppMeReferrals<TData = Awaited<ReturnType<typeof getAppMeReferrals>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMeReferrals>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAppMeReferralsQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Giới thiệu bạn bè của khách
+ */
+export const prefetchGetAppMeReferralsQuery = async <TData = Awaited<ReturnType<typeof getAppMeReferrals>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMeReferrals>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetAppMeReferralsQueryOptions(options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
  * **APP-06** — GET /app/me/membership. Customer scope: only operate on the data of the logged-in customer. Returns the point balance and the latest up to 100 point transactions in `points_history`. Handled by `appService.myMembership`.
  * @summary Get membership information
  */
@@ -1885,6 +3657,459 @@ export const prefetchGetAppMeQuery = async <TData = Awaited<ReturnType<typeof ge
 
 
 /**
+ * **APP-19** — GET /app/me/health-record. Customer scope: only operate on the data of the logged-in customer. Returns `metrics` (latest value per metric code, with delta vs previous measurement, labels from lookup `health.metrics`) and `journal` (completed/done treatment sessions with skin_note, products_used, diary and before/process/after photos). Handled by `appService.myHealthRecord`.
+ * @summary Customer health record (skin metrics + treatment journal)
+ */
+export const getAppMeHealthRecord = (
+    
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetAppMeHealthRecord200>(
+      {url: `/app/me/health-record`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetAppMeHealthRecordInfiniteQueryKey = () => {
+    return [
+    'infinite', `/app/me/health-record`
+    ] as const;
+    }
+
+export const getGetAppMeHealthRecordQueryKey = () => {
+    return [
+    `/app/me/health-record`
+    ] as const;
+    }
+
+    
+export const getGetAppMeHealthRecordInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAppMeHealthRecord>>>, TError = UnauthorizedResponse | InternalErrorResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeHealthRecord>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAppMeHealthRecordInfiniteQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAppMeHealthRecord>>> = ({ signal }) => getAppMeHealthRecord(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeHealthRecord>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAppMeHealthRecordInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAppMeHealthRecord>>>
+export type GetAppMeHealthRecordInfiniteQueryError = UnauthorizedResponse | InternalErrorResponse
+
+
+export function useGetAppMeHealthRecordInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppMeHealthRecord>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeHealthRecord>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppMeHealthRecord>>,
+          TError,
+          Awaited<ReturnType<typeof getAppMeHealthRecord>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppMeHealthRecordInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppMeHealthRecord>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeHealthRecord>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppMeHealthRecord>>,
+          TError,
+          Awaited<ReturnType<typeof getAppMeHealthRecord>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppMeHealthRecordInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppMeHealthRecord>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeHealthRecord>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Customer health record (skin metrics + treatment journal)
+ */
+
+export function useGetAppMeHealthRecordInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppMeHealthRecord>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeHealthRecord>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAppMeHealthRecordInfiniteQueryOptions(options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Customer health record (skin metrics + treatment journal)
+ */
+export const prefetchGetAppMeHealthRecordInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAppMeHealthRecord>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeHealthRecord>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetAppMeHealthRecordInfiniteQueryOptions(options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetAppMeHealthRecordQueryOptions = <TData = Awaited<ReturnType<typeof getAppMeHealthRecord>>, TError = UnauthorizedResponse | InternalErrorResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMeHealthRecord>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAppMeHealthRecordQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAppMeHealthRecord>>> = ({ signal }) => getAppMeHealthRecord(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAppMeHealthRecord>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAppMeHealthRecordQueryResult = NonNullable<Awaited<ReturnType<typeof getAppMeHealthRecord>>>
+export type GetAppMeHealthRecordQueryError = UnauthorizedResponse | InternalErrorResponse
+
+
+export function useGetAppMeHealthRecord<TData = Awaited<ReturnType<typeof getAppMeHealthRecord>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMeHealthRecord>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppMeHealthRecord>>,
+          TError,
+          Awaited<ReturnType<typeof getAppMeHealthRecord>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppMeHealthRecord<TData = Awaited<ReturnType<typeof getAppMeHealthRecord>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMeHealthRecord>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppMeHealthRecord>>,
+          TError,
+          Awaited<ReturnType<typeof getAppMeHealthRecord>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppMeHealthRecord<TData = Awaited<ReturnType<typeof getAppMeHealthRecord>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMeHealthRecord>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Customer health record (skin metrics + treatment journal)
+ */
+
+export function useGetAppMeHealthRecord<TData = Awaited<ReturnType<typeof getAppMeHealthRecord>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMeHealthRecord>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAppMeHealthRecordQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Customer health record (skin metrics + treatment journal)
+ */
+export const prefetchGetAppMeHealthRecordQuery = async <TData = Awaited<ReturnType<typeof getAppMeHealthRecord>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMeHealthRecord>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetAppMeHealthRecordQueryOptions(options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * **APP-20** — GET /app/me/ctv. Customer scope. Trả `collaborator` (null nếu chưa đăng ký), `stats` (số khách giới thiệu, hoa hồng chờ chi/đã chi), `customers` (người được giới thiệu + gói liệu trình) và `commissions` (bút toán hoa hồng).
+ * @summary Tài khoản cộng tác viên của khách
+ */
+export const getAppMeCtv = (
+    
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetAppMeCtv200>(
+      {url: `/app/me/ctv`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetAppMeCtvInfiniteQueryKey = () => {
+    return [
+    'infinite', `/app/me/ctv`
+    ] as const;
+    }
+
+export const getGetAppMeCtvQueryKey = () => {
+    return [
+    `/app/me/ctv`
+    ] as const;
+    }
+
+    
+export const getGetAppMeCtvInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAppMeCtv>>>, TError = UnauthorizedResponse | InternalErrorResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeCtv>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAppMeCtvInfiniteQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAppMeCtv>>> = ({ signal }) => getAppMeCtv(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeCtv>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAppMeCtvInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAppMeCtv>>>
+export type GetAppMeCtvInfiniteQueryError = UnauthorizedResponse | InternalErrorResponse
+
+
+export function useGetAppMeCtvInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppMeCtv>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeCtv>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppMeCtv>>,
+          TError,
+          Awaited<ReturnType<typeof getAppMeCtv>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppMeCtvInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppMeCtv>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeCtv>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppMeCtv>>,
+          TError,
+          Awaited<ReturnType<typeof getAppMeCtv>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppMeCtvInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppMeCtv>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeCtv>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Tài khoản cộng tác viên của khách
+ */
+
+export function useGetAppMeCtvInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppMeCtv>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeCtv>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAppMeCtvInfiniteQueryOptions(options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Tài khoản cộng tác viên của khách
+ */
+export const prefetchGetAppMeCtvInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAppMeCtv>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeCtv>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetAppMeCtvInfiniteQueryOptions(options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetAppMeCtvQueryOptions = <TData = Awaited<ReturnType<typeof getAppMeCtv>>, TError = UnauthorizedResponse | InternalErrorResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMeCtv>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAppMeCtvQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAppMeCtv>>> = ({ signal }) => getAppMeCtv(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAppMeCtv>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAppMeCtvQueryResult = NonNullable<Awaited<ReturnType<typeof getAppMeCtv>>>
+export type GetAppMeCtvQueryError = UnauthorizedResponse | InternalErrorResponse
+
+
+export function useGetAppMeCtv<TData = Awaited<ReturnType<typeof getAppMeCtv>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMeCtv>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppMeCtv>>,
+          TError,
+          Awaited<ReturnType<typeof getAppMeCtv>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppMeCtv<TData = Awaited<ReturnType<typeof getAppMeCtv>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMeCtv>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppMeCtv>>,
+          TError,
+          Awaited<ReturnType<typeof getAppMeCtv>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppMeCtv<TData = Awaited<ReturnType<typeof getAppMeCtv>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMeCtv>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Tài khoản cộng tác viên của khách
+ */
+
+export function useGetAppMeCtv<TData = Awaited<ReturnType<typeof getAppMeCtv>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMeCtv>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAppMeCtvQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Tài khoản cộng tác viên của khách
+ */
+export const prefetchGetAppMeCtvQuery = async <TData = Awaited<ReturnType<typeof getAppMeCtv>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMeCtv>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetAppMeCtvQueryOptions(options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * **APP-21** — POST /app/me/ctv. Customer scope. Tạo `collaborator` gắn `user_id` với `is_active=false` chờ admin duyệt. Body fields: `name`, `phone`. Mã `referral_code` dạng `CTV-XXXXXX` tự sinh unique.
+ * @summary Đăng ký làm cộng tác viên
+ */
+export const postAppMeCtv = (
+    postAppMeCtvBody: PostAppMeCtvBody,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<PostAppMeCtv200>(
+      {url: `/app/me/ctv`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: postAppMeCtvBody, signal
+    },
+      );
+    }
+  
+
+
+export const getPostAppMeCtvMutationOptions = <TError = UnauthorizedResponse | ConflictResponse | UnprocessableEntityResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAppMeCtv>>, TError,{data: PostAppMeCtvBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postAppMeCtv>>, TError,{data: PostAppMeCtvBody}, TContext> => {
+
+const mutationKey = ['postAppMeCtv'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAppMeCtv>>, {data: PostAppMeCtvBody}> = (props) => {
+          const {data} = props ?? {};
+
+          return  postAppMeCtv(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostAppMeCtvMutationResult = NonNullable<Awaited<ReturnType<typeof postAppMeCtv>>>
+    export type PostAppMeCtvMutationBody = PostAppMeCtvBody
+    export type PostAppMeCtvMutationError = UnauthorizedResponse | ConflictResponse | UnprocessableEntityResponse
+
+    /**
+ * @summary Đăng ký làm cộng tác viên
+ */
+export const usePostAppMeCtv = <TError = UnauthorizedResponse | ConflictResponse | UnprocessableEntityResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAppMeCtv>>, TError,{data: PostAppMeCtvBody}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postAppMeCtv>>,
+        TError,
+        {data: PostAppMeCtvBody},
+        TContext
+      > => {
+
+      const mutationOptions = getPostAppMeCtvMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
  * **APP-04** — GET /app/me/treatments/{id}. Customer scope: only operate on the data of the logged-in customer. Handled by `appService.myTreatmentDetail`.
  * @summary View treatment details
  */
@@ -2661,6 +4886,327 @@ export const prefetchGetAppMeOrdersQuery = async <TData = Awaited<ReturnType<typ
 
 
 /**
+ * **APP-27** — DELETE /app/me/favorites/{productId}. Xoá mọi favorite row của product đó trên các hồ sơ của user. Trả `{ removed: n }`.
+ * @summary Bỏ sản phẩm khỏi yêu thích
+ */
+export const deleteAppMeFavoritesProductId = (
+    productId: string,
+ ) => {
+      
+      
+      return customInstance<DeleteAppMeFavoritesProductId200>(
+      {url: `/app/me/favorites/${productId}`, method: 'DELETE'
+    },
+      );
+    }
+  
+
+
+export const getDeleteAppMeFavoritesProductIdMutationOptions = <TError = UnauthorizedResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAppMeFavoritesProductId>>, TError,{productId: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteAppMeFavoritesProductId>>, TError,{productId: string}, TContext> => {
+
+const mutationKey = ['deleteAppMeFavoritesProductId'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteAppMeFavoritesProductId>>, {productId: string}> = (props) => {
+          const {productId} = props ?? {};
+
+          return  deleteAppMeFavoritesProductId(productId,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteAppMeFavoritesProductIdMutationResult = NonNullable<Awaited<ReturnType<typeof deleteAppMeFavoritesProductId>>>
+    
+    export type DeleteAppMeFavoritesProductIdMutationError = UnauthorizedResponse | InternalErrorResponse
+
+    /**
+ * @summary Bỏ sản phẩm khỏi yêu thích
+ */
+export const useDeleteAppMeFavoritesProductId = <TError = UnauthorizedResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAppMeFavoritesProductId>>, TError,{productId: string}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof deleteAppMeFavoritesProductId>>,
+        TError,
+        {productId: string},
+        TContext
+      > => {
+
+      const mutationOptions = getDeleteAppMeFavoritesProductIdMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * **APP-25** — GET /app/me/favorites. Customer scope: gộp favorites của mọi `customer_profile` thuộc user đang login (đa cơ sở). Trả `rows` gồm `product_id`, `created_at`.
+ * @summary Danh sách sản phẩm yêu thích của khách
+ */
+export const getAppMeFavorites = (
+    
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetAppMeFavorites200>(
+      {url: `/app/me/favorites`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetAppMeFavoritesInfiniteQueryKey = () => {
+    return [
+    'infinite', `/app/me/favorites`
+    ] as const;
+    }
+
+export const getGetAppMeFavoritesQueryKey = () => {
+    return [
+    `/app/me/favorites`
+    ] as const;
+    }
+
+    
+export const getGetAppMeFavoritesInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAppMeFavorites>>>, TError = UnauthorizedResponse | InternalErrorResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeFavorites>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAppMeFavoritesInfiniteQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAppMeFavorites>>> = ({ signal }) => getAppMeFavorites(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeFavorites>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAppMeFavoritesInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAppMeFavorites>>>
+export type GetAppMeFavoritesInfiniteQueryError = UnauthorizedResponse | InternalErrorResponse
+
+
+export function useGetAppMeFavoritesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppMeFavorites>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeFavorites>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppMeFavorites>>,
+          TError,
+          Awaited<ReturnType<typeof getAppMeFavorites>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppMeFavoritesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppMeFavorites>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeFavorites>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppMeFavorites>>,
+          TError,
+          Awaited<ReturnType<typeof getAppMeFavorites>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppMeFavoritesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppMeFavorites>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeFavorites>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Danh sách sản phẩm yêu thích của khách
+ */
+
+export function useGetAppMeFavoritesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppMeFavorites>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeFavorites>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAppMeFavoritesInfiniteQueryOptions(options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Danh sách sản phẩm yêu thích của khách
+ */
+export const prefetchGetAppMeFavoritesInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAppMeFavorites>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeFavorites>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetAppMeFavoritesInfiniteQueryOptions(options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetAppMeFavoritesQueryOptions = <TData = Awaited<ReturnType<typeof getAppMeFavorites>>, TError = UnauthorizedResponse | InternalErrorResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMeFavorites>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAppMeFavoritesQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAppMeFavorites>>> = ({ signal }) => getAppMeFavorites(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAppMeFavorites>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAppMeFavoritesQueryResult = NonNullable<Awaited<ReturnType<typeof getAppMeFavorites>>>
+export type GetAppMeFavoritesQueryError = UnauthorizedResponse | InternalErrorResponse
+
+
+export function useGetAppMeFavorites<TData = Awaited<ReturnType<typeof getAppMeFavorites>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMeFavorites>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppMeFavorites>>,
+          TError,
+          Awaited<ReturnType<typeof getAppMeFavorites>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppMeFavorites<TData = Awaited<ReturnType<typeof getAppMeFavorites>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMeFavorites>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppMeFavorites>>,
+          TError,
+          Awaited<ReturnType<typeof getAppMeFavorites>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppMeFavorites<TData = Awaited<ReturnType<typeof getAppMeFavorites>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMeFavorites>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Danh sách sản phẩm yêu thích của khách
+ */
+
+export function useGetAppMeFavorites<TData = Awaited<ReturnType<typeof getAppMeFavorites>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMeFavorites>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAppMeFavoritesQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Danh sách sản phẩm yêu thích của khách
+ */
+export const prefetchGetAppMeFavoritesQuery = async <TData = Awaited<ReturnType<typeof getAppMeFavorites>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMeFavorites>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetAppMeFavoritesQueryOptions(options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * **APP-26** — POST /app/me/favorites. Idempotent: đã favorite rồi thì trả row cũ. Gắn vào hồ sơ đầu tiên của user. Body: `product_id`.
+ * @summary Thêm sản phẩm vào yêu thích
+ */
+export const postAppMeFavorites = (
+    postAppMeFavoritesBody: PostAppMeFavoritesBody,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<PostAppMeFavorites200>(
+      {url: `/app/me/favorites`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: postAppMeFavoritesBody, signal
+    },
+      );
+    }
+  
+
+
+export const getPostAppMeFavoritesMutationOptions = <TError = UnauthorizedResponse | NotFoundResponse | UnprocessableEntityResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAppMeFavorites>>, TError,{data: PostAppMeFavoritesBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postAppMeFavorites>>, TError,{data: PostAppMeFavoritesBody}, TContext> => {
+
+const mutationKey = ['postAppMeFavorites'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAppMeFavorites>>, {data: PostAppMeFavoritesBody}> = (props) => {
+          const {data} = props ?? {};
+
+          return  postAppMeFavorites(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostAppMeFavoritesMutationResult = NonNullable<Awaited<ReturnType<typeof postAppMeFavorites>>>
+    export type PostAppMeFavoritesMutationBody = PostAppMeFavoritesBody
+    export type PostAppMeFavoritesMutationError = UnauthorizedResponse | NotFoundResponse | UnprocessableEntityResponse
+
+    /**
+ * @summary Thêm sản phẩm vào yêu thích
+ */
+export const usePostAppMeFavorites = <TError = UnauthorizedResponse | NotFoundResponse | UnprocessableEntityResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAppMeFavorites>>, TError,{data: PostAppMeFavoritesBody}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postAppMeFavorites>>,
+        TError,
+        {data: PostAppMeFavoritesBody},
+        TContext
+      > => {
+
+      const mutationOptions = getPostAppMeFavoritesMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
  * **APP-11** — Create an appointment with `pending` status from the mini-app. The customer profile is inferred from the logged-in account; if `branch_id` is provided, the profile must belong to that branch. A fully booked slot returns `SLOT_UNAVAILABLE` (409).
  * @summary Book an appointment for the logged-in customer
  */
@@ -2920,6 +5466,71 @@ export const prefetchGetAppAppointmentsQuery = async <TData = Awaited<ReturnType
 
 
 /**
+ * **APP-17** — PUT /app/appointments/{id}/reschedule (customer reschedules their own pending/approved appointment to a new available slot, before the minimum lead time; approved appointments return to pending for re-approval). Customer scope: only operate on the data of the logged-in customer.
+ * @summary Reschedule appointment
+ */
+export const putAppAppointmentsIdReschedule = (
+    id: string,
+    putAppAppointmentsIdRescheduleBody: PutAppAppointmentsIdRescheduleBody,
+ ) => {
+      
+      
+      return customInstance<PutAppAppointmentsIdReschedule200>(
+      {url: `/app/appointments/${id}/reschedule`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: putAppAppointmentsIdRescheduleBody
+    },
+      );
+    }
+  
+
+
+export const getPutAppAppointmentsIdRescheduleMutationOptions = <TError = UnauthorizedResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAppAppointmentsIdReschedule>>, TError,{id: string;data: PutAppAppointmentsIdRescheduleBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putAppAppointmentsIdReschedule>>, TError,{id: string;data: PutAppAppointmentsIdRescheduleBody}, TContext> => {
+
+const mutationKey = ['putAppAppointmentsIdReschedule'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putAppAppointmentsIdReschedule>>, {id: string;data: PutAppAppointmentsIdRescheduleBody}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  putAppAppointmentsIdReschedule(id,data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PutAppAppointmentsIdRescheduleMutationResult = NonNullable<Awaited<ReturnType<typeof putAppAppointmentsIdReschedule>>>
+    export type PutAppAppointmentsIdRescheduleMutationBody = PutAppAppointmentsIdRescheduleBody
+    export type PutAppAppointmentsIdRescheduleMutationError = UnauthorizedResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+
+    /**
+ * @summary Reschedule appointment
+ */
+export const usePutAppAppointmentsIdReschedule = <TError = UnauthorizedResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAppAppointmentsIdReschedule>>, TError,{id: string;data: PutAppAppointmentsIdRescheduleBody}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof putAppAppointmentsIdReschedule>>,
+        TError,
+        {id: string;data: PutAppAppointmentsIdRescheduleBody},
+        TContext
+      > => {
+
+      const mutationOptions = getPutAppAppointmentsIdRescheduleMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
  * **APP-13** — PUT /app/appointments/{id}/cancel (customer cancels their own appointment, before the minimum lead time). Customer scope: only operate on the data of the logged-in customer.
  * @summary Cancel appointment
  */
