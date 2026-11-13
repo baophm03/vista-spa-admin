@@ -635,7 +635,7 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
                 columns={[
                   { title: 'Khách hàng', dataIndex: 'full_name' },
                   { title: 'Gói', dataIndex: 'package_name' },
-                  { title: 'Còn lại', dataIndex: 'sessions_remaining', width: 90, align: 'right' },
+                  { title: 'Sổ buổi còn lại', dataIndex: 'sessions_remaining', width: 200, align: 'right' },
                 ]}
               />
               <ListPagination page={remainingPage} limit={8} total={(sessions.remaining ?? []).length} onChange={setRemainingPage} noun="gói còn lại" />
