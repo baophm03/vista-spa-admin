@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Alert, Button, Card, Form, Spin, Table, Tabs, Tag, Typography, message } from 'antd'
+import { Alert, Button, Card, Form, Modal, Spin, Table, Tabs, Tag, Typography, message } from 'antd'
 import { EditOutlined, PlusOutlined } from '@ant-design/icons'
 import { Can, useAbility } from '@casl/react'
 import PageTitle from '@/components/base/PageTitle'
@@ -153,7 +153,8 @@ function CustomerFieldsConfig({ entity, sectionTitle }: {
       sort_order: row.sort_order,
       required: row.required,
       visible_to_customer: row.visible_to_customer,
-    } : { data_type: 'text', option_source: 'manual', required: false, visible_to_customer: false, sort_order: rows.length })
+      is_active: row.is_active !== false,
+    } : { data_type: 'text', option_source: 'manual', required: false, visible_to_customer: false, sort_order: rows.length, is_active: true })
     setOpen(true)
   }
 
@@ -170,6 +171,7 @@ function CustomerFieldsConfig({ entity, sectionTitle }: {
       options: supportsOptions && !lookupListId ? splitOptions(values.options_text) : null,
       sort_order: values.sort_order ?? 0,
       required: values.required ?? false,
+      ...(editing ? { is_active: values.is_active !== false } : {}),
       ...(entity === 'CUSTOMER_PROFILE' ? { visible_to_customer: values.visible_to_customer ?? false } : {}),
     }
     setSaving(true)
@@ -186,11 +188,21 @@ function CustomerFieldsConfig({ entity, sectionTitle }: {
     }
   }
 
+  // Ẩn/bật = PUT is_active; DELETE riêng là xóa mềm (is_deleted), bị chặn nếu trường đã có dữ liệu.
   const toggleActive = async (row: CustomFieldDef) => {
     try {
-      if (row.is_active === false) await putCustomFieldDefsId(row.id, { is_active: true })
-      else await deleteCustomFieldDefsId(row.id)
+      await putCustomFieldDefsId(row.id, { is_active: row.is_active === false })
       message.success(row.is_active === false ? 'Đã bật lại trường' : 'Đã ẩn trường; dữ liệu đã lưu được giữ nguyên')
+      await load()
+    } catch (err) {
+      message.error(errorMessage(err))
+    }
+  }
+
+  const removeField = async (row: CustomFieldDef) => {
+    try {
+      await deleteCustomFieldDefsId(row.id)
+      message.success('Đã xóa trường')
       await load()
     } catch (err) {
       message.error(errorMessage(err))
@@ -218,10 +230,21 @@ function CustomerFieldsConfig({ entity, sectionTitle }: {
           items={[
             ...(canUpdate ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []),
             ...(canToggleRow(row) ? [{ key: 'toggle', danger: row.is_active !== false, label: row.is_active === false ? 'Bật lại' : 'Ẩn' }] : []),
+            ...(ability.can('DELETE', 'CUSTOM_FIELD') ? [{ key: 'delete', danger: true, label: 'Xóa' }] : []),
           ]}
           onSelect={(key) => {
             if (key === 'edit') openEditor(row)
             else if (key === 'toggle') void toggleActive(row)
+            else if (key === 'delete') {
+              Modal.confirm({
+                title: 'Xóa trường tùy chỉnh này?',
+                content: 'Xóa mềm (is_deleted). Không xóa được trường đã có dữ liệu được lưu.',
+                okText: 'Xóa',
+                okButtonProps: { danger: true },
+                cancelText: 'Hủy',
+                onOk: () => void removeField(row),
+              })
+            }
           }}
         />
       ),

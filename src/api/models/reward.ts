@@ -6,6 +6,11 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { RewardVoucherId } from './rewardVoucherId';
+import type { RewardVoucherReference } from './rewardVoucherReference';
+import type { RewardVoucherKind } from './rewardVoucherKind';
+import type { RewardTreatmentPackageVoucherId } from './rewardTreatmentPackageVoucherId';
+import type { RewardAcademyCourseVoucherId } from './rewardAcademyCourseVoucherId';
+import type { RewardProductVoucherId } from './rewardProductVoucherId';
 import type { RewardBenefitAmount } from './rewardBenefitAmount';
 import type { RewardServiceId } from './rewardServiceId';
 import type { RewardQuantityTotal } from './rewardQuantityTotal';
@@ -22,6 +27,11 @@ export interface Reward {
   name: string;
   type?: string;
   voucher_id?: RewardVoucherId;
+  voucher_reference?: RewardVoucherReference;
+  voucher_kind?: RewardVoucherKind;
+  treatment_package_voucher_id?: RewardTreatmentPackageVoucherId;
+  academy_course_voucher_id?: RewardAcademyCourseVoucherId;
+  product_voucher_id?: RewardProductVoucherId;
   /** @minimum 0 */
   points_cost: number;
   /** @minimum 1 */

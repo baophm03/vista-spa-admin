@@ -633,7 +633,7 @@ export default function LuckyWheel() {
                         ]
                       : []),
                     ...(ability.can('DELETE' as never, 'WHEEL') && row.is_active !== false
-                      ? [{ key: 'delete', icon: <DeleteOutlined />, label: 'Ngừng hoạt động', danger: true }]
+                      ? [{ key: 'delete', icon: <DeleteOutlined />, label: 'Xóa', danger: true }]
                       : []),
                   ]}
                   onSelect={(key) => {
@@ -642,9 +642,9 @@ export default function LuckyWheel() {
                     else if (key === 'toggle') toggleWheel(row)
                     else if (key === 'delete') {
                       Modal.confirm({
-                        title: 'Ngừng hoạt động vòng quay này?',
-                        content: 'Vòng quay sẽ bị tắt; giải thưởng và lịch sử quay vẫn được giữ.',
-                        okText: 'Ngừng hoạt động',
+                        title: 'Xóa vòng quay này?',
+                        content: 'Xóa mềm (is_deleted). Không xóa được vòng quay đã phát sinh lượt quay hoặc còn giải thưởng đang cấu hình; ngừng quay hãy dùng "Tắt".',
+                        okText: 'Xóa',
                         okButtonProps: { danger: true },
                         cancelText: 'Hủy',
                         onOk: () => removeWheel(row),

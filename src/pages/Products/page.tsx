@@ -256,6 +256,19 @@ export default function Products() {
     }
   }
 
+  const toggleCategoryVisibility = async (row: ProductCategoryRow) => {
+    try {
+      await updateCategoryMutation.mutateAsync({
+        id: row.id,
+        dto: { name: row.name, is_active: row.is_active === false },
+      })
+      message.success(row.is_active === false ? 'Đã hiển thị lại danh mục' : 'Đã ẩn danh mục; danh mục vẫn còn trong danh sách quản trị')
+      await queryClient.invalidateQueries({ queryKey: getGetProductCategoriesQueryKey() })
+    } catch (err) {
+      message.error(errorMessage(err))
+    }
+  }
+
   return (
     <>
       <StatCards items={statItems} />
@@ -469,6 +482,7 @@ export default function Products() {
         catSaving={catSaving}
         onSubmitCategory={() => void submitCategory()}
         onRemoveCategory={(c) => void removeCategory(c)}
+        onToggleCategory={(c) => void toggleCategoryVisibility(c)}
         categories={categories}
       />
     </>

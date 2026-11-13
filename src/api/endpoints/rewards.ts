@@ -383,7 +383,7 @@ export const usePutRewardsId = <TError = UnauthorizedResponse | ForbiddenRespons
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **RW-05** — DELETE /rewards/{id} = hide. Only platform administrators (ADM) can call this. Handled by `row.update`.
+ * **RW-05** — DELETE /rewards/{id} — soft-deletes the reward (is_deleted=true); rejected with 409 if redemption history exists. Only platform administrators (ADM) can call this.
  * @summary Delete a reward
  */
 export const deleteRewardsId = (

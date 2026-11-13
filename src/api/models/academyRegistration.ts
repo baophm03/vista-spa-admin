@@ -8,6 +8,8 @@
 import type { AcademyRegistrationUserId } from './academyRegistrationUserId';
 import type { AcademyRegistrationCustomerProfileId } from './academyRegistrationCustomerProfileId';
 import type { AcademyRegistrationEmail } from './academyRegistrationEmail';
+import type { AcademyRegistrationAcademyCourseVoucherId } from './academyRegistrationAcademyCourseVoucherId';
+import type { AcademyRegistrationCourseVoucherTitle } from './academyRegistrationCourseVoucherTitle';
 import type { AcademyRegistrationPaymentStatus } from './academyRegistrationPaymentStatus';
 import type { AcademyRegistrationStatus } from './academyRegistrationStatus';
 import type { AcademyRegistrationNote } from './academyRegistrationNote';
@@ -30,6 +32,12 @@ export interface AcademyRegistration {
    * @maximum 100
    */
   discount_percent?: number;
+  /** @minimum 0 */
+  tuition_before_discount?: number;
+  academy_course_voucher_id?: AcademyRegistrationAcademyCourseVoucherId;
+  course_voucher_title?: AcademyRegistrationCourseVoucherTitle;
+  /** @minimum 0 */
+  voucher_discount_amount?: number;
   /** @minimum 0 */
   final_tuition?: number;
   payment_status?: AcademyRegistrationPaymentStatus;

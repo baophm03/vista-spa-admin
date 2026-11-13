@@ -243,7 +243,7 @@ export default function DiscountRules() {
             else if (key === 'delete') {
               Modal.confirm({
                 title: 'Xóa quy tắc này?',
-                content: 'Xóa mềm (is_active=false).',
+                content: 'Xóa mềm (is_deleted). Chỉ xóa được quy tắc chưa gắn dịch vụ áp dụng; ngừng áp dụng hãy dùng "Sửa" và tắt "Đang dùng".',
                 okText: 'Xóa',
                 okButtonProps: { danger: true },
                 cancelText: 'Hủy',

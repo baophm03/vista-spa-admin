@@ -2,7 +2,7 @@ import dayjs from 'dayjs'
 import { Alert, Form, Input, Modal, Select } from 'antd'
 import type { FormInstance } from 'antd'
 import type { AcademyCourse } from '@/api/models/academyCourse'
-import type { VoucherCategoryRow } from '@/api/endpoints/voucherCategories'
+import type { VoucherCategoryRow } from '@/api/custom/voucherCategories'
 
 export default function RegistrationCreateModal({ open, form, courses, vouchers, creating, onCancel, onSubmit }: {
   open: boolean

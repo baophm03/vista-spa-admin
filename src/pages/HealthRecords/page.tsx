@@ -118,7 +118,7 @@ export default function HealthRecords() {
       .then((body) => setSkinTypes(pickData<SkinTypeOption[]>(body) ?? []))
       .catch((err) => message.error(`Không tải được danh mục loại da: ${errorMessage(err)}`))
       .finally(() => setSkinTypesLoading(false))
-    getTreatmentPackages({ page: 1, limit: 200 })
+    getTreatmentPackages({ page: 1, limit: 200, is_active: true })
       .then((body) => {
         const names: Record<string, string> = {}
         for (const item of pickData<Array<{ id: string; name: string }>>(body) ?? []) names[item.id] = item.name

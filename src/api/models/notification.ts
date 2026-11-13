@@ -5,6 +5,8 @@
  * Vista Spa backend API. Uses the NEWSKY+ business error envelope for permission-aware endpoints and the legacy response envelope for existing admin endpoints.
  * OpenAPI spec version: 1.0.0
  */
+import type { NotificationUserId } from './notificationUserId';
+import type { NotificationCustomerProfileId } from './notificationCustomerProfileId';
 import type { NotificationBody } from './notificationBody';
 import type { NotificationReadAt } from './notificationReadAt';
 import type { NotificationSentAt } from './notificationSentAt';
@@ -14,7 +16,9 @@ import type { NotificationSentAt } from './notificationSentAt';
  */
 export interface Notification {
   id: string;
-  user_id: string;
+  user_id?: NotificationUserId;
+  /** For a one-to-one email, use the customer's profile email or linked account email. */
+  customer_profile_id?: NotificationCustomerProfileId;
   event_key?: string;
   title: string;
   body?: NotificationBody;

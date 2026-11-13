@@ -218,7 +218,7 @@ export default function TreatmentPackageModal({
                   <Form.Item name="terms" label="Điều khoản">
                     <Input.TextArea rows={3} />
                   </Form.Item>
-                  <Form.Item name="is_active" label="Đang bán" valuePropName="checked">
+                  <Form.Item name="is_active" label="Đang sử dụng" valuePropName="checked">
                     <Switch />
                   </Form.Item>
                 </>

@@ -1562,7 +1562,7 @@ export const usePutShiftTemplatesId = <TError = UnauthorizedResponse | Forbidden
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * DELETE `/shiftTemplates/{id}` — shift templates. Requires `shift_template.delete` permission. Branch scope: users restricted to a single branch only see that branch's data.
+ * DELETE `/shiftTemplates/{id}` — soft-deletes the template (is_deleted=true); rejected with 409 when schedules or day-off requests reference it. Requires `shift_template.delete` permission. Branch scope: users restricted to a single branch only see that branch's data.
  * @summary Delete a shift template
  */
 export const deleteShiftTemplatesId = (

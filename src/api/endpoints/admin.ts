@@ -1230,7 +1230,7 @@ export const usePutCollaboratorsId = <TError = UnauthorizedResponse | ForbiddenR
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **CO-05** — DELETE /collaborators/{id} — hides the collaborator (is_active=false). Requires `collaborator.delete` permission.
+ * **CO-05** — DELETE /collaborators/{id} — soft-deletes the collaborator (is_deleted=true); rejected with 409 if commission history exists. Requires `collaborator.delete` permission.
  * @summary Delete a collaborator
  */
 export const deleteCollaboratorsId = (

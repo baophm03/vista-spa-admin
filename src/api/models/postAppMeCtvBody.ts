@@ -9,4 +9,6 @@
 export type PostAppMeCtvBody = {
   name: string;
   phone: string;
+  /** Tùy chọn — mã CTV / mã khách hàng của người giới thiệu */
+  referral_code?: string;
 };

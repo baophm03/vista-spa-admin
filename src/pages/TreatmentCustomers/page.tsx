@@ -139,7 +139,7 @@ export default function TreatmentCustomers() {
 
   const profilesQuery = useGetCustomerProfiles({ page: 1, limit: 200 })
   const profiles = (pickData<ProfileRow[] | undefined>(profilesQuery.data) ?? []) as ProfileRow[]
-  const packagesQuery = useGetTreatmentPackages({ page: 1, limit: 200 })
+  const packagesQuery = useGetTreatmentPackages({ page: 1, limit: 200, is_active: true })
   const packages = (pickData<TreatmentPackage[] | undefined>(packagesQuery.data) ?? []) as TreatmentPackage[]
   const selectedSalePackageId = Form.useWatch('package_id', createForm)
   const selectedSalePackage = packages.find((pkg) => pkg.id === selectedSalePackageId)

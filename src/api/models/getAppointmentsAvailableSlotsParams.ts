@@ -10,6 +10,9 @@ export type GetAppointmentsAvailableSlotsParams = {
 branch_id?: string;
 date?: string;
 staff_id?: string;
+/**
+ * Optional HH:mm filter — khi truyền, trả staff_ids rảnh đúng khung giờ.
+ */
 start_time?: string;
 exclude_appointment_id?: string;
 };

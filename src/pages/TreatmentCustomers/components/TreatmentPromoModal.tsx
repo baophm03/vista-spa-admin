@@ -80,7 +80,6 @@ export default function TreatmentPromoModal({
   redeemMoney,
   pointValue,
   redeemInvoiceAmount,
-  minRedeemMoney,
   maxRedeemMoney,
   minRedeemPercent,
   maxRedeemPercent,
@@ -253,7 +252,7 @@ export default function TreatmentPromoModal({
                       { validator: async (_, value) => Number.isInteger(Number(value)) && Number(value) > 0 ? Promise.resolve() : Promise.reject(new Error('Số điểm phải là số nguyên dương')) },
                     ]}
                   >
-                    <InputNumber min={1} max={maxRedeemPoints > 0 ? maxRedeemPoints : undefined} precision={0} className="w-full!" disabled={!isPointsEnabled || !redemptionConfigReady || maxRedeemPoints <= 0} />
+                    <InputNumber min={1} max={maxRedeemPoints != null && maxRedeemPoints > 0 ? maxRedeemPoints : undefined} precision={0} className="w-full!" disabled={!isPointsEnabled || !redemptionConfigReady || !maxRedeemPoints || maxRedeemPoints <= 0} />
                   </Form.Item>
                   {pointsLoaded && isPointsEnabled && redemptionConfigReady ? (
                     <Card size="small" className="mb-3">

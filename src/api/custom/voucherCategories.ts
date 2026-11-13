@@ -1,3 +1,6 @@
+// Facade quản lý voucher theo danh mục (treatment-package / academy-course / product).
+// Đặt ngoài src/api/endpoints|models để orval không xóa khi regenerate —
+// BE đã expose đủ 3 nhóm route và client generated tương ứng trong src/api/endpoints/*-vouchers.ts.
 import { apiClient } from '@/api/mutator/custom-instance'
 
 export type VoucherCategory = 'treatment-package' | 'academy-course' | 'product'

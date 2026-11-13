@@ -15,6 +15,7 @@ import {
 import type { TableColumnsType } from 'antd'
 import {
   CheckOutlined,
+  DeleteOutlined,
   EditOutlined,
   EyeInvisibleOutlined,
   GiftOutlined,
@@ -47,7 +48,7 @@ import {
   putRewardsId,
 } from '@/api/endpoints/rewards'
 import { getCustomerProfiles, postCustomerProfilesIdRedeemReward } from '@/api/endpoints/customer-profiles'
-import { getVoucherCategory, type VoucherCategory, type VoucherCategoryRow } from '@/api/endpoints/voucherCategories'
+import { getVoucherCategory, type VoucherCategory, type VoucherCategoryRow } from '@/api/custom/voucherCategories'
 import { getService } from '@/api/endpoints/services'
 import { Can, useAbility } from '@casl/react'
 import CancelRedemptionModal from './components/CancelRedemptionModal'
@@ -68,6 +69,7 @@ import {
 function RewardCatalogTab({ onChanged }: { onChanged: () => void }) {
   const ability = useAbility()
   const canRedeem = ability.can('REDEEM_ADMIN', 'REWARD')
+  const canDelete = ability.can('DELETE', 'REWARD')
   const canUpdate = ability.can('UPDATE', 'REWARD')
   const [page, setPage] = useState(1)
   const [open, setOpen] = useState(false)
@@ -209,10 +211,22 @@ function RewardCatalogTab({ onChanged }: { onChanged: () => void }) {
     }
   }
 
+  // Ẩn = PUT is_active (switch trong modal); DELETE riêng là xóa mềm is_deleted.
   const hide = async (row: RewardRow) => {
     try {
+      await updateMutation.mutateAsync({ id: row.id, dto: { is_active: false } })
+      message.success('Đã ẩn quà; quà vẫn còn trong danh sách quản trị')
+      onChanged()
+      await queryClient.invalidateQueries({ queryKey: getGetRewardsQueryKey() })
+    } catch (err) {
+      message.error(errorMessage(err))
+    }
+  }
+
+  const remove = async (row: RewardRow) => {
+    try {
       await deleteMutation.mutateAsync(row.id)
-      message.success('Đã ẩn quà')
+      message.success('Đã xóa quà')
       onChanged()
       await queryClient.invalidateQueries({ queryKey: getGetRewardsQueryKey() })
     } catch (err) {
@@ -271,7 +285,8 @@ function RewardCatalogTab({ onChanged }: { onChanged: () => void }) {
           items={[
             ...(canRedeem && row.is_active ? [{ key: 'redeem', icon: <GiftOutlined />, label: 'Đổi hộ khách' }] : []),
             ...(canUpdate ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []),
-            ...(canUpdate && row.is_active ? [{ key: 'hide', icon: <EyeInvisibleOutlined />, label: 'Ẩn', danger: true }] : []),
+            ...(canUpdate && row.is_active ? [{ key: 'hide', icon: <EyeInvisibleOutlined />, label: 'Ẩn' }] : []),
+            ...(canDelete ? [{ key: 'delete', icon: <DeleteOutlined />, danger: true, label: 'Xóa' }] : []),
           ]}
           onSelect={(key) => {
             if (key === 'redeem') void openRedeem(row)
@@ -279,11 +294,19 @@ function RewardCatalogTab({ onChanged }: { onChanged: () => void }) {
             else if (key === 'hide') {
               Modal.confirm({
                 title: 'Ẩn quà này?',
-                content: 'Lượt đổi cũ vẫn được giữ.',
+                content: 'Quà bị ẩn khỏi app nhưng vẫn còn trong danh sách quản trị; lượt đổi cũ vẫn được giữ.',
                 okText: 'Ẩn',
-                okButtonProps: { danger: true },
                 cancelText: 'Hủy',
                 onOk: () => hide(row),
+              })
+            } else if (key === 'delete') {
+              Modal.confirm({
+                title: 'Xóa quà này?',
+                content: 'Xóa mềm (is_deleted). Không xóa được quà đã phát sinh lịch sử đổi thưởng.',
+                okText: 'Xóa',
+                okButtonProps: { danger: true },
+                cancelText: 'Hủy',
+                onOk: () => remove(row),
               })
             }
           }}

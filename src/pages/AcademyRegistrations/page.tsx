@@ -8,7 +8,7 @@ import ListPagination from '@/components/base/ListPagination'
 import { paginateRows } from '@/utils/listTable'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { AcademyCourse } from '@/api/models/academyCourse'
-import { getVoucherCategory, type VoucherCategoryRow } from '@/api/endpoints/voucherCategories'
+import { getVoucherCategory, type VoucherCategoryRow } from '@/api/custom/voucherCategories'
 import {
   getGetAcademyRegistrationsQueryKey,
   useGetAcademyRegistrationsFindStudent,

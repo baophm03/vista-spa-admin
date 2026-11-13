@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Alert, Button, Form, Modal, Table, Tabs, Tag, Typography, message } from 'antd'
 import type { TableColumnsType } from 'antd'
-import { CheckCircleOutlined, ClockCircleOutlined, DeleteOutlined, EditOutlined, GiftOutlined, MinusCircleOutlined, PlusOutlined } from '@ant-design/icons'
+import { CheckCircleOutlined, ClockCircleOutlined, DeleteOutlined, EditOutlined, GiftOutlined, MinusCircleOutlined, PauseCircleOutlined, PlusOutlined } from '@ant-design/icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { Can, useAbility } from '@casl/react'
@@ -22,7 +22,7 @@ import {
   putVoucherCategory,
   type VoucherCategory,
   type VoucherCategoryRow,
-} from '@/api/endpoints/voucherCategories'
+} from '@/api/custom/voucherCategories'
 import VoucherModal from './components/VoucherModal'
 import { CATEGORY_META } from './components/constants'
 
@@ -137,13 +137,24 @@ function VoucherCategoryTab({ category }: { category: VoucherCategory }) {
     }
   }
 
+  // Tắt voucher = ngừng phát hành (is_active=false qua PUT); DELETE riêng là xóa mềm is_deleted.
   const hide = async (row: VoucherCategoryRow) => {
     try {
-      await hideMutation.mutateAsync(row.id)
-      message.success('Đã tắt voucher')
+      await updateMutation.mutateAsync({ id: row.id, body: { is_active: false } })
+      message.success('Đã tắt voucher; voucher vẫn còn trong danh sách quản trị')
       await queryClient.invalidateQueries({ queryKey: listKey })
     } catch (err) {
       message.error(errorMessage(err, 'Không thể tắt voucher'))
+    }
+  }
+
+  const remove = async (row: VoucherCategoryRow) => {
+    try {
+      await hideMutation.mutateAsync(row.id)
+      message.success('Đã xóa voucher')
+      await queryClient.invalidateQueries({ queryKey: listKey })
+    } catch (err) {
+      message.error(errorMessage(err, 'Không thể xóa voucher'))
     }
   }
 
@@ -186,11 +197,13 @@ function VoucherCategoryTab({ category }: { category: VoucherCategory }) {
         <RowActionsMenu
           items={[
             { key: 'edit', icon: <EditOutlined />, label: 'Sửa' },
-            ...(row.is_active ? [{ key: 'hide', icon: <DeleteOutlined />, label: 'Tắt voucher', danger: true }] : []),
+            ...(row.is_active ? [{ key: 'hide', icon: <PauseCircleOutlined />, label: 'Tắt voucher' }] : []),
+            { key: 'delete', icon: <DeleteOutlined />, label: 'Xóa', danger: true },
           ]}
           onSelect={(key) => {
             if (key === 'edit') openModal(row)
-            if (key === 'hide') Modal.confirm({ title: 'Tắt voucher này?', content: 'Voucher đã phát hành vẫn được giữ lại.', okText: 'Tắt voucher', okButtonProps: { danger: true }, cancelText: 'Hủy', onOk: () => hide(row) })
+            if (key === 'hide') Modal.confirm({ title: 'Tắt voucher này?', content: 'Voucher ngừng phát hành nhưng vẫn còn trong danh sách; có thể bật lại trong modal Sửa.', okText: 'Tắt voucher', cancelText: 'Hủy', onOk: () => hide(row) })
+            if (key === 'delete') Modal.confirm({ title: 'Xóa voucher này?', content: 'Xóa mềm (is_deleted). Không xóa được voucher đã phát hành cho khách hoặc đang cấu hình ở quà/vòng quay.', okText: 'Xóa', okButtonProps: { danger: true }, cancelText: 'Hủy', onOk: () => remove(row) })
           }}
         />
       ),

@@ -1456,7 +1456,7 @@ export const usePostTreatmentCustomersIdSessions = <TError = UnauthorizedRespons
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **LY-02** — POST /customer-treatments/{id}/redeem-points (BR-16). Requires the `membership.points_adjust` permission. Branch scope: users limited to one branch only see that branch's data. Body: `points` (positive integer). Minimum/maximum redemption percentages use the discounted invoice value before points and payments; the amount cannot exceed the remaining payable amount.
+ * **LY-02** — POST /customer-treatments/{id}/redeem-points (BR-16). Requires the `membership.points_adjust` permission. Branch scope: users limited to one branch only see that branch's data. Body: `points` (positive integer). Minimum/maximum redemption percentages use the discounted invoice value before points and payments; the amount cannot exceed the remaining payable amount or the customer's points balance limit.
  * @summary Redeem points to reduce the debt on a treatment package
  */
 export const postTreatmentCustomersIdRedeemPoints = (
@@ -3728,4 +3728,4 @@ export const usePostPaymentsIdVoid = <TError = UnauthorizedResponse | ForbiddenR
 
       return useMutation(mutationOptions, queryClient);
     }
-
+    

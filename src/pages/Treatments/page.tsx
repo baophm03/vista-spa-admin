@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { Alert, Button, Form, Grid, Input, Modal, Popconfirm, Select, Space, Table, Tabs, Tag, Typography, message } from 'antd'
+import { Alert, Button, Form, Grid, Input, Modal, Select, Space, Table, Tabs, Tag, Typography, message } from 'antd'
 import type { TableColumnsType } from 'antd'
-import { EditOutlined, EyeInvisibleOutlined, EyeOutlined, PlusOutlined, SearchOutlined, ShoppingOutlined } from '@ant-design/icons'
+import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, PlusOutlined, SearchOutlined, ShoppingOutlined } from '@ant-design/icons'
 import PageTitle from '@/components/base/PageTitle'
 import StatCards, { type StatItem } from '@/components/base/StatCards'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
@@ -36,7 +36,8 @@ import TreatmentTypeModal from './components/TreatmentTypeModal'
 import {
   VALIDITY_LABEL,
   PACKAGE_TYPE_QUOTA_OPTIONS,
-  QUOTA_LABEL,
+  QUOTA_LABEL,
+
   saleModeLabel,
   priceLabel,
   type PackageTypeForm,
@@ -94,7 +95,7 @@ export default function Treatments() {
     : [
       { key: 'total', label: 'Tổng gói liệu trình', value: rows.length.toLocaleString('vi-VN'), icon: <ShoppingOutlined />, tone: 'primary' },
       { key: 'active', label: 'Đang bán', value: activePackageCount.toLocaleString('vi-VN'), icon: <EyeOutlined />, tone: 'secondary' },
-      { key: 'hidden', label: 'Đã ẩn', value: (rows.length - activePackageCount).toLocaleString('vi-VN'), icon: <EyeInvisibleOutlined />, tone: 'neutral' },
+      { key: 'hidden', label: 'Ngưng sử dụng', value: (rows.length - activePackageCount).toLocaleString('vi-VN'), icon: <EyeInvisibleOutlined />, tone: 'neutral' },
     ]
   const packageTypeData = pickData<PackageTypeRow[] | { rows?: PackageTypeRow[] }>(packageTypesQuery.data)
   const packageTypes = (Array.isArray(packageTypeData) ? packageTypeData : packageTypeData?.rows ?? []) as PackageTypeRow[]
@@ -178,12 +179,12 @@ export default function Treatments() {
       const dto = {
         ...values,
         name: String(values.name).trim(),
+        is_active: values.is_active !== false,
         branch_id: values.branch_id || null,
         package_type_id: values.package_type_id,
         quota_type: quotaType,
         total_sessions: quotaType === 'SESSIONS' ? Number(values.total_sessions) : null,
         total_value: quotaType === 'VALUE' ? Number(values.list_price) : null,
-        // Nghiệp vụ mới: mỗi gói tương đương đúng 1 dịch vụ
         service_id: isCombo ? null : (values.service_id || null),
         service_ids: [],
         warranty_text: selectedPackageType?.has_warranty ? (values.warranty_text?.trim() || null) : null,
@@ -214,20 +215,10 @@ export default function Treatments() {
     }
   }
 
-  const hidePackage = async (row: TreatmentPackageRow) => {
+  const deletePackage = async (row: TreatmentPackageRow) => {
     try {
       await deletePackageMutation.mutateAsync({ id: row.id })
-      message.success('Đã ẩn gói dịch vụ')
-      await reloadPackages()
-    } catch (err) {
-      message.error(errorMessage(err))
-    }
-  }
-
-  const restorePackage = async (row: TreatmentPackageRow) => {
-    try {
-      await updatePackageMutation.mutateAsync({ id: row.id, data: { is_active: true } as never })
-      message.success('Đã bật lại gói dịch vụ')
+      message.success('Đã xóa gói dịch vụ')
       await reloadPackages()
     } catch (err) {
       message.error(errorMessage(err))
@@ -285,16 +276,15 @@ export default function Treatments() {
     }
   }
 
-  const hideType = async (row: PackageTypeRow) => {
+  const handleTypeDelete = async (row: PackageTypeRow) => {
     try {
       await deleteTypeMutation.mutateAsync({ id: row.id })
-      message.success('Đã ẩn loại gói')
+      message.success('Đã xóa loại gói')
       await reloadPackageTypes()
     } catch (err) {
       message.error(errorMessage(err))
     }
   }
-
 
   const packageColumns: TableColumnsType<TreatmentPackageRow> = [
     {
@@ -347,7 +337,7 @@ export default function Treatments() {
         : 'Không thời hạn',
     },
     { title: 'Buổi tặng', key: 'bonus', dataIndex: 'bonus_sessions_default', width: 100, render: (value) => Number(value ?? 0) },
-    { title: 'Trạng thái', key: 'status', dataIndex: 'is_active', width: 110, render: (active) => active ? <Tag color="green">Đang bán</Tag> : <Tag>Đã ẩn</Tag> },
+    { title: 'Trạng thái', key: 'status', dataIndex: 'is_active', width: 140, render: (active) => active ? <Tag color="green">Đang sử dụng</Tag> : <Tag>Ngưng sử dụng</Tag> },
   ]
 
   const visiblePackageColumns = packageColumns
@@ -367,9 +357,7 @@ export default function Treatments() {
         <Space>
           <Button size="small" onClick={() => openTypeModal(row)}>Sửa</Button>
           {row.is_active && (
-            <Popconfirm title="Ẩn loại gói này?" okText="Ẩn" cancelText="Hủy" onConfirm={() => hideType(row)}>
-              <Button size="small" danger>Ẩn</Button>
-            </Popconfirm>
+            <Button onClick={() => { handleTypeDelete(row) }} size="small" danger icon={<DeleteOutlined />} aria-label="Xóa loại gói" title="Xóa loại gói" />
           )}
         </Space>
       ),
@@ -424,21 +412,11 @@ export default function Treatments() {
               <RowActionsMenu
                 items={[
                   { key: 'edit', icon: <EditOutlined />, label: 'Sửa' },
-                  ...(row.is_active
-                    ? [{ key: 'hide', icon: <EyeInvisibleOutlined />, danger: true, label: 'Ẩn' }]
-                    : [{ key: 'restore', icon: <EyeOutlined />, label: 'Bật lại' }]),
+                  { key: 'delete', icon: <DeleteOutlined />, danger: true, label: 'Xóa' },
                 ]}
                 onSelect={(key) => {
                   if (key === 'edit') openPackageModal(row)
-                  else if (key === 'hide') {
-                    Modal.confirm({
-                      title: 'Ẩn gói dịch vụ này?',
-                      okText: 'Ẩn',
-                      okButtonProps: { danger: true },
-                      cancelText: 'Hủy',
-                      onOk: () => hidePackage(row),
-                    })
-                  } else if (key === 'restore') void restorePackage(row)
+                  else if (key === 'delete') Modal.confirm({ title: 'Xóa gói dịch vụ này?', content: 'Gói đã được sử dụng không thể xóa.', okText: 'Xóa', okButtonProps: { danger: true }, cancelText: 'Hủy', onOk: () => deletePackage(row) })
                 }}
               />
             ),
@@ -454,7 +432,7 @@ export default function Treatments() {
           <>
             <div className="mobile-card-head">
               <div className="mobile-card-title">{row.name}</div>
-              {row.is_active ? <Tag color="green">Đang bán</Tag> : <Tag>Đã ẩn</Tag>}
+              {row.is_active ? <Tag color="green">Đang sử dụng</Tag> : <Tag>Ngưng sử dụng</Tag>}
             </div>
             <div className="mobile-card-rows">
               <MobileCardRow label="Chế độ" value={saleModeLabel(row)} />
@@ -463,9 +441,7 @@ export default function Treatments() {
             {canManage && (
               <div className="mobile-card-actions">
                 <Button size="small" icon={<EditOutlined />} onClick={() => openPackageModal(row)}>Sửa</Button>
-                {row.is_active
-                  ? <Button size="small" danger onClick={() => Modal.confirm({ title: 'Ẩn gói dịch vụ này?', okText: 'Ẩn', okButtonProps: { danger: true }, cancelText: 'Hủy', onOk: () => hidePackage(row) })}>Ẩn</Button>
-                  : <Button size="small" onClick={() => void restorePackage(row)}>Bật lại</Button>}
+                <Button size="small" danger icon={<DeleteOutlined />} aria-label="Xóa gói" title="Xóa gói" onClick={() => Modal.confirm({ title: 'Xóa gói dịch vụ này?', content: 'Gói đã được sử dụng không thể xóa.', okText: 'Xóa', okButtonProps: { danger: true }, cancelText: 'Hủy', onOk: () => deletePackage(row) })} />
               </div>
             )}
           </>
@@ -509,7 +485,7 @@ export default function Treatments() {
           <>
             <div className="mobile-card-head">
               <div className="mobile-card-title">{row.name}</div>
-              {row.is_active ? <Tag color="green">Đang dùng</Tag> : <Tag>Đã ẩn</Tag>}
+              {row.is_active ? <Tag color="green">Đang dùng</Tag> : <Tag>Ngưng sử dụng</Tag>}
             </div>
             <div className="mobile-card-rows">
               <MobileCardRow label="Mã loại" value={row.code || '—'} />
@@ -521,9 +497,7 @@ export default function Treatments() {
               <div className="mobile-card-actions">
                 <Button size="small" onClick={() => openTypeModal(row)}>Sửa</Button>
                 {row.is_active && (
-                  <Popconfirm title="Ẩn loại gói này?" okText="Ẩn" cancelText="Hủy" onConfirm={() => hideType(row)}>
-                    <Button size="small" danger>Ẩn</Button>
-                  </Popconfirm>
+                  <Button size="small" danger icon={<DeleteOutlined />} aria-label="Xóa loại gói" title="Xóa loại gói" />
                 )}
               </div>
             )}

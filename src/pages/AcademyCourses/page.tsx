@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { Alert, Button, Form, Modal, Table, Tag, message } from 'antd'
-import { BookOutlined, CheckCircleOutlined, EditOutlined, EyeInvisibleOutlined, PlusOutlined } from '@ant-design/icons'
+import { BookOutlined, CheckCircleOutlined, DeleteOutlined, EditOutlined, EyeInvisibleOutlined, PlusOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
 import StatCards, { type StatItem } from '@/components/base/StatCards'
@@ -126,11 +126,21 @@ export default function AcademyCourses() {
     }
   }
 
+  // Ẩn/mở = PUT is_active; DELETE riêng là xóa mềm (is_deleted).
   const toggleActive = async (row: AcademyCourse) => {
     try {
-      if (row.is_active) await deleteMutation.mutateAsync({ id: row.id })
-      else await updateMutation.mutateAsync({ id: row.id, data: { ...row, is_active: true } as never })
-      message.success(row.is_active ? 'Đã ẩn khóa học' : 'Đã mở khóa học')
+      await updateMutation.mutateAsync({ id: row.id, data: { ...row, is_active: !row.is_active } as never })
+      message.success(row.is_active ? 'Đã ẩn khóa học; khóa học vẫn còn trong danh sách quản trị' : 'Đã mở khóa học')
+      await reload()
+    } catch (error) {
+      message.error(errorMessage(error))
+    }
+  }
+
+  const remove = async (row: AcademyCourse) => {
+    try {
+      await deleteMutation.mutateAsync({ id: row.id })
+      message.success('Đã xóa khóa học')
       await reload()
     } catch (error) {
       message.error(errorMessage(error))
@@ -206,22 +216,33 @@ export default function AcademyCourses() {
             width: 90,
             fixed: 'right' as const,
             render: (_: unknown, row: AcademyCourse) => {
-              const canToggle = row.is_active ? canDelete : canUpdate
+              const canToggle = canUpdate
               return (
                 <RowActionsMenu
                   items={[
                     ...(canUpdate ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []),
                     ...(canToggle ? [{ key: 'toggle', danger: row.is_active, label: row.is_active ? 'Ẩn' : 'Mở lại' }] : []),
+                    ...(canDelete ? [{ key: 'delete', icon: <DeleteOutlined />, danger: true, label: 'Xóa' }] : []),
                   ]}
                   onSelect={(key) => {
                     if (key === 'edit') openEditor(row)
                     else if (key === 'toggle') {
                       Modal.confirm({
                         title: row.is_active ? 'Ẩn khóa học này?' : 'Mở lại khóa học này?',
+                        content: row.is_active ? 'Khóa học bị ẩn khỏi app nhưng vẫn còn trong danh sách quản trị.' : undefined,
                         okText: row.is_active ? 'Ẩn' : 'Mở',
                         okButtonProps: row.is_active ? { danger: true } : undefined,
                         cancelText: 'Hủy',
                         onOk: () => void toggleActive(row),
+                      })
+                    } else if (key === 'delete') {
+                      Modal.confirm({
+                        title: 'Xóa khóa học này?',
+                        content: 'Xóa mềm (is_deleted). Không xóa được khóa học đã có học viên đăng ký.',
+                        okText: 'Xóa',
+                        okButtonProps: { danger: true },
+                        cancelText: 'Hủy',
+                        onOk: () => void remove(row),
                       })
                     }
                   }}

@@ -95,7 +95,7 @@ export const getGetLuckyWheelsIdQueryKey = (id?: string,) => {
     ] as const;
     }
 
-
+    
 export const getGetLuckyWheelsIdInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getLuckyWheelsId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLuckyWheelsId>>, TError, TData>>, }
 ) => {
 
@@ -1567,4 +1567,4 @@ export const useDeleteLuckyWheelsIdPrizesPrizeId = <TError = UnauthorizedRespons
 
       return useMutation(mutationOptions, queryClient);
     }
-
+    

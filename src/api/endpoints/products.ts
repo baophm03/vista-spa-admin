@@ -323,7 +323,7 @@ export const usePutProductsId = <TError = UnauthorizedResponse | ForbiddenRespon
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * DELETE `/products/{id}` — products. Only platform administrators (ADM) can call this. Handled by `product.update`.
+ * DELETE `/products/{id}` — soft-deletes the product (is_deleted=true, keeps files/references for audit). Only platform administrators (ADM) can call this.
  * @summary Delete a product
  */
 export const deleteProductsId = (

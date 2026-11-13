@@ -43,6 +43,7 @@ import type {
   NotFoundResponse,
   PostBranches200,
   PostBranchesIdActivate200,
+  PostBranchesIdDeactivate200,
   PutBranchesId200,
   UnauthorizedResponse,
   UnprocessableEntityResponse
@@ -314,7 +315,7 @@ export const usePutBranchesId = <TError = UnauthorizedResponse | ForbiddenRespon
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **BR-05** — DELETE /branches/{id}: deactivates the branch without deleting historical data. Requires `branch.delete` permission. Branch scope: users limited to a single branch only see that branch's data. Handled by `item.update`.
+ * **BR-05** — DELETE /branches/{id}: soft-deletes the branch (sets `is_deleted=true`) after checking lifecycle blockers; historical data is preserved. Requires `branch.delete` permission. Branch scope: users limited to a single branch only see that branch's data. Returns 409 if the branch still has dependent data.
  * @summary Delete a branch
  */
 export const deleteBranchesId = (
@@ -826,6 +827,69 @@ export const usePostBranches = <TError = UnauthorizedResponse | ForbiddenRespons
       > => {
 
       const mutationOptions = getPostBranchesMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * POST `/branches/{id}/deactivate` — ngừng hoạt động cơ sở (is_active=false), khác với DELETE là xóa mềm. Bị chặn khi còn booking/điều trị đang chạy. Requires `branch.update` permission. Branch scope: users limited to a single branch only see that branch's data.
+ * @summary Deactivate a branch (is_active=false, giữ nguyên dữ liệu)
+ */
+export const postBranchesIdDeactivate = (
+    id: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<PostBranchesIdDeactivate200>(
+      {url: `/branches/${id}/deactivate`, method: 'POST', signal
+    },
+      );
+    }
+  
+
+
+export const getPostBranchesIdDeactivateMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postBranchesIdDeactivate>>, TError,{id: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postBranchesIdDeactivate>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['postBranchesIdDeactivate'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postBranchesIdDeactivate>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  postBranchesIdDeactivate(id,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostBranchesIdDeactivateMutationResult = NonNullable<Awaited<ReturnType<typeof postBranchesIdDeactivate>>>
+    
+    export type PostBranchesIdDeactivateMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+
+    /**
+ * @summary Deactivate a branch (is_active=false, giữ nguyên dữ liệu)
+ */
+export const usePostBranchesIdDeactivate = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postBranchesIdDeactivate>>, TError,{id: string}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postBranchesIdDeactivate>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+
+      const mutationOptions = getPostBranchesIdDeactivateMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

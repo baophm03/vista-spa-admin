@@ -1,4 +1,4 @@
-import type { VoucherCategory, VoucherCategoryRow } from '@/api/endpoints/voucherCategories'
+import type { VoucherCategory, VoucherCategoryRow } from '@/api/custom/voucherCategories'
 
 export type { VoucherCategory, VoucherCategoryRow }
 
