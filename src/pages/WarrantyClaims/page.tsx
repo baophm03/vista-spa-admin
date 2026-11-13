@@ -146,7 +146,6 @@ export default function WarrantyClaims() {
       title: 'Thao tác', align: 'center' as const, key: 'actions', width: 170,
       render: (_v, row) => (
         <Space size={6}>
-          <Button size="small" onClick={() => setDetailId(row.id)}>Chi tiết</Button>
           <Button
             size="small"
             onClick={() => navigate(`/treatment-customers?treatment_id=${encodeURIComponent(row.customer_treatment_id)}`)}
@@ -189,7 +188,10 @@ export default function WarrantyClaims() {
         />
       )}
       <Table<ClaimRow>
-        rowKey="id" loading={claimsQuery.isLoading} dataSource={rows} columns={columns}
+        rowKey="id" loading={claimsQuery.isLoading} dataSource={rows} columns={columns}  onRow={(row) => ({
+    onClick: () => setDetailId(row.id),
+    style: { cursor: 'pointer' },
+  })}
         pagination={false}
       />
       <ListPagination page={page} limit={10} total={total} onChange={setPage} noun="yêu cầu bảo hành" />

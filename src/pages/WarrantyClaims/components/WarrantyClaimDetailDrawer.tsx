@@ -57,8 +57,8 @@ export default function WarrantyClaimDetailDrawer(props: WarrantyClaimDetailDraw
   }
 
   return (
-    <Drawer
-      title="Chi tiết yêu cầu bảo hành" open={!!claimId} onClose={onClose} width={480}
+    <Modal
+      title="Chi tiết yêu cầu bảo hành" open={!!claimId} onCancel={onClose} width={480}
       styles={{ body: { display: 'flex', flexDirection: 'column' } }}
     >
       {!claim ? (
@@ -124,6 +124,6 @@ export default function WarrantyClaimDetailDrawer(props: WarrantyClaimDetailDraw
           </Modal>
         </>
       )}
-    </Drawer>
+    </Modal>
   )
 }
