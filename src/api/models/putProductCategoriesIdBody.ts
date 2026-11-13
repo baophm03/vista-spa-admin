@@ -10,4 +10,5 @@ export type PutProductCategoriesIdBody = {
   name?: string;
   sort_order?: string;
   is_active?: boolean;
+  image_file_id?: string;
 };

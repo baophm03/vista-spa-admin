@@ -333,7 +333,7 @@ export const usePutTreatmentPackagesId = <TError = UnauthorizedResponse | Forbid
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **TP-05** — DELETE /treatment-packages/{id} (soft delete). Requires permission `treatment_package.delete`.
+ * **TP-05** — DELETE /treatment-packages/{id} (permanent delete when unused). Requires permission `treatment_package.delete`.
  * @summary Delete a treatment package
  */
 export const deleteTreatmentPackagesId = (

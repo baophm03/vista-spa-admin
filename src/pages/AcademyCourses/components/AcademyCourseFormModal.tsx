@@ -1,6 +1,7 @@
 import { DatePicker, Form, Input, InputNumber, Modal, Select, Space } from 'antd'
 import type { FormInstance } from 'antd'
 import CustomFieldFormItems from '@/components/CustomFieldFormItems'
+import ServiceImageField from '@/components/ServiceImageField'
 import type { CustomFieldDefWithOptions } from '@/components/CustomFieldFormItems'
 import type { AcademyCourse } from '@/api/models/academyCourse'
 import type { Branch } from '@/api/models/branch'
@@ -46,6 +47,9 @@ export default function AcademyCourseFormModal({ open, form, editing, branches, 
             <Select disabled={!!editing} allowClear options={branches.map((branch) => ({ value: branch.id, label: branch.name }))} />
           </Form.Item>
         </Space>
+        <Form.Item name="cover_file_id" label="Ảnh bìa">
+          <ServiceImageField />
+        </Form.Item>
         <Form.Item name="description" label="Mô tả"><Input.TextArea rows={3} /></Form.Item>
         <Space style={{ display: 'flex' }} align="start" wrap>
           <Form.Item name="tuition" label="Học phí" rules={[{ required: true, type: 'number', min: 0 }]} style={{ minWidth: 180 }}>

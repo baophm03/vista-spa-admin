@@ -41,9 +41,10 @@ export default function TreatmentPackageModal({
   onCancel,
   onOk,
 }: TreatmentPackageModalProps) {
+  const totalSessionsWatch = Form.useWatch('total_sessions', form)
   return (
     <Modal
-      title={editing ? 'Sửa gói dịch vụ' : 'Thêm gói dịch vụ'}
+      title={editing ? 'Sửa gói liệu trình' : 'Thêm gói liệu trình'}
       open={open}
       onCancel={onCancel}
       onOk={onOk}
@@ -77,7 +78,6 @@ export default function TreatmentPackageModal({
                     total_sessions: type.default_quota_type === 'SESSIONS' ? 5 : undefined,
                     total_value: undefined,
                     service_id: undefined,
-                    service_ids: [],
                     warranty_text: undefined,
                   })
                 }}
@@ -85,7 +85,12 @@ export default function TreatmentPackageModal({
             </Form.Item>
           </Col>
           <Col span={8}>
-            <Form.Item name="quota_type" label="Cách tính hạn mức" rules={[{ required: true, message: 'Chọn cách tính hạn mức' }]}>
+            <Form.Item
+              name="quota_type"
+              label="Chế độ bán"
+              rules={[{ required: true, message: 'Chọn chế độ bán' }]}
+              extra="Theo buổi: 1 buổi = dịch vụ lẻ, từ 2 buổi = bán theo buổi. Theo giá tiền: mỗi buổi có giá, tổng không vượt định mức. Unlimited: không giới hạn số buổi."
+            >
               <Select options={packageQuotaOptions} onChange={(value: QuotaType) => {
                   if (value !== 'SESSIONS') form.setFieldValue('total_sessions', undefined)
                   if (value !== 'VALUE') form.setFieldValue('total_value', undefined)
@@ -95,7 +100,12 @@ export default function TreatmentPackageModal({
           </Col>
           <Col span={8}>
             {selectedQuotaType === 'SESSIONS' && (
-                <Form.Item name="total_sessions" label="Số buổi" rules={[{ required: true, message: 'Nhập số buổi' }]}>
+                <Form.Item
+                  name="total_sessions"
+                  label="Số buổi"
+                  rules={[{ required: true, message: 'Nhập số buổi' }]}
+                  extra={totalSessionsWatch === 1 ? '1 buổi — chế độ dịch vụ lẻ.' : 'Từ 2 buổi — chế độ bán theo buổi.'}
+                >
                 <InputNumber min={1} precision={0} style={{ width: '100%' }} />
               </Form.Item>
             )}
@@ -135,39 +145,27 @@ export default function TreatmentPackageModal({
         {selectedQuotaType === 'UNLIMITED' && (
           <Alert type="info" showIcon message="Gói trọn gói không giới hạn số buổi." style={{ marginBottom: 16 }} />
         )}
-        {String(selectedPackageType?.code || '').toUpperCase() === 'COMBO' ? (
-            <Form.Item
-              name="service_ids"
-              label="Dịch vụ trong combo"
-              rules={[{
-                validator: (_rule, value: string[] | undefined) => value && value.length >= 2
-                  ? Promise.resolve()
-                  : Promise.reject(new Error('Combo cần chọn ít nhất 2 dịch vụ'))
-              }]}
-            >
-              <Select
-                mode="multiple"
-                showSearch
-                optionFilterProp="label"
-                placeholder="Chọn từ 2 dịch vụ"
-                options={services.map((service) => ({ value: service.id, label: service.title }))}
-              />
-            </Form.Item>
-          ) : (
-            <Form.Item
-              name="service_id"
-              label="Dịch vụ áp dụng"
-              rules={String(selectedPackageType?.code || '').toUpperCase() === 'SINGLE_SESSION' ? [{ required: true, message: 'Gói lẻ cần chọn một dịch vụ' }] : []}
-            >
-              <Select
-                allowClear
-                showSearch
-                optionFilterProp="label"
-                placeholder="Chọn dịch vụ (không bắt buộc)"
-                options={services.map((service) => ({ value: service.id, label: service.title }))}
-              />
-            </Form.Item>
-          )}
+        {String(selectedPackageType?.code || '').toUpperCase() === 'COMBO' && (
+          <Alert
+            type="warning"
+            showIcon
+            message="Loại gói COMBO không còn hỗ trợ (nghiệp vụ mới: mỗi gói tương đương đúng 1 dịch vụ). Hãy chọn loại gói khác."
+            style={{ marginBottom: 16 }}
+          />
+        )}
+        <Form.Item
+          name="service_id"
+          label="Dịch vụ áp dụng"
+          rules={[{ required: true, message: 'Gói liệu trình phải gắn đúng 1 dịch vụ' }]}
+          extra="Nghiệp vụ mới: mỗi gói liệu trình tương đương đúng 1 dịch vụ."
+        >
+          <Select
+            showSearch
+            optionFilterProp="label"
+            placeholder="Chọn 1 dịch vụ"
+            options={services.map((service) => ({ value: service.id, label: service.title }))}
+          />
+        </Form.Item>
         <Collapse
           ghost
           items={[{
@@ -220,7 +218,7 @@ export default function TreatmentPackageModal({
                   <Form.Item name="terms" label="Điều khoản">
                     <Input.TextArea rows={3} />
                   </Form.Item>
-                  <Form.Item name="is_active" label="Đang bán" valuePropName="checked">
+                  <Form.Item name="is_active" label="Đang sử dụng" valuePropName="checked">
                     <Switch />
                   </Form.Item>
                 </>

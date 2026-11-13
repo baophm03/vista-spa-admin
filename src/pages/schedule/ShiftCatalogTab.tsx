@@ -45,6 +45,7 @@ export default function ShiftCatalogTab({ branches, access, loadingShared }: Pro
       name: row.name,
       start_time: dayjs(`2000-01-01T${row.start_time}`),
       end_time: dayjs(`2000-01-01T${row.end_time}`),
+      is_active: row.is_active !== false,
     } : { name: '', start_time: dayjs('2000-01-01T08:00:00'), end_time: dayjs('2000-01-01T12:00:00'), branch_id: branchFilter || ALL_BRANCHES })
     setOpen(true)
   }
@@ -64,6 +65,7 @@ export default function ShiftCatalogTab({ branches, access, loadingShared }: Pro
       name: String(values.name).trim(),
       start_time: start.format('HH:mm:ss'),
       end_time: end.format('HH:mm:ss'),
+      ...(editing ? { is_active: values.is_active !== false } : {}),
       ...(!editing ? { branch_id: values.branch_id === ALL_BRANCHES ? null : values.branch_id } : {}),
     }
     try {
@@ -75,11 +77,10 @@ export default function ShiftCatalogTab({ branches, access, loadingShared }: Pro
     } catch (err) { message.error(errorMessage(err)) }
   }
 
-  const setActive = async (row: ShiftTemplate, is_active: boolean) => {
+  const deleteShift = async (row: ShiftTemplate) => {
     try {
-      if (is_active) await putShiftTemplatesId(row.id, { is_active: true })
-      else await deleteShiftTemplatesId(row.id)
-      message.success(is_active ? 'Đã bật lại ca' : 'Đã ẩn ca')
+      await deleteShiftTemplatesId(row.id)
+      message.success('Đã xóa ca làm việc')
       await reload()
     } catch (err) { message.error(errorMessage(err)) }
   }
@@ -91,9 +92,7 @@ export default function ShiftCatalogTab({ branches, access, loadingShared }: Pro
     { title: 'Trạng thái', dataIndex: 'is_active', key: 'status', render: (value: boolean) => <Tag color={value === false ? 'default' : 'green'}>{value === false ? 'Đã ẩn' : 'Đang dùng'}</Tag> },
     ...(access.isAdmin ? [{ title: 'Thao tác', align: 'center' as const, key: 'actions', width: 180, render: (_: unknown, row: ShiftTemplate) => <Space>
       <Button icon={<EditOutlined />} size="small" onClick={() => openForm(row)}>Sửa</Button>
-      {row.is_active === false
-        ? <Button size="small" onClick={() => void setActive(row, true)}>Bật lại</Button>
-        : <Popconfirm title="Ẩn ca này?" description="Không thể ẩn nếu lịch KTV còn đang dùng ca." okText="Ẩn ca" cancelText="Hủy" onConfirm={() => void setActive(row, false)}><Button size="small" danger>Ẩn</Button></Popconfirm>}
+      <Popconfirm title="Xóa ca làm việc này?" description="Không thể xóa nếu lịch KTV vẫn đang sử dụng ca." okText="Xóa" cancelText="Hủy" onConfirm={() => void deleteShift(row)}><Button size="small" danger>Xóa</Button></Popconfirm>
     </Space> }] : []),
   ]
 
@@ -127,9 +126,7 @@ export default function ShiftCatalogTab({ branches, access, loadingShared }: Pro
           {access.isAdmin && (
             <div className="mobile-card-actions">
               <Button icon={<EditOutlined />} size="small" onClick={() => openForm(row)}>Sửa</Button>
-              {row.is_active === false
-                ? <Button size="small" onClick={() => void setActive(row, true)}>Bật lại</Button>
-                : <Popconfirm title="Ẩn ca này?" description="Không thể ẩn nếu lịch KTV còn đang dùng ca." okText="Ẩn ca" cancelText="Hủy" onConfirm={() => void setActive(row, false)}><Button size="small" danger>Ẩn</Button></Popconfirm>}
+              <Popconfirm title="Xóa ca làm việc này?" description="Không thể xóa nếu lịch KTV vẫn đang sử dụng ca." okText="Xóa" cancelText="Hủy" onConfirm={() => void deleteShift(row)}><Button size="small" danger>Xóa</Button></Popconfirm>
             </div>
           )}
         </>

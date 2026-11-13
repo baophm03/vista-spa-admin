@@ -7,6 +7,6 @@
  */
 
 /**
- * Business payload passed as-is to the processing layer
+ * Business payload: `appt_date`, `start_time`, `staff_id` (UUID — gán/đổi KTV; null = bỏ gán), `note`, `custom_fields`
  */
 export type PutAppointmentsIdBody = { [key: string]: unknown };

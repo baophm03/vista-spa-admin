@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Button, Form, Input, Popconfirm, Space, Table, Tag, message } from 'antd'
 import type { TableColumnsType } from 'antd'
-import { PlusOutlined, SearchOutlined } from '@ant-design/icons'
+import { DeleteOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import ServiceCategoryModal from './components/ServiceCategoryModal'
 import ListPagination from '@/components/base/ListPagination'
@@ -83,8 +83,17 @@ export default function ServiceCategories() {
 
   const hide = async (row: ServiceCategoryRow) => {
     try {
+      await updateMutation.mutateAsync({ id: row.id, dto: { is_active: false } })
+      message.success('Đã ẩn danh mục; danh mục vẫn còn trong danh sách quản trị')
+    } catch (err) {
+      message.error(errorMessage(err))
+    }
+  }
+
+  const remove = async (row: ServiceCategoryRow) => {
+    try {
       await deleteMutation.mutateAsync(row.id)
-      message.success('Đã ẩn danh mục')
+      message.success('Đã xóa danh mục')
     } catch (err) {
       message.error(errorMessage(err))
     }
@@ -129,18 +138,27 @@ export default function ServiceCategories() {
                 </Button>
               </Can>
             ) : (
-              <Can I="DELETE" a="SERVICE">
+              <Can I="UPDATE" a="SERVICE">
                 <Popconfirm
                   title="Ẩn danh mục này?"
-                  description="Chỉ ẩn được khi không còn dịch vụ hoặc danh mục con đang hoạt động."
+                  description="Danh mục bị ẩn khỏi app nhưng vẫn còn trong danh sách quản trị."
                   onConfirm={() => void hide(row)}
                 >
-                  <Button size="small" danger>
-                    Ẩn
-                  </Button>
+                  <Button size="small">Ẩn</Button>
                 </Popconfirm>
               </Can>
             )}
+            <Can I="DELETE" a="SERVICE">
+              <Popconfirm
+                title="Xóa danh mục này?"
+                description="Chỉ xóa được khi không còn dịch vụ hoặc danh mục con tham chiếu."
+                okButtonProps={{ danger: true }}
+                okText="Xóa"
+                onConfirm={() => void remove(row)}
+              >
+                <Button size="small" danger icon={<DeleteOutlined />} aria-label="Xóa danh mục" />
+              </Popconfirm>
+            </Can>
           </Space>
         ),
       },
@@ -193,16 +211,27 @@ export default function ServiceCategories() {
                   <Button size="small" onClick={() => void restore(row)}>Bật lại</Button>
                 </Can>
               ) : (
-                <Can I="DELETE" a="SERVICE">
+                <Can I="UPDATE" a="SERVICE">
                   <Popconfirm
                     title="Ẩn danh mục này?"
-                    description="Chỉ ẩn được khi không còn dịch vụ hoặc danh mục con đang hoạt động."
+                    description="Danh mục bị ẩn khỏi app nhưng vẫn còn trong danh sách quản trị."
                     onConfirm={() => void hide(row)}
                   >
-                    <Button size="small" danger>Ẩn</Button>
+                    <Button size="small">Ẩn</Button>
                   </Popconfirm>
                 </Can>
               )}
+              <Can I="DELETE" a="SERVICE">
+                <Popconfirm
+                  title="Xóa danh mục này?"
+                  description="Chỉ xóa được khi không còn dịch vụ hoặc danh mục con tham chiếu."
+                  okButtonProps={{ danger: true }}
+                  okText="Xóa"
+                  onConfirm={() => void remove(row)}
+                >
+                  <Button size="small" danger icon={<DeleteOutlined />} aria-label="Xóa danh mục" />
+                </Popconfirm>
+              </Can>
             </div>
           </>
         )}

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { Alert, Button, Form, Input, Modal, Select, Space, Table, Tabs, Tag, Typography, message } from 'antd'
-import { DeleteOutlined, EditOutlined, PlusOutlined, SearchOutlined, SendOutlined, UndoOutlined } from '@ant-design/icons'
+import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, PlusOutlined, SearchOutlined, SendOutlined, UndoOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
 import ToolbarRow from '@/components/base/ToolbarRow'
@@ -284,16 +284,25 @@ export default function ContentPosts() {
             ...(ability.can('UPDATE' as never, 'CONTENT')
               ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }]
               : []),
+            ...(ability.can('UPDATE' as never, 'CONTENT') && row.is_active !== false
+              ? [{ key: 'hide', icon: <EyeInvisibleOutlined />, label: 'Ẩn' }]
+              : []),
             ...(ability.can('DELETE' as never, 'CONTENT')
               ? [{ key: 'delete', icon: <DeleteOutlined />, label: 'Xóa', danger: true }]
               : []),
           ]}
           onSelect={(key) => {
             if (key === 'edit') { setEditingCategory(row); categoryForm.resetFields(); categoryForm.setFieldsValue(row); setCategoryModal(true) }
+            else if (key === 'hide') {
+              updateCategoryMutation
+                .mutateAsync({ id: row.id, data: { is_active: false } })
+                .then(() => { message.success('Đã ẩn chuyên mục; chuyên mục vẫn còn trong danh sách quản trị'); reload() })
+                .catch((e) => message.error(errorMessage(e)))
+            }
             else if (key === 'delete') {
               Modal.confirm({
                 title: 'Xóa chuyên mục này?',
-                content: 'Bị chặn nếu chuyên mục còn bài đang xuất bản.',
+                content: 'Bị chặn nếu chuyên mục còn bài viết tham chiếu.',
                 okText: 'Xóa',
                 okButtonProps: { danger: true },
                 cancelText: 'Hủy',

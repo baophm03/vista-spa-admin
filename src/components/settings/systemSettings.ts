@@ -35,7 +35,18 @@ export interface SystemSettingUpdate {
 export const settingSections = [
   { key: 'member', label: 'Hội viên & hạng thẻ', groups: ['rank', 'customer_code', 'customer'] },
   { key: 'booking', label: 'Đặt lịch hẹn', groups: ['booking', 'reminder', 'job'] },
-  { key: 'loyalty', label: 'Tích điểm & ưu đãi', groups: ['points', 'payment', 'commission', 'discount', 'academy', 'lucky_wheel'] },
+  { key: 'points', label: 'Tích điểm & đổi quà', groups: ['points'] },
+  {
+    key: 'sales-customer-programs',
+    label: 'Bán hàng & chương trình khách hàng',
+    groups: ['payment', 'commission', 'discount', 'academy', 'lucky_wheel'],
+    subsections: [
+      { key: 'payment', label: 'Thanh toán', groups: ['payment'] },
+      { key: 'promotions', label: 'Ưu đãi & hoa hồng', groups: ['commission', 'discount'] },
+      { key: 'academy', label: 'Học viện', groups: ['academy'] },
+      { key: 'lucky-wheel', label: 'Vòng quay', groups: ['lucky_wheel'] },
+    ],
+  },
   { key: 'modules', label: 'Mô-đun chức năng', groups: ['module', 'content', 'zalo'] },
   { key: 'workflow', label: 'Nhãn & trạng thái', groups: ['status', 'treatment', 'session', 'label'] },
 ] as const
@@ -50,19 +61,21 @@ const labels: Record<string, string> = {
   'booking.pending_expire_hours': 'Thời hạn giữ lịch chờ (giờ)', 'booking.require_staff_service': 'Yêu cầu nhân viên có dịch vụ tương ứng',
   'payment.methods': 'Phương thức thanh toán', 'payment.allow_overpay': 'Cho phép thanh toán dư',
   'reminder.offsets_days': 'Nhắc trước ngày hẹn (ngày)', 'reminder.send_time': 'Giờ gửi nhắc hẹn',
-  'reminder.next_session_days': 'Số ngày nhắc buổi tiếp theo', 'points.enabled': 'Bật tích điểm',
-  'points.earn_amount': 'Số tiền quy đổi thành điểm', 'points.point_value': 'Giá trị quy đổi một điểm',
-  'points.redeem_min_percent': 'Tỷ lệ đổi điểm tối thiểu (%)', 'points.redeem_max_percent': 'Tỷ lệ đổi điểm tối đa (%)',
+  'reminder.next_session_days': 'Số ngày nhắc buổi tiếp theo', 'points.enabled': 'Bật hệ thống điểm thưởng',
+  'points.earn_amount': 'Số tiền thanh toán để nhận 1 điểm', 'points.point_value': 'Số tiền giảm khi dùng 1 điểm',
+  'points.redeem_min_percent': 'Đổi điểm phải giảm tối thiểu bao nhiêu % giá trị hóa đơn?',
+  'points.redeem_max_percent': 'Đổi điểm được giảm tối đa bao nhiêu % giá trị hóa đơn?',
+  'points.redeem_balance_max_percent': 'Mỗi lần dùng tối đa bao nhiêu % số điểm đang có?',
   'points.auto_earn': 'Tự động cộng điểm', 'commission.auto_enabled': 'Tự động tính hoa hồng',
   'discount.max_total_percent': 'Mức giảm tối đa cộng dồn (%)', 'status.labels': 'Nhãn trạng thái',
   'status.colors': 'Màu trạng thái', 'module.academy': 'Khóa học', 'module.content': 'Nội dung',
   'module.report': 'Báo cáo', 'module.lucky_wheel': 'Vòng quay may mắn', 'module.shop': 'Cửa hàng',
   'module.shop_checkout': 'Thanh toán tại cửa hàng', 'module.invoice': 'Hóa đơn',
   'academy.levels': 'Cấp độ khóa học', 'academy.returning_discount_percent': 'Ưu đãi học viên cũ (%)',
-  'job.birthday_time': 'Giờ chạy job sinh nhật', 'zalo.enabled': 'Bật tích hợp Zalo',
+  'job.birthday_time': 'Giờ gửi thông báo sinh nhật', 'zalo.enabled': 'Bật tích hợp Zalo',
   'content.max_video_mb': 'Dung lượng video tối đa (MB)', 'content.notify_on_publish': 'Thông báo khi đăng nội dung',
   'treatment.expiry_policy': 'Xử lý liệu trình hết hạn', 'session.required_fields': 'Trường bắt buộc của buổi điều trị',
-  'lucky_wheel.max_spins_default': 'Số lượt quay mặc định tối đa', 'label.brand': 'Tên thương hiệu hiển thị',
+  'lucky_wheel.max_spins_default': 'Số lượt quay mặc định tối đa',
 }
 
 export function settingLabel(key: string) {

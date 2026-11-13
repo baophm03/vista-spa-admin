@@ -6,7 +6,20 @@
  * OpenAPI spec version: 1.0.0
  */
 
-/**
- * Endpoint-specific business payload
- */
-export type PostLuckyWheelsBody = { [key: string]: unknown };
+export type PostLuckyWheelsBody = {
+  /**
+   * @minLength 1
+   * @maxLength 150
+   */
+  name: string;
+  /** @nullable */
+  branch_id?: string | null;
+  /** @minimum 0 */
+  min_year_spent: number;
+  /** @minimum 1 */
+  spins_per_user: number;
+  /** @nullable */
+  starts_at?: string | null;
+  /** @nullable */
+  ends_at?: string | null;
+};

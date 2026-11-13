@@ -14,6 +14,7 @@ export interface CustomFieldFormValues {
   sort_order?: number
   required?: boolean
   visible_to_customer?: boolean
+  is_active?: boolean
 }
 
 interface CustomFieldEditorModalProps {
@@ -100,6 +101,15 @@ export default function CustomFieldEditorModal({
         <Form.Item name="sort_order" label="Thứ tự hiển thị"><InputNumber min={0} style={{ width: '100%' }} /></Form.Item>
         <Form.Item name="required" valuePropName="checked"><Checkbox>Bắt buộc nhập</Checkbox></Form.Item>
         {entity === 'CUSTOMER_PROFILE' && <Form.Item name="visible_to_customer" valuePropName="checked"><Checkbox>Hiển thị với khách hàng</Checkbox></Form.Item>}
+        {editing && (
+          <Form.Item
+            name="is_active"
+            label="Trạng thái"
+            extra="Ẩn trường để ngừng nhận dữ liệu mới; giá trị đã lưu vẫn giữ nguyên. Xóa trường nằm ở menu hành động trong danh sách."
+          >
+            <Select options={[{ value: true, label: 'Đang dùng' }, { value: false, label: 'Đã ẩn' }]} />
+          </Form.Item>
+        )}
       </Form>
     </Modal>
   )

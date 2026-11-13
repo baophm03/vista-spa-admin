@@ -5,12 +5,16 @@
  * Vista Spa backend API. Uses the NEWSKY+ business error envelope for permission-aware endpoints and the legacy response envelope for existing admin endpoints.
  * OpenAPI spec version: 1.0.0
  */
+import type { GetLuckyWheelsIdEligibleCustomers200AllOfResponseDataItemEmail } from './getLuckyWheelsIdEligibleCustomers200AllOfResponseDataItemEmail';
+import type { GetLuckyWheelsIdEligibleCustomers200AllOfResponseDataItemUserId } from './getLuckyWheelsIdEligibleCustomers200AllOfResponseDataItemUserId';
 
 export type GetLuckyWheelsIdEligibleCustomers200AllOfResponseDataItem = {
   customer_profile_id?: string;
   customer_code?: string;
   full_name?: string;
   phone?: string;
+  email?: GetLuckyWheelsIdEligibleCustomers200AllOfResponseDataItemEmail;
+  user_id?: GetLuckyWheelsIdEligibleCustomers200AllOfResponseDataItemUserId;
   spend?: number;
   spins_used?: number;
   spins_max?: number;

@@ -6,6 +6,11 @@ export type RewardRow = Reward & {
   benefit_amount?: number | null
   service_id?: string | null
   voucher?: { id?: string; title?: string; description?: string } | null
+  voucher_kind?: 'legacy' | 'treatment-package' | 'academy-course' | 'product'
+  voucher_reference?: string | null
+  treatment_package_voucher_id?: string | null
+  academy_course_voucher_id?: string | null
+  product_voucher_id?: string | null
 }
 
 /** GET /reward-redemptions trả kèm reward (model gen thiếu — mở rộng cục bộ). */

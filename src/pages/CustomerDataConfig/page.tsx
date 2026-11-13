@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Alert, Button, Form, Spin, Table, Tabs, Tag, Typography, message } from 'antd'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { Alert, Button, Card, Form, Modal, Spin, Table, Tabs, Tag, Typography, message } from 'antd'
 import { EditOutlined, PlusOutlined } from '@ant-design/icons'
 import { Can, useAbility } from '@casl/react'
 import PageTitle from '@/components/base/PageTitle'
@@ -23,6 +24,10 @@ import {
   putCustomFieldDefsId,
 } from '@/api/endpoints/settings'
 import { getLookupLists } from '@/api/endpoints/lookup-lists'
+import { getGetSettingsQueryKey, getSettings, putSettings } from '@/api/endpoints/settings'
+import type { PutSettingsBody } from '@/api/models/putSettingsBody'
+import type { SystemSetting } from '@/components/settings/systemSettings'
+import SystemSettingField from '@/components/settings/SystemSettingField'
 
 function splitOptions(value?: string) {
   return value?.split(/\r?\n|,/).map((item) => item.trim()).filter(Boolean) ?? []
@@ -40,6 +45,65 @@ const SERVICE_BASE_FIELDS = [
   { label: 'Ảnh bìa', key: 'image_file_id', dataType: 'Ảnh', required: 'Không' },
   { label: 'Bộ ảnh', key: 'gallery_file_ids', dataType: 'Danh sách ảnh', required: 'Không' },
 ]
+
+function SessionRequiredFieldsSetting() {
+  const queryClient = useQueryClient()
+  const canEdit = useAbility().can('UPDATE', 'SETTING')
+  const [draft, setDraft] = useState<string[] | null>(null)
+  const settingsQuery = useQuery({
+    queryKey: getGetSettingsQueryKey(),
+    queryFn: async () => pickData<SystemSetting[]>(await getSettings()) ?? [],
+  })
+  const setting = settingsQuery.data?.find((item) => item.key === 'session.required_fields')
+  const savedValue = Array.isArray(setting?.value) ? setting.value.map(String) : []
+  const value = draft ?? savedValue
+  const hasChanges = JSON.stringify(value) !== JSON.stringify(savedValue)
+
+  const saveMutation = useMutation({
+    mutationFn: async () => putSettings({
+      items: [{ key: 'session.required_fields', value }],
+    } as unknown as PutSettingsBody),
+    onSuccess: async () => {
+      setDraft(null)
+      message.success('Đã lưu trường bắt buộc của buổi điều trị')
+      await queryClient.invalidateQueries({ queryKey: getGetSettingsQueryKey() })
+    },
+    onError: (error) => message.error(errorMessage(error)),
+  })
+
+  return (
+    <Card className="mb-4" title="Nhật ký buổi điều trị">
+      {settingsQuery.isError ? (
+        <Alert type="error" showIcon message="Không tải được cấu hình trường bắt buộc" description={errorMessage(settingsQuery.error)} />
+      ) : (
+        <Spin spinning={settingsQuery.isLoading}>
+          {setting ? (
+            <>
+              <SystemSettingField
+                setting={setting}
+                value={value}
+                disabled={!canEdit || saveMutation.isPending}
+                onChange={(next) => setDraft(Array.isArray(next) ? next.map(String) : [])}
+              />
+              <div className="mt-3 flex justify-end">
+                <Button
+                  type="primary"
+                  loading={saveMutation.isPending}
+                  disabled={!canEdit || !hasChanges}
+                  onClick={() => saveMutation.mutate()}
+                >
+                  Lưu cấu hình
+                </Button>
+              </div>
+            </>
+          ) : (
+            <Typography.Text type="secondary">Chưa có cấu hình trường nhật ký.</Typography.Text>
+          )}
+        </Spin>
+      )}
+    </Card>
+  )
+}
 
 function CustomerFieldsConfig({ entity, sectionTitle }: {
   entity: CustomFieldDefEntity
@@ -89,7 +153,8 @@ function CustomerFieldsConfig({ entity, sectionTitle }: {
       sort_order: row.sort_order,
       required: row.required,
       visible_to_customer: row.visible_to_customer,
-    } : { data_type: 'text', option_source: 'manual', required: false, visible_to_customer: false, sort_order: rows.length })
+      is_active: row.is_active !== false,
+    } : { data_type: 'text', option_source: 'manual', required: false, visible_to_customer: false, sort_order: rows.length, is_active: true })
     setOpen(true)
   }
 
@@ -106,6 +171,7 @@ function CustomerFieldsConfig({ entity, sectionTitle }: {
       options: supportsOptions && !lookupListId ? splitOptions(values.options_text) : null,
       sort_order: values.sort_order ?? 0,
       required: values.required ?? false,
+      ...(editing ? { is_active: values.is_active !== false } : {}),
       ...(entity === 'CUSTOMER_PROFILE' ? { visible_to_customer: values.visible_to_customer ?? false } : {}),
     }
     setSaving(true)
@@ -122,11 +188,21 @@ function CustomerFieldsConfig({ entity, sectionTitle }: {
     }
   }
 
+  // Ẩn/bật = PUT is_active; DELETE riêng là xóa mềm (is_deleted), bị chặn nếu trường đã có dữ liệu.
   const toggleActive = async (row: CustomFieldDef) => {
     try {
-      if (row.is_active === false) await putCustomFieldDefsId(row.id, { is_active: true })
-      else await deleteCustomFieldDefsId(row.id)
+      await putCustomFieldDefsId(row.id, { is_active: row.is_active === false })
       message.success(row.is_active === false ? 'Đã bật lại trường' : 'Đã ẩn trường; dữ liệu đã lưu được giữ nguyên')
+      await load()
+    } catch (err) {
+      message.error(errorMessage(err))
+    }
+  }
+
+  const removeField = async (row: CustomFieldDef) => {
+    try {
+      await deleteCustomFieldDefsId(row.id)
+      message.success('Đã xóa trường')
       await load()
     } catch (err) {
       message.error(errorMessage(err))
@@ -154,10 +230,21 @@ function CustomerFieldsConfig({ entity, sectionTitle }: {
           items={[
             ...(canUpdate ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []),
             ...(canToggleRow(row) ? [{ key: 'toggle', danger: row.is_active !== false, label: row.is_active === false ? 'Bật lại' : 'Ẩn' }] : []),
+            ...(ability.can('DELETE', 'CUSTOM_FIELD') ? [{ key: 'delete', danger: true, label: 'Xóa' }] : []),
           ]}
           onSelect={(key) => {
             if (key === 'edit') openEditor(row)
             else if (key === 'toggle') void toggleActive(row)
+            else if (key === 'delete') {
+              Modal.confirm({
+                title: 'Xóa trường tùy chỉnh này?',
+                content: 'Xóa mềm (is_deleted). Không xóa được trường đã có dữ liệu được lưu.',
+                okText: 'Xóa',
+                okButtonProps: { danger: true },
+                cancelText: 'Hủy',
+                onOk: () => void removeField(row),
+              })
+            }
           }}
         />
       ),
@@ -227,6 +314,7 @@ function CustomerFieldsConfig({ entity, sectionTitle }: {
           >
             {sectionTitle ?? 'Trường tùy chỉnh'}
           </PageTitle>
+          {entity === 'SESSION' && <SessionRequiredFieldsSetting />}
           {customFieldsTable}
         </>
       )}
@@ -285,7 +373,7 @@ function HealthMetricsConfig() {
     return <Alert
       type="info"
       showIcon
-      message="Chưa có danh mục health.metrics"
+      message="Chưa có danh mục chỉ số sức khỏe"
       description="Danh mục hệ thống được tạo khi áp dụng migration; không tự thêm chỉ số trước khi cơ sở thống nhất bộ mã."
     />
   }

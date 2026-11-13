@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Alert, Button, Form, Input, Modal, Select, Table, Tag, Typography, message } from 'antd'
-import { CheckCircleOutlined, EditOutlined, EnvironmentOutlined, PauseCircleOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
+import { CheckCircleOutlined, DeleteOutlined, EditOutlined, EnvironmentOutlined, PauseCircleOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
 import PageTitle from '@/components/base/PageTitle'
 import StatCards, { type StatItem } from '@/components/base/StatCards'
 import ListFilterPopover from '@/components/base/ListFilterPopover'
@@ -21,6 +21,7 @@ import {
   useGetBranchesNextCode,
   usePostBranches,
   usePostBranchesIdActivate,
+  usePostBranchesIdDeactivate,
   usePutBranchesId,
 } from '@/api/endpoints/branches'
 import { Can, useAbility } from '@casl/react'
@@ -71,7 +72,9 @@ export default function Branches() {
   const nextCode = pickData<{ code?: string }>(nextCodeQuery.data)?.code
   const createMutation = usePostBranches()
   const updateMutation = usePutBranchesId()
-  const deactivateMutation = useDeleteBranchesId()
+  // Ngừng hoạt động = POST /branches/{id}/deactivate (is_active=false); DELETE /branches/{id} là xóa mềm is_deleted.
+  const deactivateMutation = usePostBranchesIdDeactivate()
+  const deleteBranchMutation = useDeleteBranchesId()
   const activateMutation = usePostBranchesIdActivate()
   const ability = useAbility()
   const canUpdate = ability.can('UPDATE', 'BRANCH')
@@ -224,6 +227,17 @@ export default function Branches() {
     })
   }
 
+  // Xóa = soft delete (is_deleted) qua DELETE /branches/{id}; khác với "Ngừng hoạt động" (deactivate).
+  const remove = async (branch: Branch) => {
+    try {
+      await deleteBranchMutation.mutateAsync({ id: branch.id })
+      message.success(`Đã xóa cơ sở ${branch.name}`)
+      await invalidate()
+    } catch (err) {
+      message.error(errorMessage(err))
+    }
+  }
+
   const activeFilterCount = (statusFilter !== 'all' ? 1 : 0) + (keyword ? 1 : 0)
 
   const columns = [
@@ -274,16 +288,27 @@ export default function Branches() {
         <RowActionsMenu
           items={[
             ...(canUpdate ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []),
-            ...(canDelete
+            ...(canUpdate
               ? [row.is_active
-                ? { key: 'deactivate', icon: <PauseCircleOutlined />, danger: true, label: 'Ngừng' }
+                ? { key: 'deactivate', icon: <PauseCircleOutlined />, label: 'Ngừng' }
                 : { key: 'activate', icon: <CheckCircleOutlined />, label: 'Kích hoạt' }]
               : []),
+            ...(canDelete ? [{ key: 'delete', icon: <DeleteOutlined />, danger: true, label: 'Xóa' }] : []),
           ]}
           onSelect={(key) => {
             if (key === 'edit') openEdit(row)
             else if (key === 'deactivate') confirmStatusChange(row, false)
             else if (key === 'activate') confirmStatusChange(row, true)
+            else if (key === 'delete') {
+              Modal.confirm({
+                title: `Xóa cơ sở ${row.name}?`,
+                content: 'Xóa mềm (is_deleted=true). Chỉ thực hiện được khi cơ sở không còn lịch hẹn đang xử lý, liệu trình còn quyền lợi hay tài khoản vận hành.',
+                okText: 'Xóa',
+                okButtonProps: { danger: true },
+                cancelText: 'Hủy',
+                onOk: () => remove(row),
+              })
+            }
           }}
         />
       ),

@@ -1505,7 +1505,7 @@ export const usePutLuckyWheelsIdPrizesPrizeId = <TError = UnauthorizedResponse |
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **LW-09** — DELETE /lucky-wheels/{id}/prizes/{prizeId}. Requires the `wheel.update` permission. Deletion is only allowed if no spin has ever won this prize (409 if it has).
+ * **LW-09** — DELETE /lucky-wheels/{id}/prizes/{prizeId}. Requires the `wheel.delete` permission. Deletion is only allowed if no spin has ever won this prize (409 if it has).
  * @summary Remove a prize from the wheel
  */
 export const deleteLuckyWheelsIdPrizesPrizeId = (

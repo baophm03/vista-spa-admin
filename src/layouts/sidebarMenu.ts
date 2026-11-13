@@ -58,7 +58,6 @@ export const menuItems: MenuItem[] = [
     children: [
       { key: '/users', icon: createElement(TeamOutlined), label: 'Danh sách khách', permission: { action: 'READ', subject: 'CUSTOMER' } },
       { key: '/appointments', icon: createElement(CalendarOutlined), label: 'Lịch hẹn', permission: { action: 'READ', subject: 'APPOINTMENT' } },
-      { key: '/standalone-services', icon: createElement(ProfileOutlined), label: 'Dịch vụ KH', permission: { action: 'READ', subject: 'APPOINTMENT' } },
       { key: '/treatment-customers', icon: createElement(SolutionOutlined), label: 'Liệu trình KH', permission: { action: 'READ', subject: 'TREATMENT_PACKAGE' } },
       { key: '/my-sessions', icon: createElement(ExperimentOutlined), label: 'Buổi của tôi', permission: { action: 'READ', subject: 'CUSTOMER' }, ktvOnly: true },
       { key: '/health-records', icon: createElement(FileTextOutlined), label: 'Sổ sức khỏe', permission: { action: 'READ', subject: 'CUSTOMER' }, hideForKtv: true },
@@ -70,6 +69,10 @@ export const menuItems: MenuItem[] = [
           { action: 'READ', subject: 'CARD_RANK' },
         ]
       },
+      { key: '/points-redemption', icon: createElement(GiftOutlined), label: 'Đổi điểm & quà', permission: [
+        { action: 'POINTS_ADJUST', subject: 'MEMBERSHIP' },
+        { action: 'REDEEM_ADMIN', subject: 'REWARD' },
+      ] },
       { key: '/rewards', icon: createElement(GiftOutlined), label: 'Quà & Lượt đổi', permission: { action: 'READ', subject: 'REWARD' } },
       { key: '/warranty-claims', icon: createElement(FileTextOutlined), label: 'Bảo hành gói liệu trình', permission: { action: 'READ', subject: 'CUSTOMER' }, hideForKtv: true },
     ],
@@ -87,7 +90,7 @@ export const menuItems: MenuItem[] = [
       { key: '/academy/courses', icon: createElement(BookOutlined), label: 'Khóa học đào tạo', permission: { action: 'READ', subject: 'ACADEMY' } },
       { key: '/academy/registrations', icon: createElement(SolutionOutlined), label: 'Đăng ký học viên', permission: { action: 'READ', subject: 'ACADEMY' } },
       { key: '/discount-rules', icon: createElement(StarOutlined), label: 'Giảm giá & Ưu đãi', permission: { action: 'READ', subject: 'DISCOUNT' } },
-      { key: '/vouchers', icon: createElement(GiftOutlined), label: 'Voucher & Quà tặng', permission: { action: 'READ', subject: 'VOUCHER' } },
+      { key: '/vouchers', icon: createElement(GiftOutlined), label: 'Voucher', permission: { action: 'READ', subject: 'VOUCHER' } },
       { key: '/luckywheel', icon: createElement(ThunderboltOutlined), label: 'Quay số may mắn', permission: { action: 'READ', subject: 'WHEEL' } },
       { key: '/commission-rules', icon: createElement(StarOutlined), label: 'Quy tắc hoa hồng', permission: { action: 'RULE_MANAGE', subject: 'COMMISSION' } },
       { key: '/commissions', icon: createElement(ProfileOutlined), label: 'Hoa hồng', permission: { action: 'READ', subject: 'COMMISSION' } },

@@ -139,7 +139,7 @@ export default function Collaborators() {
   const remove = async (row: CollaboratorRow) => {
     try {
       await deleteMutation.mutateAsync({ id: row.id })
-      message.success(`Đã ngừng hoạt động CTV "${row.name}"`)
+      message.success(`Đã xóa CTV "${row.name}"`)
     } catch (err) {
       message.error(errorMessage(err))
     }
@@ -241,8 +241,8 @@ export default function Collaborators() {
             else if (key === 'edit') openEditor(row)
             else if (key === 'delete') {
               Modal.confirm({
-                title: 'Ngừng hoạt động CTV này?',
-                content: 'Xóa mềm (đặt is_active = false).',
+                title: `Xóa CTV "${row.name}"?`,
+                content: 'Xóa mềm (is_deleted). Không xóa được CTV đã phát sinh hoa hồng; ngừng hợp tác hãy dùng "Sửa" và tắt Trạng thái.',
                 okText: 'Xóa',
                 okButtonProps: { danger: true },
                 cancelText: 'Hủy',
@@ -344,7 +344,7 @@ export default function Collaborators() {
         ) : (
           <>
             <PageTitle subtitle="Quản lý cộng tác viên giới thiệu dịch vụ">Cộng tác viên</PageTitle>
-            <Alert type="warning" showIcon title="Bạn không có quyền xem danh sách cộng tác viên (cần quyền collaborator.read)" />
+            <Alert type="warning" showIcon title="Tài khoản của bạn chưa được cấp quyền xem danh sách cộng tác viên. Vui lòng liên hệ quản trị viên." />
           </>
         )
       }

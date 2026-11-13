@@ -8,7 +8,6 @@ import Services from './pages/services/page'
 import Appointments from './pages/Appointments/page'
 import Treatments from './pages/Treatments/page'
 import TreatmentCustomers from './pages/TreatmentCustomers/page'
-import StandaloneServices from './pages/StandaloneServices/page'
 import MySessions from './pages/MySessions/page'
 import Payments from './pages/Payments/page'
 import Staffs from './pages/Staffs/page'
@@ -16,6 +15,7 @@ import Notifications from './pages/Notifications/page'
 import NotificationTemplates from './pages/NotificationTemplates/page'
 import Products from './pages/Products/page'
 import Points from './pages/Points/page'
+import PointRedemption from './pages/PointRedemption/page'
 import HealthRecords from './pages/HealthRecords/page'
 import Roles from './pages/Roles/page'
 import Orders from './pages/Orders/page'
@@ -56,7 +56,6 @@ export default function App() {
           <Route path="/academy/courses" element={<AcademyCourses />} />
           <Route path="/academy/registrations" element={<AcademyRegistrations />} />
           <Route path="/treatment-customers" element={<TreatmentCustomers />} />
-          <Route path="/standalone-services" element={<StandaloneServices />} />
           <Route path="/my-sessions" element={<MySessions />} />
           <Route path="/payments" element={<Payments />} />
           <Route path="/staffs" element={<Staffs />} />
@@ -66,6 +65,7 @@ export default function App() {
           <Route path="/products" element={<Products />} />
           <Route path="/content-posts" element={<ContentPosts />} />
           <Route path="/points" element={<Points />} />
+          <Route path="/points-redemption" element={<PointRedemption />} />
           <Route path="/orders" element={<Orders />} />
           <Route path="/schedule" element={<ScheduleErrorBoundary><StaffSchedule /></ScheduleErrorBoundary>} />
           <Route path="/luckywheel" element={<LuckyWheel />} />

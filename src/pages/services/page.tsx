@@ -14,7 +14,7 @@ import {
   message,
 } from 'antd'
 import type { TableColumnsType } from 'antd'
-import { AppstoreOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
+import { AppstoreOutlined, DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Can, useAbility } from '@casl/react'
 import PageTitle from '@/components/base/PageTitle'
@@ -146,7 +146,11 @@ export default function Services() {
   const updateMutation = useMutation({
     mutationFn: async ({ id, dto }: { id: string; dto: Partial<ServiceCreate> }) => putServiceId(id, dto as ServiceCreate),
   })
-  const hideMutation = useMutation({ mutationFn: async (id: string) => deleteServiceId(id) })
+  const hideMutation = useMutation({
+    mutationFn: async ({ id, isActive }: { id: string; isActive: boolean }) =>
+      putServiceId(id, { is_active: isActive } as ServiceCreate),
+  })
+  const deleteMutation = useMutation({ mutationFn: async (id: string) => deleteServiceId(id) })
 
 
   const openEditor = async (row?: ServiceRow) => {
@@ -199,8 +203,19 @@ export default function Services() {
 
   const hideService = async (row: ServiceRow) => {
     try {
-      await hideMutation.mutateAsync(row.id)
+      await hideMutation.mutateAsync({ id: row.id, isActive: false })
       message.success('Đã ẩn dịch vụ; lịch và gói cũ vẫn được giữ')
+      await listQuery.refetch()
+      void queryClient.invalidateQueries({ queryKey: ["service-stats"] })
+    } catch (err) {
+      message.error(errorMessage(err))
+    }
+  }
+
+  const deleteService = async (row: ServiceRow) => {
+    try {
+      await deleteMutation.mutateAsync(row.id)
+      message.success('Đã xóa dịch vụ')
       await listQuery.refetch()
       void queryClient.invalidateQueries({ queryKey: ["service-stats"] })
     } catch (err) {
@@ -265,7 +280,8 @@ export default function Services() {
             items={[
               ...(canUpdate ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []),
               ...(canUpdate && row.is_active === false ? [{ key: 'restore', icon: <EyeOutlined />, label: 'Bật lại' }] : []),
-              ...(canDelete && row.is_active !== false ? [{ key: 'hide', icon: <EyeInvisibleOutlined />, danger: true, label: 'Ẩn' }] : []),
+              ...(canUpdate && row.is_active !== false ? [{ key: 'hide', icon: <EyeInvisibleOutlined />, label: 'Ẩn' }] : []),
+              ...(canDelete ? [{ key: 'delete', icon: <DeleteOutlined />, danger: true, label: 'Xóa' }] : []),
             ]}
             onSelect={(key) => {
               if (key === 'edit') void openEditor(row)
@@ -273,11 +289,19 @@ export default function Services() {
               else if (key === 'hide') {
                 Modal.confirm({
                   title: 'Ẩn dịch vụ này?',
-                  content: 'Lịch và gói cũ vẫn sẽ tham chiếu dịch vụ.',
+                  content: 'Dịch vụ sẽ bị ẩn khỏi app nhưng vẫn còn trong danh sách quản trị.',
                   okText: 'Ẩn',
-                  okButtonProps: { danger: true },
                   cancelText: 'Hủy',
                   onOk: () => hideService(row),
+                })
+              } else if (key === 'delete') {
+                Modal.confirm({
+                  title: 'Xóa dịch vụ này?',
+                  content: 'Xóa mềm: chỉ thực hiện được khi dịch vụ không còn lịch sử/hóa đơn tham chiếu.',
+                  okText: 'Xóa',
+                  okButtonProps: { danger: true },
+                  cancelText: 'Hủy',
+                  onOk: () => deleteService(row),
                 })
               }
             }}

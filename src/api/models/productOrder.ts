@@ -8,6 +8,8 @@
 import type { ProductOrderUserId } from './productOrderUserId';
 import type { ProductOrderAddress } from './productOrderAddress';
 import type { ProductOrderNote } from './productOrderNote';
+import type { ProductOrderUserVoucherId } from './productOrderUserVoucherId';
+import type { ProductOrderVoucherTitleSnapshot } from './productOrderVoucherTitleSnapshot';
 
 /**
  * Retail product order
@@ -22,7 +24,13 @@ export interface ProductOrder {
   note?: ProductOrderNote;
   status?: string;
   /** @minimum 0 */
+  subtotal_amount?: number;
+  /** @minimum 0 */
+  discount_amount?: number;
+  /** @minimum 0 */
   total_amount?: number;
+  user_voucher_id?: ProductOrderUserVoucherId;
+  voucher_title_snapshot?: ProductOrderVoucherTitleSnapshot;
   created_at?: string;
   updated_at?: string;
 }

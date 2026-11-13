@@ -42,6 +42,8 @@ import type {
   GetShiftTemplatesId200,
   GetShiftTemplatesParams,
   GetStaffDaysOff200,
+  GetStaffDaysOffConflicts200,
+  GetStaffDaysOffConflictsParams,
   GetStaffDaysOffParams,
   GetStaffScheduleDates200,
   GetStaffScheduleDatesId200,
@@ -979,6 +981,201 @@ export const usePostStaffDaysOff = <TError = UnauthorizedResponse | ForbiddenRes
       return useMutation(mutationOptions, queryClient);
     }
     /**
+ * GET `/staffDaysOff/conflicts` — trả danh sách lịch hẹn ĐÍCH DANH KTV (staff_id = KTV, status pending/approved) trùng ngày/ca của đơn nghỉ dự kiến. Dùng cho modal xin nghỉ của KTV và preview của admin. KTV chỉ được xem của chính mình. Requires permission `day_off.read`. Query parameters: `staff_id`, `off_date`, `shift_template_id` (bỏ trống = nghỉ cả ngày).
+ * @summary List booked appointments conflicting with a draft day-off
+ */
+export const getStaffDaysOffConflicts = (
+    params: GetStaffDaysOffConflictsParams,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetStaffDaysOffConflicts200>(
+      {url: `/staffDaysOff/conflicts`, method: 'GET',
+        params, signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetStaffDaysOffConflictsInfiniteQueryKey = (params?: GetStaffDaysOffConflictsParams,) => {
+    return [
+    'infinite', `/staffDaysOff/conflicts`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+export const getGetStaffDaysOffConflictsQueryKey = (params?: GetStaffDaysOffConflictsParams,) => {
+    return [
+    `/staffDaysOff/conflicts`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getGetStaffDaysOffConflictsInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getStaffDaysOffConflicts>>>, TError = UnauthorizedResponse | ForbiddenResponse | UnprocessableEntityResponse | InternalErrorResponse>(params: GetStaffDaysOffConflictsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffDaysOffConflicts>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetStaffDaysOffConflictsInfiniteQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getStaffDaysOffConflicts>>> = ({ signal }) => getStaffDaysOffConflicts(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffDaysOffConflicts>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetStaffDaysOffConflictsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getStaffDaysOffConflicts>>>
+export type GetStaffDaysOffConflictsInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | UnprocessableEntityResponse | InternalErrorResponse
+
+
+export function useGetStaffDaysOffConflictsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffDaysOffConflicts>>>, TError = UnauthorizedResponse | ForbiddenResponse | UnprocessableEntityResponse | InternalErrorResponse>(
+ params: GetStaffDaysOffConflictsParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffDaysOffConflicts>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getStaffDaysOffConflicts>>,
+          TError,
+          Awaited<ReturnType<typeof getStaffDaysOffConflicts>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetStaffDaysOffConflictsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffDaysOffConflicts>>>, TError = UnauthorizedResponse | ForbiddenResponse | UnprocessableEntityResponse | InternalErrorResponse>(
+ params: GetStaffDaysOffConflictsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffDaysOffConflicts>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getStaffDaysOffConflicts>>,
+          TError,
+          Awaited<ReturnType<typeof getStaffDaysOffConflicts>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetStaffDaysOffConflictsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffDaysOffConflicts>>>, TError = UnauthorizedResponse | ForbiddenResponse | UnprocessableEntityResponse | InternalErrorResponse>(
+ params: GetStaffDaysOffConflictsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffDaysOffConflicts>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List booked appointments conflicting with a draft day-off
+ */
+
+export function useGetStaffDaysOffConflictsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffDaysOffConflicts>>>, TError = UnauthorizedResponse | ForbiddenResponse | UnprocessableEntityResponse | InternalErrorResponse>(
+ params: GetStaffDaysOffConflictsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffDaysOffConflicts>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetStaffDaysOffConflictsInfiniteQueryOptions(params,options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary List booked appointments conflicting with a draft day-off
+ */
+export const prefetchGetStaffDaysOffConflictsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getStaffDaysOffConflicts>>, TError = UnauthorizedResponse | ForbiddenResponse | UnprocessableEntityResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params: GetStaffDaysOffConflictsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffDaysOffConflicts>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetStaffDaysOffConflictsInfiniteQueryOptions(params,options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetStaffDaysOffConflictsQueryOptions = <TData = Awaited<ReturnType<typeof getStaffDaysOffConflicts>>, TError = UnauthorizedResponse | ForbiddenResponse | UnprocessableEntityResponse | InternalErrorResponse>(params: GetStaffDaysOffConflictsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffDaysOffConflicts>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetStaffDaysOffConflictsQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getStaffDaysOffConflicts>>> = ({ signal }) => getStaffDaysOffConflicts(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getStaffDaysOffConflicts>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetStaffDaysOffConflictsQueryResult = NonNullable<Awaited<ReturnType<typeof getStaffDaysOffConflicts>>>
+export type GetStaffDaysOffConflictsQueryError = UnauthorizedResponse | ForbiddenResponse | UnprocessableEntityResponse | InternalErrorResponse
+
+
+export function useGetStaffDaysOffConflicts<TData = Awaited<ReturnType<typeof getStaffDaysOffConflicts>>, TError = UnauthorizedResponse | ForbiddenResponse | UnprocessableEntityResponse | InternalErrorResponse>(
+ params: GetStaffDaysOffConflictsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffDaysOffConflicts>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getStaffDaysOffConflicts>>,
+          TError,
+          Awaited<ReturnType<typeof getStaffDaysOffConflicts>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetStaffDaysOffConflicts<TData = Awaited<ReturnType<typeof getStaffDaysOffConflicts>>, TError = UnauthorizedResponse | ForbiddenResponse | UnprocessableEntityResponse | InternalErrorResponse>(
+ params: GetStaffDaysOffConflictsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffDaysOffConflicts>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getStaffDaysOffConflicts>>,
+          TError,
+          Awaited<ReturnType<typeof getStaffDaysOffConflicts>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetStaffDaysOffConflicts<TData = Awaited<ReturnType<typeof getStaffDaysOffConflicts>>, TError = UnauthorizedResponse | ForbiddenResponse | UnprocessableEntityResponse | InternalErrorResponse>(
+ params: GetStaffDaysOffConflictsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffDaysOffConflicts>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List booked appointments conflicting with a draft day-off
+ */
+
+export function useGetStaffDaysOffConflicts<TData = Awaited<ReturnType<typeof getStaffDaysOffConflicts>>, TError = UnauthorizedResponse | ForbiddenResponse | UnprocessableEntityResponse | InternalErrorResponse>(
+ params: GetStaffDaysOffConflictsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffDaysOffConflicts>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetStaffDaysOffConflictsQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary List booked appointments conflicting with a draft day-off
+ */
+export const prefetchGetStaffDaysOffConflictsQuery = async <TData = Awaited<ReturnType<typeof getStaffDaysOffConflicts>>, TError = UnauthorizedResponse | ForbiddenResponse | UnprocessableEntityResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params: GetStaffDaysOffConflictsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffDaysOffConflicts>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetStaffDaysOffConflictsQueryOptions(params,options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
  * PUT `/staffDaysOff/{id}/reject` — days off. Requires permission `day_off.approve`. Branch scope: users restricted to a single branch only see that branch's data. Body fields: `reason`.
  * @summary Reject
  */
@@ -1365,7 +1562,7 @@ export const usePutShiftTemplatesId = <TError = UnauthorizedResponse | Forbidden
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * DELETE `/shiftTemplates/{id}` — shift templates. Requires `shift_template.delete` permission. Branch scope: users restricted to a single branch only see that branch's data.
+ * DELETE `/shiftTemplates/{id}` — soft-deletes the template (is_deleted=true); rejected with 409 when schedules or day-off requests reference it. Requires `shift_template.delete` permission. Branch scope: users restricted to a single branch only see that branch's data.
  * @summary Delete a shift template
  */
 export const deleteShiftTemplatesId = (

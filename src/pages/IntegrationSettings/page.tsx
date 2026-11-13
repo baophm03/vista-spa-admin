@@ -72,7 +72,7 @@ function ZaloIntegrationCard({ provider, title, row, canEdit }: {
       const result = await postIntegrationsProviderTest(provider, payload)
       return pickData<{ ok?: boolean; message?: string }>(result) ?? {}
     },
-    onSuccess: (result) => setTestResult({ ok: !!result.ok, message: result.message ?? '' }),
+    onSuccess: (result) => setTestResult({ ok: !!result.ok, message: errorMessage(result) }),
     onError: (error) => setTestResult({ ok: false, message: errorMessage(error) }),
   })
   const saveMutation = useMutation({
@@ -84,9 +84,10 @@ function ZaloIntegrationCard({ provider, title, row, canEdit }: {
       await invalidate()
       setSecrets({})
       setClearSecret(false)
-      setTestResult(result.status === 'ERROR' ? { ok: false, message: result.message ?? '' } : { ok: true, message: result.message ?? '' })
-      if (result.status === 'ERROR') message.error(result.message)
-      else message.success(result.message)
+      const userMessage = errorMessage(result)
+      setTestResult({ ok: result.status !== 'ERROR', message: userMessage })
+      if (result.status === 'ERROR') message.error(userMessage)
+      else message.success(userMessage)
     },
     onError: (error) => message.error(errorMessage(error)),
   })
@@ -218,7 +219,7 @@ export default function IntegrationSettings() {
       const result = await postIntegrationsProviderTest(SMTP_PROVIDER, payload as unknown as IntegrationUpdate)
       return pickData<{ ok?: boolean; message?: string }>(result) ?? {}
     },
-    onSuccess: (result) => setTestResult({ ok: !!result.ok, message: result.message ?? '' }),
+    onSuccess: (result) => setTestResult({ ok: !!result.ok, message: errorMessage(result) }),
     onError: (error) => setTestResult({ ok: false, message: errorMessage(error) }),
   })
   const saveMutation = useMutation({
@@ -230,9 +231,10 @@ export default function IntegrationSettings() {
       await invalidate()
       setPassword('')
       setClearSecret(false)
-      setTestResult(result.status === 'ERROR' ? { ok: false, message: result.message ?? '' } : { ok: true, message: result.message ?? '' })
-      if (result.status === 'ERROR') message.error(result.message)
-      else message.success(result.message)
+      const userMessage = errorMessage(result)
+      setTestResult({ ok: result.status !== 'ERROR', message: userMessage })
+      if (result.status === 'ERROR') message.error(userMessage)
+      else message.success(userMessage)
     },
     onError: (error) => message.error(errorMessage(error)),
   })

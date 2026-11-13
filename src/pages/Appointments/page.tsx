@@ -37,9 +37,8 @@ import useCustomFieldDefinitions from '@/hooks/useCustomFieldDefinitions'
 import { errorMessage, pickData, pickMeta } from '@/api/helpers'
 import type { Appointment } from '@/api/models/appointment'
 import type { AppointmentStatus } from '@/api/models/appointmentStatus'
-import type { Service } from '@/api/models/service'
-import type { TreatmentPackage } from '@/api/models/treatmentPackage'
 import type { Branch } from '@/api/models/branch'
+import type { ShiftTemplate } from '@/api/models/shiftTemplate'
 import {
   getAppointmentsAvailableSlots,
   getGetAppointmentsQueryKey,
@@ -51,16 +50,26 @@ import {
   usePutAppointmentsIdCancel,
   usePutAppointmentsIdNoShow,
   usePutAppointmentsIdReject,
+  getAppointmentsId,
 } from '@/api/endpoints/appointments'
 import { getGetCustomerProfilesQueryKey, postCustomerProfiles, useGetCustomerProfiles } from '@/api/endpoints/customer-profiles'
-import { useGetTreatmentPackages } from '@/api/endpoints/services'
-import { useGetService } from '@/api/endpoints/services'
+import { useGetUsers } from '@/api/endpoints/users'
 import { useGetBranches } from '@/api/endpoints/branches'
+import { useGetShiftTemplates } from '@/api/endpoints/staff'
 import AppointmentDetailModal from './components/AppointmentDetailModal'
-import AppointmentFormModal, { type AppointmentBookingType } from './components/AppointmentFormModal'
+import AppointmentFormModal from './components/AppointmentFormModal'
+
+interface UsersRowsPick {
+  rows?: {
+    id: string
+    zalo_name?: string
+    email?: string
+    branch_id?: string
+    user_roles?: { role?: { role_name?: string } }[]
+  }[]
+}
 import QuickCustomerModal from './components/QuickCustomerModal'
-import AppointmentStartModal from './components/AppointmentStartModal'
-import { STATUS_META, treatmentCode, treatmentPackageName } from './components/constants'
+import { STATUS_META } from './components/constants'
 import type { AppointmentRow, ProfileRow, Slot } from './components/constants'
 
 const CALENDAR_START_HOUR = 7
@@ -83,7 +92,7 @@ const FILTERS = [
 ]
 
 const CALENDAR_STATUS_STYLE: Record<AppointmentStatus, { border: string; background: string }> = {
-  pending: { border: '#f5a623', background: '#fff8e8' },
+  pending: { border: '#5bbfba', background: '#f0fffd' },
   approved: { border: '#52a66b', background: '#f1fbf3' },
   in_progress: { border: '#4587c7', background: '#eff7ff' },
   completed: { border: '#8bbf69', background: '#f5fbef' },
@@ -101,21 +110,19 @@ function AppointmentCalendarCard({ row, onClick }: { row: AppointmentRow; onClic
       tabIndex={0}
       onClick={onClick}
       onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onClick() } }}
-      style={{ borderLeft: `3px solid ${style.border}`, borderRadius: 7, background: style.background, padding: '6px 8px', marginBottom: 5, lineHeight: 1.35, cursor: 'pointer' }}
+      style={{ borderLeft: `3px solid ${style.border}`, borderRadius: 7, background: style.background, padding: '8px 10px', marginBottom: 6, lineHeight: 1.4, cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 3 }}
     >
-      <Typography.Text strong style={{ display: 'block', fontSize: 12 }}>
-        {row.start_time?.slice(0, 5)} · {row.customer_profile?.full_name || 'Khách hàng'}
-      </Typography.Text>
-      <Typography.Text type="secondary" style={{ display: 'block', fontSize: 11 }}>
-        {row.service?.title || (row.treatment_package?.name ? 'Lịch hẹn liệu trình' : 'Chưa có dịch vụ')} · {row.service?.duration_minutes || 60} phút
-      </Typography.Text>
-      {treatmentPackageName(row) && (
-        <Typography.Text style={{ display: 'block', fontSize: 11, color: '#71005C' }}>
-          Gói: {treatmentPackageName(row)}{treatmentCode(row) ? ` · ${treatmentCode(row)}` : ''}
-        </Typography.Text>
-      )}
-      <Typography.Text type="secondary" style={{ display: 'block', fontSize: 11 }}>
+      <Typography.Text strong style={{ display: 'block', alignSelf: 'flex-start', marginBottom: 2, fontSize: 11, color: style.border }}>
         {STATUS_META[status]?.label || status}
+      </Typography.Text>
+      <Typography.Text type="secondary" style={{ display: 'block', fontSize: 11 }}>
+        {dayjs(row.appt_date).format('DD/MM/YYYY')} {row.start_time?.slice(0, 5) || '—'}
+      </Typography.Text>
+      <Typography.Text strong style={{ display: 'block', fontSize: 12 }}>
+        {row.customer_profile?.full_name || 'Khách hàng'}
+      </Typography.Text>
+      <Typography.Text type="secondary" style={{ display: 'block', fontSize: 11 }}>
+        {row.customer_profile?.phone || 'Chưa có số điện thoại'}
       </Typography.Text>
     </div>
   )
@@ -123,7 +130,6 @@ function AppointmentCalendarCard({ row, onClick }: { row: AppointmentRow; onClic
 
 const APPOINTMENT_COLUMNS = [
   { value: 'customer', label: 'Khách hàng' },
-  { value: 'service', label: 'Dịch vụ' },
   { value: 'time', label: 'Thời gian' },
   { value: 'source', label: 'Nguồn' },
   { value: 'status', label: 'Trạng thái' },
@@ -150,28 +156,24 @@ export default function Appointments() {
   const [draftVisibleColumns, setDraftVisibleColumns] = useState<string[]>(DEFAULT_APPOINTMENT_COLUMNS)
   const [filterOpen, setFilterOpen] = useState(false)
   const [open, setOpen] = useState(false)
-  const [bookingType, setBookingType] = useState<AppointmentBookingType>('service')
   const [selectedAppointment, setSelectedAppointment] = useState<AppointmentRow | null>(null)
   const [customerSearchInput, setCustomerSearchInput] = useState('')
   const [customerSearch, setCustomerSearch] = useState('')
   const [selectedProfile, setSelectedProfile] = useState<ProfileRow | null>(null)
   const [quickCustomerOpen, setQuickCustomerOpen] = useState(false)
-  const [startingAppointment, setStartingAppointment] = useState<AppointmentRow | null>(null)
   const [editing, setEditing] = useState<Appointment | null>(null)
   const [slots, setSlots] = useState<Slot[]>([])
   const [slotsLoading, setSlotsLoading] = useState(false)
   const [form] = Form.useForm()
-  const [startForm] = Form.useForm()
   const [quickCustomerForm] = Form.useForm()
   const [filterForm] = Form.useForm()
   const appointmentCustomFields = useCustomFieldDefinitions('APPOINTMENT')
-  const sessionCustomFields = useCustomFieldDefinitions('SESSION')
   const slotRequest = useRef(0)
   const previousSlotCriteria = useRef('')
   const appointmentSubmitInFlightRef = useRef(false)
-  const startSubmitInFlightRef = useRef(false)
-  const selectedCustomerId = Form.useWatch('customer_profile_id', form)
-  const selectedServiceId = Form.useWatch('service_id', form)
+  const selectedStaffId = Form.useWatch('staff_id', form) as string | undefined
+  const selectedTimeValue = Form.useWatch('start_time', form)
+  const selectedTime = selectedTimeValue?.format?.('HH:mm') ?? (typeof selectedTimeValue === 'string' ? selectedTimeValue.slice(0, 5) : '')
   const selectedDateValue = Form.useWatch('appt_date', form)
   const selectedDate = selectedDateValue ? dayjs(selectedDateValue).format('YYYY-MM-DD') : ''
 
@@ -220,11 +222,31 @@ export default function Appointments() {
     if (selectedProfile && !options.some((profile) => profile.id === selectedProfile.id)) options.unshift(selectedProfile)
     return options
   }, [profiles, selectedProfile])
-  const servicesQuery = useGetService({ page: 1, limit: 200, is_active: true })
-  // GET /service trả { services, total, ... } trong responseData
-  const services = useMemo(() => (pickData<{ services?: Service[] } | undefined>(servicesQuery.data)?.services ?? []) as Service[], [servicesQuery.data])
   const branchesQuery = useGetBranches({ status: 'active' })
   const branches = useMemo(() => (pickData<Branch[] | undefined>(branchesQuery.data) ?? []) as Branch[], [branchesQuery.data])
+  const shiftTemplatesQuery = useGetShiftTemplates(branchFilter ? { branch_id: branchFilter } : {})
+  const shiftTemplates = useMemo(() => (pickData<ShiftTemplate[] | undefined>(shiftTemplatesQuery.data) ?? []).filter((shift) => shift.is_active !== false), [shiftTemplatesQuery.data])
+  const timeOptions = useMemo(() => {
+    const values = new Set<string>()
+    for (const shift of shiftTemplates) {
+      const [startHour, startMinute] = shift.start_time.slice(0, 5).split(':').map(Number)
+      const [endHour, endMinute] = shift.end_time.slice(0, 5).split(':').map(Number)
+      let minute = Math.ceil((startHour * 60 + startMinute) / 60) * 60
+      const end = endHour * 60 + endMinute
+      for (; minute < end; minute += 60) values.add(`${String(Math.floor(minute / 60)).padStart(2, '0')}:00`)
+    }
+    return [...values].sort().map((value) => ({ value, label: value }))
+  }, [shiftTemplates])
+
+  // Danh sách KTV để gán/đổi người phụ trách lịch hẹn (luồng xin nghỉ của KTV cũ)
+  const usersQuery = useGetUsers({ currentPage: 1, pageSize: 500, has_role: true })
+  const allUsers = (pickData<UsersRowsPick | undefined>(usersQuery.data)?.rows ?? [])
+  const staffOptions = useMemo(() => allUsers
+    .filter((person) => (person.user_roles ?? []).some(({ role }) => {
+      const roleName = String(role?.role_name || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase()
+      return roleName.includes('ktv') || roleName.includes('ky thuat vien') || roleName === 'technician'
+    }))
+    .map((person) => ({ id: person.id, label: person.zalo_name || person.email || person.id, branchId: person.branch_id })), [allUsers])
 
   const createMutation = usePostAppointments()
   const rescheduleMutation = usePutAppointmentsId()
@@ -234,10 +256,6 @@ export default function Appointments() {
   const cancelMutation = usePutAppointmentsIdCancel()
   const startMutation = usePostAppointmentsIdStart()
 
-  // Gói liệu trình trong hệ thống — nội dung hẹn loại "Liệu trình"
-  const treatmentPackagesQuery = useGetTreatmentPackages({ page: 1, limit: 200 })
-  const treatmentPackages = useMemo(() => (pickData<TreatmentPackage[] | undefined>(treatmentPackagesQuery.data) ?? []) as TreatmentPackage[], [treatmentPackagesQuery.data])
-
   const isSavingAppointment = createMutation.isPending || rescheduleMutation.isPending
 
   const refresh = useCallback(() => {
@@ -246,40 +264,35 @@ export default function Appointments() {
 
   useEffect(() => {
     const requestId = ++slotRequest.current
+    const selectedCustomerId = form.getFieldValue('customer_profile_id') as string | undefined
     const branchId = profiles.find((p) => p.id === selectedCustomerId)?.branch_id
       ?? (selectedProfile && selectedProfile.id === selectedCustomerId ? selectedProfile.branch_id : undefined)
-    const criteria = selectedCustomerId && selectedServiceId && selectedDate
-      ? `${selectedCustomerId}|${selectedServiceId}|${selectedDate}`
-      : ''
+      ?? branchFilter
+      ?? branches[0]?.id
+    const currentTime = selectedTime || (form.getFieldValue('start_time') as string | undefined)?.slice(0, 5) || ''
+    const criteria = selectedDate ? `${branchId ?? ''}|${selectedDate}|${currentTime}` : ''
     if (previousSlotCriteria.current && criteria && criteria !== previousSlotCriteria.current) {
-      form.setFieldsValue({ start_time: undefined })
+      form.setFieldValue('staff_id', undefined)
     }
     previousSlotCriteria.current = criteria
     setSlots([])
-    if (!open || !branchId || !selectedServiceId || !selectedDate) {
+    if (!open || !branchId || !selectedDate) {
       setSlotsLoading(false)
       return
     }
 
     setSlotsLoading(true)
+    // Load all available slots; the selected time determines which technicians can be assigned.
     getAppointmentsAvailableSlots({
       branch_id: branchId,
-      service_id: selectedServiceId,
       date: selectedDate,
+      start_time: currentTime || undefined,
       exclude_appointment_id: editing?.id,
     })
       .then((response) => {
         if (requestId !== slotRequest.current) return
         const available = (pickData<Slot[] | undefined>(response) ?? []) as Slot[]
         setSlots(available)
-        const currentTime = form.getFieldValue('start_time')?.slice(0, 5)
-        const slot = available.find((candidate) => candidate.start_time.slice(0, 5) === currentTime)
-        if (currentTime && !slot) {
-          form.setFieldsValue({ start_time: undefined })
-          // BR-10: hết chỗ khung giờ đã chọn → gợi ý giờ còn trống
-          const suggestions = available.slice(0, 3).map((s) => s.start_time.slice(0, 5)).join(', ')
-          message.warning(suggestions ? `Khung giờ ${currentTime} đã hết chỗ. Còn trống: ${suggestions}` : 'Khung giờ đã chọn không còn trống')
-        }
       })
       .catch((err) => {
         if (requestId === slotRequest.current) {
@@ -290,11 +303,19 @@ export default function Appointments() {
       .finally(() => {
         if (requestId === slotRequest.current) setSlotsLoading(false)
       })
-  }, [open, selectedCustomerId, selectedServiceId, selectedDate, profiles, selectedProfile, editing?.id, form])
+  }, [open, selectedDate, selectedTime, profiles, selectedProfile, editing?.id, form, branchFilter, branches])
+
+  const availableStaffIds = slots.find((slot) => slot.start_time.slice(0, 5) === selectedTime)?.staff_ids ?? []
+  const availableStaffOptions = staffOptions.filter((staff) => availableStaffIds.includes(staff.id))
+
+  useEffect(() => {
+    if (selectedStaffId && selectedTime && !availableStaffIds.includes(selectedStaffId)) {
+      form.setFieldValue('staff_id', undefined)
+    }
+  }, [selectedStaffId, selectedTime, availableStaffIds, form])
 
   const openModal = (appointment?: Appointment) => {
     setEditing(appointment ?? null)
-    setBookingType(appointment?.treatment_package_id || appointment?.customer_treatment_id ? 'treatment' : 'service')
     setSlots([])
     slotRequest.current += 1
     previousSlotCriteria.current = ''
@@ -315,8 +336,7 @@ export default function Appointments() {
       appointment
         ? {
           customer_profile_id: appointment.customer_profile_id,
-          service_id: appointment.service_id,
-          treatment_package_id: appointment.treatment_package_id ?? undefined,
+          staff_id: appointment.staff_id ?? undefined,
           appt_date: dayjs(appointment.appt_date),
           start_time: appointment.start_time?.slice(0, 5),
           note: appointment.note,
@@ -333,6 +353,25 @@ export default function Appointments() {
     next.delete('create')
     setSearchParams(next, { replace: true })
     openModal()
+  }, [])
+
+  // Deep-link từ tab Xin nghỉ: ?appointment_id=<id> → mở modal đổi lịch hẹn (đổi KTV phụ trách)
+  useEffect(() => {
+    const appointmentIdParam = searchParams.get('appointment_id')
+    if (!appointmentIdParam) return
+    const next = new URLSearchParams(searchParams)
+    next.delete('appointment_id')
+    setSearchParams(next, { replace: true })
+    void (async () => {
+      try {
+        const item = pickData<Appointment | undefined>(await getAppointmentsId(appointmentIdParam))
+        if (!item) { message.warning('Không tìm thấy lịch hẹn'); return }
+        openModal(item)
+        message.info('Đổi KTV phụ trách sang người khác rồi lưu để hoàn tất chuyển giao lịch hẹn.')
+      } catch (err) {
+        message.error(errorMessage(err))
+      }
+    })()
   }, [])
 
   const openQuickCustomer = () => {
@@ -365,19 +404,14 @@ export default function Appointments() {
     appointmentSubmitInFlightRef.current = true
     try {
       const values = await form.validateFields()
-      if (bookingType === 'treatment' && !values.treatment_package_id) {
-        message.warning('Chọn gói liệu trình trước khi lưu')
-        appointmentSubmitInFlightRef.current = false
-        return
-      }
       const profile = profiles.find((p) => p.id === values.customer_profile_id)
         ?? (selectedProfile?.id === values.customer_profile_id ? selectedProfile : undefined)
       const branchId = profile?.branch_id ?? branchFilter ?? branches[0]?.id
       const payload = {
         customer_profile_id: values.customer_profile_id,
         branch_id: branchId,
-        service_id: bookingType === 'service' ? values.service_id : undefined,
-        treatment_package_id: bookingType === 'treatment' ? (values.treatment_package_id || undefined) : null,
+        // Gửi staff_id để BE gán/đổi KTV (nếu không gửi thì BE bỏ gán KTV)
+        staff_id: values.staff_id || null,
         appt_date: dayjs(values.appt_date).format('YYYY-MM-DD'),
         start_time: values.start_time,
         note: values.note,
@@ -412,39 +446,14 @@ export default function Appointments() {
     }
   }
 
+  // Lịch hẹn chỉ là hẹn tư vấn — start chỉ chuyển trạng thái, không gắn buổi điều trị
+  // nên không cần hỏi custom fields của buổi.
   const beginAppointment = (row: AppointmentRow) => {
     if (!canStartAppointmentToday(row)) {
       message.warning('Chỉ bắt đầu được trong ngày hẹn, sau giờ hẹn')
       return
     }
-    if (sessionCustomFields.length === 0) {
-      void doAction(() => startMutation.mutateAsync({ id: row.id, data: {} }), 'Đã bắt đầu')
-      return
-    }
-    startForm.resetFields()
-    startForm.setFieldsValue({ custom_fields: {} })
-    setStartingAppointment(row)
-  }
-
-  const submitStart = async () => {
-    if (!startingAppointment || startSubmitInFlightRef.current) return
-    startSubmitInFlightRef.current = true
-    try {
-      const values = await startForm.validateFields()
-      const sessionFields = normalizeCustomFieldValues(sessionCustomFields, values.custom_fields ?? {})
-      await startMutation.mutateAsync({
-        id: startingAppointment.id,
-        data: { ...(sessionFields ? { session_custom_fields: sessionFields } : {}) },
-      })
-      message.success('Đã bắt đầu')
-      refresh()
-      setStartingAppointment(null)
-    } catch (err) {
-      if ((err as { errorFields?: unknown })?.errorFields) return
-      message.error(errorMessage(err))
-    } finally {
-      startSubmitInFlightRef.current = false
-    }
+    void doAction(() => startMutation.mutateAsync({ id: row.id, data: {} }), 'Đã bắt đầu')
   }
 
   const approve = (row: AppointmentRow) => {
@@ -643,26 +652,6 @@ export default function Appointments() {
               ),
             },
             {
-              title: 'Dịch vụ / Gói',
-              key: 'service',
-              dataIndex: ['service', 'title'],
-              render: (value, row) => (
-                <div>
-                  <div>{value || (row.treatment_package ? 'Lịch hẹn liệu trình' : '—')}</div>
-                  {row.treatment_package && (
-                    <Typography.Text type="secondary" style={{ display: 'block', fontSize: 12 }}>
-                      Gói: {row.treatment_package.name}
-                    </Typography.Text>
-                  )}
-                  {(treatmentPackageName(row) || treatmentCode(row)) && (
-                    <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                      {treatmentPackageName(row) ? `Gói KH: ${treatmentPackageName(row)}` : 'Gói liệu trình'}{treatmentCode(row) ? ` · ${treatmentCode(row)}` : ''}
-                    </Typography.Text>
-                  )}
-                </div>
-              ),
-            },
-            {
               title: 'Thời gian',
               key: 'time',
               dataIndex: 'appt_date',
@@ -747,14 +736,8 @@ export default function Appointments() {
         onSelectProfile={setSelectedProfile}
         onQuickCustomer={openQuickCustomer}
         profileOptions={profileOptions}
-        servicesLoading={servicesQuery.isLoading}
-        serviceOptions={services}
-        bookingType={bookingType}
-        onBookingTypeChange={setBookingType}
-        treatmentPackagesLoading={treatmentPackagesQuery.isLoading}
-        treatmentPackages={treatmentPackages}
-        selectedCustomerId={selectedCustomerId}
-        selectedServiceId={selectedServiceId}
+        staffOptions={availableStaffOptions}
+        timeOptions={timeOptions}
         selectedDate={selectedDate}
         appointmentCustomFields={appointmentCustomFields}
         onCancel={() => setOpen(false)}
@@ -766,14 +749,6 @@ export default function Appointments() {
         branches={branches}
         onCancel={() => setQuickCustomerOpen(false)}
         onOk={() => void submitQuickCustomer()}
-      />
-      <AppointmentStartModal
-        appointment={startingAppointment}
-        form={startForm}
-        startMutation={startMutation}
-        sessionCustomFields={sessionCustomFields}
-        onCancel={() => setStartingAppointment(null)}
-        onSubmit={() => void submitStart()}
       />
     </>
   )

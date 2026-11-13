@@ -12,7 +12,6 @@ import type { PostLookupListsIdItemsBody } from '@/api/models/postLookupListsIdI
 import type { PutLookupItemsIdBody } from '@/api/models/putLookupItemsIdBody'
 import type { PutLookupListsIdBody } from '@/api/models/putLookupListsIdBody'
 import {
-  deleteLookupItemsId,
   postLookupListsIdItems,
   putLookupItemsId,
 	} from '@/api/endpoints/lookup-items'
@@ -92,8 +91,8 @@ export default function LookupItemsManager({ listId }: { listId: string }) {
   const toggleActive = async (row: LookupItemWithColor) => {
     setSaving(true)
     try {
-      if (row.is_active === false) await putLookupItemsId(row.id, { is_active: true } as PutLookupItemsIdBody)
-      else await deleteLookupItemsId(row.id)
+      // Ẩn/bật đi qua PUT is_active; DELETE giờ là xóa mềm thật (is_deleted).
+      await putLookupItemsId(row.id, { is_active: row.is_active === false } as PutLookupItemsIdBody)
       message.success(row.is_active === false ? 'Đã bật lại mục chọn' : 'Đã ẩn mục chọn; dữ liệu cũ được giữ lại')
       await load()
     } catch (err) {

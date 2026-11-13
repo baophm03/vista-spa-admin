@@ -1,5 +1,6 @@
 import dayjs from 'dayjs'
-import { Button, Descriptions, Modal, Tag } from 'antd'
+import { Button, Descriptions, Image, Modal, Tag } from 'antd'
+import { fileSrc } from '@/hooks/useFileUrl'
 import type { AcademyCourse } from '@/api/models/academyCourse'
 import type { Branch } from '@/api/models/branch'
 import type { CustomFieldDefWithOptions } from '@/components/CustomFieldFormItems'
@@ -22,6 +23,11 @@ export default function AcademyCourseDetailModal({ detail, branches, courseField
     >
       {detail && (
         <Descriptions bordered size="small" column={1} style={{ marginTop: 12 }}>
+          <Descriptions.Item label="Ảnh bìa">
+            {fileSrc((detail as { cover_file?: { path?: string } }).cover_file)
+              ? <Image src={fileSrc((detail as { cover_file?: { path?: string } }).cover_file) ?? undefined} alt="Ảnh bìa" width={160} style={{ borderRadius: 6, objectFit: 'cover' }} />
+              : '—'}
+          </Descriptions.Item>
           <Descriptions.Item label="Mã khóa">{detail.code}</Descriptions.Item>
           <Descriptions.Item label="Tên khóa học">{detail.name}</Descriptions.Item>
           <Descriptions.Item label="Danh mục">{CATEGORY_OPTIONS.find((item) => item.value === detail.category)?.label ?? detail.category}</Descriptions.Item>

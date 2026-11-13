@@ -9,4 +9,5 @@
 export type PostProductCategoriesBody = {
   name?: string;
   sort_order?: string;
+  image_file_id?: string;
 };

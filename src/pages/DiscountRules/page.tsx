@@ -243,7 +243,7 @@ export default function DiscountRules() {
             else if (key === 'delete') {
               Modal.confirm({
                 title: 'Xóa quy tắc này?',
-                content: 'Xóa mềm (is_active=false).',
+                content: 'Xóa mềm (is_deleted). Chỉ xóa được quy tắc chưa gắn dịch vụ áp dụng; ngừng áp dụng hãy dùng "Sửa" và tắt "Đang dùng".',
                 okText: 'Xóa',
                 okButtonProps: { danger: true },
                 cancelText: 'Hủy',
@@ -308,7 +308,7 @@ export default function DiscountRules() {
             )}
             <Alert
               type="info" showIcon style={{ marginBottom: 16 }}
-              title="Nhân viên chỉ áp được % trong khoảng của quy tắc; vượt khoảng cần quyền discount.override. Tổng % xếp chồng (gồm giảm hạng thẻ) không vượt trần của quy tắc."
+              title="Nhân viên chỉ được chọn mức giảm trong khoảng của quy tắc. Nếu cần áp dụng ngoài khoảng này, hãy liên hệ quản trị viên để được cấp quyền duyệt ngoại lệ. Khi kết hợp nhiều ưu đãi, gồm ưu đãi theo hạng thẻ, tổng mức giảm không được vượt giới hạn của quy tắc."
             />
             <Table<DiscountRule>
               rowKey="id" loading={rulesQuery.isLoading} dataSource={paginateRows(rules, page, 10)} columns={columns}
@@ -340,7 +340,7 @@ export default function DiscountRules() {
         ) : (
           <>
             <PageTitle subtitle="Quyết định giảm giá và ưu đãi theo hạng thẻ">Giảm giá & Ưu đãi</PageTitle>
-            <Alert type="warning" showIcon title="Bạn không có quyền xem quy tắc giảm giá (cần quyền discount.read)" />
+            <Alert type="warning" showIcon title="Tài khoản của bạn chưa được cấp quyền xem quy tắc giảm giá. Vui lòng liên hệ quản trị viên." />
           </>
         )
       }

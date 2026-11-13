@@ -5,8 +5,20 @@
  * Vista Spa backend API. Uses the NEWSKY+ business error envelope for permission-aware endpoints and the legacy response envelope for existing admin endpoints.
  * OpenAPI spec version: 1.0.0
  */
+import type { PostAppOrdersBodyItemsItem } from './postAppOrdersBodyItemsItem';
 
-/**
- * Business payload passed as-is to the processing layer
- */
-export type PostAppOrdersBody = { [key: string]: unknown };
+export type PostAppOrdersBody = {
+  /** @minItems 1 */
+  items: PostAppOrdersBodyItemsItem[];
+  customer_name: string;
+  phone: string;
+  /** @nullable */
+  address?: string | null;
+  /** @nullable */
+  note?: string | null;
+  /**
+   * Voucher sản phẩm của khách; chỉ cần gửi khi khách chọn áp dụng voucher.
+   * @nullable
+   */
+  user_voucher_id?: string | null;
+};

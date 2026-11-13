@@ -17,7 +17,7 @@ export default function CollaboratorModal({ editing, open, onClose, onSubmit, lo
             <Select allowClear placeholder="Chọn loại" options={collaboratorTypes.map((t: string) => ({ value: t, label: typeMeta[t]?.label ?? t }))} />
           </Form.Item>
         </Space>
-        <Form.Item name="commission_percent" label="% hoa hồng tham khảo" extra="Chỉ gợi ý khi nhập tay trong module Hoa hồng; không tự động tính.">
+        <Form.Item name="commission_percent" label="% hoa hồng tham khảo" extra="Chỉ dùng làm gợi ý khi nhập tay tại mục Hoa hồng; không tự động tính.">
           <InputNumber min={0} max={100} precision={2} style={{ width: '100%' }} />
         </Form.Item>
         <Form.Item name="note" label="Ghi chú"><Input.TextArea rows={3} maxLength={2000} /></Form.Item>

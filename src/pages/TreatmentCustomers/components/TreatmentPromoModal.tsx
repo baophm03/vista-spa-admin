@@ -1,9 +1,11 @@
-import { Alert, Button, Card, Col, Empty, Form, InputNumber, Modal, Row, Select, Space, Spin, Tabs, Typography } from 'antd'
+import { Alert, Button, Card, Col, Empty, Form, InputNumber, Modal, Row, Segmented, Select, Space, Spin, Tabs, Typography } from 'antd'
 import type { FormInstance } from 'antd'
 import type { DiscountRule } from '@/api/models'
 import type { CustomerTreatment } from '@/api/models/customerTreatment'
 import { Can } from '@casl/react'
 import type { RewardRedemptionRow } from './constants'
+
+export type ManualDiscountMode = 'percent' | 'amount'
 
 interface TreatmentPromoModalProps {
   open: boolean
@@ -13,6 +15,12 @@ interface TreatmentPromoModalProps {
   discountForm: FormInstance
   discountSubmitting: boolean
   onApplyDiscount: () => void
+  /** Giảm thủ công không qua voucher: % hoặc số tiền nhập tay */
+  manualForm: FormInstance
+  manualMode: ManualDiscountMode
+  onManualModeChange: (mode: ManualDiscountMode) => void
+  manualSubmitting: boolean
+  onManualDiscount: () => void
   redeemForm: FormInstance
   pointsLoading: boolean
   pointsError: boolean
@@ -21,13 +29,16 @@ interface TreatmentPromoModalProps {
   isPointsEnabled: boolean
   redemptionConfigReady: boolean
   redeemBalance: number
+  balanceMaxRedeemPercent: number
   redeemPointsValue: number
   redeemMoney: number
   pointValue: number
+  redeemInvoiceAmount: number
   minRedeemMoney: number
   maxRedeemMoney: number
   minRedeemPercent: number
   maxRedeemPercent: number
+  maxRedeemPoints: number | null
   redeemDebt: number
   redeemValidationMessage: string
   canSubmitRedeem: boolean
@@ -51,6 +62,11 @@ export default function TreatmentPromoModal({
   discountForm,
   discountSubmitting,
   onApplyDiscount,
+  manualForm,
+  manualMode,
+  onManualModeChange,
+  manualSubmitting,
+  onManualDiscount,
   redeemForm,
   pointsLoading,
   pointsError,
@@ -59,13 +75,15 @@ export default function TreatmentPromoModal({
   isPointsEnabled,
   redemptionConfigReady,
   redeemBalance,
+  balanceMaxRedeemPercent,
   redeemPointsValue,
   redeemMoney,
   pointValue,
-  minRedeemMoney,
+  redeemInvoiceAmount,
   maxRedeemMoney,
   minRedeemPercent,
   maxRedeemPercent,
+  maxRedeemPoints,
   redeemDebt,
   redeemValidationMessage,
   canSubmitRedeem,
@@ -94,6 +112,62 @@ export default function TreatmentPromoModal({
         />
         <Tabs
           items={[
+            {
+              key: 'manual',
+              label: 'Giảm trực tiếp',
+              children: (
+                <>
+                  <Alert
+                    type="info" showIcon className="mb-3"
+                    message="Giảm giá thủ công không qua voucher/ưu đãi nào"
+                    description="Chọn giảm theo % hoặc theo số tiền nhập tay. Mức % cộng dồn với ưu đãi đã áp và không vượt trần hệ thống; số tiền không vượt công nợ còn lại. Có thể gỡ lại trong Lịch sử."
+                  />
+                  <Form form={manualForm} layout="vertical">
+                    <Form.Item label="Kiểu giảm" style={{ marginBottom: 12 }}>
+                      <Segmented
+                        block
+                        value={manualMode}
+                        options={[
+                          { label: 'Giảm theo %', value: 'percent' },
+                          { label: 'Giảm theo số tiền', value: 'amount' },
+                        ]}
+                        onChange={(value) => onManualModeChange(value as ManualDiscountMode)}
+                      />
+                    </Form.Item>
+                    <Form.Item
+                      name="value"
+                      label={manualMode === 'percent' ? 'Mức giảm (%)' : 'Số tiền giảm'}
+                      rules={[
+                        { required: true, message: manualMode === 'percent' ? 'Nhập mức giảm (%)' : 'Nhập số tiền giảm' },
+                        { validator: async (_, value) => Number.isFinite(Number(value)) && Number(value) > 0 ? Promise.resolve() : Promise.reject(new Error('Phải là số lớn hơn 0')) },
+                      ]}
+                      extra={manualMode === 'percent'
+                        ? 'Tổng % cộng dồn (ưu đãi đã áp + giảm thủ công) không vượt trần hệ thống discount.max_total_percent.'
+                        : `Không vượt công nợ còn lại: ${formatMoney(promoRow?.debt_amount ?? 0)}`}
+                    >
+                      <InputNumber
+                        min={0}
+                        max={manualMode === 'percent' ? 100 : undefined}
+                        precision={manualMode === 'percent' ? 0 : 0}
+                        step={manualMode === 'percent' ? 1 : 10000}
+                        className="w-full!"
+                        addonAfter={manualMode === 'amount' ? 'đ' : '%'}
+                      />
+                    </Form.Item>
+                    {manualMode === 'percent' && (
+                      <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 8 }}>
+                        Ước tính trên gói {formatMoney(promoRow?.total_amount ?? 0)}.
+                      </Typography.Text>
+                    )}
+                    <Can I="READ" a="DISCOUNT">
+                      <Button type="primary" loading={manualSubmitting} onClick={onManualDiscount}>
+                        Áp dụng giảm trực tiếp
+                      </Button>
+                    </Can>
+                  </Form>
+                </>
+              ),
+            },
             {
               key: 'discount',
               label: 'Áp ưu đãi',
@@ -168,7 +242,7 @@ export default function TreatmentPromoModal({
                     <Alert type="warning" showIcon className="mb-3" message="Tính năng đổi điểm đang tắt theo cấu hình hệ thống." />
                   ) : null}
                   {pointsLoaded && isPointsEnabled && !redemptionConfigReady ? (
-                    <Alert type="error" showIcon className="mb-3" message="Cấu hình quy đổi điểm chưa hợp lệ. Kiểm tra giá trị điểm và tỷ lệ tối thiểu/tối đa." />
+                    <Alert type="error" showIcon className="mb-3" message="Cấu hình đổi điểm chưa hợp lệ. Kiểm tra giá trị điểm và các tỷ lệ giới hạn." />
                   ) : null}
                   <Form.Item
                     name="points"
@@ -178,15 +252,19 @@ export default function TreatmentPromoModal({
                       { validator: async (_, value) => Number.isInteger(Number(value)) && Number(value) > 0 ? Promise.resolve() : Promise.reject(new Error('Số điểm phải là số nguyên dương')) },
                     ]}
                   >
-                    <InputNumber min={1} max={redeemBalance > 0 ? redeemBalance : undefined} precision={0} className="w-full!" disabled={!isPointsEnabled || !redemptionConfigReady || redeemBalance <= 0} />
+                    <InputNumber min={1} max={maxRedeemPoints != null && maxRedeemPoints > 0 ? maxRedeemPoints : undefined} precision={0} className="w-full!" disabled={!isPointsEnabled || !redemptionConfigReady || !maxRedeemPoints || maxRedeemPoints <= 0} />
                   </Form.Item>
                   {pointsLoaded && isPointsEnabled && redemptionConfigReady ? (
                     <Card size="small" className="mb-3">
                       <Space direction="vertical" size={4}>
                         <Typography.Text>Điểm hiện có: <Typography.Text strong>{redeemBalance.toLocaleString('vi-VN')}</Typography.Text></Typography.Text>
+                        <Typography.Text>Tối đa lần này: <Typography.Text strong>{maxRedeemPoints?.toLocaleString('vi-VN') ?? 0} điểm</Typography.Text> ({balanceMaxRedeemPercent}% số dư và giới hạn hóa đơn)</Typography.Text>
                         <Typography.Text>Giá trị dự kiến: <Typography.Text strong>{redeemPointsValue > 0 ? formatMoney(redeemMoney) : '—'}</Typography.Text></Typography.Text>
                         <Typography.Text type="secondary">
-                          1 điểm = {formatMoney(pointValue)} · Mức được phép: {formatMoney(minRedeemMoney)}–{formatMoney(maxRedeemMoney)} ({minRedeemPercent}–{maxRedeemPercent}% công nợ {formatMoney(redeemDebt)})
+                          1 điểm = {formatMoney(pointValue)} · Giảm {minRedeemPercent}–{maxRedeemPercent}% trên hóa đơn {formatMoney(redeemInvoiceAmount)}.
+                        </Typography.Text>
+                        <Typography.Text type="secondary">
+                          Mức giảm tối đa {formatMoney(maxRedeemMoney)}; không vượt số tiền còn phải trả {formatMoney(redeemDebt)}.
                         </Typography.Text>
                       </Space>
                     </Card>

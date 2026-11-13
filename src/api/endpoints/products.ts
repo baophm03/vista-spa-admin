@@ -323,7 +323,7 @@ export const usePutProductsId = <TError = UnauthorizedResponse | ForbiddenRespon
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * DELETE `/products/{id}` — products. Only platform administrators (ADM) can call this. Handled by `product.update`.
+ * DELETE `/products/{id}` — soft-deletes the product (is_deleted=true, keeps files/references for audit). Only platform administrators (ADM) can call this.
  * @summary Delete a product
  */
 export const deleteProductsId = (
@@ -645,7 +645,7 @@ export const usePostProducts = <TError = UnauthorizedResponse | ForbiddenRespons
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * PUT `/productCategories/{id}` — product categories. Only platform administrators (ADM) can call this. Body fields: `name`, `sort_order`, `is_active`. Handled by `category.update`.
+ * PUT `/productCategories/{id}` — product categories. Only platform administrators (ADM) can call this. Body fields: `name`, `sort_order`, `is_active`, `image_file_id`. Handled by `category.update`.
  * @summary Update a product category
  */
 export const putProductCategoriesId = (

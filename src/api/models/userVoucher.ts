@@ -5,6 +5,11 @@
  * Vista Spa backend API. Uses the NEWSKY+ business error envelope for permission-aware endpoints and the legacy response envelope for existing admin endpoints.
  * OpenAPI spec version: 1.0.0
  */
+import type { UserVoucherUserId } from './userVoucherUserId';
+import type { UserVoucherVoucherId } from './userVoucherVoucherId';
+import type { UserVoucherTreatmentPackageVoucherId } from './userVoucherTreatmentPackageVoucherId';
+import type { UserVoucherAcademyCourseVoucherId } from './userVoucherAcademyCourseVoucherId';
+import type { UserVoucherProductVoucherId } from './userVoucherProductVoucherId';
 import type { UserVoucherMembershipId } from './userVoucherMembershipId';
 import type { UserVoucherNote } from './userVoucherNote';
 import type { UserVoucherRedeemedAt } from './userVoucherRedeemedAt';
@@ -14,8 +19,11 @@ import type { UserVoucherRedeemedAt } from './userVoucherRedeemedAt';
  */
 export interface UserVoucher {
   id: string;
-  user_id: string;
-  voucher_id: string;
+  user_id?: UserVoucherUserId;
+  voucher_id?: UserVoucherVoucherId;
+  treatment_package_voucher_id?: UserVoucherTreatmentPackageVoucherId;
+  academy_course_voucher_id?: UserVoucherAcademyCourseVoucherId;
+  product_voucher_id?: UserVoucherProductVoucherId;
   membership_id?: UserVoucherMembershipId;
   note?: UserVoucherNote;
   redeemed_at?: UserVoucherRedeemedAt;

@@ -14,4 +14,5 @@ export type GetCustomerProfilesIdPoints200AllOfResponseDataRedemption = {
   min_percent?: number | null;
   /** @nullable */
   max_percent?: number | null;
+  balance_max_percent?: number;
 };

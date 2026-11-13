@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
+import { useNavigate } from 'react-router-dom'
 import dayjs, { type Dayjs } from 'dayjs'
 import { Alert, Badge, Button, Checkbox, DatePicker, Divider, Form, Modal, Popconfirm, Popover, Select, Space, Table, Tag, Typography, message } from 'antd'
-import { ClearOutlined, FilterOutlined, PlusOutlined, ReloadOutlined } from '@ant-design/icons'
+import { CalendarOutlined, ClearOutlined, FilterOutlined, PlusOutlined, ReloadOutlined } from '@ant-design/icons'
 import { errorMessage, pickData } from '@/api/helpers'
 import ListPagination from '@/components/base/ListPagination'
 import ToolbarRow from '@/components/base/ToolbarRow'
@@ -12,6 +13,7 @@ import { paginateRows } from '@/utils/listTable'
 import {
   deleteStaffDaysOffId,
   getGetStaffDaysOffQueryKey,
+  getStaffDaysOffConflicts,
   postStaffDaysOff,
   putStaffDaysOffIdApprove,
   putStaffDaysOffIdReject,
@@ -26,7 +28,75 @@ import DayOffFormModal from './components/DayOffFormModal'
 import DayOffRejectModal from './components/DayOffRejectModal'
 
 interface Props extends SchedulePageData { loadingShared: boolean }
-interface ApprovalResult { affected_appointments?: { id: string; appt_date: string; start_time: string; customer_profile?: { full_name?: string }; service?: { title?: string } }[] }
+interface ConflictAppointment { id: string; appt_date: string; start_time: string; status?: string; customer_profile?: { full_name?: string }; service?: { title?: string } }
+
+const conflictColumns = [
+  { title: 'Giờ', dataIndex: 'start_time', render: (value: string) => value?.slice(0, 5) },
+  { title: 'Khách', dataIndex: ['customer_profile', 'full_name'], render: (value: string) => value || '—' },
+  { title: 'Dịch vụ', dataIndex: ['service', 'title'], render: (value: string) => value || '—' },
+  { title: 'Trạng thái', dataIndex: 'status', render: (value: string) => value === 'approved' ? 'Đã duyệt' : 'Chờ duyệt' },
+]
+
+/** Modal yêu cầu admin xử lý (đổi KTV) các lịch hẹn đích danh trước khi duyệt đơn nghỉ. */
+function showBlockedByAppointmentsModal(appointments: ConflictAppointment[], navigate: (path: string) => void) {
+  Modal.info({
+    title: `Còn ${appointments.length} lịch hẹn đích danh trùng ca nghỉ — phải xử lý hết trước khi duyệt`,
+    width: 760,
+    content: (
+      <div>
+        <p style={{ marginBottom: 8 }}>
+          Tuyệt đối <b>không hủy lịch của khách</b>: gọi điện xin lỗi khách và xin phép đổi sang KTV khác,
+          sau đó mở từng lịch hẹn bên dưới để đổi KTV. Xử lý xong hết thì quay lại bấm "Duyệt".
+        </p>
+        <Table<ConflictAppointment>
+          rowKey="id" size="small" pagination={false} scroll={{ y: 260 }} dataSource={appointments}
+          columns={[
+            { title: 'Ngày', dataIndex: 'appt_date', render: (value: string) => dayjs(value).format('DD/MM/YYYY') },
+            ...conflictColumns,
+            {
+              title: 'Thao tác', align: 'center' as const, width: 150,
+              render: (_: unknown, row: ConflictAppointment) => (
+                <Button size="small" type="primary" icon={<CalendarOutlined />} onClick={() => navigate(`/appointments?appointment_id=${row.id}`)}>
+                  Xử lý lịch hẹn
+                </Button>
+              ),
+            },
+          ]}
+        />
+      </div>
+    ),
+    okText: 'Đã hiểu',
+  })
+}
+
+/** Preview lịch hẹn đích danh trùng ngày/ca nghỉ (chưa gửi duyệt). */
+async function showConflictsPreview(row: StaffDayOff) {
+  try {
+    const rows = (pickData<ConflictAppointment[] | undefined>(await getStaffDaysOffConflicts({
+      staff_id: row.staff_id,
+      off_date: String(row.off_date).slice(0, 10),
+      ...(row.shift_template_id ? { shift_template_id: row.shift_template_id } : {}),
+    } as never)) ?? [])
+    Modal.info({
+      title: rows.length
+        ? `Có ${rows.length} lịch hẹn đã đặt trước trùng ca nghỉ này`
+        : 'Không có lịch hẹn nào trùng ca nghỉ này',
+      width: 700,
+      content: rows.length ? (
+        <Table<ConflictAppointment>
+          rowKey="id" size="small" pagination={false} scroll={{ y: 240 }} dataSource={rows}
+          columns={[
+            { title: 'Ngày', dataIndex: 'appt_date', render: (value: string) => dayjs(value).format('DD/MM/YYYY') },
+            ...conflictColumns,
+          ]}
+        />
+      ) : undefined,
+      okText: 'Đã hiểu',
+    })
+  } catch (err) {
+    message.error(errorMessage(err))
+  }
+}
 type DayOffColumnKey = 'staff' | 'date' | 'time' | 'reason' | 'status'
 const DAY_OFF_COLUMN_OPTIONS: { label: string; value: DayOffColumnKey }[] = [
   { label: 'KTV', value: 'staff' },
@@ -44,6 +114,7 @@ const STATUS: Record<string, { label: string; color: string }> = {
 
 export default function DayOffTab({ branches, staff, access, loadingShared }: Props) {
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
   const [staffFilter, setStaffFilter] = useState<string>()
   const [statusFilter, setStatusFilter] = useState<string>()
   const [branchFilter, setBranchFilter] = useState<string>()
@@ -147,24 +218,16 @@ export default function DayOffTab({ branches, staff, access, loadingShared }: Pr
 
   const approve = async (row: StaffDayOff) => {
     try {
-      const result = pickData<ApprovalResult>(await putStaffDaysOffIdApprove(row.id))
+      await putStaffDaysOffIdApprove(row.id)
       message.success('Đã duyệt ngày nghỉ')
-      const appointments = result?.affected_appointments ?? []
-      if (appointments.length) Modal.info({
-        title: `Có ${appointments.length} lịch hẹn cần xử lý`,
-        width: 700,
-        content: <div>
-          <p>Hệ thống giữ nguyên lịch hẹn. Vui lòng xử lý từng lịch ở tab Lịch hẹn.</p>
-          <Table<NonNullable<ApprovalResult["affected_appointments"]>[number]> rowKey="id" size="small" pagination={false} scroll={{ y: 260 }} dataSource={appointments} columns={[
-            { title: 'Ngày', dataIndex: 'appt_date', render: (value: string) => dayjs(value).format('DD/MM/YYYY') },
-            { title: 'Giờ', dataIndex: 'start_time', render: (value: string) => value?.slice(0, 5) },
-            { title: 'Khách', dataIndex: ['customer_profile', 'full_name'], render: (value) => value || '—' },
-            { title: 'Dịch vụ', dataIndex: ['service', 'title'], render: (value) => value || '—' },
-          ]} />
-        </div>,
-      })
       void queryClient.invalidateQueries({ queryKey: getGetStaffDaysOffQueryKey() })
-    } catch (err) { message.error(errorMessage(err)) }
+    } catch (err: unknown) {
+      // Nghiệp vụ mới: duyệt bị chặn khi còn lịch hẹn đích danh trùng ca nghỉ
+      const response = (err as { response?: { data?: { code?: string; details?: { affected_appointments?: ConflictAppointment[] } } } })?.response?.data
+      if (response?.code === 'DAY_OFF_BLOCKED_BY_APPOINTMENTS') {
+        showBlockedByAppointmentsModal(response.details?.affected_appointments ?? [], (path) => navigate(path))
+      } else message.error(errorMessage(err))
+    }
   }
 
   const reject = async () => {
@@ -193,6 +256,7 @@ export default function DayOffTab({ branches, staff, access, loadingShared }: Pr
     { title: 'Trạng thái', dataIndex: 'status', key: 'status', render: (value: string, row: StaffDayOff) => <Space direction="vertical" size={0}><Tag color={STATUS[value]?.color}>{STATUS[value]?.label ?? value}</Tag>{row.reject_reason && <span style={{ color: '#cf1322', fontSize: 12 }}>Lý do: {row.reject_reason}</span>}</Space> },
     { title: 'Thao tác', align: 'center' as const, key: 'actions', width: 230, render: (_: unknown, row: StaffDayOff) => <Space wrap>
       {access.isAdmin && row.status === 'pending' && <>
+        <Button size="small" icon={<CalendarOutlined />} onClick={() => void showConflictsPreview(row)}>Lịch trùng</Button>
         <Button size="small" type="primary" onClick={() => void approve(row)}>Duyệt</Button>
         <Button size="small" danger onClick={() => { setRejecting(row); setRejectReason('') }}>Từ chối</Button>
       </>}
