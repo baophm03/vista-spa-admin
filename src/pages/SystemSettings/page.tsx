@@ -16,6 +16,50 @@ import { errorMessage, pickData } from '@/api/helpers'
 import { ability } from '@/configs/casl/ability'
 
 const EMPTY_SETTINGS: SystemSetting[] = []
+const POINTS_SETTING_ORDER: Record<string, number> = {
+  'points.enabled': 0,
+  'points.auto_earn': 1,
+  'points.earn_amount': 2,
+  'points.point_value': 3,
+  'points.redeem_min_percent': 4,
+  'points.redeem_max_percent': 5,
+  'points.redeem_balance_max_percent': 6,
+}
+const POINTS_SETTING_GROUPS = [
+  {
+    key: 'earning',
+    label: 'Tích điểm',
+    settingKeys: ['points.enabled', 'points.auto_earn', 'points.earn_amount', 'points.point_value'],
+  },
+  {
+    key: 'redemption',
+    label: 'Giới hạn đổi điểm',
+    settingKeys: ['points.redeem_min_percent', 'points.redeem_max_percent', 'points.redeem_balance_max_percent'],
+  },
+] as const
+const POINTS_SETTING_ROWS = [
+  ['points.enabled', 'points.redeem_min_percent'],
+  ['points.auto_earn', 'points.redeem_max_percent'],
+  ['points.earn_amount', 'points.redeem_balance_max_percent'],
+  ['points.point_value', null],
+] as const
+const BOOKING_SETTING_ROWS = [
+  ['booking.auto_approve', 'booking.horizon_days'],
+  ['booking.min_cancel_hours', 'booking.pending_expire_hours'],
+  ['booking.require_staff_service', 'booking.slot_minutes'],
+  ['reminder.next_session_days', 'reminder.offsets_days'],
+  ['reminder.send_time', 'job.birthday_time'],
+] as const
+const MEMBER_SETTING_COLUMNS = [
+  {
+    label: 'Thông tin khách hàng',
+    settingKeys: ['customer_code.format', 'customer_code.regen_on_rank_up', 'customer.shared_across_branches'],
+  },
+  {
+    label: 'Xếp hạng hội viên',
+    settingKeys: ['rank.metric', 'rank.period', 'rank.boundary', 'rank.downgrade', 'rank.near_percent'],
+  },
+] as const
 
 function sourceLabel(setting: SystemSetting) {
   if (setting.is_overridden) return 'Đang dùng cấu hình riêng của cơ sở'
@@ -72,28 +116,159 @@ function SettingsEditor({ canEdit }: { canEdit: boolean }) {
 
   const tabs = settingSections.map((section) => {
     const sectionSettings = settings
-      .filter((setting) => (section.groups as readonly string[]).includes(setting.group))
-      .sort((a, b) => a.key.localeCompare(b.key))
+      .filter((setting) => ![
+        'label.brand',
+        'treatment.expiry_policy',
+        'session.required_fields',
+        'lucky_wheel.customer_default_enabled',
+        'lucky_wheel.customer_overrides',
+      ].includes(setting.key)
+        && (section.groups as readonly string[]).includes(setting.group))
+      .sort((a, b) => {
+        if (a.key === b.key) return 0
+        if (section.key === 'points') {
+          const orderDifference = (POINTS_SETTING_ORDER[a.key] ?? Number.MAX_SAFE_INTEGER)
+            - (POINTS_SETTING_ORDER[b.key] ?? Number.MAX_SAFE_INTEGER)
+          if (orderDifference !== 0) return orderDifference
+        }
+        return a.key.localeCompare(b.key)
+      })
+    const fields = sectionSettings.map((setting) => (
+      <div
+        key={setting.key}
+        className={section.key === 'modules' ? 'h-full border-b border-[var(--brand-border)]' : undefined}
+      >
+        <div className="mb-1 flex flex-wrap items-center gap-2">
+          {branchId && <Typography.Text type="secondary" className="text-xs!">{sourceLabel(setting)}</Typography.Text>}
+          {branchId && !setting.branch_allowed && <Tag>Chỉ sửa toàn hệ thống</Tag>}
+        </div>
+        <SystemSettingField
+          setting={setting}
+          value={draft[setting.key]}
+          disabled={!canEdit || (Boolean(branchId) && !setting.branch_allowed)}
+          alignControlsRight={['payment', 'commission', 'discount', 'academy', 'lucky_wheel'].includes(setting.group)
+            || section.key === 'modules' || section.key === 'booking' || section.key === 'member'}
+          onChange={(value) => updateDraft(setting.key, value)}
+        />
+      </div>
+    ))
+    const fieldsByKey = new Map(sectionSettings.map((setting, index) => [setting.key, fields[index]]))
+    const mobilePointsContent = POINTS_SETTING_GROUPS.map((group) => {
+      const groupFields = group.settingKeys.map((key) => fieldsByKey.get(key)).filter(Boolean)
+      if (!groupFields.length) return null
+      return (
+        <section key={group.key}>
+          <Typography.Title level={5} className="mb-2!">{group.label}</Typography.Title>
+          <div className="divide-y divide-[var(--brand-border)]">{groupFields}</div>
+        </section>
+      )
+    })
+    const desktopPointsContent = [
+      <Typography.Title key="earning-title" level={5} className="mb-2!">Tích điểm</Typography.Title>,
+      <Typography.Title key="redemption-title" level={5} className="mb-2!">Giới hạn đổi điểm</Typography.Title>,
+      ...POINTS_SETTING_ROWS.flatMap(([leftKey, rightKey]) => [
+        <div key={`${leftKey}-left`} className="min-w-0 border-b border-[var(--brand-border)]">
+          {fieldsByKey.get(leftKey)}
+        </div>,
+        ...(rightKey ? [
+          <div key={`${leftKey}-right`} className="min-w-0 border-b border-[var(--brand-border)]">
+            {fieldsByKey.get(rightKey)}
+          </div>,
+        ] : []),
+      ]),
+    ]
+    const desktopBookingContent = BOOKING_SETTING_ROWS.flatMap(([leftKey, rightKey]) => [
+      <div key={`${leftKey}-left`} className="h-full border-b border-[var(--brand-border)]">
+        {fieldsByKey.get(leftKey)}
+      </div>,
+      <div key={`${leftKey}-right`} className="h-full border-b border-[var(--brand-border)]">
+        {fieldsByKey.get(rightKey)}
+      </div>,
+    ])
+    const memberColumnsContent = MEMBER_SETTING_COLUMNS.map((column) => {
+      const columnFields = column.settingKeys.map((key) => fieldsByKey.get(key)).filter(Boolean)
+      if (!columnFields.length) return null
+      return (
+        <section key={column.label}>
+          <Typography.Title level={5} className="mb-2!">{column.label}</Typography.Title>
+          <div>
+            {column.settingKeys.map((key) => fieldsByKey.has(key) ? (
+              <div key={key} className="min-w-0 border-b border-[var(--brand-border)]">
+                {fieldsByKey.get(key)}
+              </div>
+            ) : null)}
+          </div>
+        </section>
+      )
+    })
+    const subsections = 'subsections' in section ? section.subsections : undefined
+    const subsectionContent = subsections?.map((subsection) => {
+      const subsectionSettings = sectionSettings.filter((setting) => (subsection.groups as readonly string[]).includes(setting.group))
+      if (subsection.key === 'academy') {
+        subsectionSettings.sort((a, b) => {
+          if (a.key === 'academy.returning_discount_percent') return -1
+          if (b.key === 'academy.returning_discount_percent') return 1
+          return a.key.localeCompare(b.key)
+        })
+      }
+      if (!subsectionSettings.length) return null
+      return (
+        <section key={subsection.key}>
+          <Typography.Title level={5} className="mb-2!">{subsection.label}</Typography.Title>
+          <div>{subsectionSettings.map((setting) => fieldsByKey.get(setting.key))}</div>
+        </section>
+      )
+    })
+    const visibleSubsections = subsectionContent?.filter(Boolean) ?? []
     return {
       key: section.key,
       label: section.label,
       children: sectionSettings.length ? (
-        <Card>
-          {sectionSettings.map((setting) => (
-            <div key={setting.key}>
-              <div className="mb-1 flex flex-wrap items-center gap-2">
-                {branchId && <Typography.Text type="secondary" className="text-xs!">{sourceLabel(setting)}</Typography.Text>}
-                {branchId && !setting.branch_allowed && <Tag>Chỉ sửa toàn hệ thống</Tag>}
-              </div>
-              <SystemSettingField
-                setting={setting}
-                value={draft[setting.key]}
-                disabled={!canEdit || (Boolean(branchId) && !setting.branch_allowed)}
-                onChange={(value) => updateDraft(setting.key, value)}
-              />
+        section.key === 'points' ? (
+          <Card>
+            <div className="space-y-6 xl:hidden">{mobilePointsContent}</div>
+            <div className="hidden xl:grid xl:grid-cols-2 xl:gap-x-8">{desktopPointsContent}</div>
+          </Card>
+        ) : section.key === 'booking' ? (
+          <Card>
+            <div className="divide-y divide-[var(--brand-border)] xl:hidden">
+              {fields.map((field, index) => <div key={index} className="py-5 first:pt-0 last:pb-0">{field}</div>)}
             </div>
-          ))}
-        </Card>
+            <div className="hidden xl:grid xl:grid-cols-2 xl:gap-x-8">{desktopBookingContent}</div>
+          </Card>
+        ) : section.key === 'member' ? (
+          <Card>
+            <div className="divide-y divide-[var(--brand-border)] xl:hidden">
+              {memberColumnsContent.map((content, index) => content && (
+                <div key={index} className="py-5 first:pt-0 last:pb-0">{content}</div>
+              ))}
+            </div>
+            <div className="hidden xl:grid xl:grid-cols-2 xl:gap-x-8">{memberColumnsContent}</div>
+          </Card>
+        ) : section.key === 'modules' ? (
+          <Card><div className="grid grid-cols-1 gap-x-8 xl:grid-cols-2">{fields}</div></Card>
+        ) : subsections ? (
+          <Card>
+            <div className="divide-y divide-[var(--brand-border)] xl:hidden">
+              {visibleSubsections.map((content, index) => (
+                <div key={index} className="py-5 first:pt-0 last:pb-0">{content}</div>
+              ))}
+            </div>
+            <div className="hidden xl:block">
+              <div className="grid grid-cols-[minmax(0,1fr)_1px_minmax(0,1fr)] gap-x-8">
+                {visibleSubsections[0]}
+                <div className="bg-[var(--brand-border)]" />
+                {visibleSubsections[1]}
+              </div>
+              <div className="my-6 h-px bg-[var(--brand-border)]" />
+              <div className="grid grid-cols-[minmax(0,1fr)_1px_minmax(0,1fr)] gap-x-8">
+                {visibleSubsections[2]}
+                <div className="bg-[var(--brand-border)]" />
+                {visibleSubsections[3]}
+              </div>
+            </div>
+          </Card>
+        ) : <Card>{fields}</Card>
       ) : <Card><Typography.Text type="secondary">Nhóm này chưa có cấu hình.</Typography.Text></Card>,
     }
   })

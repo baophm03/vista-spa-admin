@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from 'react'
 import { Typography, message } from 'antd'
 import ReactQuill from 'react-quill-new'
 import 'react-quill-new/dist/quill.snow.css'
+import { errorMessage } from '@/api/helpers'
 
 interface ContentRichTextEditorProps {
   value?: string
@@ -73,7 +74,7 @@ export default function ContentRichTextEditor({
       quill.setSelection(index + 1, 'silent')
       message.success('Đã chèn ảnh vào nội dung')
     } catch (error) {
-      const detail = error instanceof Error ? error.message : 'Không tải được ảnh'
+      const detail = errorMessage(error, 'Không tải được ảnh')
       message.error(`Tải ảnh thất bại: ${detail}`)
     } finally {
       setUploadingImage(false)

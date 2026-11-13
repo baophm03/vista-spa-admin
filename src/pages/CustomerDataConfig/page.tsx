@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Alert, Button, Form, Spin, Table, Tabs, Tag, Typography, message } from 'antd'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { Alert, Button, Card, Form, Spin, Table, Tabs, Tag, Typography, message } from 'antd'
 import { EditOutlined, PlusOutlined } from '@ant-design/icons'
 import { Can, useAbility } from '@casl/react'
 import PageTitle from '@/components/base/PageTitle'
@@ -23,6 +24,10 @@ import {
   putCustomFieldDefsId,
 } from '@/api/endpoints/settings'
 import { getLookupLists } from '@/api/endpoints/lookup-lists'
+import { getGetSettingsQueryKey, getSettings, putSettings } from '@/api/endpoints/settings'
+import type { PutSettingsBody } from '@/api/models/putSettingsBody'
+import type { SystemSetting } from '@/components/settings/systemSettings'
+import SystemSettingField from '@/components/settings/SystemSettingField'
 
 function splitOptions(value?: string) {
   return value?.split(/\r?\n|,/).map((item) => item.trim()).filter(Boolean) ?? []
@@ -40,6 +45,65 @@ const SERVICE_BASE_FIELDS = [
   { label: 'Ảnh bìa', key: 'image_file_id', dataType: 'Ảnh', required: 'Không' },
   { label: 'Bộ ảnh', key: 'gallery_file_ids', dataType: 'Danh sách ảnh', required: 'Không' },
 ]
+
+function SessionRequiredFieldsSetting() {
+  const queryClient = useQueryClient()
+  const canEdit = useAbility().can('UPDATE', 'SETTING')
+  const [draft, setDraft] = useState<string[] | null>(null)
+  const settingsQuery = useQuery({
+    queryKey: getGetSettingsQueryKey(),
+    queryFn: async () => pickData<SystemSetting[]>(await getSettings()) ?? [],
+  })
+  const setting = settingsQuery.data?.find((item) => item.key === 'session.required_fields')
+  const savedValue = Array.isArray(setting?.value) ? setting.value.map(String) : []
+  const value = draft ?? savedValue
+  const hasChanges = JSON.stringify(value) !== JSON.stringify(savedValue)
+
+  const saveMutation = useMutation({
+    mutationFn: async () => putSettings({
+      items: [{ key: 'session.required_fields', value }],
+    } as unknown as PutSettingsBody),
+    onSuccess: async () => {
+      setDraft(null)
+      message.success('Đã lưu trường bắt buộc của buổi điều trị')
+      await queryClient.invalidateQueries({ queryKey: getGetSettingsQueryKey() })
+    },
+    onError: (error) => message.error(errorMessage(error)),
+  })
+
+  return (
+    <Card className="mb-4" title="Nhật ký buổi điều trị">
+      {settingsQuery.isError ? (
+        <Alert type="error" showIcon message="Không tải được cấu hình trường bắt buộc" description={errorMessage(settingsQuery.error)} />
+      ) : (
+        <Spin spinning={settingsQuery.isLoading}>
+          {setting ? (
+            <>
+              <SystemSettingField
+                setting={setting}
+                value={value}
+                disabled={!canEdit || saveMutation.isPending}
+                onChange={(next) => setDraft(Array.isArray(next) ? next.map(String) : [])}
+              />
+              <div className="mt-3 flex justify-end">
+                <Button
+                  type="primary"
+                  loading={saveMutation.isPending}
+                  disabled={!canEdit || !hasChanges}
+                  onClick={() => saveMutation.mutate()}
+                >
+                  Lưu cấu hình
+                </Button>
+              </div>
+            </>
+          ) : (
+            <Typography.Text type="secondary">Chưa có cấu hình trường nhật ký.</Typography.Text>
+          )}
+        </Spin>
+      )}
+    </Card>
+  )
+}
 
 function CustomerFieldsConfig({ entity, sectionTitle }: {
   entity: CustomFieldDefEntity
@@ -227,6 +291,7 @@ function CustomerFieldsConfig({ entity, sectionTitle }: {
           >
             {sectionTitle ?? 'Trường tùy chỉnh'}
           </PageTitle>
+          {entity === 'SESSION' && <SessionRequiredFieldsSetting />}
           {customFieldsTable}
         </>
       )}
@@ -285,7 +350,7 @@ function HealthMetricsConfig() {
     return <Alert
       type="info"
       showIcon
-      message="Chưa có danh mục health.metrics"
+      message="Chưa có danh mục chỉ số sức khỏe"
       description="Danh mục hệ thống được tạo khi áp dụng migration; không tự thêm chỉ số trước khi cơ sở thống nhất bộ mã."
     />
   }

@@ -9,6 +9,7 @@ import ListPagination from '../../components/base/ListPagination'
 import { paginateRows } from '../../utils/listTable'
 import { useDeleteVouchersId, useGetVouchers, usePostVouchers, usePutVouchersId } from '../../api/endpoints/vouchers'
 import { Can, useAbility } from '@casl/react'
+import { errorMessage } from '@/api/helpers'
 
 import VoucherModal from './components/VoucherModal'
 import { TYPE_LABEL, type VoucherRow } from './components/constants'
@@ -69,7 +70,7 @@ export default function Vouchers() {
       setOpen(false)
       await vouchersQuery.refetch()
     } catch (err) {
-      message.error(err instanceof Error ? err.message : 'Không thể lưu voucher')
+      message.error(errorMessage(err, 'Không thể lưu voucher'))
     }
   }
 
@@ -79,7 +80,7 @@ export default function Vouchers() {
       message.success('Đã xóa voucher')
       await vouchersQuery.refetch()
     } catch (err) {
-      message.error(err instanceof Error ? err.message : 'Không thể xóa voucher')
+      message.error(errorMessage(err, 'Không thể xóa voucher'))
     }
   }
 
@@ -96,7 +97,7 @@ export default function Vouchers() {
           </Can>
         }
       >
-        Voucher & Quà tặng
+        Voucher
       </PageTitle>
       <Table
         rowKey="id"

@@ -344,7 +344,7 @@ export default function Collaborators() {
         ) : (
           <>
             <PageTitle subtitle="Quản lý cộng tác viên giới thiệu dịch vụ">Cộng tác viên</PageTitle>
-            <Alert type="warning" showIcon title="Bạn không có quyền xem danh sách cộng tác viên (cần quyền collaborator.read)" />
+            <Alert type="warning" showIcon title="Tài khoản của bạn chưa được cấp quyền xem danh sách cộng tác viên. Vui lòng liên hệ quản trị viên." />
           </>
         )
       }

@@ -61,7 +61,7 @@ export default function CommissionRuleModal({
           <Form.Item name="payee_type" label="Người nhận" rules={[{ required: true }]} style={{ flex: 1 }}>
             <Select options={Object.entries(PAYEE_META).map(([value, meta]) => ({ value, label: meta.label }))} />
           </Form.Item>
-          <Form.Item name="base" label="Căn tính" rules={[{ required: true }]} style={{ flex: 1 }}>
+          <Form.Item name="base" label="Tính hoa hồng theo" rules={[{ required: true }]} style={{ flex: 1 }}>
             <Select
               options={BASE_OPTIONS.filter((option) => option.value === (payeeType === 'STAFF' ? 'SESSION_VALUE' : 'PAYMENT'))}
             />

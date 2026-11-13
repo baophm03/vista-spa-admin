@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { BrowserQRCodeReader } from '@zxing/browser'
 import { Alert, Button, Input, Modal, Space, Typography, message } from 'antd'
 import { CameraOutlined, SearchOutlined } from '@ant-design/icons'
+import { errorMessage } from '@/api/helpers'
 
 interface Props {
   open: boolean
@@ -41,8 +42,7 @@ export default function CustomerQrScannerModal({ open, onClose, onToken }: Props
     }).catch((error: unknown) => {
       if (disposed) return
       setScanning(false)
-      const detail = error instanceof Error ? error.message : ''
-      setCameraError(detail || 'Không thể mở camera. Hãy kiểm tra quyền camera hoặc nhập token bên dưới.')
+      setCameraError(errorMessage(error, 'Không thể mở camera. Hãy kiểm tra quyền camera hoặc nhập token bên dưới.'))
     })
     return () => {
       disposed = true

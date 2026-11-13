@@ -97,7 +97,7 @@ export default function Commissions() {
         ) : (
           <>
             <PageTitle>Hoa hồng</PageTitle>
-            <Alert type="warning" showIcon title="Bạn không có quyền xem hoa hồng (cần quyền commission.read)" />
+            <Alert type="warning" showIcon title="Tài khoản của bạn chưa được cấp quyền xem hoa hồng. Vui lòng liên hệ quản trị viên." />
           </>
         )
       }

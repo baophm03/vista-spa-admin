@@ -69,6 +69,10 @@ export const menuItems: MenuItem[] = [
           { action: 'READ', subject: 'CARD_RANK' },
         ]
       },
+      { key: '/points-redemption', icon: createElement(GiftOutlined), label: 'Đổi điểm & quà', permission: [
+        { action: 'POINTS_ADJUST', subject: 'MEMBERSHIP' },
+        { action: 'REDEEM_ADMIN', subject: 'REWARD' },
+      ] },
       { key: '/rewards', icon: createElement(GiftOutlined), label: 'Quà & Lượt đổi', permission: { action: 'READ', subject: 'REWARD' } },
       { key: '/warranty-claims', icon: createElement(FileTextOutlined), label: 'Bảo hành gói liệu trình', permission: { action: 'READ', subject: 'CUSTOMER' }, hideForKtv: true },
     ],
@@ -86,7 +90,7 @@ export const menuItems: MenuItem[] = [
       { key: '/academy/courses', icon: createElement(BookOutlined), label: 'Khóa học đào tạo', permission: { action: 'READ', subject: 'ACADEMY' } },
       { key: '/academy/registrations', icon: createElement(SolutionOutlined), label: 'Đăng ký học viên', permission: { action: 'READ', subject: 'ACADEMY' } },
       { key: '/discount-rules', icon: createElement(StarOutlined), label: 'Giảm giá & Ưu đãi', permission: { action: 'READ', subject: 'DISCOUNT' } },
-      { key: '/vouchers', icon: createElement(GiftOutlined), label: 'Voucher & Quà tặng', permission: { action: 'READ', subject: 'VOUCHER' } },
+      { key: '/vouchers', icon: createElement(GiftOutlined), label: 'Voucher', permission: { action: 'READ', subject: 'VOUCHER' } },
       { key: '/luckywheel', icon: createElement(ThunderboltOutlined), label: 'Quay số may mắn', permission: { action: 'READ', subject: 'WHEEL' } },
       { key: '/commission-rules', icon: createElement(StarOutlined), label: 'Quy tắc hoa hồng', permission: { action: 'RULE_MANAGE', subject: 'COMMISSION' } },
       { key: '/commissions', icon: createElement(ProfileOutlined), label: 'Hoa hồng', permission: { action: 'READ', subject: 'COMMISSION' } },
