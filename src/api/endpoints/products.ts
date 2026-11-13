@@ -966,7 +966,7 @@ export const prefetchGetProductCategoriesQuery = async <TData = Awaited<ReturnTy
 
 
 /**
- * POST `/productCategories` — product categories. Only platform administrators (ADM) can call this. Body fields: `name`, `sort_order`, `image_file_id`.
+ * POST `/productCategories` — product categories. Only platform administrators (ADM) can call this. Body fields: `name`, `sort_order`.
  * @summary Create a new product category
  */
 export const postProductCategories = (

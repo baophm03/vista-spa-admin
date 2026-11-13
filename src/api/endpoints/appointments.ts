@@ -255,7 +255,7 @@ export const prefetchGetAppointmentsIdQuery = async <TData = Awaited<ReturnType<
 
 
 /**
- * **AP-04** — PUT /appointments/{id} (change date/time/technician, re-check the slot). Requires the `appointment.update` permission. Branch scope: users limited to a single branch only see that branch's data.
+ * **AP-04** — PUT /appointments/{id} (change date/time, gán/đổi KTV phụ trách qua `staff_id` — validate slot còn trống cho KTV đó, loại trừ chính lịch này; dùng cho luồng admin đổi KTV trước khi duyệt đơn xin nghỉ). Requires the `appointment.update` permission. Branch scope: users limited to a single branch only see that branch's data.
  * @summary Update appointment
  */
 export const putAppointmentsId = (
@@ -580,7 +580,7 @@ export const usePostAppointments = <TError = UnauthorizedResponse | ForbiddenRes
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **AP-08** — GET /appointments/available-slots?branch_id&service_id&date&staff_id?. Requires the `appointment.read` permission. Branch scope: users limited to a single branch only see that branch's data. Query parameters: `branch_id`, `service_id`, `date`, `staff_id`, `exclude_appointment_id`.
+ * **AP-08** — GET /appointments/available-slots?branch_id&date&staff_id?. Requires the `appointment.read` permission. Branch scope: users limited to a single branch only see that branch's data. Query parameters: `branch_id`, `date`, `staff_id`, `exclude_appointment_id`. Lịch hẹn chỉ là hẹn tư vấn nên không cần service_id.
  * @summary View available time slots
  */
 export const getAppointmentsAvailableSlots = (
@@ -775,7 +775,7 @@ export const prefetchGetAppointmentsAvailableSlotsQuery = async <TData = Awaited
 
 
 /**
- * **AP-09** — POST /appointments/{id}/start (assigned technician, or ADM/REC: approved → in_progress + create/attach session). The body accepts an optional `customer_treatment_id`: if the appointment has no package attached yet, the package is attached at start time and the treatment session is created in the same transaction. Requires `appointment.start` permission.
+ * **AP-09** — POST /appointments/{id}/start (assigned technician, or ADM/REC: approved → in_progress). Lịch hẹn chỉ là hẹn tư vấn: start chỉ chuyển trạng thái, không tạo buổi điều trị (buổi được tạo từ gói đã bán ở treatment-customers/sessions). Requires `appointment.start` permission.
  * @summary Start appointment
  */
 export const postAppointmentsIdStart = (

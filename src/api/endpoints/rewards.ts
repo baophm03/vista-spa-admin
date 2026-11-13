@@ -41,7 +41,6 @@ import type {
   InternalErrorResponse,
   NotFoundResponse,
   PostRewards200,
-  PostStandaloneServicesIdApplyRewardBody,
   PostTreatmentCustomersIdApplyRewardBody,
   PutRewardRedemptionsIdCancel200,
   PutRewardRedemptionsIdCancelBody,
@@ -121,72 +120,6 @@ export const usePostTreatmentCustomersIdApplyReward = <TError = void,
       > => {
 
       const mutationOptions = getPostTreatmentCustomersIdApplyRewardMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * Mirror của /treatmentCustomers/{id}/apply-reward cho Dịch vụ KH — the redemption must belong to the same customer, still be ISSUED, be a money-discount benefit, and the reward service must match the visit service.
- * @summary Apply a redeemed reward to a customer service visit balance
- */
-export const postStandaloneServicesIdApplyReward = (
-    id: string,
-    postStandaloneServicesIdApplyRewardBody: PostStandaloneServicesIdApplyRewardBody,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<void>(
-      {url: `/standaloneServices/${id}/apply-reward`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: postStandaloneServicesIdApplyRewardBody, signal
-    },
-      );
-    }
-  
-
-
-export const getPostStandaloneServicesIdApplyRewardMutationOptions = <TError = ForbiddenResponse | NotFoundResponse | UnprocessableEntityResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postStandaloneServicesIdApplyReward>>, TError,{id: string;data: PostStandaloneServicesIdApplyRewardBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postStandaloneServicesIdApplyReward>>, TError,{id: string;data: PostStandaloneServicesIdApplyRewardBody}, TContext> => {
-
-const mutationKey = ['postStandaloneServicesIdApplyReward'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postStandaloneServicesIdApplyReward>>, {id: string;data: PostStandaloneServicesIdApplyRewardBody}> = (props) => {
-          const {id,data} = props ?? {};
-
-          return  postStandaloneServicesIdApplyReward(id,data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostStandaloneServicesIdApplyRewardMutationResult = NonNullable<Awaited<ReturnType<typeof postStandaloneServicesIdApplyReward>>>
-    export type PostStandaloneServicesIdApplyRewardMutationBody = PostStandaloneServicesIdApplyRewardBody
-    export type PostStandaloneServicesIdApplyRewardMutationError = ForbiddenResponse | NotFoundResponse | UnprocessableEntityResponse
-
-    /**
- * @summary Apply a redeemed reward to a customer service visit balance
- */
-export const usePostStandaloneServicesIdApplyReward = <TError = ForbiddenResponse | NotFoundResponse | UnprocessableEntityResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postStandaloneServicesIdApplyReward>>, TError,{id: string;data: PostStandaloneServicesIdApplyRewardBody}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postStandaloneServicesIdApplyReward>>,
-        TError,
-        {id: string;data: PostStandaloneServicesIdApplyRewardBody},
-        TContext
-      > => {
-
-      const mutationOptions = getPostStandaloneServicesIdApplyRewardMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

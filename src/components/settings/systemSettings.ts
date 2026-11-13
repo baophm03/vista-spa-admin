@@ -53,6 +53,7 @@ const labels: Record<string, string> = {
   'reminder.next_session_days': 'Số ngày nhắc buổi tiếp theo', 'points.enabled': 'Bật tích điểm',
   'points.earn_amount': 'Số tiền quy đổi thành điểm', 'points.point_value': 'Giá trị quy đổi một điểm',
   'points.redeem_min_percent': 'Tỷ lệ đổi điểm tối thiểu (%)', 'points.redeem_max_percent': 'Tỷ lệ đổi điểm tối đa (%)',
+  'points.redeem_max_points': 'Số điểm tối đa mỗi lần đổi (0/trống = không giới hạn)',
   'points.auto_earn': 'Tự động cộng điểm', 'commission.auto_enabled': 'Tự động tính hoa hồng',
   'discount.max_total_percent': 'Mức giảm tối đa cộng dồn (%)', 'status.labels': 'Nhãn trạng thái',
   'status.colors': 'Màu trạng thái', 'module.academy': 'Khóa học', 'module.content': 'Nội dung',

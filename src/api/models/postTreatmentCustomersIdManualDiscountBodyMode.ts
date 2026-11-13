@@ -6,13 +6,11 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type PostStandaloneServicesIdPaymentsBodyMethod = typeof PostStandaloneServicesIdPaymentsBodyMethod[keyof typeof PostStandaloneServicesIdPaymentsBodyMethod];
+export type PostTreatmentCustomersIdManualDiscountBodyMode = typeof PostTreatmentCustomersIdManualDiscountBodyMode[keyof typeof PostTreatmentCustomersIdManualDiscountBodyMode];
 
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const PostStandaloneServicesIdPaymentsBodyMethod = {
-  CASH: 'CASH',
-  BANK: 'BANK',
-  POS: 'POS',
-  OTHER: 'OTHER',
+export const PostTreatmentCustomersIdManualDiscountBodyMode = {
+  percent: 'percent',
+  amount: 'amount',
 } as const;

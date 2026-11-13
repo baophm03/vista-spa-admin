@@ -36,6 +36,19 @@ export const QUOTA_LABEL: Record<QuotaType, string> = {
   VALUE: 'Theo định mức tiền',
   UNLIMITED: 'Trọn gói',
 }
+
+/**
+ * 4 chế độ bán của gói liệu trình (nghiệp vụ mới):
+ * - Dịch vụ lẻ: 1 gói = 1 dịch vụ, đúng 1 buổi (quota SESSIONS + total_sessions = 1)
+ * - Theo buổi: 1 gói = 1 dịch vụ, nhiều buổi (quota SESSIONS + total_sessions >= 2)
+ * - Theo giá tiền: mỗi buổi có giá, tổng giá các buổi không vượt định mức (quota VALUE)
+ * - Unlimited: vô hạn số buổi (quota UNLIMITED)
+ */
+export function saleModeLabel(row: Pick<TreatmentPackage, 'quota_type' | 'total_sessions'>): string {
+  if (row.quota_type === 'VALUE') return 'Theo giá tiền'
+  if (row.quota_type === 'UNLIMITED') return 'Unlimited'
+  return Number(row.total_sessions) === 1 ? 'Dịch vụ lẻ' : 'Theo buổi'
+}
 export const VALIDITY_LABEL: Record<ValidityUnit, string> = {
   DAY: 'ngày',
   WEEK: 'tuần',
@@ -45,7 +58,7 @@ export const COLUMN_OPTIONS: { label: string; value: PackageColumnKey }[] = [
   { label: 'Tên gói', value: 'name' },
   { label: 'Cơ sở', value: 'branch' },
   { label: 'Loại gói', value: 'type' },
-  { label: 'Hạn mức', value: 'quota' },
+  { label: 'Chế độ', value: 'quota' },
   { label: 'Dịch vụ', value: 'services' },
   { label: 'Giá niêm yết', value: 'price' },
   { label: 'Thời hạn', value: 'validity' },

@@ -58,7 +58,10 @@ const shiftLabel = (template?: ShiftTemplateRow | null) =>
 
 export default function DateScheduleTab({ branches, staff, access, loadingShared }: Props) {
   const queryClient = useQueryClient()
-  const [weekStart, setWeekStart] = useState<Dayjs>(() => mondayOf(dayjs()))
+  const isTechSelf = access.isTechnician && !access.isAdmin
+  // KTV chỉ được tự đăng ký/sửa/xóa ca của TUẦN KẾ TIẾP — mở mặc định ở tuần kế tiếp
+  const nextWeekStart = mondayOf(dayjs()).add(1, 'week')
+  const [weekStart, setWeekStart] = useState<Dayjs>(() => (isTechSelf ? nextWeekStart : mondayOf(dayjs())))
   const [branchFilter, setBranchFilter] = useState<string>()
   const [staffFilter, setStaffFilter] = useState<string>()
   const [open, setOpen] = useState(false)
@@ -67,6 +70,8 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
   const [form] = Form.useForm()
   const selectedBranch = Form.useWatch('branch_id', form)
   const canManage = access.isAdmin
+  const viewingNextWeek = weekStart.isSame(nextWeekStart, 'day')
+  const ownBranchId = staff.find((person) => person.id === access.currentUserId)?.branch_id
   const today = dayjs().format('YYYY-MM-DD')
   const weekDates = useMemo(() => Array.from({ length: 7 }, (_, index) => weekStart.add(index, 'day')), [weekStart])
   const staffForBranchFilter = useMemo(
@@ -140,6 +145,25 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
   const openForm = (row?: StaffScheduleDateWithStaff) => {
     setEditing(row ?? null)
     const rowStaff = row ? staff.find((person) => person.id === row.staff_id) : undefined
+    if (isTechSelf) {
+      // KTV tự đăng ký: khóa staff + cơ sở theo hồ sơ của mình
+      const staffId = row && row.staff_id === access.currentUserId ? row.staff_id : access.currentUserId
+      form.setFieldsValue(row ? {
+        staff_id: staffId,
+        branch_id: row.branch_id || ownBranchId,
+        work_dates: toFormDates(row.work_date),
+        shift_template_id: row.shift_template_id,
+        note: row.note ?? undefined,
+      } : {
+        staff_id: staffId,
+        branch_id: ownBranchId,
+        work_dates: undefined,
+        shift_template_id: undefined,
+        note: undefined,
+      })
+      setOpen(true)
+      return
+    }
     const branchId = row?.branch_id || branchFilter || rowStaff?.branch_id || staff.find((person) => person.id === staffFilter)?.branch_id || branches[0]?.id
     const staffId = row
       ? (rowStaff?.branch_id === branchId ? row.staff_id : undefined)
@@ -162,6 +186,7 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
 
   const submit = async () => {
     const values = await form.validateFields()
+    if (isTechSelf) values.staff_id = access.currentUserId
     const selectedStaff = staff.find((person) => person.id === values.staff_id)
     if (!selectedStaff?.branch_id || selectedStaff.branch_id !== values.branch_id) {
       message.error('KTV chưa được gán vào cơ sở đã chọn. Hãy kiểm tra lại nhân sự trước khi xếp lịch.')
@@ -275,17 +300,23 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
     }
   }
 
-  const renderShiftTags = (shifts: DateCellShift[], compact: boolean) => (
+  const renderShiftTags = (shifts: DateCellShift[], compact: boolean) => {
+    const canEditCell = (row: StaffScheduleDateWithStaff) =>
+      canManage || (isTechSelf && row.staff_id === access.currentUserId && viewingNextWeek)
+    const lockTooltip = 'Tuần đã bắt đầu — dùng tab Xin nghỉ hoặc liên hệ Admin'
+    return (
     <Space direction="vertical" size={4} style={{ display: 'flex' }}>
-      {shifts.map((item) => (
+      {shifts.map((item) => {
+        const editable = canEditCell(item.row)
+        return (
         <Space key={item.key} direction="vertical" size={2} style={{ display: 'flex' }}>
           <Space size={2} style={{ display: 'flex' }}>
-            <Tooltip title={item.note ? `Ghi chú: ${item.note}` : undefined}>
-              <Tag color="geekblue" style={{ margin: 0, whiteSpace: 'normal', textAlign: 'left', cursor: canManage ? 'pointer' : undefined }} onClick={() => canManage && openForm(item.row)}>
+            <Tooltip title={item.note ? `Ghi chú: ${item.note}` : (!editable && isTechSelf ? lockTooltip : undefined)}>
+              <Tag color="geekblue" style={{ margin: 0, whiteSpace: 'normal', textAlign: 'left', cursor: editable ? 'pointer' : undefined }} onClick={() => editable && openForm(item.row)}>
                 {shiftLabel(item.template)}
               </Tag>
             </Tooltip>
-            {canManage && <Popconfirm title="Xóa lịch ngày này?" okText="Kiểm tra và xóa" cancelText="Hủy" onConfirm={() => remove(item.row)}>
+            {editable && <Popconfirm title="Xóa lịch ngày này?" okText="Kiểm tra và xóa" cancelText="Hủy" onConfirm={() => remove(item.row)}>
               <Button aria-label="Xóa lịch theo ngày" type="text" size="small" danger icon={<DeleteOutlined />} />
             </Popconfirm>}
           </Space>
@@ -298,10 +329,12 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
             </Typography.Text>
           )}
         </Space>
-      ))}
+        )
+      })}
       {!shifts.length && !compact && <span style={{ color: '#aaa' }}>—</span>}
     </Space>
-  )
+    )
+  }
 
   const columns = [
     { title: 'KTV', dataIndex: 'id', key: 'staff', width: 160, fixed: 'left' as const, render: (id: string) => <strong>{staffLabel(visibleStaff.find((person) => person.id === id))}</strong> },
@@ -339,6 +372,28 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
   ]
 
   return <div>
+    {isTechSelf && <ToolbarRow>
+      <Space.Compact>
+        <Button icon={<LeftOutlined />} aria-label="Tuần trước" onClick={() => setWeekStart((week) => week.subtract(1, 'week'))} />
+        <DatePicker.RangePicker
+          allowClear={false}
+          format="DD/MM"
+          style={{ width: 170 }}
+          value={[weekStart, weekStart.add(6, 'day')]}
+          onChange={(value) => { const start = value?.[0]; if (start) setWeekStart(mondayOf(start)) }}
+        />
+        <Button icon={<RightOutlined />} aria-label="Tuần sau" onClick={() => setWeekStart((week) => week.add(1, 'week'))} />
+      </Space.Compact>
+      <Button type="primary" icon={<PlusOutlined />} onClick={() => openForm()}>Đăng ký ca</Button>
+    </ToolbarRow>}
+    {isTechSelf && !viewingNextWeek && (
+      <Alert
+        type="info"
+        showIcon
+        style={{ marginBottom: 12 }}
+        message="Bạn chỉ được tự đăng ký/sửa/xóa ca cho TUẦN KẾ TIẾP. Ca trong tuần đã bắt đầu muốn thay đổi: dùng tab Xin nghỉ hoặc liên hệ Admin."
+      />
+    )}
     {canManage && <ToolbarRow>
       <Select allowClear placeholder="Tất cả cơ sở" style={{ width: 190 }} value={branchFilter} onChange={(value) => {
         setBranchFilter(value)
@@ -428,6 +483,7 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
       selectedBranch={selectedBranch}
       staffForSelectedBranch={staffForSelectedBranch}
       templates={templates}
+      lockStaffAndBranch={isTechSelf}
       saving={saving}
       onCancel={() => setOpen(false)}
       onSubmit={() => void submit()}

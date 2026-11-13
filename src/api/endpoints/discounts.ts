@@ -34,7 +34,9 @@ import type {
   GetCustomerProfilesIdAvailableDiscounts200,
   NotFoundResponse,
   PostTreatmentCustomersIdApplyDiscount200,
-  PostTreatmentCustomersIdApplyDiscountBody
+  PostTreatmentCustomersIdApplyDiscountBody,
+  PostTreatmentCustomersIdManualDiscount200,
+  PostTreatmentCustomersIdManualDiscountBody
 } from '../models';
 
 import { customInstance } from '../mutator/custom-instance';
@@ -44,6 +46,72 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
+ * **DC-09** — POST /treatmentCustomers/{id}/manual-discount. Giảm giá thủ công không qua voucher: body `{ mode: 'percent' | 'amount', value }`. mode percent — tổng % cộng dồn không vượt trần hệ thống `discount.max_total_percent`; mode amount — không vượt công nợ còn lại. Ghi treatment_adjustment (DISCOUNT, payload.manual=true) — gỡ bằng luồng gỡ ưu đãi hiện có.
+ * @summary Apply a manual discount (percent or amount) without any voucher rule
+ */
+export const postTreatmentCustomersIdManualDiscount = (
+    id: string,
+    postTreatmentCustomersIdManualDiscountBody: PostTreatmentCustomersIdManualDiscountBody,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<PostTreatmentCustomersIdManualDiscount200>(
+      {url: `/treatmentCustomers/${id}/manual-discount`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: postTreatmentCustomersIdManualDiscountBody, signal
+    },
+      );
+    }
+  
+
+
+export const getPostTreatmentCustomersIdManualDiscountMutationOptions = <TError = void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postTreatmentCustomersIdManualDiscount>>, TError,{id: string;data: PostTreatmentCustomersIdManualDiscountBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postTreatmentCustomersIdManualDiscount>>, TError,{id: string;data: PostTreatmentCustomersIdManualDiscountBody}, TContext> => {
+
+const mutationKey = ['postTreatmentCustomersIdManualDiscount'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postTreatmentCustomersIdManualDiscount>>, {id: string;data: PostTreatmentCustomersIdManualDiscountBody}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  postTreatmentCustomersIdManualDiscount(id,data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostTreatmentCustomersIdManualDiscountMutationResult = NonNullable<Awaited<ReturnType<typeof postTreatmentCustomersIdManualDiscount>>>
+    export type PostTreatmentCustomersIdManualDiscountMutationBody = PostTreatmentCustomersIdManualDiscountBody
+    export type PostTreatmentCustomersIdManualDiscountMutationError = void
+
+    /**
+ * @summary Apply a manual discount (percent or amount) without any voucher rule
+ */
+export const usePostTreatmentCustomersIdManualDiscount = <TError = void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postTreatmentCustomersIdManualDiscount>>, TError,{id: string;data: PostTreatmentCustomersIdManualDiscountBody}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postTreatmentCustomersIdManualDiscount>>,
+        TError,
+        {id: string;data: PostTreatmentCustomersIdManualDiscountBody},
+        TContext
+      > => {
+
+      const mutationOptions = getPostTreatmentCustomersIdManualDiscountMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
  * **DC-07** — POST /customer-treatments/{id}/apply-discount. Body: rule_id, percent (% within the rule's range; exceeding it requires permission `discount.override`).
  * @summary Apply a discount to the treatment package
  */

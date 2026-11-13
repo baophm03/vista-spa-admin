@@ -36,8 +36,8 @@ import TreatmentTypeModal from './components/TreatmentTypeModal'
 import {
   VALIDITY_LABEL,
   PACKAGE_TYPE_QUOTA_OPTIONS,
-  QUOTA_LABEL,
-  quotaLabel,
+  QUOTA_LABEL,
+  saleModeLabel,
   priceLabel,
   type PackageTypeForm,
   type PackageTypeRow,
@@ -154,7 +154,7 @@ export default function Treatments() {
       quota_type: row.quota_type ?? type?.default_quota_type ?? 'SESSIONS',
       list_price: row.list_price ?? 0,
       bonus_sessions_default: row.bonus_sessions_default ?? 0,
-      service_ids: row.service_ids ?? [],
+      service_id: row.service_id ?? undefined,
       custom_fields: row.custom_fields ?? {},
     } : {
       name: '',
@@ -162,7 +162,7 @@ export default function Treatments() {
       total_sessions: 5,
       list_price: 0,
       bonus_sessions_default: 0,
-      service_ids: [],
+      service_id: undefined,
       custom_fields: {},
       is_active: true,
     })
@@ -183,8 +183,9 @@ export default function Treatments() {
         quota_type: quotaType,
         total_sessions: quotaType === 'SESSIONS' ? Number(values.total_sessions) : null,
         total_value: quotaType === 'VALUE' ? Number(values.list_price) : null,
+        // Nghiệp vụ mới: mỗi gói tương đương đúng 1 dịch vụ
         service_id: isCombo ? null : (values.service_id || null),
-        service_ids: isCombo ? values.service_ids : [],
+        service_ids: [],
         warranty_text: selectedPackageType?.has_warranty ? (values.warranty_text?.trim() || null) : null,
         convertible_note: values.convertible_note?.trim() || null,
         terms: values.terms?.trim() || null,
@@ -322,10 +323,10 @@ export default function Treatments() {
       },
     },
     {
-      title: 'Hạn mức',
+      title: 'Chế độ',
       key: 'quota',
       width: 170,
-      render: (_value, row) => <Tag>{quotaLabel(row, formatMoney)}</Tag>,
+      render: (_value, row) => <Tag>{saleModeLabel(row)}</Tag>,
     },
     {
       title: 'Dịch vụ',
@@ -456,7 +457,7 @@ export default function Treatments() {
               {row.is_active ? <Tag color="green">Đang bán</Tag> : <Tag>Đã ẩn</Tag>}
             </div>
             <div className="mobile-card-rows">
-              <MobileCardRow label="Hạn mức" value={quotaLabel(row, formatMoney)} />
+              <MobileCardRow label="Chế độ" value={saleModeLabel(row)} />
               <MobileCardRow label="Giá niêm yết" value={priceLabel(row, formatMoney)} />
             </div>
             {canManage && (

@@ -41,6 +41,7 @@ import { useGetLookupLists } from '@/api/endpoints/lookup-lists'
 import {
   useGetCustomerProfilesIdAvailableDiscounts,
   usePostTreatmentCustomersIdApplyDiscount,
+  usePostTreatmentCustomersIdManualDiscount,
 } from '@/api/endpoints/discounts'
 import type { DiscountRule } from '@/api/models'
 import { usePostTreatmentCustomersIdRedeemPoints } from '@/api/endpoints/treatment-customers'
@@ -624,7 +625,7 @@ export default function TreatmentCustomers() {
   })
   const promoPointsData = pickData<{
     points?: number
-    redemption?: { enabled?: boolean | string; point_value?: number | null; min_percent?: number | null; max_percent?: number | null }
+    redemption?: { enabled?: boolean | string; point_value?: number | null; min_percent?: number | null; max_percent?: number | null; max_points?: number | null }
   }>(promoPointsQuery.data)
   const redeemPointsValue = Number(Form.useWatch('points', redeemForm) ?? 0)
   const redeemBalance = Number(promoPointsData?.points ?? 0)
@@ -632,6 +633,7 @@ export default function TreatmentCustomers() {
   const pointValue = Number(promoPointsData?.redemption?.point_value)
   const minRedeemPercent = Number(promoPointsData?.redemption?.min_percent)
   const maxRedeemPercent = Number(promoPointsData?.redemption?.max_percent)
+  const maxRedeemPoints = Number(promoPointsData?.redemption?.max_points ?? 0)
   const isPointsEnabled = promoPointsData?.redemption?.enabled === true || promoPointsData?.redemption?.enabled === 'true'
   const redemptionConfigReady = Number.isFinite(pointValue) && pointValue > 0
     && Number.isFinite(minRedeemPercent) && Number.isFinite(maxRedeemPercent)
@@ -642,7 +644,9 @@ export default function TreatmentCustomers() {
   let redeemValidationMessage = ''
   if (redeemPointsValue > 0 && redeemDebt <= 0) redeemValidationMessage = 'Gói không còn công nợ để đổi điểm.'
   else if (redeemPointsValue > redeemBalance) redeemValidationMessage = `Khách chỉ còn ${redeemBalance.toLocaleString('vi-VN')} điểm.`
-  else if (redeemPointsValue > 0 && redemptionConfigReady && redeemMoney < minRedeemMoney) {
+  else if (redeemPointsValue > 0 && maxRedeemPoints > 0 && redeemPointsValue > maxRedeemPoints) {
+    redeemValidationMessage = `Mỗi lần chỉ được đổi tối đa ${maxRedeemPoints.toLocaleString('vi-VN')} điểm (cấu hình Tích điểm & ưu đãi).`
+  } else if (redeemPointsValue > 0 && redemptionConfigReady && redeemMoney < minRedeemMoney) {
     redeemValidationMessage = `Giá trị đổi thấp hơn mức tối thiểu ${formatMoney(minRedeemMoney)}.`
   } else if (redeemPointsValue > 0 && redemptionConfigReady && redeemMoney > maxRedeemMoney) {
     redeemValidationMessage = `Giá trị đổi vượt mức tối đa ${formatMoney(maxRedeemMoney)}.`
@@ -650,13 +654,36 @@ export default function TreatmentCustomers() {
   const canSubmitRedeem = promoPointsQuery.isSuccess && isPointsEnabled && redemptionConfigReady
     && redeemPointsValue > 0 && Number.isInteger(redeemPointsValue)
     && redeemPointsValue <= redeemBalance && redeemDebt > 0
+    && (maxRedeemPoints <= 0 || redeemPointsValue <= maxRedeemPoints)
     && redeemMoney >= minRedeemMoney && redeemMoney <= maxRedeemMoney
+
+  // Giảm thủ công (không qua voucher): % hoặc số tiền
+  const [manualForm] = Form.useForm()
+  const [manualMode, setManualMode] = useState<'percent' | 'amount'>('percent')
+  const manualDiscountMutation = usePostTreatmentCustomersIdManualDiscount()
+  const submitManualDiscount = async () => {
+    const target = promoRow
+    if (!target) return
+    try {
+      const values = await manualForm.validateFields()
+      await manualDiscountMutation.mutateAsync({ id: target.id, data: { mode: manualMode, value: Number(values.value) } })
+      message.success(manualMode === 'percent' ? `Đã giảm ${values.value}% vào gói` : `Đã giảm ${formatMoney(values.value)} vào gói`)
+      const fresh = pickData<CustomerTreatment>(await getTreatmentCustomersId(target.id))
+      if (fresh) setPromoRow(fresh)
+      manualForm.resetFields()
+      refresh()
+      await refreshSelectedDetail()
+    } catch (err) {
+      message.error(errorMessage(err))
+    }
+  }
 
   const openPromo = (row: CustomerTreatment) => {
     setPromoRow(row)
     setPromoOpen(true)
     promoForm.resetFields()
     redeemForm.resetFields()
+    manualForm.resetFields()
   }
 
   const submitApplyDiscount = async () => {
@@ -1072,6 +1099,11 @@ export default function TreatmentCustomers() {
         discountForm={promoForm}
         discountSubmitting={applyDiscountMutation.isPending}
         onApplyDiscount={() => void submitApplyDiscount()}
+        manualForm={manualForm}
+        manualMode={manualMode}
+        onManualModeChange={setManualMode}
+        manualSubmitting={manualDiscountMutation.isPending}
+        onManualDiscount={() => void submitManualDiscount()}
         redeemForm={redeemForm}
         pointsLoading={promoPointsQuery.isLoading}
         pointsError={promoPointsQuery.isError}
@@ -1087,6 +1119,7 @@ export default function TreatmentCustomers() {
         maxRedeemMoney={maxRedeemMoney}
         minRedeemPercent={minRedeemPercent}
         maxRedeemPercent={maxRedeemPercent}
+        maxRedeemPoints={maxRedeemPoints > 0 ? maxRedeemPoints : null}
         redeemDebt={redeemDebt}
         redeemValidationMessage={redeemValidationMessage}
         canSubmitRedeem={canSubmitRedeem}

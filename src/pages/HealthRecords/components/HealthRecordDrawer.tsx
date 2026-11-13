@@ -1,4 +1,4 @@
-import { Alert, Button, Card, Descriptions, Drawer, Empty, Space, Tag, Typography } from 'antd'
+import { Alert, Button, Card, Descriptions, Drawer, Empty, Space, Tag, Typography, Modal } from 'antd'
 import {
   CalendarOutlined,
   FileTextOutlined,
@@ -47,12 +47,12 @@ export default function HealthRecordDrawer({
   detailAppointments,
 }: HealthRecordDrawerProps) {
   return (
-    <Drawer
+    <Modal
       title={detail ? `${detail.full_name} — ${detail.customer_code}` : 'Hồ sơ sức khỏe'}
       width={560}
       open={!!detail}
-      onClose={onClose}
-      extra={detail && <Can I="UPDATE" a="CUSTOMER"><Button type="primary" icon={<PlusOutlined />} onClick={() => onOpenRecordForm(detail)}>Tạo phiếu khám</Button></Can>}
+      onCancel={onClose}
+      footer = {detail && <Can I="UPDATE" a="CUSTOMER"><Button type="primary" icon={<PlusOutlined />} onClick={() => onOpenRecordForm(detail)}>Tạo phiếu khám</Button></Can>}
     >
       {detail && (() => {
         const current = currentHealth(detail, skinTypes)
@@ -177,7 +177,7 @@ export default function HealthRecordDrawer({
           </Space>
         )
       })()}
-    </Drawer>
+    </Modal>
   )
 }
 
