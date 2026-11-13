@@ -52,9 +52,34 @@ export default function Staffs() {
   const urlMap = useFileUrlMap()
   const currentUser = useProfileStore((state) => state.profile)
   const isPlatformAdmin = !!currentUser?.is_admin
+  const isSuperAdmin = !!currentUser?.is_super_admin
+  const currentUserRoleNames = currentUser?.roles ?? []
+  const currentUserRoleRows = (currentUser?.user_roles ?? []) as { role?: { code?: string | null } | null }[]
+  const isBranchAdmin = !isPlatformAdmin && (
+    currentUserRoleNames.some((role) => role.trim().toLowerCase() === 'admin') ||
+    currentUserRoleRows.some(({ role }) => isAdminRole(role?.code))
+  )
+  const currentBranchId = typeof currentUser?.branch_id === 'string' ? currentUser.branch_id : undefined
   const canReadStaffProfile = isPlatformAdmin || ability.can('READ', 'STAFF_PROFILE')
   const canUpdateStaffProfile = isPlatformAdmin || ability.can('UPDATE', 'STAFF_PROFILE')
-  const canCreateStaff = isPlatformAdmin || ability.can('CREATE', 'STAFF_PROFILE')
+  const canCreateStaff = isSuperAdmin
+  const isGlobalAdminRow = (row: StaffRow) => Boolean(
+    row.is_admin || (!row.branch_id && row.user_roles?.some(({ role }) => isAdminRole(role?.code))),
+  )
+  const isHighestAdminRow = (row: StaffRow) => Boolean(
+    row.is_super_admin || (!row.branch_id && row.user_roles?.some(({ role }) => isAdminRole(role?.code))),
+  )
+  const canManageStaffRow = (row: StaffRow) => {
+    const targetIsAdminRole = row.user_roles?.some(({ role }) => isAdminRole(role?.code)) ?? false
+    const targetIsGlobalAdmin = isGlobalAdminRow(row)
+    const targetIsHighestAdmin = isHighestAdminRow(row)
+    if (isSuperAdmin) return !targetIsHighestAdmin || row.id === currentUser?.id
+    if (isPlatformAdmin) return !targetIsHighestAdmin && !targetIsGlobalAdmin && !targetIsAdminRole
+    return Boolean(
+      isBranchAdmin && currentBranchId && row.branch_id === currentBranchId &&
+      !row.is_admin && !row.is_super_admin && !targetIsAdminRole,
+    )
+  }
   const [page, setPage] = useState(1)
   const [limit] = useState(10)
   const [searchInput, setSearchInput] = useState('')
@@ -70,7 +95,7 @@ export default function Staffs() {
   const [form] = Form.useForm()
   const [filterForm] = Form.useForm()
   const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
-  const selectedRoleId = Form.useWatch('role_id', form)
+  const selectedBranchId = Form.useWatch('branch_id', form)
 
   const usersQuery = useGetUsers({
     currentPage: page,
@@ -109,7 +134,7 @@ export default function Staffs() {
     query: { enabled: profileOpen && !!profileUser && canReadStaffProfile },
   })
   const staffServicesQuery = useGetStaffProfilesUserIdServices(servicesUser?.id ?? 'none', {
-    query: { enabled: servicesOpen && !!servicesUser && canUpdateStaffProfile },
+    query: { enabled: servicesOpen && !!servicesUser && canUpdateStaffProfile && canManageStaffRow(servicesUser) },
   })
   const profileDetails = pickData<StaffProfileRow>(profileDetailQuery.data)
   const upsertProfileMutation = usePutStaffProfilesUserId()
@@ -146,11 +171,16 @@ export default function Staffs() {
     | undefined)?.rows ?? []
   const roles = roleRows.map((role) => ({ id: role.id, role_name: role.role_name ?? role.name ?? role.id, code: role.code ?? null }))
   const branches = (pickData<Branch[]>(branchesQuery.data) ?? []) as Branch[]
+  const adminRoleId = roles.find((role) => isAdminRole(role.code))?.id
+
+  useEffect(() => {
+    if (!open || editing || selectedBranchId || !adminRoleId) return
+    if (form.getFieldValue('role_id') !== adminRoleId) form.setFieldValue('role_id', adminRoleId)
+  }, [open, editing, selectedBranchId, adminRoleId, form])
 
   const loading = usersQuery.isLoading
-  const selectedRole = roles.find((role) => role.id === selectedRoleId)
-  // Vai trò Admin làm việc toàn hệ thống, không bắt buộc cơ sở
-  const branchRequired = !selectedRoleId || !roles.length || !isAdminRole(selectedRole?.code)
+  const globalAdminSelected = !selectedBranchId
+  const branchRequired = !globalAdminSelected
   const activeFilterCount = [branchFilter, roleFilter, statusFilter].filter(Boolean).length + (search ? 1 : 0)
 
   // Gõ tìm kiếm có debounce 400ms, quay về trang 1.
@@ -202,7 +232,7 @@ export default function Staffs() {
   }
 
   const openModal = (s?: StaffRow) => {
-    if (s ? !isPlatformAdmin : !canCreateStaff) return
+    if (s ? !canManageStaffRow(s) : !canCreateStaff) return
     setEditing(s ?? null)
     form.setFieldsValue(
       s
@@ -220,14 +250,15 @@ export default function Staffs() {
           phone_number: '',
           password: '',
           role_id: undefined,
-          branch_id: branches.length === 1 ? branches[0].id : undefined,
+          // Bỏ trống cơ sở mặc định sẽ tạo quản trị viên toàn hệ thống.
+          branch_id: undefined,
         },
     )
     setOpen(true)
   }
 
   const submit = async () => {
-    if (editing ? !isPlatformAdmin : !canCreateStaff) return
+    if (editing ? !canManageStaffRow(editing) : !canCreateStaff) return
     const values = await form.validateFields()
     try {
       if (editing) {
@@ -236,18 +267,21 @@ export default function Staffs() {
           zalo_name: values.zalo_name,
           email: values.email,
           phone_number: values.phone_number,
-          branch_id: (values.branch_id || null) as PutUsersAdminIdBody['branch_id'],
-          role_id: values.role_id,
+          ...(isSuperAdmin && !editing.is_super_admin ? {
+            branch_id: (values.branch_id || null) as PutUsersAdminIdBody['branch_id'],
+            role_id: values.role_id,
+            is_admin: !values.branch_id,
+          } : {}),
           ...(values.password ? { password: values.password } : {}),
         }
         await updateMutation.mutateAsync({ id: editing.id, data: payload })
-        message.success(values.password ? 'Đã cập nhật chuyên viên và mật khẩu mới' : 'Đã cập nhật chuyên viên')
+        message.success(values.password ? 'Đã cập nhật tài khoản và mật khẩu mới' : 'Đã cập nhật tài khoản')
       } else {
         const payload: UserCreate = {
           email: values.email,
           phone_number: values.phone_number,
           password: values.password,
-          role_id: values.role_id,
+          role_id: values.role_id ?? adminRoleId,
           full_name: values.zalo_name,
           branch_id: values.branch_id || undefined,
         }
@@ -263,7 +297,7 @@ export default function Staffs() {
 
   /** LIFE-01 — khóa mềm: giữ hồ sơ/lịch, thu hồi phiên; báo số lịch hẹn tương lai cần xử lý. */
   const deactivate = async (row: StaffRow) => {
-    if (!isPlatformAdmin) return
+    if (!canManageStaffRow(row)) return
     try {
       const result = await deleteMutation.mutateAsync({ id: row.id })
       const futureCount = Number(pickData<{ future_appointments?: number }>(result)?.future_appointments ?? 0)
@@ -279,7 +313,7 @@ export default function Staffs() {
   }
 
   const restore = async (row: StaffRow) => {
-    if (!isPlatformAdmin) return
+    if (!canManageStaffRow(row)) return
     try {
       await updateMutation.mutateAsync({ id: row.id, data: { is_active: true } })
       message.success('Đã khôi phục tài khoản. Lịch tuần cũ có hiệu lực trở lại.')
@@ -297,7 +331,7 @@ export default function Staffs() {
   }
 
   const submitProfile = async () => {
-    if (!profileUser || !canUpdateStaffProfile) return
+    if (!profileUser || !canUpdateStaffProfile || !canManageStaffRow(profileUser)) return
     const values = await profileForm.validateFields()
     try {
       await upsertProfileMutation.mutateAsync({
@@ -321,7 +355,7 @@ export default function Staffs() {
   }
 
   const toggleInApp = async (row: StaffRow, showInApp: boolean) => {
-    if (!canUpdateStaffProfile) return
+    if (!canUpdateStaffProfile || !canManageStaffRow(row)) return
     try {
       await upsertProfileMutation.mutateAsync({ userId: row.id, data: { show_in_app: showInApp } })
       message.success(showInApp ? 'Đã hiện chuyên viên trên app' : 'Đã ẩn chuyên viên khỏi app')
@@ -332,14 +366,14 @@ export default function Staffs() {
   }
 
   const openServices = (row: StaffRow) => {
-    if (!canUpdateStaffProfile) return
+    if (!canUpdateStaffProfile || !canManageStaffRow(row)) return
     setServicesUser(row)
     setCheckedServiceIds([])
     setServicesOpen(true)
   }
 
   const submitServices = async () => {
-    if (!servicesUser || !canUpdateStaffProfile) return
+    if (!servicesUser || !canUpdateStaffProfile || !canManageStaffRow(servicesUser)) return
     try {
       await assignServicesMutation.mutateAsync({ userId: servicesUser.id, data: { service_ids: checkedServiceIds } })
       message.success('Đã cập nhật dịch vụ phụ trách')
@@ -443,7 +477,10 @@ export default function Staffs() {
             render: (_: unknown, s: StaffRow) => (
               <Space size={4} wrap>
                 <Tag color="purple">{s.user_roles?.[0]?.role?.role_name || 'Nhân viên'}</Tag>
-                {s.user_roles?.some(({ role }) => isAdminRole(role?.code)) && <Tag color="gold">Quản trị hệ thống</Tag>}
+                {isGlobalAdminRow(s) &&
+                  <Tag color="gold">Quản trị toàn hệ thống</Tag>}
+                {!s.is_admin && s.branch_id && s.user_roles?.some(({ role }) => isAdminRole(role?.code)) &&
+                  <Tag color="blue">Admin cơ sở</Tag>}
               </Space>
             ),
           },
@@ -455,8 +492,8 @@ export default function Staffs() {
             render: (branchId: string | null | undefined, s: StaffRow) => {
               if (branchId) return branches.find((branch) => branch.id === branchId)?.name || 'Cơ sở'
               const hasTechnicianRole = s.user_roles?.some(({ role }) => isTechnicianRole(role?.code))
-              const hasAdminRoleTag = s.user_roles?.some(({ role }) => isAdminRole(role?.code))
-              return hasAdminRoleTag && !hasTechnicianRole ? 'Toàn hệ thống' : <Tag color="orange">Chưa gán</Tag>
+              const isGlobalAdmin = isGlobalAdminRow(s)
+              return isGlobalAdmin && !hasTechnicianRole ? 'Toàn hệ thống' : <Tag color="orange">Chưa gán</Tag>
             },
           },
           {
@@ -494,7 +531,7 @@ export default function Staffs() {
             width: 100,
             render: (_: unknown, s: StaffRow) => {
               const profile = profileByUser.get(s.id)
-              if (!canUpdateStaffProfile) {
+              if (!canUpdateStaffProfile || !canManageStaffRow(s)) {
                 return (
                   <Tag color={profile?.show_in_app === false ? 'default' : 'green'}>
                     {profile?.show_in_app === false ? 'Đã ẩn' : 'Đang hiện'}
@@ -517,11 +554,12 @@ export default function Staffs() {
             width: 90,
             fixed: 'right' as const,
             render: (_: unknown, s: StaffRow) => {
+              const canManageRow = canManageStaffRow(s)
               const actionItems = [
-                ...(isPlatformAdmin ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []),
-                ...(canReadStaffProfile ? [{ key: 'profile', icon: <ProfileOutlined />, label: canUpdateStaffProfile ? 'Hồ sơ' : 'Xem hồ sơ' }] : []),
-                ...(canUpdateStaffProfile ? [{ key: 'services', icon: <AppstoreOutlined />, label: 'Dịch vụ' }] : []),
-                ...(isPlatformAdmin
+                ...(canManageRow ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []),
+                ...(canReadStaffProfile ? [{ key: 'profile', icon: <ProfileOutlined />, label: canUpdateStaffProfile && canManageRow ? 'Hồ sơ' : 'Xem hồ sơ' }] : []),
+                ...(canUpdateStaffProfile && canManageRow ? [{ key: 'services', icon: <AppstoreOutlined />, label: 'Dịch vụ' }] : []),
+                ...(canManageRow && !isHighestAdminRow(s)
                   ? s.is_active === false
                     ? [{ key: 'restore', icon: <UndoOutlined />, label: 'Khôi phục' }]
                     : [{ key: 'deactivate', icon: <LockOutlined />, danger: true, label: 'Khóa' }]
@@ -569,6 +607,9 @@ export default function Staffs() {
         branches={branches}
         roles={roles}
         branchRequired={branchRequired}
+        globalAdminSelected={globalAdminSelected}
+        globalAdminAlreadyExists={isSuperAdmin && !editing}
+        canEditAccess={isSuperAdmin && !editing?.is_super_admin}
         onCancel={() => setOpen(false)}
         onOk={submit}
       />
@@ -577,7 +618,7 @@ export default function Staffs() {
         form={profileForm}
         open={profileOpen}
         profileUser={profileUser}
-        canUpdate={canUpdateStaffProfile}
+        canUpdate={canUpdateStaffProfile && !!profileUser && canManageStaffRow(profileUser)}
         profileDetails={profileDetails}
         saving={upsertProfileMutation.isPending}
         onCancel={() => setProfileOpen(false)}

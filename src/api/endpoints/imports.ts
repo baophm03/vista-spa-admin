@@ -44,7 +44,7 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * **IMP-01** — POST /imports/{kind}. Multipart file (.csv/.xlsx) or JSON `rows`. `dry_run=true` (default) only validates and returns a per-row error report without writing to the DB. Requires the `import.run` permission.
+ * **IMP-01** — POST /imports/{kind}. Upload a CSV/XLSX file with column mapping. `dry_run=true` (default) only validates and returns a per-row error report without writing to the DB. Requires the `import.run` permission.
  * @summary Import legacy customer data (customer-profiles / customer-treatments)
  */
 export const postImportsKind = (

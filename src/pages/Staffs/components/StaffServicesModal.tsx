@@ -41,7 +41,7 @@ export default function StaffServicesModal({
         <Checkbox.Group
           value={checkedServiceIds}
           onChange={(values) => onCheckedChange(values as string[])}
-          className="mt-2 grid max-h-[50vh] gap-2 overflow-y-auto"
+          className="staff-services-grid mt-2 grid max-h-[50vh] grid-cols-1 gap-x-6 gap-y-3 overflow-y-auto sm:grid-cols-2"
           options={serviceRows.map((service) => ({ value: service.id, label: service.title || service.id }))}
         />
       )}

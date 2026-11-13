@@ -14,4 +14,5 @@ export type PutUsersAdminIdBody = {
   zalo_name?: string;
   branch_id?: string;
   is_active?: boolean;
+  is_admin?: boolean;
 };
