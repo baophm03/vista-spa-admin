@@ -39,8 +39,8 @@ import { useCustomerProfileAccess } from '@/utils/customerProfileAccess'
 
 const CustomerQrScannerModal = lazy(() => import('@/components/CustomerQrScannerModal'))
 import CustomerAvatar from './components/CustomerAvatar'
-import CustomerDetailDrawer from './components/CustomerDetailDrawer'
 import CustomerProfileFormModal from './components/CustomerProfileFormModal'
+import CustomerDetailModal from './components/CustomerDetailModal'
 
 function escapeHtml(value: string) {
   return value.replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char] ?? char)
@@ -597,7 +597,7 @@ export default function Users() {
       />
       <ListPagination page={page} limit={limit} total={total} onChange={setPage} noun="khách hàng" />
 
-      <CustomerDetailDrawer
+      <CustomerDetailModal
         selected={selected}
         summary={summary}
         qrUrl={qrUrl}

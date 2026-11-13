@@ -1,11 +1,11 @@
-import { Button, Drawer, Popconfirm, Space, Typography } from 'antd'
+import { Button, Popconfirm, Space, Typography, Modal } from 'antd'
 import { DownloadOutlined, HistoryOutlined, LinkOutlined, PrinterOutlined } from '@ant-design/icons'
 import CustomerProfileDetailsTabs from '@/components/CustomerProfileDetailsTabs'
 import type { CustomerProfileRow, CustomerProfileSummary } from '@/components/CustomerProfileOverviewTab'
 import type { CustomFieldDefWithOptions } from '@/components/CustomerProfileCustomFields'
 import CustomerAvatar from './CustomerAvatar'
 
-interface CustomerDetailDrawerProps {
+interface CustomerDetailModalProps {
   selected: CustomerProfileRow | null
   summary: CustomerProfileSummary | null
   qrUrl: string
@@ -26,7 +26,7 @@ interface CustomerDetailDrawerProps {
   branchName: (id?: string) => string
 }
 
-export default function CustomerDetailDrawer({
+export default function CustomerDetailModal({
   selected,
   summary,
   qrUrl,
@@ -45,13 +45,17 @@ export default function CustomerDetailDrawer({
   onHistory,
   onMembershipUpdated,
   branchName,
-}: CustomerDetailDrawerProps) {
+}: CustomerDetailModalProps) {
   return (
-    <Drawer
+    <Modal
       title={selected ? `${selected.full_name} — ${selected.customer_code}` : ''}
       width="min(980px, calc(100vw - 24px))"
       open={!!selected}
-      onClose={onClose}
+      onCancel={onClose}
+      footer = {null}
+      centered
+      destroyOnClose
+      styles = {{body: { maxHeight: 'calc(100vh - 160px)', overflowY: 'auto' }}}
     >
       {selected && (
         <div>
@@ -118,6 +122,6 @@ export default function CustomerDetailDrawer({
           />
         </div>
       )}
-    </Drawer>
+    </Modal>
   )
 }
