@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import dayjs, { type Dayjs } from 'dayjs'
-import { Alert, Button, DatePicker, Form, Input, Modal, Popconfirm, Select, Space, Table, Tag, Tooltip, Typography, message } from 'antd'
-import { DeleteOutlined, EditOutlined, LeftOutlined, PlusOutlined, RightOutlined } from '@ant-design/icons'
+import { Alert, Button, Form, Input, Modal, Popconfirm, Select, Space, Table, Tag, Tooltip, Typography, message } from 'antd'
+import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons'
 import { errorMessage, pickData } from '@/api/helpers'
+import PeriodNavigator from '@/components/base/PeriodNavigator'
 import TableEmpty from '@/components/base/TableEmpty'
 import ToolbarRow from '@/components/base/ToolbarRow'
 import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
@@ -61,6 +62,10 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
   const isTechSelf = access.isTechnician && !access.isAdmin
   // KTV chỉ được tự đăng ký/sửa/xóa ca của TUẦN KẾ TIẾP — mở mặc định ở tuần kế tiếp
   const nextWeekStart = mondayOf(dayjs()).add(1, 'week')
+  // Hạn đăng ký: 23:59 Chủ nhật của tuần hiện tại — sau mốc này KTV không tự sửa lịch tuần kế nữa
+  const registrationDeadline = mondayOf(dayjs()).add(6, 'day').endOf('day')
+  const registrationOpen = dayjs().isBefore(registrationDeadline)
+  const deadlineText = registrationDeadline.format('HH:mm [ngày] DD/MM/YYYY')
   const [weekStart, setWeekStart] = useState<Dayjs>(() => (isTechSelf ? nextWeekStart : mondayOf(dayjs())))
   const [branchFilter, setBranchFilter] = useState<string>()
   const [staffFilter, setStaffFilter] = useState<string>()
@@ -302,8 +307,11 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
 
   const renderShiftTags = (shifts: DateCellShift[], compact: boolean) => {
     const canEditCell = (row: StaffScheduleDateWithStaff) =>
-      canManage || (isTechSelf && row.staff_id === access.currentUserId && viewingNextWeek)
-    const lockTooltip = 'Tuần đã bắt đầu — dùng tab Xin nghỉ hoặc liên hệ Admin'
+      canManage
+      || (isTechSelf && row.staff_id === access.currentUserId && viewingNextWeek && registrationOpen)
+    const lockTooltip = registrationOpen
+      ? 'Tuần đã bắt đầu — dùng tab Xin nghỉ hoặc liên hệ Admin'
+      : 'Đã hết hạn đăng ký (23:59 Chủ nhật tuần hiện tại) — liên hệ Admin để thay đổi lịch'
     return (
     <Space direction="vertical" size={4} style={{ display: 'flex' }}>
       {shifts.map((item) => {
@@ -323,9 +331,9 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
           {item.note && (
             <Typography.Text
               type="secondary"
-              style={{ display: 'block', fontSize: 11, lineHeight: 1.35, color: '#71005C', whiteSpace: 'normal', overflowWrap: 'anywhere', paddingLeft: 2 }}
+              style={{ display: 'block', fontSize: 11, lineHeight: 1.35, color: 'var(--brand-dark)', whiteSpace: 'normal', overflowWrap: 'anywhere', paddingLeft: 2 }}
             >
-              📝 {item.note}
+              {item.note}
             </Typography.Text>
           )}
         </Space>
@@ -345,7 +353,7 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
         title: (
           <div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
-              <span style={iso === today ? { color: '#71005C', fontWeight: 700 } : undefined}>
+              <span style={iso === today ? { color: 'var(--brand-dark)', fontWeight: 700 } : undefined}>
                 {WEEKDAY_LABELS[date.day()]} {date.format('DD/MM')}
               </span>
               {canManage && (
@@ -357,9 +365,9 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
                 <div
                   role={canManage ? 'button' : undefined}
                   onClick={() => canManage && openNoteForm(date, notesByDate.get(iso) ?? [])}
-                  style={{ fontSize: 11, lineHeight: 1.3, color: '#71005C', whiteSpace: 'normal', textAlign: 'center', cursor: canManage ? 'pointer' : 'default' }}
+                  style={{ fontSize: 11, lineHeight: 1.3, color: 'var(--brand-dark)', whiteSpace: 'normal', textAlign: 'center', cursor: canManage ? 'pointer' : 'default' }}
                 >
-                  📝 {noteText.length > 46 ? `${noteText.slice(0, 46)}…` : noteText}
+                  {noteText.length > 46 ? `${noteText.slice(0, 46)}…` : noteText}
                 </div>
               </Tooltip>
             )}
@@ -373,19 +381,24 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
 
   return <div>
     {isTechSelf && <ToolbarRow>
-      <Space.Compact>
-        <Button icon={<LeftOutlined />} aria-label="Tuần trước" onClick={() => setWeekStart((week) => week.subtract(1, 'week'))} />
-        <DatePicker.RangePicker
-          allowClear={false}
-          format="DD/MM"
-          style={{ width: 170 }}
-          value={[weekStart, weekStart.add(6, 'day')]}
-          onChange={(value) => { const start = value?.[0]; if (start) setWeekStart(mondayOf(start)) }}
-        />
-        <Button icon={<RightOutlined />} aria-label="Tuần sau" onClick={() => setWeekStart((week) => week.add(1, 'week'))} />
-      </Space.Compact>
-      <Button type="primary" icon={<PlusOutlined />} onClick={() => openForm()}>Đăng ký ca</Button>
+      <PeriodNavigator
+        value={[weekStart, weekStart.add(6, 'day')]}
+        onChange={(value) => { const start = value?.[0]; if (start) setWeekStart(mondayOf(start)) }}
+        onPrev={() => setWeekStart((week) => week.subtract(1, 'week'))}
+        onNext={() => setWeekStart((week) => week.add(1, 'week'))}
+        prevLabel="Tuần trước"
+        nextLabel="Tuần sau"
+      />
+      <Button type="primary" icon={<PlusOutlined />} disabled={isTechSelf && !registrationOpen} onClick={() => openForm()}>Đăng ký ca</Button>
     </ToolbarRow>}
+    {isTechSelf && viewingNextWeek && !registrationOpen && (
+      <Alert
+        type="warning"
+        showIcon
+        style={{ marginBottom: 12 }}
+        message={`Đã hết hạn đăng ký lịch tuần kế tiếp (hạn ${deadlineText}). Liên hệ Admin để thay đổi.`}
+      />
+    )}
     {isTechSelf && !viewingNextWeek && (
       <Alert
         type="info"
@@ -401,17 +414,14 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
         if (value && selectedStaff?.branch_id !== value) setStaffFilter(undefined)
       }} options={branches.map((branch) => ({ value: branch.id, label: branch.name }))} />
       <Select allowClear showSearch optionFilterProp="label" placeholder="Tất cả KTV" style={{ width: 220 }} value={staffFilter} onChange={setStaffFilter} options={staffForBranchFilter.map((person) => ({ value: person.id, label: staffLabel(person) }))} />
-      <Space.Compact>
-        <Button icon={<LeftOutlined />} aria-label="Tuần trước" onClick={() => setWeekStart((week) => week.subtract(1, 'week'))} />
-        <DatePicker.RangePicker
-          allowClear={false}
-          format="DD/MM"
-          style={{ width: 170 }}
-          value={[weekStart, weekStart.add(6, 'day')]}
-          onChange={(value) => { const start = value?.[0]; if (start) setWeekStart(mondayOf(start)) }}
-        />
-        <Button icon={<RightOutlined />} aria-label="Tuần sau" onClick={() => setWeekStart((week) => week.add(1, 'week'))} />
-      </Space.Compact>
+      <PeriodNavigator
+        value={[weekStart, weekStart.add(6, 'day')]}
+        onChange={(value) => { const start = value?.[0]; if (start) setWeekStart(mondayOf(start)) }}
+        onPrev={() => setWeekStart((week) => week.subtract(1, 'week'))}
+        onNext={() => setWeekStart((week) => week.add(1, 'week'))}
+        prevLabel="Tuần trước"
+        nextLabel="Tuần sau"
+      />
       <Button type="primary" icon={<PlusOutlined />} onClick={() => openForm()}>Đăng ký theo ngày</Button>
     </ToolbarRow>}
     {!!error && <Alert type="error" showIcon message="Không tải được lịch theo ngày" description={error} action={<Button size="small" onClick={refreshShared}>Thử lại</Button>} style={{ marginBottom: 16 }} />}
@@ -430,7 +440,7 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
         message={<Space direction="vertical" size={2} style={{ display: 'flex' }}>
           {dateNotes.map((item, index) => (
             <span key={`${item.branch_id}-${item.note_date}-${index}`}>
-              📝 {WEEKDAY_LABELS[dayjs(item.note_date).day()]} {dayjs(item.note_date).format('DD/MM')}: {item.note}
+              {WEEKDAY_LABELS[dayjs(item.note_date).day()]} {dayjs(item.note_date).format('DD/MM')}: {item.note}
             </span>
           ))}
         </Space>}

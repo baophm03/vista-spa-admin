@@ -2,7 +2,7 @@ import { Button, DatePicker, Drawer, Form, Image, Input, InputNumber, Select, Sp
 import { EyeOutlined, UploadOutlined } from '@ant-design/icons'
 import type { FormInstance } from 'antd'
 import type { ContentCategory } from '@/api/models/contentCategory'
-import ContentRichTextEditor from '@/components/ContentRichTextEditor'
+import ContentRichTextEditor from './ContentRichTextEditor'
 import { resolveFileSrc, useFileUrlMap } from '@/hooks/useFileUrl'
 import { makePostSlug } from './constants'
 import type { ContentPostRow, PostFormValues } from './constants'

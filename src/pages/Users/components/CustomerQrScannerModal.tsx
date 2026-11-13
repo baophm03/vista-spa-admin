@@ -51,18 +51,6 @@ export default function CustomerQrScannerModal({ open, onClose, onToken }: Props
     }
   }, [open, scanning])
 
-  const submitToken = () => {
-    const value = token.trim()
-    if (!value) {
-      message.warning('Nhập hoặc dán token QR')
-      return
-    }
-    controlsRef.current?.stop()
-    controlsRef.current = null
-    setScanning(false)
-    onTokenRef.current(value)
-  }
-
   const close = () => {
     controlsRef.current?.stop()
     controlsRef.current = null
@@ -92,14 +80,6 @@ export default function CustomerQrScannerModal({ open, onClose, onToken }: Props
           </Button>
           {scanning && <Button onClick={() => { controlsRef.current?.stop(); controlsRef.current = null; setScanning(false) }}>Dừng camera</Button>}
         </Space>
-        <Input.Search
-          allowClear
-          value={token}
-          onChange={(event) => setToken(event.target.value)}
-          onSearch={submitToken}
-          placeholder="Nhập hoặc dán token QR"
-          enterButton={<><SearchOutlined /> Tra cứu</>}
-        />
       </Space>
     </Modal>
   )

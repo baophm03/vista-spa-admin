@@ -4,7 +4,6 @@ import { useSearchParams } from 'react-router-dom'
 import { Can, useAbility } from '@casl/react'
 import {
   Button,
-  DatePicker,
   Form,
   Input,
   Modal,
@@ -29,7 +28,7 @@ import {
 } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
-import ListFilterPopover from '@/components/base/ListFilterPopover'
+import PeriodNavigator from '@/components/base/PeriodNavigator'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
 import { normalizeCustomFieldValues } from '@/components/CustomFieldFormItems'
@@ -128,14 +127,6 @@ function AppointmentCalendarCard({ row, onClick }: { row: AppointmentRow; onClic
   )
 }
 
-const APPOINTMENT_COLUMNS = [
-  { value: 'customer', label: 'Khách hàng' },
-  { value: 'time', label: 'Thời gian' },
-  { value: 'source', label: 'Nguồn' },
-  { value: 'status', label: 'Trạng thái' },
-]
-const DEFAULT_APPOINTMENT_COLUMNS = APPOINTMENT_COLUMNS.map((column) => column.value)
-
 export default function Appointments() {
   const queryClient = useQueryClient()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -146,15 +137,12 @@ export default function Appointments() {
   // Mặc định mở ở dạng lịch
   const [displayMode, setDisplayMode] = useState<'calendar' | 'list'>('calendar')
   const [calendarView, setCalendarView] = useState<'day' | 'week'>('week')
-  const [calendarDate] = useState(() => dayjs())
+  const [calendarDate, setCalendarDate] = useState(() => dayjs())
   const [page, setPage] = useState(1)
   const [limit] = useState(10)
   const [filter, setFilter] = useState('all')
   const [dateFilter, setDateFilter] = useState<[string | null, string | null]>([null, null])
   const [branchFilter, setBranchFilter] = useState<string | undefined>()
-  const [visibleColumns, setVisibleColumns] = useState<string[]>(DEFAULT_APPOINTMENT_COLUMNS)
-  const [draftVisibleColumns, setDraftVisibleColumns] = useState<string[]>(DEFAULT_APPOINTMENT_COLUMNS)
-  const [filterOpen, setFilterOpen] = useState(false)
   const [open, setOpen] = useState(false)
   const [selectedAppointment, setSelectedAppointment] = useState<AppointmentRow | null>(null)
   const [customerSearchInput, setCustomerSearchInput] = useState('')
@@ -166,7 +154,6 @@ export default function Appointments() {
   const [slotsLoading, setSlotsLoading] = useState(false)
   const [form] = Form.useForm()
   const [quickCustomerForm] = Form.useForm()
-  const [filterForm] = Form.useForm()
   const appointmentCustomFields = useCustomFieldDefinitions('APPOINTMENT')
   const slotRequest = useRef(0)
   const previousSlotCriteria = useRef('')
@@ -493,38 +480,38 @@ export default function Appointments() {
     return !!scheduledAt && scheduledAt.format('YYYY-MM-DD') === dayjs().format('YYYY-MM-DD') && !scheduledAt.isAfter(dayjs())
   }
 
-  const activeFilterCount = [dateFilter.some(Boolean), branchFilter, filter !== 'all'].filter(Boolean).length
-
-  const openFilters = (nextOpen: boolean) => {
-    setFilterOpen(nextOpen)
-    if (!nextOpen) return
-    filterForm.setFieldsValue({
-      date_range: [dateFilter[0] ? dayjs(dateFilter[0]) : null, dateFilter[1] ? dayjs(dateFilter[1]) : null],
-      branch_id: branchFilter,
-      status: filter,
-    })
-    setDraftVisibleColumns(visibleColumns)
+  // Navigator kiểu /schedule: [<] [khoảng ngày] [>] — dùng chung cho cả chế độ Lịch và Danh sách
+  const navAnchor = displayMode === 'calendar'
+    ? [calendarStart, calendarEnd] as const
+    : (dateFilter[0] && dateFilter[1]
+      ? [dayjs(dateFilter[0]), dayjs(dateFilter[1])] as const
+      : [mondayOf(dayjs()), mondayOf(dayjs()).add(6, 'day')] as const)
+  const navStep = displayMode === 'calendar' && calendarView === 'day' ? 1 : 7
+  const navPrev = () => {
+    if (displayMode === 'calendar') setCalendarDate((date) => date.subtract(navStep, 'day'))
+    else {
+      const start = mondayOf(navAnchor[0].subtract(navStep, 'day'))
+      setDateFilter([start.format('YYYY-MM-DD'), start.add(6, 'day').format('YYYY-MM-DD')])
+      setPage(1)
+    }
   }
-
-  const applyFilters = (values: Record<string, unknown>) => {
-    const range = values.date_range as [dayjs.Dayjs | null, dayjs.Dayjs | null] | undefined
-    setDateFilter([range?.[0] ? range[0].format('YYYY-MM-DD') : null, range?.[1] ? range[1].format('YYYY-MM-DD') : null])
-    setBranchFilter(typeof values.branch_id === 'string' && values.branch_id ? values.branch_id : undefined)
-    setFilter(typeof values.status === 'string' && values.status ? values.status : 'all')
-    setVisibleColumns(draftVisibleColumns)
-    setPage(1)
-    setFilterOpen(false)
+  const navNext = () => {
+    if (displayMode === 'calendar') setCalendarDate((date) => date.add(navStep, 'day'))
+    else {
+      const start = mondayOf(navAnchor[0].add(navStep, 'day'))
+      setDateFilter([start.format('YYYY-MM-DD'), start.add(6, 'day').format('YYYY-MM-DD')])
+      setPage(1)
+    }
   }
-
-  const clearFilters = () => {
-    const emptyRange: [string | null, string | null] = [null, null]
-    filterForm.resetFields()
-    setDateFilter(emptyRange)
-    setBranchFilter(undefined)
-    setFilter('all')
-    setVisibleColumns(DEFAULT_APPOINTMENT_COLUMNS)
-    setDraftVisibleColumns(DEFAULT_APPOINTMENT_COLUMNS)
-    setPage(1)
+  const navApply = (value: [dayjs.Dayjs | null, dayjs.Dayjs | null] | null) => {
+    const start = value?.[0]
+    if (!start) return
+    if (displayMode === 'calendar') setCalendarDate(calendarView === 'week' ? mondayOf(start) : start)
+    else {
+      const end = value?.[1] ?? start
+      setDateFilter([start.format('YYYY-MM-DD'), end.format('YYYY-MM-DD')])
+      setPage(1)
+    }
   }
 
   return (
@@ -542,6 +529,12 @@ export default function Appointments() {
                 />
               </>
             )}
+            <PeriodNavigator
+              value={[navAnchor[0], navAnchor[1]]}
+              onChange={navApply}
+              onPrev={navPrev}
+              onNext={navNext}
+            />
             <Segmented
               value={displayMode}
               options={[
@@ -550,29 +543,21 @@ export default function Appointments() {
               ]}
               onChange={(value) => setDisplayMode(value as 'calendar' | 'list')}
             />
-            <ListFilterPopover
-              open={filterOpen}
-              onOpenChange={openFilters}
-              activeFilterCount={activeFilterCount}
-              form={filterForm}
-              onApply={applyFilters}
-              onClear={clearFilters}
-              columnOptions={APPOINTMENT_COLUMNS}
-              draftVisibleColumns={draftVisibleColumns}
-              onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as string[])}
-              filterItems={(
-                <>
-                  <Form.Item name="date_range" label="Khoảng ngày" className="mb-2.5!">
-                    <DatePicker.RangePicker allowEmpty={[true, true]} placeholder={['Từ ngày', 'Đến ngày']} className="w-full!" />
-                  </Form.Item>
-                  <Form.Item name="branch_id" label="Cơ sở" className="mb-2.5!">
-                    <Select allowClear placeholder="Tất cả cơ sở" options={branches.map((branch) => ({ value: branch.id, label: branch.name }))} />
-                  </Form.Item>
-                  <Form.Item name="status" label="Trạng thái" className="mb-0!">
-                    <Select options={FILTERS} />
-                  </Form.Item>
-                </>
-              )}
+            <Select
+              allowClear
+              showSearch
+              optionFilterProp="label"
+              placeholder="Tất cả cơ sở"
+              style={{ width: 180 }}
+              value={branchFilter}
+              onChange={(value) => { setBranchFilter(value); setPage(1) }}
+              options={branches.map((branch) => ({ value: branch.id, label: branch.name }))}
+            />
+            <Select
+              style={{ width: 160 }}
+              value={filter}
+              onChange={(value) => { setFilter(value); setPage(1) }}
+              options={FILTERS}
             />
           </>
         }
@@ -705,7 +690,7 @@ export default function Appointments() {
                 )
               },
             },
-          ] satisfies TableColumnsType<AppointmentRow>).filter((column) => column.key === 'actions' || visibleColumns.includes(String(column.key)))}
+          ] satisfies TableColumnsType<AppointmentRow>)}
         />
       </>}
       {displayMode !== 'calendar' && <ListPagination page={page} limit={limit} total={total} onChange={setPage} noun="lịch hẹn" />}

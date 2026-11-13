@@ -1,6 +1,6 @@
 import dayjs from 'dayjs'
 import type { CustomerHealthRecord } from '@/api/models/customerHealthRecord'
-import type { CustomerProfileRow } from '@/components/CustomerProfileOverviewTab'
+import type { CustomerProfileRow } from '@/pages/Users/components/CustomerProfileOverviewTab'
 import type { Appointment } from '@/api/models/appointment'
 
 export const labelStyle = { fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#8A8D93', fontWeight: 600 } as const

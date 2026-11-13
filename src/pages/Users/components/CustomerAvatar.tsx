@@ -1,6 +1,6 @@
 import { Avatar } from 'antd'
 import { UserOutlined } from '@ant-design/icons'
-import type { CustomerProfileRow } from '@/components/CustomerProfileOverviewTab'
+import type { CustomerProfileRow } from './CustomerProfileOverviewTab'
 
 export default function CustomerAvatar({ profile, size = 32 }: { profile: CustomerProfileRow; size?: number }) {
   const initial = profile.full_name?.trim().charAt(0).toUpperCase()

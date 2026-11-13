@@ -7,7 +7,6 @@ export interface PackageTypeRow {
   id: string
   code: string
   name: string
-  default_quota_type: QuotaType
   has_warranty?: boolean
   allow_unlimited?: boolean
   sort_order?: number
@@ -21,20 +20,36 @@ export interface TreatmentPackageRow extends TreatmentPackage {
 
 export type PackageColumnKey = 'name' | 'branch' | 'type' | 'quota' | 'services' | 'price' | 'validity' | 'bonus' | 'status'
 export type PackageFiltersForm = { package_type_id?: string; branch_id?: string; is_active?: 'true' | 'false' }
-export type PackageTypeForm = {
-  code: string
-  name: string
-  default_quota_type: QuotaType
-  has_warranty: boolean
-  allow_unlimited: boolean
-  sort_order: number
-  is_active: boolean
-}
 
 export const QUOTA_LABEL: Record<QuotaType, string> = {
   SESSIONS: 'Theo số buổi',
   VALUE: 'Theo định mức tiền',
   UNLIMITED: 'Trọn gói',
+}
+
+/**
+ * 4 loại gói cố định (migration 084/086) — không cho phép thêm loại mới trên UI:
+ * - SINGLE_SESSION: dịch vụ lẻ, số buổi cố định 1
+ * - FIXED_PACKAGE: theo số buổi, nhập số buổi mong muốn (>= 2)
+ * - VALUE_QUOTA: theo định mức tiền, không giới hạn số buổi — mỗi buổi tham gia trừ giá trị buổi
+ *   vào định mức, hết định mức gói kết thúc
+ * - UNLIMITED_PACKAGE: trọn đời, không giới hạn số buổi
+ */
+export const SINGLE_SESSION_TYPE_CODE = 'SINGLE_SESSION'
+export const FIXED_PACKAGE_TYPE_CODE = 'FIXED_PACKAGE'
+export const VALUE_QUOTA_TYPE_CODE = 'VALUE_QUOTA'
+export const UNLIMITED_PACKAGE_TYPE_CODE = 'UNLIMITED_PACKAGE'
+export const FIXED_PACKAGE_TYPE_CODES = [
+  SINGLE_SESSION_TYPE_CODE,
+  FIXED_PACKAGE_TYPE_CODE,
+  VALUE_QUOTA_TYPE_CODE,
+  UNLIMITED_PACKAGE_TYPE_CODE,
+]
+export const FIXED_PACKAGE_TYPE_LABEL: Record<string, string> = {
+  [SINGLE_SESSION_TYPE_CODE]: 'Dịch vụ lẻ',
+  [FIXED_PACKAGE_TYPE_CODE]: 'Theo số buổi',
+  [VALUE_QUOTA_TYPE_CODE]: 'Theo định mức tiền',
+  [UNLIMITED_PACKAGE_TYPE_CODE]: 'Trọn đời',
 }
 
 /**
@@ -45,7 +60,7 @@ export const QUOTA_LABEL: Record<QuotaType, string> = {
  * - Unlimited: vô hạn số buổi (quota UNLIMITED)
  */
 export function saleModeLabel(row: Pick<TreatmentPackage, 'quota_type' | 'total_sessions'>): string {
-  if (row.quota_type === 'VALUE') return 'Theo giá tiền'
+  if (row.quota_type === 'VALUE') return 'Theo định mức tiền'
   if (row.quota_type === 'UNLIMITED') return 'Unlimited'
   return Number(row.total_sessions) === 1 ? 'Dịch vụ lẻ' : 'Theo buổi'
 }
