@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Alert, Button, Select, Space, Table, Tag, Typography, message } from 'antd'
+import { Alert, Button, Select, Space, Table, Tag, Typography, message, Spin, Empty } from 'antd'
 import type { TableColumnsType } from 'antd'
 import { CheckOutlined, ProfileOutlined, PlayCircleOutlined } from '@ant-design/icons'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -12,6 +12,7 @@ import { usePutSessionsIdDone, usePutSessionsIdStart } from '@/api/endpoints/tre
 import type { TreatmentSession } from '@/api/models/treatmentSession'
 import ListPagination from '@/components/base/ListPagination'
 import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
+import { SessionPackageCard, groupRows } from './component/sessionCard'
 
 type SessionRow = TreatmentSession & {
   appointment?: { appt_date?: string; start_time?: string } | null
@@ -35,7 +36,7 @@ type ServiceRow = {
   staff?: { zalo_name?: string } | null
 }
 
-type MergedRow = ({ kind: 'treatment' } & SessionRow) | ServiceRow
+export type MergedRow = ({ kind: 'treatment' } & SessionRow) | ServiceRow
 
 type SessionsResponse = {
   responseData?: SessionRow[] | { rows?: SessionRow[] }
@@ -51,7 +52,7 @@ const STATUS_OPTIONS = [
   { value: 'completed', label: 'Hoàn tất' },
 ]
 
-const STATUS_META: Record<string, { label: string; color: string }> = {
+export const STATUS_META: Record<string, { label: string; color: string }> = {
   scheduled: { label: 'Chưa làm', color: 'default' },
   in_progress: { label: 'Đang làm', color: 'processing' },
   done: { label: 'Đã làm', color: 'orange' },
@@ -65,14 +66,18 @@ function serviceStatus(row: ServiceRow): string {
   return 'scheduled'
 }
 
-function rowTime(row: MergedRow): string | null {
+export function rowStatus(row : MergedRow): string {
+  return row.kind === 'service' ? serviceStatus(row) : row.status || ''
+}
+
+export function rowTime(row: MergedRow): string | null {
   if (row.kind === 'service') return row.cs_date ? `${String(row.cs_date).slice(0, 10)}T${row.start_time?.slice(0, 5) || '00:00'}` : null
   const appointment = row.appointment
   if (appointment?.appt_date) return appointment.start_time ? `${appointment.appt_date}T${appointment.start_time}` : appointment.appt_date
   return row.scheduled_at || null
 }
 
-function rowCustomer(row: MergedRow) {
+export function rowCustomer(row: MergedRow) {
   if (row.kind === 'service') return row.customer_profile ?? null
   return row.customer_treatment?.customer_profile ?? null
 }
@@ -132,6 +137,7 @@ export default function MySessions() {
   const listError = sessionsQuery.isError ? sessionsQuery.error : standaloneQuery.isError ? standaloneQuery.error : null
   const total = rows.length
   const pageRows = rows.slice((page - 1) * 10, page * 10)
+  const groups = useMemo(()=> groupRows(pageRows), [pageRows])
 
   const refresh = async () => {
     await queryClient.invalidateQueries({ queryKey: ['my-sessions'] })
@@ -183,64 +189,64 @@ export default function MySessions() {
         : <Typography.Text type="secondary">—</Typography.Text>
   }
 
-  const columns: TableColumnsType<MergedRow> = [
-    {
-      title: 'Buổi',
-      key: 'label',
-      width: 110,
-      render: (_value, row) => {
-        if (row.kind === 'service') return <strong>Dịch vụ lẻ</strong>
-        return <strong>{row.is_warranty ? 'Bảo hành' : `Buổi ${row.session_no}`}</strong>
-      },
-    },
-    {
-      title: 'Khách hàng',
-      key: 'customer',
-      render: (_value, row) => {
-        const customer = rowCustomer(row)
-        return <Space direction="vertical" size={0}>
-          <span>{customer?.full_name || 'Khách hàng'}</span>
-          <Typography.Text type="secondary" style={{ fontSize: 12 }}>{customer?.customer_code || customer?.phone || '—'}</Typography.Text>
-        </Space>
-      },
-    },
-    {
-      title: 'Nội dung',
-      key: 'content',
-      render: (_value, row) => row.kind === 'service' ? row.service?.title || '—' : row.customer_treatment?.package?.name || '—',
-    },
-    {
-      title: 'KTV',
-      key: 'staff',
-      render: (_value, row) => ('zalo_name' in (row.staff ?? {}) ? row.staff?.zalo_name : undefined) || 'Chưa gán',
-    },
-    {
-      title: 'Lịch hẹn',
-      key: 'scheduled_at',
-      render: (_value, row) => {
-        const time = rowTime(row)
-        if (!time) return 'Chưa xếp lịch'
-        const hasTime = time.includes('T') && !time.endsWith('T00:00')
-        return dayjs(time).format(hasTime ? 'DD/MM/YYYY HH:mm' : 'DD/MM/YYYY')
-      },
-    },
-    {
-      title: 'Trạng thái',
-      key: 'status',
-      width: 130,
-      render: (_value, row) => {
-        const mapped = row.kind === 'service' ? serviceStatus(row) : row.status || ''
-        const statusInfo = STATUS_META[mapped] ?? { label: mapped || '—', color: 'default' }
-        return <Tag color={statusInfo.color}>{statusInfo.label}</Tag>
-      },
-    },
-    {
-      title: 'Thao tác', align: 'center' as const,
-      key: 'actions',
-      width: 150,
-      render: (_value, row) => actionCell(row),
-    },
-  ]
+  // const columns: TableColumnsType<MergedRow> = [
+  //   {
+  //     title: 'Buổi',
+  //     key: 'label',
+  //     width: 110,
+  //     render: (_value, row) => {
+  //       if (row.kind === 'service') return <strong>Dịch vụ lẻ</strong>
+  //       return <strong>{row.is_warranty ? 'Bảo hành' : `Buổi ${row.session_no}`}</strong>
+  //     },
+  //   },
+  //   {
+  //     title: 'Khách hàng',
+  //     key: 'customer',
+  //     render: (_value, row) => {
+  //       const customer = rowCustomer(row)
+  //       return <Space direction="vertical" size={0}>
+  //         <span>{customer?.full_name || 'Khách hàng'}</span>
+  //         <Typography.Text type="secondary" style={{ fontSize: 12 }}>{customer?.customer_code || customer?.phone || '—'}</Typography.Text>
+  //       </Space>
+  //     },
+  //   },
+  //   {
+  //     title: 'Nội dung',
+  //     key: 'content',
+  //     render: (_value, row) => row.kind === 'service' ? row.service?.title || '—' : row.customer_treatment?.package?.name || '—',
+  //   },
+  //   {
+  //     title: 'KTV',
+  //     key: 'staff',
+  //     render: (_value, row) => ('zalo_name' in (row.staff ?? {}) ? row.staff?.zalo_name : undefined) || 'Chưa gán',
+  //   },
+  //   {
+  //     title: 'Lịch hẹn',
+  //     key: 'scheduled_at',
+  //     render: (_value, row) => {
+  //       const time = rowTime(row)
+  //       if (!time) return 'Chưa xếp lịch'
+  //       const hasTime = time.includes('T') && !time.endsWith('T00:00')
+  //       return dayjs(time).format(hasTime ? 'DD/MM/YYYY HH:mm' : 'DD/MM/YYYY')
+  //     },
+  //   },
+  //   {
+  //     title: 'Trạng thái',
+  //     key: 'status',
+  //     width: 130,
+  //     render: (_value, row) => {
+  //       const mapped = row.kind === 'service' ? serviceStatus(row) : row.status || ''
+  //       const statusInfo = STATUS_META[mapped] ?? { label: mapped || '—', color: 'default' }
+  //       return <Tag color={statusInfo.color}>{statusInfo.label}</Tag>
+  //     },
+  //   },
+  //   {
+  //     title: 'Thao tác', align: 'center' as const,
+  //     key: 'actions',
+  //     width: 150,
+  //     render: (_value, row) => actionCell(row),
+  //   },
+  // ]
 
   return <>
     <PageTitle
@@ -256,7 +262,7 @@ export default function MySessions() {
         </>
       }
     >
-      Buổi của tôi
+      Danh sách buổi trị liệu
     </PageTitle>
     {listError && <Alert
       style={{ marginBottom: 16 }}
@@ -266,16 +272,20 @@ export default function MySessions() {
       description={errorMessage(listError)}
       action={<Button size="small" onClick={() => { void sessionsQuery.refetch(); void standaloneQuery.refetch() }}>Thử lại</Button>}
     />}
-    <Table<MergedRow>
-      className="desktop-only"
-      rowKey="id"
-      loading={isLoading}
-      columns={columns}
-      dataSource={pageRows}
-      scroll={{ x: 950 }}
-      pagination={false}
-      locale={{ emptyText: 'Chưa có buổi nào được giao cho bạn' }}
-    />
+
+      <div className="desktop-only">
+      {isLoading ? (
+        <div className="flex justify-center py-16"><Spin /></div>
+      ) : groups.length === 0 ? (
+        <div className="py-16"><Empty description="Chưa có buổi nào được giao cho bạn" /></div>
+      ) : (
+        <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2 2xl:grid-cols-3">
+          {groups.map((g) => (
+            <SessionPackageCard key={g.key} rows={g.rows} renderAction={actionCell} />
+          ))}
+        </div>
+      )}
+    </div>
     <MobileCards
       rows={pageRows}
       rowKey={(row) => row.id}
