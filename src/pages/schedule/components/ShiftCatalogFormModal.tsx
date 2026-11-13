@@ -24,6 +24,7 @@ export default function ShiftCatalogFormModal({ open, form, editing, branches, o
         {!editing && <Form.Item name="branch_id" label="Cơ sở áp dụng" rules={[{ required: true, message: 'Chọn phạm vi áp dụng' }]}>
           <Select options={[{ value: ALL_BRANCHES, label: 'Mọi cơ sở' }, ...branches.map((branch) => ({ value: branch.id, label: branch.name }))]} />
         </Form.Item>}
+        {editing && <Form.Item name="is_active" label="Trạng thái" rules={[{ required: true }]}><Select options={[{ value: true, label: 'Đang hoạt động' }, { value: false, label: 'Tắt' }]} /></Form.Item>}
         {!editing && <Alert type="info" showIcon message="Giờ mẫu là giá trị khởi tạo; hãy chỉnh theo jam vận hành đã được cơ sở xác nhận." />}
       </Form>
     </Modal>

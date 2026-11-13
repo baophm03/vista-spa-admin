@@ -1,6 +1,4 @@
-import { Can } from '@casl/react'
-import { Button, Col, DatePicker, Form, Input, Modal, Row, Select, Space, Typography } from 'antd'
-
+import { Col, DatePicker, Form, Input, Modal, Row, Select, Space } from 'antd'
 import type { FormInstance } from 'antd'
 import CustomFieldFormItems from '@/components/CustomFieldFormItems'
 import type { CustomFieldDefWithOptions } from '@/components/CustomFieldFormItems'
@@ -25,9 +23,8 @@ export interface AppointmentFormModalProps {
   onSelectProfile: (profile: ProfileRow | null) => void
   onQuickCustomer: () => void
   profileOptions: ProfileRow[]
-  /** Danh sách KTV để gán/đổi người phụ trách (luồng xin nghỉ của KTV cũ) */
   staffOptions: StaffOption[]
-  selectedCustomerId?: string
+  timeOptions: { value: string; label: string }[]
   selectedDate: string
   appointmentCustomFields: CustomFieldDefWithOptions[]
   onCancel: () => void
@@ -35,24 +32,13 @@ export interface AppointmentFormModalProps {
 }
 
 export default function AppointmentFormModal({
-  open,
-  editing,
-  form,
-  isSaving,
-  slots,
-  slotsLoading,
-  profilesLoading,
-  onCustomerSearch,
-  onSelectProfile,
-  onQuickCustomer,
-  profileOptions,
-  staffOptions,
-  selectedCustomerId,
-  selectedDate,
-  appointmentCustomFields,
-  onCancel,
-  onSubmit,
+  open, editing, form, isSaving, slots, slotsLoading, profilesLoading,
+  onCustomerSearch, onSelectProfile, profileOptions, staffOptions, timeOptions,
+  selectedDate, appointmentCustomFields, onCancel, onSubmit,
 }: AppointmentFormModalProps) {
+  const selectedTime = Form.useWatch('start_time', form) as string | undefined
+  const timeHasStaff = slots.some((slot) => slot.start_time.slice(0, 5) === selectedTime && slot.staff_ids.length > 0)
+
   return (
     <Modal
       title={editing ? 'Đổi lịch hẹn' : 'Thêm lịch hẹn'}
@@ -67,32 +53,10 @@ export default function AppointmentFormModal({
       <Form form={form} layout="vertical" style={{ marginTop: 12 }}>
         <Form.Item
           name="customer_profile_id"
-          label={(
-            <Space size={4}>
-              <span>Khách hàng</span>
-              <Can I="CREATE" a="CUSTOMER">
-                <Button type="link" size="small" onClick={onQuickCustomer}>+ Tạo khách mới</Button>
-              </Can>
-            </Space>
-          )}
+          label={(<Space size={4}><span>Khách hàng</span></Space>)}
           rules={[{ required: true, message: 'Chọn khách' }]}
-          extra="Lịch hẹn chỉ là hẹn ngày gặp tư vấn — gói liệu trình sẽ được tạo/bán sau buổi tư vấn."
         >
-          <Select
-            showSearch
-            filterOption={false}
-            onSearch={onCustomerSearch}
-            onChange={(id) => {
-              onSelectProfile(profileOptions.find((profile) => profile.id === id) ?? null)
-            }}
-            loading={profilesLoading}
-            placeholder="Chọn khách hàng"
-            options={profileOptions.map((p) => ({
-              value: p.id,
-              label: `${p.full_name} — ${p.phone}`,
-            }))}
-            notFoundContent={profilesLoading ? 'Đang tìm khách hàng…' : 'Không tìm thấy khách'}
-          />
+          <Select showSearch filterOption={false} onSearch={onCustomerSearch} onChange={(id) => onSelectProfile(profileOptions.find((profile) => profile.id === id) ?? null)} loading={profilesLoading} placeholder="Chọn khách hàng" options={profileOptions.map((p) => ({ value: p.id, label: `${p.full_name} — ${p.phone}` }))} notFoundContent={profilesLoading ? 'Đang tìm khách hàng…' : 'Không tìm thấy khách'} />
         </Form.Item>
         <Row gutter={12}>
           <Col xs={24} sm={12}>
@@ -101,52 +65,15 @@ export default function AppointmentFormModal({
             </Form.Item>
           </Col>
           <Col xs={24} sm={12}>
-            <Form.Item
-              name="staff_id"
-              label="KTV phụ trách (tùy chọn)"
-              extra="Để trống để spa phân công. Khi khách đòi KTV cũ không được nghỉ: đổi lịch hẹn sang KTV khác ở đây."
-            >
-              <Select
-                allowClear
-                showSearch
-                optionFilterProp="label"
-                placeholder="Chọn KTV"
-                options={staffOptions.map((staff) => ({ value: staff.id, label: staff.label }))}
-                notFoundContent="Chưa có danh sách KTV"
-              />
+            <Form.Item name="start_time" label="Giờ hẹn" rules={[{ required: true, message: 'Chọn giờ hẹn' }]}>
+              <Select disabled={!selectedDate || !timeOptions.length} options={timeOptions} placeholder={!selectedDate ? 'Chọn ngày hẹn trước' : timeOptions.length ? 'Chọn giờ trong ca làm' : 'Chưa cấu hình ca làm việc'} />
             </Form.Item>
           </Col>
         </Row>
-        <Form.Item
-          name="start_time"
-          label="Giờ hẹn"
-          rules={[{ required: true, message: 'Chọn giờ hẹn còn trống' }]}
-          extra="Chỉ hiện giờ có KTV rảnh, không trùng lịch."
-        >
-          <Select
-            disabled={slotsLoading || !selectedDate || !selectedCustomerId}
-            loading={slotsLoading}
-            placeholder={
-              !selectedCustomerId || !selectedDate
-                ? 'Chọn khách và ngày trước'
-                : slotsLoading
-                  ? 'Đang tìm giờ trống…'
-                  : slots.length
-                    ? 'Chọn giờ còn trống'
-                    : 'Không có giờ trống ngày này'
-            }
-            options={slots.map((slot) => ({ value: slot.start_time.slice(0, 5), label: slot.start_time.slice(0, 5) }))}
-            allowClear
-            notFoundContent={
-              <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                Không có giờ trống — thử ngày khác
-              </Typography.Text>
-            }
-          />
+        <Form.Item name="staff_id" label="KTV phụ trách (tùy chọn)">
+          <Select allowClear showSearch optionFilterProp="label" disabled={!selectedTime || slotsLoading} placeholder={slotsLoading ? 'Đang tải KTV…' : selectedTime ? 'Chọn KTV đang trống' : 'Chọn ngày và giờ trước'} options={staffOptions.map((staff) => ({ value: staff.id, label: staff.label }))} notFoundContent={timeHasStaff ? 'Không có KTV phù hợp' : 'Khung giờ này chưa có KTV trống'} />
         </Form.Item>
-        <Form.Item name="note" label="Ghi chú">
-          <Input.TextArea rows={2} />
-        </Form.Item>
+        <Form.Item name="note" label="Ghi chú"><Input.TextArea rows={2} /></Form.Item>
         <CustomFieldFormItems definitions={appointmentCustomFields} />
       </Form>
     </Modal>
