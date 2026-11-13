@@ -166,6 +166,7 @@ export default function Payments() {
     {
       key: 'branch',
       title: 'Cơ sở',
+      width: 120,
       render: (_: unknown, row: LedgerRow) => {
         const branchId = row.branch_id || row.customer_treatment?.branch_id || row.appointment?.branch_id
         return (branchId && branchById.get(branchId)) || '—'

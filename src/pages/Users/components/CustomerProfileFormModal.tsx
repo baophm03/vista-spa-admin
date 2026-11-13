@@ -2,10 +2,10 @@ import { Col, DatePicker, Form, Input, Modal, Row, Select } from 'antd'
 import type { FormInstance } from 'antd'
 import dayjs from 'dayjs'
 import type { Dayjs } from 'dayjs'
-import CustomerProfileCustomFields from '@/components/CustomerProfileCustomFields'
-import type { CustomFieldDefWithOptions } from '@/components/CustomerProfileCustomFields'
+import CustomerProfileCustomFields from './CustomerProfileCustomFields'
+import type { CustomFieldDefWithOptions } from './CustomerProfileCustomFields'
 import type { Branch } from '@/api/models/branch'
-import type { CustomerProfileRow } from '@/components/CustomerProfileOverviewTab'
+import type { CustomerProfileRow } from './CustomerProfileOverviewTab'
 
 interface CustomerProfileFormModalProps {
   form: FormInstance

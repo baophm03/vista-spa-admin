@@ -4,19 +4,23 @@ import {
   Form,
   Image,
   Input,
+  InputNumber,
   Modal,
+  Popconfirm,
   Select,
+  Space,
   Table,
+  Tabs,
   Tag,
   Typography,
   message,
 } from 'antd'
 import type { TableColumnsType } from 'antd'
 import {
+  DeleteOutlined,
   EditOutlined,
   EyeInvisibleOutlined,
   EyeOutlined,
-  InboxOutlined,
   LinkOutlined,
   PictureOutlined,
   PlusOutlined,
@@ -51,7 +55,6 @@ import type { PostProductCategoriesBody } from '@/api/models/postProductCategori
 import type { PutProductCategoriesIdBody } from '@/api/models/putProductCategoriesIdBody'
 import { useBrandCurrency } from '@/themeRuntime'
 import { useCustomerProfileAccess } from '@/utils/customerProfileAccess'
-import ProductCategoryModal from './components/ProductCategoryModal'
 import ProductDetailModal from './components/ProductDetailModal'
 import ProductFormModal from './components/ProductFormModal'
 import {
@@ -69,6 +72,7 @@ export default function Products() {
   const [searchInput, setSearchInput] = useState('')
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
+  const [activeTab, setActiveTab] = useState<'products' | 'categories'>('products')
   const [categoryFilter, setCategoryFilter] = useState<string>()
   const [statusFilter, setStatusFilter] = useState<boolean>()
   const [visibleColumns, setVisibleColumns] = useState<string[]>(DEFAULT_PRODUCT_COLUMNS)
@@ -82,10 +86,11 @@ export default function Products() {
   const [saving, setSaving] = useState(false)
   const [uploadingCover, setUploadingCover] = useState(false)
   const [uploadingGallery, setUploadingGallery] = useState(false)
-  const [catOpen, setCatOpen] = useState(false)
   const [catForm] = Form.useForm()
   const [editingCategory, setEditingCategory] = useState<ProductCategoryRow | null>(null)
   const [catSaving, setCatSaving] = useState(false)
+  const [categoryModalOpen, setCategoryModalOpen] = useState(false)
+  const [categorySearchInput, setCategorySearchInput] = useState('')
   const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
   const activeFilterCount = [categoryFilter, statusFilter !== undefined].filter(Boolean).length + (search ? 1 : 0)
@@ -226,14 +231,15 @@ export default function Products() {
     setCatSaving(true)
     try {
       if (editingCategory) {
-        await updateCategoryMutation.mutateAsync({ id: editingCategory.id, dto: { name: values.name, sort_order: String(values.sort_order ?? 0), image_file_id: values.image_file_id ?? null } })
+        await updateCategoryMutation.mutateAsync({ id: editingCategory.id, dto: { name: values.name, sort_order: String(values.sort_order ?? 0) } })
         message.success('Đã cập nhật danh mục')
       } else {
-        await createCategoryMutation.mutateAsync({ name: values.name, sort_order: String(values.sort_order ?? 0), image_file_id: values.image_file_id ?? null })
+        await createCategoryMutation.mutateAsync({ name: values.name, sort_order: String(values.sort_order ?? 0) })
         message.success('Đã thêm danh mục')
       }
       catForm.resetFields()
       setEditingCategory(null)
+      setCategoryModalOpen(false)
       await queryClient.invalidateQueries({ queryKey: getGetProductCategoriesQueryKey() })
     } catch (err) {
       message.error(errorMessage(err))
@@ -269,90 +275,77 @@ export default function Products() {
     }
   }
 
-  return (
+  const productsContent = (
     <>
-      <StatCards items={statItems} />
-      <PageTitle
-        subtitle="Danh mục sản phẩm hiển thị trên ứng dụng"
-        left={
-          <>
-            <Input
-              allowClear
-              prefix={<SearchOutlined className="text-[var(--brand-text-inactive,#A9ADB2)]" />}
-              placeholder="Tìm theo tên hoặc mã SKU"
-              className="w-[260px]!"
-              value={searchInput}
-              onChange={(event) => setSearchInput(event.target.value)}
-              onPressEnter={() => {
-                clearTimeout(debounceRef.current)
-                setSearch(searchInput.trim())
-                setPage(1)
-              }}
-            />
-            {isAdmin && (
-              <Button icon={<InboxOutlined />} onClick={() => { setEditingCategory(null); catForm.resetFields(); setCatOpen(true) }}>
-                Danh mục
-              </Button>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <Input
+            allowClear
+            prefix={<SearchOutlined className="text-[var(--brand-text-inactive,#A9ADB2)]" />}
+            placeholder="Tìm theo tên hoặc mã SKU"
+            className="w-[260px]!"
+            value={searchInput}
+            onChange={(event) => setSearchInput(event.target.value)}
+            onPressEnter={() => {
+              clearTimeout(debounceRef.current)
+              setSearch(searchInput.trim())
+              setPage(1)
+            }}
+          />
+          <ListFilterPopover
+            open={filterOpen}
+            onOpenChange={(next) => {
+              setFilterOpen(next)
+              if (next) {
+                filterForm.setFieldsValue({ category_id: categoryFilter, status: statusFilter === undefined ? undefined : String(statusFilter) })
+                setDraftVisibleColumns(visibleColumns)
+              }
+            }}
+            activeFilterCount={activeFilterCount}
+            form={filterForm}
+            onApply={(values) => {
+              if (!draftVisibleColumns.length) {
+                message.error('Hãy giữ lại ít nhất một cột hiển thị')
+                return
+              }
+              setCategoryFilter(typeof values.category_id === 'string' ? values.category_id : undefined)
+              setStatusFilter(values.status === '' || values.status === undefined || values.status === null ? undefined : values.status === 'true')
+              setVisibleColumns(draftVisibleColumns)
+              setFilterOpen(false)
+              setPage(1)
+            }}
+            onClear={() => {
+              filterForm.resetFields()
+              setCategoryFilter(undefined)
+              setStatusFilter(undefined)
+              setVisibleColumns(DEFAULT_PRODUCT_COLUMNS)
+              setDraftVisibleColumns(DEFAULT_PRODUCT_COLUMNS)
+              setPage(1)
+            }}
+            columnOptions={PRODUCT_COLUMNS}
+            draftVisibleColumns={draftVisibleColumns}
+            onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as string[])}
+            filterItems={(
+              <>
+                <Form.Item name="category_id" label="Danh mục" className="mb-2.5!">
+                  <Select allowClear placeholder="Tất cả danh mục" options={categories.map((c) => ({ value: c.id, label: c.name }))} />
+                </Form.Item>
+                <Form.Item name="status" label="Trạng thái" className="mb-0!">
+                  <Select allowClear placeholder="Tất cả trạng thái" options={[
+                    { value: 'true', label: 'Đang bán' },
+                    { value: 'false', label: 'Đã ẩn' },
+                  ]} />
+                </Form.Item>
+              </>
             )}
-            <ListFilterPopover
-              open={filterOpen}
-              onOpenChange={(next) => {
-                setFilterOpen(next)
-                if (next) {
-                  filterForm.setFieldsValue({ category_id: categoryFilter, status: statusFilter === undefined ? undefined : String(statusFilter) })
-                  setDraftVisibleColumns(visibleColumns)
-                }
-              }}
-              activeFilterCount={activeFilterCount}
-              form={filterForm}
-              onApply={(values) => {
-                if (!draftVisibleColumns.length) {
-                  message.error('Hãy giữ lại ít nhất một cột hiển thị')
-                  return
-                }
-                setCategoryFilter(typeof values.category_id === 'string' ? values.category_id : undefined)
-                setStatusFilter(values.status === '' || values.status === undefined || values.status === null ? undefined : values.status === 'true')
-                setVisibleColumns(draftVisibleColumns)
-                setFilterOpen(false)
-                setPage(1)
-              }}
-              onClear={() => {
-                filterForm.resetFields()
-                setCategoryFilter(undefined)
-                setStatusFilter(undefined)
-                setVisibleColumns(DEFAULT_PRODUCT_COLUMNS)
-                setDraftVisibleColumns(DEFAULT_PRODUCT_COLUMNS)
-                setPage(1)
-              }}
-              columnOptions={PRODUCT_COLUMNS}
-              draftVisibleColumns={draftVisibleColumns}
-              onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as string[])}
-              filterItems={(
-                <>
-                  <Form.Item name="category_id" label="Danh mục" className="mb-2.5!">
-                    <Select allowClear placeholder="Tất cả danh mục" options={categories.map((c) => ({ value: c.id, label: c.name }))} />
-                  </Form.Item>
-                  <Form.Item name="status" label="Trạng thái" className="mb-0!">
-                    <Select allowClear placeholder="Tất cả trạng thái" options={[
-                      { value: 'true', label: 'Đang bán' },
-                      { value: 'false', label: 'Đã ẩn' },
-                    ]} />
-                  </Form.Item>
-                </>
-              )}
-            />
-          </>
-        }
-        right={
-          isAdmin ? (
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
-              Thêm sản phẩm
-            </Button>
-          ) : undefined
-        }
-      >
-        Sản phẩm
-      </PageTitle>
+          />
+        </div>
+        {isAdmin && (
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
+            Thêm sản phẩm
+          </Button>
+        )}
+      </div>
       <Table<ProductRow>
         rowKey="id"
         loading={productsQuery.isFetching}
@@ -448,6 +441,113 @@ export default function Products() {
         )}
       />
       <ListPagination page={page} limit={10} total={rows.length} onChange={setPage} noun="sản phẩm" hideOnSinglePage />
+    </>
+  )
+
+  const categoriesContent = (
+    <>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
+        <Input
+          allowClear
+          prefix={<SearchOutlined className="text-[var(--brand-text-inactive,#A9ADB2)]" />}
+          placeholder="Tìm tên danh mục"
+          className="w-[260px]!"
+          value={categorySearchInput}
+          onChange={(event) => setCategorySearchInput(event.target.value)}
+        />
+        {isAdmin && (
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => { setEditingCategory(null); catForm.resetFields(); setCategoryModalOpen(true) }}>
+            Tạo danh mục
+          </Button>
+        )}
+      </div>
+      <Table<ProductCategoryRow>
+        rowKey="id"
+        size="small"
+        dataSource={categories.filter((category) =>
+          !categorySearchInput.trim() || category.name.toLowerCase().includes(categorySearchInput.trim().toLowerCase()))}
+        pagination={false}
+        locale={{ emptyText: <TableEmpty description="Chưa có danh mục nào" /> }}
+        columns={[
+          { title: 'Tên', dataIndex: 'name', render: (v: string) => <strong>{v}</strong> },
+          { title: 'Thứ tự', dataIndex: 'sort_order', width: 70 },
+          { title: 'SP đang bán', dataIndex: 'active_product_count', width: 100, render: (v?: number) => v ?? 0 },
+          {
+            title: 'Trạng thái',
+            dataIndex: 'is_active',
+            width: 90,
+            render: (v?: boolean) => (v === false ? <Tag>Đã ẩn</Tag> : <Tag color="green">Đang dùng</Tag>),
+          },
+          {
+            title: 'Hành động',
+            key: 'actions',
+            width: 130,
+            align: 'center' as const,
+            render: (_, c) => (
+              <Space size={4}>
+                <Button size="small" type="text" icon={<EditOutlined />} onClick={() => { setEditingCategory(c); catForm.setFieldsValue({ name: c.name, sort_order: c.sort_order ?? 0 }); setCategoryModalOpen(true) }} />
+                <Popconfirm
+                  title={c.is_active === false ? 'Hiện lại danh mục này?' : 'Ẩn danh mục này?'}
+                  description={c.is_active === false ? 'Danh mục sẽ hiển thị lại trên app.' : 'Danh mục bị ẩn khỏi app nhưng vẫn còn trong danh sách quản trị.'}
+                  okText={c.is_active === false ? 'Hiện' : 'Ẩn'}
+                  cancelText="Hủy"
+                  onConfirm={() => void toggleCategoryVisibility(c)}
+                >
+                  <Button size="small" type="text" icon={c.is_active === false ? <EyeOutlined /> : <EyeInvisibleOutlined />} />
+                </Popconfirm>
+                <Popconfirm
+                  title="Xóa danh mục này?"
+                  description="Chỉ xóa được khi không còn sản phẩm tham chiếu."
+                  okText="Xóa"
+                  okButtonProps={{ danger: true }}
+                  cancelText="Hủy"
+                  onConfirm={() => void removeCategory(c)}
+                >
+                  <Button size="small" type="text" danger icon={<DeleteOutlined />} />
+                </Popconfirm>
+              </Space>
+            ),
+          },
+        ]}
+      />
+      <Modal
+        title={editingCategory ? 'Sửa danh mục' : 'Tạo danh mục'}
+        open={isAdmin && categoryModalOpen}
+        onCancel={() => { setCategoryModalOpen(false); setEditingCategory(null); catForm.resetFields() }}
+        onOk={() => void submitCategory()}
+        confirmLoading={catSaving}
+        okText={editingCategory ? 'Lưu' : 'Tạo'}
+        cancelText="Hủy"
+        width={440}
+      >
+        <Form form={catForm} layout="vertical" style={{ marginTop: 12 }}>
+          <Form.Item name="name" label="Tên danh mục" rules={[{ required: true, whitespace: true, message: 'Nhập tên danh mục' }]}>
+            <Input placeholder="VD: Mỹ phẩm" />
+          </Form.Item>
+          <Form.Item name="sort_order" label="Thứ tự hiển thị">
+            <InputNumber min={0} precision={0} style={{ width: '100%' }} />
+          </Form.Item>
+        </Form>
+      </Modal>
+    </>
+  )
+
+  return (
+    <>
+      <StatCards items={activeTab === 'products' ? statItems : []} />
+      <PageTitle
+        subtitle="Danh mục sản phẩm hiển thị trên ứng dụng"
+      >
+        Sản phẩm
+      </PageTitle>
+      <Tabs
+        activeKey={activeTab}
+        onChange={(key) => setActiveTab(key as 'products' | 'categories')}
+        items={[
+          { key: 'products', label: 'Sản phẩm', children: productsContent },
+          { key: 'categories', label: 'Danh mục', children: categoriesContent },
+        ]}
+      />
 
       <ProductDetailModal
         viewing={viewing}
@@ -470,20 +570,6 @@ export default function Products() {
         uploadingGallery={uploadingGallery}
         setUploadingGallery={setUploadingGallery}
         uploadImage={uploadImage}
-      />
-
-      <ProductCategoryModal
-        open={catOpen}
-        isAdmin={isAdmin}
-        onCancel={() => { setCatOpen(false); setEditingCategory(null); catForm.resetFields() }}
-        catForm={catForm}
-        editingCategory={editingCategory}
-        setEditingCategory={setEditingCategory}
-        catSaving={catSaving}
-        onSubmitCategory={() => void submitCategory()}
-        onRemoveCategory={(c) => void removeCategory(c)}
-        onToggleCategory={(c) => void toggleCategoryVisibility(c)}
-        categories={categories}
       />
     </>
   )

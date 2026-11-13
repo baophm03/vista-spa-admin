@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Avatar, Button, Form, Input, Modal, Select, Space, Switch, Table, Tag, Typography, message } from 'antd'
+import { Avatar, Button, Form, Input, Modal, Select, Space, Switch, Table, Tag, Tooltip, Typography, message } from 'antd'
 import { useAbility } from '@casl/react'
 import {
   AppstoreOutlined,
@@ -415,6 +415,7 @@ export default function Staffs() {
         locale={{ emptyText: <TableEmpty description="Chưa có nhân viên nào khớp điều kiện." /> }}
         scroll={{ x: 1240 }}
         pagination={false}
+        onRow={(s) => ({ onClick: () => openProfile(s), style: { cursor: 'pointer' } })}
         columns={[
           {
             title: 'Nhân viên',
@@ -480,9 +481,16 @@ export default function Staffs() {
                 <Space direction="vertical" size={4}>
                   <Typography.Text>{profile?.title || '—'}</Typography.Text>
                   <Space size={4} wrap>
-                    {serviceTags.length
-                      ? serviceTags.map((name, index) => <Tag key={`${s.id}-${index}`} color="blue">{name}</Tag>)
-                      : <Typography.Text type="secondary">Chưa gán dịch vụ</Typography.Text>}
+                    {serviceTags.length === 0 && <Typography.Text type="secondary">Chưa gán dịch vụ</Typography.Text>}
+                    {serviceTags.length === 1 && <Tag color="blue">{serviceTags[0]}</Tag>}
+                    {serviceTags.length >= 2 && (
+                      <>
+                        <Tag color="blue">{serviceTags[0]}</Tag>
+                        <Tooltip title={serviceTags.join(', ')}>
+                          <Tag color="blue">+{serviceTags.length - 1} dịch vụ</Tag>
+                        </Tooltip>
+                      </>
+                    )}
                   </Space>
                 </Space>
               )
@@ -502,12 +510,14 @@ export default function Staffs() {
                 )
               }
               return (
-                <Switch
-                  checked={profile?.show_in_app !== false}
-                  size="small"
-                  loading={upsertProfileMutation.isPending}
-                  onChange={(checked) => void toggleInApp(s, checked)}
-                />
+                <div onClick={(e) => e.stopPropagation()}>
+                  <Switch
+                    checked={profile?.show_in_app !== false}
+                    size="small"
+                    loading={upsertProfileMutation.isPending}
+                    onChange={(checked) => void toggleInApp(s, checked)}
+                  />
+                </div>
               )
             },
           },
