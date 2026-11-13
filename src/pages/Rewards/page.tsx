@@ -32,7 +32,6 @@ import { paginateRows } from '@/utils/listTable'
 import { errorMessage, pickData, pickMeta } from '@/api/helpers'
 import type { CustomerProfile } from '@/api/models/customerProfile'
 import type { Reward } from '@/api/models/reward'
-import type { Voucher } from '@/api/models/voucher'
 import type { Service } from '@/api/models/service'
 import type { PostCustomerProfilesIdRedeemRewardBody } from '@/api/models/postCustomerProfilesIdRedeemRewardBody'
 import type { PutRewardRedemptionsIdCancelBody } from '@/api/models/putRewardRedemptionsIdCancelBody'
@@ -48,12 +47,12 @@ import {
   putRewardsId,
 } from '@/api/endpoints/rewards'
 import { getCustomerProfiles, postCustomerProfilesIdRedeemReward } from '@/api/endpoints/customer-profiles'
-import { getVouchers } from '@/api/endpoints/vouchers'
+import { getVoucherCategory, type VoucherCategory, type VoucherCategoryRow } from '@/api/endpoints/voucherCategories'
 import { getService } from '@/api/endpoints/services'
 import { Can, useAbility } from '@casl/react'
 import CancelRedemptionModal from './components/CancelRedemptionModal'
 import RedeemModal from './components/RedeemModal'
-import RewardModal from './components/RewardModal'
+import RewardModal, { type RewardVoucherOption } from './components/RewardModal'
 import {
   DEFAULT_REDEMPTION_COLUMNS,
   REDEMPTION_COLUMN_OPTIONS,
@@ -98,10 +97,29 @@ function RewardCatalogTab({ onChanged }: { onChanged: () => void }) {
   const rewards = rawRewards.filter((r) => r.is_active !== false || canUpdate)
 
   const vouchersQuery = useQuery({
-    queryKey: ['vouchers', 'catalog'],
-    queryFn: async () => pickData<{ rows?: Voucher[] }>(await getVouchers({ currentPage: 1, pageSize: 100 })),
+    queryKey: ['voucher-categories', 'reward-picker'],
+    queryFn: async () => {
+      const categories: VoucherCategory[] = ['treatment-package', 'academy-course', 'product']
+      const lists = await Promise.all(categories.map(async (category) => {
+        const payload = pickData<{ rows?: VoucherCategoryRow[] } | VoucherCategoryRow[]>(await getVoucherCategory(category))
+        return { category, rows: Array.isArray(payload) ? payload : payload?.rows ?? [] }
+      }))
+      const labels: Record<VoucherCategory, string> = {
+        'treatment-package': 'Gói liệu trình',
+        'academy-course': 'Khóa học',
+        product: 'Sản phẩm',
+      }
+      return lists.flatMap(({ category, rows }) => rows
+        .filter((voucher) => voucher.is_active)
+        .map((voucher) => ({ value: `${category}:${voucher.id}`, label: `${labels[category]} · ${voucher.title}` })))
+    },
   })
-  const vouchers = vouchersQuery.data?.rows ?? []
+  const vouchers: RewardVoucherOption[] = [
+    ...(vouchersQuery.data ?? []),
+    ...(editing?.voucher_kind === 'legacy' && editing.voucher_reference && editing.voucher?.title
+      ? [{ value: editing.voucher_reference, label: `Voucher cũ · ${editing.voucher.title}` }]
+      : []),
+  ]
 
   const createMutation = useMutation({
     mutationFn: async (dto: Partial<Reward>) => postRewards(dto as never),
@@ -126,7 +144,7 @@ function RewardCatalogTab({ onChanged }: { onChanged: () => void }) {
         type: row.type,
         points_cost: row.points_cost,
         quantity_total: row.quantity_total ?? undefined,
-        voucher_id: row.voucher_id ?? undefined,
+        voucher_reference: row.voucher_reference ?? (row.voucher_id ? `legacy:${row.voucher_id}` : undefined),
         benefit_amount: row.benefit_amount ?? undefined,
         service_id: row.service_id ?? undefined,
         valid_from: row.valid_from ? dayjs(String(row.valid_from)) : undefined,
@@ -167,7 +185,7 @@ function RewardCatalogTab({ onChanged }: { onChanged: () => void }) {
         type: values.type,
         points_cost: values.points_cost,
         quantity_total: values.quantity_total ?? null,
-        voucher_id: values.type === 'VOUCHER' ? values.voucher_id : null,
+        voucher_reference: values.type === 'VOUCHER' ? values.voucher_reference : null,
         benefit_amount: values.type === 'BENEFIT' ? (values.benefit_amount ?? null) : null,
         service_id: values.type === 'BENEFIT' ? (values.service_id ?? null) : null,
         valid_from: values.valid_from ? values.valid_from.format('YYYY-MM-DD') : null,

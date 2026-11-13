@@ -1,18 +1,9 @@
-export interface VoucherRow {
-  id: string
-  title: string
-  required_points?: number
-  type?: number
-  start_date?: string
-  end_date?: string
-  is_active?: boolean
-}
+import type { VoucherCategory, VoucherCategoryRow } from '@/api/endpoints/voucherCategories'
 
-/** type theo contract BE: hạng thẻ được áp dụng (0=Tất cả, 1=Silver, 2=Gold, 3=Diamond, 4=VIP) */
-export const TYPE_LABEL: Record<number, string> = {
-  0: 'Tất cả hạng',
-  1: 'Silver',
-  2: 'Gold',
-  3: 'Diamond',
-  4: 'VIP',
+export type { VoucherCategory, VoucherCategoryRow }
+
+export const CATEGORY_META: Record<VoucherCategory, { label: string; targetField: keyof VoucherCategoryRow; targetLabel: string }> = {
+  'treatment-package': { label: 'Voucher gói liệu trình', targetField: 'treatment_package_id', targetLabel: 'Gói liệu trình áp dụng' },
+  'academy-course': { label: 'Voucher khóa học', targetField: 'academy_course_id', targetLabel: 'Khóa học áp dụng' },
+  product: { label: 'Voucher sản phẩm', targetField: 'product_id', targetLabel: 'Sản phẩm áp dụng' },
 }

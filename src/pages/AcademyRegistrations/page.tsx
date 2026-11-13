@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Alert, Button, Form, Input, Select, Space, Table, Tag, Typography, message } from 'antd'
 import { PlusOutlined, SearchOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
@@ -8,6 +8,7 @@ import ListPagination from '@/components/base/ListPagination'
 import { paginateRows } from '@/utils/listTable'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { AcademyCourse } from '@/api/models/academyCourse'
+import { getVoucherCategory, type VoucherCategoryRow } from '@/api/endpoints/voucherCategories'
 import {
   getGetAcademyRegistrationsQueryKey,
   useGetAcademyRegistrationsFindStudent,
@@ -56,6 +57,7 @@ export default function AcademyRegistrations() {
   }, [searchInput])
 
   const coursesQuery = useGetAcademyCourses()
+  const courseVouchersQuery = useQuery({ queryKey: ['voucher-category', 'academy-course'], queryFn: () => getVoucherCategory('academy-course') })
   const registrationsQuery = useGetRegistrationsSafe(filter)
   const usersQuery = useGetUsers({ currentPage: 1, pageSize: 200, has_role: true })
   const lookupPhone = /^0\d{9}$/.test(lookupValue.trim()) ? lookupValue.trim() : undefined
@@ -66,6 +68,8 @@ export default function AcademyRegistrations() {
   )
 
   const courses = (pickData<AcademyCourse[]>(coursesQuery.data) ?? []) as AcademyCourse[]
+  const courseVouchersPayload = pickData<any>(courseVouchersQuery.data)
+  const courseVouchers = (Array.isArray(courseVouchersPayload) ? courseVouchersPayload : courseVouchersPayload?.rows ?? []) as VoucherCategoryRow[]
   const registrations = (pickData<RegistrationRow[]>(registrationsQuery.data) ?? []) as RegistrationRow[]
   const staffs = (pickData<{ rows?: Array<{ id: string; zalo_name?: string }> } | undefined>(usersQuery.data)?.rows ?? []) as Array<{ id: string; zalo_name?: string }>
   const lookupRows = (pickData<RegistrationRow[]>(lookupQuery.data) ?? []) as RegistrationRow[]
@@ -134,6 +138,7 @@ export default function AcademyRegistrations() {
         phone: values.phone,
         email: values.email || undefined,
         course_id: values.course_id,
+        academy_course_voucher_id: values.academy_course_voucher_id || undefined,
         note: values.note || undefined,
       })
       message.success('Đã thêm đăng ký — hệ thống tự động đối soát học viên cũ')
@@ -161,7 +166,17 @@ export default function AcademyRegistrations() {
     },
     { title: 'Khóa học', key: 'course', width: 200, render: (_: unknown, row: RegistrationRow) => row.course?.name ?? courseById.get(row.course_id)?.name ?? '—' },
     { title: 'Trạng thái', dataIndex: 'status', key: 'status', width: 130, render: (v: string) => <Tag color={STATUS_META[v]?.color}>{STATUS_META[v]?.label ?? v}</Tag> },
-    { title: 'Ưu đãi', dataIndex: 'discount_percent', key: 'discount', width: 80, align: 'right' as const, render: (v?: number) => (v ? `${v}%` : '—') },
+    {
+      title: 'Ưu đãi', dataIndex: 'discount_percent', key: 'discount', width: 220,
+      render: (_v: number, row: RegistrationRow) => {
+        const details = [
+          row.course_voucher_title ? `Voucher: ${row.course_voucher_title}` : null,
+          Number(row.voucher_discount_amount ?? 0) > 0 ? `Giảm ${formatMoney(Number(row.voucher_discount_amount))} từ voucher` : null,
+          Number(row.discount_percent ?? 0) > 0 ? `Ưu đãi học viên cũ ${row.discount_percent}%` : null,
+        ].filter(Boolean)
+        return details.length ? <Typography.Text>{details.join(' · ')}</Typography.Text> : '—'
+      },
+    },
     { title: 'Học phí cuối', dataIndex: 'final_tuition', key: 'final_tuition', width: 130, align: 'right' as const, render: (v?: number) => formatMoney(Number(v ?? 0)) },
     {
       title: 'Thanh toán', dataIndex: 'payment_status', key: 'payment_status', width: 150,
@@ -255,6 +270,7 @@ export default function AcademyRegistrations() {
         open={createOpen}
         form={createForm}
         courses={courses}
+        vouchers={courseVouchers}
         creating={creating}
         onCancel={() => setCreateOpen(false)}
         onSubmit={() => void submitCreate()}
