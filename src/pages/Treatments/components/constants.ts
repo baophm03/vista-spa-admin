@@ -16,6 +16,8 @@ export interface PackageTypeRow {
 export interface TreatmentPackageRow extends TreatmentPackage {
   service_ids?: string[]
   package_type?: { id?: string; name?: string; code?: string } | null
+  image_file_id?: string | null
+  image_file?: { id?: string; path?: string; file_name?: string } | null
 }
 
 export type PackageColumnKey = 'name' | 'branch' | 'type' | 'quota' | 'services' | 'price' | 'validity' | 'bonus' | 'status'
@@ -93,7 +95,7 @@ export function quotaLabel(row: TreatmentPackage, formatMoney: (value: unknown) 
   return 'Không giới hạn'
 }
 
-export function priceLabel(row: TreatmentPackage, formatMoney: (value: unknown) => string) {
+export function priceLabel(row: TreatmentPackage, formatMoney: (value?: number | null | undefined) => string) {
   const minimum = formatMoney(row.list_price)
   return row.list_price_max != null
     ? minimum + ' – ' + formatMoney(row.list_price_max)

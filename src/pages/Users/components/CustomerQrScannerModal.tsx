@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { BrowserQRCodeReader } from '@zxing/browser'
-import { Alert, Button, Input, Modal, Space, Typography, message } from 'antd'
-import { CameraOutlined, SearchOutlined } from '@ant-design/icons'
+import { Alert, Button, Modal, Space, Typography } from 'antd'
+import { CameraOutlined } from '@ant-design/icons'
 import { errorMessage } from '@/api/helpers'
 
 interface Props {
@@ -15,7 +15,6 @@ export default function CustomerQrScannerModal({ open, onClose, onToken }: Props
   const controlsRef = useRef<{ stop: () => void } | null>(null)
   const onTokenRef = useRef(onToken)
   const [scanning, setScanning] = useState(false)
-  const [token, setToken] = useState('')
   const [cameraError, setCameraError] = useState('')
 
   useEffect(() => {
