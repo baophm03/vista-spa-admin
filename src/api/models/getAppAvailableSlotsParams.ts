@@ -8,7 +8,6 @@
 
 export type GetAppAvailableSlotsParams = {
 branch_id?: string;
-service_id?: string;
 date?: string;
 staff_id?: string;
 };

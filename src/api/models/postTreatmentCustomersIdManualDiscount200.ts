@@ -6,6 +6,6 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { Response } from './response';
-import type { PutStandaloneServicesIdApprove200AllOf } from './putStandaloneServicesIdApprove200AllOf';
+import type { PostTreatmentCustomersIdManualDiscount200AllOf } from './postTreatmentCustomersIdManualDiscount200AllOf';
 
-export type PutStandaloneServicesIdApprove200 = Response & PutStandaloneServicesIdApprove200AllOf;
+export type PostTreatmentCustomersIdManualDiscount200 = Response & PostTreatmentCustomersIdManualDiscount200AllOf;

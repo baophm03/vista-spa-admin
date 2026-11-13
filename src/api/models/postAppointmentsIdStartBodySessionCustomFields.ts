@@ -6,4 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 
+/**
+ * (Legacy) custom fields cho buổi điều trị khi lịch còn gắn customer_treatment
+ */
 export type PostAppointmentsIdStartBodySessionCustomFields = { [key: string]: unknown };

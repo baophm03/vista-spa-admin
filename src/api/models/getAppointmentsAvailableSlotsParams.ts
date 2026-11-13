@@ -8,7 +8,6 @@
 
 export type GetAppointmentsAvailableSlotsParams = {
 branch_id?: string;
-service_id?: string;
 date?: string;
 staff_id?: string;
 exclude_appointment_id?: string;

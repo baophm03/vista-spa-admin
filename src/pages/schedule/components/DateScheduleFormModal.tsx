@@ -1,4 +1,4 @@
-import { Form, Input, Modal, Select, DatePicker } from 'antd'
+import { Alert, Form, Input, Modal, Select, DatePicker } from 'antd'
 import type { FormInstance } from 'antd'
 import dayjs, { type Dayjs } from 'dayjs'
 import type { ShiftTemplate as ShiftTemplateRow, SchedulePageData, ScheduleStaff } from '../types'
@@ -15,13 +15,16 @@ interface Props {
   selectedBranch?: string
   staffForSelectedBranch: ScheduleStaff[]
   templates: ShiftTemplateRow[]
+  /** KTV tự đăng ký: khóa KTV + cơ sở theo hồ sơ và nhắc rule tuần */
+  lockStaffAndBranch?: boolean
   saving: boolean
   onCancel: () => void
   onSubmit: () => void
 }
 
 /** Modal đăng ký ca làm theo NGÀY CỤ THỂ (làm thêm ngoài lịch lặp theo thứ). */
-export default function DateScheduleFormModal({ open, form, editing, staff, branches, branchFilter, selectedBranch, staffForSelectedBranch, templates, saving, onCancel, onSubmit }: Props) {
+export default function DateScheduleFormModal({ open, form, editing, staff, branches, branchFilter, selectedBranch, staffForSelectedBranch, templates, lockStaffAndBranch, saving, onCancel, onSubmit }: Props) {
+  const nextMonday = dayjs().subtract((dayjs().day() + 6) % 7, 'day').add(1, 'week')
   return (
     <Modal
       title={editing ? 'Sửa lịch theo ngày' : 'Đăng ký làm theo ngày'}
@@ -33,6 +36,15 @@ export default function DateScheduleFormModal({ open, form, editing, staff, bran
       confirmLoading={saving}
       destroyOnHidden
     >
+      {lockStaffAndBranch && (
+        <Alert
+          type="info"
+          showIcon
+          style={{ marginBottom: 12 }}
+          message="KTV chỉ được tự đăng ký ca cho tuần kế tiếp"
+          description={`Cần đăng ký trước 00h thứ 2 đầu tuần kế tiếp (tuần kế tiếp: ${nextMonday.format('DD/MM')} – ${nextMonday.add(6, 'day').format('DD/MM')}). Muốn thay đổi ca tuần hiện tại: dùng tab Xin nghỉ hoặc liên hệ Admin.`}
+        />
+      )}
       <Form form={form} layout="vertical" style={{ marginTop: 16 }} onValuesChange={(changed) => {
         if (changed.branch_id !== undefined) {
           const currentStaff = staff.find((person) => person.id === form.getFieldValue('staff_id'))
@@ -54,15 +66,15 @@ export default function DateScheduleFormModal({ open, form, editing, staff, bran
           }]}
         >
           <Select
-            disabled={!selectedBranch}
+            disabled={lockStaffAndBranch || !selectedBranch}
             showSearch
             optionFilterProp="label"
             notFoundContent="Không có KTV đã được gán vào cơ sở này"
             options={staffForSelectedBranch.map((person) => ({ value: person.id, label: staffLabel(person) }))}
           />
         </Form.Item>
-        <Form.Item name="branch_id" label="Cơ sở" rules={[{ required: true, message: 'Chọn cơ sở' }]}>
-          <Select options={(branchFilter ? branches.filter((branch) => branch.id === branchFilter) : branches).map((branch) => ({ value: branch.id, label: branch.name }))} />
+        <Form.Item name="branch_id" label="Cơ sở" rules={[{ required: true, message: 'Chọn cơ sở' }]} hidden={lockStaffAndBranch}>
+          <Select disabled={lockStaffAndBranch} options={(branchFilter ? branches.filter((branch) => branch.id === branchFilter) : branches).map((branch) => ({ value: branch.id, label: branch.name }))} />
         </Form.Item>
         <Form.Item name="work_dates" label={editing ? 'Ngày làm' : 'Ngày làm (chọn nhiều ngày)'} rules={[{
           validator: (_, value: Dayjs[] | Dayjs | undefined) => {

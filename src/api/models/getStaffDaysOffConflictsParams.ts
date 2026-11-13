@@ -6,6 +6,8 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type PostStandaloneServicesIdComplete200AllOf = {
-  responseData?: unknown;
+export type GetStaffDaysOffConflictsParams = {
+staff_id?: string;
+off_date: string;
+shift_template_id?: string;
 };

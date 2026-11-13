@@ -1719,7 +1719,7 @@ export const prefetchGetAppBranchesQuery = async <TData = Awaited<ReturnType<typ
 
 
 /**
- * **APP-10** — GET /app/available-slots (BR-10). Customer scope: only operate on the data of the logged-in customer. Query parameters: `branch_id`, `service_id`, `date`.
+ * **APP-10** — GET /app/available-slots (BR-10). Customer scope: only operate on the data of the logged-in customer. Query parameters: `branch_id`, `date`. Lịch hẹn chỉ là hẹn tư vấn nên không cần service_id. Khách chỉ được đặt trước tối đa 1 tuần (booking.customer_horizon_days, mặc định 7 ngày) — ngày ngoài horizon trả lỗi 422.
  * @summary View available time slots
  */
 export const getAppAvailableSlots = (

@@ -1,15 +1,17 @@
 import { Can } from '@casl/react'
-import { Button, Col, DatePicker, Form, Input, Modal, Row, Segmented, Select, Space, Typography } from 'antd'
+import { Button, Col, DatePicker, Form, Input, Modal, Row, Select, Space, Typography } from 'antd'
 
 import type { FormInstance } from 'antd'
 import CustomFieldFormItems from '@/components/CustomFieldFormItems'
 import type { CustomFieldDefWithOptions } from '@/components/CustomFieldFormItems'
 import type { Appointment } from '@/api/models/appointment'
-import type { Service } from '@/api/models/service'
-import type { TreatmentPackage } from '@/api/models/treatmentPackage'
 import type { ProfileRow, Slot } from './constants'
 
-export type AppointmentBookingType = 'service' | 'treatment'
+export interface StaffOption {
+  id: string
+  label: string
+  branchId?: string
+}
 
 export interface AppointmentFormModalProps {
   open: boolean
@@ -23,14 +25,9 @@ export interface AppointmentFormModalProps {
   onSelectProfile: (profile: ProfileRow | null) => void
   onQuickCustomer: () => void
   profileOptions: ProfileRow[]
-  servicesLoading: boolean
-  serviceOptions: Service[]
-  bookingType: AppointmentBookingType
-  onBookingTypeChange: (type: AppointmentBookingType) => void
-  treatmentPackagesLoading: boolean
-  treatmentPackages: TreatmentPackage[]
+  /** Danh sách KTV để gán/đổi người phụ trách (luồng xin nghỉ của KTV cũ) */
+  staffOptions: StaffOption[]
   selectedCustomerId?: string
-  selectedServiceId?: string
   selectedDate: string
   appointmentCustomFields: CustomFieldDefWithOptions[]
   onCancel: () => void
@@ -49,21 +46,13 @@ export default function AppointmentFormModal({
   onSelectProfile,
   onQuickCustomer,
   profileOptions,
-  servicesLoading,
-  serviceOptions,
-  bookingType,
-  onBookingTypeChange,
-  treatmentPackagesLoading,
-  treatmentPackages,
+  staffOptions,
   selectedCustomerId,
-  selectedServiceId,
   selectedDate,
   appointmentCustomFields,
   onCancel,
   onSubmit,
 }: AppointmentFormModalProps) {
-  const isTreatment = bookingType === 'treatment'
-  const selectedPackageId = Form.useWatch('treatment_package_id', form)
   return (
     <Modal
       title={editing ? 'Đổi lịch hẹn' : 'Thêm lịch hẹn'}
@@ -87,6 +76,7 @@ export default function AppointmentFormModal({
             </Space>
           )}
           rules={[{ required: true, message: 'Chọn khách' }]}
+          extra="Lịch hẹn chỉ là hẹn ngày gặp tư vấn — gói liệu trình sẽ được tạo/bán sau buổi tư vấn."
         >
           <Select
             showSearch
@@ -94,7 +84,6 @@ export default function AppointmentFormModal({
             onSearch={onCustomerSearch}
             onChange={(id) => {
               onSelectProfile(profileOptions.find((profile) => profile.id === id) ?? null)
-              form.setFieldsValue({ treatment_package_id: undefined, service_id: undefined })
             }}
             loading={profilesLoading}
             placeholder="Chọn khách hàng"
@@ -105,65 +94,26 @@ export default function AppointmentFormModal({
             notFoundContent={profilesLoading ? 'Đang tìm khách hàng…' : 'Không tìm thấy khách'}
           />
         </Form.Item>
-        <Form.Item label="Loại lịch hẹn" required>
-          <Segmented
-            block
-            value={bookingType}
-            options={[
-              { label: 'Dịch vụ', value: 'service' },
-              { label: 'Liệu trình', value: 'treatment' },
-            ]}
-            onChange={(value) => {
-              const next = value as AppointmentBookingType
-              form.setFieldsValue(
-                next === 'treatment'
-                  ? { service_id: undefined, treatment_package_id: undefined }
-                  : { treatment_package_id: undefined },
-              )
-              onBookingTypeChange(next)
-            }}
-          />
-        </Form.Item>
-        {isTreatment ? (
-          <Form.Item
-            name="treatment_package_id"
-            label="Gói liệu trình"
-            rules={[{ required: true, message: 'Chọn gói liệu trình' }]}
-            extra="Nội dung buổi gặp với khách."
-          >
-            <Select
-              showSearch
-              optionFilterProp="label"
-              loading={treatmentPackagesLoading}
-              placeholder="Chọn gói liệu trình"
-              options={treatmentPackages
-                .filter((pkg) => pkg.is_active !== false)
-                .map((pkg) => ({ value: pkg.id, label: pkg.name }))}
-              notFoundContent={treatmentPackagesLoading ? 'Đang tải gói…' : 'Chưa có gói liệu trình'}
-            />
-          </Form.Item>
-        ) : (
-          <Form.Item
-            name="service_id"
-            label="Dịch vụ"
-            rules={[{ required: true, message: 'Chọn dịch vụ khách đặt' }]}
-            extra="Nội dung buổi gặp với khách."
-          >
-            <Select
-              showSearch
-              optionFilterProp="label"
-              loading={servicesLoading}
-              placeholder="Chọn dịch vụ"
-              style={{ width: '100%' }}
-              options={serviceOptions.map((s) => ({ value: s.id, label: s.title }))}
-              notFoundContent={servicesLoading ? 'Đang tải dịch vụ…' : 'Chưa có dịch vụ đang hoạt động'}
-            />
-          </Form.Item>
-        )}
         <Row gutter={12}>
           <Col xs={24} sm={12}>
             <Form.Item name="appt_date" label="Ngày hẹn" rules={[{ required: true, message: 'Chọn ngày hẹn' }]}>
               <DatePicker format="DD/MM/YYYY" style={{ width: '100%' }} />
+            </Form.Item>
+          </Col>
+          <Col xs={24} sm={12}>
+            <Form.Item
+              name="staff_id"
+              label="KTV phụ trách (tùy chọn)"
+              extra="Để trống để spa phân công. Khi khách đòi KTV cũ không được nghỉ: đổi lịch hẹn sang KTV khác ở đây."
+            >
+              <Select
+                allowClear
+                showSearch
+                optionFilterProp="label"
+                placeholder="Chọn KTV"
+                options={staffOptions.map((staff) => ({ value: staff.id, label: staff.label }))}
+                notFoundContent="Chưa có danh sách KTV"
+              />
             </Form.Item>
           </Col>
         </Row>
@@ -174,11 +124,11 @@ export default function AppointmentFormModal({
           extra="Chỉ hiện giờ có KTV rảnh, không trùng lịch."
         >
           <Select
-            disabled={slotsLoading || !selectedDate || (!selectedServiceId && !selectedPackageId) || !selectedCustomerId}
+            disabled={slotsLoading || !selectedDate || !selectedCustomerId}
             loading={slotsLoading}
             placeholder={
-              !selectedCustomerId || (!selectedServiceId && !selectedPackageId) || !selectedDate
-                ? 'Chọn khách, dịch vụ/gói và ngày trước'
+              !selectedCustomerId || !selectedDate
+                ? 'Chọn khách và ngày trước'
                 : slotsLoading
                   ? 'Đang tìm giờ trống…'
                   : slots.length

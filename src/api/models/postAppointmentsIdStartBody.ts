@@ -8,9 +8,6 @@
 import type { PostAppointmentsIdStartBodySessionCustomFields } from './postAppointmentsIdStartBodySessionCustomFields';
 
 export type PostAppointmentsIdStartBody = {
+  /** (Legacy) custom fields cho buổi điều trị khi lịch còn gắn customer_treatment */
   session_custom_fields?: PostAppointmentsIdStartBodySessionCustomFields;
-  /** Treatment package chosen to attach at start time */
-  customer_treatment_id?: string;
-  /** Finalized price of the standalone service that has a price range; required before starting */
-  service_amount?: number;
 };
