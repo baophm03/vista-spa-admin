@@ -625,27 +625,36 @@ export default function TreatmentCustomers() {
   })
   const promoPointsData = pickData<{
     points?: number
-    redemption?: { enabled?: boolean | string; point_value?: number | null; min_percent?: number | null; max_percent?: number | null; max_points?: number | null }
+    redemption?: { enabled?: boolean | string; point_value?: number | null; min_percent?: number | null; max_percent?: number | null; balance_max_percent?: number | null }
   }>(promoPointsQuery.data)
   const redeemPointsValue = Number(Form.useWatch('points', redeemForm) ?? 0)
   const redeemBalance = Number(promoPointsData?.points ?? 0)
   const redeemDebt = Number(promoRow?.debt_amount ?? 0)
+  const redeemInvoiceAmount = Math.max(Number(promoRow?.total_amount ?? 0) - Number(promoRow?.discount_amount ?? 0), 0)
   const pointValue = Number(promoPointsData?.redemption?.point_value)
   const minRedeemPercent = Number(promoPointsData?.redemption?.min_percent)
   const maxRedeemPercent = Number(promoPointsData?.redemption?.max_percent)
-  const maxRedeemPoints = Number(promoPointsData?.redemption?.max_points ?? 0)
+  const balanceMaxRedeemPercent = Number(promoPointsData?.redemption?.balance_max_percent)
+  const maxRedeemPointsByBalance = Number.isFinite(balanceMaxRedeemPercent)
+    ? Math.floor(redeemBalance * balanceMaxRedeemPercent / 100)
+    : 0
   const isPointsEnabled = promoPointsData?.redemption?.enabled === true || promoPointsData?.redemption?.enabled === 'true'
   const redemptionConfigReady = Number.isFinite(pointValue) && pointValue > 0
     && Number.isFinite(minRedeemPercent) && Number.isFinite(maxRedeemPercent)
+    && Number.isInteger(balanceMaxRedeemPercent) && balanceMaxRedeemPercent >= 1 && balanceMaxRedeemPercent <= 99
     && minRedeemPercent <= maxRedeemPercent
   const redeemMoney = redeemPointsValue * pointValue
-  const minRedeemMoney = redeemDebt * minRedeemPercent / 100
-  const maxRedeemMoney = redeemDebt * maxRedeemPercent / 100
+  const minRedeemMoney = redeemInvoiceAmount * minRedeemPercent / 100
+  const maxRedeemMoney = Math.min(redeemInvoiceAmount * maxRedeemPercent / 100, redeemDebt)
+  const maxRedeemPoints = Math.min(
+    maxRedeemPointsByBalance,
+    pointValue > 0 ? Math.floor(maxRedeemMoney / pointValue) : 0,
+  )
   let redeemValidationMessage = ''
-  if (redeemPointsValue > 0 && redeemDebt <= 0) redeemValidationMessage = 'Gói không còn công nợ để đổi điểm.'
+  if (redeemPointsValue > 0 && redeemDebt <= 0) redeemValidationMessage = 'Gói này đã được thanh toán đủ.'
   else if (redeemPointsValue > redeemBalance) redeemValidationMessage = `Khách chỉ còn ${redeemBalance.toLocaleString('vi-VN')} điểm.`
-  else if (redeemPointsValue > 0 && maxRedeemPoints > 0 && redeemPointsValue > maxRedeemPoints) {
-    redeemValidationMessage = `Mỗi lần chỉ được đổi tối đa ${maxRedeemPoints.toLocaleString('vi-VN')} điểm (cấu hình Tích điểm & ưu đãi).`
+  else if (redeemPointsValue > 0 && redeemPointsValue > maxRedeemPoints) {
+    redeemValidationMessage = `Mỗi lần chỉ được dùng tối đa ${maxRedeemPoints.toLocaleString('vi-VN')} điểm theo số dư và hóa đơn.`
   } else if (redeemPointsValue > 0 && redemptionConfigReady && redeemMoney < minRedeemMoney) {
     redeemValidationMessage = `Giá trị đổi thấp hơn mức tối thiểu ${formatMoney(minRedeemMoney)}.`
   } else if (redeemPointsValue > 0 && redemptionConfigReady && redeemMoney > maxRedeemMoney) {
@@ -653,8 +662,7 @@ export default function TreatmentCustomers() {
   }
   const canSubmitRedeem = promoPointsQuery.isSuccess && isPointsEnabled && redemptionConfigReady
     && redeemPointsValue > 0 && Number.isInteger(redeemPointsValue)
-    && redeemPointsValue <= redeemBalance && redeemDebt > 0
-    && (maxRedeemPoints <= 0 || redeemPointsValue <= maxRedeemPoints)
+    && redeemPointsValue <= redeemBalance && redeemDebt > 0 && redeemPointsValue <= maxRedeemPoints
     && redeemMoney >= minRedeemMoney && redeemMoney <= maxRedeemMoney
 
   // Giảm thủ công (không qua voucher): % hoặc số tiền
@@ -1112,14 +1120,16 @@ export default function TreatmentCustomers() {
         isPointsEnabled={isPointsEnabled}
         redemptionConfigReady={redemptionConfigReady}
         redeemBalance={redeemBalance}
+        balanceMaxRedeemPercent={balanceMaxRedeemPercent}
         redeemPointsValue={redeemPointsValue}
         redeemMoney={redeemMoney}
         pointValue={pointValue}
+        redeemInvoiceAmount={redeemInvoiceAmount}
         minRedeemMoney={minRedeemMoney}
         maxRedeemMoney={maxRedeemMoney}
         minRedeemPercent={minRedeemPercent}
         maxRedeemPercent={maxRedeemPercent}
-        maxRedeemPoints={maxRedeemPoints > 0 ? maxRedeemPoints : null}
+        maxRedeemPoints={maxRedeemPoints}
         redeemDebt={redeemDebt}
         redeemValidationMessage={redeemValidationMessage}
         canSubmitRedeem={canSubmitRedeem}

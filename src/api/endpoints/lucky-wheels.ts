@@ -95,7 +95,7 @@ export const getGetLuckyWheelsIdQueryKey = (id?: string,) => {
     ] as const;
     }
 
-    
+
 export const getGetLuckyWheelsIdInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getLuckyWheelsId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLuckyWheelsId>>, TError, TData>>, }
 ) => {
 
@@ -1505,7 +1505,7 @@ export const usePutLuckyWheelsIdPrizesPrizeId = <TError = UnauthorizedResponse |
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **LW-09** — DELETE /lucky-wheels/{id}/prizes/{prizeId}. Requires the `wheel.update` permission. Deletion is only allowed if no spin has ever won this prize (409 if it has).
+ * **LW-09** — DELETE /lucky-wheels/{id}/prizes/{prizeId}. Requires the `wheel.delete` permission. Deletion is only allowed if no spin has ever won this prize (409 if it has).
  * @summary Remove a prize from the wheel
  */
 export const deleteLuckyWheelsIdPrizesPrizeId = (
@@ -1567,4 +1567,4 @@ export const useDeleteLuckyWheelsIdPrizesPrizeId = <TError = UnauthorizedRespons
 
       return useMutation(mutationOptions, queryClient);
     }
-    
+

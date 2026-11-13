@@ -167,7 +167,7 @@ export default function CommissionRules() {
         return meta ? <Tag color={meta.color}>{meta.label}</Tag> : <Tag>{v}</Tag>
       },
     },
-    { key: 'base', title: 'Căn tính', dataIndex: 'base', width: 150, render: (v?: string) => BASE_OPTIONS.find((o) => o.value === v)?.label ?? '—' },
+    { key: 'base', title: 'Tính hoa hồng theo', dataIndex: 'base', width: 190, render: (v?: string) => BASE_OPTIONS.find((o) => o.value === v)?.label ?? '—' },
     { key: 'percent', title: '% hoa hồng', dataIndex: 'percent', width: 100, align: 'right', render: (v?: number) => (v != null ? `${v}%` : '—') },
     {
       key: 'scope',
@@ -267,7 +267,7 @@ export default function CommissionRules() {
             )}
             <Alert
               type="info" showIcon style={{ marginBottom: 16 }}
-              message="Hoa hồng tự động chỉ chạy khi bật cấu hình commission.auto_enabled. Rule cụ thể hơn (theo dịch vụ/KTV/cơ sở) được ưu tiên, rồi đến mức ưu tiên."
+              message="Tính hoa hồng tự động chỉ hoạt động khi được bật trong Cài đặt hệ thống. Khi nhiều quy tắc cùng phù hợp, hệ thống ưu tiên quy tắc cụ thể hơn theo dịch vụ, KTV hoặc cơ sở, sau đó xét mức ưu tiên."
             />
             <Table<CommissionRule>
               rowKey="id" loading={rulesQuery.isLoading} dataSource={paginateRows(rules, page, 10)} columns={columns}
@@ -293,7 +293,7 @@ export default function CommissionRules() {
         ) : (
           <>
             <PageTitle subtitle="Quy tắc tính hoa hồng cho nhân viên và cộng tác viên">Quy tắc hoa hồng</PageTitle>
-            <Alert type="warning" showIcon message="Bạn không có quyền quản lý quy tắc hoa hồng (cần quyền commission.rule_manage)" />
+            <Alert type="warning" showIcon message="Tài khoản của bạn chưa được cấp quyền quản lý quy tắc hoa hồng. Vui lòng liên hệ quản trị viên." />
           </>
         )
       }

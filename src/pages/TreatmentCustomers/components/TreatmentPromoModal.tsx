@@ -29,9 +29,11 @@ interface TreatmentPromoModalProps {
   isPointsEnabled: boolean
   redemptionConfigReady: boolean
   redeemBalance: number
+  balanceMaxRedeemPercent: number
   redeemPointsValue: number
   redeemMoney: number
   pointValue: number
+  redeemInvoiceAmount: number
   minRedeemMoney: number
   maxRedeemMoney: number
   minRedeemPercent: number
@@ -73,9 +75,11 @@ export default function TreatmentPromoModal({
   isPointsEnabled,
   redemptionConfigReady,
   redeemBalance,
+  balanceMaxRedeemPercent,
   redeemPointsValue,
   redeemMoney,
   pointValue,
+  redeemInvoiceAmount,
   minRedeemMoney,
   maxRedeemMoney,
   minRedeemPercent,
@@ -239,7 +243,7 @@ export default function TreatmentPromoModal({
                     <Alert type="warning" showIcon className="mb-3" message="Tính năng đổi điểm đang tắt theo cấu hình hệ thống." />
                   ) : null}
                   {pointsLoaded && isPointsEnabled && !redemptionConfigReady ? (
-                    <Alert type="error" showIcon className="mb-3" message="Cấu hình quy đổi điểm chưa hợp lệ. Kiểm tra giá trị điểm và tỷ lệ tối thiểu/tối đa." />
+                    <Alert type="error" showIcon className="mb-3" message="Cấu hình đổi điểm chưa hợp lệ. Kiểm tra giá trị điểm và các tỷ lệ giới hạn." />
                   ) : null}
                   <Form.Item
                     name="points"
@@ -249,16 +253,19 @@ export default function TreatmentPromoModal({
                       { validator: async (_, value) => Number.isInteger(Number(value)) && Number(value) > 0 ? Promise.resolve() : Promise.reject(new Error('Số điểm phải là số nguyên dương')) },
                     ]}
                   >
-                    <InputNumber min={1} max={redeemBalance > 0 ? redeemBalance : undefined} precision={0} className="w-full!" disabled={!isPointsEnabled || !redemptionConfigReady || redeemBalance <= 0} />
+                    <InputNumber min={1} max={maxRedeemPoints > 0 ? maxRedeemPoints : undefined} precision={0} className="w-full!" disabled={!isPointsEnabled || !redemptionConfigReady || maxRedeemPoints <= 0} />
                   </Form.Item>
                   {pointsLoaded && isPointsEnabled && redemptionConfigReady ? (
                     <Card size="small" className="mb-3">
                       <Space direction="vertical" size={4}>
                         <Typography.Text>Điểm hiện có: <Typography.Text strong>{redeemBalance.toLocaleString('vi-VN')}</Typography.Text></Typography.Text>
+                        <Typography.Text>Tối đa lần này: <Typography.Text strong>{maxRedeemPoints?.toLocaleString('vi-VN') ?? 0} điểm</Typography.Text> ({balanceMaxRedeemPercent}% số dư và giới hạn hóa đơn)</Typography.Text>
                         <Typography.Text>Giá trị dự kiến: <Typography.Text strong>{redeemPointsValue > 0 ? formatMoney(redeemMoney) : '—'}</Typography.Text></Typography.Text>
                         <Typography.Text type="secondary">
-                          1 điểm = {formatMoney(pointValue)} · Mức được phép: {formatMoney(minRedeemMoney)}–{formatMoney(maxRedeemMoney)} ({minRedeemPercent}–{maxRedeemPercent}% công nợ {formatMoney(redeemDebt)})
-                          {maxRedeemPoints != null && Number(maxRedeemPoints) > 0 ? ` · Tối đa ${Number(maxRedeemPoints).toLocaleString('vi-VN')} điểm/lần` : ''}
+                          1 điểm = {formatMoney(pointValue)} · Giảm {minRedeemPercent}–{maxRedeemPercent}% trên hóa đơn {formatMoney(redeemInvoiceAmount)}.
+                        </Typography.Text>
+                        <Typography.Text type="secondary">
+                          Mức giảm tối đa {formatMoney(maxRedeemMoney)}; không vượt số tiền còn phải trả {formatMoney(redeemDebt)}.
                         </Typography.Text>
                       </Space>
                     </Card>

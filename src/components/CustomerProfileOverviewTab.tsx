@@ -12,6 +12,7 @@ import {
 } from '@/api/endpoints/membership'
 import type { CustomFieldDefWithOptions } from '@/components/CustomerProfileCustomFields'
 import { useBrandCurrency } from '@/themeRuntime'
+import { errorMessage } from '@/api/helpers'
 
 /** Hồ sơ khách hàng kèm dữ liệu user được include từ backend. */
 export interface CustomerProfileRow extends CustomerProfile {
@@ -88,7 +89,7 @@ export default function CustomerProfileOverviewTab({ profile, summary, branchNam
       await onMembershipUpdated?.()
     } catch (error) {
       if (error && typeof error === 'object' && 'errorFields' in error) return
-      message.error(error instanceof Error ? error.message : 'Không thể điều chỉnh điểm')
+      message.error(errorMessage(error, 'Không thể điều chỉnh điểm'))
     }
   }
 
@@ -102,7 +103,7 @@ export default function CustomerProfileOverviewTab({ profile, summary, branchNam
       await onMembershipUpdated?.()
     } catch (error) {
       if (error && typeof error === 'object' && 'errorFields' in error) return
-      message.error(error instanceof Error ? error.message : 'Không thể gán hạng')
+      message.error(errorMessage(error, 'Không thể gán hạng'))
     }
   }
 
@@ -112,7 +113,7 @@ export default function CustomerProfileOverviewTab({ profile, summary, branchNam
       message.success('Đã tính lại hạng theo chi tiêu')
       await onMembershipUpdated?.()
     } catch (error) {
-      message.error(error instanceof Error ? error.message : 'Không thể tính lại hạng')
+      message.error(errorMessage(error, 'Không thể tính lại hạng'))
     }
   }
 

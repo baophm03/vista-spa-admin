@@ -8,6 +8,8 @@
 
 export type PutLuckyWheelsIdBody = {
   name?: string;
+  /** @nullable */
+  branch_id?: string | null;
   min_year_spent?: number;
   spins_per_user?: number;
   /** @nullable */

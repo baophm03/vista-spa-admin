@@ -22,7 +22,13 @@ export interface ProductOrder {
   note?: ProductOrderNote;
   status?: string;
   /** @minimum 0 */
+  subtotal_amount?: number;
+  /** @minimum 0 */
+  discount_amount?: number;
+  /** @minimum 0 */
   total_amount?: number;
+  user_voucher_id?: string | null;
+  voucher_title_snapshot?: string | null;
   created_at?: string;
   updated_at?: string;
 }

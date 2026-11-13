@@ -9,9 +9,13 @@ import {
   Space,
   Switch,
 } from 'antd'
-import type { Voucher } from '@/api/models/voucher'
 import type { Service } from '@/api/models/service'
 import { TYPE_META, type RewardRow } from './constants'
+
+export interface RewardVoucherOption {
+  value: string
+  label: string
+}
 
 interface RewardModalProps {
   open: boolean
@@ -20,7 +24,7 @@ interface RewardModalProps {
   onSubmit: () => void
   confirmLoading: boolean
   form: FormInstance
-  vouchers: Voucher[]
+  vouchers: RewardVoucherOption[]
   services: Service[]
   servicesQueryLoading: boolean
 }
@@ -57,11 +61,12 @@ export default function RewardModal({
             <Select options={Object.entries(TYPE_META).map(([value, meta]) => ({ value, label: meta.label }))} />
           </Form.Item>
           {selectedType === 'VOUCHER' && (
-            <Form.Item name="voucher_id" label="Voucher cấp" rules={[{ required: true, message: 'Chọn voucher sẽ cấp' }]} style={{ flex: 1 }}>
+            <Form.Item name="voucher_reference" label="Voucher cấp" rules={[{ required: true, message: 'Chọn voucher sẽ cấp' }]} style={{ flex: 1 }}>
               <Select
                 showSearch
                 optionFilterProp="label"
-                options={vouchers.filter((v) => v.is_active !== false).map((v) => ({ value: v.id, label: v.title }))}
+                placeholder="Chọn voucher liệu trình, khóa học hoặc sản phẩm"
+                options={vouchers}
               />
             </Form.Item>
           )}

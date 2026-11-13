@@ -293,7 +293,7 @@ export default function Referrals() {
         ) : (
           <>
             <PageTitle subtitle="Theo dõi lượt giới thiệu và hoa hồng giới thiệu">Lịch sử giới thiệu</PageTitle>
-            <Alert type="warning" showIcon title="Bạn không có quyền xem lịch sử giới thiệu (cần quyền referral.read)" />
+            <Alert type="warning" showIcon title="Tài khoản của bạn chưa được cấp quyền xem lịch sử giới thiệu. Vui lòng liên hệ quản trị viên." />
           </>
         )
       }

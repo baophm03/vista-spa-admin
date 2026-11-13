@@ -51,9 +51,6 @@ export default class ScheduleErrorBoundary extends Component<Props, State> {
         description={
           <div>
             <p>Trang đã được giữ lại để không bị trắng. Hãy tải lại trang; nếu lỗi xuất hiện sau khi sửa code, trang cũng sẽ tự thử lại khi Vite cập nhật.</p>
-            {import.meta.env.DEV && (
-              <pre style={{ maxHeight: 180, overflow: 'auto', whiteSpace: 'pre-wrap' }}>{this.state.error.message}</pre>
-            )}
             <Button size="small" onClick={this.reloadPage}>Tải lại trang lịch</Button>
           </div>
         }

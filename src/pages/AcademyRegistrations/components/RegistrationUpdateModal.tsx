@@ -35,8 +35,11 @@ export default function RegistrationUpdateModal({ target, form, staffs, courses,
             <Tag color={STATUS_META[target.status ?? '']?.color}>{STATUS_META[target.status ?? '']?.label ?? target.status}</Tag>
           </Descriptions.Item>
           <Descriptions.Item label="Khóa học" span={2}>{target.course?.name ?? courseById(target.course_id) ?? '—'}</Descriptions.Item>
+          <Descriptions.Item label="Học phí ban đầu">{formatMoney(Number(target.tuition_before_discount ?? target.course?.tuition ?? 0))}</Descriptions.Item>
           <Descriptions.Item label="Học phí cuối">{formatMoney(Number(target.final_tuition ?? 0))}</Descriptions.Item>
-          <Descriptions.Item label="Ưu đãi">{target.discount_percent ? `${target.discount_percent}%` : '—'}</Descriptions.Item>
+          <Descriptions.Item label="Ưu đãi học viên cũ">{target.discount_percent ? `${target.discount_percent}%` : '—'}</Descriptions.Item>
+          <Descriptions.Item label="Voucher khóa học">{target.course_voucher_title ?? '—'}</Descriptions.Item>
+          <Descriptions.Item label="Giảm từ voucher" span={2}>{Number(target.voucher_discount_amount ?? 0) > 0 ? formatMoney(Number(target.voucher_discount_amount)) : '—'}</Descriptions.Item>
           <Descriptions.Item label="Thanh toán" span={2}>
             <Tag color={PAYMENT_STATUS_META[target.payment_status ?? '']?.color}>{PAYMENT_STATUS_META[target.payment_status ?? '']?.label ?? target.payment_status ?? '—'}</Tag>
           </Descriptions.Item>

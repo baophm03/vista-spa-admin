@@ -5,6 +5,10 @@ import type { AcademyCourse } from '@/api/models/academyCourse'
 export type RegistrationRow = AcademyRegistration & {
   assigned_to?: string | null
   contacted_at?: string | null
+  tuition_before_discount?: number | string | null
+  academy_course_voucher_id?: string | null
+  voucher_discount_amount?: number | string | null
+  course_voucher_title?: string | null
   user?: { id: string; zalo_name?: string } | null
   course?: AcademyCourse | null
 }

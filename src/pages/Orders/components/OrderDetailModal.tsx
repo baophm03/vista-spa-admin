@@ -52,6 +52,7 @@ export default function OrderDetailModal({
             <Descriptions.Item label="SĐT">{detail.phone}</Descriptions.Item>
             <Descriptions.Item label="Địa chỉ" span={2}>{detail.address || '—'}</Descriptions.Item>
             <Descriptions.Item label="Ghi chú" span={2}>{detail.note || '—'}</Descriptions.Item>
+            {detail.voucher_title_snapshot && <Descriptions.Item label="Voucher" span={2}>{detail.voucher_title_snapshot}</Descriptions.Item>}
           </Descriptions>
           <Typography.Title level={5} style={{ marginTop: 16 }}>Sản phẩm</Typography.Title>
           <Table<ProductOrderItem>
@@ -60,12 +61,30 @@ export default function OrderDetailModal({
             pagination={false}
             dataSource={detail.items ?? []}
             columns={itemColumns}
-            summary={() => (
-              <Table.Summary.Row>
-                <Table.Summary.Cell index={0} colSpan={3}><strong>Tổng cộng</strong></Table.Summary.Cell>
-                <Table.Summary.Cell index={1}><strong>{formatMoney(detail.total_amount)}</strong></Table.Summary.Cell>
-              </Table.Summary.Row>
-            )}
+            summary={() => {
+              const subtotal = detail.subtotal_amount ?? (detail.items ?? []).reduce((sum, item) => sum + Number(item.subtotal ?? 0), 0)
+              const discount = Number(detail.discount_amount ?? 0)
+              return (
+                <>
+                  <Table.Summary.Row>
+                    <Table.Summary.Cell index={0} colSpan={3}>Tạm tính</Table.Summary.Cell>
+                    <Table.Summary.Cell index={3}>{formatMoney(subtotal)}</Table.Summary.Cell>
+                  </Table.Summary.Row>
+                  {discount > 0 && (
+                    <Table.Summary.Row>
+                      <Table.Summary.Cell index={0} colSpan={3}>
+                        Giảm từ voucher{detail.voucher_title_snapshot ? ` · ${detail.voucher_title_snapshot}` : ''}
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell index={3}>−{formatMoney(discount)}</Table.Summary.Cell>
+                    </Table.Summary.Row>
+                  )}
+                  <Table.Summary.Row>
+                    <Table.Summary.Cell index={0} colSpan={3}><strong>Khách cần trả</strong></Table.Summary.Cell>
+                    <Table.Summary.Cell index={3}><strong>{formatMoney(detail.total_amount)}</strong></Table.Summary.Cell>
+                  </Table.Summary.Row>
+                </>
+              )
+            }}
           />
           <Space style={{ marginTop: 16 }}>
             {(isAdmin ? NEXT_ACTIONS[detailStatus] ?? [] : []).map((action) => (

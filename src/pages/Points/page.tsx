@@ -295,7 +295,7 @@ export default function Points() {
       form.resetFields()
       await memberProfilesQuery.refetch()
     } catch (err) {
-      message.error(err instanceof Error ? err.message : 'Không thể điều chỉnh điểm')
+      message.error(errorMessage(err, 'Không thể điều chỉnh điểm'))
     } finally {
       adjustSubmitLock.current = false
     }
@@ -317,7 +317,7 @@ export default function Points() {
       await memberProfilesQuery.refetch()
     } catch (err) {
       if (err && typeof err === 'object' && 'errorFields' in err) return
-      message.error(err instanceof Error ? err.message : 'Không thể gán hạng')
+      message.error(errorMessage(err, 'Không thể gán hạng'))
     }
   }
 
@@ -327,7 +327,7 @@ export default function Points() {
       message.success('Đã tính lại hạng')
       await memberProfilesQuery.refetch()
     } catch (err) {
-      message.error(err instanceof Error ? err.message : 'Không thể tính lại hạng')
+      message.error(errorMessage(err, 'Không thể tính lại hạng'))
     }
   }
 
