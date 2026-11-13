@@ -140,13 +140,10 @@ export default function HealthRecords() {
       getTreatmentCustomers({ customer_profile_id: detail.id, limit: 50 }),
       getAppointments({ customer_profile_id: detail.id, page: 1, limit: 100 }).catch(() => null),
     ])
-      .then(([recordsResult, treatmentsResult, appointmentsResult]) => {
+      .then(([recordsResult, treatmentsResult]) => {
         if (cancelled) return
         setHistory(pickData<CustomerHealthRecord[]>(recordsResult) ?? [])
-        setDetailTreatments(pickData<CustomerTreatment[]>(treatmentsResult) ?? [])
-        setDetailAppointments((pickData<ServiceHistoryAppointment[]>(appointmentsResult) ?? []).filter((appointment) =>
-          !appointment.customer_treatment_id && ['in_progress', 'completed'].includes(String(appointment.status)),
-        ))
+        setDetailTreatments(pickData<CustomerTreatment[]>(treatmentsResult) ?? [])   
       })
       .catch(() => {
         if (!cancelled) setHistoryError(true)
