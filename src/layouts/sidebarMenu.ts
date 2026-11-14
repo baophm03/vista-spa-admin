@@ -82,7 +82,7 @@ export const menuItems: MenuItem[] = [
     label: 'Kinh doanh',
     icon: null,
     children: [
-      { key: '/services', icon: createElement(ShoppingOutlined), label: 'Gói dịch vụ', permission: { action: 'READ', subject: 'SERVICE' } },
+      { key: '/services', icon: createElement(ShoppingOutlined), label: 'Dịch vụ', permission: { action: 'READ', subject: 'SERVICE' } },
       { key: '/treatments', icon: createElement(ExperimentOutlined), label: 'Gói liệu trình', permission: { action: 'READ', subject: 'TREATMENT_PACKAGE' } },
       { key: '/payments', icon: createElement(AccountBookOutlined), label: 'Sổ thanh toán', permission: { action: 'READ', subject: 'PAYMENT' } },
       { key: '/products', icon: createElement(ShoppingOutlined), label: 'Sản phẩm', hideForKtv: true },

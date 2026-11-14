@@ -1,5 +1,5 @@
 import { Button, Image, Modal, Typography } from 'antd'
-import ContentRichTextEditor from '@/components/ContentRichTextEditor'
+import ContentRichTextEditor from './ContentRichTextEditor'
 import { resolveFileSrc, useFileUrlMap } from '@/hooks/useFileUrl'
 import type { PostFormValues } from './constants'
 

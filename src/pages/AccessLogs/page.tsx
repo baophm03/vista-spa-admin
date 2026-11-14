@@ -63,7 +63,7 @@ function listRows<T>(value: unknown): T[] {
 export default function AccessLogs() {
   const { formatDateTime } = useBrandDateTime()
   const [page, setPage] = useState(1)
-  const [limit] = useState(10)
+  const [limit] = useState(20)
   const [userId, setUserId] = useState<string>()
   const [branchId, setBranchId] = useState<string>()
   const [customerProfileId, setCustomerProfileId] = useState<string>()

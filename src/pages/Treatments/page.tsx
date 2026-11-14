@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { Alert, Button, Form, Grid, Input, Modal, Select, Space, Table, Tabs, Tag, Typography, message } from 'antd'
+import { Alert, Button, Image, Form, Grid, Input, Modal, Table, Tag, Typography, message } from 'antd'
 import type { TableColumnsType } from 'antd'
-import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, PlusOutlined, SearchOutlined, ShoppingOutlined } from '@ant-design/icons'
+import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, PictureOutlined, PlusOutlined, SearchOutlined, ShoppingOutlined } from '@ant-design/icons'
 import PageTitle from '@/components/base/PageTitle'
 import StatCards, { type StatItem } from '@/components/base/StatCards'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
@@ -13,34 +13,29 @@ import { useCustomerProfileAccess } from '@/utils/customerProfileAccess'
 import { normalizeCustomFieldValues } from '@/components/CustomFieldFormItems'
 import useCustomFieldDefinitions from '@/hooks/useCustomFieldDefinitions'
 import { errorMessage, pickData } from '@/api/helpers'
+import { fileSrc, resolveFileSrc, useFileUrlMap } from '@/hooks/useFileUrl'
 import type { Branch } from '@/api/models/branch'
 import type { Service } from '@/api/models/service'
 import {
-  getGetPackageTypesQueryKey,
   getGetTreatmentPackagesQueryKey,
-  useDeletePackageTypesId,
   useDeleteTreatmentPackagesId,
   useGetPackageTypes,
   useGetService,
   useGetTreatmentPackages,
-  usePostPackageTypes,
   usePostTreatmentPackages,
-  usePutPackageTypesId,
   usePutTreatmentPackagesId,
 } from '@/api/endpoints/services'
 import { useGetBranches } from '@/api/endpoints/branches'
 import { useBrandCurrency } from '@/themeRuntime'
 
 import TreatmentPackageModal from './components/TreatmentPackageModal'
-import TreatmentTypeModal from './components/TreatmentTypeModal'
+import TreatmentPackageDetailModal from './components/TreatmentPackageDetailModal'
 import {
+  FIXED_PACKAGE_TYPE_CODE,
+  UNLIMITED_PACKAGE_TYPE_CODE,
   VALIDITY_LABEL,
-  PACKAGE_TYPE_QUOTA_OPTIONS,
-  QUOTA_LABEL,
 
-  saleModeLabel,
   priceLabel,
-  type PackageTypeForm,
   type PackageTypeRow,
   type QuotaType,
   type TreatmentPackageRow,
@@ -53,10 +48,8 @@ export default function Treatments() {
   const canManage = useCustomerProfileAccess().isAdmin
   const { isAdmin, isReceptionist, isTechnician } = useCustomerProfileAccess()
   const hideSummaryForTechnician = isTechnician && !isAdmin && !isReceptionist
-  const [activeTab, setActiveTab] = useState('packages')
-  // Mobile (dưới breakpoint md): chuyển vùng nội dung bằng Select thay vì Tabs
+  // Mobile (dưới breakpoint md): search thu về nút icon, bấm mới mở ô tìm kiếm
   const isMobile = !Grid.useBreakpoint().md
-  // Mobile: search thu về nút icon, bấm mới mở ô tìm kiếm
   const [searchOpen, setSearchOpen] = useState(false)
 
   const [packageOpen, setPackageOpen] = useState(false)
@@ -64,11 +57,6 @@ export default function Treatments() {
   const [packageForm] = Form.useForm()
   const packageCustomFields = useCustomFieldDefinitions('PACKAGE')
   const [packageSaving, setPackageSaving] = useState(false)
-
-  const [typeOpen, setTypeOpen] = useState(false)
-  const [editingType, setEditingType] = useState<PackageTypeRow | null>(null)
-  const [typeForm] = Form.useForm<PackageTypeForm>()
-  const [typeSaving, setTypeSaving] = useState(false)
 
   const packagesQuery = useGetTreatmentPackages({ page: 1, limit: 200 })
   const packageTypesQuery = useGetPackageTypes({ limit: 200 })
@@ -78,6 +66,7 @@ export default function Treatments() {
   const rows = (pickData<TreatmentPackageRow[]>(packagesQuery.data) ?? []) as TreatmentPackageRow[]
   const [packageSearch, setPackageSearch] = useState('')
   const [packagePage, setPackagePage] = useState(1)
+  const [detailRow, setDetailRow] = useState<TreatmentPackageRow | null>(null)
   const visibleRows = useMemo(() => {
     const keyword = packageSearch.trim().toLowerCase()
     if (!keyword) return rows
@@ -86,8 +75,6 @@ export default function Treatments() {
       || String(row.description || '').toLowerCase().includes(keyword))
   }, [rows, packageSearch])
   const pagedRows = paginateRows(visibleRows, packagePage, 10)
-  // Thống kê đầu tab gói — đếm trên TẤT CẢ gói (rows) trước khi phân trang;
-
 
   const activePackageCount = rows.filter((row) => !!row.is_active).length
   const statItems: StatItem[] = hideSummaryForTechnician
@@ -99,45 +86,18 @@ export default function Treatments() {
     ]
   const packageTypeData = pickData<PackageTypeRow[] | { rows?: PackageTypeRow[] }>(packageTypesQuery.data)
   const packageTypes = (Array.isArray(packageTypeData) ? packageTypeData : packageTypeData?.rows ?? []) as PackageTypeRow[]
-  // Tìm kiếm loại gói (client-side) + phân trang tab loại
-  const [typeSearch, setTypeSearch] = useState('')
-  const filteredPackageTypes = useMemo(() => {
-    const keyword = typeSearch.trim().toLocaleLowerCase('vi-VN')
-    if (!keyword) return packageTypes
-    return packageTypes.filter((row) => [row.name, row.code].filter(Boolean).join(' ').toLocaleLowerCase('vi-VN').includes(keyword))
-  }, [packageTypes, typeSearch])
+  const packageTypeByCode = new Map(packageTypes.map((type) => [String(type.code).toUpperCase(), type]))
   const packageTypeById = new Map(packageTypes.map((type) => [String(type.id), type]))
   // GET /service trả { services, total, ... } trong responseData
   const services = (pickData<{ services?: Service[] }>(servicesQuery.data)?.services ?? []) as Service[]
   const branches = (pickData<Branch[]>(branchesQuery.data) ?? []) as Branch[]
   const catalogLoading = packageTypesQuery.isLoading || servicesQuery.isLoading || branchesQuery.isLoading
-
-  const selectedPackageTypeId = Form.useWatch('package_type_id', packageForm)
-  const selectedQuotaType = Form.useWatch('quota_type', packageForm) as QuotaType | undefined
-  const selectedPackageListPrice = Form.useWatch('list_price', packageForm)
-  const selectedPackageType = packageTypeById.get(String(selectedPackageTypeId))
-  const packageQuotaOptions = PACKAGE_TYPE_QUOTA_OPTIONS.filter((option) =>
-    option.value !== 'UNLIMITED' || selectedPackageType?.allow_unlimited,
-  )
-  const selectedTypeDefaultQuota = Form.useWatch('default_quota_type', typeForm)
   const serviceById = useMemo(() => new Map(services.map((service) => [service.id, service.title])), [services])
-
-  useEffect(() => {
-    if (selectedQuotaType === 'VALUE') {
-      packageForm.setFieldValue('total_value', Number(selectedPackageListPrice ?? 0))
-    }
-  }, [packageForm, selectedPackageListPrice, selectedQuotaType])
+  const urlMap = useFileUrlMap()
 
   const createPackageMutation = usePostTreatmentPackages()
   const updatePackageMutation = usePutTreatmentPackagesId()
   const deletePackageMutation = useDeleteTreatmentPackagesId()
-  const createTypeMutation = usePostPackageTypes()
-  const updateTypeMutation = usePutPackageTypesId()
-  const deleteTypeMutation = useDeletePackageTypesId()
-
-  const reloadPackageTypes = useCallback(async () => {
-    await queryClient.invalidateQueries({ queryKey: getGetPackageTypesQueryKey() })
-  }, [queryClient])
 
   const reloadPackages = useCallback(async () => {
     await queryClient.invalidateQueries({ queryKey: getGetTreatmentPackagesQueryKey() })
@@ -152,17 +112,18 @@ export default function Treatments() {
     packageForm.setFieldsValue(row ? {
       ...row,
       package_type_id: packageTypeId ? String(packageTypeId) : undefined,
-      quota_type: row.quota_type ?? type?.default_quota_type ?? 'SESSIONS',
+      quota_type: row.quota_type ?? (type && String(type.code).toUpperCase() === UNLIMITED_PACKAGE_TYPE_CODE ? 'UNLIMITED' : 'SESSIONS'),
+      has_warranty: !!row.warranty_text,
       list_price: row.list_price ?? 0,
-      bonus_sessions_default: row.bonus_sessions_default ?? 0,
       service_id: row.service_id ?? undefined,
       custom_fields: row.custom_fields ?? {},
     } : {
       name: '',
+      package_type_id: packageTypeByCode.get(FIXED_PACKAGE_TYPE_CODE)?.id,
       quota_type: 'SESSIONS',
       total_sessions: 5,
+      has_warranty: false,
       list_price: 0,
-      bonus_sessions_default: 0,
       service_id: undefined,
       custom_fields: {},
       is_active: true,
@@ -174,8 +135,8 @@ export default function Treatments() {
     const values = await packageForm.validateFields()
     setPackageSaving(true)
     try {
-      const isCombo = String(selectedPackageType?.code || '').toUpperCase() === 'COMBO'
       const quotaType = values.quota_type as QuotaType
+      const warrantyText = values.warranty_text?.trim() || null
       const dto = {
         ...values,
         name: String(values.name).trim(),
@@ -185,15 +146,16 @@ export default function Treatments() {
         quota_type: quotaType,
         total_sessions: quotaType === 'SESSIONS' ? Number(values.total_sessions) : null,
         total_value: quotaType === 'VALUE' ? Number(values.list_price) : null,
-        service_id: isCombo ? null : (values.service_id || null),
+        service_id: values.service_id || null,
         service_ids: [],
-        warranty_text: selectedPackageType?.has_warranty ? (values.warranty_text?.trim() || null) : null,
+        has_warranty: undefined,
+        warranty_text: values.has_warranty ? warrantyText : null,
         convertible_note: values.convertible_note?.trim() || null,
         terms: values.terms?.trim() || null,
         description: values.description?.trim() || null,
         validity_value: values.validity_value ? Number(values.validity_value) : null,
         validity_unit: values.validity_value ? values.validity_unit : null,
-        bonus_sessions_default: Number(values.bonus_sessions_default ?? 0),
+        bonus_sessions_default: undefined,
         list_price: Number(values.list_price ?? 0),
         list_price_max: values.list_price_max == null ? null : Number(values.list_price_max),
         custom_fields: normalizeCustomFieldValues(packageCustomFields, values.custom_fields ?? {}, editingPackage?.custom_fields ?? {}),
@@ -225,70 +187,20 @@ export default function Treatments() {
     }
   }
 
-  const openTypeModal = (row?: PackageTypeRow) => {
-    setEditingType(row ?? null)
-    typeForm.resetFields()
-    typeForm.setFieldsValue(row ? {
-      code: row.code,
-      name: row.name,
-      default_quota_type: row.default_quota_type,
-      has_warranty: !!row.has_warranty,
-      allow_unlimited: !!row.allow_unlimited,
-      sort_order: row.sort_order ?? 0,
-      is_active: row.is_active ?? true,
-    } : {
-      code: '',
-      name: '',
-      default_quota_type: 'SESSIONS',
-      has_warranty: false,
-      allow_unlimited: false,
-      sort_order: 0,
-      is_active: true,
-    })
-    setTypeOpen(true)
-  }
-
-  const submitType = async () => {
-    const values = await typeForm.validateFields()
-    setTypeSaving(true)
-    try {
-      const dto = {
-        ...values,
-        code: String(values.code).trim().toUpperCase(),
-        name: String(values.name).trim(),
-        has_warranty: values.default_quota_type === 'UNLIMITED' || !!values.has_warranty,
-        allow_unlimited: values.default_quota_type === 'UNLIMITED' || !!values.allow_unlimited,
-      }
-      if (editingType) {
-        await updateTypeMutation.mutateAsync({ id: editingType.id, data: dto as never })
-        message.success('Đã cập nhật loại gói')
-      } else {
-        await createTypeMutation.mutateAsync({ data: dto as never })
-        message.success('Đã tạo loại gói')
-      }
-      setTypeOpen(false)
-      await reloadPackageTypes()
-    } catch (err) {
-      if (err && typeof err === 'object' && 'errorFields' in err) return
-      message.error(errorMessage(err))
-    } finally {
-      setTypeSaving(false)
-    }
-  }
-
-  const handleTypeDelete = async (row: PackageTypeRow) => {
-    try {
-      await deleteTypeMutation.mutateAsync({ id: row.id })
-      message.success('Đã xóa loại gói')
-      await reloadPackageTypes()
-    } catch (err) {
-      message.error(errorMessage(err))
-    }
-  }
-
   const packageColumns: TableColumnsType<TreatmentPackageRow> = [
     {
-      title: 'Gói dịch vụ',
+      title: 'Ảnh',
+      key: 'image',
+      width: 76,
+      render: (_, row) => {
+        const src = fileSrc((row as any).image_file) ?? resolveFileSrc(urlMap, row.image_file_id)
+        return src
+          ? <Image src={src} width={48} height={48} style={{ objectFit: 'cover', borderRadius: 8 }} />
+          : <div style={{ width: 48, height: 48, borderRadius: 8, background: 'var(--brand-bg)', display: 'grid', placeItems: 'center', color: '#B9BDC2' }}><PictureOutlined /></div>
+      },
+    },
+    {
+      title: 'Gói liệu trình',
       key: 'name',
       dataIndex: 'name',
       width: 250,
@@ -313,12 +225,6 @@ export default function Treatments() {
       },
     },
     {
-      title: 'Chế độ',
-      key: 'quota',
-      width: 170,
-      render: (_value, row) => <Tag>{saleModeLabel(row)}</Tag>,
-    },
-    {
       title: 'Dịch vụ',
       key: 'services',
       width: 220,
@@ -336,32 +242,7 @@ export default function Treatments() {
         ? String(row.validity_value) + ' ' + (VALIDITY_LABEL[row.validity_unit] ?? row.validity_unit)
         : 'Không thời hạn',
     },
-    { title: 'Buổi tặng', key: 'bonus', dataIndex: 'bonus_sessions_default', width: 100, render: (value) => Number(value ?? 0) },
     { title: 'Trạng thái', key: 'status', dataIndex: 'is_active', width: 140, render: (active) => active ? <Tag color="green">Đang sử dụng</Tag> : <Tag>Ngưng sử dụng</Tag> },
-  ]
-
-  const visiblePackageColumns = packageColumns
-
-  const packageTypeColumns: TableColumnsType<PackageTypeRow> = [
-    { title: 'Tên loại gói', dataIndex: 'name', render: (value) => <Typography.Text strong>{value}</Typography.Text> },
-    { title: 'Mã loại', dataIndex: 'code', render: (value) => <Tag>{value}</Tag> },
-    { title: 'Hạn mức mặc định', dataIndex: 'default_quota_type', render: (value: QuotaType) => QUOTA_LABEL[value] ?? value },
-    { title: 'Bảo hành', dataIndex: 'has_warranty', render: (value) => value ? 'Có' : 'Không' },
-    { title: 'Cho phép trọn gói', dataIndex: 'allow_unlimited', render: (value) => value ? 'Có' : 'Không' },
-    { title: 'Trạng thái', dataIndex: 'is_active', render: (value) => value ? <Tag color="green">Đang dùng</Tag> : <Tag>Đã ẩn</Tag> },
-    ...(canManage ? [{
-      title: 'Thao tác', align: 'center' as const,
-      key: 'actions',
-      width: 150,
-      render: (_value: unknown, row: PackageTypeRow) => (
-        <Space>
-          <Button size="small" onClick={() => openTypeModal(row)}>Sửa</Button>
-          {row.is_active && (
-            <Button onClick={() => { handleTypeDelete(row) }} size="small" danger icon={<DeleteOutlined />} aria-label="Xóa loại gói" title="Xóa loại gói" />
-          )}
-        </Space>
-      ),
-    }] : []),
   ]
 
   const packagesContent = (
@@ -401,24 +282,30 @@ export default function Treatments() {
         dataSource={pagedRows}
         scroll={{ x: 1100 }}
         pagination={false}
+        onRow={(row) => ({
+          onClick: () => setDetailRow(row),
+          style: { cursor: 'pointer' },
+        })}
         columns={[
-          ...visiblePackageColumns,
+          ...packageColumns,
           ...(canManage ? [{
             title: 'Hành động', align: 'center' as const,
             key: 'actions',
             width: 140,
             fixed: 'right' as const,
             render: (_value: unknown, row: TreatmentPackageRow) => (
-              <RowActionsMenu
-                items={[
-                  { key: 'edit', icon: <EditOutlined />, label: 'Sửa' },
-                  { key: 'delete', icon: <DeleteOutlined />, danger: true, label: 'Xóa' },
-                ]}
-                onSelect={(key) => {
-                  if (key === 'edit') openPackageModal(row)
-                  else if (key === 'delete') Modal.confirm({ title: 'Xóa gói dịch vụ này?', content: 'Gói đã được sử dụng không thể xóa.', okText: 'Xóa', okButtonProps: { danger: true }, cancelText: 'Hủy', onOk: () => deletePackage(row) })
-                }}
-              />
+              <div onClick={(e) => e.stopPropagation()}>
+                <RowActionsMenu
+                  items={[
+                    { key: 'edit', icon: <EditOutlined />, label: 'Sửa' },
+                    { key: 'delete', icon: <DeleteOutlined />, danger: true, label: 'Xóa' },
+                  ]}
+                  onSelect={(key) => {
+                    if (key === 'edit') openPackageModal(row)
+                    else if (key === 'delete') Modal.confirm({ title: 'Xóa gói dịch vụ này?', content: 'Gói đã được sử dụng không thể xóa.', okText: 'Xóa', okButtonProps: { danger: true }, cancelText: 'Hủy', onOk: () => deletePackage(row) })
+                  }}
+                />
+              </div>
             ),
           }] : []),
         ]}
@@ -428,6 +315,7 @@ export default function Treatments() {
         rowKey={(row) => row.id}
         loading={packagesQuery.isLoading}
         emptyText="Chưa có gói dịch vụ nào"
+        onCardClick={(row) => setDetailRow(row)}
         renderCard={(row) => (
           <>
             <div className="mobile-card-head">
@@ -435,11 +323,10 @@ export default function Treatments() {
               {row.is_active ? <Tag color="green">Đang sử dụng</Tag> : <Tag>Ngưng sử dụng</Tag>}
             </div>
             <div className="mobile-card-rows">
-              <MobileCardRow label="Chế độ" value={saleModeLabel(row)} />
               <MobileCardRow label="Giá niêm yết" value={priceLabel(row, formatMoney)} />
             </div>
             {canManage && (
-              <div className="mobile-card-actions">
+              <div className="mobile-card-actions" onClick={(e) => e.stopPropagation()}>
                 <Button size="small" icon={<EditOutlined />} onClick={() => openPackageModal(row)}>Sửa</Button>
                 <Button size="small" danger icon={<DeleteOutlined />} aria-label="Xóa gói" title="Xóa gói" onClick={() => Modal.confirm({ title: 'Xóa gói dịch vụ này?', content: 'Gói đã được sử dụng không thể xóa.', okText: 'Xóa', okButtonProps: { danger: true }, cancelText: 'Hủy', onOk: () => deletePackage(row) })} />
               </div>
@@ -451,88 +338,13 @@ export default function Treatments() {
     </>
   )
 
-  const typesContent = (
-    <>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
-        <Input
-          allowClear
-          prefix={<SearchOutlined className="text-[var(--brand-text-inactive,#A9ADB2)]" />}
-          placeholder="Tìm theo tên hoặc mã loại gói"
-          style={{ width: 260 }}
-          value={typeSearch}
-          onChange={(event) => setTypeSearch(event.target.value)}
-        />
-        {canManage && (
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => openTypeModal()}>
-            Thêm loại gói
-          </Button>
-        )}
-      </div>
-      <Table<PackageTypeRow>
-        className="desktop-only"
-        rowKey="id"
-        loading={packageTypesQuery.isLoading}
-        dataSource={filteredPackageTypes}
-        columns={packageTypeColumns}
-        pagination={false}
-      />
-      <MobileCards
-        rows={filteredPackageTypes}
-        rowKey={(row) => row.id}
-        loading={packageTypesQuery.isLoading}
-        emptyText="Chưa có loại gói nào"
-        renderCard={(row) => (
-          <>
-            <div className="mobile-card-head">
-              <div className="mobile-card-title">{row.name}</div>
-              {row.is_active ? <Tag color="green">Đang dùng</Tag> : <Tag>Ngưng sử dụng</Tag>}
-            </div>
-            <div className="mobile-card-rows">
-              <MobileCardRow label="Mã loại" value={row.code || '—'} />
-              <MobileCardRow label="Hạn mức mặc định" value={row.default_quota_type ? (QUOTA_LABEL[row.default_quota_type] ?? row.default_quota_type) : '—'} />
-              <MobileCardRow label="Bảo hành" value={row.has_warranty ? 'Có' : 'Không'} />
-              <MobileCardRow label="Cho phép trọn gói" value={row.allow_unlimited ? 'Có' : 'Không'} />
-            </div>
-            {canManage && (
-              <div className="mobile-card-actions">
-                <Button size="small" onClick={() => openTypeModal(row)}>Sửa</Button>
-                {row.is_active && (
-                  <Button size="small" danger icon={<DeleteOutlined />} aria-label="Xóa loại gói" title="Xóa loại gói" />
-                )}
-              </div>
-            )}
-          </>
-        )}
-      />
-    </>
-  )
-
   return (
     <>
-      <PageTitle subtitle="Danh mục gói liệu trình và loại gói dịch vụ">
+      <PageTitle subtitle="Danh mục gói liệu trình — 4 loại cố định: Dịch vụ lẻ, Theo số buổi, Theo định mức tiền, Trọn đời">
         Liệu trình
       </PageTitle>
       <StatCards items={statItems} />
-
-      {isMobile && (
-        <Select
-          style={{ width: '100%', marginBottom: 12 }}
-          value={activeTab}
-          onChange={setActiveTab}
-          options={[
-            { value: 'packages', label: 'Danh mục gói' },
-            { value: 'types', label: 'Loại gói' },
-          ]}
-        />
-      )}
-      {!isMobile ? (
-        <Tabs activeKey={activeTab} onChange={setActiveTab} items={[
-          { key: 'packages', label: 'Danh mục gói', children: packagesContent },
-          { key: 'types', label: 'Loại gói', children: typesContent },
-        ]} />
-      ) : (
-        activeTab === 'packages' ? packagesContent : typesContent
-      )}
+      {packagesContent}
 
       <TreatmentPackageModal
         form={packageForm}
@@ -542,9 +354,6 @@ export default function Treatments() {
         packageTypeById={packageTypeById}
         services={services}
         branches={branches}
-        packageQuotaOptions={packageQuotaOptions}
-        selectedQuotaType={selectedQuotaType}
-        selectedPackageType={selectedPackageType}
         packageCustomFields={packageCustomFields}
         currencySymbol={currencySymbol}
         saving={packageSaving}
@@ -552,14 +361,15 @@ export default function Treatments() {
         onOk={submitPackage}
       />
 
-      <TreatmentTypeModal
-        form={typeForm}
-        open={typeOpen}
-        editing={editingType}
-        selectedDefaultQuota={selectedTypeDefaultQuota}
-        saving={typeSaving}
-        onCancel={() => setTypeOpen(false)}
-        onOk={submitType}
+      <TreatmentPackageDetailModal
+        row={detailRow}
+        branches={branches}
+        services={services}
+        packageTypeById={packageTypeById}
+        packageFields={packageCustomFields}
+        formatMoney={formatMoney}
+        onClose={() => setDetailRow(null)}
+        onEdit={(row) => { setDetailRow(null); openPackageModal(row) }}
       />
     </>
   )

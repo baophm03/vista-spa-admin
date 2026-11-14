@@ -1,6 +1,7 @@
 import { Alert, DatePicker, Form, Input, Modal, Select, Space, Table, Typography } from 'antd'
 import type { FormInstance } from 'antd'
 import dayjs from 'dayjs'
+import ServiceImageField from '@/components/ServiceImageField'
 import type { ShiftTemplate, ScheduleStaff } from '../types'
 import { staffLabel } from '../types'
 import { useGetStaffDaysOffConflicts } from '@/api/endpoints/staff'
@@ -61,6 +62,9 @@ export default function DayOffFormModal({ open, form, staff, scheduledTemplates,
           <Select allowClear placeholder="Cả ngày" options={scheduledTemplates.map((template) => ({ value: template.id, label: `${template.name} (${template.start_time.slice(0, 5)}–${template.end_time.slice(0, 5)})` }))} />
         </Form.Item>
         <Form.Item name="reason" label="Lý do"><Input.TextArea maxLength={1000} rows={3} /></Form.Item>
+        <Form.Item name="image_file_id" label="Ảnh minh chứng (tùy chọn)">
+          <ServiceImageField />
+        </Form.Item>
       </Form>
       {!!selectedStaffId && !!selectedDate && (
         conflictsQuery.isLoading ? (

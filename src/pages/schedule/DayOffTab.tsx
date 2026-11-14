@@ -2,9 +2,10 @@ import { useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import dayjs, { type Dayjs } from 'dayjs'
-import { Alert, Badge, Button, Checkbox, DatePicker, Divider, Form, Modal, Popconfirm, Popover, Select, Space, Table, Tag, Typography, message } from 'antd'
+import { Alert, Image, Badge, Button, Checkbox, DatePicker, Divider, Form, Modal, Popconfirm, Popover, Select, Space, Table, Tag, Typography, message } from 'antd'
 import { CalendarOutlined, ClearOutlined, FilterOutlined, PlusOutlined, ReloadOutlined } from '@ant-design/icons'
 import { errorMessage, pickData } from '@/api/helpers'
+import { fileSrc, resolveFileSrc, useFileUrlMap } from '@/hooks/useFileUrl'
 import ListPagination from '@/components/base/ListPagination'
 import ToolbarRow from '@/components/base/ToolbarRow'
 import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
@@ -124,6 +125,7 @@ export default function DayOffTab({ branches, staff, access, loadingShared }: Pr
   const [visibleColumns, setVisibleColumns] = useState<DayOffColumnKey[]>(DEFAULT_VISIBLE_COLUMNS)
   const [draftVisibleColumns, setDraftVisibleColumns] = useState<DayOffColumnKey[]>(DEFAULT_VISIBLE_COLUMNS)
   const [rejecting, setRejecting] = useState<StaffDayOff | null>(null)
+  const urlMap = useFileUrlMap()
   const [rejectReason, setRejectReason] = useState('')
   const [page, setPage] = useState(1)
   const [form] = Form.useForm()
@@ -252,7 +254,17 @@ export default function DayOffTab({ branches, staff, access, loadingShared }: Pr
     { title: 'KTV', dataIndex: 'staff_id', key: 'staff', render: (id: string, row: StaffDayOff) => staffLabel((row as StaffDayOff & { staff?: { id: string; zalo_name?: string; email?: string; phone_number?: string } }).staff ?? staff.find((person) => person.id === id)) },
     { title: 'Ngày nghỉ', dataIndex: 'off_date', key: 'date', render: (value: string) => dayjs(value).format('DD/MM/YYYY') },
     { title: 'Thời gian nghỉ', key: 'time', render: (_: unknown, row: StaffDayOff) => (row as StaffDayOff & { shift_template?: { name?: string } }).shift_template?.name || templates.find((template) => template.id === row.shift_template_id)?.name || 'Cả ngày' },
-    { title: 'Lý do', dataIndex: 'reason', key: 'reason', render: (value?: string) => value || '—' },
+    {
+      title: 'Lý do', dataIndex: 'reason', key: 'reason', render: (value?: string, row?: StaffDayOff) => {
+        const src = fileSrc((row as any)?.image_file) ?? resolveFileSrc(urlMap, row?.image_file_id)
+        return (
+          <Space size={8}>
+            <span style={{ maxWidth: 220, display: 'inline-block' }}>{value || '—'}</span>
+            {src && <Image src={src} width={40} height={40} style={{ objectFit: 'cover', borderRadius: 6 }} />}
+          </Space>
+        )
+      },
+    },
     { title: 'Trạng thái', dataIndex: 'status', key: 'status', render: (value: string, row: StaffDayOff) => <Space direction="vertical" size={0}><Tag color={STATUS[value]?.color}>{STATUS[value]?.label ?? value}</Tag>{row.reject_reason && <span style={{ color: '#cf1322', fontSize: 12 }}>Lý do: {row.reject_reason}</span>}</Space> },
     { title: 'Thao tác', align: 'center' as const, key: 'actions', width: 230, render: (_: unknown, row: StaffDayOff) => <Space wrap>
       {access.isAdmin && row.status === 'pending' && <>

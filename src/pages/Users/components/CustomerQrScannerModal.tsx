@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { BrowserQRCodeReader } from '@zxing/browser'
-import { Alert, Button, Input, Modal, Space, Typography, message } from 'antd'
-import { CameraOutlined, SearchOutlined } from '@ant-design/icons'
+import { Alert, Button, Modal, Space, Typography } from 'antd'
+import { CameraOutlined } from '@ant-design/icons'
 import { errorMessage } from '@/api/helpers'
 
 interface Props {
@@ -15,7 +15,6 @@ export default function CustomerQrScannerModal({ open, onClose, onToken }: Props
   const controlsRef = useRef<{ stop: () => void } | null>(null)
   const onTokenRef = useRef(onToken)
   const [scanning, setScanning] = useState(false)
-  const [token, setToken] = useState('')
   const [cameraError, setCameraError] = useState('')
 
   useEffect(() => {
@@ -51,18 +50,6 @@ export default function CustomerQrScannerModal({ open, onClose, onToken }: Props
     }
   }, [open, scanning])
 
-  const submitToken = () => {
-    const value = token.trim()
-    if (!value) {
-      message.warning('Nhập hoặc dán token QR')
-      return
-    }
-    controlsRef.current?.stop()
-    controlsRef.current = null
-    setScanning(false)
-    onTokenRef.current(value)
-  }
-
   const close = () => {
     controlsRef.current?.stop()
     controlsRef.current = null
@@ -92,14 +79,6 @@ export default function CustomerQrScannerModal({ open, onClose, onToken }: Props
           </Button>
           {scanning && <Button onClick={() => { controlsRef.current?.stop(); controlsRef.current = null; setScanning(false) }}>Dừng camera</Button>}
         </Space>
-        <Input.Search
-          allowClear
-          value={token}
-          onChange={(event) => setToken(event.target.value)}
-          onSearch={submitToken}
-          placeholder="Nhập hoặc dán token QR"
-          enterButton={<><SearchOutlined /> Tra cứu</>}
-        />
       </Space>
     </Modal>
   )

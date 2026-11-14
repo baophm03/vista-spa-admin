@@ -7,7 +7,7 @@ import type { SessionPhoto } from '@/api/models/sessionPhoto'
 import type { TreatmentSession } from '@/api/models/treatmentSession'
 import { getTreatmentCustomers, getTreatmentCustomersIdPayments, getTreatmentCustomersIdSessions, getSessionsIdPhotos } from '@/api/endpoints/treatment-customers'
 import { errorMessage, pickData } from '@/api/helpers'
-import CustomerTreatmentDetailCard from '@/components/CustomerTreatmentDetailCard'
+import CustomerTreatmentDetailCard from './CustomerTreatmentDetailCard'
 import { useAbility } from '@casl/react'
 
 interface Bundle {

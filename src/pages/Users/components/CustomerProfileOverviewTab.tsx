@@ -10,7 +10,7 @@ import {
   usePostMembershipsCustomerProfileIdRankOverride,
   usePostMembershipsCustomerProfileIdRecalculate,
 } from '@/api/endpoints/membership'
-import type { CustomFieldDefWithOptions } from '@/components/CustomerProfileCustomFields'
+import type { CustomFieldDefWithOptions } from './CustomerProfileCustomFields'
 import { useBrandCurrency } from '@/themeRuntime'
 import { errorMessage } from '@/api/helpers'
 

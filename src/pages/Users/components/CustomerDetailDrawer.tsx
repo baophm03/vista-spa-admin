@@ -1,8 +1,8 @@
 import { Button, Drawer, Popconfirm, Space, Typography } from 'antd'
 import { DownloadOutlined, HistoryOutlined, LinkOutlined, PrinterOutlined } from '@ant-design/icons'
-import CustomerProfileDetailsTabs from '@/components/CustomerProfileDetailsTabs'
-import type { CustomerProfileRow, CustomerProfileSummary } from '@/components/CustomerProfileOverviewTab'
-import type { CustomFieldDefWithOptions } from '@/components/CustomerProfileCustomFields'
+import CustomerProfileDetailsTabs from './CustomerProfileDetailsTabs'
+import type { CustomerProfileRow, CustomerProfileSummary } from './CustomerProfileOverviewTab'
+import type { CustomFieldDefWithOptions } from './CustomerProfileCustomFields'
 import CustomerAvatar from './CustomerAvatar'
 
 interface CustomerDetailDrawerProps {

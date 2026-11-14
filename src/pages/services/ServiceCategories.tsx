@@ -1,14 +1,15 @@
 import { useMemo, useState } from 'react'
-import { Button, Form, Input, Popconfirm, Space, Table, Tag, message } from 'antd'
+import { Button, Form, Input, Modal, Popconfirm, Space, Table, Tag, message } from 'antd'
 import type { TableColumnsType } from 'antd'
-import { DeleteOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
+import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { Can, useAbility } from '@casl/react'
+import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ServiceCategoryModal from './components/ServiceCategoryModal'
 import ListPagination from '@/components/base/ListPagination'
 import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import { paginateRows } from '@/utils/listTable'
 import { errorMessage, pickData } from '@/api/helpers'
-import { Can } from '@casl/react'
 import {
   deleteServiceCategoriesId,
   getGetServiceCategoriesQueryKey,
@@ -24,6 +25,9 @@ type ServiceCategoryRow = ServiceCategory & { parent?: { id?: string; name?: str
 
 export default function ServiceCategories() {
   const queryClient = useQueryClient()
+  const ability = useAbility()
+  const canUpdate = ability.can('UPDATE', 'SERVICE')
+  const canDelete = ability.can('DELETE', 'SERVICE')
   const [saving, setSaving] = useState(false)
   const [editing, setEditing] = useState<ServiceCategoryRow | null>(null)
   const [open, setOpen] = useState(false)
@@ -123,43 +127,36 @@ export default function ServiceCategories() {
         title: 'Hành động',
         key: 'actions',
         align: 'center' as const,
-        width: 170,
+        width: 90,
         render: (_value, row) => (
-          <Space>
-            <Can I="UPDATE" a="SERVICE">
-              <Button size="small" onClick={() => openEditor(row)}>
-                Sửa
-              </Button>
-            </Can>
-            {row.is_active === false ? (
-              <Can I="UPDATE" a="SERVICE">
-                <Button size="small" onClick={() => void restore(row)}>
-                  Bật lại
-                </Button>
-              </Can>
-            ) : (
-              <Can I="UPDATE" a="SERVICE">
-                <Popconfirm
-                  title="Ẩn danh mục này?"
-                  description="Danh mục bị ẩn khỏi app nhưng vẫn còn trong danh sách quản trị."
-                  onConfirm={() => void hide(row)}
-                >
-                  <Button size="small">Ẩn</Button>
-                </Popconfirm>
-              </Can>
-            )}
-            <Can I="DELETE" a="SERVICE">
-              <Popconfirm
-                title="Xóa danh mục này?"
-                description="Chỉ xóa được khi không còn dịch vụ hoặc danh mục con tham chiếu."
-                okButtonProps={{ danger: true }}
-                okText="Xóa"
-                onConfirm={() => void remove(row)}
-              >
-                <Button size="small" danger icon={<DeleteOutlined />} aria-label="Xóa danh mục" />
-              </Popconfirm>
-            </Can>
-          </Space>
+          <RowActionsMenu
+            items={[
+              ...(canUpdate ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []),
+              ...(canUpdate
+                ? [row.is_active === false
+                  ? { key: 'restore', icon: <EyeOutlined />, label: 'Bật lại' }
+                  : { key: 'hide', icon: <EyeInvisibleOutlined />, label: 'Ẩn' }]
+                : []),
+              ...(canDelete ? [{ key: 'delete', icon: <DeleteOutlined />, danger: true, label: 'Xóa' }] : []),
+            ]}
+            onSelect={(key) => {
+              if (key === 'edit') openEditor(row)
+              else if (key === 'restore') void restore(row)
+              else if (key === 'hide') Modal.confirm({
+                title: 'Ẩn danh mục này?',
+                content: 'Danh mục bị ẩn khỏi app nhưng vẫn còn trong danh sách quản trị.',
+                okText: 'Ẩn',
+                onOk: () => void hide(row),
+              })
+              else if (key === 'delete') Modal.confirm({
+                title: 'Xóa danh mục này?',
+                content: 'Chỉ xóa được khi không còn dịch vụ hoặc danh mục con tham chiếu.',
+                okButtonProps: { danger: true },
+                okText: 'Xóa',
+                onOk: () => void remove(row),
+              })
+            }}
+          />
         ),
       },
     ],

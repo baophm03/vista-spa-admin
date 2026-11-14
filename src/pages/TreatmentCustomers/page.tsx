@@ -843,6 +843,19 @@ export default function TreatmentCustomers() {
         onRow={(row) => ({ onClick: () => openDetail(row), style: { cursor: 'pointer' } })}
         columns={[
           {
+            title: 'Mã gói',
+            key: 'package_code',
+            width: 200,
+            render: (_: unknown, row: CustomerTreatment) => (
+              <div>
+                <Tag color="purple">G-{treatmentCode(row)}</Tag>
+                <div className="mt-0.5 text-xs text-[#777]">
+                  Mua ngày {row.created_at ? dayjs(row.created_at).format('DD/MM/YYYY') : '—'}
+                </div>
+              </div>
+            ),
+          },
+          {
             title: 'Khách hàng',
             key: 'customer',
             width: 220,
@@ -856,19 +869,6 @@ export default function TreatmentCustomers() {
                 </div>
               )
             },
-          },
-          {
-            title: 'Mã gói',
-            key: 'package_code',
-            width: 200,
-            render: (_: unknown, row: CustomerTreatment) => (
-              <div>
-                <Tag color="purple">G-{treatmentCode(row)}</Tag>
-                <div className="mt-0.5 text-xs text-[#777]">
-                  Mua ngày {row.created_at ? dayjs(row.created_at).format('DD/MM/YYYY') : '—'}
-                </div>
-              </div>
-            ),
           },
           {
             title: 'Tiến độ',

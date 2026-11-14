@@ -25,4 +25,7 @@ export interface StaffDayOff {
   reject_reason?: StaffDayOffRejectReason;
   created_at?: string;
   updated_at?: string;
+  /** Ảnh minh chứng (tùy chọn) — file id + path (BE include image_file) */
+  image_file_id?: string;
+  image_file?: { id?: string; path?: string; file_name?: string } | null;
 }

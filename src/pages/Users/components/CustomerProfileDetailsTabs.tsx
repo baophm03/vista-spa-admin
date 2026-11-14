@@ -1,12 +1,12 @@
 import { lazy, Suspense, useState } from 'react'
 import { Select, Tabs } from 'antd'
-import type { CustomerProfileRow, CustomerProfileSummary } from '@/components/CustomerProfileOverviewTab'
-import type { CustomFieldDefWithOptions } from '@/components/CustomerProfileCustomFields'
+import type { CustomerProfileRow, CustomerProfileSummary } from './CustomerProfileOverviewTab'
+import type { CustomFieldDefWithOptions } from './CustomerProfileCustomFields'
 
-const CustomerProfileAppointmentsTab = lazy(() => import('@/components/CustomerProfileAppointmentsTab'))
-const CustomerProfileHealthMetricsTab = lazy(() => import('@/components/CustomerProfileHealthMetricsTab'))
-const CustomerProfileOverviewTab = lazy(() => import('@/components/CustomerProfileOverviewTab'))
-const CustomerProfileTreatmentsTab = lazy(() => import('@/components/CustomerProfileTreatmentsTab'))
+const CustomerProfileAppointmentsTab = lazy(() => import('./CustomerProfileAppointmentsTab'))
+const CustomerProfileHealthMetricsTab = lazy(() => import('./CustomerProfileHealthMetricsTab'))
+const CustomerProfileOverviewTab = lazy(() => import('./CustomerProfileOverviewTab'))
+const CustomerProfileTreatmentsTab = lazy(() => import('./CustomerProfileTreatmentsTab'))
 
 type TabKey = 'overview' | 'treatments' | 'appointments' | 'metrics'
 
