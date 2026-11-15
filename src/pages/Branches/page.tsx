@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Alert, Button, Form, Input, Modal, Select, Table, Tag, Typography, message } from 'antd'
+import { Alert, Button, Form, Input, Modal, Select, Table, Tag, Typography, message, Spin, Empty } from 'antd'
 import { CheckCircleOutlined, DeleteOutlined, EditOutlined, EnvironmentOutlined, PauseCircleOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
 import PageTitle from '@/components/base/PageTitle'
 import StatCards, { type StatItem } from '@/components/base/StatCards'
@@ -28,6 +28,7 @@ import { Can, useAbility } from '@casl/react'
 import { useQueryClient } from '@tanstack/react-query'
 import BranchModal from './components/BranchModal'
 import type { BranchFormValues } from './components/constants'
+import BranchCard from './components/BranchCard'
 
 type StatusFilter = 'all' | 'active' | 'inactive'
 
@@ -240,83 +241,38 @@ export default function Branches() {
 
   const activeFilterCount = (statusFilter !== 'all' ? 1 : 0) + (keyword ? 1 : 0)
 
-  const columns = [
-    {
-      key: 'code',
-      title: 'Mã cơ sở',
-      dataIndex: 'code',
-      width: 130,
-      render: (value: string) => <Typography.Text code>{value}</Typography.Text>,
-    },
-    {
-      key: 'name',
-      title: 'Tên cơ sở',
-      dataIndex: 'name',
-      width: 210,
-      render: (value: string) => <Typography.Text strong>{value}</Typography.Text>,
-    },
-    {
-      key: 'address',
-      title: 'Địa chỉ',
-      dataIndex: 'address',
-      width: 160,
-      ellipsis: true,
-      render: (value?: string) => value?.trim() || '—',
-    },
-    {
-      key: 'phone',
-      title: 'Số điện thoại',
-      dataIndex: 'phone',
-      width: 160,
-      render: (value?: string) => value?.trim() || '—',
-    },
-    {
-      key: 'status',
-      title: 'Trạng thái',
-      dataIndex: 'is_active',
-      width: 140,
-      render: (active: boolean) => (
-        <Tag color={active ? 'green' : 'default'}>{active ? 'Đang hoạt động' : 'Đã ngừng'}</Tag>
-      ),
-    },
-    {
-      key: 'actions',
-      title: 'Hành động', align: 'center' as const,
-      width: 90,
-      fixed: 'right' as const,
-      render: (_: unknown, row: Branch) => (
-        <RowActionsMenu
-          items={[
-            ...(canUpdate ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []),
-            ...(canUpdate
-              ? [row.is_active
-                ? { key: 'deactivate', icon: <PauseCircleOutlined />, label: 'Ngừng' }
-                : { key: 'activate', icon: <CheckCircleOutlined />, label: 'Kích hoạt' }]
-              : []),
-            ...(canDelete ? [{ key: 'delete', icon: <DeleteOutlined />, danger: true, label: 'Xóa' }] : []),
-          ]}
-          onSelect={(key) => {
-            if (key === 'edit') openEdit(row)
-            else if (key === 'deactivate') confirmStatusChange(row, false)
-            else if (key === 'activate') confirmStatusChange(row, true)
-            else if (key === 'delete') {
-              Modal.confirm({
-                title: `Xóa cơ sở ${row.name}?`,
-                content: 'Xóa mềm (is_deleted=true). Chỉ thực hiện được khi cơ sở không còn lịch hẹn đang xử lý, liệu trình còn quyền lợi hay tài khoản vận hành.',
-                okText: 'Xóa',
-                okButtonProps: { danger: true },
-                cancelText: 'Hủy',
-                onOk: () => remove(row),
-              })
-            }
-          }}
-        />
-      ),
-    },
-  ].filter((column) =>
-    (column.key !== 'actions' || canUpdate || canDelete) &&
-    (column.key === 'actions' || visibleColumns.includes(column.key as BranchColumnKey)),
+
+  const rowActions = (row: Branch) => {
+  if (!canUpdate && !canDelete) return null
+  return (
+    <RowActionsMenu
+      items={[
+        ...(canUpdate ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []),
+        ...(canUpdate
+          ? [row.is_active
+            ? { key: 'deactivate', icon: <PauseCircleOutlined />, label: 'Ngừng' }
+            : { key: 'activate', icon: <CheckCircleOutlined />, label: 'Kích hoạt' }]
+          : []),
+        ...(canDelete ? [{ key: 'delete', icon: <DeleteOutlined />, danger: true, label: 'Xóa' }] : []),
+      ]}
+      onSelect={(key) => {
+        if (key === 'edit') openEdit(row)
+        else if (key === 'deactivate') confirmStatusChange(row, false)
+        else if (key === 'activate') confirmStatusChange(row, true)
+        else if (key === 'delete') {
+          Modal.confirm({
+            title: `Xóa cơ sở ${row.name}?`,
+            content: 'Xóa mềm (is_deleted=true). Chỉ thực hiện được khi cơ sở không còn lịch hẹn đang xử lý, liệu trình còn quyền lợi hay tài khoản vận hành.',
+            okText: 'Xóa',
+            okButtonProps: { danger: true },
+            cancelText: 'Hủy',
+            onOk: () => remove(row),
+          })
+        }
+      }}
+    />
   )
+}
 
   return (
     <>
@@ -385,18 +341,30 @@ export default function Branches() {
         />
       )}
 
-      <Table<Branch>
-        className="desktop-only"
-        rowKey="id"
-        loading={branchesQuery.isLoading}
-        dataSource={paginateRows(visibleRows, page, 10)}
-        columns={columns}
-        scroll={{ x: 980 }}
-        pagination={false}
-        locale={{
-          emptyText: <TableEmpty description={keyword.trim() || statusFilter !== 'all' ? 'Không tìm thấy cơ sở phù hợp' : 'Chưa có cơ sở nào'} />,
-        }}
-      />
+      <div className="desktop-only">
+  {branchesQuery.isLoading ? (
+    <div className="flex justify-center py-16"><Spin /></div>
+  ) : visibleRows.length === 0 ? (
+    <div className="py-16">
+      <Empty description={keyword.trim() || statusFilter !== 'all' ? 'Không tìm thấy cơ sở phù hợp' : 'Chưa có cơ sở nào'} />
+    </div>
+  ) : (
+    <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+      {paginateRows(visibleRows, page, 10).map((row) => (
+        <BranchCard
+          key={row.id}
+          name={row.name}
+          code={row.code}
+          isActive={!!row.is_active}
+          address={row.address?.trim() || '—'}
+          phone={row.phone?.trim() || '—'}
+          actions={rowActions(row)}
+          onOpen={canUpdate ? () => openEdit(row) : undefined}
+        />
+      ))}
+    </div>
+  )}
+</div>
       <MobileCards
         rows={paginateRows(visibleRows, page, 10)}
         rowKey={(row) => row.id}
