@@ -190,7 +190,7 @@ export default function DiscountRules() {
     },
     {
       key: 'audience',
-      title: 'Đối tượng', dataIndex: 'audience', width: 180,
+      title: 'Đối tượng', dataIndex: 'audience', width: 220,
       render: (v: DiscountRuleAudience, row) => {
         const meta = AUDIENCE_META[v]
         return (
