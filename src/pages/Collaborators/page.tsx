@@ -33,7 +33,7 @@ import {
 import type { PostCollaboratorsBody } from '@/api/models'
 import type { GetCollaboratorsParams } from '@/api/models/getCollaboratorsParams'
 import CollaboratorModal from './components/CollaboratorModal'
-import CollaboratorReportDrawer from './components/CollaboratorReportDrawer'
+import CollaboratorReportModal from './components/CollaboratorReportModal'
 
 const COLLABORATOR_TYPES = ['STAFF', 'CUSTOMER', 'EXTERNAL']
 
@@ -334,7 +334,7 @@ export default function Collaborators() {
               typeMeta={TYPE_META}
             />
             {reportRow && (
-              <CollaboratorReportDrawer
+              <CollaboratorReportModal
                 id={reportRow.id}
                 open={!!reportRow}
                 onClose={() => setReportRow(null)}

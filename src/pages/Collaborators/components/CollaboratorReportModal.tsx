@@ -1,4 +1,4 @@
-import { Alert, Button, Drawer, Space, Spin, Typography } from 'antd'
+import { Alert, Button, Drawer, Space, Spin, Typography, Modal } from 'antd'
 import { errorMessage, pickData } from '@/api/helpers'
 import { useGetCollaboratorsIdSummary } from '@/api/endpoints/admin'
 
@@ -7,14 +7,14 @@ function formatVnd(v?: number | null): string {
   return `${Number(v).toLocaleString('vi-VN')} ₫`
 }
 
-export default function CollaboratorReportDrawer({ id, open, onClose }: { id: string; open: boolean; onClose: () => void }) {
+export default function CollaboratorReportModal({ id, open, onClose }: { id: string; open: boolean; onClose: () => void }) {
   const summaryQuery = useGetCollaboratorsIdSummary(id, { query: { enabled: open && !!id } })
   const summary = pickData<{ referral_count?: number; total_package_value?: number; total_commission?: number }>(
     summaryQuery.data,
   )
 
   return (
-    <Drawer title="Báo cáo cộng tác viên" width={420} open={open} onClose={onClose}>
+    <Modal title="Báo cáo cộng tác viên" width={420} open={open} onCancel={onClose}>
       {summaryQuery.isLoading ? (
         <Spin />
       ) : summaryQuery.isError ? (
@@ -41,6 +41,6 @@ export default function CollaboratorReportDrawer({ id, open, onClose }: { id: st
           </div>
         </Space>
       )}
-    </Drawer>
+    </Modal>
   )
 }
