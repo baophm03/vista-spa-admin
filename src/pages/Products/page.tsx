@@ -370,7 +370,6 @@ export default function Products() {
                 </Form.Item>
               </>
             )}
-<<<<<<< Updated upstream
           />
         </div>
         {isAdmin && (
@@ -379,67 +378,6 @@ export default function Products() {
           </Button>
         )}
       </div>
-      <Table<ProductRow>
-=======
-            <ListFilterPopover
-              open={filterOpen}
-              onOpenChange={(next) => {
-                setFilterOpen(next)
-                if (next) {
-                  filterForm.setFieldsValue({ category_id: categoryFilter, status: statusFilter === undefined ? undefined : String(statusFilter) })
-                  setDraftVisibleColumns(visibleColumns)
-                }
-              }}
-              activeFilterCount={activeFilterCount}
-              form={filterForm}
-              onApply={(values) => {
-                if (!draftVisibleColumns.length) {
-                  message.error('Hãy giữ lại ít nhất một cột hiển thị')
-                  return
-                }
-                setCategoryFilter(typeof values.category_id === 'string' ? values.category_id : undefined)
-                setStatusFilter(values.status === '' || values.status === undefined || values.status === null ? undefined : values.status === 'true')
-                setVisibleColumns(draftVisibleColumns)
-                setFilterOpen(false)
-                setPage(1)
-              }}
-              onClear={() => {
-                filterForm.resetFields()
-                setCategoryFilter(undefined)
-                setStatusFilter(undefined)
-                setVisibleColumns(DEFAULT_PRODUCT_COLUMNS)
-                setDraftVisibleColumns(DEFAULT_PRODUCT_COLUMNS)
-                setPage(1)
-              }}
-              columnOptions={PRODUCT_COLUMNS}
-              draftVisibleColumns={draftVisibleColumns}
-              onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as string[])}
-              filterItems={(
-                <>
-                  <Form.Item name="category_id" label="Danh mục" className="mb-2.5!">
-                    <Select allowClear placeholder="Tất cả danh mục" options={categories.map((c) => ({ value: c.id, label: c.name }))} />
-                  </Form.Item>
-                  <Form.Item name="status" label="Trạng thái" className="mb-0!">
-                    <Select allowClear placeholder="Tất cả trạng thái" options={[
-                      { value: 'true', label: 'Đang bán' },
-                      { value: 'false', label: 'Đã ẩn' },
-                    ]} />
-                  </Form.Item>
-                </>
-              )}
-            />
-          </>
-        }
-        right={
-          isAdmin ? (
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
-              Thêm sản phẩm
-            </Button>
-          ) : undefined
-        }
-      >
-        Sản phẩm
-      </PageTitle>
       {productsQuery.isLoading ? (
   <div className="flex justify-center py-16"><Spin /></div>
 ) : rows.length === 0 ? (
@@ -460,8 +398,7 @@ export default function Products() {
     ))}
   </div>
 )}
-      {/* <Table<ProductRow>
->>>>>>> Stashed changes
+     {/* <Table<ProductRow>
         rowKey="id"
         loading={productsQuery.isFetching}
         dataSource={paginateRows(rows, page, 10)}
