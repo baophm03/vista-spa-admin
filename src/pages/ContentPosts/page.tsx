@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { Alert, Button, Form, Input, Modal, Select, Space, Table, Tabs, Tag, Typography, message } from 'antd'
+import { Alert, Button, Form, Input, Modal, Select, Space, Table, Tabs, Tag, Typography, message, Spin, Empty } from 'antd'
 import { DeleteOutlined, EditOutlined, PlusOutlined, SearchOutlined, SendOutlined, UndoOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
@@ -25,13 +25,14 @@ import {
 import { apiClient } from '@/api/mutator/custom-instance'
 import { Can, useAbility } from '@casl/react'
 import { usePostFiles } from '@/api/endpoints/files'
-import { objectKeySrc, registerUploadedFile } from '@/hooks/useFileUrl'
-import ContentPostDrawer from './components/ContentPostDrawer'
+import { objectKeySrc, registerUploadedFile, useFileUrlMap, fileSrc } from '@/hooks/useFileUrl'
 import PostPreviewModal from './components/PostPreviewModal'
 import CategoryModal from './components/CategoryModal'
 import PublishModal from './components/PublishModal'
 import { DISPLAY_TYPE_OPTIONS, makePostSlug } from './components/constants'
 import type { ContentPostRow, PostFormValues, CategoryFormValues } from './components/constants'
+import BlogCard from './components/BlogCard'
+import ContentPostModal from './components/ContentPostModal'
 
 const STATUS_META: Record<string, { label: string; color: string }> = {
   DRAFT: { label: 'Nháp', color: 'default' },
@@ -61,6 +62,8 @@ export default function ContentPosts() {
   const [uploadingCover, setUploadingCover] = useState(false)
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
   const [previewOpen, setPreviewOpen] = useState(false)
+  const urlMap = useFileUrlMap()
+  const canUpdate = ability.can('UPDATE' as never, 'CONTENT')
 
   // Gõ tìm tiêu đề có debounce 400ms — giống các page danh sách khác
   useEffect(() => {
@@ -209,60 +212,106 @@ export default function ContentPosts() {
     }
   }
 
-  const postColumns = [
-    {
-      title: 'Tiêu đề', dataIndex: 'title', key: 'title', render: (v: string, row: ContentPostRow) => (
-        <Space size={6}>
-          <Typography.Text strong={!!row.is_pinned}>{v}{row.is_pinned ? ' 📌' : ''}</Typography.Text>
-        </Space>
-      )
-    },
-    { title: 'Chuyên mục', key: 'category', width: 160, render: (_: unknown, row: ContentPostRow) => categoryById.get(row.category_id)?.name ?? '—' },
-    { title: 'Trạng thái', dataIndex: 'status', key: 'status', width: 120, render: (v: string) => <Tag color={STATUS_META[v]?.color}>{STATUS_META[v]?.label ?? v}</Tag> },
-    { title: 'Xuất bản', dataIndex: 'published_at', key: 'published_at', width: 130, render: (v: string) => (v ? dayjs(v).format('DD/MM/YYYY HH:mm') : '—') },
-    { title: 'Lượt xem', dataIndex: 'view_count', key: 'view_count', width: 90, align: 'right' as const },
-    {
-      title: 'Hành động', key: 'actions', width: 90, align: 'center' as const,
-      render: (_: unknown, row: ContentPostRow) => (
-        <RowActionsMenu
-          items={[
-            ...(ability.can('UPDATE' as never, 'CONTENT')
-              ? [
-                ...(row.status !== 'PUBLISHED'
-                  ? [{ key: 'publish', icon: <SendOutlined />, label: 'Xuất bản' }]
-                  : [{ key: 'unpublish', icon: <UndoOutlined />, label: 'Gỡ bài' }]),
-                { key: 'edit', icon: <EditOutlined />, label: 'Sửa' },
-              ]
-              : []),
-            ...(ability.can('DELETE' as never, 'CONTENT') && row.status !== 'PUBLISHED'
-              ? [{ key: 'delete', icon: <DeleteOutlined />, label: 'Xóa', danger: true }]
-              : []),
-          ]}
-          onSelect={(key) => {
-            if (key === 'publish') { setPublishTarget(row); setNotify(!row.notified_at) }
-            else if (key === 'unpublish') {
-              Modal.confirm({
-                title: 'Gỡ bài xuất bản?',
-                okText: 'Gỡ bài',
-                cancelText: 'Hủy',
-                onOk: () => unpublishMutation.mutateAsync({ id: row.id }).then(reload).catch((e) => message.error(errorMessage(e))),
-              })
-            }
-            else if (key === 'edit') openPostEditor(row)
-            else if (key === 'delete') {
-              Modal.confirm({
-                title: 'Lưu trữ bài viết này?',
-                okText: 'Xóa',
-                okButtonProps: { danger: true },
-                cancelText: 'Hủy',
-                onOk: () => deletePostMutation.mutateAsync({ id: row.id }).then(reload).catch((e) => message.error(errorMessage(e))),
-              })
-            }
-          }}
-        />
-      )
-    },
-  ]
+  // const postColumns = [
+  //   {
+  //     title: 'Tiêu đề', dataIndex: 'title', key: 'title', render: (v: string, row: ContentPostRow) => (
+  //       <Space size={6}>
+  //         <Typography.Text strong={!!row.is_pinned}>{v}{row.is_pinned ? ' 📌' : ''}</Typography.Text>
+  //       </Space>
+  //     )
+  //   },
+  //   { title: 'Chuyên mục', key: 'category', width: 160, render: (_: unknown, row: ContentPostRow) => categoryById.get(row.category_id)?.name ?? '—' },
+  //   { title: 'Trạng thái', dataIndex: 'status', key: 'status', width: 120, render: (v: string) => <Tag color={STATUS_META[v]?.color}>{STATUS_META[v]?.label ?? v}</Tag> },
+  //   { title: 'Xuất bản', dataIndex: 'published_at', key: 'published_at', width: 130, render: (v: string) => (v ? dayjs(v).format('DD/MM/YYYY HH:mm') : '—') },
+  //   { title: 'Lượt xem', dataIndex: 'view_count', key: 'view_count', width: 90, align: 'right' as const },
+  //   {
+  //     title: 'Hành động', key: 'actions', width: 90, align: 'center' as const,
+  //     render: (_: unknown, row: ContentPostRow) => (
+  //       <RowActionsMenu
+  //         items={[
+  //           ...(ability.can('UPDATE' as never, 'CONTENT')
+  //             ? [
+  //               ...(row.status !== 'PUBLISHED'
+  //                 ? [{ key: 'publish', icon: <SendOutlined />, label: 'Xuất bản' }]
+  //                 : [{ key: 'unpublish', icon: <UndoOutlined />, label: 'Gỡ bài' }]),
+  //               { key: 'edit', icon: <EditOutlined />, label: 'Sửa' },
+  //             ]
+  //             : []),
+  //           ...(ability.can('DELETE' as never, 'CONTENT') && row.status !== 'PUBLISHED'
+  //             ? [{ key: 'delete', icon: <DeleteOutlined />, label: 'Xóa', danger: true }]
+  //             : []),
+  //         ]}
+  //         onSelect={(key) => {
+  //           if (key === 'publish') { setPublishTarget(row); setNotify(!row.notified_at) }
+  //           else if (key === 'unpublish') {
+  //             Modal.confirm({
+  //               title: 'Gỡ bài xuất bản?',
+  //               okText: 'Gỡ bài',
+  //               cancelText: 'Hủy',
+  //               onOk: () => unpublishMutation.mutateAsync({ id: row.id }).then(reload).catch((e) => message.error(errorMessage(e))),
+  //             })
+  //           }
+  //           else if (key === 'edit') openPostEditor(row)
+  //           else if (key === 'delete') {
+  //             Modal.confirm({
+  //               title: 'Lưu trữ bài viết này?',
+  //               okText: 'Xóa',
+  //               okButtonProps: { danger: true },
+  //               cancelText: 'Hủy',
+  //               onOk: () => deletePostMutation.mutateAsync({ id: row.id }).then(reload).catch((e) => message.error(errorMessage(e))),
+  //             })
+  //           }
+  //         }}
+  //       />
+  //     )
+  //   },
+  // ]
+
+  const postActions = (row: ContentPostRow) => {
+    const items = [
+      ...(canUpdate
+        ? [
+          ...(row.status !== 'PUBLISHED'
+            ? [{ key: 'publish', icon: <SendOutlined />, label: 'Xuất bản' }]
+            : [{ key: 'unpublish', icon: <UndoOutlined />, label: 'Gỡ bài' }]),
+          { key: 'edit', icon: <EditOutlined />, label: 'Sửa' },
+        ]
+        : []),
+      ...(ability.can('DELETE' as never, 'CONTENT') && row.status !== 'PUBLISHED'
+        ? [{ key: 'delete', icon: <DeleteOutlined />, label: 'Xóa', danger: true }]
+        : []),
+    ]
+    if (items.length === 0) return null
+    return (
+      <RowActionsMenu
+        items={items}
+        onSelect={(key) => {
+          if (key === 'publish') { setPublishTarget(row); setNotify(!row.notified_at) }
+          else if (key === 'unpublish') {
+            Modal.confirm({
+              title: 'Gỡ bài xuất bản?',
+              okText: 'Gỡ bài',
+              cancelText: 'Hủy',
+              onOk: () => unpublishMutation.mutateAsync({ id: row.id }).then(reload).catch((e) => message.error(errorMessage(e))),
+            })
+          }
+          else if (key === 'edit') openPostEditor(row)
+          else if (key === 'delete') {
+            Modal.confirm({
+              title: 'Lưu trữ bài viết này?',
+              okText: 'Xóa',
+              okButtonProps: { danger: true },
+              cancelText: 'Hủy',
+              onOk: () => deletePostMutation.mutateAsync({ id: row.id }).then(reload).catch((e) => message.error(errorMessage(e))),
+            })
+          }
+        }}
+      />
+    )
+  }
+
+
+  const STATUS_TONE = { DRAFT: 'draft', PUBLISHED: 'published', ARCHIVED: 'archived' } as const
 
   const categoryColumns = [
     { title: 'Tên chuyên mục', dataIndex: 'name', key: 'name' },
@@ -305,6 +354,7 @@ export default function ContentPosts() {
       )
     },
   ]
+
 
   return (
     <div>
@@ -351,13 +401,37 @@ export default function ContentPosts() {
                     <Button type="primary" icon={<PlusOutlined />} onClick={() => openPostEditor()}>Tạo bài viết</Button>
                   </Can>
                 </ToolbarRow>
-                <Table
+                {/* <Table
                   rowKey="id"
                   loading={postsQuery.isLoading}
                   columns={postColumns}
                   dataSource={posts}
                   pagination={false}
-                />
+                /> */}
+                {postsQuery.isLoading ? (
+                  <div className="flex justify-center py-16"><Spin /></div>
+                ) : posts.length === 0 ? (
+                  <div className="py-16"><Empty description="Chưa có bài viết nào" /></div>
+                ) : (
+                  <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+                    {posts.map((row) => (
+                      <BlogCard
+                        key={row.id}
+                        title={row.title}
+                        excerpt={row.summary}
+                        category={categoryById.get(row.category_id)?.name}
+                        imageSrc={fileSrc((row as any).cover_file)}
+                        date={row.published_at ? dayjs(row.published_at).format('DD/MM/YYYY') : 'Chưa xuất bản'}
+                        meta={`${row.view_count ?? 0} lượt xem`}
+                        status={{ label: STATUS_META[status]?.label ?? row.status, tone: STATUS_TONE[row.status as keyof typeof STATUS_TONE] ?? 'draft' }}
+                        pinned={!!row.is_pinned}
+                        actions={postActions(row)}
+                        actionLabel="Chỉnh sửa"
+                        onOpen={canUpdate ? () => openPostEditor(row) : undefined}
+                      />
+                    ))}
+                  </div>
+                )}
                 <ListPagination page={postPage} limit={20} total={postTotal} onChange={setPostPage} noun="bài viết" />
               </>
             ),
@@ -379,7 +453,7 @@ export default function ContentPosts() {
         ]}
       />
 
-      <ContentPostDrawer
+      <ContentPostModal
         open={postModal}
         editing={editingPost}
         form={postForm}

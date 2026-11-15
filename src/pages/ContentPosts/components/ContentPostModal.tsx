@@ -1,4 +1,4 @@
-import { Button, DatePicker, Drawer, Form, Image, Input, InputNumber, Select, Space, Switch, Typography, Upload } from 'antd'
+import { Button, DatePicker, Form, Image, Input, InputNumber, Select, Space, Switch, Typography, Upload, Modal } from 'antd'
 import { EyeOutlined, UploadOutlined } from '@ant-design/icons'
 import type { FormInstance } from 'antd'
 import type { ContentCategory } from '@/api/models/contentCategory'
@@ -7,7 +7,7 @@ import { resolveFileSrc, useFileUrlMap } from '@/hooks/useFileUrl'
 import { makePostSlug } from './constants'
 import type { ContentPostRow, PostFormValues } from './constants'
 
-interface ContentPostDrawerProps {
+interface ContentPostModalProps {
   open: boolean
   editing: ContentPostRow | null
   form: FormInstance<PostFormValues>
@@ -23,7 +23,7 @@ interface ContentPostDrawerProps {
   uploadContentImage: (file: File) => Promise<string>
 }
 
-export default function ContentPostDrawer({
+export default function ContentPostModal({
   open,
   editing,
   form,
@@ -37,15 +37,15 @@ export default function ContentPostDrawer({
   onSubmit,
   uploadCover,
   uploadContentImage,
-}: ContentPostDrawerProps) {
+}: ContentPostModalProps) {
   const urlMap = useFileUrlMap()
   return (
-    <Drawer
+    <Modal
       title={editing ? 'Sửa bài viết' : 'Tạo bài viết mới (Nháp)'}
       open={open}
-      onClose={onClose}
+      onCancel={onClose}
       width={760}
-      extra={(
+      footer={(
         <Space>
           <Button icon={<EyeOutlined />} onClick={onPreview}>Xem trước</Button>
           <Button type="primary" loading={saving} onClick={onSubmit}>Lưu</Button>
@@ -131,6 +131,6 @@ export default function ContentPostDrawer({
           </Form.Item>
         </Space>
       </Form>
-    </Drawer>
+    </Modal>
   )
 }
