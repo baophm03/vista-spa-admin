@@ -14,6 +14,7 @@ import {
   Tag,
   Typography,
   message,
+  Spin,
 } from 'antd'
 import type { TableColumnsType } from 'antd'
 import {
@@ -64,6 +65,7 @@ import {
   type ProductCategoryRow,
   type ProductRow,
 } from './components/constants'
+import ProductCard from './components/ProductCard'
 
 export default function Products() {
   const { currency, symbol: currencySymbol } = useBrandCurrency()
@@ -204,6 +206,36 @@ export default function Products() {
     }
   }
 
+  const rowActions = (p: ProductRow) => {
+  if (!isAdmin) return null
+  return (
+    <RowActionsMenu
+      items={[
+        { key: 'edit', icon: <EditOutlined />, label: 'Sửa' },
+        p.is_active === false
+          ? { key: 'show', icon: <EyeOutlined />, label: 'Hiện lại' }
+          : { key: 'hide', icon: <EyeInvisibleOutlined />, label: 'Ẩn', danger: true },
+      ]}
+      onSelect={(key) => {
+        if (key === 'edit') openModal(p)
+        else if (key === 'show') void toggleVisibility(p)
+        else if (key === 'hide') {
+          Modal.confirm({
+            title: 'Ẩn sản phẩm này khỏi app?',
+            okText: 'Ẩn',
+            okButtonProps: { danger: true },
+            cancelText: 'Hủy',
+            onOk: () => toggleVisibility(p),
+          })
+        }
+      }}
+    />
+  )
+}
+
+  const priceText = (row: ProductRow) =>
+    row.price != null && Number(row.price) !== Number(row.price) ? `${formatPrice(row.price, currency)} – ${formatPrice(row.price, currency)}`: formatPrice(row.price, currency)
+
   const toggleVisibility = async (row: ProductRow) => {
     try {
       await updateMutation.mutateAsync({ id: row.id, dto: { name: row.name, is_active: row.is_active === false } })
@@ -338,6 +370,7 @@ export default function Products() {
                 </Form.Item>
               </>
             )}
+<<<<<<< Updated upstream
           />
         </div>
         {isAdmin && (
@@ -347,6 +380,88 @@ export default function Products() {
         )}
       </div>
       <Table<ProductRow>
+=======
+            <ListFilterPopover
+              open={filterOpen}
+              onOpenChange={(next) => {
+                setFilterOpen(next)
+                if (next) {
+                  filterForm.setFieldsValue({ category_id: categoryFilter, status: statusFilter === undefined ? undefined : String(statusFilter) })
+                  setDraftVisibleColumns(visibleColumns)
+                }
+              }}
+              activeFilterCount={activeFilterCount}
+              form={filterForm}
+              onApply={(values) => {
+                if (!draftVisibleColumns.length) {
+                  message.error('Hãy giữ lại ít nhất một cột hiển thị')
+                  return
+                }
+                setCategoryFilter(typeof values.category_id === 'string' ? values.category_id : undefined)
+                setStatusFilter(values.status === '' || values.status === undefined || values.status === null ? undefined : values.status === 'true')
+                setVisibleColumns(draftVisibleColumns)
+                setFilterOpen(false)
+                setPage(1)
+              }}
+              onClear={() => {
+                filterForm.resetFields()
+                setCategoryFilter(undefined)
+                setStatusFilter(undefined)
+                setVisibleColumns(DEFAULT_PRODUCT_COLUMNS)
+                setDraftVisibleColumns(DEFAULT_PRODUCT_COLUMNS)
+                setPage(1)
+              }}
+              columnOptions={PRODUCT_COLUMNS}
+              draftVisibleColumns={draftVisibleColumns}
+              onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as string[])}
+              filterItems={(
+                <>
+                  <Form.Item name="category_id" label="Danh mục" className="mb-2.5!">
+                    <Select allowClear placeholder="Tất cả danh mục" options={categories.map((c) => ({ value: c.id, label: c.name }))} />
+                  </Form.Item>
+                  <Form.Item name="status" label="Trạng thái" className="mb-0!">
+                    <Select allowClear placeholder="Tất cả trạng thái" options={[
+                      { value: 'true', label: 'Đang bán' },
+                      { value: 'false', label: 'Đã ẩn' },
+                    ]} />
+                  </Form.Item>
+                </>
+              )}
+            />
+          </>
+        }
+        right={
+          isAdmin ? (
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
+              Thêm sản phẩm
+            </Button>
+          ) : undefined
+        }
+      >
+        Sản phẩm
+      </PageTitle>
+      {productsQuery.isLoading ? (
+  <div className="flex justify-center py-16"><Spin /></div>
+) : rows.length === 0 ? (
+  <div className="py-16"><TableEmpty description="Chưa có sản phẩm nào khớp điều kiện" /></div>
+) : (
+  <div className={`grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 ${productsQuery.isFetching ? 'opacity-60 transition-opacity' : ''}`}>
+    {paginateRows(rows, page, 10).map((p) => (
+      <ProductCard
+        key={p.id}
+        title={p.name}
+        imageSrc={fileSrc((p as any).cover_file) ?? resolveFileSrc(urlMap, p.cover_file_id)}
+        isActive={p.is_active !== false}
+        category={p.category?.name || '—'}
+        price={formatPrice(p.price, currency)}
+        actions={rowActions(p)}
+        onOpen={() => setViewing(p)}
+      />
+    ))}
+  </div>
+)}
+      {/* <Table<ProductRow>
+>>>>>>> Stashed changes
         rowKey="id"
         loading={productsQuery.isFetching}
         dataSource={paginateRows(rows, page, 10)}
@@ -439,7 +554,7 @@ export default function Products() {
         ] satisfies TableColumnsType<ProductRow>).filter((column) =>
           column.key === 'actions' ? true : visibleColumns.includes(String(column.key)),
         )}
-      />
+      /> */}
       <ListPagination page={page} limit={10} total={rows.length} onChange={setPage} noun="sản phẩm" hideOnSinglePage />
     </>
   )
