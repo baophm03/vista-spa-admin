@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import {
   Alert,
   Button,
@@ -48,6 +48,15 @@ import type {
   GetCommissionsSummaryParams,
   User,
 } from '@/api/models'
+
+interface CommonFilters{
+  payee_type?: GetCommissionsParams['payee_type']
+  staff_id?: string
+  collaborator_id?: string
+  branch_id?: string
+  date_from?: string
+  date_to?: string
+}
 
 const STATUS_META: Record<string, { label: string; color: string }> = {
   ACTIVE: { label: 'Đang hiệu lực', color: 'green' },
@@ -105,21 +114,72 @@ export default function Commissions() {
   )
 }
 
+function CommissionFilterFields({
+  filters,
+  onChange,
+  leading,
+  trailing,
+}: {
+  filters: CommonFilters
+  onChange: (patch: Partial<CommonFilters>) => void
+  leading?: ReactNode  
+  trailing?: ReactNode  
+}) {
+  const branchesQuery = useGetBranches()
+  const usersQuery = useGetUsers({ currentPage: 1, pageSize: 200, has_role: true })
+  const collaboratorsQuery = useGetCollaborators({})
+  const branches = (pickData<Branch[] | undefined>(branchesQuery.data) ?? []) as Branch[]
+  const users = (pickData<{ rows?: User[] } | undefined>(usersQuery.data)?.rows ?? []) as User[]
+  const collaborators = (pickData<Collaborator[] | undefined>(collaboratorsQuery.data) ?? []) as Collaborator[]
+
+  return (
+    <Space wrap>
+      {leading}
+      <Select
+        allowClear placeholder="Người nhận" className="w-[170px]!"
+        options={Object.entries(PAYEE_LABEL).map(([value, label]) => ({ value, label }))}
+        value={filters.payee_type}
+        onChange={(v) => onChange({ payee_type: v, staff_id: undefined, collaborator_id: undefined })}
+      />
+      {filters.payee_type === 'STAFF' && (
+        <Select allowClear showSearch optionFilterProp="label" placeholder="KTV" className="w-[210px]!" loading={usersQuery.isLoading}
+          value={filters.staff_id} options={users.map((u) => ({ value: u.id, label: u.zalo_name || u.email || u.id }))}
+          onChange={(v) => onChange({ staff_id: v })} />
+      )}
+      {filters.payee_type === 'COLLABORATOR' && (
+        <Select allowClear showSearch optionFilterProp="label" placeholder="Cộng tác viên" className="w-[210px]!" loading={collaboratorsQuery.isLoading}
+          value={filters.collaborator_id} options={collaborators.map((c) => ({ value: c.id, label: c.name }))}
+          onChange={(v) => onChange({ collaborator_id: v })} />
+      )}
+      <Select allowClear showSearch optionFilterProp="label" placeholder="Chi nhánh" className="w-[180px]!" loading={branchesQuery.isLoading}
+        value={filters.branch_id} options={branches.map((b) => ({ value: b.id, label: b.name }))}
+        onChange={(v) => onChange({ branch_id: v })} />
+      <DatePicker.RangePicker
+        value={filters.date_from || filters.date_to
+          ? [filters.date_from ? dayjs(filters.date_from) : null, filters.date_to ? dayjs(filters.date_to) : null]
+          : null}
+        onChange={(dates) => onChange({
+          date_from: dates?.[0]?.format('YYYY-MM-DD'),
+          date_to: dates?.[1]?.format('YYYY-MM-DD'),
+        })}
+      />
+      {trailing}
+    </Space>
+  )
+}
+
 function LedgerTab() {
   const ability = useAbility()
   const canEdit = ability.can('UPDATE', 'COMMISSION')
   const canVoid = ability.can('VOID', 'COMMISSION')
   const [filters, setFilters] = useState<GetCommissionsParams>({})
   const [page, setPage] = useState(1)
-  const [filterOpen, setFilterOpen] = useState(false)
-  const [visibleColumns, setVisibleColumns] = useState<CommissionColumnKey[]>(DEFAULT_VISIBLE_COLUMNS)
-  const [draftVisibleColumns, setDraftVisibleColumns] = useState<CommissionColumnKey[]>(DEFAULT_VISIBLE_COLUMNS)
+  const [visibleColumns] = useState<CommissionColumnKey[]>(DEFAULT_VISIBLE_COLUMNS)
   const [manualOpen, setManualOpen] = useState(false)
   const [editTarget, setEditTarget] = useState<CommissionEntry | null>(null)
   const [editForm] = Form.useForm()
   const [voidTarget, setVoidTarget] = useState<CommissionEntry | null>(null)
   const [voidForm] = Form.useForm()
-  const [filterForm] = Form.useForm()
   const queryClient = useQueryClient()
   const branchesQuery = useGetBranches()
   const branches = (pickData<Branch[] | undefined>(branchesQuery.data) ?? []) as Branch[]
@@ -154,48 +214,6 @@ function LedgerTab() {
 
   const updateMutation = usePutCommissionsId({ mutation: { onSuccess: invalidate } })
   const voidMutation = usePostCommissionsIdVoid({ mutation: { onSuccess: invalidate } })
-
-  const openFilters = (nextOpen: boolean) => {
-    setFilterOpen(nextOpen)
-    if (!nextOpen) return
-    filterForm.setFieldsValue({
-      payee_type: filters.payee_type,
-      mode: filters.mode,
-      status: filters.status,
-      branch_id: filters.branch_id,
-      date_range: filters.date_from || filters.date_to
-        ? [filters.date_from ? dayjs(filters.date_from) : null, filters.date_to ? dayjs(filters.date_to) : null]
-        : undefined,
-    })
-    setDraftVisibleColumns(visibleColumns)
-  }
-
-  const applyFilters = (values: Record<string, unknown>) => {
-    if (draftVisibleColumns.length === 0) {
-      message.error('Hãy giữ lại ít nhất một cột hiển thị')
-      return
-    }
-    const range = values.date_range as [Dayjs | null, Dayjs | null] | null | undefined
-    const next: GetCommissionsParams = {}
-    if (values.payee_type) next.payee_type = values.payee_type as GetCommissionsParams['payee_type']
-    if (values.mode) next.mode = values.mode as GetCommissionsParams['mode']
-    if (values.status) next.status = values.status as GetCommissionsParams['status']
-    if (values.branch_id) next.branch_id = values.branch_id as string
-    if (range?.[0]) next.date_from = range[0].format('YYYY-MM-DD')
-    if (range?.[1]) next.date_to = range[1].format('YYYY-MM-DD')
-    setFilters(next)
-    setVisibleColumns(draftVisibleColumns)
-    setPage(1)
-    setFilterOpen(false)
-  }
-
-  const clearFilters = () => {
-    filterForm.resetFields()
-    setFilters({})
-    setDraftVisibleColumns(DEFAULT_VISIBLE_COLUMNS)
-    setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)
-    setPage(1)
-  }
 
   const submitEdit = async () => {
     if (!editTarget) return
@@ -279,52 +297,26 @@ function LedgerTab() {
 
   return (
     <>
-      <Space className="mb-4! w-full! justify-end" wrap>
-        <ListFilterPopover
-          open={filterOpen}
-          onOpenChange={openFilters}
-          activeFilterCount={[
-            filters.payee_type,
-            filters.mode,
-            filters.status,
-            filters.branch_id,
-            filters.date_from,
-            filters.date_to,
-          ].filter(Boolean).length}
-          form={filterForm}
-          onApply={applyFilters}
-          onClear={clearFilters}
-          columnOptions={COMMISSION_COLUMN_OPTIONS}
-          draftVisibleColumns={draftVisibleColumns}
-          onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as CommissionColumnKey[])}
-          filterItems={(
-            <>
-              <Form.Item name="payee_type" label="Người nhận" className="mb-2.5!">
-                <Select allowClear placeholder="Tất cả" options={Object.entries(PAYEE_LABEL).map(([value, label]) => ({ value, label }))} />
-              </Form.Item>
-              <Form.Item name="mode" label="Chế độ" className="mb-2.5!">
-                <Select allowClear placeholder="Tất cả" options={[{ value: 'AUTO', label: 'Tự động' }, { value: 'MANUAL', label: 'Nhập tay' }]} />
-              </Form.Item>
-              <Form.Item name="status" label="Trạng thái" className="mb-2.5!">
-                <Select allowClear placeholder="Tất cả" options={Object.entries(STATUS_META).map(([value, meta]) => ({ value, label: meta.label }))} />
-              </Form.Item>
-              <Form.Item name="branch_id" label="Chi nhánh" className="mb-2.5!">
-                <Select
-                  allowClear showSearch optionFilterProp="label" loading={branchesQuery.isLoading}
-                  placeholder="Tất cả"
-                  options={branches.map((branch) => ({ value: branch.id, label: branch.name }))}
-                />
-              </Form.Item>
-              <Form.Item name="date_range" label="Khoảng thời gian" className="mb-0!">
-                <DatePicker.RangePicker className="w-full!" placeholder={['Từ ngày', 'Đến ngày']} />
-              </Form.Item>
-            </>
-          )}
-        />
-        <Can I="CREATE" a="COMMISSION">
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => setManualOpen(true)}>Nhập tay</Button>
-        </Can>
-      </Space>
+   
+      <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+  <CommissionFilterFields
+    filters={filters}
+    onChange={(patch) => { setFilters((c) => ({ ...c, ...patch })); setPage(1) }}
+    trailing={
+      <>
+        <Select allowClear placeholder="Chế độ" className="w-[140px]!" value={filters.mode}
+          options={[{ value: 'AUTO', label: 'Tự động' }, { value: 'MANUAL', label: 'Nhập tay' }]}
+          onChange={(v) => { setFilters((c) => ({ ...c, mode: v })); setPage(1) }} />
+        <Select allowClear placeholder="Trạng thái" className="w-[170px]!" value={filters.status}
+          options={Object.entries(STATUS_META).map(([value, m]) => ({ value, label: m.label }))}
+          onChange={(v) => { setFilters((c) => ({ ...c, status: v })); setPage(1) }} />
+      </>
+    }
+  />
+  <Can I="CREATE" a="COMMISSION">
+    <Button type="primary" icon={<PlusOutlined />} onClick={() => setManualOpen(true)}>Nhập tay</Button>
+  </Can>
+</div>
       {listQuery.isError && (
         <Alert
           className="mb-4" type="error" showIcon
@@ -413,39 +405,20 @@ function SummaryTab() {
 
   return (
     <>
-      <Space className="mb-4! w-full!" wrap>
-        <Select
-          value={groupBy} className="w-[140px]!"
-          options={[{ value: 'day', label: 'Theo ngày' }, { value: 'week', label: 'Theo tuần' }, { value: 'month', label: 'Theo tháng' }]}
-          onChange={(v) => { setFilters((current) => ({ ...current, group_by: v })); setPage(1) }}
-        />
-        <Select
-          allowClear placeholder="Người nhận" className="w-[170px]!"
-          options={Object.entries(PAYEE_LABEL).map(([value, label]) => ({ value, label }))}
-          value={filters.payee_type}
-          onChange={(v) => { setFilters((current) => ({ ...current, payee_type: v, staff_id: undefined, collaborator_id: undefined })); setPage(1) }}
-        />
-        {filters.payee_type === 'STAFF' && (
-          <Select allowClear showSearch optionFilterProp="label" placeholder="KTV" className="w-[210px]!" loading={usersQuery.isLoading}
-            value={filters.staff_id} options={users.map((user) => ({ value: user.id, label: user.zalo_name || user.email || user.id }))}
-            onChange={(v) => { setFilters((current) => ({ ...current, staff_id: v })); setPage(1) }} />
-        )}
-        {filters.payee_type === 'COLLABORATOR' && (
-          <Select allowClear showSearch optionFilterProp="label" placeholder="Cộng tác viên" className="w-[210px]!" loading={collaboratorsQuery.isLoading}
-            value={filters.collaborator_id} options={collaborators.map((row) => ({ value: row.id, label: row.name }))}
-            onChange={(v) => { setFilters((current) => ({ ...current, collaborator_id: v })); setPage(1) }} />
-        )}
-        <Select allowClear showSearch optionFilterProp="label" placeholder="Chi nhánh" className="w-[180px]!" loading={branchesQuery.isLoading}
-          value={filters.branch_id} options={branches.map((branch) => ({ value: branch.id, label: branch.name }))}
-          onChange={(v) => { setFilters((current) => ({ ...current, branch_id: v })); setPage(1) }} />
-        <DatePicker.RangePicker onChange={(dates) => {
-          setFilters((current) => ({
-            ...current,
-            date_from: dates?.[0]?.format('YYYY-MM-DD'),
-            date_to: dates?.[1]?.format('YYYY-MM-DD'),
-          })); setPage(1)
-        }} />
-      </Space>
+      
+      <div className="mb-4">
+  <CommissionFilterFields
+    filters={filters}
+    onChange={(patch) => { setFilters((c) => ({ ...c, ...patch } as GetCommissionsSummaryParams)); setPage(1) }}
+    leading={
+      <Select
+        value={groupBy} className="w-[140px]!"
+        options={[{ value: 'day', label: 'Theo ngày' }, { value: 'week', label: 'Theo tuần' }, { value: 'month', label: 'Theo tháng' }]}
+        onChange={(v) => { setFilters((c) => ({ ...c, group_by: v })); setPage(1) }}
+      />
+    }
+  />
+</div>
       <Table<CommissionSummaryRow & { payee_id?: string }>
         rowKey={(r) => `${r.period}-${r.payee_type}-${r.payee_id ?? 'unknown'}`}
         loading={summaryQuery.isLoading} dataSource={paginateRows(rows, page, 15)} columns={columns}
