@@ -12,6 +12,8 @@ import {
   Tag,
   Typography,
   message,
+  Empty,
+  Spin
 } from 'antd'
 import type { TableColumnsType } from 'antd'
 import { AppstoreOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
@@ -40,6 +42,7 @@ import type { ServiceCategory } from '@/api/models/serviceCategory'
 import ServiceCategories from './ServiceCategories'
 import { formatCurrency, useBrandCurrency } from '@/themeRuntime'
 import { fileSrc, resolveFileSrc, useFileUrlMap } from '@/hooks/useFileUrl'
+import ServiceCard from './components/ServiceCard'
 
 /** BE list include kèm `service_category`, ảnh bìa `image_file` và bộ ảnh `service_galleries[].file`. */
 type ServiceRow = Service & {
@@ -219,74 +222,105 @@ export default function Services() {
     }
   }
 
-  const columns = useMemo<TableColumnsType<ServiceRow>>(() => {
-    const dataColumns: Record<string, NonNullable<TableColumnsType<ServiceRow>[number]>> = {
-      service: {
-        key: 'service',
-        title: 'Dịch vụ',
-        dataIndex: 'title',
-        render: (value: string, row) => (
-          <Space align="start">
-            {fileSrc((row as any).image_file) ?? resolveFileSrc(urlMap, row.image_file_id) ? <img src={(fileSrc((row as any).image_file) ?? resolveFileSrc(urlMap, row.image_file_id)) ?? undefined} alt="" width={44} height={44} style={{ objectFit: 'cover', borderRadius: 6 }} /> : null}
-            <div>
-              <div style={{ fontWeight: 500 }}>{value}</div>
-              <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                {row.description}
-              </Typography.Text>
-            </div>
-          </Space>
-        ),
-      },
-      category: { key: 'category', title: 'Danh mục', render: (_value, row) => row.service_category?.name || '—' },
-      price: {
-        key: 'price',
-        title: 'Giá niêm yết',
-        render: (_value, row) =>
-          row.price_max != null && Number(row.price_max) !== Number(row.price) ? `${formatPrice(row.price, currency)} – ${formatPrice(row.price_max, currency)}` : formatPrice(row.price, currency),
-      },
-      duration: { key: 'duration', title: 'Thời lượng', dataIndex: 'duration_minutes', render: (value?: number | null) => (value ? `${value} phút` : 'Theo cấu hình') },
-      points: { key: 'points', title: 'Điểm đổi', dataIndex: 'required_points', render: (value?: number | null) => (value ? Number(value).toLocaleString('vi-VN') : '—') },
-      status: {
-        key: 'status',
-        title: 'Trạng thái',
-        dataIndex: 'is_active',
-        render: (value?: boolean) => <Tag color={value === false ? 'default' : 'green'}>{value === false ? 'Đã ẩn' : 'Đang hiển thị'}</Tag>,
-      },
-    }
-    return [
-      ...visibleColumns.map((key) => dataColumns[key]).filter(Boolean),
-      {
-        key: 'actions',
-        title: 'Hành động', align: 'center' as const,
-        width: 90,
-        fixed: 'right',
-        render: (_value, row) => (
-          <RowActionsMenu
-            items={[
-              ...(canUpdate ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []),
-              ...(canUpdate && row.is_active === false ? [{ key: 'restore', icon: <EyeOutlined />, label: 'Bật lại' }] : []),
-              ...(canDelete && row.is_active !== false ? [{ key: 'hide', icon: <EyeInvisibleOutlined />, danger: true, label: 'Ẩn' }] : []),
-            ]}
-            onSelect={(key) => {
-              if (key === 'edit') void openEditor(row)
-              else if (key === 'restore') void restoreService(row)
-              else if (key === 'hide') {
-                Modal.confirm({
-                  title: 'Ẩn dịch vụ này?',
-                  content: 'Lịch và gói cũ vẫn sẽ tham chiếu dịch vụ.',
-                  okText: 'Ẩn',
-                  okButtonProps: { danger: true },
-                  cancelText: 'Hủy',
-                  onOk: () => hideService(row),
-                })
-              }
-            }}
-          />
-        ),
-      },
+  // const columns = useMemo<TableColumnsType<ServiceRow>>(() => {
+  //   const dataColumns: Record<string, NonNullable<TableColumnsType<ServiceRow>[number]>> = {
+  //     service: {
+  //       key: 'service',
+  //       title: 'Dịch vụ',
+  //       dataIndex: 'title',
+  //       render: (value: string, row) => (
+  //         <Space align="start">
+  //           {fileSrc((row as any).image_file) ?? resolveFileSrc(urlMap, row.image_file_id) ? <img src={(fileSrc((row as any).image_file) ?? resolveFileSrc(urlMap, row.image_file_id)) ?? undefined} alt="" width={44} height={44} style={{ objectFit: 'cover', borderRadius: 6 }} /> : null}
+  //           <div>
+  //             <div style={{ fontWeight: 500 }}>{value}</div>
+  //             <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+  //               {row.description}
+  //             </Typography.Text>
+  //           </div>
+  //         </Space>
+  //       ),
+  //     },
+  //     category: { key: 'category', title: 'Danh mục', render: (_value, row) => row.service_category?.name || '—' },
+  //     price: {
+  //       key: 'price',
+  //       title: 'Giá niêm yết',
+  //       render: (_value, row) =>
+  //         row.price_max != null && Number(row.price_max) !== Number(row.price) ? `${formatPrice(row.price, currency)} – ${formatPrice(row.price_max, currency)}` : formatPrice(row.price, currency),
+  //     },
+  //     duration: { key: 'duration', title: 'Thời lượng', dataIndex: 'duration_minutes', render: (value?: number | null) => (value ? `${value} phút` : 'Theo cấu hình') },
+  //     points: { key: 'points', title: 'Điểm đổi', dataIndex: 'required_points', render: (value?: number | null) => (value ? Number(value).toLocaleString('vi-VN') : '—') },
+  //     status: {
+  //       key: 'status',
+  //       title: 'Trạng thái',
+  //       dataIndex: 'is_active',
+  //       render: (value?: boolean) => <Tag color={value === false ? 'default' : 'green'}>{value === false ? 'Đã ẩn' : 'Đang hiển thị'}</Tag>,
+  //     },
+  //   }
+  //   return [
+  //     ...visibleColumns.map((key) => dataColumns[key]).filter(Boolean),
+  //     {
+  //       key: 'actions',
+  //       title: 'Hành động', align: 'center' as const,
+  //       width: 90,
+  //       fixed: 'right',
+  //       render: (_value, row) => (
+  //         <RowActionsMenu
+  //           items={[
+  //             ...(canUpdate ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []),
+  //             ...(canUpdate && row.is_active === false ? [{ key: 'restore', icon: <EyeOutlined />, label: 'Bật lại' }] : []),
+  //             ...(canDelete && row.is_active !== false ? [{ key: 'hide', icon: <EyeInvisibleOutlined />, danger: true, label: 'Ẩn' }] : []),
+  //           ]}
+  //           onSelect={(key) => {
+  //             if (key === 'edit') void openEditor(row)
+  //             else if (key === 'restore') void restoreService(row)
+  //             else if (key === 'hide') {
+  //               Modal.confirm({
+  //                 title: 'Ẩn dịch vụ này?',
+  //                 content: 'Lịch và gói cũ vẫn sẽ tham chiếu dịch vụ.',
+  //                 okText: 'Ẩn',
+  //                 okButtonProps: { danger: true },
+  //                 cancelText: 'Hủy',
+  //                 onOk: () => hideService(row),
+  //               })
+  //             }
+  //           }}
+  //         />
+  //       ),
+  //     },
+  //   ]
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [visibleColumns, canUpdate, canDelete, urlMap])
+
+    const rowActions = (row: ServiceRow) => {
+    const items = [
+      ...(canUpdate ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []),
+      ...(canUpdate && row.is_active === false ? [{ key: 'restore', icon: <EyeOutlined />, label: 'Bật lại' }] : []),
+      ...(canDelete && row.is_active !== false ? [{ key: 'hide', icon: <EyeInvisibleOutlined />, danger: true, label: 'Ẩn' }] : []),
     ]
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visibleColumns, canUpdate, canDelete, urlMap])
+    if (items.length === 0) return null
+    return (
+      <RowActionsMenu
+        items={items}
+        onSelect={(key) => {
+          if (key === 'edit') void openEditor(row)
+          else if (key === 'restore') void restoreService(row)
+          else if (key === 'hide') {
+            Modal.confirm({
+              title: 'Ẩn dịch vụ này?',
+              content: 'Lịch và gói cũ vẫn sẽ tham chiếu dịch vụ.',
+              okText: 'Ẩn',
+              okButtonProps: { danger: true },
+              cancelText: 'Hủy',
+              onOk: () => hideService(row),
+            })
+          }
+        }}
+      />
+    )
+  }
+
+  const priceText = (row: ServiceRow) =>
+    row.price_max != null && Number(row.price_max) !== Number(row.price) ? `${formatPrice(row.price, currency)} – ${formatPrice(row.price_max, currency)}`: formatPrice(row.price, currency)
 
   const servicesContent = (
     <>
@@ -318,15 +352,29 @@ export default function Services() {
           </Button>
         </Can>
       </div>
-      <Table<ServiceRow>
-        className="desktop-only"
-        rowKey="id"
-        loading={listQuery.isLoading}
-        dataSource={rows}
-        columns={columns}
-        scroll={{ x: 1000 }}
-        pagination={false}
-      />
+      <div className="desktop-only">
+        {listQuery.isLoading ? (
+          <div className="flex justify-center py-16"><Spin /></div>
+        ) : rows.length === 0 ? (
+          <div className="py-16"><Empty description="Chưa có dịch vụ nào" /></div>
+        ) : (
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+            {rows.map((row) => (
+              <ServiceCard
+                key={row.id}
+                title={row.title || 'Dịch vụ'}
+                imageSrc={fileSrc((row as any).image_file) ?? resolveFileSrc(urlMap, row.image_file_id)}
+                isActive={row.is_active !== false}
+                duration={row.duration_minutes ? `${row.duration_minutes} phút` : 'Theo cấu hình'}
+                category={row.service_category?.name || '—'}
+                price={priceText(row)}
+                actions={rowActions(row)}
+                onOpen={() => void openEditor(row)}
+              />
+            ))}
+          </div>
+        )}
+      </div>
       <MobileCards
         rows={rows}
         rowKey={(row) => row.id}
