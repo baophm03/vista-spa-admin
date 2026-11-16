@@ -1,6 +1,6 @@
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
 import { Button, Form, Grid, Input, InputNumber, Modal, Col, Row, Select, Space, Table, Tag, Typography, message } from 'antd'
-import { DeleteOutlined, DownloadOutlined, EditOutlined, PlusOutlined, QrcodeOutlined, SearchOutlined } from '@ant-design/icons'
+import { DeleteOutlined, DownloadOutlined, EditOutlined, PlusOutlined, QrcodeOutlined } from '@ant-design/icons'
 import { useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import type { Dayjs } from 'dayjs'
@@ -14,7 +14,6 @@ import LinkCustomerAccountModal from './components/LinkCustomerAccountModal'
 import { normalizeCustomerCustomFields, type CustomFieldDefWithOptions } from './components/CustomerProfileCustomFields'
 import type { CustomerProfileRow, CustomerProfileSummary } from './components/CustomerProfileOverviewTab'
 import { useBrandCurrency } from '@/themeRuntime'
-import type { Branch } from '@/api/models/branch'
 import type { CardRank } from '@/api/models/cardRank'
 import type { CustomerProfile } from '@/api/models/customerProfile'
 import type { CustomerProfileCreate } from '@/api/models/customerProfileCreate'
@@ -30,7 +29,6 @@ import {
   putCustomerProfilesId,
   useGetCustomerProfiles,
 } from '@/api/endpoints/customer-profiles'
-import { getBranches } from '@/api/endpoints/branches'
 import { getCardRanks } from '@/api/endpoints/membership'
 import { getCustomFieldDefs } from '@/api/endpoints/settings'
 import { apiClient } from '@/api/mutator/custom-instance'
@@ -46,21 +44,19 @@ function escapeHtml(value: string) {
   return value.replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char] ?? char)
 }
 
-type CustomerColumnKey = 'customer_code' | 'full_name' | 'phone' | 'email' | 'branch' | 'rank'
+type CustomerColumnKey = 'customer_code' | 'full_name' | 'phone' | 'email' | 'rank'
 
 const CUSTOMER_COLUMN_OPTIONS: { label: string; value: CustomerColumnKey }[] = [
   { label: 'Mã khách hàng', value: 'customer_code' },
   { label: 'Tên khách hàng', value: 'full_name' },
   { label: 'Số điện thoại', value: 'phone' },
   { label: 'Email', value: 'email' },
-  { label: 'Cơ sở', value: 'branch' },
   { label: 'Hạng / Tài khoản', value: 'rank' },
 ]
 
 const DEFAULT_VISIBLE_COLUMNS = CUSTOMER_COLUMN_OPTIONS.map((column) => column.value)
 
 interface CustomerProfileListFilters {
-  branch_id?: string
   birth_month?: number
   rank_id?: string
   min_spent?: number
@@ -98,7 +94,6 @@ export default function Users() {
   const [editing, setEditing] = useState<CustomerProfileRow | null>(null)
   const [historyOpen, setHistoryOpen] = useState(false)
   const [linkOpen, setLinkOpen] = useState(false)
-  const [branches, setBranches] = useState<Branch[]>([])
   const [ranks, setRanks] = useState<CardRank[]>([])
   const [profileFieldDefs, setProfileFieldDefs] = useState<CustomFieldDefWithOptions[]>([])
   const [exporting, setExporting] = useState(false)
@@ -107,8 +102,6 @@ export default function Users() {
   const [filterForm] = Form.useForm()
   // Mobile (dưới breakpoint md): nút công cụ hiện chữ thay vì chỉ icon
   const isMobile = !Grid.useBreakpoint().md
-  // Mobile: search thu về nút icon, bấm mới mở ô tìm kiếm
-  const [searchOpen, setSearchOpen] = useState(false)
 
   const listParams = buildListParams(filters, keyword, page, limit) as GetCustomerProfilesParams
   const listQuery = useGetCustomerProfiles(listParams)
@@ -123,9 +116,6 @@ export default function Users() {
   }, [qrUrl])
 
   useEffect(() => {
-    getBranches()
-      .then((body) => setBranches(pickData<Branch[]>(body) ?? []))
-      .catch(() => undefined)
     getCardRanks()
       .then((body) => setRanks((pickData<CardRank[]>(body) ?? [])
         .filter((rank) => rank.is_active !== false)
@@ -215,7 +205,6 @@ export default function Users() {
     }
 
     const next: CustomerProfileListFilters = {}
-    if (typeof values.branch_id === 'string' && values.branch_id) next.branch_id = values.branch_id
     if (typeof values.birth_month === 'number') next.birth_month = values.birth_month
     if (typeof values.rank_id === 'string' && values.rank_id) next.rank_id = values.rank_id
     if (minSpent !== undefined) next.min_spent = minSpent
@@ -310,7 +299,6 @@ export default function Users() {
         full_name: fresh.full_name,
         phone: fresh.phone,
         email: fresh.email,
-        branch_id: fresh.branch_id,
         birthday: fresh.birthday ? dayjs(fresh.birthday) : undefined,
         address: fresh.address,
         note: fresh.note,
@@ -376,14 +364,12 @@ export default function Users() {
     }
     const customerName = escapeHtml(selected.full_name)
     const customerCode = escapeHtml(selected.customer_code)
-    const branch = escapeHtml(branches.find((item) => item.id === selected.branch_id)?.name ?? '—')
     printWindow.document.write(`<!doctype html><html lang="vi"><head><meta charset="utf-8"><title>QR ${customerCode}</title><style>
-      *{box-sizing:border-box}body{font-family:Arial,sans-serif;margin:0;padding:24px;color:#26352d}.card{width:320px;margin:0 auto;border:1px solid #dce8df;border-radius:16px;padding:22px;text-align:center}.brand{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#5b7868}.name{font-size:20px;font-weight:700;margin:10px 0 6px}.code{font-family:monospace;font-size:16px;font-weight:700}.branch{font-size:13px;color:#65756b;margin-top:7px}img{width:210px;height:210px;image-rendering:pixelated;margin-top:16px}@media print{body{padding:0}.card{border:0}}
-      </style></head><body><main class="card"><div class="brand">Vista</div><div class="name">${customerName}</div><div class="code">${customerCode}</div><div class="branch">${branch}</div><img src="${qrUrl}" alt="QR ${customerCode}"></main><script>window.onload=()=>{setTimeout(()=>{window.focus();window.print();window.close()},150)}</script></body></html>`)
+      *{box-sizing:border-box}body{font-family:Arial,sans-serif;margin:0;padding:24px;color:#26352d}.card{width:320px;margin:0 auto;border:1px solid #dce8df;border-radius:16px;padding:22px;text-align:center}.brand{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#5b7868}.name{font-size:20px;font-weight:700;margin:10px 0 6px}.code{font-family:monospace;font-size:16px;font-weight:700}img{width:210px;height:210px;image-rendering:pixelated;margin-top:16px}@media print{body{padding:0}.card{border:0}}
+      </style></head><body><main class="card"><div class="brand">Vista</div><div class="name">${customerName}</div><div class="code">${customerCode}</div><img src="${qrUrl}" alt="QR ${customerCode}"></main><script>window.onload=()=>{setTimeout(()=>{window.focus();window.print();window.close()},150)}</script></body></html>`)
     printWindow.document.close()
   }
 
-  const branchName = (id?: string) => branches.find((branch) => branch.id === id)?.name ?? '—'
   const rowRankName = (row: CustomerProfileRow) => row.user?.membership?.card_rank?.name
   const activeFilterCount = Object.values(filters).filter((value) => value !== undefined && value !== '').length + (keyword ? 1 : 0)
 
@@ -393,26 +379,14 @@ export default function Users() {
         subtitle="Quản lý cơ sở dữ liệu và phân hạng thành viên"
         left={
           <>
-            {/* Mobile: nút icon mở ô tìm kiếm; desktop hiện input luôn */}
-            {isMobile && !searchOpen && (
-              <Button icon={<SearchOutlined />} aria-label="Tìm kiếm" title="Tìm kiếm" onClick={() => setSearchOpen(true)} />
-            )}
-            {(searchOpen || !isMobile) && (
-              <Input
-                allowClear
-                autoFocus={isMobile}
-                prefix={<SearchOutlined className="text-[var(--brand-text-inactive,#A9ADB2)]" />}
-                placeholder="Tìm tên, SĐT, email, mã KH..."
-                className={isMobile && searchOpen ? 'min-w-0 flex-1' : 'w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]'}
-                value={searchText}
-                onChange={(event) => {
-                  setSearchText(event.target.value)
-                  if (!event.target.value) applySearch('')
-                }}
-                onPressEnter={() => applySearch(searchText)}
-                onBlur={() => { if (isMobile && !searchText) setSearchOpen(false) }}
-              />
-            )}
+            <Input.Search
+              allowClear
+              placeholder="Tìm tên, SĐT, email, mã KH..."
+              className="w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]"
+              value={searchText}
+              onChange={(event) => { setSearchText(event.target.value); if (!event.target.value) applySearch('') }}
+              onSearch={(v) => applySearch(v)}
+            />
             {profileAccess.canRead && (
               <Button icon={<QrcodeOutlined />} loading={qrLookupLoading} onClick={() => setScannerOpen(true)} aria-label="Quét QR" title="Quét QR">
                 {/* Desktop: hiện chữ dễ nhận biết; mobile giữ icon gọn thanh công cụ */}
@@ -432,9 +406,6 @@ export default function Users() {
               onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as CustomerColumnKey[])}
               filterItems={(
                 <>
-                  <Form.Item name="branch_id" label="Cơ sở" className="mb-2.5!">
-                    <Select allowClear placeholder="Tất cả cơ sở" options={branches.map((branch) => ({ value: branch.id, label: branch.name }))} />
-                  </Form.Item>
                   <Row gutter={8}>
                     <Col span={12}>
                       <Form.Item name="birth_month" label="Tháng sinh" className="mb-2.5!">
@@ -515,7 +486,6 @@ export default function Users() {
           },
           { key: 'phone', title: 'Số điện thoại', dataIndex: 'phone', width: 120 },
           { key: 'email', title: 'Email', dataIndex: 'email', width: 190, render: (value: string | undefined, row: CustomerProfileRow) => value || row.user?.email || '—' },
-          { key: 'branch', title: 'Cơ sở', dataIndex: 'branch_id', width: 120, render: (value?: string) => branchName(value) },
           {
             title: 'Hạng / Tài khoản',
             key: 'rank',
@@ -575,7 +545,6 @@ export default function Users() {
             <div className="mobile-card-rows">
               <MobileCardRow label="Số điện thoại" value={row.phone || '—'} />
               <MobileCardRow label="Email" value={row.email || row.user?.email || '—'} />
-              <MobileCardRow label="Cơ sở" value={branchName(row.branch_id)} />
             </div>
             {(profileAccess.canManage || profileAccess.canDelete) && (
               <div className="mobile-card-actions">
@@ -615,7 +584,6 @@ export default function Users() {
         onLink={() => setLinkOpen(true)}
         onHistory={() => setHistoryOpen(true)}
         onMembershipUpdated={refreshSelected}
-        branchName={branchName}
       />
 
 
@@ -623,7 +591,6 @@ export default function Users() {
         form={form}
         open={open}
         editing={editing}
-        branches={branches}
         profileFieldDefs={profileFieldDefs}
         onCancel={() => setOpen(false)}
         onOk={() => void submit()}

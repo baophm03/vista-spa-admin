@@ -6,6 +6,7 @@ import {
   type HealthRow,
   type SkinTypeOption,
 } from './constants'
+import type { Branch } from '@/api/models/branch'
 
 interface HealthRecordModalProps {
   open: boolean
@@ -18,6 +19,7 @@ interface HealthRecordModalProps {
   staffs: ExaminerOption[]
   skinTypes: SkinTypeOption[]
   skinTypesLoading: boolean
+  branches: Branch[]
 }
 
 export default function HealthRecordModal({
@@ -31,6 +33,7 @@ export default function HealthRecordModal({
   staffs,
   skinTypes,
   skinTypesLoading,
+  branches,
 }: HealthRecordModalProps) {
   return (
     <Modal
@@ -67,6 +70,16 @@ export default function HealthRecordModal({
                     const name = staff.zalo_name || staff.email || staff.id.slice(0, 8)
                     return { value: name, label: name }
                   })}
+                />
+              </Form.Item>
+              <Form.Item name="branch_id" label={<span style={labelStyle}>Cơ sở</span>}>
+                <Select
+                  allowClear
+                  showSearch
+                  optionFilterProp="label"
+                  placeholder="Chọn cơ sở"
+                  notFoundContent="Chưa có cơ sở"
+                  options={branches.map((branch) => ({ value: branch.id, label: branch.name }))}
                 />
               </Form.Item>
               <Form.Item name="skin_type" label={<span style={labelStyle}>Loại da</span>}>

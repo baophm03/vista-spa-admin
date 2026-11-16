@@ -17,7 +17,6 @@ import PageTitle from '@/components/base/PageTitle'
 import StatCards, { type StatItem } from '@/components/base/StatCards'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
-import { paginateRows } from '@/utils/listTable'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { PostReferralsBody, PutReferralsIdBody } from '@/api/models'
 import {
@@ -44,18 +43,18 @@ export default function Referrals() {
   const canUpdate = ability.can('UPDATE', 'REFERRAL')
   const [open, setOpen] = useState(false)
   const [page, setPage] = useState(1)
+  const [limit] = useState(10)
   const [editing, setEditing] = useState<ReferralRow | null>(null)
   const [form] = Form.useForm()
   const queryClient = useQueryClient()
 
-  const listQuery = useGetReferrals()
-  const rows = useMemo(() => {
-    const raw = pickData<unknown>(listQuery.data)
-    return (Array.isArray(raw) ? raw : (raw as { rows?: ReferralRow[] } | null)?.rows ?? []) as ReferralRow[]
-  }, [listQuery.data])
+  const listQuery = useGetReferrals({ page, limit } as never)
+  const rows = (pickData<ReferralRow[] | undefined>(listQuery.data) ?? []) as ReferralRow[]
+  const total = (listQuery.data as unknown as { meta?: { total?: number } })?.meta?.total ?? rows.length
+  const statsMeta = (listQuery.data as unknown as { meta?: { stats?: { total?: number; pending?: number; paid?: number } } })?.meta?.stats
 
   // Map tên CTV để hiển thị "người giới thiệu" khi referrer_type = COLLABORATOR
-  const collaboratorsQuery = useGetCollaborators({ is_active: true })
+  const collaboratorsQuery = useGetCollaborators({ page: 1, limit: 200, is_active: true } as never)
   const collaboratorNameById = useMemo(() => {
     const raw = pickData<unknown>(collaboratorsQuery.data)
     const list = (Array.isArray(raw) ? raw : (raw as { rows?: { id: string; name: string }[] } | null)?.rows ?? []) as { id: string; name: string }[]
@@ -148,11 +147,11 @@ export default function Referrals() {
     return customer?.full_name || customer?.phone || row.referrer_id
   }
 
-  // Thống kê đầu trang — tính từ danh sách referrals hiện tại (client-side, do endpoint không phân trang server)
+  // Thống kê đầu trang — lấy từ meta.stats phía server
   const statItems: StatItem[] = [
-    { key: 'total', label: 'Tổng lượt giới thiệu', value: rows.length.toLocaleString('vi-VN'), icon: <ShareAltOutlined />, tone: 'primary' },
-    { key: 'pending', label: 'Chờ duyệt', value: rows.filter((r) => r.status === 'PENDING').length.toLocaleString('vi-VN'), icon: <ClockCircleOutlined />, tone: 'tertiary' },
-    { key: 'paid', label: 'Đã chi trả', value: rows.filter((r) => r.status === 'PAID').length.toLocaleString('vi-VN'), icon: <PayCircleOutlined />, tone: 'secondary' },
+    { key: 'total', label: 'Tổng lượt giới thiệu', value: (statsMeta?.total ?? total).toLocaleString('vi-VN'), icon: <ShareAltOutlined />, tone: 'primary' },
+    { key: 'pending', label: 'Chờ duyệt', value: (statsMeta?.pending ?? 0).toLocaleString('vi-VN'), icon: <ClockCircleOutlined />, tone: 'tertiary' },
+    { key: 'paid', label: 'Đã chi trả', value: (statsMeta?.paid ?? 0).toLocaleString('vi-VN'), icon: <PayCircleOutlined />, tone: 'secondary' },
   ]
 
   const columns: TableColumnsType<ReferralRow> = [
@@ -266,12 +265,12 @@ export default function Referrals() {
               />
             )}
             <Table<ReferralRow>
-              rowKey="id" loading={listQuery.isLoading} dataSource={paginateRows(rows, page, 10)}
+              rowKey="id" loading={listQuery.isLoading} dataSource={rows}
               scroll={{ x: 'max-content' }}
               columns={columns.filter((column) => column.key !== 'actions' || canUpdate)}
               pagination={false}
             />
-            <ListPagination page={page} limit={10} total={rows.length} onChange={setPage} noun="lượt giới thiệu" />
+            <ListPagination page={page} limit={limit} total={total} onChange={setPage} noun="lượt giới thiệu" />
 
             <ReferralModal
               open={open}

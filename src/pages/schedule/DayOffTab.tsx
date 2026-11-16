@@ -3,14 +3,14 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import dayjs, { type Dayjs } from 'dayjs'
 import { Alert, Image, Badge, Button, Checkbox, DatePicker, Divider, Form, Modal, Popconfirm, Popover, Select, Space, Table, Tag, Typography, message } from 'antd'
-import { CalendarOutlined, ClearOutlined, FilterOutlined, PlusOutlined, ReloadOutlined } from '@ant-design/icons'
+import { CalendarOutlined, CheckOutlined, ClearOutlined, CloseOutlined, FilterOutlined, PlusOutlined, ReloadOutlined, UndoOutlined } from '@ant-design/icons'
 import { errorMessage, pickData } from '@/api/helpers'
 import { fileSrc, resolveFileSrc, useFileUrlMap } from '@/hooks/useFileUrl'
 import ListPagination from '@/components/base/ListPagination'
+import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ToolbarRow from '@/components/base/ToolbarRow'
 import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import TableEmpty from '@/components/base/TableEmpty'
-import { paginateRows } from '@/utils/listTable'
 import {
   deleteStaffDaysOffId,
   getGetStaffDaysOffQueryKey,
@@ -166,7 +166,7 @@ export default function DayOffTab({ branches, staff, access, loadingShared }: Pr
     setFilterOpen(false)
   }
 
-  const daysOffParams: Record<string, unknown> = {}
+  const daysOffParams: Record<string, unknown> = { page, limit: 10 }
   if (access.isAdmin && branchFilter) daysOffParams.branch_id = branchFilter
   if (staffFilter) daysOffParams.staff_id = staffFilter
   if (statusFilter) daysOffParams.status = statusFilter
@@ -256,7 +256,7 @@ export default function DayOffTab({ branches, staff, access, loadingShared }: Pr
     { title: 'Thời gian nghỉ', key: 'time', render: (_: unknown, row: StaffDayOff) => (row as StaffDayOff & { shift_template?: { name?: string } }).shift_template?.name || templates.find((template) => template.id === row.shift_template_id)?.name || 'Cả ngày' },
     {
       title: 'Lý do', dataIndex: 'reason', key: 'reason', render: (value?: string, row?: StaffDayOff) => {
-        const src = fileSrc((row as any)?.image_file) ?? resolveFileSrc(urlMap, row?.image_file_id)
+        const src = fileSrc((row as any)?.image_file) ?? resolveFileSrc(urlMap, (row as StaffDayOff & { image_file_id?: string })?.image_file_id)
         return (
           <Space size={8}>
             <span style={{ maxWidth: 220, display: 'inline-block' }}>{value || '—'}</span>
@@ -266,14 +266,37 @@ export default function DayOffTab({ branches, staff, access, loadingShared }: Pr
       },
     },
     { title: 'Trạng thái', dataIndex: 'status', key: 'status', render: (value: string, row: StaffDayOff) => <Space direction="vertical" size={0}><Tag color={STATUS[value]?.color}>{STATUS[value]?.label ?? value}</Tag>{row.reject_reason && <span style={{ color: '#cf1322', fontSize: 12 }}>Lý do: {row.reject_reason}</span>}</Space> },
-    { title: 'Thao tác', align: 'center' as const, key: 'actions', width: 230, render: (_: unknown, row: StaffDayOff) => <Space wrap>
-      {access.isAdmin && row.status === 'pending' && <>
-        <Button size="small" icon={<CalendarOutlined />} onClick={() => void showConflictsPreview(row)}>Lịch trùng</Button>
-        <Button size="small" type="primary" onClick={() => void approve(row)}>Duyệt</Button>
-        <Button size="small" danger onClick={() => { setRejecting(row); setRejectReason('') }}>Từ chối</Button>
-      </>}
-      {isTechnician && row.status === 'pending' && row.staff_id === access.currentUserId && <Popconfirm title="Rút đăng ký nghỉ này?" okText="Rút" cancelText="Hủy" onConfirm={() => void withdraw(row)}><Button size="small">Rút đơn</Button></Popconfirm>}
-    </Space> },
+    { title: 'Thao tác', align: 'center' as const, key: 'actions', width: 90, fixed: 'right' as const, render: (_: unknown, row: StaffDayOff) => {
+      const items = [
+        ...(access.isAdmin && row.status === 'pending' ? [
+          { key: 'conflicts', icon: <CalendarOutlined />, label: 'Lịch trùng' },
+          { key: 'approve', icon: <CheckOutlined />, label: 'Duyệt' },
+          { key: 'reject', icon: <CloseOutlined />, label: 'Từ chối', danger: true },
+        ] : []),
+        ...(isTechnician && row.status === 'pending' && row.staff_id === access.currentUserId ? [
+          { key: 'withdraw', icon: <UndoOutlined />, label: 'Rút đơn', danger: true },
+        ] : []),
+      ]
+      return (
+        <RowActionsMenu
+          items={items}
+          onSelect={(key) => {
+            if (key === 'conflicts') void showConflictsPreview(row)
+            else if (key === 'approve') void approve(row)
+            else if (key === 'reject') { setRejecting(row); setRejectReason('') }
+            else if (key === 'withdraw') {
+              Modal.confirm({
+                title: 'Rút đăng ký nghỉ này?',
+                okText: 'Rút',
+                okButtonProps: { danger: true },
+                cancelText: 'Hủy',
+                onOk: () => void withdraw(row),
+              })
+            }
+          }}
+        />
+      )
+    } },
   ]
 
   return <div>
@@ -327,12 +350,12 @@ export default function DayOffTab({ branches, staff, access, loadingShared }: Pr
     <Table<StaffDayOff>
       className="desktop-only"
       rowKey="id" size="middle" pagination={false}
-      loading={loadingShared || daysOffQuery.isLoading || templatesQuery.isLoading} dataSource={paginateRows(rows, page, 10)}
+      loading={loadingShared || daysOffQuery.isLoading || templatesQuery.isLoading} dataSource={rows}
       columns={columns.filter((column) => column.key === 'actions' || visibleColumns.includes(column.key as DayOffColumnKey))}
       locale={{ emptyText: <TableEmpty description="Chưa có đăng ký nghỉ trong điều kiện đã chọn" /> }}
     />
     <MobileCards
-      rows={paginateRows(rows, page, 10)}
+      rows={rows}
       rowKey={(row) => row.id}
       loading={loadingShared || daysOffQuery.isLoading || templatesQuery.isLoading}
       emptyText="Chưa có đăng ký nghỉ trong điều kiện đã chọn"
@@ -364,7 +387,7 @@ export default function DayOffTab({ branches, staff, access, loadingShared }: Pr
         )
       }}
     />
-    <ListPagination page={page} limit={10} total={rows.length} onChange={setPage} noun="đăng ký nghỉ" />
+    <ListPagination page={page} limit={10} total={(daysOffQuery.data as unknown as { meta?: { total?: number } })?.meta?.total ?? rows.length} onChange={setPage} noun="đăng ký nghỉ" />
 
     <DayOffFormModal
       open={open}

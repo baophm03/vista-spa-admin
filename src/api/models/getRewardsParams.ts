@@ -9,4 +9,6 @@
 export type GetRewardsParams = {
 is_active?: boolean;
 available?: string;
+q?: string;
+type?: string;
 };

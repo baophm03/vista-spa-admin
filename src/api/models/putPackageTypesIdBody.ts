@@ -8,7 +8,6 @@
 
 export type PutPackageTypesIdBody = {
   name?: string;
-  default_quota_type?: string;
   has_warranty?: boolean;
   allow_unlimited?: boolean;
   sort_order?: string;

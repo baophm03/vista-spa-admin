@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { Alert, Button, Form, Input, Modal, Select, Space, Table, Tabs, Tag, Typography, message } from 'antd'
-import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, PlusOutlined, SearchOutlined, SendOutlined, UndoOutlined } from '@ant-design/icons'
+import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, PlusOutlined, SendOutlined, UndoOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
 import ToolbarRow from '@/components/base/ToolbarRow'
@@ -61,16 +61,13 @@ export default function ContentPosts() {
   const [uploadingCover, setUploadingCover] = useState(false)
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
   const [previewOpen, setPreviewOpen] = useState(false)
-
-  // Gõ tìm tiêu đề có debounce 400ms — giống các page danh sách khác
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setPostPage(1)
-      setPostFilter((f) => ({ ...f, q: postSearchInput.trim() || undefined }))
-    }, 400)
-    return () => clearTimeout(timer)
-  }, [postSearchInput])
   const [previewData, setPreviewData] = useState<PostFormValues | null>(null)
+
+  const applyPostSearch = (value: string) => {
+    setPostSearchInput(value)
+    setPostFilter((f) => ({ ...f, q: value.trim() || undefined }))
+    setPostPage(1)
+  }
   const [postForm] = Form.useForm<PostFormValues>()
   const [categoryForm] = Form.useForm<CategoryFormValues>()
   const uploadMutation = usePostFiles()
@@ -348,13 +345,13 @@ export default function ContentPosts() {
                     value={postFilter.status}
                     onChange={(v) => { setPostFilter((f) => ({ ...f, status: v })); setPostPage(1) }}
                   />
-                  <Input
+                  <Input.Search
                     allowClear
-                    prefix={<SearchOutlined className="text-[var(--brand-text-inactive,#A9ADB2)]" />}
                     placeholder="Tìm tiêu đề"
-                    className="w-[220px]!"
+                    className="w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]"
                     value={postSearchInput}
-                    onChange={(event) => setPostSearchInput(event.target.value)}
+                    onChange={(event) => { setPostSearchInput(event.target.value); if (!event.target.value) applyPostSearch('') }}
+                    onSearch={applyPostSearch}
                   />
                   <Can I="CREATE" a="CONTENT">
                     <Button type="primary" icon={<PlusOutlined />} onClick={() => openPostEditor()}>Tạo bài viết</Button>

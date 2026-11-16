@@ -6,15 +6,15 @@ import {
   InputNumber,
   Modal,
   Select,
-  Space,
   Switch,
 } from 'antd'
-import type { Service } from '@/api/models/service'
 import { TYPE_META, type RewardRow } from './constants'
 
 export interface RewardVoucherOption {
   value: string
   label: string
+  category: string
+  disabled?: boolean
 }
 
 interface RewardModalProps {
@@ -25,8 +25,6 @@ interface RewardModalProps {
   confirmLoading: boolean
   form: FormInstance
   vouchers: RewardVoucherOption[]
-  services: Service[]
-  servicesQueryLoading: boolean
 }
 
 export default function RewardModal({
@@ -37,14 +35,20 @@ export default function RewardModal({
   confirmLoading,
   form,
   vouchers,
-  services,
-  servicesQueryLoading,
 }: RewardModalProps) {
   const selectedType = Form.useWatch('type', form)
+  const selectedVoucherKind = Form.useWatch('voucher_kind', form)
+  const voucherKinds = [
+    { value: 'treatment-package', label: 'Gói liệu trình' },
+    { value: 'academy-course', label: 'Khóa học' },
+    { value: 'product', label: 'Sản phẩm' },
+  ]
+  const selectedVouchers = vouchers.filter((voucher) => voucher.category === selectedVoucherKind)
 
   return (
     <Modal
       title={editing ? 'Sửa quà' : 'Thêm quà'}
+      width={800}
       open={open}
       onCancel={onCancel}
       onOk={onSubmit}
@@ -56,69 +60,66 @@ export default function RewardModal({
         <Form.Item name="name" label="Tên quà" rules={[{ required: true, message: 'Nhập tên quà' }]}>
           <Input maxLength={255} placeholder="VD: Nước tẩy trang Kahanna" />
         </Form.Item>
-        <Space style={{ display: 'flex' }} align="start">
-          <Form.Item name="type" label="Loại" rules={[{ required: true }]} style={{ flex: 1 }}>
+        <div style={{ display: 'flex', gap: 16, width: '100%' }}>
+          <Form.Item name="type" label="Loại" rules={[{ required: true }]} style={{ width: 180, flex: '0 0 180px' }}>
             <Select options={Object.entries(TYPE_META).map(([value, meta]) => ({ value, label: meta.label }))} />
           </Form.Item>
           {selectedType === 'VOUCHER' && (
-            <Form.Item name="voucher_reference" label="Voucher cấp" rules={[{ required: true, message: 'Chọn voucher sẽ cấp' }]} style={{ flex: 1 }}>
-              <Select
-                showSearch
-                optionFilterProp="label"
-                placeholder="Chọn voucher liệu trình, khóa học hoặc sản phẩm"
-                options={vouchers}
-              />
-            </Form.Item>
+            <>
+              <Form.Item name="voucher_kind" label="Nhóm voucher" rules={[{ required: true, message: 'Chọn nhóm voucher' }]} style={{ width: 200, flex: '0 0 200px' }}>
+                <Select
+                  placeholder="Chọn nhóm"
+                  options={voucherKinds}
+                  onChange={() => form.setFieldValue('voucher_reference', undefined)}
+                />
+              </Form.Item>
+              <Form.Item
+                name="voucher_reference"
+                label="Loại Voucher"
+                rules={[{ required: true, message: 'Chọn voucher sẽ cấp' }]}
+                style={{ flex: '1 1 0', minWidth: 0 }}
+                extra="Chỉ chọn được voucher đang trong thời gian hiệu lực."
+              >
+                <Select
+                  showSearch
+                  optionFilterProp="label"
+                  placeholder={selectedVoucherKind ? 'Chọn voucher' : 'Trước tiên chọn nhóm voucher'}
+                  disabled={!selectedVoucherKind}
+                  options={selectedVouchers}
+                />
+              </Form.Item>
+            </>
           )}
-        </Space>
-        <Space style={{ display: 'flex' }} align="start">
-          <Form.Item name="points_cost" label="Điểm đổi" rules={[{ required: true }, { type: 'number', min: 1, message: 'Tối thiểu 1 điểm' }]} style={{ flex: 1 }}>
+        </div>
+        <div style={{ display: 'flex', gap: 16, width: '100%' }}>
+          <Form.Item name="points_cost" label="Điểm quy đổi" rules={[{ required: true }, { type: 'number', min: 1, message: 'Tối thiểu 1 điểm' }]} style={{ flex: 1, minWidth: 0 }}>
             <InputNumber min={1} precision={0} style={{ width: '100%' }} />
           </Form.Item>
-          <Form.Item name="quantity_total" label="Số lượng (trống = không giới hạn)" rules={[{ type: 'number', min: 0 }]} style={{ flex: 1 }}>
+          <Form.Item name="quantity_total" label="Số lượng" rules={[{ type: 'number', min: 0 }]} style={{ flex: 1, minWidth: 0 }}>
             <InputNumber min={0} precision={0} style={{ width: '100%' }} placeholder="Không giới hạn" />
           </Form.Item>
-        </Space>
-        {selectedType === 'BENEFIT' && (
-          <Space style={{ display: 'flex' }} align="start">
-            <Form.Item
-              name="benefit_amount"
-              label="Mức giảm cố định"
-              extra="Để trống nếu quyền lợi không giảm tiền."
-              rules={[{ type: 'number', min: 1, message: 'Mức giảm phải lớn hơn 0' }]}
-              style={{ flex: 1 }}
-            >
-              <InputNumber min={1} precision={0} style={{ width: '100%' }} suffix="đ" />
-            </Form.Item>
-            <Form.Item
-              name="service_id"
-              label="Dịch vụ áp dụng"
-              dependencies={['benefit_amount']}
-              rules={[({ getFieldValue }) => ({
-                validator: async (_rule, value) => getFieldValue('benefit_amount') != null && !value
-                  ? Promise.reject(new Error('Chọn dịch vụ áp dụng cho mức giảm'))
-                  : Promise.resolve(),
-              })]}
-              style={{ flex: 1 }}
-            >
-              <Select
-                showSearch
-                optionFilterProp="label"
-                loading={servicesQueryLoading}
-                placeholder="Chọn dịch vụ"
-                options={services.filter((service) => service.is_active !== false).map((service) => ({ value: service.id, label: service.title }))}
-              />
-            </Form.Item>
-          </Space>
-        )}
-        <Space style={{ display: 'flex' }} align="start">
-          <Form.Item name="valid_from" label="Bắt đầu" style={{ flex: 1 }}>
-            <DatePicker style={{ width: '100%' }} format="DD/MM/YYYY" />
+          <Form.Item name="valid_from" label="Bắt đầu" rules={[{ required: true, message: 'Chọn ngày bắt đầu' }]} style={{ flex: 1, minWidth: 0 }}>
+            <DatePicker style={{ width: '100%' }} format="DD/MM/YYYY" placeholder="Chọn ngày" />
           </Form.Item>
-          <Form.Item name="valid_to" label="Kết thúc" style={{ flex: 1 }}>
-            <DatePicker style={{ width: '100%' }} format="DD/MM/YYYY" />
+          <Form.Item
+            name="valid_to"
+            label="Kết thúc"
+            style={{ flex: 1, minWidth: 0 }}
+            rules={[
+              { required: true, message: 'Chọn ngày kết thúc' },
+              ({ getFieldValue }) => ({
+                validator: async (_rule, value) => {
+                  const from = getFieldValue('valid_from')
+                  if (!value || !from) return
+                  if (value.isBefore(from, 'day')) throw new Error('Ngày kết thúc phải sau ngày bắt đầu')
+                },
+              }),
+            ]}
+            dependencies={['valid_from']}
+          >
+            <DatePicker style={{ width: '100%' }} format="DD/MM/YYYY" placeholder="Chọn ngày" />
           </Form.Item>
-        </Space>
+        </div>
         <Form.Item name="description" label="Mô tả"><Input.TextArea rows={2} maxLength={1000} /></Form.Item>
         <Form.Item name="is_active" label="Đang đổi" valuePropName="checked"><Switch /></Form.Item>
       </Form>

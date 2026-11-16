@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Alert, Button, DatePicker, Form, Select, Space, Table, Tag, Typography } from 'antd'
+import { Alert, Button, DatePicker, Select, Space, Table, Tag, Typography } from 'antd'
 import type { Dayjs } from 'dayjs'
 import dayjs from 'dayjs'
 
 import PageTitle from '@/components/base/PageTitle'
-import ListFilterPopover from '@/components/base/ListFilterPopover'
 import ListPagination from '@/components/base/ListPagination'
 import TableEmpty from '@/components/base/TableEmpty'
 import { errorMessage, pickData, pickMeta } from '@/api/helpers'
@@ -69,8 +68,6 @@ export default function AccessLogs() {
   const [customerProfileId, setCustomerProfileId] = useState<string>()
   const [action, setAction] = useState<GetAccessLogsAction>()
   const [range, setRange] = useState<[Dayjs | null, Dayjs | null] | null>(null)
-  const [filterOpen, setFilterOpen] = useState(false)
-  const [filterForm] = Form.useForm()
   const [staffSearch, setStaffSearch] = useState('')
   const [customerSearch, setCustomerSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState({ staff: '', customer: '' })
@@ -108,114 +105,70 @@ export default function AccessLogs() {
   const branches = (pickData<Branch[] | undefined>(branchesQuery.data) ?? []) as Branch[]
   const customers = listRows<CustomerOption>(customersQuery.data)
 
-  const activeFilterCount = [branchId, userId, customerProfileId, action, range?.some(Boolean) ? 'date' : undefined]
-    .filter(Boolean).length
-
-  const openFilters = (nextOpen: boolean) => {
-    setFilterOpen(nextOpen)
-    if (!nextOpen) {
-      setStaffSearch('')
-      setCustomerSearch('')
-      return
-    }
-    filterForm.setFieldsValue({ branch_id: branchId, user_id: userId, customer_profile_id: customerProfileId, action, range })
-  }
-
-  const applyFilters = (values: Record<string, unknown>) => {
-    setBranchId(typeof values.branch_id === 'string' && values.branch_id ? values.branch_id : undefined)
-    setUserId(typeof values.user_id === 'string' && values.user_id ? values.user_id : undefined)
-    setCustomerProfileId(typeof values.customer_profile_id === 'string' && values.customer_profile_id ? values.customer_profile_id : undefined)
-    setAction(values.action as GetAccessLogsAction | undefined)
-    setRange((values.range as [Dayjs | null, Dayjs | null] | null | undefined) ?? null)
-    setPage(1)
-    setFilterOpen(false)
-  }
-
-  const clearFilters = () => {
-    filterForm.resetFields()
-    setBranchId(undefined)
-    setUserId(undefined)
-    setCustomerProfileId(undefined)
-    setAction(undefined)
-    setRange(null)
-    setStaffSearch('')
-    setCustomerSearch('')
-    setPage(1)
-  }
-
   return (
     <>
       <PageTitle
         subtitle="Nhật ký truy cập hệ thống quản trị"
         left={(
           <>
-            <ListFilterPopover
-              open={filterOpen}
-              onOpenChange={openFilters}
-              activeFilterCount={activeFilterCount}
-              form={filterForm}
-              onApply={applyFilters}
-              onClear={clearFilters}
-              filterItems={(
-                <>
-                  <Form.Item name="branch_id" label="Cơ sở" className="mb-2.5!">
-                    <Select
-                      allowClear
-                      showSearch
-                      optionFilterProp="label"
-                      loading={branchesQuery.isLoading}
-                      placeholder="Tất cả cơ sở"
-                      options={branches.map((branch) => ({
-                        value: branch.id,
-                        label: `${branch.code} · ${branch.name}${branch.is_active === false ? ' (Ngừng hoạt động)' : ''}`,
-                      }))}
-                    />
-                  </Form.Item>
-                  <Form.Item name="user_id" label="Nhân viên thực hiện" className="mb-2.5!">
-                    <Select
-                      allowClear
-                      showSearch
-                      filterOption={false}
-                      loading={usersQuery.isLoading}
-                      placeholder="Tất cả nhân viên"
-                      options={users.map((user) => ({ value: user.id, label: user.zalo_name || user.phone_number || user.id }))}
-                      onSearch={setStaffSearch}
-                    />
-                  </Form.Item>
-                  <Form.Item name="customer_profile_id" label="Khách hàng" className="mb-2.5!">
-                    <Select
-                      allowClear
-                      showSearch
-                      filterOption={false}
-                      loading={customersQuery.isLoading}
-                      placeholder="Tất cả khách hàng"
-                      options={customers.map((customer) => ({
-                        value: customer.id,
-                        label: `${customer.customer_code ? `${customer.customer_code} · ` : ''}${customer.full_name}${customer.phone ? ` · ${customer.phone}` : ''}`,
-                      }))}
-                      onSearch={setCustomerSearch}
-                    />
-                  </Form.Item>
-                  <Form.Item name="action" label="Hành động" className="mb-2.5!">
-                    <Select<GetAccessLogsAction>
-                      allowClear
-                      showSearch
-                      optionFilterProp="label"
-                      placeholder="Tất cả hành động"
-                      options={(Object.keys(ACTION_META) as GetAccessLogsAction[]).map((value) => ({ value, label: ACTION_META[value].label }))}
-                    />
-                  </Form.Item>
-                  <Form.Item name="range" label="Thời gian" className="mb-0!">
-                    <DatePicker.RangePicker
-                      allowEmpty={[true, true]}
-                      showTime={{ defaultValue: [dayjs('2000-01-01T00:00:00'), dayjs('2000-01-01T23:59:59')], format: 'HH:mm' }}
-                      format="DD/MM/YYYY HH:mm"
-                      placeholder={['Từ ngày/giờ', 'Đến ngày/giờ']}
-                      className="w-full!"
-                    />
-                  </Form.Item>
-                </>
-              )}
+            <Select
+              allowClear
+              showSearch
+              optionFilterProp="label"
+              loading={branchesQuery.isLoading}
+              placeholder="Tất cả cơ sở"
+              style={{ width: 190 }}
+              value={branchId}
+              onChange={(value) => { setBranchId(value); setPage(1) }}
+              options={branches.map((branch) => ({
+                value: branch.id,
+                label: `${branch.code} · ${branch.name}${branch.is_active === false ? ' (Ngừng hoạt động)' : ''}`,
+              }))}
+            />
+            <Select
+              allowClear
+              showSearch
+              filterOption={false}
+              loading={usersQuery.isLoading}
+              placeholder="Tất cả nhân viên"
+              style={{ width: 180 }}
+              value={userId}
+              onChange={(value) => { setUserId(value); setPage(1) }}
+              options={users.map((user) => ({ value: user.id, label: user.zalo_name || user.phone_number || user.id }))}
+              onSearch={setStaffSearch}
+            />
+            <Select
+              allowClear
+              showSearch
+              filterOption={false}
+              loading={customersQuery.isLoading}
+              placeholder="Tất cả khách hàng"
+              style={{ width: 200 }}
+              value={customerProfileId}
+              onChange={(value) => { setCustomerProfileId(value); setPage(1) }}
+              options={customers.map((customer) => ({
+                value: customer.id,
+                label: `${customer.customer_code ? `${customer.customer_code} · ` : ''}${customer.full_name}${customer.phone ? ` · ${customer.phone}` : ''}`,
+              }))}
+              onSearch={setCustomerSearch}
+            />
+            <Select<GetAccessLogsAction>
+              allowClear
+              showSearch
+              optionFilterProp="label"
+              placeholder="Tất cả hành động"
+              style={{ width: 160 }}
+              value={action}
+              onChange={(value) => { setAction(value); setPage(1) }}
+              options={(Object.keys(ACTION_META) as GetAccessLogsAction[]).map((value) => ({ value, label: ACTION_META[value].label }))}
+            />
+            <DatePicker.RangePicker
+              allowEmpty={[true, true]}
+              showTime={{ defaultValue: [dayjs('2000-01-01T00:00:00'), dayjs('2000-01-01T23:59:59')], format: 'HH:mm' }}
+              format="DD/MM/YYYY HH:mm"
+              placeholder={['Từ ngày/giờ', 'Đến ngày/giờ']}
+              value={range ?? undefined}
+              onChange={(value) => { setRange(value ?? null); setPage(1) }}
             />
           </>
         )}

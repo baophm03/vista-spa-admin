@@ -4,6 +4,9 @@ import type { Service } from '@/api/models/service'
 import type { ServiceCategory } from '@/api/models/serviceCategory'
 import CustomFieldFormItems from '@/components/CustomFieldFormItems'
 import ServiceImageField from '@/components/ServiceImageField'
+import type { Branch } from '@/api/models'
+
+const labelStyle = { fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#8A8D93', fontWeight: 600 }
 
 type ServiceRow = Service & { service_category?: { id?: string; name?: string } }
 type ServiceCategoryRow = ServiceCategory & { parent?: { id?: string; name?: string } }
@@ -16,6 +19,7 @@ interface ServiceModalProps {
   customFields: Parameters<typeof CustomFieldFormItems>[0]['definitions']
   currencySymbol: string
   saving: boolean
+  branches: Branch[]
   categoryOptions: (categories: ServiceCategoryRow[], parentId?: string | null, depth?: number, skipId?: string, includeInactiveId?: string) => { value: string; label: string }[]
   onCancel: () => void
   onSubmit: () => void
@@ -29,6 +33,7 @@ export default function ServiceModal({
   customFields,
   currencySymbol,
   saving,
+  branches,
   categoryOptions,
   onCancel,
   onSubmit,
@@ -83,6 +88,15 @@ export default function ServiceModal({
             </Form.Item>
           </Col>
         </Row>
+         <Form.Item name="branch_id" label={<span style={labelStyle}>Cơ sở</span>}>
+          <Select
+            allowClear
+            showSearch
+            optionFilterProp="label"
+            placeholder="Tất cả cơ sở"
+            options={branches.map((branch) => ({ value: branch.id, label: branch.name }))}
+          />
+        </Form.Item>
         <Form.Item name="description" label="Mô tả">
           <Input.TextArea rows={3} maxLength={5000} />
         </Form.Item>

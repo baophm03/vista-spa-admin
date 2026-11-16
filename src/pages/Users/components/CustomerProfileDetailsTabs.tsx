@@ -20,15 +20,14 @@ const TAB_OPTIONS: { value: TabKey; label: string }[] = [
 interface Props {
   profile: CustomerProfileRow
   summary: CustomerProfileSummary | null
-  branchName: (id?: string) => string
   fieldDefinitions: CustomFieldDefWithOptions[]
   onMembershipUpdated?: () => Promise<void> | void
 }
 
-export default function CustomerProfileDetailsTabs({ profile, summary, branchName, fieldDefinitions, onMembershipUpdated }: Props) {
+export default function CustomerProfileDetailsTabs({ profile, summary, fieldDefinitions, onMembershipUpdated }: Props) {
   const [activeTab, setActiveTab] = useState<TabKey>('overview')
   const content = activeTab === 'overview'
-    ? <CustomerProfileOverviewTab profile={profile} summary={summary} branchName={branchName} fieldDefinitions={fieldDefinitions} onMembershipUpdated={onMembershipUpdated} />
+    ? <CustomerProfileOverviewTab profile={profile} summary={summary} fieldDefinitions={fieldDefinitions} onMembershipUpdated={onMembershipUpdated} />
     : activeTab === 'treatments'
       ? <CustomerProfileTreatmentsTab key={profile.id} profileId={profile.id} />
       : activeTab === 'appointments'

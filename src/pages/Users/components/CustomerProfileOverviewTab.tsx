@@ -59,12 +59,11 @@ export interface CustomerProfileSummary {
 interface Props {
   profile: CustomerProfileRow
   summary: CustomerProfileSummary | null
-  branchName: (id?: string) => string
   fieldDefinitions: CustomFieldDefWithOptions[]
   onMembershipUpdated?: () => Promise<void> | void
 }
 
-export default function CustomerProfileOverviewTab({ profile, summary, branchName, fieldDefinitions, onMembershipUpdated }: Props) {
+export default function CustomerProfileOverviewTab({ profile, summary, fieldDefinitions, onMembershipUpdated }: Props) {
   const { format: money } = useBrandCurrency()
   const labels = useMemo(() => new Map(fieldDefinitions.map((definition) => [definition.key, definition.label])), [fieldDefinitions])
   const [adjustOpen, setAdjustOpen] = useState(false)
@@ -151,7 +150,6 @@ export default function CustomerProfileOverviewTab({ profile, summary, branchNam
         <Descriptions.Item label="Điện thoại">{profile.phone || '—'}</Descriptions.Item>
         <Descriptions.Item label="Email">{profile.email || profile.user?.email || '—'}</Descriptions.Item>
         <Descriptions.Item label="Ngày sinh">{profile.birthday ? dayjs(profile.birthday).format('DD/MM/YYYY') : '—'}</Descriptions.Item>
-        <Descriptions.Item label="Cơ sở">{branchName(profile.branch_id)}</Descriptions.Item>
         <Descriptions.Item label="Tài khoản">{profile.user?.zalo_name || profile.user?.phone_number || (profile.user_id ? 'Đã liên kết' : 'Chưa liên kết')}</Descriptions.Item>
         <Descriptions.Item label="Địa chỉ">{profile.address || '—'}</Descriptions.Item>
         <Descriptions.Item label="Ghi chú">{profile.note || '—'}</Descriptions.Item>

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Avatar, Button, Form, Input, Modal, Select, Space, Switch, Table, Tag, Tooltip, Typography, message } from 'antd'
 import { useAbility } from '@casl/react'
 import {
@@ -7,7 +7,6 @@ import {
   LockOutlined,
   PlusOutlined,
   ProfileOutlined,
-  SearchOutlined,
   UndoOutlined,
   UserOutlined,
 } from '@ant-design/icons'
@@ -69,7 +68,6 @@ export default function Staffs() {
   const [editing, setEditing] = useState<StaffRow | null>(null)
   const [form] = Form.useForm()
   const [filterForm] = Form.useForm()
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const selectedRoleId = Form.useWatch('role_id', form)
 
   const usersQuery = useGetUsers({
@@ -153,19 +151,8 @@ export default function Staffs() {
   const branchRequired = !selectedRoleId || !roles.length || !isAdminRole(selectedRole?.code)
   const activeFilterCount = [branchFilter, roleFilter, statusFilter].filter(Boolean).length + (search ? 1 : 0)
 
-  // Gõ tìm kiếm có debounce 400ms, quay về trang 1.
-  useEffect(() => {
-    clearTimeout(debounceRef.current)
-    debounceRef.current = setTimeout(() => {
-      setPage(1)
-      setSearch(searchInput.trim())
-    }, 400)
-    return () => clearTimeout(debounceRef.current)
-  }, [searchInput])
-
-  /** Áp dụng ngay từ khóa (Enter hoặc khi xóa hết) mà không chờ debounce. */
+  /** Áp dụng ngay từ khóa (Enter hoặc khi xóa hết). */
   const applySearch = (value: string) => {
-    clearTimeout(debounceRef.current)
     setSearchInput(value)
     setSearch(value.trim())
     setPage(1)
@@ -356,17 +343,16 @@ export default function Staffs() {
         subtitle="Quản lý thông tin và vai trò của nhân viên"
         left={
           <>
-            <Input
+            <Input.Search
               allowClear
-              prefix={<SearchOutlined className="text-[var(--brand-text-inactive,#A9ADB2)]" />}
               placeholder="Tìm theo tên, email, SĐT"
-              className="w-[260px]!"
+              className="w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]"
               value={searchInput}
               onChange={(e) => {
                 setSearchInput(e.target.value)
                 if (!e.target.value) applySearch('')
               }}
-              onPressEnter={() => applySearch(searchInput)}
+              onSearch={applySearch}
             />
             <ListFilterPopover
               open={filterOpen}

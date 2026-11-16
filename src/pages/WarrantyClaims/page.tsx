@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Alert, Button, Form, Select, Space, Table, Tag, message } from 'antd'
+import { Alert, Button, Form, Select, Table, Tag, Typography, message } from 'antd'
 import type { TableColumnsType } from 'antd'
 import { PlusOutlined } from '@ant-design/icons'
 import { useQueryClient } from '@tanstack/react-query'
@@ -25,6 +25,8 @@ import WarrantyClaimCreateModal from './components/WarrantyClaimCreateModal'
 import WarrantyClaimDetailDrawer from './components/WarrantyClaimDetailDrawer'
 import WarrantyClaimRejectModal from './components/WarrantyClaimRejectModal'
 import { STATUS_FILTER_OPTIONS, snapshotField, type ClaimRow } from './components/constants'
+import { useGetBranches } from '@/api/endpoints/branches'
+import type {Branch} from '@/api/models'
 
 export default function WarrantyClaims() {
   const [page, setPage] = useState(1)
@@ -40,6 +42,9 @@ export default function WarrantyClaims() {
   const { formatDateTime } = useBrandDateTime()
   const uploadMutation = usePostFiles()
   const [uploadingContract, setUploadingContract] = useState(false)
+  const branchesQuery = useGetBranches()
+const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as Branch[], [branchesQuery.data])
+
 
   // Danh sách claims — phân trang server-side (page/limit/status)
   const claimsQuery = useGetWarrantyClaims({ page, limit: 10, ...(statusFilter ? { status: statusFilter } : {}) })
@@ -128,10 +133,26 @@ export default function WarrantyClaims() {
   const columns: TableColumnsType<ClaimRow> = [
     { title: 'Khách hàng', key: 'customer', render: (_v, row) => customerLabel(row) },
     {
+  title: 'Cơ sở',
+  width: 130,
+  render: (_, row) => branches.find((branch) => branch.id === row.customer_treatment?.branch_id)?.name ?? '—',
+},
+    {
       title: 'Mã liệu trình', key: 'treatmentCode', width: 150,
       render: (_v, row) => row.customer_treatment?.id?.slice(0, 8).toUpperCase() ?? row.customer_treatment_id.slice(0, 8).toUpperCase(),
     },
-    { title: 'Gói liệu trình', key: 'package', render: (_v, row) => packageLabel(row) },
+    {
+      title: 'Gói liệu trình', key: 'package', render: (_v, row) => (
+        <Typography.Link
+          onClick={(event) => {
+            event.stopPropagation()
+            navigate(`/treatment-customers?treatment_id=${encodeURIComponent(row.customer_treatment_id)}`)
+          }}
+        >
+          {packageLabel(row)}
+        </Typography.Link>
+      ),
+    },
     {
       title: 'Ngày hoàn tất', key: 'finishedAt', width: 150,
       render: (_v, row) => row.customer_treatment?.finished_at ? formatDateTime(row.customer_treatment.finished_at).split(' ')[0] : '—',
@@ -141,20 +162,6 @@ export default function WarrantyClaims() {
     {
       title: 'Trạng thái', dataIndex: 'status', width: 120,
       render: (v?: string) => <Tag color={STATUS_META[v ?? '']?.color}>{STATUS_META[v ?? '']?.label ?? v ?? '—'}</Tag>,
-    },
-    {
-      title: 'Thao tác', align: 'center' as const, key: 'actions', width: 170,
-      render: (_v, row) => (
-        <Space size={6}>
-          <Button size="small" onClick={() => setDetailId(row.id)}>Chi tiết</Button>
-          <Button
-            size="small"
-            onClick={() => navigate(`/treatment-customers?treatment_id=${encodeURIComponent(row.customer_treatment_id)}`)}
-          >
-            Mở gói
-          </Button>
-        </Space>
-      ),
     },
   ]
 
@@ -191,6 +198,10 @@ export default function WarrantyClaims() {
       <Table<ClaimRow>
         rowKey="id" loading={claimsQuery.isLoading} dataSource={rows} columns={columns}
         pagination={false}
+        onRow={(row) => ({
+          onClick: () => setDetailId(row.id),
+          style: { cursor: 'pointer' },
+        })}
       />
       <ListPagination page={page} limit={10} total={total} onChange={setPage} noun="yêu cầu bảo hành" />
 
@@ -218,6 +229,7 @@ export default function WarrantyClaims() {
         onOk={() => { if (!uploadingContract) void submitCreate() }}
         onUpload={(file) => void uploadContract(file)}
         onRemoveFile={() => createForm.setFieldValue('contract_file_id', undefined)}
+        branches={branches}
       />
 
       <WarrantyClaimRejectModal

@@ -2076,7 +2076,7 @@ export const prefetchGetPackageTypesIdQuery = async <TData = Awaited<ReturnType<
 
 
 /**
- * **PT-04** — PUT /package-types/{id}. Requires `package_type.update` permission. Body fields: `name`, `default_quota_type`, `has_warranty`, `allow_unlimited`, `sort_order`, `is_active`. Handled by `packageTypeProvider.getById`.
+ * **PT-04** — PUT /package-types/{id}. Requires `package_type.update` permission. Body fields: `name`, `has_warranty`, `allow_unlimited`, `sort_order`, `is_active`. Handled by `packageService.updatePackageType`.
  * @summary Update a package type
  */
 export const putPackageTypesId = (
@@ -2141,7 +2141,7 @@ export const usePutPackageTypesId = <TError = UnauthorizedResponse | ForbiddenRe
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **PT-05** — DELETE /package-types/{id} (soft delete). Requires `package_type.delete` permission. Handled by `packageTypeProvider.getById`.
+ * **PT-05** — DELETE /package-types/{id} (soft delete: đặt `is_deleted=true`, `deleted_at`, kèm `is_active=false`). Chặn xoá khi còn gói dịch vụ chưa xoá sử dụng loại này. Requires `package_type.delete` permission. Handled by `packageService.deletePackageType`.
  * @summary Delete a package type
  */
 export const deletePackageTypesId = (
@@ -2398,7 +2398,7 @@ export const prefetchGetPackageTypesQuery = async <TData = Awaited<ReturnType<ty
 
 
 /**
- * **PT-03** — POST /package-types. Requires `package_type.create` permission. Body fields: `code`, `name`, `default_quota_type`, `has_warranty`, `allow_unlimited`, `sort_order`. Handled by `packageTypeProvider.getAll`.
+ * **PT-03** — POST /package-types. Requires `package_type.create` permission. Body fields: `code`, `name`, `has_warranty`, `allow_unlimited`, `sort_order`. Chỉ còn dùng cho dữ liệu đặc biệt — UI đã cố định 3 loại (xem migration 084). Handled by `packageService.createPackageType`.
  * @summary Create a new package type
  */
 export const postPackageTypes = (

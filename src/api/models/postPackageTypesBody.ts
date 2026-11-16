@@ -9,7 +9,6 @@
 export type PostPackageTypesBody = {
   code?: string;
   name?: string;
-  default_quota_type?: string;
   has_warranty?: boolean;
   allow_unlimited?: boolean;
   sort_order?: string;

@@ -1,23 +1,21 @@
-import { Col, DatePicker, Form, Input, Modal, Row, Select } from 'antd'
+import { Col, DatePicker, Form, Input, Modal, Row } from 'antd'
 import type { FormInstance } from 'antd'
 import dayjs from 'dayjs'
 import type { Dayjs } from 'dayjs'
 import CustomerProfileCustomFields from './CustomerProfileCustomFields'
 import type { CustomFieldDefWithOptions } from './CustomerProfileCustomFields'
-import type { Branch } from '@/api/models/branch'
 import type { CustomerProfileRow } from './CustomerProfileOverviewTab'
 
 interface CustomerProfileFormModalProps {
   form: FormInstance
   open: boolean
   editing: CustomerProfileRow | null
-  branches: Branch[]
   profileFieldDefs: CustomFieldDefWithOptions[]
   onCancel: () => void
   onOk: () => void
 }
 
-export default function CustomerProfileFormModal({ form, open, editing, branches, profileFieldDefs, onCancel, onOk }: CustomerProfileFormModalProps) {
+export default function CustomerProfileFormModal({ form, open, editing, profileFieldDefs, onCancel, onOk }: CustomerProfileFormModalProps) {
   return (
     <Modal
       title={editing ? 'Sửa khách hàng' : 'Thêm khách hàng'}
@@ -45,16 +43,6 @@ export default function CustomerProfileFormModal({ form, open, editing, branches
           </Col>
         </Row>
         <Row gutter={12}>
-          <Col xs={24} sm={8}>
-            <Form.Item name="branch_id" label="Cơ sở" rules={[{ required: true, message: 'Chọn cơ sở' }]}>
-              <Select
-                disabled={!!editing}
-                options={branches.map((branch) => ({ value: branch.id, label: branch.name }))}
-                placeholder="Chọn cơ sở"
-                style={{ width: '100%' }}
-              />
-            </Form.Item>
-          </Col>
           <Col xs={24} sm={8}>
             <Form.Item
               name="birthday"

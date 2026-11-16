@@ -100,7 +100,8 @@ export default function Imports() {
     if (fileList[0]?.originFileObj) data.append('file', fileList[0].originFileObj as File)
     data.append('dry_run', String(dryRun))
     data.append('column_mapping', JSON.stringify(mapping))
-    if (branchId) data.append('branch_id', branchId)
+    // Cơ sở chỉ áp dụng cho gói điều trình; hồ sơ khách không còn gắn cơ sở
+    if (branchId && kind === 'customer-treatments') data.append('branch_id', branchId)
     return data
   }
 
@@ -124,7 +125,7 @@ export default function Imports() {
       }
       setRunning(true)
       try {
-        const res = await apiClient.post(`/imports/${kind}`, { dry_run: dryRun, rows: parsed, branch_id: branchId })
+        const res = await apiClient.post(`/imports/${kind}`, { dry_run: dryRun, rows: parsed, branch_id: kind === 'customer-treatments' ? branchId : undefined })
         const data = pickData<ImportReport>(res.data)
         setReport(data)
         await reloadHistory()
@@ -192,14 +193,16 @@ export default function Imports() {
                 options={Object.entries(KIND_LABELS).map(([value, label]) => ({ value, label }))}
               />
             </Form.Item>
-            <Form.Item label="Cơ sở" style={{ minWidth: 220 }} required>
-              <Select
-                placeholder="Chọn cơ sở nhập vào"
-                options={branches.map((b) => ({ value: b.id, label: b.name }))}
-                value={branchId}
-                onChange={setBranchId}
-              />
-            </Form.Item>
+            {kind === 'customer-treatments' && (
+              <Form.Item label="Cơ sở" style={{ minWidth: 220 }} required>
+                <Select
+                  placeholder="Chọn cơ sở nhập vào"
+                  options={branches.map((b) => ({ value: b.id, label: b.name }))}
+                  value={branchId}
+                  onChange={setBranchId}
+                />
+              </Form.Item>
+            )}
           </Space>
 
           <Form.Item label="File dữ liệu (.csv / .xlsx)">

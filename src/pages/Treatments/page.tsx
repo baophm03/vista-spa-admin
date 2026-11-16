@@ -1,14 +1,13 @@
 import { useCallback, useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { Alert, Button, Image, Form, Grid, Input, Modal, Table, Tag, Typography, message } from 'antd'
+import { Alert, Button, Image, Form, Input, Modal, Table, Tag, Typography, message } from 'antd'
 import type { TableColumnsType } from 'antd'
-import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, PictureOutlined, PlusOutlined, SearchOutlined, ShoppingOutlined } from '@ant-design/icons'
+import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, PictureOutlined, PlusOutlined, ShoppingOutlined } from '@ant-design/icons'
 import PageTitle from '@/components/base/PageTitle'
 import StatCards, { type StatItem } from '@/components/base/StatCards'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
 import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
-import { paginateRows } from '@/utils/listTable'
 import { useCustomerProfileAccess } from '@/utils/customerProfileAccess'
 import { normalizeCustomFieldValues } from '@/components/CustomFieldFormItems'
 import useCustomFieldDefinitions from '@/hooks/useCustomFieldDefinitions'
@@ -48,9 +47,6 @@ export default function Treatments() {
   const canManage = useCustomerProfileAccess().isAdmin
   const { isAdmin, isReceptionist, isTechnician } = useCustomerProfileAccess()
   const hideSummaryForTechnician = isTechnician && !isAdmin && !isReceptionist
-  // Mobile (dưới breakpoint md): search thu về nút icon, bấm mới mở ô tìm kiếm
-  const isMobile = !Grid.useBreakpoint().md
-  const [searchOpen, setSearchOpen] = useState(false)
 
   const [packageOpen, setPackageOpen] = useState(false)
   const [editingPackage, setEditingPackage] = useState<TreatmentPackageRow | null>(null)
@@ -58,31 +54,37 @@ export default function Treatments() {
   const packageCustomFields = useCustomFieldDefinitions('PACKAGE')
   const [packageSaving, setPackageSaving] = useState(false)
 
-  const packagesQuery = useGetTreatmentPackages({ page: 1, limit: 200 })
+  const [packageSearchInput, setPackageSearchInput] = useState('')
+  const [packageSearch, setPackageSearch] = useState('')
+  const [packagePage, setPackagePage] = useState(1)
+  const [packageLimit] = useState(10)
+
+  const packagesQuery = useGetTreatmentPackages({
+    page: packagePage,
+    limit: packageLimit,
+    ...(packageSearch.trim() ? { q: packageSearch.trim() } : {}),
+  } as never)
   const packageTypesQuery = useGetPackageTypes({ limit: 200 })
   const servicesQuery = useGetService({ page: 1, limit: 200 })
   const branchesQuery = useGetBranches()
 
   const rows = (pickData<TreatmentPackageRow[]>(packagesQuery.data) ?? []) as TreatmentPackageRow[]
-  const [packageSearch, setPackageSearch] = useState('')
-  const [packagePage, setPackagePage] = useState(1)
+  const total = (packagesQuery.data as unknown as { meta?: { total?: number } })?.meta?.total ?? rows.length
+  const statsMeta = (packagesQuery.data as unknown as { meta?: { stats?: { total: number; active: number; hidden: number } } })?.meta?.stats
   const [detailRow, setDetailRow] = useState<TreatmentPackageRow | null>(null)
-  const visibleRows = useMemo(() => {
-    const keyword = packageSearch.trim().toLowerCase()
-    if (!keyword) return rows
-    return rows.filter((row) =>
-      String(row.name || '').toLowerCase().includes(keyword)
-      || String(row.description || '').toLowerCase().includes(keyword))
-  }, [rows, packageSearch])
-  const pagedRows = paginateRows(visibleRows, packagePage, 10)
 
-  const activePackageCount = rows.filter((row) => !!row.is_active).length
+  const applyPackageSearch = (nextKeyword: string) => {
+    setPackageSearchInput(nextKeyword)
+    setPackageSearch(nextKeyword.trim())
+    setPackagePage(1)
+  }
+
   const statItems: StatItem[] = hideSummaryForTechnician
     ? []
     : [
-      { key: 'total', label: 'Tổng gói liệu trình', value: rows.length.toLocaleString('vi-VN'), icon: <ShoppingOutlined />, tone: 'primary' },
-      { key: 'active', label: 'Đang bán', value: activePackageCount.toLocaleString('vi-VN'), icon: <EyeOutlined />, tone: 'secondary' },
-      { key: 'hidden', label: 'Ngưng sử dụng', value: (rows.length - activePackageCount).toLocaleString('vi-VN'), icon: <EyeInvisibleOutlined />, tone: 'neutral' },
+      { key: 'total', label: 'Tổng gói liệu trình', value: (statsMeta?.total ?? 0).toLocaleString('vi-VN'), icon: <ShoppingOutlined />, tone: 'primary' },
+      { key: 'active', label: 'Đang bán', value: (statsMeta?.active ?? 0).toLocaleString('vi-VN'), icon: <EyeOutlined />, tone: 'secondary' },
+      { key: 'hidden', label: 'Ngưng sử dụng', value: (statsMeta?.hidden ?? 0).toLocaleString('vi-VN'), icon: <EyeInvisibleOutlined />, tone: 'neutral' },
     ]
   const packageTypeData = pickData<PackageTypeRow[] | { rows?: PackageTypeRow[] }>(packageTypesQuery.data)
   const packageTypes = (Array.isArray(packageTypeData) ? packageTypeData : packageTypeData?.rows ?? []) as PackageTypeRow[]
@@ -249,24 +251,14 @@ export default function Treatments() {
     <>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', minWidth: 0 }}>
-          {/* Mobile: gọn toolbar — search thu về nút icon, bấm mới mở */}
-          {isMobile && !searchOpen && (
-            <Button icon={<SearchOutlined />} aria-label="Tìm kiếm" title="Tìm kiếm" onClick={() => setSearchOpen(true)} />
-          )}
-          {(searchOpen || !isMobile) && (
-            <Input
+            <Input.Search
               allowClear
-              prefix={<SearchOutlined className="text-[var(--brand-text-inactive,#A9ADB2)]" />}
-              placeholder="Tìm theo tên gói"
-              className={isMobile && searchOpen ? 'min-w-0 flex-1' : 'w-[260px]!'}
-              value={packageSearch}
-              onChange={(event) => {
-                setPackageSearch(event.target.value)
-                setPackagePage(1)
-              }}
-              onBlur={() => { if (isMobile && !packageSearch) setSearchOpen(false) }}
+              placeholder="Tìm theo tên hoặc mô tả gói"
+              className="w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]"
+              value={packageSearchInput}
+              onChange={(event) => { setPackageSearchInput(event.target.value); if (!event.target.value) applyPackageSearch('') }}
+              onSearch={(v) => applyPackageSearch(v)}
             />
-          )}
         </div>
         {canManage && (
           <Button type="primary" icon={<PlusOutlined />} onClick={() => openPackageModal()}>
@@ -279,7 +271,7 @@ export default function Treatments() {
         className="desktop-only"
         rowKey="id"
         loading={packagesQuery.isLoading}
-        dataSource={pagedRows}
+        dataSource={rows}
         scroll={{ x: 1100 }}
         pagination={false}
         onRow={(row) => ({
@@ -311,7 +303,7 @@ export default function Treatments() {
         ]}
       />
       <MobileCards
-        rows={pagedRows}
+        rows={rows}
         rowKey={(row) => row.id}
         loading={packagesQuery.isLoading}
         emptyText="Chưa có gói dịch vụ nào"
@@ -334,13 +326,13 @@ export default function Treatments() {
           </>
         )}
       />
-      <ListPagination page={packagePage} limit={10} total={visibleRows.length} onChange={setPackagePage} noun="gói dịch vụ" />
+      <ListPagination page={packagePage} limit={packageLimit} total={total} onChange={setPackagePage} noun="gói dịch vụ" />
     </>
   )
 
   return (
     <>
-      <PageTitle subtitle="Danh mục gói liệu trình — 4 loại cố định: Dịch vụ lẻ, Theo số buổi, Theo định mức tiền, Trọn đời">
+      <PageTitle subtitle="Danh sách các gói liệu trình đang có trong hệ thống.">
         Liệu trình
       </PageTitle>
       <StatCards items={statItems} />
