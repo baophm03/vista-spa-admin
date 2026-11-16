@@ -20,7 +20,7 @@ export const VARIABLE_LABELS: Record<string, string> = {
   appt_date: 'Ngày hẹn',
   appt_time: 'Giờ hẹn',
   service_name: 'Dịch vụ / liệu trình',
-  branch_name: 'Chi nhánh',
+  branch_name: 'Cơ sở',
   rank_name: 'Hạng thành viên',
   progress_percent: 'Mức độ đạt hạng',
   remaining_amount: 'Số tiền còn thiếu',

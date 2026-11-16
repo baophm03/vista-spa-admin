@@ -1746,7 +1746,7 @@ export const prefetchGetCollaboratorsIdSummaryQuery = async <TData = Awaited<Ret
 
 
 /**
- * **AL-01** — GET /access-logs (ADM). Requires the `permission.manage` permission. Query parameters: `page`, `limit`, `branch_id` (the customer profile's branch; logs without a profile use the staff member's branch), `user_id`, `customer_profile_id`, `action`, `from`, `to`. Branch-limited users can only view logs of that branch.
+ * **AL-01** — GET /access-logs (ADM). Requires the `permission.manage` permission. Query parameters: `page`, `limit`, `branch_id` (the acting staff member's branch), `user_id`, `customer_profile_id`, `action`, `from`, `to`. Branch-limited users can only view logs of that branch.
  * @summary List access logs
  */
 export const getAccessLogs = (

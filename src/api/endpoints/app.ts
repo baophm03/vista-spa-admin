@@ -61,6 +61,8 @@ import type {
   GetAppRanks200,
   GetAppServices200,
   GetAppStaff200,
+  GetAppStaffIdAvailableDates200,
+  GetAppStaffIdAvailableDatesParams,
   GetAppStaffParams,
   GetAppVouchers200,
   GetAppWheels200,
@@ -1529,8 +1531,8 @@ export const prefetchGetAppConfigQuery = async <TData = Awaited<ReturnType<typeo
 
 
 /**
- * Returns active branches the customer can book appointments at (branches linked to their customer profiles).
- * @summary List branches where the logged-in customer has a profile
+ * Returns all active branches the customer can book appointments at (customers are no longer linked to a branch).
+ * @summary List active branches available for booking
  */
 export const getAppBranches = (
     
@@ -1607,7 +1609,7 @@ export function useGetAppBranchesInfinite<TData = InfiniteData<Awaited<ReturnTyp
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary List branches where the logged-in customer has a profile
+ * @summary List active branches available for booking
  */
 
 export function useGetAppBranchesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppBranches>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
@@ -1625,7 +1627,7 @@ export function useGetAppBranchesInfinite<TData = InfiniteData<Awaited<ReturnTyp
 }
 
 /**
- * @summary List branches where the logged-in customer has a profile
+ * @summary List active branches available for booking
  */
 export const prefetchGetAppBranchesInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAppBranches>>, TError = UnauthorizedResponse | InternalErrorResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppBranches>>, TError, TData>>, }
@@ -1688,7 +1690,7 @@ export function useGetAppBranches<TData = Awaited<ReturnType<typeof getAppBranch
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary List branches where the logged-in customer has a profile
+ * @summary List active branches available for booking
  */
 
 export function useGetAppBranches<TData = Awaited<ReturnType<typeof getAppBranches>>, TError = UnauthorizedResponse | InternalErrorResponse>(
@@ -1706,7 +1708,7 @@ export function useGetAppBranches<TData = Awaited<ReturnType<typeof getAppBranch
 }
 
 /**
- * @summary List branches where the logged-in customer has a profile
+ * @summary List active branches available for booking
  */
 export const prefetchGetAppBranchesQuery = async <TData = Awaited<ReturnType<typeof getAppBranches>>, TError = UnauthorizedResponse | InternalErrorResponse>(
  queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppBranches>>, TError, TData>>, }
@@ -2433,6 +2435,216 @@ export const usePostAppVouchersIdRedeem = <TError = UnauthorizedResponse | NotFo
       return useMutation(mutationOptions, queryClient);
     }
     /**
+ * GET /app/staff/{id}/available-dates — for the logged-in customer's booking flow ('pick a technician first'). Returns the dates (YYYY-MM-DD) within [from, to] the technician has active shifts for at the branch, excluding approved full-day offs. Range is clamped to [today, today + booking.customer_horizon_days]. Query parameters: `branch_id` (required), `from`, `to` (YYYY-MM-DD, required).
+ * @summary Dates a technician is scheduled to work
+ */
+export const getAppStaffIdAvailableDates = (
+    id: string,
+    params: GetAppStaffIdAvailableDatesParams,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetAppStaffIdAvailableDates200>(
+      {url: `/app/staff/${id}/available-dates`, method: 'GET',
+        params, signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetAppStaffIdAvailableDatesInfiniteQueryKey = (id?: string,
+    params?: GetAppStaffIdAvailableDatesParams,) => {
+    return [
+    'infinite', `/app/staff/${id}/available-dates`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+export const getGetAppStaffIdAvailableDatesQueryKey = (id?: string,
+    params?: GetAppStaffIdAvailableDatesParams,) => {
+    return [
+    `/app/staff/${id}/available-dates`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getGetAppStaffIdAvailableDatesInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAppStaffIdAvailableDates>>>, TError = UnauthorizedResponse | InternalErrorResponse>(id: string,
+    params: GetAppStaffIdAvailableDatesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppStaffIdAvailableDates>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAppStaffIdAvailableDatesInfiniteQueryKey(id,params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAppStaffIdAvailableDates>>> = ({ signal }) => getAppStaffIdAvailableDates(id,params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppStaffIdAvailableDates>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAppStaffIdAvailableDatesInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAppStaffIdAvailableDates>>>
+export type GetAppStaffIdAvailableDatesInfiniteQueryError = UnauthorizedResponse | InternalErrorResponse
+
+
+export function useGetAppStaffIdAvailableDatesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppStaffIdAvailableDates>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+ id: string,
+    params: GetAppStaffIdAvailableDatesParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppStaffIdAvailableDates>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppStaffIdAvailableDates>>,
+          TError,
+          Awaited<ReturnType<typeof getAppStaffIdAvailableDates>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppStaffIdAvailableDatesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppStaffIdAvailableDates>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+ id: string,
+    params: GetAppStaffIdAvailableDatesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppStaffIdAvailableDates>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppStaffIdAvailableDates>>,
+          TError,
+          Awaited<ReturnType<typeof getAppStaffIdAvailableDates>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppStaffIdAvailableDatesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppStaffIdAvailableDates>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+ id: string,
+    params: GetAppStaffIdAvailableDatesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppStaffIdAvailableDates>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Dates a technician is scheduled to work
+ */
+
+export function useGetAppStaffIdAvailableDatesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppStaffIdAvailableDates>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+ id: string,
+    params: GetAppStaffIdAvailableDatesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppStaffIdAvailableDates>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAppStaffIdAvailableDatesInfiniteQueryOptions(id,params,options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Dates a technician is scheduled to work
+ */
+export const prefetchGetAppStaffIdAvailableDatesInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAppStaffIdAvailableDates>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+ queryClient: QueryClient, id: string,
+    params: GetAppStaffIdAvailableDatesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppStaffIdAvailableDates>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetAppStaffIdAvailableDatesInfiniteQueryOptions(id,params,options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetAppStaffIdAvailableDatesQueryOptions = <TData = Awaited<ReturnType<typeof getAppStaffIdAvailableDates>>, TError = UnauthorizedResponse | InternalErrorResponse>(id: string,
+    params: GetAppStaffIdAvailableDatesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppStaffIdAvailableDates>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAppStaffIdAvailableDatesQueryKey(id,params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAppStaffIdAvailableDates>>> = ({ signal }) => getAppStaffIdAvailableDates(id,params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAppStaffIdAvailableDates>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAppStaffIdAvailableDatesQueryResult = NonNullable<Awaited<ReturnType<typeof getAppStaffIdAvailableDates>>>
+export type GetAppStaffIdAvailableDatesQueryError = UnauthorizedResponse | InternalErrorResponse
+
+
+export function useGetAppStaffIdAvailableDates<TData = Awaited<ReturnType<typeof getAppStaffIdAvailableDates>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+ id: string,
+    params: GetAppStaffIdAvailableDatesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppStaffIdAvailableDates>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppStaffIdAvailableDates>>,
+          TError,
+          Awaited<ReturnType<typeof getAppStaffIdAvailableDates>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppStaffIdAvailableDates<TData = Awaited<ReturnType<typeof getAppStaffIdAvailableDates>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+ id: string,
+    params: GetAppStaffIdAvailableDatesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppStaffIdAvailableDates>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppStaffIdAvailableDates>>,
+          TError,
+          Awaited<ReturnType<typeof getAppStaffIdAvailableDates>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppStaffIdAvailableDates<TData = Awaited<ReturnType<typeof getAppStaffIdAvailableDates>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+ id: string,
+    params: GetAppStaffIdAvailableDatesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppStaffIdAvailableDates>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Dates a technician is scheduled to work
+ */
+
+export function useGetAppStaffIdAvailableDates<TData = Awaited<ReturnType<typeof getAppStaffIdAvailableDates>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+ id: string,
+    params: GetAppStaffIdAvailableDatesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppStaffIdAvailableDates>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAppStaffIdAvailableDatesQueryOptions(id,params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Dates a technician is scheduled to work
+ */
+export const prefetchGetAppStaffIdAvailableDatesQuery = async <TData = Awaited<ReturnType<typeof getAppStaffIdAvailableDates>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+ queryClient: QueryClient, id: string,
+    params: GetAppStaffIdAvailableDatesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppStaffIdAvailableDates>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetAppStaffIdAvailableDatesQueryOptions(id,params,options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
  * GET /app/packages/{id} (read-only, no authentication required). Public detail of an active treatment package. Handled by `appService.publicPackageDetail`.
  * @summary View treatment package detail
  */
@@ -5664,7 +5876,7 @@ export const usePostAppMeFavorites = <TError = UnauthorizedResponse | NotFoundRe
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **APP-11** — Create an appointment with `pending` status from the mini-app. The customer profile is inferred from the logged-in account; if `branch_id` is provided, the profile must belong to that branch. A fully booked slot returns `SLOT_UNAVAILABLE` (409).
+ * **APP-11** — Create an appointment with `pending` status from the mini-app. The customer profile is inferred from the logged-in account; `branch_id` is the branch the customer chose to book at. A fully booked slot returns `SLOT_UNAVAILABLE` (409).
  * @summary Book an appointment for the logged-in customer
  */
 export const postAppAppointments = (

@@ -14,7 +14,7 @@ import {
   message,
 } from 'antd'
 import type { TableColumnsType } from 'antd'
-import { AppstoreOutlined, DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
+import { AppstoreOutlined, DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, PlusOutlined } from '@ant-design/icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Can, useAbility } from '@casl/react'
 import PageTitle from '@/components/base/PageTitle'
@@ -24,6 +24,7 @@ import ListPagination from '@/components/base/ListPagination'
 import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import { normalizeCustomFieldValues } from '@/components/CustomFieldFormItems'
 import ServiceModal from './components/ServiceModal'
+import ServiceDetailModal from './components/ServiceDetailModal'
 import { errorMessage, pickData } from '@/api/helpers'
 import {
   deleteServiceId,
@@ -86,6 +87,7 @@ export default function Services() {
   const [saving, setSaving] = useState(false)
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<ServiceRow | null>(null)
+  const [detailService, setDetailService] = useState<ServiceRow | null>(null)
   const [page, setPage] = useState(1)
   const [limit] = useState(10)
   const [searchText, setSearchText] = useState('')
@@ -95,8 +97,6 @@ export default function Services() {
   // Mobile (dưới breakpoint md): chuyển vùng nội dung bằng Select thay vì Tabs
   const isMobile = !Grid.useBreakpoint().md
   const [activeTab, setActiveTab] = useState<'services' | 'categories'>('services')
-  // Mobile: search thu về nút icon, bấm mới mở ô tìm kiếm
-  const [searchOpen, setSearchOpen] = useState(false)
 const branchesQuery = useGetBranches()
 const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as Branch[], [branchesQuery.data])
 
@@ -137,14 +137,11 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      setPage(1)
-      setFilters((current) => ({ ...current, q: searchText.trim() || undefined }))
-    }, 300)
-    return () => window.clearTimeout(timer)
-  }, [searchText])
+  const applySearch = (nextKeyword: string) => {
+    setSearchText(nextKeyword)
+    setPage(1)
+    setFilters((current) => ({ ...current, q: nextKeyword.trim() || undefined }))
+  }
 
   const createMutation = useMutation({ mutationFn: async (dto: ServiceCreate) => postService(dto) })
   const updateMutation = useMutation({
@@ -321,25 +318,14 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
     <>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', minWidth: 0 }}>
-          {/* Mobile: gọn toolbar — search thu về nút icon, bấm mới mở */}
-          {isMobile && !searchOpen && (
-            <Button icon={<SearchOutlined />} aria-label="Tìm kiếm" title="Tìm kiếm" onClick={() => setSearchOpen(true)} />
-          )}
-          {(searchOpen || !isMobile) && (
-            <Input
-              allowClear
-              prefix={<SearchOutlined className="text-[var(--brand-text-inactive,#A9ADB2)]" />}
-              placeholder="Tìm tên hoặc mô tả dịch vụ"
-              className={isMobile && searchOpen ? 'min-w-0 flex-1' : 'w-[260px]!'}
-              value={searchText}
-              onChange={(event) => setSearchText(event.target.value)}
-              onPressEnter={() => {
-                setFilters((current) => ({ ...current, q: searchText.trim() || undefined }))
-                setPage(1)
-              }}
-              onBlur={() => { if (isMobile && !searchText) setSearchOpen(false) }}
-            />
-          )}
+          <Input.Search
+            allowClear
+            placeholder="Tìm tên hoặc mô tả dịch vụ"
+            className="w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]"
+            value={searchText}
+            onChange={(event) => { setSearchText(event.target.value); if (!event.target.value) applySearch('') }}
+            onSearch={(v) => applySearch(v)}
+          />
         </div>
         <Can I="CREATE" a="SERVICE">
           <Button type="primary" icon={<PlusOutlined />} onClick={() => void openEditor()}>
@@ -355,12 +341,17 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
         columns={columns}
         scroll={{ x: 1000 }}
         pagination={false}
+        onRow={(row) => ({
+          onClick: () => setDetailService(row),
+          style: { cursor: 'pointer' },
+        })}
       />
       <MobileCards
         rows={rows}
         rowKey={(row) => row.id}
         loading={listQuery.isLoading}
         emptyText="Chưa có dịch vụ nào"
+        onCardClick={(row) => setDetailService(row)}
         renderCard={(row) => (
           <>
             <div className="mobile-card-head">
@@ -420,6 +411,15 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
         onCancel={() => setOpen(false)}
         onSubmit={() => void submit()}
         branches={branches}
+      />
+      <ServiceDetailModal
+        service={detailService}
+        onClose={() => setDetailService(null)}
+        categories={categories}
+        branches={branches}
+        urlMap={urlMap}
+        currency={currency}
+        formatCurrency={formatCurrency}
       />
     </>
   )

@@ -1,11 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Alert, Button, Form, Input, Modal, Space, Table, Tag, Typography, message } from 'antd'
-import { DeleteOutlined, EditOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
+import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons'
 import PageTitle from '@/components/base/PageTitle'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
 import TableEmpty from '@/components/base/TableEmpty'
-import { paginateRows } from '@/utils/listTable'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { LookupList } from '@/api/models/lookupList'
 import type { PostLookupListsBody } from '@/api/models/postLookupListsBody'
@@ -21,6 +20,7 @@ export default function LookupLists() {
   const [viewingList, setViewingList] = useState<LookupList | null>(null)
   const [query, setQuery] = useState('')
   const [page, setPage] = useState(1)
+  const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
@@ -29,13 +29,18 @@ export default function LookupLists() {
   const [form] = Form.useForm()
   const [editForm] = Form.useForm<{ name: string; is_active: boolean }>()
 
-  const load = useCallback(async (search: string) => {
+  const load = useCallback(async (search: string, nextPage = 1) => {
     setLoading(true)
     setError('')
     try {
-      const body = await getLookupLists(search.trim() ? { q: search.trim() } : {})
+      const body = await getLookupLists({
+        page: nextPage,
+        limit: 8,
+        ...(search.trim() ? { q: search.trim() } : {}),
+      } as never)
       setLists((pickData<LookupList[]>(body) ?? []) as LookupList[])
-      setPage(1)
+      setTotal((body as unknown as { meta?: { total?: number } })?.meta?.total ?? 0)
+      setPage(nextPage)
     } catch (err) {
       setError(errorMessage(err))
     } finally {
@@ -128,17 +133,16 @@ export default function LookupLists() {
               subtitle="Danh mục dùng chung cho các trường tùy chỉnh"
               left={(
                 <>
-                  <Input
+                  <Input.Search
                     allowClear
-                    prefix={<SearchOutlined className="text-[var(--brand-text-inactive,#A9ADB2)]" />}
                     placeholder="Tìm tên, mã danh mục hoặc mã mục"
-                    className="w-[260px]!"
+                    className="w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]"
                     value={query}
                     onChange={(event) => {
                       setQuery(event.target.value)
                       if (!event.target.value) void load('')
                     }}
-                    onPressEnter={() => void load(query)}
+                    onSearch={(value) => void load(value)}
                   />
                 </>
               )}
@@ -153,7 +157,7 @@ export default function LookupLists() {
             <Table<LookupList>
               rowKey="id"
               loading={loading}
-              dataSource={paginateRows(lists, page, 8)}
+              dataSource={lists}
               pagination={false}
               locale={{ emptyText: <TableEmpty description={query ? 'Không tìm thấy danh mục' : 'Chưa có danh mục'} /> }}
               onRow={(row) => ({
@@ -186,7 +190,7 @@ export default function LookupLists() {
                 },
               ]}
             />
-            <ListPagination page={page} limit={8} total={lists.length} onChange={setPage} noun="danh mục dùng chung" />
+            <ListPagination page={page} limit={8} total={total} onChange={setPage} noun="danh mục dùng chung" />
 
             <LookupItemsModal
               viewingList={viewingList}

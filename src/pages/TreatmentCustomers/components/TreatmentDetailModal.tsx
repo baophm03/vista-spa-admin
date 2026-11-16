@@ -74,215 +74,214 @@ export default function TreatmentDetailModal({
   const { formatDateTime } = useBrandDateTime()
   const isMobile = !Grid.useBreakpoint().md
   return (
-      <Modal
-        open={!!detail && !payOpen}
-        onCancel={onClose}
-        title={detail ? `${profileName(detail)} · ${packageName(detail)}` : 'Chi tiết liệu trình'}
-        footer={<Button onClick={onClose}>Đóng</Button>}
-        width="min(1200px, calc(100vw - 24px))"
-        style={{ top: 20 }}
-      >
-        {detail && (
-          <div className="flex flex-wrap items-start gap-5">
-            {/* Rail trái: tóm tắt + hành động — card nền brand-bg như modal lần làm dịch vụ */}
-            {/* Cố định rail trái: scroll cột phải thì aside đứng yên (trừ mobile xếp chồng) */}
-            <aside
-              className="max-w-[330px] flex-[1_1_260px] rounded-[14px] border border-[var(--brand-border)] bg-[var(--brand-bg)] p-[18px]"
-              style={isMobile ? undefined : { position: 'sticky', top: 0, maxHeight: 'calc(100vh - 140px)', overflowY: 'auto' }}
-            >
-              <Typography.Text type="secondary" className="text-xs font-extrabold tracking-[1.2px]">
-                {detail.quota_type === 'UNLIMITED' ? 'LIỆU TRÌNH TRỌN GÓI' : 'TIẾN ĐỘ LIỆU TRÌNH'}
-              </Typography.Text>
-              <Typography.Title level={4} className="mt-[5px]! mb-0!">{packageName(detail)}</Typography.Title>
-              <Typography.Text type="secondary" className="block text-[13px]">
-                {QUOTA_LABEL[detail.quota_type ?? ''] ?? detail.quota_type}
-              </Typography.Text>
-              {detail.quota_type !== 'UNLIMITED' ? (
-                <>
-                  <Progress percent={treatmentProgress(detail) ?? 0} size="small" showInfo={false} strokeColor="var(--brand-primary)" className="mt-2.5" />
-                  <div className="flex justify-between gap-2.5 text-[13px]">
-                    <span>Đã dùng</span>
-                    <strong>
-                      {detail.quota_type === 'SESSIONS'
-                        ? `${sessionUsage(detail).used} / ${sessionUsage(detail).total} buổi`
-                        : `${formatMoney(detail.value_used)} / ${formatMoney(detail.value_total)}`}
-                    </strong>
-                  </div>
-                </>
-              ) : (
-                <Typography.Text type="secondary" className="mt-1 block">Không giới hạn số buổi</Typography.Text>
-              )}
-              <Divider className="my-3!" />
-              <div className="grid gap-[9px] text-[13.5px]">
-                {canReadPayments && (
-                  <div className="flex justify-between gap-2.5">
-                    <span>Đã trả</span><strong>{formatMoney(detail.paid_amount)}</strong>
-                  </div>
-                )}
+    <Modal
+      open={!!detail && !payOpen}
+      onCancel={onClose}
+      title={detail ? `${profileName(detail)} · ${packageName(detail)}` : 'Chi tiết liệu trình'}
+      footer={<Button onClick={onClose}>Đóng</Button>}
+      width="min(1200px, calc(100vw - 24px))"
+      style={{ top: 20 }}
+    >
+      {detail && (
+        <div className="flex flex-wrap items-start gap-5">
+          {/* Rail trái: tóm tắt + hành động — card nền brand-bg như modal lần làm dịch vụ */}
+          {/* Cố định rail trái: scroll cột phải thì aside đứng yên (trừ mobile xếp chồng) */}
+          <aside
+            className="max-w-[330px] flex-[1_1_260px] rounded-[14px] border border-[var(--brand-border)] bg-[var(--brand-bg)] p-[18px]"
+            style={isMobile ? undefined : { position: 'sticky', top: 0, maxHeight: 'calc(100vh - 140px)', overflowY: 'auto' }}
+          >
+            <Typography.Text type="secondary" className="text-xs font-extrabold tracking-[1.2px]">
+              {detail.quota_type === 'UNLIMITED' ? 'LIỆU TRÌNH TRỌN GÓI' : 'TIẾN ĐỘ LIỆU TRÌNH'}
+            </Typography.Text>
+            <Typography.Title level={4} className="mt-[5px]! mb-0!">{packageName(detail)}</Typography.Title>
+            <Typography.Text type="secondary" className="block text-[13px]">
+              {QUOTA_LABEL[detail.quota_type ?? ''] ?? detail.quota_type}
+            </Typography.Text>
+            {detail.quota_type !== 'UNLIMITED' ? (
+              <>
+                <Progress percent={treatmentProgress(detail) ?? 0} size="small" showInfo={false} strokeColor="var(--brand-primary)" className="mt-2.5" />
+                <div className="flex justify-between gap-2.5 text-[13px]">
+                  <span>Đã dùng</span>
+                  <strong>
+                    {detail.quota_type === 'SESSIONS'
+                      ? `${sessionUsage(detail).used} / ${sessionUsage(detail).total} buổi`
+                      : `${formatMoney(detail.value_used)} / ${formatMoney(detail.value_total)}`}
+                  </strong>
+                </div>
+              </>
+            ) : (
+              <Typography.Text type="secondary" className="mt-1 block">Không giới hạn số buổi</Typography.Text>
+            )}
+            <Divider className="my-3!" />
+            <div className="grid gap-[9px] text-[13.5px]">
+              {canReadPayments && (
                 <div className="flex justify-between gap-2.5">
-                  <span>Công nợ</span>
-                  <strong className={(detail.debt_amount ?? 0) > 0 ? 'text-[#D97706]' : 'text-[#159447]'}>{formatMoney(detail.debt_amount)}</strong>
+                  <span>Đã trả</span><strong>{formatMoney(detail.paid_amount)}</strong>
                 </div>
-                {detail.quota_type === 'SESSIONS' && (
-                  <div className="flex justify-between gap-2.5">
-                    <span>Còn lại</span><strong>{sessionUsage(detail).remaining} buổi</strong>
-                  </div>
-                )}
-                <div className="flex items-center justify-between gap-2.5">
-                  <span>Trạng thái</span>
-                  <Tag color={STATUS_META[detail.status ?? '']?.color} className="me-0">
-                    {STATUS_META[detail.status ?? '']?.label ?? detail.status}
-                  </Tag>
-                </div>
+              )}
+              <div className="flex justify-between gap-2.5">
+                <span>Công nợ</span>
+                <strong className={(detail.debt_amount ?? 0) > 0 ? 'text-[#D97706]' : 'text-[#159447]'}>{formatMoney(detail.debt_amount)}</strong>
               </div>
-              {supplementalInfo.length > 0 && (
-                <div className="mt-3 border-t border-[var(--brand-border-soft)] pt-3">
-                  <Typography.Text strong>Thông tin bổ sung</Typography.Text>
-                  {supplementalInfo.map(({ key, label, value }) => (
-                    <div key={key} className="mt-1.5 flex justify-between gap-3 text-[13px]">
-                      <span className="text-[#6F7071]">{label}</span>
-                      <span className="text-right wrap-anywhere">{value ?? '—'}</span>
-                    </div>
-                  ))}
+              {detail.quota_type === 'SESSIONS' && (
+                <div className="flex justify-between gap-2.5">
+                  <span>Còn lại</span><strong>{sessionUsage(detail).remaining} buổi</strong>
                 </div>
               )}
-              <div className="mt-4 flex flex-col gap-2">
-                {canCreateSessions && detail.status === 'ACTIVE' && detail.quota_type !== 'UNLIMITED' && (
-                  <Button block disabled={addingSessionId !== null} loading={addingSessionId === detail.id} onClick={() => onAddSession(detail)}>
-                    +1 buổi
-                  </Button>
-                )}
-                {canUpdate && detail.status !== 'CANCELLED' && (detail.debt_amount ?? 0) > 0 && (
-                  <Button
-                    block
-                    type="primary"
-                    onClick={() => onPay(detail)}
-                  >
-                    Thu tiền ({formatMoney(detail.debt_amount)})
-                  </Button>
-                )}
-                {/* INV-01 — In phiếu hóa đơn gói liệu trình (mở hộp thoại In của trình duyệt) */}
-                {canReadPayments && <Button
-                  block
-                  onClick={() =>
-                    void openHtmlPrint(`/invoices/${detail.id}/print`).catch((err) => message.error(errorMessage(err, 'Không mở được phiếu in. Vui lòng kiểm tra cấu hình hóa đơn.')))
-                  }
-                >
-                  In phiếu
-                </Button>}
-                {/* CT-06: chỉ Admin được hủy gói liệu trình */}
-                {isAdmin && canUpdate && detail.status === 'ACTIVE' && (
-                  <Popconfirm title="Hủy liệu trình này?" okText="Hủy" cancelText="Không" onConfirm={() => void onCancelTreatment(detail)}>
-                    <Button block danger>
-                      Hủy liệu trình
-                    </Button>
-                  </Popconfirm>
-                )}
+              <div className="flex items-center justify-between gap-2.5">
+                <span>Trạng thái</span>
+                <Tag color={STATUS_META[detail.status ?? '']?.color} className="me-0">
+                  {STATUS_META[detail.status ?? '']?.label ?? detail.status}
+                </Tag>
               </div>
-            </aside>
-
-            {/* Vùng chính: desktop dùng thanh Tabs, mobile dùng Select — nội dung render DUY NHẤT
-                ở khối phía dưới; trước đây Tabs lẫn khối dưới cùng cùng render nội dung gây double render */}
-            <div className="min-w-0 flex-[3_1_560px]">
-              <Tabs
-                className="max-md:hidden!"
-                activeKey={detailTab}
-                onChange={(key) => onTabChange(key as typeof detailTab)}
-                items={[
-                  { key: 'sessions', label: 'Buổi điều trị' },
-                  ...(canReadPayments ? [{ key: 'payments', label: 'Lịch sử thanh toán' }] : []),
-                  { key: 'points', label: 'Điểm thưởng' },
-                ]}
-              />
-              <Select
-                className="mb-6! w-full md:hidden!"
-                value={detailTab}
-                onChange={(key) => onTabChange(key as typeof detailTab)}
-                options={([
-                  { value: 'sessions', label: 'Buổi điều trị' },
-                  ...(canReadPayments ? [{ value: 'payments', label: 'Lịch sử thanh toán' }] : []),
-                  { value: 'points', label: 'Điểm thưởng' },
-                ])}
-              />
-              {detailTab === 'sessions' && (
-                <SessionTimeline
-                  ctId={detail.id}
-                  ctStatus={detail.status}
-                  treatmentTotalAmount={detail.total_amount}
-                  formatMoney={formatMoney}
-                  currencySymbol={currencySymbol}
-                  staffOptions={staffOptions}
-                  customFieldDefinitions={sessionCustomFields}
-                  isAdmin={isAdmin}
-                  onChanged={() => { refresh(); void refreshSelectedDetail() }}
-                  refreshKey={sessionsRefreshKey}
-                  focusSessionId={focusSessionId}
-                  onFocusSessionHandled={onFocusSessionHandled}
-                />
-              )}
-              {detailTab === 'payments' && canReadPayments && (
-                <>
-                  {/* Desktop: bảng trong khung viền (giữ giao diện tab cũ); MobileCards tự ẩn trên desktop */}
-                  <div className="hidden overflow-hidden rounded-xl border border-[var(--brand-border)] bg-white md:block">
-                    <SubHead>Lịch sử thanh toán</SubHead>
-                    <Table<PaymentRow>
-                      rowKey="id"
-                      size="small"
-                      loading={payLoading}
-                      dataSource={payments}
-                      pagination={false}
-                      locale={{ emptyText: <TableEmpty description="Chưa có lần thanh toán nào" /> }}
-                      columns={[
-                        {
-                          title: 'Thời gian',
-                          key: 'time',
-                          width: 170,
-                          render: (_, p) => {
-                            const t = p.paid_at || p.created_at
-                            return formatDateTime(t)
-                          },
-                        },
-                        {
-                          title: 'Số tiền',
-                          dataIndex: 'amount',
-                          width: 140,
-                          render: (v) => <b>{formatMoney(v)}</b>,
-                        },
-                        {
-                          title: 'Phương thức',
-                          dataIndex: 'method',
-                          width: 130,
-                          render: (v: string) => paymentMethodLabels[v] ?? PAY_METHOD[v] ?? v ?? '—',
-                        },
-                        { title: 'Ghi chú', dataIndex: 'note', render: (v) => v || '—' },
-                      ]}
-                    />
-                  </div>
-                  <MobileCards
-                    rows={payments}
-                    rowKey={(p) => p.id}
-                    loading={payLoading}
-                    emptyText="Chưa có lần thanh toán nào"
-                    renderCard={(p) => (
-                      <>
-                        <div className="mobile-card-head">
-                          <div className="mobile-card-title">{formatMoney(p.amount)}</div>
-                          <Tag color="green">{paymentMethodLabels[p.method ?? ''] ?? PAY_METHOD[p.method ?? ''] ?? p.method ?? '—'}</Tag>
-                        </div>
-                        <div className="mobile-card-rows">
-                          <MobileCardRow label="Thời gian" value={formatDateTime(p.paid_at || p.created_at)} />
-                          {p.note && <MobileCardRow label="Ghi chú" value={p.note} />}
-                        </div>
-                      </>
-                    )}
-                  />
-                </>
-              )}
-              {detailTab === 'points' && <PointsHistoryPanel profileId={detail.customer_profile_id} />}
             </div>
+            {supplementalInfo.length > 0 && (
+              <div className="mt-3 border-t border-[var(--brand-border-soft)] pt-3">
+                <Typography.Text strong>Thông tin bổ sung</Typography.Text>
+                {supplementalInfo.map(({ key, label, value }) => (
+                  <div key={key} className="mt-1.5 flex justify-between gap-3 text-[13px]">
+                    <span className="text-[#6F7071]">{label}</span>
+                    <span className="text-right wrap-anywhere">{value ?? '—'}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="mt-4 flex flex-col gap-2">
+              {canCreateSessions && detail.status === 'ACTIVE' && detail.quota_type !== 'UNLIMITED' && (
+                <Button block disabled={addingSessionId !== null} loading={addingSessionId === detail.id} onClick={() => onAddSession(detail)}>
+                  +1 buổi
+                </Button>
+              )}
+              {canUpdate && detail.status !== 'CANCELLED' && (detail.debt_amount ?? 0) > 0 && (
+                <Button
+                  block
+                  type="primary"
+                  onClick={() => onPay(detail)}
+                >
+                  Thu tiền ({formatMoney(detail.debt_amount)})
+                </Button>
+              )}
+              {/* INV-01 — In phiếu hóa đơn gói liệu trình (mở hộp thoại In của trình duyệt) */}
+              {canReadPayments && <Button
+                block
+                onClick={() =>
+                  void openHtmlPrint(`/invoices/${detail.id}/print`).catch((err) => message.error(errorMessage(err, 'Không mở được phiếu in. Vui lòng kiểm tra cấu hình hóa đơn.')))
+                }
+              >
+                In phiếu
+              </Button>}
+              {/* CT-06: chỉ Admin được hủy gói liệu trình */}
+              {isAdmin && canUpdate && detail.status === 'ACTIVE' && (
+                <Popconfirm title="Hủy liệu trình này?" okText="Hủy" cancelText="Không" onConfirm={() => void onCancelTreatment(detail)}>
+                  <Button block danger>
+                    Hủy liệu trình
+                  </Button>
+                </Popconfirm>
+              )}
+            </div>
+          </aside>
+
+          {/* Vùng chính: desktop dùng thanh Tabs, mobile dùng Select — nội dung render DUY NHẤT
+                ở khối phía dưới; trước đây Tabs lẫn khối dưới cùng cùng render nội dung gây double render */}
+          <div className="min-w-0 flex-[3_1_560px]">
+            <Tabs
+              className="max-md:hidden!"
+              activeKey={detailTab}
+              onChange={(key) => onTabChange(key as typeof detailTab)}
+              items={[
+                { key: 'sessions', label: 'Buổi điều trị' },
+                ...(canReadPayments ? [{ key: 'payments', label: 'Lịch sử thanh toán' }] : []),
+                { key: 'points', label: 'Điểm thưởng' },
+              ]}
+            />
+            <Select
+              className="mb-6! w-full md:hidden!"
+              value={detailTab}
+              onChange={(key) => onTabChange(key as typeof detailTab)}
+              options={([
+                { value: 'sessions', label: 'Buổi điều trị' },
+                ...(canReadPayments ? [{ value: 'payments', label: 'Lịch sử thanh toán' }] : []),
+                { value: 'points', label: 'Điểm thưởng' },
+              ])}
+            />
+            {detailTab === 'sessions' && (
+              <SessionTimeline
+                ctId={detail.id}
+                ctStatus={detail.status}
+                treatmentTotalAmount={detail.total_amount}
+                formatMoney={formatMoney}
+                currencySymbol={currencySymbol}
+                staffOptions={staffOptions}
+                customFieldDefinitions={sessionCustomFields}
+                isAdmin={isAdmin}
+                onChanged={() => { refresh(); void refreshSelectedDetail() }}
+                refreshKey={sessionsRefreshKey}
+                focusSessionId={focusSessionId}
+                onFocusSessionHandled={onFocusSessionHandled}
+              />
+            )}
+            {detailTab === 'payments' && canReadPayments && (
+              <>
+                {/* Desktop: bảng trong khung viền (giữ giao diện tab cũ); MobileCards tự ẩn trên desktop */}
+                <div className="hidden overflow-hidden rounded-xl border border-[var(--brand-border)] bg-white md:block">
+                  <SubHead>Lịch sử thanh toán</SubHead>
+                  <Table<PaymentRow>
+                    rowKey="id"
+                    size="small"
+                    loading={payLoading}
+                    dataSource={payments}
+                    pagination={false}
+                    locale={{ emptyText: <TableEmpty description="Chưa có lần thanh toán nào" /> }}
+                    columns={[
+                      {
+                        title: 'Thời gian',
+                        key: 'time',
+                        width: 170,
+                        render: (_, p) => {
+                          const t = p.paid_at || p.created_at
+                          return formatDateTime(t)
+                        },
+                      },
+                      {
+                        title: 'Số tiền',
+                        dataIndex: 'amount',
+                        width: 140,
+                        render: (v) => <b>{formatMoney(v)}</b>,
+                      },
+                      {
+                        title: 'Phương thức',
+                        dataIndex: 'method',
+                        width: 130,
+                        render: (v: string) => paymentMethodLabels[v] ?? PAY_METHOD[v] ?? v ?? '—',
+                      },
+                      { title: 'Ghi chú', dataIndex: 'note', render: (v) => v || '—' },
+                    ]}
+                  />
+                </div>
+                <MobileCards
+                  rows={payments}
+                  rowKey={(p) => p.id}
+                  loading={payLoading}
+                  emptyText="Chưa có lần thanh toán nào"
+                  renderCard={(p) => (
+                    <>
+                      <div className="mobile-card-head">
+                        <div className="mobile-card-title">{formatMoney(p.amount)}</div>
+                        <Tag color="green">{paymentMethodLabels[p.method ?? ''] ?? PAY_METHOD[p.method ?? ''] ?? p.method ?? '—'}</Tag>
+                      </div>
+                      <div className="mobile-card-rows">
+                        <MobileCardRow label="Thời gian" value={formatDateTime(p.paid_at || p.created_at)} />
+                        {p.note && <MobileCardRow label="Ghi chú" value={p.note} />}
+                      </div>
+                    </>
+                  )}
+                />
+              </>
+            )}
+            {detailTab === 'points' && <PointsHistoryPanel profileId={detail.customer_profile_id} />}
           </div>
-        )}
-      </Modal>
+        </div>
+      )}
+    </Modal>
   )
 }
-

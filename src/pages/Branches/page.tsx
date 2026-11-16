@@ -1,14 +1,12 @@
 import { useMemo, useState } from 'react'
 import { Alert, Button, Form, Input, Modal, Select, Table, Tag, Typography, message } from 'antd'
-import { CheckCircleOutlined, DeleteOutlined, EditOutlined, EnvironmentOutlined, PauseCircleOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
+import { CheckCircleOutlined, DeleteOutlined, EditOutlined, EnvironmentOutlined, PauseCircleOutlined, PlusOutlined } from '@ant-design/icons'
 import PageTitle from '@/components/base/PageTitle'
 import StatCards, { type StatItem } from '@/components/base/StatCards'
-import ListFilterPopover from '@/components/base/ListFilterPopover'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
 import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import TableEmpty from '@/components/base/TableEmpty'
-import { paginateRows } from '@/utils/listTable'
 import { useCustomerProfileAccess } from '@/utils/customerProfileAccess'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { Branch } from '@/api/models/branch'
@@ -31,43 +29,19 @@ import type { BranchFormValues } from './components/constants'
 
 type StatusFilter = 'all' | 'active' | 'inactive'
 
-type BranchColumnKey = 'code' | 'name' | 'address' | 'phone' | 'status'
-
-const BRANCH_COLUMN_OPTIONS: { label: string; value: BranchColumnKey }[] = [
-  { label: 'Mã cơ sở', value: 'code' },
-  { label: 'Tên cơ sở', value: 'name' },
-  { label: 'Địa chỉ', value: 'address' },
-  { label: 'Số điện thoại', value: 'phone' },
-  { label: 'Trạng thái', value: 'status' },
-]
-
-const DEFAULT_VISIBLE_COLUMNS = BRANCH_COLUMN_OPTIONS.map((column) => column.value)
-
-/** So sánh không dấu, bỏ đ (search tiếng Việt). */
-const foldForSearch = (value: string) =>
-  value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/đ/gi, 'd')
-    .toLocaleLowerCase('vi')
-
 export default function Branches() {
   const [searchText, setSearchText] = useState('')
   const [keyword, setKeyword] = useState('')
   const [page, setPage] = useState(1)
-  const [filterOpen, setFilterOpen] = useState(false)
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
-  const [visibleColumns, setVisibleColumns] = useState<BranchColumnKey[]>(DEFAULT_VISIBLE_COLUMNS)
-  const [draftVisibleColumns, setDraftVisibleColumns] = useState<BranchColumnKey[]>(DEFAULT_VISIBLE_COLUMNS)
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<Branch | null>(null)
   const [form] = Form.useForm<BranchFormValues>()
-  const [filterForm] = Form.useForm()
   const queryClient = useQueryClient()
   const { isAdmin, isReceptionist, isTechnician } = useCustomerProfileAccess()
   const hideSummaryForTechnician = isTechnician && !isAdmin && !isReceptionist
 
-  const branchesQuery = useGetBranches(statusFilter === 'all' ? undefined : { status: statusFilter })
+  const branchesQuery = useGetBranches({ page, limit: 10, ...(statusFilter !== 'all' ? { status: statusFilter } : {}), ...(keyword ? { q: keyword } : {}) } as never)
   const nextCodeQuery = useGetBranchesNextCode({ query: { enabled: open && !editing } })
   const nextCode = pickData<{ code?: string }>(nextCodeQuery.data)?.code
   const createMutation = usePostBranches()
@@ -87,60 +61,27 @@ export default function Branches() {
     queryClient.invalidateQueries({ queryKey: getGetBranchesNextCodeQueryKey() })
   }
 
-  const visibleRows = useMemo(() => {
-    const term = foldForSearch(keyword.trim())
-    return rows.filter((row) => {
-      if (statusFilter === 'active' && !row.is_active) return false
-      if (statusFilter === 'inactive' && row.is_active) return false
-      return !term || foldForSearch(`${row.code} ${row.name}`).includes(term)
-    })
-  }, [rows, keyword, statusFilter])
-
   const applySearch = (nextKeyword: string) => {
     setSearchText(nextKeyword)
     setKeyword(nextKeyword.trim())
     setPage(1)
   }
 
-  // Thống kê đầu trang — chỉ đáng tin khi không lọc trạng thái phía server (khi đó rows là danh sách đầy đủ)
+  // Thống kê đầu trang — từ meta.stats của BE (đã trừ điều kiện status)
+  const statsMeta = (branchesQuery.data as unknown as { meta?: { stats?: { total: number; active: number; inactive: number } } })?.meta?.stats
   const statItems = useMemo<StatItem[]>(() => {
     if (hideSummaryForTechnician) return []
-    if (statusFilter !== 'all') return []
-    const activeCount = rows.filter((row) => !!row.is_active).length
+    if (!statsMeta) return []
     return [
-      { key: 'total', label: 'Tổng cơ sở', value: rows.length.toLocaleString('vi-VN'), icon: <EnvironmentOutlined />, tone: 'primary' },
-      { key: 'active', label: 'Đang hoạt động', value: activeCount.toLocaleString('vi-VN'), icon: <CheckCircleOutlined />, tone: 'secondary' },
-      { key: 'inactive', label: 'Đã ngừng', value: (rows.length - activeCount).toLocaleString('vi-VN'), icon: <PauseCircleOutlined />, tone: 'neutral' },
+      { key: 'total', label: 'Tổng cơ sở', value: statsMeta.total.toLocaleString('vi-VN'), icon: <EnvironmentOutlined />, tone: 'primary' },
+      { key: 'active', label: 'Đang hoạt động', value: statsMeta.active.toLocaleString('vi-VN'), icon: <CheckCircleOutlined />, tone: 'secondary' },
+      { key: 'inactive', label: 'Đã ngừng', value: statsMeta.inactive.toLocaleString('vi-VN'), icon: <PauseCircleOutlined />, tone: 'neutral' },
     ]
-  }, [rows, statusFilter, hideSummaryForTechnician])
+  }, [statsMeta, hideSummaryForTechnician])
 
-  const applyFilters = (values: Record<string, unknown>) => {
-    if (draftVisibleColumns.length === 0) {
-      message.error('Hãy giữ lại ít nhất một cột hiển thị')
-      return
-    }
-    setStatusFilter(values.status === 'active' || values.status === 'inactive' ? values.status : 'all')
-    setVisibleColumns(draftVisibleColumns)
-    setFilterOpen(false)
+  const applyStatusFilter = (value: StatusFilter) => {
+    setStatusFilter(value)
     setPage(1)
-  }
-
-  const clearFilters = () => {
-    filterForm.resetFields()
-    setSearchText('')
-    setKeyword('')
-    setStatusFilter('all')
-    setDraftVisibleColumns(DEFAULT_VISIBLE_COLUMNS)
-    setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)
-    setPage(1)
-  }
-
-  const openFilters = (nextOpen: boolean) => {
-    setFilterOpen(nextOpen)
-    if (!nextOpen) return
-    filterForm.setFieldsValue({ status: statusFilter === 'all' ? undefined : statusFilter })
-    setSearchText(keyword)
-    setDraftVisibleColumns(visibleColumns)
   }
 
   const openCreate = () => {
@@ -238,8 +179,6 @@ export default function Branches() {
     }
   }
 
-  const activeFilterCount = (statusFilter !== 'all' ? 1 : 0) + (keyword ? 1 : 0)
-
   const columns = [
     {
       key: 'code',
@@ -314,8 +253,7 @@ export default function Branches() {
       ),
     },
   ].filter((column) =>
-    (column.key !== 'actions' || canUpdate || canDelete) &&
-    (column.key === 'actions' || visibleColumns.includes(column.key as BranchColumnKey)),
+    column.key !== 'actions' || canUpdate || canDelete,
   )
 
   return (
@@ -326,40 +264,24 @@ export default function Branches() {
         subtitle="Danh sách cơ sở spa trong hệ thống"
         left={
           <>
-            <Input
+            <Input.Search
               allowClear
-              prefix={<SearchOutlined className="text-[var(--brand-text-inactive,#A9ADB2)]" />}
               placeholder="Tìm theo mã hoặc tên cơ sở"
-              className="w-[260px]!"
+              className="w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]"
               value={searchText}
-              onChange={(event) => {
-                setSearchText(event.target.value)
-                if (!event.target.value) applySearch('')
-              }}
-              onPressEnter={() => applySearch(searchText)}
+              onChange={(e) => { setSearchText(e.target.value); if (!e.target.value) applySearch('') }}
+              onSearch={(v) => applySearch(v)}
             />
-            <ListFilterPopover
-              open={filterOpen}
-              onOpenChange={openFilters}
-              activeFilterCount={activeFilterCount}
-              form={filterForm}
-              onApply={applyFilters}
-              onClear={clearFilters}
-              columnOptions={BRANCH_COLUMN_OPTIONS}
-              draftVisibleColumns={draftVisibleColumns}
-              onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as BranchColumnKey[])}
-              filterItems={(
-                <Form.Item name="status" label="Trạng thái" className="mb-0!">
-                  <Select
-                    allowClear
-                    placeholder="Tất cả"
-                    options={[
-                      { value: 'active', label: 'Đang hoạt động' },
-                      { value: 'inactive', label: 'Đã ngừng' },
-                    ]}
-                  />
-                </Form.Item>
-              )}
+            <Select
+              allowClear
+              placeholder="Tất cả trạng thái"
+              style={{ width: 170 }}
+              value={statusFilter === 'all' ? undefined : statusFilter}
+              onChange={(value) => applyStatusFilter((value as StatusFilter) ?? 'all')}
+              options={[
+                { value: 'active', label: 'Đang hoạt động' },
+                { value: 'inactive', label: 'Đã ngừng' },
+              ]}
             />
           </>
         }
@@ -389,7 +311,7 @@ export default function Branches() {
         className="desktop-only"
         rowKey="id"
         loading={branchesQuery.isLoading}
-        dataSource={paginateRows(visibleRows, page, 10)}
+        dataSource={rows}
         columns={columns}
         scroll={{ x: 980 }}
         pagination={false}
@@ -398,7 +320,7 @@ export default function Branches() {
         }}
       />
       <MobileCards
-        rows={paginateRows(visibleRows, page, 10)}
+        rows={rows}
         rowKey={(row) => row.id}
         loading={branchesQuery.isLoading}
         emptyText={keyword.trim() || statusFilter !== 'all' ? 'Không tìm thấy cơ sở phù hợp' : 'Chưa có cơ sở nào'}
@@ -418,7 +340,7 @@ export default function Branches() {
           </>
         )}
       />
-      <ListPagination page={page} limit={10} total={visibleRows.length} onChange={setPage} noun="cơ sở" />
+      <ListPagination page={page} limit={10} total={(branchesQuery.data as unknown as { meta?: { total?: number } })?.meta?.total ?? rows.length} onChange={setPage} noun="cơ sở" />
 
       <BranchModal
         open={open}

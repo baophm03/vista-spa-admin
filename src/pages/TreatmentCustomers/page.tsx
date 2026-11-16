@@ -1,17 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Button, Form, Grid, Input, Modal, Progress, Select, Table, Tag, Tooltip, Typography, message } from 'antd'
+import { Button, Form, Input, Modal, Progress, Select, Table, Tag, Tooltip, Typography, message } from 'antd'
 import type { MenuProps } from 'antd'
-import { CheckCircleOutlined, PlayCircleOutlined, PlusOutlined, SearchOutlined, TeamOutlined, WalletOutlined } from '@ant-design/icons'
+import { CheckCircleOutlined, PlayCircleOutlined, PlusOutlined, TeamOutlined, WalletOutlined } from '@ant-design/icons'
 import dayjs, { type Dayjs } from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
 import StatCards, { type StatItem } from '@/components/base/StatCards'
-import ListFilterPopover from '@/components/base/ListFilterPopover'
 import RowActionsMenu, { type RowActionItem } from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
 import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
-import { paginateRows } from '@/utils/listTable'
 import { normalizeCustomFieldValues } from '@/components/CustomFieldFormItems'
 import { errorMessage, pickData } from '@/api/helpers'
 import { customInstance } from '@/api/mutator/custom-instance'
@@ -59,8 +57,6 @@ import TreatmentCreateModal from './components/TreatmentCreateModal'
 import TreatmentPromoModal from './components/TreatmentPromoModal'
 import TreatmentDetailModal from './components/TreatmentDetailModal'
 import {
-  CUSTOMER_TREATMENT_COLUMN_OPTIONS,
-  DEFAULT_VISIBLE_COLUMNS,
   FILTERS,
   HIDDEN_TREATMENT_SYSTEM_FIELDS,
   STATUS_META,
@@ -69,7 +65,6 @@ import {
   customFieldValueText,
   readableCustomFieldLabel,
   sessionUsage,
-  type CustomerTreatmentColumnKey,
   type LookupListRow,
   type PaymentRow,
   type ProfileRow,
@@ -99,15 +94,9 @@ export default function TreatmentCustomers() {
   const [searchInput, setSearchInput] = useState('')
   const [search, setSearch] = useState('')
   const [pkgFilter, setPkgFilter] = useState<string>()
-  const [filterOpen, setFilterOpen] = useState(false)
-  const [visibleColumns, setVisibleColumns] = useState<CustomerTreatmentColumnKey[]>(DEFAULT_VISIBLE_COLUMNS)
-  const [draftVisibleColumns, setDraftVisibleColumns] = useState<CustomerTreatmentColumnKey[]>(DEFAULT_VISIBLE_COLUMNS)
+  const [branchFilter, setBranchFilter] = useState<string>()
   const [createOpen, setCreateOpen] = useState(false)
   const [createForm] = Form.useForm()
-  const [filterForm] = Form.useForm()
-  // Mobile (dưới breakpoint md): search thu về nút icon, bộ lọc/tải lại chỉ icon
-  const isMobile = !Grid.useBreakpoint().md
-  const [searchOpen, setSearchOpen] = useState(false)
   // Modal chi tiết
   const [detailTab, setDetailTab] = useState<'sessions' | 'payments' | 'points'>('sessions')
   const [detail, setDetail] = useState<CustomerTreatment | null>(null)
@@ -138,8 +127,17 @@ export default function TreatmentCustomers() {
 const branchesQuery = useGetBranches()
 const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as Branch[], [branchesQuery.data])
 
-  const treatmentsQuery = useGetTreatmentCustomers({ page: 1, limit: 500 })
+  const treatmentsQuery = useGetTreatmentCustomers({
+    page,
+    limit,
+    ...(filter !== 'all' ? { status: filter } : {}),
+    ...(pkgFilter ? { package_id: pkgFilter } : {}),
+    ...(branchFilter ? { branch_id: branchFilter } : {}),
+    ...(search ? { q: search } : {}),
+  } as never)
   const rows = (pickData<CustomerTreatment[] | undefined>(treatmentsQuery.data) ?? []) as CustomerTreatment[]
+  const total = (treatmentsQuery.data as unknown as { meta?: { total?: number } })?.meta?.total ?? rows.length
+  const statsMeta = (treatmentsQuery.data as unknown as { meta?: { stats?: { total: number; ongoing: number; done: number; debt_sum: number } } })?.meta?.stats
 
   const profilesQuery = useGetCustomerProfiles({ page: 1, limit: 200 })
   const profiles = (pickData<ProfileRow[] | undefined>(profilesQuery.data) ?? []) as ProfileRow[]
@@ -200,61 +198,18 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
       ?? '—'
   }
 
-  const list = useMemo(() => {
-    const q = search.trim().toLowerCase()
-    return rows.filter((r) => {
-      if (filter !== 'all' && r.status !== filter) return false
-      if (pkgFilter && r.package_id !== pkgFilter) return false
-      if (q) {
-        const p = profileOf(r.customer_profile_id)
-        const shortCode = treatmentCode(r)
-        const hay = `${p?.full_name ?? ''} ${p?.phone ?? ''} ${packageName(r)} G-${shortCode} ${shortCode} ${r.id}`.toLowerCase()
-        if (!hay.includes(q)) return false
-      }
-      return true
-    })
-  }, [rows, filter, pkgFilter, search, profiles, packages])
-
-  const activeFilterCount = Number(filter !== 'all') + Number(!!pkgFilter) + (search ? 1 : 0)
-  const openFilters = (nextOpen: boolean) => {
-    setFilterOpen(nextOpen)
-    if (!nextOpen) return
-    filterForm.setFieldsValue({ package_id: pkgFilter, status: filter })
-    setDraftVisibleColumns(visibleColumns)
-  }
   const applySearch = (nextKeyword: string) => {
     setSearchInput(nextKeyword)
     setSearch(nextKeyword.trim())
     setPage(1)
   }
-  const applyFilters = (values: Record<string, unknown>) => {
-    if (!draftVisibleColumns.length) {
-      message.error('Hãy giữ lại ít nhất một cột hiển thị')
-      return
-    }
-    setPkgFilter(typeof values.package_id === 'string' ? values.package_id : undefined)
-    setFilter(typeof values.status === 'string' ? values.status : 'all')
-    setVisibleColumns(draftVisibleColumns)
-    setFilterOpen(false)
-    setPage(1)
-  }
-  const clearFilters = () => {
-    filterForm.resetFields()
-    setPkgFilter(undefined)
-    setFilter('all')
-    setDraftVisibleColumns(DEFAULT_VISIBLE_COLUMNS)
-    setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)
-    setPage(1)
-  }
 
-  const stats = useMemo(() => ({
-    total: rows.length,
-    ongoing: rows.filter((r) => r.status === 'ACTIVE').length,
-    done: rows.filter((r) => r.status === 'FINISHED').length,
-    debt: rows
-      .filter((r) => r.status !== 'CANCELLED')
-      .reduce((s, r) => s + Number(r.debt_amount ?? 0), 0),
-  }), [rows])
+  const stats = {
+    total: statsMeta?.total ?? 0,
+    ongoing: statsMeta?.ongoing ?? 0,
+    done: statsMeta?.done ?? 0,
+    debt: statsMeta?.debt_sum ?? 0,
+  }
 
   const openDetail = (row: CustomerTreatment) => {
     setDetail(row)
@@ -784,47 +739,40 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
         subtitle="Khách hàng đang thực hiện liệu trình"
         left={
           <>
-            {/* Mobile: nút icon mở ô tìm kiếm; desktop hiện input luôn */}
-            {isMobile && !searchOpen && (
-              <Button icon={<SearchOutlined />} aria-label="Tìm kiếm" title="Tìm kiếm" onClick={() => setSearchOpen(true)} />
-            )}
-            {(searchOpen || !isMobile) && (
-              <Input
-                allowClear
-                autoFocus={isMobile}
-                prefix={<SearchOutlined className="text-[var(--brand-text-inactive,#A9ADB2)]" />}
-                placeholder="Tìm tên hoặc SĐT khách hàng"
-                className={isMobile && searchOpen ? 'min-w-0 flex-1' : 'w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]'}
-                value={searchInput}
-                onChange={(event) => {
-                  setSearchInput(event.target.value)
-                  if (!event.target.value) applySearch('')
-                }}
-                onPressEnter={() => applySearch(searchInput)}
-                onBlur={() => { if (isMobile && !searchInput) setSearchOpen(false) }}
-              />
-            )}
-            <ListFilterPopover
-              iconOnly={isMobile}
-              open={filterOpen}
-              onOpenChange={openFilters}
-              activeFilterCount={activeFilterCount}
-              form={filterForm}
-              onApply={applyFilters}
-              onClear={clearFilters}
-              columnOptions={CUSTOMER_TREATMENT_COLUMN_OPTIONS}
-              draftVisibleColumns={draftVisibleColumns}
-              onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as CustomerTreatmentColumnKey[])}
-              filterItems={(
-                <>
-                  <Form.Item name="package_id" label="Liệu trình" className="mb-2.5!">
-                    <Select allowClear showSearch optionFilterProp="label" placeholder="Tất cả liệu trình" options={packages.map((pkg) => ({ value: pkg.id, label: pkg.name }))} />
-                  </Form.Item>
-                  <Form.Item name="status" label="Trạng thái" className="mb-0!">
-                    <Select options={FILTERS} />
-                  </Form.Item>
-                </>
-              )}
+            <Input.Search
+              allowClear
+              placeholder="Tìm tên hoặc SĐT khách hàng"
+              className="w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]"
+              value={searchInput}
+              onChange={(event) => { setSearchInput(event.target.value); if (!event.target.value) applySearch('') }}
+              onSearch={(v) => applySearch(v)}
+            />
+            <Select
+              allowClear
+              showSearch
+              optionFilterProp="label"
+              placeholder="Tất cả liệu trình"
+              style={{ minWidth: 160 }}
+              value={pkgFilter}
+              onChange={(value) => { setPkgFilter(value); setPage(1) }}
+              options={packages.map((pkg) => ({ value: pkg.id, label: pkg.name }))}
+            />
+            <Select
+              placeholder="Trạng thái"
+              style={{ width: 150 }}
+              value={filter}
+              onChange={(value) => { setFilter(value); setPage(1) }}
+              options={FILTERS}
+            />
+            <Select
+              allowClear
+              showSearch
+              optionFilterProp="label"
+              placeholder="Tất cả cơ sở"
+              style={{ width: 160 }}
+              value={branchFilter}
+              onChange={(value) => { setBranchFilter(value); setPage(1) }}
+              options={branches.map((branch) => ({ value: branch.id, label: branch.name }))}
             />
           </>
         }
@@ -843,7 +791,7 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
         className="desktop-only"
         rowKey="id"
         loading={treatmentsQuery.isLoading}
-        dataSource={paginateRows(list, page, limit)}
+        dataSource={rows}
         pagination={false}
         onRow={(row) => ({ onClick: () => openDetail(row), style: { cursor: 'pointer' } })}
         columns={[
@@ -876,9 +824,16 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
             },
           },
           {
+            title: 'Cơ sở',
+            key: 'branch',
+            dataIndex: ['branch', 'name'],
+            width: 130,
+            render: (v: string | undefined, row: CustomerTreatment) => v || branches.find((branch) => branch.id === row.branch_id)?.name || '—',
+          },
+          {
             title: 'Tiến độ',
             key: 'progress',
-            width: 220,
+            width: 150,
             render: (_: unknown, row: CustomerTreatment) => {
               if (row.quota_type === 'SESSIONS') {
                 const { total, used, percent } = sessionUsage(row)
@@ -1008,13 +963,10 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
               )
             },
           },
-        ].filter((column) =>
-          (column.key !== 'actions' || canUpdate) &&
-          (column.key === 'actions' || visibleColumns.includes(column.key as CustomerTreatmentColumnKey)),
-        )}
+        ].filter((column) => column.key !== 'actions' || canUpdate)}
       />
       <MobileCards
-        rows={paginateRows(list, page, limit)}
+        rows={rows}
         rowKey={(row) => row.id}
         onCardClick={(row) => openDetail(row)}
         loading={treatmentsQuery.isLoading}
@@ -1031,6 +983,7 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
                 <Tag color={STATUS_META[row.status as string]?.color}>{STATUS_META[row.status as string]?.label ?? row.status}</Tag>
               </div>
               <div className="mobile-card-rows">
+                <MobileCardRow label="Cơ sở" value={(row as CustomerTreatment & { branch?: { name?: string } }).branch?.name || branches.find((branch) => branch.id === row.branch_id)?.name || '—'} />
                 {usage
                   ? <MobileCardRow label="Số buổi" value={`Đã dùng ${usage.used}/${usage.total} · Còn ${usage.remaining}`} />
                   : row.quota_type === 'VALUE'
@@ -1059,7 +1012,7 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
           )
         }}
       />
-      <ListPagination page={page} limit={limit} total={list.length} onChange={setPage} noun="khách điều trị" />
+      <ListPagination page={page} limit={limit} total={total} onChange={setPage} noun="khách điều trị" />
 
       <TreatmentCreateModal
         form={createForm}

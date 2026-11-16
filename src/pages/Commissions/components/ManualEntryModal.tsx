@@ -176,7 +176,7 @@ export default function ManualEntryModal({ open, onClose, onDone }: { open: bool
             }))} />
           </Form.Item>
         <Space style={{ display: 'flex' }} align="start">
-          <Form.Item name="branch_id" label="Chi nhánh" style={{ flex: 1 }}>
+          <Form.Item name="branch_id" label="Cơ sở" style={{ flex: 1 }}>
             <Select allowClear showSearch optionFilterProp="label" loading={branchesQuery.isLoading} placeholder="Tự lấy theo buổi/gói nếu có"
               options={branches.map((branch) => ({ value: branch.id, label: branch.name }))} />
           </Form.Item>

@@ -5,7 +5,6 @@ import type { ServiceCategory } from '@/api/models/serviceCategory'
 import CustomFieldFormItems from '@/components/CustomFieldFormItems'
 import ServiceImageField from '@/components/ServiceImageField'
 import type { Branch } from '@/api/models'
-import { getBranches } from '@/api/endpoints/branches'
 
 const labelStyle = { fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#8A8D93', fontWeight: 600 }
 

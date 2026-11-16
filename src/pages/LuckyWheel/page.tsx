@@ -3,13 +3,12 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Alert, Button, Card, Form, Input, Modal, Select, Space, Switch, Table, Tabs, Tag, Tooltip, Typography, message } from 'antd'
 import dayjs from 'dayjs'
 import { useBrandCurrency, useBrandDateTime } from '@/themeRuntime'
-import { BellOutlined, CloseOutlined, DeleteOutlined, EditOutlined, GiftOutlined, PauseCircleOutlined, PlayCircleOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
+import { BellOutlined, CloseOutlined, DeleteOutlined, EditOutlined, GiftOutlined, PauseCircleOutlined, PlayCircleOutlined, PlusOutlined } from '@ant-design/icons'
 import PageTitle from '../../components/base/PageTitle'
 import RowActionsMenu from '../../components/base/RowActionsMenu'
 import TableEmpty from '../../components/base/TableEmpty'
 import { errorMessage, pickData } from '../../api/helpers'
 import ListPagination from '../../components/base/ListPagination'
-import { paginateRows } from '../../utils/listTable'
 import { useGetBranches } from '../../api/endpoints/branches'
 import { getGetAppConfigQueryKey } from '../../api/endpoints/app'
 import { postNotifications } from '../../api/endpoints/admin'
@@ -110,13 +109,15 @@ export default function LuckyWheel() {
     queryKey: getGetSettingsQueryKey(),
     queryFn: async () => pickData<SystemSetting[]>(await getSettings()) ?? [],
   })
-  const wheelsQuery = useGetLuckyWheels()
+  const wheelsQuery = useGetLuckyWheels({ page: wheelPage, limit: TABLE_PAGE_SIZE } as never)
   const branchesQuery = useGetBranches()
-  const prizesQuery = useGetLuckyWheelsIdPrizes(selected?.id ?? '')
-  const spinsQuery = useGetLuckyWheelsIdSpins(selected?.id ?? '')
+  const prizesQuery = useGetLuckyWheelsIdPrizes(selected?.id ?? '', { page: prizePage, limit: TABLE_PAGE_SIZE } as never)
+  const spinsQuery = useGetLuckyWheelsIdSpins(selected?.id ?? '', { page: spinPage, limit: TABLE_PAGE_SIZE } as never)
   const eligibleQuery = useGetLuckyWheelsIdEligibleCustomers(
+    // eslint-disable-next-line
+
     selected?.id ?? '',
-    customerSearch ? { search: customerSearch, limit: 200 } : { limit: 200 },
+    (customerSearch ? { search: customerSearch, page: customerPage, limit: TABLE_PAGE_SIZE } : { page: customerPage, limit: TABLE_PAGE_SIZE }) as never,
   )
   const createMutation = usePostLuckyWheels()
   const updateMutation = usePutLuckyWheelsId()
@@ -127,10 +128,14 @@ export default function LuckyWheel() {
   const spinForCustomerMutation = usePostLuckyWheelsIdSpins()
   const claimMutation = usePutLuckyWheelsIdSpinsSpinIdClaim()
   const wheels = wheelsQuery.data?.responseData ?? []
+  const wheelsTotal = (wheelsQuery.data as unknown as { meta?: { total?: number } })?.meta?.total ?? 0
   const branches = branchesQuery.data?.responseData ?? []
   const prizes = prizesQuery.data?.responseData ?? []
+  const prizesTotal = (prizesQuery.data as unknown as { meta?: { total?: number } })?.meta?.total ?? 0
   const spins = spinsQuery.data?.responseData ?? []
+  const spinsTotal = (spinsQuery.data as unknown as { meta?: { total?: number } })?.meta?.total ?? 0
   const eligibleCustomers = eligibleQuery.data?.responseData ?? []
+  const eligibleTotal = (eligibleQuery.data as unknown as { meta?: { total?: number } })?.meta?.total ?? 0
   const customerSettings = customerSettingsQuery.data ?? []
   const customerDefaultSetting = customerSettings.find((setting) => setting.key === CUSTOMER_DEFAULT_SETTING)
   const customerOverridesSetting = customerSettings.find((setting) => setting.key === CUSTOMER_OVERRIDES_SETTING)
@@ -176,20 +181,10 @@ export default function LuckyWheel() {
     return customerOverrides.find((item) => item.customer_profile_id === customerProfileId)?.enabled ?? customerDefaultEnabled
   }
   const canManageAllBranches = ability.can('ALL' as never, 'BRANCH')
-  const currentWheelPage = Math.min(wheelPage, Math.max(1, Math.ceil(wheels.length / TABLE_PAGE_SIZE)))
-  const currentPrizePage = Math.min(prizePage, Math.max(1, Math.ceil(prizes.length / TABLE_PAGE_SIZE)))
-  const currentCustomerPage = Math.min(customerPage, Math.max(1, Math.ceil(eligibleCustomers.length / TABLE_PAGE_SIZE)))
-  const currentSpinPage = Math.min(spinPage, Math.max(1, Math.ceil(spins.length / TABLE_PAGE_SIZE)))
 
   useEffect(() => {
     if (!selected && wheels.length) setSelected(wheels[0])
   }, [wheels, selected])
-
-  // Gõ tìm khách có debounce 400ms — giống các page danh sách khác
-  useEffect(() => {
-    const timer = setTimeout(() => setCustomerSearch(customerSearchInput.trim()), 400)
-    return () => clearTimeout(timer)
-  }, [customerSearchInput])
 
   const selectWheel = (w: LuckyWheelRecord) => {
     setSelected(w)
@@ -568,15 +563,6 @@ export default function LuckyWheel() {
     <>
       <PageTitle
         subtitle="Cấu hình vòng quay may mắn và phần thưởng"
-        right={
-          activeTab === 'campaigns' ? (
-            <Can I="CREATE" a="WHEEL">
-              <Button type="primary" icon={<PlusOutlined />} onClick={openCreateWheel}>
-                Thêm vòng quay
-              </Button>
-            </Can>
-          ) : null
-        }
       >
         Quay số may mắn
       </PageTitle>
@@ -602,9 +588,16 @@ export default function LuckyWheel() {
         )
       ) : (
       <Space direction="vertical" style={{ width: '100%' }} size={16}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: -8 }}>
+          <Can I="CREATE" a="WHEEL">
+            <Button type="primary" icon={<PlusOutlined />} onClick={openCreateWheel}>
+              Thêm vòng quay
+            </Button>
+          </Can>
+        </div>
         <Table
           rowKey="id"
-          dataSource={paginateRows(wheels, currentWheelPage, TABLE_PAGE_SIZE)}
+          dataSource={wheels}
           pagination={false}
           onRow={(row) => ({ onClick: () => selectWheel(row), style: { cursor: 'pointer' } })}
           columns={[
@@ -657,9 +650,9 @@ export default function LuckyWheel() {
           ]}
         />
         <ListPagination
-          page={currentWheelPage}
+          page={wheelPage}
           limit={TABLE_PAGE_SIZE}
-          total={wheels.length}
+          total={wheelsTotal}
           onChange={setWheelPage}
           noun="vòng quay"
           hideOnSinglePage
@@ -691,7 +684,7 @@ export default function LuckyWheel() {
           >
             <Table
               rowKey="id"
-              dataSource={paginateRows(prizes, currentPrizePage, TABLE_PAGE_SIZE)}
+              dataSource={prizes}
               pagination={false}
               size="small"
               columns={[
@@ -733,9 +726,9 @@ export default function LuckyWheel() {
               ]}
             />
             <ListPagination
-              page={currentPrizePage}
+              page={prizePage}
               limit={TABLE_PAGE_SIZE}
-              total={prizes.length}
+              total={prizesTotal}
               onChange={setPrizePage}
               noun="giải thưởng"
               hideOnSinglePage
@@ -748,16 +741,16 @@ export default function LuckyWheel() {
             <Card title={`Màn hình quay cho khách — ${selected.name}`}>
               <Space direction="vertical" style={{ width: '100%' }} size={12}>
                 <Space wrap>
-                  <Input
+                  <Input.Search
                     allowClear
-                    prefix={<SearchOutlined className="text-[var(--brand-text-inactive,#A9ADB2)]" />}
                     placeholder="Tìm theo tên / SĐT"
-                    className="w-[260px]!"
+                    className="w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]"
                     value={customerSearchInput}
                     onChange={(event) => {
                       setCustomerSearchInput(event.target.value)
-                      setCustomerPage(1)
+                      if (!event.target.value) { setCustomerSearch(''); setCustomerPage(1) }
                     }}
+                    onSearch={(value) => { setCustomerSearch(value.trim()); setCustomerPage(1) }}
                   />
                   {chosenCustomer && (
                     <Typography.Text>
@@ -778,7 +771,7 @@ export default function LuckyWheel() {
                 )}
                 <Table<EligibleWheelCustomer>
                   rowKey="customer_profile_id"
-                  dataSource={paginateRows(eligibleCustomers as EligibleWheelCustomer[], currentCustomerPage, TABLE_PAGE_SIZE)}
+                  dataSource={eligibleCustomers as EligibleWheelCustomer[]}
                   loading={eligibleQuery.isLoading}
                   pagination={false}
                   size="small"
@@ -855,9 +848,9 @@ export default function LuckyWheel() {
                   ]}
                 />
                 <ListPagination
-                  page={currentCustomerPage}
+                  page={customerPage}
                   limit={TABLE_PAGE_SIZE}
-                  total={eligibleCustomers.length}
+                  total={eligibleTotal}
                   onChange={setCustomerPage}
                   noun="khách hàng"
                   hideOnSinglePage
@@ -886,7 +879,7 @@ export default function LuckyWheel() {
           <Card title="Lịch sử quay">
             <Table<WheelSpin>
               rowKey="id"
-              dataSource={paginateRows(spins, currentSpinPage, TABLE_PAGE_SIZE)}
+              dataSource={spins}
               pagination={false}
               size="small"
               columns={[
@@ -914,7 +907,7 @@ export default function LuckyWheel() {
                 },
               ]}
             />
-            <ListPagination page={currentSpinPage} limit={TABLE_PAGE_SIZE} total={spins.length} onChange={setSpinPage} noun="lượt quay" hideOnSinglePage />
+            <ListPagination page={spinPage} limit={TABLE_PAGE_SIZE} total={spinsTotal} onChange={setSpinPage} noun="lượt quay" hideOnSinglePage />
           </Card>
         )}
       </Space>

@@ -1,16 +1,14 @@
-import { Form, Input, Modal, Select } from 'antd'
+import { Form, Input, Modal } from 'antd'
 import type { FormInstance } from 'antd'
-import type { Branch } from '@/api/models/branch'
 
 export interface QuickCustomerModalProps {
   open: boolean
   form: FormInstance
-  branches: Branch[]
   onCancel: () => void
   onOk: () => void
 }
 
-export default function QuickCustomerModal({ open, form, branches, onCancel, onOk }: QuickCustomerModalProps) {
+export default function QuickCustomerModal({ open, form, onCancel, onOk }: QuickCustomerModalProps) {
   return (
     <Modal
       title="Tạo nhanh khách hàng"
@@ -30,12 +28,6 @@ export default function QuickCustomerModal({ open, form, branches, onCancel, onO
         </Form.Item>
         <Form.Item name="email" label="Email">
           <Input type="email" placeholder="email@example.com" />
-        </Form.Item>
-        <Form.Item name="branch_id" label="Cơ sở" rules={[{ required: true, message: 'Chọn cơ sở' }]}>
-          <Select
-            placeholder="Chọn cơ sở"
-            options={branches.map((branch) => ({ value: branch.id, label: branch.name }))}
-          />
         </Form.Item>
       </Form>
     </Modal>

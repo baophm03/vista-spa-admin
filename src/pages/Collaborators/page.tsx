@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import {
   Alert,
   Button,
@@ -12,15 +12,13 @@ import {
   message,
 } from 'antd'
 import type { TableColumnsType } from 'antd'
-import { BarChartOutlined, CheckCircleOutlined, DeleteOutlined, EditOutlined, EyeInvisibleOutlined, PlusOutlined, SearchOutlined, TeamOutlined, UserAddOutlined } from '@ant-design/icons'
+import { BarChartOutlined, CheckCircleOutlined, DeleteOutlined, EditOutlined, PlusOutlined, TeamOutlined, UserAddOutlined } from '@ant-design/icons'
 import { useQueryClient } from '@tanstack/react-query'
 import { Can, useAbility } from '@casl/react'
 import PageTitle from '@/components/base/PageTitle'
 import StatCards, { type StatItem } from '@/components/base/StatCards'
-import ListFilterPopover from '@/components/base/ListFilterPopover'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
-import { paginateRows } from '@/utils/listTable'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { Collaborator } from '@/api/models/collaborator'
 import {
@@ -45,44 +43,24 @@ const TYPE_META: Record<string, { label: string; color: string }> = {
 
 type CollaboratorRow = Collaborator & { referral_count?: number; referral_use_count?: number; commission_percent?: number }
 
-type CollaboratorColumnKey = 'referral_code' | 'name' | 'phone' | 'type' | 'referral_count' | 'commission_percent' | 'note' | 'is_active'
-
-const COLLABORATOR_COLUMN_OPTIONS: { label: string; value: CollaboratorColumnKey }[] = [
-  { label: 'Mã giới thiệu', value: 'referral_code' },
-  { label: 'Tên', value: 'name' },
-  { label: 'SĐT', value: 'phone' },
-  { label: 'Loại', value: 'type' },
-  { label: 'Khách giới thiệu', value: 'referral_count' },
-  { label: '% hoa hồng tham khảo', value: 'commission_percent' },
-  { label: 'Ghi chú', value: 'note' },
-  { label: 'Trạng thái', value: 'is_active' },
-]
-
-const DEFAULT_VISIBLE_COLUMNS = COLLABORATOR_COLUMN_OPTIONS.map((column) => column.value)
-
 export default function Collaborators() {
   const [page, setPage] = useState(1)
+  const [limit] = useState(10)
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<CollaboratorRow | null>(null)
   const [reportRow, setReportRow] = useState<CollaboratorRow | null>(null)
   const [listFilters, setListFilters] = useState<GetCollaboratorsParams>({})
   const [searchText, setSearchText] = useState('')
-  const [filterOpen, setFilterOpen] = useState(false)
-  const [visibleColumns, setVisibleColumns] = useState<CollaboratorColumnKey[]>(DEFAULT_VISIBLE_COLUMNS)
-  const [draftVisibleColumns, setDraftVisibleColumns] = useState<CollaboratorColumnKey[]>(DEFAULT_VISIBLE_COLUMNS)
   const [form] = Form.useForm()
-  const [filterForm] = Form.useForm()
   const queryClient = useQueryClient()
   const ability = useAbility()
   const canUpdate = ability.can('UPDATE', 'COLLABORATOR')
   const canDelete = ability.can('DELETE', 'COLLABORATOR')
 
-  const listQuery = useGetCollaborators(listFilters)
-  const rows = useMemo(() => {
-    const raw = pickData<unknown>(listQuery.data)
-    const list = (Array.isArray(raw) ? raw : (raw as { rows?: CollaboratorRow[] } | null)?.rows ?? []) as CollaboratorRow[]
-    return list
-  }, [listQuery.data])
+  const listQuery = useGetCollaborators({ ...listFilters, page, limit } as never)
+  const rows = (pickData<CollaboratorRow[] | undefined>(listQuery.data) ?? []) as CollaboratorRow[]
+  const total = (listQuery.data as unknown as { meta?: { total?: number } })?.meta?.total ?? rows.length
+  const statsMeta = (listQuery.data as unknown as { meta?: { stats?: { total?: number; active?: number; referral_count_sum?: number } } })?.meta?.stats
 
   const invalidate = async () => {
     await queryClient.invalidateQueries({ queryKey: getGetCollaboratorsQueryKey() })
@@ -151,48 +129,17 @@ export default function Collaborators() {
     setPage(1)
   }
 
-  const applyFilters = (values: Record<string, unknown>) => {
-    if (draftVisibleColumns.length === 0) {
-      message.error('Hãy giữ lại ít nhất một cột hiển thị')
-      return
-    }
-    setListFilters((current) => ({ ...current, type: typeof values.type === 'string' && values.type ? values.type : undefined }))
-    setVisibleColumns(draftVisibleColumns)
-    setFilterOpen(false)
+  const applyTypeFilter = (value: string | undefined) => {
+    setListFilters((current) => ({ ...current, type: value || undefined }))
     setPage(1)
   }
 
-  const clearFilters = () => {
-    filterForm.resetFields()
-    setSearchText('')
-    setListFilters((current) => ({ ...current, type: undefined, q: undefined }))
-    setDraftVisibleColumns(DEFAULT_VISIBLE_COLUMNS)
-    setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)
-    setPage(1)
-  }
-
-  const openFilters = (nextOpen: boolean) => {
-    setFilterOpen(nextOpen)
-    if (!nextOpen) return
-    filterForm.setFieldsValue({ type: listFilters.type })
-    setSearchText(listFilters.q ?? '')
-    setDraftVisibleColumns(visibleColumns)
-  }
-
-  const activeFilterCount = (listFilters.type ? 1 : 0) + (listFilters.q ? 1 : 0)
-
-  // Thống kê đầu trang — chỉ đáng tin khi không lọc q/type phía server (khi đó rows là danh sách đầy đủ)
-  const statItems = useMemo<StatItem[]>(() => {
-    if (listFilters.q || listFilters.type) return []
-    const activeCount = rows.filter((row) => row.is_active !== false).length
-    const referralTotal = rows.reduce((sum, row) => sum + Number(row.referral_count ?? 0), 0)
-    return [
-      { key: 'total', label: 'Tổng cộng tác viên', value: rows.length.toLocaleString('vi-VN'), icon: <TeamOutlined />, tone: 'primary' },
-      { key: 'active', label: 'Đang hoạt động', value: activeCount.toLocaleString('vi-VN'), icon: <CheckCircleOutlined />, tone: 'secondary' },
-      { key: 'hidden', label: 'Đã ẩn', value: (rows.length - activeCount).toLocaleString('vi-VN'), icon: <EyeInvisibleOutlined />, tone: 'neutral' },
-      { key: 'referrals', label: 'Khách đã giới thiệu', value: referralTotal.toLocaleString('vi-VN'), icon: <UserAddOutlined />, tone: 'tertiary' },
-    ]
-  }, [rows, listFilters])
+  // Thống kê đầu trang — lấy từ meta.stats phía server
+  const statItems: StatItem[] = [
+    { key: 'total', label: 'Tổng cộng tác viên', value: (statsMeta?.total ?? total).toLocaleString('vi-VN'), icon: <TeamOutlined />, tone: 'primary' },
+    { key: 'active', label: 'Đang hoạt động', value: (statsMeta?.active ?? 0).toLocaleString('vi-VN'), icon: <CheckCircleOutlined />, tone: 'secondary' },
+    { key: 'referrals', label: 'Khách đã giới thiệu', value: (statsMeta?.referral_count_sum ?? 0).toLocaleString('vi-VN'), icon: <UserAddOutlined />, tone: 'tertiary' },
+  ]
 
   const columns: TableColumnsType<CollaboratorRow> = ([
     {
@@ -253,9 +200,7 @@ export default function Collaborators() {
         />
       ),
     },
-  ] as TableColumnsType<CollaboratorRow>).filter((column) =>
-    column.key === 'actions' || visibleColumns.includes(column.key as CollaboratorColumnKey),
-  )
+  ] as TableColumnsType<CollaboratorRow>)
 
   return (
     <Can I="READ" a="COLLABORATOR" passThrough>
@@ -267,37 +212,21 @@ export default function Collaborators() {
               subtitle="Quản lý cộng tác viên giới thiệu dịch vụ"
               left={
                 <>
-                  <Input
+                  <Input.Search
                     allowClear
-                    prefix={<SearchOutlined className="text-[var(--brand-text-inactive,#A9ADB2)]" />}
                     placeholder="Tìm tên, SĐT, mã giới thiệu"
-                    className="w-[260px]!"
+                    className="w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]"
                     value={searchText}
-                    onChange={(event) => {
-                      setSearchText(event.target.value)
-                      if (!event.target.value) applySearch('')
-                    }}
-                    onPressEnter={() => applySearch(searchText)}
+                    onChange={(e) => { setSearchText(e.target.value); if (!e.target.value) applySearch('') }}
+                    onSearch={(v) => applySearch(v)}
                   />
-                  <ListFilterPopover
-                    open={filterOpen}
-                    onOpenChange={openFilters}
-                    activeFilterCount={activeFilterCount}
-                    form={filterForm}
-                    onApply={applyFilters}
-                    onClear={clearFilters}
-                    columnOptions={COLLABORATOR_COLUMN_OPTIONS}
-                    draftVisibleColumns={draftVisibleColumns}
-                    onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as CollaboratorColumnKey[])}
-                    filterItems={(
-                      <Form.Item name="type" label="Loại CTV" className="mb-0!">
-                        <Select
-                          allowClear
-                          placeholder="Tất cả"
-                          options={COLLABORATOR_TYPES.map((type) => ({ value: type, label: TYPE_META[type].label }))}
-                        />
-                      </Form.Item>
-                    )}
+                  <Select
+                    allowClear
+                    placeholder="Loại CTV"
+                    style={{ width: 160 }}
+                    value={listFilters.type}
+                    onChange={applyTypeFilter}
+                    options={COLLABORATOR_TYPES.map((type) => ({ value: type, label: TYPE_META[type].label }))}
                   />
                 </>
               }
@@ -318,11 +247,11 @@ export default function Collaborators() {
               />
             )}
             <Table<CollaboratorRow>
-              rowKey="id" loading={listQuery.isLoading} dataSource={paginateRows(rows, page, 10)} columns={columns}
+              rowKey="id" loading={listQuery.isLoading} dataSource={rows} columns={columns}
               scroll={{ x: 'max-content' }}
               pagination={false}
             />
-            <ListPagination page={page} limit={10} total={rows.length} onChange={setPage} noun="cộng tác viên" />
+            <ListPagination page={page} limit={limit} total={total} onChange={setPage} noun="cộng tác viên" />
             <CollaboratorModal
               editing={editing}
               open={open}

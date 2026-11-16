@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import {
   Alert,
   Button,
@@ -18,7 +18,6 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import ListPagination from '@/components/base/ListPagination'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
-import { paginateRows } from '@/utils/listTable'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { Reward } from '@/api/models/reward'
 import {
@@ -56,24 +55,31 @@ export default function RewardCatalogTab() {
   const [form] = Form.useForm()
   const [redeemForm] = Form.useForm()
   const queryClient = useQueryClient()
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      setSearch(searchInput.trim())
-      setPage(1)
-    }, 300)
-    return () => window.clearTimeout(timer)
-  }, [searchInput])
-  const rewardsQuery = useGetRewards({ q: search || undefined, type: typeFilter })
-  const rawRewards = (pickData<RewardRow[]>(rewardsQuery.data) ?? []) as RewardRow[]
+  const [limit] = useState(10)
+  const applySearch = (value: string) => {
+    setSearchInput(value)
+    setSearch(value.trim())
+    setPage(1)
+  }
+  // Admin (canUpdate) xem cả quà đã ẩn → không gửi is_active; người thường chỉ thấy quà đang hoạt động
+  const rewardsQuery = useGetRewards({
+    page,
+    limit,
+    q: search || undefined,
+    type: typeFilter,
+    ...(canUpdate ? {} : { is_active: true }),
+  } as never)
+  const rawRewards = (pickData<RewardRow[] | undefined>(rewardsQuery.data) ?? []) as RewardRow[]
   const rewards = rawRewards.filter((r) => r.is_active !== false || canUpdate)
+  const total = (rewardsQuery.data as unknown as { meta?: { total?: number } })?.meta?.total ?? rewards.length
 
   const vouchersQuery = useQuery({
     queryKey: ['voucher-categories', 'reward-picker'],
     queryFn: async () => {
       const categories: VoucherCategory[] = ['treatment-package', 'academy-course', 'product']
       const lists = await Promise.all(categories.map(async (category) => {
-        const payload = pickData<{ rows?: VoucherCategoryRow[] } | VoucherCategoryRow[]>(await getVoucherCategory(category))
-        return { category, rows: Array.isArray(payload) ? payload : payload?.rows ?? [] }
+        const payload = pickData<VoucherCategoryRow[] | undefined>(await getVoucherCategory(category, { page: 1, limit: 200 }))
+        return { category, rows: payload ?? [] }
       }))
       const today = dayjs().format('YYYY-MM-DD')
       const dateOnly = (value?: string | null) => (value ? String(value).slice(0, 10) : null)
@@ -262,10 +268,10 @@ export default function RewardCatalogTab() {
         <Input.Search
           allowClear
           value={searchInput}
-          onChange={(event) => setSearchInput(event.target.value)}
-          onSearch={(value) => { setSearchInput(value); setSearch(value.trim()); setPage(1) }}
+          onChange={(event) => { setSearchInput(event.target.value); if (!event.target.value) applySearch('') }}
+          onSearch={applySearch}
           placeholder="Tìm theo tên quà"
-          style={{ width: 320, maxWidth: '100%' }}
+          className="w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]"
         />
         <Select<RewardType>
           allowClear
@@ -284,7 +290,7 @@ export default function RewardCatalogTab() {
         <Alert className="mb-4" type="error" showIcon message="Không tải được quà tặng" description={errorMessage(rewardsQuery.error)} action={<Button size="small" onClick={() => void rewardsQuery.refetch()}>Thử lại</Button>} />
       )}
       <Table<RewardRow>
-        rowKey="id" loading={rewardsQuery.isLoading} dataSource={paginateRows(rewards, page, 10)}
+        rowKey="id" loading={rewardsQuery.isLoading} dataSource={rewards}
         onRow={(row) => ({
           onClick: (event) => {
             if (canUpdate && !(event.target as HTMLElement).closest('button, a, input, .ant-dropdown, .ant-switch')) {
@@ -297,7 +303,7 @@ export default function RewardCatalogTab() {
         scroll={{ x: 950 }}
         pagination={false}
       />
-      <ListPagination page={page} limit={10} total={rewards.length} onChange={setPage} noun="quà" />
+      <ListPagination page={page} limit={limit} total={total} onChange={setPage} noun="quà" />
 
       <RewardModal
         open={open}

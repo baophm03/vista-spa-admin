@@ -63,7 +63,7 @@ const COMMISSION_COLUMN_OPTIONS: { label: string; value: CommissionColumnKey }[]
   { label: 'Ngày', value: 'period_date' },
   { label: 'Người nhận', value: 'payee' },
   { label: 'Nguồn', value: 'source_type' },
-  { label: 'Chi nhánh', value: 'branch_id' },
+  { label: 'Cơ sở', value: 'branch_id' },
   { label: 'Chế độ', value: 'mode' },
   { label: 'Căn tính', value: 'base' },
   { label: '% hoa hồng', value: 'percent' },
@@ -238,7 +238,7 @@ function LedgerTab() {
       ),
     },
     { key: 'source_type', title: 'Nguồn', dataIndex: 'source_type', width: 110, render: (v?: string) => ({ PAYMENT: 'Thanh toán', SESSION: 'Buổi điều trị', MANUAL: 'Nhập tay' })[v ?? ''] ?? v ?? '—' },
-    { key: 'branch_id', title: 'Chi nhánh', dataIndex: 'branch_id', width: 120, ellipsis: true, render: (v?: string) => (v ? branchNameById.get(v) ?? v : '—') },
+    { key: 'branch_id', title: 'Cơ sở', dataIndex: 'branch_id', width: 120, ellipsis: true, render: (v?: string) => (v ? branchNameById.get(v) ?? v : '—') },
     { key: 'mode', title: 'Chế độ', dataIndex: 'mode', width: 90, render: (v?: string) => <Tag color={v === 'AUTO' ? 'blue' : 'orange'}>{v === 'AUTO' ? 'Tự động' : 'Nhập tay'}</Tag> },
     {
       key: 'base', title: 'Căn tính', width: 120, align: 'right',
@@ -308,7 +308,7 @@ function LedgerTab() {
               <Form.Item name="status" label="Trạng thái" className="mb-2.5!">
                 <Select allowClear placeholder="Tất cả" options={Object.entries(STATUS_META).map(([value, meta]) => ({ value, label: meta.label }))} />
               </Form.Item>
-              <Form.Item name="branch_id" label="Chi nhánh" className="mb-2.5!">
+              <Form.Item name="branch_id" label="Cơ sở" className="mb-2.5!">
                 <Select
                   allowClear showSearch optionFilterProp="label" loading={branchesQuery.isLoading}
                   placeholder="Tất cả"
@@ -435,7 +435,7 @@ function SummaryTab() {
             value={filters.collaborator_id} options={collaborators.map((row) => ({ value: row.id, label: row.name }))}
             onChange={(v) => { setFilters((current) => ({ ...current, collaborator_id: v })); setPage(1) }} />
         )}
-        <Select allowClear showSearch optionFilterProp="label" placeholder="Chi nhánh" className="w-[180px]!" loading={branchesQuery.isLoading}
+        <Select allowClear showSearch optionFilterProp="label" placeholder="Cơ sở" className="w-[180px]!" loading={branchesQuery.isLoading}
           value={filters.branch_id} options={branches.map((branch) => ({ value: branch.id, label: branch.name }))}
           onChange={(v) => { setFilters((current) => ({ ...current, branch_id: v })); setPage(1) }} />
         <DatePicker.RangePicker onChange={(dates) => {

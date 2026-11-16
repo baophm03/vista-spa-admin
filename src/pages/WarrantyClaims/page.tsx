@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Alert, Button, Form, Select, Space, Table, Tag, message } from 'antd'
+import { Alert, Button, Form, Select, Table, Tag, Typography, message } from 'antd'
 import type { TableColumnsType } from 'antd'
 import { PlusOutlined } from '@ant-design/icons'
 import { useQueryClient } from '@tanstack/react-query'
@@ -141,7 +141,18 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
       title: 'Mã liệu trình', key: 'treatmentCode', width: 150,
       render: (_v, row) => row.customer_treatment?.id?.slice(0, 8).toUpperCase() ?? row.customer_treatment_id.slice(0, 8).toUpperCase(),
     },
-    { title: 'Gói liệu trình', key: 'package', render: (_v, row) => packageLabel(row) },
+    {
+      title: 'Gói liệu trình', key: 'package', render: (_v, row) => (
+        <Typography.Link
+          onClick={(event) => {
+            event.stopPropagation()
+            navigate(`/treatment-customers?treatment_id=${encodeURIComponent(row.customer_treatment_id)}`)
+          }}
+        >
+          {packageLabel(row)}
+        </Typography.Link>
+      ),
+    },
     {
       title: 'Ngày hoàn tất', key: 'finishedAt', width: 150,
       render: (_v, row) => row.customer_treatment?.finished_at ? formatDateTime(row.customer_treatment.finished_at).split(' ')[0] : '—',
@@ -151,20 +162,6 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
     {
       title: 'Trạng thái', dataIndex: 'status', width: 120,
       render: (v?: string) => <Tag color={STATUS_META[v ?? '']?.color}>{STATUS_META[v ?? '']?.label ?? v ?? '—'}</Tag>,
-    },
-    {
-      title: 'Thao tác', align: 'center' as const, key: 'actions', width: 170,
-      render: (_v, row) => (
-        <Space size={6}>
-          <Button size="small" onClick={() => setDetailId(row.id)}>Chi tiết</Button>
-          <Button
-            size="small"
-            onClick={() => navigate(`/treatment-customers?treatment_id=${encodeURIComponent(row.customer_treatment_id)}`)}
-          >
-            Mở gói
-          </Button>
-        </Space>
-      ),
     },
   ]
 
@@ -201,6 +198,10 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
       <Table<ClaimRow>
         rowKey="id" loading={claimsQuery.isLoading} dataSource={rows} columns={columns}
         pagination={false}
+        onRow={(row) => ({
+          onClick: () => setDetailId(row.id),
+          style: { cursor: 'pointer' },
+        })}
       />
       <ListPagination page={page} limit={10} total={total} onChange={setPage} noun="yêu cầu bảo hành" />
 

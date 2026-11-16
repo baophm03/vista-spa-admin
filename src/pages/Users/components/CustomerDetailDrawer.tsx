@@ -23,7 +23,6 @@ interface CustomerDetailDrawerProps {
   onLink: () => void
   onHistory: () => void
   onMembershipUpdated: () => Promise<void> | void
-  branchName: (id?: string) => string
 }
 
 export default function CustomerDetailDrawer({
@@ -44,7 +43,6 @@ export default function CustomerDetailDrawer({
   onLink,
   onHistory,
   onMembershipUpdated,
-  branchName,
 }: CustomerDetailDrawerProps) {
   return (
     <Drawer
@@ -112,7 +110,6 @@ export default function CustomerDetailDrawer({
             key={selected.id}
             profile={selected}
             summary={summary}
-            branchName={branchName}
             fieldDefinitions={profileFieldDefs}
             onMembershipUpdated={onMembershipUpdated}
           />
