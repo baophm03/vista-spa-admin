@@ -3,7 +3,6 @@ import {
   Form,
   Input,
   Table,
-  Select,
   Tag,
   Typography,
   message,
@@ -45,7 +44,7 @@ import {
   type SkinTypeOption,
 } from './components/constants'
 import type { Branch } from '@/api/models'
-import {getBranches} from '@/api/endpoints/branches'
+import { useGetBranches } from '@/api/endpoints/branches'
 
  export default function HealthRecords() {
   const [rows, setRows] = useState<HealthRow[]>([])
@@ -69,7 +68,8 @@ import {getBranches} from '@/api/endpoints/branches'
   const [editingRecord, setEditingRecord] = useState<CustomerHealthRecord | null>(null)
   const [saving, setSaving] = useState(false)
   const [form] = Form.useForm()
-  const [branches, setBranches] = useState<Branch[]>([])
+const branchesQuery = useGetBranches()
+const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as Branch[], [branchesQuery.data])
   
 
 
@@ -124,9 +124,6 @@ import {getBranches} from '@/api/endpoints/branches'
       .then((body) => setSkinTypes(pickData<SkinTypeOption[]>(body) ?? []))
       .catch((err) => message.error(`Không tải được danh mục loại da: ${errorMessage(err)}`))
       .finally(() => setSkinTypesLoading(false))
-      getBranches()
-  .then((body) => setBranches(pickData<Branch[]>(body) ?? []))
-  .catch(() => undefined)
     getTreatmentPackages({ page: 1, limit: 200, is_active: true })
       .then((body) => {
         const names: Record<string, string> = {}

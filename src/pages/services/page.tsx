@@ -41,7 +41,7 @@ import ServiceCategories from './ServiceCategories'
 import { formatCurrency, useBrandCurrency } from '@/themeRuntime'
 import { fileSrc, resolveFileSrc, useFileUrlMap } from '@/hooks/useFileUrl'
 import type { Branch } from '@/api/models'
-import { getBranches } from '@/api/endpoints/branches'
+import { useGetBranches } from '@/api/endpoints/branches'
 
 /** BE list include kèm `service_category`, ảnh bìa `image_file` và bộ ảnh `service_galleries[].file`. */
 type ServiceRow = Service & {
@@ -97,7 +97,8 @@ export default function Services() {
   const [activeTab, setActiveTab] = useState<'services' | 'categories'>('services')
   // Mobile: search thu về nút icon, bấm mới mở ô tìm kiếm
   const [searchOpen, setSearchOpen] = useState(false)
-  const [branches, setBranches] = useState<Branch[]>([])
+const branchesQuery = useGetBranches()
+const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as Branch[], [branchesQuery.data])
 
   const listQuery = useQuery({
     queryKey: getGetServiceQueryKey({ ...filters, page, limit }),
@@ -134,9 +135,6 @@ export default function Services() {
   useEffect(() => {
     void loadCategories()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    getBranches()
-    .then((body) => setBranches(pickData<Branch[]>(body) ?? []))
-    .catch((err) => message.error(`Không tải được danh sách cơ sở: ${errorMessage(err)}`))
   }, [])
 
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Alert, Button, Form, Select, Space, Table, Tag, message } from 'antd'
 import type { TableColumnsType } from 'antd'
@@ -25,7 +25,7 @@ import WarrantyClaimCreateModal from './components/WarrantyClaimCreateModal'
 import WarrantyClaimDetailDrawer from './components/WarrantyClaimDetailDrawer'
 import WarrantyClaimRejectModal from './components/WarrantyClaimRejectModal'
 import { STATUS_FILTER_OPTIONS, snapshotField, type ClaimRow } from './components/constants'
-import {getBranches} from '@/api/endpoints/branches'
+import { useGetBranches } from '@/api/endpoints/branches'
 import type {Branch} from '@/api/models'
 
 export default function WarrantyClaims() {
@@ -42,14 +42,9 @@ export default function WarrantyClaims() {
   const { formatDateTime } = useBrandDateTime()
   const uploadMutation = usePostFiles()
   const [uploadingContract, setUploadingContract] = useState(false)
-  const [branches, setBranches] = useState<Branch[]>([])
+  const branchesQuery = useGetBranches()
+const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as Branch[], [branchesQuery.data])
 
-  //Thêm lựa chọn cơ sở
-  useEffect(() => {
-  getBranches()
-    .then((body) => setBranches(pickData<Branch[]>(body) ?? []))
-    .catch((err) => message.error(`Không tải được danh sách cơ sở: ${errorMessage(err)}`))
-}, [])
 
   // Danh sách claims — phân trang server-side (page/limit/status)
   const claimsQuery = useGetWarrantyClaims({ page, limit: 10, ...(statusFilter ? { status: statusFilter } : {}) })
