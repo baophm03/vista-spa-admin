@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Alert, Button, Form, Select, Space, Table, Tag, message } from 'antd'
 import type { TableColumnsType } from 'antd'
@@ -25,6 +25,8 @@ import WarrantyClaimCreateModal from './components/WarrantyClaimCreateModal'
 import WarrantyClaimDetailDrawer from './components/WarrantyClaimDetailDrawer'
 import WarrantyClaimRejectModal from './components/WarrantyClaimRejectModal'
 import { STATUS_FILTER_OPTIONS, snapshotField, type ClaimRow } from './components/constants'
+import { useGetBranches } from '@/api/endpoints/branches'
+import type {Branch} from '@/api/models'
 
 export default function WarrantyClaims() {
   const [page, setPage] = useState(1)
@@ -40,6 +42,9 @@ export default function WarrantyClaims() {
   const { formatDateTime } = useBrandDateTime()
   const uploadMutation = usePostFiles()
   const [uploadingContract, setUploadingContract] = useState(false)
+  const branchesQuery = useGetBranches()
+const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as Branch[], [branchesQuery.data])
+
 
   // Danh sách claims — phân trang server-side (page/limit/status)
   const claimsQuery = useGetWarrantyClaims({ page, limit: 10, ...(statusFilter ? { status: statusFilter } : {}) })
@@ -127,6 +132,11 @@ export default function WarrantyClaims() {
 
   const columns: TableColumnsType<ClaimRow> = [
     { title: 'Khách hàng', key: 'customer', render: (_v, row) => customerLabel(row) },
+    {
+  title: 'Cơ sở',
+  width: 130,
+  render: (_, row) => branches.find((branch) => branch.id === row.customer_treatment?.branch_id)?.name ?? '—',
+},
     {
       title: 'Mã liệu trình', key: 'treatmentCode', width: 150,
       render: (_v, row) => row.customer_treatment?.id?.slice(0, 8).toUpperCase() ?? row.customer_treatment_id.slice(0, 8).toUpperCase(),
@@ -218,6 +228,7 @@ export default function WarrantyClaims() {
         onOk={() => { if (!uploadingContract) void submitCreate() }}
         onUpload={(file) => void uploadContract(file)}
         onRemoveFile={() => createForm.setFieldValue('contract_file_id', undefined)}
+        branches={branches}
       />
 
       <WarrantyClaimRejectModal

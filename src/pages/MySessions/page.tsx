@@ -11,6 +11,8 @@ import { usePutSessionsIdDone, usePutSessionsIdStart } from '@/api/endpoints/tre
 import type { TreatmentSession } from '@/api/models/treatmentSession'
 import ListPagination from '@/components/base/ListPagination'
 import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
+import type { Branch } from '@/api/models'
+import { useGetBranches } from '@/api/endpoints/branches'
 
 type SessionRow = TreatmentSession & {
   appointment?: { appt_date?: string; start_time?: string } | null
@@ -56,6 +58,9 @@ export default function MySessions() {
   const queryClient = useQueryClient()
   const startMutation = usePutSessionsIdStart()
   const doneMutation = usePutSessionsIdDone()
+const branchesQuery = useGetBranches()
+const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as Branch[], [branchesQuery.data])
+
 
   const sessionsQuery = useQuery({
     queryKey: ['my-sessions'],
@@ -112,6 +117,7 @@ export default function MySessions() {
       setFinishingId(null)
     }
   }
+    const branchName = (id?: string) => branches.find((branch) => branch.id === id)?.name ?? '—'
 
   const actionCell = (row: SessionRow) => {
     return row.status === 'scheduled'
@@ -159,6 +165,7 @@ export default function MySessions() {
         return dayjs(time).format(hasTime ? 'DD/MM/YYYY HH:mm' : 'DD/MM/YYYY')
       },
     },
+     { key: 'branch', title: 'Cơ sở', dataIndex: 'branch_id', width: 120, render: (value?: string) => branchName(value) },
     {
       title: 'Trạng thái',
       key: 'status',

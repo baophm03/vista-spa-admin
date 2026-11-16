@@ -5,6 +5,9 @@ import type { CustomFieldDefWithOptions } from '@/components/CustomFieldFormItem
 import type { TreatmentPackage } from '@/api/models/treatmentPackage'
 import type { ProfileRow } from './constants'
 import { QUOTA_LABEL } from './constants'
+import type { Branch } from '@/api/models'
+
+const labelStyle = { fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#8A8D93', fontWeight: 600 } as const
 
 interface TreatmentCreateModalProps {
   form: FormInstance
@@ -17,6 +20,7 @@ interface TreatmentCreateModalProps {
   currencySymbol: string
   customFieldDefs: CustomFieldDefWithOptions[]
   submitting: boolean
+  branches: Branch[]
   onPackageChange: (id: string) => void
   onCancel: () => void
   onOk: () => void
@@ -33,6 +37,7 @@ export default function TreatmentCreateModal({
   currencySymbol,
   customFieldDefs,
   submitting,
+  branches,
   onPackageChange,
   onCancel,
   onOk,
@@ -70,6 +75,16 @@ export default function TreatmentCreateModal({
               }))}
             />
           </Form.Item>
+           <Form.Item name="branch_id" label={<span style={labelStyle}>Cơ sở</span>}>
+                          <Select
+                            allowClear
+                            showSearch
+                            optionFilterProp="label"
+                            placeholder="Chọn cơ sở"
+                            notFoundContent="Chưa có cơ sở"
+                            options={branches.map((branch) => ({ value: branch.id, label: branch.name }))}
+                          />
+                        </Form.Item>
           <Form.Item
             name="total_amount"
             label="Số tiền"

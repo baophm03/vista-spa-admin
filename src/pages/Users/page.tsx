@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useState, useMemo } from 'react'
 import { Button, Form, Grid, Input, InputNumber, Modal, Col, Row, Select, Space, Table, Tag, Typography, message } from 'antd'
 import { DeleteOutlined, DownloadOutlined, EditOutlined, PlusOutlined, QrcodeOutlined, SearchOutlined } from '@ant-design/icons'
 import { useQueryClient } from '@tanstack/react-query'
@@ -30,7 +30,7 @@ import {
   putCustomerProfilesId,
   useGetCustomerProfiles,
 } from '@/api/endpoints/customer-profiles'
-import { getBranches } from '@/api/endpoints/branches'
+import { useGetBranches } from '@/api/endpoints/branches' 
 import { getCardRanks } from '@/api/endpoints/membership'
 import { getCustomFieldDefs } from '@/api/endpoints/settings'
 import { apiClient } from '@/api/mutator/custom-instance'
@@ -98,7 +98,8 @@ export default function Users() {
   const [editing, setEditing] = useState<CustomerProfileRow | null>(null)
   const [historyOpen, setHistoryOpen] = useState(false)
   const [linkOpen, setLinkOpen] = useState(false)
-  const [branches, setBranches] = useState<Branch[]>([])
+  const branchesQuery = useGetBranches()
+  const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as Branch[], [branchesQuery.data])
   const [ranks, setRanks] = useState<CardRank[]>([])
   const [profileFieldDefs, setProfileFieldDefs] = useState<CustomFieldDefWithOptions[]>([])
   const [exporting, setExporting] = useState(false)
@@ -123,9 +124,6 @@ export default function Users() {
   }, [qrUrl])
 
   useEffect(() => {
-    getBranches()
-      .then((body) => setBranches(pickData<Branch[]>(body) ?? []))
-      .catch(() => undefined)
     getCardRanks()
       .then((body) => setRanks((pickData<CardRank[]>(body) ?? [])
         .filter((rank) => rank.is_active !== false)

@@ -384,6 +384,8 @@ export * from './getAppNotifications200AllOf';
 export * from './getAppNotificationsParams';
 export * from './getAppPackages200';
 export * from './getAppPackages200AllOf';
+export * from './getAppPackagesId200';
+export * from './getAppPackagesId200AllOf';
 export * from './getAppPosts200';
 export * from './getAppPosts200AllOf';
 export * from './getAppPostsParams';
