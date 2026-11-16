@@ -17,6 +17,10 @@ page?: number;
  */
 limit?: number;
 status?: string;
+/**
+ * Search by customer full name
+ */
+q?: string;
 reward_id?: string;
 customer_profile_id?: string;
 from?: string;

@@ -55,6 +55,7 @@ import type {
   GetAppNotifications200,
   GetAppNotificationsParams,
   GetAppPackages200,
+  GetAppPackagesId200,
   GetAppPosts200,
   GetAppPostsParams,
   GetAppRanks200,
@@ -2432,6 +2433,200 @@ export const usePostAppVouchersIdRedeem = <TError = UnauthorizedResponse | NotFo
       return useMutation(mutationOptions, queryClient);
     }
     /**
+ * GET /app/packages/{id} (read-only, no authentication required). Public detail of an active treatment package. Handled by `appService.publicPackageDetail`.
+ * @summary View treatment package detail
+ */
+export const getAppPackagesId = (
+    id: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetAppPackagesId200>(
+      {url: `/app/packages/${id}`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetAppPackagesIdInfiniteQueryKey = (id?: string,) => {
+    return [
+    'infinite', `/app/packages/${id}`
+    ] as const;
+    }
+
+export const getGetAppPackagesIdQueryKey = (id?: string,) => {
+    return [
+    `/app/packages/${id}`
+    ] as const;
+    }
+
+    
+export const getGetAppPackagesIdInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAppPackagesId>>>, TError = NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppPackagesId>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAppPackagesIdInfiniteQueryKey(id);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAppPackagesId>>> = ({ signal }) => getAppPackagesId(id, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppPackagesId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAppPackagesIdInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAppPackagesId>>>
+export type GetAppPackagesIdInfiniteQueryError = NotFoundResponse | InternalErrorResponse
+
+
+export function useGetAppPackagesIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppPackagesId>>>, TError = NotFoundResponse | InternalErrorResponse>(
+ id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppPackagesId>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppPackagesId>>,
+          TError,
+          Awaited<ReturnType<typeof getAppPackagesId>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppPackagesIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppPackagesId>>>, TError = NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppPackagesId>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppPackagesId>>,
+          TError,
+          Awaited<ReturnType<typeof getAppPackagesId>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppPackagesIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppPackagesId>>>, TError = NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppPackagesId>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary View treatment package detail
+ */
+
+export function useGetAppPackagesIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppPackagesId>>>, TError = NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppPackagesId>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAppPackagesIdInfiniteQueryOptions(id,options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary View treatment package detail
+ */
+export const prefetchGetAppPackagesIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAppPackagesId>>, TError = NotFoundResponse | InternalErrorResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppPackagesId>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetAppPackagesIdInfiniteQueryOptions(id,options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetAppPackagesIdQueryOptions = <TData = Awaited<ReturnType<typeof getAppPackagesId>>, TError = NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppPackagesId>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAppPackagesIdQueryKey(id);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAppPackagesId>>> = ({ signal }) => getAppPackagesId(id, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAppPackagesId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAppPackagesIdQueryResult = NonNullable<Awaited<ReturnType<typeof getAppPackagesId>>>
+export type GetAppPackagesIdQueryError = NotFoundResponse | InternalErrorResponse
+
+
+export function useGetAppPackagesId<TData = Awaited<ReturnType<typeof getAppPackagesId>>, TError = NotFoundResponse | InternalErrorResponse>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppPackagesId>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppPackagesId>>,
+          TError,
+          Awaited<ReturnType<typeof getAppPackagesId>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppPackagesId<TData = Awaited<ReturnType<typeof getAppPackagesId>>, TError = NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppPackagesId>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppPackagesId>>,
+          TError,
+          Awaited<ReturnType<typeof getAppPackagesId>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppPackagesId<TData = Awaited<ReturnType<typeof getAppPackagesId>>, TError = NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppPackagesId>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary View treatment package detail
+ */
+
+export function useGetAppPackagesId<TData = Awaited<ReturnType<typeof getAppPackagesId>>, TError = NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppPackagesId>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAppPackagesIdQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary View treatment package detail
+ */
+export const prefetchGetAppPackagesIdQuery = async <TData = Awaited<ReturnType<typeof getAppPackagesId>>, TError = NotFoundResponse | InternalErrorResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppPackagesId>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetAppPackagesIdQueryOptions(id,options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
  * POST `/app/orders` — app. Customer scope: only operate on the data of the logged-in customer.
  * @summary Customer places a product order
  */

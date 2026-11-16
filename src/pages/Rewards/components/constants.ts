@@ -1,7 +1,7 @@
 import type { Reward } from '@/api/models/reward'
 import type { RewardRedemption } from '@/api/models/rewardRedemption'
 
-/** GET /rewards trả kèm voucher cấp khi type = VOUCHER (model gen thiếu — mở rộng cục bộ). */
+/** GET /rewards trả kèm loại voucher khi type = VOUCHER (model gen thiếu — mở rộng cục bộ). */
 export type RewardRow = Reward & {
   benefit_amount?: number | null
   service_id?: string | null
@@ -14,13 +14,15 @@ export type RewardRow = Reward & {
 }
 
 /** GET /reward-redemptions trả kèm reward (model gen thiếu — mở rộng cục bộ). */
-export type RewardRedemptionRow = RewardRedemption & { reward?: RewardRow | null }
-export type RewardType = 'VOUCHER' | 'GIFT' | 'BENEFIT'
+export type RewardRedemptionRow = RewardRedemption & {
+  reward?: RewardRow | null
+  customer_profile?: { id: string; customer_code?: string; full_name?: string; phone?: string } | null
+}
+export type RewardType = 'VOUCHER' | 'GIFT'
 
 export const TYPE_META: Record<RewardType, { label: string; color: string }> = {
-  VOUCHER: { label: 'Voucher', color: 'purple' },
-  GIFT: { label: 'Quà vật phẩm', color: 'gold' },
-  BENEFIT: { label: 'Quyền lợi', color: 'cyan' },
+  VOUCHER: { label: 'Quà Voucher', color: 'purple' },
+  GIFT: { label: 'Quà hiện vật', color: 'gold' },
 }
 
 export const REDEMPTION_META: Record<string, { label: string; color: string }> = {
@@ -34,15 +36,4 @@ export function remainingLabel(row: RewardRow) {
   return `${Math.max(Number(row.quantity_total) - Number(row.quantity_given ?? 0), 0)}/${row.quantity_total}`
 }
 
-export type RedemptionColumnKey = 'reward' | 'points_spent' | 'status' | 'created_at' | 'cancel_reason'
-
-export const REDEMPTION_COLUMN_OPTIONS: { label: string; value: RedemptionColumnKey }[] = [
-  { label: 'Quà', value: 'reward' },
-  { label: 'Điểm đã trừ', value: 'points_spent' },
-  { label: 'Trạng thái', value: 'status' },
-  { label: 'Ngày đổi', value: 'created_at' },
-  { label: 'Lý do hủy', value: 'cancel_reason' },
-]
-
-export const DEFAULT_REDEMPTION_COLUMNS = REDEMPTION_COLUMN_OPTIONS.map((column) => column.value)
 

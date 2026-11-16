@@ -15,7 +15,6 @@ import Notifications from './pages/Notifications/page'
 import NotificationTemplates from './pages/NotificationTemplates/page'
 import Products from './pages/Products/page'
 import Points from './pages/Points/page'
-import PointRedemption from './pages/PointRedemption/page'
 import HealthRecords from './pages/HealthRecords/page'
 import Roles from './pages/Roles/page'
 import Orders from './pages/Orders/page'
@@ -65,7 +64,7 @@ export default function App() {
           <Route path="/products" element={<Products />} />
           <Route path="/content-posts" element={<ContentPosts />} />
           <Route path="/points" element={<Points />} />
-          <Route path="/points-redemption" element={<PointRedemption />} />
+          <Route path="/points-redemption" element={<Navigate to="/rewards" replace />} />
           <Route path="/orders" element={<Orders />} />
           <Route path="/schedule" element={<ScheduleErrorBoundary><StaffSchedule /></ScheduleErrorBoundary>} />
           <Route path="/luckywheel" element={<LuckyWheel />} />

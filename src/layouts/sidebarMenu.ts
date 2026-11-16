@@ -69,10 +69,6 @@ export const menuItems: MenuItem[] = [
           { action: 'READ', subject: 'CARD_RANK' },
         ]
       },
-      { key: '/points-redemption', icon: createElement(GiftOutlined), label: 'Đổi điểm & quà', permission: [
-        { action: 'POINTS_ADJUST', subject: 'MEMBERSHIP' },
-        { action: 'REDEEM_ADMIN', subject: 'REWARD' },
-      ] },
       { key: '/rewards', icon: createElement(GiftOutlined), label: 'Quà & Lượt đổi', permission: { action: 'READ', subject: 'REWARD' } },
       { key: '/warranty-claims', icon: createElement(FileTextOutlined), label: 'Bảo hành gói liệu trình', permission: { action: 'READ', subject: 'CUSTOMER' }, hideForKtv: true },
     ],
@@ -84,7 +80,7 @@ export const menuItems: MenuItem[] = [
     children: [
       { key: '/services', icon: createElement(ShoppingOutlined), label: 'Dịch vụ', permission: { action: 'READ', subject: 'SERVICE' } },
       { key: '/treatments', icon: createElement(ExperimentOutlined), label: 'Gói liệu trình', permission: { action: 'READ', subject: 'TREATMENT_PACKAGE' } },
-      { key: '/payments', icon: createElement(AccountBookOutlined), label: 'Sổ thanh toán', permission: { action: 'READ', subject: 'PAYMENT' } },
+      { key: '/payments', icon: createElement(AccountBookOutlined), label: 'Lịch sử thanh toán', permission: { action: 'READ', subject: 'PAYMENT' } },
       { key: '/products', icon: createElement(ShoppingOutlined), label: 'Sản phẩm', hideForKtv: true },
       { key: '/orders', icon: createElement(ProfileOutlined), label: 'Đơn hàng', hideForKtv: true },
       { key: '/academy/courses', icon: createElement(BookOutlined), label: 'Khóa học đào tạo', permission: { action: 'READ', subject: 'ACADEMY' } },

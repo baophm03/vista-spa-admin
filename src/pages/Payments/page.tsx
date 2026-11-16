@@ -23,7 +23,7 @@ import {
   type PaymentColumnKey,
 } from './components/constants'
 
-/** PM-03 — Sổ thanh toán toàn hệ thống + PM-04 hủy giao dịch (Admin). */
+/** PM-03 — Lịch sử thanh toán toàn hệ thống + PM-04 hủy giao dịch (Admin). */
 export default function Payments() {
   const [page, setPage] = useState(1)
   const [limit] = useState(10)
@@ -271,7 +271,7 @@ export default function Payments() {
           </>
         }
       >
-        Sổ thanh toán
+        Lịch sử thanh toán
       </PageTitle>
 
       {paymentsQuery.isError && (
@@ -279,7 +279,7 @@ export default function Payments() {
           className="mb-4"
           type="error"
           showIcon
-          message="Không tải được sổ thanh toán"
+          message="Không tải được lịch sử thanh toán"
           description={errorMessage(paymentsQuery.error)}
           action={<Button size="small" onClick={() => void paymentsQuery.refetch()}>Thử lại</Button>}
         />
