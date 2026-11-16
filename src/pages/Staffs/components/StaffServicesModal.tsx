@@ -27,6 +27,7 @@ export default function StaffServicesModal({
   return (
     <Modal
       title={`Dịch vụ phụ trách — ${servicesUser?.zalo_name || servicesUser?.email || ''}`}
+      width={600}
       open={open}
       onCancel={onCancel}
       onOk={onOk}
@@ -41,7 +42,7 @@ export default function StaffServicesModal({
         <Checkbox.Group
           value={checkedServiceIds}
           onChange={(values) => onCheckedChange(values as string[])}
-          className="staff-services-grid mt-2 grid max-h-[50vh] grid-cols-1 gap-x-6 gap-y-3 overflow-y-auto sm:grid-cols-2"
+          className="staff-services-grid mt-2 max-h-[50vh] overflow-y-auto"
           options={serviceRows.map((service) => ({ value: service.id, label: service.title || service.id }))}
         />
       )}

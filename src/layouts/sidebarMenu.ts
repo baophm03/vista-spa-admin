@@ -88,10 +88,8 @@ export const menuItems: MenuItem[] = [
       { key: '/discount-rules', icon: createElement(StarOutlined), label: 'Giảm giá & Ưu đãi', permission: { action: 'READ', subject: 'DISCOUNT' } },
       { key: '/vouchers', icon: createElement(GiftOutlined), label: 'Voucher', permission: { action: 'READ', subject: 'VOUCHER' } },
       { key: '/luckywheel', icon: createElement(ThunderboltOutlined), label: 'Quay số may mắn', permission: { action: 'READ', subject: 'WHEEL' } },
-      { key: '/commission-rules', icon: createElement(StarOutlined), label: 'Quy tắc hoa hồng', permission: { action: 'RULE_MANAGE', subject: 'COMMISSION' } },
-      { key: '/commissions', icon: createElement(ProfileOutlined), label: 'Hoa hồng', permission: { action: 'READ', subject: 'COMMISSION' } },
+      { key: '/commissions', icon: createElement(ProfileOutlined), label: 'Giới thiệu & Hoa hồng', permission: { action: 'READ', subject: 'COMMISSION' } },
       { key: '/collaborators', icon: createElement(TeamOutlined), label: 'Cộng tác viên', permission: { action: 'READ', subject: 'COLLABORATOR' } },
-      { key: '/referrals', icon: createElement(UserSwitchOutlined), label: 'Lịch sử giới thiệu', permission: { action: 'READ', subject: 'REFERRAL' } },
     ],
   },
   {

@@ -9,6 +9,7 @@ import type { CollaboratorPhone } from './collaboratorPhone';
 import type { CollaboratorType } from './collaboratorType';
 import type { CollaboratorBranchId } from './collaboratorBranchId';
 import type { CollaboratorUserId } from './collaboratorUserId';
+import type { CollaboratorCustomerProfileId } from './collaboratorCustomerProfileId';
 import type { CollaboratorNote } from './collaboratorNote';
 
 /**
@@ -22,6 +23,7 @@ export interface Collaborator {
   type?: CollaboratorType;
   branch_id?: CollaboratorBranchId;
   user_id?: CollaboratorUserId;
+  customer_profile_id?: CollaboratorCustomerProfileId;
   note?: CollaboratorNote;
   is_active?: boolean;
   created_at?: string;

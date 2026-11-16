@@ -9,6 +9,8 @@
 export type PostImportsKindBody = {
   file?: Blob;
   dry_run?: boolean;
+  preview_headers?: boolean;
+  /** Default branch used when the mapped file branch column is blank or unmapped. */
   branch_id?: string;
   /** JSON map of field -> column index (0-based) */
   column_mapping?: string;

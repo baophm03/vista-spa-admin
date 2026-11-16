@@ -12,19 +12,19 @@ type Props = {
 export default function VoidCommissionModal({ open, form, loading, onClose, onSubmit }: Props) {
   return (
     <Modal
-      title="Hủy bút toán hoa hồng"
+      title="Hủy khoản hoa hồng"
       open={open}
       onCancel={onClose}
       onOk={onSubmit}
       confirmLoading={loading}
-      okText="Hủy bút toán"
+      okText="Xác nhận hủy"
       okButtonProps={{ danger: true }}
-      cancelText="Đóng"
+      cancelText="Quay lại"
     >
-      <Alert type="info" showIcon style={{ marginBottom: 12 }} title="Bút toán không bị xóa, chỉ đánh dấu VOID và loại khỏi tổng hợp." />
+      <Alert type="info" showIcon style={{ marginBottom: 12 }} title="Khoản này vẫn được lưu trong lịch sử nhưng sẽ không còn được tính vào tổng hoa hồng." />
       <Form form={form} layout="vertical">
-        <Form.Item name="void_reason" label="Lý do hủy" rules={[{ required: true, message: 'Nhập lý do hủy' }]}>
-          <Input.TextArea rows={2} />
+        <Form.Item name="void_reason" label="Lý do hủy" rules={[{ required: true, whitespace: true, message: 'Nhập lý do hủy' }]}>
+          <Input.TextArea rows={2} maxLength={255} showCount placeholder="VD: Nhập nhầm số tiền, tạo trùng khoản hoa hồng…" />
         </Form.Item>
       </Form>
     </Modal>

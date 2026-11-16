@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
-import { Alert, Button, Form, Input, Modal, Select, Table, Tag, Typography, message } from 'antd'
-import { CheckCircleOutlined, DeleteOutlined, EditOutlined, EnvironmentOutlined, PauseCircleOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
+import { Alert, Button, Form, Image, Input, Modal, Select, Table, Tag, Typography, message } from 'antd'
+import { CheckCircleOutlined, DeleteOutlined, EditOutlined, EnvironmentOutlined, PauseCircleOutlined, PictureOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
 import PageTitle from '@/components/base/PageTitle'
 import StatCards, { type StatItem } from '@/components/base/StatCards'
 import ListFilterPopover from '@/components/base/ListFilterPopover'
@@ -24,6 +24,8 @@ import {
   usePostBranchesIdDeactivate,
   usePutBranchesId,
 } from '@/api/endpoints/branches'
+import { usePostFiles } from '@/api/endpoints/files'
+import { fileSrc, registerUploadedFile, resolveFileSrc, useFileUrlMap } from '@/hooks/useFileUrl'
 import { Can, useAbility } from '@casl/react'
 import { useQueryClient } from '@tanstack/react-query'
 import BranchModal from './components/BranchModal'
@@ -31,9 +33,10 @@ import type { BranchFormValues } from './components/constants'
 
 type StatusFilter = 'all' | 'active' | 'inactive'
 
-type BranchColumnKey = 'code' | 'name' | 'address' | 'phone' | 'status'
+type BranchColumnKey = 'image' | 'code' | 'name' | 'address' | 'phone' | 'status'
 
 const BRANCH_COLUMN_OPTIONS: { label: string; value: BranchColumnKey }[] = [
+  { label: 'Ảnh', value: 'image' },
   { label: 'Mã cơ sở', value: 'code' },
   { label: 'Tên cơ sở', value: 'name' },
   { label: 'Địa chỉ', value: 'address' },
@@ -63,6 +66,8 @@ export default function Branches() {
   const [editing, setEditing] = useState<Branch | null>(null)
   const [form] = Form.useForm<BranchFormValues>()
   const [filterForm] = Form.useForm()
+  const [uploadingImage, setUploadingImage] = useState(false)
+  const fileUrlMap = useFileUrlMap()
   const queryClient = useQueryClient()
   const { isAdmin, isReceptionist, isTechnician } = useCustomerProfileAccess()
   const hideSummaryForTechnician = isTechnician && !isAdmin && !isReceptionist
@@ -76,6 +81,7 @@ export default function Branches() {
   const deactivateMutation = usePostBranchesIdDeactivate()
   const deleteBranchMutation = useDeleteBranchesId()
   const activateMutation = usePostBranchesIdActivate()
+  const uploadMutation = usePostFiles()
   const ability = useAbility()
   const canUpdate = ability.can('UPDATE', 'BRANCH')
   const canDelete = ability.can('DELETE', 'BRANCH')
@@ -146,7 +152,7 @@ export default function Branches() {
   const openCreate = () => {
     setEditing(null)
     form.resetFields()
-    form.setFieldsValue({ name: '', address: '', phone: '' })
+    form.setFieldsValue({ name: '', address: '', phone: '', image_file_id: undefined })
     setOpen(true)
   }
 
@@ -157,8 +163,36 @@ export default function Branches() {
       name: branch.name,
       address: branch.address ?? '',
       phone: branch.phone ?? '',
+      image_file_id: (branch as Branch & { image_file?: { id?: string }; image_file_id?: string }).image_file?.id
+        ?? (branch as Branch & { image_file_id?: string }).image_file_id
+        ?? undefined,
     })
     setOpen(true)
+  }
+
+  /** Upload ảnh cơ sở — giống luồng ảnh bìa bài viết (POST /files → set form field). */
+  const uploadImage = async (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      message.error('Vui lòng chọn tệp ảnh')
+      return false
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      message.error('Ảnh không được vượt quá 10 MB')
+      return false
+    }
+    setUploadingImage(true)
+    try {
+      const uploaded = pickData<{ id?: string; path?: string }>(await uploadMutation.mutateAsync({ data: { file } }))
+      if (!uploaded?.id) throw new Error('Máy chủ không trả về file')
+      registerUploadedFile(uploaded.id, uploaded.path)
+      form.setFieldValue('image_file_id', uploaded.id)
+      message.success('Đã tải ảnh lên')
+    } catch (err) {
+      message.error(`Tải ảnh lên thất bại: ${errorMessage(err)}`)
+    } finally {
+      setUploadingImage(false)
+    }
+    return false
   }
 
   const closeModal = () => {
@@ -179,6 +213,7 @@ export default function Branches() {
       name: values.name.trim(),
       address: values.address?.trim() ?? '',
       phone: values.phone?.trim() ?? '',
+      image_file_id: values.image_file_id || null,
     }
 
     try {
@@ -188,10 +223,10 @@ export default function Branches() {
           address: payload.address,
           phone: payload.phone,
         }
-        await updateMutation.mutateAsync({ id: editing.id, data: body })
+        await updateMutation.mutateAsync({ id: editing.id, data: { ...body, image_file_id: payload.image_file_id } as BranchUpdate })
         message.success('Đã cập nhật cơ sở')
       } else {
-        await createMutation.mutateAsync({ data: payload })
+        await createMutation.mutateAsync({ data: payload as never })
         message.success('Đã thêm cơ sở')
       }
       setOpen(false)
@@ -241,6 +276,23 @@ export default function Branches() {
   const activeFilterCount = (statusFilter !== 'all' ? 1 : 0) + (keyword ? 1 : 0)
 
   const columns = [
+    {
+      key: 'image',
+      title: 'Ảnh',
+      dataIndex: 'image_file_id',
+      width: 90,
+      render: (_: unknown, row: Branch) => {
+        const withFile = row as Branch & { image_file?: { path?: string }; image_file_id?: string }
+        const src = fileSrc(withFile.image_file) ?? resolveFileSrc(fileUrlMap, withFile.image_file_id)
+        return src ? (
+          <Image src={src} alt={row.name} width={48} height={48} style={{ objectFit: 'cover', borderRadius: 8 }} />
+        ) : (
+          <div style={{ width: 48, height: 48, borderRadius: 8, background: 'var(--brand-bg)', display: 'grid', placeItems: 'center', color: '#B9BDC2' }}>
+            <PictureOutlined />
+          </div>
+        )
+      },
+    },
     {
       key: 'code',
       title: 'Mã cơ sở',
@@ -426,6 +478,8 @@ export default function Branches() {
         nextCode={nextCode}
         form={form}
         saving={saving}
+        uploadingImage={uploadingImage}
+        uploadImage={uploadImage}
         onCancel={closeModal}
         onSubmit={() => void submit()}
       />

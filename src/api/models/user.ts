@@ -34,8 +34,6 @@ export interface User {
   birthday?: UserBirthday;
   branch_id?: UserBranchId;
   is_active?: boolean;
-  is_admin?: boolean;
-  is_super_admin?: boolean;
   created_by?: UserCreatedBy;
   updated_by?: UserUpdatedBy;
   created_at?: string;

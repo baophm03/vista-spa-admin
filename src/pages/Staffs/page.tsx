@@ -447,7 +447,7 @@ export default function Staffs() {
         loading={loading}
         dataSource={rows}
         locale={{ emptyText: <TableEmpty description="Chưa có nhân viên nào khớp điều kiện." /> }}
-        scroll={{ x: 1240 }}
+        scroll={{ x: 1335 }}
         pagination={false}
         onRow={(s) => ({ onClick: () => openProfile(s), style: { cursor: 'pointer' } })}
         columns={[
@@ -474,15 +474,9 @@ export default function Staffs() {
           {
             title: 'Vai trò',
             key: 'role',
-            width: 155,
+            width: 120,
             render: (_: unknown, s: StaffRow) => (
-              <Space size={4} wrap>
-                <Tag color="purple">{s.user_roles?.[0]?.role?.role_name || 'Nhân viên'}</Tag>
-                {isGlobalAdminRow(s) &&
-                  <Tag color="gold">Quản trị toàn hệ thống</Tag>}
-                {!s.is_admin && s.branch_id && s.user_roles?.some(({ role }) => isAdminRole(role?.code)) &&
-                  <Tag color="blue">Admin cơ sở</Tag>}
-              </Space>
+              <Tag color="purple">{s.user_roles?.[0]?.role?.role_name || 'Nhân viên'}</Tag>
             ),
           },
           {
@@ -501,7 +495,7 @@ export default function Staffs() {
             title: 'Trạng thái',
             key: 'status',
             dataIndex: 'is_active',
-            width: 100,
+            width: 110,
             render: (v: boolean | undefined) => (v === false ? <Tag>Đã nghỉ việc</Tag> : <Tag color="green">Đang làm</Tag>),
           },
           { title: 'SĐT', key: 'phone', dataIndex: 'phone_number', width: 130, render: (v: string | undefined) => v || '—' },
@@ -509,7 +503,7 @@ export default function Staffs() {
           {
             title: 'Chức danh & dịch vụ phụ trách',
             key: 'profile',
-            width: 230,
+            width: 250,
             render: (_: unknown, s: StaffRow) => {
               const profile = profileByUser.get(s.id)
               const serviceTags = (profile?.service_ids ?? [])
@@ -536,7 +530,7 @@ export default function Staffs() {
           {
             title: 'Hiện trên app',
             key: 'in_app',
-            width: 100,
+            width: 110,
             render: (_: unknown, s: StaffRow) => {
               const profile = profileByUser.get(s.id)
               if (!canUpdateStaffProfile || !canManageStaffRow(s)) {
@@ -561,7 +555,7 @@ export default function Staffs() {
           {
             title: 'Hành động', align: 'center' as const,
             key: 'actions',
-            width: 90,
+            width: 100,
             fixed: 'right' as const,
             render: (_: unknown, s: StaffRow) => {
               const canManageRow = canManageStaffRow(s)

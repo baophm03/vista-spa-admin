@@ -13,6 +13,7 @@ export type PutCollaboratorsIdBody = {
   type?: string;
   branch_id?: string;
   user_id?: string;
+  customer_profile_id?: string;
   commission_percent?: number;
   note?: string;
   is_active?: boolean;

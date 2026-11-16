@@ -353,11 +353,11 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
         title: (
           <div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
-              <span style={iso === today ? { color: 'var(--brand-dark)', fontWeight: 700 } : undefined}>
+              <span style={iso === today ? { color: 'var(--brand-on-primary)', fontWeight: 700, textDecoration: 'underline', textUnderlineOffset: 3 } : undefined}>
                 {WEEKDAY_LABELS[date.day()]} {date.format('DD/MM')}
               </span>
               {canManage && (
-                <Button aria-label={`Sửa ghi chú ngày ${date.format('DD/MM')}`} type="text" size="small" icon={<EditOutlined />} onClick={() => openNoteForm(date, notesByDate.get(iso) ?? [])} />
+                <Button aria-label={`Sửa ghi chú ngày ${date.format('DD/MM')}`} type="text" size="small" icon={<EditOutlined />} style={{ color: 'var(--brand-on-primary)' }} onClick={() => openNoteForm(date, notesByDate.get(iso) ?? [])} />
               )}
             </div>
             {noteText && (
@@ -365,7 +365,7 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
                 <div
                   role={canManage ? 'button' : undefined}
                   onClick={() => canManage && openNoteForm(date, notesByDate.get(iso) ?? [])}
-                  style={{ fontSize: 11, lineHeight: 1.3, color: 'var(--brand-dark)', whiteSpace: 'normal', textAlign: 'center', cursor: canManage ? 'pointer' : 'default' }}
+                  style={{ fontSize: 11, lineHeight: 1.3, color: 'var(--brand-on-primary)', opacity: 0.92, whiteSpace: 'normal', textAlign: 'center', cursor: canManage ? 'pointer' : 'default' }}
                 >
                   {noteText.length > 46 ? `${noteText.slice(0, 46)}…` : noteText}
                 </div>

@@ -159,7 +159,10 @@ function VoucherCategoryTab({ category }: { category: VoucherCategory }) {
   }
 
   const columns: TableColumnsType<VoucherCategoryRow> = [
-    { title: 'Tên voucher', dataIndex: 'title', render: (value: string) => <Typography.Text strong>{value}</Typography.Text> },
+    {
+      title: 'Tên voucher', dataIndex: 'title', width: 240, ellipsis: true,
+      render: (value: string) => <Typography.Text strong ellipsis={{ tooltip: value }}>{value}</Typography.Text>,
+    },
     ...(category === 'academy-course' || category === 'treatment-package' || category === 'product' ? [{
       title: 'Ưu đãi', key: 'benefit', width: 190,
       render: (_value: unknown, row: VoucherCategoryRow) => {
@@ -169,22 +172,24 @@ function VoucherCategoryTab({ category }: { category: VoucherCategory }) {
       },
     }, ...(category === 'academy-course' ? [{
       title: 'Điều kiện', key: 'conditions', width: 230,
-      render: (_value: unknown, row: VoucherCategoryRow) => (
-        <Typography.Text type="secondary">
-          {Number(row.minimum_tuition ?? 0) > 0 ? `Học phí từ ${Number(row.minimum_tuition).toLocaleString('vi-VN')} đ` : 'Không yêu cầu học phí tối thiểu'}
-          {` · Tối đa ${row.max_uses_per_student ?? 1} lần/học viên`}
-        </Typography.Text>
-      ),
+      render: (_value: unknown, row: VoucherCategoryRow) => {
+        const condition = `${Number(row.minimum_tuition ?? 0) > 0 ? `Học phí từ ${Number(row.minimum_tuition).toLocaleString('vi-VN')} đ` : 'Không yêu cầu học phí tối thiểu'} · Tối đa ${row.max_uses_per_student ?? 1} lần/học viên`
+        return <Typography.Text type="secondary" ellipsis={{ tooltip: condition }}>{condition}</Typography.Text>
+      },
     }] : category === 'product' ? [{
       title: 'Điều kiện', key: 'conditions', width: 230,
-      render: (_value: unknown, row: VoucherCategoryRow) => (
-        <Typography.Text type="secondary">
-          {Number(row.minimum_order_amount ?? 0) > 0 ? `Đơn từ ${Number(row.minimum_order_amount).toLocaleString('vi-VN')} đ` : 'Không yêu cầu tối thiểu'}
-          {row.discount_type === 'PERCENT' && row.maximum_discount_amount != null ? ` · Giảm tối đa ${Number(row.maximum_discount_amount).toLocaleString('vi-VN')} đ` : ''}
-        </Typography.Text>
-      ),
+      render: (_value: unknown, row: VoucherCategoryRow) => {
+        const condition = `${Number(row.minimum_order_amount ?? 0) > 0 ? `Đơn từ ${Number(row.minimum_order_amount).toLocaleString('vi-VN')} đ` : 'Không yêu cầu tối thiểu'}${row.discount_type === 'PERCENT' && row.maximum_discount_amount != null ? ` · Giảm tối đa ${Number(row.maximum_discount_amount).toLocaleString('vi-VN')} đ` : ''}`
+        return <Typography.Text type="secondary" ellipsis={{ tooltip: condition }}>{condition}</Typography.Text>
+      },
     }] : [])] : []),
-    { title: 'Áp dụng cho', dataIndex: 'target_name', width: 220, render: (value?: string) => value || `Tất cả ${meta.label.replace('Voucher ', '').toLowerCase()}` },
+    {
+      title: 'Áp dụng cho', dataIndex: 'target_name', width: 220, ellipsis: true,
+      render: (value?: string) => {
+        const label = value || `Tất cả ${meta.label.replace('Voucher ', '').toLowerCase()}`
+        return <Typography.Text ellipsis={{ tooltip: label }}>{label}</Typography.Text>
+      },
+    },
     ...(category !== 'academy-course' ? [{ title: 'Hạng khách', dataIndex: 'card_rank_name', width: 150, render: (value?: string) => value ? <Tag color="gold">{value}</Tag> : <Tag>Tất cả hạng</Tag> }] : []),
     { title: 'Đối tượng', dataIndex: 'is_loyalty', width: 150, render: (value: boolean) => value ? <Tag color="magenta">Khách cũ</Tag> : <Tag>Mọi khách</Tag> },
     { title: 'Số lượng', width: 120, render: (_value, row) => row.quantity_total == null ? 'Không giới hạn' : `${Math.max(Number(row.quantity_total) - Number(row.quantity_given ?? 0), 0)}/${row.quantity_total}` },
@@ -226,7 +231,8 @@ function VoucherCategoryTab({ category }: { category: VoucherCategory }) {
         dataSource={paginateRows(rows, page, PAGE_SIZE)}
         pagination={false}
         columns={columns}
-        scroll={{ x: 1000 }}
+        tableLayout="fixed"
+        scroll={{ x: 'max-content' }}
       />
       <ListPagination page={page} limit={PAGE_SIZE} total={rows.length} onChange={setPage} noun="voucher" />
       <VoucherModal

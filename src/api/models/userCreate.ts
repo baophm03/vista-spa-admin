@@ -15,6 +15,7 @@ export interface UserCreate {
   /** @minLength 8 */
   password: string;
   full_name?: string;
+  /** Required when creating a branch account; omitted branch creates the highest system administrator */
   role_id?: string;
   /** Leave blank to create the highest system administrator */
   branch_id?: string;

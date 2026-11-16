@@ -1165,7 +1165,7 @@ export const prefetchGetCollaboratorsIdQuery = async <TData = Awaited<ReturnType
 
 
 /**
- * **CO-04** — PUT /collaborators/{id} — the referral_code cannot be changed once it has been used by a referral. Requires `collaborator.update` permission. Body fields: `name`, `phone`, `referral_code`, `type`, `branch_id`, `user_id`, `note`, `is_active`.
+ * **CO-04** — PUT /collaborators/{id} — the referral_code cannot be changed once it has been used by a referral. Requires `collaborator.update` permission. Body fields: `name`, `phone`, `referral_code`, `type`, `branch_id`, `user_id`, `customer_profile_id`, `note`, `is_active`.
  * @summary Update a collaborator
  */
 export const putCollaboratorsId = (
@@ -1487,7 +1487,7 @@ export const prefetchGetCollaboratorsQuery = async <TData = Awaited<ReturnType<t
 
 
 /**
- * **CO-03** — POST /collaborators. Requires `collaborator.create` permission. Body fields: `name`, `phone`, `referral_code`, `type`, `commission_percent`, `branch_id`.
+ * **CO-03** — POST /collaborators. Requires `collaborator.create` permission. Body fields: `name`, `phone`, `referral_code`, `type`, `commission_percent`, `branch_id`. Loại STAFF bắt buộc `user_id`; loại CUSTOMER bắt buộc `customer_profile_id`.
  * @summary Create a new collaborator
  */
 export const postCollaborators = (

@@ -481,6 +481,22 @@ h4.ant-typography {
 .content-post-preview .ql-container.ql-snow { border: 0; }
 .content-post-preview .ql-editor { min-height: 0; padding: 0; }
 
+/* antd v6 đặt .ant-checkbox-group là inline-flex (CSS không layer, thắng utility Tailwind trong @layer).
+   Ép lại thành grid 2 cột bằng specificity cao hơn để cột phải thẳng hàng theo track, không lệch theo độ dài chữ. */
+.ant-checkbox-group.staff-services-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  row-gap: 12px;
+  align-items: start;
+}
+
+@media (min-width: 640px) {
+  .ant-checkbox-group.staff-services-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 24px;
+  }
+}
+
 .staff-services-grid .ant-checkbox-group-item {
   display: flex;
   min-width: 0;

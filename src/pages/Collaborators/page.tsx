@@ -101,11 +101,13 @@ export default function Collaborators() {
             phone: row.phone ?? '',
             referral_code: row.referral_code,
             type: row.type ?? undefined,
+            user_id: row.user_id ?? undefined,
+            customer_profile_id: row.customer_profile_id ?? undefined,
             commission_percent: row.commission_percent ?? undefined,
             note: row.note ?? '',
             is_active: row.is_active !== false,
           }
-        : { name: '', phone: '', referral_code: '', type: undefined, commission_percent: undefined, note: '', is_active: true },
+        : { name: '', phone: '', referral_code: '', type: undefined, user_id: undefined, customer_profile_id: undefined, commission_percent: undefined, note: '', is_active: true },
     )
     setOpen(true)
   }
@@ -118,6 +120,8 @@ export default function Collaborators() {
         phone: values.phone || undefined,
         referral_code: values.referral_code,
         type: values.type || undefined,
+        user_id: values.user_id || undefined,
+        customer_profile_id: values.customer_profile_id || undefined,
         commission_percent: values.commission_percent ?? null,
         note: values.note || undefined,
         is_active: values.is_active !== false,

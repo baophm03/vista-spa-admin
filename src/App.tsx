@@ -31,10 +31,8 @@ import Rewards from './pages/Rewards/page'
 import AcademyCourses from './pages/AcademyCourses/page'
 import AccessLogs from './pages/AccessLogs/page'
 import WarrantyClaims from './pages/WarrantyClaims/page'
-import CommissionRules from './pages/CommissionRules/page'
 import Commissions from './pages/Commissions/page'
 import Collaborators from './pages/Collaborators/page'
-import Referrals from './pages/Referrals/page'
 import DiscountRules from './pages/DiscountRules/page'
 import ContentPosts from './pages/ContentPosts/page'
 import AcademyRegistrations from './pages/AcademyRegistrations/page'
@@ -72,10 +70,10 @@ export default function App() {
           <Route path="/rewards" element={<Rewards />} />
           <Route path="/warranty-claims" element={<WarrantyClaims />} />
           <Route path="/card-ranks" element={<Navigate to="/points" replace />} />
-          <Route path="/commission-rules" element={<CommissionRules />} />
+          <Route path="/commission-rules" element={<Navigate to="/commissions?tab=rules" replace />} />
           <Route path="/commissions" element={<Commissions />} />
           <Route path="/collaborators" element={<Collaborators />} />
-          <Route path="/referrals" element={<Referrals />} />
+          <Route path="/referrals" element={<Navigate to="/commissions?tab=referrals" replace />} />
           <Route path="/discount-rules" element={<DiscountRules />} />
           <Route path="/branches" element={<Branches />} />
           <Route path="/imports" element={<Imports />} />

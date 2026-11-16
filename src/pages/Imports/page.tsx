@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { Alert, Button, Card, Form, Modal, Select, Space, Steps, Table, Tag, Typography, Upload, message } from 'antd'
-import { InboxOutlined, PlayCircleOutlined, SafetyOutlined } from '@ant-design/icons'
+import { Alert, Button, Card, Checkbox, Form, Modal, Progress, Select, Space, Steps, Table, Tag, Typography, Upload, message } from 'antd'
+import { InboxOutlined, PlayCircleOutlined, SafetyOutlined, ThunderboltOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
 import { errorMessage, pickData } from '@/api/helpers'
@@ -24,7 +24,30 @@ interface ImportReport {
   created_count?: number
   updated_count?: number
   errors?: Array<{ row: number; message: string }>
+  warnings?: Array<{ row: number; message: string }>
   preview?: Record<string, unknown>[]
+}
+
+/** Job xử lý nền (file lớn) — poll GET /import-jobs/{id} để lấy tiến độ. */
+interface ActiveBackgroundJob {
+  id: string
+  filename: string
+}
+
+interface JobProgress {
+  status: 'QUEUED' | 'PARSING' | 'VALIDATING' | 'IMPORTING' | 'DONE' | 'FAILED'
+  processed: number
+  total: number
+  errorMessage?: string | null
+}
+
+const JOB_STATUS_LABELS: Record<JobProgress['status'], string> = {
+  QUEUED: 'Đang chờ nhận việc',
+  PARSING: 'Đang đọc file',
+  VALIDATING: 'Đang kiểm tra dữ liệu',
+  IMPORTING: 'Đang nhập vào hệ thống',
+  DONE: 'Hoàn tất',
+  FAILED: 'Thất bại',
 }
 
 interface HistoryRow {
@@ -65,11 +88,107 @@ const KIND_LABELS: Record<string, string> = {
   'customer-treatments': 'Gói liệu trình dở dang',
 }
 
+/** Chuẩn hoá tên cột/trường để so khớp tự động: bỏ dấu tiếng Việt, khoảng trắng, ký tự đặc biệt. */
+function normalizeHeaderText(value: string): string {
+  return (value ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'D')
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '')
+}
+
+/** Biệt danh thường gặp của từng trường để tự ghép cột theo tên. */
+const AUTO_MAP_ALIASES: Record<string, string[]> = {
+  customer_code: ['makhach', 'makh', 'customercode'],
+  full_name: ['hovaten', 'tenkhach', 'tenkhachhang', 'fullname', 'name', 'hotenkhachhang'],
+  phone: ['sdt', 'sodienthoai', 'phone', 'mobile', 'dienthoai'],
+  birthday: ['ngaysinh', 'sinhnhat', 'birthday', 'dob'],
+  address: ['diachi', 'address', 'diachikhachhang'],
+  email: ['email', 'thudientu'],
+  package_name: ['tengoi', 'tengoilieutrinh', 'goilieutrinh', 'packagename', 'goidieutri'],
+  sessions_total: ['tongsobuoi', 'tongbuoi', 'sobuoi', 'sessionstotal'],
+  sessions_used: ['sobuoidathuchien', 'dathuchien', 'sobuoidadung', 'sobuoidasudung', 'buoidadung'],
+  total_amount: ['tonggiatrihopdong', 'tonggiatri', 'tongtien', 'giatrihopdong', 'totalamount'],
+  paid_amount: ['dathanhtoan', 'datra', 'sotiendatra', 'tiendatra', 'paidamount', 'sotiendathanhtoan', 'thanhtoan'],
+  branch_id: ['coso', 'chinhanh', 'branch', 'branchid', 'cosoapdung'],
+}
+
+interface AutoMapField {
+  key: string
+  aliases: string[]
+}
+
+function buildAutoMapFields(kind: 'customer-profiles' | 'customer-treatments', defs: CustomFieldDef[]): AutoMapField[] {
+  const baseKeys = kind === 'customer-profiles' ? PROFILE_FIELDS : TREATMENT_FIELDS
+  const fields: AutoMapField[] = baseKeys.map((key) => ({
+    key,
+    aliases: [key, FIELD_LABELS[key] ?? key, ...(AUTO_MAP_ALIASES[key] ?? [])].map(normalizeHeaderText),
+  }))
+  fields.push({
+    key: 'branch_id',
+    aliases: ['branch_id', 'Cơ sở áp dụng', 'Cơ sở trong file (tùy chọn)', 'Cơ sở', ...(AUTO_MAP_ALIASES.branch_id ?? [])].map(normalizeHeaderText),
+  })
+  for (const def of defs) {
+    fields.push({ key: `custom_fields.${def.key}`, aliases: [def.key, def.label ?? ''].map(normalizeHeaderText).filter(Boolean) })
+  }
+  return fields
+}
+
+/** Ghép cột tự động theo tên: khớp chính xác trước, rồi mới tới khớp chứa (>=3 ký tự). Mỗi cột chỉ ghép một trường. */
+function autoMapColumns(headers: string[], fields: AutoMapField[]): Record<string, number> {
+  const normalizedHeaders = headers.map((header) => normalizeHeaderText(header))
+  const used = new Set<number>()
+  const result: Record<string, number> = {}
+  const findColumn = (aliases: string[], exact: boolean): number => {
+    for (let col = 0; col < normalizedHeaders.length; col++) {
+      if (used.has(col) || !normalizedHeaders[col]) continue
+      const header = normalizedHeaders[col]
+      const matched = aliases.some((alias) => {
+        if (!alias || alias.length < 2) return false
+        if (exact) return alias === header
+        return (header.length >= 3 && header.includes(alias)) || (alias.length >= 3 && alias.includes(header))
+      })
+      if (matched) return col
+    }
+    return -1
+  }
+  for (const field of fields) {
+    const exact = findColumn(field.aliases, true)
+    if (exact >= 0) {
+      result[field.key] = exact
+      used.add(exact)
+    }
+  }
+  for (const field of fields) {
+    if (result[field.key] !== undefined) continue
+    const fuzzy = findColumn(field.aliases, false)
+    if (fuzzy >= 0) {
+      result[field.key] = fuzzy
+      used.add(fuzzy)
+    }
+  }
+  return result
+}
+
 interface ImportField {
   key: string
   label: string
   required: boolean
 }
+
+/** Bản nháp phiên nhập — giữ ở cấp module để không mất khi chuyển sang menu khác rồi quay lại (tải lại trang thì làm mới). */
+interface ImportDraft {
+  kind: 'customer-profiles' | 'customer-treatments'
+  file: File | null
+  mapping: Record<string, number>
+  branchId?: string
+  report: ImportReport | null
+  sourceHeaders: string[]
+}
+
+let importDraft: ImportDraft | null = null
 
 export default function Imports() {
   const queryClient = useQueryClient()
@@ -78,12 +197,16 @@ export default function Imports() {
   const [mapping, setMapping] = useState<Record<string, number>>({})
   const [branchId, setBranchId] = useState<string | undefined>()
   const [report, setReport] = useState<ImportReport | null>(null)
+  const [activeJob, setActiveJob] = useState<ActiveBackgroundJob | null>(null)
+  const [jobProgress, setJobProgress] = useState<JobProgress | null>(null)
+  const [processInBackground, setProcessInBackground] = useState(false)
   const [history, setHistory] = useState<HistoryRow[]>([])
   const [running, setRunning] = useState(false)
   const [customFieldDefs, setCustomFieldDefs] = useState<CustomFieldDef[]>([])
   const [customFieldsLoading, setCustomFieldsLoading] = useState(true)
   const [customFieldsError, setCustomFieldsError] = useState('')
   const [sourceColumns, setSourceColumns] = useState<Array<{ label: string; value: number }>>([])
+  const [sourceHeaders, setSourceHeaders] = useState<string[]>([])
   const [headersLoading, setHeadersLoading] = useState(false)
   const headerRequestId = useRef(0)
   const [form] = Form.useForm()
@@ -152,6 +275,9 @@ export default function Imports() {
   }
 
   const parsedFileName = fileList[0]?.name ?? ''
+  const originFile = fileList[0]?.originFileObj as File | undefined
+  // xlsx nén mạnh — 100KB tương đương khoảng 2-3 nghìn dòng
+  const isLargeFile = Boolean(originFile && originFile.size > 100 * 1024)
 
   useEffect(() => {
     let active = true
@@ -174,11 +300,35 @@ export default function Imports() {
     return () => { active = false }
   }, [customFieldEntity])
 
+  // Khôi phục bản nháp khi quay lại trang
+  const draftRestoredRef = useRef(false)
+  useEffect(() => {
+    if (draftRestoredRef.current) return
+    draftRestoredRef.current = true
+    const draft = importDraft
+    if (!draft) return
+    setKind(draft.kind)
+    setMapping(draft.mapping ?? {})
+    if (draft.branchId) setBranchId(draft.branchId)
+    if (draft.report) setReport(draft.report)
+    if (draft.sourceHeaders.length) {
+      setSourceHeaders(draft.sourceHeaders)
+      setSourceColumns(draft.sourceHeaders.map((header, index) => ({
+        label: `${header || 'Không có tiêu đề'} (cột ${index + 1})`,
+        value: index,
+      })))
+    }
+    if (draft.file) {
+      setFileList([{ uid: '-restored', name: draft.file.name, status: 'done', originFileObj: draft.file } as unknown as UploadFile])
+    }
+  }, [])
+
   const handleFileChange = async (nextFileList: UploadFile[]) => {
     setFileList(nextFileList)
     setMapping({})
     setReport(null)
     setSourceColumns([])
+    setSourceHeaders([])
     const requestId = ++headerRequestId.current
     const file = nextFileList[0]?.originFileObj
     if (!file) {
@@ -187,6 +337,8 @@ export default function Imports() {
     }
 
     setHeadersLoading(true)
+    // File lớn nên bật sẵn chế độ xử lý nền (user vẫn tắt được)
+    setProcessInBackground(Boolean(file && file.size > 100 * 1024))
     const body = new FormData()
     body.append('file', file as File)
     body.append('preview_headers', 'true')
@@ -194,6 +346,7 @@ export default function Imports() {
       const response = await apiClient.post(`/imports/${kind}`, body)
       if (headerRequestId.current !== requestId) return
       const headers = pickData<string[]>(response.data) ?? []
+      setSourceHeaders(headers)
       setSourceColumns(headers.map((header, index) => ({
         label: `${header || 'Không có tiêu đề'} (cột ${index + 1})`,
         value: index,
@@ -205,6 +358,89 @@ export default function Imports() {
     }
   }
 
+  /** Tự ghép cột theo tên: chỉ điền các trường chưa ghép, không đè lựa chọn thủ công. */
+  const applyAutoMap = () => {
+    if (!sourceHeaders.length) return
+    const auto = autoMapColumns(sourceHeaders, buildAutoMapFields(kind, customFieldDefs))
+    setMapping((current) => {
+      const used = new Set<number>()
+      for (const value of Object.values(current)) if (typeof value === 'number' && value >= 0) used.add(value)
+      const next = { ...current }
+      for (const [key, col] of Object.entries(auto)) {
+        if ((next[key] == null || next[key] < 0) && !used.has(col)) {
+          next[key] = col
+          used.add(col)
+        }
+      }
+      return next
+    })
+  }
+
+  useEffect(() => {
+    applyAutoMap()
+    // Chạy lại khi đổi file / đổi loại dữ liệu / tải xong trường tùy chỉnh
+  }, [sourceHeaders, customFieldDefs, kind])
+
+  // Lưu bản nháp liên tục để chuyển tab không mất dữ liệu
+  useEffect(() => {
+    const file = fileList[0]?.originFileObj as File | undefined
+    importDraft = {
+      kind,
+      file: file ?? null,
+      mapping,
+      branchId,
+      report,
+      sourceHeaders,
+    }
+  }, [kind, fileList, mapping, branchId, report, sourceHeaders])
+
+  // Poll tiến độ job xử lý nền mỗi 2 giây; xong thì hiển thị báo cáo như đồng bộ
+  useEffect(() => {
+    if (!activeJob) return
+    let cancelled = false
+    const timer = setInterval(async () => {
+      try {
+        const res = await apiClient.get(`/import-jobs/${activeJob.id}`)
+        const job = pickData<Record<string, any>>(res)
+        if (cancelled || !job) return
+        setJobProgress({ status: job.status, processed: job.processed_rows ?? 0, total: job.total_rows ?? 0, errorMessage: job.error_message ?? null })
+        if (job.status === 'DONE') {
+          setActiveJob(null)
+          setReport({
+            id: job.id,
+            kind: job.kind,
+            dry_run: job.dry_run,
+            filename: job.filename,
+            total_rows: job.total_rows,
+            valid_rows: job.valid_rows,
+            error_rows: job.error_rows,
+            created_count: job.created_count,
+            updated_count: job.updated_count,
+            errors: job.errors?.rows ?? [],
+            warnings: job.warnings?.rows ?? [],
+            preview: job.preview ?? [],
+          })
+          await reloadHistory()
+          if (!job.dry_run) {
+            message.success(`Đã nhập: tạo ${job.created_count ?? 0}, cập nhật ${job.updated_count ?? 0}`)
+            await queryClient.invalidateQueries({ queryKey: ['getCustomerProfiles'] })
+            await queryClient.invalidateQueries({ queryKey: ['getTreatmentCustomers'] })
+          }
+        } else if (job.status === 'FAILED') {
+          setActiveJob(null)
+          message.error(`Xử lý nền thất bại: ${job.error_message ?? 'lỗi không xác định'}`)
+          await reloadHistory()
+        }
+      } catch {
+        /* lỗi poll tạm thời — chờ nhịp sau */
+      }
+    }, 2000)
+    return () => {
+      cancelled = true
+      clearInterval(timer)
+    }
+  }, [activeJob])
+
   const reloadHistory = async () => {
     try {
       const res = await apiClient.get('/imports/all')
@@ -214,13 +450,18 @@ export default function Imports() {
     }
   }
 
-  const buildFormData = (dryRun: boolean): FormData => {
-    const data = new FormData()
-    if (fileList[0]?.originFileObj) data.append('file', fileList[0].originFileObj as File)
-    data.append('dry_run', String(dryRun))
-    data.append('column_mapping', JSON.stringify(mapping))
-    if (branchId) data.append('branch_id', branchId)
-    return data
+  // orval tự dựng lại FormData từ các thuộc tính của body object — truyền FormData thẳng vào
+  // mutation sẽ bị bỏ qua (body.file/dry_run/... đều undefined) và sinh request rỗng.
+  const buildImportBody = (dryRun: boolean) => {
+    const originFile = fileList[0]?.originFileObj as File | undefined
+    return {
+      file: originFile,
+      dry_run: dryRun,
+      column_mapping: JSON.stringify(mapping),
+      branch_id: branchId || undefined,
+      // File lớn → yêu cầu BE xếp hàng xử lý nền (worker), tránh treo request
+      process_mode: processInBackground ? 'async' : undefined,
+    }
   }
 
   const runImport = async (dryRun: boolean) => {
@@ -251,8 +492,17 @@ export default function Imports() {
     }
     setRunning(true)
     try {
-      const res = await importMutation.mutateAsync({ kind, data: buildFormData(dryRun) as never })
-      const data = pickData<ImportReport>(res)
+      const res = await importMutation.mutateAsync({ kind, data: buildImportBody(dryRun) as never })
+      const data = pickData<ImportReport & { job_id?: string; async?: boolean }>(res)
+      if (data?.job_id) {
+        // File lớn đã nộp việc cho worker — theo dõi tiến độ thay vì đợi
+        setReport(null)
+        setActiveJob({ id: data.job_id, filename: parsedFileName })
+        setJobProgress({ status: 'QUEUED', processed: 0, total: 0 })
+        message.info('File lớn — đã nộp việc xử lý nền, theo dõi tiến độ bên dưới')
+        await reloadHistory()
+        return
+      }
       setReport(data)
       await reloadHistory()
       if (!dryRun) {
@@ -328,7 +578,29 @@ export default function Imports() {
             </Upload.Dragger>
           </Form.Item>
 
-          <Typography.Title level={5}>Ghép cột dữ liệu</Typography.Title>
+          {isLargeFile && (
+            <Alert
+              type="info"
+              showIcon
+              style={{ marginTop: 8 }}
+              message="File lớn — nên xếp hàng xử lý nền để không làm chậm hệ thống."
+              description={
+                <Checkbox
+                  checked={processInBackground}
+                  onChange={(e) => setProcessInBackground(e.target.checked)}
+                >
+                  Xử lý nền (theo dõi tiến độ, không phải đợi trên trang)
+                </Checkbox>
+              }
+            />
+          )}
+
+          <Space align="center" style={{ marginBottom: 4 }}>
+            <Typography.Title level={5} style={{ marginBottom: 0 }}>Ghép cột dữ liệu</Typography.Title>
+            <Button size="small" icon={<ThunderboltOutlined />} disabled={!sourceHeaders.length || headersLoading} onClick={applyAutoMap}>
+              Tự động ghép cột
+            </Button>
+          </Space>
           <Typography.Paragraph type="secondary" style={{ marginBottom: 12 }}>
             {kind === 'customer-profiles'
               ? 'Hồ sơ khách cần có họ tên và số điện thoại. Mã khách cũ, Email và các thông tin khác có thể ghép thêm.'
@@ -357,12 +629,26 @@ export default function Imports() {
         </Form>
       </Card>
 
+      {activeJob && (
+        <Card title={`Đang xử lý nền — ${activeJob.filename}`} style={{ marginBottom: 16 }}>
+          <Progress
+            percent={jobProgress?.total ? Math.round((jobProgress.processed / jobProgress.total) * 100) : 0}
+            status={jobProgress?.status === 'FAILED' ? 'exception' : 'active'}
+          />
+          <Typography.Text type="secondary">
+            {JOB_STATUS_LABELS[jobProgress?.status ?? 'QUEUED']}
+            {jobProgress?.total ? ` — ${jobProgress.processed}/${jobProgress.total} dòng` : ''}
+          </Typography.Text>
+        </Card>
+      )}
+
       {report && (
         <Card title={`Báo cáo — ${report.dry_run ? 'Kiểm tra dữ liệu' : 'Đã nhập vào hệ thống'}: ${report.filename ?? parsedFileName}`} style={{ marginBottom: 16 }}>
           <Space wrap size={24} style={{ marginBottom: 12 }}>
             <Typography.Text>Tổng dòng: <b>{report.total_rows}</b></Typography.Text>
             <Typography.Text>Hợp lệ: <b style={{ color: '#389e0d' }}>{report.valid_rows}</b></Typography.Text>
             <Typography.Text>Lỗi: <b style={{ color: '#cf1322' }}>{report.error_rows}</b></Typography.Text>
+            {(report.warnings?.length ?? 0) > 0 && <Typography.Text>Cảnh báo trùng: <b style={{ color: '#d46b08' }}>{report.warnings?.length}</b></Typography.Text>}
             {!report.dry_run && <Typography.Text>Tạo mới: <b>{report.created_count}</b></Typography.Text>}
             {!report.dry_run && <Typography.Text>Cập nhật: <b>{report.updated_count}</b></Typography.Text>}
           </Space>
@@ -370,6 +656,18 @@ export default function Imports() {
             <>
               <Typography.Title level={5}>Chi tiết lỗi từng dòng</Typography.Title>
               <Table rowKey={(r) => String(r.row)} size="small" columns={errorColumns} dataSource={report.errors ?? []} pagination={{ pageSize: 5 }} />
+            </>
+          )}
+          {(report.warnings?.length ?? 0) > 0 && (
+            <>
+              <Typography.Title level={5}>Chi tiết cảnh báo trùng lặp</Typography.Title>
+              <Alert
+                type="warning"
+                showIcon
+                message="Dòng trùng trong file bị chặn (chỉ dòng đầu tiên được nhập). Khách/gói đã có sẵn trong hệ thống không bị tạo trùng — được cập nhật theo SĐT."
+                style={{ marginBottom: 8 }}
+              />
+              <Table rowKey={(r) => `w-${r.row}-${r.message}`} size="small" columns={errorColumns} dataSource={report.warnings ?? []} pagination={{ pageSize: 5 }} />
             </>
           )}
           {(report.preview?.length ?? 0) > 0 && (

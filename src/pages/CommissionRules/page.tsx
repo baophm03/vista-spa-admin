@@ -4,21 +4,21 @@ import {
   Button,
   Form,
   Modal,
+  Space,
   Table,
   Tag,
   message,
 } from 'antd'
 import type { TableColumnsType } from 'antd'
-import { CheckCircleOutlined, EditOutlined, PauseCircleOutlined, PercentageOutlined, PlusOutlined } from '@ant-design/icons'
+import { EditOutlined, PauseCircleOutlined, PlusOutlined } from '@ant-design/icons'
 import { useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { Can, useAbility } from '@casl/react'
-import PageTitle from '@/components/base/PageTitle'
-import StatCards, { type StatItem } from '@/components/base/StatCards'
 import ListFilterPopover from '@/components/base/ListFilterPopover'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
 import { paginateRows } from '@/utils/listTable'
+import { isTechnicianUser, type UserWithRoleAssignments } from '@/utils/userRoles'
 import { errorMessage, pickData } from '@/api/helpers'
 import {
   getGetCommissionRulesQueryKey,
@@ -31,16 +31,16 @@ import { useGetBranches } from '@/api/endpoints/branches'
 import { useGetService } from '@/api/endpoints/services'
 import { useGetUsers } from '@/api/endpoints/users'
 import type { Branch, CommissionRule, PostCommissionRulesBody, Service, User } from '@/api/models'
-import CommissionRuleModal from './components/CommissionRuleModal'
+import CommissionRuleModal, { type RateType } from './components/CommissionRuleModal'
 import { BASE_OPTIONS, PAYEE_META, type PayeeType } from './components/constants'
 
-type CommissionColumnKey = 'name' | 'payee_type' | 'base' | 'percent' | 'scope' | 'priority' | 'validity' | 'is_active'
+type CommissionColumnKey = 'name' | 'payee_type' | 'base' | 'rate' | 'scope' | 'priority' | 'validity' | 'is_active'
 
 const COMMISSION_COLUMN_OPTIONS: { label: string; value: CommissionColumnKey }[] = [
   { label: 'Tên quy tắc', value: 'name' },
   { label: 'Người nhận', value: 'payee_type' },
   { label: 'Căn tính', value: 'base' },
-  { label: '% hoa hồng', value: 'percent' },
+  { label: 'Giá trị hoa hồng', value: 'rate' },
   { label: 'Phạm vi', value: 'scope' },
   { label: 'Ưu tiên', value: 'priority' },
   { label: 'Hạn', value: 'validity' },
@@ -49,7 +49,12 @@ const COMMISSION_COLUMN_OPTIONS: { label: string; value: CommissionColumnKey }[]
 
 const DEFAULT_VISIBLE_COLUMNS = COMMISSION_COLUMN_OPTIONS.map((column) => column.value)
 
-export default function CommissionRules() {
+function formatVnd(v?: number | null): string {
+  if (v == null) return '—'
+  return `${Number(v).toLocaleString('vi-VN')} ₫`
+}
+
+export default function CommissionRulesPanel() {
   const [page, setPage] = useState(1)
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<CommissionRule | null>(null)
@@ -71,7 +76,8 @@ export default function CommissionRules() {
   }, [rulesQuery.data])
   const branches = (pickData<Branch[] | undefined>(branchesQuery.data) ?? []) as Branch[]
   const services = (pickData<{ services?: Service[] } | undefined>(servicesQuery.data)?.services ?? []) as Service[]
-  const users = (pickData<{ rows?: User[] } | undefined>(usersQuery.data)?.rows ?? []) as User[]
+  const users = (pickData<{ rows?: User[] } | undefined>(usersQuery.data)?.rows ?? []) as (User & UserWithRoleAssignments)[]
+  const technicians = useMemo(() => users.filter(isTechnicianUser), [users])
   const branchNameById = useMemo(() => new Map(branches.map((branch) => [branch.id, branch.name])), [branches])
   const serviceNameById = useMemo(() => new Map(services.map((service) => [service.id, service.title])), [services])
   const userNameById = useMemo(() => new Map(users.map((user) => [user.id, user.zalo_name || user.email || user.id])), [users])
@@ -79,13 +85,6 @@ export default function CommissionRules() {
   const invalidate = async () => {
     await queryClient.invalidateQueries({ queryKey: getGetCommissionRulesQueryKey() })
   }
-
-  // Thống kê đầu trang — rules là danh sách đầy đủ client-side (query không có bộ lọc server)
-  const activeRuleCount = rules.filter((row) => row.is_active !== false).length
-  const statItems: StatItem[] = [
-    { key: 'total', label: 'Tổng quy tắc', value: rules.length.toLocaleString('vi-VN'), icon: <PercentageOutlined />, tone: 'primary' },
-    { key: 'active', label: 'Đang áp dụng', value: activeRuleCount.toLocaleString('vi-VN'), icon: <CheckCircleOutlined />, tone: 'secondary' },
-  ]
 
   const createMutation = usePostCommissionRules({ mutation: { onSuccess: invalidate } })
   const updateMutation = usePutCommissionRulesId({ mutation: { onSuccess: invalidate } })
@@ -99,7 +98,9 @@ export default function CommissionRules() {
             name: row.name,
             payee_type: row.payee_type,
             base: row.base ?? (row.payee_type === 'STAFF' ? 'SESSION_VALUE' : 'PAYMENT'),
-            percent: row.percent ?? undefined,
+            rate_type: (row.fixed_amount != null ? 'AMOUNT' : 'PERCENT') as RateType,
+            percent: row.fixed_amount != null ? undefined : row.percent ?? undefined,
+            fixed_amount: row.fixed_amount ?? undefined,
             priority: row.priority ?? 0,
             service_id: row.service_id ?? undefined,
             staff_id: row.staff_id ?? undefined,
@@ -109,7 +110,7 @@ export default function CommissionRules() {
               : undefined,
             is_active: row.is_active ?? true,
           }
-        : { name: '', payee_type: 'STAFF', base: 'SESSION_VALUE', percent: undefined, priority: 0, is_active: true },
+        : { name: '', payee_type: 'STAFF', base: 'SESSION_VALUE', rate_type: 'PERCENT' as RateType, percent: undefined, fixed_amount: undefined, priority: 0, is_active: true },
     )
     setOpen(true)
   }
@@ -117,11 +118,14 @@ export default function CommissionRules() {
   const submit = async () => {
     try {
       const values = await form.validateFields()
+      const rateType: RateType = values.rate_type ?? 'PERCENT'
       const dto: PostCommissionRulesBody = {
         name: values.name,
         payee_type: values.payee_type,
         base: values.base,
-        percent: values.percent ?? null,
+        // Hai kiểu giá trị loại trừ nhau — gửi null tường minh để đổi kiểu khi sửa không bị giữ giá trị cũ.
+        percent: rateType === 'PERCENT' ? values.percent ?? null : null,
+        fixed_amount: rateType === 'AMOUNT' ? values.fixed_amount ?? null : null,
         priority: values.priority ?? 0,
         is_active: !!values.is_active,
         valid_from: values.valid_range?.[0]?.format('YYYY-MM-DD') ?? undefined,
@@ -168,7 +172,13 @@ export default function CommissionRules() {
       },
     },
     { key: 'base', title: 'Tính hoa hồng theo', dataIndex: 'base', width: 190, render: (v?: string) => BASE_OPTIONS.find((o) => o.value === v)?.label ?? '—' },
-    { key: 'percent', title: '% hoa hồng', dataIndex: 'percent', width: 100, align: 'right', render: (v?: number) => (v != null ? `${v}%` : '—') },
+    {
+      key: 'rate', title: 'Giá trị hoa hồng', width: 130, align: 'right',
+      render: (_v, row) => {
+        if (row.fixed_amount != null) return `${formatVnd(row.fixed_amount)}/lần`
+        return row.percent != null ? `${row.percent}%` : '—'
+      },
+    },
     {
       key: 'scope',
       title: 'Phạm vi', width: 170,
@@ -226,37 +236,29 @@ export default function CommissionRules() {
       {(allowed) =>
         allowed ? (
           <>
-            <StatCards items={statItems} />
-            <PageTitle
-              subtitle="Quy tắc tính hoa hồng cho nhân viên và cộng tác viên"
-              left={
-                <>
-                  <ListFilterPopover
-                    open={filterOpen}
-                    onOpenChange={setFilterOpen}
-                    activeFilterCount={0}
-                    onApply={() => {
-                      if (draftVisibleColumns.length === 0) {
-                        message.error('Hãy giữ lại ít nhất một cột hiển thị')
-                        return
-                      }
-                      setVisibleColumns(draftVisibleColumns)
-                      setFilterOpen(false)
-                    }}
-                    onClear={() => {
-                      setDraftVisibleColumns(DEFAULT_VISIBLE_COLUMNS)
-                      setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)
-                    }}
-                    columnOptions={COMMISSION_COLUMN_OPTIONS}
-                    draftVisibleColumns={draftVisibleColumns}
-                    onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as CommissionColumnKey[])}
-                  />
-                </>
-              }
-              right={<Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor()}>Thêm quy tắc</Button>}
-            >
-              Quy tắc hoa hồng
-            </PageTitle>
+            <Space className="mb-4! w-full! justify-end" wrap>
+              <ListFilterPopover
+                open={filterOpen}
+                onOpenChange={setFilterOpen}
+                activeFilterCount={0}
+                onApply={() => {
+                  if (draftVisibleColumns.length === 0) {
+                    message.error('Hãy giữ lại ít nhất một cột hiển thị')
+                    return
+                  }
+                  setVisibleColumns(draftVisibleColumns)
+                  setFilterOpen(false)
+                }}
+                onClear={() => {
+                  setDraftVisibleColumns(DEFAULT_VISIBLE_COLUMNS)
+                  setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)
+                }}
+                columnOptions={COMMISSION_COLUMN_OPTIONS}
+                draftVisibleColumns={draftVisibleColumns}
+                onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as CommissionColumnKey[])}
+              />
+              <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor()}>Thêm quy tắc</Button>
+            </Space>
             {rulesQuery.isError && (
               <Alert
                 className="mb-4" type="error" showIcon
@@ -271,7 +273,7 @@ export default function CommissionRules() {
             />
             <Table<CommissionRule>
               rowKey="id" loading={rulesQuery.isLoading} dataSource={paginateRows(rules, page, 10)} columns={columns}
-              scroll={{ x: 1310 }}
+              scroll={{ x: 1340 }}
               pagination={false}
             />
             <ListPagination page={page} limit={10} total={rules.length} onChange={setPage} noun="quy tắc hoa hồng" />
@@ -282,7 +284,7 @@ export default function CommissionRules() {
               saving={createMutation.isPending || updateMutation.isPending}
               services={services}
               servicesLoading={servicesQuery.isLoading}
-              users={users}
+              users={technicians}
               usersLoading={usersQuery.isLoading}
               branches={branches}
               branchesLoading={branchesQuery.isLoading}
@@ -291,10 +293,7 @@ export default function CommissionRules() {
             />
           </>
         ) : (
-          <>
-            <PageTitle subtitle="Quy tắc tính hoa hồng cho nhân viên và cộng tác viên">Quy tắc hoa hồng</PageTitle>
-            <Alert type="warning" showIcon message="Tài khoản của bạn chưa được cấp quyền quản lý quy tắc hoa hồng. Vui lòng liên hệ quản trị viên." />
-          </>
+          <Alert type="warning" showIcon message="Tài khoản của bạn chưa được cấp quyền quản lý quy tắc hoa hồng. Vui lòng liên hệ quản trị viên." />
         )
       }
     </Can>
