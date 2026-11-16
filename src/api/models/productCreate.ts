@@ -5,6 +5,7 @@
  * Vista Spa backend API. Uses the NEWSKY+ business error envelope for permission-aware endpoints and the legacy response envelope for existing admin endpoints.
  * OpenAPI spec version: 1.0.0
  */
+import type { ProductCreateAttributesItem } from './productCreateAttributesItem';
 
 /**
  * Create a product
@@ -20,4 +21,10 @@ export interface ProductCreate {
   /** @maxItems 12 */
   gallery?: string[];
   buy_url?: string;
+  brand?: string;
+  /** @minimum 0 */
+  original_price?: number;
+  short_description?: string;
+  attributes?: ProductCreateAttributesItem[];
+  tags?: string[];
 }

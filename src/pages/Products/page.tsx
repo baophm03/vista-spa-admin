@@ -166,10 +166,29 @@ export default function Products() {
             price: p.price ?? undefined,
             buy_url: p.buy_url ?? undefined,
             description: p.description ?? undefined,
+            brand: p.brand ?? undefined,
+            original_price: p.original_price ?? undefined,
+            short_description: p.short_description ?? undefined,
+            attributes: (p.attributes ?? []).map((item) => ({ label: item.label ?? '', value: item.value ?? '' })),
+            tags: p.tags ?? [],
             cover_file_id: p.cover_file?.id ?? p.cover_file_id ?? undefined,
             gallery_file_ids: (p.product_galleries ?? []).map((gallery) => gallery.file?.id ?? gallery.file_id),
           }
-        : { name: '', sku: undefined, category_id: undefined, price: undefined, buy_url: undefined, description: undefined, cover_file_id: undefined, gallery_file_ids: [] },
+        : {
+            name: '',
+            sku: undefined,
+            category_id: undefined,
+            price: undefined,
+            buy_url: undefined,
+            description: undefined,
+            brand: undefined,
+            original_price: undefined,
+            short_description: undefined,
+            attributes: [],
+            tags: [],
+            cover_file_id: undefined,
+            gallery_file_ids: [],
+          },
     )
     setOpen(true)
   }
@@ -185,6 +204,13 @@ export default function Products() {
         price: values.price ?? undefined,
         buy_url: values.buy_url || undefined,
         description: values.description || undefined,
+        brand: values.brand?.trim() || null,
+        original_price: values.original_price ?? null,
+        short_description: values.short_description?.trim() || null,
+        attributes: (values.attributes ?? [])
+          .filter((item: { label?: string }) => item?.label?.trim())
+          .map((item: { label?: string; value?: string }) => ({ label: item.label?.trim(), value: item.value?.trim() ?? '' })),
+        tags: values.tags ?? [],
         cover_file_id: values.cover_file_id || undefined,
         gallery_file_ids: values.gallery_file_ids ?? [],
       } as unknown as ProductCreate
@@ -376,9 +402,38 @@ export default function Products() {
             render: (_, p) => (
               <div>
                 <div style={{ fontWeight: 600 }}>{p.name}</div>
-                {p.sku && <Typography.Text type="secondary" style={{ fontSize: 12 }}>SKU: {p.sku}</Typography.Text>}
+                {(p.brand || p.sku) && (
+                  <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                    {p.brand ?? ''}{p.brand && p.sku ? ' · ' : ''}{p.sku ? `SKU: ${p.sku}` : ''}
+                  </Typography.Text>
+                )}
+                {(p.tags?.length ?? 0) > 0 && (
+                  <div style={{ marginTop: 4, display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                    {p.tags!.map((tag) => (
+                      <Tag key={tag} style={{ marginInlineEnd: 0, fontSize: 11, lineHeight: '18px', padding: '0 6px' }}>{tag}</Tag>
+                    ))}
+                  </div>
+                )}
               </div>
             ),
+          },
+          {
+            title: 'Mô tả',
+            key: 'description',
+            dataIndex: 'description',
+            ellipsis: { showTitle: false },
+            render: (v?: string | null) =>
+              v ? (
+                <Typography.Paragraph
+                  type="secondary"
+                  style={{ margin: 0, whiteSpace: 'pre-wrap' }}
+                  ellipsis={{ rows: 2, expandable: false, tooltip: v }}
+                >
+                  {v}
+                </Typography.Paragraph>
+              ) : (
+                '—'
+              ),
           },
           {
             title: 'Danh mục',
@@ -387,7 +442,20 @@ export default function Products() {
             width: 150,
             render: (_, p) => p.category?.name || '—',
           },
-          { title: 'Giá hiển thị', key: 'price', dataIndex: 'price', width: 130, render: (v?: number | null) => formatPrice(v, currency) },
+          {
+            title: 'Giá hiển thị',
+            key: 'price',
+            dataIndex: 'price',
+            width: 150,
+            render: (v?: number | null, p?: ProductRow) => (
+              <div>
+                <div>{formatPrice(v, currency)}</div>
+                {p?.original_price
+                  ? <Typography.Text delete type="secondary" style={{ fontSize: 12 }}>{formatPrice(p.original_price, currency)}</Typography.Text>
+                  : null}
+              </div>
+            ),
+          },
           {
             title: 'Liên kết',
             key: 'link',
