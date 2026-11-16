@@ -1,8 +1,11 @@
 import { Alert, Button, Form, Input, Modal, Select, Space, Upload } from 'antd'
 import { FileTextOutlined, UploadOutlined } from '@ant-design/icons'
 import type { CustomerTreatment } from '@/api/models/customerTreatment'
-import { snapshotField } from './constants'
+import { snapshotField, labelStyle } from './constants'
 import { useBrandDateTime } from '@/themeRuntime'
+import type { Branch } from '@/api/models'
+
+
 
 interface WarrantyClaimCreateModalProps {
   form: ReturnType<typeof import('antd').Form.useForm>[0]
@@ -16,6 +19,7 @@ interface WarrantyClaimCreateModalProps {
   onOk: () => void
   onUpload: (file: File) => void
   onRemoveFile: () => void
+  branches: Branch[]
 }
 
 export default function WarrantyClaimCreateModal({
@@ -30,6 +34,7 @@ export default function WarrantyClaimCreateModal({
   onOk,
   onUpload,
   onRemoveFile,
+  branches,
 }: WarrantyClaimCreateModalProps) {
   const { formatDateTime } = useBrandDateTime()
 
@@ -73,6 +78,16 @@ export default function WarrantyClaimCreateModal({
           <Input.TextArea rows={4} maxLength={2000} placeholder="VD: Sau 2 tuần hết liệu trình, vùng điều trị bắt đầu tái phát..." />
         </Form.Item>
         <Form.Item name="contract_file_id" hidden><Input /></Form.Item>
+        <Form.Item name="branch_id" label={<span style={labelStyle}>Cơ sở</span>}>
+  <Select
+    allowClear
+    showSearch
+    optionFilterProp="label"
+    placeholder="Chọn cơ sở"
+    notFoundContent="Chưa có cơ sở"
+    options={branches.map((branch) => ({ value: branch.id, label: branch.name }))}
+  />
+</Form.Item>
         <Form.Item
           label="Giấy cam kết bảo hành đã ký (nếu có)"
           extra="Tải ảnh hoặc PDF giấy khách đã ký để lưu cùng yêu cầu. Không có giấy thì để trống."

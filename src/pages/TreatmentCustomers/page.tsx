@@ -77,6 +77,8 @@ import {
   type Slot,
   type TreatmentAdjustmentRow,
 } from './components/constants'
+import type { Branch } from '@/api/models'
+import { useGetBranches } from '@/api/endpoints/branches'
 
 export default function TreatmentCustomers() {
   const { format: formatMoney, symbol: currencySymbol } = useBrandCurrency()
@@ -133,6 +135,8 @@ export default function TreatmentCustomers() {
   const [promoForm] = Form.useForm()
   const [redeemForm] = Form.useForm()
   const [paymentLookupError, setPaymentLookupError] = useState('')
+const branchesQuery = useGetBranches()
+const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as Branch[], [branchesQuery.data])
 
   const treatmentsQuery = useGetTreatmentCustomers({ page: 1, limit: 500 })
   const rows = (pickData<CustomerTreatment[] | undefined>(treatmentsQuery.data) ?? []) as CustomerTreatment[]
@@ -279,6 +283,7 @@ export default function TreatmentCustomers() {
     setSearchParams(next, { replace: true })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [focusTreatmentId, rows, treatmentsQuery.isLoading])
+
 
   const [customerOptions, setCustomerOptions] = useState<ProfileRow[]>([])
   const custTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -1066,6 +1071,7 @@ export default function TreatmentCustomers() {
         selectedSalePackage={selectedSalePackage}
         currencySymbol={currencySymbol}
         customFieldDefs={customerTreatmentCustomFields}
+        branches={branches}
         submitting={createMutation.isPending}
         onPackageChange={onCreatePackageChange}
         onCancel={() => setCreateOpen(false)}

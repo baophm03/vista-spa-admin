@@ -4,12 +4,15 @@ import CustomFieldFormItems from '@/components/CustomFieldFormItems'
 import type { CustomFieldDefWithOptions } from '@/components/CustomFieldFormItems'
 import type { Appointment } from '@/api/models/appointment'
 import type { ProfileRow, Slot } from './constants'
+import type { Branch } from '@/api/models'
 
 export interface StaffOption {
   id: string
   label: string
   branchId?: string
 }
+
+const labelStyle = { fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#8A8D93', fontWeight: 600 } as const
 
 export interface AppointmentFormModalProps {
   open: boolean
@@ -26,6 +29,7 @@ export interface AppointmentFormModalProps {
   staffOptions: StaffOption[]
   timeOptions: { value: string; label: string }[]
   selectedDate: string
+  branches: Branch[]
   appointmentCustomFields: CustomFieldDefWithOptions[]
   onCancel: () => void
   onSubmit: () => void
@@ -34,7 +38,7 @@ export interface AppointmentFormModalProps {
 export default function AppointmentFormModal({
   open, editing, form, isSaving, slots, slotsLoading, profilesLoading,
   onCustomerSearch, onSelectProfile, profileOptions, staffOptions, timeOptions,
-  selectedDate, appointmentCustomFields, onCancel, onSubmit,
+  selectedDate, branches, appointmentCustomFields, onCancel, onSubmit,
 }: AppointmentFormModalProps) {
   const selectedTime = Form.useWatch('start_time', form) as string | undefined
   const timeHasStaff = slots.some((slot) => slot.start_time.slice(0, 5) === selectedTime && slot.staff_ids.length > 0)
@@ -73,6 +77,16 @@ export default function AppointmentFormModal({
         <Form.Item name="staff_id" label="KTV phụ trách (tùy chọn)">
           <Select allowClear showSearch optionFilterProp="label" disabled={!selectedTime || slotsLoading} placeholder={slotsLoading ? 'Đang tải KTV…' : selectedTime ? 'Chọn KTV đang trống' : 'Chọn ngày và giờ trước'} options={staffOptions.map((staff) => ({ value: staff.id, label: staff.label }))} notFoundContent={timeHasStaff ? 'Không có KTV phù hợp' : 'Khung giờ này chưa có KTV trống'} />
         </Form.Item>
+        <Form.Item name="branch_id" label={<span style={labelStyle}>Cơ sở</span>}>
+                        <Select
+                          allowClear
+                          showSearch
+                          optionFilterProp="label"
+                          placeholder="Chọn cơ sở"
+                          notFoundContent="Chưa có cơ sở"
+                          options={branches.map((branch) => ({ value: branch.id, label: branch.name }))}
+                        />
+                      </Form.Item>
         <Form.Item name="note" label="Ghi chú"><Input.TextArea rows={2} /></Form.Item>
         <CustomFieldFormItems definitions={appointmentCustomFields} />
       </Form>

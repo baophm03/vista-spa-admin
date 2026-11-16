@@ -43,8 +43,10 @@ import {
   type ServiceHistoryAppointment,
   type SkinTypeOption,
 } from './components/constants'
+import type { Branch } from '@/api/models'
+import { useGetBranches } from '@/api/endpoints/branches'
 
-export default function HealthRecords() {
+ export default function HealthRecords() {
   const [rows, setRows] = useState<HealthRow[]>([])
   const [searchText, setSearchText] = useState('')
   const [keyword, setKeyword] = useState('')
@@ -66,6 +68,10 @@ export default function HealthRecords() {
   const [editingRecord, setEditingRecord] = useState<CustomerHealthRecord | null>(null)
   const [saving, setSaving] = useState(false)
   const [form] = Form.useForm()
+const branchesQuery = useGetBranches()
+const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as Branch[], [branchesQuery.data])
+  
+
 
   const load = useCallback(async (): Promise<HealthRow[] | null> => {
     setLoading(true)
@@ -190,6 +196,7 @@ export default function HealthRecords() {
       products_used: record?.products_used ?? undefined,
       advice: record?.advice ?? undefined,
       note: record?.note ?? undefined,
+      branch_id: (record as { branch_id?: string } | null)?.branch_id ?? row.branch_id ?? undefined,
     })
     setModalOpen(true)
   }
@@ -208,6 +215,7 @@ export default function HealthRecords() {
       products_used: (values.products_used as string) || null,
       advice: (values.advice as string) || null,
       note: (values.note as string) || null,
+      branch_id: (values.branch_id as string) || null,
     }
     setSaving(true)
     try {
@@ -297,6 +305,11 @@ export default function HealthRecords() {
             render: (_, row) => currentHealth(row, skinTypes).checked_by || '—',
           },
           {
+  title: 'Cơ sở',
+  width: 130,
+  render: (_, row) => branches.find((branch) => branch.id === row.branch_id)?.name ?? '—',
+},
+          {
             title: 'Ngày khám',
             width: 115,
             render: (_, row) => displayDate(currentHealth(row, skinTypes).checked_date),
@@ -346,6 +359,7 @@ export default function HealthRecords() {
         staffs={staffs}
         skinTypes={skinTypes}
         skinTypesLoading={skinTypesLoading}
+        branches={branches}
       />
     </>
   )

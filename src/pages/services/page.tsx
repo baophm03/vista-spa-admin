@@ -40,6 +40,8 @@ import type { ServiceCategory } from '@/api/models/serviceCategory'
 import ServiceCategories from './ServiceCategories'
 import { formatCurrency, useBrandCurrency } from '@/themeRuntime'
 import { fileSrc, resolveFileSrc, useFileUrlMap } from '@/hooks/useFileUrl'
+import type { Branch } from '@/api/models'
+import { useGetBranches } from '@/api/endpoints/branches'
 
 /** BE list include kèm `service_category`, ảnh bìa `image_file` và bộ ảnh `service_galleries[].file`. */
 type ServiceRow = Service & {
@@ -50,7 +52,7 @@ type ServiceRow = Service & {
 type ServiceCategoryRow = ServiceCategory & { parent?: { id?: string; name?: string } }
 
 /** BE trả thêm resolved_options cho field có lookup_list_id. */
-const DEFAULT_COLUMNS = ['service', 'category', 'price', 'duration', 'points', 'status']
+const DEFAULT_COLUMNS = ['service', 'category', 'branch','price', 'duration', 'points', 'status']
 
 function formatPrice(value: number | string | null | undefined, currency: string) {
   if (value === null || value === undefined || value === '') return '—'
@@ -95,6 +97,8 @@ export default function Services() {
   const [activeTab, setActiveTab] = useState<'services' | 'categories'>('services')
   // Mobile: search thu về nút icon, bấm mới mở ô tìm kiếm
   const [searchOpen, setSearchOpen] = useState(false)
+const branchesQuery = useGetBranches()
+const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as Branch[], [branchesQuery.data])
 
   const listQuery = useQuery({
     queryKey: getGetServiceQueryKey({ ...filters, page, limit }),
@@ -253,6 +257,7 @@ export default function Services() {
         ),
       },
       category: { key: 'category', title: 'Danh mục', render: (_value, row) => row.service_category?.name || '—' },
+      branch: { key: 'branch', title: 'Cơ sở', dataIndex: 'branch_id', width: 140, render: (id) => id ? branches.find((branch) => branch.id === id)?.name ?? '—' : 'Tất cả cơ sở' },
       price: {
         key: 'price',
         title: 'Giá niêm yết',
@@ -414,6 +419,7 @@ export default function Services() {
         categoryOptions={categoryOptions}
         onCancel={() => setOpen(false)}
         onSubmit={() => void submit()}
+        branches={branches}
       />
     </>
   )

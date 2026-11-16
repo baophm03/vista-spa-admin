@@ -547,7 +547,7 @@ export default function Appointments() {
               allowClear
               showSearch
               optionFilterProp="label"
-              placeholder="Tất cả cơ sở"
+              placeholder="Chọn cơ sở"
               style={{ width: 180 }}
               value={branchFilter}
               onChange={(value) => { setBranchFilter(value); setPage(1) }}
@@ -724,6 +724,7 @@ export default function Appointments() {
         staffOptions={availableStaffOptions}
         timeOptions={timeOptions}
         selectedDate={selectedDate}
+        branches={branches}
         appointmentCustomFields={appointmentCustomFields}
         onCancel={() => setOpen(false)}
         onSubmit={submit}

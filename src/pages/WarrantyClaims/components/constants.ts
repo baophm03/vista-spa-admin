@@ -1,5 +1,7 @@
 import type { WarrantyClaim } from '@/api/models/warrantyClaim'
 
+export const labelStyle = { fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#8A8D93', fontWeight: 600 } as const
+
 export type ClaimRow = Omit<WarrantyClaim, 'customer_treatment' | 'session'> & {
   contract_file_id?: string | null
   customer_treatment?: {
