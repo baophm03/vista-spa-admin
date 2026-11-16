@@ -30,13 +30,14 @@ import AcademyCourseDetailModal from './components/AcademyCourseDetailModal'
 import AcademyCourseFormModal from './components/AcademyCourseFormModal'
 import { CATEGORY_OPTIONS, LEVEL_OPTIONS, type CourseFormValues } from './components/constants'
 
-type CourseColumnKey = 'code' | 'name' | 'category' | 'level' | 'tuition' | 'is_active'
+type CourseColumnKey = 'code' | 'name' | 'category' | 'level' | 'tuition' | 'is_active' | 'branch'
 
 const COURSE_COLUMN_OPTIONS: { label: string; value: CourseColumnKey }[] = [
   { label: 'Mã khóa', value: 'code' },
   { label: 'Tên khóa học', value: 'name' },
   { label: 'Danh mục', value: 'category' },
   { label: 'Trình độ', value: 'level' },
+  { label: 'Cơ sở', value: 'branch' },
   { label: 'Học phí', value: 'tuition' },
   { label: 'Trạng thái', value: 'is_active' },
 ]
@@ -197,7 +198,8 @@ export default function AcademyCourses() {
         })}
         columns={[
           { key: 'code', title: 'Mã khóa', dataIndex: 'code' },
-          { key: 'name', title: 'Tên khóa học', dataIndex: 'name', render: (value: string, row: AcademyCourse) => {
+          {
+            key: 'name', title: 'Tên khóa học', dataIndex: 'name', render: (value: string, row: AcademyCourse) => {
               const src = fileSrc((row as { cover_file?: { path?: string } }).cover_file)
               return (
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
@@ -205,7 +207,16 @@ export default function AcademyCourses() {
                   <span>{value}</span>
                 </span>
               )
-            } },
+            }
+          },
+          {
+            key: 'branch',
+            title: 'Cơ sở',
+            dataIndex: 'branch_id',
+            width: 140,
+            render: (id?: string | null) =>
+              id ? branches.find((branch) => branch.id === id)?.name ?? '—' : 'Tất cả cơ sở',
+          },
           { key: 'category', title: 'Danh mục', dataIndex: 'category', render: (value: string) => CATEGORY_OPTIONS.find((item) => item.value === value)?.label ?? value },
           { key: 'level', title: 'Trình độ', dataIndex: 'level', render: (value: string) => LEVEL_OPTIONS.find((item) => item.value === value)?.label ?? value },
           { key: 'tuition', title: 'Học phí', dataIndex: 'tuition', render: (value: number) => formatMoney(value) },
