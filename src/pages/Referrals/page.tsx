@@ -18,16 +18,11 @@ import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
 import { paginateRows } from '@/utils/listTable'
 import { errorMessage, pickData } from '@/api/helpers'
-import type { PostReferralsBody, PutReferralsIdBody } from '@/api/models'
-import {
-  getGetReferralsQueryKey,
-  useGetReferrals,
-  usePostReferrals,
-  usePutReferralsId,
-} from '@/api/endpoints/membership'
-import { useGetCollaborators } from '@/api/endpoints/admin'
-import { useGetCustomerProfiles } from '@/api/endpoints/customer-profiles'
-import { useGetDiscountRules } from '@/api/endpoints/settings'
+import type { PostReferralsAdminBody, PutReferralsIdAdminBody } from '@/api/models'
+import { getGetReferralsAdminQueryKey, useGetReferralsAdmin, usePostReferralsAdmin, usePutReferralsIdAdmin } from '@/api/endpoints/referrals'
+import { useGetCollaboratorsAdmin } from '@/api/endpoints/collaborators'
+import { useGetCustomerProfilesAdmin } from '@/api/endpoints/customer-profiles'
+import { useGetDiscountRulesAdmin } from '@/api/endpoints/discount-rules'
 import type { DiscountRule } from '@/api/models'
 import ReferralModal from './components/ReferralModal'
 import {
@@ -48,14 +43,14 @@ export default function ReferralsPanel() {
   const [form] = Form.useForm()
   const queryClient = useQueryClient()
 
-  const listQuery = useGetReferrals()
+  const listQuery = useGetReferralsAdmin()
   const rows = useMemo(() => {
     const raw = pickData<unknown>(listQuery.data)
     return (Array.isArray(raw) ? raw : (raw as { rows?: ReferralRow[] } | null)?.rows ?? []) as ReferralRow[]
   }, [listQuery.data])
 
   // Map tên CTV để hiển thị "người giới thiệu" khi referrer_type = COLLABORATOR
-  const collaboratorsQuery = useGetCollaborators({ is_active: true })
+  const collaboratorsQuery = useGetCollaboratorsAdmin({ is_active: true })
   const collaboratorNameById = useMemo(() => {
     const raw = pickData<unknown>(collaboratorsQuery.data)
     const list = (Array.isArray(raw) ? raw : (raw as { rows?: { id: string; name: string }[] } | null)?.rows ?? []) as { id: string; name: string }[]
@@ -63,13 +58,13 @@ export default function ReferralsPanel() {
   }, [collaboratorsQuery.data])
 
   // Danh sách khách hàng — dùng cho "khách được giới thiệu" và referrer CUSTOMER
-  const customersQuery = useGetCustomerProfiles({ page: 1, limit: 200 })
+  const customersQuery = useGetCustomerProfilesAdmin({ page: 1, limit: 200 })
   const customers = useMemo(() => {
     const raw = pickData<unknown>(customersQuery.data)
     const list = (Array.isArray(raw) ? raw : (raw as { rows?: CustomerOption[] } | null)?.rows ?? []) as CustomerOption[]
     return list
   }, [customersQuery.data])
-  const discountRulesQuery = useGetDiscountRules({ is_active: true, audience: 'NEW_BY_REFERRAL' })
+  const discountRulesQuery = useGetDiscountRulesAdmin({ is_active: true, audience: 'NEW_BY_REFERRAL' })
   const discountRules = useMemo(() => pickData<DiscountRule[]>(discountRulesQuery.data) ?? [], [discountRulesQuery.data])
 
   const referrerTypeValue = Form.useWatch('referrer_type', form) as string | undefined
@@ -77,26 +72,26 @@ export default function ReferralsPanel() {
   // Tập hợp các customer_profile_id đã được giới thiệu (loại trừ khi tạo mới để tránh trùng)
   const alreadyReferredIds = useMemo(() => new Set(rows.map((r) => r.referred_profile_id)), [rows])
 
-  const createMutation = usePostReferrals({
+  const createMutation = usePostReferralsAdmin({
     mutation: {
       onSuccess: () => {
         message.success('Đã ghi nhận lượt giới thiệu')
         setOpen(false)
         form.resetFields()
-        void queryClient.invalidateQueries({ queryKey: getGetReferralsQueryKey() })
+        void queryClient.invalidateQueries({ queryKey: getGetReferralsAdminQueryKey() })
       },
       onError: (err) => message.error(errorMessage(err)),
     },
   })
 
-  const updateMutation = usePutReferralsId({
+  const updateMutation = usePutReferralsIdAdmin({
     mutation: {
       onSuccess: () => {
         message.success('Đã cập nhật lượt giới thiệu')
         setOpen(false)
         setEditing(null)
         form.resetFields()
-        void queryClient.invalidateQueries({ queryKey: getGetReferralsQueryKey() })
+        void queryClient.invalidateQueries({ queryKey: getGetReferralsAdminQueryKey() })
       },
       onError: (err) => message.error(errorMessage(err)),
     },
@@ -122,14 +117,14 @@ export default function ReferralsPanel() {
   const submit = async () => {
     const values = await form.validateFields()
     if (editing) {
-      const data: PutReferralsIdBody = {
+      const data: PutReferralsIdAdminBody = {
         status: values.status,
         discount_rule_id: values.discount_rule_id,
         note: values.note,
       }
       await updateMutation.mutateAsync({ id: editing.id, data })
     } else {
-      const data: PostReferralsBody = {
+      const data: PostReferralsAdminBody = {
         referrer_type: values.referrer_type,
         referrer_id: values.referrer_id,
         referred_profile_id: values.referred_profile_id,

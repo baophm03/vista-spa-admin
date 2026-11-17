@@ -12,18 +12,8 @@ import { useCustomerProfileAccess } from '@/utils/customerProfileAccess'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { Branch } from '@/api/models/branch'
 import type { BranchUpdate } from '@/api/models/branchUpdate'
-import {
-  getGetBranchesNextCodeQueryKey,
-  getGetBranchesQueryKey,
-  useDeleteBranchesId,
-  useGetBranches,
-  useGetBranchesNextCode,
-  usePostBranches,
-  usePostBranchesIdActivate,
-  usePostBranchesIdDeactivate,
-  usePutBranchesId,
-} from '@/api/endpoints/branches'
-import { usePostFiles } from '@/api/endpoints/files'
+import { getGetBranchesNextCodeAdminQueryKey, getGetBranchesAdminQueryKey, useDeleteBranchesIdAdmin, useGetBranchesAdmin, useGetBranchesNextCodeAdmin, usePostBranchesAdmin, usePostBranchesIdActivateAdmin, usePostBranchesIdDeactivateAdmin, usePutBranchesIdAdmin } from '@/api/endpoints/branches'
+import { usePostFilesAdmin } from '@/api/endpoints/files'
 import { fileSrc, registerUploadedFile, resolveFileSrc, useFileUrlMap } from '@/hooks/useFileUrl'
 import { Can, useAbility } from '@casl/react'
 import { useQueryClient } from '@tanstack/react-query'
@@ -63,21 +53,21 @@ export default function Branches() {
   const { isAdmin, isReceptionist, isTechnician } = useCustomerProfileAccess()
   const hideSummaryForTechnician = isTechnician && !isAdmin && !isReceptionist
 
-  const branchesQuery = useGetBranches({
+  const branchesQuery = useGetBranchesAdmin({
     page,
     limit: 10,
     ...(statusFilter !== 'all' ? { status: statusFilter } : {}),
     ...(keyword ? { q: keyword } : {}),
   } as never)
-  const nextCodeQuery = useGetBranchesNextCode({ query: { enabled: open && !editing } })
+  const nextCodeQuery = useGetBranchesNextCodeAdmin({ query: { enabled: open && !editing } })
   const nextCode = pickData<{ code?: string }>(nextCodeQuery.data)?.code
-  const createMutation = usePostBranches()
-  const updateMutation = usePutBranchesId()
+  const createMutation = usePostBranchesAdmin()
+  const updateMutation = usePutBranchesIdAdmin()
   // Ngừng hoạt động = POST /branches/{id}/deactivate (is_active=false); DELETE /branches/{id} là xóa mềm is_deleted.
-  const deactivateMutation = usePostBranchesIdDeactivate()
-  const deleteBranchMutation = useDeleteBranchesId()
-  const activateMutation = usePostBranchesIdActivate()
-  const uploadMutation = usePostFiles()
+  const deactivateMutation = usePostBranchesIdDeactivateAdmin()
+  const deleteBranchMutation = useDeleteBranchesIdAdmin()
+  const activateMutation = usePostBranchesIdActivateAdmin()
+  const uploadMutation = usePostFilesAdmin()
   const ability = useAbility()
   const canUpdate = ability.can('UPDATE', 'BRANCH')
   const canDelete = ability.can('DELETE', 'BRANCH')
@@ -85,8 +75,8 @@ export default function Branches() {
   const rows = (pickData<Branch[]>(branchesQuery.data) ?? []) as Branch[]
 
   const invalidate = () => {
-    queryClient.invalidateQueries({ queryKey: getGetBranchesQueryKey() })
-    queryClient.invalidateQueries({ queryKey: getGetBranchesNextCodeQueryKey() })
+    queryClient.invalidateQueries({ queryKey: getGetBranchesAdminQueryKey() })
+    queryClient.invalidateQueries({ queryKey: getGetBranchesNextCodeAdminQueryKey() })
   }
 
   const visibleRows = rows

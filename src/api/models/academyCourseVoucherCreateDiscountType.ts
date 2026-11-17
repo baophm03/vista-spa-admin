@@ -13,5 +13,4 @@ export type AcademyCourseVoucherCreateDiscountType = typeof AcademyCourseVoucher
 export const AcademyCourseVoucherCreateDiscountType = {
   PERCENT: 'PERCENT',
   AMOUNT: 'AMOUNT',
-  GIFT: 'GIFT',
 } as const;

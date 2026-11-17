@@ -5,13 +5,16 @@
  * Vista Spa backend API. Uses the NEWSKY+ business error envelope for permission-aware endpoints and the legacy response envelope for existing admin endpoints.
  * OpenAPI spec version: 1.0.0
  */
+import type { VoucherCustomerAssignmentUserId } from './voucherCustomerAssignmentUserId';
+import type { VoucherCustomerAssignmentCustomerProfileId } from './voucherCustomerAssignmentCustomerProfileId';
 import type { VoucherCustomerAssignmentNote } from './voucherCustomerAssignmentNote';
 
 /**
- * Assign a voucher to a customer
+ * Assign a voucher to an app account or CRM customer profile
  */
 export interface VoucherCustomerAssignment {
   voucher_id: string;
-  user_id: string;
+  user_id?: VoucherCustomerAssignmentUserId;
+  customer_profile_id?: VoucherCustomerAssignmentCustomerProfileId;
   note?: VoucherCustomerAssignmentNote;
 }

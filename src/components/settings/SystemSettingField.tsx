@@ -1,7 +1,7 @@
 import { Button, ColorPicker, Input, InputNumber, Select, Space, Switch, Typography } from 'antd'
 import type { SystemSetting, SystemSettingSchema } from './systemSettings'
 import { settingLabel } from './systemSettings'
-import { useGetLookupLists } from '@/api/endpoints/lookup-lists'
+import { useGetLookupListsAdmin } from '@/api/endpoints/lookup-lists'
 import type { LookupItem } from '@/api/models/lookupItem'
 import type { LookupList } from '@/api/models/lookupList'
 import { pickData } from '@/api/helpers'
@@ -270,7 +270,7 @@ interface LookupListWithItems extends LookupList {
 }
 
 function PaymentMethodsField({ setting, value, disabled, onChange }: Props) {
-  const lookupQuery = useGetLookupLists({ key: 'payment.methods' })
+  const lookupQuery = useGetLookupListsAdmin({ key: 'payment.methods' })
   const lookupList = (pickData<LookupListWithItems[]>(lookupQuery.data) ?? []).find((list) => list.key === 'payment.methods')
   const itemsByCode = new Map((lookupList?.lookup_items ?? []).map((item) => [item.code, item]))
   const enumValues = setting.schema.items?.enum ?? []

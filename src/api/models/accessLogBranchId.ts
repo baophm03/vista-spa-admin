@@ -7,6 +7,6 @@
  */
 
 /**
- * Branch of the customer profile, or the employee branch when the log has no customer profile
+ * Branch of the employee who performed the action
  */
 export type AccessLogBranchId = string | null;

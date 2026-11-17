@@ -9,22 +9,10 @@ import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
 import { errorMessage, pickData, pickMeta } from '@/api/helpers'
 import type { ContentCategory } from '@/api/models/contentCategory'
-import {
-  getGetContentPostsQueryKey,
-  getGetContentCategoriesQueryKey,
-  useDeleteContentCategoriesId,
-  useDeleteContentPostsId,
-  useGetContentCategories,
-  useGetContentPosts,
-  usePostContentCategories,
-  usePostContentPosts,
-  usePutContentCategoriesId,
-  usePutContentPostsId,
-  usePutContentPostsIdUnpublish,
-} from '@/api/endpoints/content'
+import { getGetContentPostsAdminQueryKey, getGetContentCategoriesAdminQueryKey, useDeleteContentCategoriesIdAdmin, useDeleteContentPostsIdAdmin, useGetContentCategoriesAdmin, useGetContentPostsAdmin, usePostContentCategoriesAdmin, usePostContentPostsAdmin, usePutContentCategoriesIdAdmin, usePutContentPostsIdAdmin, usePutContentPostsIdUnpublishAdmin } from '@/api/endpoints/content'
 import { apiClient } from '@/api/mutator/custom-instance'
 import { Can, useAbility } from '@casl/react'
-import { usePostFiles } from '@/api/endpoints/files'
+import { usePostFilesAdmin } from '@/api/endpoints/files'
 import { objectKeySrc, registerUploadedFile, fileSrc, resolveFileSrc, useFileUrlMap } from '@/hooks/useFileUrl'
 import ContentPostDrawer from './components/ContentPostDrawer'
 import PostPreviewModal from './components/PostPreviewModal'
@@ -74,27 +62,27 @@ export default function ContentPosts() {
   const [previewData, setPreviewData] = useState<PostFormValues | null>(null)
   const [postForm] = Form.useForm<PostFormValues>()
   const [categoryForm] = Form.useForm<CategoryFormValues>()
-  const uploadMutation = usePostFiles()
+  const uploadMutation = usePostFilesAdmin()
   const fileUrlMap = useFileUrlMap()
 
-  const postsQuery = useGetContentPosts({ ...postFilter, page: postPage, limit: 20 })
-  const categoriesQuery = useGetContentCategories()
+  const postsQuery = useGetContentPostsAdmin({ ...postFilter, page: postPage, limit: 20 })
+  const categoriesQuery = useGetContentCategoriesAdmin()
   const posts = (pickData<ContentPostRow[]>(postsQuery.data) ?? []) as ContentPostRow[]
   const postTotal = pickMeta(postsQuery.data)?.total ?? posts.length
   const categories = (pickData<ContentCategory[]>(categoriesQuery.data) ?? []) as ContentCategory[]
   const categoryById = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories])
 
-  const createPostMutation = usePostContentPosts()
-  const updatePostMutation = usePutContentPostsId()
-  const deletePostMutation = useDeleteContentPostsId()
-  const unpublishMutation = usePutContentPostsIdUnpublish()
-  const createCategoryMutation = usePostContentCategories()
-  const updateCategoryMutation = usePutContentCategoriesId()
-  const deleteCategoryMutation = useDeleteContentCategoriesId()
+  const createPostMutation = usePostContentPostsAdmin()
+  const updatePostMutation = usePutContentPostsIdAdmin()
+  const deletePostMutation = useDeleteContentPostsIdAdmin()
+  const unpublishMutation = usePutContentPostsIdUnpublishAdmin()
+  const createCategoryMutation = usePostContentCategoriesAdmin()
+  const updateCategoryMutation = usePutContentCategoriesIdAdmin()
+  const deleteCategoryMutation = useDeleteContentCategoriesIdAdmin()
 
   const reload = async () => {
-    await queryClient.invalidateQueries({ queryKey: getGetContentPostsQueryKey() })
-    await queryClient.invalidateQueries({ queryKey: getGetContentCategoriesQueryKey() })
+    await queryClient.invalidateQueries({ queryKey: getGetContentPostsAdminQueryKey() })
+    await queryClient.invalidateQueries({ queryKey: getGetContentCategoriesAdminQueryKey() })
   }
 
   const openPostEditor = (row?: ContentPostRow) => {

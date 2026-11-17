@@ -30,11 +30,12 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  DeleteFilesBody,
+  DeleteFilesAdminBody,
   FileUpload,
+  ForbiddenResponse,
   LegacyBadRequestResponse,
-  LegacyUnauthorizedResponse,
-  Response
+  Response,
+  UnauthorizedResponse
 } from '../models';
 
 import { customInstance } from '../mutator/custom-instance';
@@ -44,17 +45,17 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * GET `/files` — files. Requires authentication; the route does not declare granular permissions. Handled by `minioStorage.listObjects`.
+ * GET `/files/admin` — files. Cần đăng nhập + `file.view_all`. Handled by `minioStorage.listObjects`.
  * @summary List files
  */
-export const getFiles = (
+export const getFilesAdmin = (
     
  signal?: AbortSignal
 ) => {
       
       
       return customInstance<Response>(
-      {url: `/files`, method: 'GET', signal
+      {url: `/files/admin`, method: 'GET', signal
     },
       );
     }
@@ -62,75 +63,75 @@ export const getFiles = (
 
 
 
-export const getGetFilesInfiniteQueryKey = () => {
+export const getGetFilesAdminInfiniteQueryKey = () => {
     return [
-    'infinite', `/files`
+    'infinite', `/files/admin`
     ] as const;
     }
 
-export const getGetFilesQueryKey = () => {
+export const getGetFilesAdminQueryKey = () => {
     return [
-    `/files`
+    `/files/admin`
     ] as const;
     }
 
     
-export const getGetFilesInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getFiles>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getFiles>>, TError, TData>>, }
+export const getGetFilesAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getFilesAdmin>>>, TError = LegacyBadRequestResponse | UnauthorizedResponse | ForbiddenResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getFilesAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetFilesInfiniteQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getGetFilesAdminInfiniteQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getFiles>>> = ({ signal }) => getFiles(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getFilesAdmin>>> = ({ signal }) => getFilesAdmin(signal);
 
       
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getFiles>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getFilesAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetFilesInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getFiles>>>
-export type GetFilesInfiniteQueryError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
+export type GetFilesAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getFilesAdmin>>>
+export type GetFilesAdminInfiniteQueryError = LegacyBadRequestResponse | UnauthorizedResponse | ForbiddenResponse
 
 
-export function useGetFilesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getFiles>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
-  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getFiles>>, TError, TData>> & Pick<
+export function useGetFilesAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getFilesAdmin>>>, TError = LegacyBadRequestResponse | UnauthorizedResponse | ForbiddenResponse>(
+  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getFilesAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getFiles>>,
+          Awaited<ReturnType<typeof getFilesAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getFiles>>
+          Awaited<ReturnType<typeof getFilesAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetFilesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getFiles>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getFiles>>, TError, TData>> & Pick<
+export function useGetFilesAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getFilesAdmin>>>, TError = LegacyBadRequestResponse | UnauthorizedResponse | ForbiddenResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getFilesAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getFiles>>,
+          Awaited<ReturnType<typeof getFilesAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getFiles>>
+          Awaited<ReturnType<typeof getFilesAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetFilesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getFiles>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getFiles>>, TError, TData>>, }
+export function useGetFilesAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getFilesAdmin>>>, TError = LegacyBadRequestResponse | UnauthorizedResponse | ForbiddenResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getFilesAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary List files
  */
 
-export function useGetFilesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getFiles>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getFiles>>, TError, TData>>, }
+export function useGetFilesAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getFilesAdmin>>>, TError = LegacyBadRequestResponse | UnauthorizedResponse | ForbiddenResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getFilesAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetFilesInfiniteQueryOptions(options)
+  const queryOptions = getGetFilesAdminInfiniteQueryOptions(options)
 
   const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -142,12 +143,12 @@ export function useGetFilesInfinite<TData = InfiniteData<Awaited<ReturnType<type
 /**
  * @summary List files
  */
-export const prefetchGetFilesInfiniteQuery = async <TData = Awaited<ReturnType<typeof getFiles>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getFiles>>, TError, TData>>, }
+export const prefetchGetFilesAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getFilesAdmin>>, TError = LegacyBadRequestResponse | UnauthorizedResponse | ForbiddenResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getFilesAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetFilesInfiniteQueryOptions(options)
+  const queryOptions = getGetFilesAdminInfiniteQueryOptions(options)
 
   await queryClient.prefetchInfiniteQuery(queryOptions);
 
@@ -156,62 +157,62 @@ export const prefetchGetFilesInfiniteQuery = async <TData = Awaited<ReturnType<t
 
 
 
-export const getGetFilesQueryOptions = <TData = Awaited<ReturnType<typeof getFiles>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getFiles>>, TError, TData>>, }
+export const getGetFilesAdminQueryOptions = <TData = Awaited<ReturnType<typeof getFilesAdmin>>, TError = LegacyBadRequestResponse | UnauthorizedResponse | ForbiddenResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getFilesAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetFilesQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getGetFilesAdminQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getFiles>>> = ({ signal }) => getFiles(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getFilesAdmin>>> = ({ signal }) => getFilesAdmin(signal);
 
       
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getFiles>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getFilesAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetFilesQueryResult = NonNullable<Awaited<ReturnType<typeof getFiles>>>
-export type GetFilesQueryError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
+export type GetFilesAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getFilesAdmin>>>
+export type GetFilesAdminQueryError = LegacyBadRequestResponse | UnauthorizedResponse | ForbiddenResponse
 
 
-export function useGetFiles<TData = Awaited<ReturnType<typeof getFiles>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getFiles>>, TError, TData>> & Pick<
+export function useGetFilesAdmin<TData = Awaited<ReturnType<typeof getFilesAdmin>>, TError = LegacyBadRequestResponse | UnauthorizedResponse | ForbiddenResponse>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getFilesAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getFiles>>,
+          Awaited<ReturnType<typeof getFilesAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getFiles>>
+          Awaited<ReturnType<typeof getFilesAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetFiles<TData = Awaited<ReturnType<typeof getFiles>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getFiles>>, TError, TData>> & Pick<
+export function useGetFilesAdmin<TData = Awaited<ReturnType<typeof getFilesAdmin>>, TError = LegacyBadRequestResponse | UnauthorizedResponse | ForbiddenResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getFilesAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getFiles>>,
+          Awaited<ReturnType<typeof getFilesAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getFiles>>
+          Awaited<ReturnType<typeof getFilesAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetFiles<TData = Awaited<ReturnType<typeof getFiles>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getFiles>>, TError, TData>>, }
+export function useGetFilesAdmin<TData = Awaited<ReturnType<typeof getFilesAdmin>>, TError = LegacyBadRequestResponse | UnauthorizedResponse | ForbiddenResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getFilesAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary List files
  */
 
-export function useGetFiles<TData = Awaited<ReturnType<typeof getFiles>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getFiles>>, TError, TData>>, }
+export function useGetFilesAdmin<TData = Awaited<ReturnType<typeof getFilesAdmin>>, TError = LegacyBadRequestResponse | UnauthorizedResponse | ForbiddenResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getFilesAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetFilesQueryOptions(options)
+  const queryOptions = getGetFilesAdminQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -223,12 +224,12 @@ export function useGetFiles<TData = Awaited<ReturnType<typeof getFiles>>, TError
 /**
  * @summary List files
  */
-export const prefetchGetFilesQuery = async <TData = Awaited<ReturnType<typeof getFiles>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getFiles>>, TError, TData>>, }
+export const prefetchGetFilesAdminQuery = async <TData = Awaited<ReturnType<typeof getFilesAdmin>>, TError = LegacyBadRequestResponse | UnauthorizedResponse | ForbiddenResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getFilesAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetFilesQueryOptions(options)
+  const queryOptions = getGetFilesAdminQueryOptions(options)
 
   await queryClient.prefetchQuery(queryOptions);
 
@@ -238,10 +239,10 @@ export const prefetchGetFilesQuery = async <TData = Awaited<ReturnType<typeof ge
 
 
 /**
- * POST `/files` — files. Requires authentication; the route does not declare granular permissions. Upload the file using `multipart/form-data`. Handled by `minioStorage.putObject`.
+ * POST `/files/admin` — files. Cần đăng nhập + `file.create`. Upload the file using `multipart/form-data`. Handled by `minioStorage.putObject`.
  * @summary Upload a new file
  */
-export const postFiles = (
+export const postFilesAdmin = (
     fileUpload: FileUpload,
  signal?: AbortSignal
 ) => {
@@ -256,7 +257,7 @@ if(fileUpload.created_by !== undefined && fileUpload.created_by !== null) {
  }
 
       return customInstance<Response>(
-      {url: `/files`, method: 'POST',
+      {url: `/files/admin`, method: 'POST',
       headers: {'Content-Type': 'multipart/form-data', },
        data: formData, signal
     },
@@ -265,11 +266,11 @@ if(fileUpload.created_by !== undefined && fileUpload.created_by !== null) {
   
 
 
-export const getPostFilesMutationOptions = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postFiles>>, TError,{data: FileUpload}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postFiles>>, TError,{data: FileUpload}, TContext> => {
+export const getPostFilesAdminMutationOptions = <TError = LegacyBadRequestResponse | UnauthorizedResponse | ForbiddenResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postFilesAdmin>>, TError,{data: FileUpload}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postFilesAdmin>>, TError,{data: FileUpload}, TContext> => {
 
-const mutationKey = ['postFiles'];
+const mutationKey = ['postFilesAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -279,10 +280,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postFiles>>, {data: FileUpload}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postFilesAdmin>>, {data: FileUpload}> = (props) => {
           const {data} = props ?? {};
 
-          return  postFiles(data,)
+          return  postFilesAdmin(data,)
         }
 
         
@@ -290,50 +291,50 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PostFilesMutationResult = NonNullable<Awaited<ReturnType<typeof postFiles>>>
-    export type PostFilesMutationBody = FileUpload
-    export type PostFilesMutationError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
+    export type PostFilesAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postFilesAdmin>>>
+    export type PostFilesAdminMutationBody = FileUpload
+    export type PostFilesAdminMutationError = LegacyBadRequestResponse | UnauthorizedResponse | ForbiddenResponse
 
     /**
  * @summary Upload a new file
  */
-export const usePostFiles = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postFiles>>, TError,{data: FileUpload}, TContext>, }
+export const usePostFilesAdmin = <TError = LegacyBadRequestResponse | UnauthorizedResponse | ForbiddenResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postFilesAdmin>>, TError,{data: FileUpload}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postFiles>>,
+        Awaited<ReturnType<typeof postFilesAdmin>>,
         TError,
         {data: FileUpload},
         TContext
       > => {
 
-      const mutationOptions = getPostFilesMutationOptions(options);
+      const mutationOptions = getPostFilesAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * DELETE `/files` — files. Requires authentication; the route does not declare granular permissions. Body field: `filePath`. Handled by `minioStorage.objectExists`.
+ * DELETE `/files/admin` — files. Cần đăng nhập + `file.delete_all`. Body field: `filePath`. Handled by `minioStorage.objectExists`.
  * @summary Delete files in bulk
  */
-export const deleteFiles = (
-    deleteFilesBody: DeleteFilesBody,
+export const deleteFilesAdmin = (
+    deleteFilesAdminBody: DeleteFilesAdminBody,
  ) => {
       
       
       return customInstance<Response>(
-      {url: `/files`, method: 'DELETE',
+      {url: `/files/admin`, method: 'DELETE',
       headers: {'Content-Type': 'application/json', },
-      data: deleteFilesBody
+      data: deleteFilesAdminBody
     },
       );
     }
   
 
 
-export const getDeleteFilesMutationOptions = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteFiles>>, TError,{data: DeleteFilesBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof deleteFiles>>, TError,{data: DeleteFilesBody}, TContext> => {
+export const getDeleteFilesAdminMutationOptions = <TError = LegacyBadRequestResponse | UnauthorizedResponse | ForbiddenResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteFilesAdmin>>, TError,{data: DeleteFilesAdminBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteFilesAdmin>>, TError,{data: DeleteFilesAdminBody}, TContext> => {
 
-const mutationKey = ['deleteFiles'];
+const mutationKey = ['deleteFilesAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -343,10 +344,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteFiles>>, {data: DeleteFilesBody}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteFilesAdmin>>, {data: DeleteFilesAdminBody}> = (props) => {
           const {data} = props ?? {};
 
-          return  deleteFiles(data,)
+          return  deleteFilesAdmin(data,)
         }
 
         
@@ -354,23 +355,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type DeleteFilesMutationResult = NonNullable<Awaited<ReturnType<typeof deleteFiles>>>
-    export type DeleteFilesMutationBody = DeleteFilesBody
-    export type DeleteFilesMutationError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void
+    export type DeleteFilesAdminMutationResult = NonNullable<Awaited<ReturnType<typeof deleteFilesAdmin>>>
+    export type DeleteFilesAdminMutationBody = DeleteFilesAdminBody
+    export type DeleteFilesAdminMutationError = LegacyBadRequestResponse | UnauthorizedResponse | ForbiddenResponse | void
 
     /**
  * @summary Delete files in bulk
  */
-export const useDeleteFiles = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteFiles>>, TError,{data: DeleteFilesBody}, TContext>, }
+export const useDeleteFilesAdmin = <TError = LegacyBadRequestResponse | UnauthorizedResponse | ForbiddenResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteFilesAdmin>>, TError,{data: DeleteFilesAdminBody}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteFiles>>,
+        Awaited<ReturnType<typeof deleteFilesAdmin>>,
         TError,
-        {data: DeleteFilesBody},
+        {data: DeleteFilesAdminBody},
         TContext
       > => {
 
-      const mutationOptions = getDeleteFilesMutationOptions(options);
+      const mutationOptions = getDeleteFilesAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

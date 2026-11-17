@@ -4,25 +4,19 @@ import { Alert, Button, Card, Form, Input, Modal, Select, Space, Spin, Switch, T
 import { BellOutlined, FilterOutlined } from '@ant-design/icons'
 import { useAbility } from '@casl/react'
 import ListPagination from '@/components/base/ListPagination'
-import { getGetAppConfigQueryKey } from '@/api/endpoints/app'
-import {
-  getCustomerProfiles,
-  getGetCustomerProfilesQueryKey,
-} from '@/api/endpoints/customer-profiles'
-import { postNotifications } from '@/api/endpoints/admin'
-import {
-  getGetLuckyWheelsIdEligibleCustomersQueryKey,
-  getLuckyWheelsIdEligibleCustomers,
-} from '@/api/endpoints/lucky-wheels'
-import { getGetSettingsQueryKey, getSettings, putSettings } from '@/api/endpoints/settings'
+import { getGetConfigQueryKey } from '@/api/endpoints/config'
+import { getCustomerProfilesAdmin, getGetCustomerProfilesAdminQueryKey } from '@/api/endpoints/customer-profiles'
+import { postNotificationsAdmin } from '@/api/endpoints/notifications'
+import { getGetLuckyWheelsIdEligibleCustomersAdminQueryKey, getLuckyWheelsIdEligibleCustomersAdmin } from '@/api/endpoints/lucky-wheels'
+import { getGetSettingsAdminQueryKey, getSettingsAdmin, putSettingsAdmin } from '@/api/endpoints/settings'
 import { errorMessage, pickData, pickMeta } from '@/api/helpers'
 import type { CustomerProfile } from '@/api/models/customerProfile'
-import type { GetCustomerProfilesParams } from '@/api/models/getCustomerProfilesParams'
+import type { GetCustomerProfilesAdminParams } from '@/api/models/getCustomerProfilesAdminParams'
 import type { Notification } from '@/api/models/notification'
 import type { LuckyWheel } from '@/api/models/luckyWheel'
-import type { GetLuckyWheelsIdEligibleCustomers200AllOfResponseDataItem } from '@/api/models/getLuckyWheelsIdEligibleCustomers200AllOfResponseDataItem'
+import type { GetLuckyWheelsIdEligibleCustomersAdmin200AllOfResponseDataItem } from '@/api/models/getLuckyWheelsIdEligibleCustomersAdmin200AllOfResponseDataItem'
 import type { SystemSetting, SystemSettingUpdate } from '@/components/settings/systemSettings'
-import type { PutSettingsBody } from '@/api/models/putSettingsBody'
+import type { PutSettingsAdminBody } from '@/api/models/putSettingsAdminBody'
 
 const CUSTOMER_DEFAULT_SETTING = 'lucky_wheel.customer_default_enabled'
 const CUSTOMER_OVERRIDES_SETTING = 'lucky_wheel.customer_overrides'
@@ -54,14 +48,14 @@ type WheelNotificationTarget =
   | { type: 'customer'; customerProfileId: string; userId?: string | null; email?: string | null; customerName: string }
 
 async function getAllCustomerProfiles(): Promise<CustomerProfile[]> {
-  const firstPage = await getCustomerProfiles({ page: 1, limit: NOTIFICATION_RECIPIENTS_PAGE_SIZE })
+  const firstPage = await getCustomerProfilesAdmin({ page: 1, limit: NOTIFICATION_RECIPIENTS_PAGE_SIZE })
   const firstRows = pickData<CustomerProfile[]>(firstPage) ?? []
   const total = pickMeta(firstPage)?.total ?? firstRows.length
   const pageCount = Math.ceil(total / NOTIFICATION_RECIPIENTS_PAGE_SIZE)
   if (pageCount <= 1) return firstRows
 
   const remainingPages = await Promise.all(Array.from({ length: pageCount - 1 }, (_, index) =>
-    getCustomerProfiles({ page: index + 2, limit: NOTIFICATION_RECIPIENTS_PAGE_SIZE }),
+    getCustomerProfilesAdmin({ page: index + 2, limit: NOTIFICATION_RECIPIENTS_PAGE_SIZE }),
   ))
   return [
     ...firstRows,
@@ -76,7 +70,7 @@ interface Props {
 }
 
 type CustomerRow = Pick<CustomerProfile, 'id' | 'user_id' | 'full_name' | 'customer_code' | 'phone' | 'email'>
-type WheelEligibleCustomer = GetLuckyWheelsIdEligibleCustomers200AllOfResponseDataItem & { user_id?: string | null; email?: string | null }
+type WheelEligibleCustomer = GetLuckyWheelsIdEligibleCustomersAdmin200AllOfResponseDataItem & { user_id?: string | null; email?: string | null }
 
 export default function CustomerVisibilityTab({ canEdit, wheels, wheelsLoading = false }: Props) {
   const canSendNotifications = useAbility().can('CREATE', 'NOTIFICATION')
@@ -90,8 +84,8 @@ export default function CustomerVisibilityTab({ canEdit, wheels, wheelsLoading =
   const [notificationForm] = Form.useForm<WheelNotificationFormValues>()
   const notificationChannel = Form.useWatch('channel', notificationForm) ?? 'app'
   const settingsQuery = useQuery({
-    queryKey: getGetSettingsQueryKey(),
-    queryFn: async () => pickData<SystemSetting[]>(await getSettings()) ?? [],
+    queryKey: getGetSettingsAdminQueryKey(),
+    queryFn: async () => pickData<SystemSetting[]>(await getSettingsAdmin()) ?? [],
   })
   const settingRows = settingsQuery.data ?? []
   const defaultSetting = settingRows.find((item) => item.key === CUSTOMER_DEFAULT_SETTING)
@@ -108,19 +102,19 @@ export default function CustomerVisibilityTab({ canEdit, wheels, wheelsLoading =
       )
     : []
 
-  const customerParams: GetCustomerProfilesParams = {
+  const customerParams: GetCustomerProfilesAdminParams = {
     page: customerPage,
     limit: CUSTOMER_PAGE_SIZE,
     ...(appliedSearch ? { q: appliedSearch } : {}),
   }
   const customerQuery = useQuery({
-    queryKey: getGetCustomerProfilesQueryKey(customerParams),
-    queryFn: async () => getCustomerProfiles(customerParams),
+    queryKey: getGetCustomerProfilesAdminQueryKey(customerParams),
+    queryFn: async () => getCustomerProfilesAdmin(customerParams),
   })
   const eligibleCustomerParams = { search: appliedSearch || undefined, limit: 200 }
   const eligibleCustomerQuery = useQuery({
-    queryKey: getGetLuckyWheelsIdEligibleCustomersQueryKey(selectedWheelId, eligibleCustomerParams),
-    queryFn: async () => getLuckyWheelsIdEligibleCustomers(selectedWheelId!, eligibleCustomerParams),
+    queryKey: getGetLuckyWheelsIdEligibleCustomersAdminQueryKey(selectedWheelId, eligibleCustomerParams),
+    queryFn: async () => getLuckyWheelsIdEligibleCustomersAdmin(selectedWheelId!, eligibleCustomerParams),
     enabled: Boolean(selectedWheelId),
   })
   const profileRows = pickData<CustomerProfile[]>(customerQuery.data) ?? []
@@ -178,12 +172,12 @@ export default function CustomerVisibilityTab({ canEdit, wheels, wheelsLoading =
   const notificationRecipients = getNotificationRecipients(notificationChannel)
 
   const updateMutation = useMutation({
-    mutationFn: async ({ updates }: SettingMutation) => putSettings({ items: updates } as PutSettingsBody),
+    mutationFn: async ({ updates }: SettingMutation) => putSettingsAdmin({ items: updates } as PutSettingsAdminBody),
     onSuccess: async (_, variables) => {
       message.success(variables.successMessage)
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: getGetSettingsQueryKey() }),
-        queryClient.invalidateQueries({ queryKey: getGetAppConfigQueryKey() }),
+        queryClient.invalidateQueries({ queryKey: getGetSettingsAdminQueryKey() }),
+        queryClient.invalidateQueries({ queryKey: getGetConfigQueryKey() }),
       ])
     },
     onError: (error) => message.error(errorMessage(error, 'Không thể cập nhật quyền tham gia vòng quay')),
@@ -195,7 +189,7 @@ export default function CustomerVisibilityTab({ canEdit, wheels, wheelsLoading =
       let failed = 0
       for (let index = 0; index < recipients.length; index += 10) {
         const batch = recipients.slice(index, index + 10)
-        const results = await Promise.allSettled(batch.map(({ userId, customerProfileId }) => postNotifications({
+        const results = await Promise.allSettled(batch.map(({ userId, customerProfileId }) => postNotificationsAdmin({
           event_key: 'SYSTEM',
           channel,
           title,

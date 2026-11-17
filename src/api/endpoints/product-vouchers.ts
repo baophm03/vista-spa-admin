@@ -30,6 +30,7 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  GetProductVouchersAdminParams,
   ProductVoucherCreate,
   ProductVoucherUpdate
 } from '../models';
@@ -43,14 +44,14 @@ import { customInstance } from '../mutator/custom-instance';
 /**
  * @summary Get one product voucher
  */
-export const getProductVouchersId = (
+export const getProductVouchersIdAdmin = (
     id: string,
  signal?: AbortSignal
 ) => {
       
       
       return customInstance<void>(
-      {url: `/product-vouchers/${id}`, method: 'GET', signal
+      {url: `/product-vouchers/${id}/admin`, method: 'GET', signal
     },
       );
     }
@@ -58,75 +59,75 @@ export const getProductVouchersId = (
 
 
 
-export const getGetProductVouchersIdInfiniteQueryKey = (id?: string,) => {
+export const getGetProductVouchersIdAdminInfiniteQueryKey = (id?: string,) => {
     return [
-    'infinite', `/product-vouchers/${id}`
+    'infinite', `/product-vouchers/${id}/admin`
     ] as const;
     }
 
-export const getGetProductVouchersIdQueryKey = (id?: string,) => {
+export const getGetProductVouchersIdAdminQueryKey = (id?: string,) => {
     return [
-    `/product-vouchers/${id}`
+    `/product-vouchers/${id}/admin`
     ] as const;
     }
 
     
-export const getGetProductVouchersIdInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getProductVouchersId>>>, TError = unknown>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductVouchersId>>, TError, TData>>, }
+export const getGetProductVouchersIdAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getProductVouchersIdAdmin>>>, TError = unknown>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductVouchersIdAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetProductVouchersIdInfiniteQueryKey(id);
+  const queryKey =  queryOptions?.queryKey ?? getGetProductVouchersIdAdminInfiniteQueryKey(id);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getProductVouchersId>>> = ({ signal }) => getProductVouchersId(id, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getProductVouchersIdAdmin>>> = ({ signal }) => getProductVouchersIdAdmin(id, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductVouchersId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductVouchersIdAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetProductVouchersIdInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getProductVouchersId>>>
-export type GetProductVouchersIdInfiniteQueryError = unknown
+export type GetProductVouchersIdAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getProductVouchersIdAdmin>>>
+export type GetProductVouchersIdAdminInfiniteQueryError = unknown
 
 
-export function useGetProductVouchersIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProductVouchersId>>>, TError = unknown>(
- id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductVouchersId>>, TError, TData>> & Pick<
+export function useGetProductVouchersIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProductVouchersIdAdmin>>>, TError = unknown>(
+ id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductVouchersIdAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getProductVouchersId>>,
+          Awaited<ReturnType<typeof getProductVouchersIdAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getProductVouchersId>>
+          Awaited<ReturnType<typeof getProductVouchersIdAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetProductVouchersIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProductVouchersId>>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductVouchersId>>, TError, TData>> & Pick<
+export function useGetProductVouchersIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProductVouchersIdAdmin>>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductVouchersIdAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getProductVouchersId>>,
+          Awaited<ReturnType<typeof getProductVouchersIdAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getProductVouchersId>>
+          Awaited<ReturnType<typeof getProductVouchersIdAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetProductVouchersIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProductVouchersId>>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductVouchersId>>, TError, TData>>, }
+export function useGetProductVouchersIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProductVouchersIdAdmin>>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductVouchersIdAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Get one product voucher
  */
 
-export function useGetProductVouchersIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProductVouchersId>>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductVouchersId>>, TError, TData>>, }
+export function useGetProductVouchersIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProductVouchersIdAdmin>>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductVouchersIdAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetProductVouchersIdInfiniteQueryOptions(id,options)
+  const queryOptions = getGetProductVouchersIdAdminInfiniteQueryOptions(id,options)
 
   const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -138,12 +139,12 @@ export function useGetProductVouchersIdInfinite<TData = InfiniteData<Awaited<Ret
 /**
  * @summary Get one product voucher
  */
-export const prefetchGetProductVouchersIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getProductVouchersId>>, TError = unknown>(
- queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductVouchersId>>, TError, TData>>, }
+export const prefetchGetProductVouchersIdAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getProductVouchersIdAdmin>>, TError = unknown>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductVouchersIdAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetProductVouchersIdInfiniteQueryOptions(id,options)
+  const queryOptions = getGetProductVouchersIdAdminInfiniteQueryOptions(id,options)
 
   await queryClient.prefetchInfiniteQuery(queryOptions);
 
@@ -152,62 +153,62 @@ export const prefetchGetProductVouchersIdInfiniteQuery = async <TData = Awaited<
 
 
 
-export const getGetProductVouchersIdQueryOptions = <TData = Awaited<ReturnType<typeof getProductVouchersId>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductVouchersId>>, TError, TData>>, }
+export const getGetProductVouchersIdAdminQueryOptions = <TData = Awaited<ReturnType<typeof getProductVouchersIdAdmin>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductVouchersIdAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetProductVouchersIdQueryKey(id);
+  const queryKey =  queryOptions?.queryKey ?? getGetProductVouchersIdAdminQueryKey(id);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getProductVouchersId>>> = ({ signal }) => getProductVouchersId(id, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getProductVouchersIdAdmin>>> = ({ signal }) => getProductVouchersIdAdmin(id, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getProductVouchersId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getProductVouchersIdAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetProductVouchersIdQueryResult = NonNullable<Awaited<ReturnType<typeof getProductVouchersId>>>
-export type GetProductVouchersIdQueryError = unknown
+export type GetProductVouchersIdAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getProductVouchersIdAdmin>>>
+export type GetProductVouchersIdAdminQueryError = unknown
 
 
-export function useGetProductVouchersId<TData = Awaited<ReturnType<typeof getProductVouchersId>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductVouchersId>>, TError, TData>> & Pick<
+export function useGetProductVouchersIdAdmin<TData = Awaited<ReturnType<typeof getProductVouchersIdAdmin>>, TError = unknown>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductVouchersIdAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getProductVouchersId>>,
+          Awaited<ReturnType<typeof getProductVouchersIdAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getProductVouchersId>>
+          Awaited<ReturnType<typeof getProductVouchersIdAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetProductVouchersId<TData = Awaited<ReturnType<typeof getProductVouchersId>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductVouchersId>>, TError, TData>> & Pick<
+export function useGetProductVouchersIdAdmin<TData = Awaited<ReturnType<typeof getProductVouchersIdAdmin>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductVouchersIdAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getProductVouchersId>>,
+          Awaited<ReturnType<typeof getProductVouchersIdAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getProductVouchersId>>
+          Awaited<ReturnType<typeof getProductVouchersIdAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetProductVouchersId<TData = Awaited<ReturnType<typeof getProductVouchersId>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductVouchersId>>, TError, TData>>, }
+export function useGetProductVouchersIdAdmin<TData = Awaited<ReturnType<typeof getProductVouchersIdAdmin>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductVouchersIdAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Get one product voucher
  */
 
-export function useGetProductVouchersId<TData = Awaited<ReturnType<typeof getProductVouchersId>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductVouchersId>>, TError, TData>>, }
+export function useGetProductVouchersIdAdmin<TData = Awaited<ReturnType<typeof getProductVouchersIdAdmin>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductVouchersIdAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetProductVouchersIdQueryOptions(id,options)
+  const queryOptions = getGetProductVouchersIdAdminQueryOptions(id,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -219,12 +220,12 @@ export function useGetProductVouchersId<TData = Awaited<ReturnType<typeof getPro
 /**
  * @summary Get one product voucher
  */
-export const prefetchGetProductVouchersIdQuery = async <TData = Awaited<ReturnType<typeof getProductVouchersId>>, TError = unknown>(
- queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductVouchersId>>, TError, TData>>, }
+export const prefetchGetProductVouchersIdAdminQuery = async <TData = Awaited<ReturnType<typeof getProductVouchersIdAdmin>>, TError = unknown>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductVouchersIdAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetProductVouchersIdQueryOptions(id,options)
+  const queryOptions = getGetProductVouchersIdAdminQueryOptions(id,options)
 
   await queryClient.prefetchQuery(queryOptions);
 
@@ -236,14 +237,14 @@ export const prefetchGetProductVouchersIdQuery = async <TData = Awaited<ReturnTy
 /**
  * @summary Update a product voucher
  */
-export const putProductVouchersId = (
+export const putProductVouchersIdAdmin = (
     id: string,
     productVoucherUpdate: ProductVoucherUpdate,
  ) => {
       
       
       return customInstance<void>(
-      {url: `/product-vouchers/${id}`, method: 'PUT',
+      {url: `/product-vouchers/${id}/admin`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: productVoucherUpdate
     },
@@ -252,11 +253,11 @@ export const putProductVouchersId = (
   
 
 
-export const getPutProductVouchersIdMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putProductVouchersId>>, TError,{id: string;data: ProductVoucherUpdate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putProductVouchersId>>, TError,{id: string;data: ProductVoucherUpdate}, TContext> => {
+export const getPutProductVouchersIdAdminMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putProductVouchersIdAdmin>>, TError,{id: string;data: ProductVoucherUpdate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putProductVouchersIdAdmin>>, TError,{id: string;data: ProductVoucherUpdate}, TContext> => {
 
-const mutationKey = ['putProductVouchersId'];
+const mutationKey = ['putProductVouchersIdAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -266,10 +267,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putProductVouchersId>>, {id: string;data: ProductVoucherUpdate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putProductVouchersIdAdmin>>, {id: string;data: ProductVoucherUpdate}> = (props) => {
           const {id,data} = props ?? {};
 
-          return  putProductVouchersId(id,data,)
+          return  putProductVouchersIdAdmin(id,data,)
         }
 
         
@@ -277,47 +278,47 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PutProductVouchersIdMutationResult = NonNullable<Awaited<ReturnType<typeof putProductVouchersId>>>
-    export type PutProductVouchersIdMutationBody = ProductVoucherUpdate
-    export type PutProductVouchersIdMutationError = unknown
+    export type PutProductVouchersIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof putProductVouchersIdAdmin>>>
+    export type PutProductVouchersIdAdminMutationBody = ProductVoucherUpdate
+    export type PutProductVouchersIdAdminMutationError = unknown
 
     /**
  * @summary Update a product voucher
  */
-export const usePutProductVouchersId = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putProductVouchersId>>, TError,{id: string;data: ProductVoucherUpdate}, TContext>, }
+export const usePutProductVouchersIdAdmin = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putProductVouchersIdAdmin>>, TError,{id: string;data: ProductVoucherUpdate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putProductVouchersId>>,
+        Awaited<ReturnType<typeof putProductVouchersIdAdmin>>,
         TError,
         {id: string;data: ProductVoucherUpdate},
         TContext
       > => {
 
-      const mutationOptions = getPutProductVouchersIdMutationOptions(options);
+      const mutationOptions = getPutProductVouchersIdAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
  * @summary Deactivate a product voucher
  */
-export const deleteProductVouchersId = (
+export const deleteProductVouchersIdAdmin = (
     id: string,
  ) => {
       
       
       return customInstance<void>(
-      {url: `/product-vouchers/${id}`, method: 'DELETE'
+      {url: `/product-vouchers/${id}/admin`, method: 'DELETE'
     },
       );
     }
   
 
 
-export const getDeleteProductVouchersIdMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteProductVouchersId>>, TError,{id: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof deleteProductVouchersId>>, TError,{id: string}, TContext> => {
+export const getDeleteProductVouchersIdAdminMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteProductVouchersIdAdmin>>, TError,{id: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteProductVouchersIdAdmin>>, TError,{id: string}, TContext> => {
 
-const mutationKey = ['deleteProductVouchersId'];
+const mutationKey = ['deleteProductVouchersIdAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -327,10 +328,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteProductVouchersId>>, {id: string}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteProductVouchersIdAdmin>>, {id: string}> = (props) => {
           const {id} = props ?? {};
 
-          return  deleteProductVouchersId(id,)
+          return  deleteProductVouchersIdAdmin(id,)
         }
 
         
@@ -338,37 +339,38 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type DeleteProductVouchersIdMutationResult = NonNullable<Awaited<ReturnType<typeof deleteProductVouchersId>>>
+    export type DeleteProductVouchersIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof deleteProductVouchersIdAdmin>>>
     
-    export type DeleteProductVouchersIdMutationError = unknown
+    export type DeleteProductVouchersIdAdminMutationError = unknown
 
     /**
  * @summary Deactivate a product voucher
  */
-export const useDeleteProductVouchersId = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteProductVouchersId>>, TError,{id: string}, TContext>, }
+export const useDeleteProductVouchersIdAdmin = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteProductVouchersIdAdmin>>, TError,{id: string}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteProductVouchersId>>,
+        Awaited<ReturnType<typeof deleteProductVouchersIdAdmin>>,
         TError,
         {id: string},
         TContext
       > => {
 
-      const mutationOptions = getDeleteProductVouchersIdMutationOptions(options);
+      const mutationOptions = getDeleteProductVouchersIdAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
  * @summary List product vouchers
  */
-export const getProductVouchers = (
-    
+export const getProductVouchersAdmin = (
+    params?: GetProductVouchersAdminParams,
  signal?: AbortSignal
 ) => {
       
       
       return customInstance<void>(
-      {url: `/product-vouchers`, method: 'GET', signal
+      {url: `/product-vouchers/admin`, method: 'GET',
+        params, signal
     },
       );
     }
@@ -376,75 +378,75 @@ export const getProductVouchers = (
 
 
 
-export const getGetProductVouchersInfiniteQueryKey = () => {
+export const getGetProductVouchersAdminInfiniteQueryKey = (params?: GetProductVouchersAdminParams,) => {
     return [
-    'infinite', `/product-vouchers`
+    'infinite', `/product-vouchers/admin`, ...(params ? [params]: [])
     ] as const;
     }
 
-export const getGetProductVouchersQueryKey = () => {
+export const getGetProductVouchersAdminQueryKey = (params?: GetProductVouchersAdminParams,) => {
     return [
-    `/product-vouchers`
+    `/product-vouchers/admin`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetProductVouchersInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getProductVouchers>>>, TError = unknown>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductVouchers>>, TError, TData>>, }
+export const getGetProductVouchersAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getProductVouchersAdmin>>>, TError = unknown>(params?: GetProductVouchersAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductVouchersAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetProductVouchersInfiniteQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getGetProductVouchersAdminInfiniteQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getProductVouchers>>> = ({ signal }) => getProductVouchers(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getProductVouchersAdmin>>> = ({ signal }) => getProductVouchersAdmin(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductVouchers>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductVouchersAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetProductVouchersInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getProductVouchers>>>
-export type GetProductVouchersInfiniteQueryError = unknown
+export type GetProductVouchersAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getProductVouchersAdmin>>>
+export type GetProductVouchersAdminInfiniteQueryError = unknown
 
 
-export function useGetProductVouchersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProductVouchers>>>, TError = unknown>(
-  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductVouchers>>, TError, TData>> & Pick<
+export function useGetProductVouchersAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProductVouchersAdmin>>>, TError = unknown>(
+ params: undefined |  GetProductVouchersAdminParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductVouchersAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getProductVouchers>>,
+          Awaited<ReturnType<typeof getProductVouchersAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getProductVouchers>>
+          Awaited<ReturnType<typeof getProductVouchersAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetProductVouchersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProductVouchers>>>, TError = unknown>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductVouchers>>, TError, TData>> & Pick<
+export function useGetProductVouchersAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProductVouchersAdmin>>>, TError = unknown>(
+ params?: GetProductVouchersAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductVouchersAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getProductVouchers>>,
+          Awaited<ReturnType<typeof getProductVouchersAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getProductVouchers>>
+          Awaited<ReturnType<typeof getProductVouchersAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetProductVouchersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProductVouchers>>>, TError = unknown>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductVouchers>>, TError, TData>>, }
+export function useGetProductVouchersAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProductVouchersAdmin>>>, TError = unknown>(
+ params?: GetProductVouchersAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductVouchersAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary List product vouchers
  */
 
-export function useGetProductVouchersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProductVouchers>>>, TError = unknown>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductVouchers>>, TError, TData>>, }
+export function useGetProductVouchersAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProductVouchersAdmin>>>, TError = unknown>(
+ params?: GetProductVouchersAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductVouchersAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetProductVouchersInfiniteQueryOptions(options)
+  const queryOptions = getGetProductVouchersAdminInfiniteQueryOptions(params,options)
 
   const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -456,12 +458,12 @@ export function useGetProductVouchersInfinite<TData = InfiniteData<Awaited<Retur
 /**
  * @summary List product vouchers
  */
-export const prefetchGetProductVouchersInfiniteQuery = async <TData = Awaited<ReturnType<typeof getProductVouchers>>, TError = unknown>(
- queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductVouchers>>, TError, TData>>, }
+export const prefetchGetProductVouchersAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getProductVouchersAdmin>>, TError = unknown>(
+ queryClient: QueryClient, params?: GetProductVouchersAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductVouchersAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetProductVouchersInfiniteQueryOptions(options)
+  const queryOptions = getGetProductVouchersAdminInfiniteQueryOptions(params,options)
 
   await queryClient.prefetchInfiniteQuery(queryOptions);
 
@@ -470,62 +472,62 @@ export const prefetchGetProductVouchersInfiniteQuery = async <TData = Awaited<Re
 
 
 
-export const getGetProductVouchersQueryOptions = <TData = Awaited<ReturnType<typeof getProductVouchers>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductVouchers>>, TError, TData>>, }
+export const getGetProductVouchersAdminQueryOptions = <TData = Awaited<ReturnType<typeof getProductVouchersAdmin>>, TError = unknown>(params?: GetProductVouchersAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductVouchersAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetProductVouchersQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getGetProductVouchersAdminQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getProductVouchers>>> = ({ signal }) => getProductVouchers(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getProductVouchersAdmin>>> = ({ signal }) => getProductVouchersAdmin(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getProductVouchers>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getProductVouchersAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetProductVouchersQueryResult = NonNullable<Awaited<ReturnType<typeof getProductVouchers>>>
-export type GetProductVouchersQueryError = unknown
+export type GetProductVouchersAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getProductVouchersAdmin>>>
+export type GetProductVouchersAdminQueryError = unknown
 
 
-export function useGetProductVouchers<TData = Awaited<ReturnType<typeof getProductVouchers>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductVouchers>>, TError, TData>> & Pick<
+export function useGetProductVouchersAdmin<TData = Awaited<ReturnType<typeof getProductVouchersAdmin>>, TError = unknown>(
+ params: undefined |  GetProductVouchersAdminParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductVouchersAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getProductVouchers>>,
+          Awaited<ReturnType<typeof getProductVouchersAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getProductVouchers>>
+          Awaited<ReturnType<typeof getProductVouchersAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetProductVouchers<TData = Awaited<ReturnType<typeof getProductVouchers>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductVouchers>>, TError, TData>> & Pick<
+export function useGetProductVouchersAdmin<TData = Awaited<ReturnType<typeof getProductVouchersAdmin>>, TError = unknown>(
+ params?: GetProductVouchersAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductVouchersAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getProductVouchers>>,
+          Awaited<ReturnType<typeof getProductVouchersAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getProductVouchers>>
+          Awaited<ReturnType<typeof getProductVouchersAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetProductVouchers<TData = Awaited<ReturnType<typeof getProductVouchers>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductVouchers>>, TError, TData>>, }
+export function useGetProductVouchersAdmin<TData = Awaited<ReturnType<typeof getProductVouchersAdmin>>, TError = unknown>(
+ params?: GetProductVouchersAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductVouchersAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary List product vouchers
  */
 
-export function useGetProductVouchers<TData = Awaited<ReturnType<typeof getProductVouchers>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductVouchers>>, TError, TData>>, }
+export function useGetProductVouchersAdmin<TData = Awaited<ReturnType<typeof getProductVouchersAdmin>>, TError = unknown>(
+ params?: GetProductVouchersAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductVouchersAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetProductVouchersQueryOptions(options)
+  const queryOptions = getGetProductVouchersAdminQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -537,12 +539,12 @@ export function useGetProductVouchers<TData = Awaited<ReturnType<typeof getProdu
 /**
  * @summary List product vouchers
  */
-export const prefetchGetProductVouchersQuery = async <TData = Awaited<ReturnType<typeof getProductVouchers>>, TError = unknown>(
- queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductVouchers>>, TError, TData>>, }
+export const prefetchGetProductVouchersAdminQuery = async <TData = Awaited<ReturnType<typeof getProductVouchersAdmin>>, TError = unknown>(
+ queryClient: QueryClient, params?: GetProductVouchersAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductVouchersAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetProductVouchersQueryOptions(options)
+  const queryOptions = getGetProductVouchersAdminQueryOptions(params,options)
 
   await queryClient.prefetchQuery(queryOptions);
 
@@ -554,14 +556,14 @@ export const prefetchGetProductVouchersQuery = async <TData = Awaited<ReturnType
 /**
  * @summary Create a product voucher
  */
-export const postProductVouchers = (
+export const postProductVouchersAdmin = (
     productVoucherCreate: ProductVoucherCreate,
  signal?: AbortSignal
 ) => {
       
       
       return customInstance<void>(
-      {url: `/product-vouchers`, method: 'POST',
+      {url: `/product-vouchers/admin`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: productVoucherCreate, signal
     },
@@ -570,11 +572,11 @@ export const postProductVouchers = (
   
 
 
-export const getPostProductVouchersMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postProductVouchers>>, TError,{data: ProductVoucherCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postProductVouchers>>, TError,{data: ProductVoucherCreate}, TContext> => {
+export const getPostProductVouchersAdminMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postProductVouchersAdmin>>, TError,{data: ProductVoucherCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postProductVouchersAdmin>>, TError,{data: ProductVoucherCreate}, TContext> => {
 
-const mutationKey = ['postProductVouchers'];
+const mutationKey = ['postProductVouchersAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -584,10 +586,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postProductVouchers>>, {data: ProductVoucherCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postProductVouchersAdmin>>, {data: ProductVoucherCreate}> = (props) => {
           const {data} = props ?? {};
 
-          return  postProductVouchers(data,)
+          return  postProductVouchersAdmin(data,)
         }
 
         
@@ -595,23 +597,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PostProductVouchersMutationResult = NonNullable<Awaited<ReturnType<typeof postProductVouchers>>>
-    export type PostProductVouchersMutationBody = ProductVoucherCreate
-    export type PostProductVouchersMutationError = unknown
+    export type PostProductVouchersAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postProductVouchersAdmin>>>
+    export type PostProductVouchersAdminMutationBody = ProductVoucherCreate
+    export type PostProductVouchersAdminMutationError = unknown
 
     /**
  * @summary Create a product voucher
  */
-export const usePostProductVouchers = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postProductVouchers>>, TError,{data: ProductVoucherCreate}, TContext>, }
+export const usePostProductVouchersAdmin = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postProductVouchersAdmin>>, TError,{data: ProductVoucherCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postProductVouchers>>,
+        Awaited<ReturnType<typeof postProductVouchersAdmin>>,
         TError,
         {data: ProductVoucherCreate},
         TContext
       > => {
 
-      const mutationOptions = getPostProductVouchersMutationOptions(options);
+      const mutationOptions = getPostProductVouchersAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

@@ -7,12 +7,7 @@ import { errorMessage, pickData } from '@/api/helpers'
 import type { IntegrationUpdate } from '@/api/models/integrationUpdate'
 import type { IntegrationStatus } from '@/api/models/integrationStatus'
 import type { IntegrationStatusProvider } from '@/api/models/integrationStatusProvider'
-import {
-  getIntegrations,
-  getGetIntegrationsQueryKey,
-  postIntegrationsProviderTest,
-  putIntegrationsProvider,
-} from '@/api/endpoints/settings'
+import { getIntegrationsAdmin, getGetIntegrationsAdminQueryKey, postIntegrationsProviderTestAdmin, putIntegrationsProviderAdmin } from '@/api/endpoints/integrations'
 import { Can } from '@casl/react'
 
 interface SmtpConfig {
@@ -66,10 +61,10 @@ function ZaloIntegrationCard({ provider, title, row, canEdit }: {
     setTestResult(null)
   }, [form, isZbs, row])
 
-  const invalidate = () => queryClient.invalidateQueries({ queryKey: getGetIntegrationsQueryKey() })
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: getGetIntegrationsAdminQueryKey() })
   const testMutation = useMutation({
     mutationFn: async (payload: IntegrationUpdate) => {
-      const result = await postIntegrationsProviderTest(provider, payload)
+      const result = await postIntegrationsProviderTestAdmin(provider, payload)
       return pickData<{ ok?: boolean; message?: string }>(result) ?? {}
     },
     onSuccess: (result) => setTestResult({ ok: !!result.ok, message: errorMessage(result) }),
@@ -77,7 +72,7 @@ function ZaloIntegrationCard({ provider, title, row, canEdit }: {
   })
   const saveMutation = useMutation({
     mutationFn: async (payload: IntegrationUpdate) => {
-      const result = await putIntegrationsProvider(provider, payload)
+      const result = await putIntegrationsProviderAdmin(provider, payload)
       return pickData<{ status?: string; message?: string }>(result) ?? {}
     },
     onSuccess: async (result) => {
@@ -187,8 +182,8 @@ export default function IntegrationSettings() {
   const [form] = Form.useForm<SmtpConfig>()
   const queryClient = useQueryClient()
   const query = useQuery({
-    queryKey: getGetIntegrationsQueryKey(),
-    queryFn: async () => (pickData<IntegrationStatus[]>(await getIntegrations()) ?? []) as IntegrationStatus[],
+    queryKey: getGetIntegrationsAdminQueryKey(),
+    queryFn: async () => (pickData<IntegrationStatus[]>(await getIntegrationsAdmin()) ?? []) as IntegrationStatus[],
   })
   const [password, setPassword] = useState('')
   const [clearSecret, setClearSecret] = useState(false)
@@ -213,10 +208,10 @@ export default function IntegrationSettings() {
     setClearSecret(false)
   }, [form, query.data, smtp])
 
-  const invalidate = () => queryClient.invalidateQueries({ queryKey: getGetIntegrationsQueryKey() })
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: getGetIntegrationsAdminQueryKey() })
   const testMutation = useMutation({
     mutationFn: async (payload: { config_public: SmtpConfig; secrets?: { password?: string }; clear_secret?: boolean }) => {
-      const result = await postIntegrationsProviderTest(SMTP_PROVIDER, payload as unknown as IntegrationUpdate)
+      const result = await postIntegrationsProviderTestAdmin(SMTP_PROVIDER, payload as unknown as IntegrationUpdate)
       return pickData<{ ok?: boolean; message?: string }>(result) ?? {}
     },
     onSuccess: (result) => setTestResult({ ok: !!result.ok, message: errorMessage(result) }),
@@ -224,7 +219,7 @@ export default function IntegrationSettings() {
   })
   const saveMutation = useMutation({
     mutationFn: async (payload: { config_public: SmtpConfig; secrets?: { password?: string }; clear_secret?: boolean; enabled: boolean }) => {
-      const result = await putIntegrationsProvider(SMTP_PROVIDER, payload as unknown as IntegrationUpdate)
+      const result = await putIntegrationsProviderAdmin(SMTP_PROVIDER, payload as unknown as IntegrationUpdate)
       return pickData<{ status?: string; message?: string }>(result) ?? {}
     },
     onSuccess: async (result) => {

@@ -9,13 +9,7 @@ import ServiceCategoryModal from './components/ServiceCategoryModal'
 import ListPagination from '@/components/base/ListPagination'
 import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import { errorMessage } from '@/api/helpers'
-import {
-  deleteServiceCategoriesId,
-  getGetServiceCategoriesQueryKey,
-  getServiceCategories,
-  postServiceCategories,
-  putServiceCategoriesId,
-} from '@/api/endpoints/services'
+import { deleteServiceCategoriesIdAdmin, getGetServiceCategoriesAdminQueryKey, getServiceCategoriesAdmin, postServiceCategoriesAdmin, putServiceCategoriesIdAdmin } from '@/api/endpoints/services'
 import type { ServiceCategory } from '@/api/models/serviceCategory'
 import type { ServiceCategoryCreate } from '@/api/models/serviceCategoryCreate'
 
@@ -35,9 +29,9 @@ export default function ServiceCategories() {
   const [form] = Form.useForm()
 
   const categoriesQuery = useQuery({
-    queryKey: [getGetServiceCategoriesQueryKey(), page, search],
+    queryKey: [getGetServiceCategoriesAdminQueryKey(), page, search],
     queryFn: async () =>
-      (await getServiceCategories({ page, limit: 10, ...(search.trim() ? { q: search.trim() } : {}) } as never)) as unknown as {
+      (await getServiceCategoriesAdmin({ page, limit: 10, ...(search.trim() ? { q: search.trim() } : {}) } as never)) as unknown as {
         responseData?: ServiceCategoryRow[]
         meta?: { total?: number }
       },
@@ -46,16 +40,16 @@ export default function ServiceCategories() {
   const total = categoriesQuery.data?.meta?.total ?? rows.length
 
   const createMutation = useMutation({
-    mutationFn: async (dto: ServiceCategoryCreate) => postServiceCategories(dto),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: getGetServiceCategoriesQueryKey() }),
+    mutationFn: async (dto: ServiceCategoryCreate) => postServiceCategoriesAdmin(dto),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: getGetServiceCategoriesAdminQueryKey() }),
   })
   const updateMutation = useMutation({
-    mutationFn: async ({ id, dto }: { id: string; dto: Partial<ServiceCategoryCreate> }) => putServiceCategoriesId(id, dto as ServiceCategoryCreate),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: getGetServiceCategoriesQueryKey() }),
+    mutationFn: async ({ id, dto }: { id: string; dto: Partial<ServiceCategoryCreate> }) => putServiceCategoriesIdAdmin(id, dto as ServiceCategoryCreate),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: getGetServiceCategoriesAdminQueryKey() }),
   })
   const deleteMutation = useMutation({
-    mutationFn: async (id: string) => deleteServiceCategoriesId(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: getGetServiceCategoriesQueryKey() }),
+    mutationFn: async (id: string) => deleteServiceCategoriesIdAdmin(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: getGetServiceCategoriesAdminQueryKey() }),
   })
 
   const openEditor = (row?: ServiceCategoryRow) => {

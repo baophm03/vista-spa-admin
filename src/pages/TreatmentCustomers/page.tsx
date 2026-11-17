@@ -12,25 +12,16 @@ import { normalizeCustomFieldValues } from '@/components/CustomFieldFormItems'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { CustomerTreatment } from '@/api/models/customerTreatment'
 import type { TreatmentPackage } from '@/api/models/treatmentPackage'
-import { getCustomerProfiles, useGetCustomerProfiles, useGetCustomerProfilesIdPoints } from '@/api/endpoints/customer-profiles'
+import { getCustomerProfilesAdmin, useGetCustomerProfilesAdmin, useGetCustomerProfilesIdPointsAdmin } from '@/api/endpoints/customer-profiles'
 import { getVoucherCustomerView, useVoucherCustomer, type VoucherCustomerRow } from '@/api/custom/voucherCustomers'
 import { getVoucherCategory, type VoucherCategoryRow } from '@/api/custom/voucherCategories'
-import { usePostTreatmentCustomersIdManualDiscount } from '@/api/endpoints/discounts'
-import { usePostTreatmentCustomersIdRedeemPoints } from '@/api/endpoints/treatment-customers'
-import {
-  getTreatmentCustomersIdAvailableSlots,
-  getTreatmentCustomersIdPayments,
-  getTreatmentCustomersId,
-  getGetTreatmentCustomersQueryKey,
-  postTreatmentCustomersIdSessions,
-  useGetTreatmentCustomers,
-  usePostTreatmentCustomers,
-  usePostTreatmentCustomersIdPayments,
-  usePutTreatmentCustomersIdCancel,
-} from '@/api/endpoints/treatment-customers'
-import { useGetTreatmentPackages } from '@/api/endpoints/services'
-import { useGetLookupLists } from '@/api/endpoints/lookup-lists'
-import { useGetUsers } from '@/api/endpoints/users'
+import { usePostTreatmentCustomersIdManualDiscountAdmin } from '@/api/endpoints/discounts'
+import { usePostTreatmentCustomersIdRedeemPointsAdmin } from '@/api/endpoints/treatment-customers'
+import { getTreatmentCustomersIdAvailableSlotsAdmin, getTreatmentCustomersIdPaymentsAdmin, getTreatmentCustomersIdAdmin, getGetTreatmentCustomersAdminQueryKey, useGetTreatmentCustomersAdmin, usePostTreatmentCustomersAdmin, usePostTreatmentCustomersIdPaymentsAdmin, usePutTreatmentCustomersIdCancelAdmin } from '@/api/endpoints/treatment-customers'
+import { postTreatmentCustomersIdSessionsAdmin } from '@/api/endpoints/treatment-sessions'
+import { useGetTreatmentPackagesAdmin } from '@/api/endpoints/treatment-packages'
+import { useGetLookupListsAdmin } from '@/api/endpoints/lookup-lists'
+import { useGetUsersAdmin } from '@/api/endpoints/users'
 import { useBrandCurrency } from '@/themeRuntime'
 import { useCustomerProfileAccess } from '@/utils/customerProfileAccess'
 import useCustomFieldDefinitions from '@/hooks/useCustomFieldDefinitions'
@@ -53,15 +44,15 @@ import {
   type Slot,
 } from './components/constants'
 import type { Branch } from '@/api/models'
-import { useGetBranches } from '@/api/endpoints/branches'
+import { useGetBranchesAdmin } from '@/api/endpoints/branches'
 
 export default function TreatmentCustomers() {
   const { format: formatMoney, symbol: currencySymbol } = useBrandCurrency()
   const queryClient = useQueryClient()
   const { isAdmin, isReceptionist } = useCustomerProfileAccess()
   const ability = useAbility()
-  const canUpdate = ability.can('UPDATE', 'CUSTOMER')
-  const canCreateSessions = ability.can('CREATE', 'SESSION')
+  const canUpdate = ability.can('UPDATE', 'CUSTOMER_PROFILE')
+  const canCreateSessions = ability.can('CREATE', 'TREATMENT_SESSION')
   const canReadPayments = ability.can('READ', 'PAYMENT')
   const canSeeDebtSummary = (!isReceptionist || isAdmin)
     && (ability.can('READ' as never, 'REPORT') || ability.can('DEBT.READ' as never, 'REPORT'))
@@ -100,10 +91,10 @@ export default function TreatmentCustomers() {
   const [promoRow, setPromoRow] = useState<CustomerTreatment | null>(null)
   const [redeemForm] = Form.useForm()
   const [paymentLookupError, setPaymentLookupError] = useState('')
-const branchesQuery = useGetBranches()
+const branchesQuery = useGetBranchesAdmin()
 const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as Branch[], [branchesQuery.data])
 
-  const treatmentsQuery = useGetTreatmentCustomers({
+  const treatmentsQuery = useGetTreatmentCustomersAdmin({
     page,
     limit,
     ...(filter !== 'all' ? { status: filter } : {}),
@@ -115,13 +106,13 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
   const total = (treatmentsQuery.data as unknown as { meta?: { total?: number } })?.meta?.total ?? rows.length
   const statsMeta = (treatmentsQuery.data as unknown as { meta?: { stats?: { total: number; ongoing: number; done: number; debt_sum: number } } })?.meta?.stats
 
-  const profilesQuery = useGetCustomerProfiles({ page: 1, limit: 200 })
+  const profilesQuery = useGetCustomerProfilesAdmin({ page: 1, limit: 200 })
   const profiles = (pickData<ProfileRow[] | undefined>(profilesQuery.data) ?? []) as ProfileRow[]
-  const packagesQuery = useGetTreatmentPackages({ page: 1, limit: 200, is_active: true })
+  const packagesQuery = useGetTreatmentPackagesAdmin({ page: 1, limit: 200, is_active: true })
   const packages = (pickData<TreatmentPackage[] | undefined>(packagesQuery.data) ?? []) as TreatmentPackage[]
   const selectedSalePackageId = Form.useWatch('package_id', createForm)
   const selectedSalePackage = packages.find((pkg) => pkg.id === selectedSalePackageId)
-  const staffsQuery = useGetUsers({ currentPage: 1, pageSize: 200, has_role: true })
+  const staffsQuery = useGetUsersAdmin({ currentPage: 1, pageSize: 200, has_role: true })
   const staffOptions = useMemo(
     () =>
       (((pickData<{ rows?: Array<{ id: string; zalo_name?: string; email?: string }> }>(staffsQuery.data)?.rows ?? [])) as Array<{ id: string; zalo_name?: string; email?: string }>)
@@ -129,7 +120,7 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
     [staffsQuery.data],
   )
 
-  const lookupQuery = useGetLookupLists({ key: 'payment.methods', items_is_active: 'true' })
+  const lookupQuery = useGetLookupListsAdmin({ key: 'payment.methods', items_is_active: 'true' })
   const paymentLookup = (pickData<LookupListRow[] | undefined>(lookupQuery.data) ?? [])[0] ?? null
   const activePaymentMethods = (paymentLookup?.lookup_items ?? []).filter((item) => item.is_active !== false)
   const paymentMethodLabels = Object.fromEntries((paymentLookup?.lookup_items ?? []).map((item) => [item.code, item.label]))
@@ -147,13 +138,13 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
     } else setPaymentLookupError('')
   }, [lookupQuery.isLoading, lookupQuery.isError, lookupQuery.error, paymentLookup])
 
-  const createMutation = usePostTreatmentCustomers()
+  const createMutation = usePostTreatmentCustomersAdmin()
   const createInFlightRef = useRef(false)
-  const createPaymentMutation = usePostTreatmentCustomersIdPayments()
-  const cancelMutation = usePutTreatmentCustomersIdCancel()
+  const createPaymentMutation = usePostTreatmentCustomersIdPaymentsAdmin()
+  const cancelMutation = usePutTreatmentCustomersIdCancelAdmin()
 
   const refresh = useCallback(() => {
-    void queryClient.invalidateQueries({ queryKey: getGetTreatmentCustomersQueryKey() })
+    void queryClient.invalidateQueries({ queryKey: getGetTreatmentCustomersAdminQueryKey() })
   }, [queryClient])
 
   const profileOf = (id: string) => profiles.find((p) => p.id === id)
@@ -195,7 +186,7 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
       return
     }
     setPayLoading(true)
-    getTreatmentCustomersIdPayments(row.id)
+    getTreatmentCustomersIdPaymentsAdmin(row.id)
       .then((response) => setPayments((pickData<PaymentRow[] | undefined>(response) ?? []) as PaymentRow[]))
       .catch(() => setPayments([]))
       .finally(() => setPayLoading(false))
@@ -222,7 +213,7 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
   const fetchCustomerOptions = useCallback((q: string) => {
     if (custTimer.current) clearTimeout(custTimer.current)
     custTimer.current = setTimeout(() => {
-      getCustomerProfiles({ page: 1, limit: 50, ...(q ? { q } : {}) } as never)
+      getCustomerProfilesAdmin({ page: 1, limit: 50, ...(q ? { q } : {}) } as never)
         .then((response) => setCustomerOptions((pickData<ProfileRow[] | undefined>(response) ?? []) as ProfileRow[]))
         .catch(() => undefined)
     }, 300)
@@ -275,7 +266,7 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
     const sequence = ++addSessionSlotSequence.current
     setAddSessionSlotsLoading(true)
     try {
-      const response = await getTreatmentCustomersIdAvailableSlots(addSessionFor.id, { date: date.format('YYYY-MM-DD') })
+      const response = await getTreatmentCustomersIdAvailableSlotsAdmin(addSessionFor.id, { date: date.format('YYYY-MM-DD') })
       if (sequence !== addSessionSlotSequence.current) return
       const now = dayjs()
       const slots = ((pickData<Slot[] | undefined>(response) ?? []) as Slot[]).filter((slot) => {
@@ -316,7 +307,7 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
     }
     setAddingSessionId(addSessionFor.id)
     try {
-      await postTreatmentCustomersIdSessions(addSessionFor.id, {
+      await postTreatmentCustomersIdSessionsAdmin(addSessionFor.id, {
         ...(scheduledDate && scheduledTime && staffId ? {
           scheduled_at: scheduledDate.hour(Number(scheduledTime.slice(0, 2))).minute(Number(scheduledTime.slice(3, 5))).second(0).millisecond(0).toISOString(),
           staff_id: staffId,
@@ -352,7 +343,7 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
   const refreshSelectedDetail = async () => {
     if (!detail) return
     try {
-      const fresh = pickData<CustomerTreatment>(await getTreatmentCustomersId(detail.id))
+      const fresh = pickData<CustomerTreatment>(await getTreatmentCustomersIdAdmin(detail.id))
       if (fresh) setDetail(fresh)
     } catch { /* bỏ qua — drawer giữ dữ liệu cũ */ }
   }
@@ -378,7 +369,7 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
       const promoApplied = await applyPromoSelection(treatmentId)
       if (!promoApplied) return
       // Lấy công nợ mới nhất sau khi áp ưu đãi
-      const fresh = pickData<CustomerTreatment>(await getTreatmentCustomersId(treatmentId))
+      const fresh = pickData<CustomerTreatment>(await getTreatmentCustomersIdAdmin(treatmentId))
       if (fresh) setPromoRow(fresh)
       const remainingDebt = Number(fresh?.debt_amount ?? 0)
       if (promoWasSelected && remainingDebt <= 0) {
@@ -401,7 +392,7 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
       if (canReadPayments) {
         setPayLoading(true)
         try {
-          const response = await getTreatmentCustomersIdPayments(treatmentId)
+          const response = await getTreatmentCustomersIdPaymentsAdmin(treatmentId)
           setPayments((pickData<PaymentRow[] | undefined>(response) ?? []) as PaymentRow[])
         } catch {
           setPayments([])
@@ -454,8 +445,8 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
   })
   const customerVouchers = customerVouchersQuery.data ?? []
   const selectedVoucher = customerVouchers.find((voucher) => voucher.voucherId === selectedVoucherId) ?? null
-  const redeemPointsMutation = usePostTreatmentCustomersIdRedeemPoints()
-  const promoPointsQuery = useGetCustomerProfilesIdPoints(promoCustomerProfileId ?? '', {
+  const redeemPointsMutation = usePostTreatmentCustomersIdRedeemPointsAdmin()
+  const promoPointsQuery = useGetCustomerProfilesIdPointsAdmin(promoCustomerProfileId ?? '', {
     query: { enabled: payOpen && Boolean(promoCustomerProfileId) },
   })
   const promoPointsData = pickData<{
@@ -503,7 +494,7 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
   // Giảm thủ công (không qua voucher): % hoặc số tiền
   const [manualForm] = Form.useForm()
   const [manualMode, setManualMode] = useState<'percent' | 'amount'>('percent')
-  const manualDiscountMutation = usePostTreatmentCustomersIdManualDiscount()
+  const manualDiscountMutation = usePostTreatmentCustomersIdManualDiscountAdmin()
 
   // Lựa chọn ưu đãi trong modal thanh toán: giá trị nhập theo tab đang chọn
   const manualValue = Number(Form.useWatch('value', manualForm) ?? 0)
@@ -545,7 +536,7 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
 
   /** Mở modal thanh toán cho 1 gói — fetch gói mới nhất làm ngữ cảnh ưu đãi. */
   const openPay = async (rowId: string) => {
-    const fresh = pickData<CustomerTreatment>(await getTreatmentCustomersId(rowId)) ?? rows.find((row) => row.id === rowId) ?? null
+    const fresh = pickData<CustomerTreatment>(await getTreatmentCustomersIdAdmin(rowId)) ?? rows.find((row) => row.id === rowId) ?? null
     setPromoRow(fresh)
     setPayTargetId(rowId)
     setPayOpen(true)
@@ -677,7 +668,7 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
           </>
         }
         right={
-          <Can I="UPDATE" a="CUSTOMER">
+          <Can I="UPDATE" a="CUSTOMER_PROFILE">
             <Button type="primary" icon={<PlusOutlined />} onClick={() => openCreateModal()}>
               Thêm khách vào liệu trình
             </Button>

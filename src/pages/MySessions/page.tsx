@@ -7,12 +7,12 @@ import dayjs from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
 import { errorMessage, pickData } from '@/api/helpers'
 import { customInstance } from '@/api/mutator/custom-instance'
-import { usePutSessionsIdDone, usePutSessionsIdStart } from '@/api/endpoints/treatment-customers'
+import { usePutSessionsIdDoneAdmin, usePutSessionsIdStartAdmin } from '@/api/endpoints/treatment-sessions'
 import type { TreatmentSession } from '@/api/models/treatmentSession'
 import ListPagination from '@/components/base/ListPagination'
 import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import type { Branch } from '@/api/models'
-import { useGetBranches } from '@/api/endpoints/branches'
+import { useGetBranchesAdmin } from '@/api/endpoints/branches'
 
 type SessionRow = TreatmentSession & {
   appointment?: { appt_date?: string; start_time?: string } | null
@@ -56,9 +56,9 @@ export default function MySessions() {
   const [startingId, setStartingId] = useState<string | null>(null)
   const [finishingId, setFinishingId] = useState<string | null>(null)
   const queryClient = useQueryClient()
-  const startMutation = usePutSessionsIdStart()
-  const doneMutation = usePutSessionsIdDone()
-const branchesQuery = useGetBranches()
+  const startMutation = usePutSessionsIdStartAdmin()
+  const doneMutation = usePutSessionsIdDoneAdmin()
+const branchesQuery = useGetBranchesAdmin()
 const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as Branch[], [branchesQuery.data])
 
 

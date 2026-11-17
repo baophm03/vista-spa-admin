@@ -30,8 +30,8 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  GetAcademyCourseVoucherCustomers200,
-  GetAcademyCourseVoucherCustomersParams,
+  GetAcademyCourseVoucherCustomersAdmin200,
+  GetAcademyCourseVoucherCustomersAdminParams,
   VoucherCustomerAssignment
 } from '../models';
 
@@ -42,156 +42,156 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * DELETE `/academy-course-voucher-customers/{id}` — marks the assignment REVOKED. Requires `voucher.update`.
+ * DELETE `/academy-course-voucher-customers/{id}/admin` — marks the assignment REVOKED. Cần đăng nhập + `voucher.delete_all`.
  * @summary Revoke a voucher assignment
  */
-export const deleteAcademyCourseVoucherCustomersId = (
+export const deleteAcademyCourseVoucherCustomersIdAdmin = (
     id: string,
  ) => {
-
-
+      
+      
       return customInstance<void>(
-      {url: `/academy-course-voucher-customers/${id}`, method: 'DELETE'
+      {url: `/academy-course-voucher-customers/${id}/admin`, method: 'DELETE'
     },
       );
     }
+  
 
 
+export const getDeleteAcademyCourseVoucherCustomersIdAdminMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAcademyCourseVoucherCustomersIdAdmin>>, TError,{id: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteAcademyCourseVoucherCustomersIdAdmin>>, TError,{id: string}, TContext> => {
 
-export const getDeleteAcademyCourseVoucherCustomersIdMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAcademyCourseVoucherCustomersId>>, TError,{id: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof deleteAcademyCourseVoucherCustomersId>>, TError,{id: string}, TContext> => {
-
-const mutationKey = ['deleteAcademyCourseVoucherCustomersId'];
+const mutationKey = ['deleteAcademyCourseVoucherCustomersIdAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
       : {mutation: { mutationKey, }};
 
+      
 
 
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteAcademyCourseVoucherCustomersId>>, {id: string}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteAcademyCourseVoucherCustomersIdAdmin>>, {id: string}> = (props) => {
           const {id} = props ?? {};
 
-          return  deleteAcademyCourseVoucherCustomersId(id,)
+          return  deleteAcademyCourseVoucherCustomersIdAdmin(id,)
         }
 
-
+        
 
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type DeleteAcademyCourseVoucherCustomersIdMutationResult = NonNullable<Awaited<ReturnType<typeof deleteAcademyCourseVoucherCustomersId>>>
-
-    export type DeleteAcademyCourseVoucherCustomersIdMutationError = unknown
+    export type DeleteAcademyCourseVoucherCustomersIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof deleteAcademyCourseVoucherCustomersIdAdmin>>>
+    
+    export type DeleteAcademyCourseVoucherCustomersIdAdminMutationError = unknown
 
     /**
  * @summary Revoke a voucher assignment
  */
-export const useDeleteAcademyCourseVoucherCustomersId = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAcademyCourseVoucherCustomersId>>, TError,{id: string}, TContext>, }
+export const useDeleteAcademyCourseVoucherCustomersIdAdmin = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAcademyCourseVoucherCustomersIdAdmin>>, TError,{id: string}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteAcademyCourseVoucherCustomersId>>,
+        Awaited<ReturnType<typeof deleteAcademyCourseVoucherCustomersIdAdmin>>,
         TError,
         {id: string},
         TContext
       > => {
 
-      const mutationOptions = getDeleteAcademyCourseVoucherCustomersIdMutationOptions(options);
+      const mutationOptions = getDeleteAcademyCourseVoucherCustomersIdAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/academy-course-voucher-customers` — combined view. Query parameters: `q`, `user_id`. Requires `voucher.read`.
+ * GET `/academy-course-voucher-customers/admin` — combined view. Query parameters: `q`, `user_id`, `customer_profile_id`. Cần đăng nhập + `voucher.view_all`.
  * @summary List vouchers each customer currently holds (auto by rank + manual assignments)
  */
-export const getAcademyCourseVoucherCustomers = (
-    params?: GetAcademyCourseVoucherCustomersParams,
+export const getAcademyCourseVoucherCustomersAdmin = (
+    params?: GetAcademyCourseVoucherCustomersAdminParams,
  signal?: AbortSignal
 ) => {
-
-
-      return customInstance<GetAcademyCourseVoucherCustomers200>(
-      {url: `/academy-course-voucher-customers`, method: 'GET',
+      
+      
+      return customInstance<GetAcademyCourseVoucherCustomersAdmin200>(
+      {url: `/academy-course-voucher-customers/admin`, method: 'GET',
         params, signal
     },
       );
     }
+  
 
 
 
-
-export const getGetAcademyCourseVoucherCustomersInfiniteQueryKey = (params?: GetAcademyCourseVoucherCustomersParams,) => {
+export const getGetAcademyCourseVoucherCustomersAdminInfiniteQueryKey = (params?: GetAcademyCourseVoucherCustomersAdminParams,) => {
     return [
-    'infinite', `/academy-course-voucher-customers`, ...(params ? [params]: [])
+    'infinite', `/academy-course-voucher-customers/admin`, ...(params ? [params]: [])
     ] as const;
     }
 
-export const getGetAcademyCourseVoucherCustomersQueryKey = (params?: GetAcademyCourseVoucherCustomersParams,) => {
+export const getGetAcademyCourseVoucherCustomersAdminQueryKey = (params?: GetAcademyCourseVoucherCustomersAdminParams,) => {
     return [
-    `/academy-course-voucher-customers`, ...(params ? [params]: [])
+    `/academy-course-voucher-customers/admin`, ...(params ? [params]: [])
     ] as const;
     }
 
-
-export const getGetAcademyCourseVoucherCustomersInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCourseVoucherCustomers>>>, TError = unknown>(params?: GetAcademyCourseVoucherCustomersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVoucherCustomers>>, TError, TData>>, }
+    
+export const getGetAcademyCourseVoucherCustomersAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCourseVoucherCustomersAdmin>>>, TError = unknown>(params?: GetAcademyCourseVoucherCustomersAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVoucherCustomersAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAcademyCourseVoucherCustomersInfiniteQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getGetAcademyCourseVoucherCustomersAdminInfiniteQueryKey(params);
 
+  
 
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAcademyCourseVoucherCustomersAdmin>>> = ({ signal }) => getAcademyCourseVoucherCustomersAdmin(params, signal);
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAcademyCourseVoucherCustomers>>> = ({ signal }) => getAcademyCourseVoucherCustomers(params, signal);
+      
 
+      
 
-
-
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVoucherCustomers>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVoucherCustomersAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetAcademyCourseVoucherCustomersInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAcademyCourseVoucherCustomers>>>
-export type GetAcademyCourseVoucherCustomersInfiniteQueryError = unknown
+export type GetAcademyCourseVoucherCustomersAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAcademyCourseVoucherCustomersAdmin>>>
+export type GetAcademyCourseVoucherCustomersAdminInfiniteQueryError = unknown
 
 
-export function useGetAcademyCourseVoucherCustomersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCourseVoucherCustomers>>>, TError = unknown>(
- params: undefined |  GetAcademyCourseVoucherCustomersParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVoucherCustomers>>, TError, TData>> & Pick<
+export function useGetAcademyCourseVoucherCustomersAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCourseVoucherCustomersAdmin>>>, TError = unknown>(
+ params: undefined |  GetAcademyCourseVoucherCustomersAdminParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVoucherCustomersAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAcademyCourseVoucherCustomers>>,
+          Awaited<ReturnType<typeof getAcademyCourseVoucherCustomersAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getAcademyCourseVoucherCustomers>>
+          Awaited<ReturnType<typeof getAcademyCourseVoucherCustomersAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAcademyCourseVoucherCustomersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCourseVoucherCustomers>>>, TError = unknown>(
- params?: GetAcademyCourseVoucherCustomersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVoucherCustomers>>, TError, TData>> & Pick<
+export function useGetAcademyCourseVoucherCustomersAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCourseVoucherCustomersAdmin>>>, TError = unknown>(
+ params?: GetAcademyCourseVoucherCustomersAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVoucherCustomersAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAcademyCourseVoucherCustomers>>,
+          Awaited<ReturnType<typeof getAcademyCourseVoucherCustomersAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getAcademyCourseVoucherCustomers>>
+          Awaited<ReturnType<typeof getAcademyCourseVoucherCustomersAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAcademyCourseVoucherCustomersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCourseVoucherCustomers>>>, TError = unknown>(
- params?: GetAcademyCourseVoucherCustomersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVoucherCustomers>>, TError, TData>>, }
+export function useGetAcademyCourseVoucherCustomersAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCourseVoucherCustomersAdmin>>>, TError = unknown>(
+ params?: GetAcademyCourseVoucherCustomersAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVoucherCustomersAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary List vouchers each customer currently holds (auto by rank + manual assignments)
  */
 
-export function useGetAcademyCourseVoucherCustomersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCourseVoucherCustomers>>>, TError = unknown>(
- params?: GetAcademyCourseVoucherCustomersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVoucherCustomers>>, TError, TData>>, }
- , queryClient?: QueryClient
+export function useGetAcademyCourseVoucherCustomersAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCourseVoucherCustomersAdmin>>>, TError = unknown>(
+ params?: GetAcademyCourseVoucherCustomersAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVoucherCustomersAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetAcademyCourseVoucherCustomersInfiniteQueryOptions(params,options)
+  const queryOptions = getGetAcademyCourseVoucherCustomersAdminInfiniteQueryOptions(params,options)
 
   const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -203,12 +203,12 @@ export function useGetAcademyCourseVoucherCustomersInfinite<TData = InfiniteData
 /**
  * @summary List vouchers each customer currently holds (auto by rank + manual assignments)
  */
-export const prefetchGetAcademyCourseVoucherCustomersInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAcademyCourseVoucherCustomers>>, TError = unknown>(
- queryClient: QueryClient, params?: GetAcademyCourseVoucherCustomersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVoucherCustomers>>, TError, TData>>, }
+export const prefetchGetAcademyCourseVoucherCustomersAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAcademyCourseVoucherCustomersAdmin>>, TError = unknown>(
+ queryClient: QueryClient, params?: GetAcademyCourseVoucherCustomersAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVoucherCustomersAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetAcademyCourseVoucherCustomersInfiniteQueryOptions(params,options)
+  const queryOptions = getGetAcademyCourseVoucherCustomersAdminInfiniteQueryOptions(params,options)
 
   await queryClient.prefetchInfiniteQuery(queryOptions);
 
@@ -217,62 +217,62 @@ export const prefetchGetAcademyCourseVoucherCustomersInfiniteQuery = async <TDat
 
 
 
-export const getGetAcademyCourseVoucherCustomersQueryOptions = <TData = Awaited<ReturnType<typeof getAcademyCourseVoucherCustomers>>, TError = unknown>(params?: GetAcademyCourseVoucherCustomersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVoucherCustomers>>, TError, TData>>, }
+export const getGetAcademyCourseVoucherCustomersAdminQueryOptions = <TData = Awaited<ReturnType<typeof getAcademyCourseVoucherCustomersAdmin>>, TError = unknown>(params?: GetAcademyCourseVoucherCustomersAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVoucherCustomersAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAcademyCourseVoucherCustomersQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getGetAcademyCourseVoucherCustomersAdminQueryKey(params);
 
+  
 
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAcademyCourseVoucherCustomersAdmin>>> = ({ signal }) => getAcademyCourseVoucherCustomersAdmin(params, signal);
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAcademyCourseVoucherCustomers>>> = ({ signal }) => getAcademyCourseVoucherCustomers(params, signal);
+      
 
+      
 
-
-
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVoucherCustomers>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVoucherCustomersAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetAcademyCourseVoucherCustomersQueryResult = NonNullable<Awaited<ReturnType<typeof getAcademyCourseVoucherCustomers>>>
-export type GetAcademyCourseVoucherCustomersQueryError = unknown
+export type GetAcademyCourseVoucherCustomersAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getAcademyCourseVoucherCustomersAdmin>>>
+export type GetAcademyCourseVoucherCustomersAdminQueryError = unknown
 
 
-export function useGetAcademyCourseVoucherCustomers<TData = Awaited<ReturnType<typeof getAcademyCourseVoucherCustomers>>, TError = unknown>(
- params: undefined |  GetAcademyCourseVoucherCustomersParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVoucherCustomers>>, TError, TData>> & Pick<
+export function useGetAcademyCourseVoucherCustomersAdmin<TData = Awaited<ReturnType<typeof getAcademyCourseVoucherCustomersAdmin>>, TError = unknown>(
+ params: undefined |  GetAcademyCourseVoucherCustomersAdminParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVoucherCustomersAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAcademyCourseVoucherCustomers>>,
+          Awaited<ReturnType<typeof getAcademyCourseVoucherCustomersAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getAcademyCourseVoucherCustomers>>
+          Awaited<ReturnType<typeof getAcademyCourseVoucherCustomersAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAcademyCourseVoucherCustomers<TData = Awaited<ReturnType<typeof getAcademyCourseVoucherCustomers>>, TError = unknown>(
- params?: GetAcademyCourseVoucherCustomersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVoucherCustomers>>, TError, TData>> & Pick<
+export function useGetAcademyCourseVoucherCustomersAdmin<TData = Awaited<ReturnType<typeof getAcademyCourseVoucherCustomersAdmin>>, TError = unknown>(
+ params?: GetAcademyCourseVoucherCustomersAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVoucherCustomersAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAcademyCourseVoucherCustomers>>,
+          Awaited<ReturnType<typeof getAcademyCourseVoucherCustomersAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getAcademyCourseVoucherCustomers>>
+          Awaited<ReturnType<typeof getAcademyCourseVoucherCustomersAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAcademyCourseVoucherCustomers<TData = Awaited<ReturnType<typeof getAcademyCourseVoucherCustomers>>, TError = unknown>(
- params?: GetAcademyCourseVoucherCustomersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVoucherCustomers>>, TError, TData>>, }
+export function useGetAcademyCourseVoucherCustomersAdmin<TData = Awaited<ReturnType<typeof getAcademyCourseVoucherCustomersAdmin>>, TError = unknown>(
+ params?: GetAcademyCourseVoucherCustomersAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVoucherCustomersAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary List vouchers each customer currently holds (auto by rank + manual assignments)
  */
 
-export function useGetAcademyCourseVoucherCustomers<TData = Awaited<ReturnType<typeof getAcademyCourseVoucherCustomers>>, TError = unknown>(
- params?: GetAcademyCourseVoucherCustomersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVoucherCustomers>>, TError, TData>>, }
- , queryClient?: QueryClient
+export function useGetAcademyCourseVoucherCustomersAdmin<TData = Awaited<ReturnType<typeof getAcademyCourseVoucherCustomersAdmin>>, TError = unknown>(
+ params?: GetAcademyCourseVoucherCustomersAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVoucherCustomersAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetAcademyCourseVoucherCustomersQueryOptions(params,options)
+  const queryOptions = getGetAcademyCourseVoucherCustomersAdminQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -284,12 +284,12 @@ export function useGetAcademyCourseVoucherCustomers<TData = Awaited<ReturnType<t
 /**
  * @summary List vouchers each customer currently holds (auto by rank + manual assignments)
  */
-export const prefetchGetAcademyCourseVoucherCustomersQuery = async <TData = Awaited<ReturnType<typeof getAcademyCourseVoucherCustomers>>, TError = unknown>(
- queryClient: QueryClient, params?: GetAcademyCourseVoucherCustomersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVoucherCustomers>>, TError, TData>>, }
+export const prefetchGetAcademyCourseVoucherCustomersAdminQuery = async <TData = Awaited<ReturnType<typeof getAcademyCourseVoucherCustomersAdmin>>, TError = unknown>(
+ queryClient: QueryClient, params?: GetAcademyCourseVoucherCustomersAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVoucherCustomersAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetAcademyCourseVoucherCustomersQueryOptions(params,options)
+  const queryOptions = getGetAcademyCourseVoucherCustomersAdminQueryOptions(params,options)
 
   await queryClient.prefetchQuery(queryOptions);
 
@@ -299,67 +299,68 @@ export const prefetchGetAcademyCourseVoucherCustomersQuery = async <TData = Awai
 
 
 /**
- * POST `/academy-course-voucher-customers` — assigns an active voucher to a customer. Body fields: `voucher_id`, `user_id`, `note`. Requires `voucher.update`.
+ * POST `/academy-course-voucher-customers/admin` — assigns an active voucher to a customer. Body fields: `voucher_id`, `customer_profile_id` (CRM profile, including profiles without an app account), or `user_id`, `note`. Cần đăng nhập + `voucher.create`.
  * @summary Assign a voucher to a customer (FIXED mode)
  */
-export const postAcademyCourseVoucherCustomers = (
+export const postAcademyCourseVoucherCustomersAdmin = (
     voucherCustomerAssignment: VoucherCustomerAssignment,
  signal?: AbortSignal
 ) => {
-
-
+      
+      
       return customInstance<void>(
-      {url: `/academy-course-voucher-customers`, method: 'POST',
+      {url: `/academy-course-voucher-customers/admin`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: voucherCustomerAssignment, signal
     },
       );
     }
+  
 
 
+export const getPostAcademyCourseVoucherCustomersAdminMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAcademyCourseVoucherCustomersAdmin>>, TError,{data: VoucherCustomerAssignment}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postAcademyCourseVoucherCustomersAdmin>>, TError,{data: VoucherCustomerAssignment}, TContext> => {
 
-export const getPostAcademyCourseVoucherCustomersMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAcademyCourseVoucherCustomers>>, TError,{data: VoucherCustomerAssignment}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postAcademyCourseVoucherCustomers>>, TError,{data: VoucherCustomerAssignment}, TContext> => {
-
-const mutationKey = ['postAcademyCourseVoucherCustomers'];
+const mutationKey = ['postAcademyCourseVoucherCustomersAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
       : {mutation: { mutationKey, }};
 
+      
 
 
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAcademyCourseVoucherCustomers>>, {data: VoucherCustomerAssignment}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAcademyCourseVoucherCustomersAdmin>>, {data: VoucherCustomerAssignment}> = (props) => {
           const {data} = props ?? {};
 
-          return  postAcademyCourseVoucherCustomers(data,)
+          return  postAcademyCourseVoucherCustomersAdmin(data,)
         }
 
-
+        
 
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PostAcademyCourseVoucherCustomersMutationResult = NonNullable<Awaited<ReturnType<typeof postAcademyCourseVoucherCustomers>>>
-    export type PostAcademyCourseVoucherCustomersMutationBody = VoucherCustomerAssignment
-    export type PostAcademyCourseVoucherCustomersMutationError = unknown
+    export type PostAcademyCourseVoucherCustomersAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postAcademyCourseVoucherCustomersAdmin>>>
+    export type PostAcademyCourseVoucherCustomersAdminMutationBody = VoucherCustomerAssignment
+    export type PostAcademyCourseVoucherCustomersAdminMutationError = unknown
 
     /**
  * @summary Assign a voucher to a customer (FIXED mode)
  */
-export const usePostAcademyCourseVoucherCustomers = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAcademyCourseVoucherCustomers>>, TError,{data: VoucherCustomerAssignment}, TContext>, }
+export const usePostAcademyCourseVoucherCustomersAdmin = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAcademyCourseVoucherCustomersAdmin>>, TError,{data: VoucherCustomerAssignment}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postAcademyCourseVoucherCustomers>>,
+        Awaited<ReturnType<typeof postAcademyCourseVoucherCustomersAdmin>>,
         TError,
         {data: VoucherCustomerAssignment},
         TContext
       > => {
 
-      const mutationOptions = getPostAcademyCourseVoucherCustomersMutationOptions(options);
+      const mutationOptions = getPostAcademyCourseVoucherCustomersAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
+    

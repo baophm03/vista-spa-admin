@@ -20,17 +20,11 @@ import ListPagination from '@/components/base/ListPagination'
 import { paginateRows } from '@/utils/listTable'
 import { isTechnicianUser, type UserWithRoleAssignments } from '@/utils/userRoles'
 import { errorMessage, pickData } from '@/api/helpers'
-import {
-  getGetCommissionRulesQueryKey,
-  useDeleteCommissionRulesId,
-  useGetCommissionRules,
-  usePostCommissionRules,
-  usePutCommissionRulesId,
-} from '@/api/endpoints/commissions'
-import { useGetBranches } from '@/api/endpoints/branches'
-import { useGetService } from '@/api/endpoints/services'
-import { useGetUsers } from '@/api/endpoints/users'
-import type { Branch, CommissionRule, PostCommissionRulesBody, Service, User } from '@/api/models'
+import { getGetCommissionRulesAdminQueryKey, useDeleteCommissionRulesIdAdmin, useGetCommissionRulesAdmin, usePostCommissionRulesAdmin, usePutCommissionRulesIdAdmin } from '@/api/endpoints/commissions'
+import { useGetBranchesAdmin } from '@/api/endpoints/branches'
+import { useGetServiceAdmin } from '@/api/endpoints/services'
+import { useGetUsersAdmin } from '@/api/endpoints/users'
+import type { Branch, CommissionRule, PostCommissionRulesAdminBody, Service, User } from '@/api/models'
 import CommissionRuleModal, { type RateType } from './components/CommissionRuleModal'
 import { BASE_OPTIONS, PAYEE_META, type PayeeType } from './components/constants'
 
@@ -66,10 +60,10 @@ export default function CommissionRulesPanel() {
   const ability = useAbility()
   const canManage = ability.can('RULE_MANAGE', 'COMMISSION')
 
-  const rulesQuery = useGetCommissionRules()
-  const branchesQuery = useGetBranches({ status: 'active' })
-  const servicesQuery = useGetService({ page: 1, limit: 200, is_active: true })
-  const usersQuery = useGetUsers({ currentPage: 1, pageSize: 200, has_role: true })
+  const rulesQuery = useGetCommissionRulesAdmin()
+  const branchesQuery = useGetBranchesAdmin({ status: 'active' })
+  const servicesQuery = useGetServiceAdmin({ page: 1, limit: 200, is_active: true })
+  const usersQuery = useGetUsersAdmin({ currentPage: 1, pageSize: 200, has_role: true })
   const rules = useMemo(() => {
     const raw = pickData<CommissionRule[]>(rulesQuery.data)
     return Array.isArray(raw) ? raw : []
@@ -83,12 +77,12 @@ export default function CommissionRulesPanel() {
   const userNameById = useMemo(() => new Map(users.map((user) => [user.id, user.zalo_name || user.email || user.id])), [users])
 
   const invalidate = async () => {
-    await queryClient.invalidateQueries({ queryKey: getGetCommissionRulesQueryKey() })
+    await queryClient.invalidateQueries({ queryKey: getGetCommissionRulesAdminQueryKey() })
   }
 
-  const createMutation = usePostCommissionRules({ mutation: { onSuccess: invalidate } })
-  const updateMutation = usePutCommissionRulesId({ mutation: { onSuccess: invalidate } })
-  const deleteMutation = useDeleteCommissionRulesId({ mutation: { onSuccess: invalidate } })
+  const createMutation = usePostCommissionRulesAdmin({ mutation: { onSuccess: invalidate } })
+  const updateMutation = usePutCommissionRulesIdAdmin({ mutation: { onSuccess: invalidate } })
+  const deleteMutation = useDeleteCommissionRulesIdAdmin({ mutation: { onSuccess: invalidate } })
 
   const openEditor = (row?: CommissionRule) => {
     setEditing(row ?? null)
@@ -119,7 +113,7 @@ export default function CommissionRulesPanel() {
     try {
       const values = await form.validateFields()
       const rateType: RateType = values.rate_type ?? 'PERCENT'
-      const dto: PostCommissionRulesBody = {
+      const dto: PostCommissionRulesAdminBody = {
         name: values.name,
         payee_type: values.payee_type,
         base: values.base,

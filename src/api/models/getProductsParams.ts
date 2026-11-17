@@ -9,5 +9,4 @@
 export type GetProductsParams = {
 q?: string;
 category_id?: string;
-is_active?: boolean;
 };

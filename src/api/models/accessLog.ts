@@ -19,7 +19,7 @@ import type { AccessLogIp } from './accessLogIp';
 export interface AccessLog {
   id: string;
   user_id: string;
-  /** Branch of the customer profile, or the employee branch when the log has no customer profile */
+  /** Branch of the employee who performed the action */
   branch_id?: AccessLogBranchId;
   user_name?: AccessLogUserName;
   customer_profile_id?: AccessLogCustomerProfileId;

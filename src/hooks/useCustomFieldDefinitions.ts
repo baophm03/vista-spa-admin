@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { message } from 'antd'
-import { getCustomFieldDefs } from '@/api/endpoints/settings'
+import { getCustomFieldDefsAdmin } from '@/api/endpoints/custom-field-defs'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { CustomFieldDef } from '@/api/models/customFieldDef'
 import type { CustomFieldDefEntity } from '@/api/models/customFieldDefEntity'
@@ -11,7 +11,7 @@ export default function useCustomFieldDefinitions(entity: CustomFieldDefEntity) 
 
   useEffect(() => {
     let active = true
-    getCustomFieldDefs({ entity, is_active: true })
+    getCustomFieldDefsAdmin({ entity, is_active: true })
       .then((response) => {
         if (!active) return
         setDefinitions((pickData<CustomFieldDef[]>(response) ?? []) as CustomFieldDefWithOptions[])

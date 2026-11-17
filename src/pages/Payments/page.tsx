@@ -8,9 +8,9 @@ import ListPagination from '@/components/base/ListPagination'
 import TableEmpty from '@/components/base/TableEmpty'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { Branch } from '@/api/models/branch'
-import { getGetPaymentsQueryKey, useGetPayments, usePostPaymentsIdVoid } from '@/api/endpoints/treatment-customers'
-import { useGetBranches } from '@/api/endpoints/branches'
-import { useGetUsers } from '@/api/endpoints/users'
+import { getGetPaymentsAdminQueryKey, useGetPaymentsAdmin, usePostPaymentsIdVoidAdmin } from '@/api/endpoints/treatment-customers'
+import { useGetBranchesAdmin } from '@/api/endpoints/branches'
+import { useGetUsersAdmin } from '@/api/endpoints/users'
 import { useAbility } from '@casl/react'
 import { useQueryClient } from '@tanstack/react-query'
 import PaymentVoidModal from './components/PaymentVoidModal'
@@ -49,10 +49,10 @@ export default function Payments() {
     ...(range?.[1] ? { to_date: range[1].format('YYYY-MM-DD') } : {}),
   }
 
-  const paymentsQuery = useGetPayments(params as unknown as Parameters<typeof useGetPayments>[0])
-  const branchesQuery = useGetBranches()
-  const staffQuery = useGetUsers({ currentPage: 1, pageSize: 100, has_role: true } as never)
-  const voidMutation = usePostPaymentsIdVoid()
+  const paymentsQuery = useGetPaymentsAdmin(params as unknown as Parameters<typeof useGetPaymentsAdmin>[0])
+  const branchesQuery = useGetBranchesAdmin()
+  const staffQuery = useGetUsersAdmin({ currentPage: 1, pageSize: 100, has_role: true } as never)
+  const voidMutation = usePostPaymentsIdVoidAdmin()
 
   const raw = pickData<LedgerRow[] | { rows?: LedgerRow[] }>(paymentsQuery.data)
   const rows = (Array.isArray(raw) ? raw : raw?.rows ?? []) as LedgerRow[]
@@ -67,7 +67,7 @@ export default function Payments() {
   const staffById = new Map(staffRows.map((s) => [s.id, s.zalo_name || s.email || s.id]))
   const branchById = new Map(branches.map((b) => [b.id, b.name]))
 
-  const refresh = () => queryClient.invalidateQueries({ queryKey: getGetPaymentsQueryKey() })
+  const refresh = () => queryClient.invalidateQueries({ queryKey: getGetPaymentsAdminQueryKey() })
 
   const submitVoid = async () => {
     if (!voidRow) return

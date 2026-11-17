@@ -32,7 +32,7 @@ import type {
 import type {
   ForbiddenResponse,
   NotFoundResponse,
-  PostImportsKindBody,
+  PostImportsKindAdminBody,
   UnauthorizedResponse,
   UnprocessableEntityResponse
 } from '../models';
@@ -44,34 +44,34 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * **IMP-01** — POST /imports/{kind}. Upload a CSV/XLSX file with column mapping. For `customer-treatments`, an optional `branch_id` column or top-level branch sets the treatment location; `customer-profiles` are global and do not accept a branch. Set `preview_headers=true` to read its first row as column headers without importing. `dry_run=true` (default) only validates and returns a per-row error report without writing to the DB. Files larger than 2MB (or `process_mode=async`) are queued for the background worker instead — the response then returns `{ job_id, async: true }`; poll GET /import-jobs/{job_id} for progress and the final report. Requires the `import.run` permission.
+ * **IMP-01** — POST /imports/{kind}/admin. Upload a CSV/XLSX file with column mapping. Map the optional `branch_id` column to use each row's branch (by branch name, code, or ID); otherwise the top-level `branch_id` is the default. Set `preview_headers=true` to read its first row as column headers without importing. `dry_run=true` (default) only validates and returns a per-row error report without writing to the DB. Files larger than 2MB (or `process_mode=async`) are queued for the background worker instead — the response then returns `{ job_id, async: true }`; poll GET /import-jobs/{job_id}/admin for progress and the final report. Cần đăng nhập + `import.run`.
  * @summary Import legacy customer data (customer-profiles / customer-treatments)
  */
-export const postImportsKind = (
+export const postImportsKindAdmin = (
     kind: 'customer-profiles' | 'customer-treatments',
-    postImportsKindBody: PostImportsKindBody,
+    postImportsKindAdminBody: PostImportsKindAdminBody,
  signal?: AbortSignal
 ) => {
       
       const formData = new FormData();
-if(postImportsKindBody.file !== undefined) {
- formData.append(`file`, postImportsKindBody.file)
+if(postImportsKindAdminBody.file !== undefined) {
+ formData.append(`file`, postImportsKindAdminBody.file)
  }
-if(postImportsKindBody.dry_run !== undefined) {
- formData.append(`dry_run`, postImportsKindBody.dry_run.toString())
+if(postImportsKindAdminBody.dry_run !== undefined) {
+ formData.append(`dry_run`, postImportsKindAdminBody.dry_run.toString())
  }
-if(postImportsKindBody.preview_headers !== undefined) {
- formData.append(`preview_headers`, postImportsKindBody.preview_headers.toString())
+if(postImportsKindAdminBody.preview_headers !== undefined) {
+ formData.append(`preview_headers`, postImportsKindAdminBody.preview_headers.toString())
  }
-if(postImportsKindBody.branch_id !== undefined) {
- formData.append(`branch_id`, postImportsKindBody.branch_id)
+if(postImportsKindAdminBody.branch_id !== undefined) {
+ formData.append(`branch_id`, postImportsKindAdminBody.branch_id)
  }
-if(postImportsKindBody.column_mapping !== undefined) {
- formData.append(`column_mapping`, postImportsKindBody.column_mapping)
+if(postImportsKindAdminBody.column_mapping !== undefined) {
+ formData.append(`column_mapping`, postImportsKindAdminBody.column_mapping)
  }
 
       return customInstance<void>(
-      {url: `/imports/${kind}`, method: 'POST',
+      {url: `/imports/${kind}/admin`, method: 'POST',
       headers: {'Content-Type': 'multipart/form-data', },
        data: formData, signal
     },
@@ -80,11 +80,11 @@ if(postImportsKindBody.column_mapping !== undefined) {
   
 
 
-export const getPostImportsKindMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | UnprocessableEntityResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postImportsKind>>, TError,{kind: 'customer-profiles' | 'customer-treatments';data: PostImportsKindBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postImportsKind>>, TError,{kind: 'customer-profiles' | 'customer-treatments';data: PostImportsKindBody}, TContext> => {
+export const getPostImportsKindAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | UnprocessableEntityResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postImportsKindAdmin>>, TError,{kind: 'customer-profiles' | 'customer-treatments';data: PostImportsKindAdminBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postImportsKindAdmin>>, TError,{kind: 'customer-profiles' | 'customer-treatments';data: PostImportsKindAdminBody}, TContext> => {
 
-const mutationKey = ['postImportsKind'];
+const mutationKey = ['postImportsKindAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -94,10 +94,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postImportsKind>>, {kind: 'customer-profiles' | 'customer-treatments';data: PostImportsKindBody}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postImportsKindAdmin>>, {kind: 'customer-profiles' | 'customer-treatments';data: PostImportsKindAdminBody}> = (props) => {
           const {kind,data} = props ?? {};
 
-          return  postImportsKind(kind,data,)
+          return  postImportsKindAdmin(kind,data,)
         }
 
         
@@ -105,38 +105,38 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PostImportsKindMutationResult = NonNullable<Awaited<ReturnType<typeof postImportsKind>>>
-    export type PostImportsKindMutationBody = PostImportsKindBody
-    export type PostImportsKindMutationError = UnauthorizedResponse | ForbiddenResponse | UnprocessableEntityResponse
+    export type PostImportsKindAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postImportsKindAdmin>>>
+    export type PostImportsKindAdminMutationBody = PostImportsKindAdminBody
+    export type PostImportsKindAdminMutationError = UnauthorizedResponse | ForbiddenResponse | UnprocessableEntityResponse
 
     /**
  * @summary Import legacy customer data (customer-profiles / customer-treatments)
  */
-export const usePostImportsKind = <TError = UnauthorizedResponse | ForbiddenResponse | UnprocessableEntityResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postImportsKind>>, TError,{kind: 'customer-profiles' | 'customer-treatments';data: PostImportsKindBody}, TContext>, }
+export const usePostImportsKindAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | UnprocessableEntityResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postImportsKindAdmin>>, TError,{kind: 'customer-profiles' | 'customer-treatments';data: PostImportsKindAdminBody}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postImportsKind>>,
+        Awaited<ReturnType<typeof postImportsKindAdmin>>,
         TError,
-        {kind: 'customer-profiles' | 'customer-treatments';data: PostImportsKindBody},
+        {kind: 'customer-profiles' | 'customer-treatments';data: PostImportsKindAdminBody},
         TContext
       > => {
 
-      const mutationOptions = getPostImportsKindMutationOptions(options);
+      const mutationOptions = getPostImportsKindAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **IMP-02** — GET /imports/{id}. `id=all` returns up to the 50 most recent imports. Requires the `import.run` permission.
+ * **IMP-02** — GET /imports/{id}/admin. `id=all` returns up to the 50 most recent imports. Cần đăng nhập + `import.run`.
  * @summary View an import report by id, or recent imports with id=all
  */
-export const getImportsId = (
+export const getImportsIdAdmin = (
     id: string,
  signal?: AbortSignal
 ) => {
       
       
       return customInstance<void>(
-      {url: `/imports/${id}`, method: 'GET', signal
+      {url: `/imports/${id}/admin`, method: 'GET', signal
     },
       );
     }
@@ -144,75 +144,75 @@ export const getImportsId = (
 
 
 
-export const getGetImportsIdInfiniteQueryKey = (id?: string,) => {
+export const getGetImportsIdAdminInfiniteQueryKey = (id?: string,) => {
     return [
-    'infinite', `/imports/${id}`
+    'infinite', `/imports/${id}/admin`
     ] as const;
     }
 
-export const getGetImportsIdQueryKey = (id?: string,) => {
+export const getGetImportsIdAdminQueryKey = (id?: string,) => {
     return [
-    `/imports/${id}`
+    `/imports/${id}/admin`
     ] as const;
     }
 
     
-export const getGetImportsIdInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getImportsId>>>, TError = NotFoundResponse>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportsId>>, TError, TData>>, }
+export const getGetImportsIdAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getImportsIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportsIdAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetImportsIdInfiniteQueryKey(id);
+  const queryKey =  queryOptions?.queryKey ?? getGetImportsIdAdminInfiniteQueryKey(id);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getImportsId>>> = ({ signal }) => getImportsId(id, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getImportsIdAdmin>>> = ({ signal }) => getImportsIdAdmin(id, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportsId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportsIdAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetImportsIdInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getImportsId>>>
-export type GetImportsIdInfiniteQueryError = NotFoundResponse
+export type GetImportsIdAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getImportsIdAdmin>>>
+export type GetImportsIdAdminInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse
 
 
-export function useGetImportsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getImportsId>>>, TError = NotFoundResponse>(
- id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportsId>>, TError, TData>> & Pick<
+export function useGetImportsIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getImportsIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>(
+ id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportsIdAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getImportsId>>,
+          Awaited<ReturnType<typeof getImportsIdAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getImportsId>>
+          Awaited<ReturnType<typeof getImportsIdAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetImportsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getImportsId>>>, TError = NotFoundResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportsId>>, TError, TData>> & Pick<
+export function useGetImportsIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getImportsIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportsIdAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getImportsId>>,
+          Awaited<ReturnType<typeof getImportsIdAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getImportsId>>
+          Awaited<ReturnType<typeof getImportsIdAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetImportsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getImportsId>>>, TError = NotFoundResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportsId>>, TError, TData>>, }
+export function useGetImportsIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getImportsIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportsIdAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary View an import report by id, or recent imports with id=all
  */
 
-export function useGetImportsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getImportsId>>>, TError = NotFoundResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportsId>>, TError, TData>>, }
+export function useGetImportsIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getImportsIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportsIdAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetImportsIdInfiniteQueryOptions(id,options)
+  const queryOptions = getGetImportsIdAdminInfiniteQueryOptions(id,options)
 
   const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -224,12 +224,12 @@ export function useGetImportsIdInfinite<TData = InfiniteData<Awaited<ReturnType<
 /**
  * @summary View an import report by id, or recent imports with id=all
  */
-export const prefetchGetImportsIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getImportsId>>, TError = NotFoundResponse>(
- queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportsId>>, TError, TData>>, }
+export const prefetchGetImportsIdAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getImportsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportsIdAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetImportsIdInfiniteQueryOptions(id,options)
+  const queryOptions = getGetImportsIdAdminInfiniteQueryOptions(id,options)
 
   await queryClient.prefetchInfiniteQuery(queryOptions);
 
@@ -238,62 +238,62 @@ export const prefetchGetImportsIdInfiniteQuery = async <TData = Awaited<ReturnTy
 
 
 
-export const getGetImportsIdQueryOptions = <TData = Awaited<ReturnType<typeof getImportsId>>, TError = NotFoundResponse>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportsId>>, TError, TData>>, }
+export const getGetImportsIdAdminQueryOptions = <TData = Awaited<ReturnType<typeof getImportsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportsIdAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetImportsIdQueryKey(id);
+  const queryKey =  queryOptions?.queryKey ?? getGetImportsIdAdminQueryKey(id);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getImportsId>>> = ({ signal }) => getImportsId(id, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getImportsIdAdmin>>> = ({ signal }) => getImportsIdAdmin(id, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getImportsId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getImportsIdAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetImportsIdQueryResult = NonNullable<Awaited<ReturnType<typeof getImportsId>>>
-export type GetImportsIdQueryError = NotFoundResponse
+export type GetImportsIdAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getImportsIdAdmin>>>
+export type GetImportsIdAdminQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse
 
 
-export function useGetImportsId<TData = Awaited<ReturnType<typeof getImportsId>>, TError = NotFoundResponse>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportsId>>, TError, TData>> & Pick<
+export function useGetImportsIdAdmin<TData = Awaited<ReturnType<typeof getImportsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportsIdAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getImportsId>>,
+          Awaited<ReturnType<typeof getImportsIdAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getImportsId>>
+          Awaited<ReturnType<typeof getImportsIdAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetImportsId<TData = Awaited<ReturnType<typeof getImportsId>>, TError = NotFoundResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportsId>>, TError, TData>> & Pick<
+export function useGetImportsIdAdmin<TData = Awaited<ReturnType<typeof getImportsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportsIdAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getImportsId>>,
+          Awaited<ReturnType<typeof getImportsIdAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getImportsId>>
+          Awaited<ReturnType<typeof getImportsIdAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetImportsId<TData = Awaited<ReturnType<typeof getImportsId>>, TError = NotFoundResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportsId>>, TError, TData>>, }
+export function useGetImportsIdAdmin<TData = Awaited<ReturnType<typeof getImportsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportsIdAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary View an import report by id, or recent imports with id=all
  */
 
-export function useGetImportsId<TData = Awaited<ReturnType<typeof getImportsId>>, TError = NotFoundResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportsId>>, TError, TData>>, }
+export function useGetImportsIdAdmin<TData = Awaited<ReturnType<typeof getImportsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportsIdAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetImportsIdQueryOptions(id,options)
+  const queryOptions = getGetImportsIdAdminQueryOptions(id,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -305,12 +305,12 @@ export function useGetImportsId<TData = Awaited<ReturnType<typeof getImportsId>>
 /**
  * @summary View an import report by id, or recent imports with id=all
  */
-export const prefetchGetImportsIdQuery = async <TData = Awaited<ReturnType<typeof getImportsId>>, TError = NotFoundResponse>(
- queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportsId>>, TError, TData>>, }
+export const prefetchGetImportsIdAdminQuery = async <TData = Awaited<ReturnType<typeof getImportsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportsIdAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetImportsIdQueryOptions(id,options)
+  const queryOptions = getGetImportsIdAdminQueryOptions(id,options)
 
   await queryClient.prefetchQuery(queryOptions);
 
@@ -320,17 +320,17 @@ export const prefetchGetImportsIdQuery = async <TData = Awaited<ReturnType<typeo
 
 
 /**
- * **IMP-04** — GET /import-jobs/{id}. Returns job status (`QUEUED/PARSING/VALIDATING/IMPORTING/DONE/FAILED`), progress (`processed_rows/total_rows`) and, when finished, the full per-row report (errors, warnings, preview). Requires the `import.run` permission.
+ * **IMP-04** — GET /import-jobs/{id}/admin. Returns job status (`QUEUED/PARSING/VALIDATING/IMPORTING/DONE/FAILED`), progress (`processed_rows/total_rows`) and, when finished, the full per-row report (errors, warnings, preview). Cần đăng nhập + `import.run`.
  * @summary Background import job progress and report
  */
-export const getImportJobsId = (
+export const getImportJobsIdAdmin = (
     id: string,
  signal?: AbortSignal
 ) => {
       
       
       return customInstance<void>(
-      {url: `/import-jobs/${id}`, method: 'GET', signal
+      {url: `/import-jobs/${id}/admin`, method: 'GET', signal
     },
       );
     }
@@ -338,75 +338,75 @@ export const getImportJobsId = (
 
 
 
-export const getGetImportJobsIdInfiniteQueryKey = (id?: string,) => {
+export const getGetImportJobsIdAdminInfiniteQueryKey = (id?: string,) => {
     return [
-    'infinite', `/import-jobs/${id}`
+    'infinite', `/import-jobs/${id}/admin`
     ] as const;
     }
 
-export const getGetImportJobsIdQueryKey = (id?: string,) => {
+export const getGetImportJobsIdAdminQueryKey = (id?: string,) => {
     return [
-    `/import-jobs/${id}`
+    `/import-jobs/${id}/admin`
     ] as const;
     }
 
     
-export const getGetImportJobsIdInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getImportJobsId>>>, TError = UnauthorizedResponse | NotFoundResponse>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportJobsId>>, TError, TData>>, }
+export const getGetImportJobsIdAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getImportJobsIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportJobsIdAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetImportJobsIdInfiniteQueryKey(id);
+  const queryKey =  queryOptions?.queryKey ?? getGetImportJobsIdAdminInfiniteQueryKey(id);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getImportJobsId>>> = ({ signal }) => getImportJobsId(id, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getImportJobsIdAdmin>>> = ({ signal }) => getImportJobsIdAdmin(id, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportJobsId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportJobsIdAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetImportJobsIdInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getImportJobsId>>>
-export type GetImportJobsIdInfiniteQueryError = UnauthorizedResponse | NotFoundResponse
+export type GetImportJobsIdAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getImportJobsIdAdmin>>>
+export type GetImportJobsIdAdminInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse
 
 
-export function useGetImportJobsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getImportJobsId>>>, TError = UnauthorizedResponse | NotFoundResponse>(
- id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportJobsId>>, TError, TData>> & Pick<
+export function useGetImportJobsIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getImportJobsIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>(
+ id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportJobsIdAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getImportJobsId>>,
+          Awaited<ReturnType<typeof getImportJobsIdAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getImportJobsId>>
+          Awaited<ReturnType<typeof getImportJobsIdAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetImportJobsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getImportJobsId>>>, TError = UnauthorizedResponse | NotFoundResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportJobsId>>, TError, TData>> & Pick<
+export function useGetImportJobsIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getImportJobsIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportJobsIdAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getImportJobsId>>,
+          Awaited<ReturnType<typeof getImportJobsIdAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getImportJobsId>>
+          Awaited<ReturnType<typeof getImportJobsIdAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetImportJobsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getImportJobsId>>>, TError = UnauthorizedResponse | NotFoundResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportJobsId>>, TError, TData>>, }
+export function useGetImportJobsIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getImportJobsIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportJobsIdAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Background import job progress and report
  */
 
-export function useGetImportJobsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getImportJobsId>>>, TError = UnauthorizedResponse | NotFoundResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportJobsId>>, TError, TData>>, }
+export function useGetImportJobsIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getImportJobsIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportJobsIdAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetImportJobsIdInfiniteQueryOptions(id,options)
+  const queryOptions = getGetImportJobsIdAdminInfiniteQueryOptions(id,options)
 
   const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -418,12 +418,12 @@ export function useGetImportJobsIdInfinite<TData = InfiniteData<Awaited<ReturnTy
 /**
  * @summary Background import job progress and report
  */
-export const prefetchGetImportJobsIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getImportJobsId>>, TError = UnauthorizedResponse | NotFoundResponse>(
- queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportJobsId>>, TError, TData>>, }
+export const prefetchGetImportJobsIdAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getImportJobsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportJobsIdAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetImportJobsIdInfiniteQueryOptions(id,options)
+  const queryOptions = getGetImportJobsIdAdminInfiniteQueryOptions(id,options)
 
   await queryClient.prefetchInfiniteQuery(queryOptions);
 
@@ -432,62 +432,62 @@ export const prefetchGetImportJobsIdInfiniteQuery = async <TData = Awaited<Retur
 
 
 
-export const getGetImportJobsIdQueryOptions = <TData = Awaited<ReturnType<typeof getImportJobsId>>, TError = UnauthorizedResponse | NotFoundResponse>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportJobsId>>, TError, TData>>, }
+export const getGetImportJobsIdAdminQueryOptions = <TData = Awaited<ReturnType<typeof getImportJobsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportJobsIdAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetImportJobsIdQueryKey(id);
+  const queryKey =  queryOptions?.queryKey ?? getGetImportJobsIdAdminQueryKey(id);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getImportJobsId>>> = ({ signal }) => getImportJobsId(id, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getImportJobsIdAdmin>>> = ({ signal }) => getImportJobsIdAdmin(id, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getImportJobsId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getImportJobsIdAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetImportJobsIdQueryResult = NonNullable<Awaited<ReturnType<typeof getImportJobsId>>>
-export type GetImportJobsIdQueryError = UnauthorizedResponse | NotFoundResponse
+export type GetImportJobsIdAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getImportJobsIdAdmin>>>
+export type GetImportJobsIdAdminQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse
 
 
-export function useGetImportJobsId<TData = Awaited<ReturnType<typeof getImportJobsId>>, TError = UnauthorizedResponse | NotFoundResponse>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportJobsId>>, TError, TData>> & Pick<
+export function useGetImportJobsIdAdmin<TData = Awaited<ReturnType<typeof getImportJobsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportJobsIdAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getImportJobsId>>,
+          Awaited<ReturnType<typeof getImportJobsIdAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getImportJobsId>>
+          Awaited<ReturnType<typeof getImportJobsIdAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetImportJobsId<TData = Awaited<ReturnType<typeof getImportJobsId>>, TError = UnauthorizedResponse | NotFoundResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportJobsId>>, TError, TData>> & Pick<
+export function useGetImportJobsIdAdmin<TData = Awaited<ReturnType<typeof getImportJobsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportJobsIdAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getImportJobsId>>,
+          Awaited<ReturnType<typeof getImportJobsIdAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getImportJobsId>>
+          Awaited<ReturnType<typeof getImportJobsIdAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetImportJobsId<TData = Awaited<ReturnType<typeof getImportJobsId>>, TError = UnauthorizedResponse | NotFoundResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportJobsId>>, TError, TData>>, }
+export function useGetImportJobsIdAdmin<TData = Awaited<ReturnType<typeof getImportJobsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportJobsIdAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Background import job progress and report
  */
 
-export function useGetImportJobsId<TData = Awaited<ReturnType<typeof getImportJobsId>>, TError = UnauthorizedResponse | NotFoundResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportJobsId>>, TError, TData>>, }
+export function useGetImportJobsIdAdmin<TData = Awaited<ReturnType<typeof getImportJobsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportJobsIdAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetImportJobsIdQueryOptions(id,options)
+  const queryOptions = getGetImportJobsIdAdminQueryOptions(id,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -499,12 +499,12 @@ export function useGetImportJobsId<TData = Awaited<ReturnType<typeof getImportJo
 /**
  * @summary Background import job progress and report
  */
-export const prefetchGetImportJobsIdQuery = async <TData = Awaited<ReturnType<typeof getImportJobsId>>, TError = UnauthorizedResponse | NotFoundResponse>(
- queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportJobsId>>, TError, TData>>, }
+export const prefetchGetImportJobsIdAdminQuery = async <TData = Awaited<ReturnType<typeof getImportJobsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportJobsIdAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetImportJobsIdQueryOptions(id,options)
+  const queryOptions = getGetImportJobsIdAdminQueryOptions(id,options)
 
   await queryClient.prefetchQuery(queryOptions);
 
@@ -514,17 +514,17 @@ export const prefetchGetImportJobsIdQuery = async <TData = Awaited<ReturnType<ty
 
 
 /**
- * **IMP-03** — GET /import-jobs. Up to the 50 most recent background import jobs (newest first). Requires the `import.run` permission.
+ * **IMP-03** — GET /import-jobs/admin. Up to the 50 most recent background import jobs (newest first). Cần đăng nhập + `import.run`.
  * @summary List recent background import jobs
  */
-export const getImportJobs = (
+export const getImportJobsAdmin = (
     
  signal?: AbortSignal
 ) => {
       
       
       return customInstance<void>(
-      {url: `/import-jobs`, method: 'GET', signal
+      {url: `/import-jobs/admin`, method: 'GET', signal
     },
       );
     }
@@ -532,75 +532,75 @@ export const getImportJobs = (
 
 
 
-export const getGetImportJobsInfiniteQueryKey = () => {
+export const getGetImportJobsAdminInfiniteQueryKey = () => {
     return [
-    'infinite', `/import-jobs`
+    'infinite', `/import-jobs/admin`
     ] as const;
     }
 
-export const getGetImportJobsQueryKey = () => {
+export const getGetImportJobsAdminQueryKey = () => {
     return [
-    `/import-jobs`
+    `/import-jobs/admin`
     ] as const;
     }
 
     
-export const getGetImportJobsInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getImportJobs>>>, TError = UnauthorizedResponse | ForbiddenResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportJobs>>, TError, TData>>, }
+export const getGetImportJobsAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getImportJobsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportJobsAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetImportJobsInfiniteQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getGetImportJobsAdminInfiniteQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getImportJobs>>> = ({ signal }) => getImportJobs(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getImportJobsAdmin>>> = ({ signal }) => getImportJobsAdmin(signal);
 
       
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportJobs>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportJobsAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetImportJobsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getImportJobs>>>
-export type GetImportJobsInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse
+export type GetImportJobsAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getImportJobsAdmin>>>
+export type GetImportJobsAdminInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse
 
 
-export function useGetImportJobsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getImportJobs>>>, TError = UnauthorizedResponse | ForbiddenResponse>(
-  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportJobs>>, TError, TData>> & Pick<
+export function useGetImportJobsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getImportJobsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse>(
+  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportJobsAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getImportJobs>>,
+          Awaited<ReturnType<typeof getImportJobsAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getImportJobs>>
+          Awaited<ReturnType<typeof getImportJobsAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetImportJobsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getImportJobs>>>, TError = UnauthorizedResponse | ForbiddenResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportJobs>>, TError, TData>> & Pick<
+export function useGetImportJobsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getImportJobsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportJobsAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getImportJobs>>,
+          Awaited<ReturnType<typeof getImportJobsAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getImportJobs>>
+          Awaited<ReturnType<typeof getImportJobsAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetImportJobsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getImportJobs>>>, TError = UnauthorizedResponse | ForbiddenResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportJobs>>, TError, TData>>, }
+export function useGetImportJobsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getImportJobsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportJobsAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary List recent background import jobs
  */
 
-export function useGetImportJobsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getImportJobs>>>, TError = UnauthorizedResponse | ForbiddenResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportJobs>>, TError, TData>>, }
+export function useGetImportJobsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getImportJobsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportJobsAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetImportJobsInfiniteQueryOptions(options)
+  const queryOptions = getGetImportJobsAdminInfiniteQueryOptions(options)
 
   const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -612,12 +612,12 @@ export function useGetImportJobsInfinite<TData = InfiniteData<Awaited<ReturnType
 /**
  * @summary List recent background import jobs
  */
-export const prefetchGetImportJobsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getImportJobs>>, TError = UnauthorizedResponse | ForbiddenResponse>(
- queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportJobs>>, TError, TData>>, }
+export const prefetchGetImportJobsAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getImportJobsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportJobsAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetImportJobsInfiniteQueryOptions(options)
+  const queryOptions = getGetImportJobsAdminInfiniteQueryOptions(options)
 
   await queryClient.prefetchInfiniteQuery(queryOptions);
 
@@ -626,62 +626,62 @@ export const prefetchGetImportJobsInfiniteQuery = async <TData = Awaited<ReturnT
 
 
 
-export const getGetImportJobsQueryOptions = <TData = Awaited<ReturnType<typeof getImportJobs>>, TError = UnauthorizedResponse | ForbiddenResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportJobs>>, TError, TData>>, }
+export const getGetImportJobsAdminQueryOptions = <TData = Awaited<ReturnType<typeof getImportJobsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportJobsAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetImportJobsQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getGetImportJobsAdminQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getImportJobs>>> = ({ signal }) => getImportJobs(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getImportJobsAdmin>>> = ({ signal }) => getImportJobsAdmin(signal);
 
       
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getImportJobs>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getImportJobsAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetImportJobsQueryResult = NonNullable<Awaited<ReturnType<typeof getImportJobs>>>
-export type GetImportJobsQueryError = UnauthorizedResponse | ForbiddenResponse
+export type GetImportJobsAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getImportJobsAdmin>>>
+export type GetImportJobsAdminQueryError = UnauthorizedResponse | ForbiddenResponse
 
 
-export function useGetImportJobs<TData = Awaited<ReturnType<typeof getImportJobs>>, TError = UnauthorizedResponse | ForbiddenResponse>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportJobs>>, TError, TData>> & Pick<
+export function useGetImportJobsAdmin<TData = Awaited<ReturnType<typeof getImportJobsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportJobsAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getImportJobs>>,
+          Awaited<ReturnType<typeof getImportJobsAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getImportJobs>>
+          Awaited<ReturnType<typeof getImportJobsAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetImportJobs<TData = Awaited<ReturnType<typeof getImportJobs>>, TError = UnauthorizedResponse | ForbiddenResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportJobs>>, TError, TData>> & Pick<
+export function useGetImportJobsAdmin<TData = Awaited<ReturnType<typeof getImportJobsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportJobsAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getImportJobs>>,
+          Awaited<ReturnType<typeof getImportJobsAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getImportJobs>>
+          Awaited<ReturnType<typeof getImportJobsAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetImportJobs<TData = Awaited<ReturnType<typeof getImportJobs>>, TError = UnauthorizedResponse | ForbiddenResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportJobs>>, TError, TData>>, }
+export function useGetImportJobsAdmin<TData = Awaited<ReturnType<typeof getImportJobsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportJobsAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary List recent background import jobs
  */
 
-export function useGetImportJobs<TData = Awaited<ReturnType<typeof getImportJobs>>, TError = UnauthorizedResponse | ForbiddenResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportJobs>>, TError, TData>>, }
+export function useGetImportJobsAdmin<TData = Awaited<ReturnType<typeof getImportJobsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportJobsAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetImportJobsQueryOptions(options)
+  const queryOptions = getGetImportJobsAdminQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -693,12 +693,12 @@ export function useGetImportJobs<TData = Awaited<ReturnType<typeof getImportJobs
 /**
  * @summary List recent background import jobs
  */
-export const prefetchGetImportJobsQuery = async <TData = Awaited<ReturnType<typeof getImportJobs>>, TError = UnauthorizedResponse | ForbiddenResponse>(
- queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportJobs>>, TError, TData>>, }
+export const prefetchGetImportJobsAdminQuery = async <TData = Awaited<ReturnType<typeof getImportJobsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportJobsAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetImportJobsQueryOptions(options)
+  const queryOptions = getGetImportJobsAdminQueryOptions(options)
 
   await queryClient.prefetchQuery(queryOptions);
 

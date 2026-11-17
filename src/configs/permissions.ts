@@ -83,6 +83,22 @@ export function normalizePermissions(input: unknown): Permission[] {
   const result: Permission[] = [];
 
   for (const item of input) {
+    // BE mới có thể trả key dạng string 'MODULE:ACTION' (realhub style) hoặc
+    // legacy 'module.action' — hoặc object {module, action}. Chấp nhận cả 3.
+    if (typeof item === "string") {
+      const key = item.trim();
+      if (!key) continue;
+      const sepIdx = key.includes(":") ? key.indexOf(":") : key.indexOf(".");
+      if (sepIdx === -1) {
+        result.push({ module: key.toUpperCase(), action: "ALL" });
+      } else {
+        result.push({
+          module: key.slice(0, sepIdx).trim().toUpperCase(),
+          action: key.slice(sepIdx + 1).trim().toUpperCase(),
+        });
+      }
+      continue;
+    }
     if (!item || typeof item !== "object") continue;
 
     const { module, action } = item as { module?: unknown; action?: unknown };
@@ -110,11 +126,40 @@ export function parsePermissionKey(key: string): Permission {
   return { module: key.slice(0, idx), action: key.slice(idx + 1) };
 }
 
+// Alias subject: key mới của BE (realhub) đôi khi khác tên module mà FE pages
+// đang check (legacy). Emit thêm rule với alias để cả 2 phía đều pass.
+const SUBJECT_ALIASES: Record<string, string[]> = {
+  CUSTOMER_PROFILE: ["CUSTOMER"],
+  ACADEMY_COURSE: ["ACADEMY"],
+  ACADEMY_REGISTRATION: ["ACADEMY"],
+  TREATMENT_SESSION: ["SESSION"],
+  NOTIFICATION_TEMPLATE: ["NOTIFICATION"],
+};
+
 export const updateCaslAbility = (user: { permissions?: Permission[] } | null) => {
-  const rules: RawRuleOf<AppAbility>[] = normalizePermissions(user?.permissions).map((p) => ({
-    action: p.action as Actions,
-    subject: p.module,
-  }));
+  const rules: RawRuleOf<AppAbility>[] = [];
+
+  for (const p of normalizePermissions(user?.permissions)) {
+    // Wildcard realhub: '*:*' → toàn quyền; 'MODULE:*' → mọi action của module.
+    const subject = p.module === "*" ? "all" : p.module;
+    let action = p.action === "*" ? "manage" : p.action;
+    rules.push({ action: action as Actions, subject });
+
+    // 'MODULE:ACTION_ALL' / 'MODULE:ACTION_OWN' (realhub scope) → FE pages check
+    // base action ('READ', 'UPDATE', 'DELETE') nên emit thêm rule base tương ứng.
+    // Trả về nhiều rule riêng (thay vì inverted fields) để page checks scope-agnostic pass.
+    if (action.endsWith("_ALL") || action.endsWith("_OWN")) {
+      const base = action.replace(/_(ALL|OWN)$/, "");
+      rules.push({ action: base as Actions, subject });
+      for (const alias of SUBJECT_ALIASES[subject] ?? []) {
+        rules.push({ action: base as Actions, subject: alias });
+      }
+    }
+
+    for (const alias of SUBJECT_ALIASES[subject] ?? []) {
+      rules.push({ action: action as Actions, subject: alias });
+    }
+  }
 
   ability.update(rules);
 };

@@ -7,9 +7,9 @@ import type { CustomerHealthRecord } from '@/api/models/customerHealthRecord'
 import type { HealthMetric } from '@/api/models/healthMetric'
 import type { LookupItem } from '@/api/models/lookupItem'
 import type { LookupList } from '@/api/models/lookupList'
-import { getCustomerProfilesIdHealthMetrics, getCustomerProfilesIdHealthRecords } from '@/api/endpoints/customer-profiles'
-import { getSkinTypes } from '@/api/endpoints/settings'
-import { getLookupLists } from '@/api/endpoints/lookup-lists'
+import { getCustomerProfilesIdHealthMetricsAdmin, getCustomerProfilesIdHealthRecordsAdmin } from '@/api/endpoints/customer-profiles'
+import { getSkinTypesAdmin } from '@/api/endpoints/skin-types'
+import { getLookupListsAdmin } from '@/api/endpoints/lookup-lists'
 import { errorMessage, pickData } from '@/api/helpers'
 import { useBrandDateTime } from '@/themeRuntime'
 import ListPagination from '@/components/base/ListPagination'
@@ -127,10 +127,10 @@ export default function CustomerProfileHealthMetricsTab({ profileId }: { profile
     setError('')
     // API trả toàn bộ dữ liệu của hồ sơ; lọc theo chỉ số/khoảng ngày tại client (endpoint không nhận query params trong spec).
     Promise.all([
-      getCustomerProfilesIdHealthMetrics(profileId),
-      getLookupLists({ key: 'health.metrics' }),
-      getCustomerProfilesIdHealthRecords(profileId),
-      getSkinTypes(),
+      getCustomerProfilesIdHealthMetricsAdmin(profileId),
+      getLookupListsAdmin({ key: 'health.metrics' }),
+      getCustomerProfilesIdHealthRecordsAdmin(profileId),
+      getSkinTypesAdmin(),
     ])
       .then(([metricsResult, catalogsResult, recordsResult, skinTypesResult]) => {
         if (!active) return

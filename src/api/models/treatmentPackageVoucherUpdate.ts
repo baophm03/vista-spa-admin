@@ -7,6 +7,7 @@
  */
 import type { TreatmentPackageVoucherUpdateDescription } from './treatmentPackageVoucherUpdateDescription';
 import type { TreatmentPackageVoucherUpdateTreatmentPackageId } from './treatmentPackageVoucherUpdateTreatmentPackageId';
+import type { TreatmentPackageVoucherUpdateBranchId } from './treatmentPackageVoucherUpdateBranchId';
 import type { TreatmentPackageVoucherUpdateCardRankId } from './treatmentPackageVoucherUpdateCardRankId';
 import type { TreatmentPackageVoucherUpdateIssueMode } from './treatmentPackageVoucherUpdateIssueMode';
 import type { TreatmentPackageVoucherUpdatePointsCost } from './treatmentPackageVoucherUpdatePointsCost';
@@ -24,7 +25,7 @@ export interface TreatmentPackageVoucherUpdate {
   title?: string;
   description?: TreatmentPackageVoucherUpdateDescription;
   treatment_package_id?: TreatmentPackageVoucherUpdateTreatmentPackageId;
-  branch_id?: string | null;
+  branch_id?: TreatmentPackageVoucherUpdateBranchId;
   card_rank_id?: TreatmentPackageVoucherUpdateCardRankId;
   is_loyalty?: boolean;
   issue_mode?: TreatmentPackageVoucherUpdateIssueMode;

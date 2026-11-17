@@ -17,17 +17,12 @@ import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
 import type { CustomerHealthRecord } from '@/api/models/customerHealthRecord'
 import type { CustomerTreatment } from '@/api/models/customerTreatment'
-import {
-  getCustomerProfilesIdHealthRecords,
-  getHealthRecordsLatest,
-  postCustomerProfilesIdHealthRecords,
-  putCustomerProfilesIdHealthRecordsRecordId,
-} from '@/api/endpoints/customer-profiles'
-import { getTreatmentCustomers } from '@/api/endpoints/treatment-customers'
-import { getAppointments } from '@/api/endpoints/appointments'
-import { getSkinTypes } from '@/api/endpoints/settings'
-import { getTreatmentPackages } from '@/api/endpoints/services'
-import { getUsers } from '@/api/endpoints/users'
+import { getCustomerProfilesIdHealthRecordsAdmin, getHealthRecordsAdmin, postCustomerProfilesIdHealthRecordsAdmin, putCustomerProfilesIdHealthRecordsRecordIdAdmin } from '@/api/endpoints/customer-profiles'
+import { getTreatmentCustomersAdmin } from '@/api/endpoints/treatment-customers'
+import { getAppointmentsAdmin } from '@/api/endpoints/appointments'
+import { getSkinTypesAdmin } from '@/api/endpoints/skin-types'
+import { getTreatmentPackagesAdmin } from '@/api/endpoints/treatment-packages'
+import { getUsersAdmin } from '@/api/endpoints/users'
 import { errorMessage, pickData } from '@/api/helpers'
 import HealthRecordDrawer from './components/HealthRecordDrawer'
 import HealthRecordModal from './components/HealthRecordModal'
@@ -41,7 +36,7 @@ import {
   type SkinTypeOption,
 } from './components/constants'
 import type { Branch } from '@/api/models'
-import { useGetBranches } from '@/api/endpoints/branches'
+import { useGetBranchesAdmin } from '@/api/endpoints/branches'
 
  export default function HealthRecords() {
   const [rows, setRows] = useState<HealthRow[]>([])
@@ -66,7 +61,7 @@ import { useGetBranches } from '@/api/endpoints/branches'
   const [editingRecord, setEditingRecord] = useState<CustomerHealthRecord | null>(null)
   const [saving, setSaving] = useState(false)
   const [form] = Form.useForm()
-const branchesQuery = useGetBranches()
+const branchesQuery = useGetBranchesAdmin()
 const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as Branch[], [branchesQuery.data])
   
 
@@ -75,7 +70,7 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
     setLoading(true)
     try {
       // BE trả bản ghi phiếu khám mới nhất của từng khách kèm customer_profile + tìm q trên khách/nội dung phiếu
-      const latestRecords = await getHealthRecordsLatest({
+      const latestRecords = await getHealthRecordsAdmin({
         page: nextPage,
         limit: 10,
         ...(search.trim() ? { q: search.trim() } : {}),
@@ -100,7 +95,7 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
   useEffect(() => {
     void load()
     const loadExaminerOptions = async () => {
-      const result = await getUsers({ currentPage: 1, pageSize: 200, has_role: true }).catch(() => null)
+      const result = await getUsersAdmin({ currentPage: 1, pageSize: 200, has_role: true }).catch(() => null)
       const userRows = (pickData<{ rows?: Array<{ id: string; zalo_name?: string; email?: string; user_roles?: Array<{ role?: { role_name?: string } | null }> }> }>(result)?.rows ?? [])
       const ktvUsers = userRows.filter((user) =>
         (user.user_roles ?? []).some((assignment) => {
@@ -123,11 +118,11 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
     }
 
     void loadExaminerOptions()
-    getSkinTypes()
+    getSkinTypesAdmin()
       .then((body) => setSkinTypes(pickData<SkinTypeOption[]>(body) ?? []))
       .catch((err) => message.error(`Không tải được danh mục loại da: ${errorMessage(err)}`))
       .finally(() => setSkinTypesLoading(false))
-    getTreatmentPackages({ page: 1, limit: 200, is_active: true })
+    getTreatmentPackagesAdmin({ page: 1, limit: 200, is_active: true })
       .then((body) => {
         const names: Record<string, string> = {}
         for (const item of pickData<Array<{ id: string; name: string }>>(body) ?? []) names[item.id] = item.name
@@ -145,9 +140,9 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
     setDetailTreatments([])
     setDetailAppointments([])
     Promise.all([
-      getCustomerProfilesIdHealthRecords(detail.id),
-      getTreatmentCustomers({ customer_profile_id: detail.id, limit: 50 }),
-      getAppointments({ customer_profile_id: detail.id, page: 1, limit: 100 }).catch(() => null),
+      getCustomerProfilesIdHealthRecordsAdmin(detail.id),
+      getTreatmentCustomersAdmin({ customer_profile_id: detail.id, limit: 50 }),
+      getAppointmentsAdmin({ customer_profile_id: detail.id, page: 1, limit: 100 }).catch(() => null),
     ])
       .then(([recordsResult, treatmentsResult, appointmentsResult]) => {
         if (cancelled) return
@@ -213,10 +208,10 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
     setSaving(true)
     try {
       if (editingRecord) {
-        await putCustomerProfilesIdHealthRecordsRecordId(recordCustomer.id, editingRecord.id, dto as never)
+        await putCustomerProfilesIdHealthRecordsRecordIdAdmin(recordCustomer.id, editingRecord.id, dto as never)
         message.success('Đã cập nhật phiếu khám')
       } else {
-        await postCustomerProfilesIdHealthRecords(recordCustomer.id, dto as never)
+        await postCustomerProfilesIdHealthRecordsAdmin(recordCustomer.id, dto as never)
         message.success('Đã tạo phiếu khám')
       }
       setModalOpen(false)

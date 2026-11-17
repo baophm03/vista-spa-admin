@@ -11,20 +11,12 @@ import ListPagination from '../../components/base/ListPagination'
 import TableEmpty from '../../components/base/TableEmpty'
 import CustomerCodeHistoryModal from '../../components/CustomerCodeHistoryModal'
 import { errorMessage } from '../../api/helpers'
-import {
-  getGetCardRanksQueryKey,
-  useDeleteCardRanksId,
-  useGetCardRanks,
-  usePostCardRanks,
-  usePostMembershipsCustomerProfileIdPointsAdjust,
-  usePostMembershipsCustomerProfileIdRankOverride,
-  usePostMembershipsCustomerProfileIdRecalculate,
-  usePutCardRanksId,
-} from '../../api/endpoints/membership'
+import { getGetCardRanksAdminQueryKey, useDeleteCardRanksIdAdmin, useGetCardRanksAdmin, usePostCardRanksAdmin, usePutCardRanksIdAdmin } from '@/api/endpoints/card-ranks'
+import { usePostMembershipsCustomerProfileIdPointsAdjustAdmin, usePostMembershipsCustomerProfileIdRankOverrideAdmin, usePostMembershipsCustomerProfileIdRecalculateAdmin } from '@/api/endpoints/memberships'
 import type { MembershipTransaction } from '../../api/models'
-import type { PostCardRanksBody } from '../../api/models/postCardRanksBody'
-import type { PutCardRanksIdBody } from '../../api/models/putCardRanksIdBody'
-import { useGetCustomerProfiles } from '../../api/endpoints/customer-profiles'
+import type { PostCardRanksAdminBody } from '../../api/models/postCardRanksAdminBody'
+import type { PutCardRanksIdAdminBody } from '../../api/models/putCardRanksIdAdminBody'
+import { useGetCustomerProfilesAdmin } from '@/api/endpoints/customer-profiles'
 
 import AdjustPointsModal from './components/AdjustPointsModal'
 import RankOverrideModal from './components/RankOverrideModal'
@@ -81,7 +73,7 @@ export default function Points() {
   const canAdjust = ability.can('POINTS_ADJUST', 'MEMBERSHIP')
   const canOverride = ability.can('RANK_OVERRIDE', 'MEMBERSHIP')
   const canRecalc = ability.can('RECALCULATE', 'MEMBERSHIP')
-  const canViewHistory = ability.can('READ', 'CUSTOMER') && canAdjust
+  const canViewHistory = ability.can('READ', 'CUSTOMER_PROFILE') && canAdjust
   const [page, setPage] = useState(1)
   const [limit] = useState(10)
   const [searchText, setSearchText] = useState('')
@@ -96,11 +88,11 @@ export default function Points() {
   // Tabs chính: bảng thành viên / lịch sử điểm (khu card hạng nằm ngoài, hiện chung cho cả 2 tab)
   const [activeTab, setActiveTab] = useState('members')
   const adjustSubmitLock = useRef(false)
-  const memberProfilesQuery = useGetCustomerProfiles({ page, limit, ...filters } as Parameters<typeof useGetCustomerProfiles>[0])
-  const ranksQuery = useGetCardRanks()
-  const adjustMutation = usePostMembershipsCustomerProfileIdPointsAdjust()
-  const overrideMutation = usePostMembershipsCustomerProfileIdRankOverride()
-  const recalcMutation = usePostMembershipsCustomerProfileIdRecalculate()
+  const memberProfilesQuery = useGetCustomerProfilesAdmin({ page, limit, ...filters } as Parameters<typeof useGetCustomerProfilesAdmin>[0])
+  const ranksQuery = useGetCardRanksAdmin()
+  const adjustMutation = usePostMembershipsCustomerProfileIdPointsAdjustAdmin()
+  const overrideMutation = usePostMembershipsCustomerProfileIdRankOverrideAdmin()
+  const recalcMutation = usePostMembershipsCustomerProfileIdRecalculateAdmin()
   const rows = (memberProfilesQuery.data?.responseData ?? (memberProfilesQuery.data as any)?.data ?? []) as MemberRow[]
   const total = memberProfilesQuery.data?.meta?.total ?? rows.length
   const ranksData = (ranksQuery.data?.responseData ?? (ranksQuery.data as any)?.data ?? []) as RankRow[]
@@ -116,11 +108,11 @@ export default function Points() {
   const [rankReordering, setRankReordering] = useState(false)
   const [rankForm] = Form.useForm()
   const invalidateRanks = async () => {
-    await queryClient.invalidateQueries({ queryKey: getGetCardRanksQueryKey() })
+    await queryClient.invalidateQueries({ queryKey: getGetCardRanksAdminQueryKey() })
   }
-  const createRankMutation = usePostCardRanks({ mutation: { onSuccess: invalidateRanks } })
-  const updateRankMutation = usePutCardRanksId({ mutation: { onSuccess: invalidateRanks } })
-  const deleteRankMutation = useDeleteCardRanksId({ mutation: { onSuccess: invalidateRanks } })
+  const createRankMutation = usePostCardRanksAdmin({ mutation: { onSuccess: invalidateRanks } })
+  const updateRankMutation = usePutCardRanksIdAdmin({ mutation: { onSuccess: invalidateRanks } })
+  const deleteRankMutation = useDeleteCardRanksIdAdmin({ mutation: { onSuccess: invalidateRanks } })
 
   const openRankEditor = (row?: CardRankRow) => {
     setEditingRank(row ?? null)
@@ -158,10 +150,10 @@ export default function Points() {
         benefits: values.benefits || undefined,
       }
       if (editingRank) {
-        await updateRankMutation.mutateAsync({ id: editingRank.id, data: dto as PutCardRanksIdBody })
+        await updateRankMutation.mutateAsync({ id: editingRank.id, data: dto as PutCardRanksIdAdminBody })
         message.success('Đã cập nhật hạng thẻ')
       } else {
-        await createRankMutation.mutateAsync({ data: { ...dto, code: values.code } as PostCardRanksBody })
+        await createRankMutation.mutateAsync({ data: { ...dto, code: values.code } as PostCardRanksAdminBody })
         message.success('Đã tạo hạng thẻ')
       }
       setRankModalOpen(false)
@@ -204,7 +196,7 @@ export default function Points() {
         reordered.map((rank, index) => {
           const sort_order = index + 1
           if (rank.sort_order === sort_order) return Promise.resolve()
-          return updateRankMutation.mutateAsync({ id: rank.id, data: { sort_order } as PutCardRanksIdBody })
+          return updateRankMutation.mutateAsync({ id: rank.id, data: { sort_order } as PutCardRanksIdAdminBody })
         }),
       )
       await invalidateRanks()
@@ -224,7 +216,7 @@ export default function Points() {
 
   // Lịch sử điểm: log toàn bộ biến động điểm của mọi khách (LY-03) — có thể lọc theo khách / nhận-trừ
   const [historyDirection, setHistoryDirection] = useState<'' | 'plus' | 'minus'>('')
-  const profilesQuery = useGetCustomerProfiles({ page: 1, limit: 200 })
+  const profilesQuery = useGetCustomerProfilesAdmin({ page: 1, limit: 200 })
   const profilesData = (profilesQuery.data?.responseData ?? (profilesQuery.data as any)?.data ?? []) as ProfileLite[]
   const historyParams: Record<string, unknown> = { page: historyPage, limit: 10 }
   if (historyProfileId) historyParams.customer_profile_id = historyProfileId

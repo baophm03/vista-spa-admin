@@ -14,17 +14,12 @@ import { errorMessage, pickData } from '@/api/helpers'
 import type { CustomFieldDef } from '@/api/models/customFieldDef'
 import type { CustomFieldDefEntity } from '@/api/models/customFieldDefEntity'
 import type { LookupList } from '@/api/models/lookupList'
-import type { PostCustomFieldDefsBody } from '@/api/models/postCustomFieldDefsBody'
-import type { PutCustomFieldDefsIdBody } from '@/api/models/putCustomFieldDefsIdBody'
-import {
-  deleteCustomFieldDefsId,
-  getCustomFieldDefs,
-  postCustomFieldDefs,
-  putCustomFieldDefsId,
-} from '@/api/endpoints/settings'
-import { getLookupLists } from '@/api/endpoints/lookup-lists'
-import { getGetSettingsQueryKey, getSettings, putSettings } from '@/api/endpoints/settings'
-import type { PutSettingsBody } from '@/api/models/putSettingsBody'
+import type { PostCustomFieldDefsAdminBody } from '@/api/models/postCustomFieldDefsAdminBody'
+import type { PutCustomFieldDefsIdAdminBody } from '@/api/models/putCustomFieldDefsIdAdminBody'
+import { deleteCustomFieldDefsIdAdmin, getCustomFieldDefsAdmin, postCustomFieldDefsAdmin, putCustomFieldDefsIdAdmin } from '@/api/endpoints/custom-field-defs'
+import { getLookupListsAdmin } from '@/api/endpoints/lookup-lists'
+import { getGetSettingsAdminQueryKey, getSettingsAdmin, putSettingsAdmin } from '@/api/endpoints/settings'
+import type { PutSettingsAdminBody } from '@/api/models/putSettingsAdminBody'
 import type { SystemSetting } from '@/components/settings/systemSettings'
 import SystemSettingField from '@/components/settings/SystemSettingField'
 
@@ -50,8 +45,8 @@ function SessionRequiredFieldsSetting() {
   const canEdit = useAbility().can('UPDATE', 'SETTING')
   const [draft, setDraft] = useState<string[] | null>(null)
   const settingsQuery = useQuery({
-    queryKey: getGetSettingsQueryKey(),
-    queryFn: async () => pickData<SystemSetting[]>(await getSettings()) ?? [],
+    queryKey: getGetSettingsAdminQueryKey(),
+    queryFn: async () => pickData<SystemSetting[]>(await getSettingsAdmin()) ?? [],
   })
   const setting = settingsQuery.data?.find((item) => item.key === 'session.required_fields')
   const savedValue = Array.isArray(setting?.value) ? setting.value.map(String) : []
@@ -59,13 +54,13 @@ function SessionRequiredFieldsSetting() {
   const hasChanges = JSON.stringify(value) !== JSON.stringify(savedValue)
 
   const saveMutation = useMutation({
-    mutationFn: async () => putSettings({
+    mutationFn: async () => putSettingsAdmin({
       items: [{ key: 'session.required_fields', value }],
-    } as unknown as PutSettingsBody),
+    } as unknown as PutSettingsAdminBody),
     onSuccess: async () => {
       setDraft(null)
       message.success('Đã lưu trường bắt buộc của buổi điều trị')
-      await queryClient.invalidateQueries({ queryKey: getGetSettingsQueryKey() })
+      await queryClient.invalidateQueries({ queryKey: getGetSettingsAdminQueryKey() })
     },
     onError: (error) => message.error(errorMessage(error)),
   })
@@ -126,8 +121,8 @@ function CustomerFieldsConfig({ entity, sectionTitle }: {
     setLoading(true)
     try {
       const [definitions, catalogs] = await Promise.all([
-        getCustomFieldDefs({ entity, page: nextPage, limit: 10 } as never),
-        getLookupLists({ is_active: true }),
+        getCustomFieldDefsAdmin({ entity, page: nextPage, limit: 10 } as never),
+        getLookupListsAdmin({ is_active: true }),
       ])
       setRows((pickData<CustomFieldDef[]>(definitions) ?? []) as CustomFieldDef[])
       setTotal((definitions as unknown as { meta?: { total?: number } })?.meta?.total ?? 0)
@@ -177,8 +172,8 @@ function CustomerFieldsConfig({ entity, sectionTitle }: {
     }
     setSaving(true)
     try {
-      if (editing) await putCustomFieldDefsId(editing.id, dto as unknown as PutCustomFieldDefsIdBody)
-      else await postCustomFieldDefs(dto as unknown as PostCustomFieldDefsBody)
+      if (editing) await putCustomFieldDefsIdAdmin(editing.id, dto as unknown as PutCustomFieldDefsIdAdminBody)
+      else await postCustomFieldDefsAdmin(dto as unknown as PostCustomFieldDefsAdminBody)
       setOpen(false)
       message.success(editing ? `Đã cập nhật trường ${sectionTitle}` : `Đã tạo trường ${sectionTitle}`)
       await load()
@@ -192,7 +187,7 @@ function CustomerFieldsConfig({ entity, sectionTitle }: {
   // Ẩn/bật = PUT is_active; DELETE riêng là xóa mềm (is_deleted), bị chặn nếu trường đã có dữ liệu.
   const toggleActive = async (row: CustomFieldDef) => {
     try {
-      await putCustomFieldDefsId(row.id, { is_active: row.is_active === false })
+      await putCustomFieldDefsIdAdmin(row.id, { is_active: row.is_active === false })
       message.success(row.is_active === false ? 'Đã bật lại trường' : 'Đã ẩn trường; dữ liệu đã lưu được giữ nguyên')
       await load()
     } catch (err) {
@@ -202,7 +197,7 @@ function CustomerFieldsConfig({ entity, sectionTitle }: {
 
   const removeField = async (row: CustomFieldDef) => {
     try {
-      await deleteCustomFieldDefsId(row.id)
+      await deleteCustomFieldDefsIdAdmin(row.id)
       message.success('Đã xóa trường')
       await load()
     } catch (err) {
@@ -344,7 +339,7 @@ function HealthMetricsConfig() {
     setLoading(true)
     setLoadError('')
     try {
-      const lists = (pickData<LookupList[]>(await getLookupLists()) ?? []) as LookupList[]
+      const lists = (pickData<LookupList[]>(await getLookupListsAdmin()) ?? []) as LookupList[]
       setLookup(lists.find((row) => row.key === 'health.metrics') ?? null)
     } catch (err) {
       setLookup(null)

@@ -32,36 +32,14 @@ import type {
 import type {
   BrandSettingsUpdate,
   ConflictResponse,
-  DeleteCustomFieldDefsId200,
-  DeleteDiscountRulesId200,
   ForbiddenResponse,
-  GetCustomFieldDefs200,
-  GetCustomFieldDefsId200,
-  GetCustomFieldDefsParams,
-  GetDiscountRules200,
-  GetDiscountRulesId200,
-  GetDiscountRulesParams,
-  GetIntegrations200,
-  GetSettings200,
-  GetSettingsBrand200,
-  GetSettingsParams,
-  GetSkinTypes200,
-  IntegrationUpdate,
+  GetSettingsAdmin200,
+  GetSettingsAdminParams,
+  GetSettingsBrandAdmin200,
   InternalErrorResponse,
-  NotFoundResponse,
-  PostCustomFieldDefs200,
-  PostCustomFieldDefsBody,
-  PostDiscountRules200,
-  PostDiscountRulesBody,
-  PostIntegrationsProviderTest200,
-  PutCustomFieldDefsId200,
-  PutCustomFieldDefsIdBody,
-  PutDiscountRulesId200,
-  PutDiscountRulesIdBody,
-  PutIntegrationsProvider200,
-  PutSettings200,
-  PutSettingsBody,
-  PutSettingsBrand200,
+  PutSettingsAdmin200,
+  PutSettingsAdminBody,
+  PutSettingsBrandAdmin200,
   UnauthorizedResponse,
   UnprocessableEntityResponse
 } from '../models';
@@ -73,470 +51,17 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * GET `/skinTypes` — skin types. Requires `customer.read` permission.
- * @summary Get list of skin types
- */
-export const getSkinTypes = (
-    
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<GetSkinTypes200>(
-      {url: `/skinTypes`, method: 'GET', signal
-    },
-      );
-    }
-  
-
-
-
-export const getGetSkinTypesInfiniteQueryKey = () => {
-    return [
-    'infinite', `/skinTypes`
-    ] as const;
-    }
-
-export const getGetSkinTypesQueryKey = () => {
-    return [
-    `/skinTypes`
-    ] as const;
-    }
-
-    
-export const getGetSkinTypesInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getSkinTypes>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSkinTypes>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetSkinTypesInfiniteQueryKey();
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSkinTypes>>> = ({ signal }) => getSkinTypes(signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSkinTypes>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetSkinTypesInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getSkinTypes>>>
-export type GetSkinTypesInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
-
-
-export function useGetSkinTypesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getSkinTypes>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSkinTypes>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getSkinTypes>>,
-          TError,
-          Awaited<ReturnType<typeof getSkinTypes>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetSkinTypesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getSkinTypes>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSkinTypes>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getSkinTypes>>,
-          TError,
-          Awaited<ReturnType<typeof getSkinTypes>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetSkinTypesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getSkinTypes>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSkinTypes>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get list of skin types
- */
-
-export function useGetSkinTypesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getSkinTypes>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSkinTypes>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetSkinTypesInfiniteQueryOptions(options)
-
-  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary Get list of skin types
- */
-export const prefetchGetSkinTypesInfiniteQuery = async <TData = Awaited<ReturnType<typeof getSkinTypes>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSkinTypes>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetSkinTypesInfiniteQueryOptions(options)
-
-  await queryClient.prefetchInfiniteQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-export const getGetSkinTypesQueryOptions = <TData = Awaited<ReturnType<typeof getSkinTypes>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSkinTypes>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetSkinTypesQueryKey();
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSkinTypes>>> = ({ signal }) => getSkinTypes(signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSkinTypes>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetSkinTypesQueryResult = NonNullable<Awaited<ReturnType<typeof getSkinTypes>>>
-export type GetSkinTypesQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
-
-
-export function useGetSkinTypes<TData = Awaited<ReturnType<typeof getSkinTypes>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSkinTypes>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getSkinTypes>>,
-          TError,
-          Awaited<ReturnType<typeof getSkinTypes>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetSkinTypes<TData = Awaited<ReturnType<typeof getSkinTypes>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSkinTypes>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getSkinTypes>>,
-          TError,
-          Awaited<ReturnType<typeof getSkinTypes>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetSkinTypes<TData = Awaited<ReturnType<typeof getSkinTypes>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSkinTypes>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get list of skin types
- */
-
-export function useGetSkinTypes<TData = Awaited<ReturnType<typeof getSkinTypes>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSkinTypes>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetSkinTypesQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary Get list of skin types
- */
-export const prefetchGetSkinTypesQuery = async <TData = Awaited<ReturnType<typeof getSkinTypes>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSkinTypes>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetSkinTypesQueryOptions(options)
-
-  await queryClient.prefetchQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-/**
- * **ST-01** — GET /settings. Requires `setting.read` permission. Query parameters: `branch_id`. Handled by `settingsService.list`.
- * @summary Get list of settings
- */
-export const getSettings = (
-    params?: GetSettingsParams,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<GetSettings200>(
-      {url: `/settings`, method: 'GET',
-        params, signal
-    },
-      );
-    }
-  
-
-
-
-export const getGetSettingsInfiniteQueryKey = (params?: GetSettingsParams,) => {
-    return [
-    'infinite', `/settings`, ...(params ? [params]: [])
-    ] as const;
-    }
-
-export const getGetSettingsQueryKey = (params?: GetSettingsParams,) => {
-    return [
-    `/settings`, ...(params ? [params]: [])
-    ] as const;
-    }
-
-    
-export const getGetSettingsInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getSettings>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetSettingsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSettings>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetSettingsInfiniteQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSettings>>> = ({ signal }) => getSettings(params, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSettings>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetSettingsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getSettings>>>
-export type GetSettingsInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
-
-
-export function useGetSettingsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getSettings>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params: undefined |  GetSettingsParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSettings>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getSettings>>,
-          TError,
-          Awaited<ReturnType<typeof getSettings>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetSettingsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getSettings>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetSettingsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSettings>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getSettings>>,
-          TError,
-          Awaited<ReturnType<typeof getSettings>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetSettingsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getSettings>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetSettingsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSettings>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get list of settings
- */
-
-export function useGetSettingsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getSettings>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetSettingsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSettings>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetSettingsInfiniteQueryOptions(params,options)
-
-  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary Get list of settings
- */
-export const prefetchGetSettingsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getSettings>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient, params?: GetSettingsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSettings>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetSettingsInfiniteQueryOptions(params,options)
-
-  await queryClient.prefetchInfiniteQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-export const getGetSettingsQueryOptions = <TData = Awaited<ReturnType<typeof getSettings>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetSettingsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSettings>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetSettingsQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSettings>>> = ({ signal }) => getSettings(params, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSettings>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetSettingsQueryResult = NonNullable<Awaited<ReturnType<typeof getSettings>>>
-export type GetSettingsQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
-
-
-export function useGetSettings<TData = Awaited<ReturnType<typeof getSettings>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params: undefined |  GetSettingsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSettings>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getSettings>>,
-          TError,
-          Awaited<ReturnType<typeof getSettings>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetSettings<TData = Awaited<ReturnType<typeof getSettings>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetSettingsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSettings>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getSettings>>,
-          TError,
-          Awaited<ReturnType<typeof getSettings>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetSettings<TData = Awaited<ReturnType<typeof getSettings>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetSettingsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSettings>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get list of settings
- */
-
-export function useGetSettings<TData = Awaited<ReturnType<typeof getSettings>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetSettingsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSettings>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetSettingsQueryOptions(params,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary Get list of settings
- */
-export const prefetchGetSettingsQuery = async <TData = Awaited<ReturnType<typeof getSettings>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient, params?: GetSettingsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSettings>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetSettingsQueryOptions(params,options)
-
-  await queryClient.prefetchQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-/**
- * **ST-02** — PUT /settings. Requires `setting.update` permission. Body fields: `items`. Handled by `settingsService.update`.
- * @summary Update settings
- */
-export const putSettings = (
-    putSettingsBody: PutSettingsBody,
- ) => {
-      
-      
-      return customInstance<PutSettings200>(
-      {url: `/settings`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: putSettingsBody
-    },
-      );
-    }
-  
-
-
-export const getPutSettingsMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putSettings>>, TError,{data: PutSettingsBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putSettings>>, TError,{data: PutSettingsBody}, TContext> => {
-
-const mutationKey = ['putSettings'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putSettings>>, {data: PutSettingsBody}> = (props) => {
-          const {data} = props ?? {};
-
-          return  putSettings(data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PutSettingsMutationResult = NonNullable<Awaited<ReturnType<typeof putSettings>>>
-    export type PutSettingsMutationBody = PutSettingsBody
-    export type PutSettingsMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
-
-    /**
- * @summary Update settings
- */
-export const usePutSettings = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putSettings>>, TError,{data: PutSettingsBody}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putSettings>>,
-        TError,
-        {data: PutSettingsBody},
-        TContext
-      > => {
-
-      const mutationOptions = getPutSettingsMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * GET `/settings/brand` — settings. Requires `brand.read` permission. Handled by `brandSettingsService.get`.
+ * GET `/settings/brand/admin` — settings. Cần đăng nhập + quyền đọc brand settings (`brand.read`). Handled by `brandSettingsService.get`.
  * @summary View brand and region settings
  */
-export const getSettingsBrand = (
+export const getSettingsBrandAdmin = (
     
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<GetSettingsBrand200>(
-      {url: `/settings/brand`, method: 'GET', signal
+      return customInstance<GetSettingsBrandAdmin200>(
+      {url: `/settings/brand/admin`, method: 'GET', signal
     },
       );
     }
@@ -544,75 +69,75 @@ export const getSettingsBrand = (
 
 
 
-export const getGetSettingsBrandInfiniteQueryKey = () => {
+export const getGetSettingsBrandAdminInfiniteQueryKey = () => {
     return [
-    'infinite', `/settings/brand`
+    'infinite', `/settings/brand/admin`
     ] as const;
     }
 
-export const getGetSettingsBrandQueryKey = () => {
+export const getGetSettingsBrandAdminQueryKey = () => {
     return [
-    `/settings/brand`
+    `/settings/brand/admin`
     ] as const;
     }
 
     
-export const getGetSettingsBrandInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getSettingsBrand>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSettingsBrand>>, TError, TData>>, }
+export const getGetSettingsBrandAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getSettingsBrandAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSettingsBrandAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetSettingsBrandInfiniteQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getGetSettingsBrandAdminInfiniteQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSettingsBrand>>> = ({ signal }) => getSettingsBrand(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSettingsBrandAdmin>>> = ({ signal }) => getSettingsBrandAdmin(signal);
 
       
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSettingsBrand>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSettingsBrandAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetSettingsBrandInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getSettingsBrand>>>
-export type GetSettingsBrandInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+export type GetSettingsBrandAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getSettingsBrandAdmin>>>
+export type GetSettingsBrandAdminInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
 
 
-export function useGetSettingsBrandInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getSettingsBrand>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSettingsBrand>>, TError, TData>> & Pick<
+export function useGetSettingsBrandAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getSettingsBrandAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSettingsBrandAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getSettingsBrand>>,
+          Awaited<ReturnType<typeof getSettingsBrandAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getSettingsBrand>>
+          Awaited<ReturnType<typeof getSettingsBrandAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetSettingsBrandInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getSettingsBrand>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSettingsBrand>>, TError, TData>> & Pick<
+export function useGetSettingsBrandAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getSettingsBrandAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSettingsBrandAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getSettingsBrand>>,
+          Awaited<ReturnType<typeof getSettingsBrandAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getSettingsBrand>>
+          Awaited<ReturnType<typeof getSettingsBrandAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetSettingsBrandInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getSettingsBrand>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSettingsBrand>>, TError, TData>>, }
+export function useGetSettingsBrandAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getSettingsBrandAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSettingsBrandAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary View brand and region settings
  */
 
-export function useGetSettingsBrandInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getSettingsBrand>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSettingsBrand>>, TError, TData>>, }
+export function useGetSettingsBrandAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getSettingsBrandAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSettingsBrandAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetSettingsBrandInfiniteQueryOptions(options)
+  const queryOptions = getGetSettingsBrandAdminInfiniteQueryOptions(options)
 
   const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -624,12 +149,12 @@ export function useGetSettingsBrandInfinite<TData = InfiniteData<Awaited<ReturnT
 /**
  * @summary View brand and region settings
  */
-export const prefetchGetSettingsBrandInfiniteQuery = async <TData = Awaited<ReturnType<typeof getSettingsBrand>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSettingsBrand>>, TError, TData>>, }
+export const prefetchGetSettingsBrandAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getSettingsBrandAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSettingsBrandAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetSettingsBrandInfiniteQueryOptions(options)
+  const queryOptions = getGetSettingsBrandAdminInfiniteQueryOptions(options)
 
   await queryClient.prefetchInfiniteQuery(queryOptions);
 
@@ -638,62 +163,62 @@ export const prefetchGetSettingsBrandInfiniteQuery = async <TData = Awaited<Retu
 
 
 
-export const getGetSettingsBrandQueryOptions = <TData = Awaited<ReturnType<typeof getSettingsBrand>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSettingsBrand>>, TError, TData>>, }
+export const getGetSettingsBrandAdminQueryOptions = <TData = Awaited<ReturnType<typeof getSettingsBrandAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSettingsBrandAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetSettingsBrandQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getGetSettingsBrandAdminQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSettingsBrand>>> = ({ signal }) => getSettingsBrand(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSettingsBrandAdmin>>> = ({ signal }) => getSettingsBrandAdmin(signal);
 
       
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSettingsBrand>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSettingsBrandAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetSettingsBrandQueryResult = NonNullable<Awaited<ReturnType<typeof getSettingsBrand>>>
-export type GetSettingsBrandQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+export type GetSettingsBrandAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getSettingsBrandAdmin>>>
+export type GetSettingsBrandAdminQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
 
 
-export function useGetSettingsBrand<TData = Awaited<ReturnType<typeof getSettingsBrand>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSettingsBrand>>, TError, TData>> & Pick<
+export function useGetSettingsBrandAdmin<TData = Awaited<ReturnType<typeof getSettingsBrandAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSettingsBrandAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getSettingsBrand>>,
+          Awaited<ReturnType<typeof getSettingsBrandAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getSettingsBrand>>
+          Awaited<ReturnType<typeof getSettingsBrandAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetSettingsBrand<TData = Awaited<ReturnType<typeof getSettingsBrand>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSettingsBrand>>, TError, TData>> & Pick<
+export function useGetSettingsBrandAdmin<TData = Awaited<ReturnType<typeof getSettingsBrandAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSettingsBrandAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getSettingsBrand>>,
+          Awaited<ReturnType<typeof getSettingsBrandAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getSettingsBrand>>
+          Awaited<ReturnType<typeof getSettingsBrandAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetSettingsBrand<TData = Awaited<ReturnType<typeof getSettingsBrand>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSettingsBrand>>, TError, TData>>, }
+export function useGetSettingsBrandAdmin<TData = Awaited<ReturnType<typeof getSettingsBrandAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSettingsBrandAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary View brand and region settings
  */
 
-export function useGetSettingsBrand<TData = Awaited<ReturnType<typeof getSettingsBrand>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSettingsBrand>>, TError, TData>>, }
+export function useGetSettingsBrandAdmin<TData = Awaited<ReturnType<typeof getSettingsBrandAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSettingsBrandAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetSettingsBrandQueryOptions(options)
+  const queryOptions = getGetSettingsBrandAdminQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -705,12 +230,12 @@ export function useGetSettingsBrand<TData = Awaited<ReturnType<typeof getSetting
 /**
  * @summary View brand and region settings
  */
-export const prefetchGetSettingsBrandQuery = async <TData = Awaited<ReturnType<typeof getSettingsBrand>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSettingsBrand>>, TError, TData>>, }
+export const prefetchGetSettingsBrandAdminQuery = async <TData = Awaited<ReturnType<typeof getSettingsBrandAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSettingsBrandAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetSettingsBrandQueryOptions(options)
+  const queryOptions = getGetSettingsBrandAdminQueryOptions(options)
 
   await queryClient.prefetchQuery(queryOptions);
 
@@ -720,16 +245,16 @@ export const prefetchGetSettingsBrandQuery = async <TData = Awaited<ReturnType<t
 
 
 /**
- * PUT `/settings/brand` — settings. Requires `brand.admin` permission. Handled by `brandSettingsService.update`.
+ * PUT `/settings/brand/admin` — settings. Cần đăng nhập + quyền quản trị brand settings (`brand.admin`). Handled by `brandSettingsService.update`.
  * @summary Update brand and region settings
  */
-export const putSettingsBrand = (
+export const putSettingsBrandAdmin = (
     brandSettingsUpdate: BrandSettingsUpdate,
  ) => {
       
       
-      return customInstance<PutSettingsBrand200>(
-      {url: `/settings/brand`, method: 'PUT',
+      return customInstance<PutSettingsBrandAdmin200>(
+      {url: `/settings/brand/admin`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: brandSettingsUpdate
     },
@@ -738,11 +263,11 @@ export const putSettingsBrand = (
   
 
 
-export const getPutSettingsBrandMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putSettingsBrand>>, TError,{data: BrandSettingsUpdate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putSettingsBrand>>, TError,{data: BrandSettingsUpdate}, TContext> => {
+export const getPutSettingsBrandAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putSettingsBrandAdmin>>, TError,{data: BrandSettingsUpdate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putSettingsBrandAdmin>>, TError,{data: BrandSettingsUpdate}, TContext> => {
 
-const mutationKey = ['putSettingsBrand'];
+const mutationKey = ['putSettingsBrandAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -752,10 +277,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putSettingsBrand>>, {data: BrandSettingsUpdate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putSettingsBrandAdmin>>, {data: BrandSettingsUpdate}> = (props) => {
           const {data} = props ?? {};
 
-          return  putSettingsBrand(data,)
+          return  putSettingsBrandAdmin(data,)
         }
 
         
@@ -763,684 +288,38 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PutSettingsBrandMutationResult = NonNullable<Awaited<ReturnType<typeof putSettingsBrand>>>
-    export type PutSettingsBrandMutationBody = BrandSettingsUpdate
-    export type PutSettingsBrandMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+    export type PutSettingsBrandAdminMutationResult = NonNullable<Awaited<ReturnType<typeof putSettingsBrandAdmin>>>
+    export type PutSettingsBrandAdminMutationBody = BrandSettingsUpdate
+    export type PutSettingsBrandAdminMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
  * @summary Update brand and region settings
  */
-export const usePutSettingsBrand = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putSettingsBrand>>, TError,{data: BrandSettingsUpdate}, TContext>, }
+export const usePutSettingsBrandAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putSettingsBrandAdmin>>, TError,{data: BrandSettingsUpdate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putSettingsBrand>>,
+        Awaited<ReturnType<typeof putSettingsBrandAdmin>>,
         TError,
         {data: BrandSettingsUpdate},
         TContext
       > => {
 
-      const mutationOptions = getPutSettingsBrandMutationOptions(options);
+      const mutationOptions = getPutSettingsBrandAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * PUT `/integrations/{provider}` — integrations. Requires the `brand.admin` permission. Handled by `integrationService.update`.
- * @summary Update an integration configuration
+ * **ST-01** — GET /settings/admin. Cần đăng nhập + `setting.view_all`. Query parameters: `branch_id`. Handled by `settingsService.list`.
+ * @summary Get list of settings (management)
  */
-export const putIntegrationsProvider = (
-    provider: 'ZALO_OA' | 'ZALO_ZBS' | 'EMAIL_SMTP' | 'EMAIL_API',
-    integrationUpdate: IntegrationUpdate,
- ) => {
-      
-      
-      return customInstance<PutIntegrationsProvider200>(
-      {url: `/integrations/${provider}`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: integrationUpdate
-    },
-      );
-    }
-  
-
-
-export const getPutIntegrationsProviderMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putIntegrationsProvider>>, TError,{provider: 'ZALO_OA' | 'ZALO_ZBS' | 'EMAIL_SMTP' | 'EMAIL_API';data: IntegrationUpdate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putIntegrationsProvider>>, TError,{provider: 'ZALO_OA' | 'ZALO_ZBS' | 'EMAIL_SMTP' | 'EMAIL_API';data: IntegrationUpdate}, TContext> => {
-
-const mutationKey = ['putIntegrationsProvider'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putIntegrationsProvider>>, {provider: 'ZALO_OA' | 'ZALO_ZBS' | 'EMAIL_SMTP' | 'EMAIL_API';data: IntegrationUpdate}> = (props) => {
-          const {provider,data} = props ?? {};
-
-          return  putIntegrationsProvider(provider,data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PutIntegrationsProviderMutationResult = NonNullable<Awaited<ReturnType<typeof putIntegrationsProvider>>>
-    export type PutIntegrationsProviderMutationBody = IntegrationUpdate
-    export type PutIntegrationsProviderMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
-
-    /**
- * @summary Update an integration configuration
- */
-export const usePutIntegrationsProvider = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putIntegrationsProvider>>, TError,{provider: 'ZALO_OA' | 'ZALO_ZBS' | 'EMAIL_SMTP' | 'EMAIL_API';data: IntegrationUpdate}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putIntegrationsProvider>>,
-        TError,
-        {provider: 'ZALO_OA' | 'ZALO_ZBS' | 'EMAIL_SMTP' | 'EMAIL_API';data: IntegrationUpdate},
-        TContext
-      > => {
-
-      const mutationOptions = getPutIntegrationsProviderMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * GET `/integrations` — integrations. Requires the `brand.admin` permission. Handled by `integrationService.list`.
- * @summary List integration statuses
- */
-export const getIntegrations = (
-    
+export const getSettingsAdmin = (
+    params?: GetSettingsAdminParams,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<GetIntegrations200>(
-      {url: `/integrations`, method: 'GET', signal
-    },
-      );
-    }
-  
-
-
-
-export const getGetIntegrationsInfiniteQueryKey = () => {
-    return [
-    'infinite', `/integrations`
-    ] as const;
-    }
-
-export const getGetIntegrationsQueryKey = () => {
-    return [
-    `/integrations`
-    ] as const;
-    }
-
-    
-export const getGetIntegrationsInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getIntegrations>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getIntegrations>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetIntegrationsInfiniteQueryKey();
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getIntegrations>>> = ({ signal }) => getIntegrations(signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getIntegrations>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetIntegrationsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getIntegrations>>>
-export type GetIntegrationsInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
-
-
-export function useGetIntegrationsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getIntegrations>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getIntegrations>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getIntegrations>>,
-          TError,
-          Awaited<ReturnType<typeof getIntegrations>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetIntegrationsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getIntegrations>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getIntegrations>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getIntegrations>>,
-          TError,
-          Awaited<ReturnType<typeof getIntegrations>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetIntegrationsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getIntegrations>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getIntegrations>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary List integration statuses
- */
-
-export function useGetIntegrationsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getIntegrations>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getIntegrations>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetIntegrationsInfiniteQueryOptions(options)
-
-  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary List integration statuses
- */
-export const prefetchGetIntegrationsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getIntegrations>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getIntegrations>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetIntegrationsInfiniteQueryOptions(options)
-
-  await queryClient.prefetchInfiniteQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-export const getGetIntegrationsQueryOptions = <TData = Awaited<ReturnType<typeof getIntegrations>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getIntegrations>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetIntegrationsQueryKey();
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getIntegrations>>> = ({ signal }) => getIntegrations(signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getIntegrations>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetIntegrationsQueryResult = NonNullable<Awaited<ReturnType<typeof getIntegrations>>>
-export type GetIntegrationsQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
-
-
-export function useGetIntegrations<TData = Awaited<ReturnType<typeof getIntegrations>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getIntegrations>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getIntegrations>>,
-          TError,
-          Awaited<ReturnType<typeof getIntegrations>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetIntegrations<TData = Awaited<ReturnType<typeof getIntegrations>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getIntegrations>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getIntegrations>>,
-          TError,
-          Awaited<ReturnType<typeof getIntegrations>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetIntegrations<TData = Awaited<ReturnType<typeof getIntegrations>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getIntegrations>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary List integration statuses
- */
-
-export function useGetIntegrations<TData = Awaited<ReturnType<typeof getIntegrations>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getIntegrations>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetIntegrationsQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary List integration statuses
- */
-export const prefetchGetIntegrationsQuery = async <TData = Awaited<ReturnType<typeof getIntegrations>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getIntegrations>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetIntegrationsQueryOptions(options)
-
-  await queryClient.prefetchQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-/**
- * POST `/integrations/{provider}/test` — integrations. With EMAIL_API, the request sends a real test email to `config_public.test_email`. Requires the `brand.admin` permission. Handled by `integrationService.test`.
- * @summary Test an integration connection
- */
-export const postIntegrationsProviderTest = (
-    provider: 'ZALO_OA' | 'ZALO_ZBS' | 'EMAIL_SMTP' | 'EMAIL_API',
-    integrationUpdate: IntegrationUpdate,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<PostIntegrationsProviderTest200>(
-      {url: `/integrations/${provider}/test`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: integrationUpdate, signal
-    },
-      );
-    }
-  
-
-
-export const getPostIntegrationsProviderTestMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postIntegrationsProviderTest>>, TError,{provider: 'ZALO_OA' | 'ZALO_ZBS' | 'EMAIL_SMTP' | 'EMAIL_API';data: IntegrationUpdate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postIntegrationsProviderTest>>, TError,{provider: 'ZALO_OA' | 'ZALO_ZBS' | 'EMAIL_SMTP' | 'EMAIL_API';data: IntegrationUpdate}, TContext> => {
-
-const mutationKey = ['postIntegrationsProviderTest'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postIntegrationsProviderTest>>, {provider: 'ZALO_OA' | 'ZALO_ZBS' | 'EMAIL_SMTP' | 'EMAIL_API';data: IntegrationUpdate}> = (props) => {
-          const {provider,data} = props ?? {};
-
-          return  postIntegrationsProviderTest(provider,data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostIntegrationsProviderTestMutationResult = NonNullable<Awaited<ReturnType<typeof postIntegrationsProviderTest>>>
-    export type PostIntegrationsProviderTestMutationBody = IntegrationUpdate
-    export type PostIntegrationsProviderTestMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
-
-    /**
- * @summary Test an integration connection
- */
-export const usePostIntegrationsProviderTest = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postIntegrationsProviderTest>>, TError,{provider: 'ZALO_OA' | 'ZALO_ZBS' | 'EMAIL_SMTP' | 'EMAIL_API';data: IntegrationUpdate}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postIntegrationsProviderTest>>,
-        TError,
-        {provider: 'ZALO_OA' | 'ZALO_ZBS' | 'EMAIL_SMTP' | 'EMAIL_API';data: IntegrationUpdate},
-        TContext
-      > => {
-
-      const mutationOptions = getPostIntegrationsProviderTestMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * **DC-03** — GET /discount-rules/{id}. Requires the `discount.read` permission.
- * @summary View discount rule details
- */
-export const getDiscountRulesId = (
-    id: string,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<GetDiscountRulesId200>(
-      {url: `/discountRules/${id}`, method: 'GET', signal
-    },
-      );
-    }
-  
-
-
-
-export const getGetDiscountRulesIdInfiniteQueryKey = (id?: string,) => {
-    return [
-    'infinite', `/discountRules/${id}`
-    ] as const;
-    }
-
-export const getGetDiscountRulesIdQueryKey = (id?: string,) => {
-    return [
-    `/discountRules/${id}`
-    ] as const;
-    }
-
-    
-export const getGetDiscountRulesIdInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getDiscountRulesId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getDiscountRulesId>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetDiscountRulesIdInfiniteQueryKey(id);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDiscountRulesId>>> = ({ signal }) => getDiscountRulesId(id, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getDiscountRulesId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetDiscountRulesIdInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getDiscountRulesId>>>
-export type GetDiscountRulesIdInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
-
-
-export function useGetDiscountRulesIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getDiscountRulesId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getDiscountRulesId>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getDiscountRulesId>>,
-          TError,
-          Awaited<ReturnType<typeof getDiscountRulesId>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetDiscountRulesIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getDiscountRulesId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getDiscountRulesId>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getDiscountRulesId>>,
-          TError,
-          Awaited<ReturnType<typeof getDiscountRulesId>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetDiscountRulesIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getDiscountRulesId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getDiscountRulesId>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary View discount rule details
- */
-
-export function useGetDiscountRulesIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getDiscountRulesId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getDiscountRulesId>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetDiscountRulesIdInfiniteQueryOptions(id,options)
-
-  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary View discount rule details
- */
-export const prefetchGetDiscountRulesIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getDiscountRulesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getDiscountRulesId>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetDiscountRulesIdInfiniteQueryOptions(id,options)
-
-  await queryClient.prefetchInfiniteQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-export const getGetDiscountRulesIdQueryOptions = <TData = Awaited<ReturnType<typeof getDiscountRulesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDiscountRulesId>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetDiscountRulesIdQueryKey(id);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDiscountRulesId>>> = ({ signal }) => getDiscountRulesId(id, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getDiscountRulesId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetDiscountRulesIdQueryResult = NonNullable<Awaited<ReturnType<typeof getDiscountRulesId>>>
-export type GetDiscountRulesIdQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
-
-
-export function useGetDiscountRulesId<TData = Awaited<ReturnType<typeof getDiscountRulesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDiscountRulesId>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getDiscountRulesId>>,
-          TError,
-          Awaited<ReturnType<typeof getDiscountRulesId>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetDiscountRulesId<TData = Awaited<ReturnType<typeof getDiscountRulesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDiscountRulesId>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getDiscountRulesId>>,
-          TError,
-          Awaited<ReturnType<typeof getDiscountRulesId>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetDiscountRulesId<TData = Awaited<ReturnType<typeof getDiscountRulesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDiscountRulesId>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary View discount rule details
- */
-
-export function useGetDiscountRulesId<TData = Awaited<ReturnType<typeof getDiscountRulesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDiscountRulesId>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetDiscountRulesIdQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary View discount rule details
- */
-export const prefetchGetDiscountRulesIdQuery = async <TData = Awaited<ReturnType<typeof getDiscountRulesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDiscountRulesId>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetDiscountRulesIdQueryOptions(id,options)
-
-  await queryClient.prefetchQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-/**
- * **DC-04** — PUT /discount-rules/{id}. Requires the `discount.update` permission. Body fields: `code`, `name`, `audience`, `applies_to`, `requires_rank_id`, `percent_min`, `percent_max`, `max_total_percent`, `start_date`, `end_date`, `is_active`.
- * @summary Update a discount rule
- */
-export const putDiscountRulesId = (
-    id: string,
-    putDiscountRulesIdBody: PutDiscountRulesIdBody,
- ) => {
-      
-      
-      return customInstance<PutDiscountRulesId200>(
-      {url: `/discountRules/${id}`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: putDiscountRulesIdBody
-    },
-      );
-    }
-  
-
-
-export const getPutDiscountRulesIdMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putDiscountRulesId>>, TError,{id: string;data: PutDiscountRulesIdBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putDiscountRulesId>>, TError,{id: string;data: PutDiscountRulesIdBody}, TContext> => {
-
-const mutationKey = ['putDiscountRulesId'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putDiscountRulesId>>, {id: string;data: PutDiscountRulesIdBody}> = (props) => {
-          const {id,data} = props ?? {};
-
-          return  putDiscountRulesId(id,data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PutDiscountRulesIdMutationResult = NonNullable<Awaited<ReturnType<typeof putDiscountRulesId>>>
-    export type PutDiscountRulesIdMutationBody = PutDiscountRulesIdBody
-    export type PutDiscountRulesIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
-
-    /**
- * @summary Update a discount rule
- */
-export const usePutDiscountRulesId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putDiscountRulesId>>, TError,{id: string;data: PutDiscountRulesIdBody}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putDiscountRulesId>>,
-        TError,
-        {id: string;data: PutDiscountRulesIdBody},
-        TContext
-      > => {
-
-      const mutationOptions = getPutDiscountRulesIdMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * **DC-05** — DELETE /discount-rules/{id} — soft delete (is_active=false). Requires the `discount.delete` permission.
- * @summary Delete a discount rule
- */
-export const deleteDiscountRulesId = (
-    id: string,
- ) => {
-      
-      
-      return customInstance<DeleteDiscountRulesId200>(
-      {url: `/discountRules/${id}`, method: 'DELETE'
-    },
-      );
-    }
-  
-
-
-export const getDeleteDiscountRulesIdMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDiscountRulesId>>, TError,{id: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof deleteDiscountRulesId>>, TError,{id: string}, TContext> => {
-
-const mutationKey = ['deleteDiscountRulesId'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteDiscountRulesId>>, {id: string}> = (props) => {
-          const {id} = props ?? {};
-
-          return  deleteDiscountRulesId(id,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteDiscountRulesIdMutationResult = NonNullable<Awaited<ReturnType<typeof deleteDiscountRulesId>>>
-    
-    export type DeleteDiscountRulesIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
-
-    /**
- * @summary Delete a discount rule
- */
-export const useDeleteDiscountRulesId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDiscountRulesId>>, TError,{id: string}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteDiscountRulesId>>,
-        TError,
-        {id: string},
-        TContext
-      > => {
-
-      const mutationOptions = getDeleteDiscountRulesIdMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * **DC-01** — GET /discount-rules. Requires the `discount.read` permission. Query parameters: `is_active`, `audience`.
- * @summary List discount rules
- */
-export const getDiscountRules = (
-    params?: GetDiscountRulesParams,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<GetDiscountRules200>(
-      {url: `/discountRules`, method: 'GET',
+      return customInstance<GetSettingsAdmin200>(
+      {url: `/settings/admin`, method: 'GET',
         params, signal
     },
       );
@@ -1449,75 +328,75 @@ export const getDiscountRules = (
 
 
 
-export const getGetDiscountRulesInfiniteQueryKey = (params?: GetDiscountRulesParams,) => {
+export const getGetSettingsAdminInfiniteQueryKey = (params?: GetSettingsAdminParams,) => {
     return [
-    'infinite', `/discountRules`, ...(params ? [params]: [])
+    'infinite', `/settings/admin`, ...(params ? [params]: [])
     ] as const;
     }
 
-export const getGetDiscountRulesQueryKey = (params?: GetDiscountRulesParams,) => {
+export const getGetSettingsAdminQueryKey = (params?: GetSettingsAdminParams,) => {
     return [
-    `/discountRules`, ...(params ? [params]: [])
+    `/settings/admin`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetDiscountRulesInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getDiscountRules>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetDiscountRulesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getDiscountRules>>, TError, TData>>, }
+export const getGetSettingsAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getSettingsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetSettingsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSettingsAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetDiscountRulesInfiniteQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getGetSettingsAdminInfiniteQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDiscountRules>>> = ({ signal }) => getDiscountRules(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSettingsAdmin>>> = ({ signal }) => getSettingsAdmin(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getDiscountRules>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSettingsAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetDiscountRulesInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getDiscountRules>>>
-export type GetDiscountRulesInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+export type GetSettingsAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getSettingsAdmin>>>
+export type GetSettingsAdminInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
 
 
-export function useGetDiscountRulesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getDiscountRules>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params: undefined |  GetDiscountRulesParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getDiscountRules>>, TError, TData>> & Pick<
+export function useGetSettingsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getSettingsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetSettingsAdminParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSettingsAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getDiscountRules>>,
+          Awaited<ReturnType<typeof getSettingsAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getDiscountRules>>
+          Awaited<ReturnType<typeof getSettingsAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetDiscountRulesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getDiscountRules>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetDiscountRulesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getDiscountRules>>, TError, TData>> & Pick<
+export function useGetSettingsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getSettingsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetSettingsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSettingsAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getDiscountRules>>,
+          Awaited<ReturnType<typeof getSettingsAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getDiscountRules>>
+          Awaited<ReturnType<typeof getSettingsAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetDiscountRulesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getDiscountRules>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetDiscountRulesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getDiscountRules>>, TError, TData>>, }
+export function useGetSettingsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getSettingsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetSettingsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSettingsAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary List discount rules
+ * @summary Get list of settings (management)
  */
 
-export function useGetDiscountRulesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getDiscountRules>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetDiscountRulesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getDiscountRules>>, TError, TData>>, }
+export function useGetSettingsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getSettingsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetSettingsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSettingsAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetDiscountRulesInfiniteQueryOptions(params,options)
+  const queryOptions = getGetSettingsAdminInfiniteQueryOptions(params,options)
 
   const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -1527,14 +406,14 @@ export function useGetDiscountRulesInfinite<TData = InfiniteData<Awaited<ReturnT
 }
 
 /**
- * @summary List discount rules
+ * @summary Get list of settings (management)
  */
-export const prefetchGetDiscountRulesInfiniteQuery = async <TData = Awaited<ReturnType<typeof getDiscountRules>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient, params?: GetDiscountRulesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getDiscountRules>>, TError, TData>>, }
+export const prefetchGetSettingsAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getSettingsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetSettingsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSettingsAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetDiscountRulesInfiniteQueryOptions(params,options)
+  const queryOptions = getGetSettingsAdminInfiniteQueryOptions(params,options)
 
   await queryClient.prefetchInfiniteQuery(queryOptions);
 
@@ -1543,62 +422,62 @@ export const prefetchGetDiscountRulesInfiniteQuery = async <TData = Awaited<Retu
 
 
 
-export const getGetDiscountRulesQueryOptions = <TData = Awaited<ReturnType<typeof getDiscountRules>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetDiscountRulesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDiscountRules>>, TError, TData>>, }
+export const getGetSettingsAdminQueryOptions = <TData = Awaited<ReturnType<typeof getSettingsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetSettingsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSettingsAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetDiscountRulesQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getGetSettingsAdminQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDiscountRules>>> = ({ signal }) => getDiscountRules(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSettingsAdmin>>> = ({ signal }) => getSettingsAdmin(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getDiscountRules>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSettingsAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetDiscountRulesQueryResult = NonNullable<Awaited<ReturnType<typeof getDiscountRules>>>
-export type GetDiscountRulesQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+export type GetSettingsAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getSettingsAdmin>>>
+export type GetSettingsAdminQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
 
 
-export function useGetDiscountRules<TData = Awaited<ReturnType<typeof getDiscountRules>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params: undefined |  GetDiscountRulesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDiscountRules>>, TError, TData>> & Pick<
+export function useGetSettingsAdmin<TData = Awaited<ReturnType<typeof getSettingsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetSettingsAdminParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSettingsAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getDiscountRules>>,
+          Awaited<ReturnType<typeof getSettingsAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getDiscountRules>>
+          Awaited<ReturnType<typeof getSettingsAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetDiscountRules<TData = Awaited<ReturnType<typeof getDiscountRules>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetDiscountRulesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDiscountRules>>, TError, TData>> & Pick<
+export function useGetSettingsAdmin<TData = Awaited<ReturnType<typeof getSettingsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetSettingsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSettingsAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getDiscountRules>>,
+          Awaited<ReturnType<typeof getSettingsAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getDiscountRules>>
+          Awaited<ReturnType<typeof getSettingsAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetDiscountRules<TData = Awaited<ReturnType<typeof getDiscountRules>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetDiscountRulesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDiscountRules>>, TError, TData>>, }
+export function useGetSettingsAdmin<TData = Awaited<ReturnType<typeof getSettingsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetSettingsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSettingsAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary List discount rules
+ * @summary Get list of settings (management)
  */
 
-export function useGetDiscountRules<TData = Awaited<ReturnType<typeof getDiscountRules>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetDiscountRulesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDiscountRules>>, TError, TData>>, }
+export function useGetSettingsAdmin<TData = Awaited<ReturnType<typeof getSettingsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetSettingsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSettingsAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetDiscountRulesQueryOptions(params,options)
+  const queryOptions = getGetSettingsAdminQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -1608,14 +487,14 @@ export function useGetDiscountRules<TData = Awaited<ReturnType<typeof getDiscoun
 }
 
 /**
- * @summary List discount rules
+ * @summary Get list of settings (management)
  */
-export const prefetchGetDiscountRulesQuery = async <TData = Awaited<ReturnType<typeof getDiscountRules>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient, params?: GetDiscountRulesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDiscountRules>>, TError, TData>>, }
+export const prefetchGetSettingsAdminQuery = async <TData = Awaited<ReturnType<typeof getSettingsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetSettingsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSettingsAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetDiscountRulesQueryOptions(params,options)
+  const queryOptions = getGetSettingsAdminQueryOptions(params,options)
 
   await queryClient.prefetchQuery(queryOptions);
 
@@ -1625,289 +504,29 @@ export const prefetchGetDiscountRulesQuery = async <TData = Awaited<ReturnType<t
 
 
 /**
- * **DC-02** — POST /discount-rules. Requires the `discount.create` permission. Body fields: `code`, `name`, `audience`, `applies_to`, `requires_rank_id`, `percent_min`, `percent_max`, `max_total_percent`, `start_date`, `end_date`.
- * @summary Create a new discount rule
+ * **ST-02** — PUT /settings/admin. Cần đăng nhập + `setting.update_all`. Body fields: `items`. Handled by `settingsService.update`.
+ * @summary Update settings
  */
-export const postDiscountRules = (
-    postDiscountRulesBody: PostDiscountRulesBody,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<PostDiscountRules200>(
-      {url: `/discountRules`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: postDiscountRulesBody, signal
-    },
-      );
-    }
-  
-
-
-export const getPostDiscountRulesMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postDiscountRules>>, TError,{data: PostDiscountRulesBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postDiscountRules>>, TError,{data: PostDiscountRulesBody}, TContext> => {
-
-const mutationKey = ['postDiscountRules'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postDiscountRules>>, {data: PostDiscountRulesBody}> = (props) => {
-          const {data} = props ?? {};
-
-          return  postDiscountRules(data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostDiscountRulesMutationResult = NonNullable<Awaited<ReturnType<typeof postDiscountRules>>>
-    export type PostDiscountRulesMutationBody = PostDiscountRulesBody
-    export type PostDiscountRulesMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
-
-    /**
- * @summary Create a new discount rule
- */
-export const usePostDiscountRules = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postDiscountRules>>, TError,{data: PostDiscountRulesBody}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postDiscountRules>>,
-        TError,
-        {data: PostDiscountRulesBody},
-        TContext
-      > => {
-
-      const mutationOptions = getPostDiscountRulesMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * **CF-02** — GET /custom-field-defs/{id}. Requires `custom_field.read` permission.
- * @summary Get custom field details
- */
-export const getCustomFieldDefsId = (
-    id: string,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<GetCustomFieldDefsId200>(
-      {url: `/customFieldDefs/${id}`, method: 'GET', signal
-    },
-      );
-    }
-  
-
-
-
-export const getGetCustomFieldDefsIdInfiniteQueryKey = (id?: string,) => {
-    return [
-    'infinite', `/customFieldDefs/${id}`
-    ] as const;
-    }
-
-export const getGetCustomFieldDefsIdQueryKey = (id?: string,) => {
-    return [
-    `/customFieldDefs/${id}`
-    ] as const;
-    }
-
-    
-export const getGetCustomFieldDefsIdInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getCustomFieldDefsId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomFieldDefsId>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetCustomFieldDefsIdInfiniteQueryKey(id);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCustomFieldDefsId>>> = ({ signal }) => getCustomFieldDefsId(id, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomFieldDefsId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetCustomFieldDefsIdInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getCustomFieldDefsId>>>
-export type GetCustomFieldDefsIdInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
-
-
-export function useGetCustomFieldDefsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCustomFieldDefsId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomFieldDefsId>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getCustomFieldDefsId>>,
-          TError,
-          Awaited<ReturnType<typeof getCustomFieldDefsId>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetCustomFieldDefsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCustomFieldDefsId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomFieldDefsId>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getCustomFieldDefsId>>,
-          TError,
-          Awaited<ReturnType<typeof getCustomFieldDefsId>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetCustomFieldDefsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCustomFieldDefsId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomFieldDefsId>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get custom field details
- */
-
-export function useGetCustomFieldDefsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCustomFieldDefsId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomFieldDefsId>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetCustomFieldDefsIdInfiniteQueryOptions(id,options)
-
-  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary Get custom field details
- */
-export const prefetchGetCustomFieldDefsIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getCustomFieldDefsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomFieldDefsId>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetCustomFieldDefsIdInfiniteQueryOptions(id,options)
-
-  await queryClient.prefetchInfiniteQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-export const getGetCustomFieldDefsIdQueryOptions = <TData = Awaited<ReturnType<typeof getCustomFieldDefsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomFieldDefsId>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetCustomFieldDefsIdQueryKey(id);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCustomFieldDefsId>>> = ({ signal }) => getCustomFieldDefsId(id, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCustomFieldDefsId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetCustomFieldDefsIdQueryResult = NonNullable<Awaited<ReturnType<typeof getCustomFieldDefsId>>>
-export type GetCustomFieldDefsIdQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
-
-
-export function useGetCustomFieldDefsId<TData = Awaited<ReturnType<typeof getCustomFieldDefsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomFieldDefsId>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getCustomFieldDefsId>>,
-          TError,
-          Awaited<ReturnType<typeof getCustomFieldDefsId>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetCustomFieldDefsId<TData = Awaited<ReturnType<typeof getCustomFieldDefsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomFieldDefsId>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getCustomFieldDefsId>>,
-          TError,
-          Awaited<ReturnType<typeof getCustomFieldDefsId>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetCustomFieldDefsId<TData = Awaited<ReturnType<typeof getCustomFieldDefsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomFieldDefsId>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get custom field details
- */
-
-export function useGetCustomFieldDefsId<TData = Awaited<ReturnType<typeof getCustomFieldDefsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomFieldDefsId>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetCustomFieldDefsIdQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary Get custom field details
- */
-export const prefetchGetCustomFieldDefsIdQuery = async <TData = Awaited<ReturnType<typeof getCustomFieldDefsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomFieldDefsId>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetCustomFieldDefsIdQueryOptions(id,options)
-
-  await queryClient.prefetchQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-/**
- * **CF-04** — PUT /custom-field-defs/{id} (key and data_type cannot be changed once data exists — checked at the service layer on apply). Requires `custom_field.update` permission. Body fields: `label`, `options`, `lookup_list_id`, `required`, `visible_to_customer`, `sort_order`, `is_active`, `data_type`.
- * @summary Update a custom field
- */
-export const putCustomFieldDefsId = (
-    id: string,
-    putCustomFieldDefsIdBody: PutCustomFieldDefsIdBody,
+export const putSettingsAdmin = (
+    putSettingsAdminBody: PutSettingsAdminBody,
  ) => {
       
       
-      return customInstance<PutCustomFieldDefsId200>(
-      {url: `/customFieldDefs/${id}`, method: 'PUT',
+      return customInstance<PutSettingsAdmin200>(
+      {url: `/settings/admin`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
-      data: putCustomFieldDefsIdBody
+      data: putSettingsAdminBody
     },
       );
     }
   
 
 
-export const getPutCustomFieldDefsIdMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putCustomFieldDefsId>>, TError,{id: string;data: PutCustomFieldDefsIdBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putCustomFieldDefsId>>, TError,{id: string;data: PutCustomFieldDefsIdBody}, TContext> => {
+export const getPutSettingsAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putSettingsAdmin>>, TError,{data: PutSettingsAdminBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putSettingsAdmin>>, TError,{data: PutSettingsAdminBody}, TContext> => {
 
-const mutationKey = ['putCustomFieldDefsId'];
+const mutationKey = ['putSettingsAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -1917,332 +536,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putCustomFieldDefsId>>, {id: string;data: PutCustomFieldDefsIdBody}> = (props) => {
-          const {id,data} = props ?? {};
-
-          return  putCustomFieldDefsId(id,data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PutCustomFieldDefsIdMutationResult = NonNullable<Awaited<ReturnType<typeof putCustomFieldDefsId>>>
-    export type PutCustomFieldDefsIdMutationBody = PutCustomFieldDefsIdBody
-    export type PutCustomFieldDefsIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
-
-    /**
- * @summary Update a custom field
- */
-export const usePutCustomFieldDefsId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putCustomFieldDefsId>>, TError,{id: string;data: PutCustomFieldDefsIdBody}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putCustomFieldDefsId>>,
-        TError,
-        {id: string;data: PutCustomFieldDefsIdBody},
-        TContext
-      > => {
-
-      const mutationOptions = getPutCustomFieldDefsIdMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * **CF-05** — DELETE /custom-field-defs/{id}: hides the field without deleting previously entered data. Requires `custom_field.delete` permission.
- * @summary Delete a custom field
- */
-export const deleteCustomFieldDefsId = (
-    id: string,
- ) => {
-      
-      
-      return customInstance<DeleteCustomFieldDefsId200>(
-      {url: `/customFieldDefs/${id}`, method: 'DELETE'
-    },
-      );
-    }
-  
-
-
-export const getDeleteCustomFieldDefsIdMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteCustomFieldDefsId>>, TError,{id: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof deleteCustomFieldDefsId>>, TError,{id: string}, TContext> => {
-
-const mutationKey = ['deleteCustomFieldDefsId'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteCustomFieldDefsId>>, {id: string}> = (props) => {
-          const {id} = props ?? {};
-
-          return  deleteCustomFieldDefsId(id,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteCustomFieldDefsIdMutationResult = NonNullable<Awaited<ReturnType<typeof deleteCustomFieldDefsId>>>
-    
-    export type DeleteCustomFieldDefsIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
-
-    /**
- * @summary Delete a custom field
- */
-export const useDeleteCustomFieldDefsId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteCustomFieldDefsId>>, TError,{id: string}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteCustomFieldDefsId>>,
-        TError,
-        {id: string},
-        TContext
-      > => {
-
-      const mutationOptions = getDeleteCustomFieldDefsIdMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * **CF-01** — GET /custom-field-defs. Requires `custom_field.read` permission. Query parameters: `entity`, `is_active`.
- * @summary List custom fields
- */
-export const getCustomFieldDefs = (
-    params?: GetCustomFieldDefsParams,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<GetCustomFieldDefs200>(
-      {url: `/customFieldDefs`, method: 'GET',
-        params, signal
-    },
-      );
-    }
-  
-
-
-
-export const getGetCustomFieldDefsInfiniteQueryKey = (params?: GetCustomFieldDefsParams,) => {
-    return [
-    'infinite', `/customFieldDefs`, ...(params ? [params]: [])
-    ] as const;
-    }
-
-export const getGetCustomFieldDefsQueryKey = (params?: GetCustomFieldDefsParams,) => {
-    return [
-    `/customFieldDefs`, ...(params ? [params]: [])
-    ] as const;
-    }
-
-    
-export const getGetCustomFieldDefsInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getCustomFieldDefs>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetCustomFieldDefsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomFieldDefs>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetCustomFieldDefsInfiniteQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCustomFieldDefs>>> = ({ signal }) => getCustomFieldDefs(params, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomFieldDefs>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetCustomFieldDefsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getCustomFieldDefs>>>
-export type GetCustomFieldDefsInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
-
-
-export function useGetCustomFieldDefsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCustomFieldDefs>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params: undefined |  GetCustomFieldDefsParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomFieldDefs>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getCustomFieldDefs>>,
-          TError,
-          Awaited<ReturnType<typeof getCustomFieldDefs>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetCustomFieldDefsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCustomFieldDefs>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetCustomFieldDefsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomFieldDefs>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getCustomFieldDefs>>,
-          TError,
-          Awaited<ReturnType<typeof getCustomFieldDefs>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetCustomFieldDefsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCustomFieldDefs>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetCustomFieldDefsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomFieldDefs>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary List custom fields
- */
-
-export function useGetCustomFieldDefsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCustomFieldDefs>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetCustomFieldDefsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomFieldDefs>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetCustomFieldDefsInfiniteQueryOptions(params,options)
-
-  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary List custom fields
- */
-export const prefetchGetCustomFieldDefsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getCustomFieldDefs>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient, params?: GetCustomFieldDefsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomFieldDefs>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetCustomFieldDefsInfiniteQueryOptions(params,options)
-
-  await queryClient.prefetchInfiniteQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-export const getGetCustomFieldDefsQueryOptions = <TData = Awaited<ReturnType<typeof getCustomFieldDefs>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetCustomFieldDefsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomFieldDefs>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetCustomFieldDefsQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCustomFieldDefs>>> = ({ signal }) => getCustomFieldDefs(params, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCustomFieldDefs>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetCustomFieldDefsQueryResult = NonNullable<Awaited<ReturnType<typeof getCustomFieldDefs>>>
-export type GetCustomFieldDefsQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
-
-
-export function useGetCustomFieldDefs<TData = Awaited<ReturnType<typeof getCustomFieldDefs>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params: undefined |  GetCustomFieldDefsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomFieldDefs>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getCustomFieldDefs>>,
-          TError,
-          Awaited<ReturnType<typeof getCustomFieldDefs>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetCustomFieldDefs<TData = Awaited<ReturnType<typeof getCustomFieldDefs>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetCustomFieldDefsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomFieldDefs>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getCustomFieldDefs>>,
-          TError,
-          Awaited<ReturnType<typeof getCustomFieldDefs>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetCustomFieldDefs<TData = Awaited<ReturnType<typeof getCustomFieldDefs>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetCustomFieldDefsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomFieldDefs>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary List custom fields
- */
-
-export function useGetCustomFieldDefs<TData = Awaited<ReturnType<typeof getCustomFieldDefs>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetCustomFieldDefsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomFieldDefs>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetCustomFieldDefsQueryOptions(params,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary List custom fields
- */
-export const prefetchGetCustomFieldDefsQuery = async <TData = Awaited<ReturnType<typeof getCustomFieldDefs>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient, params?: GetCustomFieldDefsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomFieldDefs>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetCustomFieldDefsQueryOptions(params,options)
-
-  await queryClient.prefetchQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-/**
- * **CF-03** — POST /custom-field-defs. Requires `custom_field.create` permission. Body fields: `entity`, `key`, `label`, `data_type`, `options`, `lookup_list_id`, `required`, `visible_to_customer`, `sort_order`.
- * @summary Create a new custom field
- */
-export const postCustomFieldDefs = (
-    postCustomFieldDefsBody: PostCustomFieldDefsBody,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<PostCustomFieldDefs200>(
-      {url: `/customFieldDefs`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: postCustomFieldDefsBody, signal
-    },
-      );
-    }
-  
-
-
-export const getPostCustomFieldDefsMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postCustomFieldDefs>>, TError,{data: PostCustomFieldDefsBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postCustomFieldDefs>>, TError,{data: PostCustomFieldDefsBody}, TContext> => {
-
-const mutationKey = ['postCustomFieldDefs'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postCustomFieldDefs>>, {data: PostCustomFieldDefsBody}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putSettingsAdmin>>, {data: PutSettingsAdminBody}> = (props) => {
           const {data} = props ?? {};
 
-          return  postCustomFieldDefs(data,)
+          return  putSettingsAdmin(data,)
         }
 
         
@@ -2250,23 +547,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PostCustomFieldDefsMutationResult = NonNullable<Awaited<ReturnType<typeof postCustomFieldDefs>>>
-    export type PostCustomFieldDefsMutationBody = PostCustomFieldDefsBody
-    export type PostCustomFieldDefsMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+    export type PutSettingsAdminMutationResult = NonNullable<Awaited<ReturnType<typeof putSettingsAdmin>>>
+    export type PutSettingsAdminMutationBody = PutSettingsAdminBody
+    export type PutSettingsAdminMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Create a new custom field
+ * @summary Update settings
  */
-export const usePostCustomFieldDefs = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postCustomFieldDefs>>, TError,{data: PostCustomFieldDefsBody}, TContext>, }
+export const usePutSettingsAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putSettingsAdmin>>, TError,{data: PutSettingsAdminBody}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postCustomFieldDefs>>,
+        Awaited<ReturnType<typeof putSettingsAdmin>>,
         TError,
-        {data: PostCustomFieldDefsBody},
+        {data: PutSettingsAdminBody},
         TContext
       > => {
 
-      const mutationOptions = getPostCustomFieldDefsMutationOptions(options);
+      const mutationOptions = getPutSettingsAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

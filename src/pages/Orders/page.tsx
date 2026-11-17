@@ -9,7 +9,7 @@ import ListPagination from '@/components/base/ListPagination'
 import { errorMessage, pickData, pickMeta } from '@/api/helpers'
 import { formatCurrency, formatDateTime, useBrandCurrency } from '@/themeRuntime'
 import { useCustomerProfileAccess } from '@/utils/customerProfileAccess'
-import { getProductOrders, getGetProductOrdersQueryKey, putProductOrdersId } from '@/api/endpoints/products'
+import { getProductOrdersAdmin, getGetProductOrdersAdminQueryKey, putProductOrdersIdAdmin } from '@/api/endpoints/product-orders'
 import OrderDetailModal from './components/OrderDetailModal'
 import {
   NEXT_ACTIONS,
@@ -30,14 +30,14 @@ export default function Orders() {
   const [detail, setDetail] = useState<ProductOrderRow | null>(null)
 
   const ordersQuery = useQuery({
-    queryKey: getGetProductOrdersQueryKey({
+    queryKey: getGetProductOrdersAdminQueryKey({
       page,
       limit,
       ...(search.trim() ? { q: search.trim() } : {}),
       ...(statusFilter ? { status: statusFilter } : {}),
     }),
     queryFn: async () =>
-      await getProductOrders({
+      await getProductOrdersAdmin({
         page,
         limit,
         ...(search.trim() ? { q: search.trim() } : {}),
@@ -56,7 +56,7 @@ export default function Orders() {
   const changeStatus = async (row: ProductOrderRow, status: ProductOrderStatus) => {
     if (!isAdmin) return
     try {
-      await putProductOrdersId(row.id, { status })
+      await putProductOrdersIdAdmin(row.id, { status })
       message.success(`Đã chuyển đơn ${row.code} sang "${STATUS_META[status].label}"`)
       if (detail?.id === row.id) setDetail({ ...detail, status })
       await ordersQuery.refetch()

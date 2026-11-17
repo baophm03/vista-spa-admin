@@ -31,7 +31,7 @@ import type {
 
 import type {
   LegacyBadRequestResponse,
-  PostTreatmentSpecialtiesSpecialtySlugTopicsBody,
+  PostTreatmentSpecialtiesSpecialtySlugTopicsAdminBody,
   Response,
   TreatmentSpecialtyCreate
 } from '../models';
@@ -237,71 +237,6 @@ export const prefetchGetTreatmentSpecialtiesQuery = async <TData = Awaited<Retur
 
 
 /**
- * POST `/treatment/specialties` — treatment specialties. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `specialtyProvider.post`.
- * @summary Create a treatment specialty
- */
-export const postTreatmentSpecialties = (
-    treatmentSpecialtyCreate: TreatmentSpecialtyCreate,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<Response>(
-      {url: `/treatment/specialties`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: treatmentSpecialtyCreate, signal
-    },
-      );
-    }
-  
-
-
-export const getPostTreatmentSpecialtiesMutationOptions = <TError = LegacyBadRequestResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postTreatmentSpecialties>>, TError,{data: TreatmentSpecialtyCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postTreatmentSpecialties>>, TError,{data: TreatmentSpecialtyCreate}, TContext> => {
-
-const mutationKey = ['postTreatmentSpecialties'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postTreatmentSpecialties>>, {data: TreatmentSpecialtyCreate}> = (props) => {
-          const {data} = props ?? {};
-
-          return  postTreatmentSpecialties(data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostTreatmentSpecialtiesMutationResult = NonNullable<Awaited<ReturnType<typeof postTreatmentSpecialties>>>
-    export type PostTreatmentSpecialtiesMutationBody = TreatmentSpecialtyCreate
-    export type PostTreatmentSpecialtiesMutationError = LegacyBadRequestResponse
-
-    /**
- * @summary Create a treatment specialty
- */
-export const usePostTreatmentSpecialties = <TError = LegacyBadRequestResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postTreatmentSpecialties>>, TError,{data: TreatmentSpecialtyCreate}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postTreatmentSpecialties>>,
-        TError,
-        {data: TreatmentSpecialtyCreate},
-        TContext
-      > => {
-
-      const mutationOptions = getPostTreatmentSpecialtiesMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
  * GET `/treatment/specialties/{specialtySlug}` — treatment specialties. Public, no authentication required. Handled by `specialtyProvider.getOne`.
  * @summary View specialty details
  */
@@ -496,17 +431,17 @@ export const prefetchGetTreatmentSpecialtiesSpecialtySlugQuery = async <TData = 
 
 
 /**
- * PUT `/treatment/specialties/{specialtySlug}` — treatment specialties. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `specialtyProvider.getOne`.
+ * PUT `/treatment/specialties/{specialtySlug}/admin` — treatment specialties. This route currently has no authentication or authorization middleware attached. Handled by `specialtyProvider.getOne`.
  * @summary Update a specialty
  */
-export const putTreatmentSpecialtiesSpecialtySlug = (
+export const putTreatmentSpecialtiesSpecialtySlugAdmin = (
     specialtySlug: string,
     treatmentSpecialtyCreate: TreatmentSpecialtyCreate,
  ) => {
       
       
       return customInstance<Response>(
-      {url: `/treatment/specialties/${specialtySlug}`, method: 'PUT',
+      {url: `/treatment/specialties/${specialtySlug}/admin`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: treatmentSpecialtyCreate
     },
@@ -515,11 +450,11 @@ export const putTreatmentSpecialtiesSpecialtySlug = (
   
 
 
-export const getPutTreatmentSpecialtiesSpecialtySlugMutationOptions = <TError = LegacyBadRequestResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putTreatmentSpecialtiesSpecialtySlug>>, TError,{specialtySlug: string;data: TreatmentSpecialtyCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putTreatmentSpecialtiesSpecialtySlug>>, TError,{specialtySlug: string;data: TreatmentSpecialtyCreate}, TContext> => {
+export const getPutTreatmentSpecialtiesSpecialtySlugAdminMutationOptions = <TError = LegacyBadRequestResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putTreatmentSpecialtiesSpecialtySlugAdmin>>, TError,{specialtySlug: string;data: TreatmentSpecialtyCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putTreatmentSpecialtiesSpecialtySlugAdmin>>, TError,{specialtySlug: string;data: TreatmentSpecialtyCreate}, TContext> => {
 
-const mutationKey = ['putTreatmentSpecialtiesSpecialtySlug'];
+const mutationKey = ['putTreatmentSpecialtiesSpecialtySlugAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -529,10 +464,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putTreatmentSpecialtiesSpecialtySlug>>, {specialtySlug: string;data: TreatmentSpecialtyCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putTreatmentSpecialtiesSpecialtySlugAdmin>>, {specialtySlug: string;data: TreatmentSpecialtyCreate}> = (props) => {
           const {specialtySlug,data} = props ?? {};
 
-          return  putTreatmentSpecialtiesSpecialtySlug(specialtySlug,data,)
+          return  putTreatmentSpecialtiesSpecialtySlugAdmin(specialtySlug,data,)
         }
 
         
@@ -540,48 +475,48 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PutTreatmentSpecialtiesSpecialtySlugMutationResult = NonNullable<Awaited<ReturnType<typeof putTreatmentSpecialtiesSpecialtySlug>>>
-    export type PutTreatmentSpecialtiesSpecialtySlugMutationBody = TreatmentSpecialtyCreate
-    export type PutTreatmentSpecialtiesSpecialtySlugMutationError = LegacyBadRequestResponse | void
+    export type PutTreatmentSpecialtiesSpecialtySlugAdminMutationResult = NonNullable<Awaited<ReturnType<typeof putTreatmentSpecialtiesSpecialtySlugAdmin>>>
+    export type PutTreatmentSpecialtiesSpecialtySlugAdminMutationBody = TreatmentSpecialtyCreate
+    export type PutTreatmentSpecialtiesSpecialtySlugAdminMutationError = LegacyBadRequestResponse | void
 
     /**
  * @summary Update a specialty
  */
-export const usePutTreatmentSpecialtiesSpecialtySlug = <TError = LegacyBadRequestResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putTreatmentSpecialtiesSpecialtySlug>>, TError,{specialtySlug: string;data: TreatmentSpecialtyCreate}, TContext>, }
+export const usePutTreatmentSpecialtiesSpecialtySlugAdmin = <TError = LegacyBadRequestResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putTreatmentSpecialtiesSpecialtySlugAdmin>>, TError,{specialtySlug: string;data: TreatmentSpecialtyCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putTreatmentSpecialtiesSpecialtySlug>>,
+        Awaited<ReturnType<typeof putTreatmentSpecialtiesSpecialtySlugAdmin>>,
         TError,
         {specialtySlug: string;data: TreatmentSpecialtyCreate},
         TContext
       > => {
 
-      const mutationOptions = getPutTreatmentSpecialtiesSpecialtySlugMutationOptions(options);
+      const mutationOptions = getPutTreatmentSpecialtiesSpecialtySlugAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * DELETE `/treatment/specialties/{specialtySlug}` — treatment specialties. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `specialtyProvider.getOne`.
+ * DELETE `/treatment/specialties/{specialtySlug}/admin` — treatment specialties. This route currently has no authentication or authorization middleware attached. Handled by `specialtyProvider.getOne`.
  * @summary Delete a specialty
  */
-export const deleteTreatmentSpecialtiesSpecialtySlug = (
+export const deleteTreatmentSpecialtiesSpecialtySlugAdmin = (
     specialtySlug: string,
  ) => {
       
       
       return customInstance<Response>(
-      {url: `/treatment/specialties/${specialtySlug}`, method: 'DELETE'
+      {url: `/treatment/specialties/${specialtySlug}/admin`, method: 'DELETE'
     },
       );
     }
   
 
 
-export const getDeleteTreatmentSpecialtiesSpecialtySlugMutationOptions = <TError = LegacyBadRequestResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTreatmentSpecialtiesSpecialtySlug>>, TError,{specialtySlug: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof deleteTreatmentSpecialtiesSpecialtySlug>>, TError,{specialtySlug: string}, TContext> => {
+export const getDeleteTreatmentSpecialtiesSpecialtySlugAdminMutationOptions = <TError = LegacyBadRequestResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTreatmentSpecialtiesSpecialtySlugAdmin>>, TError,{specialtySlug: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteTreatmentSpecialtiesSpecialtySlugAdmin>>, TError,{specialtySlug: string}, TContext> => {
 
-const mutationKey = ['deleteTreatmentSpecialtiesSpecialtySlug'];
+const mutationKey = ['deleteTreatmentSpecialtiesSpecialtySlugAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -591,10 +526,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteTreatmentSpecialtiesSpecialtySlug>>, {specialtySlug: string}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteTreatmentSpecialtiesSpecialtySlugAdmin>>, {specialtySlug: string}> = (props) => {
           const {specialtySlug} = props ?? {};
 
-          return  deleteTreatmentSpecialtiesSpecialtySlug(specialtySlug,)
+          return  deleteTreatmentSpecialtiesSpecialtySlugAdmin(specialtySlug,)
         }
 
         
@@ -602,23 +537,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type DeleteTreatmentSpecialtiesSpecialtySlugMutationResult = NonNullable<Awaited<ReturnType<typeof deleteTreatmentSpecialtiesSpecialtySlug>>>
+    export type DeleteTreatmentSpecialtiesSpecialtySlugAdminMutationResult = NonNullable<Awaited<ReturnType<typeof deleteTreatmentSpecialtiesSpecialtySlugAdmin>>>
     
-    export type DeleteTreatmentSpecialtiesSpecialtySlugMutationError = LegacyBadRequestResponse | void
+    export type DeleteTreatmentSpecialtiesSpecialtySlugAdminMutationError = LegacyBadRequestResponse | void
 
     /**
  * @summary Delete a specialty
  */
-export const useDeleteTreatmentSpecialtiesSpecialtySlug = <TError = LegacyBadRequestResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTreatmentSpecialtiesSpecialtySlug>>, TError,{specialtySlug: string}, TContext>, }
+export const useDeleteTreatmentSpecialtiesSpecialtySlugAdmin = <TError = LegacyBadRequestResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTreatmentSpecialtiesSpecialtySlugAdmin>>, TError,{specialtySlug: string}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteTreatmentSpecialtiesSpecialtySlug>>,
+        Awaited<ReturnType<typeof deleteTreatmentSpecialtiesSpecialtySlugAdmin>>,
         TError,
         {specialtySlug: string},
         TContext
       > => {
 
-      const mutationOptions = getDeleteTreatmentSpecialtiesSpecialtySlugMutationOptions(options);
+      const mutationOptions = getDeleteTreatmentSpecialtiesSpecialtySlugAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -832,135 +767,6 @@ export const prefetchGetTreatmentSpecialtiesSpecialtySlugTopicsTopicSlugQuery = 
 
 
 /**
- * PUT `/treatment/specialties/{specialtySlug}/topics/{topicSlug}` — treatment specialties. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `specialtyProvider.getOne`.
- * @summary Update a topic
- */
-export const putTreatmentSpecialtiesSpecialtySlugTopicsTopicSlug = (
-    specialtySlug: string,
-    topicSlug: string,
-    treatmentSpecialtyCreate: TreatmentSpecialtyCreate,
- ) => {
-      
-      
-      return customInstance<Response>(
-      {url: `/treatment/specialties/${specialtySlug}/topics/${topicSlug}`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: treatmentSpecialtyCreate
-    },
-      );
-    }
-  
-
-
-export const getPutTreatmentSpecialtiesSpecialtySlugTopicsTopicSlugMutationOptions = <TError = LegacyBadRequestResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putTreatmentSpecialtiesSpecialtySlugTopicsTopicSlug>>, TError,{specialtySlug: string;topicSlug: string;data: TreatmentSpecialtyCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putTreatmentSpecialtiesSpecialtySlugTopicsTopicSlug>>, TError,{specialtySlug: string;topicSlug: string;data: TreatmentSpecialtyCreate}, TContext> => {
-
-const mutationKey = ['putTreatmentSpecialtiesSpecialtySlugTopicsTopicSlug'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putTreatmentSpecialtiesSpecialtySlugTopicsTopicSlug>>, {specialtySlug: string;topicSlug: string;data: TreatmentSpecialtyCreate}> = (props) => {
-          const {specialtySlug,topicSlug,data} = props ?? {};
-
-          return  putTreatmentSpecialtiesSpecialtySlugTopicsTopicSlug(specialtySlug,topicSlug,data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PutTreatmentSpecialtiesSpecialtySlugTopicsTopicSlugMutationResult = NonNullable<Awaited<ReturnType<typeof putTreatmentSpecialtiesSpecialtySlugTopicsTopicSlug>>>
-    export type PutTreatmentSpecialtiesSpecialtySlugTopicsTopicSlugMutationBody = TreatmentSpecialtyCreate
-    export type PutTreatmentSpecialtiesSpecialtySlugTopicsTopicSlugMutationError = LegacyBadRequestResponse | void
-
-    /**
- * @summary Update a topic
- */
-export const usePutTreatmentSpecialtiesSpecialtySlugTopicsTopicSlug = <TError = LegacyBadRequestResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putTreatmentSpecialtiesSpecialtySlugTopicsTopicSlug>>, TError,{specialtySlug: string;topicSlug: string;data: TreatmentSpecialtyCreate}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putTreatmentSpecialtiesSpecialtySlugTopicsTopicSlug>>,
-        TError,
-        {specialtySlug: string;topicSlug: string;data: TreatmentSpecialtyCreate},
-        TContext
-      > => {
-
-      const mutationOptions = getPutTreatmentSpecialtiesSpecialtySlugTopicsTopicSlugMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * DELETE `/treatment/specialties/{specialtySlug}/topics/{topicSlug}` — treatment specialties. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `specialtyProvider.getOne`.
- * @summary Delete a topic
- */
-export const deleteTreatmentSpecialtiesSpecialtySlugTopicsTopicSlug = (
-    specialtySlug: string,
-    topicSlug: string,
- ) => {
-      
-      
-      return customInstance<Response>(
-      {url: `/treatment/specialties/${specialtySlug}/topics/${topicSlug}`, method: 'DELETE'
-    },
-      );
-    }
-  
-
-
-export const getDeleteTreatmentSpecialtiesSpecialtySlugTopicsTopicSlugMutationOptions = <TError = LegacyBadRequestResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTreatmentSpecialtiesSpecialtySlugTopicsTopicSlug>>, TError,{specialtySlug: string;topicSlug: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof deleteTreatmentSpecialtiesSpecialtySlugTopicsTopicSlug>>, TError,{specialtySlug: string;topicSlug: string}, TContext> => {
-
-const mutationKey = ['deleteTreatmentSpecialtiesSpecialtySlugTopicsTopicSlug'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteTreatmentSpecialtiesSpecialtySlugTopicsTopicSlug>>, {specialtySlug: string;topicSlug: string}> = (props) => {
-          const {specialtySlug,topicSlug} = props ?? {};
-
-          return  deleteTreatmentSpecialtiesSpecialtySlugTopicsTopicSlug(specialtySlug,topicSlug,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteTreatmentSpecialtiesSpecialtySlugTopicsTopicSlugMutationResult = NonNullable<Awaited<ReturnType<typeof deleteTreatmentSpecialtiesSpecialtySlugTopicsTopicSlug>>>
-    
-    export type DeleteTreatmentSpecialtiesSpecialtySlugTopicsTopicSlugMutationError = LegacyBadRequestResponse | void
-
-    /**
- * @summary Delete a topic
- */
-export const useDeleteTreatmentSpecialtiesSpecialtySlugTopicsTopicSlug = <TError = LegacyBadRequestResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTreatmentSpecialtiesSpecialtySlugTopicsTopicSlug>>, TError,{specialtySlug: string;topicSlug: string}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteTreatmentSpecialtiesSpecialtySlugTopicsTopicSlug>>,
-        TError,
-        {specialtySlug: string;topicSlug: string},
-        TContext
-      > => {
-
-      const mutationOptions = getDeleteTreatmentSpecialtiesSpecialtySlugTopicsTopicSlugMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
  * GET `/treatment/specialties/{specialtySlug}/topics` — treatment specialties. Public, no authentication required. Handled by `specialtyProvider.getOne`.
  * @summary List topics of a specialty
  */
@@ -1155,31 +961,31 @@ export const prefetchGetTreatmentSpecialtiesSpecialtySlugTopicsQuery = async <TD
 
 
 /**
- * POST `/treatment/specialties/{specialtySlug}/topics` — treatment specialties. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. The body is passed as-is to the business layer. Handled by `specialtyProvider.getOne`.
- * @summary Create a topic for a specialty
+ * PUT `/treatment/specialties/{specialtySlug}/topics/{topicSlug}/admin` — treatment specialties. This route currently has no authentication or authorization middleware attached. Handled by `specialtyProvider.getOne`.
+ * @summary Update a topic
  */
-export const postTreatmentSpecialtiesSpecialtySlugTopics = (
+export const putTreatmentSpecialtiesSpecialtySlugTopicsTopicSlugAdmin = (
     specialtySlug: string,
-    postTreatmentSpecialtiesSpecialtySlugTopicsBody: PostTreatmentSpecialtiesSpecialtySlugTopicsBody,
- signal?: AbortSignal
-) => {
+    topicSlug: string,
+    treatmentSpecialtyCreate: TreatmentSpecialtyCreate,
+ ) => {
       
       
       return customInstance<Response>(
-      {url: `/treatment/specialties/${specialtySlug}/topics`, method: 'POST',
+      {url: `/treatment/specialties/${specialtySlug}/topics/${topicSlug}/admin`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
-      data: postTreatmentSpecialtiesSpecialtySlugTopicsBody, signal
+      data: treatmentSpecialtyCreate
     },
       );
     }
   
 
 
-export const getPostTreatmentSpecialtiesSpecialtySlugTopicsMutationOptions = <TError = LegacyBadRequestResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postTreatmentSpecialtiesSpecialtySlugTopics>>, TError,{specialtySlug: string;data: PostTreatmentSpecialtiesSpecialtySlugTopicsBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postTreatmentSpecialtiesSpecialtySlugTopics>>, TError,{specialtySlug: string;data: PostTreatmentSpecialtiesSpecialtySlugTopicsBody}, TContext> => {
+export const getPutTreatmentSpecialtiesSpecialtySlugTopicsTopicSlugAdminMutationOptions = <TError = LegacyBadRequestResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putTreatmentSpecialtiesSpecialtySlugTopicsTopicSlugAdmin>>, TError,{specialtySlug: string;topicSlug: string;data: TreatmentSpecialtyCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putTreatmentSpecialtiesSpecialtySlugTopicsTopicSlugAdmin>>, TError,{specialtySlug: string;topicSlug: string;data: TreatmentSpecialtyCreate}, TContext> => {
 
-const mutationKey = ['postTreatmentSpecialtiesSpecialtySlugTopics'];
+const mutationKey = ['putTreatmentSpecialtiesSpecialtySlugTopicsTopicSlugAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -1189,10 +995,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postTreatmentSpecialtiesSpecialtySlugTopics>>, {specialtySlug: string;data: PostTreatmentSpecialtiesSpecialtySlugTopicsBody}> = (props) => {
-          const {specialtySlug,data} = props ?? {};
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putTreatmentSpecialtiesSpecialtySlugTopicsTopicSlugAdmin>>, {specialtySlug: string;topicSlug: string;data: TreatmentSpecialtyCreate}> = (props) => {
+          const {specialtySlug,topicSlug,data} = props ?? {};
 
-          return  postTreatmentSpecialtiesSpecialtySlugTopics(specialtySlug,data,)
+          return  putTreatmentSpecialtiesSpecialtySlugTopicsTopicSlugAdmin(specialtySlug,topicSlug,data,)
         }
 
         
@@ -1200,23 +1006,217 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PostTreatmentSpecialtiesSpecialtySlugTopicsMutationResult = NonNullable<Awaited<ReturnType<typeof postTreatmentSpecialtiesSpecialtySlugTopics>>>
-    export type PostTreatmentSpecialtiesSpecialtySlugTopicsMutationBody = PostTreatmentSpecialtiesSpecialtySlugTopicsBody
-    export type PostTreatmentSpecialtiesSpecialtySlugTopicsMutationError = LegacyBadRequestResponse | void
+    export type PutTreatmentSpecialtiesSpecialtySlugTopicsTopicSlugAdminMutationResult = NonNullable<Awaited<ReturnType<typeof putTreatmentSpecialtiesSpecialtySlugTopicsTopicSlugAdmin>>>
+    export type PutTreatmentSpecialtiesSpecialtySlugTopicsTopicSlugAdminMutationBody = TreatmentSpecialtyCreate
+    export type PutTreatmentSpecialtiesSpecialtySlugTopicsTopicSlugAdminMutationError = LegacyBadRequestResponse | void
+
+    /**
+ * @summary Update a topic
+ */
+export const usePutTreatmentSpecialtiesSpecialtySlugTopicsTopicSlugAdmin = <TError = LegacyBadRequestResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putTreatmentSpecialtiesSpecialtySlugTopicsTopicSlugAdmin>>, TError,{specialtySlug: string;topicSlug: string;data: TreatmentSpecialtyCreate}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof putTreatmentSpecialtiesSpecialtySlugTopicsTopicSlugAdmin>>,
+        TError,
+        {specialtySlug: string;topicSlug: string;data: TreatmentSpecialtyCreate},
+        TContext
+      > => {
+
+      const mutationOptions = getPutTreatmentSpecialtiesSpecialtySlugTopicsTopicSlugAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * DELETE `/treatment/specialties/{specialtySlug}/topics/{topicSlug}/admin` — treatment specialties. This route currently has no authentication or authorization middleware attached. Handled by `specialtyProvider.getOne`.
+ * @summary Delete a topic
+ */
+export const deleteTreatmentSpecialtiesSpecialtySlugTopicsTopicSlugAdmin = (
+    specialtySlug: string,
+    topicSlug: string,
+ ) => {
+      
+      
+      return customInstance<Response>(
+      {url: `/treatment/specialties/${specialtySlug}/topics/${topicSlug}/admin`, method: 'DELETE'
+    },
+      );
+    }
+  
+
+
+export const getDeleteTreatmentSpecialtiesSpecialtySlugTopicsTopicSlugAdminMutationOptions = <TError = LegacyBadRequestResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTreatmentSpecialtiesSpecialtySlugTopicsTopicSlugAdmin>>, TError,{specialtySlug: string;topicSlug: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteTreatmentSpecialtiesSpecialtySlugTopicsTopicSlugAdmin>>, TError,{specialtySlug: string;topicSlug: string}, TContext> => {
+
+const mutationKey = ['deleteTreatmentSpecialtiesSpecialtySlugTopicsTopicSlugAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteTreatmentSpecialtiesSpecialtySlugTopicsTopicSlugAdmin>>, {specialtySlug: string;topicSlug: string}> = (props) => {
+          const {specialtySlug,topicSlug} = props ?? {};
+
+          return  deleteTreatmentSpecialtiesSpecialtySlugTopicsTopicSlugAdmin(specialtySlug,topicSlug,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteTreatmentSpecialtiesSpecialtySlugTopicsTopicSlugAdminMutationResult = NonNullable<Awaited<ReturnType<typeof deleteTreatmentSpecialtiesSpecialtySlugTopicsTopicSlugAdmin>>>
+    
+    export type DeleteTreatmentSpecialtiesSpecialtySlugTopicsTopicSlugAdminMutationError = LegacyBadRequestResponse | void
+
+    /**
+ * @summary Delete a topic
+ */
+export const useDeleteTreatmentSpecialtiesSpecialtySlugTopicsTopicSlugAdmin = <TError = LegacyBadRequestResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTreatmentSpecialtiesSpecialtySlugTopicsTopicSlugAdmin>>, TError,{specialtySlug: string;topicSlug: string}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof deleteTreatmentSpecialtiesSpecialtySlugTopicsTopicSlugAdmin>>,
+        TError,
+        {specialtySlug: string;topicSlug: string},
+        TContext
+      > => {
+
+      const mutationOptions = getDeleteTreatmentSpecialtiesSpecialtySlugTopicsTopicSlugAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * POST `/treatment/specialties/{specialtySlug}/topics/admin` — treatment specialties. This route currently has no authentication or authorization middleware attached. The body is passed as-is to the business layer. Handled by `specialtyProvider.getOne`.
+ * @summary Create a topic for a specialty
+ */
+export const postTreatmentSpecialtiesSpecialtySlugTopicsAdmin = (
+    specialtySlug: string,
+    postTreatmentSpecialtiesSpecialtySlugTopicsAdminBody: PostTreatmentSpecialtiesSpecialtySlugTopicsAdminBody,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<Response>(
+      {url: `/treatment/specialties/${specialtySlug}/topics/admin`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: postTreatmentSpecialtiesSpecialtySlugTopicsAdminBody, signal
+    },
+      );
+    }
+  
+
+
+export const getPostTreatmentSpecialtiesSpecialtySlugTopicsAdminMutationOptions = <TError = LegacyBadRequestResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postTreatmentSpecialtiesSpecialtySlugTopicsAdmin>>, TError,{specialtySlug: string;data: PostTreatmentSpecialtiesSpecialtySlugTopicsAdminBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postTreatmentSpecialtiesSpecialtySlugTopicsAdmin>>, TError,{specialtySlug: string;data: PostTreatmentSpecialtiesSpecialtySlugTopicsAdminBody}, TContext> => {
+
+const mutationKey = ['postTreatmentSpecialtiesSpecialtySlugTopicsAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postTreatmentSpecialtiesSpecialtySlugTopicsAdmin>>, {specialtySlug: string;data: PostTreatmentSpecialtiesSpecialtySlugTopicsAdminBody}> = (props) => {
+          const {specialtySlug,data} = props ?? {};
+
+          return  postTreatmentSpecialtiesSpecialtySlugTopicsAdmin(specialtySlug,data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostTreatmentSpecialtiesSpecialtySlugTopicsAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postTreatmentSpecialtiesSpecialtySlugTopicsAdmin>>>
+    export type PostTreatmentSpecialtiesSpecialtySlugTopicsAdminMutationBody = PostTreatmentSpecialtiesSpecialtySlugTopicsAdminBody
+    export type PostTreatmentSpecialtiesSpecialtySlugTopicsAdminMutationError = LegacyBadRequestResponse | void
 
     /**
  * @summary Create a topic for a specialty
  */
-export const usePostTreatmentSpecialtiesSpecialtySlugTopics = <TError = LegacyBadRequestResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postTreatmentSpecialtiesSpecialtySlugTopics>>, TError,{specialtySlug: string;data: PostTreatmentSpecialtiesSpecialtySlugTopicsBody}, TContext>, }
+export const usePostTreatmentSpecialtiesSpecialtySlugTopicsAdmin = <TError = LegacyBadRequestResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postTreatmentSpecialtiesSpecialtySlugTopicsAdmin>>, TError,{specialtySlug: string;data: PostTreatmentSpecialtiesSpecialtySlugTopicsAdminBody}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postTreatmentSpecialtiesSpecialtySlugTopics>>,
+        Awaited<ReturnType<typeof postTreatmentSpecialtiesSpecialtySlugTopicsAdmin>>,
         TError,
-        {specialtySlug: string;data: PostTreatmentSpecialtiesSpecialtySlugTopicsBody},
+        {specialtySlug: string;data: PostTreatmentSpecialtiesSpecialtySlugTopicsAdminBody},
         TContext
       > => {
 
-      const mutationOptions = getPostTreatmentSpecialtiesSpecialtySlugTopicsMutationOptions(options);
+      const mutationOptions = getPostTreatmentSpecialtiesSpecialtySlugTopicsAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * POST `/treatment/specialties/admin` — treatment specialties. This route currently has no authentication or authorization middleware attached. Handled by `specialtyProvider.post`.
+ * @summary Create a treatment specialty
+ */
+export const postTreatmentSpecialtiesAdmin = (
+    treatmentSpecialtyCreate: TreatmentSpecialtyCreate,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<Response>(
+      {url: `/treatment/specialties/admin`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: treatmentSpecialtyCreate, signal
+    },
+      );
+    }
+  
+
+
+export const getPostTreatmentSpecialtiesAdminMutationOptions = <TError = LegacyBadRequestResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postTreatmentSpecialtiesAdmin>>, TError,{data: TreatmentSpecialtyCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postTreatmentSpecialtiesAdmin>>, TError,{data: TreatmentSpecialtyCreate}, TContext> => {
+
+const mutationKey = ['postTreatmentSpecialtiesAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postTreatmentSpecialtiesAdmin>>, {data: TreatmentSpecialtyCreate}> = (props) => {
+          const {data} = props ?? {};
+
+          return  postTreatmentSpecialtiesAdmin(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostTreatmentSpecialtiesAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postTreatmentSpecialtiesAdmin>>>
+    export type PostTreatmentSpecialtiesAdminMutationBody = TreatmentSpecialtyCreate
+    export type PostTreatmentSpecialtiesAdminMutationError = LegacyBadRequestResponse
+
+    /**
+ * @summary Create a treatment specialty
+ */
+export const usePostTreatmentSpecialtiesAdmin = <TError = LegacyBadRequestResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postTreatmentSpecialtiesAdmin>>, TError,{data: TreatmentSpecialtyCreate}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postTreatmentSpecialtiesAdmin>>,
+        TError,
+        {data: TreatmentSpecialtyCreate},
+        TContext
+      > => {
+
+      const mutationOptions = getPostTreatmentSpecialtiesAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

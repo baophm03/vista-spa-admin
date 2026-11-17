@@ -31,17 +31,17 @@ import type {
 
 import type {
   ConflictResponse,
-  DeleteLookupListsId200,
+  DeleteLookupListsIdAdmin200,
   ForbiddenResponse,
-  GetLookupLists200,
-  GetLookupListsId200,
-  GetLookupListsParams,
+  GetLookupListsAdmin200,
+  GetLookupListsAdminParams,
+  GetLookupListsIdAdmin200,
   InternalErrorResponse,
   NotFoundResponse,
-  PostLookupLists200,
-  PostLookupListsBody,
-  PutLookupListsId200,
-  PutLookupListsIdBody,
+  PostLookupListsAdmin200,
+  PostLookupListsAdminBody,
+  PutLookupListsIdAdmin200,
+  PutLookupListsIdAdminBody,
   UnauthorizedResponse,
   UnprocessableEntityResponse
 } from '../models';
@@ -53,17 +53,17 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * **LK-04** — GET /lookup-lists/{id} (including items). Requires the `lookup.read` permission.
+ * **LK-04** — GET /lookup-lists/{id}/admin (including items). Cần đăng nhập + `lookup.view_all`.
  * @summary View lookup list details
  */
-export const getLookupListsId = (
+export const getLookupListsIdAdmin = (
     id: string,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<GetLookupListsId200>(
-      {url: `/lookupLists/${id}`, method: 'GET', signal
+      return customInstance<GetLookupListsIdAdmin200>(
+      {url: `/lookup-lists/${id}/admin`, method: 'GET', signal
     },
       );
     }
@@ -71,75 +71,75 @@ export const getLookupListsId = (
 
 
 
-export const getGetLookupListsIdInfiniteQueryKey = (id?: string,) => {
+export const getGetLookupListsIdAdminInfiniteQueryKey = (id?: string,) => {
     return [
-    'infinite', `/lookupLists/${id}`
+    'infinite', `/lookup-lists/${id}/admin`
     ] as const;
     }
 
-export const getGetLookupListsIdQueryKey = (id?: string,) => {
+export const getGetLookupListsIdAdminQueryKey = (id?: string,) => {
     return [
-    `/lookupLists/${id}`
+    `/lookup-lists/${id}/admin`
     ] as const;
     }
 
     
-export const getGetLookupListsIdInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getLookupListsId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLookupListsId>>, TError, TData>>, }
+export const getGetLookupListsIdAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getLookupListsIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLookupListsIdAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetLookupListsIdInfiniteQueryKey(id);
+  const queryKey =  queryOptions?.queryKey ?? getGetLookupListsIdAdminInfiniteQueryKey(id);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLookupListsId>>> = ({ signal }) => getLookupListsId(id, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLookupListsIdAdmin>>> = ({ signal }) => getLookupListsIdAdmin(id, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLookupListsId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLookupListsIdAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetLookupListsIdInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getLookupListsId>>>
-export type GetLookupListsIdInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+export type GetLookupListsIdAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getLookupListsIdAdmin>>>
+export type GetLookupListsIdAdminInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
 
 
-export function useGetLookupListsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getLookupListsId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLookupListsId>>, TError, TData>> & Pick<
+export function useGetLookupListsIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getLookupListsIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLookupListsIdAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getLookupListsId>>,
+          Awaited<ReturnType<typeof getLookupListsIdAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getLookupListsId>>
+          Awaited<ReturnType<typeof getLookupListsIdAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetLookupListsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getLookupListsId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLookupListsId>>, TError, TData>> & Pick<
+export function useGetLookupListsIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getLookupListsIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLookupListsIdAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getLookupListsId>>,
+          Awaited<ReturnType<typeof getLookupListsIdAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getLookupListsId>>
+          Awaited<ReturnType<typeof getLookupListsIdAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetLookupListsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getLookupListsId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLookupListsId>>, TError, TData>>, }
+export function useGetLookupListsIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getLookupListsIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLookupListsIdAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary View lookup list details
  */
 
-export function useGetLookupListsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getLookupListsId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLookupListsId>>, TError, TData>>, }
+export function useGetLookupListsIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getLookupListsIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLookupListsIdAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetLookupListsIdInfiniteQueryOptions(id,options)
+  const queryOptions = getGetLookupListsIdAdminInfiniteQueryOptions(id,options)
 
   const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -151,12 +151,12 @@ export function useGetLookupListsIdInfinite<TData = InfiniteData<Awaited<ReturnT
 /**
  * @summary View lookup list details
  */
-export const prefetchGetLookupListsIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getLookupListsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLookupListsId>>, TError, TData>>, }
+export const prefetchGetLookupListsIdAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getLookupListsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLookupListsIdAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetLookupListsIdInfiniteQueryOptions(id,options)
+  const queryOptions = getGetLookupListsIdAdminInfiniteQueryOptions(id,options)
 
   await queryClient.prefetchInfiniteQuery(queryOptions);
 
@@ -165,62 +165,62 @@ export const prefetchGetLookupListsIdInfiniteQuery = async <TData = Awaited<Retu
 
 
 
-export const getGetLookupListsIdQueryOptions = <TData = Awaited<ReturnType<typeof getLookupListsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLookupListsId>>, TError, TData>>, }
+export const getGetLookupListsIdAdminQueryOptions = <TData = Awaited<ReturnType<typeof getLookupListsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLookupListsIdAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetLookupListsIdQueryKey(id);
+  const queryKey =  queryOptions?.queryKey ?? getGetLookupListsIdAdminQueryKey(id);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLookupListsId>>> = ({ signal }) => getLookupListsId(id, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLookupListsIdAdmin>>> = ({ signal }) => getLookupListsIdAdmin(id, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getLookupListsId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getLookupListsIdAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetLookupListsIdQueryResult = NonNullable<Awaited<ReturnType<typeof getLookupListsId>>>
-export type GetLookupListsIdQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+export type GetLookupListsIdAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getLookupListsIdAdmin>>>
+export type GetLookupListsIdAdminQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
 
 
-export function useGetLookupListsId<TData = Awaited<ReturnType<typeof getLookupListsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLookupListsId>>, TError, TData>> & Pick<
+export function useGetLookupListsIdAdmin<TData = Awaited<ReturnType<typeof getLookupListsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLookupListsIdAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getLookupListsId>>,
+          Awaited<ReturnType<typeof getLookupListsIdAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getLookupListsId>>
+          Awaited<ReturnType<typeof getLookupListsIdAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetLookupListsId<TData = Awaited<ReturnType<typeof getLookupListsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLookupListsId>>, TError, TData>> & Pick<
+export function useGetLookupListsIdAdmin<TData = Awaited<ReturnType<typeof getLookupListsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLookupListsIdAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getLookupListsId>>,
+          Awaited<ReturnType<typeof getLookupListsIdAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getLookupListsId>>
+          Awaited<ReturnType<typeof getLookupListsIdAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetLookupListsId<TData = Awaited<ReturnType<typeof getLookupListsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLookupListsId>>, TError, TData>>, }
+export function useGetLookupListsIdAdmin<TData = Awaited<ReturnType<typeof getLookupListsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLookupListsIdAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary View lookup list details
  */
 
-export function useGetLookupListsId<TData = Awaited<ReturnType<typeof getLookupListsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLookupListsId>>, TError, TData>>, }
+export function useGetLookupListsIdAdmin<TData = Awaited<ReturnType<typeof getLookupListsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLookupListsIdAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetLookupListsIdQueryOptions(id,options)
+  const queryOptions = getGetLookupListsIdAdminQueryOptions(id,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -232,12 +232,12 @@ export function useGetLookupListsId<TData = Awaited<ReturnType<typeof getLookupL
 /**
  * @summary View lookup list details
  */
-export const prefetchGetLookupListsIdQuery = async <TData = Awaited<ReturnType<typeof getLookupListsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLookupListsId>>, TError, TData>>, }
+export const prefetchGetLookupListsIdAdminQuery = async <TData = Awaited<ReturnType<typeof getLookupListsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLookupListsIdAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetLookupListsIdQueryOptions(id,options)
+  const queryOptions = getGetLookupListsIdAdminQueryOptions(id,options)
 
   await queryClient.prefetchQuery(queryOptions);
 
@@ -247,30 +247,30 @@ export const prefetchGetLookupListsIdQuery = async <TData = Awaited<ReturnType<t
 
 
 /**
- * **LK-05** — PUT /lookup-lists/{id} — only name/is_active can be changed (key is immutable). Requires the `lookup.update` permission. Body fields: `name`, `is_active`, `item_order`.
+ * **LK-05** — PUT /lookup-lists/{id}/admin — only name/is_active can be changed (key is immutable). Cần đăng nhập + `lookup.update_all`. Body fields: `name`, `is_active`, `item_order`.
  * @summary Update a lookup list
  */
-export const putLookupListsId = (
+export const putLookupListsIdAdmin = (
     id: string,
-    putLookupListsIdBody: PutLookupListsIdBody,
+    putLookupListsIdAdminBody: PutLookupListsIdAdminBody,
  ) => {
       
       
-      return customInstance<PutLookupListsId200>(
-      {url: `/lookupLists/${id}`, method: 'PUT',
+      return customInstance<PutLookupListsIdAdmin200>(
+      {url: `/lookup-lists/${id}/admin`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
-      data: putLookupListsIdBody
+      data: putLookupListsIdAdminBody
     },
       );
     }
   
 
 
-export const getPutLookupListsIdMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putLookupListsId>>, TError,{id: string;data: PutLookupListsIdBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putLookupListsId>>, TError,{id: string;data: PutLookupListsIdBody}, TContext> => {
+export const getPutLookupListsIdAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putLookupListsIdAdmin>>, TError,{id: string;data: PutLookupListsIdAdminBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putLookupListsIdAdmin>>, TError,{id: string;data: PutLookupListsIdAdminBody}, TContext> => {
 
-const mutationKey = ['putLookupListsId'];
+const mutationKey = ['putLookupListsIdAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -280,10 +280,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putLookupListsId>>, {id: string;data: PutLookupListsIdBody}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putLookupListsIdAdmin>>, {id: string;data: PutLookupListsIdAdminBody}> = (props) => {
           const {id,data} = props ?? {};
 
-          return  putLookupListsId(id,data,)
+          return  putLookupListsIdAdmin(id,data,)
         }
 
         
@@ -291,48 +291,48 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PutLookupListsIdMutationResult = NonNullable<Awaited<ReturnType<typeof putLookupListsId>>>
-    export type PutLookupListsIdMutationBody = PutLookupListsIdBody
-    export type PutLookupListsIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+    export type PutLookupListsIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof putLookupListsIdAdmin>>>
+    export type PutLookupListsIdAdminMutationBody = PutLookupListsIdAdminBody
+    export type PutLookupListsIdAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
  * @summary Update a lookup list
  */
-export const usePutLookupListsId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putLookupListsId>>, TError,{id: string;data: PutLookupListsIdBody}, TContext>, }
+export const usePutLookupListsIdAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putLookupListsIdAdmin>>, TError,{id: string;data: PutLookupListsIdAdminBody}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putLookupListsId>>,
+        Awaited<ReturnType<typeof putLookupListsIdAdmin>>,
         TError,
-        {id: string;data: PutLookupListsIdBody},
+        {id: string;data: PutLookupListsIdAdminBody},
         TContext
       > => {
 
-      const mutationOptions = getPutLookupListsIdMutationOptions(options);
+      const mutationOptions = getPutLookupListsIdAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **LK-06** — DELETE /lookup-lists/{id} — blocked for is_system lists. Requires the `lookup.delete` permission.
+ * **LK-06** — DELETE /lookup-lists/{id}/admin — blocked for is_system lists. Cần đăng nhập + `lookup.delete_all`.
  * @summary Delete a lookup list
  */
-export const deleteLookupListsId = (
+export const deleteLookupListsIdAdmin = (
     id: string,
  ) => {
       
       
-      return customInstance<DeleteLookupListsId200>(
-      {url: `/lookupLists/${id}`, method: 'DELETE'
+      return customInstance<DeleteLookupListsIdAdmin200>(
+      {url: `/lookup-lists/${id}/admin`, method: 'DELETE'
     },
       );
     }
   
 
 
-export const getDeleteLookupListsIdMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteLookupListsId>>, TError,{id: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof deleteLookupListsId>>, TError,{id: string}, TContext> => {
+export const getDeleteLookupListsIdAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteLookupListsIdAdmin>>, TError,{id: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteLookupListsIdAdmin>>, TError,{id: string}, TContext> => {
 
-const mutationKey = ['deleteLookupListsId'];
+const mutationKey = ['deleteLookupListsIdAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -342,10 +342,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteLookupListsId>>, {id: string}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteLookupListsIdAdmin>>, {id: string}> = (props) => {
           const {id} = props ?? {};
 
-          return  deleteLookupListsId(id,)
+          return  deleteLookupListsIdAdmin(id,)
         }
 
         
@@ -353,38 +353,38 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type DeleteLookupListsIdMutationResult = NonNullable<Awaited<ReturnType<typeof deleteLookupListsId>>>
+    export type DeleteLookupListsIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof deleteLookupListsIdAdmin>>>
     
-    export type DeleteLookupListsIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+    export type DeleteLookupListsIdAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
  * @summary Delete a lookup list
  */
-export const useDeleteLookupListsId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteLookupListsId>>, TError,{id: string}, TContext>, }
+export const useDeleteLookupListsIdAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteLookupListsIdAdmin>>, TError,{id: string}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteLookupListsId>>,
+        Awaited<ReturnType<typeof deleteLookupListsIdAdmin>>,
         TError,
         {id: string},
         TContext
       > => {
 
-      const mutationOptions = getDeleteLookupListsIdMutationOptions(options);
+      const mutationOptions = getDeleteLookupListsIdAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/lookupLists` — lookup lists. Requires the `lookup.read` permission. Query parameters: `is_active`, `key`, `items_is_active`, `q`.
- * @summary List lookup lists
+ * GET `/lookup-lists/admin` — lookup lists. Cần đăng nhập + `lookup.view_all`. Query parameters: `is_active`, `key`, `items_is_active`, `q`.
+ * @summary List lookup lists (management)
  */
-export const getLookupLists = (
-    params?: GetLookupListsParams,
+export const getLookupListsAdmin = (
+    params?: GetLookupListsAdminParams,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<GetLookupLists200>(
-      {url: `/lookupLists`, method: 'GET',
+      return customInstance<GetLookupListsAdmin200>(
+      {url: `/lookup-lists/admin`, method: 'GET',
         params, signal
     },
       );
@@ -393,75 +393,75 @@ export const getLookupLists = (
 
 
 
-export const getGetLookupListsInfiniteQueryKey = (params?: GetLookupListsParams,) => {
+export const getGetLookupListsAdminInfiniteQueryKey = (params?: GetLookupListsAdminParams,) => {
     return [
-    'infinite', `/lookupLists`, ...(params ? [params]: [])
+    'infinite', `/lookup-lists/admin`, ...(params ? [params]: [])
     ] as const;
     }
 
-export const getGetLookupListsQueryKey = (params?: GetLookupListsParams,) => {
+export const getGetLookupListsAdminQueryKey = (params?: GetLookupListsAdminParams,) => {
     return [
-    `/lookupLists`, ...(params ? [params]: [])
+    `/lookup-lists/admin`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetLookupListsInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getLookupLists>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetLookupListsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLookupLists>>, TError, TData>>, }
+export const getGetLookupListsAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getLookupListsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetLookupListsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLookupListsAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetLookupListsInfiniteQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getGetLookupListsAdminInfiniteQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLookupLists>>> = ({ signal }) => getLookupLists(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLookupListsAdmin>>> = ({ signal }) => getLookupListsAdmin(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLookupLists>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLookupListsAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetLookupListsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getLookupLists>>>
-export type GetLookupListsInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+export type GetLookupListsAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getLookupListsAdmin>>>
+export type GetLookupListsAdminInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
 
 
-export function useGetLookupListsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getLookupLists>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params: undefined |  GetLookupListsParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLookupLists>>, TError, TData>> & Pick<
+export function useGetLookupListsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getLookupListsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetLookupListsAdminParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLookupListsAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getLookupLists>>,
+          Awaited<ReturnType<typeof getLookupListsAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getLookupLists>>
+          Awaited<ReturnType<typeof getLookupListsAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetLookupListsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getLookupLists>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetLookupListsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLookupLists>>, TError, TData>> & Pick<
+export function useGetLookupListsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getLookupListsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetLookupListsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLookupListsAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getLookupLists>>,
+          Awaited<ReturnType<typeof getLookupListsAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getLookupLists>>
+          Awaited<ReturnType<typeof getLookupListsAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetLookupListsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getLookupLists>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetLookupListsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLookupLists>>, TError, TData>>, }
+export function useGetLookupListsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getLookupListsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetLookupListsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLookupListsAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary List lookup lists
+ * @summary List lookup lists (management)
  */
 
-export function useGetLookupListsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getLookupLists>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetLookupListsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLookupLists>>, TError, TData>>, }
+export function useGetLookupListsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getLookupListsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetLookupListsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLookupListsAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetLookupListsInfiniteQueryOptions(params,options)
+  const queryOptions = getGetLookupListsAdminInfiniteQueryOptions(params,options)
 
   const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -471,14 +471,14 @@ export function useGetLookupListsInfinite<TData = InfiniteData<Awaited<ReturnTyp
 }
 
 /**
- * @summary List lookup lists
+ * @summary List lookup lists (management)
  */
-export const prefetchGetLookupListsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getLookupLists>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient, params?: GetLookupListsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLookupLists>>, TError, TData>>, }
+export const prefetchGetLookupListsAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getLookupListsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetLookupListsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLookupListsAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetLookupListsInfiniteQueryOptions(params,options)
+  const queryOptions = getGetLookupListsAdminInfiniteQueryOptions(params,options)
 
   await queryClient.prefetchInfiniteQuery(queryOptions);
 
@@ -487,62 +487,62 @@ export const prefetchGetLookupListsInfiniteQuery = async <TData = Awaited<Return
 
 
 
-export const getGetLookupListsQueryOptions = <TData = Awaited<ReturnType<typeof getLookupLists>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetLookupListsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLookupLists>>, TError, TData>>, }
+export const getGetLookupListsAdminQueryOptions = <TData = Awaited<ReturnType<typeof getLookupListsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetLookupListsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLookupListsAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetLookupListsQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getGetLookupListsAdminQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLookupLists>>> = ({ signal }) => getLookupLists(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLookupListsAdmin>>> = ({ signal }) => getLookupListsAdmin(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getLookupLists>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getLookupListsAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetLookupListsQueryResult = NonNullable<Awaited<ReturnType<typeof getLookupLists>>>
-export type GetLookupListsQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+export type GetLookupListsAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getLookupListsAdmin>>>
+export type GetLookupListsAdminQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
 
 
-export function useGetLookupLists<TData = Awaited<ReturnType<typeof getLookupLists>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params: undefined |  GetLookupListsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLookupLists>>, TError, TData>> & Pick<
+export function useGetLookupListsAdmin<TData = Awaited<ReturnType<typeof getLookupListsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetLookupListsAdminParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLookupListsAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getLookupLists>>,
+          Awaited<ReturnType<typeof getLookupListsAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getLookupLists>>
+          Awaited<ReturnType<typeof getLookupListsAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetLookupLists<TData = Awaited<ReturnType<typeof getLookupLists>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetLookupListsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLookupLists>>, TError, TData>> & Pick<
+export function useGetLookupListsAdmin<TData = Awaited<ReturnType<typeof getLookupListsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetLookupListsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLookupListsAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getLookupLists>>,
+          Awaited<ReturnType<typeof getLookupListsAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getLookupLists>>
+          Awaited<ReturnType<typeof getLookupListsAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetLookupLists<TData = Awaited<ReturnType<typeof getLookupLists>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetLookupListsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLookupLists>>, TError, TData>>, }
+export function useGetLookupListsAdmin<TData = Awaited<ReturnType<typeof getLookupListsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetLookupListsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLookupListsAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary List lookup lists
+ * @summary List lookup lists (management)
  */
 
-export function useGetLookupLists<TData = Awaited<ReturnType<typeof getLookupLists>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetLookupListsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLookupLists>>, TError, TData>>, }
+export function useGetLookupListsAdmin<TData = Awaited<ReturnType<typeof getLookupListsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetLookupListsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLookupListsAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetLookupListsQueryOptions(params,options)
+  const queryOptions = getGetLookupListsAdminQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -552,14 +552,14 @@ export function useGetLookupLists<TData = Awaited<ReturnType<typeof getLookupLis
 }
 
 /**
- * @summary List lookup lists
+ * @summary List lookup lists (management)
  */
-export const prefetchGetLookupListsQuery = async <TData = Awaited<ReturnType<typeof getLookupLists>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient, params?: GetLookupListsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLookupLists>>, TError, TData>>, }
+export const prefetchGetLookupListsAdminQuery = async <TData = Awaited<ReturnType<typeof getLookupListsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetLookupListsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLookupListsAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetLookupListsQueryOptions(params,options)
+  const queryOptions = getGetLookupListsAdminQueryOptions(params,options)
 
   await queryClient.prefetchQuery(queryOptions);
 
@@ -569,30 +569,30 @@ export const prefetchGetLookupListsQuery = async <TData = Awaited<ReturnType<typ
 
 
 /**
- * POST `/lookupLists` — lookup lists. Requires the `lookup.create` permission. Body fields: `key`, `name`, `is_system`, `items`.
+ * POST `/lookup-lists/admin` — lookup lists. Cần đăng nhập + `lookup.create`. Body fields: `key`, `name`, `is_system`, `items`.
  * @summary Create a new lookup list
  */
-export const postLookupLists = (
-    postLookupListsBody: PostLookupListsBody,
+export const postLookupListsAdmin = (
+    postLookupListsAdminBody: PostLookupListsAdminBody,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<PostLookupLists200>(
-      {url: `/lookupLists`, method: 'POST',
+      return customInstance<PostLookupListsAdmin200>(
+      {url: `/lookup-lists/admin`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: postLookupListsBody, signal
+      data: postLookupListsAdminBody, signal
     },
       );
     }
   
 
 
-export const getPostLookupListsMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postLookupLists>>, TError,{data: PostLookupListsBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postLookupLists>>, TError,{data: PostLookupListsBody}, TContext> => {
+export const getPostLookupListsAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postLookupListsAdmin>>, TError,{data: PostLookupListsAdminBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postLookupListsAdmin>>, TError,{data: PostLookupListsAdminBody}, TContext> => {
 
-const mutationKey = ['postLookupLists'];
+const mutationKey = ['postLookupListsAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -602,10 +602,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postLookupLists>>, {data: PostLookupListsBody}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postLookupListsAdmin>>, {data: PostLookupListsAdminBody}> = (props) => {
           const {data} = props ?? {};
 
-          return  postLookupLists(data,)
+          return  postLookupListsAdmin(data,)
         }
 
         
@@ -613,23 +613,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PostLookupListsMutationResult = NonNullable<Awaited<ReturnType<typeof postLookupLists>>>
-    export type PostLookupListsMutationBody = PostLookupListsBody
-    export type PostLookupListsMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+    export type PostLookupListsAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postLookupListsAdmin>>>
+    export type PostLookupListsAdminMutationBody = PostLookupListsAdminBody
+    export type PostLookupListsAdminMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
  * @summary Create a new lookup list
  */
-export const usePostLookupLists = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postLookupLists>>, TError,{data: PostLookupListsBody}, TContext>, }
+export const usePostLookupListsAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postLookupListsAdmin>>, TError,{data: PostLookupListsAdminBody}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postLookupLists>>,
+        Awaited<ReturnType<typeof postLookupListsAdmin>>,
         TError,
-        {data: PostLookupListsBody},
+        {data: PostLookupListsAdminBody},
         TContext
       > => {
 
-      const mutationOptions = getPostLookupListsMutationOptions(options);
+      const mutationOptions = getPostLookupListsAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

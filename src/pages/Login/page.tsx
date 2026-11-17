@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { usePostAuthLogin } from '../../api/endpoints/auth'
+import { usePostAuthLogin } from '@/api/endpoints/auth'
 import { pickData, errorMessage } from '../../api/helpers'
 import { useAuthStore } from '../../stores/auth-store'
 import { useProfileStore, type AdminProfile } from '../../stores/profile-store'

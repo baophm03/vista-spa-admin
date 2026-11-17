@@ -7,6 +7,7 @@
  */
 import type { AcademyCourseVoucherUpdateDescription } from './academyCourseVoucherUpdateDescription';
 import type { AcademyCourseVoucherUpdateAcademyCourseId } from './academyCourseVoucherUpdateAcademyCourseId';
+import type { AcademyCourseVoucherUpdateBranchId } from './academyCourseVoucherUpdateBranchId';
 import type { AcademyCourseVoucherUpdateIssueMode } from './academyCourseVoucherUpdateIssueMode';
 import type { AcademyCourseVoucherUpdatePointsCost } from './academyCourseVoucherUpdatePointsCost';
 import type { AcademyCourseVoucherUpdateDiscountType } from './academyCourseVoucherUpdateDiscountType';
@@ -23,7 +24,7 @@ export interface AcademyCourseVoucherUpdate {
   title?: string;
   description?: AcademyCourseVoucherUpdateDescription;
   academy_course_id?: AcademyCourseVoucherUpdateAcademyCourseId;
-  branch_id?: string | null;
+  branch_id?: AcademyCourseVoucherUpdateBranchId;
   is_loyalty?: boolean;
   issue_mode?: AcademyCourseVoucherUpdateIssueMode;
   /** @minimum 0 */

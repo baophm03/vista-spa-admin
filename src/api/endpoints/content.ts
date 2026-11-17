@@ -32,32 +32,31 @@ import type {
 import type {
   CmsContentCreate,
   ConflictResponse,
-  DeleteContentCategoriesId200,
-  DeleteContentPostsId200,
+  DeleteContentCategoriesIdAdmin200,
+  DeleteContentPostsIdAdmin200,
   ForbiddenResponse,
-  GetContentCategories200,
-  GetContentCategoriesId200,
-  GetContentCategoriesParams,
+  GetContentCategoriesAdmin200,
+  GetContentCategoriesAdminParams,
+  GetContentCategoriesIdAdmin200,
   GetContentPosts200,
-  GetContentPostsId200,
+  GetContentPostsAdmin200,
+  GetContentPostsAdminParams,
+  GetContentPostsIdAdmin200,
   GetContentPostsParams,
   GetPageConfigParams,
   InternalErrorResponse,
   LegacyBadRequestResponse,
-  LegacyUnauthorizedResponse,
   NotFoundResponse,
-  PostContentCategories200,
-  PostContentCategoriesBody,
-  PostContentPosts200,
-  PostContentPostsBody,
-  PostPageConfigBody,
-  PutContentCategoriesId200,
-  PutContentCategoriesIdBody,
-  PutContentPostsId200,
-  PutContentPostsIdBody,
-  PutContentPostsIdPublish200,
-  PutContentPostsIdUnpublish200,
-  PutPageConfigIdBody,
+  PostContentCategoriesAdmin200,
+  PostContentCategoriesAdminBody,
+  PostContentPostsAdmin200,
+  PostContentPostsAdminBody,
+  PutContentCategoriesIdAdmin200,
+  PutContentCategoriesIdAdminBody,
+  PutContentPostsIdAdmin200,
+  PutContentPostsIdAdminBody,
+  PutContentPostsIdPublishAdmin200,
+  PutContentPostsIdUnpublishAdmin200,
   Response,
   UnauthorizedResponse,
   UnprocessableEntityResponse
@@ -264,133 +263,6 @@ export const prefetchGetPolicyIdQuery = async <TData = Awaited<ReturnType<typeof
 
 
 /**
- * PUT `/policy/{id}` — policy pages. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `cmsContentProvider.put`.
- * @summary Update a policy page
- */
-export const putPolicyId = (
-    id: string,
-    cmsContentCreate: CmsContentCreate,
- ) => {
-      
-      
-      return customInstance<Response>(
-      {url: `/policy/${id}`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: cmsContentCreate
-    },
-      );
-    }
-  
-
-
-export const getPutPolicyIdMutationOptions = <TError = LegacyBadRequestResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putPolicyId>>, TError,{id: string;data: CmsContentCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putPolicyId>>, TError,{id: string;data: CmsContentCreate}, TContext> => {
-
-const mutationKey = ['putPolicyId'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putPolicyId>>, {id: string;data: CmsContentCreate}> = (props) => {
-          const {id,data} = props ?? {};
-
-          return  putPolicyId(id,data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PutPolicyIdMutationResult = NonNullable<Awaited<ReturnType<typeof putPolicyId>>>
-    export type PutPolicyIdMutationBody = CmsContentCreate
-    export type PutPolicyIdMutationError = LegacyBadRequestResponse | void
-
-    /**
- * @summary Update a policy page
- */
-export const usePutPolicyId = <TError = LegacyBadRequestResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putPolicyId>>, TError,{id: string;data: CmsContentCreate}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putPolicyId>>,
-        TError,
-        {id: string;data: CmsContentCreate},
-        TContext
-      > => {
-
-      const mutationOptions = getPutPolicyIdMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * DELETE `/policy/{id}` — policy pages. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `cmsContentProvider.delete`.
- * @summary Delete a policy page
- */
-export const deletePolicyId = (
-    id: string,
- ) => {
-      
-      
-      return customInstance<Response>(
-      {url: `/policy/${id}`, method: 'DELETE'
-    },
-      );
-    }
-  
-
-
-export const getDeletePolicyIdMutationOptions = <TError = LegacyBadRequestResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deletePolicyId>>, TError,{id: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof deletePolicyId>>, TError,{id: string}, TContext> => {
-
-const mutationKey = ['deletePolicyId'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deletePolicyId>>, {id: string}> = (props) => {
-          const {id} = props ?? {};
-
-          return  deletePolicyId(id,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeletePolicyIdMutationResult = NonNullable<Awaited<ReturnType<typeof deletePolicyId>>>
-    
-    export type DeletePolicyIdMutationError = LegacyBadRequestResponse | void
-
-    /**
- * @summary Delete a policy page
- */
-export const useDeletePolicyId = <TError = LegacyBadRequestResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deletePolicyId>>, TError,{id: string}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deletePolicyId>>,
-        TError,
-        {id: string},
-        TContext
-      > => {
-
-      const mutationOptions = getDeletePolicyIdMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
  * GET `/policy` — policy pages. Public, no authentication required. Handled by `cmsContentProvider.getAll`.
  * @summary List policy pages
  */
@@ -585,17 +457,144 @@ export const prefetchGetPolicyQuery = async <TData = Awaited<ReturnType<typeof g
 
 
 /**
- * POST `/policy` — policy pages. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `cmsContentProvider.post`.
+ * PUT `/policy/{id}/admin` — policy pages. This route currently has no authentication or authorization middleware attached. Handled by `cmsContentProvider.put`.
+ * @summary Update a policy page
+ */
+export const putPolicyIdAdmin = (
+    id: string,
+    cmsContentCreate: CmsContentCreate,
+ ) => {
+      
+      
+      return customInstance<Response>(
+      {url: `/policy/${id}/admin`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: cmsContentCreate
+    },
+      );
+    }
+  
+
+
+export const getPutPolicyIdAdminMutationOptions = <TError = LegacyBadRequestResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putPolicyIdAdmin>>, TError,{id: string;data: CmsContentCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putPolicyIdAdmin>>, TError,{id: string;data: CmsContentCreate}, TContext> => {
+
+const mutationKey = ['putPolicyIdAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putPolicyIdAdmin>>, {id: string;data: CmsContentCreate}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  putPolicyIdAdmin(id,data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PutPolicyIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof putPolicyIdAdmin>>>
+    export type PutPolicyIdAdminMutationBody = CmsContentCreate
+    export type PutPolicyIdAdminMutationError = LegacyBadRequestResponse | void
+
+    /**
+ * @summary Update a policy page
+ */
+export const usePutPolicyIdAdmin = <TError = LegacyBadRequestResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putPolicyIdAdmin>>, TError,{id: string;data: CmsContentCreate}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof putPolicyIdAdmin>>,
+        TError,
+        {id: string;data: CmsContentCreate},
+        TContext
+      > => {
+
+      const mutationOptions = getPutPolicyIdAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * DELETE `/policy/{id}/admin` — policy pages. This route currently has no authentication or authorization middleware attached. Handled by `cmsContentProvider.delete`.
+ * @summary Delete a policy page
+ */
+export const deletePolicyIdAdmin = (
+    id: string,
+ ) => {
+      
+      
+      return customInstance<Response>(
+      {url: `/policy/${id}/admin`, method: 'DELETE'
+    },
+      );
+    }
+  
+
+
+export const getDeletePolicyIdAdminMutationOptions = <TError = LegacyBadRequestResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deletePolicyIdAdmin>>, TError,{id: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deletePolicyIdAdmin>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['deletePolicyIdAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deletePolicyIdAdmin>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deletePolicyIdAdmin(id,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeletePolicyIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof deletePolicyIdAdmin>>>
+    
+    export type DeletePolicyIdAdminMutationError = LegacyBadRequestResponse | void
+
+    /**
+ * @summary Delete a policy page
+ */
+export const useDeletePolicyIdAdmin = <TError = LegacyBadRequestResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deletePolicyIdAdmin>>, TError,{id: string}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof deletePolicyIdAdmin>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+
+      const mutationOptions = getDeletePolicyIdAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * POST `/policy/admin` — policy pages. This route currently has no authentication or authorization middleware attached. Handled by `cmsContentProvider.post`.
  * @summary Create a policy page
  */
-export const postPolicy = (
+export const postPolicyAdmin = (
     cmsContentCreate: CmsContentCreate,
  signal?: AbortSignal
 ) => {
       
       
       return customInstance<Response>(
-      {url: `/policy`, method: 'POST',
+      {url: `/policy/admin`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: cmsContentCreate, signal
     },
@@ -604,11 +603,11 @@ export const postPolicy = (
   
 
 
-export const getPostPolicyMutationOptions = <TError = LegacyBadRequestResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postPolicy>>, TError,{data: CmsContentCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postPolicy>>, TError,{data: CmsContentCreate}, TContext> => {
+export const getPostPolicyAdminMutationOptions = <TError = LegacyBadRequestResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postPolicyAdmin>>, TError,{data: CmsContentCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postPolicyAdmin>>, TError,{data: CmsContentCreate}, TContext> => {
 
-const mutationKey = ['postPolicy'];
+const mutationKey = ['postPolicyAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -618,10 +617,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postPolicy>>, {data: CmsContentCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postPolicyAdmin>>, {data: CmsContentCreate}> = (props) => {
           const {data} = props ?? {};
 
-          return  postPolicy(data,)
+          return  postPolicyAdmin(data,)
         }
 
         
@@ -629,93 +628,28 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PostPolicyMutationResult = NonNullable<Awaited<ReturnType<typeof postPolicy>>>
-    export type PostPolicyMutationBody = CmsContentCreate
-    export type PostPolicyMutationError = LegacyBadRequestResponse
+    export type PostPolicyAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postPolicyAdmin>>>
+    export type PostPolicyAdminMutationBody = CmsContentCreate
+    export type PostPolicyAdminMutationError = LegacyBadRequestResponse
 
     /**
  * @summary Create a policy page
  */
-export const usePostPolicy = <TError = LegacyBadRequestResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postPolicy>>, TError,{data: CmsContentCreate}, TContext>, }
+export const usePostPolicyAdmin = <TError = LegacyBadRequestResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postPolicyAdmin>>, TError,{data: CmsContentCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postPolicy>>,
+        Awaited<ReturnType<typeof postPolicyAdmin>>,
         TError,
         {data: CmsContentCreate},
         TContext
       > => {
 
-      const mutationOptions = getPostPolicyMutationOptions(options);
+      const mutationOptions = getPostPolicyAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * PUT `/pageConfig/{id}` — page configuration. Requires authentication; the route does not declare detailed permissions. Body field: `content`. Handled by `pageConfigProvider.put`.
- * @summary Update page configuration
- */
-export const putPageConfigId = (
-    id: string,
-    putPageConfigIdBody: PutPageConfigIdBody,
- ) => {
-      
-      
-      return customInstance<Response>(
-      {url: `/pageConfig/${id}`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: putPageConfigIdBody
-    },
-      );
-    }
-  
-
-
-export const getPutPageConfigIdMutationOptions = <TError = LegacyUnauthorizedResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putPageConfigId>>, TError,{id: string;data: PutPageConfigIdBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putPageConfigId>>, TError,{id: string;data: PutPageConfigIdBody}, TContext> => {
-
-const mutationKey = ['putPageConfigId'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putPageConfigId>>, {id: string;data: PutPageConfigIdBody}> = (props) => {
-          const {id,data} = props ?? {};
-
-          return  putPageConfigId(id,data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PutPageConfigIdMutationResult = NonNullable<Awaited<ReturnType<typeof putPageConfigId>>>
-    export type PutPageConfigIdMutationBody = PutPageConfigIdBody
-    export type PutPageConfigIdMutationError = LegacyUnauthorizedResponse | void
-
-    /**
- * @summary Update page configuration
- */
-export const usePutPageConfigId = <TError = LegacyUnauthorizedResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putPageConfigId>>, TError,{id: string;data: PutPageConfigIdBody}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putPageConfigId>>,
-        TError,
-        {id: string;data: PutPageConfigIdBody},
-        TContext
-      > => {
-
-      const mutationOptions = getPutPageConfigIdMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * GET `/pageConfig` — page configuration. Public, no authentication required. Query parameters: `currentPage`, `pageSize`, `filters`, `sortField`, `sortOrder`. Handled by `pageConfigProvider.getAll`.
+ * GET `/page-config` — page configuration. Public, no authentication required. Query parameters: `currentPage`, `pageSize`, `filters`, `sortField`, `sortOrder`. Handled by `pageConfigProvider.getAll`.
  * @summary List page configurations
  */
 export const getPageConfig = (
@@ -725,7 +659,7 @@ export const getPageConfig = (
       
       
       return customInstance<Response>(
-      {url: `/pageConfig`, method: 'GET',
+      {url: `/page-config`, method: 'GET',
         params, signal
     },
       );
@@ -736,13 +670,13 @@ export const getPageConfig = (
 
 export const getGetPageConfigInfiniteQueryKey = (params?: GetPageConfigParams,) => {
     return [
-    'infinite', `/pageConfig`, ...(params ? [params]: [])
+    'infinite', `/page-config`, ...(params ? [params]: [])
     ] as const;
     }
 
 export const getGetPageConfigQueryKey = (params?: GetPageConfigParams,) => {
     return [
-    `/pageConfig`, ...(params ? [params]: [])
+    `/page-config`, ...(params ? [params]: [])
     ] as const;
     }
 
@@ -910,394 +844,8 @@ export const prefetchGetPageConfigQuery = async <TData = Awaited<ReturnType<type
 
 
 /**
- * POST `/pageConfig` — page configuration. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Body fields: `name`, `code`, `content`. Handled by `pageConfigProvider.post`.
- * @summary Create page configuration
- */
-export const postPageConfig = (
-    postPageConfigBody: PostPageConfigBody,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<Response>(
-      {url: `/pageConfig`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: postPageConfigBody, signal
-    },
-      );
-    }
-  
-
-
-export const getPostPageConfigMutationOptions = <TError = LegacyBadRequestResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postPageConfig>>, TError,{data: PostPageConfigBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postPageConfig>>, TError,{data: PostPageConfigBody}, TContext> => {
-
-const mutationKey = ['postPageConfig'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postPageConfig>>, {data: PostPageConfigBody}> = (props) => {
-          const {data} = props ?? {};
-
-          return  postPageConfig(data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostPageConfigMutationResult = NonNullable<Awaited<ReturnType<typeof postPageConfig>>>
-    export type PostPageConfigMutationBody = PostPageConfigBody
-    export type PostPageConfigMutationError = LegacyBadRequestResponse
-
-    /**
- * @summary Create page configuration
- */
-export const usePostPageConfig = <TError = LegacyBadRequestResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postPageConfig>>, TError,{data: PostPageConfigBody}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postPageConfig>>,
-        TError,
-        {data: PostPageConfigBody},
-        TContext
-      > => {
-
-      const mutationOptions = getPostPageConfigMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * **CMS-08** — GET /content-posts/{id}. Requires `content.read` permission.
- * @summary Get post details
- */
-export const getContentPostsId = (
-    id: string,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<GetContentPostsId200>(
-      {url: `/contentPosts/${id}`, method: 'GET', signal
-    },
-      );
-    }
-  
-
-
-
-export const getGetContentPostsIdInfiniteQueryKey = (id?: string,) => {
-    return [
-    'infinite', `/contentPosts/${id}`
-    ] as const;
-    }
-
-export const getGetContentPostsIdQueryKey = (id?: string,) => {
-    return [
-    `/contentPosts/${id}`
-    ] as const;
-    }
-
-    
-export const getGetContentPostsIdInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getContentPostsId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentPostsId>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetContentPostsIdInfiniteQueryKey(id);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getContentPostsId>>> = ({ signal }) => getContentPostsId(id, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentPostsId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetContentPostsIdInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getContentPostsId>>>
-export type GetContentPostsIdInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
-
-
-export function useGetContentPostsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getContentPostsId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentPostsId>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getContentPostsId>>,
-          TError,
-          Awaited<ReturnType<typeof getContentPostsId>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetContentPostsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getContentPostsId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentPostsId>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getContentPostsId>>,
-          TError,
-          Awaited<ReturnType<typeof getContentPostsId>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetContentPostsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getContentPostsId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentPostsId>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get post details
- */
-
-export function useGetContentPostsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getContentPostsId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentPostsId>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetContentPostsIdInfiniteQueryOptions(id,options)
-
-  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary Get post details
- */
-export const prefetchGetContentPostsIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getContentPostsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentPostsId>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetContentPostsIdInfiniteQueryOptions(id,options)
-
-  await queryClient.prefetchInfiniteQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-export const getGetContentPostsIdQueryOptions = <TData = Awaited<ReturnType<typeof getContentPostsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getContentPostsId>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetContentPostsIdQueryKey(id);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getContentPostsId>>> = ({ signal }) => getContentPostsId(id, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getContentPostsId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetContentPostsIdQueryResult = NonNullable<Awaited<ReturnType<typeof getContentPostsId>>>
-export type GetContentPostsIdQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
-
-
-export function useGetContentPostsId<TData = Awaited<ReturnType<typeof getContentPostsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getContentPostsId>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getContentPostsId>>,
-          TError,
-          Awaited<ReturnType<typeof getContentPostsId>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetContentPostsId<TData = Awaited<ReturnType<typeof getContentPostsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getContentPostsId>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getContentPostsId>>,
-          TError,
-          Awaited<ReturnType<typeof getContentPostsId>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetContentPostsId<TData = Awaited<ReturnType<typeof getContentPostsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getContentPostsId>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get post details
- */
-
-export function useGetContentPostsId<TData = Awaited<ReturnType<typeof getContentPostsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getContentPostsId>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetContentPostsIdQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary Get post details
- */
-export const prefetchGetContentPostsIdQuery = async <TData = Awaited<ReturnType<typeof getContentPostsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getContentPostsId>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetContentPostsIdQueryOptions(id,options)
-
-  await queryClient.prefetchQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-/**
- * **CMS-09** — PUT /content-posts/{id} — cannot be edited when ARCHIVED. Requires `content.update` permission. Body fields: `category_id`, `title`, `slug`, `summary`, `content`, `cover_url`, `video_url`, `branch_id`, `is_active`.
- * @summary Update a post
- */
-export const putContentPostsId = (
-    id: string,
-    putContentPostsIdBody: PutContentPostsIdBody,
- ) => {
-      
-      
-      return customInstance<PutContentPostsId200>(
-      {url: `/contentPosts/${id}`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: putContentPostsIdBody
-    },
-      );
-    }
-  
-
-
-export const getPutContentPostsIdMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putContentPostsId>>, TError,{id: string;data: PutContentPostsIdBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putContentPostsId>>, TError,{id: string;data: PutContentPostsIdBody}, TContext> => {
-
-const mutationKey = ['putContentPostsId'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putContentPostsId>>, {id: string;data: PutContentPostsIdBody}> = (props) => {
-          const {id,data} = props ?? {};
-
-          return  putContentPostsId(id,data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PutContentPostsIdMutationResult = NonNullable<Awaited<ReturnType<typeof putContentPostsId>>>
-    export type PutContentPostsIdMutationBody = PutContentPostsIdBody
-    export type PutContentPostsIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
-
-    /**
- * @summary Update a post
- */
-export const usePutContentPostsId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putContentPostsId>>, TError,{id: string;data: PutContentPostsIdBody}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putContentPostsId>>,
-        TError,
-        {id: string;data: PutContentPostsIdBody},
-        TContext
-      > => {
-
-      const mutationOptions = getPutContentPostsIdMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * **CMS-10** — DELETE /content-posts/{id} — hides the post (is_active=false). Requires `content.delete` permission.
- * @summary Delete a post
- */
-export const deleteContentPostsId = (
-    id: string,
- ) => {
-      
-      
-      return customInstance<DeleteContentPostsId200>(
-      {url: `/contentPosts/${id}`, method: 'DELETE'
-    },
-      );
-    }
-  
-
-
-export const getDeleteContentPostsIdMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteContentPostsId>>, TError,{id: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof deleteContentPostsId>>, TError,{id: string}, TContext> => {
-
-const mutationKey = ['deleteContentPostsId'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteContentPostsId>>, {id: string}> = (props) => {
-          const {id} = props ?? {};
-
-          return  deleteContentPostsId(id,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteContentPostsIdMutationResult = NonNullable<Awaited<ReturnType<typeof deleteContentPostsId>>>
-    
-    export type DeleteContentPostsIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
-
-    /**
- * @summary Delete a post
- */
-export const useDeleteContentPostsId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteContentPostsId>>, TError,{id: string}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteContentPostsId>>,
-        TError,
-        {id: string},
-        TContext
-      > => {
-
-      const mutationOptions = getDeleteContentPostsIdMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * **CMS-06** — GET /content-posts. Requires `content.read` permission. Query parameters: `status`, `category_id`, `q`, `page`, `limit`.
- * @summary List posts
+ * **GET /content-posts** — Public, không cần đăng nhập. Các bài viết CMS đã `PUBLISHED` cho màn hình chủ miniapp (Bí quyết da đẹp). Bài ghim trước, rồi `sort_order`, rồi mới nhất. Optional `limit` query (default 8, max 20). Quản trị đầy đủ xem `GET /content-posts/admin`.
+ * @summary List published content posts (public)
  */
 export const getContentPosts = (
     params?: GetContentPostsParams,
@@ -1306,7 +854,7 @@ export const getContentPosts = (
       
       
       return customInstance<GetContentPosts200>(
-      {url: `/contentPosts`, method: 'GET',
+      {url: `/content-posts`, method: 'GET',
         params, signal
     },
       );
@@ -1317,18 +865,18 @@ export const getContentPosts = (
 
 export const getGetContentPostsInfiniteQueryKey = (params?: GetContentPostsParams,) => {
     return [
-    'infinite', `/contentPosts`, ...(params ? [params]: [])
+    'infinite', `/content-posts`, ...(params ? [params]: [])
     ] as const;
     }
 
 export const getGetContentPostsQueryKey = (params?: GetContentPostsParams,) => {
     return [
-    `/contentPosts`, ...(params ? [params]: [])
+    `/content-posts`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetContentPostsInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getContentPosts>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetContentPostsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentPosts>>, TError, TData>>, }
+export const getGetContentPostsInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getContentPosts>>>, TError = InternalErrorResponse>(params?: GetContentPostsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentPosts>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
@@ -1347,10 +895,10 @@ const {query: queryOptions} = options ?? {};
 }
 
 export type GetContentPostsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getContentPosts>>>
-export type GetContentPostsInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+export type GetContentPostsInfiniteQueryError = InternalErrorResponse
 
 
-export function useGetContentPostsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getContentPosts>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+export function useGetContentPostsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getContentPosts>>>, TError = InternalErrorResponse>(
  params: undefined |  GetContentPostsParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentPosts>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getContentPosts>>,
@@ -1360,7 +908,7 @@ export function useGetContentPostsInfinite<TData = InfiniteData<Awaited<ReturnTy
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetContentPostsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getContentPosts>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+export function useGetContentPostsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getContentPosts>>>, TError = InternalErrorResponse>(
  params?: GetContentPostsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentPosts>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getContentPosts>>,
@@ -1370,15 +918,15 @@ export function useGetContentPostsInfinite<TData = InfiniteData<Awaited<ReturnTy
       >, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetContentPostsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getContentPosts>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+export function useGetContentPostsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getContentPosts>>>, TError = InternalErrorResponse>(
  params?: GetContentPostsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentPosts>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary List posts
+ * @summary List published content posts (public)
  */
 
-export function useGetContentPostsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getContentPosts>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+export function useGetContentPostsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getContentPosts>>>, TError = InternalErrorResponse>(
  params?: GetContentPostsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentPosts>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -1393,9 +941,9 @@ export function useGetContentPostsInfinite<TData = InfiniteData<Awaited<ReturnTy
 }
 
 /**
- * @summary List posts
+ * @summary List published content posts (public)
  */
-export const prefetchGetContentPostsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getContentPosts>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+export const prefetchGetContentPostsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getContentPosts>>, TError = InternalErrorResponse>(
  queryClient: QueryClient, params?: GetContentPostsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentPosts>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
@@ -1409,7 +957,7 @@ export const prefetchGetContentPostsInfiniteQuery = async <TData = Awaited<Retur
 
 
 
-export const getGetContentPostsQueryOptions = <TData = Awaited<ReturnType<typeof getContentPosts>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetContentPostsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getContentPosts>>, TError, TData>>, }
+export const getGetContentPostsQueryOptions = <TData = Awaited<ReturnType<typeof getContentPosts>>, TError = InternalErrorResponse>(params?: GetContentPostsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getContentPosts>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
@@ -1428,10 +976,10 @@ const {query: queryOptions} = options ?? {};
 }
 
 export type GetContentPostsQueryResult = NonNullable<Awaited<ReturnType<typeof getContentPosts>>>
-export type GetContentPostsQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+export type GetContentPostsQueryError = InternalErrorResponse
 
 
-export function useGetContentPosts<TData = Awaited<ReturnType<typeof getContentPosts>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+export function useGetContentPosts<TData = Awaited<ReturnType<typeof getContentPosts>>, TError = InternalErrorResponse>(
  params: undefined |  GetContentPostsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getContentPosts>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getContentPosts>>,
@@ -1441,7 +989,7 @@ export function useGetContentPosts<TData = Awaited<ReturnType<typeof getContentP
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetContentPosts<TData = Awaited<ReturnType<typeof getContentPosts>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+export function useGetContentPosts<TData = Awaited<ReturnType<typeof getContentPosts>>, TError = InternalErrorResponse>(
  params?: GetContentPostsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getContentPosts>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getContentPosts>>,
@@ -1451,15 +999,15 @@ export function useGetContentPosts<TData = Awaited<ReturnType<typeof getContentP
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetContentPosts<TData = Awaited<ReturnType<typeof getContentPosts>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+export function useGetContentPosts<TData = Awaited<ReturnType<typeof getContentPosts>>, TError = InternalErrorResponse>(
  params?: GetContentPostsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getContentPosts>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary List posts
+ * @summary List published content posts (public)
  */
 
-export function useGetContentPosts<TData = Awaited<ReturnType<typeof getContentPosts>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+export function useGetContentPosts<TData = Awaited<ReturnType<typeof getContentPosts>>, TError = InternalErrorResponse>(
  params?: GetContentPostsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getContentPosts>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -1474,9 +1022,9 @@ export function useGetContentPosts<TData = Awaited<ReturnType<typeof getContentP
 }
 
 /**
- * @summary List posts
+ * @summary List published content posts (public)
  */
-export const prefetchGetContentPostsQuery = async <TData = Awaited<ReturnType<typeof getContentPosts>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+export const prefetchGetContentPostsQuery = async <TData = Awaited<ReturnType<typeof getContentPosts>>, TError = InternalErrorResponse>(
  queryClient: QueryClient, params?: GetContentPostsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getContentPosts>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
@@ -1491,206 +1039,17 @@ export const prefetchGetContentPostsQuery = async <TData = Awaited<ReturnType<ty
 
 
 /**
- * **CMS-07** — POST /content-posts. Requires `content.create` permission. Body fields: `category_id`, `title`, `slug`, `summary`, `content`, `cover_url`, `video_url`, `branch_id`.
- * @summary Create a new post
+ * **CMS-08** — GET /content-posts/{id}/admin. Requires `content.view_all` permission.
+ * @summary Get post details
  */
-export const postContentPosts = (
-    postContentPostsBody: PostContentPostsBody,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<PostContentPosts200>(
-      {url: `/contentPosts`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: postContentPostsBody, signal
-    },
-      );
-    }
-  
-
-
-export const getPostContentPostsMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postContentPosts>>, TError,{data: PostContentPostsBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postContentPosts>>, TError,{data: PostContentPostsBody}, TContext> => {
-
-const mutationKey = ['postContentPosts'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postContentPosts>>, {data: PostContentPostsBody}> = (props) => {
-          const {data} = props ?? {};
-
-          return  postContentPosts(data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostContentPostsMutationResult = NonNullable<Awaited<ReturnType<typeof postContentPosts>>>
-    export type PostContentPostsMutationBody = PostContentPostsBody
-    export type PostContentPostsMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
-
-    /**
- * @summary Create a new post
- */
-export const usePostContentPosts = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postContentPosts>>, TError,{data: PostContentPostsBody}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postContentPosts>>,
-        TError,
-        {data: PostContentPostsBody},
-        TContext
-      > => {
-
-      const mutationOptions = getPostContentPostsMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * **CMS-12** — PUT /content-posts/{id}/unpublish — PUBLISHED → DRAFT. Requires `content.update` permission.
- * @summary Unpublish a post
- */
-export const putContentPostsIdUnpublish = (
-    id: string,
- ) => {
-      
-      
-      return customInstance<PutContentPostsIdUnpublish200>(
-      {url: `/contentPosts/${id}/unpublish`, method: 'PUT'
-    },
-      );
-    }
-  
-
-
-export const getPutContentPostsIdUnpublishMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putContentPostsIdUnpublish>>, TError,{id: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putContentPostsIdUnpublish>>, TError,{id: string}, TContext> => {
-
-const mutationKey = ['putContentPostsIdUnpublish'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putContentPostsIdUnpublish>>, {id: string}> = (props) => {
-          const {id} = props ?? {};
-
-          return  putContentPostsIdUnpublish(id,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PutContentPostsIdUnpublishMutationResult = NonNullable<Awaited<ReturnType<typeof putContentPostsIdUnpublish>>>
-    
-    export type PutContentPostsIdUnpublishMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
-
-    /**
- * @summary Unpublish a post
- */
-export const usePutContentPostsIdUnpublish = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putContentPostsIdUnpublish>>, TError,{id: string}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putContentPostsIdUnpublish>>,
-        TError,
-        {id: string},
-        TContext
-      > => {
-
-      const mutationOptions = getPutContentPostsIdUnpublishMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * **CMS-11** — PUT /content-posts/{id}/publish — DRAFT/ARCHIVED → PUBLISHED. Requires `content.update` permission.
- * @summary Publish a post
- */
-export const putContentPostsIdPublish = (
-    id: string,
- ) => {
-      
-      
-      return customInstance<PutContentPostsIdPublish200>(
-      {url: `/contentPosts/${id}/publish`, method: 'PUT'
-    },
-      );
-    }
-  
-
-
-export const getPutContentPostsIdPublishMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putContentPostsIdPublish>>, TError,{id: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putContentPostsIdPublish>>, TError,{id: string}, TContext> => {
-
-const mutationKey = ['putContentPostsIdPublish'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putContentPostsIdPublish>>, {id: string}> = (props) => {
-          const {id} = props ?? {};
-
-          return  putContentPostsIdPublish(id,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PutContentPostsIdPublishMutationResult = NonNullable<Awaited<ReturnType<typeof putContentPostsIdPublish>>>
-    
-    export type PutContentPostsIdPublishMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
-
-    /**
- * @summary Publish a post
- */
-export const usePutContentPostsIdPublish = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putContentPostsIdPublish>>, TError,{id: string}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putContentPostsIdPublish>>,
-        TError,
-        {id: string},
-        TContext
-      > => {
-
-      const mutationOptions = getPutContentPostsIdPublishMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * **CMS-03** — GET /content-categories/{id}. Requires `content.read` permission.
- * @summary Get content category details
- */
-export const getContentCategoriesId = (
+export const getContentPostsIdAdmin = (
     id: string,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<GetContentCategoriesId200>(
-      {url: `/contentCategories/${id}`, method: 'GET', signal
+      return customInstance<GetContentPostsIdAdmin200>(
+      {url: `/content-posts/${id}/admin`, method: 'GET', signal
     },
       );
     }
@@ -1698,75 +1057,75 @@ export const getContentCategoriesId = (
 
 
 
-export const getGetContentCategoriesIdInfiniteQueryKey = (id?: string,) => {
+export const getGetContentPostsIdAdminInfiniteQueryKey = (id?: string,) => {
     return [
-    'infinite', `/contentCategories/${id}`
+    'infinite', `/content-posts/${id}/admin`
     ] as const;
     }
 
-export const getGetContentCategoriesIdQueryKey = (id?: string,) => {
+export const getGetContentPostsIdAdminQueryKey = (id?: string,) => {
     return [
-    `/contentCategories/${id}`
+    `/content-posts/${id}/admin`
     ] as const;
     }
 
     
-export const getGetContentCategoriesIdInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getContentCategoriesId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentCategoriesId>>, TError, TData>>, }
+export const getGetContentPostsIdAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getContentPostsIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentPostsIdAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetContentCategoriesIdInfiniteQueryKey(id);
+  const queryKey =  queryOptions?.queryKey ?? getGetContentPostsIdAdminInfiniteQueryKey(id);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getContentCategoriesId>>> = ({ signal }) => getContentCategoriesId(id, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getContentPostsIdAdmin>>> = ({ signal }) => getContentPostsIdAdmin(id, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentCategoriesId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentPostsIdAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetContentCategoriesIdInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getContentCategoriesId>>>
-export type GetContentCategoriesIdInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+export type GetContentPostsIdAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getContentPostsIdAdmin>>>
+export type GetContentPostsIdAdminInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
 
 
-export function useGetContentCategoriesIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getContentCategoriesId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentCategoriesId>>, TError, TData>> & Pick<
+export function useGetContentPostsIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getContentPostsIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentPostsIdAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getContentCategoriesId>>,
+          Awaited<ReturnType<typeof getContentPostsIdAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getContentCategoriesId>>
+          Awaited<ReturnType<typeof getContentPostsIdAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetContentCategoriesIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getContentCategoriesId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentCategoriesId>>, TError, TData>> & Pick<
+export function useGetContentPostsIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getContentPostsIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentPostsIdAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getContentCategoriesId>>,
+          Awaited<ReturnType<typeof getContentPostsIdAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getContentCategoriesId>>
+          Awaited<ReturnType<typeof getContentPostsIdAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetContentCategoriesIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getContentCategoriesId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentCategoriesId>>, TError, TData>>, }
+export function useGetContentPostsIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getContentPostsIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentPostsIdAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Get content category details
+ * @summary Get post details
  */
 
-export function useGetContentCategoriesIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getContentCategoriesId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentCategoriesId>>, TError, TData>>, }
+export function useGetContentPostsIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getContentPostsIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentPostsIdAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetContentCategoriesIdInfiniteQueryOptions(id,options)
+  const queryOptions = getGetContentPostsIdAdminInfiniteQueryOptions(id,options)
 
   const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -1776,14 +1135,14 @@ export function useGetContentCategoriesIdInfinite<TData = InfiniteData<Awaited<R
 }
 
 /**
- * @summary Get content category details
+ * @summary Get post details
  */
-export const prefetchGetContentCategoriesIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getContentCategoriesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentCategoriesId>>, TError, TData>>, }
+export const prefetchGetContentPostsIdAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getContentPostsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentPostsIdAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetContentCategoriesIdInfiniteQueryOptions(id,options)
+  const queryOptions = getGetContentPostsIdAdminInfiniteQueryOptions(id,options)
 
   await queryClient.prefetchInfiniteQuery(queryOptions);
 
@@ -1792,62 +1151,62 @@ export const prefetchGetContentCategoriesIdInfiniteQuery = async <TData = Awaite
 
 
 
-export const getGetContentCategoriesIdQueryOptions = <TData = Awaited<ReturnType<typeof getContentCategoriesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getContentCategoriesId>>, TError, TData>>, }
+export const getGetContentPostsIdAdminQueryOptions = <TData = Awaited<ReturnType<typeof getContentPostsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getContentPostsIdAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetContentCategoriesIdQueryKey(id);
+  const queryKey =  queryOptions?.queryKey ?? getGetContentPostsIdAdminQueryKey(id);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getContentCategoriesId>>> = ({ signal }) => getContentCategoriesId(id, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getContentPostsIdAdmin>>> = ({ signal }) => getContentPostsIdAdmin(id, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getContentCategoriesId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getContentPostsIdAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetContentCategoriesIdQueryResult = NonNullable<Awaited<ReturnType<typeof getContentCategoriesId>>>
-export type GetContentCategoriesIdQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+export type GetContentPostsIdAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getContentPostsIdAdmin>>>
+export type GetContentPostsIdAdminQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
 
 
-export function useGetContentCategoriesId<TData = Awaited<ReturnType<typeof getContentCategoriesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getContentCategoriesId>>, TError, TData>> & Pick<
+export function useGetContentPostsIdAdmin<TData = Awaited<ReturnType<typeof getContentPostsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getContentPostsIdAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getContentCategoriesId>>,
+          Awaited<ReturnType<typeof getContentPostsIdAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getContentCategoriesId>>
+          Awaited<ReturnType<typeof getContentPostsIdAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetContentCategoriesId<TData = Awaited<ReturnType<typeof getContentCategoriesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getContentCategoriesId>>, TError, TData>> & Pick<
+export function useGetContentPostsIdAdmin<TData = Awaited<ReturnType<typeof getContentPostsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getContentPostsIdAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getContentCategoriesId>>,
+          Awaited<ReturnType<typeof getContentPostsIdAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getContentCategoriesId>>
+          Awaited<ReturnType<typeof getContentPostsIdAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetContentCategoriesId<TData = Awaited<ReturnType<typeof getContentCategoriesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getContentCategoriesId>>, TError, TData>>, }
+export function useGetContentPostsIdAdmin<TData = Awaited<ReturnType<typeof getContentPostsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getContentPostsIdAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Get content category details
+ * @summary Get post details
  */
 
-export function useGetContentCategoriesId<TData = Awaited<ReturnType<typeof getContentCategoriesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getContentCategoriesId>>, TError, TData>>, }
+export function useGetContentPostsIdAdmin<TData = Awaited<ReturnType<typeof getContentPostsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getContentPostsIdAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetContentCategoriesIdQueryOptions(id,options)
+  const queryOptions = getGetContentPostsIdAdminQueryOptions(id,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -1857,14 +1216,14 @@ export function useGetContentCategoriesId<TData = Awaited<ReturnType<typeof getC
 }
 
 /**
- * @summary Get content category details
+ * @summary Get post details
  */
-export const prefetchGetContentCategoriesIdQuery = async <TData = Awaited<ReturnType<typeof getContentCategoriesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getContentCategoriesId>>, TError, TData>>, }
+export const prefetchGetContentPostsIdAdminQuery = async <TData = Awaited<ReturnType<typeof getContentPostsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getContentPostsIdAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetContentCategoriesIdQueryOptions(id,options)
+  const queryOptions = getGetContentPostsIdAdminQueryOptions(id,options)
 
   await queryClient.prefetchQuery(queryOptions);
 
@@ -1874,30 +1233,30 @@ export const prefetchGetContentCategoriesIdQuery = async <TData = Awaited<Return
 
 
 /**
- * **CMS-04** — PUT /content-categories/{id}. Requires `content.update` permission. Body fields: `name`, `slug`, `display_type`, `sort_order`, `is_active`.
- * @summary Update a content category
+ * **CMS-09** — PUT /content-posts/{id}/admin — cannot be edited when ARCHIVED. Requires `content.update_all` permission. Body fields: `category_id`, `title`, `slug`, `summary`, `content`, `cover_url`, `video_url`, `branch_id`, `is_active`.
+ * @summary Update a post
  */
-export const putContentCategoriesId = (
+export const putContentPostsIdAdmin = (
     id: string,
-    putContentCategoriesIdBody: PutContentCategoriesIdBody,
+    putContentPostsIdAdminBody: PutContentPostsIdAdminBody,
  ) => {
       
       
-      return customInstance<PutContentCategoriesId200>(
-      {url: `/contentCategories/${id}`, method: 'PUT',
+      return customInstance<PutContentPostsIdAdmin200>(
+      {url: `/content-posts/${id}/admin`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
-      data: putContentCategoriesIdBody
+      data: putContentPostsIdAdminBody
     },
       );
     }
   
 
 
-export const getPutContentCategoriesIdMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putContentCategoriesId>>, TError,{id: string;data: PutContentCategoriesIdBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putContentCategoriesId>>, TError,{id: string;data: PutContentCategoriesIdBody}, TContext> => {
+export const getPutContentPostsIdAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putContentPostsIdAdmin>>, TError,{id: string;data: PutContentPostsIdAdminBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putContentPostsIdAdmin>>, TError,{id: string;data: PutContentPostsIdAdminBody}, TContext> => {
 
-const mutationKey = ['putContentCategoriesId'];
+const mutationKey = ['putContentPostsIdAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -1907,10 +1266,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putContentCategoriesId>>, {id: string;data: PutContentCategoriesIdBody}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putContentPostsIdAdmin>>, {id: string;data: PutContentPostsIdAdminBody}> = (props) => {
           const {id,data} = props ?? {};
 
-          return  putContentCategoriesId(id,data,)
+          return  putContentPostsIdAdmin(id,data,)
         }
 
         
@@ -1918,48 +1277,48 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PutContentCategoriesIdMutationResult = NonNullable<Awaited<ReturnType<typeof putContentCategoriesId>>>
-    export type PutContentCategoriesIdMutationBody = PutContentCategoriesIdBody
-    export type PutContentCategoriesIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+    export type PutContentPostsIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof putContentPostsIdAdmin>>>
+    export type PutContentPostsIdAdminMutationBody = PutContentPostsIdAdminBody
+    export type PutContentPostsIdAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Update a content category
+ * @summary Update a post
  */
-export const usePutContentCategoriesId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putContentCategoriesId>>, TError,{id: string;data: PutContentCategoriesIdBody}, TContext>, }
+export const usePutContentPostsIdAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putContentPostsIdAdmin>>, TError,{id: string;data: PutContentPostsIdAdminBody}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putContentCategoriesId>>,
+        Awaited<ReturnType<typeof putContentPostsIdAdmin>>,
         TError,
-        {id: string;data: PutContentCategoriesIdBody},
+        {id: string;data: PutContentPostsIdAdminBody},
         TContext
       > => {
 
-      const mutationOptions = getPutContentCategoriesIdMutationOptions(options);
+      const mutationOptions = getPutContentPostsIdAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **CMS-05** — DELETE /content-categories/{id} — blocked while the category still has PUBLISHED posts. Requires `content.delete` permission.
- * @summary Delete a content category
+ * **CMS-10** — DELETE /content-posts/{id}/admin — hides the post (is_active=false). Requires `content.delete_all` permission.
+ * @summary Delete a post
  */
-export const deleteContentCategoriesId = (
+export const deleteContentPostsIdAdmin = (
     id: string,
  ) => {
       
       
-      return customInstance<DeleteContentCategoriesId200>(
-      {url: `/contentCategories/${id}`, method: 'DELETE'
+      return customInstance<DeleteContentPostsIdAdmin200>(
+      {url: `/content-posts/${id}/admin`, method: 'DELETE'
     },
       );
     }
   
 
 
-export const getDeleteContentCategoriesIdMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteContentCategoriesId>>, TError,{id: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof deleteContentCategoriesId>>, TError,{id: string}, TContext> => {
+export const getDeleteContentPostsIdAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteContentPostsIdAdmin>>, TError,{id: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteContentPostsIdAdmin>>, TError,{id: string}, TContext> => {
 
-const mutationKey = ['deleteContentCategoriesId'];
+const mutationKey = ['deleteContentPostsIdAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -1969,10 +1328,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteContentCategoriesId>>, {id: string}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteContentPostsIdAdmin>>, {id: string}> = (props) => {
           const {id} = props ?? {};
 
-          return  deleteContentCategoriesId(id,)
+          return  deleteContentPostsIdAdmin(id,)
         }
 
         
@@ -1980,38 +1339,162 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type DeleteContentCategoriesIdMutationResult = NonNullable<Awaited<ReturnType<typeof deleteContentCategoriesId>>>
+    export type DeleteContentPostsIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof deleteContentPostsIdAdmin>>>
     
-    export type DeleteContentCategoriesIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+    export type DeleteContentPostsIdAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Delete a content category
+ * @summary Delete a post
  */
-export const useDeleteContentCategoriesId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteContentCategoriesId>>, TError,{id: string}, TContext>, }
+export const useDeleteContentPostsIdAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteContentPostsIdAdmin>>, TError,{id: string}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteContentCategoriesId>>,
+        Awaited<ReturnType<typeof deleteContentPostsIdAdmin>>,
         TError,
         {id: string},
         TContext
       > => {
 
-      const mutationOptions = getDeleteContentCategoriesIdMutationOptions(options);
+      const mutationOptions = getDeleteContentPostsIdAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **CMS-01** — GET /content-categories. Requires `content.read` permission. Query parameters: `is_active`.
- * @summary List content categories
+ * **CMS-12** — PUT /content-posts/{id}/unpublish/admin — PUBLISHED → DRAFT. Requires `content.publish` permission.
+ * @summary Unpublish a post
  */
-export const getContentCategories = (
-    params?: GetContentCategoriesParams,
+export const putContentPostsIdUnpublishAdmin = (
+    id: string,
+ ) => {
+      
+      
+      return customInstance<PutContentPostsIdUnpublishAdmin200>(
+      {url: `/content-posts/${id}/unpublish/admin`, method: 'PUT'
+    },
+      );
+    }
+  
+
+
+export const getPutContentPostsIdUnpublishAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putContentPostsIdUnpublishAdmin>>, TError,{id: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putContentPostsIdUnpublishAdmin>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['putContentPostsIdUnpublishAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putContentPostsIdUnpublishAdmin>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  putContentPostsIdUnpublishAdmin(id,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PutContentPostsIdUnpublishAdminMutationResult = NonNullable<Awaited<ReturnType<typeof putContentPostsIdUnpublishAdmin>>>
+    
+    export type PutContentPostsIdUnpublishAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+
+    /**
+ * @summary Unpublish a post
+ */
+export const usePutContentPostsIdUnpublishAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putContentPostsIdUnpublishAdmin>>, TError,{id: string}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof putContentPostsIdUnpublishAdmin>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+
+      const mutationOptions = getPutContentPostsIdUnpublishAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * **CMS-11** — PUT /content-posts/{id}/publish/admin — DRAFT/ARCHIVED → PUBLISHED. Requires `content.publish` permission.
+ * @summary Publish a post
+ */
+export const putContentPostsIdPublishAdmin = (
+    id: string,
+ ) => {
+      
+      
+      return customInstance<PutContentPostsIdPublishAdmin200>(
+      {url: `/content-posts/${id}/publish/admin`, method: 'PUT'
+    },
+      );
+    }
+  
+
+
+export const getPutContentPostsIdPublishAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putContentPostsIdPublishAdmin>>, TError,{id: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putContentPostsIdPublishAdmin>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['putContentPostsIdPublishAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putContentPostsIdPublishAdmin>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  putContentPostsIdPublishAdmin(id,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PutContentPostsIdPublishAdminMutationResult = NonNullable<Awaited<ReturnType<typeof putContentPostsIdPublishAdmin>>>
+    
+    export type PutContentPostsIdPublishAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+
+    /**
+ * @summary Publish a post
+ */
+export const usePutContentPostsIdPublishAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putContentPostsIdPublishAdmin>>, TError,{id: string}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof putContentPostsIdPublishAdmin>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+
+      const mutationOptions = getPutContentPostsIdPublishAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * **CMS-06** — GET /content-posts/admin. Requires `content.view_all` permission. Query parameters: `status`, `category_id`, `q`, `page`, `limit`.
+ * @summary List posts
+ */
+export const getContentPostsAdmin = (
+    params?: GetContentPostsAdminParams,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<GetContentCategories200>(
-      {url: `/contentCategories`, method: 'GET',
+      return customInstance<GetContentPostsAdmin200>(
+      {url: `/content-posts/admin`, method: 'GET',
         params, signal
     },
       );
@@ -2020,75 +1503,656 @@ export const getContentCategories = (
 
 
 
-export const getGetContentCategoriesInfiniteQueryKey = (params?: GetContentCategoriesParams,) => {
+export const getGetContentPostsAdminInfiniteQueryKey = (params?: GetContentPostsAdminParams,) => {
     return [
-    'infinite', `/contentCategories`, ...(params ? [params]: [])
+    'infinite', `/content-posts/admin`, ...(params ? [params]: [])
     ] as const;
     }
 
-export const getGetContentCategoriesQueryKey = (params?: GetContentCategoriesParams,) => {
+export const getGetContentPostsAdminQueryKey = (params?: GetContentPostsAdminParams,) => {
     return [
-    `/contentCategories`, ...(params ? [params]: [])
+    `/content-posts/admin`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetContentCategoriesInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getContentCategories>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetContentCategoriesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentCategories>>, TError, TData>>, }
+export const getGetContentPostsAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getContentPostsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetContentPostsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentPostsAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetContentCategoriesInfiniteQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getGetContentPostsAdminInfiniteQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getContentCategories>>> = ({ signal }) => getContentCategories(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getContentPostsAdmin>>> = ({ signal }) => getContentPostsAdmin(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentCategories>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentPostsAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetContentCategoriesInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getContentCategories>>>
-export type GetContentCategoriesInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+export type GetContentPostsAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getContentPostsAdmin>>>
+export type GetContentPostsAdminInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
 
 
-export function useGetContentCategoriesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getContentCategories>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params: undefined |  GetContentCategoriesParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentCategories>>, TError, TData>> & Pick<
+export function useGetContentPostsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getContentPostsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetContentPostsAdminParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentPostsAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getContentCategories>>,
+          Awaited<ReturnType<typeof getContentPostsAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getContentCategories>>
+          Awaited<ReturnType<typeof getContentPostsAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetContentCategoriesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getContentCategories>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetContentCategoriesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentCategories>>, TError, TData>> & Pick<
+export function useGetContentPostsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getContentPostsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetContentPostsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentPostsAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getContentCategories>>,
+          Awaited<ReturnType<typeof getContentPostsAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getContentCategories>>
+          Awaited<ReturnType<typeof getContentPostsAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetContentCategoriesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getContentCategories>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetContentCategoriesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentCategories>>, TError, TData>>, }
+export function useGetContentPostsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getContentPostsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetContentPostsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentPostsAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List posts
+ */
+
+export function useGetContentPostsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getContentPostsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetContentPostsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentPostsAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetContentPostsAdminInfiniteQueryOptions(params,options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary List posts
+ */
+export const prefetchGetContentPostsAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getContentPostsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetContentPostsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentPostsAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetContentPostsAdminInfiniteQueryOptions(params,options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetContentPostsAdminQueryOptions = <TData = Awaited<ReturnType<typeof getContentPostsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetContentPostsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getContentPostsAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetContentPostsAdminQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getContentPostsAdmin>>> = ({ signal }) => getContentPostsAdmin(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getContentPostsAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetContentPostsAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getContentPostsAdmin>>>
+export type GetContentPostsAdminQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+
+
+export function useGetContentPostsAdmin<TData = Awaited<ReturnType<typeof getContentPostsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetContentPostsAdminParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getContentPostsAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getContentPostsAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getContentPostsAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetContentPostsAdmin<TData = Awaited<ReturnType<typeof getContentPostsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetContentPostsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getContentPostsAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getContentPostsAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getContentPostsAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetContentPostsAdmin<TData = Awaited<ReturnType<typeof getContentPostsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetContentPostsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getContentPostsAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List posts
+ */
+
+export function useGetContentPostsAdmin<TData = Awaited<ReturnType<typeof getContentPostsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetContentPostsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getContentPostsAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetContentPostsAdminQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary List posts
+ */
+export const prefetchGetContentPostsAdminQuery = async <TData = Awaited<ReturnType<typeof getContentPostsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetContentPostsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getContentPostsAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetContentPostsAdminQueryOptions(params,options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * **CMS-07** — POST /content-posts/admin. Requires `content.create` permission. Body fields: `category_id`, `title`, `slug`, `summary`, `content`, `cover_url`, `video_url`, `branch_id`.
+ * @summary Create a new post
+ */
+export const postContentPostsAdmin = (
+    postContentPostsAdminBody: PostContentPostsAdminBody,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<PostContentPostsAdmin200>(
+      {url: `/content-posts/admin`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: postContentPostsAdminBody, signal
+    },
+      );
+    }
+  
+
+
+export const getPostContentPostsAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postContentPostsAdmin>>, TError,{data: PostContentPostsAdminBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postContentPostsAdmin>>, TError,{data: PostContentPostsAdminBody}, TContext> => {
+
+const mutationKey = ['postContentPostsAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postContentPostsAdmin>>, {data: PostContentPostsAdminBody}> = (props) => {
+          const {data} = props ?? {};
+
+          return  postContentPostsAdmin(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostContentPostsAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postContentPostsAdmin>>>
+    export type PostContentPostsAdminMutationBody = PostContentPostsAdminBody
+    export type PostContentPostsAdminMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+
+    /**
+ * @summary Create a new post
+ */
+export const usePostContentPostsAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postContentPostsAdmin>>, TError,{data: PostContentPostsAdminBody}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postContentPostsAdmin>>,
+        TError,
+        {data: PostContentPostsAdminBody},
+        TContext
+      > => {
+
+      const mutationOptions = getPostContentPostsAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * **CMS-03** — GET /content-categories/{id}/admin. Requires `content.view_all` permission.
+ * @summary Get content category details
+ */
+export const getContentCategoriesIdAdmin = (
+    id: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetContentCategoriesIdAdmin200>(
+      {url: `/content-categories/${id}/admin`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetContentCategoriesIdAdminInfiniteQueryKey = (id?: string,) => {
+    return [
+    'infinite', `/content-categories/${id}/admin`
+    ] as const;
+    }
+
+export const getGetContentCategoriesIdAdminQueryKey = (id?: string,) => {
+    return [
+    `/content-categories/${id}/admin`
+    ] as const;
+    }
+
+    
+export const getGetContentCategoriesIdAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getContentCategoriesIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentCategoriesIdAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetContentCategoriesIdAdminInfiniteQueryKey(id);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getContentCategoriesIdAdmin>>> = ({ signal }) => getContentCategoriesIdAdmin(id, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentCategoriesIdAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetContentCategoriesIdAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getContentCategoriesIdAdmin>>>
+export type GetContentCategoriesIdAdminInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+
+
+export function useGetContentCategoriesIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getContentCategoriesIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentCategoriesIdAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getContentCategoriesIdAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getContentCategoriesIdAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetContentCategoriesIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getContentCategoriesIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentCategoriesIdAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getContentCategoriesIdAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getContentCategoriesIdAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetContentCategoriesIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getContentCategoriesIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentCategoriesIdAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get content category details
+ */
+
+export function useGetContentCategoriesIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getContentCategoriesIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentCategoriesIdAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetContentCategoriesIdAdminInfiniteQueryOptions(id,options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Get content category details
+ */
+export const prefetchGetContentCategoriesIdAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getContentCategoriesIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentCategoriesIdAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetContentCategoriesIdAdminInfiniteQueryOptions(id,options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetContentCategoriesIdAdminQueryOptions = <TData = Awaited<ReturnType<typeof getContentCategoriesIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getContentCategoriesIdAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetContentCategoriesIdAdminQueryKey(id);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getContentCategoriesIdAdmin>>> = ({ signal }) => getContentCategoriesIdAdmin(id, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getContentCategoriesIdAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetContentCategoriesIdAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getContentCategoriesIdAdmin>>>
+export type GetContentCategoriesIdAdminQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+
+
+export function useGetContentCategoriesIdAdmin<TData = Awaited<ReturnType<typeof getContentCategoriesIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getContentCategoriesIdAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getContentCategoriesIdAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getContentCategoriesIdAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetContentCategoriesIdAdmin<TData = Awaited<ReturnType<typeof getContentCategoriesIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getContentCategoriesIdAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getContentCategoriesIdAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getContentCategoriesIdAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetContentCategoriesIdAdmin<TData = Awaited<ReturnType<typeof getContentCategoriesIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getContentCategoriesIdAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get content category details
+ */
+
+export function useGetContentCategoriesIdAdmin<TData = Awaited<ReturnType<typeof getContentCategoriesIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getContentCategoriesIdAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetContentCategoriesIdAdminQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Get content category details
+ */
+export const prefetchGetContentCategoriesIdAdminQuery = async <TData = Awaited<ReturnType<typeof getContentCategoriesIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getContentCategoriesIdAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetContentCategoriesIdAdminQueryOptions(id,options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * **CMS-04** — PUT /content-categories/{id}/admin. Requires `content.update_all` permission. Body fields: `name`, `slug`, `display_type`, `sort_order`, `is_active`.
+ * @summary Update a content category
+ */
+export const putContentCategoriesIdAdmin = (
+    id: string,
+    putContentCategoriesIdAdminBody: PutContentCategoriesIdAdminBody,
+ ) => {
+      
+      
+      return customInstance<PutContentCategoriesIdAdmin200>(
+      {url: `/content-categories/${id}/admin`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: putContentCategoriesIdAdminBody
+    },
+      );
+    }
+  
+
+
+export const getPutContentCategoriesIdAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putContentCategoriesIdAdmin>>, TError,{id: string;data: PutContentCategoriesIdAdminBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putContentCategoriesIdAdmin>>, TError,{id: string;data: PutContentCategoriesIdAdminBody}, TContext> => {
+
+const mutationKey = ['putContentCategoriesIdAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putContentCategoriesIdAdmin>>, {id: string;data: PutContentCategoriesIdAdminBody}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  putContentCategoriesIdAdmin(id,data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PutContentCategoriesIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof putContentCategoriesIdAdmin>>>
+    export type PutContentCategoriesIdAdminMutationBody = PutContentCategoriesIdAdminBody
+    export type PutContentCategoriesIdAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+
+    /**
+ * @summary Update a content category
+ */
+export const usePutContentCategoriesIdAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putContentCategoriesIdAdmin>>, TError,{id: string;data: PutContentCategoriesIdAdminBody}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof putContentCategoriesIdAdmin>>,
+        TError,
+        {id: string;data: PutContentCategoriesIdAdminBody},
+        TContext
+      > => {
+
+      const mutationOptions = getPutContentCategoriesIdAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * **CMS-05** — DELETE /content-categories/{id}/admin — blocked while the category still has PUBLISHED posts. Requires `content.delete_all` permission.
+ * @summary Delete a content category
+ */
+export const deleteContentCategoriesIdAdmin = (
+    id: string,
+ ) => {
+      
+      
+      return customInstance<DeleteContentCategoriesIdAdmin200>(
+      {url: `/content-categories/${id}/admin`, method: 'DELETE'
+    },
+      );
+    }
+  
+
+
+export const getDeleteContentCategoriesIdAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteContentCategoriesIdAdmin>>, TError,{id: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteContentCategoriesIdAdmin>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['deleteContentCategoriesIdAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteContentCategoriesIdAdmin>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteContentCategoriesIdAdmin(id,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteContentCategoriesIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof deleteContentCategoriesIdAdmin>>>
+    
+    export type DeleteContentCategoriesIdAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+
+    /**
+ * @summary Delete a content category
+ */
+export const useDeleteContentCategoriesIdAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteContentCategoriesIdAdmin>>, TError,{id: string}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof deleteContentCategoriesIdAdmin>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+
+      const mutationOptions = getDeleteContentCategoriesIdAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * **CMS-01** — GET /content-categories/admin. Requires `content.view_all` permission. Query parameters: `is_active`.
+ * @summary List content categories
+ */
+export const getContentCategoriesAdmin = (
+    params?: GetContentCategoriesAdminParams,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetContentCategoriesAdmin200>(
+      {url: `/content-categories/admin`, method: 'GET',
+        params, signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetContentCategoriesAdminInfiniteQueryKey = (params?: GetContentCategoriesAdminParams,) => {
+    return [
+    'infinite', `/content-categories/admin`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+export const getGetContentCategoriesAdminQueryKey = (params?: GetContentCategoriesAdminParams,) => {
+    return [
+    `/content-categories/admin`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getGetContentCategoriesAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getContentCategoriesAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetContentCategoriesAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentCategoriesAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetContentCategoriesAdminInfiniteQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getContentCategoriesAdmin>>> = ({ signal }) => getContentCategoriesAdmin(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentCategoriesAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetContentCategoriesAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getContentCategoriesAdmin>>>
+export type GetContentCategoriesAdminInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+
+
+export function useGetContentCategoriesAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getContentCategoriesAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetContentCategoriesAdminParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentCategoriesAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getContentCategoriesAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getContentCategoriesAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetContentCategoriesAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getContentCategoriesAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetContentCategoriesAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentCategoriesAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getContentCategoriesAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getContentCategoriesAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetContentCategoriesAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getContentCategoriesAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetContentCategoriesAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentCategoriesAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary List content categories
  */
 
-export function useGetContentCategoriesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getContentCategories>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetContentCategoriesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentCategories>>, TError, TData>>, }
+export function useGetContentCategoriesAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getContentCategoriesAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetContentCategoriesAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentCategoriesAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetContentCategoriesInfiniteQueryOptions(params,options)
+  const queryOptions = getGetContentCategoriesAdminInfiniteQueryOptions(params,options)
 
   const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -2100,12 +2164,12 @@ export function useGetContentCategoriesInfinite<TData = InfiniteData<Awaited<Ret
 /**
  * @summary List content categories
  */
-export const prefetchGetContentCategoriesInfiniteQuery = async <TData = Awaited<ReturnType<typeof getContentCategories>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient, params?: GetContentCategoriesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentCategories>>, TError, TData>>, }
+export const prefetchGetContentCategoriesAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getContentCategoriesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetContentCategoriesAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getContentCategoriesAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetContentCategoriesInfiniteQueryOptions(params,options)
+  const queryOptions = getGetContentCategoriesAdminInfiniteQueryOptions(params,options)
 
   await queryClient.prefetchInfiniteQuery(queryOptions);
 
@@ -2114,62 +2178,62 @@ export const prefetchGetContentCategoriesInfiniteQuery = async <TData = Awaited<
 
 
 
-export const getGetContentCategoriesQueryOptions = <TData = Awaited<ReturnType<typeof getContentCategories>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetContentCategoriesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getContentCategories>>, TError, TData>>, }
+export const getGetContentCategoriesAdminQueryOptions = <TData = Awaited<ReturnType<typeof getContentCategoriesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetContentCategoriesAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getContentCategoriesAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetContentCategoriesQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getGetContentCategoriesAdminQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getContentCategories>>> = ({ signal }) => getContentCategories(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getContentCategoriesAdmin>>> = ({ signal }) => getContentCategoriesAdmin(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getContentCategories>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getContentCategoriesAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetContentCategoriesQueryResult = NonNullable<Awaited<ReturnType<typeof getContentCategories>>>
-export type GetContentCategoriesQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+export type GetContentCategoriesAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getContentCategoriesAdmin>>>
+export type GetContentCategoriesAdminQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
 
 
-export function useGetContentCategories<TData = Awaited<ReturnType<typeof getContentCategories>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params: undefined |  GetContentCategoriesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getContentCategories>>, TError, TData>> & Pick<
+export function useGetContentCategoriesAdmin<TData = Awaited<ReturnType<typeof getContentCategoriesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetContentCategoriesAdminParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getContentCategoriesAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getContentCategories>>,
+          Awaited<ReturnType<typeof getContentCategoriesAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getContentCategories>>
+          Awaited<ReturnType<typeof getContentCategoriesAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetContentCategories<TData = Awaited<ReturnType<typeof getContentCategories>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetContentCategoriesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getContentCategories>>, TError, TData>> & Pick<
+export function useGetContentCategoriesAdmin<TData = Awaited<ReturnType<typeof getContentCategoriesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetContentCategoriesAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getContentCategoriesAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getContentCategories>>,
+          Awaited<ReturnType<typeof getContentCategoriesAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getContentCategories>>
+          Awaited<ReturnType<typeof getContentCategoriesAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetContentCategories<TData = Awaited<ReturnType<typeof getContentCategories>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetContentCategoriesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getContentCategories>>, TError, TData>>, }
+export function useGetContentCategoriesAdmin<TData = Awaited<ReturnType<typeof getContentCategoriesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetContentCategoriesAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getContentCategoriesAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary List content categories
  */
 
-export function useGetContentCategories<TData = Awaited<ReturnType<typeof getContentCategories>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetContentCategoriesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getContentCategories>>, TError, TData>>, }
+export function useGetContentCategoriesAdmin<TData = Awaited<ReturnType<typeof getContentCategoriesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetContentCategoriesAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getContentCategoriesAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetContentCategoriesQueryOptions(params,options)
+  const queryOptions = getGetContentCategoriesAdminQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -2181,12 +2245,12 @@ export function useGetContentCategories<TData = Awaited<ReturnType<typeof getCon
 /**
  * @summary List content categories
  */
-export const prefetchGetContentCategoriesQuery = async <TData = Awaited<ReturnType<typeof getContentCategories>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient, params?: GetContentCategoriesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getContentCategories>>, TError, TData>>, }
+export const prefetchGetContentCategoriesAdminQuery = async <TData = Awaited<ReturnType<typeof getContentCategoriesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetContentCategoriesAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getContentCategoriesAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetContentCategoriesQueryOptions(params,options)
+  const queryOptions = getGetContentCategoriesAdminQueryOptions(params,options)
 
   await queryClient.prefetchQuery(queryOptions);
 
@@ -2196,30 +2260,30 @@ export const prefetchGetContentCategoriesQuery = async <TData = Awaited<ReturnTy
 
 
 /**
- * **CMS-02** — POST /content-categories. Requires `content.create` permission. Body fields: `name`, `slug`, `display_type`, `sort_order`.
+ * **CMS-02** — POST /content-categories/admin. Requires `content.create` permission. Body fields: `name`, `slug`, `display_type`, `sort_order`.
  * @summary Create a new content category
  */
-export const postContentCategories = (
-    postContentCategoriesBody: PostContentCategoriesBody,
+export const postContentCategoriesAdmin = (
+    postContentCategoriesAdminBody: PostContentCategoriesAdminBody,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<PostContentCategories200>(
-      {url: `/contentCategories`, method: 'POST',
+      return customInstance<PostContentCategoriesAdmin200>(
+      {url: `/content-categories/admin`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: postContentCategoriesBody, signal
+      data: postContentCategoriesAdminBody, signal
     },
       );
     }
   
 
 
-export const getPostContentCategoriesMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postContentCategories>>, TError,{data: PostContentCategoriesBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postContentCategories>>, TError,{data: PostContentCategoriesBody}, TContext> => {
+export const getPostContentCategoriesAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postContentCategoriesAdmin>>, TError,{data: PostContentCategoriesAdminBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postContentCategoriesAdmin>>, TError,{data: PostContentCategoriesAdminBody}, TContext> => {
 
-const mutationKey = ['postContentCategories'];
+const mutationKey = ['postContentCategoriesAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -2229,10 +2293,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postContentCategories>>, {data: PostContentCategoriesBody}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postContentCategoriesAdmin>>, {data: PostContentCategoriesAdminBody}> = (props) => {
           const {data} = props ?? {};
 
-          return  postContentCategories(data,)
+          return  postContentCategoriesAdmin(data,)
         }
 
         
@@ -2240,23 +2304,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PostContentCategoriesMutationResult = NonNullable<Awaited<ReturnType<typeof postContentCategories>>>
-    export type PostContentCategoriesMutationBody = PostContentCategoriesBody
-    export type PostContentCategoriesMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+    export type PostContentCategoriesAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postContentCategoriesAdmin>>>
+    export type PostContentCategoriesAdminMutationBody = PostContentCategoriesAdminBody
+    export type PostContentCategoriesAdminMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
  * @summary Create a new content category
  */
-export const usePostContentCategories = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postContentCategories>>, TError,{data: PostContentCategoriesBody}, TContext>, }
+export const usePostContentCategoriesAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postContentCategoriesAdmin>>, TError,{data: PostContentCategoriesAdminBody}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postContentCategories>>,
+        Awaited<ReturnType<typeof postContentCategoriesAdmin>>,
         TError,
-        {data: PostContentCategoriesBody},
+        {data: PostContentCategoriesAdminBody},
         TContext
       > => {
 
-      const mutationOptions = getPostContentCategoriesMutationOptions(options);
+      const mutationOptions = getPostContentCategoriesAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

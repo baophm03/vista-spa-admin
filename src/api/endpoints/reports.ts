@@ -27,20 +27,20 @@ import type {
 
 import type {
   ForbiddenResponse,
-  GetReportsAppointments200,
-  GetReportsAppointmentsParams,
-  GetReportsCommissions200,
-  GetReportsCommissionsParams,
-  GetReportsDebts200,
-  GetReportsDebtsParams,
-  GetReportsNewCustomers200,
-  GetReportsNewCustomersParams,
-  GetReportsRanks200,
-  GetReportsRanksParams,
-  GetReportsRevenue200,
-  GetReportsRevenueParams,
-  GetReportsSessionsUsed200,
-  GetReportsSessionsUsedParams,
+  GetReportsAppointmentsAdmin200,
+  GetReportsAppointmentsAdminParams,
+  GetReportsCommissionsAdmin200,
+  GetReportsCommissionsAdminParams,
+  GetReportsDebtsAdmin200,
+  GetReportsDebtsAdminParams,
+  GetReportsNewCustomersAdmin200,
+  GetReportsNewCustomersAdminParams,
+  GetReportsRanksAdmin200,
+  GetReportsRanksAdminParams,
+  GetReportsRevenueAdmin200,
+  GetReportsRevenueAdminParams,
+  GetReportsSessionsUsedAdmin200,
+  GetReportsSessionsUsedAdminParams,
   InternalErrorResponse,
   UnauthorizedResponse
 } from '../models';
@@ -52,17 +52,17 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * **RP-06** — GET /reports/sessionsUsed. Requires one of the permissions: `report.read`, `report.session.read`. Branch scope: users limited to one branch only see that branch's data. Query parameters: `from_date`, `to_date`, `branch_id`, `group_by`, `staff_id`, `customer_profile_id`.
+ * **RP-06** — GET /reports/sessions-used/admin. Cần đăng nhập + một trong các quyền: `report.view_all`, `report.session`. Branch scope: user gắn 1 cơ sở chỉ thấy dữ liệu cơ sở đó. Query parameters: `from_date`, `to_date`, `branch_id`, `group_by`, `staff_id`, `customer_profile_id`.
  * @summary View sessions used report
  */
-export const getReportsSessionsUsed = (
-    params?: GetReportsSessionsUsedParams,
+export const getReportsSessionsUsedAdmin = (
+    params?: GetReportsSessionsUsedAdminParams,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<GetReportsSessionsUsed200>(
-      {url: `/reports/sessionsUsed`, method: 'GET',
+      return customInstance<GetReportsSessionsUsedAdmin200>(
+      {url: `/reports/sessions-used/admin`, method: 'GET',
         params, signal
     },
       );
@@ -71,158 +71,77 @@ export const getReportsSessionsUsed = (
 
 
 
-export const getGetReportsSessionsUsedInfiniteQueryKey = (params?: GetReportsSessionsUsedParams,) => {
+export const getGetReportsSessionsUsedAdminInfiniteQueryKey = (params?: GetReportsSessionsUsedAdminParams,) => {
     return [
-    'infinite', `/reports/sessionsUsed`, ...(params ? [params]: [])
+    'infinite', `/reports/sessions-used/admin`, ...(params ? [params]: [])
     ] as const;
     }
 
-export const getGetReportsSessionsUsedQueryKey = (params?: GetReportsSessionsUsedParams,) => {
+export const getGetReportsSessionsUsedAdminQueryKey = (params?: GetReportsSessionsUsedAdminParams,) => {
     return [
-    `/reports/sessionsUsed`, ...(params ? [params]: [])
+    `/reports/sessions-used/admin`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetReportsSessionsUsedInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getReportsSessionsUsed>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetReportsSessionsUsedParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsSessionsUsed>>, TError, TData>>, }
+export const getGetReportsSessionsUsedAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getReportsSessionsUsedAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetReportsSessionsUsedAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsSessionsUsedAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetReportsSessionsUsedInfiniteQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getGetReportsSessionsUsedAdminInfiniteQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getReportsSessionsUsed>>> = ({ signal }) => getReportsSessionsUsed(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getReportsSessionsUsedAdmin>>> = ({ signal }) => getReportsSessionsUsedAdmin(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsSessionsUsed>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsSessionsUsedAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetReportsSessionsUsedInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getReportsSessionsUsed>>>
-export type GetReportsSessionsUsedInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+export type GetReportsSessionsUsedAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getReportsSessionsUsedAdmin>>>
+export type GetReportsSessionsUsedAdminInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
 
 
-export function useGetReportsSessionsUsedInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsSessionsUsed>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params: undefined |  GetReportsSessionsUsedParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsSessionsUsed>>, TError, TData>> & Pick<
+export function useGetReportsSessionsUsedAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsSessionsUsedAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetReportsSessionsUsedAdminParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsSessionsUsedAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getReportsSessionsUsed>>,
+          Awaited<ReturnType<typeof getReportsSessionsUsedAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getReportsSessionsUsed>>
+          Awaited<ReturnType<typeof getReportsSessionsUsedAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetReportsSessionsUsedInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsSessionsUsed>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetReportsSessionsUsedParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsSessionsUsed>>, TError, TData>> & Pick<
+export function useGetReportsSessionsUsedAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsSessionsUsedAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetReportsSessionsUsedAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsSessionsUsedAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getReportsSessionsUsed>>,
+          Awaited<ReturnType<typeof getReportsSessionsUsedAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getReportsSessionsUsed>>
+          Awaited<ReturnType<typeof getReportsSessionsUsedAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetReportsSessionsUsedInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsSessionsUsed>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetReportsSessionsUsedParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsSessionsUsed>>, TError, TData>>, }
+export function useGetReportsSessionsUsedAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsSessionsUsedAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetReportsSessionsUsedAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsSessionsUsedAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary View sessions used report
  */
 
-export function useGetReportsSessionsUsedInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsSessionsUsed>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetReportsSessionsUsedParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsSessionsUsed>>, TError, TData>>, }
+export function useGetReportsSessionsUsedAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsSessionsUsedAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetReportsSessionsUsedAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsSessionsUsedAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetReportsSessionsUsedInfiniteQueryOptions(params,options)
+  const queryOptions = getGetReportsSessionsUsedAdminInfiniteQueryOptions(params,options)
 
   const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary View sessions used report
- */
-export const prefetchGetReportsSessionsUsedInfiniteQuery = async <TData = Awaited<ReturnType<typeof getReportsSessionsUsed>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient, params?: GetReportsSessionsUsedParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsSessionsUsed>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetReportsSessionsUsedInfiniteQueryOptions(params,options)
-
-  await queryClient.prefetchInfiniteQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-export const getGetReportsSessionsUsedQueryOptions = <TData = Awaited<ReturnType<typeof getReportsSessionsUsed>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetReportsSessionsUsedParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsSessionsUsed>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetReportsSessionsUsedQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getReportsSessionsUsed>>> = ({ signal }) => getReportsSessionsUsed(params, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getReportsSessionsUsed>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetReportsSessionsUsedQueryResult = NonNullable<Awaited<ReturnType<typeof getReportsSessionsUsed>>>
-export type GetReportsSessionsUsedQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
-
-
-export function useGetReportsSessionsUsed<TData = Awaited<ReturnType<typeof getReportsSessionsUsed>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params: undefined |  GetReportsSessionsUsedParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsSessionsUsed>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getReportsSessionsUsed>>,
-          TError,
-          Awaited<ReturnType<typeof getReportsSessionsUsed>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetReportsSessionsUsed<TData = Awaited<ReturnType<typeof getReportsSessionsUsed>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetReportsSessionsUsedParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsSessionsUsed>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getReportsSessionsUsed>>,
-          TError,
-          Awaited<ReturnType<typeof getReportsSessionsUsed>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetReportsSessionsUsed<TData = Awaited<ReturnType<typeof getReportsSessionsUsed>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetReportsSessionsUsedParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsSessionsUsed>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary View sessions used report
- */
-
-export function useGetReportsSessionsUsed<TData = Awaited<ReturnType<typeof getReportsSessionsUsed>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetReportsSessionsUsedParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsSessionsUsed>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetReportsSessionsUsedQueryOptions(params,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
   query.queryKey = queryOptions.queryKey ;
 
@@ -232,12 +151,93 @@ export function useGetReportsSessionsUsed<TData = Awaited<ReturnType<typeof getR
 /**
  * @summary View sessions used report
  */
-export const prefetchGetReportsSessionsUsedQuery = async <TData = Awaited<ReturnType<typeof getReportsSessionsUsed>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient, params?: GetReportsSessionsUsedParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsSessionsUsed>>, TError, TData>>, }
+export const prefetchGetReportsSessionsUsedAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getReportsSessionsUsedAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetReportsSessionsUsedAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsSessionsUsedAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetReportsSessionsUsedQueryOptions(params,options)
+  const queryOptions = getGetReportsSessionsUsedAdminInfiniteQueryOptions(params,options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetReportsSessionsUsedAdminQueryOptions = <TData = Awaited<ReturnType<typeof getReportsSessionsUsedAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetReportsSessionsUsedAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsSessionsUsedAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetReportsSessionsUsedAdminQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getReportsSessionsUsedAdmin>>> = ({ signal }) => getReportsSessionsUsedAdmin(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getReportsSessionsUsedAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetReportsSessionsUsedAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getReportsSessionsUsedAdmin>>>
+export type GetReportsSessionsUsedAdminQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+
+
+export function useGetReportsSessionsUsedAdmin<TData = Awaited<ReturnType<typeof getReportsSessionsUsedAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetReportsSessionsUsedAdminParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsSessionsUsedAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getReportsSessionsUsedAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getReportsSessionsUsedAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetReportsSessionsUsedAdmin<TData = Awaited<ReturnType<typeof getReportsSessionsUsedAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetReportsSessionsUsedAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsSessionsUsedAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getReportsSessionsUsedAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getReportsSessionsUsedAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetReportsSessionsUsedAdmin<TData = Awaited<ReturnType<typeof getReportsSessionsUsedAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetReportsSessionsUsedAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsSessionsUsedAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary View sessions used report
+ */
+
+export function useGetReportsSessionsUsedAdmin<TData = Awaited<ReturnType<typeof getReportsSessionsUsedAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetReportsSessionsUsedAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsSessionsUsedAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetReportsSessionsUsedAdminQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary View sessions used report
+ */
+export const prefetchGetReportsSessionsUsedAdminQuery = async <TData = Awaited<ReturnType<typeof getReportsSessionsUsedAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetReportsSessionsUsedAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsSessionsUsedAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetReportsSessionsUsedAdminQueryOptions(params,options)
 
   await queryClient.prefetchQuery(queryOptions);
 
@@ -247,17 +247,17 @@ export const prefetchGetReportsSessionsUsedQuery = async <TData = Awaited<Return
 
 
 /**
- * **RP-01** — GET /reports/revenue?branch_id&from_date&to_date&group_by=day|month. Requires one of the permissions: `report.read`, `report.revenue.read`. Branch scope: users limited to one branch only see that branch's data. Query parameters: `from_date`, `to_date`, `branch_id`, `group_by`, `customer_profile_id`, `staff_id`.
+ * **RP-01** — GET /reports/revenue/admin?branch_id&from_date&to_date&group_by=day|month. Cần đăng nhập + một trong các quyền: `report.view_all`, `report.revenue`. Branch scope: user gắn 1 cơ sở chỉ thấy dữ liệu cơ sở đó. Query parameters: `from_date`, `to_date`, `branch_id`, `group_by`, `customer_profile_id`, `staff_id`.
  * @summary View revenue report
  */
-export const getReportsRevenue = (
-    params?: GetReportsRevenueParams,
+export const getReportsRevenueAdmin = (
+    params?: GetReportsRevenueAdminParams,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<GetReportsRevenue200>(
-      {url: `/reports/revenue`, method: 'GET',
+      return customInstance<GetReportsRevenueAdmin200>(
+      {url: `/reports/revenue/admin`, method: 'GET',
         params, signal
     },
       );
@@ -266,173 +266,173 @@ export const getReportsRevenue = (
 
 
 
-export const getGetReportsRevenueInfiniteQueryKey = (params?: GetReportsRevenueParams,) => {
+export const getGetReportsRevenueAdminInfiniteQueryKey = (params?: GetReportsRevenueAdminParams,) => {
     return [
-    'infinite', `/reports/revenue`, ...(params ? [params]: [])
+    'infinite', `/reports/revenue/admin`, ...(params ? [params]: [])
     ] as const;
     }
 
-export const getGetReportsRevenueQueryKey = (params?: GetReportsRevenueParams,) => {
+export const getGetReportsRevenueAdminQueryKey = (params?: GetReportsRevenueAdminParams,) => {
     return [
-    `/reports/revenue`, ...(params ? [params]: [])
+    `/reports/revenue/admin`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetReportsRevenueInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getReportsRevenue>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetReportsRevenueParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsRevenue>>, TError, TData>>, }
+export const getGetReportsRevenueAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getReportsRevenueAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetReportsRevenueAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsRevenueAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetReportsRevenueInfiniteQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getGetReportsRevenueAdminInfiniteQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getReportsRevenue>>> = ({ signal }) => getReportsRevenue(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getReportsRevenueAdmin>>> = ({ signal }) => getReportsRevenueAdmin(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsRevenue>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsRevenueAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetReportsRevenueInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getReportsRevenue>>>
-export type GetReportsRevenueInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+export type GetReportsRevenueAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getReportsRevenueAdmin>>>
+export type GetReportsRevenueAdminInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
 
 
-export function useGetReportsRevenueInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsRevenue>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params: undefined |  GetReportsRevenueParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsRevenue>>, TError, TData>> & Pick<
+export function useGetReportsRevenueAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsRevenueAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetReportsRevenueAdminParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsRevenueAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getReportsRevenue>>,
+          Awaited<ReturnType<typeof getReportsRevenueAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getReportsRevenue>>
+          Awaited<ReturnType<typeof getReportsRevenueAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetReportsRevenueInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsRevenue>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetReportsRevenueParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsRevenue>>, TError, TData>> & Pick<
+export function useGetReportsRevenueAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsRevenueAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetReportsRevenueAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsRevenueAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getReportsRevenue>>,
+          Awaited<ReturnType<typeof getReportsRevenueAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getReportsRevenue>>
+          Awaited<ReturnType<typeof getReportsRevenueAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetReportsRevenueInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsRevenue>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetReportsRevenueParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsRevenue>>, TError, TData>>, }
+export function useGetReportsRevenueAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsRevenueAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetReportsRevenueAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsRevenueAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary View revenue report
- */
-
-export function useGetReportsRevenueInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsRevenue>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetReportsRevenueParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsRevenue>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetReportsRevenueInfiniteQueryOptions(params,options)
-
-  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary View revenue report
- */
-export const prefetchGetReportsRevenueInfiniteQuery = async <TData = Awaited<ReturnType<typeof getReportsRevenue>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient, params?: GetReportsRevenueParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsRevenue>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetReportsRevenueInfiniteQueryOptions(params,options)
-
-  await queryClient.prefetchInfiniteQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-export const getGetReportsRevenueQueryOptions = <TData = Awaited<ReturnType<typeof getReportsRevenue>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetReportsRevenueParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsRevenue>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetReportsRevenueQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getReportsRevenue>>> = ({ signal }) => getReportsRevenue(params, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getReportsRevenue>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetReportsRevenueQueryResult = NonNullable<Awaited<ReturnType<typeof getReportsRevenue>>>
-export type GetReportsRevenueQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
-
-
-export function useGetReportsRevenue<TData = Awaited<ReturnType<typeof getReportsRevenue>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params: undefined |  GetReportsRevenueParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsRevenue>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getReportsRevenue>>,
-          TError,
-          Awaited<ReturnType<typeof getReportsRevenue>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetReportsRevenue<TData = Awaited<ReturnType<typeof getReportsRevenue>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetReportsRevenueParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsRevenue>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getReportsRevenue>>,
-          TError,
-          Awaited<ReturnType<typeof getReportsRevenue>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetReportsRevenue<TData = Awaited<ReturnType<typeof getReportsRevenue>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetReportsRevenueParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsRevenue>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary View revenue report
- */
-
-export function useGetReportsRevenue<TData = Awaited<ReturnType<typeof getReportsRevenue>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetReportsRevenueParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsRevenue>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetReportsRevenueQueryOptions(params,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
 /**
  * @summary View revenue report
  */
-export const prefetchGetReportsRevenueQuery = async <TData = Awaited<ReturnType<typeof getReportsRevenue>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient, params?: GetReportsRevenueParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsRevenue>>, TError, TData>>, }
+
+export function useGetReportsRevenueAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsRevenueAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetReportsRevenueAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsRevenueAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetReportsRevenueAdminInfiniteQueryOptions(params,options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary View revenue report
+ */
+export const prefetchGetReportsRevenueAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getReportsRevenueAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetReportsRevenueAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsRevenueAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetReportsRevenueQueryOptions(params,options)
+  const queryOptions = getGetReportsRevenueAdminInfiniteQueryOptions(params,options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetReportsRevenueAdminQueryOptions = <TData = Awaited<ReturnType<typeof getReportsRevenueAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetReportsRevenueAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsRevenueAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetReportsRevenueAdminQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getReportsRevenueAdmin>>> = ({ signal }) => getReportsRevenueAdmin(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getReportsRevenueAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetReportsRevenueAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getReportsRevenueAdmin>>>
+export type GetReportsRevenueAdminQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+
+
+export function useGetReportsRevenueAdmin<TData = Awaited<ReturnType<typeof getReportsRevenueAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetReportsRevenueAdminParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsRevenueAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getReportsRevenueAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getReportsRevenueAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetReportsRevenueAdmin<TData = Awaited<ReturnType<typeof getReportsRevenueAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetReportsRevenueAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsRevenueAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getReportsRevenueAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getReportsRevenueAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetReportsRevenueAdmin<TData = Awaited<ReturnType<typeof getReportsRevenueAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetReportsRevenueAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsRevenueAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary View revenue report
+ */
+
+export function useGetReportsRevenueAdmin<TData = Awaited<ReturnType<typeof getReportsRevenueAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetReportsRevenueAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsRevenueAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetReportsRevenueAdminQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary View revenue report
+ */
+export const prefetchGetReportsRevenueAdminQuery = async <TData = Awaited<ReturnType<typeof getReportsRevenueAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetReportsRevenueAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsRevenueAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetReportsRevenueAdminQueryOptions(params,options)
 
   await queryClient.prefetchQuery(queryOptions);
 
@@ -442,17 +442,17 @@ export const prefetchGetReportsRevenueQuery = async <TData = Awaited<ReturnType<
 
 
 /**
- * **RP-03** — GET /reports/ranks?branch_id&from_date&to_date&group_by — distribution + rank upgrades per period. Requires one of the permissions: `report.read`, `report.rank.read`. Branch scope: users limited to one branch only see that branch's data. Query parameters: `branch_id`, `from_date`, `to_date`, `group_by`.
+ * **RP-03** — GET /reports/ranks/admin?branch_id&from_date&to_date&group_by — distribution + rank upgrades per period. Cần đăng nhập + một trong các quyền: `report.view_all`, `report.rank`. Branch scope: user gắn 1 cơ sở chỉ thấy dữ liệu cơ sở đó. Query parameters: `branch_id`, `from_date`, `to_date`, `group_by`.
  * @summary View membership ranks
  */
-export const getReportsRanks = (
-    params?: GetReportsRanksParams,
+export const getReportsRanksAdmin = (
+    params?: GetReportsRanksAdminParams,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<GetReportsRanks200>(
-      {url: `/reports/ranks`, method: 'GET',
+      return customInstance<GetReportsRanksAdmin200>(
+      {url: `/reports/ranks/admin`, method: 'GET',
         params, signal
     },
       );
@@ -461,75 +461,75 @@ export const getReportsRanks = (
 
 
 
-export const getGetReportsRanksInfiniteQueryKey = (params?: GetReportsRanksParams,) => {
+export const getGetReportsRanksAdminInfiniteQueryKey = (params?: GetReportsRanksAdminParams,) => {
     return [
-    'infinite', `/reports/ranks`, ...(params ? [params]: [])
+    'infinite', `/reports/ranks/admin`, ...(params ? [params]: [])
     ] as const;
     }
 
-export const getGetReportsRanksQueryKey = (params?: GetReportsRanksParams,) => {
+export const getGetReportsRanksAdminQueryKey = (params?: GetReportsRanksAdminParams,) => {
     return [
-    `/reports/ranks`, ...(params ? [params]: [])
+    `/reports/ranks/admin`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetReportsRanksInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getReportsRanks>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetReportsRanksParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsRanks>>, TError, TData>>, }
+export const getGetReportsRanksAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getReportsRanksAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetReportsRanksAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsRanksAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetReportsRanksInfiniteQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getGetReportsRanksAdminInfiniteQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getReportsRanks>>> = ({ signal }) => getReportsRanks(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getReportsRanksAdmin>>> = ({ signal }) => getReportsRanksAdmin(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsRanks>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsRanksAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetReportsRanksInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getReportsRanks>>>
-export type GetReportsRanksInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+export type GetReportsRanksAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getReportsRanksAdmin>>>
+export type GetReportsRanksAdminInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
 
 
-export function useGetReportsRanksInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsRanks>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params: undefined |  GetReportsRanksParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsRanks>>, TError, TData>> & Pick<
+export function useGetReportsRanksAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsRanksAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetReportsRanksAdminParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsRanksAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getReportsRanks>>,
+          Awaited<ReturnType<typeof getReportsRanksAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getReportsRanks>>
+          Awaited<ReturnType<typeof getReportsRanksAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetReportsRanksInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsRanks>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetReportsRanksParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsRanks>>, TError, TData>> & Pick<
+export function useGetReportsRanksAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsRanksAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetReportsRanksAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsRanksAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getReportsRanks>>,
+          Awaited<ReturnType<typeof getReportsRanksAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getReportsRanks>>
+          Awaited<ReturnType<typeof getReportsRanksAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetReportsRanksInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsRanks>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetReportsRanksParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsRanks>>, TError, TData>>, }
+export function useGetReportsRanksAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsRanksAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetReportsRanksAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsRanksAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary View membership ranks
  */
 
-export function useGetReportsRanksInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsRanks>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetReportsRanksParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsRanks>>, TError, TData>>, }
+export function useGetReportsRanksAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsRanksAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetReportsRanksAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsRanksAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetReportsRanksInfiniteQueryOptions(params,options)
+  const queryOptions = getGetReportsRanksAdminInfiniteQueryOptions(params,options)
 
   const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -541,12 +541,12 @@ export function useGetReportsRanksInfinite<TData = InfiniteData<Awaited<ReturnTy
 /**
  * @summary View membership ranks
  */
-export const prefetchGetReportsRanksInfiniteQuery = async <TData = Awaited<ReturnType<typeof getReportsRanks>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient, params?: GetReportsRanksParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsRanks>>, TError, TData>>, }
+export const prefetchGetReportsRanksAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getReportsRanksAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetReportsRanksAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsRanksAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetReportsRanksInfiniteQueryOptions(params,options)
+  const queryOptions = getGetReportsRanksAdminInfiniteQueryOptions(params,options)
 
   await queryClient.prefetchInfiniteQuery(queryOptions);
 
@@ -555,62 +555,62 @@ export const prefetchGetReportsRanksInfiniteQuery = async <TData = Awaited<Retur
 
 
 
-export const getGetReportsRanksQueryOptions = <TData = Awaited<ReturnType<typeof getReportsRanks>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetReportsRanksParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsRanks>>, TError, TData>>, }
+export const getGetReportsRanksAdminQueryOptions = <TData = Awaited<ReturnType<typeof getReportsRanksAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetReportsRanksAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsRanksAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetReportsRanksQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getGetReportsRanksAdminQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getReportsRanks>>> = ({ signal }) => getReportsRanks(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getReportsRanksAdmin>>> = ({ signal }) => getReportsRanksAdmin(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getReportsRanks>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getReportsRanksAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetReportsRanksQueryResult = NonNullable<Awaited<ReturnType<typeof getReportsRanks>>>
-export type GetReportsRanksQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+export type GetReportsRanksAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getReportsRanksAdmin>>>
+export type GetReportsRanksAdminQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
 
 
-export function useGetReportsRanks<TData = Awaited<ReturnType<typeof getReportsRanks>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params: undefined |  GetReportsRanksParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsRanks>>, TError, TData>> & Pick<
+export function useGetReportsRanksAdmin<TData = Awaited<ReturnType<typeof getReportsRanksAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetReportsRanksAdminParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsRanksAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getReportsRanks>>,
+          Awaited<ReturnType<typeof getReportsRanksAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getReportsRanks>>
+          Awaited<ReturnType<typeof getReportsRanksAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetReportsRanks<TData = Awaited<ReturnType<typeof getReportsRanks>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetReportsRanksParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsRanks>>, TError, TData>> & Pick<
+export function useGetReportsRanksAdmin<TData = Awaited<ReturnType<typeof getReportsRanksAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetReportsRanksAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsRanksAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getReportsRanks>>,
+          Awaited<ReturnType<typeof getReportsRanksAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getReportsRanks>>
+          Awaited<ReturnType<typeof getReportsRanksAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetReportsRanks<TData = Awaited<ReturnType<typeof getReportsRanks>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetReportsRanksParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsRanks>>, TError, TData>>, }
+export function useGetReportsRanksAdmin<TData = Awaited<ReturnType<typeof getReportsRanksAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetReportsRanksAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsRanksAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary View membership ranks
  */
 
-export function useGetReportsRanks<TData = Awaited<ReturnType<typeof getReportsRanks>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetReportsRanksParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsRanks>>, TError, TData>>, }
+export function useGetReportsRanksAdmin<TData = Awaited<ReturnType<typeof getReportsRanksAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetReportsRanksAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsRanksAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetReportsRanksQueryOptions(params,options)
+  const queryOptions = getGetReportsRanksAdminQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -622,12 +622,12 @@ export function useGetReportsRanks<TData = Awaited<ReturnType<typeof getReportsR
 /**
  * @summary View membership ranks
  */
-export const prefetchGetReportsRanksQuery = async <TData = Awaited<ReturnType<typeof getReportsRanks>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient, params?: GetReportsRanksParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsRanks>>, TError, TData>>, }
+export const prefetchGetReportsRanksAdminQuery = async <TData = Awaited<ReturnType<typeof getReportsRanksAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetReportsRanksAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsRanksAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetReportsRanksQueryOptions(params,options)
+  const queryOptions = getGetReportsRanksAdminQueryOptions(params,options)
 
   await queryClient.prefetchQuery(queryOptions);
 
@@ -637,17 +637,17 @@ export const prefetchGetReportsRanksQuery = async <TData = Awaited<ReturnType<ty
 
 
 /**
- * **RP-05** — GET /reports/newCustomers. Requires one of the permissions: `report.read`, `report.customer.read`. Branch scope: users limited to one branch only see that branch's data. Query parameters: `from_date`, `to_date`, `branch_id`, `group_by`.
+ * **RP-05** — GET /reports/new-customers/admin. Cần đăng nhập + một trong các quyền: `report.view_all`, `report.new_customer`. Branch scope: user gắn 1 cơ sở chỉ thấy dữ liệu cơ sở đó. Query parameters: `from_date`, `to_date`, `branch_id`, `group_by`.
  * @summary View new customers report
  */
-export const getReportsNewCustomers = (
-    params?: GetReportsNewCustomersParams,
+export const getReportsNewCustomersAdmin = (
+    params?: GetReportsNewCustomersAdminParams,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<GetReportsNewCustomers200>(
-      {url: `/reports/newCustomers`, method: 'GET',
+      return customInstance<GetReportsNewCustomersAdmin200>(
+      {url: `/reports/new-customers/admin`, method: 'GET',
         params, signal
     },
       );
@@ -656,75 +656,75 @@ export const getReportsNewCustomers = (
 
 
 
-export const getGetReportsNewCustomersInfiniteQueryKey = (params?: GetReportsNewCustomersParams,) => {
+export const getGetReportsNewCustomersAdminInfiniteQueryKey = (params?: GetReportsNewCustomersAdminParams,) => {
     return [
-    'infinite', `/reports/newCustomers`, ...(params ? [params]: [])
+    'infinite', `/reports/new-customers/admin`, ...(params ? [params]: [])
     ] as const;
     }
 
-export const getGetReportsNewCustomersQueryKey = (params?: GetReportsNewCustomersParams,) => {
+export const getGetReportsNewCustomersAdminQueryKey = (params?: GetReportsNewCustomersAdminParams,) => {
     return [
-    `/reports/newCustomers`, ...(params ? [params]: [])
+    `/reports/new-customers/admin`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetReportsNewCustomersInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getReportsNewCustomers>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetReportsNewCustomersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsNewCustomers>>, TError, TData>>, }
+export const getGetReportsNewCustomersAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getReportsNewCustomersAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetReportsNewCustomersAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsNewCustomersAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetReportsNewCustomersInfiniteQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getGetReportsNewCustomersAdminInfiniteQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getReportsNewCustomers>>> = ({ signal }) => getReportsNewCustomers(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getReportsNewCustomersAdmin>>> = ({ signal }) => getReportsNewCustomersAdmin(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsNewCustomers>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsNewCustomersAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetReportsNewCustomersInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getReportsNewCustomers>>>
-export type GetReportsNewCustomersInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+export type GetReportsNewCustomersAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getReportsNewCustomersAdmin>>>
+export type GetReportsNewCustomersAdminInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
 
 
-export function useGetReportsNewCustomersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsNewCustomers>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params: undefined |  GetReportsNewCustomersParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsNewCustomers>>, TError, TData>> & Pick<
+export function useGetReportsNewCustomersAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsNewCustomersAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetReportsNewCustomersAdminParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsNewCustomersAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getReportsNewCustomers>>,
+          Awaited<ReturnType<typeof getReportsNewCustomersAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getReportsNewCustomers>>
+          Awaited<ReturnType<typeof getReportsNewCustomersAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetReportsNewCustomersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsNewCustomers>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetReportsNewCustomersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsNewCustomers>>, TError, TData>> & Pick<
+export function useGetReportsNewCustomersAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsNewCustomersAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetReportsNewCustomersAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsNewCustomersAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getReportsNewCustomers>>,
+          Awaited<ReturnType<typeof getReportsNewCustomersAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getReportsNewCustomers>>
+          Awaited<ReturnType<typeof getReportsNewCustomersAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetReportsNewCustomersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsNewCustomers>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetReportsNewCustomersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsNewCustomers>>, TError, TData>>, }
+export function useGetReportsNewCustomersAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsNewCustomersAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetReportsNewCustomersAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsNewCustomersAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary View new customers report
  */
 
-export function useGetReportsNewCustomersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsNewCustomers>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetReportsNewCustomersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsNewCustomers>>, TError, TData>>, }
+export function useGetReportsNewCustomersAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsNewCustomersAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetReportsNewCustomersAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsNewCustomersAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetReportsNewCustomersInfiniteQueryOptions(params,options)
+  const queryOptions = getGetReportsNewCustomersAdminInfiniteQueryOptions(params,options)
 
   const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -736,12 +736,12 @@ export function useGetReportsNewCustomersInfinite<TData = InfiniteData<Awaited<R
 /**
  * @summary View new customers report
  */
-export const prefetchGetReportsNewCustomersInfiniteQuery = async <TData = Awaited<ReturnType<typeof getReportsNewCustomers>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient, params?: GetReportsNewCustomersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsNewCustomers>>, TError, TData>>, }
+export const prefetchGetReportsNewCustomersAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getReportsNewCustomersAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetReportsNewCustomersAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsNewCustomersAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetReportsNewCustomersInfiniteQueryOptions(params,options)
+  const queryOptions = getGetReportsNewCustomersAdminInfiniteQueryOptions(params,options)
 
   await queryClient.prefetchInfiniteQuery(queryOptions);
 
@@ -750,62 +750,62 @@ export const prefetchGetReportsNewCustomersInfiniteQuery = async <TData = Awaite
 
 
 
-export const getGetReportsNewCustomersQueryOptions = <TData = Awaited<ReturnType<typeof getReportsNewCustomers>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetReportsNewCustomersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsNewCustomers>>, TError, TData>>, }
+export const getGetReportsNewCustomersAdminQueryOptions = <TData = Awaited<ReturnType<typeof getReportsNewCustomersAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetReportsNewCustomersAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsNewCustomersAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetReportsNewCustomersQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getGetReportsNewCustomersAdminQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getReportsNewCustomers>>> = ({ signal }) => getReportsNewCustomers(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getReportsNewCustomersAdmin>>> = ({ signal }) => getReportsNewCustomersAdmin(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getReportsNewCustomers>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getReportsNewCustomersAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetReportsNewCustomersQueryResult = NonNullable<Awaited<ReturnType<typeof getReportsNewCustomers>>>
-export type GetReportsNewCustomersQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+export type GetReportsNewCustomersAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getReportsNewCustomersAdmin>>>
+export type GetReportsNewCustomersAdminQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
 
 
-export function useGetReportsNewCustomers<TData = Awaited<ReturnType<typeof getReportsNewCustomers>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params: undefined |  GetReportsNewCustomersParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsNewCustomers>>, TError, TData>> & Pick<
+export function useGetReportsNewCustomersAdmin<TData = Awaited<ReturnType<typeof getReportsNewCustomersAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetReportsNewCustomersAdminParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsNewCustomersAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getReportsNewCustomers>>,
+          Awaited<ReturnType<typeof getReportsNewCustomersAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getReportsNewCustomers>>
+          Awaited<ReturnType<typeof getReportsNewCustomersAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetReportsNewCustomers<TData = Awaited<ReturnType<typeof getReportsNewCustomers>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetReportsNewCustomersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsNewCustomers>>, TError, TData>> & Pick<
+export function useGetReportsNewCustomersAdmin<TData = Awaited<ReturnType<typeof getReportsNewCustomersAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetReportsNewCustomersAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsNewCustomersAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getReportsNewCustomers>>,
+          Awaited<ReturnType<typeof getReportsNewCustomersAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getReportsNewCustomers>>
+          Awaited<ReturnType<typeof getReportsNewCustomersAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetReportsNewCustomers<TData = Awaited<ReturnType<typeof getReportsNewCustomers>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetReportsNewCustomersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsNewCustomers>>, TError, TData>>, }
+export function useGetReportsNewCustomersAdmin<TData = Awaited<ReturnType<typeof getReportsNewCustomersAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetReportsNewCustomersAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsNewCustomersAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary View new customers report
  */
 
-export function useGetReportsNewCustomers<TData = Awaited<ReturnType<typeof getReportsNewCustomers>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetReportsNewCustomersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsNewCustomers>>, TError, TData>>, }
+export function useGetReportsNewCustomersAdmin<TData = Awaited<ReturnType<typeof getReportsNewCustomersAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetReportsNewCustomersAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsNewCustomersAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetReportsNewCustomersQueryOptions(params,options)
+  const queryOptions = getGetReportsNewCustomersAdminQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -817,12 +817,12 @@ export function useGetReportsNewCustomers<TData = Awaited<ReturnType<typeof getR
 /**
  * @summary View new customers report
  */
-export const prefetchGetReportsNewCustomersQuery = async <TData = Awaited<ReturnType<typeof getReportsNewCustomers>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient, params?: GetReportsNewCustomersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsNewCustomers>>, TError, TData>>, }
+export const prefetchGetReportsNewCustomersAdminQuery = async <TData = Awaited<ReturnType<typeof getReportsNewCustomersAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetReportsNewCustomersAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsNewCustomersAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetReportsNewCustomersQueryOptions(params,options)
+  const queryOptions = getGetReportsNewCustomersAdminQueryOptions(params,options)
 
   await queryClient.prefetchQuery(queryOptions);
 
@@ -832,17 +832,17 @@ export const prefetchGetReportsNewCustomersQuery = async <TData = Awaited<Return
 
 
 /**
- * **RP-02** — GET /reports/debts?branch_id&customer_profile_id. Requires one of the permissions: `report.read`, `report.debt.read`. Branch scope: users limited to one branch only see that branch's data. Query parameters: `branch_id`, `customer_profile_id`.
+ * **RP-02** — GET /reports/debts/admin?branch_id&customer_profile_id. Cần đăng nhập + một trong các quyền: `report.view_all`, `report.debt`. Branch scope: user gắn 1 cơ sở chỉ thấy dữ liệu cơ sở đó. Query parameters: `branch_id`, `customer_profile_id`.
  * @summary View debt report
  */
-export const getReportsDebts = (
-    params?: GetReportsDebtsParams,
+export const getReportsDebtsAdmin = (
+    params?: GetReportsDebtsAdminParams,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<GetReportsDebts200>(
-      {url: `/reports/debts`, method: 'GET',
+      return customInstance<GetReportsDebtsAdmin200>(
+      {url: `/reports/debts/admin`, method: 'GET',
         params, signal
     },
       );
@@ -851,75 +851,75 @@ export const getReportsDebts = (
 
 
 
-export const getGetReportsDebtsInfiniteQueryKey = (params?: GetReportsDebtsParams,) => {
+export const getGetReportsDebtsAdminInfiniteQueryKey = (params?: GetReportsDebtsAdminParams,) => {
     return [
-    'infinite', `/reports/debts`, ...(params ? [params]: [])
+    'infinite', `/reports/debts/admin`, ...(params ? [params]: [])
     ] as const;
     }
 
-export const getGetReportsDebtsQueryKey = (params?: GetReportsDebtsParams,) => {
+export const getGetReportsDebtsAdminQueryKey = (params?: GetReportsDebtsAdminParams,) => {
     return [
-    `/reports/debts`, ...(params ? [params]: [])
+    `/reports/debts/admin`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetReportsDebtsInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getReportsDebts>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetReportsDebtsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsDebts>>, TError, TData>>, }
+export const getGetReportsDebtsAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getReportsDebtsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetReportsDebtsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsDebtsAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetReportsDebtsInfiniteQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getGetReportsDebtsAdminInfiniteQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getReportsDebts>>> = ({ signal }) => getReportsDebts(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getReportsDebtsAdmin>>> = ({ signal }) => getReportsDebtsAdmin(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsDebts>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsDebtsAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetReportsDebtsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getReportsDebts>>>
-export type GetReportsDebtsInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+export type GetReportsDebtsAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getReportsDebtsAdmin>>>
+export type GetReportsDebtsAdminInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
 
 
-export function useGetReportsDebtsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsDebts>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params: undefined |  GetReportsDebtsParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsDebts>>, TError, TData>> & Pick<
+export function useGetReportsDebtsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsDebtsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetReportsDebtsAdminParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsDebtsAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getReportsDebts>>,
+          Awaited<ReturnType<typeof getReportsDebtsAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getReportsDebts>>
+          Awaited<ReturnType<typeof getReportsDebtsAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetReportsDebtsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsDebts>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetReportsDebtsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsDebts>>, TError, TData>> & Pick<
+export function useGetReportsDebtsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsDebtsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetReportsDebtsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsDebtsAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getReportsDebts>>,
+          Awaited<ReturnType<typeof getReportsDebtsAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getReportsDebts>>
+          Awaited<ReturnType<typeof getReportsDebtsAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetReportsDebtsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsDebts>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetReportsDebtsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsDebts>>, TError, TData>>, }
+export function useGetReportsDebtsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsDebtsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetReportsDebtsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsDebtsAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary View debt report
  */
 
-export function useGetReportsDebtsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsDebts>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetReportsDebtsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsDebts>>, TError, TData>>, }
+export function useGetReportsDebtsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsDebtsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetReportsDebtsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsDebtsAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetReportsDebtsInfiniteQueryOptions(params,options)
+  const queryOptions = getGetReportsDebtsAdminInfiniteQueryOptions(params,options)
 
   const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -931,12 +931,12 @@ export function useGetReportsDebtsInfinite<TData = InfiniteData<Awaited<ReturnTy
 /**
  * @summary View debt report
  */
-export const prefetchGetReportsDebtsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getReportsDebts>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient, params?: GetReportsDebtsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsDebts>>, TError, TData>>, }
+export const prefetchGetReportsDebtsAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getReportsDebtsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetReportsDebtsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsDebtsAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetReportsDebtsInfiniteQueryOptions(params,options)
+  const queryOptions = getGetReportsDebtsAdminInfiniteQueryOptions(params,options)
 
   await queryClient.prefetchInfiniteQuery(queryOptions);
 
@@ -945,62 +945,62 @@ export const prefetchGetReportsDebtsInfiniteQuery = async <TData = Awaited<Retur
 
 
 
-export const getGetReportsDebtsQueryOptions = <TData = Awaited<ReturnType<typeof getReportsDebts>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetReportsDebtsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsDebts>>, TError, TData>>, }
+export const getGetReportsDebtsAdminQueryOptions = <TData = Awaited<ReturnType<typeof getReportsDebtsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetReportsDebtsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsDebtsAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetReportsDebtsQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getGetReportsDebtsAdminQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getReportsDebts>>> = ({ signal }) => getReportsDebts(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getReportsDebtsAdmin>>> = ({ signal }) => getReportsDebtsAdmin(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getReportsDebts>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getReportsDebtsAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetReportsDebtsQueryResult = NonNullable<Awaited<ReturnType<typeof getReportsDebts>>>
-export type GetReportsDebtsQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+export type GetReportsDebtsAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getReportsDebtsAdmin>>>
+export type GetReportsDebtsAdminQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
 
 
-export function useGetReportsDebts<TData = Awaited<ReturnType<typeof getReportsDebts>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params: undefined |  GetReportsDebtsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsDebts>>, TError, TData>> & Pick<
+export function useGetReportsDebtsAdmin<TData = Awaited<ReturnType<typeof getReportsDebtsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetReportsDebtsAdminParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsDebtsAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getReportsDebts>>,
+          Awaited<ReturnType<typeof getReportsDebtsAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getReportsDebts>>
+          Awaited<ReturnType<typeof getReportsDebtsAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetReportsDebts<TData = Awaited<ReturnType<typeof getReportsDebts>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetReportsDebtsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsDebts>>, TError, TData>> & Pick<
+export function useGetReportsDebtsAdmin<TData = Awaited<ReturnType<typeof getReportsDebtsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetReportsDebtsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsDebtsAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getReportsDebts>>,
+          Awaited<ReturnType<typeof getReportsDebtsAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getReportsDebts>>
+          Awaited<ReturnType<typeof getReportsDebtsAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetReportsDebts<TData = Awaited<ReturnType<typeof getReportsDebts>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetReportsDebtsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsDebts>>, TError, TData>>, }
+export function useGetReportsDebtsAdmin<TData = Awaited<ReturnType<typeof getReportsDebtsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetReportsDebtsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsDebtsAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary View debt report
  */
 
-export function useGetReportsDebts<TData = Awaited<ReturnType<typeof getReportsDebts>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetReportsDebtsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsDebts>>, TError, TData>>, }
+export function useGetReportsDebtsAdmin<TData = Awaited<ReturnType<typeof getReportsDebtsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetReportsDebtsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsDebtsAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetReportsDebtsQueryOptions(params,options)
+  const queryOptions = getGetReportsDebtsAdminQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -1012,12 +1012,12 @@ export function useGetReportsDebts<TData = Awaited<ReturnType<typeof getReportsD
 /**
  * @summary View debt report
  */
-export const prefetchGetReportsDebtsQuery = async <TData = Awaited<ReturnType<typeof getReportsDebts>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient, params?: GetReportsDebtsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsDebts>>, TError, TData>>, }
+export const prefetchGetReportsDebtsAdminQuery = async <TData = Awaited<ReturnType<typeof getReportsDebtsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetReportsDebtsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsDebtsAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetReportsDebtsQueryOptions(params,options)
+  const queryOptions = getGetReportsDebtsAdminQueryOptions(params,options)
 
   await queryClient.prefetchQuery(queryOptions);
 
@@ -1027,17 +1027,17 @@ export const prefetchGetReportsDebtsQuery = async <TData = Awaited<ReturnType<ty
 
 
 /**
- * **RP-07** — GET /reports/commissions (ADM only — dedicated permission). Requires `report.commission.read` permission. Branch scope: users limited to one branch only see that branch's data. Query parameters: `from_date`, `to_date`, `branch_id`, `group_by`, `staff_id`, `customer_profile_id`.
+ * **RP-07** — GET /reports/commissions/admin (ADM only — dedicated permission). Cần đăng nhập + một trong các quyền: `report.view_all`, `report.commission`. Branch scope: user gắn 1 cơ sở chỉ thấy dữ liệu cơ sở đó. Query parameters: `from_date`, `to_date`, `branch_id`, `group_by`, `staff_id`, `customer_profile_id`.
  * @summary View commission report
  */
-export const getReportsCommissions = (
-    params?: GetReportsCommissionsParams,
+export const getReportsCommissionsAdmin = (
+    params?: GetReportsCommissionsAdminParams,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<GetReportsCommissions200>(
-      {url: `/reports/commissions`, method: 'GET',
+      return customInstance<GetReportsCommissionsAdmin200>(
+      {url: `/reports/commissions/admin`, method: 'GET',
         params, signal
     },
       );
@@ -1046,75 +1046,75 @@ export const getReportsCommissions = (
 
 
 
-export const getGetReportsCommissionsInfiniteQueryKey = (params?: GetReportsCommissionsParams,) => {
+export const getGetReportsCommissionsAdminInfiniteQueryKey = (params?: GetReportsCommissionsAdminParams,) => {
     return [
-    'infinite', `/reports/commissions`, ...(params ? [params]: [])
+    'infinite', `/reports/commissions/admin`, ...(params ? [params]: [])
     ] as const;
     }
 
-export const getGetReportsCommissionsQueryKey = (params?: GetReportsCommissionsParams,) => {
+export const getGetReportsCommissionsAdminQueryKey = (params?: GetReportsCommissionsAdminParams,) => {
     return [
-    `/reports/commissions`, ...(params ? [params]: [])
+    `/reports/commissions/admin`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetReportsCommissionsInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getReportsCommissions>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetReportsCommissionsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsCommissions>>, TError, TData>>, }
+export const getGetReportsCommissionsAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getReportsCommissionsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetReportsCommissionsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsCommissionsAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetReportsCommissionsInfiniteQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getGetReportsCommissionsAdminInfiniteQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getReportsCommissions>>> = ({ signal }) => getReportsCommissions(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getReportsCommissionsAdmin>>> = ({ signal }) => getReportsCommissionsAdmin(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsCommissions>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsCommissionsAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetReportsCommissionsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getReportsCommissions>>>
-export type GetReportsCommissionsInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+export type GetReportsCommissionsAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getReportsCommissionsAdmin>>>
+export type GetReportsCommissionsAdminInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
 
 
-export function useGetReportsCommissionsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsCommissions>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params: undefined |  GetReportsCommissionsParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsCommissions>>, TError, TData>> & Pick<
+export function useGetReportsCommissionsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsCommissionsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetReportsCommissionsAdminParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsCommissionsAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getReportsCommissions>>,
+          Awaited<ReturnType<typeof getReportsCommissionsAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getReportsCommissions>>
+          Awaited<ReturnType<typeof getReportsCommissionsAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetReportsCommissionsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsCommissions>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetReportsCommissionsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsCommissions>>, TError, TData>> & Pick<
+export function useGetReportsCommissionsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsCommissionsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetReportsCommissionsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsCommissionsAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getReportsCommissions>>,
+          Awaited<ReturnType<typeof getReportsCommissionsAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getReportsCommissions>>
+          Awaited<ReturnType<typeof getReportsCommissionsAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetReportsCommissionsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsCommissions>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetReportsCommissionsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsCommissions>>, TError, TData>>, }
+export function useGetReportsCommissionsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsCommissionsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetReportsCommissionsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsCommissionsAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary View commission report
  */
 
-export function useGetReportsCommissionsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsCommissions>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetReportsCommissionsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsCommissions>>, TError, TData>>, }
+export function useGetReportsCommissionsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsCommissionsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetReportsCommissionsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsCommissionsAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetReportsCommissionsInfiniteQueryOptions(params,options)
+  const queryOptions = getGetReportsCommissionsAdminInfiniteQueryOptions(params,options)
 
   const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -1126,12 +1126,12 @@ export function useGetReportsCommissionsInfinite<TData = InfiniteData<Awaited<Re
 /**
  * @summary View commission report
  */
-export const prefetchGetReportsCommissionsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getReportsCommissions>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient, params?: GetReportsCommissionsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsCommissions>>, TError, TData>>, }
+export const prefetchGetReportsCommissionsAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getReportsCommissionsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetReportsCommissionsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsCommissionsAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetReportsCommissionsInfiniteQueryOptions(params,options)
+  const queryOptions = getGetReportsCommissionsAdminInfiniteQueryOptions(params,options)
 
   await queryClient.prefetchInfiniteQuery(queryOptions);
 
@@ -1140,62 +1140,62 @@ export const prefetchGetReportsCommissionsInfiniteQuery = async <TData = Awaited
 
 
 
-export const getGetReportsCommissionsQueryOptions = <TData = Awaited<ReturnType<typeof getReportsCommissions>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetReportsCommissionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsCommissions>>, TError, TData>>, }
+export const getGetReportsCommissionsAdminQueryOptions = <TData = Awaited<ReturnType<typeof getReportsCommissionsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetReportsCommissionsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsCommissionsAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetReportsCommissionsQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getGetReportsCommissionsAdminQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getReportsCommissions>>> = ({ signal }) => getReportsCommissions(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getReportsCommissionsAdmin>>> = ({ signal }) => getReportsCommissionsAdmin(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getReportsCommissions>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getReportsCommissionsAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetReportsCommissionsQueryResult = NonNullable<Awaited<ReturnType<typeof getReportsCommissions>>>
-export type GetReportsCommissionsQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+export type GetReportsCommissionsAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getReportsCommissionsAdmin>>>
+export type GetReportsCommissionsAdminQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
 
 
-export function useGetReportsCommissions<TData = Awaited<ReturnType<typeof getReportsCommissions>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params: undefined |  GetReportsCommissionsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsCommissions>>, TError, TData>> & Pick<
+export function useGetReportsCommissionsAdmin<TData = Awaited<ReturnType<typeof getReportsCommissionsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetReportsCommissionsAdminParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsCommissionsAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getReportsCommissions>>,
+          Awaited<ReturnType<typeof getReportsCommissionsAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getReportsCommissions>>
+          Awaited<ReturnType<typeof getReportsCommissionsAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetReportsCommissions<TData = Awaited<ReturnType<typeof getReportsCommissions>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetReportsCommissionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsCommissions>>, TError, TData>> & Pick<
+export function useGetReportsCommissionsAdmin<TData = Awaited<ReturnType<typeof getReportsCommissionsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetReportsCommissionsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsCommissionsAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getReportsCommissions>>,
+          Awaited<ReturnType<typeof getReportsCommissionsAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getReportsCommissions>>
+          Awaited<ReturnType<typeof getReportsCommissionsAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetReportsCommissions<TData = Awaited<ReturnType<typeof getReportsCommissions>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetReportsCommissionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsCommissions>>, TError, TData>>, }
+export function useGetReportsCommissionsAdmin<TData = Awaited<ReturnType<typeof getReportsCommissionsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetReportsCommissionsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsCommissionsAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary View commission report
  */
 
-export function useGetReportsCommissions<TData = Awaited<ReturnType<typeof getReportsCommissions>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetReportsCommissionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsCommissions>>, TError, TData>>, }
+export function useGetReportsCommissionsAdmin<TData = Awaited<ReturnType<typeof getReportsCommissionsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetReportsCommissionsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsCommissionsAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetReportsCommissionsQueryOptions(params,options)
+  const queryOptions = getGetReportsCommissionsAdminQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -1207,12 +1207,12 @@ export function useGetReportsCommissions<TData = Awaited<ReturnType<typeof getRe
 /**
  * @summary View commission report
  */
-export const prefetchGetReportsCommissionsQuery = async <TData = Awaited<ReturnType<typeof getReportsCommissions>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient, params?: GetReportsCommissionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsCommissions>>, TError, TData>>, }
+export const prefetchGetReportsCommissionsAdminQuery = async <TData = Awaited<ReturnType<typeof getReportsCommissionsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetReportsCommissionsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsCommissionsAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetReportsCommissionsQueryOptions(params,options)
+  const queryOptions = getGetReportsCommissionsAdminQueryOptions(params,options)
 
   await queryClient.prefetchQuery(queryOptions);
 
@@ -1222,17 +1222,17 @@ export const prefetchGetReportsCommissionsQuery = async <TData = Awaited<ReturnT
 
 
 /**
- * **RP-04** — GET /reports/appointments?branch_id&from_date&to_date&staff_id. Requires one of the permissions: `report.read`, `report.appointment.read`. Branch scope: users limited to one branch only see that branch's data. Query parameters: `from_date`, `to_date`, `branch_id`, `staff_id`.
+ * **RP-04** — GET /reports/appointments/admin?branch_id&from_date&to_date&staff_id. Cần đăng nhập + một trong các quyền: `report.view_all`, `report.appointment`. Branch scope: user gắn 1 cơ sở chỉ thấy dữ liệu cơ sở đó. Query parameters: `from_date`, `to_date`, `branch_id`, `staff_id`.
  * @summary View appointments
  */
-export const getReportsAppointments = (
-    params?: GetReportsAppointmentsParams,
+export const getReportsAppointmentsAdmin = (
+    params?: GetReportsAppointmentsAdminParams,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<GetReportsAppointments200>(
-      {url: `/reports/appointments`, method: 'GET',
+      return customInstance<GetReportsAppointmentsAdmin200>(
+      {url: `/reports/appointments/admin`, method: 'GET',
         params, signal
     },
       );
@@ -1241,75 +1241,75 @@ export const getReportsAppointments = (
 
 
 
-export const getGetReportsAppointmentsInfiniteQueryKey = (params?: GetReportsAppointmentsParams,) => {
+export const getGetReportsAppointmentsAdminInfiniteQueryKey = (params?: GetReportsAppointmentsAdminParams,) => {
     return [
-    'infinite', `/reports/appointments`, ...(params ? [params]: [])
+    'infinite', `/reports/appointments/admin`, ...(params ? [params]: [])
     ] as const;
     }
 
-export const getGetReportsAppointmentsQueryKey = (params?: GetReportsAppointmentsParams,) => {
+export const getGetReportsAppointmentsAdminQueryKey = (params?: GetReportsAppointmentsAdminParams,) => {
     return [
-    `/reports/appointments`, ...(params ? [params]: [])
+    `/reports/appointments/admin`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetReportsAppointmentsInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getReportsAppointments>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetReportsAppointmentsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsAppointments>>, TError, TData>>, }
+export const getGetReportsAppointmentsAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getReportsAppointmentsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetReportsAppointmentsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsAppointmentsAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetReportsAppointmentsInfiniteQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getGetReportsAppointmentsAdminInfiniteQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getReportsAppointments>>> = ({ signal }) => getReportsAppointments(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getReportsAppointmentsAdmin>>> = ({ signal }) => getReportsAppointmentsAdmin(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsAppointments>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsAppointmentsAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetReportsAppointmentsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getReportsAppointments>>>
-export type GetReportsAppointmentsInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+export type GetReportsAppointmentsAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getReportsAppointmentsAdmin>>>
+export type GetReportsAppointmentsAdminInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
 
 
-export function useGetReportsAppointmentsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsAppointments>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params: undefined |  GetReportsAppointmentsParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsAppointments>>, TError, TData>> & Pick<
+export function useGetReportsAppointmentsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsAppointmentsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetReportsAppointmentsAdminParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsAppointmentsAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getReportsAppointments>>,
+          Awaited<ReturnType<typeof getReportsAppointmentsAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getReportsAppointments>>
+          Awaited<ReturnType<typeof getReportsAppointmentsAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetReportsAppointmentsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsAppointments>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetReportsAppointmentsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsAppointments>>, TError, TData>> & Pick<
+export function useGetReportsAppointmentsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsAppointmentsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetReportsAppointmentsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsAppointmentsAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getReportsAppointments>>,
+          Awaited<ReturnType<typeof getReportsAppointmentsAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getReportsAppointments>>
+          Awaited<ReturnType<typeof getReportsAppointmentsAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetReportsAppointmentsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsAppointments>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetReportsAppointmentsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsAppointments>>, TError, TData>>, }
+export function useGetReportsAppointmentsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsAppointmentsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetReportsAppointmentsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsAppointmentsAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary View appointments
  */
 
-export function useGetReportsAppointmentsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsAppointments>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetReportsAppointmentsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsAppointments>>, TError, TData>>, }
+export function useGetReportsAppointmentsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReportsAppointmentsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetReportsAppointmentsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsAppointmentsAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetReportsAppointmentsInfiniteQueryOptions(params,options)
+  const queryOptions = getGetReportsAppointmentsAdminInfiniteQueryOptions(params,options)
 
   const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -1321,12 +1321,12 @@ export function useGetReportsAppointmentsInfinite<TData = InfiniteData<Awaited<R
 /**
  * @summary View appointments
  */
-export const prefetchGetReportsAppointmentsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getReportsAppointments>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient, params?: GetReportsAppointmentsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsAppointments>>, TError, TData>>, }
+export const prefetchGetReportsAppointmentsAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getReportsAppointmentsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetReportsAppointmentsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReportsAppointmentsAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetReportsAppointmentsInfiniteQueryOptions(params,options)
+  const queryOptions = getGetReportsAppointmentsAdminInfiniteQueryOptions(params,options)
 
   await queryClient.prefetchInfiniteQuery(queryOptions);
 
@@ -1335,62 +1335,62 @@ export const prefetchGetReportsAppointmentsInfiniteQuery = async <TData = Awaite
 
 
 
-export const getGetReportsAppointmentsQueryOptions = <TData = Awaited<ReturnType<typeof getReportsAppointments>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetReportsAppointmentsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsAppointments>>, TError, TData>>, }
+export const getGetReportsAppointmentsAdminQueryOptions = <TData = Awaited<ReturnType<typeof getReportsAppointmentsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetReportsAppointmentsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsAppointmentsAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetReportsAppointmentsQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getGetReportsAppointmentsAdminQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getReportsAppointments>>> = ({ signal }) => getReportsAppointments(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getReportsAppointmentsAdmin>>> = ({ signal }) => getReportsAppointmentsAdmin(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getReportsAppointments>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getReportsAppointmentsAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetReportsAppointmentsQueryResult = NonNullable<Awaited<ReturnType<typeof getReportsAppointments>>>
-export type GetReportsAppointmentsQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+export type GetReportsAppointmentsAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getReportsAppointmentsAdmin>>>
+export type GetReportsAppointmentsAdminQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
 
 
-export function useGetReportsAppointments<TData = Awaited<ReturnType<typeof getReportsAppointments>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params: undefined |  GetReportsAppointmentsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsAppointments>>, TError, TData>> & Pick<
+export function useGetReportsAppointmentsAdmin<TData = Awaited<ReturnType<typeof getReportsAppointmentsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetReportsAppointmentsAdminParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsAppointmentsAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getReportsAppointments>>,
+          Awaited<ReturnType<typeof getReportsAppointmentsAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getReportsAppointments>>
+          Awaited<ReturnType<typeof getReportsAppointmentsAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetReportsAppointments<TData = Awaited<ReturnType<typeof getReportsAppointments>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetReportsAppointmentsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsAppointments>>, TError, TData>> & Pick<
+export function useGetReportsAppointmentsAdmin<TData = Awaited<ReturnType<typeof getReportsAppointmentsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetReportsAppointmentsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsAppointmentsAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getReportsAppointments>>,
+          Awaited<ReturnType<typeof getReportsAppointmentsAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getReportsAppointments>>
+          Awaited<ReturnType<typeof getReportsAppointmentsAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetReportsAppointments<TData = Awaited<ReturnType<typeof getReportsAppointments>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetReportsAppointmentsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsAppointments>>, TError, TData>>, }
+export function useGetReportsAppointmentsAdmin<TData = Awaited<ReturnType<typeof getReportsAppointmentsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetReportsAppointmentsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsAppointmentsAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary View appointments
  */
 
-export function useGetReportsAppointments<TData = Awaited<ReturnType<typeof getReportsAppointments>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetReportsAppointmentsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsAppointments>>, TError, TData>>, }
+export function useGetReportsAppointmentsAdmin<TData = Awaited<ReturnType<typeof getReportsAppointmentsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetReportsAppointmentsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsAppointmentsAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetReportsAppointmentsQueryOptions(params,options)
+  const queryOptions = getGetReportsAppointmentsAdminQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -1402,12 +1402,12 @@ export function useGetReportsAppointments<TData = Awaited<ReturnType<typeof getR
 /**
  * @summary View appointments
  */
-export const prefetchGetReportsAppointmentsQuery = async <TData = Awaited<ReturnType<typeof getReportsAppointments>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient, params?: GetReportsAppointmentsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsAppointments>>, TError, TData>>, }
+export const prefetchGetReportsAppointmentsAdminQuery = async <TData = Awaited<ReturnType<typeof getReportsAppointmentsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetReportsAppointmentsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportsAppointmentsAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetReportsAppointmentsQueryOptions(params,options)
+  const queryOptions = getGetReportsAppointmentsAdminQueryOptions(params,options)
 
   await queryClient.prefetchQuery(queryOptions);
 

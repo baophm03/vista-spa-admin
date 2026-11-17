@@ -40,35 +40,23 @@ import ListPagination from '@/components/base/ListPagination'
 import { paginateRows } from '@/utils/listTable'
 import { isTechnicianUser, type UserWithRoleAssignments } from '@/utils/userRoles'
 import { errorMessage, pickData, pickMeta } from '@/api/helpers'
-import {
-  getGetCommissionsQueryKey,
-  getGetCommissionsSummaryQueryKey,
-  useGetCommissions,
-  useGetCommissionsSummary,
-  usePostCommissionsIdVoid,
-  usePutCommissionsId,
-} from '@/api/endpoints/commissions'
-import {
-  getGetReferralsQueryKey,
-  useGetReferrals,
-  usePostReferrals,
-  usePutReferralsId,
-} from '@/api/endpoints/membership'
-import { useGetCollaborators } from '@/api/endpoints/admin'
-import { useGetBranches } from '@/api/endpoints/branches'
-import { useGetUsers } from '@/api/endpoints/users'
-import { useGetCustomerProfiles } from '@/api/endpoints/customer-profiles'
-import { useGetDiscountRules } from '@/api/endpoints/settings'
+import { getGetCommissionsAdminQueryKey, getGetCommissionsSummaryAdminQueryKey, useGetCommissionsAdmin, useGetCommissionsSummaryAdmin, usePostCommissionsIdVoidAdmin, usePutCommissionsIdAdmin } from '@/api/endpoints/commissions'
+import { getGetReferralsAdminQueryKey, useGetReferralsAdmin, usePostReferralsAdmin, usePutReferralsIdAdmin } from '@/api/endpoints/referrals'
+import { useGetCollaboratorsAdmin } from '@/api/endpoints/collaborators'
+import { useGetBranchesAdmin } from '@/api/endpoints/branches'
+import { useGetUsersAdmin } from '@/api/endpoints/users'
+import { useGetCustomerProfilesAdmin } from '@/api/endpoints/customer-profiles'
+import { useGetDiscountRulesAdmin } from '@/api/endpoints/discount-rules'
 import type {
   Branch,
   CommissionEntry,
   CommissionSummaryRow,
   Collaborator,
   DiscountRule,
-  GetCommissionsParams,
-  GetCommissionsSummaryParams,
-  PostReferralsBody,
-  PutReferralsIdBody,
+  GetCommissionsAdminParams,
+  GetCommissionsSummaryAdminParams,
+  PostReferralsAdminBody,
+  PutReferralsIdAdminBody,
   User,
 } from '@/api/models'
 
@@ -172,7 +160,7 @@ function LedgerTab({ canReadReferral, canReadCommission }: { canReadReferral: bo
   const canEdit = ability.can('UPDATE', 'COMMISSION')
   const canVoid = ability.can('VOID', 'COMMISSION')
   const canUpdateReferral = ability.can('UPDATE', 'REFERRAL')
-  const [filters, setFilters] = useState<GetCommissionsParams>({})
+  const [filters, setFilters] = useState<GetCommissionsAdminParams>({})
   const [page, setPage] = useState(1)
   const [filterOpen, setFilterOpen] = useState(false)
   const [visibleColumns, setVisibleColumns] = useState<CommissionColumnKey[]>(DEFAULT_VISIBLE_COLUMNS)
@@ -193,19 +181,19 @@ function LedgerTab({ canReadReferral, canReadCommission }: { canReadReferral: bo
   const [filterForm] = Form.useForm()
   const queryClient = useQueryClient()
   const referralTypeValue = Form.useWatch('referrer_type', referralForm) as string | undefined
-  const branchesQuery = useGetBranches()
+  const branchesQuery = useGetBranchesAdmin()
   const branches = (pickData<Branch[] | undefined>(branchesQuery.data) ?? []) as Branch[]
   const branchNameById = useMemo(() => new Map(branches.map((branch) => [branch.id, branch.name])), [branches])
-  const usersQuery = useGetUsers({ currentPage: 1, pageSize: 200, has_role: true })
-  const collaboratorsQuery = useGetCollaborators({ is_active: true })
-  const customersQuery = useGetCustomerProfiles({ page: 1, limit: 200 })
-  const discountRulesQuery = useGetDiscountRules(
+  const usersQuery = useGetUsersAdmin({ currentPage: 1, pageSize: 200, has_role: true })
+  const collaboratorsQuery = useGetCollaboratorsAdmin({ is_active: true })
+  const customersQuery = useGetCustomerProfilesAdmin({ page: 1, limit: 200 })
+  const discountRulesQuery = useGetDiscountRulesAdmin(
     { is_active: true, audience: 'NEW_BY_REFERRAL' },
     { query: { enabled: canReadReferral } },
   )
 
-  const listQuery = useGetCommissions({ ...filters, page: 1, limit: 200 }, { query: { enabled: canReadCommission } })
-  const referralQuery = useGetReferrals(undefined, { query: { enabled: canReadReferral } })
+  const listQuery = useGetCommissionsAdmin({ ...filters, page: 1, limit: 200 }, { query: { enabled: canReadCommission } })
+  const referralQuery = useGetReferralsAdmin(undefined, { query: { enabled: canReadReferral } })
   const commissionRows = useMemo(() => pickData<CommissionEntryWithRelations[]>(listQuery.data) ?? [], [listQuery.data])
   const meta = pickMeta(listQuery.data)
   const referrals = useMemo(() => {
@@ -283,15 +271,15 @@ function LedgerTab({ canReadReferral, canReadCommission }: { canReadReferral: bo
   }, [commissionRows, referralOnlyRows, referralByCommissionId])
 
   const invalidate = async () => {
-    await queryClient.invalidateQueries({ queryKey: getGetCommissionsQueryKey() })
-    await queryClient.invalidateQueries({ queryKey: getGetCommissionsSummaryQueryKey() })
-    await queryClient.invalidateQueries({ queryKey: getGetReferralsQueryKey() })
+    await queryClient.invalidateQueries({ queryKey: getGetCommissionsAdminQueryKey() })
+    await queryClient.invalidateQueries({ queryKey: getGetCommissionsSummaryAdminQueryKey() })
+    await queryClient.invalidateQueries({ queryKey: getGetReferralsAdminQueryKey() })
   }
 
-  const updateMutation = usePutCommissionsId({ mutation: { onSuccess: invalidate } })
-  const voidMutation = usePostCommissionsIdVoid({ mutation: { onSuccess: invalidate } })
+  const updateMutation = usePutCommissionsIdAdmin({ mutation: { onSuccess: invalidate } })
+  const voidMutation = usePostCommissionsIdVoidAdmin({ mutation: { onSuccess: invalidate } })
 
-  const createReferralMutation = usePostReferrals({
+  const createReferralMutation = usePostReferralsAdmin({
     mutation: {
       onSuccess: () => {
         message.success('Đã ghi nhận lượt giới thiệu')
@@ -302,7 +290,7 @@ function LedgerTab({ canReadReferral, canReadCommission }: { canReadReferral: bo
       onError: (err) => message.error(errorMessage(err)),
     },
   })
-  const updateReferralMutation = usePutReferralsId({
+  const updateReferralMutation = usePutReferralsIdAdmin({
     mutation: {
       onSuccess: () => {
         message.success('Đã cập nhật lượt giới thiệu')
@@ -336,14 +324,14 @@ function LedgerTab({ canReadReferral, canReadCommission }: { canReadReferral: bo
     try {
       const values = await referralForm.validateFields()
       if (editingReferral) {
-        const data: PutReferralsIdBody = {
+        const data: PutReferralsIdAdminBody = {
           status: values.status,
           discount_rule_id: values.discount_rule_id,
           note: values.note,
         }
         await updateReferralMutation.mutateAsync({ id: editingReferral.id, data })
       } else {
-        const data: PostReferralsBody = {
+        const data: PostReferralsAdminBody = {
           referrer_type: values.referrer_type,
           referrer_id: values.referrer_id,
           referred_profile_id: values.referred_profile_id,
@@ -380,11 +368,11 @@ function LedgerTab({ canReadReferral, canReadCommission }: { canReadReferral: bo
       return
     }
     const range = values.date_range as [Dayjs | null, Dayjs | null] | null | undefined
-    const next: GetCommissionsParams = {}
-    if (values.payee_type) next.payee_type = values.payee_type as GetCommissionsParams['payee_type']
-    if (values.mode) next.mode = values.mode as GetCommissionsParams['mode']
-    if (values.status) next.status = values.status as GetCommissionsParams['status']
-    if (values.payout_status) next.payout_status = values.payout_status as GetCommissionsParams['payout_status']
+    const next: GetCommissionsAdminParams = {}
+    if (values.payee_type) next.payee_type = values.payee_type as GetCommissionsAdminParams['payee_type']
+    if (values.mode) next.mode = values.mode as GetCommissionsAdminParams['mode']
+    if (values.status) next.status = values.status as GetCommissionsAdminParams['status']
+    if (values.payout_status) next.payout_status = values.payout_status as GetCommissionsAdminParams['payout_status']
     if (values.branch_id) next.branch_id = values.branch_id as string
     if (range?.[0]) next.date_from = range[0].format('YYYY-MM-DD')
     if (range?.[1]) next.date_to = range[1].format('YYYY-MM-DD')
@@ -826,14 +814,14 @@ function LedgerTab({ canReadReferral, canReadCommission }: { canReadReferral: bo
 }
 
 function SummaryTab() {
-  const [filters, setFilters] = useState<GetCommissionsSummaryParams>({ group_by: 'month' })
+  const [filters, setFilters] = useState<GetCommissionsSummaryAdminParams>({ group_by: 'month' })
   const [page, setPage] = useState(1)
-  const summaryQuery = useGetCommissionsSummary(filters)
+  const summaryQuery = useGetCommissionsSummaryAdmin(filters)
   const rawRows = useMemo(() => pickData<CommissionSummaryRow[]>(summaryQuery.data) ?? [], [summaryQuery.data])
   const rows = rawRows as Array<CommissionSummaryRow & { payee_id?: string }>
-  const branchesQuery = useGetBranches()
-  const usersQuery = useGetUsers({ currentPage: 1, pageSize: 200, has_role: true })
-  const collaboratorsQuery = useGetCollaborators({})
+  const branchesQuery = useGetBranchesAdmin()
+  const usersQuery = useGetUsersAdmin({ currentPage: 1, pageSize: 200, has_role: true })
+  const collaboratorsQuery = useGetCollaboratorsAdmin({})
   const branches = (pickData<Branch[] | undefined>(branchesQuery.data) ?? []) as Branch[]
   const users = (pickData<{ rows?: User[] } | undefined>(usersQuery.data)?.rows ?? []) as (User & UserWithRoleAssignments)[]
   const technicians = users.filter(isTechnicianUser)

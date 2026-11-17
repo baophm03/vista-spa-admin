@@ -2,8 +2,9 @@ import { useState } from 'react'
 import { Button, Image, Popconfirm, Space, Typography, Upload, message } from 'antd'
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons'
 import { errorMessage, pickData } from '@/api/helpers'
-import { deletePhotosId, postSessionsIdPhotos } from '@/api/endpoints/treatment-customers'
-import { postFiles } from '@/api/endpoints/files'
+import { deletePhotosIdAdmin } from '@/api/endpoints/treatment-customers'
+import { postSessionsIdPhotosAdmin } from '@/api/endpoints/treatment-sessions'
+import { postFilesAdmin } from '@/api/endpoints/files'
 import type { SessionPhoto } from '@/api/models/sessionPhoto'
 import { fileSrc, registerUploadedFile, resolveFileSrc, useFileUrlMap } from '@/hooks/useFileUrl'
 import links from '@/configs/links'
@@ -41,7 +42,7 @@ export default function SessionPhotos({
     if (!id) return
     setDeleting(true)
     try {
-      await deletePhotosId(id)
+      await deletePhotosIdAdmin(id)
       message.success('Đã xóa ảnh')
       onChanged()
     } catch (err) {
@@ -115,10 +116,10 @@ export default function SessionPhotos({
           showUploadList={false}
           beforeUpload={async (file: File) => {
             try {
-              const uploaded = pickData<{ id?: string; path?: string }>(await postFiles({ file }))
+              const uploaded = pickData<{ id?: string; path?: string }>(await postFilesAdmin({ file }))
               if (!uploaded?.id) throw new Error('Máy chủ không trả về file')
               registerUploadedFile(uploaded.id, uploaded.path)
-              const saved = pickData<SessionPhoto>(await postSessionsIdPhotos(sessionId, { file_id: uploaded.id, kind } as never))
+              const saved = pickData<SessionPhoto>(await postSessionsIdPhotosAdmin(sessionId, { file_id: uploaded.id, kind } as never))
               if (!saved?.id) throw new Error('Máy chủ chưa xác nhận ảnh của buổi')
               onPhotoAdded({ ...saved, kind: saved.kind ?? kind })
               message.success('Đã thêm ảnh')

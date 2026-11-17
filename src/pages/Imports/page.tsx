@@ -5,9 +5,9 @@ import { InboxOutlined, PlayCircleOutlined, SafetyOutlined, ThunderboltOutlined 
 import dayjs from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
 import { errorMessage, pickData } from '@/api/helpers'
-import { usePostImportsKind } from '@/api/endpoints/imports'
-import { useGetBranches } from '@/api/endpoints/branches'
-import { getCustomFieldDefs } from '@/api/endpoints/settings'
+import { usePostImportsKindAdmin } from '@/api/endpoints/imports'
+import { useGetBranchesAdmin } from '@/api/endpoints/branches'
+import { getCustomFieldDefsAdmin } from '@/api/endpoints/custom-field-defs'
 import { apiClient } from '@/api/mutator/custom-instance'
 import type { CustomFieldDef } from '@/api/models/customFieldDef'
 import type { UploadFile } from 'antd'
@@ -213,7 +213,7 @@ export default function Imports() {
   const headerRequestId = useRef(0)
   const [form] = Form.useForm()
 
-  const branchesQuery = useGetBranches()
+  const branchesQuery = useGetBranchesAdmin()
   const branches = (pickData<Array<{ id: string; name: string }>>(branchesQuery.data) ?? []) as Array<{ id: string; name: string }>
   const customFieldEntity = kind === 'customer-profiles' ? 'CUSTOMER_PROFILE' : 'CUSTOMER_TREATMENT'
   const baseFields = kind === 'customer-profiles' ? PROFILE_FIELDS : TREATMENT_FIELDS
@@ -244,7 +244,7 @@ export default function Imports() {
     ...FIELD_LABELS,
     ...Object.fromEntries(customFieldDefs.map((definition) => [`custom_fields.${definition.key}`, definition.label])),
   }
-  const importMutation = usePostImportsKind()
+  const importMutation = usePostImportsKindAdmin()
 
   const renderFieldMappings = (fieldList: ImportField[]) => {
     return (
@@ -286,7 +286,7 @@ export default function Imports() {
     setCustomFieldDefs([])
     setCustomFieldsError('')
     setCustomFieldsLoading(true)
-    getCustomFieldDefs({ entity: customFieldEntity, is_active: true })
+    getCustomFieldDefsAdmin({ entity: customFieldEntity, is_active: true })
       .then((body) => {
         if (!active) return
         setCustomFieldDefs((pickData<CustomFieldDef[]>(body) ?? [])
@@ -425,8 +425,8 @@ export default function Imports() {
           await reloadHistory()
           if (!job.dry_run) {
             message.success(`Đã nhập: tạo ${job.created_count ?? 0}, cập nhật ${job.updated_count ?? 0}`)
-            await queryClient.invalidateQueries({ queryKey: ['getCustomerProfiles'] })
-            await queryClient.invalidateQueries({ queryKey: ['getTreatmentCustomers'] })
+            await queryClient.invalidateQueries({ queryKey: ['getCustomerProfilesAdmin'] })
+            await queryClient.invalidateQueries({ queryKey: ['getTreatmentCustomersAdmin'] })
           }
         } else if (job.status === 'FAILED') {
           setActiveJob(null)
@@ -509,8 +509,8 @@ export default function Imports() {
       await reloadHistory()
       if (!dryRun) {
         message.success(`Đã nhập: tạo ${data?.created_count ?? 0}, cập nhật ${data?.updated_count ?? 0}`)
-        await queryClient.invalidateQueries({ queryKey: ['getCustomerProfiles'] })
-        await queryClient.invalidateQueries({ queryKey: ['getTreatmentCustomers'] })
+        await queryClient.invalidateQueries({ queryKey: ['getCustomerProfilesAdmin'] })
+        await queryClient.invalidateQueries({ queryKey: ['getTreatmentCustomersAdmin'] })
       }
     } catch (err) {
       message.error(errorMessage(err))

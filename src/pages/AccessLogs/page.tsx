@@ -7,13 +7,13 @@ import PageTitle from '@/components/base/PageTitle'
 import ListPagination from '@/components/base/ListPagination'
 import TableEmpty from '@/components/base/TableEmpty'
 import { errorMessage, pickData, pickMeta } from '@/api/helpers'
-import type { GetAccessLogsParams } from '@/api/models/getAccessLogsParams'
-import type { GetAccessLogsAction } from '@/api/models/getAccessLogsAction'
+import type { GetAccessLogsAdminParams } from '@/api/models/getAccessLogsAdminParams'
+import type { GetAccessLogsAdminAction } from '@/api/models/getAccessLogsAdminAction'
 import type { Branch } from '@/api/models/branch'
-import { useGetAccessLogs } from '@/api/endpoints/admin'
-import { useGetBranches } from '@/api/endpoints/branches'
-import { useGetUsers } from '@/api/endpoints/users'
-import { useGetCustomerProfiles } from '@/api/endpoints/customer-profiles'
+import { useGetAccessLogsAdmin } from '@/api/endpoints/access-logs'
+import { useGetBranchesAdmin } from '@/api/endpoints/branches'
+import { useGetUsersAdmin } from '@/api/endpoints/users'
+import { useGetCustomerProfilesAdmin } from '@/api/endpoints/customer-profiles'
 import { useBrandDateTime } from '@/themeRuntime'
 
 interface AccessLogRow {
@@ -46,7 +46,7 @@ interface ListResult<T> {
   rows?: T[]
 }
 
-const ACTION_META: Record<GetAccessLogsAction, { label: string; color: string }> = {
+const ACTION_META: Record<GetAccessLogsAdminAction, { label: string; color: string }> = {
   VIEW_PROFILE: { label: 'Xem hồ sơ / QR / sức khỏe', color: 'blue' },
   VIEW_SESSION: { label: 'Xem buổi điều trị', color: 'cyan' },
   VIEW_PHOTO: { label: 'Xem ảnh điều trị', color: 'purple' },
@@ -66,7 +66,7 @@ export default function AccessLogs() {
   const [userId, setUserId] = useState<string>()
   const [branchId, setBranchId] = useState<string>()
   const [customerProfileId, setCustomerProfileId] = useState<string>()
-  const [action, setAction] = useState<GetAccessLogsAction>()
+  const [action, setAction] = useState<GetAccessLogsAdminAction>()
   const [range, setRange] = useState<[Dayjs | null, Dayjs | null] | null>(null)
   const [staffSearch, setStaffSearch] = useState('')
   const [customerSearch, setCustomerSearch] = useState('')
@@ -79,7 +79,7 @@ export default function AccessLogs() {
     return () => window.clearTimeout(timeout)
   }, [staffSearch, customerSearch])
 
-  const params = useMemo<GetAccessLogsParams>(() => ({
+  const params = useMemo<GetAccessLogsAdminParams>(() => ({
     page,
     limit,
     ...(branchId ? { branch_id: branchId } : {}),
@@ -90,10 +90,10 @@ export default function AccessLogs() {
     ...(range?.[1] ? { to: range[1].toISOString() } : {}),
   }), [page, limit, branchId, userId, customerProfileId, action, range])
 
-  const logsQuery = useGetAccessLogs(params)
-  const branchesQuery = useGetBranches({ status: 'all' })
-  const usersQuery = useGetUsers({ currentPage: 1, pageSize: 50, has_role: true, ...(debouncedSearch.staff ? { q: debouncedSearch.staff } : {}) })
-  const customersQuery = useGetCustomerProfiles({
+  const logsQuery = useGetAccessLogsAdmin(params)
+  const branchesQuery = useGetBranchesAdmin({ status: 'all' })
+  const usersQuery = useGetUsersAdmin({ currentPage: 1, pageSize: 50, has_role: true, ...(debouncedSearch.staff ? { q: debouncedSearch.staff } : {}) })
+  const customersQuery = useGetCustomerProfilesAdmin({
     page: 1,
     limit: 50,
     ...(debouncedSearch.customer ? { q: debouncedSearch.customer } : {}),
@@ -152,7 +152,7 @@ export default function AccessLogs() {
               }))}
               onSearch={setCustomerSearch}
             />
-            <Select<GetAccessLogsAction>
+            <Select<GetAccessLogsAdminAction>
               allowClear
               showSearch
               optionFilterProp="label"
@@ -160,7 +160,7 @@ export default function AccessLogs() {
               style={{ width: 160 }}
               value={action}
               onChange={(value) => { setAction(value); setPage(1) }}
-              options={(Object.keys(ACTION_META) as GetAccessLogsAction[]).map((value) => ({ value, label: ACTION_META[value].label }))}
+              options={(Object.keys(ACTION_META) as GetAccessLogsAdminAction[]).map((value) => ({ value, label: ACTION_META[value].label }))}
             />
             <DatePicker.RangePicker
               allowEmpty={[true, true]}
@@ -219,7 +219,7 @@ export default function AccessLogs() {
             dataIndex: 'action',
             width: 230,
             render: (value: string) => {
-              const meta = ACTION_META[value as GetAccessLogsAction]
+              const meta = ACTION_META[value as GetAccessLogsAdminAction]
               return <Tag color={meta?.color}>{meta?.label ?? value}</Tag>
             },
           },

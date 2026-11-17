@@ -11,17 +11,7 @@ import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ToolbarRow from '@/components/base/ToolbarRow'
 import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import TableEmpty from '@/components/base/TableEmpty'
-import {
-  deleteStaffDaysOffId,
-  getGetStaffDaysOffQueryKey,
-  getStaffDaysOffConflicts,
-  postStaffDaysOff,
-  putStaffDaysOffIdApprove,
-  putStaffDaysOffIdReject,
-  useGetShiftTemplates,
-  useGetStaffDaysOff,
-  useGetStaffScheduleDates,
-} from '@/api/endpoints/staff'
+import { deleteStaffDaysOffIdAdmin, getGetStaffDaysOffAdminQueryKey, getStaffDaysOffConflictsAdmin, postStaffDaysOffAdmin, putStaffDaysOffIdApproveAdmin, putStaffDaysOffIdRejectAdmin, useGetShiftTemplatesAdmin, useGetStaffDaysOffAdmin, useGetStaffScheduleDatesAdmin } from '@/api/endpoints/staff'
 import type { StaffDayOff, StaffScheduleDate, ShiftTemplate } from './types'
 import type { SchedulePageData } from './types'
 import { staffLabel } from './types'
@@ -73,7 +63,7 @@ function showBlockedByAppointmentsModal(appointments: ConflictAppointment[], nav
 /** Preview lịch hẹn đích danh trùng ngày/ca nghỉ (chưa gửi duyệt). */
 async function showConflictsPreview(row: StaffDayOff) {
   try {
-    const rows = (pickData<ConflictAppointment[] | undefined>(await getStaffDaysOffConflicts({
+    const rows = (pickData<ConflictAppointment[] | undefined>(await getStaffDaysOffConflictsAdmin({
       staff_id: row.staff_id,
       off_date: String(row.off_date).slice(0, 10),
       ...(row.shift_template_id ? { shift_template_id: row.shift_template_id } : {}),
@@ -172,8 +162,8 @@ export default function DayOffTab({ branches, staff, access, loadingShared }: Pr
   if (statusFilter) daysOffParams.status = statusFilter
   if (range?.[0]) daysOffParams.from_date = range[0].format('YYYY-MM-DD')
   if (range?.[1]) daysOffParams.to_date = range[1].format('YYYY-MM-DD')
-  const daysOffQuery = useGetStaffDaysOff(daysOffParams as never)
-  const templatesQuery = useGetShiftTemplates(branchFilter ? { branch_id: branchFilter } : {})
+  const daysOffQuery = useGetStaffDaysOffAdmin(daysOffParams as never)
+  const templatesQuery = useGetShiftTemplatesAdmin(branchFilter ? { branch_id: branchFilter } : {})
 
   const rows = (pickData<StaffDayOff[] | undefined>(daysOffQuery.data) ?? []) as StaffDayOff[]
   const templates = (pickData<ShiftTemplate[] | undefined>(templatesQuery.data) ?? []) as ShiftTemplate[]
@@ -182,7 +172,7 @@ export default function DayOffTab({ branches, staff, access, loadingShared }: Pr
     .join(' · ')
 
   // Gợi ý ca mà KTV được xếp trong ngày nghỉ đã chọn (lịch 100% theo ngày cụ thể)
-  const schedulesQuery = useGetStaffScheduleDates(
+  const schedulesQuery = useGetStaffScheduleDatesAdmin(
     selectedStaff && selectedDate
       ? { staff_id: selectedStaff, from_date: selectedDate.format('YYYY-MM-DD'), to_date: selectedDate.format('YYYY-MM-DD') }
       : undefined,
@@ -206,7 +196,7 @@ export default function DayOffTab({ branches, staff, access, loadingShared }: Pr
   const submit = async () => {
     const values = await form.validateFields()
     try {
-      await postStaffDaysOff({
+      await postStaffDaysOffAdmin({
         staff_id: values.staff_id,
         off_date: values.off_date.format('YYYY-MM-DD'),
         shift_template_id: values.shift_template_id || null,
@@ -214,15 +204,15 @@ export default function DayOffTab({ branches, staff, access, loadingShared }: Pr
       } as never)
       message.success('Đã gửi đăng ký ngày nghỉ')
       setOpen(false)
-      void queryClient.invalidateQueries({ queryKey: getGetStaffDaysOffQueryKey() })
+      void queryClient.invalidateQueries({ queryKey: getGetStaffDaysOffAdminQueryKey() })
     } catch (err) { message.error(errorMessage(err)) }
   }
 
   const approve = async (row: StaffDayOff) => {
     try {
-      await putStaffDaysOffIdApprove(row.id)
+      await putStaffDaysOffIdApproveAdmin(row.id)
       message.success('Đã duyệt ngày nghỉ')
-      void queryClient.invalidateQueries({ queryKey: getGetStaffDaysOffQueryKey() })
+      void queryClient.invalidateQueries({ queryKey: getGetStaffDaysOffAdminQueryKey() })
     } catch (err: unknown) {
       // Nghiệp vụ mới: duyệt bị chặn khi còn lịch hẹn đích danh trùng ca nghỉ
       const response = (err as { response?: { data?: { code?: string; details?: { affected_appointments?: ConflictAppointment[] } } } })?.response?.data
@@ -237,16 +227,16 @@ export default function DayOffTab({ branches, staff, access, loadingShared }: Pr
     const reason = rejectReason.trim()
     if (!reason) { message.error('Nhập lý do từ chối'); return }
     try {
-      await putStaffDaysOffIdReject(rejecting.id, { reason })
+      await putStaffDaysOffIdRejectAdmin(rejecting.id, { reason })
       message.success('Đã từ chối đăng ký nghỉ')
       setRejecting(null)
       setRejectReason('')
-      void queryClient.invalidateQueries({ queryKey: getGetStaffDaysOffQueryKey() })
+      void queryClient.invalidateQueries({ queryKey: getGetStaffDaysOffAdminQueryKey() })
     } catch (err) { message.error(errorMessage(err)) }
   }
 
   const withdraw = async (row: StaffDayOff) => {
-    try { await deleteStaffDaysOffId(row.id); message.success('Đã rút đăng ký nghỉ'); void queryClient.invalidateQueries({ queryKey: getGetStaffDaysOffQueryKey() }) }
+    try { await deleteStaffDaysOffIdAdmin(row.id); message.success('Đã rút đăng ký nghỉ'); void queryClient.invalidateQueries({ queryKey: getGetStaffDaysOffAdminQueryKey() }) }
     catch (err) { message.error(errorMessage(err)) }
   }
 

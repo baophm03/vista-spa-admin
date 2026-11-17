@@ -32,22 +32,10 @@ import useCustomFieldDefinitions from '@/hooks/useCustomFieldDefinitions'
 import { errorMessage, pickData, pickMeta } from '@/api/helpers'
 import type { Appointment } from '@/api/models/appointment'
 import type { Branch } from '@/api/models/branch'
-import {
-  getAppointmentsAvailableSlots,
-  getGetAppointmentsQueryKey,
-  useGetAppointments,
-  usePostAppointments,
-  usePostAppointmentsIdStart,
-  usePutAppointmentsId,
-  usePutAppointmentsIdApprove,
-  usePutAppointmentsIdCancel,
-  usePutAppointmentsIdNoShow,
-  usePutAppointmentsIdReject,
-  getAppointmentsId,
-} from '@/api/endpoints/appointments'
-import { getGetCustomerProfilesQueryKey, postCustomerProfiles, useGetCustomerProfiles } from '@/api/endpoints/customer-profiles'
-import { useGetUsers } from '@/api/endpoints/users'
-import { useGetBranches } from '@/api/endpoints/branches'
+import { getAppointmentsAvailableSlots, getGetAppointmentsAdminQueryKey, useGetAppointmentsAdmin, usePostAppointmentsAdmin, usePostAppointmentsIdStartAdmin, usePutAppointmentsIdAdmin, usePutAppointmentsIdApproveAdmin, usePutAppointmentsIdCancelAdmin, usePutAppointmentsIdNoShowAdmin, usePutAppointmentsIdRejectAdmin, getAppointmentsIdAdmin } from '@/api/endpoints/appointments'
+import { getGetCustomerProfilesAdminQueryKey, postCustomerProfilesAdmin, useGetCustomerProfilesAdmin } from '@/api/endpoints/customer-profiles'
+import { useGetUsersAdmin } from '@/api/endpoints/users'
+import { useGetBranchesAdmin } from '@/api/endpoints/branches'
 import AppointmentDetailModal from './components/AppointmentDetailModal'
 import AppointmentFormModal from './components/AppointmentFormModal'
 import AppointmentsCalendar from './components/AppointmentsCalendar'
@@ -127,7 +115,7 @@ export default function Appointments() {
     return params
   }, [page, limit, filter, dateFilter, branchFilter])
 
-  const appointmentsQuery = useGetAppointments(listParams as never, { query: { enabled: displayMode === 'list' } })
+  const appointmentsQuery = useGetAppointmentsAdmin(listParams as never, { query: { enabled: displayMode === 'list' } })
   const rows = useMemo(() => pickData<AppointmentRow[] | undefined>(appointmentsQuery.data) ?? [], [appointmentsQuery.data])
   const total = pickMeta(appointmentsQuery.data)?.total ?? rows.length
 
@@ -146,7 +134,7 @@ export default function Appointments() {
     if (branchFilter) params.branch_id = branchFilter
     return params
   }, [calendarStart, calendarEnd, dateFilter, filter, branchFilter])
-  const calendarAppointmentsQuery = useGetAppointments(calendarParams as never, { query: { enabled: displayMode === 'calendar' } })
+  const calendarAppointmentsQuery = useGetAppointmentsAdmin(calendarParams as never, { query: { enabled: displayMode === 'calendar' } })
   const calendarRows = useMemo(() => pickData<AppointmentRow[] | undefined>(calendarAppointmentsQuery.data) ?? [], [calendarAppointmentsQuery.data])
   const calendarDays = Array.from({ length: calendarView === 'week' ? 7 : 1 }, (_, index) => calendarStart.add(index, 'day'))
 
@@ -155,7 +143,7 @@ export default function Appointments() {
     return () => window.clearTimeout(timer)
   }, [customerSearchInput])
 
-  const profilesQuery = useGetCustomerProfiles({ page: 1, limit: 50, q: customerSearch || undefined })
+  const profilesQuery = useGetCustomerProfilesAdmin({ page: 1, limit: 50, q: customerSearch || undefined })
 
   const profiles = useMemo(() => (pickData<ProfileRow[] | undefined>(profilesQuery.data) ?? []) as ProfileRow[], [profilesQuery.data])
   const profileOptions = useMemo(() => {
@@ -163,11 +151,11 @@ export default function Appointments() {
     if (selectedProfile && !options.some((profile) => profile.id === selectedProfile.id)) options.unshift(selectedProfile)
     return options
   }, [profiles, selectedProfile])
-  const branchesQuery = useGetBranches({ status: 'active' })
+  const branchesQuery = useGetBranchesAdmin({ status: 'active' })
   const branches = useMemo(() => (pickData<Branch[] | undefined>(branchesQuery.data) ?? []) as Branch[], [branchesQuery.data])
 
   // Danh sách KTV để gán/đổi người phụ trách lịch hẹn (luồng xin nghỉ của KTV cũ)
-  const usersQuery = useGetUsers({ currentPage: 1, pageSize: 500, has_role: true })
+  const usersQuery = useGetUsersAdmin({ currentPage: 1, pageSize: 500, has_role: true })
   const allUsers = (pickData<UsersRowsPick | undefined>(usersQuery.data)?.rows ?? [])
   const staffOptions = useMemo(() => allUsers
     .filter((person) => (person.user_roles ?? []).some(({ role }) => {
@@ -176,18 +164,18 @@ export default function Appointments() {
     }))
     .map((person) => ({ id: person.id, label: person.zalo_name || person.email || person.id, branchId: person.branch_id })), [allUsers])
 
-  const createMutation = usePostAppointments()
-  const rescheduleMutation = usePutAppointmentsId()
-  const approveMutation = usePutAppointmentsIdApprove()
-  const rejectMutation = usePutAppointmentsIdReject()
-  const noShowMutation = usePutAppointmentsIdNoShow()
-  const cancelMutation = usePutAppointmentsIdCancel()
-  const startMutation = usePostAppointmentsIdStart()
+  const createMutation = usePostAppointmentsAdmin()
+  const rescheduleMutation = usePutAppointmentsIdAdmin()
+  const approveMutation = usePutAppointmentsIdApproveAdmin()
+  const rejectMutation = usePutAppointmentsIdRejectAdmin()
+  const noShowMutation = usePutAppointmentsIdNoShowAdmin()
+  const cancelMutation = usePutAppointmentsIdCancelAdmin()
+  const startMutation = usePostAppointmentsIdStartAdmin()
 
   const isSavingAppointment = createMutation.isPending || rescheduleMutation.isPending
 
   const refresh = useCallback(() => {
-    void queryClient.invalidateQueries({ queryKey: getGetAppointmentsQueryKey() })
+    void queryClient.invalidateQueries({ queryKey: getGetAppointmentsAdminQueryKey() })
   }, [queryClient])
 
   useEffect(() => {
@@ -289,7 +277,7 @@ export default function Appointments() {
     setSearchParams(next, { replace: true })
     void (async () => {
       try {
-        const item = pickData<Appointment | undefined>(await getAppointmentsId(appointmentIdParam))
+        const item = pickData<Appointment | undefined>(await getAppointmentsIdAdmin(appointmentIdParam))
         if (!item) { message.warning('Không tìm thấy lịch hẹn'); return }
         openModal(item)
         message.info('Đổi KTV phụ trách sang người khác rồi lưu để hoàn tất chuyển giao lịch hẹn.')
@@ -307,7 +295,7 @@ export default function Appointments() {
   const submitQuickCustomer = async () => {
     try {
       const values = await quickCustomerForm.validateFields()
-      const response = await postCustomerProfiles(values as never)
+      const response = await postCustomerProfilesAdmin(values as never)
       const created = pickData<ProfileRow | undefined>(response)
       if (!created?.id) throw new Error('Không nhận được hồ sơ khách hàng vừa tạo')
       setSelectedProfile(created)
@@ -316,7 +304,7 @@ export default function Appointments() {
       setCustomerSearch('')
       setQuickCustomerOpen(false)
       message.success('Đã tạo khách hàng và chọn vào lịch hẹn')
-      void queryClient.invalidateQueries({ queryKey: getGetCustomerProfilesQueryKey() })
+      void queryClient.invalidateQueries({ queryKey: getGetCustomerProfilesAdminQueryKey() })
     } catch (err) {
       if ((err as { errorFields?: unknown })?.errorFields) return
       message.error(errorMessage(err))

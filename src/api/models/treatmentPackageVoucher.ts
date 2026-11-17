@@ -7,6 +7,8 @@
  */
 import type { TreatmentPackageVoucherDescription } from './treatmentPackageVoucherDescription';
 import type { TreatmentPackageVoucherTreatmentPackageId } from './treatmentPackageVoucherTreatmentPackageId';
+import type { TreatmentPackageVoucherBranchId } from './treatmentPackageVoucherBranchId';
+import type { TreatmentPackageVoucherBranchName } from './treatmentPackageVoucherBranchName';
 import type { TreatmentPackageVoucherCardRankId } from './treatmentPackageVoucherCardRankId';
 import type { TreatmentPackageVoucherCardRankName } from './treatmentPackageVoucherCardRankName';
 import type { TreatmentPackageVoucherTargetName } from './treatmentPackageVoucherTargetName';
@@ -27,8 +29,8 @@ export interface TreatmentPackageVoucher {
   title: string;
   description?: TreatmentPackageVoucherDescription;
   treatment_package_id?: TreatmentPackageVoucherTreatmentPackageId;
-  branch_id?: string | null;
-  branch_name?: string | null;
+  branch_id?: TreatmentPackageVoucherBranchId;
+  branch_name?: TreatmentPackageVoucherBranchName;
   card_rank_id?: TreatmentPackageVoucherCardRankId;
   card_rank_name?: TreatmentPackageVoucherCardRankName;
   target_name?: TreatmentPackageVoucherTargetName;

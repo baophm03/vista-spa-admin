@@ -6,8 +6,12 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { VoucherCustomerViewRowAssignmentId } from './voucherCustomerViewRowAssignmentId';
+import type { VoucherCustomerViewRowUserId } from './voucherCustomerViewRowUserId';
+import type { VoucherCustomerViewRowCustomerProfileId } from './voucherCustomerViewRowCustomerProfileId';
 import type { VoucherCustomerViewRowUserName } from './voucherCustomerViewRowUserName';
 import type { VoucherCustomerViewRowUserPhone } from './voucherCustomerViewRowUserPhone';
+import type { VoucherCustomerViewRowBranchId } from './voucherCustomerViewRowBranchId';
+import type { VoucherCustomerViewRowBranchName } from './voucherCustomerViewRowBranchName';
 import type { VoucherCustomerViewRowRankName } from './voucherCustomerViewRowRankName';
 import type { VoucherCustomerViewRowDiscountType } from './voucherCustomerViewRowDiscountType';
 import type { VoucherCustomerViewRowPointsCost } from './voucherCustomerViewRowPointsCost';
@@ -23,11 +27,12 @@ import type { VoucherCustomerViewRowAssignedAt } from './voucherCustomerViewRowA
  */
 export interface VoucherCustomerViewRow {
   assignment_id?: VoucherCustomerViewRowAssignmentId;
-  user_id: string;
+  user_id?: VoucherCustomerViewRowUserId;
+  customer_profile_id?: VoucherCustomerViewRowCustomerProfileId;
   user_name?: VoucherCustomerViewRowUserName;
   user_phone?: VoucherCustomerViewRowUserPhone;
-  branch_id?: string | null;
-  branch_name?: string | null;
+  branch_id?: VoucherCustomerViewRowBranchId;
+  branch_name?: VoucherCustomerViewRowBranchName;
   rank_name?: VoucherCustomerViewRowRankName;
   voucher_id: string;
   voucher_title?: string;

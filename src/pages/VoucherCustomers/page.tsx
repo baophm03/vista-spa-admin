@@ -9,7 +9,7 @@ import PageTitle from '../../components/base/PageTitle'
 import ListPagination from '../../components/base/ListPagination'
 import { paginateRows } from '../../utils/listTable'
 import { errorMessage, pickData, pickMeta } from '@/api/helpers'
-import { getCustomerProfiles } from '@/api/endpoints/customer-profiles'
+import { getCustomerProfilesAdmin } from '@/api/endpoints/customer-profiles'
 import type { CustomerProfile } from '@/api/models/customerProfile'
 import { getVoucherCategory, type VoucherCategory } from '@/api/custom/voucherCategories'
 import {
@@ -20,7 +20,7 @@ import {
   type VoucherCustomerRow,
 } from '@/api/custom/voucherCustomers'
 import { CATEGORY_META } from '../Vouchers/components/constants'
-import { useGetBranches } from '@/api/endpoints/branches'
+import { useGetBranchesAdmin } from '@/api/endpoints/branches'
 import type { Branch } from '@/api/models/branch'
 
 const PAGE_SIZE = 10
@@ -73,7 +73,7 @@ function VoucherCustomerTab({ category, branches }: { category: VoucherCategory;
     queryKey: ['voucher-customer-select', customerSearch, assignmentBranchId],
     enabled: assignOpen && Boolean(assignmentBranchId),
     initialPageParam: 1,
-    queryFn: ({ pageParam }) => getCustomerProfiles({ page: pageParam, limit: 50, ...(customerSearch ? { q: customerSearch } : {}), ...(assignmentBranchId ? { branch_id: assignmentBranchId } : {}) }),
+    queryFn: ({ pageParam }) => getCustomerProfilesAdmin({ page: pageParam, limit: 50, ...(customerSearch ? { q: customerSearch } : {}), ...(assignmentBranchId ? { branch_id: assignmentBranchId } : {}) }),
     getNextPageParam: (lastPage, allPages) => {
       const total = pickMeta(lastPage)?.total ?? 0
       const loaded = allPages.reduce((count, pageResult) => count + (pickData<CustomerProfile[]>(pageResult) ?? []).length, 0)
@@ -354,7 +354,7 @@ function VoucherCustomerTab({ category, branches }: { category: VoucherCategory;
 
 export default function VoucherCustomers() {
   const [activeTab, setActiveTab] = useState<VoucherCategory>('treatment-package')
-  const branchesQuery = useGetBranches({ status: 'active' })
+  const branchesQuery = useGetBranchesAdmin({ status: 'active' })
   const branches = ((pickData<Branch[]>(branchesQuery.data) ?? []) as Branch[])
     .filter((branch) => branch.is_active !== false)
     .map((branch) => ({ value: branch.id, label: branch.name }))

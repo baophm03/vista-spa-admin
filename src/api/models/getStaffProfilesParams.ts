@@ -8,8 +8,4 @@
 
 export type GetStaffProfilesParams = {
 branch_id?: string;
-service_id?: string;
-show_in_app?: boolean;
-role_id?: string;
-q?: string;
 };

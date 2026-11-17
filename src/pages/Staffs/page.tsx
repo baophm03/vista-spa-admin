@@ -19,21 +19,15 @@ import TableEmpty from '@/components/base/TableEmpty'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { Branch } from '@/api/models/branch'
 import type { UserCreate } from '@/api/models/userCreate'
-import type { PutUsersAdminIdBody } from '@/api/models/putUsersAdminIdBody'
+import type { PutUsersIdAdminBody } from '@/api/models/putUsersIdAdminBody'
 import type { StaffProfileRow } from '@/api/models/staffProfileRow'
 import { useProfileStore } from '@/stores/profile-store'
-import { useDeleteUsersAdminId, usePostUsersAdmin, usePutUsersAdminId, useGetUsers } from '@/api/endpoints/users'
-import { useGetRoles } from '@/api/endpoints/roles'
-import { useGetBranches } from '@/api/endpoints/branches'
-import { useGetService } from '@/api/endpoints/services'
+import { useDeleteUsersIdAdmin, usePostUsersAdmin, usePutUsersIdAdmin, useGetUsersAdmin } from '@/api/endpoints/users'
+import { useGetRolesAdmin } from '@/api/endpoints/roles'
+import { useGetBranchesAdmin } from '@/api/endpoints/branches'
+import { useGetServiceAdmin } from '@/api/endpoints/services'
 import { fileSrc, resolveFileSrc, useFileUrlMap } from '@/hooks/useFileUrl'
-import {
-  useGetStaffProfiles,
-  useGetStaffProfilesUserId,
-  useGetStaffProfilesUserIdServices,
-  usePutStaffProfilesUserId,
-  usePutStaffProfilesUserIdServices,
-} from '@/api/endpoints/staff-profiles'
+import { useGetStaffProfilesAdmin, useGetStaffProfilesUserIdAdmin, useGetStaffProfilesUserIdServicesAdmin, usePutStaffProfilesUserIdAdmin, usePutStaffProfilesUserIdServicesAdmin } from '@/api/endpoints/staff-profiles'
 
 import StaffModal from './components/StaffModal'
 import StaffProfileModal from './components/StaffProfileModal'
@@ -98,7 +92,7 @@ export default function Staffs() {
   const selectedBranchId = Form.useWatch('branch_id', form)
   const selectedRoleId = Form.useWatch('role_id', form)
 
-  const usersQuery = useGetUsers({
+  const usersQuery = useGetUsersAdmin({
     currentPage: page,
     pageSize: limit,
     has_role: true,
@@ -107,11 +101,11 @@ export default function Staffs() {
     ...(roleFilter ? { role_id: roleFilter } : {}),
     ...(statusFilter ? { status: statusFilter } : {}),
   })
-  const rolesQuery = useGetRoles()
-  const branchesQuery = useGetBranches()
+  const rolesQuery = useGetRolesAdmin()
+  const branchesQuery = useGetBranchesAdmin()
   const createMutation = usePostUsersAdmin()
-  const updateMutation = usePutUsersAdminId()
-  const deleteMutation = useDeleteUsersAdminId()
+  const updateMutation = usePutUsersIdAdmin()
+  const deleteMutation = useDeleteUsersIdAdmin()
 
   // KT — hồ sơ chuyên viên & dịch vụ phụ trách
   const [profileOpen, setProfileOpen] = useState(false)
@@ -121,25 +115,25 @@ export default function Staffs() {
   const [servicesUser, setServicesUser] = useState<StaffRow | null>(null)
   const [checkedServiceIds, setCheckedServiceIds] = useState<string[]>([])
 
-  const staffProfilesQuery = useGetStaffProfiles(branchFilter ? { branch_id: branchFilter } : undefined, {
+  const staffProfilesQuery = useGetStaffProfilesAdmin(branchFilter ? { branch_id: branchFilter } : undefined, {
     query: { enabled: canReadStaffProfile },
   })
   const profileRows = (pickData<StaffProfileRow[]>(staffProfilesQuery.data) ?? []) as StaffProfileRow[]
   const profileByUser = useMemo(() => new Map(profileRows.map((row) => [row.user_id, row])), [profileRows])
-  const servicesQuery = useGetService({ is_active: true, limit: 200 })
+  const servicesQuery = useGetServiceAdmin({ is_active: true, limit: 200 })
   const serviceRows = (pickData<{ services?: { id: string; title?: string }[] }>(servicesQuery.data)?.services ?? []) as {
     id: string
     title?: string
   }[]
-  const profileDetailQuery = useGetStaffProfilesUserId(profileUser?.id ?? 'none', {
+  const profileDetailQuery = useGetStaffProfilesUserIdAdmin(profileUser?.id ?? 'none', {
     query: { enabled: profileOpen && !!profileUser && canReadStaffProfile },
   })
-  const staffServicesQuery = useGetStaffProfilesUserIdServices(servicesUser?.id ?? 'none', {
+  const staffServicesQuery = useGetStaffProfilesUserIdServicesAdmin(servicesUser?.id ?? 'none', {
     query: { enabled: servicesOpen && !!servicesUser && canUpdateStaffProfile && canManageStaffRow(servicesUser) },
   })
   const profileDetails = pickData<StaffProfileRow>(profileDetailQuery.data)
-  const upsertProfileMutation = usePutStaffProfilesUserId()
-  const assignServicesMutation = usePutStaffProfilesUserIdServices()
+  const upsertProfileMutation = usePutStaffProfilesUserIdAdmin()
+  const assignServicesMutation = usePutStaffProfilesUserIdServicesAdmin()
 
   useEffect(() => {
     if (!profileOpen) return
@@ -265,12 +259,12 @@ export default function Staffs() {
     try {
       if (editing) {
         // branch_id: gửi null tường minh để cho phép gỡ cơ sở (undefined = giữ nguyên)
-        const payload: PutUsersAdminIdBody = {
+        const payload: PutUsersIdAdminBody = {
           zalo_name: values.zalo_name,
           email: values.email,
           phone_number: values.phone_number,
           ...(isSuperAdmin && !editing.is_super_admin ? {
-            branch_id: (values.branch_id || null) as PutUsersAdminIdBody['branch_id'],
+            branch_id: (values.branch_id || null) as PutUsersIdAdminBody['branch_id'],
             role_id: values.role_id,
             is_admin: !values.branch_id,
           } : {}),

@@ -5,17 +5,18 @@ import { CheckCircleOutlined, ClockCircleOutlined, DeleteOutlined, EditOutlined,
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { Can, useAbility } from '@casl/react'
-import { useGetCardRanks } from '@/api/endpoints/membership'
-import { useGetBranches } from '@/api/endpoints/branches'
+import { useGetCardRanksAdmin } from '@/api/endpoints/card-ranks'
+import { useGetBranchesAdmin } from '@/api/endpoints/branches'
 import type { Branch } from '@/api/models/branch'
 import PageTitle from '../../components/base/PageTitle'
 import StatCards, { type StatItem } from '../../components/base/StatCards'
 import RowActionsMenu from '../../components/base/RowActionsMenu'
 import ListPagination from '../../components/base/ListPagination'
 import { errorMessage, pickData } from '@/api/helpers'
-import { getTreatmentPackages } from '@/api/endpoints/services'
-import { getAcademyCourses } from '@/api/endpoints/academy'
-import { getProductCategories, getProducts } from '@/api/endpoints/products'
+import { getTreatmentPackagesAdmin } from '@/api/endpoints/treatment-packages'
+import { getAcademyCoursesAdmin } from '@/api/endpoints/academy'
+import { getProductCategoriesAdmin } from '@/api/endpoints/product-categories'
+import { getProductsAdmin } from '@/api/endpoints/products'
 import type { ProductCategory } from '@/api/models/productCategory'
 import {
   deleteVoucherCategory,
@@ -49,12 +50,12 @@ function toTargets(payload: unknown, collectionKeys: string[]) {
 
 async function loadTargets(category: VoucherCategory) {
   if (category === 'treatment-package') {
-    return toTargets(await getTreatmentPackages({ page: 1, limit: 200, is_active: true }), ['rows', 'items', 'treatment_packages', 'packages'])
+    return toTargets(await getTreatmentPackagesAdmin({ page: 1, limit: 200, is_active: true }), ['rows', 'items', 'treatment_packages', 'packages'])
   }
   if (category === 'academy-course') {
-    return toTargets(await getAcademyCourses({ is_active: true }), ['rows', 'items', 'courses'])
+    return toTargets(await getAcademyCoursesAdmin({ is_active: true }), ['rows', 'items', 'courses'])
   }
-  return toTargets(await getProducts({ is_active: true }), ['rows', 'items', 'products'])
+  return toTargets(await getProductsAdmin({ is_active: true }), ['rows', 'items', 'products'])
 }
 
 function VoucherCategoryTab({ category }: { category: VoucherCategory }) {
@@ -88,17 +89,17 @@ function VoucherCategoryTab({ category }: { category: VoucherCategory }) {
       ...(branchFilter ? { branch_id: branchFilter } : {}),
     }),
   })
-  const branchesQuery = useGetBranches({ status: 'active' })
+  const branchesQuery = useGetBranchesAdmin({ status: 'active' })
   const targetsQuery = useQuery({ queryKey: ['voucher-category-targets', category], queryFn: () => loadTargets(category) })
   const productCategoriesQuery = useQuery({
     queryKey: ['voucher-product-categories'],
     enabled: category === 'product',
     queryFn: async () => {
-      const categories = pickData<ProductCategory[]>(await getProductCategories()) ?? []
+      const categories = pickData<ProductCategory[]>(await getProductCategoriesAdmin()) ?? []
       return categories.filter((item) => item.is_active !== false).map((item) => ({ value: item.id, label: item.name }))
     },
   })
-  const ranksQuery = useGetCardRanks({ is_active: true })
+  const ranksQuery = useGetCardRanksAdmin({ is_active: true })
   const rows = toRows(vouchersQuery.data)
   const total = (vouchersQuery.data as unknown as { meta?: { total?: number } })?.meta?.total ?? rows.length
   const statsMeta = (vouchersQuery.data as unknown as { meta?: { stats?: { total?: number; active?: number; expired?: number } } })?.meta?.stats

@@ -26,14 +26,7 @@ import { normalizeCustomFieldValues } from '@/components/CustomFieldFormItems'
 import ServiceModal from './components/ServiceModal'
 import ServiceDetailModal from './components/ServiceDetailModal'
 import { errorMessage, pickData } from '@/api/helpers'
-import {
-  deleteServiceId,
-  getGetServiceQueryKey,
-  getService,
-  getServiceCategories,
-  postService,
-  putServiceId,
-} from '@/api/endpoints/services'
+import { deleteServiceIdAdmin, getGetServiceAdminQueryKey, getServiceAdmin, getServiceCategoriesAdmin, postServiceAdmin, putServiceIdAdmin } from '@/api/endpoints/services'
 import type { Service } from '@/api/models/service'
 import type { ServiceCreate } from '@/api/models/serviceCreate'
 import useCustomFieldDefinitions from '@/hooks/useCustomFieldDefinitions'
@@ -42,7 +35,7 @@ import ServiceCategories from './ServiceCategories'
 import { formatCurrency, useBrandCurrency } from '@/themeRuntime'
 import { fileSrc, resolveFileSrc, useFileUrlMap } from '@/hooks/useFileUrl'
 import type { Branch } from '@/api/models'
-import { useGetBranches } from '@/api/endpoints/branches'
+import { useGetBranchesAdmin } from '@/api/endpoints/branches'
 
 /** BE list include kèm `service_category`, ảnh bìa `image_file` và bộ ảnh `service_galleries[].file`. */
 type ServiceRow = Service & {
@@ -97,12 +90,12 @@ export default function Services() {
   // Mobile (dưới breakpoint md): chuyển vùng nội dung bằng Select thay vì Tabs
   const isMobile = !Grid.useBreakpoint().md
   const [activeTab, setActiveTab] = useState<'services' | 'categories'>('services')
-const branchesQuery = useGetBranches()
+const branchesQuery = useGetBranchesAdmin()
 const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as Branch[], [branchesQuery.data])
 
   const listQuery = useQuery({
-    queryKey: getGetServiceQueryKey({ ...filters, page, limit }),
-    queryFn: async () => pickData<{ services?: ServiceRow[]; total?: number }>(await getService({ ...filters, page, limit })),
+    queryKey: getGetServiceAdminQueryKey({ ...filters, page, limit }),
+    queryFn: async () => pickData<{ services?: ServiceRow[]; total?: number }>(await getServiceAdmin({ ...filters, page, limit })),
   })
   const rows = listQuery.data?.services ?? []
   useEffect(() => setTotal(listQuery.data?.total ?? 0), [listQuery.data])
@@ -113,8 +106,8 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
     queryKey: ['service-stats'],
     queryFn: async () => {
       const [all, active] = await Promise.all([
-        pickData<{ total?: number }>(await getService({ page: 1, limit: 1 })),
-        pickData<{ total?: number }>(await getService({ page: 1, limit: 1, is_active: true })),
+        pickData<{ total?: number }>(await getServiceAdmin({ page: 1, limit: 1 })),
+        pickData<{ total?: number }>(await getServiceAdmin({ page: 1, limit: 1, is_active: true })),
       ])
       return { total: Number(all?.total ?? 0), active: Number(active?.total ?? 0) }
     },
@@ -127,7 +120,7 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
 
   const loadCategories = async () => {
     try {
-      setCategories((pickData<ServiceCategoryRow[]>(await getServiceCategories()) ?? []) as ServiceCategoryRow[])
+      setCategories((pickData<ServiceCategoryRow[]>(await getServiceCategoriesAdmin()) ?? []) as ServiceCategoryRow[])
     } catch (err) {
       message.error(errorMessage(err))
     }
@@ -143,15 +136,15 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
     setFilters((current) => ({ ...current, q: nextKeyword.trim() || undefined }))
   }
 
-  const createMutation = useMutation({ mutationFn: async (dto: ServiceCreate) => postService(dto) })
+  const createMutation = useMutation({ mutationFn: async (dto: ServiceCreate) => postServiceAdmin(dto) })
   const updateMutation = useMutation({
-    mutationFn: async ({ id, dto }: { id: string; dto: Partial<ServiceCreate> }) => putServiceId(id, dto as ServiceCreate),
+    mutationFn: async ({ id, dto }: { id: string; dto: Partial<ServiceCreate> }) => putServiceIdAdmin(id, dto as ServiceCreate),
   })
   const hideMutation = useMutation({
     mutationFn: async ({ id, isActive }: { id: string; isActive: boolean }) =>
-      putServiceId(id, { is_active: isActive } as ServiceCreate),
+      putServiceIdAdmin(id, { is_active: isActive } as ServiceCreate),
   })
-  const deleteMutation = useMutation({ mutationFn: async (id: string) => deleteServiceId(id) })
+  const deleteMutation = useMutation({ mutationFn: async (id: string) => deleteServiceIdAdmin(id) })
 
 
   const openEditor = async (row?: ServiceRow) => {

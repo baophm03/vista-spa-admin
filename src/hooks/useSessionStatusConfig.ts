@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { useGetAppConfig } from '@/api/endpoints/app'
+import { useGetConfig } from '@/api/endpoints/config'
 import { pickData } from '@/api/helpers'
 
 const DEFAULTS = {
@@ -13,7 +13,7 @@ type SessionStatus = keyof typeof DEFAULTS
 type AppConfig = { settings?: Record<string, unknown> }
 
 export default function useSessionStatusConfig() {
-  const configQuery = useGetAppConfig(undefined, { query: { staleTime: 60_000 } })
+  const configQuery = useGetConfig(undefined, { query: { staleTime: 60_000 } })
   const config = pickData<AppConfig>(configQuery.data)
 
   return useMemo(() => {

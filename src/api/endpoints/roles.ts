@@ -32,14 +32,13 @@ import type {
 import type {
   ConflictResponse,
   ForbiddenResponse,
-  GetPermissions200,
-  GetRolesIdPermissions200,
-  GetRolesParams,
+  GetRolesAdminParams,
+  GetRolesIdPermissionsAdmin200,
   InternalErrorResponse,
   LegacyBadRequestResponse,
   NotFoundResponse,
-  PutRolesIdPermissions200,
-  PutRolesIdPermissionsBody,
+  PutRolesIdPermissionsAdmin200,
+  PutRolesIdPermissionsAdminBody,
   Response,
   RoleCreate,
   UnauthorizedResponse,
@@ -53,17 +52,17 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * GET `/roles/{id}` — roles. Public, no authentication required. Handled by `roleProvider.getById`.
+ * GET `/roles/{id}/admin` — roles. Cần đăng nhập + `permission.manage` (GET) / `role.update_all` (PUT) / `role.delete_all` (DELETE).
  * @summary View role details
  */
-export const getRolesId = (
+export const getRolesIdAdmin = (
     id: string,
  signal?: AbortSignal
 ) => {
       
       
       return customInstance<Response>(
-      {url: `/roles/${id}`, method: 'GET', signal
+      {url: `/roles/${id}/admin`, method: 'GET', signal
     },
       );
     }
@@ -71,75 +70,75 @@ export const getRolesId = (
 
 
 
-export const getGetRolesIdInfiniteQueryKey = (id?: string,) => {
+export const getGetRolesIdAdminInfiniteQueryKey = (id?: string,) => {
     return [
-    'infinite', `/roles/${id}`
+    'infinite', `/roles/${id}/admin`
     ] as const;
     }
 
-export const getGetRolesIdQueryKey = (id?: string,) => {
+export const getGetRolesIdAdminQueryKey = (id?: string,) => {
     return [
-    `/roles/${id}`
+    `/roles/${id}/admin`
     ] as const;
     }
 
     
-export const getGetRolesIdInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getRolesId>>>, TError = LegacyBadRequestResponse | void>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRolesId>>, TError, TData>>, }
+export const getGetRolesIdAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getRolesIdAdmin>>>, TError = LegacyBadRequestResponse | void>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRolesIdAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetRolesIdInfiniteQueryKey(id);
+  const queryKey =  queryOptions?.queryKey ?? getGetRolesIdAdminInfiniteQueryKey(id);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRolesId>>> = ({ signal }) => getRolesId(id, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRolesIdAdmin>>> = ({ signal }) => getRolesIdAdmin(id, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRolesId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRolesIdAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetRolesIdInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getRolesId>>>
-export type GetRolesIdInfiniteQueryError = LegacyBadRequestResponse | void
+export type GetRolesIdAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getRolesIdAdmin>>>
+export type GetRolesIdAdminInfiniteQueryError = LegacyBadRequestResponse | void
 
 
-export function useGetRolesIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRolesId>>>, TError = LegacyBadRequestResponse | void>(
- id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRolesId>>, TError, TData>> & Pick<
+export function useGetRolesIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRolesIdAdmin>>>, TError = LegacyBadRequestResponse | void>(
+ id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRolesIdAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getRolesId>>,
+          Awaited<ReturnType<typeof getRolesIdAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getRolesId>>
+          Awaited<ReturnType<typeof getRolesIdAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetRolesIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRolesId>>>, TError = LegacyBadRequestResponse | void>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRolesId>>, TError, TData>> & Pick<
+export function useGetRolesIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRolesIdAdmin>>>, TError = LegacyBadRequestResponse | void>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRolesIdAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getRolesId>>,
+          Awaited<ReturnType<typeof getRolesIdAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getRolesId>>
+          Awaited<ReturnType<typeof getRolesIdAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetRolesIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRolesId>>>, TError = LegacyBadRequestResponse | void>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRolesId>>, TError, TData>>, }
+export function useGetRolesIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRolesIdAdmin>>>, TError = LegacyBadRequestResponse | void>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRolesIdAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary View role details
  */
 
-export function useGetRolesIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRolesId>>>, TError = LegacyBadRequestResponse | void>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRolesId>>, TError, TData>>, }
+export function useGetRolesIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRolesIdAdmin>>>, TError = LegacyBadRequestResponse | void>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRolesIdAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetRolesIdInfiniteQueryOptions(id,options)
+  const queryOptions = getGetRolesIdAdminInfiniteQueryOptions(id,options)
 
   const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -151,12 +150,12 @@ export function useGetRolesIdInfinite<TData = InfiniteData<Awaited<ReturnType<ty
 /**
  * @summary View role details
  */
-export const prefetchGetRolesIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getRolesId>>, TError = LegacyBadRequestResponse | void>(
- queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRolesId>>, TError, TData>>, }
+export const prefetchGetRolesIdAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getRolesIdAdmin>>, TError = LegacyBadRequestResponse | void>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRolesIdAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetRolesIdInfiniteQueryOptions(id,options)
+  const queryOptions = getGetRolesIdAdminInfiniteQueryOptions(id,options)
 
   await queryClient.prefetchInfiniteQuery(queryOptions);
 
@@ -165,62 +164,62 @@ export const prefetchGetRolesIdInfiniteQuery = async <TData = Awaited<ReturnType
 
 
 
-export const getGetRolesIdQueryOptions = <TData = Awaited<ReturnType<typeof getRolesId>>, TError = LegacyBadRequestResponse | void>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRolesId>>, TError, TData>>, }
+export const getGetRolesIdAdminQueryOptions = <TData = Awaited<ReturnType<typeof getRolesIdAdmin>>, TError = LegacyBadRequestResponse | void>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRolesIdAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetRolesIdQueryKey(id);
+  const queryKey =  queryOptions?.queryKey ?? getGetRolesIdAdminQueryKey(id);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRolesId>>> = ({ signal }) => getRolesId(id, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRolesIdAdmin>>> = ({ signal }) => getRolesIdAdmin(id, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getRolesId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getRolesIdAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetRolesIdQueryResult = NonNullable<Awaited<ReturnType<typeof getRolesId>>>
-export type GetRolesIdQueryError = LegacyBadRequestResponse | void
+export type GetRolesIdAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getRolesIdAdmin>>>
+export type GetRolesIdAdminQueryError = LegacyBadRequestResponse | void
 
 
-export function useGetRolesId<TData = Awaited<ReturnType<typeof getRolesId>>, TError = LegacyBadRequestResponse | void>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRolesId>>, TError, TData>> & Pick<
+export function useGetRolesIdAdmin<TData = Awaited<ReturnType<typeof getRolesIdAdmin>>, TError = LegacyBadRequestResponse | void>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRolesIdAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getRolesId>>,
+          Awaited<ReturnType<typeof getRolesIdAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getRolesId>>
+          Awaited<ReturnType<typeof getRolesIdAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetRolesId<TData = Awaited<ReturnType<typeof getRolesId>>, TError = LegacyBadRequestResponse | void>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRolesId>>, TError, TData>> & Pick<
+export function useGetRolesIdAdmin<TData = Awaited<ReturnType<typeof getRolesIdAdmin>>, TError = LegacyBadRequestResponse | void>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRolesIdAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getRolesId>>,
+          Awaited<ReturnType<typeof getRolesIdAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getRolesId>>
+          Awaited<ReturnType<typeof getRolesIdAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetRolesId<TData = Awaited<ReturnType<typeof getRolesId>>, TError = LegacyBadRequestResponse | void>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRolesId>>, TError, TData>>, }
+export function useGetRolesIdAdmin<TData = Awaited<ReturnType<typeof getRolesIdAdmin>>, TError = LegacyBadRequestResponse | void>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRolesIdAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary View role details
  */
 
-export function useGetRolesId<TData = Awaited<ReturnType<typeof getRolesId>>, TError = LegacyBadRequestResponse | void>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRolesId>>, TError, TData>>, }
+export function useGetRolesIdAdmin<TData = Awaited<ReturnType<typeof getRolesIdAdmin>>, TError = LegacyBadRequestResponse | void>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRolesIdAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetRolesIdQueryOptions(id,options)
+  const queryOptions = getGetRolesIdAdminQueryOptions(id,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -232,12 +231,12 @@ export function useGetRolesId<TData = Awaited<ReturnType<typeof getRolesId>>, TE
 /**
  * @summary View role details
  */
-export const prefetchGetRolesIdQuery = async <TData = Awaited<ReturnType<typeof getRolesId>>, TError = LegacyBadRequestResponse | void>(
- queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRolesId>>, TError, TData>>, }
+export const prefetchGetRolesIdAdminQuery = async <TData = Awaited<ReturnType<typeof getRolesIdAdmin>>, TError = LegacyBadRequestResponse | void>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRolesIdAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetRolesIdQueryOptions(id,options)
+  const queryOptions = getGetRolesIdAdminQueryOptions(id,options)
 
   await queryClient.prefetchQuery(queryOptions);
 
@@ -247,17 +246,17 @@ export const prefetchGetRolesIdQuery = async <TData = Awaited<ReturnType<typeof 
 
 
 /**
- * PUT `/roles/{id}` — roles. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `roleProvider.getById`.
+ * PUT `/roles/{id}/admin` — roles. Cần đăng nhập + `permission.manage` (GET) / `role.update_all` (PUT) / `role.delete_all` (DELETE).
  * @summary Update role
  */
-export const putRolesId = (
+export const putRolesIdAdmin = (
     id: string,
     roleCreate: RoleCreate,
  ) => {
       
       
       return customInstance<Response>(
-      {url: `/roles/${id}`, method: 'PUT',
+      {url: `/roles/${id}/admin`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: roleCreate
     },
@@ -266,11 +265,11 @@ export const putRolesId = (
   
 
 
-export const getPutRolesIdMutationOptions = <TError = LegacyBadRequestResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putRolesId>>, TError,{id: string;data: RoleCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putRolesId>>, TError,{id: string;data: RoleCreate}, TContext> => {
+export const getPutRolesIdAdminMutationOptions = <TError = LegacyBadRequestResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putRolesIdAdmin>>, TError,{id: string;data: RoleCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putRolesIdAdmin>>, TError,{id: string;data: RoleCreate}, TContext> => {
 
-const mutationKey = ['putRolesId'];
+const mutationKey = ['putRolesIdAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -280,10 +279,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putRolesId>>, {id: string;data: RoleCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putRolesIdAdmin>>, {id: string;data: RoleCreate}> = (props) => {
           const {id,data} = props ?? {};
 
-          return  putRolesId(id,data,)
+          return  putRolesIdAdmin(id,data,)
         }
 
         
@@ -291,48 +290,48 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PutRolesIdMutationResult = NonNullable<Awaited<ReturnType<typeof putRolesId>>>
-    export type PutRolesIdMutationBody = RoleCreate
-    export type PutRolesIdMutationError = LegacyBadRequestResponse | void
+    export type PutRolesIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof putRolesIdAdmin>>>
+    export type PutRolesIdAdminMutationBody = RoleCreate
+    export type PutRolesIdAdminMutationError = LegacyBadRequestResponse | void
 
     /**
  * @summary Update role
  */
-export const usePutRolesId = <TError = LegacyBadRequestResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putRolesId>>, TError,{id: string;data: RoleCreate}, TContext>, }
+export const usePutRolesIdAdmin = <TError = LegacyBadRequestResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putRolesIdAdmin>>, TError,{id: string;data: RoleCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putRolesId>>,
+        Awaited<ReturnType<typeof putRolesIdAdmin>>,
         TError,
         {id: string;data: RoleCreate},
         TContext
       > => {
 
-      const mutationOptions = getPutRolesIdMutationOptions(options);
+      const mutationOptions = getPutRolesIdAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * DELETE `/roles/{id}` — roles. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `roleProvider.getById`.
+ * DELETE `/roles/{id}/admin` — roles. Cần đăng nhập + `permission.manage` (GET) / `role.update_all` (PUT) / `role.delete_all` (DELETE).
  * @summary Delete role
  */
-export const deleteRolesId = (
+export const deleteRolesIdAdmin = (
     id: string,
  ) => {
       
       
       return customInstance<Response>(
-      {url: `/roles/${id}`, method: 'DELETE'
+      {url: `/roles/${id}/admin`, method: 'DELETE'
     },
       );
     }
   
 
 
-export const getDeleteRolesIdMutationOptions = <TError = LegacyBadRequestResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteRolesId>>, TError,{id: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof deleteRolesId>>, TError,{id: string}, TContext> => {
+export const getDeleteRolesIdAdminMutationOptions = <TError = LegacyBadRequestResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteRolesIdAdmin>>, TError,{id: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteRolesIdAdmin>>, TError,{id: string}, TContext> => {
 
-const mutationKey = ['deleteRolesId'];
+const mutationKey = ['deleteRolesIdAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -342,10 +341,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteRolesId>>, {id: string}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteRolesIdAdmin>>, {id: string}> = (props) => {
           const {id} = props ?? {};
 
-          return  deleteRolesId(id,)
+          return  deleteRolesIdAdmin(id,)
         }
 
         
@@ -353,283 +352,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type DeleteRolesIdMutationResult = NonNullable<Awaited<ReturnType<typeof deleteRolesId>>>
+    export type DeleteRolesIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof deleteRolesIdAdmin>>>
     
-    export type DeleteRolesIdMutationError = LegacyBadRequestResponse | void
+    export type DeleteRolesIdAdminMutationError = LegacyBadRequestResponse | void
 
     /**
  * @summary Delete role
  */
-export const useDeleteRolesId = <TError = LegacyBadRequestResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteRolesId>>, TError,{id: string}, TContext>, }
+export const useDeleteRolesIdAdmin = <TError = LegacyBadRequestResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteRolesIdAdmin>>, TError,{id: string}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteRolesId>>,
+        Awaited<ReturnType<typeof deleteRolesIdAdmin>>,
         TError,
         {id: string},
         TContext
       > => {
 
-      const mutationOptions = getDeleteRolesIdMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * GET `/roles` — roles. Public, no authentication required. Query parameters: `currentPage`, `pageSize`, `filters`, `sortField`, `sortOrder`.
- * @summary Get list of roles
- */
-export const getRoles = (
-    params?: GetRolesParams,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<Response>(
-      {url: `/roles`, method: 'GET',
-        params, signal
-    },
-      );
-    }
-  
-
-
-
-export const getGetRolesInfiniteQueryKey = (params?: GetRolesParams,) => {
-    return [
-    'infinite', `/roles`, ...(params ? [params]: [])
-    ] as const;
-    }
-
-export const getGetRolesQueryKey = (params?: GetRolesParams,) => {
-    return [
-    `/roles`, ...(params ? [params]: [])
-    ] as const;
-    }
-
-    
-export const getGetRolesInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getRoles>>>, TError = LegacyBadRequestResponse>(params?: GetRolesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRoles>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetRolesInfiniteQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRoles>>> = ({ signal }) => getRoles(params, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRoles>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetRolesInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getRoles>>>
-export type GetRolesInfiniteQueryError = LegacyBadRequestResponse
-
-
-export function useGetRolesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRoles>>>, TError = LegacyBadRequestResponse>(
- params: undefined |  GetRolesParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRoles>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getRoles>>,
-          TError,
-          Awaited<ReturnType<typeof getRoles>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetRolesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRoles>>>, TError = LegacyBadRequestResponse>(
- params?: GetRolesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRoles>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getRoles>>,
-          TError,
-          Awaited<ReturnType<typeof getRoles>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetRolesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRoles>>>, TError = LegacyBadRequestResponse>(
- params?: GetRolesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRoles>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get list of roles
- */
-
-export function useGetRolesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRoles>>>, TError = LegacyBadRequestResponse>(
- params?: GetRolesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRoles>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetRolesInfiniteQueryOptions(params,options)
-
-  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary Get list of roles
- */
-export const prefetchGetRolesInfiniteQuery = async <TData = Awaited<ReturnType<typeof getRoles>>, TError = LegacyBadRequestResponse>(
- queryClient: QueryClient, params?: GetRolesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRoles>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetRolesInfiniteQueryOptions(params,options)
-
-  await queryClient.prefetchInfiniteQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-export const getGetRolesQueryOptions = <TData = Awaited<ReturnType<typeof getRoles>>, TError = LegacyBadRequestResponse>(params?: GetRolesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRoles>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetRolesQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRoles>>> = ({ signal }) => getRoles(params, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getRoles>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetRolesQueryResult = NonNullable<Awaited<ReturnType<typeof getRoles>>>
-export type GetRolesQueryError = LegacyBadRequestResponse
-
-
-export function useGetRoles<TData = Awaited<ReturnType<typeof getRoles>>, TError = LegacyBadRequestResponse>(
- params: undefined |  GetRolesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRoles>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getRoles>>,
-          TError,
-          Awaited<ReturnType<typeof getRoles>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetRoles<TData = Awaited<ReturnType<typeof getRoles>>, TError = LegacyBadRequestResponse>(
- params?: GetRolesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRoles>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getRoles>>,
-          TError,
-          Awaited<ReturnType<typeof getRoles>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetRoles<TData = Awaited<ReturnType<typeof getRoles>>, TError = LegacyBadRequestResponse>(
- params?: GetRolesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRoles>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get list of roles
- */
-
-export function useGetRoles<TData = Awaited<ReturnType<typeof getRoles>>, TError = LegacyBadRequestResponse>(
- params?: GetRolesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRoles>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetRolesQueryOptions(params,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary Get list of roles
- */
-export const prefetchGetRolesQuery = async <TData = Awaited<ReturnType<typeof getRoles>>, TError = LegacyBadRequestResponse>(
- queryClient: QueryClient, params?: GetRolesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRoles>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetRolesQueryOptions(params,options)
-
-  await queryClient.prefetchQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-/**
- * POST `/roles` — roles. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `roleProvider.post`.
- * @summary Create a new role
- */
-export const postRoles = (
-    roleCreate: RoleCreate,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<Response>(
-      {url: `/roles`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: roleCreate, signal
-    },
-      );
-    }
-  
-
-
-export const getPostRolesMutationOptions = <TError = LegacyBadRequestResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postRoles>>, TError,{data: RoleCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postRoles>>, TError,{data: RoleCreate}, TContext> => {
-
-const mutationKey = ['postRoles'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postRoles>>, {data: RoleCreate}> = (props) => {
-          const {data} = props ?? {};
-
-          return  postRoles(data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostRolesMutationResult = NonNullable<Awaited<ReturnType<typeof postRoles>>>
-    export type PostRolesMutationBody = RoleCreate
-    export type PostRolesMutationError = LegacyBadRequestResponse
-
-    /**
- * @summary Create a new role
- */
-export const usePostRoles = <TError = LegacyBadRequestResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postRoles>>, TError,{data: RoleCreate}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postRoles>>,
-        TError,
-        {data: RoleCreate},
-        TContext
-      > => {
-
-      const mutationOptions = getPostRolesMutationOptions(options);
+      const mutationOptions = getDeleteRolesIdAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -637,14 +376,14 @@ export const usePostRoles = <TError = LegacyBadRequestResponse,
  * **PR-02** — GET /roles/{id}/permissions: returns array of `{module, action}` pairs. Requires `permission.manage` permission. Handled by `RolePermission.findAll`.
  * @summary Get role permissions
  */
-export const getRolesIdPermissions = (
+export const getRolesIdPermissionsAdmin = (
     id: string,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<GetRolesIdPermissions200>(
-      {url: `/roles/${id}/permissions`, method: 'GET', signal
+      return customInstance<GetRolesIdPermissionsAdmin200>(
+      {url: `/roles/${id}/permissions/admin`, method: 'GET', signal
     },
       );
     }
@@ -652,75 +391,75 @@ export const getRolesIdPermissions = (
 
 
 
-export const getGetRolesIdPermissionsInfiniteQueryKey = (id?: string,) => {
+export const getGetRolesIdPermissionsAdminInfiniteQueryKey = (id?: string,) => {
     return [
-    'infinite', `/roles/${id}/permissions`
+    'infinite', `/roles/${id}/permissions/admin`
     ] as const;
     }
 
-export const getGetRolesIdPermissionsQueryKey = (id?: string,) => {
+export const getGetRolesIdPermissionsAdminQueryKey = (id?: string,) => {
     return [
-    `/roles/${id}/permissions`
+    `/roles/${id}/permissions/admin`
     ] as const;
     }
 
     
-export const getGetRolesIdPermissionsInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getRolesIdPermissions>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRolesIdPermissions>>, TError, TData>>, }
+export const getGetRolesIdPermissionsAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getRolesIdPermissionsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRolesIdPermissionsAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetRolesIdPermissionsInfiniteQueryKey(id);
+  const queryKey =  queryOptions?.queryKey ?? getGetRolesIdPermissionsAdminInfiniteQueryKey(id);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRolesIdPermissions>>> = ({ signal }) => getRolesIdPermissions(id, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRolesIdPermissionsAdmin>>> = ({ signal }) => getRolesIdPermissionsAdmin(id, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRolesIdPermissions>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRolesIdPermissionsAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetRolesIdPermissionsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getRolesIdPermissions>>>
-export type GetRolesIdPermissionsInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+export type GetRolesIdPermissionsAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getRolesIdPermissionsAdmin>>>
+export type GetRolesIdPermissionsAdminInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
 
 
-export function useGetRolesIdPermissionsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRolesIdPermissions>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRolesIdPermissions>>, TError, TData>> & Pick<
+export function useGetRolesIdPermissionsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRolesIdPermissionsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRolesIdPermissionsAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getRolesIdPermissions>>,
+          Awaited<ReturnType<typeof getRolesIdPermissionsAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getRolesIdPermissions>>
+          Awaited<ReturnType<typeof getRolesIdPermissionsAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetRolesIdPermissionsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRolesIdPermissions>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRolesIdPermissions>>, TError, TData>> & Pick<
+export function useGetRolesIdPermissionsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRolesIdPermissionsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRolesIdPermissionsAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getRolesIdPermissions>>,
+          Awaited<ReturnType<typeof getRolesIdPermissionsAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getRolesIdPermissions>>
+          Awaited<ReturnType<typeof getRolesIdPermissionsAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetRolesIdPermissionsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRolesIdPermissions>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRolesIdPermissions>>, TError, TData>>, }
+export function useGetRolesIdPermissionsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRolesIdPermissionsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRolesIdPermissionsAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Get role permissions
  */
 
-export function useGetRolesIdPermissionsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRolesIdPermissions>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRolesIdPermissions>>, TError, TData>>, }
+export function useGetRolesIdPermissionsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRolesIdPermissionsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRolesIdPermissionsAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetRolesIdPermissionsInfiniteQueryOptions(id,options)
+  const queryOptions = getGetRolesIdPermissionsAdminInfiniteQueryOptions(id,options)
 
   const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -732,12 +471,12 @@ export function useGetRolesIdPermissionsInfinite<TData = InfiniteData<Awaited<Re
 /**
  * @summary Get role permissions
  */
-export const prefetchGetRolesIdPermissionsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getRolesIdPermissions>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRolesIdPermissions>>, TError, TData>>, }
+export const prefetchGetRolesIdPermissionsAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getRolesIdPermissionsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRolesIdPermissionsAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetRolesIdPermissionsInfiniteQueryOptions(id,options)
+  const queryOptions = getGetRolesIdPermissionsAdminInfiniteQueryOptions(id,options)
 
   await queryClient.prefetchInfiniteQuery(queryOptions);
 
@@ -746,62 +485,62 @@ export const prefetchGetRolesIdPermissionsInfiniteQuery = async <TData = Awaited
 
 
 
-export const getGetRolesIdPermissionsQueryOptions = <TData = Awaited<ReturnType<typeof getRolesIdPermissions>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRolesIdPermissions>>, TError, TData>>, }
+export const getGetRolesIdPermissionsAdminQueryOptions = <TData = Awaited<ReturnType<typeof getRolesIdPermissionsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRolesIdPermissionsAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetRolesIdPermissionsQueryKey(id);
+  const queryKey =  queryOptions?.queryKey ?? getGetRolesIdPermissionsAdminQueryKey(id);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRolesIdPermissions>>> = ({ signal }) => getRolesIdPermissions(id, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRolesIdPermissionsAdmin>>> = ({ signal }) => getRolesIdPermissionsAdmin(id, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getRolesIdPermissions>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getRolesIdPermissionsAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetRolesIdPermissionsQueryResult = NonNullable<Awaited<ReturnType<typeof getRolesIdPermissions>>>
-export type GetRolesIdPermissionsQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+export type GetRolesIdPermissionsAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getRolesIdPermissionsAdmin>>>
+export type GetRolesIdPermissionsAdminQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
 
 
-export function useGetRolesIdPermissions<TData = Awaited<ReturnType<typeof getRolesIdPermissions>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRolesIdPermissions>>, TError, TData>> & Pick<
+export function useGetRolesIdPermissionsAdmin<TData = Awaited<ReturnType<typeof getRolesIdPermissionsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRolesIdPermissionsAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getRolesIdPermissions>>,
+          Awaited<ReturnType<typeof getRolesIdPermissionsAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getRolesIdPermissions>>
+          Awaited<ReturnType<typeof getRolesIdPermissionsAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetRolesIdPermissions<TData = Awaited<ReturnType<typeof getRolesIdPermissions>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRolesIdPermissions>>, TError, TData>> & Pick<
+export function useGetRolesIdPermissionsAdmin<TData = Awaited<ReturnType<typeof getRolesIdPermissionsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRolesIdPermissionsAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getRolesIdPermissions>>,
+          Awaited<ReturnType<typeof getRolesIdPermissionsAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getRolesIdPermissions>>
+          Awaited<ReturnType<typeof getRolesIdPermissionsAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetRolesIdPermissions<TData = Awaited<ReturnType<typeof getRolesIdPermissions>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRolesIdPermissions>>, TError, TData>>, }
+export function useGetRolesIdPermissionsAdmin<TData = Awaited<ReturnType<typeof getRolesIdPermissionsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRolesIdPermissionsAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Get role permissions
  */
 
-export function useGetRolesIdPermissions<TData = Awaited<ReturnType<typeof getRolesIdPermissions>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRolesIdPermissions>>, TError, TData>>, }
+export function useGetRolesIdPermissionsAdmin<TData = Awaited<ReturnType<typeof getRolesIdPermissionsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRolesIdPermissionsAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetRolesIdPermissionsQueryOptions(id,options)
+  const queryOptions = getGetRolesIdPermissionsAdminQueryOptions(id,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -813,12 +552,12 @@ export function useGetRolesIdPermissions<TData = Awaited<ReturnType<typeof getRo
 /**
  * @summary Get role permissions
  */
-export const prefetchGetRolesIdPermissionsQuery = async <TData = Awaited<ReturnType<typeof getRolesIdPermissions>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRolesIdPermissions>>, TError, TData>>, }
+export const prefetchGetRolesIdPermissionsAdminQuery = async <TData = Awaited<ReturnType<typeof getRolesIdPermissionsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRolesIdPermissionsAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetRolesIdPermissionsQueryOptions(id,options)
+  const queryOptions = getGetRolesIdPermissionsAdminQueryOptions(id,options)
 
   await queryClient.prefetchQuery(queryOptions);
 
@@ -831,27 +570,27 @@ export const prefetchGetRolesIdPermissionsQuery = async <TData = Awaited<ReturnT
  * **PR-03** — PUT /roles/{id}/permissions: overwrites the role's permission list. Requires `permission.manage` permission. Body field: `permissions` — array of `{module, action}` pairs validated against the code registry (constants/permissions.ts).
  * @summary Assign permissions to a role
  */
-export const putRolesIdPermissions = (
+export const putRolesIdPermissionsAdmin = (
     id: string,
-    putRolesIdPermissionsBody: PutRolesIdPermissionsBody,
+    putRolesIdPermissionsAdminBody: PutRolesIdPermissionsAdminBody,
  ) => {
       
       
-      return customInstance<PutRolesIdPermissions200>(
-      {url: `/roles/${id}/permissions`, method: 'PUT',
+      return customInstance<PutRolesIdPermissionsAdmin200>(
+      {url: `/roles/${id}/permissions/admin`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
-      data: putRolesIdPermissionsBody
+      data: putRolesIdPermissionsAdminBody
     },
       );
     }
   
 
 
-export const getPutRolesIdPermissionsMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putRolesIdPermissions>>, TError,{id: string;data: PutRolesIdPermissionsBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putRolesIdPermissions>>, TError,{id: string;data: PutRolesIdPermissionsBody}, TContext> => {
+export const getPutRolesIdPermissionsAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putRolesIdPermissionsAdmin>>, TError,{id: string;data: PutRolesIdPermissionsAdminBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putRolesIdPermissionsAdmin>>, TError,{id: string;data: PutRolesIdPermissionsAdminBody}, TContext> => {
 
-const mutationKey = ['putRolesIdPermissions'];
+const mutationKey = ['putRolesIdPermissionsAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -861,10 +600,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putRolesIdPermissions>>, {id: string;data: PutRolesIdPermissionsBody}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putRolesIdPermissionsAdmin>>, {id: string;data: PutRolesIdPermissionsAdminBody}> = (props) => {
           const {id,data} = props ?? {};
 
-          return  putRolesIdPermissions(id,data,)
+          return  putRolesIdPermissionsAdmin(id,data,)
         }
 
         
@@ -872,38 +611,39 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PutRolesIdPermissionsMutationResult = NonNullable<Awaited<ReturnType<typeof putRolesIdPermissions>>>
-    export type PutRolesIdPermissionsMutationBody = PutRolesIdPermissionsBody
-    export type PutRolesIdPermissionsMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+    export type PutRolesIdPermissionsAdminMutationResult = NonNullable<Awaited<ReturnType<typeof putRolesIdPermissionsAdmin>>>
+    export type PutRolesIdPermissionsAdminMutationBody = PutRolesIdPermissionsAdminBody
+    export type PutRolesIdPermissionsAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
  * @summary Assign permissions to a role
  */
-export const usePutRolesIdPermissions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putRolesIdPermissions>>, TError,{id: string;data: PutRolesIdPermissionsBody}, TContext>, }
+export const usePutRolesIdPermissionsAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putRolesIdPermissionsAdmin>>, TError,{id: string;data: PutRolesIdPermissionsAdminBody}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putRolesIdPermissions>>,
+        Awaited<ReturnType<typeof putRolesIdPermissionsAdmin>>,
         TError,
-        {id: string;data: PutRolesIdPermissionsBody},
+        {id: string;data: PutRolesIdPermissionsAdminBody},
         TContext
       > => {
 
-      const mutationOptions = getPutRolesIdPermissionsMutationOptions(options);
+      const mutationOptions = getPutRolesIdPermissionsAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **PR-01** — GET /permissions: catalog of permission keys declared by the code (src/constants/permissions.ts) — no DB query. Requires `permission.manage` permission.
- * @summary Get permission list
+ * GET `/roles/admin` — roles. Cần đăng nhập + `permission.manage` (xem) / `role.create` (tạo). Query parameters: `currentPage`, `pageSize`, `filters`, `sortField`, `sortOrder`.
+ * @summary Get list of roles
  */
-export const getPermissions = (
-    
+export const getRolesAdmin = (
+    params?: GetRolesAdminParams,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<GetPermissions200>(
-      {url: `/permissions`, method: 'GET', signal
+      return customInstance<Response>(
+      {url: `/roles/admin`, method: 'GET',
+        params, signal
     },
       );
     }
@@ -911,75 +651,75 @@ export const getPermissions = (
 
 
 
-export const getGetPermissionsInfiniteQueryKey = () => {
+export const getGetRolesAdminInfiniteQueryKey = (params?: GetRolesAdminParams,) => {
     return [
-    'infinite', `/permissions`
+    'infinite', `/roles/admin`, ...(params ? [params]: [])
     ] as const;
     }
 
-export const getGetPermissionsQueryKey = () => {
+export const getGetRolesAdminQueryKey = (params?: GetRolesAdminParams,) => {
     return [
-    `/permissions`
+    `/roles/admin`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetPermissionsInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getPermissions>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getPermissions>>, TError, TData>>, }
+export const getGetRolesAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getRolesAdmin>>>, TError = LegacyBadRequestResponse>(params?: GetRolesAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRolesAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetPermissionsInfiniteQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getGetRolesAdminInfiniteQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPermissions>>> = ({ signal }) => getPermissions(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRolesAdmin>>> = ({ signal }) => getRolesAdmin(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getPermissions>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRolesAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetPermissionsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getPermissions>>>
-export type GetPermissionsInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+export type GetRolesAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getRolesAdmin>>>
+export type GetRolesAdminInfiniteQueryError = LegacyBadRequestResponse
 
 
-export function useGetPermissionsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getPermissions>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getPermissions>>, TError, TData>> & Pick<
+export function useGetRolesAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRolesAdmin>>>, TError = LegacyBadRequestResponse>(
+ params: undefined |  GetRolesAdminParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRolesAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getPermissions>>,
+          Awaited<ReturnType<typeof getRolesAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getPermissions>>
+          Awaited<ReturnType<typeof getRolesAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetPermissionsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getPermissions>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getPermissions>>, TError, TData>> & Pick<
+export function useGetRolesAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRolesAdmin>>>, TError = LegacyBadRequestResponse>(
+ params?: GetRolesAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRolesAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getPermissions>>,
+          Awaited<ReturnType<typeof getRolesAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getPermissions>>
+          Awaited<ReturnType<typeof getRolesAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetPermissionsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getPermissions>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getPermissions>>, TError, TData>>, }
+export function useGetRolesAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRolesAdmin>>>, TError = LegacyBadRequestResponse>(
+ params?: GetRolesAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRolesAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Get permission list
+ * @summary Get list of roles
  */
 
-export function useGetPermissionsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getPermissions>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getPermissions>>, TError, TData>>, }
+export function useGetRolesAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRolesAdmin>>>, TError = LegacyBadRequestResponse>(
+ params?: GetRolesAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRolesAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetPermissionsInfiniteQueryOptions(options)
+  const queryOptions = getGetRolesAdminInfiniteQueryOptions(params,options)
 
   const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -989,14 +729,14 @@ export function useGetPermissionsInfinite<TData = InfiniteData<Awaited<ReturnTyp
 }
 
 /**
- * @summary Get permission list
+ * @summary Get list of roles
  */
-export const prefetchGetPermissionsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getPermissions>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getPermissions>>, TError, TData>>, }
+export const prefetchGetRolesAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getRolesAdmin>>, TError = LegacyBadRequestResponse>(
+ queryClient: QueryClient, params?: GetRolesAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRolesAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetPermissionsInfiniteQueryOptions(options)
+  const queryOptions = getGetRolesAdminInfiniteQueryOptions(params,options)
 
   await queryClient.prefetchInfiniteQuery(queryOptions);
 
@@ -1005,62 +745,62 @@ export const prefetchGetPermissionsInfiniteQuery = async <TData = Awaited<Return
 
 
 
-export const getGetPermissionsQueryOptions = <TData = Awaited<ReturnType<typeof getPermissions>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPermissions>>, TError, TData>>, }
+export const getGetRolesAdminQueryOptions = <TData = Awaited<ReturnType<typeof getRolesAdmin>>, TError = LegacyBadRequestResponse>(params?: GetRolesAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRolesAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetPermissionsQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getGetRolesAdminQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPermissions>>> = ({ signal }) => getPermissions(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRolesAdmin>>> = ({ signal }) => getRolesAdmin(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPermissions>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getRolesAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetPermissionsQueryResult = NonNullable<Awaited<ReturnType<typeof getPermissions>>>
-export type GetPermissionsQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+export type GetRolesAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getRolesAdmin>>>
+export type GetRolesAdminQueryError = LegacyBadRequestResponse
 
 
-export function useGetPermissions<TData = Awaited<ReturnType<typeof getPermissions>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPermissions>>, TError, TData>> & Pick<
+export function useGetRolesAdmin<TData = Awaited<ReturnType<typeof getRolesAdmin>>, TError = LegacyBadRequestResponse>(
+ params: undefined |  GetRolesAdminParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRolesAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getPermissions>>,
+          Awaited<ReturnType<typeof getRolesAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getPermissions>>
+          Awaited<ReturnType<typeof getRolesAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetPermissions<TData = Awaited<ReturnType<typeof getPermissions>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPermissions>>, TError, TData>> & Pick<
+export function useGetRolesAdmin<TData = Awaited<ReturnType<typeof getRolesAdmin>>, TError = LegacyBadRequestResponse>(
+ params?: GetRolesAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRolesAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getPermissions>>,
+          Awaited<ReturnType<typeof getRolesAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getPermissions>>
+          Awaited<ReturnType<typeof getRolesAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetPermissions<TData = Awaited<ReturnType<typeof getPermissions>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPermissions>>, TError, TData>>, }
+export function useGetRolesAdmin<TData = Awaited<ReturnType<typeof getRolesAdmin>>, TError = LegacyBadRequestResponse>(
+ params?: GetRolesAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRolesAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Get permission list
+ * @summary Get list of roles
  */
 
-export function useGetPermissions<TData = Awaited<ReturnType<typeof getPermissions>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPermissions>>, TError, TData>>, }
+export function useGetRolesAdmin<TData = Awaited<ReturnType<typeof getRolesAdmin>>, TError = LegacyBadRequestResponse>(
+ params?: GetRolesAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRolesAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetPermissionsQueryOptions(options)
+  const queryOptions = getGetRolesAdminQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -1070,14 +810,14 @@ export function useGetPermissions<TData = Awaited<ReturnType<typeof getPermissio
 }
 
 /**
- * @summary Get permission list
+ * @summary Get list of roles
  */
-export const prefetchGetPermissionsQuery = async <TData = Awaited<ReturnType<typeof getPermissions>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPermissions>>, TError, TData>>, }
+export const prefetchGetRolesAdminQuery = async <TData = Awaited<ReturnType<typeof getRolesAdmin>>, TError = LegacyBadRequestResponse>(
+ queryClient: QueryClient, params?: GetRolesAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRolesAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetPermissionsQueryOptions(options)
+  const queryOptions = getGetRolesAdminQueryOptions(params,options)
 
   await queryClient.prefetchQuery(queryOptions);
 
@@ -1086,3 +826,69 @@ export const prefetchGetPermissionsQuery = async <TData = Awaited<ReturnType<typ
 
 
 
+/**
+ * POST `/roles/admin` — roles. Cần đăng nhập + `role.create`. Handled by `roleProvider.post`.
+ * @summary Create a new role
+ */
+export const postRolesAdmin = (
+    roleCreate: RoleCreate,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<Response>(
+      {url: `/roles/admin`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: roleCreate, signal
+    },
+      );
+    }
+  
+
+
+export const getPostRolesAdminMutationOptions = <TError = LegacyBadRequestResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postRolesAdmin>>, TError,{data: RoleCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postRolesAdmin>>, TError,{data: RoleCreate}, TContext> => {
+
+const mutationKey = ['postRolesAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postRolesAdmin>>, {data: RoleCreate}> = (props) => {
+          const {data} = props ?? {};
+
+          return  postRolesAdmin(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostRolesAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postRolesAdmin>>>
+    export type PostRolesAdminMutationBody = RoleCreate
+    export type PostRolesAdminMutationError = LegacyBadRequestResponse
+
+    /**
+ * @summary Create a new role
+ */
+export const usePostRolesAdmin = <TError = LegacyBadRequestResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postRolesAdmin>>, TError,{data: RoleCreate}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postRolesAdmin>>,
+        TError,
+        {data: RoleCreate},
+        TContext
+      > => {
+
+      const mutationOptions = getPostRolesAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    

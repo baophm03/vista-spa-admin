@@ -30,8 +30,8 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  GetTreatmentPackageVoucherCustomers200,
-  GetTreatmentPackageVoucherCustomersParams,
+  GetTreatmentPackageVoucherCustomersAdmin200,
+  GetTreatmentPackageVoucherCustomersAdminParams,
   VoucherCustomerAssignment
 } from '../models';
 
@@ -42,156 +42,156 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * DELETE `/treatment-package-voucher-customers/{id}` — marks the assignment REVOKED. Requires `voucher.update`.
+ * DELETE `/treatment-package-voucher-customers/{id}/admin` — marks the assignment REVOKED. Cần đăng nhập + `voucher.delete_all`.
  * @summary Revoke a voucher assignment
  */
-export const deleteTreatmentPackageVoucherCustomersId = (
+export const deleteTreatmentPackageVoucherCustomersIdAdmin = (
     id: string,
  ) => {
-
-
+      
+      
       return customInstance<void>(
-      {url: `/treatment-package-voucher-customers/${id}`, method: 'DELETE'
+      {url: `/treatment-package-voucher-customers/${id}/admin`, method: 'DELETE'
     },
       );
     }
+  
 
 
+export const getDeleteTreatmentPackageVoucherCustomersIdAdminMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTreatmentPackageVoucherCustomersIdAdmin>>, TError,{id: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteTreatmentPackageVoucherCustomersIdAdmin>>, TError,{id: string}, TContext> => {
 
-export const getDeleteTreatmentPackageVoucherCustomersIdMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTreatmentPackageVoucherCustomersId>>, TError,{id: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof deleteTreatmentPackageVoucherCustomersId>>, TError,{id: string}, TContext> => {
-
-const mutationKey = ['deleteTreatmentPackageVoucherCustomersId'];
+const mutationKey = ['deleteTreatmentPackageVoucherCustomersIdAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
       : {mutation: { mutationKey, }};
 
+      
 
 
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteTreatmentPackageVoucherCustomersId>>, {id: string}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteTreatmentPackageVoucherCustomersIdAdmin>>, {id: string}> = (props) => {
           const {id} = props ?? {};
 
-          return  deleteTreatmentPackageVoucherCustomersId(id,)
+          return  deleteTreatmentPackageVoucherCustomersIdAdmin(id,)
         }
 
-
+        
 
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type DeleteTreatmentPackageVoucherCustomersIdMutationResult = NonNullable<Awaited<ReturnType<typeof deleteTreatmentPackageVoucherCustomersId>>>
-
-    export type DeleteTreatmentPackageVoucherCustomersIdMutationError = unknown
+    export type DeleteTreatmentPackageVoucherCustomersIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof deleteTreatmentPackageVoucherCustomersIdAdmin>>>
+    
+    export type DeleteTreatmentPackageVoucherCustomersIdAdminMutationError = unknown
 
     /**
  * @summary Revoke a voucher assignment
  */
-export const useDeleteTreatmentPackageVoucherCustomersId = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTreatmentPackageVoucherCustomersId>>, TError,{id: string}, TContext>, }
+export const useDeleteTreatmentPackageVoucherCustomersIdAdmin = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTreatmentPackageVoucherCustomersIdAdmin>>, TError,{id: string}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteTreatmentPackageVoucherCustomersId>>,
+        Awaited<ReturnType<typeof deleteTreatmentPackageVoucherCustomersIdAdmin>>,
         TError,
         {id: string},
         TContext
       > => {
 
-      const mutationOptions = getDeleteTreatmentPackageVoucherCustomersIdMutationOptions(options);
+      const mutationOptions = getDeleteTreatmentPackageVoucherCustomersIdAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/treatment-package-voucher-customers` — combined view. Query parameters: `q`, `user_id`. Requires `voucher.read`.
+ * GET `/treatment-package-voucher-customers/admin` — combined view. Query parameters: `q`, `user_id`, `customer_profile_id`. Cần đăng nhập + `voucher.view_all`.
  * @summary List vouchers each customer currently holds (auto by rank + manual assignments)
  */
-export const getTreatmentPackageVoucherCustomers = (
-    params?: GetTreatmentPackageVoucherCustomersParams,
+export const getTreatmentPackageVoucherCustomersAdmin = (
+    params?: GetTreatmentPackageVoucherCustomersAdminParams,
  signal?: AbortSignal
 ) => {
-
-
-      return customInstance<GetTreatmentPackageVoucherCustomers200>(
-      {url: `/treatment-package-voucher-customers`, method: 'GET',
+      
+      
+      return customInstance<GetTreatmentPackageVoucherCustomersAdmin200>(
+      {url: `/treatment-package-voucher-customers/admin`, method: 'GET',
         params, signal
     },
       );
     }
+  
 
 
 
-
-export const getGetTreatmentPackageVoucherCustomersInfiniteQueryKey = (params?: GetTreatmentPackageVoucherCustomersParams,) => {
+export const getGetTreatmentPackageVoucherCustomersAdminInfiniteQueryKey = (params?: GetTreatmentPackageVoucherCustomersAdminParams,) => {
     return [
-    'infinite', `/treatment-package-voucher-customers`, ...(params ? [params]: [])
+    'infinite', `/treatment-package-voucher-customers/admin`, ...(params ? [params]: [])
     ] as const;
     }
 
-export const getGetTreatmentPackageVoucherCustomersQueryKey = (params?: GetTreatmentPackageVoucherCustomersParams,) => {
+export const getGetTreatmentPackageVoucherCustomersAdminQueryKey = (params?: GetTreatmentPackageVoucherCustomersAdminParams,) => {
     return [
-    `/treatment-package-voucher-customers`, ...(params ? [params]: [])
+    `/treatment-package-voucher-customers/admin`, ...(params ? [params]: [])
     ] as const;
     }
 
-
-export const getGetTreatmentPackageVoucherCustomersInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomers>>>, TError = unknown>(params?: GetTreatmentPackageVoucherCustomersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomers>>, TError, TData>>, }
+    
+export const getGetTreatmentPackageVoucherCustomersAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomersAdmin>>>, TError = unknown>(params?: GetTreatmentPackageVoucherCustomersAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomersAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetTreatmentPackageVoucherCustomersInfiniteQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getGetTreatmentPackageVoucherCustomersAdminInfiniteQueryKey(params);
 
+  
 
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomersAdmin>>> = ({ signal }) => getTreatmentPackageVoucherCustomersAdmin(params, signal);
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomers>>> = ({ signal }) => getTreatmentPackageVoucherCustomers(params, signal);
+      
 
+      
 
-
-
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomers>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomersAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetTreatmentPackageVoucherCustomersInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomers>>>
-export type GetTreatmentPackageVoucherCustomersInfiniteQueryError = unknown
+export type GetTreatmentPackageVoucherCustomersAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomersAdmin>>>
+export type GetTreatmentPackageVoucherCustomersAdminInfiniteQueryError = unknown
 
 
-export function useGetTreatmentPackageVoucherCustomersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomers>>>, TError = unknown>(
- params: undefined |  GetTreatmentPackageVoucherCustomersParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomers>>, TError, TData>> & Pick<
+export function useGetTreatmentPackageVoucherCustomersAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomersAdmin>>>, TError = unknown>(
+ params: undefined |  GetTreatmentPackageVoucherCustomersAdminParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomersAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomers>>,
+          Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomersAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomers>>
+          Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomersAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetTreatmentPackageVoucherCustomersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomers>>>, TError = unknown>(
- params?: GetTreatmentPackageVoucherCustomersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomers>>, TError, TData>> & Pick<
+export function useGetTreatmentPackageVoucherCustomersAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomersAdmin>>>, TError = unknown>(
+ params?: GetTreatmentPackageVoucherCustomersAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomersAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomers>>,
+          Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomersAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomers>>
+          Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomersAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetTreatmentPackageVoucherCustomersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomers>>>, TError = unknown>(
- params?: GetTreatmentPackageVoucherCustomersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomers>>, TError, TData>>, }
+export function useGetTreatmentPackageVoucherCustomersAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomersAdmin>>>, TError = unknown>(
+ params?: GetTreatmentPackageVoucherCustomersAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomersAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary List vouchers each customer currently holds (auto by rank + manual assignments)
  */
 
-export function useGetTreatmentPackageVoucherCustomersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomers>>>, TError = unknown>(
- params?: GetTreatmentPackageVoucherCustomersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomers>>, TError, TData>>, }
- , queryClient?: QueryClient
+export function useGetTreatmentPackageVoucherCustomersAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomersAdmin>>>, TError = unknown>(
+ params?: GetTreatmentPackageVoucherCustomersAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomersAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetTreatmentPackageVoucherCustomersInfiniteQueryOptions(params,options)
+  const queryOptions = getGetTreatmentPackageVoucherCustomersAdminInfiniteQueryOptions(params,options)
 
   const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -203,12 +203,12 @@ export function useGetTreatmentPackageVoucherCustomersInfinite<TData = InfiniteD
 /**
  * @summary List vouchers each customer currently holds (auto by rank + manual assignments)
  */
-export const prefetchGetTreatmentPackageVoucherCustomersInfiniteQuery = async <TData = Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomers>>, TError = unknown>(
- queryClient: QueryClient, params?: GetTreatmentPackageVoucherCustomersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomers>>, TError, TData>>, }
+export const prefetchGetTreatmentPackageVoucherCustomersAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomersAdmin>>, TError = unknown>(
+ queryClient: QueryClient, params?: GetTreatmentPackageVoucherCustomersAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomersAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetTreatmentPackageVoucherCustomersInfiniteQueryOptions(params,options)
+  const queryOptions = getGetTreatmentPackageVoucherCustomersAdminInfiniteQueryOptions(params,options)
 
   await queryClient.prefetchInfiniteQuery(queryOptions);
 
@@ -217,62 +217,62 @@ export const prefetchGetTreatmentPackageVoucherCustomersInfiniteQuery = async <T
 
 
 
-export const getGetTreatmentPackageVoucherCustomersQueryOptions = <TData = Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomers>>, TError = unknown>(params?: GetTreatmentPackageVoucherCustomersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomers>>, TError, TData>>, }
+export const getGetTreatmentPackageVoucherCustomersAdminQueryOptions = <TData = Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomersAdmin>>, TError = unknown>(params?: GetTreatmentPackageVoucherCustomersAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomersAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetTreatmentPackageVoucherCustomersQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getGetTreatmentPackageVoucherCustomersAdminQueryKey(params);
 
+  
 
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomersAdmin>>> = ({ signal }) => getTreatmentPackageVoucherCustomersAdmin(params, signal);
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomers>>> = ({ signal }) => getTreatmentPackageVoucherCustomers(params, signal);
+      
 
+      
 
-
-
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomers>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomersAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetTreatmentPackageVoucherCustomersQueryResult = NonNullable<Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomers>>>
-export type GetTreatmentPackageVoucherCustomersQueryError = unknown
+export type GetTreatmentPackageVoucherCustomersAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomersAdmin>>>
+export type GetTreatmentPackageVoucherCustomersAdminQueryError = unknown
 
 
-export function useGetTreatmentPackageVoucherCustomers<TData = Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomers>>, TError = unknown>(
- params: undefined |  GetTreatmentPackageVoucherCustomersParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomers>>, TError, TData>> & Pick<
+export function useGetTreatmentPackageVoucherCustomersAdmin<TData = Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomersAdmin>>, TError = unknown>(
+ params: undefined |  GetTreatmentPackageVoucherCustomersAdminParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomersAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomers>>,
+          Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomersAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomers>>
+          Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomersAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetTreatmentPackageVoucherCustomers<TData = Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomers>>, TError = unknown>(
- params?: GetTreatmentPackageVoucherCustomersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomers>>, TError, TData>> & Pick<
+export function useGetTreatmentPackageVoucherCustomersAdmin<TData = Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomersAdmin>>, TError = unknown>(
+ params?: GetTreatmentPackageVoucherCustomersAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomersAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomers>>,
+          Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomersAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomers>>
+          Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomersAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetTreatmentPackageVoucherCustomers<TData = Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomers>>, TError = unknown>(
- params?: GetTreatmentPackageVoucherCustomersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomers>>, TError, TData>>, }
+export function useGetTreatmentPackageVoucherCustomersAdmin<TData = Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomersAdmin>>, TError = unknown>(
+ params?: GetTreatmentPackageVoucherCustomersAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomersAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary List vouchers each customer currently holds (auto by rank + manual assignments)
  */
 
-export function useGetTreatmentPackageVoucherCustomers<TData = Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomers>>, TError = unknown>(
- params?: GetTreatmentPackageVoucherCustomersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomers>>, TError, TData>>, }
- , queryClient?: QueryClient
+export function useGetTreatmentPackageVoucherCustomersAdmin<TData = Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomersAdmin>>, TError = unknown>(
+ params?: GetTreatmentPackageVoucherCustomersAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomersAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetTreatmentPackageVoucherCustomersQueryOptions(params,options)
+  const queryOptions = getGetTreatmentPackageVoucherCustomersAdminQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -284,12 +284,12 @@ export function useGetTreatmentPackageVoucherCustomers<TData = Awaited<ReturnTyp
 /**
  * @summary List vouchers each customer currently holds (auto by rank + manual assignments)
  */
-export const prefetchGetTreatmentPackageVoucherCustomersQuery = async <TData = Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomers>>, TError = unknown>(
- queryClient: QueryClient, params?: GetTreatmentPackageVoucherCustomersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomers>>, TError, TData>>, }
+export const prefetchGetTreatmentPackageVoucherCustomersAdminQuery = async <TData = Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomersAdmin>>, TError = unknown>(
+ queryClient: QueryClient, params?: GetTreatmentPackageVoucherCustomersAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomersAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetTreatmentPackageVoucherCustomersQueryOptions(params,options)
+  const queryOptions = getGetTreatmentPackageVoucherCustomersAdminQueryOptions(params,options)
 
   await queryClient.prefetchQuery(queryOptions);
 
@@ -299,67 +299,68 @@ export const prefetchGetTreatmentPackageVoucherCustomersQuery = async <TData = A
 
 
 /**
- * POST `/treatment-package-voucher-customers` — assigns an active voucher to a customer. Body fields: `voucher_id`, `user_id`, `note`. Requires `voucher.update`.
+ * POST `/treatment-package-voucher-customers/admin` — assigns an active voucher to a customer. Body fields: `voucher_id`, `customer_profile_id` (CRM profile, including profiles without an app account), or `user_id`, `note`. Cần đăng nhập + `voucher.create`.
  * @summary Assign a voucher to a customer (FIXED mode)
  */
-export const postTreatmentPackageVoucherCustomers = (
+export const postTreatmentPackageVoucherCustomersAdmin = (
     voucherCustomerAssignment: VoucherCustomerAssignment,
  signal?: AbortSignal
 ) => {
-
-
+      
+      
       return customInstance<void>(
-      {url: `/treatment-package-voucher-customers`, method: 'POST',
+      {url: `/treatment-package-voucher-customers/admin`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: voucherCustomerAssignment, signal
     },
       );
     }
+  
 
 
+export const getPostTreatmentPackageVoucherCustomersAdminMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postTreatmentPackageVoucherCustomersAdmin>>, TError,{data: VoucherCustomerAssignment}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postTreatmentPackageVoucherCustomersAdmin>>, TError,{data: VoucherCustomerAssignment}, TContext> => {
 
-export const getPostTreatmentPackageVoucherCustomersMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postTreatmentPackageVoucherCustomers>>, TError,{data: VoucherCustomerAssignment}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postTreatmentPackageVoucherCustomers>>, TError,{data: VoucherCustomerAssignment}, TContext> => {
-
-const mutationKey = ['postTreatmentPackageVoucherCustomers'];
+const mutationKey = ['postTreatmentPackageVoucherCustomersAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
       : {mutation: { mutationKey, }};
 
+      
 
 
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postTreatmentPackageVoucherCustomers>>, {data: VoucherCustomerAssignment}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postTreatmentPackageVoucherCustomersAdmin>>, {data: VoucherCustomerAssignment}> = (props) => {
           const {data} = props ?? {};
 
-          return  postTreatmentPackageVoucherCustomers(data,)
+          return  postTreatmentPackageVoucherCustomersAdmin(data,)
         }
 
-
+        
 
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PostTreatmentPackageVoucherCustomersMutationResult = NonNullable<Awaited<ReturnType<typeof postTreatmentPackageVoucherCustomers>>>
-    export type PostTreatmentPackageVoucherCustomersMutationBody = VoucherCustomerAssignment
-    export type PostTreatmentPackageVoucherCustomersMutationError = unknown
+    export type PostTreatmentPackageVoucherCustomersAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postTreatmentPackageVoucherCustomersAdmin>>>
+    export type PostTreatmentPackageVoucherCustomersAdminMutationBody = VoucherCustomerAssignment
+    export type PostTreatmentPackageVoucherCustomersAdminMutationError = unknown
 
     /**
  * @summary Assign a voucher to a customer (FIXED mode)
  */
-export const usePostTreatmentPackageVoucherCustomers = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postTreatmentPackageVoucherCustomers>>, TError,{data: VoucherCustomerAssignment}, TContext>, }
+export const usePostTreatmentPackageVoucherCustomersAdmin = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postTreatmentPackageVoucherCustomersAdmin>>, TError,{data: VoucherCustomerAssignment}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postTreatmentPackageVoucherCustomers>>,
+        Awaited<ReturnType<typeof postTreatmentPackageVoucherCustomersAdmin>>,
         TError,
         {data: VoucherCustomerAssignment},
         TContext
       > => {
 
-      const mutationOptions = getPostTreatmentPackageVoucherCustomersMutationOptions(options);
+      const mutationOptions = getPostTreatmentPackageVoucherCustomersAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
+    

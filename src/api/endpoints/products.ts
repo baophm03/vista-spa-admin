@@ -31,28 +31,19 @@ import type {
 
 import type {
   ConflictResponse,
-  DeleteProductCategoriesId200,
-  DeleteProductsId200,
+  DeleteProductsIdAdmin200,
   ForbiddenResponse,
-  GetProductCategories200,
-  GetProductOrders200,
-  GetProductOrdersId200,
-  GetProductOrdersParams,
   GetProducts200,
-  GetProductsId200,
+  GetProductsAdmin200,
+  GetProductsAdminParams,
+  GetProductsIdAdmin200,
   GetProductsParams,
   InternalErrorResponse,
   NotFoundResponse,
-  PostProductCategories200,
-  PostProductCategoriesBody,
-  PostProducts200,
+  PostProductsAdmin200,
   ProductCreate,
   ProductUpdate,
-  PutProductCategoriesId200,
-  PutProductCategoriesIdBody,
-  PutProductOrdersId200,
-  PutProductOrdersIdBody,
-  PutProductsId200,
+  PutProductsIdAdmin200,
   UnauthorizedResponse,
   UnprocessableEntityResponse
 } from '../models';
@@ -64,329 +55,8 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * GET `/products/{id}` — products. Requires authentication; the route does not declare detailed permissions.
- * @summary View product detail
- */
-export const getProductsId = (
-    id: string,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<GetProductsId200>(
-      {url: `/products/${id}`, method: 'GET', signal
-    },
-      );
-    }
-  
-
-
-
-export const getGetProductsIdInfiniteQueryKey = (id?: string,) => {
-    return [
-    'infinite', `/products/${id}`
-    ] as const;
-    }
-
-export const getGetProductsIdQueryKey = (id?: string,) => {
-    return [
-    `/products/${id}`
-    ] as const;
-    }
-
-    
-export const getGetProductsIdInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getProductsId>>>, TError = UnauthorizedResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductsId>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetProductsIdInfiniteQueryKey(id);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getProductsId>>> = ({ signal }) => getProductsId(id, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductsId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetProductsIdInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getProductsId>>>
-export type GetProductsIdInfiniteQueryError = UnauthorizedResponse | NotFoundResponse | InternalErrorResponse
-
-
-export function useGetProductsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProductsId>>>, TError = UnauthorizedResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductsId>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getProductsId>>,
-          TError,
-          Awaited<ReturnType<typeof getProductsId>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetProductsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProductsId>>>, TError = UnauthorizedResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductsId>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getProductsId>>,
-          TError,
-          Awaited<ReturnType<typeof getProductsId>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetProductsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProductsId>>>, TError = UnauthorizedResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductsId>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary View product detail
- */
-
-export function useGetProductsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProductsId>>>, TError = UnauthorizedResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductsId>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetProductsIdInfiniteQueryOptions(id,options)
-
-  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary View product detail
- */
-export const prefetchGetProductsIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getProductsId>>, TError = UnauthorizedResponse | NotFoundResponse | InternalErrorResponse>(
- queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductsId>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetProductsIdInfiniteQueryOptions(id,options)
-
-  await queryClient.prefetchInfiniteQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-export const getGetProductsIdQueryOptions = <TData = Awaited<ReturnType<typeof getProductsId>>, TError = UnauthorizedResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductsId>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetProductsIdQueryKey(id);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getProductsId>>> = ({ signal }) => getProductsId(id, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getProductsId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetProductsIdQueryResult = NonNullable<Awaited<ReturnType<typeof getProductsId>>>
-export type GetProductsIdQueryError = UnauthorizedResponse | NotFoundResponse | InternalErrorResponse
-
-
-export function useGetProductsId<TData = Awaited<ReturnType<typeof getProductsId>>, TError = UnauthorizedResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductsId>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getProductsId>>,
-          TError,
-          Awaited<ReturnType<typeof getProductsId>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetProductsId<TData = Awaited<ReturnType<typeof getProductsId>>, TError = UnauthorizedResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductsId>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getProductsId>>,
-          TError,
-          Awaited<ReturnType<typeof getProductsId>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetProductsId<TData = Awaited<ReturnType<typeof getProductsId>>, TError = UnauthorizedResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductsId>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary View product detail
- */
-
-export function useGetProductsId<TData = Awaited<ReturnType<typeof getProductsId>>, TError = UnauthorizedResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductsId>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetProductsIdQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary View product detail
- */
-export const prefetchGetProductsIdQuery = async <TData = Awaited<ReturnType<typeof getProductsId>>, TError = UnauthorizedResponse | NotFoundResponse | InternalErrorResponse>(
- queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductsId>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetProductsIdQueryOptions(id,options)
-
-  await queryClient.prefetchQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-/**
- * PUT `/products/{id}` — products. Only platform administrators (ADM) can call this. Body fields: `name`, `sku`, `category_id`, `price`, `description`, `cover_file_id`, `buy_url`, `is_active`, `gallery_file_ids`, `brand`, `original_price`, `short_description`, `attributes`, `tags`.
- * @summary Update a product
- */
-export const putProductsId = (
-    id: string,
-    productUpdate: ProductUpdate,
- ) => {
-      
-      
-      return customInstance<PutProductsId200>(
-      {url: `/products/${id}`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: productUpdate
-    },
-      );
-    }
-  
-
-
-export const getPutProductsIdMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putProductsId>>, TError,{id: string;data: ProductUpdate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putProductsId>>, TError,{id: string;data: ProductUpdate}, TContext> => {
-
-const mutationKey = ['putProductsId'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putProductsId>>, {id: string;data: ProductUpdate}> = (props) => {
-          const {id,data} = props ?? {};
-
-          return  putProductsId(id,data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PutProductsIdMutationResult = NonNullable<Awaited<ReturnType<typeof putProductsId>>>
-    export type PutProductsIdMutationBody = ProductUpdate
-    export type PutProductsIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
-
-    /**
- * @summary Update a product
- */
-export const usePutProductsId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putProductsId>>, TError,{id: string;data: ProductUpdate}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putProductsId>>,
-        TError,
-        {id: string;data: ProductUpdate},
-        TContext
-      > => {
-
-      const mutationOptions = getPutProductsIdMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * DELETE `/products/{id}` — soft-deletes the product (is_deleted=true, keeps files/references for audit). Only platform administrators (ADM) can call this.
- * @summary Delete a product
- */
-export const deleteProductsId = (
-    id: string,
- ) => {
-      
-      
-      return customInstance<DeleteProductsId200>(
-      {url: `/products/${id}`, method: 'DELETE'
-    },
-      );
-    }
-  
-
-
-export const getDeleteProductsIdMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteProductsId>>, TError,{id: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof deleteProductsId>>, TError,{id: string}, TContext> => {
-
-const mutationKey = ['deleteProductsId'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteProductsId>>, {id: string}> = (props) => {
-          const {id} = props ?? {};
-
-          return  deleteProductsId(id,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteProductsIdMutationResult = NonNullable<Awaited<ReturnType<typeof deleteProductsId>>>
-    
-    export type DeleteProductsIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
-
-    /**
- * @summary Delete a product
- */
-export const useDeleteProductsId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteProductsId>>, TError,{id: string}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteProductsId>>,
-        TError,
-        {id: string},
-        TContext
-      > => {
-
-      const mutationOptions = getDeleteProductsIdMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * GET `/products` — products. Requires authentication; the route does not declare detailed permissions. Query parameters: `q`, `category_id`, `is_active`.
- * @summary Get product list
+ * **GET /products** — Public, không cần đăng nhập. Danh sách sản phẩm đang bán (`is_active=true`) cho khách duyệt miniapp. Query parameters: `q`, `category_id`. Quản trị đầy đủ xem `GET /products/admin`. Handled by `productService.listProducts`.
+ * @summary Get product list (public)
  */
 export const getProducts = (
     params?: GetProductsParams,
@@ -417,7 +87,7 @@ export const getGetProductsQueryKey = (params?: GetProductsParams,) => {
     }
 
     
-export const getGetProductsInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getProducts>>>, TError = UnauthorizedResponse | InternalErrorResponse>(params?: GetProductsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProducts>>, TError, TData>>, }
+export const getGetProductsInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getProducts>>>, TError = InternalErrorResponse>(params?: GetProductsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProducts>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
@@ -436,10 +106,10 @@ const {query: queryOptions} = options ?? {};
 }
 
 export type GetProductsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getProducts>>>
-export type GetProductsInfiniteQueryError = UnauthorizedResponse | InternalErrorResponse
+export type GetProductsInfiniteQueryError = InternalErrorResponse
 
 
-export function useGetProductsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProducts>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+export function useGetProductsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProducts>>>, TError = InternalErrorResponse>(
  params: undefined |  GetProductsParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProducts>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getProducts>>,
@@ -449,7 +119,7 @@ export function useGetProductsInfinite<TData = InfiniteData<Awaited<ReturnType<t
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetProductsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProducts>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+export function useGetProductsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProducts>>>, TError = InternalErrorResponse>(
  params?: GetProductsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProducts>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getProducts>>,
@@ -459,15 +129,15 @@ export function useGetProductsInfinite<TData = InfiniteData<Awaited<ReturnType<t
       >, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetProductsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProducts>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+export function useGetProductsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProducts>>>, TError = InternalErrorResponse>(
  params?: GetProductsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProducts>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Get product list
+ * @summary Get product list (public)
  */
 
-export function useGetProductsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProducts>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+export function useGetProductsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProducts>>>, TError = InternalErrorResponse>(
  params?: GetProductsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProducts>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -482,9 +152,9 @@ export function useGetProductsInfinite<TData = InfiniteData<Awaited<ReturnType<t
 }
 
 /**
- * @summary Get product list
+ * @summary Get product list (public)
  */
-export const prefetchGetProductsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getProducts>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+export const prefetchGetProductsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getProducts>>, TError = InternalErrorResponse>(
  queryClient: QueryClient, params?: GetProductsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProducts>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
@@ -498,7 +168,7 @@ export const prefetchGetProductsInfiniteQuery = async <TData = Awaited<ReturnTyp
 
 
 
-export const getGetProductsQueryOptions = <TData = Awaited<ReturnType<typeof getProducts>>, TError = UnauthorizedResponse | InternalErrorResponse>(params?: GetProductsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProducts>>, TError, TData>>, }
+export const getGetProductsQueryOptions = <TData = Awaited<ReturnType<typeof getProducts>>, TError = InternalErrorResponse>(params?: GetProductsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProducts>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
@@ -517,10 +187,10 @@ const {query: queryOptions} = options ?? {};
 }
 
 export type GetProductsQueryResult = NonNullable<Awaited<ReturnType<typeof getProducts>>>
-export type GetProductsQueryError = UnauthorizedResponse | InternalErrorResponse
+export type GetProductsQueryError = InternalErrorResponse
 
 
-export function useGetProducts<TData = Awaited<ReturnType<typeof getProducts>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+export function useGetProducts<TData = Awaited<ReturnType<typeof getProducts>>, TError = InternalErrorResponse>(
  params: undefined |  GetProductsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProducts>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getProducts>>,
@@ -530,7 +200,7 @@ export function useGetProducts<TData = Awaited<ReturnType<typeof getProducts>>, 
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetProducts<TData = Awaited<ReturnType<typeof getProducts>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+export function useGetProducts<TData = Awaited<ReturnType<typeof getProducts>>, TError = InternalErrorResponse>(
  params?: GetProductsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProducts>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getProducts>>,
@@ -540,15 +210,15 @@ export function useGetProducts<TData = Awaited<ReturnType<typeof getProducts>>, 
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetProducts<TData = Awaited<ReturnType<typeof getProducts>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+export function useGetProducts<TData = Awaited<ReturnType<typeof getProducts>>, TError = InternalErrorResponse>(
  params?: GetProductsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProducts>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Get product list
+ * @summary Get product list (public)
  */
 
-export function useGetProducts<TData = Awaited<ReturnType<typeof getProducts>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+export function useGetProducts<TData = Awaited<ReturnType<typeof getProducts>>, TError = InternalErrorResponse>(
  params?: GetProductsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProducts>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -563,9 +233,9 @@ export function useGetProducts<TData = Awaited<ReturnType<typeof getProducts>>, 
 }
 
 /**
- * @summary Get product list
+ * @summary Get product list (public)
  */
-export const prefetchGetProductsQuery = async <TData = Awaited<ReturnType<typeof getProducts>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+export const prefetchGetProductsQuery = async <TData = Awaited<ReturnType<typeof getProducts>>, TError = InternalErrorResponse>(
  queryClient: QueryClient, params?: GetProductsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProducts>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
@@ -580,95 +250,224 @@ export const prefetchGetProductsQuery = async <TData = Awaited<ReturnType<typeof
 
 
 /**
- * POST `/products` — products. Only platform administrators (ADM) can call this. Body fields: `sku`, `category_id`, `price`, `description`, `cover_file_id`, `buy_url`, `name`, `gallery_file_ids`, `brand`, `original_price`, `short_description`, `attributes`, `tags`.
- * @summary Create a new product
+ * GET `/products/{id}/admin` — products. Cần đăng nhập + `product.view_all`.
+ * @summary View product detail
  */
-export const postProducts = (
-    productCreate: ProductCreate,
+export const getProductsIdAdmin = (
+    id: string,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<PostProducts200>(
-      {url: `/products`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: productCreate, signal
+      return customInstance<GetProductsIdAdmin200>(
+      {url: `/products/${id}/admin`, method: 'GET', signal
     },
       );
     }
   
 
 
-export const getPostProductsMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postProducts>>, TError,{data: ProductCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postProducts>>, TError,{data: ProductCreate}, TContext> => {
 
-const mutationKey = ['postProducts'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+export const getGetProductsIdAdminInfiniteQueryKey = (id?: string,) => {
+    return [
+    'infinite', `/products/${id}/admin`
+    ] as const;
+    }
+
+export const getGetProductsIdAdminQueryKey = (id?: string,) => {
+    return [
+    `/products/${id}/admin`
+    ] as const;
+    }
+
+    
+export const getGetProductsIdAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getProductsIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductsIdAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetProductsIdAdminInfiniteQueryKey(id);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getProductsIdAdmin>>> = ({ signal }) => getProductsIdAdmin(id, signal);
 
       
 
+      
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postProducts>>, {data: ProductCreate}> = (props) => {
-          const {data} = props ?? {};
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductsIdAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
 
-          return  postProducts(data,)
-        }
-
-        
+export type GetProductsIdAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getProductsIdAdmin>>>
+export type GetProductsIdAdminInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
 
 
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostProductsMutationResult = NonNullable<Awaited<ReturnType<typeof postProducts>>>
-    export type PostProductsMutationBody = ProductCreate
-    export type PostProductsMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
-
-    /**
- * @summary Create a new product
+export function useGetProductsIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProductsIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductsIdAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getProductsIdAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getProductsIdAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetProductsIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProductsIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductsIdAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getProductsIdAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getProductsIdAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetProductsIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProductsIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductsIdAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary View product detail
  */
-export const usePostProducts = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postProducts>>, TError,{data: ProductCreate}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postProducts>>,
-        TError,
-        {data: ProductCreate},
-        TContext
-      > => {
 
-      const mutationOptions = getPostProductsMutationOptions(options);
+export function useGetProductsIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProductsIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductsIdAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * PUT `/productCategories/{id}` — product categories. Only platform administrators (ADM) can call this. Body fields: `name`, `sort_order`, `is_active`, `image_file_id`. Handled by `category.update`.
- * @summary Update a product category
+  const queryOptions = getGetProductsIdAdminInfiniteQueryOptions(id,options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary View product detail
  */
-export const putProductCategoriesId = (
+export const prefetchGetProductsIdAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getProductsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductsIdAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetProductsIdAdminInfiniteQueryOptions(id,options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetProductsIdAdminQueryOptions = <TData = Awaited<ReturnType<typeof getProductsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductsIdAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetProductsIdAdminQueryKey(id);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getProductsIdAdmin>>> = ({ signal }) => getProductsIdAdmin(id, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getProductsIdAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetProductsIdAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getProductsIdAdmin>>>
+export type GetProductsIdAdminQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+
+
+export function useGetProductsIdAdmin<TData = Awaited<ReturnType<typeof getProductsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductsIdAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getProductsIdAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getProductsIdAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetProductsIdAdmin<TData = Awaited<ReturnType<typeof getProductsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductsIdAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getProductsIdAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getProductsIdAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetProductsIdAdmin<TData = Awaited<ReturnType<typeof getProductsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductsIdAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary View product detail
+ */
+
+export function useGetProductsIdAdmin<TData = Awaited<ReturnType<typeof getProductsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductsIdAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetProductsIdAdminQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary View product detail
+ */
+export const prefetchGetProductsIdAdminQuery = async <TData = Awaited<ReturnType<typeof getProductsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductsIdAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetProductsIdAdminQueryOptions(id,options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * PUT `/products/{id}/admin` — products. Cần đăng nhập + `product.update_all`. Body fields: `name`, `sku`, `category_id`, `price`, `description`, `cover_file_id`, `buy_url`, `is_active`, `gallery_file_ids`, `brand`, `original_price`, `short_description`, `attributes`, `tags`.
+ * @summary Update a product
+ */
+export const putProductsIdAdmin = (
     id: string,
-    putProductCategoriesIdBody: PutProductCategoriesIdBody,
+    productUpdate: ProductUpdate,
  ) => {
       
       
-      return customInstance<PutProductCategoriesId200>(
-      {url: `/productCategories/${id}`, method: 'PUT',
+      return customInstance<PutProductsIdAdmin200>(
+      {url: `/products/${id}/admin`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
-      data: putProductCategoriesIdBody
+      data: productUpdate
     },
       );
     }
   
 
 
-export const getPutProductCategoriesIdMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putProductCategoriesId>>, TError,{id: string;data: PutProductCategoriesIdBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putProductCategoriesId>>, TError,{id: string;data: PutProductCategoriesIdBody}, TContext> => {
+export const getPutProductsIdAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putProductsIdAdmin>>, TError,{id: string;data: ProductUpdate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putProductsIdAdmin>>, TError,{id: string;data: ProductUpdate}, TContext> => {
 
-const mutationKey = ['putProductCategoriesId'];
+const mutationKey = ['putProductsIdAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -678,10 +477,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putProductCategoriesId>>, {id: string;data: PutProductCategoriesIdBody}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putProductsIdAdmin>>, {id: string;data: ProductUpdate}> = (props) => {
           const {id,data} = props ?? {};
 
-          return  putProductCategoriesId(id,data,)
+          return  putProductsIdAdmin(id,data,)
         }
 
         
@@ -689,48 +488,48 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PutProductCategoriesIdMutationResult = NonNullable<Awaited<ReturnType<typeof putProductCategoriesId>>>
-    export type PutProductCategoriesIdMutationBody = PutProductCategoriesIdBody
-    export type PutProductCategoriesIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+    export type PutProductsIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof putProductsIdAdmin>>>
+    export type PutProductsIdAdminMutationBody = ProductUpdate
+    export type PutProductsIdAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Update a product category
+ * @summary Update a product
  */
-export const usePutProductCategoriesId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putProductCategoriesId>>, TError,{id: string;data: PutProductCategoriesIdBody}, TContext>, }
+export const usePutProductsIdAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putProductsIdAdmin>>, TError,{id: string;data: ProductUpdate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putProductCategoriesId>>,
+        Awaited<ReturnType<typeof putProductsIdAdmin>>,
         TError,
-        {id: string;data: PutProductCategoriesIdBody},
+        {id: string;data: ProductUpdate},
         TContext
       > => {
 
-      const mutationOptions = getPutProductCategoriesIdMutationOptions(options);
+      const mutationOptions = getPutProductsIdAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * DELETE `/productCategories/{id}` — product categories. Only platform administrators (ADM) can call this. Handled by `category.destroy`.
- * @summary Delete a product category
+ * DELETE `/products/{id}/admin` — soft-deletes the product (is_deleted=true, keeps files/references for audit). Cần đăng nhập + `product.delete_all`.
+ * @summary Delete a product
  */
-export const deleteProductCategoriesId = (
+export const deleteProductsIdAdmin = (
     id: string,
  ) => {
       
       
-      return customInstance<DeleteProductCategoriesId200>(
-      {url: `/productCategories/${id}`, method: 'DELETE'
+      return customInstance<DeleteProductsIdAdmin200>(
+      {url: `/products/${id}/admin`, method: 'DELETE'
     },
       );
     }
   
 
 
-export const getDeleteProductCategoriesIdMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteProductCategoriesId>>, TError,{id: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof deleteProductCategoriesId>>, TError,{id: string}, TContext> => {
+export const getDeleteProductsIdAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteProductsIdAdmin>>, TError,{id: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteProductsIdAdmin>>, TError,{id: string}, TContext> => {
 
-const mutationKey = ['deleteProductCategoriesId'];
+const mutationKey = ['deleteProductsIdAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -740,10 +539,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteProductCategoriesId>>, {id: string}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteProductsIdAdmin>>, {id: string}> = (props) => {
           const {id} = props ?? {};
 
-          return  deleteProductCategoriesId(id,)
+          return  deleteProductsIdAdmin(id,)
         }
 
         
@@ -751,556 +550,38 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type DeleteProductCategoriesIdMutationResult = NonNullable<Awaited<ReturnType<typeof deleteProductCategoriesId>>>
+    export type DeleteProductsIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof deleteProductsIdAdmin>>>
     
-    export type DeleteProductCategoriesIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+    export type DeleteProductsIdAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Delete a product category
+ * @summary Delete a product
  */
-export const useDeleteProductCategoriesId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteProductCategoriesId>>, TError,{id: string}, TContext>, }
+export const useDeleteProductsIdAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteProductsIdAdmin>>, TError,{id: string}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteProductCategoriesId>>,
+        Awaited<ReturnType<typeof deleteProductsIdAdmin>>,
         TError,
         {id: string},
         TContext
       > => {
 
-      const mutationOptions = getDeleteProductCategoriesIdMutationOptions(options);
+      const mutationOptions = getDeleteProductsIdAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/productCategories` — product categories. Requires authentication; the route does not declare detailed permissions.
- * @summary Get product category list
+ * GET `/products/admin` — products. Cần đăng nhập + `product.view_all`. Query parameters: `q`, `category_id`, `is_active`.
+ * @summary Get product list (management)
  */
-export const getProductCategories = (
-    
+export const getProductsAdmin = (
+    params?: GetProductsAdminParams,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<GetProductCategories200>(
-      {url: `/productCategories`, method: 'GET', signal
-    },
-      );
-    }
-  
-
-
-
-export const getGetProductCategoriesInfiniteQueryKey = () => {
-    return [
-    'infinite', `/productCategories`
-    ] as const;
-    }
-
-export const getGetProductCategoriesQueryKey = () => {
-    return [
-    `/productCategories`
-    ] as const;
-    }
-
-    
-export const getGetProductCategoriesInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getProductCategories>>>, TError = UnauthorizedResponse | InternalErrorResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductCategories>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetProductCategoriesInfiniteQueryKey();
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getProductCategories>>> = ({ signal }) => getProductCategories(signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductCategories>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetProductCategoriesInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getProductCategories>>>
-export type GetProductCategoriesInfiniteQueryError = UnauthorizedResponse | InternalErrorResponse
-
-
-export function useGetProductCategoriesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProductCategories>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
-  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductCategories>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getProductCategories>>,
-          TError,
-          Awaited<ReturnType<typeof getProductCategories>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetProductCategoriesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProductCategories>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductCategories>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getProductCategories>>,
-          TError,
-          Awaited<ReturnType<typeof getProductCategories>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetProductCategoriesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProductCategories>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductCategories>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get product category list
- */
-
-export function useGetProductCategoriesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProductCategories>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductCategories>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetProductCategoriesInfiniteQueryOptions(options)
-
-  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary Get product category list
- */
-export const prefetchGetProductCategoriesInfiniteQuery = async <TData = Awaited<ReturnType<typeof getProductCategories>>, TError = UnauthorizedResponse | InternalErrorResponse>(
- queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductCategories>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetProductCategoriesInfiniteQueryOptions(options)
-
-  await queryClient.prefetchInfiniteQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-export const getGetProductCategoriesQueryOptions = <TData = Awaited<ReturnType<typeof getProductCategories>>, TError = UnauthorizedResponse | InternalErrorResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductCategories>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetProductCategoriesQueryKey();
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getProductCategories>>> = ({ signal }) => getProductCategories(signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getProductCategories>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetProductCategoriesQueryResult = NonNullable<Awaited<ReturnType<typeof getProductCategories>>>
-export type GetProductCategoriesQueryError = UnauthorizedResponse | InternalErrorResponse
-
-
-export function useGetProductCategories<TData = Awaited<ReturnType<typeof getProductCategories>>, TError = UnauthorizedResponse | InternalErrorResponse>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductCategories>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getProductCategories>>,
-          TError,
-          Awaited<ReturnType<typeof getProductCategories>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetProductCategories<TData = Awaited<ReturnType<typeof getProductCategories>>, TError = UnauthorizedResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductCategories>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getProductCategories>>,
-          TError,
-          Awaited<ReturnType<typeof getProductCategories>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetProductCategories<TData = Awaited<ReturnType<typeof getProductCategories>>, TError = UnauthorizedResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductCategories>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get product category list
- */
-
-export function useGetProductCategories<TData = Awaited<ReturnType<typeof getProductCategories>>, TError = UnauthorizedResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductCategories>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetProductCategoriesQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary Get product category list
- */
-export const prefetchGetProductCategoriesQuery = async <TData = Awaited<ReturnType<typeof getProductCategories>>, TError = UnauthorizedResponse | InternalErrorResponse>(
- queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductCategories>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetProductCategoriesQueryOptions(options)
-
-  await queryClient.prefetchQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-/**
- * POST `/productCategories` — product categories. Only platform administrators (ADM) can call this. Body fields: `name`, `sort_order`.
- * @summary Create a new product category
- */
-export const postProductCategories = (
-    postProductCategoriesBody: PostProductCategoriesBody,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<PostProductCategories200>(
-      {url: `/productCategories`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: postProductCategoriesBody, signal
-    },
-      );
-    }
-  
-
-
-export const getPostProductCategoriesMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postProductCategories>>, TError,{data: PostProductCategoriesBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postProductCategories>>, TError,{data: PostProductCategoriesBody}, TContext> => {
-
-const mutationKey = ['postProductCategories'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postProductCategories>>, {data: PostProductCategoriesBody}> = (props) => {
-          const {data} = props ?? {};
-
-          return  postProductCategories(data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostProductCategoriesMutationResult = NonNullable<Awaited<ReturnType<typeof postProductCategories>>>
-    export type PostProductCategoriesMutationBody = PostProductCategoriesBody
-    export type PostProductCategoriesMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
-
-    /**
- * @summary Create a new product category
- */
-export const usePostProductCategories = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postProductCategories>>, TError,{data: PostProductCategoriesBody}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postProductCategories>>,
-        TError,
-        {data: PostProductCategoriesBody},
-        TContext
-      > => {
-
-      const mutationOptions = getPostProductCategoriesMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * GET `/product-orders/{id}` — orders. Requires authentication; the route does not declare detailed permissions.
- * @summary View order detail
- */
-export const getProductOrdersId = (
-    id: string,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<GetProductOrdersId200>(
-      {url: `/product-orders/${id}`, method: 'GET', signal
-    },
-      );
-    }
-  
-
-
-
-export const getGetProductOrdersIdInfiniteQueryKey = (id?: string,) => {
-    return [
-    'infinite', `/product-orders/${id}`
-    ] as const;
-    }
-
-export const getGetProductOrdersIdQueryKey = (id?: string,) => {
-    return [
-    `/product-orders/${id}`
-    ] as const;
-    }
-
-    
-export const getGetProductOrdersIdInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getProductOrdersId>>>, TError = UnauthorizedResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductOrdersId>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetProductOrdersIdInfiniteQueryKey(id);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getProductOrdersId>>> = ({ signal }) => getProductOrdersId(id, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductOrdersId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetProductOrdersIdInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getProductOrdersId>>>
-export type GetProductOrdersIdInfiniteQueryError = UnauthorizedResponse | NotFoundResponse | InternalErrorResponse
-
-
-export function useGetProductOrdersIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProductOrdersId>>>, TError = UnauthorizedResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductOrdersId>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getProductOrdersId>>,
-          TError,
-          Awaited<ReturnType<typeof getProductOrdersId>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetProductOrdersIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProductOrdersId>>>, TError = UnauthorizedResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductOrdersId>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getProductOrdersId>>,
-          TError,
-          Awaited<ReturnType<typeof getProductOrdersId>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetProductOrdersIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProductOrdersId>>>, TError = UnauthorizedResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductOrdersId>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary View order detail
- */
-
-export function useGetProductOrdersIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProductOrdersId>>>, TError = UnauthorizedResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductOrdersId>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetProductOrdersIdInfiniteQueryOptions(id,options)
-
-  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary View order detail
- */
-export const prefetchGetProductOrdersIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getProductOrdersId>>, TError = UnauthorizedResponse | NotFoundResponse | InternalErrorResponse>(
- queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductOrdersId>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetProductOrdersIdInfiniteQueryOptions(id,options)
-
-  await queryClient.prefetchInfiniteQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-export const getGetProductOrdersIdQueryOptions = <TData = Awaited<ReturnType<typeof getProductOrdersId>>, TError = UnauthorizedResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductOrdersId>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetProductOrdersIdQueryKey(id);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getProductOrdersId>>> = ({ signal }) => getProductOrdersId(id, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getProductOrdersId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetProductOrdersIdQueryResult = NonNullable<Awaited<ReturnType<typeof getProductOrdersId>>>
-export type GetProductOrdersIdQueryError = UnauthorizedResponse | NotFoundResponse | InternalErrorResponse
-
-
-export function useGetProductOrdersId<TData = Awaited<ReturnType<typeof getProductOrdersId>>, TError = UnauthorizedResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductOrdersId>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getProductOrdersId>>,
-          TError,
-          Awaited<ReturnType<typeof getProductOrdersId>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetProductOrdersId<TData = Awaited<ReturnType<typeof getProductOrdersId>>, TError = UnauthorizedResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductOrdersId>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getProductOrdersId>>,
-          TError,
-          Awaited<ReturnType<typeof getProductOrdersId>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetProductOrdersId<TData = Awaited<ReturnType<typeof getProductOrdersId>>, TError = UnauthorizedResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductOrdersId>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary View order detail
- */
-
-export function useGetProductOrdersId<TData = Awaited<ReturnType<typeof getProductOrdersId>>, TError = UnauthorizedResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductOrdersId>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetProductOrdersIdQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary View order detail
- */
-export const prefetchGetProductOrdersIdQuery = async <TData = Awaited<ReturnType<typeof getProductOrdersId>>, TError = UnauthorizedResponse | NotFoundResponse | InternalErrorResponse>(
- queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductOrdersId>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetProductOrdersIdQueryOptions(id,options)
-
-  await queryClient.prefetchQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-/**
- * PUT `/product-orders/{id}` — orders. Only platform administrators (ADM) can call this. Body field: `status`. Handled by `row.update`.
- * @summary Update an order
- */
-export const putProductOrdersId = (
-    id: string,
-    putProductOrdersIdBody: PutProductOrdersIdBody,
- ) => {
-      
-      
-      return customInstance<PutProductOrdersId200>(
-      {url: `/product-orders/${id}`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: putProductOrdersIdBody
-    },
-      );
-    }
-  
-
-
-export const getPutProductOrdersIdMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putProductOrdersId>>, TError,{id: string;data: PutProductOrdersIdBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putProductOrdersId>>, TError,{id: string;data: PutProductOrdersIdBody}, TContext> => {
-
-const mutationKey = ['putProductOrdersId'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putProductOrdersId>>, {id: string;data: PutProductOrdersIdBody}> = (props) => {
-          const {id,data} = props ?? {};
-
-          return  putProductOrdersId(id,data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PutProductOrdersIdMutationResult = NonNullable<Awaited<ReturnType<typeof putProductOrdersId>>>
-    export type PutProductOrdersIdMutationBody = PutProductOrdersIdBody
-    export type PutProductOrdersIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
-
-    /**
- * @summary Update an order
- */
-export const usePutProductOrdersId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putProductOrdersId>>, TError,{id: string;data: PutProductOrdersIdBody}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putProductOrdersId>>,
-        TError,
-        {id: string;data: PutProductOrdersIdBody},
-        TContext
-      > => {
-
-      const mutationOptions = getPutProductOrdersIdMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * GET `/product-orders` — orders. Requires authentication; the route does not declare detailed permissions. Query parameters: `page`, `limit`, `status`, `q`.
- * @summary Get order list
- */
-export const getProductOrders = (
-    params?: GetProductOrdersParams,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<GetProductOrders200>(
-      {url: `/product-orders`, method: 'GET',
+      return customInstance<GetProductsAdmin200>(
+      {url: `/products/admin`, method: 'GET',
         params, signal
     },
       );
@@ -1309,75 +590,75 @@ export const getProductOrders = (
 
 
 
-export const getGetProductOrdersInfiniteQueryKey = (params?: GetProductOrdersParams,) => {
+export const getGetProductsAdminInfiniteQueryKey = (params?: GetProductsAdminParams,) => {
     return [
-    'infinite', `/product-orders`, ...(params ? [params]: [])
+    'infinite', `/products/admin`, ...(params ? [params]: [])
     ] as const;
     }
 
-export const getGetProductOrdersQueryKey = (params?: GetProductOrdersParams,) => {
+export const getGetProductsAdminQueryKey = (params?: GetProductsAdminParams,) => {
     return [
-    `/product-orders`, ...(params ? [params]: [])
+    `/products/admin`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetProductOrdersInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getProductOrders>>>, TError = UnauthorizedResponse | InternalErrorResponse>(params?: GetProductOrdersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductOrders>>, TError, TData>>, }
+export const getGetProductsAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getProductsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetProductsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductsAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetProductOrdersInfiniteQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getGetProductsAdminInfiniteQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getProductOrders>>> = ({ signal }) => getProductOrders(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getProductsAdmin>>> = ({ signal }) => getProductsAdmin(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductOrders>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductsAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetProductOrdersInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getProductOrders>>>
-export type GetProductOrdersInfiniteQueryError = UnauthorizedResponse | InternalErrorResponse
+export type GetProductsAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getProductsAdmin>>>
+export type GetProductsAdminInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
 
 
-export function useGetProductOrdersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProductOrders>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
- params: undefined |  GetProductOrdersParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductOrders>>, TError, TData>> & Pick<
+export function useGetProductsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProductsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetProductsAdminParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductsAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getProductOrders>>,
+          Awaited<ReturnType<typeof getProductsAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getProductOrders>>
+          Awaited<ReturnType<typeof getProductsAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetProductOrdersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProductOrders>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
- params?: GetProductOrdersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductOrders>>, TError, TData>> & Pick<
+export function useGetProductsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProductsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetProductsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductsAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getProductOrders>>,
+          Awaited<ReturnType<typeof getProductsAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getProductOrders>>
+          Awaited<ReturnType<typeof getProductsAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetProductOrdersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProductOrders>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
- params?: GetProductOrdersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductOrders>>, TError, TData>>, }
+export function useGetProductsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProductsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetProductsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductsAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Get order list
+ * @summary Get product list (management)
  */
 
-export function useGetProductOrdersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProductOrders>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
- params?: GetProductOrdersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductOrders>>, TError, TData>>, }
+export function useGetProductsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProductsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetProductsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductsAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetProductOrdersInfiniteQueryOptions(params,options)
+  const queryOptions = getGetProductsAdminInfiniteQueryOptions(params,options)
 
   const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -1387,14 +668,14 @@ export function useGetProductOrdersInfinite<TData = InfiniteData<Awaited<ReturnT
 }
 
 /**
- * @summary Get order list
+ * @summary Get product list (management)
  */
-export const prefetchGetProductOrdersInfiniteQuery = async <TData = Awaited<ReturnType<typeof getProductOrders>>, TError = UnauthorizedResponse | InternalErrorResponse>(
- queryClient: QueryClient, params?: GetProductOrdersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductOrders>>, TError, TData>>, }
+export const prefetchGetProductsAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getProductsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetProductsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductsAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetProductOrdersInfiniteQueryOptions(params,options)
+  const queryOptions = getGetProductsAdminInfiniteQueryOptions(params,options)
 
   await queryClient.prefetchInfiniteQuery(queryOptions);
 
@@ -1403,62 +684,62 @@ export const prefetchGetProductOrdersInfiniteQuery = async <TData = Awaited<Retu
 
 
 
-export const getGetProductOrdersQueryOptions = <TData = Awaited<ReturnType<typeof getProductOrders>>, TError = UnauthorizedResponse | InternalErrorResponse>(params?: GetProductOrdersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductOrders>>, TError, TData>>, }
+export const getGetProductsAdminQueryOptions = <TData = Awaited<ReturnType<typeof getProductsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetProductsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductsAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetProductOrdersQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getGetProductsAdminQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getProductOrders>>> = ({ signal }) => getProductOrders(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getProductsAdmin>>> = ({ signal }) => getProductsAdmin(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getProductOrders>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getProductsAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetProductOrdersQueryResult = NonNullable<Awaited<ReturnType<typeof getProductOrders>>>
-export type GetProductOrdersQueryError = UnauthorizedResponse | InternalErrorResponse
+export type GetProductsAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getProductsAdmin>>>
+export type GetProductsAdminQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
 
 
-export function useGetProductOrders<TData = Awaited<ReturnType<typeof getProductOrders>>, TError = UnauthorizedResponse | InternalErrorResponse>(
- params: undefined |  GetProductOrdersParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductOrders>>, TError, TData>> & Pick<
+export function useGetProductsAdmin<TData = Awaited<ReturnType<typeof getProductsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetProductsAdminParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductsAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getProductOrders>>,
+          Awaited<ReturnType<typeof getProductsAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getProductOrders>>
+          Awaited<ReturnType<typeof getProductsAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetProductOrders<TData = Awaited<ReturnType<typeof getProductOrders>>, TError = UnauthorizedResponse | InternalErrorResponse>(
- params?: GetProductOrdersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductOrders>>, TError, TData>> & Pick<
+export function useGetProductsAdmin<TData = Awaited<ReturnType<typeof getProductsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetProductsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductsAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getProductOrders>>,
+          Awaited<ReturnType<typeof getProductsAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getProductOrders>>
+          Awaited<ReturnType<typeof getProductsAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetProductOrders<TData = Awaited<ReturnType<typeof getProductOrders>>, TError = UnauthorizedResponse | InternalErrorResponse>(
- params?: GetProductOrdersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductOrders>>, TError, TData>>, }
+export function useGetProductsAdmin<TData = Awaited<ReturnType<typeof getProductsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetProductsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductsAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Get order list
+ * @summary Get product list (management)
  */
 
-export function useGetProductOrders<TData = Awaited<ReturnType<typeof getProductOrders>>, TError = UnauthorizedResponse | InternalErrorResponse>(
- params?: GetProductOrdersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductOrders>>, TError, TData>>, }
+export function useGetProductsAdmin<TData = Awaited<ReturnType<typeof getProductsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetProductsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductsAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetProductOrdersQueryOptions(params,options)
+  const queryOptions = getGetProductsAdminQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -1468,14 +749,14 @@ export function useGetProductOrders<TData = Awaited<ReturnType<typeof getProduct
 }
 
 /**
- * @summary Get order list
+ * @summary Get product list (management)
  */
-export const prefetchGetProductOrdersQuery = async <TData = Awaited<ReturnType<typeof getProductOrders>>, TError = UnauthorizedResponse | InternalErrorResponse>(
- queryClient: QueryClient, params?: GetProductOrdersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductOrders>>, TError, TData>>, }
+export const prefetchGetProductsAdminQuery = async <TData = Awaited<ReturnType<typeof getProductsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetProductsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductsAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetProductOrdersQueryOptions(params,options)
+  const queryOptions = getGetProductsAdminQueryOptions(params,options)
 
   await queryClient.prefetchQuery(queryOptions);
 
@@ -1484,3 +765,69 @@ export const prefetchGetProductOrdersQuery = async <TData = Awaited<ReturnType<t
 
 
 
+/**
+ * POST `/products/admin` — products. Cần đăng nhập + `product.create`. Body fields: `sku`, `category_id`, `price`, `description`, `cover_file_id`, `buy_url`, `name`, `gallery_file_ids`, `brand`, `original_price`, `short_description`, `attributes`, `tags`.
+ * @summary Create a new product
+ */
+export const postProductsAdmin = (
+    productCreate: ProductCreate,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<PostProductsAdmin200>(
+      {url: `/products/admin`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: productCreate, signal
+    },
+      );
+    }
+  
+
+
+export const getPostProductsAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postProductsAdmin>>, TError,{data: ProductCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postProductsAdmin>>, TError,{data: ProductCreate}, TContext> => {
+
+const mutationKey = ['postProductsAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postProductsAdmin>>, {data: ProductCreate}> = (props) => {
+          const {data} = props ?? {};
+
+          return  postProductsAdmin(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostProductsAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postProductsAdmin>>>
+    export type PostProductsAdminMutationBody = ProductCreate
+    export type PostProductsAdminMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+
+    /**
+ * @summary Create a new product
+ */
+export const usePostProductsAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postProductsAdmin>>, TError,{data: ProductCreate}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postProductsAdmin>>,
+        TError,
+        {data: ProductCreate},
+        TContext
+      > => {
+
+      const mutationOptions = getPostProductsAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    

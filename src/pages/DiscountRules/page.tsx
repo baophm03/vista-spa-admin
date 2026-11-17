@@ -20,21 +20,15 @@ import ListFilterPopover from '@/components/base/ListFilterPopover'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
 import { errorMessage } from '@/api/helpers'
-import {
-  getGetDiscountRulesQueryKey,
-  useDeleteDiscountRulesId,
-  useGetDiscountRules,
-  usePostDiscountRules,
-  usePutDiscountRulesId,
-} from '@/api/endpoints/settings'
-import { useGetCardRanks } from '@/api/endpoints/membership'
-import { useGetService } from '@/api/endpoints/services'
+import { getGetDiscountRulesAdminQueryKey, useDeleteDiscountRulesIdAdmin, useGetDiscountRulesAdmin, usePostDiscountRulesAdmin, usePutDiscountRulesIdAdmin } from '@/api/endpoints/discount-rules'
+import { useGetCardRanksAdmin } from '@/api/endpoints/card-ranks'
+import { useGetServiceAdmin } from '@/api/endpoints/services'
 import type {
   DiscountRule,
   DiscountRuleAppliesTo,
   DiscountRuleAudience,
-  PostDiscountRulesBody,
-  PutDiscountRulesIdBody,
+  PostDiscountRulesAdminBody,
+  PutDiscountRulesIdAdminBody,
 } from '@/api/models'
 import DiscountDetailModal from './components/DiscountDetailModal'
 import DiscountRuleModal from './components/DiscountRuleModal'
@@ -69,9 +63,9 @@ export default function DiscountRules() {
   const canUpdate = ability.can('UPDATE', 'DISCOUNT')
   const canDelete = ability.can('DELETE', 'DISCOUNT')
 
-  const rulesQuery = useGetDiscountRules({ page, limit: 10 } as never)
-  const ranksQuery = useGetCardRanks(undefined, { query: { enabled: open } })
-  const servicesQuery = useGetService({ page: 1, limit: 200, is_active: true }, { query: { enabled: open || !!detailRuleId } })
+  const rulesQuery = useGetDiscountRulesAdmin({ page, limit: 10 } as never)
+  const ranksQuery = useGetCardRanksAdmin(undefined, { query: { enabled: open } })
+  const servicesQuery = useGetServiceAdmin({ page: 1, limit: 200, is_active: true }, { query: { enabled: open || !!detailRuleId } })
   const rules = useMemo(() => rulesQuery.data?.responseData ?? [], [rulesQuery.data])
   const ranks = useMemo(() => ranksQuery.data?.responseData ?? [], [ranksQuery.data])
   const rulesStatsMeta = (rulesQuery.data as unknown as { meta?: { stats?: { total: number; active: number; hidden: number } } })?.meta?.stats
@@ -82,7 +76,7 @@ export default function DiscountRules() {
   }, [servicesQuery.data])
 
   const invalidate = async () => {
-    await queryClient.invalidateQueries({ queryKey: getGetDiscountRulesQueryKey() })
+    await queryClient.invalidateQueries({ queryKey: getGetDiscountRulesAdminQueryKey() })
   }
 
   // Thống kê đầu trang — từ meta.stats của BE
@@ -91,9 +85,9 @@ export default function DiscountRules() {
     { key: 'active', label: 'Đang áp dụng', value: (rulesStatsMeta?.active ?? 0).toLocaleString('vi-VN'), icon: <CheckCircleOutlined />, tone: 'secondary' },
   ]
 
-  const createMutation = usePostDiscountRules({ mutation: { onSuccess: invalidate } })
-  const updateMutation = usePutDiscountRulesId({ mutation: { onSuccess: invalidate } })
-  const deleteMutation = useDeleteDiscountRulesId({ mutation: { onSuccess: invalidate } })
+  const createMutation = usePostDiscountRulesAdmin({ mutation: { onSuccess: invalidate } })
+  const updateMutation = usePutDiscountRulesIdAdmin({ mutation: { onSuccess: invalidate } })
+  const deleteMutation = useDeleteDiscountRulesIdAdmin({ mutation: { onSuccess: invalidate } })
 
   const openEditor = (row?: DiscountRule) => {
     setEditing(row ?? null)
@@ -145,7 +139,7 @@ export default function DiscountRules() {
             start_date: values.valid_range?.[0] ?? null,
             end_date: values.valid_range?.[1] ?? null,
             is_active: !!values.is_active,
-          } satisfies PutDiscountRulesIdBody,
+          } satisfies PutDiscountRulesIdAdminBody,
         })
         message.success('Đã cập nhật quy tắc giảm giá')
       } else {
@@ -156,7 +150,7 @@ export default function DiscountRules() {
             max_total_percent: values.max_total_percent ?? undefined,
             start_date: values.valid_range?.[0] ?? undefined,
             end_date: values.valid_range?.[1] ?? undefined,
-          } satisfies PostDiscountRulesBody,
+          } satisfies PostDiscountRulesAdminBody,
         })
         message.success('Đã tạo quy tắc giảm giá')
       }

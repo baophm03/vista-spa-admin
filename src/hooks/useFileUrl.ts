@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { getFiles } from '@/api/endpoints/files'
+import { getFilesAdmin } from '@/api/endpoints/files'
 import links from '@/configs/links'
 
 export interface FileRow {
@@ -47,7 +47,7 @@ export function useFileUrlMap(): Map<string, string> {
   const { data } = useQuery({
     queryKey: ['files', 'urlMap'],
     queryFn: async () => {
-      const body = (await getFiles()) as unknown as { responseData?: FileRow[] } | FileRow[]
+      const body = (await getFilesAdmin()) as unknown as { responseData?: FileRow[] } | FileRow[]
       const rows = (body as { responseData?: FileRow[] }).responseData ?? (body as FileRow[])
       const map = new Map<string, string>()
       for (const row of Array.isArray(rows) ? rows : []) {

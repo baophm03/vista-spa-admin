@@ -31,7 +31,8 @@ import type {
 
 import type {
   AcademyCourseVoucherCreate,
-  AcademyCourseVoucherUpdate
+  AcademyCourseVoucherUpdate,
+  GetAcademyCourseVouchersAdminParams
 } from '../models';
 
 import { customInstance } from '../mutator/custom-instance';
@@ -43,14 +44,14 @@ import { customInstance } from '../mutator/custom-instance';
 /**
  * @summary Get one academy course voucher
  */
-export const getAcademyCourseVouchersId = (
+export const getAcademyCourseVouchersIdAdmin = (
     id: string,
  signal?: AbortSignal
 ) => {
       
       
       return customInstance<void>(
-      {url: `/academy-course-vouchers/${id}`, method: 'GET', signal
+      {url: `/academy-course-vouchers/${id}/admin`, method: 'GET', signal
     },
       );
     }
@@ -58,75 +59,75 @@ export const getAcademyCourseVouchersId = (
 
 
 
-export const getGetAcademyCourseVouchersIdInfiniteQueryKey = (id?: string,) => {
+export const getGetAcademyCourseVouchersIdAdminInfiniteQueryKey = (id?: string,) => {
     return [
-    'infinite', `/academy-course-vouchers/${id}`
+    'infinite', `/academy-course-vouchers/${id}/admin`
     ] as const;
     }
 
-export const getGetAcademyCourseVouchersIdQueryKey = (id?: string,) => {
+export const getGetAcademyCourseVouchersIdAdminQueryKey = (id?: string,) => {
     return [
-    `/academy-course-vouchers/${id}`
+    `/academy-course-vouchers/${id}/admin`
     ] as const;
     }
 
     
-export const getGetAcademyCourseVouchersIdInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCourseVouchersId>>>, TError = unknown>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchersId>>, TError, TData>>, }
+export const getGetAcademyCourseVouchersIdAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCourseVouchersIdAdmin>>>, TError = unknown>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchersIdAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAcademyCourseVouchersIdInfiniteQueryKey(id);
+  const queryKey =  queryOptions?.queryKey ?? getGetAcademyCourseVouchersIdAdminInfiniteQueryKey(id);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAcademyCourseVouchersId>>> = ({ signal }) => getAcademyCourseVouchersId(id, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAcademyCourseVouchersIdAdmin>>> = ({ signal }) => getAcademyCourseVouchersIdAdmin(id, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchersId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchersIdAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetAcademyCourseVouchersIdInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAcademyCourseVouchersId>>>
-export type GetAcademyCourseVouchersIdInfiniteQueryError = unknown
+export type GetAcademyCourseVouchersIdAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAcademyCourseVouchersIdAdmin>>>
+export type GetAcademyCourseVouchersIdAdminInfiniteQueryError = unknown
 
 
-export function useGetAcademyCourseVouchersIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCourseVouchersId>>>, TError = unknown>(
- id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchersId>>, TError, TData>> & Pick<
+export function useGetAcademyCourseVouchersIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCourseVouchersIdAdmin>>>, TError = unknown>(
+ id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchersIdAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAcademyCourseVouchersId>>,
+          Awaited<ReturnType<typeof getAcademyCourseVouchersIdAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getAcademyCourseVouchersId>>
+          Awaited<ReturnType<typeof getAcademyCourseVouchersIdAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAcademyCourseVouchersIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCourseVouchersId>>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchersId>>, TError, TData>> & Pick<
+export function useGetAcademyCourseVouchersIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCourseVouchersIdAdmin>>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchersIdAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAcademyCourseVouchersId>>,
+          Awaited<ReturnType<typeof getAcademyCourseVouchersIdAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getAcademyCourseVouchersId>>
+          Awaited<ReturnType<typeof getAcademyCourseVouchersIdAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAcademyCourseVouchersIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCourseVouchersId>>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchersId>>, TError, TData>>, }
+export function useGetAcademyCourseVouchersIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCourseVouchersIdAdmin>>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchersIdAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Get one academy course voucher
  */
 
-export function useGetAcademyCourseVouchersIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCourseVouchersId>>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchersId>>, TError, TData>>, }
+export function useGetAcademyCourseVouchersIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCourseVouchersIdAdmin>>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchersIdAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetAcademyCourseVouchersIdInfiniteQueryOptions(id,options)
+  const queryOptions = getGetAcademyCourseVouchersIdAdminInfiniteQueryOptions(id,options)
 
   const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -138,12 +139,12 @@ export function useGetAcademyCourseVouchersIdInfinite<TData = InfiniteData<Await
 /**
  * @summary Get one academy course voucher
  */
-export const prefetchGetAcademyCourseVouchersIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAcademyCourseVouchersId>>, TError = unknown>(
- queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchersId>>, TError, TData>>, }
+export const prefetchGetAcademyCourseVouchersIdAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAcademyCourseVouchersIdAdmin>>, TError = unknown>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchersIdAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetAcademyCourseVouchersIdInfiniteQueryOptions(id,options)
+  const queryOptions = getGetAcademyCourseVouchersIdAdminInfiniteQueryOptions(id,options)
 
   await queryClient.prefetchInfiniteQuery(queryOptions);
 
@@ -152,62 +153,62 @@ export const prefetchGetAcademyCourseVouchersIdInfiniteQuery = async <TData = Aw
 
 
 
-export const getGetAcademyCourseVouchersIdQueryOptions = <TData = Awaited<ReturnType<typeof getAcademyCourseVouchersId>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchersId>>, TError, TData>>, }
+export const getGetAcademyCourseVouchersIdAdminQueryOptions = <TData = Awaited<ReturnType<typeof getAcademyCourseVouchersIdAdmin>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchersIdAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAcademyCourseVouchersIdQueryKey(id);
+  const queryKey =  queryOptions?.queryKey ?? getGetAcademyCourseVouchersIdAdminQueryKey(id);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAcademyCourseVouchersId>>> = ({ signal }) => getAcademyCourseVouchersId(id, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAcademyCourseVouchersIdAdmin>>> = ({ signal }) => getAcademyCourseVouchersIdAdmin(id, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchersId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchersIdAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetAcademyCourseVouchersIdQueryResult = NonNullable<Awaited<ReturnType<typeof getAcademyCourseVouchersId>>>
-export type GetAcademyCourseVouchersIdQueryError = unknown
+export type GetAcademyCourseVouchersIdAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getAcademyCourseVouchersIdAdmin>>>
+export type GetAcademyCourseVouchersIdAdminQueryError = unknown
 
 
-export function useGetAcademyCourseVouchersId<TData = Awaited<ReturnType<typeof getAcademyCourseVouchersId>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchersId>>, TError, TData>> & Pick<
+export function useGetAcademyCourseVouchersIdAdmin<TData = Awaited<ReturnType<typeof getAcademyCourseVouchersIdAdmin>>, TError = unknown>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchersIdAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAcademyCourseVouchersId>>,
+          Awaited<ReturnType<typeof getAcademyCourseVouchersIdAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getAcademyCourseVouchersId>>
+          Awaited<ReturnType<typeof getAcademyCourseVouchersIdAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAcademyCourseVouchersId<TData = Awaited<ReturnType<typeof getAcademyCourseVouchersId>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchersId>>, TError, TData>> & Pick<
+export function useGetAcademyCourseVouchersIdAdmin<TData = Awaited<ReturnType<typeof getAcademyCourseVouchersIdAdmin>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchersIdAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAcademyCourseVouchersId>>,
+          Awaited<ReturnType<typeof getAcademyCourseVouchersIdAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getAcademyCourseVouchersId>>
+          Awaited<ReturnType<typeof getAcademyCourseVouchersIdAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAcademyCourseVouchersId<TData = Awaited<ReturnType<typeof getAcademyCourseVouchersId>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchersId>>, TError, TData>>, }
+export function useGetAcademyCourseVouchersIdAdmin<TData = Awaited<ReturnType<typeof getAcademyCourseVouchersIdAdmin>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchersIdAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Get one academy course voucher
  */
 
-export function useGetAcademyCourseVouchersId<TData = Awaited<ReturnType<typeof getAcademyCourseVouchersId>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchersId>>, TError, TData>>, }
+export function useGetAcademyCourseVouchersIdAdmin<TData = Awaited<ReturnType<typeof getAcademyCourseVouchersIdAdmin>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchersIdAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetAcademyCourseVouchersIdQueryOptions(id,options)
+  const queryOptions = getGetAcademyCourseVouchersIdAdminQueryOptions(id,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -219,12 +220,12 @@ export function useGetAcademyCourseVouchersId<TData = Awaited<ReturnType<typeof 
 /**
  * @summary Get one academy course voucher
  */
-export const prefetchGetAcademyCourseVouchersIdQuery = async <TData = Awaited<ReturnType<typeof getAcademyCourseVouchersId>>, TError = unknown>(
- queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchersId>>, TError, TData>>, }
+export const prefetchGetAcademyCourseVouchersIdAdminQuery = async <TData = Awaited<ReturnType<typeof getAcademyCourseVouchersIdAdmin>>, TError = unknown>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchersIdAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetAcademyCourseVouchersIdQueryOptions(id,options)
+  const queryOptions = getGetAcademyCourseVouchersIdAdminQueryOptions(id,options)
 
   await queryClient.prefetchQuery(queryOptions);
 
@@ -236,14 +237,14 @@ export const prefetchGetAcademyCourseVouchersIdQuery = async <TData = Awaited<Re
 /**
  * @summary Update an academy course voucher
  */
-export const putAcademyCourseVouchersId = (
+export const putAcademyCourseVouchersIdAdmin = (
     id: string,
     academyCourseVoucherUpdate: AcademyCourseVoucherUpdate,
  ) => {
       
       
       return customInstance<void>(
-      {url: `/academy-course-vouchers/${id}`, method: 'PUT',
+      {url: `/academy-course-vouchers/${id}/admin`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: academyCourseVoucherUpdate
     },
@@ -252,11 +253,11 @@ export const putAcademyCourseVouchersId = (
   
 
 
-export const getPutAcademyCourseVouchersIdMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAcademyCourseVouchersId>>, TError,{id: string;data: AcademyCourseVoucherUpdate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putAcademyCourseVouchersId>>, TError,{id: string;data: AcademyCourseVoucherUpdate}, TContext> => {
+export const getPutAcademyCourseVouchersIdAdminMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAcademyCourseVouchersIdAdmin>>, TError,{id: string;data: AcademyCourseVoucherUpdate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putAcademyCourseVouchersIdAdmin>>, TError,{id: string;data: AcademyCourseVoucherUpdate}, TContext> => {
 
-const mutationKey = ['putAcademyCourseVouchersId'];
+const mutationKey = ['putAcademyCourseVouchersIdAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -266,10 +267,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putAcademyCourseVouchersId>>, {id: string;data: AcademyCourseVoucherUpdate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putAcademyCourseVouchersIdAdmin>>, {id: string;data: AcademyCourseVoucherUpdate}> = (props) => {
           const {id,data} = props ?? {};
 
-          return  putAcademyCourseVouchersId(id,data,)
+          return  putAcademyCourseVouchersIdAdmin(id,data,)
         }
 
         
@@ -277,47 +278,47 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PutAcademyCourseVouchersIdMutationResult = NonNullable<Awaited<ReturnType<typeof putAcademyCourseVouchersId>>>
-    export type PutAcademyCourseVouchersIdMutationBody = AcademyCourseVoucherUpdate
-    export type PutAcademyCourseVouchersIdMutationError = unknown
+    export type PutAcademyCourseVouchersIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof putAcademyCourseVouchersIdAdmin>>>
+    export type PutAcademyCourseVouchersIdAdminMutationBody = AcademyCourseVoucherUpdate
+    export type PutAcademyCourseVouchersIdAdminMutationError = unknown
 
     /**
  * @summary Update an academy course voucher
  */
-export const usePutAcademyCourseVouchersId = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAcademyCourseVouchersId>>, TError,{id: string;data: AcademyCourseVoucherUpdate}, TContext>, }
+export const usePutAcademyCourseVouchersIdAdmin = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAcademyCourseVouchersIdAdmin>>, TError,{id: string;data: AcademyCourseVoucherUpdate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putAcademyCourseVouchersId>>,
+        Awaited<ReturnType<typeof putAcademyCourseVouchersIdAdmin>>,
         TError,
         {id: string;data: AcademyCourseVoucherUpdate},
         TContext
       > => {
 
-      const mutationOptions = getPutAcademyCourseVouchersIdMutationOptions(options);
+      const mutationOptions = getPutAcademyCourseVouchersIdAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
  * @summary Deactivate an academy course voucher
  */
-export const deleteAcademyCourseVouchersId = (
+export const deleteAcademyCourseVouchersIdAdmin = (
     id: string,
  ) => {
       
       
       return customInstance<void>(
-      {url: `/academy-course-vouchers/${id}`, method: 'DELETE'
+      {url: `/academy-course-vouchers/${id}/admin`, method: 'DELETE'
     },
       );
     }
   
 
 
-export const getDeleteAcademyCourseVouchersIdMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAcademyCourseVouchersId>>, TError,{id: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof deleteAcademyCourseVouchersId>>, TError,{id: string}, TContext> => {
+export const getDeleteAcademyCourseVouchersIdAdminMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAcademyCourseVouchersIdAdmin>>, TError,{id: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteAcademyCourseVouchersIdAdmin>>, TError,{id: string}, TContext> => {
 
-const mutationKey = ['deleteAcademyCourseVouchersId'];
+const mutationKey = ['deleteAcademyCourseVouchersIdAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -327,10 +328,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteAcademyCourseVouchersId>>, {id: string}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteAcademyCourseVouchersIdAdmin>>, {id: string}> = (props) => {
           const {id} = props ?? {};
 
-          return  deleteAcademyCourseVouchersId(id,)
+          return  deleteAcademyCourseVouchersIdAdmin(id,)
         }
 
         
@@ -338,37 +339,38 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type DeleteAcademyCourseVouchersIdMutationResult = NonNullable<Awaited<ReturnType<typeof deleteAcademyCourseVouchersId>>>
+    export type DeleteAcademyCourseVouchersIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof deleteAcademyCourseVouchersIdAdmin>>>
     
-    export type DeleteAcademyCourseVouchersIdMutationError = unknown
+    export type DeleteAcademyCourseVouchersIdAdminMutationError = unknown
 
     /**
  * @summary Deactivate an academy course voucher
  */
-export const useDeleteAcademyCourseVouchersId = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAcademyCourseVouchersId>>, TError,{id: string}, TContext>, }
+export const useDeleteAcademyCourseVouchersIdAdmin = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAcademyCourseVouchersIdAdmin>>, TError,{id: string}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteAcademyCourseVouchersId>>,
+        Awaited<ReturnType<typeof deleteAcademyCourseVouchersIdAdmin>>,
         TError,
         {id: string},
         TContext
       > => {
 
-      const mutationOptions = getDeleteAcademyCourseVouchersIdMutationOptions(options);
+      const mutationOptions = getDeleteAcademyCourseVouchersIdAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
  * @summary List academy course vouchers
  */
-export const getAcademyCourseVouchers = (
-    
+export const getAcademyCourseVouchersAdmin = (
+    params?: GetAcademyCourseVouchersAdminParams,
  signal?: AbortSignal
 ) => {
       
       
       return customInstance<void>(
-      {url: `/academy-course-vouchers`, method: 'GET', signal
+      {url: `/academy-course-vouchers/admin`, method: 'GET',
+        params, signal
     },
       );
     }
@@ -376,75 +378,75 @@ export const getAcademyCourseVouchers = (
 
 
 
-export const getGetAcademyCourseVouchersInfiniteQueryKey = () => {
+export const getGetAcademyCourseVouchersAdminInfiniteQueryKey = (params?: GetAcademyCourseVouchersAdminParams,) => {
     return [
-    'infinite', `/academy-course-vouchers`
+    'infinite', `/academy-course-vouchers/admin`, ...(params ? [params]: [])
     ] as const;
     }
 
-export const getGetAcademyCourseVouchersQueryKey = () => {
+export const getGetAcademyCourseVouchersAdminQueryKey = (params?: GetAcademyCourseVouchersAdminParams,) => {
     return [
-    `/academy-course-vouchers`
+    `/academy-course-vouchers/admin`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetAcademyCourseVouchersInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCourseVouchers>>>, TError = unknown>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchers>>, TError, TData>>, }
+export const getGetAcademyCourseVouchersAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCourseVouchersAdmin>>>, TError = unknown>(params?: GetAcademyCourseVouchersAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchersAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAcademyCourseVouchersInfiniteQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getGetAcademyCourseVouchersAdminInfiniteQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAcademyCourseVouchers>>> = ({ signal }) => getAcademyCourseVouchers(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAcademyCourseVouchersAdmin>>> = ({ signal }) => getAcademyCourseVouchersAdmin(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchers>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchersAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetAcademyCourseVouchersInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAcademyCourseVouchers>>>
-export type GetAcademyCourseVouchersInfiniteQueryError = unknown
+export type GetAcademyCourseVouchersAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAcademyCourseVouchersAdmin>>>
+export type GetAcademyCourseVouchersAdminInfiniteQueryError = unknown
 
 
-export function useGetAcademyCourseVouchersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCourseVouchers>>>, TError = unknown>(
-  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchers>>, TError, TData>> & Pick<
+export function useGetAcademyCourseVouchersAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCourseVouchersAdmin>>>, TError = unknown>(
+ params: undefined |  GetAcademyCourseVouchersAdminParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchersAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAcademyCourseVouchers>>,
+          Awaited<ReturnType<typeof getAcademyCourseVouchersAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getAcademyCourseVouchers>>
+          Awaited<ReturnType<typeof getAcademyCourseVouchersAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAcademyCourseVouchersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCourseVouchers>>>, TError = unknown>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchers>>, TError, TData>> & Pick<
+export function useGetAcademyCourseVouchersAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCourseVouchersAdmin>>>, TError = unknown>(
+ params?: GetAcademyCourseVouchersAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchersAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAcademyCourseVouchers>>,
+          Awaited<ReturnType<typeof getAcademyCourseVouchersAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getAcademyCourseVouchers>>
+          Awaited<ReturnType<typeof getAcademyCourseVouchersAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAcademyCourseVouchersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCourseVouchers>>>, TError = unknown>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchers>>, TError, TData>>, }
+export function useGetAcademyCourseVouchersAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCourseVouchersAdmin>>>, TError = unknown>(
+ params?: GetAcademyCourseVouchersAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchersAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary List academy course vouchers
  */
 
-export function useGetAcademyCourseVouchersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCourseVouchers>>>, TError = unknown>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchers>>, TError, TData>>, }
+export function useGetAcademyCourseVouchersAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCourseVouchersAdmin>>>, TError = unknown>(
+ params?: GetAcademyCourseVouchersAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchersAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetAcademyCourseVouchersInfiniteQueryOptions(options)
+  const queryOptions = getGetAcademyCourseVouchersAdminInfiniteQueryOptions(params,options)
 
   const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -456,12 +458,12 @@ export function useGetAcademyCourseVouchersInfinite<TData = InfiniteData<Awaited
 /**
  * @summary List academy course vouchers
  */
-export const prefetchGetAcademyCourseVouchersInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAcademyCourseVouchers>>, TError = unknown>(
- queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchers>>, TError, TData>>, }
+export const prefetchGetAcademyCourseVouchersAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAcademyCourseVouchersAdmin>>, TError = unknown>(
+ queryClient: QueryClient, params?: GetAcademyCourseVouchersAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchersAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetAcademyCourseVouchersInfiniteQueryOptions(options)
+  const queryOptions = getGetAcademyCourseVouchersAdminInfiniteQueryOptions(params,options)
 
   await queryClient.prefetchInfiniteQuery(queryOptions);
 
@@ -470,62 +472,62 @@ export const prefetchGetAcademyCourseVouchersInfiniteQuery = async <TData = Awai
 
 
 
-export const getGetAcademyCourseVouchersQueryOptions = <TData = Awaited<ReturnType<typeof getAcademyCourseVouchers>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchers>>, TError, TData>>, }
+export const getGetAcademyCourseVouchersAdminQueryOptions = <TData = Awaited<ReturnType<typeof getAcademyCourseVouchersAdmin>>, TError = unknown>(params?: GetAcademyCourseVouchersAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchersAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAcademyCourseVouchersQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getGetAcademyCourseVouchersAdminQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAcademyCourseVouchers>>> = ({ signal }) => getAcademyCourseVouchers(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAcademyCourseVouchersAdmin>>> = ({ signal }) => getAcademyCourseVouchersAdmin(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchers>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchersAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetAcademyCourseVouchersQueryResult = NonNullable<Awaited<ReturnType<typeof getAcademyCourseVouchers>>>
-export type GetAcademyCourseVouchersQueryError = unknown
+export type GetAcademyCourseVouchersAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getAcademyCourseVouchersAdmin>>>
+export type GetAcademyCourseVouchersAdminQueryError = unknown
 
 
-export function useGetAcademyCourseVouchers<TData = Awaited<ReturnType<typeof getAcademyCourseVouchers>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchers>>, TError, TData>> & Pick<
+export function useGetAcademyCourseVouchersAdmin<TData = Awaited<ReturnType<typeof getAcademyCourseVouchersAdmin>>, TError = unknown>(
+ params: undefined |  GetAcademyCourseVouchersAdminParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchersAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAcademyCourseVouchers>>,
+          Awaited<ReturnType<typeof getAcademyCourseVouchersAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getAcademyCourseVouchers>>
+          Awaited<ReturnType<typeof getAcademyCourseVouchersAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAcademyCourseVouchers<TData = Awaited<ReturnType<typeof getAcademyCourseVouchers>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchers>>, TError, TData>> & Pick<
+export function useGetAcademyCourseVouchersAdmin<TData = Awaited<ReturnType<typeof getAcademyCourseVouchersAdmin>>, TError = unknown>(
+ params?: GetAcademyCourseVouchersAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchersAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAcademyCourseVouchers>>,
+          Awaited<ReturnType<typeof getAcademyCourseVouchersAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getAcademyCourseVouchers>>
+          Awaited<ReturnType<typeof getAcademyCourseVouchersAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAcademyCourseVouchers<TData = Awaited<ReturnType<typeof getAcademyCourseVouchers>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchers>>, TError, TData>>, }
+export function useGetAcademyCourseVouchersAdmin<TData = Awaited<ReturnType<typeof getAcademyCourseVouchersAdmin>>, TError = unknown>(
+ params?: GetAcademyCourseVouchersAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchersAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary List academy course vouchers
  */
 
-export function useGetAcademyCourseVouchers<TData = Awaited<ReturnType<typeof getAcademyCourseVouchers>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchers>>, TError, TData>>, }
+export function useGetAcademyCourseVouchersAdmin<TData = Awaited<ReturnType<typeof getAcademyCourseVouchersAdmin>>, TError = unknown>(
+ params?: GetAcademyCourseVouchersAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchersAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetAcademyCourseVouchersQueryOptions(options)
+  const queryOptions = getGetAcademyCourseVouchersAdminQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -537,12 +539,12 @@ export function useGetAcademyCourseVouchers<TData = Awaited<ReturnType<typeof ge
 /**
  * @summary List academy course vouchers
  */
-export const prefetchGetAcademyCourseVouchersQuery = async <TData = Awaited<ReturnType<typeof getAcademyCourseVouchers>>, TError = unknown>(
- queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchers>>, TError, TData>>, }
+export const prefetchGetAcademyCourseVouchersAdminQuery = async <TData = Awaited<ReturnType<typeof getAcademyCourseVouchersAdmin>>, TError = unknown>(
+ queryClient: QueryClient, params?: GetAcademyCourseVouchersAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVouchersAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetAcademyCourseVouchersQueryOptions(options)
+  const queryOptions = getGetAcademyCourseVouchersAdminQueryOptions(params,options)
 
   await queryClient.prefetchQuery(queryOptions);
 
@@ -554,14 +556,14 @@ export const prefetchGetAcademyCourseVouchersQuery = async <TData = Awaited<Retu
 /**
  * @summary Create an academy course voucher
  */
-export const postAcademyCourseVouchers = (
+export const postAcademyCourseVouchersAdmin = (
     academyCourseVoucherCreate: AcademyCourseVoucherCreate,
  signal?: AbortSignal
 ) => {
       
       
       return customInstance<void>(
-      {url: `/academy-course-vouchers`, method: 'POST',
+      {url: `/academy-course-vouchers/admin`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: academyCourseVoucherCreate, signal
     },
@@ -570,11 +572,11 @@ export const postAcademyCourseVouchers = (
   
 
 
-export const getPostAcademyCourseVouchersMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAcademyCourseVouchers>>, TError,{data: AcademyCourseVoucherCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postAcademyCourseVouchers>>, TError,{data: AcademyCourseVoucherCreate}, TContext> => {
+export const getPostAcademyCourseVouchersAdminMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAcademyCourseVouchersAdmin>>, TError,{data: AcademyCourseVoucherCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postAcademyCourseVouchersAdmin>>, TError,{data: AcademyCourseVoucherCreate}, TContext> => {
 
-const mutationKey = ['postAcademyCourseVouchers'];
+const mutationKey = ['postAcademyCourseVouchersAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -584,10 +586,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAcademyCourseVouchers>>, {data: AcademyCourseVoucherCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAcademyCourseVouchersAdmin>>, {data: AcademyCourseVoucherCreate}> = (props) => {
           const {data} = props ?? {};
 
-          return  postAcademyCourseVouchers(data,)
+          return  postAcademyCourseVouchersAdmin(data,)
         }
 
         
@@ -595,23 +597,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PostAcademyCourseVouchersMutationResult = NonNullable<Awaited<ReturnType<typeof postAcademyCourseVouchers>>>
-    export type PostAcademyCourseVouchersMutationBody = AcademyCourseVoucherCreate
-    export type PostAcademyCourseVouchersMutationError = unknown
+    export type PostAcademyCourseVouchersAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postAcademyCourseVouchersAdmin>>>
+    export type PostAcademyCourseVouchersAdminMutationBody = AcademyCourseVoucherCreate
+    export type PostAcademyCourseVouchersAdminMutationError = unknown
 
     /**
  * @summary Create an academy course voucher
  */
-export const usePostAcademyCourseVouchers = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAcademyCourseVouchers>>, TError,{data: AcademyCourseVoucherCreate}, TContext>, }
+export const usePostAcademyCourseVouchersAdmin = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAcademyCourseVouchersAdmin>>, TError,{data: AcademyCourseVoucherCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postAcademyCourseVouchers>>,
+        Awaited<ReturnType<typeof postAcademyCourseVouchersAdmin>>,
         TError,
         {data: AcademyCourseVoucherCreate},
         TContext
       > => {
 
-      const mutationOptions = getPostAcademyCourseVouchersMutationOptions(options);
+      const mutationOptions = getPostAcademyCourseVouchersAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

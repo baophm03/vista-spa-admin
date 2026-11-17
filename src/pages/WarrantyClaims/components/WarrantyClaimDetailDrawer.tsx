@@ -3,10 +3,7 @@ import { Alert, Button, Descriptions, Drawer, Form, Modal, Space, Tag, Typograph
 import { FileTextOutlined } from '@ant-design/icons'
 import { errorMessage } from '@/api/helpers'
 import { Can } from '@casl/react'
-import {
-  useGetWarrantyClaimsId,
-  usePutWarrantyClaimsIdApprove,
-} from '@/api/endpoints/treatment-customers'
+import { useGetWarrantyClaimsIdAdmin, usePutWarrantyClaimsIdApproveAdmin } from '@/api/endpoints/warranty-claims'
 import CustomFieldFormItems, { normalizeCustomFieldValues } from '@/components/CustomFieldFormItems'
 import useCustomFieldDefinitions from '@/hooks/useCustomFieldDefinitions'
 import { fileSrc, resolveFileSrc, useFileUrlMap } from '@/hooks/useFileUrl'
@@ -30,12 +27,12 @@ export default function WarrantyClaimDetailDrawer(props: WarrantyClaimDetailDraw
   const { claimId, fallback, onClose } = props
   const { formatDateTime } = useBrandDateTime()
   const urlMap = useFileUrlMap()
-  const approveMutation = usePutWarrantyClaimsIdApprove()
+  const approveMutation = usePutWarrantyClaimsIdApproveAdmin()
   const [approveForm] = Form.useForm()
   const [approveOpen, setApproveOpen] = useState(false)
   const sessionCustomFields = useCustomFieldDefinitions('SESSION')
 
-  const detailQuery = useGetWarrantyClaimsId(claimId ?? '', { query: { enabled: !!claimId } })
+  const detailQuery = useGetWarrantyClaimsIdAdmin(claimId ?? '', { query: { enabled: !!claimId } })
   const claim = (detailQuery.data?.responseData as ClaimRow | undefined) ?? fallback
   const contractSrc = fileSrc((claim as any)?.contract_file) ?? resolveFileSrc(urlMap, claim?.contract_file_id)
 
@@ -101,7 +98,7 @@ export default function WarrantyClaimDetailDrawer(props: WarrantyClaimDetailDraw
             <Alert type="warning" showIcon style={{ marginTop: 16 }} message="Yêu cầu đã bị từ chối" description={claim.reject_reason} />
           )}
           {claim.status === 'PENDING' && (
-            <Can I="UPDATE" a="CUSTOMER">
+            <Can I="UPDATE" a="WARRANTY_CLAIM">
               <Space style={{ marginTop: 'auto', paddingTop: 16 }}>
                 {props.isAdmin && <Button type="primary" loading={approveMutation.isPending} onClick={() => { approveForm.resetFields(); setApproveOpen(true) }}>Duyệt</Button>}
                 {props.isAdmin && <Button danger loading={props.rejecting} onClick={() => props.onReject(claim)}>Từ chối</Button>}

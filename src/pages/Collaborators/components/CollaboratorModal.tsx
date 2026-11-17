@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Form, Input, InputNumber, Modal, Select, Space } from 'antd'
 import { pickData } from '@/api/helpers'
-import { useGetUsers } from '@/api/endpoints/users'
-import { useGetCustomerProfiles } from '@/api/endpoints/customer-profiles'
+import { useGetUsersAdmin } from '@/api/endpoints/users'
+import { useGetCustomerProfilesAdmin } from '@/api/endpoints/customer-profiles'
 import type { CustomerProfile, User } from '@/api/models'
 
 /**
@@ -13,11 +13,11 @@ export default function CollaboratorModal({ editing, open, onClose, onSubmit, lo
   const typeValue = Form.useWatch('type', form) as string | undefined
   const [customerSearch, setCustomerSearch] = useState('')
 
-  const usersQuery = useGetUsers({ currentPage: 1, pageSize: 200, has_role: true }, { query: { enabled: open } })
+  const usersQuery = useGetUsersAdmin({ currentPage: 1, pageSize: 200, has_role: true }, { query: { enabled: open } })
   const users = (pickData<{ rows?: User[] } | undefined>(usersQuery.data)?.rows ?? pickData<User[]>(usersQuery.data) ?? []) as User[]
 
   // Khách hàng nhiều (hàng nghìn) → tìm theo từ khóa thay vì tải cả danh sách
-  const customersQuery = useGetCustomerProfiles(
+  const customersQuery = useGetCustomerProfilesAdmin(
     { page: 1, limit: 20, q: customerSearch || undefined },
     { query: { enabled: open } },
   )

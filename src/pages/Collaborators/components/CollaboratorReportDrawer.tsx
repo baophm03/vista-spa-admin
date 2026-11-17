@@ -1,6 +1,6 @@
 import { Alert, Button, Drawer, Space, Spin, Typography } from 'antd'
 import { errorMessage, pickData } from '@/api/helpers'
-import { useGetCollaboratorsIdSummary } from '@/api/endpoints/admin'
+import { useGetCollaboratorsIdSummaryAdmin } from '@/api/endpoints/collaborators'
 
 function formatVnd(v?: number | null): string {
   if (v == null) return '—'
@@ -8,7 +8,7 @@ function formatVnd(v?: number | null): string {
 }
 
 export default function CollaboratorReportDrawer({ id, open, onClose }: { id: string; open: boolean; onClose: () => void }) {
-  const summaryQuery = useGetCollaboratorsIdSummary(id, { query: { enabled: open && !!id } })
+  const summaryQuery = useGetCollaboratorsIdSummaryAdmin(id, { query: { enabled: open && !!id } })
   const summary = pickData<{ referral_count?: number; total_package_value?: number; total_commission?: number }>(
     summaryQuery.data,
   )

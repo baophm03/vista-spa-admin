@@ -7,8 +7,8 @@ import { errorMessage, pickData } from '@/api/helpers'
 import type { BrandSettings } from '@/api/models/brandSettings'
 import type { BrandSettingsUpdate } from '@/api/models/brandSettingsUpdate'
 import type { FileUpload } from '@/api/models/fileUpload'
-import { getGetSettingsBrandQueryKey, getSettingsBrand, putSettingsBrand } from '@/api/endpoints/settings'
-import { postFiles } from '@/api/endpoints/files'
+import { getGetSettingsBrandAdminQueryKey, getSettingsBrandAdmin, putSettingsBrandAdmin } from '@/api/endpoints/settings'
+import { postFilesAdmin } from '@/api/endpoints/files'
 import { Can } from '@casl/react'
 import links from '@/configs/links'
 import { fileSrc } from '@/hooks/useFileUrl'
@@ -121,8 +121,8 @@ export default function BrandSettings() {
     return pickData<BrandSettings>(body.responseData ?? body)
   }
   const settingsQuery = useQuery({
-    queryKey: getGetSettingsBrandQueryKey(),
-    queryFn: async () => normalizeSettings(await getSettingsBrand()),
+    queryKey: getGetSettingsBrandAdminQueryKey(),
+    queryFn: async () => normalizeSettings(await getSettingsBrandAdmin()),
   })
   const [primaryColor, setPrimaryColor] = useState(runtime.primaryColor)
   const [tertiaryColor, setTertiaryColor] = useState(runtime.tertiaryColor || '#FFD700')
@@ -155,7 +155,7 @@ export default function BrandSettings() {
 
   const saveMutation = useMutation({
     mutationFn: async (values: BrandFormValues) =>
-      putSettingsBrand({
+      putSettingsBrandAdmin({
         brand: {
           name: values.brand.name,
           logo_file_id: logoFileId || null,
@@ -169,10 +169,10 @@ export default function BrandSettings() {
     onSuccess: async (result) => {
       const data = pickData<BrandSettings>(result)
       if (data?.brand && data?.locale) {
-        queryClient.setQueryData(getGetSettingsBrandQueryKey(), data)
+        queryClient.setQueryData(getGetSettingsBrandAdminQueryKey(), data)
         applyBrandSettings(data)
       } else {
-        await queryClient.invalidateQueries({ queryKey: getGetSettingsBrandQueryKey() })
+        await queryClient.invalidateQueries({ queryKey: getGetSettingsBrandAdminQueryKey() })
       }
       message.success('Đã lưu cấu hình thương hiệu')
     },
@@ -192,7 +192,7 @@ export default function BrandSettings() {
     try {
       // POST /files trả object file phẳng { id, path, file_name, ... }
       // Payload gửi id (FK sang bảng files); path chỉ dùng cho preview
-      const uploaded = pickData<{ id?: string; path?: string }>(await postFiles({ file } as FileUpload))
+      const uploaded = pickData<{ id?: string; path?: string }>(await postFilesAdmin({ file } as FileUpload))
       const fileId = uploaded?.id ?? ''
       const path = uploaded?.path ?? ''
       if (!fileId || !path) throw new Error('Upload không trả về thông tin file')

@@ -32,26 +32,27 @@ import type {
 import type {
   AcademyCourse,
   ConflictResponse,
-  DeleteAcademyCoursesId200,
-  DeleteAcademyRegistrationsId200,
+  DeleteAcademyCoursesIdAdmin200,
+  DeleteAcademyRegistrationsIdAdmin200,
   ForbiddenResponse,
   GetAcademyCourses200,
-  GetAcademyCoursesId200,
-  GetAcademyCoursesParams,
-  GetAcademyRegistrations200,
-  GetAcademyRegistrationsFindStudent200,
-  GetAcademyRegistrationsFindStudentParams,
-  GetAcademyRegistrationsId200,
-  GetAcademyRegistrationsParams,
+  GetAcademyCoursesAdmin200,
+  GetAcademyCoursesAdminParams,
+  GetAcademyCoursesIdAdmin200,
+  GetAcademyRegistrationsAdmin200,
+  GetAcademyRegistrationsAdminParams,
+  GetAcademyRegistrationsFindStudentAdmin200,
+  GetAcademyRegistrationsFindStudentAdminParams,
+  GetAcademyRegistrationsIdAdmin200,
   InternalErrorResponse,
   NotFoundResponse,
-  PostAcademyCourses200,
-  PostAcademyCoursesBody,
-  PostAcademyRegistrations200,
-  PostAcademyRegistrationsBody,
-  PutAcademyCoursesId200,
-  PutAcademyRegistrationsId200,
-  PutAcademyRegistrationsIdStatusBody,
+  PostAcademyCoursesAdmin200,
+  PostAcademyCoursesAdminBody,
+  PostAcademyRegistrationsAdmin200,
+  PostAcademyRegistrationsAdminBody,
+  PutAcademyCoursesIdAdmin200,
+  PutAcademyRegistrationsIdAdmin200,
+  PutAcademyRegistrationsIdStatusAdminBody,
   UnauthorizedResponse,
   UnprocessableEntityResponse
 } from '../models';
@@ -63,17 +64,17 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * **AR-02** — GET /academy/registrations/{id}. Requires the `academy.read` permission.
+ * **AR-02** — GET /academy/registrations/{id}/admin. Requires the `academy_registration.view_all` permission.
  * @summary View course registration details
  */
-export const getAcademyRegistrationsId = (
+export const getAcademyRegistrationsIdAdmin = (
     id: string,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<GetAcademyRegistrationsId200>(
-      {url: `/academy/registrations/${id}`, method: 'GET', signal
+      return customInstance<GetAcademyRegistrationsIdAdmin200>(
+      {url: `/academy/registrations/${id}/admin`, method: 'GET', signal
     },
       );
     }
@@ -81,75 +82,75 @@ export const getAcademyRegistrationsId = (
 
 
 
-export const getGetAcademyRegistrationsIdInfiniteQueryKey = (id?: string,) => {
+export const getGetAcademyRegistrationsIdAdminInfiniteQueryKey = (id?: string,) => {
     return [
-    'infinite', `/academy/registrations/${id}`
+    'infinite', `/academy/registrations/${id}/admin`
     ] as const;
     }
 
-export const getGetAcademyRegistrationsIdQueryKey = (id?: string,) => {
+export const getGetAcademyRegistrationsIdAdminQueryKey = (id?: string,) => {
     return [
-    `/academy/registrations/${id}`
+    `/academy/registrations/${id}/admin`
     ] as const;
     }
 
     
-export const getGetAcademyRegistrationsIdInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAcademyRegistrationsId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsId>>, TError, TData>>, }
+export const getGetAcademyRegistrationsIdAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAcademyRegistrationsIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsIdAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAcademyRegistrationsIdInfiniteQueryKey(id);
+  const queryKey =  queryOptions?.queryKey ?? getGetAcademyRegistrationsIdAdminInfiniteQueryKey(id);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAcademyRegistrationsId>>> = ({ signal }) => getAcademyRegistrationsId(id, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAcademyRegistrationsIdAdmin>>> = ({ signal }) => getAcademyRegistrationsIdAdmin(id, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsIdAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetAcademyRegistrationsIdInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAcademyRegistrationsId>>>
-export type GetAcademyRegistrationsIdInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+export type GetAcademyRegistrationsIdAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAcademyRegistrationsIdAdmin>>>
+export type GetAcademyRegistrationsIdAdminInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
 
 
-export function useGetAcademyRegistrationsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyRegistrationsId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsId>>, TError, TData>> & Pick<
+export function useGetAcademyRegistrationsIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyRegistrationsIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsIdAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAcademyRegistrationsId>>,
+          Awaited<ReturnType<typeof getAcademyRegistrationsIdAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getAcademyRegistrationsId>>
+          Awaited<ReturnType<typeof getAcademyRegistrationsIdAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAcademyRegistrationsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyRegistrationsId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsId>>, TError, TData>> & Pick<
+export function useGetAcademyRegistrationsIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyRegistrationsIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsIdAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAcademyRegistrationsId>>,
+          Awaited<ReturnType<typeof getAcademyRegistrationsIdAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getAcademyRegistrationsId>>
+          Awaited<ReturnType<typeof getAcademyRegistrationsIdAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAcademyRegistrationsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyRegistrationsId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsId>>, TError, TData>>, }
+export function useGetAcademyRegistrationsIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyRegistrationsIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsIdAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary View course registration details
  */
 
-export function useGetAcademyRegistrationsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyRegistrationsId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsId>>, TError, TData>>, }
+export function useGetAcademyRegistrationsIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyRegistrationsIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsIdAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetAcademyRegistrationsIdInfiniteQueryOptions(id,options)
+  const queryOptions = getGetAcademyRegistrationsIdAdminInfiniteQueryOptions(id,options)
 
   const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -161,12 +162,12 @@ export function useGetAcademyRegistrationsIdInfinite<TData = InfiniteData<Awaite
 /**
  * @summary View course registration details
  */
-export const prefetchGetAcademyRegistrationsIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAcademyRegistrationsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsId>>, TError, TData>>, }
+export const prefetchGetAcademyRegistrationsIdAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAcademyRegistrationsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsIdAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetAcademyRegistrationsIdInfiniteQueryOptions(id,options)
+  const queryOptions = getGetAcademyRegistrationsIdAdminInfiniteQueryOptions(id,options)
 
   await queryClient.prefetchInfiniteQuery(queryOptions);
 
@@ -175,62 +176,62 @@ export const prefetchGetAcademyRegistrationsIdInfiniteQuery = async <TData = Awa
 
 
 
-export const getGetAcademyRegistrationsIdQueryOptions = <TData = Awaited<ReturnType<typeof getAcademyRegistrationsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsId>>, TError, TData>>, }
+export const getGetAcademyRegistrationsIdAdminQueryOptions = <TData = Awaited<ReturnType<typeof getAcademyRegistrationsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsIdAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAcademyRegistrationsIdQueryKey(id);
+  const queryKey =  queryOptions?.queryKey ?? getGetAcademyRegistrationsIdAdminQueryKey(id);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAcademyRegistrationsId>>> = ({ signal }) => getAcademyRegistrationsId(id, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAcademyRegistrationsIdAdmin>>> = ({ signal }) => getAcademyRegistrationsIdAdmin(id, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsIdAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetAcademyRegistrationsIdQueryResult = NonNullable<Awaited<ReturnType<typeof getAcademyRegistrationsId>>>
-export type GetAcademyRegistrationsIdQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+export type GetAcademyRegistrationsIdAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getAcademyRegistrationsIdAdmin>>>
+export type GetAcademyRegistrationsIdAdminQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
 
 
-export function useGetAcademyRegistrationsId<TData = Awaited<ReturnType<typeof getAcademyRegistrationsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsId>>, TError, TData>> & Pick<
+export function useGetAcademyRegistrationsIdAdmin<TData = Awaited<ReturnType<typeof getAcademyRegistrationsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsIdAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAcademyRegistrationsId>>,
+          Awaited<ReturnType<typeof getAcademyRegistrationsIdAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getAcademyRegistrationsId>>
+          Awaited<ReturnType<typeof getAcademyRegistrationsIdAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAcademyRegistrationsId<TData = Awaited<ReturnType<typeof getAcademyRegistrationsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsId>>, TError, TData>> & Pick<
+export function useGetAcademyRegistrationsIdAdmin<TData = Awaited<ReturnType<typeof getAcademyRegistrationsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsIdAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAcademyRegistrationsId>>,
+          Awaited<ReturnType<typeof getAcademyRegistrationsIdAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getAcademyRegistrationsId>>
+          Awaited<ReturnType<typeof getAcademyRegistrationsIdAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAcademyRegistrationsId<TData = Awaited<ReturnType<typeof getAcademyRegistrationsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsId>>, TError, TData>>, }
+export function useGetAcademyRegistrationsIdAdmin<TData = Awaited<ReturnType<typeof getAcademyRegistrationsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsIdAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary View course registration details
  */
 
-export function useGetAcademyRegistrationsId<TData = Awaited<ReturnType<typeof getAcademyRegistrationsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsId>>, TError, TData>>, }
+export function useGetAcademyRegistrationsIdAdmin<TData = Awaited<ReturnType<typeof getAcademyRegistrationsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsIdAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetAcademyRegistrationsIdQueryOptions(id,options)
+  const queryOptions = getGetAcademyRegistrationsIdAdminQueryOptions(id,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -242,12 +243,12 @@ export function useGetAcademyRegistrationsId<TData = Awaited<ReturnType<typeof g
 /**
  * @summary View course registration details
  */
-export const prefetchGetAcademyRegistrationsIdQuery = async <TData = Awaited<ReturnType<typeof getAcademyRegistrationsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsId>>, TError, TData>>, }
+export const prefetchGetAcademyRegistrationsIdAdminQuery = async <TData = Awaited<ReturnType<typeof getAcademyRegistrationsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsIdAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetAcademyRegistrationsIdQueryOptions(id,options)
+  const queryOptions = getGetAcademyRegistrationsIdAdminQueryOptions(id,options)
 
   await queryClient.prefetchQuery(queryOptions);
 
@@ -257,17 +258,17 @@ export const prefetchGetAcademyRegistrationsIdQuery = async <TData = Awaited<Ret
 
 
 /**
- * **AR-04** — PUT /academy/registrations/{id} (confirm/attended/cancel + payment_status). Requires the `academy.update` permission.
+ * **AR-04** — PUT /academy/registrations/{id}/admin (confirm/attended/cancel + payment_status). Requires the `academy_registration.update_all` permission.
  * @summary Update course registration
  */
-export const putAcademyRegistrationsId = (
+export const putAcademyRegistrationsIdAdmin = (
     id: string,
     academyCourse: AcademyCourse,
  ) => {
       
       
-      return customInstance<PutAcademyRegistrationsId200>(
-      {url: `/academy/registrations/${id}`, method: 'PUT',
+      return customInstance<PutAcademyRegistrationsIdAdmin200>(
+      {url: `/academy/registrations/${id}/admin`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: academyCourse
     },
@@ -276,11 +277,11 @@ export const putAcademyRegistrationsId = (
   
 
 
-export const getPutAcademyRegistrationsIdMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAcademyRegistrationsId>>, TError,{id: string;data: AcademyCourse}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putAcademyRegistrationsId>>, TError,{id: string;data: AcademyCourse}, TContext> => {
+export const getPutAcademyRegistrationsIdAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAcademyRegistrationsIdAdmin>>, TError,{id: string;data: AcademyCourse}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putAcademyRegistrationsIdAdmin>>, TError,{id: string;data: AcademyCourse}, TContext> => {
 
-const mutationKey = ['putAcademyRegistrationsId'];
+const mutationKey = ['putAcademyRegistrationsIdAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -290,10 +291,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putAcademyRegistrationsId>>, {id: string;data: AcademyCourse}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putAcademyRegistrationsIdAdmin>>, {id: string;data: AcademyCourse}> = (props) => {
           const {id,data} = props ?? {};
 
-          return  putAcademyRegistrationsId(id,data,)
+          return  putAcademyRegistrationsIdAdmin(id,data,)
         }
 
         
@@ -301,48 +302,48 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PutAcademyRegistrationsIdMutationResult = NonNullable<Awaited<ReturnType<typeof putAcademyRegistrationsId>>>
-    export type PutAcademyRegistrationsIdMutationBody = AcademyCourse
-    export type PutAcademyRegistrationsIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+    export type PutAcademyRegistrationsIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof putAcademyRegistrationsIdAdmin>>>
+    export type PutAcademyRegistrationsIdAdminMutationBody = AcademyCourse
+    export type PutAcademyRegistrationsIdAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
  * @summary Update course registration
  */
-export const usePutAcademyRegistrationsId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAcademyRegistrationsId>>, TError,{id: string;data: AcademyCourse}, TContext>, }
+export const usePutAcademyRegistrationsIdAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAcademyRegistrationsIdAdmin>>, TError,{id: string;data: AcademyCourse}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putAcademyRegistrationsId>>,
+        Awaited<ReturnType<typeof putAcademyRegistrationsIdAdmin>>,
         TError,
         {id: string;data: AcademyCourse},
         TContext
       > => {
 
-      const mutationOptions = getPutAcademyRegistrationsIdMutationOptions(options);
+      const mutationOptions = getPutAcademyRegistrationsIdAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **AR-05** — DELETE /academy/registrations/{id} → status=CANCELLED. Requires the `academy.delete` permission.
+ * **AR-05** — DELETE /academy/registrations/{id}/admin → status=CANCELLED. Requires the `academy_registration.delete_all` permission.
  * @summary Delete course registration
  */
-export const deleteAcademyRegistrationsId = (
+export const deleteAcademyRegistrationsIdAdmin = (
     id: string,
  ) => {
       
       
-      return customInstance<DeleteAcademyRegistrationsId200>(
-      {url: `/academy/registrations/${id}`, method: 'DELETE'
+      return customInstance<DeleteAcademyRegistrationsIdAdmin200>(
+      {url: `/academy/registrations/${id}/admin`, method: 'DELETE'
     },
       );
     }
   
 
 
-export const getDeleteAcademyRegistrationsIdMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAcademyRegistrationsId>>, TError,{id: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof deleteAcademyRegistrationsId>>, TError,{id: string}, TContext> => {
+export const getDeleteAcademyRegistrationsIdAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAcademyRegistrationsIdAdmin>>, TError,{id: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteAcademyRegistrationsIdAdmin>>, TError,{id: string}, TContext> => {
 
-const mutationKey = ['deleteAcademyRegistrationsId'];
+const mutationKey = ['deleteAcademyRegistrationsIdAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -352,10 +353,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteAcademyRegistrationsId>>, {id: string}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteAcademyRegistrationsIdAdmin>>, {id: string}> = (props) => {
           const {id} = props ?? {};
 
-          return  deleteAcademyRegistrationsId(id,)
+          return  deleteAcademyRegistrationsIdAdmin(id,)
         }
 
         
@@ -363,506 +364,51 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type DeleteAcademyRegistrationsIdMutationResult = NonNullable<Awaited<ReturnType<typeof deleteAcademyRegistrationsId>>>
+    export type DeleteAcademyRegistrationsIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof deleteAcademyRegistrationsIdAdmin>>>
     
-    export type DeleteAcademyRegistrationsIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+    export type DeleteAcademyRegistrationsIdAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
  * @summary Delete course registration
  */
-export const useDeleteAcademyRegistrationsId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAcademyRegistrationsId>>, TError,{id: string}, TContext>, }
+export const useDeleteAcademyRegistrationsIdAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAcademyRegistrationsIdAdmin>>, TError,{id: string}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteAcademyRegistrationsId>>,
+        Awaited<ReturnType<typeof deleteAcademyRegistrationsIdAdmin>>,
         TError,
         {id: string},
         TContext
       > => {
 
-      const mutationOptions = getDeleteAcademyRegistrationsIdMutationOptions(options);
+      const mutationOptions = getDeleteAcademyRegistrationsIdAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **AR-01** — GET /academy/registrations. Requires the `academy.read` permission. Branch scope: users limited to a single branch only see that branch's data. Query parameters: `branch_id`, `course_id`, `status`, `phone`.
- * @summary Manage course registrations
- */
-export const getAcademyRegistrations = (
-    params?: GetAcademyRegistrationsParams,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<GetAcademyRegistrations200>(
-      {url: `/academy/registrations`, method: 'GET',
-        params, signal
-    },
-      );
-    }
-  
-
-
-
-export const getGetAcademyRegistrationsInfiniteQueryKey = (params?: GetAcademyRegistrationsParams,) => {
-    return [
-    'infinite', `/academy/registrations`, ...(params ? [params]: [])
-    ] as const;
-    }
-
-export const getGetAcademyRegistrationsQueryKey = (params?: GetAcademyRegistrationsParams,) => {
-    return [
-    `/academy/registrations`, ...(params ? [params]: [])
-    ] as const;
-    }
-
-    
-export const getGetAcademyRegistrationsInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAcademyRegistrations>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetAcademyRegistrationsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrations>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAcademyRegistrationsInfiniteQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAcademyRegistrations>>> = ({ signal }) => getAcademyRegistrations(params, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrations>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAcademyRegistrationsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAcademyRegistrations>>>
-export type GetAcademyRegistrationsInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
-
-
-export function useGetAcademyRegistrationsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyRegistrations>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params: undefined |  GetAcademyRegistrationsParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrations>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAcademyRegistrations>>,
-          TError,
-          Awaited<ReturnType<typeof getAcademyRegistrations>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAcademyRegistrationsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyRegistrations>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetAcademyRegistrationsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrations>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAcademyRegistrations>>,
-          TError,
-          Awaited<ReturnType<typeof getAcademyRegistrations>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAcademyRegistrationsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyRegistrations>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetAcademyRegistrationsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrations>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Manage course registrations
- */
-
-export function useGetAcademyRegistrationsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyRegistrations>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetAcademyRegistrationsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrations>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAcademyRegistrationsInfiniteQueryOptions(params,options)
-
-  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary Manage course registrations
- */
-export const prefetchGetAcademyRegistrationsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAcademyRegistrations>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient, params?: GetAcademyRegistrationsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrations>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetAcademyRegistrationsInfiniteQueryOptions(params,options)
-
-  await queryClient.prefetchInfiniteQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-export const getGetAcademyRegistrationsQueryOptions = <TData = Awaited<ReturnType<typeof getAcademyRegistrations>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetAcademyRegistrationsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrations>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAcademyRegistrationsQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAcademyRegistrations>>> = ({ signal }) => getAcademyRegistrations(params, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrations>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAcademyRegistrationsQueryResult = NonNullable<Awaited<ReturnType<typeof getAcademyRegistrations>>>
-export type GetAcademyRegistrationsQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
-
-
-export function useGetAcademyRegistrations<TData = Awaited<ReturnType<typeof getAcademyRegistrations>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params: undefined |  GetAcademyRegistrationsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrations>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAcademyRegistrations>>,
-          TError,
-          Awaited<ReturnType<typeof getAcademyRegistrations>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAcademyRegistrations<TData = Awaited<ReturnType<typeof getAcademyRegistrations>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetAcademyRegistrationsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrations>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAcademyRegistrations>>,
-          TError,
-          Awaited<ReturnType<typeof getAcademyRegistrations>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAcademyRegistrations<TData = Awaited<ReturnType<typeof getAcademyRegistrations>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetAcademyRegistrationsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrations>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Manage course registrations
- */
-
-export function useGetAcademyRegistrations<TData = Awaited<ReturnType<typeof getAcademyRegistrations>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetAcademyRegistrationsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrations>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAcademyRegistrationsQueryOptions(params,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary Manage course registrations
- */
-export const prefetchGetAcademyRegistrationsQuery = async <TData = Awaited<ReturnType<typeof getAcademyRegistrations>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient, params?: GetAcademyRegistrationsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrations>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetAcademyRegistrationsQueryOptions(params,options)
-
-  await queryClient.prefetchQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-/**
- * **AR-03** — POST /academy/registrations (identify a returning student, apply benefits). Requires the `academy.create` permission. Branch scope: users limited to a single branch only see that branch's data. The body is passed as-is to the business layer.
- * @summary Manage course registrations
- */
-export const postAcademyRegistrations = (
-    postAcademyRegistrationsBody: PostAcademyRegistrationsBody,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<PostAcademyRegistrations200>(
-      {url: `/academy/registrations`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: postAcademyRegistrationsBody, signal
-    },
-      );
-    }
-  
-
-
-export const getPostAcademyRegistrationsMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAcademyRegistrations>>, TError,{data: PostAcademyRegistrationsBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postAcademyRegistrations>>, TError,{data: PostAcademyRegistrationsBody}, TContext> => {
-
-const mutationKey = ['postAcademyRegistrations'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAcademyRegistrations>>, {data: PostAcademyRegistrationsBody}> = (props) => {
-          const {data} = props ?? {};
-
-          return  postAcademyRegistrations(data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostAcademyRegistrationsMutationResult = NonNullable<Awaited<ReturnType<typeof postAcademyRegistrations>>>
-    export type PostAcademyRegistrationsMutationBody = PostAcademyRegistrationsBody
-    export type PostAcademyRegistrationsMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
-
-    /**
- * @summary Manage course registrations
- */
-export const usePostAcademyRegistrations = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAcademyRegistrations>>, TError,{data: PostAcademyRegistrationsBody}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postAcademyRegistrations>>,
-        TError,
-        {data: PostAcademyRegistrationsBody},
-        TContext
-      > => {
-
-      const mutationOptions = getPostAcademyRegistrationsMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * **AR-06** — GET /academy/registrations/find-student?phone|email (identify a returning student). Requires the `academy.read` permission. Branch scope: users limited to a single branch only see that branch's data. Query parameters: `branch_id`, `phone`, `email`.
- * @summary Find returning student
- */
-export const getAcademyRegistrationsFindStudent = (
-    params?: GetAcademyRegistrationsFindStudentParams,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<GetAcademyRegistrationsFindStudent200>(
-      {url: `/academy/registrations/find-student`, method: 'GET',
-        params, signal
-    },
-      );
-    }
-  
-
-
-
-export const getGetAcademyRegistrationsFindStudentInfiniteQueryKey = (params?: GetAcademyRegistrationsFindStudentParams,) => {
-    return [
-    'infinite', `/academy/registrations/find-student`, ...(params ? [params]: [])
-    ] as const;
-    }
-
-export const getGetAcademyRegistrationsFindStudentQueryKey = (params?: GetAcademyRegistrationsFindStudentParams,) => {
-    return [
-    `/academy/registrations/find-student`, ...(params ? [params]: [])
-    ] as const;
-    }
-
-    
-export const getGetAcademyRegistrationsFindStudentInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAcademyRegistrationsFindStudent>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetAcademyRegistrationsFindStudentParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsFindStudent>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAcademyRegistrationsFindStudentInfiniteQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAcademyRegistrationsFindStudent>>> = ({ signal }) => getAcademyRegistrationsFindStudent(params, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsFindStudent>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAcademyRegistrationsFindStudentInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAcademyRegistrationsFindStudent>>>
-export type GetAcademyRegistrationsFindStudentInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
-
-
-export function useGetAcademyRegistrationsFindStudentInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyRegistrationsFindStudent>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params: undefined |  GetAcademyRegistrationsFindStudentParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsFindStudent>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAcademyRegistrationsFindStudent>>,
-          TError,
-          Awaited<ReturnType<typeof getAcademyRegistrationsFindStudent>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAcademyRegistrationsFindStudentInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyRegistrationsFindStudent>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetAcademyRegistrationsFindStudentParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsFindStudent>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAcademyRegistrationsFindStudent>>,
-          TError,
-          Awaited<ReturnType<typeof getAcademyRegistrationsFindStudent>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAcademyRegistrationsFindStudentInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyRegistrationsFindStudent>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetAcademyRegistrationsFindStudentParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsFindStudent>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Find returning student
- */
-
-export function useGetAcademyRegistrationsFindStudentInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyRegistrationsFindStudent>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetAcademyRegistrationsFindStudentParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsFindStudent>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAcademyRegistrationsFindStudentInfiniteQueryOptions(params,options)
-
-  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary Find returning student
- */
-export const prefetchGetAcademyRegistrationsFindStudentInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAcademyRegistrationsFindStudent>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient, params?: GetAcademyRegistrationsFindStudentParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsFindStudent>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetAcademyRegistrationsFindStudentInfiniteQueryOptions(params,options)
-
-  await queryClient.prefetchInfiniteQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-export const getGetAcademyRegistrationsFindStudentQueryOptions = <TData = Awaited<ReturnType<typeof getAcademyRegistrationsFindStudent>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetAcademyRegistrationsFindStudentParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsFindStudent>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAcademyRegistrationsFindStudentQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAcademyRegistrationsFindStudent>>> = ({ signal }) => getAcademyRegistrationsFindStudent(params, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsFindStudent>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAcademyRegistrationsFindStudentQueryResult = NonNullable<Awaited<ReturnType<typeof getAcademyRegistrationsFindStudent>>>
-export type GetAcademyRegistrationsFindStudentQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
-
-
-export function useGetAcademyRegistrationsFindStudent<TData = Awaited<ReturnType<typeof getAcademyRegistrationsFindStudent>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params: undefined |  GetAcademyRegistrationsFindStudentParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsFindStudent>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAcademyRegistrationsFindStudent>>,
-          TError,
-          Awaited<ReturnType<typeof getAcademyRegistrationsFindStudent>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAcademyRegistrationsFindStudent<TData = Awaited<ReturnType<typeof getAcademyRegistrationsFindStudent>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetAcademyRegistrationsFindStudentParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsFindStudent>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAcademyRegistrationsFindStudent>>,
-          TError,
-          Awaited<ReturnType<typeof getAcademyRegistrationsFindStudent>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAcademyRegistrationsFindStudent<TData = Awaited<ReturnType<typeof getAcademyRegistrationsFindStudent>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetAcademyRegistrationsFindStudentParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsFindStudent>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Find returning student
- */
-
-export function useGetAcademyRegistrationsFindStudent<TData = Awaited<ReturnType<typeof getAcademyRegistrationsFindStudent>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetAcademyRegistrationsFindStudentParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsFindStudent>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAcademyRegistrationsFindStudentQueryOptions(params,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary Find returning student
- */
-export const prefetchGetAcademyRegistrationsFindStudentQuery = async <TData = Awaited<ReturnType<typeof getAcademyRegistrationsFindStudent>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient, params?: GetAcademyRegistrationsFindStudentParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsFindStudent>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetAcademyRegistrationsFindStudentQueryOptions(params,options)
-
-  await queryClient.prefetchQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-/**
- * **AC-09** — PUT /academy/registrations/{id}/status. One-way state machine: `PENDING` (New) → `CONFIRMED` (Contacted) → `ATTENDED` (Enrolled), or `CANCELLED` from PENDING/CONFIRMED. Backward transitions are not allowed (Test 20). Body: `status`, `assigned_to?`, `note?`. On the first transition to CONFIRMED the system automatically records `contacted_at`.
+ * **AC-09** — PUT /academy/registrations/{id}/status/admin. One-way state machine: `PENDING` (New) → `CONFIRMED` (Contacted) → `ATTENDED` (Enrolled), or `CANCELLED` from PENDING/CONFIRMED. Backward transitions are not allowed (Test 20). Body: `status`, `assigned_to?`, `note?`. On the first transition to CONFIRMED the system automatically records `contacted_at`.
  * @summary Update the consultation progress of a registration
  */
-export const putAcademyRegistrationsIdStatus = (
+export const putAcademyRegistrationsIdStatusAdmin = (
     id: string,
-    putAcademyRegistrationsIdStatusBody: PutAcademyRegistrationsIdStatusBody,
+    putAcademyRegistrationsIdStatusAdminBody: PutAcademyRegistrationsIdStatusAdminBody,
  ) => {
       
       
       return customInstance<void>(
-      {url: `/academy/registrations/${id}/status`, method: 'PUT',
+      {url: `/academy/registrations/${id}/status/admin`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
-      data: putAcademyRegistrationsIdStatusBody
+      data: putAcademyRegistrationsIdStatusAdminBody
     },
       );
     }
   
 
 
-export const getPutAcademyRegistrationsIdStatusMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAcademyRegistrationsIdStatus>>, TError,{id: string;data: PutAcademyRegistrationsIdStatusBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putAcademyRegistrationsIdStatus>>, TError,{id: string;data: PutAcademyRegistrationsIdStatusBody}, TContext> => {
+export const getPutAcademyRegistrationsIdStatusAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAcademyRegistrationsIdStatusAdmin>>, TError,{id: string;data: PutAcademyRegistrationsIdStatusAdminBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putAcademyRegistrationsIdStatusAdmin>>, TError,{id: string;data: PutAcademyRegistrationsIdStatusAdminBody}, TContext> => {
 
-const mutationKey = ['putAcademyRegistrationsIdStatus'];
+const mutationKey = ['putAcademyRegistrationsIdStatusAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -872,10 +418,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putAcademyRegistrationsIdStatus>>, {id: string;data: PutAcademyRegistrationsIdStatusBody}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putAcademyRegistrationsIdStatusAdmin>>, {id: string;data: PutAcademyRegistrationsIdStatusAdminBody}> = (props) => {
           const {id,data} = props ?? {};
 
-          return  putAcademyRegistrationsIdStatus(id,data,)
+          return  putAcademyRegistrationsIdStatusAdmin(id,data,)
         }
 
         
@@ -883,38 +429,39 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PutAcademyRegistrationsIdStatusMutationResult = NonNullable<Awaited<ReturnType<typeof putAcademyRegistrationsIdStatus>>>
-    export type PutAcademyRegistrationsIdStatusMutationBody = PutAcademyRegistrationsIdStatusBody
-    export type PutAcademyRegistrationsIdStatusMutationError = UnauthorizedResponse | ForbiddenResponse | void
+    export type PutAcademyRegistrationsIdStatusAdminMutationResult = NonNullable<Awaited<ReturnType<typeof putAcademyRegistrationsIdStatusAdmin>>>
+    export type PutAcademyRegistrationsIdStatusAdminMutationBody = PutAcademyRegistrationsIdStatusAdminBody
+    export type PutAcademyRegistrationsIdStatusAdminMutationError = UnauthorizedResponse | ForbiddenResponse | void
 
     /**
  * @summary Update the consultation progress of a registration
  */
-export const usePutAcademyRegistrationsIdStatus = <TError = UnauthorizedResponse | ForbiddenResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAcademyRegistrationsIdStatus>>, TError,{id: string;data: PutAcademyRegistrationsIdStatusBody}, TContext>, }
+export const usePutAcademyRegistrationsIdStatusAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAcademyRegistrationsIdStatusAdmin>>, TError,{id: string;data: PutAcademyRegistrationsIdStatusAdminBody}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putAcademyRegistrationsIdStatus>>,
+        Awaited<ReturnType<typeof putAcademyRegistrationsIdStatusAdmin>>,
         TError,
-        {id: string;data: PutAcademyRegistrationsIdStatusBody},
+        {id: string;data: PutAcademyRegistrationsIdStatusAdminBody},
         TContext
       > => {
 
-      const mutationOptions = getPutAcademyRegistrationsIdStatusMutationOptions(options);
+      const mutationOptions = getPutAcademyRegistrationsIdStatusAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **AC-02** — GET /academy/courses/{id}. Requires the `academy.read` permission.
- * @summary View course details
+ * **AR-06** — GET /academy/registrations/find-student/admin?phone|email (identify a returning student). Requires the `academy_registration.view_all` permission. Branch scope: users limited to a single branch only see that branch's data. Query parameters: `branch_id`, `phone`, `email`.
+ * @summary Find returning student
  */
-export const getAcademyCoursesId = (
-    id: string,
+export const getAcademyRegistrationsFindStudentAdmin = (
+    params?: GetAcademyRegistrationsFindStudentAdminParams,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<GetAcademyCoursesId200>(
-      {url: `/academy/courses/${id}`, method: 'GET', signal
+      return customInstance<GetAcademyRegistrationsFindStudentAdmin200>(
+      {url: `/academy/registrations/find-student/admin`, method: 'GET',
+        params, signal
     },
       );
     }
@@ -922,75 +469,75 @@ export const getAcademyCoursesId = (
 
 
 
-export const getGetAcademyCoursesIdInfiniteQueryKey = (id?: string,) => {
+export const getGetAcademyRegistrationsFindStudentAdminInfiniteQueryKey = (params?: GetAcademyRegistrationsFindStudentAdminParams,) => {
     return [
-    'infinite', `/academy/courses/${id}`
+    'infinite', `/academy/registrations/find-student/admin`, ...(params ? [params]: [])
     ] as const;
     }
 
-export const getGetAcademyCoursesIdQueryKey = (id?: string,) => {
+export const getGetAcademyRegistrationsFindStudentAdminQueryKey = (params?: GetAcademyRegistrationsFindStudentAdminParams,) => {
     return [
-    `/academy/courses/${id}`
+    `/academy/registrations/find-student/admin`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetAcademyCoursesIdInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCoursesId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCoursesId>>, TError, TData>>, }
+export const getGetAcademyRegistrationsFindStudentAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAcademyRegistrationsFindStudentAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetAcademyRegistrationsFindStudentAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsFindStudentAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAcademyCoursesIdInfiniteQueryKey(id);
+  const queryKey =  queryOptions?.queryKey ?? getGetAcademyRegistrationsFindStudentAdminInfiniteQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAcademyCoursesId>>> = ({ signal }) => getAcademyCoursesId(id, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAcademyRegistrationsFindStudentAdmin>>> = ({ signal }) => getAcademyRegistrationsFindStudentAdmin(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCoursesId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsFindStudentAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetAcademyCoursesIdInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAcademyCoursesId>>>
-export type GetAcademyCoursesIdInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+export type GetAcademyRegistrationsFindStudentAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAcademyRegistrationsFindStudentAdmin>>>
+export type GetAcademyRegistrationsFindStudentAdminInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
 
 
-export function useGetAcademyCoursesIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCoursesId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCoursesId>>, TError, TData>> & Pick<
+export function useGetAcademyRegistrationsFindStudentAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyRegistrationsFindStudentAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetAcademyRegistrationsFindStudentAdminParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsFindStudentAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAcademyCoursesId>>,
+          Awaited<ReturnType<typeof getAcademyRegistrationsFindStudentAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getAcademyCoursesId>>
+          Awaited<ReturnType<typeof getAcademyRegistrationsFindStudentAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAcademyCoursesIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCoursesId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCoursesId>>, TError, TData>> & Pick<
+export function useGetAcademyRegistrationsFindStudentAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyRegistrationsFindStudentAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetAcademyRegistrationsFindStudentAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsFindStudentAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAcademyCoursesId>>,
+          Awaited<ReturnType<typeof getAcademyRegistrationsFindStudentAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getAcademyCoursesId>>
+          Awaited<ReturnType<typeof getAcademyRegistrationsFindStudentAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAcademyCoursesIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCoursesId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCoursesId>>, TError, TData>>, }
+export function useGetAcademyRegistrationsFindStudentAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyRegistrationsFindStudentAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetAcademyRegistrationsFindStudentAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsFindStudentAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary View course details
+ * @summary Find returning student
  */
 
-export function useGetAcademyCoursesIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCoursesId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCoursesId>>, TError, TData>>, }
+export function useGetAcademyRegistrationsFindStudentAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyRegistrationsFindStudentAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetAcademyRegistrationsFindStudentAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsFindStudentAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetAcademyCoursesIdInfiniteQueryOptions(id,options)
+  const queryOptions = getGetAcademyRegistrationsFindStudentAdminInfiniteQueryOptions(params,options)
 
   const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -1000,14 +547,14 @@ export function useGetAcademyCoursesIdInfinite<TData = InfiniteData<Awaited<Retu
 }
 
 /**
- * @summary View course details
+ * @summary Find returning student
  */
-export const prefetchGetAcademyCoursesIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAcademyCoursesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCoursesId>>, TError, TData>>, }
+export const prefetchGetAcademyRegistrationsFindStudentAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAcademyRegistrationsFindStudentAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetAcademyRegistrationsFindStudentAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsFindStudentAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetAcademyCoursesIdInfiniteQueryOptions(id,options)
+  const queryOptions = getGetAcademyRegistrationsFindStudentAdminInfiniteQueryOptions(params,options)
 
   await queryClient.prefetchInfiniteQuery(queryOptions);
 
@@ -1016,62 +563,62 @@ export const prefetchGetAcademyCoursesIdInfiniteQuery = async <TData = Awaited<R
 
 
 
-export const getGetAcademyCoursesIdQueryOptions = <TData = Awaited<ReturnType<typeof getAcademyCoursesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCoursesId>>, TError, TData>>, }
+export const getGetAcademyRegistrationsFindStudentAdminQueryOptions = <TData = Awaited<ReturnType<typeof getAcademyRegistrationsFindStudentAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetAcademyRegistrationsFindStudentAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsFindStudentAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAcademyCoursesIdQueryKey(id);
+  const queryKey =  queryOptions?.queryKey ?? getGetAcademyRegistrationsFindStudentAdminQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAcademyCoursesId>>> = ({ signal }) => getAcademyCoursesId(id, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAcademyRegistrationsFindStudentAdmin>>> = ({ signal }) => getAcademyRegistrationsFindStudentAdmin(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAcademyCoursesId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsFindStudentAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetAcademyCoursesIdQueryResult = NonNullable<Awaited<ReturnType<typeof getAcademyCoursesId>>>
-export type GetAcademyCoursesIdQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+export type GetAcademyRegistrationsFindStudentAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getAcademyRegistrationsFindStudentAdmin>>>
+export type GetAcademyRegistrationsFindStudentAdminQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
 
 
-export function useGetAcademyCoursesId<TData = Awaited<ReturnType<typeof getAcademyCoursesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCoursesId>>, TError, TData>> & Pick<
+export function useGetAcademyRegistrationsFindStudentAdmin<TData = Awaited<ReturnType<typeof getAcademyRegistrationsFindStudentAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetAcademyRegistrationsFindStudentAdminParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsFindStudentAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAcademyCoursesId>>,
+          Awaited<ReturnType<typeof getAcademyRegistrationsFindStudentAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getAcademyCoursesId>>
+          Awaited<ReturnType<typeof getAcademyRegistrationsFindStudentAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAcademyCoursesId<TData = Awaited<ReturnType<typeof getAcademyCoursesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCoursesId>>, TError, TData>> & Pick<
+export function useGetAcademyRegistrationsFindStudentAdmin<TData = Awaited<ReturnType<typeof getAcademyRegistrationsFindStudentAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetAcademyRegistrationsFindStudentAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsFindStudentAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAcademyCoursesId>>,
+          Awaited<ReturnType<typeof getAcademyRegistrationsFindStudentAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getAcademyCoursesId>>
+          Awaited<ReturnType<typeof getAcademyRegistrationsFindStudentAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAcademyCoursesId<TData = Awaited<ReturnType<typeof getAcademyCoursesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCoursesId>>, TError, TData>>, }
+export function useGetAcademyRegistrationsFindStudentAdmin<TData = Awaited<ReturnType<typeof getAcademyRegistrationsFindStudentAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetAcademyRegistrationsFindStudentAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsFindStudentAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary View course details
+ * @summary Find returning student
  */
 
-export function useGetAcademyCoursesId<TData = Awaited<ReturnType<typeof getAcademyCoursesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCoursesId>>, TError, TData>>, }
+export function useGetAcademyRegistrationsFindStudentAdmin<TData = Awaited<ReturnType<typeof getAcademyRegistrationsFindStudentAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetAcademyRegistrationsFindStudentAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsFindStudentAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetAcademyCoursesIdQueryOptions(id,options)
+  const queryOptions = getGetAcademyRegistrationsFindStudentAdminQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -1081,14 +628,14 @@ export function useGetAcademyCoursesId<TData = Awaited<ReturnType<typeof getAcad
 }
 
 /**
- * @summary View course details
+ * @summary Find returning student
  */
-export const prefetchGetAcademyCoursesIdQuery = async <TData = Awaited<ReturnType<typeof getAcademyCoursesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCoursesId>>, TError, TData>>, }
+export const prefetchGetAcademyRegistrationsFindStudentAdminQuery = async <TData = Awaited<ReturnType<typeof getAcademyRegistrationsFindStudentAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetAcademyRegistrationsFindStudentAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsFindStudentAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetAcademyCoursesIdQueryOptions(id,options)
+  const queryOptions = getGetAcademyRegistrationsFindStudentAdminQueryOptions(params,options)
 
   await queryClient.prefetchQuery(queryOptions);
 
@@ -1098,145 +645,277 @@ export const prefetchGetAcademyCoursesIdQuery = async <TData = Awaited<ReturnTyp
 
 
 /**
- * **AC-04** — PUT /academy/courses/{id}. Admin only, requires the `academy.update` permission.
- * @summary Update course
+ * **AR-01** — GET /academy/registrations/admin. Cần đăng nhập + `academy_registration.view_all` (quản trị; branch scope: user gắn 1 cơ sở chỉ thấy dữ liệu cơ sở đó; query `branch_id`, `course_id`, `status`, `phone`) hoặc `academy_registration.view_own` (khách: danh sách khóa học của bản thân).
+ * @summary List course registrations
  */
-export const putAcademyCoursesId = (
-    id: string,
-    academyCourse: AcademyCourse,
- ) => {
+export const getAcademyRegistrationsAdmin = (
+    params?: GetAcademyRegistrationsAdminParams,
+ signal?: AbortSignal
+) => {
       
       
-      return customInstance<PutAcademyCoursesId200>(
-      {url: `/academy/courses/${id}`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: academyCourse
+      return customInstance<GetAcademyRegistrationsAdmin200>(
+      {url: `/academy/registrations/admin`, method: 'GET',
+        params, signal
     },
       );
     }
   
 
 
-export const getPutAcademyCoursesIdMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAcademyCoursesId>>, TError,{id: string;data: AcademyCourse}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putAcademyCoursesId>>, TError,{id: string;data: AcademyCourse}, TContext> => {
 
-const mutationKey = ['putAcademyCoursesId'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putAcademyCoursesId>>, {id: string;data: AcademyCourse}> = (props) => {
-          const {id,data} = props ?? {};
-
-          return  putAcademyCoursesId(id,data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PutAcademyCoursesIdMutationResult = NonNullable<Awaited<ReturnType<typeof putAcademyCoursesId>>>
-    export type PutAcademyCoursesIdMutationBody = AcademyCourse
-    export type PutAcademyCoursesIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
-
-    /**
- * @summary Update course
- */
-export const usePutAcademyCoursesId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAcademyCoursesId>>, TError,{id: string;data: AcademyCourse}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putAcademyCoursesId>>,
-        TError,
-        {id: string;data: AcademyCourse},
-        TContext
-      > => {
-
-      const mutationOptions = getPutAcademyCoursesIdMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
+export const getGetAcademyRegistrationsAdminInfiniteQueryKey = (params?: GetAcademyRegistrationsAdminParams,) => {
+    return [
+    'infinite', `/academy/registrations/admin`, ...(params ? [params]: [])
+    ] as const;
     }
-    /**
- * **AC-05** — DELETE /academy/courses/{id} (soft: is_active=false). Admin only, requires the `academy.delete` permission.
- * @summary Delete course
- */
-export const deleteAcademyCoursesId = (
-    id: string,
- ) => {
-      
-      
-      return customInstance<DeleteAcademyCoursesId200>(
-      {url: `/academy/courses/${id}`, method: 'DELETE'
-    },
-      );
+
+export const getGetAcademyRegistrationsAdminQueryKey = (params?: GetAcademyRegistrationsAdminParams,) => {
+    return [
+    `/academy/registrations/admin`, ...(params ? [params]: [])
+    ] as const;
     }
-  
 
-
-export const getDeleteAcademyCoursesIdMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAcademyCoursesId>>, TError,{id: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof deleteAcademyCoursesId>>, TError,{id: string}, TContext> => {
-
-const mutationKey = ['deleteAcademyCoursesId'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteAcademyCoursesId>>, {id: string}> = (props) => {
-          const {id} = props ?? {};
-
-          return  deleteAcademyCoursesId(id,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteAcademyCoursesIdMutationResult = NonNullable<Awaited<ReturnType<typeof deleteAcademyCoursesId>>>
     
-    export type DeleteAcademyCoursesIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+export const getGetAcademyRegistrationsAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAcademyRegistrationsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetAcademyRegistrationsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAcademyRegistrationsAdminInfiniteQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAcademyRegistrationsAdmin>>> = ({ signal }) => getAcademyRegistrationsAdmin(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAcademyRegistrationsAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAcademyRegistrationsAdmin>>>
+export type GetAcademyRegistrationsAdminInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+
+
+export function useGetAcademyRegistrationsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyRegistrationsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetAcademyRegistrationsAdminParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAcademyRegistrationsAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getAcademyRegistrationsAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAcademyRegistrationsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyRegistrationsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetAcademyRegistrationsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAcademyRegistrationsAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getAcademyRegistrationsAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAcademyRegistrationsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyRegistrationsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetAcademyRegistrationsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List course registrations
+ */
+
+export function useGetAcademyRegistrationsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyRegistrationsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetAcademyRegistrationsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAcademyRegistrationsAdminInfiniteQueryOptions(params,options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary List course registrations
+ */
+export const prefetchGetAcademyRegistrationsAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAcademyRegistrationsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetAcademyRegistrationsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetAcademyRegistrationsAdminInfiniteQueryOptions(params,options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetAcademyRegistrationsAdminQueryOptions = <TData = Awaited<ReturnType<typeof getAcademyRegistrationsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetAcademyRegistrationsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAcademyRegistrationsAdminQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAcademyRegistrationsAdmin>>> = ({ signal }) => getAcademyRegistrationsAdmin(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAcademyRegistrationsAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getAcademyRegistrationsAdmin>>>
+export type GetAcademyRegistrationsAdminQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+
+
+export function useGetAcademyRegistrationsAdmin<TData = Awaited<ReturnType<typeof getAcademyRegistrationsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetAcademyRegistrationsAdminParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAcademyRegistrationsAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getAcademyRegistrationsAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAcademyRegistrationsAdmin<TData = Awaited<ReturnType<typeof getAcademyRegistrationsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetAcademyRegistrationsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAcademyRegistrationsAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getAcademyRegistrationsAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAcademyRegistrationsAdmin<TData = Awaited<ReturnType<typeof getAcademyRegistrationsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetAcademyRegistrationsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List course registrations
+ */
+
+export function useGetAcademyRegistrationsAdmin<TData = Awaited<ReturnType<typeof getAcademyRegistrationsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetAcademyRegistrationsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAcademyRegistrationsAdminQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary List course registrations
+ */
+export const prefetchGetAcademyRegistrationsAdminQuery = async <TData = Awaited<ReturnType<typeof getAcademyRegistrationsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetAcademyRegistrationsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetAcademyRegistrationsAdminQueryOptions(params,options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * **AR-03** — POST /academy/registrations/admin. Cần đăng nhập + `academy_registration.create`: khách tự đăng ký cho bản thân (body passed as-is, xác định học viên cũ để áp quyền lợi); platform admin tạo giúp khách. Branch scope: user gắn 1 cơ sở chỉ thao tác cơ sở đó.
+ * @summary Create a course registration
+ */
+export const postAcademyRegistrationsAdmin = (
+    postAcademyRegistrationsAdminBody: PostAcademyRegistrationsAdminBody,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<PostAcademyRegistrationsAdmin200>(
+      {url: `/academy/registrations/admin`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: postAcademyRegistrationsAdminBody, signal
+    },
+      );
+    }
+  
+
+
+export const getPostAcademyRegistrationsAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAcademyRegistrationsAdmin>>, TError,{data: PostAcademyRegistrationsAdminBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postAcademyRegistrationsAdmin>>, TError,{data: PostAcademyRegistrationsAdminBody}, TContext> => {
+
+const mutationKey = ['postAcademyRegistrationsAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAcademyRegistrationsAdmin>>, {data: PostAcademyRegistrationsAdminBody}> = (props) => {
+          const {data} = props ?? {};
+
+          return  postAcademyRegistrationsAdmin(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostAcademyRegistrationsAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postAcademyRegistrationsAdmin>>>
+    export type PostAcademyRegistrationsAdminMutationBody = PostAcademyRegistrationsAdminBody
+    export type PostAcademyRegistrationsAdminMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Delete course
+ * @summary Create a course registration
  */
-export const useDeleteAcademyCoursesId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAcademyCoursesId>>, TError,{id: string}, TContext>, }
+export const usePostAcademyRegistrationsAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAcademyRegistrationsAdmin>>, TError,{data: PostAcademyRegistrationsAdminBody}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteAcademyCoursesId>>,
+        Awaited<ReturnType<typeof postAcademyRegistrationsAdmin>>,
         TError,
-        {id: string},
+        {data: PostAcademyRegistrationsAdminBody},
         TContext
       > => {
 
-      const mutationOptions = getDeleteAcademyCoursesIdMutationOptions(options);
+      const mutationOptions = getPostAcademyRegistrationsAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **AC-01** — GET /academy/courses. Requires the `academy.read` permission. Branch scope: users limited to a single branch only see that branch's data. Query parameters: `branch_id`, `category`, `level`, `is_active`.
- * @summary Manage courses
+ * **GET /academy/courses** — Public, không cần đăng nhập. Danh sách khóa học đang mở đăng ký (`is_active=true`, còn thời hạn). Quản trị đầy đủ xem `GET /academy/courses/admin`.
+ * @summary List open academy courses (public)
  */
 export const getAcademyCourses = (
-    params?: GetAcademyCoursesParams,
+    
  signal?: AbortSignal
 ) => {
       
       
       return customInstance<GetAcademyCourses200>(
-      {url: `/academy/courses`, method: 'GET',
-        params, signal
+      {url: `/academy/courses`, method: 'GET', signal
     },
       );
     }
@@ -1244,29 +923,29 @@ export const getAcademyCourses = (
 
 
 
-export const getGetAcademyCoursesInfiniteQueryKey = (params?: GetAcademyCoursesParams,) => {
+export const getGetAcademyCoursesInfiniteQueryKey = () => {
     return [
-    'infinite', `/academy/courses`, ...(params ? [params]: [])
+    'infinite', `/academy/courses`
     ] as const;
     }
 
-export const getGetAcademyCoursesQueryKey = (params?: GetAcademyCoursesParams,) => {
+export const getGetAcademyCoursesQueryKey = () => {
     return [
-    `/academy/courses`, ...(params ? [params]: [])
+    `/academy/courses`
     ] as const;
     }
 
     
-export const getGetAcademyCoursesInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCourses>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetAcademyCoursesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourses>>, TError, TData>>, }
+export const getGetAcademyCoursesInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCourses>>>, TError = InternalErrorResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourses>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAcademyCoursesInfiniteQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getGetAcademyCoursesInfiniteQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAcademyCourses>>> = ({ signal }) => getAcademyCourses(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAcademyCourses>>> = ({ signal }) => getAcademyCourses(signal);
 
       
 
@@ -1276,11 +955,11 @@ const {query: queryOptions} = options ?? {};
 }
 
 export type GetAcademyCoursesInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAcademyCourses>>>
-export type GetAcademyCoursesInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+export type GetAcademyCoursesInfiniteQueryError = InternalErrorResponse
 
 
-export function useGetAcademyCoursesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCourses>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params: undefined |  GetAcademyCoursesParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourses>>, TError, TData>> & Pick<
+export function useGetAcademyCoursesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCourses>>>, TError = InternalErrorResponse>(
+  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourses>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAcademyCourses>>,
           TError,
@@ -1289,8 +968,8 @@ export function useGetAcademyCoursesInfinite<TData = InfiniteData<Awaited<Return
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAcademyCoursesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCourses>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetAcademyCoursesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourses>>, TError, TData>> & Pick<
+export function useGetAcademyCoursesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCourses>>>, TError = InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourses>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAcademyCourses>>,
           TError,
@@ -1299,20 +978,536 @@ export function useGetAcademyCoursesInfinite<TData = InfiniteData<Awaited<Return
       >, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAcademyCoursesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCourses>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetAcademyCoursesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourses>>, TError, TData>>, }
+export function useGetAcademyCoursesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCourses>>>, TError = InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourses>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List open academy courses (public)
+ */
+
+export function useGetAcademyCoursesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCourses>>>, TError = InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourses>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAcademyCoursesInfiniteQueryOptions(options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary List open academy courses (public)
+ */
+export const prefetchGetAcademyCoursesInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAcademyCourses>>, TError = InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourses>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetAcademyCoursesInfiniteQueryOptions(options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetAcademyCoursesQueryOptions = <TData = Awaited<ReturnType<typeof getAcademyCourses>>, TError = InternalErrorResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourses>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAcademyCoursesQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAcademyCourses>>> = ({ signal }) => getAcademyCourses(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourses>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAcademyCoursesQueryResult = NonNullable<Awaited<ReturnType<typeof getAcademyCourses>>>
+export type GetAcademyCoursesQueryError = InternalErrorResponse
+
+
+export function useGetAcademyCourses<TData = Awaited<ReturnType<typeof getAcademyCourses>>, TError = InternalErrorResponse>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourses>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAcademyCourses>>,
+          TError,
+          Awaited<ReturnType<typeof getAcademyCourses>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAcademyCourses<TData = Awaited<ReturnType<typeof getAcademyCourses>>, TError = InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourses>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAcademyCourses>>,
+          TError,
+          Awaited<ReturnType<typeof getAcademyCourses>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAcademyCourses<TData = Awaited<ReturnType<typeof getAcademyCourses>>, TError = InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourses>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List open academy courses (public)
+ */
+
+export function useGetAcademyCourses<TData = Awaited<ReturnType<typeof getAcademyCourses>>, TError = InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourses>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAcademyCoursesQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary List open academy courses (public)
+ */
+export const prefetchGetAcademyCoursesQuery = async <TData = Awaited<ReturnType<typeof getAcademyCourses>>, TError = InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourses>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetAcademyCoursesQueryOptions(options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * **AC-02** — GET /academy/courses/{id}/admin. Requires the `academy_course.view_all` permission.
+ * @summary View course details
+ */
+export const getAcademyCoursesIdAdmin = (
+    id: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetAcademyCoursesIdAdmin200>(
+      {url: `/academy/courses/${id}/admin`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetAcademyCoursesIdAdminInfiniteQueryKey = (id?: string,) => {
+    return [
+    'infinite', `/academy/courses/${id}/admin`
+    ] as const;
+    }
+
+export const getGetAcademyCoursesIdAdminQueryKey = (id?: string,) => {
+    return [
+    `/academy/courses/${id}/admin`
+    ] as const;
+    }
+
+    
+export const getGetAcademyCoursesIdAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCoursesIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCoursesIdAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAcademyCoursesIdAdminInfiniteQueryKey(id);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAcademyCoursesIdAdmin>>> = ({ signal }) => getAcademyCoursesIdAdmin(id, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCoursesIdAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAcademyCoursesIdAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAcademyCoursesIdAdmin>>>
+export type GetAcademyCoursesIdAdminInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+
+
+export function useGetAcademyCoursesIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCoursesIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCoursesIdAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAcademyCoursesIdAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getAcademyCoursesIdAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAcademyCoursesIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCoursesIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCoursesIdAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAcademyCoursesIdAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getAcademyCoursesIdAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAcademyCoursesIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCoursesIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCoursesIdAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary View course details
+ */
+
+export function useGetAcademyCoursesIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCoursesIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCoursesIdAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAcademyCoursesIdAdminInfiniteQueryOptions(id,options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary View course details
+ */
+export const prefetchGetAcademyCoursesIdAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAcademyCoursesIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCoursesIdAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetAcademyCoursesIdAdminInfiniteQueryOptions(id,options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetAcademyCoursesIdAdminQueryOptions = <TData = Awaited<ReturnType<typeof getAcademyCoursesIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCoursesIdAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAcademyCoursesIdAdminQueryKey(id);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAcademyCoursesIdAdmin>>> = ({ signal }) => getAcademyCoursesIdAdmin(id, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAcademyCoursesIdAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAcademyCoursesIdAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getAcademyCoursesIdAdmin>>>
+export type GetAcademyCoursesIdAdminQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+
+
+export function useGetAcademyCoursesIdAdmin<TData = Awaited<ReturnType<typeof getAcademyCoursesIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCoursesIdAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAcademyCoursesIdAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getAcademyCoursesIdAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAcademyCoursesIdAdmin<TData = Awaited<ReturnType<typeof getAcademyCoursesIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCoursesIdAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAcademyCoursesIdAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getAcademyCoursesIdAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAcademyCoursesIdAdmin<TData = Awaited<ReturnType<typeof getAcademyCoursesIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCoursesIdAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary View course details
+ */
+
+export function useGetAcademyCoursesIdAdmin<TData = Awaited<ReturnType<typeof getAcademyCoursesIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCoursesIdAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAcademyCoursesIdAdminQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary View course details
+ */
+export const prefetchGetAcademyCoursesIdAdminQuery = async <TData = Awaited<ReturnType<typeof getAcademyCoursesIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCoursesIdAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetAcademyCoursesIdAdminQueryOptions(id,options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * **AC-04** — PUT /academy/courses/{id}/admin. Admin only, requires the `academy_course.update_all` permission.
+ * @summary Update course
+ */
+export const putAcademyCoursesIdAdmin = (
+    id: string,
+    academyCourse: AcademyCourse,
+ ) => {
+      
+      
+      return customInstance<PutAcademyCoursesIdAdmin200>(
+      {url: `/academy/courses/${id}/admin`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: academyCourse
+    },
+      );
+    }
+  
+
+
+export const getPutAcademyCoursesIdAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAcademyCoursesIdAdmin>>, TError,{id: string;data: AcademyCourse}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putAcademyCoursesIdAdmin>>, TError,{id: string;data: AcademyCourse}, TContext> => {
+
+const mutationKey = ['putAcademyCoursesIdAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putAcademyCoursesIdAdmin>>, {id: string;data: AcademyCourse}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  putAcademyCoursesIdAdmin(id,data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PutAcademyCoursesIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof putAcademyCoursesIdAdmin>>>
+    export type PutAcademyCoursesIdAdminMutationBody = AcademyCourse
+    export type PutAcademyCoursesIdAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+
+    /**
+ * @summary Update course
+ */
+export const usePutAcademyCoursesIdAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAcademyCoursesIdAdmin>>, TError,{id: string;data: AcademyCourse}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof putAcademyCoursesIdAdmin>>,
+        TError,
+        {id: string;data: AcademyCourse},
+        TContext
+      > => {
+
+      const mutationOptions = getPutAcademyCoursesIdAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * **AC-05** — DELETE /academy/courses/{id}/admin (soft: is_active=false). Admin only, requires the `academy_course.delete_all` permission.
+ * @summary Delete course
+ */
+export const deleteAcademyCoursesIdAdmin = (
+    id: string,
+ ) => {
+      
+      
+      return customInstance<DeleteAcademyCoursesIdAdmin200>(
+      {url: `/academy/courses/${id}/admin`, method: 'DELETE'
+    },
+      );
+    }
+  
+
+
+export const getDeleteAcademyCoursesIdAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAcademyCoursesIdAdmin>>, TError,{id: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteAcademyCoursesIdAdmin>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['deleteAcademyCoursesIdAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteAcademyCoursesIdAdmin>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteAcademyCoursesIdAdmin(id,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteAcademyCoursesIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof deleteAcademyCoursesIdAdmin>>>
+    
+    export type DeleteAcademyCoursesIdAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+
+    /**
+ * @summary Delete course
+ */
+export const useDeleteAcademyCoursesIdAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAcademyCoursesIdAdmin>>, TError,{id: string}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof deleteAcademyCoursesIdAdmin>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+
+      const mutationOptions = getDeleteAcademyCoursesIdAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * **AC-01** — GET /academy/courses/admin. Requires the `academy_course.view_all` permission. Branch scope: users limited to a single branch only see that branch's data. Query parameters: `branch_id`, `category`, `level`, `is_active`.
+ * @summary Manage courses
+ */
+export const getAcademyCoursesAdmin = (
+    params?: GetAcademyCoursesAdminParams,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetAcademyCoursesAdmin200>(
+      {url: `/academy/courses/admin`, method: 'GET',
+        params, signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetAcademyCoursesAdminInfiniteQueryKey = (params?: GetAcademyCoursesAdminParams,) => {
+    return [
+    'infinite', `/academy/courses/admin`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+export const getGetAcademyCoursesAdminQueryKey = (params?: GetAcademyCoursesAdminParams,) => {
+    return [
+    `/academy/courses/admin`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getGetAcademyCoursesAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCoursesAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetAcademyCoursesAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCoursesAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAcademyCoursesAdminInfiniteQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAcademyCoursesAdmin>>> = ({ signal }) => getAcademyCoursesAdmin(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCoursesAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAcademyCoursesAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAcademyCoursesAdmin>>>
+export type GetAcademyCoursesAdminInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+
+
+export function useGetAcademyCoursesAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCoursesAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetAcademyCoursesAdminParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCoursesAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAcademyCoursesAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getAcademyCoursesAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAcademyCoursesAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCoursesAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetAcademyCoursesAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCoursesAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAcademyCoursesAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getAcademyCoursesAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAcademyCoursesAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCoursesAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetAcademyCoursesAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCoursesAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Manage courses
  */
 
-export function useGetAcademyCoursesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCourses>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetAcademyCoursesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourses>>, TError, TData>>, }
+export function useGetAcademyCoursesAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyCoursesAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetAcademyCoursesAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCoursesAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetAcademyCoursesInfiniteQueryOptions(params,options)
+  const queryOptions = getGetAcademyCoursesAdminInfiniteQueryOptions(params,options)
 
   const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -1324,12 +1519,12 @@ export function useGetAcademyCoursesInfinite<TData = InfiniteData<Awaited<Return
 /**
  * @summary Manage courses
  */
-export const prefetchGetAcademyCoursesInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAcademyCourses>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient, params?: GetAcademyCoursesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourses>>, TError, TData>>, }
+export const prefetchGetAcademyCoursesAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAcademyCoursesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetAcademyCoursesAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCoursesAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetAcademyCoursesInfiniteQueryOptions(params,options)
+  const queryOptions = getGetAcademyCoursesAdminInfiniteQueryOptions(params,options)
 
   await queryClient.prefetchInfiniteQuery(queryOptions);
 
@@ -1338,62 +1533,62 @@ export const prefetchGetAcademyCoursesInfiniteQuery = async <TData = Awaited<Ret
 
 
 
-export const getGetAcademyCoursesQueryOptions = <TData = Awaited<ReturnType<typeof getAcademyCourses>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetAcademyCoursesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourses>>, TError, TData>>, }
+export const getGetAcademyCoursesAdminQueryOptions = <TData = Awaited<ReturnType<typeof getAcademyCoursesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetAcademyCoursesAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCoursesAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAcademyCoursesQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getGetAcademyCoursesAdminQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAcademyCourses>>> = ({ signal }) => getAcademyCourses(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAcademyCoursesAdmin>>> = ({ signal }) => getAcademyCoursesAdmin(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourses>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAcademyCoursesAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetAcademyCoursesQueryResult = NonNullable<Awaited<ReturnType<typeof getAcademyCourses>>>
-export type GetAcademyCoursesQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+export type GetAcademyCoursesAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getAcademyCoursesAdmin>>>
+export type GetAcademyCoursesAdminQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
 
 
-export function useGetAcademyCourses<TData = Awaited<ReturnType<typeof getAcademyCourses>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params: undefined |  GetAcademyCoursesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourses>>, TError, TData>> & Pick<
+export function useGetAcademyCoursesAdmin<TData = Awaited<ReturnType<typeof getAcademyCoursesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetAcademyCoursesAdminParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCoursesAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAcademyCourses>>,
+          Awaited<ReturnType<typeof getAcademyCoursesAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getAcademyCourses>>
+          Awaited<ReturnType<typeof getAcademyCoursesAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAcademyCourses<TData = Awaited<ReturnType<typeof getAcademyCourses>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetAcademyCoursesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourses>>, TError, TData>> & Pick<
+export function useGetAcademyCoursesAdmin<TData = Awaited<ReturnType<typeof getAcademyCoursesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetAcademyCoursesAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCoursesAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAcademyCourses>>,
+          Awaited<ReturnType<typeof getAcademyCoursesAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getAcademyCourses>>
+          Awaited<ReturnType<typeof getAcademyCoursesAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAcademyCourses<TData = Awaited<ReturnType<typeof getAcademyCourses>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetAcademyCoursesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourses>>, TError, TData>>, }
+export function useGetAcademyCoursesAdmin<TData = Awaited<ReturnType<typeof getAcademyCoursesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetAcademyCoursesAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCoursesAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Manage courses
  */
 
-export function useGetAcademyCourses<TData = Awaited<ReturnType<typeof getAcademyCourses>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetAcademyCoursesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourses>>, TError, TData>>, }
+export function useGetAcademyCoursesAdmin<TData = Awaited<ReturnType<typeof getAcademyCoursesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetAcademyCoursesAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCoursesAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetAcademyCoursesQueryOptions(params,options)
+  const queryOptions = getGetAcademyCoursesAdminQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -1405,12 +1600,12 @@ export function useGetAcademyCourses<TData = Awaited<ReturnType<typeof getAcadem
 /**
  * @summary Manage courses
  */
-export const prefetchGetAcademyCoursesQuery = async <TData = Awaited<ReturnType<typeof getAcademyCourses>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient, params?: GetAcademyCoursesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourses>>, TError, TData>>, }
+export const prefetchGetAcademyCoursesAdminQuery = async <TData = Awaited<ReturnType<typeof getAcademyCoursesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetAcademyCoursesAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyCoursesAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetAcademyCoursesQueryOptions(params,options)
+  const queryOptions = getGetAcademyCoursesAdminQueryOptions(params,options)
 
   await queryClient.prefetchQuery(queryOptions);
 
@@ -1420,30 +1615,30 @@ export const prefetchGetAcademyCoursesQuery = async <TData = Awaited<ReturnType<
 
 
 /**
- * **AC-03** — POST /academy/courses. Admin only, requires the `academy.create` permission. Branch scope: users limited to a single branch only see that branch's data. The body is passed as-is to the business layer.
+ * **AC-03** — POST /academy/courses/admin. Admin only, requires the `academy_course.create` permission. Branch scope: users limited to a single branch only see that branch's data. The body is passed as-is to the business layer.
  * @summary Manage courses
  */
-export const postAcademyCourses = (
-    postAcademyCoursesBody: PostAcademyCoursesBody,
+export const postAcademyCoursesAdmin = (
+    postAcademyCoursesAdminBody: PostAcademyCoursesAdminBody,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<PostAcademyCourses200>(
-      {url: `/academy/courses`, method: 'POST',
+      return customInstance<PostAcademyCoursesAdmin200>(
+      {url: `/academy/courses/admin`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: postAcademyCoursesBody, signal
+      data: postAcademyCoursesAdminBody, signal
     },
       );
     }
   
 
 
-export const getPostAcademyCoursesMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAcademyCourses>>, TError,{data: PostAcademyCoursesBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postAcademyCourses>>, TError,{data: PostAcademyCoursesBody}, TContext> => {
+export const getPostAcademyCoursesAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAcademyCoursesAdmin>>, TError,{data: PostAcademyCoursesAdminBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postAcademyCoursesAdmin>>, TError,{data: PostAcademyCoursesAdminBody}, TContext> => {
 
-const mutationKey = ['postAcademyCourses'];
+const mutationKey = ['postAcademyCoursesAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -1453,10 +1648,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAcademyCourses>>, {data: PostAcademyCoursesBody}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAcademyCoursesAdmin>>, {data: PostAcademyCoursesAdminBody}> = (props) => {
           const {data} = props ?? {};
 
-          return  postAcademyCourses(data,)
+          return  postAcademyCoursesAdmin(data,)
         }
 
         
@@ -1464,23 +1659,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PostAcademyCoursesMutationResult = NonNullable<Awaited<ReturnType<typeof postAcademyCourses>>>
-    export type PostAcademyCoursesMutationBody = PostAcademyCoursesBody
-    export type PostAcademyCoursesMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+    export type PostAcademyCoursesAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postAcademyCoursesAdmin>>>
+    export type PostAcademyCoursesAdminMutationBody = PostAcademyCoursesAdminBody
+    export type PostAcademyCoursesAdminMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
  * @summary Manage courses
  */
-export const usePostAcademyCourses = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAcademyCourses>>, TError,{data: PostAcademyCoursesBody}, TContext>, }
+export const usePostAcademyCoursesAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAcademyCoursesAdmin>>, TError,{data: PostAcademyCoursesAdminBody}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postAcademyCourses>>,
+        Awaited<ReturnType<typeof postAcademyCoursesAdmin>>,
         TError,
-        {data: PostAcademyCoursesBody},
+        {data: PostAcademyCoursesAdminBody},
         TContext
       > => {
 
-      const mutationOptions = getPostAcademyCoursesMutationOptions(options);
+      const mutationOptions = getPostAcademyCoursesAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

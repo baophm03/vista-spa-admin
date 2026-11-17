@@ -32,23 +32,14 @@ import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
 import TableEmpty from '@/components/base/TableEmpty'
 import { errorMessage, pickData } from '@/api/helpers'
-import {
-  deleteProductCategoriesId,
-  getGetProductCategoriesQueryKey,
-  getGetProductsQueryKey,
-  getProductCategories,
-  getProducts,
-  postProductCategories,
-  postProducts,
-  putProductCategoriesId,
-  putProductsId,
-} from '@/api/endpoints/products'
-import { usePostFiles } from '@/api/endpoints/files'
+import { deleteProductCategoriesIdAdmin, getGetProductCategoriesAdminQueryKey, getProductCategoriesAdmin, postProductCategoriesAdmin, putProductCategoriesIdAdmin } from '@/api/endpoints/product-categories'
+import { getGetProductsAdminQueryKey, getProductsAdmin, postProductsAdmin, putProductsIdAdmin } from '@/api/endpoints/products'
+import { usePostFilesAdmin } from '@/api/endpoints/files'
 import { fileSrc, registerUploadedFile, resolveFileSrc, useFileUrlMap } from '@/hooks/useFileUrl'
 import type { ProductCreate } from '@/api/models/productCreate'
 import type { ProductUpdate } from '@/api/models/productUpdate'
-import type { PostProductCategoriesBody } from '@/api/models/postProductCategoriesBody'
-import type { PutProductCategoriesIdBody } from '@/api/models/putProductCategoriesIdBody'
+import type { PostProductCategoriesAdminBody } from '@/api/models/postProductCategoriesAdminBody'
+import type { PutProductCategoriesIdAdminBody } from '@/api/models/putProductCategoriesIdAdminBody'
 import { useBrandCurrency } from '@/themeRuntime'
 import { useCustomerProfileAccess } from '@/utils/customerProfileAccess'
 import ProductDetailModal from './components/ProductDetailModal'
@@ -95,15 +86,15 @@ export default function Products() {
 
   // Danh sách đầy đủ cho bộ lọc / modal tạo sản phẩm
   const allCategoriesQuery = useQuery({
-    queryKey: getGetProductCategoriesQueryKey(),
-    queryFn: async () => (pickData<ProductCategoryRow[]>(await getProductCategories({ page: 1, limit: 200 } as never)) ?? []) as ProductCategoryRow[],
+    queryKey: getGetProductCategoriesAdminQueryKey(),
+    queryFn: async () => (pickData<ProductCategoryRow[]>(await getProductCategoriesAdmin({ page: 1, limit: 200 } as never)) ?? []) as ProductCategoryRow[],
   })
   const categories = allCategoriesQuery.data ?? []
 
   // Bảng danh mục (tab "Danh mục") — tìm kiếm + phân trang phía server
   const categoriesTableQuery = useQuery({
-    queryKey: [...getGetProductCategoriesQueryKey(), 'table', categoryPage, limit, categorySearch] as const,
-    queryFn: async () => getProductCategories({
+    queryKey: [...getGetProductCategoriesAdminQueryKey(), 'table', categoryPage, limit, categorySearch] as const,
+    queryFn: async () => getProductCategoriesAdmin({
       page: categoryPage,
       limit,
       ...(categorySearch ? { q: categorySearch } : {}),
@@ -113,14 +104,14 @@ export default function Products() {
   const categoryTotal = (categoriesTableQuery.data as unknown as { meta?: { total?: number } })?.meta?.total ?? categoryRows.length
 
   const productsQuery = useQuery({
-    queryKey: getGetProductsQueryKey({
+    queryKey: getGetProductsAdminQueryKey({
       page,
       limit,
       ...(search ? { q: search } : {}),
       ...(categoryFilter ? { category_id: categoryFilter } : {}),
       ...(statusFilter !== undefined ? { is_active: statusFilter } : {}),
     } as never),
-    queryFn: async () => getProducts({
+    queryFn: async () => getProductsAdmin({
       page,
       limit,
       ...(search ? { q: search } : {}),
@@ -145,22 +136,22 @@ export default function Products() {
     setPage(1)
   }
 
-  const uploadMutation = usePostFiles()
+  const uploadMutation = usePostFilesAdmin()
   const urlMap = useFileUrlMap()
-  const createMutation = useMutation({ mutationFn: async (dto: ProductCreate) => postProducts(dto) })
+  const createMutation = useMutation({ mutationFn: async (dto: ProductCreate) => postProductsAdmin(dto) })
   const updateMutation = useMutation({
-    mutationFn: async ({ id, dto }: { id: string; dto: ProductUpdate }) => putProductsId(id, dto),
+    mutationFn: async ({ id, dto }: { id: string; dto: ProductUpdate }) => putProductsIdAdmin(id, dto),
   })
-  const createCategoryMutation = useMutation({ mutationFn: async (dto: PostProductCategoriesBody) => postProductCategories(dto) })
+  const createCategoryMutation = useMutation({ mutationFn: async (dto: PostProductCategoriesAdminBody) => postProductCategoriesAdmin(dto) })
   const updateCategoryMutation = useMutation({
-    mutationFn: async ({ id, dto }: { id: string; dto: PutProductCategoriesIdBody }) => putProductCategoriesId(id, dto),
+    mutationFn: async ({ id, dto }: { id: string; dto: PutProductCategoriesIdAdminBody }) => putProductCategoriesIdAdmin(id, dto),
   })
-  const deleteCategoryMutation = useMutation({ mutationFn: async (id: string) => deleteProductCategoriesId(id) })
+  const deleteCategoryMutation = useMutation({ mutationFn: async (id: string) => deleteProductCategoriesIdAdmin(id) })
 
   const invalidateAll = async () => {
     await Promise.all([
-      queryClient.invalidateQueries({ queryKey: getGetProductsQueryKey() }),
-      queryClient.invalidateQueries({ queryKey: getGetProductCategoriesQueryKey() }),
+      queryClient.invalidateQueries({ queryKey: getGetProductsAdminQueryKey() }),
+      queryClient.invalidateQueries({ queryKey: getGetProductCategoriesAdminQueryKey() }),
     ])
   }
 
@@ -265,7 +256,7 @@ export default function Products() {
       catForm.resetFields()
       setEditingCategory(null)
       setCategoryModalOpen(false)
-      await queryClient.invalidateQueries({ queryKey: getGetProductCategoriesQueryKey() })
+      await queryClient.invalidateQueries({ queryKey: getGetProductCategoriesAdminQueryKey() })
     } catch (err) {
       message.error(errorMessage(err))
     } finally {
@@ -281,7 +272,7 @@ export default function Products() {
         setEditingCategory(null)
         catForm.resetFields()
       }
-      await queryClient.invalidateQueries({ queryKey: getGetProductCategoriesQueryKey() })
+      await queryClient.invalidateQueries({ queryKey: getGetProductCategoriesAdminQueryKey() })
     } catch (err) {
       message.error(errorMessage(err))
     }
@@ -294,7 +285,7 @@ export default function Products() {
         dto: { name: row.name, is_active: row.is_active === false },
       })
       message.success(row.is_active === false ? 'Đã hiển thị lại danh mục' : 'Đã ẩn danh mục; danh mục vẫn còn trong danh sách quản trị')
-      await queryClient.invalidateQueries({ queryKey: getGetProductCategoriesQueryKey() })
+      await queryClient.invalidateQueries({ queryKey: getGetProductCategoriesAdminQueryKey() })
     } catch (err) {
       message.error(errorMessage(err))
     }

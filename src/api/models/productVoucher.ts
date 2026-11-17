@@ -7,6 +7,9 @@
  */
 import type { ProductVoucherDescription } from './productVoucherDescription';
 import type { ProductVoucherProductId } from './productVoucherProductId';
+import type { ProductVoucherProductCategoryId } from './productVoucherProductCategoryId';
+import type { ProductVoucherBranchId } from './productVoucherBranchId';
+import type { ProductVoucherBranchName } from './productVoucherBranchName';
 import type { ProductVoucherCardRankId } from './productVoucherCardRankId';
 import type { ProductVoucherCardRankName } from './productVoucherCardRankName';
 import type { ProductVoucherTargetName } from './productVoucherTargetName';
@@ -28,9 +31,9 @@ export interface ProductVoucher {
   title: string;
   description?: ProductVoucherDescription;
   product_id?: ProductVoucherProductId;
-  product_category_id?: string | null;
-  branch_id?: string | null;
-  branch_name?: string | null;
+  product_category_id?: ProductVoucherProductCategoryId;
+  branch_id?: ProductVoucherBranchId;
+  branch_name?: ProductVoucherBranchName;
   card_rank_id?: ProductVoucherCardRankId;
   card_rank_name?: ProductVoucherCardRankName;
   target_name?: ProductVoucherTargetName;

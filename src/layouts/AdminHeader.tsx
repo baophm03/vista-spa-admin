@@ -2,7 +2,7 @@ import { BellOutlined, LogoutOutlined, MenuFoldOutlined, MenuOutlined, MenuUnfol
 import { Avatar, Badge, Dropdown, Empty, Layout, Popover, Space, Typography } from 'antd'
 import dayjs from 'dayjs'
 import { useProfileStore } from '../stores/profile-store'
-import { useGetNotifications } from '../api/endpoints/admin'
+import { useGetNotificationsAdmin } from '@/api/endpoints/notifications'
 import { pickData } from '../api/helpers'
 import { groupNotifications, type NotificationGroup } from '../utils/notificationGroups'
 
@@ -28,7 +28,7 @@ export default function AdminHeader({
   const profile = useProfileStore((state) => state.profile)
   // Số chưa đọc trên chuông = số sự kiện có ít nhất 1 bản ghi is_read=false
   // (1 sự kiện gửi N người → N bản ghi trong bảng, gộp lại để đếm 1 lần)
-  const notificationsQuery = useGetNotifications()
+  const notificationsQuery = useGetNotificationsAdmin()
   const notificationRows = pickData<NotificationGroup['rep'][] | { rows?: NotificationGroup['rep'][] }>(notificationsQuery.data)
   const groups = groupNotifications(Array.isArray(notificationRows) ? notificationRows : notificationRows?.rows ?? [])
   const unreadCount = groups.filter((group) => group.unreadIds.length > 0).length

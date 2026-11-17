@@ -10,11 +10,11 @@ import {
   message,
 } from 'antd'
 import { errorMessage, pickData } from '@/api/helpers'
-import { usePostCommissions } from '@/api/endpoints/commissions'
-import { useGetCollaborators } from '@/api/endpoints/admin'
-import { useGetReferrals } from '@/api/endpoints/membership'
-import { useGetUsers } from '@/api/endpoints/users'
-import type { Collaborator, PostCommissionsBody, User } from '@/api/models'
+import { usePostCommissionsAdmin } from '@/api/endpoints/commissions'
+import { useGetCollaboratorsAdmin } from '@/api/endpoints/collaborators'
+import { useGetReferralsAdmin } from '@/api/endpoints/referrals'
+import { useGetUsersAdmin } from '@/api/endpoints/users'
+import type { Collaborator, PostCommissionsAdminBody, User } from '@/api/models'
 import { isTechnicianUser, type UserWithRoleAssignments } from '@/utils/userRoles'
 
 type ReferralOption = {
@@ -43,13 +43,13 @@ export default function ManualEntryModal({ open, onClose, onDone, prefill }: { o
   // Hoa hồng giới thiệu thì chọn thẳng lượt giới thiệu đã duyệt — quan hệ tự đi theo,
   // không khai lại; riêng thưởng KTV thì chọn nhân viên.
   const [payeeMode, setPayeeMode] = useState<'STAFF' | 'REFERRAL'>('STAFF')
-  const createMutation = usePostCommissions()
-  const collaboratorsQuery = useGetCollaborators({})
+  const createMutation = usePostCommissionsAdmin()
+  const collaboratorsQuery = useGetCollaboratorsAdmin({})
   const collaborators = useMemo(() => pickData<(Collaborator & { commission_percent?: number })[]>(collaboratorsQuery.data) ?? [], [collaboratorsQuery.data])
-  const usersQuery = useGetUsers({ currentPage: 1, pageSize: 200, has_role: true }, { query: { enabled: open } })
+  const usersQuery = useGetUsersAdmin({ currentPage: 1, pageSize: 200, has_role: true }, { query: { enabled: open } })
   const users = (pickData<{ rows?: User[] } | undefined>(usersQuery.data)?.rows ?? pickData<User[]>(usersQuery.data) ?? []) as (User & UserWithRoleAssignments)[]
   const technicians = useMemo(() => users.filter(isTechnicianUser), [users])
-  const referralsQuery = useGetReferrals()
+  const referralsQuery = useGetReferralsAdmin()
   const referrals = useMemo(() => pickData<ReferralOption[]>(referralsQuery.data) ?? [], [referralsQuery.data])
 
   // Lượt giới thiệu đã duyệt — nguồn duy nhất để gắn khoản hoa hồng giới thiệu
@@ -93,7 +93,7 @@ export default function ManualEntryModal({ open, onClose, onDone, prefill }: { o
         period_date: values.period_date?.format('YYYY-MM-DD'),
         amount: values.amount,
       }
-      let data: PostCommissionsBody
+      let data: PostCommissionsAdminBody
       if (payeeMode === 'STAFF') {
         data = { ...common, payee_type: 'STAFF', staff_id: values.staff_id || undefined }
       } else {

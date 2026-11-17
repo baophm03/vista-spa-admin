@@ -30,6 +30,7 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  GetTreatmentPackageVouchersAdminParams,
   TreatmentPackageVoucherCreate,
   TreatmentPackageVoucherUpdate
 } from '../models';
@@ -43,14 +44,14 @@ import { customInstance } from '../mutator/custom-instance';
 /**
  * @summary Get one treatment package voucher
  */
-export const getTreatmentPackageVouchersId = (
+export const getTreatmentPackageVouchersIdAdmin = (
     id: string,
  signal?: AbortSignal
 ) => {
       
       
       return customInstance<void>(
-      {url: `/treatment-package-vouchers/${id}`, method: 'GET', signal
+      {url: `/treatment-package-vouchers/${id}/admin`, method: 'GET', signal
     },
       );
     }
@@ -58,75 +59,75 @@ export const getTreatmentPackageVouchersId = (
 
 
 
-export const getGetTreatmentPackageVouchersIdInfiniteQueryKey = (id?: string,) => {
+export const getGetTreatmentPackageVouchersIdAdminInfiniteQueryKey = (id?: string,) => {
     return [
-    'infinite', `/treatment-package-vouchers/${id}`
+    'infinite', `/treatment-package-vouchers/${id}/admin`
     ] as const;
     }
 
-export const getGetTreatmentPackageVouchersIdQueryKey = (id?: string,) => {
+export const getGetTreatmentPackageVouchersIdAdminQueryKey = (id?: string,) => {
     return [
-    `/treatment-package-vouchers/${id}`
+    `/treatment-package-vouchers/${id}/admin`
     ] as const;
     }
 
     
-export const getGetTreatmentPackageVouchersIdInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentPackageVouchersId>>>, TError = unknown>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchersId>>, TError, TData>>, }
+export const getGetTreatmentPackageVouchersIdAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentPackageVouchersIdAdmin>>>, TError = unknown>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchersIdAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetTreatmentPackageVouchersIdInfiniteQueryKey(id);
+  const queryKey =  queryOptions?.queryKey ?? getGetTreatmentPackageVouchersIdAdminInfiniteQueryKey(id);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTreatmentPackageVouchersId>>> = ({ signal }) => getTreatmentPackageVouchersId(id, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTreatmentPackageVouchersIdAdmin>>> = ({ signal }) => getTreatmentPackageVouchersIdAdmin(id, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchersId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchersIdAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetTreatmentPackageVouchersIdInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getTreatmentPackageVouchersId>>>
-export type GetTreatmentPackageVouchersIdInfiniteQueryError = unknown
+export type GetTreatmentPackageVouchersIdAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getTreatmentPackageVouchersIdAdmin>>>
+export type GetTreatmentPackageVouchersIdAdminInfiniteQueryError = unknown
 
 
-export function useGetTreatmentPackageVouchersIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentPackageVouchersId>>>, TError = unknown>(
- id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchersId>>, TError, TData>> & Pick<
+export function useGetTreatmentPackageVouchersIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentPackageVouchersIdAdmin>>>, TError = unknown>(
+ id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchersIdAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getTreatmentPackageVouchersId>>,
+          Awaited<ReturnType<typeof getTreatmentPackageVouchersIdAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getTreatmentPackageVouchersId>>
+          Awaited<ReturnType<typeof getTreatmentPackageVouchersIdAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetTreatmentPackageVouchersIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentPackageVouchersId>>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchersId>>, TError, TData>> & Pick<
+export function useGetTreatmentPackageVouchersIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentPackageVouchersIdAdmin>>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchersIdAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getTreatmentPackageVouchersId>>,
+          Awaited<ReturnType<typeof getTreatmentPackageVouchersIdAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getTreatmentPackageVouchersId>>
+          Awaited<ReturnType<typeof getTreatmentPackageVouchersIdAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetTreatmentPackageVouchersIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentPackageVouchersId>>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchersId>>, TError, TData>>, }
+export function useGetTreatmentPackageVouchersIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentPackageVouchersIdAdmin>>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchersIdAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Get one treatment package voucher
  */
 
-export function useGetTreatmentPackageVouchersIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentPackageVouchersId>>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchersId>>, TError, TData>>, }
+export function useGetTreatmentPackageVouchersIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentPackageVouchersIdAdmin>>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchersIdAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetTreatmentPackageVouchersIdInfiniteQueryOptions(id,options)
+  const queryOptions = getGetTreatmentPackageVouchersIdAdminInfiniteQueryOptions(id,options)
 
   const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -138,12 +139,12 @@ export function useGetTreatmentPackageVouchersIdInfinite<TData = InfiniteData<Aw
 /**
  * @summary Get one treatment package voucher
  */
-export const prefetchGetTreatmentPackageVouchersIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getTreatmentPackageVouchersId>>, TError = unknown>(
- queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchersId>>, TError, TData>>, }
+export const prefetchGetTreatmentPackageVouchersIdAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getTreatmentPackageVouchersIdAdmin>>, TError = unknown>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchersIdAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetTreatmentPackageVouchersIdInfiniteQueryOptions(id,options)
+  const queryOptions = getGetTreatmentPackageVouchersIdAdminInfiniteQueryOptions(id,options)
 
   await queryClient.prefetchInfiniteQuery(queryOptions);
 
@@ -152,62 +153,62 @@ export const prefetchGetTreatmentPackageVouchersIdInfiniteQuery = async <TData =
 
 
 
-export const getGetTreatmentPackageVouchersIdQueryOptions = <TData = Awaited<ReturnType<typeof getTreatmentPackageVouchersId>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchersId>>, TError, TData>>, }
+export const getGetTreatmentPackageVouchersIdAdminQueryOptions = <TData = Awaited<ReturnType<typeof getTreatmentPackageVouchersIdAdmin>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchersIdAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetTreatmentPackageVouchersIdQueryKey(id);
+  const queryKey =  queryOptions?.queryKey ?? getGetTreatmentPackageVouchersIdAdminQueryKey(id);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTreatmentPackageVouchersId>>> = ({ signal }) => getTreatmentPackageVouchersId(id, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTreatmentPackageVouchersIdAdmin>>> = ({ signal }) => getTreatmentPackageVouchersIdAdmin(id, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchersId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchersIdAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetTreatmentPackageVouchersIdQueryResult = NonNullable<Awaited<ReturnType<typeof getTreatmentPackageVouchersId>>>
-export type GetTreatmentPackageVouchersIdQueryError = unknown
+export type GetTreatmentPackageVouchersIdAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getTreatmentPackageVouchersIdAdmin>>>
+export type GetTreatmentPackageVouchersIdAdminQueryError = unknown
 
 
-export function useGetTreatmentPackageVouchersId<TData = Awaited<ReturnType<typeof getTreatmentPackageVouchersId>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchersId>>, TError, TData>> & Pick<
+export function useGetTreatmentPackageVouchersIdAdmin<TData = Awaited<ReturnType<typeof getTreatmentPackageVouchersIdAdmin>>, TError = unknown>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchersIdAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getTreatmentPackageVouchersId>>,
+          Awaited<ReturnType<typeof getTreatmentPackageVouchersIdAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getTreatmentPackageVouchersId>>
+          Awaited<ReturnType<typeof getTreatmentPackageVouchersIdAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetTreatmentPackageVouchersId<TData = Awaited<ReturnType<typeof getTreatmentPackageVouchersId>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchersId>>, TError, TData>> & Pick<
+export function useGetTreatmentPackageVouchersIdAdmin<TData = Awaited<ReturnType<typeof getTreatmentPackageVouchersIdAdmin>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchersIdAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getTreatmentPackageVouchersId>>,
+          Awaited<ReturnType<typeof getTreatmentPackageVouchersIdAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getTreatmentPackageVouchersId>>
+          Awaited<ReturnType<typeof getTreatmentPackageVouchersIdAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetTreatmentPackageVouchersId<TData = Awaited<ReturnType<typeof getTreatmentPackageVouchersId>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchersId>>, TError, TData>>, }
+export function useGetTreatmentPackageVouchersIdAdmin<TData = Awaited<ReturnType<typeof getTreatmentPackageVouchersIdAdmin>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchersIdAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Get one treatment package voucher
  */
 
-export function useGetTreatmentPackageVouchersId<TData = Awaited<ReturnType<typeof getTreatmentPackageVouchersId>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchersId>>, TError, TData>>, }
+export function useGetTreatmentPackageVouchersIdAdmin<TData = Awaited<ReturnType<typeof getTreatmentPackageVouchersIdAdmin>>, TError = unknown>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchersIdAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetTreatmentPackageVouchersIdQueryOptions(id,options)
+  const queryOptions = getGetTreatmentPackageVouchersIdAdminQueryOptions(id,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -219,12 +220,12 @@ export function useGetTreatmentPackageVouchersId<TData = Awaited<ReturnType<type
 /**
  * @summary Get one treatment package voucher
  */
-export const prefetchGetTreatmentPackageVouchersIdQuery = async <TData = Awaited<ReturnType<typeof getTreatmentPackageVouchersId>>, TError = unknown>(
- queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchersId>>, TError, TData>>, }
+export const prefetchGetTreatmentPackageVouchersIdAdminQuery = async <TData = Awaited<ReturnType<typeof getTreatmentPackageVouchersIdAdmin>>, TError = unknown>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchersIdAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetTreatmentPackageVouchersIdQueryOptions(id,options)
+  const queryOptions = getGetTreatmentPackageVouchersIdAdminQueryOptions(id,options)
 
   await queryClient.prefetchQuery(queryOptions);
 
@@ -236,14 +237,14 @@ export const prefetchGetTreatmentPackageVouchersIdQuery = async <TData = Awaited
 /**
  * @summary Update a treatment package voucher
  */
-export const putTreatmentPackageVouchersId = (
+export const putTreatmentPackageVouchersIdAdmin = (
     id: string,
     treatmentPackageVoucherUpdate: TreatmentPackageVoucherUpdate,
  ) => {
       
       
       return customInstance<void>(
-      {url: `/treatment-package-vouchers/${id}`, method: 'PUT',
+      {url: `/treatment-package-vouchers/${id}/admin`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: treatmentPackageVoucherUpdate
     },
@@ -252,11 +253,11 @@ export const putTreatmentPackageVouchersId = (
   
 
 
-export const getPutTreatmentPackageVouchersIdMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putTreatmentPackageVouchersId>>, TError,{id: string;data: TreatmentPackageVoucherUpdate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putTreatmentPackageVouchersId>>, TError,{id: string;data: TreatmentPackageVoucherUpdate}, TContext> => {
+export const getPutTreatmentPackageVouchersIdAdminMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putTreatmentPackageVouchersIdAdmin>>, TError,{id: string;data: TreatmentPackageVoucherUpdate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putTreatmentPackageVouchersIdAdmin>>, TError,{id: string;data: TreatmentPackageVoucherUpdate}, TContext> => {
 
-const mutationKey = ['putTreatmentPackageVouchersId'];
+const mutationKey = ['putTreatmentPackageVouchersIdAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -266,10 +267,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putTreatmentPackageVouchersId>>, {id: string;data: TreatmentPackageVoucherUpdate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putTreatmentPackageVouchersIdAdmin>>, {id: string;data: TreatmentPackageVoucherUpdate}> = (props) => {
           const {id,data} = props ?? {};
 
-          return  putTreatmentPackageVouchersId(id,data,)
+          return  putTreatmentPackageVouchersIdAdmin(id,data,)
         }
 
         
@@ -277,47 +278,47 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PutTreatmentPackageVouchersIdMutationResult = NonNullable<Awaited<ReturnType<typeof putTreatmentPackageVouchersId>>>
-    export type PutTreatmentPackageVouchersIdMutationBody = TreatmentPackageVoucherUpdate
-    export type PutTreatmentPackageVouchersIdMutationError = unknown
+    export type PutTreatmentPackageVouchersIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof putTreatmentPackageVouchersIdAdmin>>>
+    export type PutTreatmentPackageVouchersIdAdminMutationBody = TreatmentPackageVoucherUpdate
+    export type PutTreatmentPackageVouchersIdAdminMutationError = unknown
 
     /**
  * @summary Update a treatment package voucher
  */
-export const usePutTreatmentPackageVouchersId = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putTreatmentPackageVouchersId>>, TError,{id: string;data: TreatmentPackageVoucherUpdate}, TContext>, }
+export const usePutTreatmentPackageVouchersIdAdmin = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putTreatmentPackageVouchersIdAdmin>>, TError,{id: string;data: TreatmentPackageVoucherUpdate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putTreatmentPackageVouchersId>>,
+        Awaited<ReturnType<typeof putTreatmentPackageVouchersIdAdmin>>,
         TError,
         {id: string;data: TreatmentPackageVoucherUpdate},
         TContext
       > => {
 
-      const mutationOptions = getPutTreatmentPackageVouchersIdMutationOptions(options);
+      const mutationOptions = getPutTreatmentPackageVouchersIdAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
  * @summary Deactivate a treatment package voucher
  */
-export const deleteTreatmentPackageVouchersId = (
+export const deleteTreatmentPackageVouchersIdAdmin = (
     id: string,
  ) => {
       
       
       return customInstance<void>(
-      {url: `/treatment-package-vouchers/${id}`, method: 'DELETE'
+      {url: `/treatment-package-vouchers/${id}/admin`, method: 'DELETE'
     },
       );
     }
   
 
 
-export const getDeleteTreatmentPackageVouchersIdMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTreatmentPackageVouchersId>>, TError,{id: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof deleteTreatmentPackageVouchersId>>, TError,{id: string}, TContext> => {
+export const getDeleteTreatmentPackageVouchersIdAdminMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTreatmentPackageVouchersIdAdmin>>, TError,{id: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteTreatmentPackageVouchersIdAdmin>>, TError,{id: string}, TContext> => {
 
-const mutationKey = ['deleteTreatmentPackageVouchersId'];
+const mutationKey = ['deleteTreatmentPackageVouchersIdAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -327,10 +328,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteTreatmentPackageVouchersId>>, {id: string}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteTreatmentPackageVouchersIdAdmin>>, {id: string}> = (props) => {
           const {id} = props ?? {};
 
-          return  deleteTreatmentPackageVouchersId(id,)
+          return  deleteTreatmentPackageVouchersIdAdmin(id,)
         }
 
         
@@ -338,37 +339,38 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type DeleteTreatmentPackageVouchersIdMutationResult = NonNullable<Awaited<ReturnType<typeof deleteTreatmentPackageVouchersId>>>
+    export type DeleteTreatmentPackageVouchersIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof deleteTreatmentPackageVouchersIdAdmin>>>
     
-    export type DeleteTreatmentPackageVouchersIdMutationError = unknown
+    export type DeleteTreatmentPackageVouchersIdAdminMutationError = unknown
 
     /**
  * @summary Deactivate a treatment package voucher
  */
-export const useDeleteTreatmentPackageVouchersId = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTreatmentPackageVouchersId>>, TError,{id: string}, TContext>, }
+export const useDeleteTreatmentPackageVouchersIdAdmin = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTreatmentPackageVouchersIdAdmin>>, TError,{id: string}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteTreatmentPackageVouchersId>>,
+        Awaited<ReturnType<typeof deleteTreatmentPackageVouchersIdAdmin>>,
         TError,
         {id: string},
         TContext
       > => {
 
-      const mutationOptions = getDeleteTreatmentPackageVouchersIdMutationOptions(options);
+      const mutationOptions = getDeleteTreatmentPackageVouchersIdAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
  * @summary List treatment package vouchers
  */
-export const getTreatmentPackageVouchers = (
-    
+export const getTreatmentPackageVouchersAdmin = (
+    params?: GetTreatmentPackageVouchersAdminParams,
  signal?: AbortSignal
 ) => {
       
       
       return customInstance<void>(
-      {url: `/treatment-package-vouchers`, method: 'GET', signal
+      {url: `/treatment-package-vouchers/admin`, method: 'GET',
+        params, signal
     },
       );
     }
@@ -376,75 +378,75 @@ export const getTreatmentPackageVouchers = (
 
 
 
-export const getGetTreatmentPackageVouchersInfiniteQueryKey = () => {
+export const getGetTreatmentPackageVouchersAdminInfiniteQueryKey = (params?: GetTreatmentPackageVouchersAdminParams,) => {
     return [
-    'infinite', `/treatment-package-vouchers`
+    'infinite', `/treatment-package-vouchers/admin`, ...(params ? [params]: [])
     ] as const;
     }
 
-export const getGetTreatmentPackageVouchersQueryKey = () => {
+export const getGetTreatmentPackageVouchersAdminQueryKey = (params?: GetTreatmentPackageVouchersAdminParams,) => {
     return [
-    `/treatment-package-vouchers`
+    `/treatment-package-vouchers/admin`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetTreatmentPackageVouchersInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentPackageVouchers>>>, TError = unknown>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchers>>, TError, TData>>, }
+export const getGetTreatmentPackageVouchersAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentPackageVouchersAdmin>>>, TError = unknown>(params?: GetTreatmentPackageVouchersAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchersAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetTreatmentPackageVouchersInfiniteQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getGetTreatmentPackageVouchersAdminInfiniteQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTreatmentPackageVouchers>>> = ({ signal }) => getTreatmentPackageVouchers(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTreatmentPackageVouchersAdmin>>> = ({ signal }) => getTreatmentPackageVouchersAdmin(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchers>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchersAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetTreatmentPackageVouchersInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getTreatmentPackageVouchers>>>
-export type GetTreatmentPackageVouchersInfiniteQueryError = unknown
+export type GetTreatmentPackageVouchersAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getTreatmentPackageVouchersAdmin>>>
+export type GetTreatmentPackageVouchersAdminInfiniteQueryError = unknown
 
 
-export function useGetTreatmentPackageVouchersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentPackageVouchers>>>, TError = unknown>(
-  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchers>>, TError, TData>> & Pick<
+export function useGetTreatmentPackageVouchersAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentPackageVouchersAdmin>>>, TError = unknown>(
+ params: undefined |  GetTreatmentPackageVouchersAdminParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchersAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getTreatmentPackageVouchers>>,
+          Awaited<ReturnType<typeof getTreatmentPackageVouchersAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getTreatmentPackageVouchers>>
+          Awaited<ReturnType<typeof getTreatmentPackageVouchersAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetTreatmentPackageVouchersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentPackageVouchers>>>, TError = unknown>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchers>>, TError, TData>> & Pick<
+export function useGetTreatmentPackageVouchersAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentPackageVouchersAdmin>>>, TError = unknown>(
+ params?: GetTreatmentPackageVouchersAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchersAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getTreatmentPackageVouchers>>,
+          Awaited<ReturnType<typeof getTreatmentPackageVouchersAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getTreatmentPackageVouchers>>
+          Awaited<ReturnType<typeof getTreatmentPackageVouchersAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetTreatmentPackageVouchersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentPackageVouchers>>>, TError = unknown>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchers>>, TError, TData>>, }
+export function useGetTreatmentPackageVouchersAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentPackageVouchersAdmin>>>, TError = unknown>(
+ params?: GetTreatmentPackageVouchersAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchersAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary List treatment package vouchers
  */
 
-export function useGetTreatmentPackageVouchersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentPackageVouchers>>>, TError = unknown>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchers>>, TError, TData>>, }
+export function useGetTreatmentPackageVouchersAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentPackageVouchersAdmin>>>, TError = unknown>(
+ params?: GetTreatmentPackageVouchersAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchersAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetTreatmentPackageVouchersInfiniteQueryOptions(options)
+  const queryOptions = getGetTreatmentPackageVouchersAdminInfiniteQueryOptions(params,options)
 
   const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -456,12 +458,12 @@ export function useGetTreatmentPackageVouchersInfinite<TData = InfiniteData<Awai
 /**
  * @summary List treatment package vouchers
  */
-export const prefetchGetTreatmentPackageVouchersInfiniteQuery = async <TData = Awaited<ReturnType<typeof getTreatmentPackageVouchers>>, TError = unknown>(
- queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchers>>, TError, TData>>, }
+export const prefetchGetTreatmentPackageVouchersAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getTreatmentPackageVouchersAdmin>>, TError = unknown>(
+ queryClient: QueryClient, params?: GetTreatmentPackageVouchersAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchersAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetTreatmentPackageVouchersInfiniteQueryOptions(options)
+  const queryOptions = getGetTreatmentPackageVouchersAdminInfiniteQueryOptions(params,options)
 
   await queryClient.prefetchInfiniteQuery(queryOptions);
 
@@ -470,62 +472,62 @@ export const prefetchGetTreatmentPackageVouchersInfiniteQuery = async <TData = A
 
 
 
-export const getGetTreatmentPackageVouchersQueryOptions = <TData = Awaited<ReturnType<typeof getTreatmentPackageVouchers>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchers>>, TError, TData>>, }
+export const getGetTreatmentPackageVouchersAdminQueryOptions = <TData = Awaited<ReturnType<typeof getTreatmentPackageVouchersAdmin>>, TError = unknown>(params?: GetTreatmentPackageVouchersAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchersAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetTreatmentPackageVouchersQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getGetTreatmentPackageVouchersAdminQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTreatmentPackageVouchers>>> = ({ signal }) => getTreatmentPackageVouchers(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTreatmentPackageVouchersAdmin>>> = ({ signal }) => getTreatmentPackageVouchersAdmin(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchers>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchersAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetTreatmentPackageVouchersQueryResult = NonNullable<Awaited<ReturnType<typeof getTreatmentPackageVouchers>>>
-export type GetTreatmentPackageVouchersQueryError = unknown
+export type GetTreatmentPackageVouchersAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getTreatmentPackageVouchersAdmin>>>
+export type GetTreatmentPackageVouchersAdminQueryError = unknown
 
 
-export function useGetTreatmentPackageVouchers<TData = Awaited<ReturnType<typeof getTreatmentPackageVouchers>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchers>>, TError, TData>> & Pick<
+export function useGetTreatmentPackageVouchersAdmin<TData = Awaited<ReturnType<typeof getTreatmentPackageVouchersAdmin>>, TError = unknown>(
+ params: undefined |  GetTreatmentPackageVouchersAdminParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchersAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getTreatmentPackageVouchers>>,
+          Awaited<ReturnType<typeof getTreatmentPackageVouchersAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getTreatmentPackageVouchers>>
+          Awaited<ReturnType<typeof getTreatmentPackageVouchersAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetTreatmentPackageVouchers<TData = Awaited<ReturnType<typeof getTreatmentPackageVouchers>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchers>>, TError, TData>> & Pick<
+export function useGetTreatmentPackageVouchersAdmin<TData = Awaited<ReturnType<typeof getTreatmentPackageVouchersAdmin>>, TError = unknown>(
+ params?: GetTreatmentPackageVouchersAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchersAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getTreatmentPackageVouchers>>,
+          Awaited<ReturnType<typeof getTreatmentPackageVouchersAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getTreatmentPackageVouchers>>
+          Awaited<ReturnType<typeof getTreatmentPackageVouchersAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetTreatmentPackageVouchers<TData = Awaited<ReturnType<typeof getTreatmentPackageVouchers>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchers>>, TError, TData>>, }
+export function useGetTreatmentPackageVouchersAdmin<TData = Awaited<ReturnType<typeof getTreatmentPackageVouchersAdmin>>, TError = unknown>(
+ params?: GetTreatmentPackageVouchersAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchersAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary List treatment package vouchers
  */
 
-export function useGetTreatmentPackageVouchers<TData = Awaited<ReturnType<typeof getTreatmentPackageVouchers>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchers>>, TError, TData>>, }
+export function useGetTreatmentPackageVouchersAdmin<TData = Awaited<ReturnType<typeof getTreatmentPackageVouchersAdmin>>, TError = unknown>(
+ params?: GetTreatmentPackageVouchersAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchersAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetTreatmentPackageVouchersQueryOptions(options)
+  const queryOptions = getGetTreatmentPackageVouchersAdminQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -537,12 +539,12 @@ export function useGetTreatmentPackageVouchers<TData = Awaited<ReturnType<typeof
 /**
  * @summary List treatment package vouchers
  */
-export const prefetchGetTreatmentPackageVouchersQuery = async <TData = Awaited<ReturnType<typeof getTreatmentPackageVouchers>>, TError = unknown>(
- queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchers>>, TError, TData>>, }
+export const prefetchGetTreatmentPackageVouchersAdminQuery = async <TData = Awaited<ReturnType<typeof getTreatmentPackageVouchersAdmin>>, TError = unknown>(
+ queryClient: QueryClient, params?: GetTreatmentPackageVouchersAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchersAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetTreatmentPackageVouchersQueryOptions(options)
+  const queryOptions = getGetTreatmentPackageVouchersAdminQueryOptions(params,options)
 
   await queryClient.prefetchQuery(queryOptions);
 
@@ -554,14 +556,14 @@ export const prefetchGetTreatmentPackageVouchersQuery = async <TData = Awaited<R
 /**
  * @summary Create a treatment package voucher
  */
-export const postTreatmentPackageVouchers = (
+export const postTreatmentPackageVouchersAdmin = (
     treatmentPackageVoucherCreate: TreatmentPackageVoucherCreate,
  signal?: AbortSignal
 ) => {
       
       
       return customInstance<void>(
-      {url: `/treatment-package-vouchers`, method: 'POST',
+      {url: `/treatment-package-vouchers/admin`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: treatmentPackageVoucherCreate, signal
     },
@@ -570,11 +572,11 @@ export const postTreatmentPackageVouchers = (
   
 
 
-export const getPostTreatmentPackageVouchersMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postTreatmentPackageVouchers>>, TError,{data: TreatmentPackageVoucherCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postTreatmentPackageVouchers>>, TError,{data: TreatmentPackageVoucherCreate}, TContext> => {
+export const getPostTreatmentPackageVouchersAdminMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postTreatmentPackageVouchersAdmin>>, TError,{data: TreatmentPackageVoucherCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postTreatmentPackageVouchersAdmin>>, TError,{data: TreatmentPackageVoucherCreate}, TContext> => {
 
-const mutationKey = ['postTreatmentPackageVouchers'];
+const mutationKey = ['postTreatmentPackageVouchersAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -584,10 +586,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postTreatmentPackageVouchers>>, {data: TreatmentPackageVoucherCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postTreatmentPackageVouchersAdmin>>, {data: TreatmentPackageVoucherCreate}> = (props) => {
           const {data} = props ?? {};
 
-          return  postTreatmentPackageVouchers(data,)
+          return  postTreatmentPackageVouchersAdmin(data,)
         }
 
         
@@ -595,23 +597,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PostTreatmentPackageVouchersMutationResult = NonNullable<Awaited<ReturnType<typeof postTreatmentPackageVouchers>>>
-    export type PostTreatmentPackageVouchersMutationBody = TreatmentPackageVoucherCreate
-    export type PostTreatmentPackageVouchersMutationError = unknown
+    export type PostTreatmentPackageVouchersAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postTreatmentPackageVouchersAdmin>>>
+    export type PostTreatmentPackageVouchersAdminMutationBody = TreatmentPackageVoucherCreate
+    export type PostTreatmentPackageVouchersAdminMutationError = unknown
 
     /**
  * @summary Create a treatment package voucher
  */
-export const usePostTreatmentPackageVouchers = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postTreatmentPackageVouchers>>, TError,{data: TreatmentPackageVoucherCreate}, TContext>, }
+export const usePostTreatmentPackageVouchersAdmin = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postTreatmentPackageVouchersAdmin>>, TError,{data: TreatmentPackageVoucherCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postTreatmentPackageVouchers>>,
+        Awaited<ReturnType<typeof postTreatmentPackageVouchersAdmin>>,
         TError,
         {data: TreatmentPackageVoucherCreate},
         TContext
       > => {
 
-      const mutationOptions = getPostTreatmentPackageVouchersMutationOptions(options);
+      const mutationOptions = getPostTreatmentPackageVouchersAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

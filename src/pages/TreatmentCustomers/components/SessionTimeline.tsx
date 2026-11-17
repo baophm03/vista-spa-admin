@@ -5,16 +5,8 @@ import dayjs, { type Dayjs } from 'dayjs'
 import { errorMessage, pickData } from '@/api/helpers'
 import { customInstance } from '@/api/mutator/custom-instance'
 import CustomFieldFormItems, { normalizeCustomFieldValues, type CustomFieldDefWithOptions } from '@/components/CustomFieldFormItems'
-import {
-  deleteSessionsId,
-  getTreatmentCustomersIdAvailableSlots,
-  getTreatmentCustomersIdSessions,
-  getSessionsIdPhotos,
-  putSessionsId,
-  putSessionsIdComplete,
-  putSessionsIdDone,
-  putSessionsIdStart,
-} from '@/api/endpoints/treatment-customers'
+import { deleteSessionsIdAdmin, getTreatmentCustomersIdSessionsAdmin, getSessionsIdPhotosAdmin, putSessionsIdAdmin, putSessionsIdCompleteAdmin, putSessionsIdDoneAdmin, putSessionsIdStartAdmin } from '@/api/endpoints/treatment-sessions'
+import { getTreatmentCustomersIdAvailableSlotsAdmin } from '@/api/endpoints/treatment-customers'
 import { useBrandDateTime } from '@/themeRuntime'
 import useSessionStatusConfig from '@/hooks/useSessionStatusConfig'
 import { useAbility } from '@casl/react'
@@ -54,12 +46,12 @@ export default function SessionTimeline({
 }) {
   const { formatDateTime, getDateTimeParts } = useBrandDateTime()
   const ability = useAbility()
-  const canEditSession = ability.can('UPDATE', 'SESSION')
-  const canManageSessionSchedule = ability.can('UPDATE', 'CUSTOMER')
-  const canStartSession = ability.can('START' as never, 'SESSION')
-  const canFinishSessionWork = ability.can('DONE' as never, 'SESSION')
-  const canCompleteSession = ability.can('COMPLETE' as never, 'SESSION')
-  const canDeleteSession = ability.can('DELETE', 'SESSION')
+  const canEditSession = ability.can('UPDATE', 'TREATMENT_SESSION')
+  const canManageSessionSchedule = ability.can('UPDATE', 'CUSTOMER_PROFILE')
+  const canStartSession = ability.can('START' as never, 'TREATMENT_SESSION')
+  const canFinishSessionWork = ability.can('DONE' as never, 'TREATMENT_SESSION')
+  const canCompleteSession = ability.can('COMPLETE' as never, 'TREATMENT_SESSION')
+  const canDeleteSession = ability.can('DELETE', 'TREATMENT_SESSION')
   const sessionStatusConfig = useSessionStatusConfig()
   const [sessions, setSessions] = useState<SessionRow[]>([])
   const [photos, setPhotos] = useState<Record<string, SessionPhoto[]>>({})
@@ -82,7 +74,7 @@ export default function SessionTimeline({
     const sequence = ++sessionSlotSequence.current
     setSessionSlotsLoading(true)
     try {
-      const response = await getTreatmentCustomersIdAvailableSlots(ctId, {
+      const response = await getTreatmentCustomersIdAvailableSlotsAdmin(ctId, {
         date: date.format('YYYY-MM-DD'),
         exclude_session_id: session.id,
       })
@@ -147,7 +139,7 @@ export default function SessionTimeline({
     const sequence = ++loadSequence.current
     if (!hasLoadedSessions.current) setLoading(true)
     try {
-      const response = await getTreatmentCustomersIdSessions(ctId)
+      const response = await getTreatmentCustomersIdSessionsAdmin(ctId)
       if (sequence !== loadSequence.current) return
       const rows = (pickData<SessionRow[] | undefined>(response) ?? []) as SessionRow[]
       setSessions(rows)
@@ -163,7 +155,7 @@ export default function SessionTimeline({
       // Ảnh tải nền để việc làm mới buổi không giữ cả danh sách ở trạng thái spinner.
       const entries = await Promise.all(rows.map(async (s) => {
         try {
-          return [s.id, (pickData<SessionPhoto[] | undefined>(await getSessionsIdPhotos(s.id)) ?? []) as SessionPhoto[]] as const
+          return [s.id, (pickData<SessionPhoto[] | undefined>(await getSessionsIdPhotosAdmin(s.id)) ?? []) as SessionPhoto[]] as const
         } catch {
           return [s.id, [] as SessionPhoto[]] as const
         }
@@ -285,7 +277,7 @@ export default function SessionTimeline({
       ? (isScheduledSession ? contentValues : sessionValues)
       : contentValues
     try {
-      await putSessionsId(editOpen!.id, {
+      await putSessionsIdAdmin(editOpen!.id, {
         ...editableValues,
         custom_fields: normalizeCustomFieldValues(customFieldDefinitions, sessionValues.custom_fields ?? {}, editOpen?.custom_fields ?? {}),
         ...(canManageSessionSchedule ? scheduleValues : {}),
@@ -394,19 +386,19 @@ export default function SessionTimeline({
                             type="primary"
                             ghost
                             disabled={!s.staff_id || !canStart(s) || !sessionStartAllowedToday(s)}
-                            onClick={() => act(() => putSessionsIdStart(s.id), 'Đã bắt đầu buổi')}
+                            onClick={() => act(() => putSessionsIdStartAdmin(s.id), 'Đã bắt đầu buổi')}
                           >
                             Bắt đầu
                           </Button>
                         </Tooltip>
                       )}
                       {canFinishSessionWork && s.status === 'in_progress' && (
-                        <Button onClick={() => act(() => putSessionsIdDone(s.id, {} as never), 'Đã thực hiện xong')}>
+                        <Button onClick={() => act(() => putSessionsIdDoneAdmin(s.id, {} as never), 'Đã thực hiện xong')}>
                           Đã làm
                         </Button>
                       )}
                       {canCompleteSession && s.status === 'done' && (
-                        <Button type="primary" onClick={() => act(() => putSessionsIdComplete(s.id), 'Đã hoàn tất buổi')}>
+                        <Button type="primary" onClick={() => act(() => putSessionsIdCompleteAdmin(s.id), 'Đã hoàn tất buổi')}>
                           Hoàn tất
                         </Button>
                       )}
@@ -431,7 +423,7 @@ export default function SessionTimeline({
                         </Tooltip>
                       )}
                       {canDeleteSession && s.status === 'scheduled' && (
-                        <Popconfirm title="Xóa buổi này?" okText="Xóa" cancelText="Hủy" onConfirm={() => act(() => deleteSessionsId(s.id), 'Đã xóa buổi')}>
+                        <Popconfirm title="Xóa buổi này?" okText="Xóa" cancelText="Hủy" onConfirm={() => act(() => deleteSessionsIdAdmin(s.id), 'Đã xóa buổi')}>
                           <Button danger icon={<DeleteOutlined />} />
                         </Popconfirm>
                       )}

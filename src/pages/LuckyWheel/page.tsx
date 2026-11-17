@@ -9,31 +9,18 @@ import RowActionsMenu from '../../components/base/RowActionsMenu'
 import TableEmpty from '../../components/base/TableEmpty'
 import { errorMessage, pickData } from '../../api/helpers'
 import ListPagination from '../../components/base/ListPagination'
-import { useGetBranches } from '../../api/endpoints/branches'
-import { getGetAppConfigQueryKey } from '../../api/endpoints/app'
-import { postNotifications } from '../../api/endpoints/admin'
-import { getGetSettingsQueryKey, getSettings, putSettings } from '../../api/endpoints/settings'
-import {
-  useDeleteLuckyWheelsId,
-  useDeleteLuckyWheelsIdPrizesPrizeId,
-  useGetLuckyWheelsIdEligibleCustomers,
-  useGetLuckyWheels,
-  useGetLuckyWheelsIdPrizes,
-  useGetLuckyWheelsIdSpins,
-  usePostLuckyWheels,
-  usePostLuckyWheelsIdPrizes,
-  usePostLuckyWheelsIdSpins,
-  usePutLuckyWheelsId,
-  usePutLuckyWheelsIdPrizesPrizeId,
-  usePutLuckyWheelsIdSpinsSpinIdClaim,
-} from '../../api/endpoints/lucky-wheels'
+import { useGetBranchesAdmin } from '@/api/endpoints/branches'
+import { getGetConfigQueryKey } from '@/api/endpoints/config'
+import { postNotificationsAdmin } from '@/api/endpoints/notifications'
+import { getGetSettingsAdminQueryKey, getSettingsAdmin, putSettingsAdmin } from '@/api/endpoints/settings'
+import { useDeleteLuckyWheelsIdAdmin, useDeleteLuckyWheelsIdPrizesPrizeIdAdmin, useGetLuckyWheelsIdEligibleCustomersAdmin, useGetLuckyWheelsAdmin, useGetLuckyWheelsIdPrizesAdmin, useGetLuckyWheelsIdSpinsAdmin, usePostLuckyWheelsAdmin, usePostLuckyWheelsIdPrizesAdmin, usePostLuckyWheelsIdSpinsAdmin, usePutLuckyWheelsIdAdmin, usePutLuckyWheelsIdPrizesPrizeIdAdmin, usePutLuckyWheelsIdSpinsSpinIdClaimAdmin } from '@/api/endpoints/lucky-wheels'
 import type {
-  GetLuckyWheelsIdEligibleCustomers200AllOfResponseDataItem as EligibleCustomer,
+  GetLuckyWheelsIdEligibleCustomersAdmin200AllOfResponseDataItem as EligibleCustomer,
   LuckyWheel as LuckyWheelRecord,
-  PostLuckyWheelsBody,
+  PostLuckyWheelsAdminBody,
   Notification,
-  PutLuckyWheelsIdBody,
-  PutSettingsBody,
+  PutLuckyWheelsIdAdminBody,
+  PutSettingsAdminBody,
   WheelPrize,
   WheelSpin,
 } from '../../api/models'
@@ -106,27 +93,27 @@ export default function LuckyWheel() {
   const [customerNotificationForm] = Form.useForm<CustomerNotificationFormValues>()
 
   const customerSettingsQuery = useQuery({
-    queryKey: getGetSettingsQueryKey(),
-    queryFn: async () => pickData<SystemSetting[]>(await getSettings()) ?? [],
+    queryKey: getGetSettingsAdminQueryKey(),
+    queryFn: async () => pickData<SystemSetting[]>(await getSettingsAdmin()) ?? [],
   })
-  const wheelsQuery = useGetLuckyWheels({ page: wheelPage, limit: TABLE_PAGE_SIZE } as never)
-  const branchesQuery = useGetBranches()
-  const prizesQuery = useGetLuckyWheelsIdPrizes(selected?.id ?? '', { page: prizePage, limit: TABLE_PAGE_SIZE } as never)
-  const spinsQuery = useGetLuckyWheelsIdSpins(selected?.id ?? '', { page: spinPage, limit: TABLE_PAGE_SIZE } as never)
-  const eligibleQuery = useGetLuckyWheelsIdEligibleCustomers(
+  const wheelsQuery = useGetLuckyWheelsAdmin({ page: wheelPage, limit: TABLE_PAGE_SIZE } as never)
+  const branchesQuery = useGetBranchesAdmin()
+  const prizesQuery = useGetLuckyWheelsIdPrizesAdmin(selected?.id ?? '', { page: prizePage, limit: TABLE_PAGE_SIZE } as never)
+  const spinsQuery = useGetLuckyWheelsIdSpinsAdmin(selected?.id ?? '', { page: spinPage, limit: TABLE_PAGE_SIZE } as never)
+  const eligibleQuery = useGetLuckyWheelsIdEligibleCustomersAdmin(
     // eslint-disable-next-line
 
     selected?.id ?? '',
     (customerSearch ? { search: customerSearch, page: customerPage, limit: TABLE_PAGE_SIZE } : { page: customerPage, limit: TABLE_PAGE_SIZE }) as never,
   )
-  const createMutation = usePostLuckyWheels()
-  const updateMutation = usePutLuckyWheelsId()
-  const deleteMutation = useDeleteLuckyWheelsId()
-  const prizeMutation = usePostLuckyWheelsIdPrizes()
-  const prizeUpdateMutation = usePutLuckyWheelsIdPrizesPrizeId()
-  const prizeDeleteMutation = useDeleteLuckyWheelsIdPrizesPrizeId()
-  const spinForCustomerMutation = usePostLuckyWheelsIdSpins()
-  const claimMutation = usePutLuckyWheelsIdSpinsSpinIdClaim()
+  const createMutation = usePostLuckyWheelsAdmin()
+  const updateMutation = usePutLuckyWheelsIdAdmin()
+  const deleteMutation = useDeleteLuckyWheelsIdAdmin()
+  const prizeMutation = usePostLuckyWheelsIdPrizesAdmin()
+  const prizeUpdateMutation = usePutLuckyWheelsIdPrizesPrizeIdAdmin()
+  const prizeDeleteMutation = useDeleteLuckyWheelsIdPrizesPrizeIdAdmin()
+  const spinForCustomerMutation = usePostLuckyWheelsIdSpinsAdmin()
+  const claimMutation = usePutLuckyWheelsIdSpinsSpinIdClaimAdmin()
   const wheels = wheelsQuery.data?.responseData ?? []
   const wheelsTotal = (wheelsQuery.data as unknown as { meta?: { total?: number } })?.meta?.total ?? 0
   const branches = branchesQuery.data?.responseData ?? []
@@ -155,19 +142,19 @@ export default function LuckyWheel() {
     mutationFn: async ({ customerProfileId, enabled }: CustomerAccessChange) => {
       const nextOverrides = customerOverrides.filter((item) => item.customer_profile_id !== customerProfileId)
       if (enabled !== customerDefaultEnabled) nextOverrides.push({ customer_profile_id: customerProfileId, enabled })
-      return putSettings({ items: [{ key: CUSTOMER_OVERRIDES_SETTING, value: nextOverrides }] } as PutSettingsBody)
+      return putSettingsAdmin({ items: [{ key: CUSTOMER_OVERRIDES_SETTING, value: nextOverrides }] } as PutSettingsAdminBody)
     },
     onSuccess: async (_, variables) => {
       message.success(variables.enabled ? 'Đã bật vòng quay cho khách hàng' : 'Đã tắt vòng quay cho khách hàng')
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: getGetSettingsQueryKey() }),
-        queryClient.invalidateQueries({ queryKey: getGetAppConfigQueryKey() }),
+        queryClient.invalidateQueries({ queryKey: getGetSettingsAdminQueryKey() }),
+        queryClient.invalidateQueries({ queryKey: getGetConfigQueryKey() }),
       ])
     },
     onError: (error) => message.error(errorMessage(error, 'Không thể cập nhật quyền quay của khách')),
   })
   const customerNotificationMutation = useMutation({
-    mutationFn: ({ userId, customerProfileId, channel, title, body }: CustomerNotificationInput) => postNotifications({
+    mutationFn: ({ userId, customerProfileId, channel, title, body }: CustomerNotificationInput) => postNotificationsAdmin({
       event_key: 'SYSTEM',
       channel,
       title,
@@ -304,12 +291,12 @@ export default function LuckyWheel() {
       if (editingWheel) {
         const response = await updateMutation.mutateAsync({
           id: editingWheel.id,
-          data: payload as PutLuckyWheelsIdBody,
+          data: payload as PutLuckyWheelsIdAdminBody,
         })
         savedWheel = response.responseData
         message.success('Đã cập nhật vòng quay')
       } else {
-        const response = await createMutation.mutateAsync({ data: payload as PostLuckyWheelsBody })
+        const response = await createMutation.mutateAsync({ data: payload as PostLuckyWheelsAdminBody })
         savedWheel = response.responseData
         message.success('Đã tạo vòng quay')
       }

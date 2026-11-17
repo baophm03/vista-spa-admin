@@ -2,8 +2,8 @@ import { useMemo, useState } from 'react'
 import { Alert, Grid, Select, Tabs } from 'antd'
 import PageTitle from '@/components/base/PageTitle'
 import { pickData } from '@/api/helpers'
-import { useGetBranches } from '@/api/endpoints/branches'
-import { useGetUsers } from '@/api/endpoints/users'
+import { useGetBranchesAdmin } from '@/api/endpoints/branches'
+import { useGetUsersAdmin } from '@/api/endpoints/users'
 import type { Branch } from '@/api/models/branch'
 import { useCustomerProfileAccess, normalizeRole } from '@/utils/customerProfileAccess'
 import { useProfileStore } from '@/stores/profile-store'
@@ -21,10 +21,10 @@ export default function StaffSchedule() {
 
   const isOwnScheduleOnly = isTechnician && !isAdmin
   // KTV được xem cơ sở của mình; dữ liệu này cũng giúp hiển thị phạm vi áp dụng của mẫu ca.
-  const branchesQuery = useGetBranches(undefined)
+  const branchesQuery = useGetBranchesAdmin(undefined)
   const branches = (pickData<Branch[] | undefined>(branchesQuery.data) ?? []) as Branch[]
 
-  const staffsQuery = useGetUsers({ currentPage: 1, pageSize: 500, has_role: true }, { query: { enabled: !isOwnScheduleOnly } })
+  const staffsQuery = useGetUsersAdmin({ currentPage: 1, pageSize: 500, has_role: true }, { query: { enabled: !isOwnScheduleOnly } })
   const allUsers = (pickData<{ rows?: ScheduleStaff[] } | undefined>(staffsQuery.data)?.rows ?? []) as ScheduleStaff[]
   const ownStaff: ScheduleStaff | null = profile?.id ? {
     id: profile.id,
