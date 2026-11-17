@@ -7,8 +7,8 @@ import ListPagination from '@/components/base/ListPagination'
 import TableEmpty from '@/components/base/TableEmpty'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { LookupList } from '@/api/models/lookupList'
-import type { PostLookupListsBody } from '@/api/models/postLookupListsBody'
-import { deleteLookupListsId, getLookupLists, postLookupLists, putLookupListsId } from '@/api/endpoints/lookup-lists'
+import type { PostLookupListsAdminBody } from '@/api/models/postLookupListsAdminBody'
+import { deleteLookupListsIdAdmin, getLookupListsAdmin, postLookupListsAdmin, putLookupListsIdAdmin } from '@/api/endpoints/lookup-lists'
 import { Can } from '@casl/react'
 import LookupItemsModal from './components/LookupItemsModal'
 import LookupListCreateModal from './components/LookupListCreateModal'
@@ -33,7 +33,7 @@ export default function LookupLists() {
     setLoading(true)
     setError('')
     try {
-      const body = await getLookupLists({
+      const body = await getLookupListsAdmin({
         page: nextPage,
         limit: 8,
         ...(search.trim() ? { q: search.trim() } : {}),
@@ -59,10 +59,10 @@ export default function LookupLists() {
     const values = await form.validateFields()
     setSaving(true)
     try {
-      await postLookupLists({
+      await postLookupListsAdmin({
         key: values.key.trim(),
         name: values.name.trim(),
-      } as PostLookupListsBody)
+      } as PostLookupListsAdminBody)
       setCreateOpen(false)
       form.resetFields()
       message.success('Đã tạo danh mục')
@@ -85,7 +85,7 @@ export default function LookupLists() {
     const values = await editForm.validateFields()
     setSaving(true)
     try {
-      await putLookupListsId(editingList.id, {
+      await putLookupListsIdAdmin(editingList.id, {
         name: values.name.trim(),
         is_active: values.is_active,
       })
@@ -108,7 +108,7 @@ export default function LookupLists() {
       cancelText: 'Hủy',
       onOk: async () => {
         try {
-          await deleteLookupListsId(row.id)
+          await deleteLookupListsIdAdmin(row.id)
           message.success('Đã xóa danh mục')
           await load(query)
         } catch (err) {

@@ -40,7 +40,7 @@ export default function StudentLookupModal({ open, lookupValue, onLookupValueCha
             { title: 'Trạng thái', dataIndex: 'status', render: (v: string) => <Tag color={STATUS_META[v]?.color}>{STATUS_META[v]?.label ?? v}</Tag> },
             {
               title: '', key: 'act', render: (_: unknown, row: RegistrationRow) => (
-                <Can I="CREATE" a="ACADEMY">
+                <Can I="CREATE" a="ACADEMY_REGISTRATION">
                   {row.status === 'CANCELLED' && (
                     <Button size="small" onClick={() => onCreateFromLookup(row)}>Đăng ký lại khóa này</Button>
                   )}

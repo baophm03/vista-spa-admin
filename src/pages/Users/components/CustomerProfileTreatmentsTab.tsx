@@ -5,7 +5,8 @@ import type { CustomerTreatment } from '@/api/models/customerTreatment'
 import type { PaymentLog } from '@/api/models/paymentLog'
 import type { SessionPhoto } from '@/api/models/sessionPhoto'
 import type { TreatmentSession } from '@/api/models/treatmentSession'
-import { getTreatmentCustomers, getTreatmentCustomersIdPayments, getTreatmentCustomersIdSessions, getSessionsIdPhotos } from '@/api/endpoints/treatment-customers'
+import { getTreatmentCustomersAdmin, getTreatmentCustomersIdPaymentsAdmin } from '@/api/endpoints/treatment-customers'
+import { getTreatmentCustomersIdSessionsAdmin, getSessionsIdPhotosAdmin } from '@/api/endpoints/treatment-sessions'
 import { errorMessage, pickData } from '@/api/helpers'
 import CustomerTreatmentDetailCard from './CustomerTreatmentDetailCard'
 import { useAbility } from '@casl/react'
@@ -35,12 +36,12 @@ export default function CustomerProfileTreatmentsTab({ profileId }: { profileId:
     setLoading(true)
     setError('')
     const load = async () => {
-      const result = await getTreatmentCustomers({ customer_profile_id: profileId, page: 1, limit: 200 })
+      const result = await getTreatmentCustomersAdmin({ customer_profile_id: profileId, page: 1, limit: 200 })
       const treatments = rowsOf<CustomerTreatment>(pickData(result))
       const details = await Promise.all(treatments.map(async (treatment) => {
         const [sessionResult, paymentResult] = await Promise.all([
-          getTreatmentCustomersIdSessions(treatment.id),
-          canReadPayments ? getTreatmentCustomersIdPayments(treatment.id) : Promise.resolve(undefined),
+          getTreatmentCustomersIdSessionsAdmin(treatment.id),
+          canReadPayments ? getTreatmentCustomersIdPaymentsAdmin(treatment.id) : Promise.resolve(undefined),
         ])
         return {
           treatment,
@@ -48,7 +49,7 @@ export default function CustomerProfileTreatmentsTab({ profileId }: { profileId:
           payments: canReadPayments ? rowsOf<PaymentLog>(pickData(paymentResult)) : [],
         }
       }))
-      const photoResults = await Promise.all(details.flatMap((detail) => detail.sessions.map((session) => getSessionsIdPhotos(session.id).then((res) => rowsOf<SessionPhoto>(pickData(res))))))
+      const photoResults = await Promise.all(details.flatMap((detail) => detail.sessions.map((session) => getSessionsIdPhotosAdmin(session.id).then((res) => rowsOf<SessionPhoto>(pickData(res))))))
       return details.map((detail) => {
         const sessionIds = new Set(detail.sessions.map((session) => session.id))
         return { ...detail, photos: photoResults.flat().filter((photo) => sessionIds.has(photo.session_id)) }

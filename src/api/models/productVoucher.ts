@@ -7,9 +7,14 @@
  */
 import type { ProductVoucherDescription } from './productVoucherDescription';
 import type { ProductVoucherProductId } from './productVoucherProductId';
+import type { ProductVoucherProductCategoryId } from './productVoucherProductCategoryId';
+import type { ProductVoucherBranchId } from './productVoucherBranchId';
+import type { ProductVoucherBranchName } from './productVoucherBranchName';
 import type { ProductVoucherCardRankId } from './productVoucherCardRankId';
 import type { ProductVoucherCardRankName } from './productVoucherCardRankName';
 import type { ProductVoucherTargetName } from './productVoucherTargetName';
+import type { ProductVoucherIssueMode } from './productVoucherIssueMode';
+import type { ProductVoucherPointsCost } from './productVoucherPointsCost';
 import type { ProductVoucherDiscountType } from './productVoucherDiscountType';
 import type { ProductVoucherMaximumDiscountAmount } from './productVoucherMaximumDiscountAmount';
 import type { ProductVoucherQuantityTotal } from './productVoucherQuantityTotal';
@@ -26,10 +31,16 @@ export interface ProductVoucher {
   title: string;
   description?: ProductVoucherDescription;
   product_id?: ProductVoucherProductId;
+  product_category_id?: ProductVoucherProductCategoryId;
+  branch_id?: ProductVoucherBranchId;
+  branch_name?: ProductVoucherBranchName;
   card_rank_id?: ProductVoucherCardRankId;
   card_rank_name?: ProductVoucherCardRankName;
   target_name?: ProductVoucherTargetName;
   is_loyalty?: boolean;
+  issue_mode?: ProductVoucherIssueMode;
+  /** @minimum 0 */
+  points_cost?: ProductVoucherPointsCost;
   discount_type?: ProductVoucherDiscountType;
   /** @minimum 0 */
   discount_value?: number;

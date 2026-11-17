@@ -4,11 +4,11 @@ import { Empty, Statistic, Table, Typography } from 'antd'
 import ListPagination from '@/components/base/ListPagination'
 import { paginateRows } from '@/utils/listTable'
 import { pickData } from '@/api/helpers'
-import { useGetCustomerProfilesIdPoints } from '@/api/endpoints/customer-profiles'
+import { useGetCustomerProfilesIdPointsAdmin } from '@/api/endpoints/customer-profiles'
 import type { MembershipTransaction } from '@/api/models/membershipTransaction'
 /** LY-01 — Lịch sử biến động điểm của khách (trong drawer chi tiết). */
 export default function PointsHistoryPanel({ profileId }: { profileId: string }) {
-  const pointsQuery = useGetCustomerProfilesIdPoints(profileId)
+  const pointsQuery = useGetCustomerProfilesIdPointsAdmin(profileId)
   const [pointPage, setPointPage] = useState(1)
   const data = pickData<{ points?: number; history?: MembershipTransaction[] }>(pointsQuery.data)
   const REF_LABEL: Record<string, string> = {

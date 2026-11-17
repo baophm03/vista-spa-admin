@@ -4,12 +4,8 @@ import dayjs from 'dayjs'
 import type { CustomerProfile } from '@/api/models/customerProfile'
 import type { CardRank } from '@/api/models/cardRank'
 import { Can } from '@casl/react'
-import {
-  useGetCardRanks,
-  usePostMembershipsCustomerProfileIdPointsAdjust,
-  usePostMembershipsCustomerProfileIdRankOverride,
-  usePostMembershipsCustomerProfileIdRecalculate,
-} from '@/api/endpoints/membership'
+import { useGetCardRanksAdmin } from '@/api/endpoints/card-ranks'
+import { usePostMembershipsCustomerProfileIdPointsAdjustAdmin, usePostMembershipsCustomerProfileIdRankOverrideAdmin, usePostMembershipsCustomerProfileIdRecalculateAdmin } from '@/api/endpoints/memberships'
 import type { CustomFieldDefWithOptions } from './CustomerProfileCustomFields'
 import { useBrandCurrency } from '@/themeRuntime'
 import { errorMessage } from '@/api/helpers'
@@ -70,10 +66,10 @@ export default function CustomerProfileOverviewTab({ profile, summary, fieldDefi
   const [rankOpen, setRankOpen] = useState(false)
   const [adjustForm] = Form.useForm()
   const [rankForm] = Form.useForm()
-  const ranksQuery = useGetCardRanks()
-  const adjustMutation = usePostMembershipsCustomerProfileIdPointsAdjust()
-  const overrideMutation = usePostMembershipsCustomerProfileIdRankOverride()
-  const recalculateMutation = usePostMembershipsCustomerProfileIdRecalculate()
+  const ranksQuery = useGetCardRanksAdmin()
+  const adjustMutation = usePostMembershipsCustomerProfileIdPointsAdjustAdmin()
+  const overrideMutation = usePostMembershipsCustomerProfileIdRankOverrideAdmin()
+  const recalculateMutation = usePostMembershipsCustomerProfileIdRecalculateAdmin()
   const membership = summary?.membership
   const rankRows = (ranksQuery.data?.responseData ?? (ranksQuery.data as any)?.data ?? []) as CardRank[]
   const activeRanks = Array.isArray(rankRows) ? rankRows.filter((rank) => rank.is_active !== false).sort((a, b) => Number(a.sort_order ?? 0) - Number(b.sort_order ?? 0)) : []

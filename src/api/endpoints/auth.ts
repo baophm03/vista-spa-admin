@@ -17,10 +17,8 @@ import type {
 
 import type {
   LegacyBadRequestResponse,
-  PostAuthGenNewAccessTokenBody,
   PostAuthLoginBody,
-  PostAuthLoginMedicalBody,
-  PostAuthRegisterBody,
+  PostAuthRefreshTokenBody,
   Response
 } from '../models';
 
@@ -31,30 +29,30 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * POST `/auth/register` — login session. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Body fields: `password`. Handled by `userProvider.getOne`.
- * @summary Register a customer account
+ * POST `/auth/refresh-token` — login session. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Body fields: `refreshToken`. Handled by `userProvider.validateSession`.
+ * @summary Issue a new access token from a refresh token
  */
-export const postAuthRegister = (
-    postAuthRegisterBody: PostAuthRegisterBody,
+export const postAuthRefreshToken = (
+    postAuthRefreshTokenBody: PostAuthRefreshTokenBody,
  signal?: AbortSignal
 ) => {
       
       
       return customInstance<Response>(
-      {url: `/auth/register`, method: 'POST',
+      {url: `/auth/refresh-token`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: postAuthRegisterBody, signal
+      data: postAuthRefreshTokenBody, signal
     },
       );
     }
   
 
 
-export const getPostAuthRegisterMutationOptions = <TError = LegacyBadRequestResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAuthRegister>>, TError,{data: PostAuthRegisterBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postAuthRegister>>, TError,{data: PostAuthRegisterBody}, TContext> => {
+export const getPostAuthRefreshTokenMutationOptions = <TError = LegacyBadRequestResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAuthRefreshToken>>, TError,{data: PostAuthRefreshTokenBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postAuthRefreshToken>>, TError,{data: PostAuthRefreshTokenBody}, TContext> => {
 
-const mutationKey = ['postAuthRegister'];
+const mutationKey = ['postAuthRefreshToken'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -64,10 +62,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAuthRegister>>, {data: PostAuthRegisterBody}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAuthRefreshToken>>, {data: PostAuthRefreshTokenBody}> = (props) => {
           const {data} = props ?? {};
 
-          return  postAuthRegister(data,)
+          return  postAuthRefreshToken(data,)
         }
 
         
@@ -75,88 +73,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PostAuthRegisterMutationResult = NonNullable<Awaited<ReturnType<typeof postAuthRegister>>>
-    export type PostAuthRegisterMutationBody = PostAuthRegisterBody
-    export type PostAuthRegisterMutationError = LegacyBadRequestResponse
+    export type PostAuthRefreshTokenMutationResult = NonNullable<Awaited<ReturnType<typeof postAuthRefreshToken>>>
+    export type PostAuthRefreshTokenMutationBody = PostAuthRefreshTokenBody
+    export type PostAuthRefreshTokenMutationError = LegacyBadRequestResponse
 
     /**
- * @summary Register a customer account
+ * @summary Issue a new access token from a refresh token
  */
-export const usePostAuthRegister = <TError = LegacyBadRequestResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAuthRegister>>, TError,{data: PostAuthRegisterBody}, TContext>, }
+export const usePostAuthRefreshToken = <TError = LegacyBadRequestResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAuthRefreshToken>>, TError,{data: PostAuthRefreshTokenBody}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postAuthRegister>>,
+        Awaited<ReturnType<typeof postAuthRefreshToken>>,
         TError,
-        {data: PostAuthRegisterBody},
+        {data: PostAuthRefreshTokenBody},
         TContext
       > => {
 
-      const mutationOptions = getPostAuthRegisterMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * POST `/auth/loginMedical` — login session. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Body fields: `account`, `password`. Handled by `externalAPIService.login`.
- * @summary Log in to the medical system
- */
-export const postAuthLoginMedical = (
-    postAuthLoginMedicalBody: PostAuthLoginMedicalBody,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<Response>(
-      {url: `/auth/loginMedical`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: postAuthLoginMedicalBody, signal
-    },
-      );
-    }
-  
-
-
-export const getPostAuthLoginMedicalMutationOptions = <TError = LegacyBadRequestResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAuthLoginMedical>>, TError,{data: PostAuthLoginMedicalBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postAuthLoginMedical>>, TError,{data: PostAuthLoginMedicalBody}, TContext> => {
-
-const mutationKey = ['postAuthLoginMedical'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAuthLoginMedical>>, {data: PostAuthLoginMedicalBody}> = (props) => {
-          const {data} = props ?? {};
-
-          return  postAuthLoginMedical(data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostAuthLoginMedicalMutationResult = NonNullable<Awaited<ReturnType<typeof postAuthLoginMedical>>>
-    export type PostAuthLoginMedicalMutationBody = PostAuthLoginMedicalBody
-    export type PostAuthLoginMedicalMutationError = LegacyBadRequestResponse
-
-    /**
- * @summary Log in to the medical system
- */
-export const usePostAuthLoginMedical = <TError = LegacyBadRequestResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAuthLoginMedical>>, TError,{data: PostAuthLoginMedicalBody}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postAuthLoginMedical>>,
-        TError,
-        {data: PostAuthLoginMedicalBody},
-        TContext
-      > => {
-
-      const mutationOptions = getPostAuthLoginMedicalMutationOptions(options);
+      const mutationOptions = getPostAuthRefreshTokenMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -222,71 +155,6 @@ export const usePostAuthLogin = <TError = LegacyBadRequestResponse,
       > => {
 
       const mutationOptions = getPostAuthLoginMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * POST `/auth/genNewAccessToken` — login session. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Body fields: `refreshToken`. Handled by `userProvider.validateSession`.
- * @summary Issue a new access token from a refresh token
- */
-export const postAuthGenNewAccessToken = (
-    postAuthGenNewAccessTokenBody: PostAuthGenNewAccessTokenBody,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<Response>(
-      {url: `/auth/genNewAccessToken`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: postAuthGenNewAccessTokenBody, signal
-    },
-      );
-    }
-  
-
-
-export const getPostAuthGenNewAccessTokenMutationOptions = <TError = LegacyBadRequestResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAuthGenNewAccessToken>>, TError,{data: PostAuthGenNewAccessTokenBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postAuthGenNewAccessToken>>, TError,{data: PostAuthGenNewAccessTokenBody}, TContext> => {
-
-const mutationKey = ['postAuthGenNewAccessToken'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAuthGenNewAccessToken>>, {data: PostAuthGenNewAccessTokenBody}> = (props) => {
-          const {data} = props ?? {};
-
-          return  postAuthGenNewAccessToken(data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostAuthGenNewAccessTokenMutationResult = NonNullable<Awaited<ReturnType<typeof postAuthGenNewAccessToken>>>
-    export type PostAuthGenNewAccessTokenMutationBody = PostAuthGenNewAccessTokenBody
-    export type PostAuthGenNewAccessTokenMutationError = LegacyBadRequestResponse
-
-    /**
- * @summary Issue a new access token from a refresh token
- */
-export const usePostAuthGenNewAccessToken = <TError = LegacyBadRequestResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAuthGenNewAccessToken>>, TError,{data: PostAuthGenNewAccessTokenBody}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postAuthGenNewAccessToken>>,
-        TError,
-        {data: PostAuthGenNewAccessTokenBody},
-        TContext
-      > => {
-
-      const mutationOptions = getPostAuthGenNewAccessTokenMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

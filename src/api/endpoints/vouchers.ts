@@ -30,18 +30,25 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  DeleteVouchersBulkBody,
-  GetVouchersParams,
-  GetVouchersRedeemedParams,
-  GetVouchersSearchParams,
-  GetVouchersStatisticsParams,
+  ConflictResponse,
+  DeleteVouchersBulkAdminBody,
+  ForbiddenResponse,
+  GetVouchersAdminParams,
+  GetVouchersRedeemedAdminParams,
+  GetVouchersSearchAdminParams,
+  GetVouchersStatisticsAdminParams,
+  InternalErrorResponse,
   LegacyBadRequestResponse,
   LegacyUnauthorizedResponse,
-  PostVouchersIdRedeemBody,
-  PostVouchersMarkUsedBody,
-  PostVouchersRevokeBody,
-  PutVouchersBulkBody,
+  NotFoundResponse,
+  PostVouchersIdRedeemAdmin200,
+  PostVouchersIdRedeemAdminBody,
+  PostVouchersMarkUsedAdminBody,
+  PostVouchersRevokeAdminBody,
+  PutVouchersBulkAdminBody,
   Response,
+  UnauthorizedResponse,
+  UnprocessableEntityResponse,
   VoucherCreate,
   VoucherUpdate
 } from '../models';
@@ -53,17 +60,17 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * GET `/vouchers/{id}` — voucher. Requires authentication; route does not declare detailed permissions. Handled by `voucherProvider.getVoucherWithStats`.
+ * GET `/vouchers/{id}/admin` — voucher. Cần đăng nhập + `voucher.view_all`. Handled by `voucherProvider.getVoucherWithStats`.
  * @summary View voucher details
  */
-export const getVouchersId = (
+export const getVouchersIdAdmin = (
     id: string,
  signal?: AbortSignal
 ) => {
       
       
       return customInstance<Response>(
-      {url: `/vouchers/${id}`, method: 'GET', signal
+      {url: `/vouchers/${id}/admin`, method: 'GET', signal
     },
       );
     }
@@ -71,75 +78,75 @@ export const getVouchersId = (
 
 
 
-export const getGetVouchersIdInfiniteQueryKey = (id?: string,) => {
+export const getGetVouchersIdAdminInfiniteQueryKey = (id?: string,) => {
     return [
-    'infinite', `/vouchers/${id}`
+    'infinite', `/vouchers/${id}/admin`
     ] as const;
     }
 
-export const getGetVouchersIdQueryKey = (id?: string,) => {
+export const getGetVouchersIdAdminQueryKey = (id?: string,) => {
     return [
-    `/vouchers/${id}`
+    `/vouchers/${id}/admin`
     ] as const;
     }
 
     
-export const getGetVouchersIdInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getVouchersId>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersId>>, TError, TData>>, }
+export const getGetVouchersIdAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getVouchersIdAdmin>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersIdAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetVouchersIdInfiniteQueryKey(id);
+  const queryKey =  queryOptions?.queryKey ?? getGetVouchersIdAdminInfiniteQueryKey(id);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getVouchersId>>> = ({ signal }) => getVouchersId(id, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getVouchersIdAdmin>>> = ({ signal }) => getVouchersIdAdmin(id, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersIdAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetVouchersIdInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getVouchersId>>>
-export type GetVouchersIdInfiniteQueryError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void
+export type GetVouchersIdAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getVouchersIdAdmin>>>
+export type GetVouchersIdAdminInfiniteQueryError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void
 
 
-export function useGetVouchersIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getVouchersId>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void>(
- id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersId>>, TError, TData>> & Pick<
+export function useGetVouchersIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getVouchersIdAdmin>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void>(
+ id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersIdAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getVouchersId>>,
+          Awaited<ReturnType<typeof getVouchersIdAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getVouchersId>>
+          Awaited<ReturnType<typeof getVouchersIdAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetVouchersIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getVouchersId>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersId>>, TError, TData>> & Pick<
+export function useGetVouchersIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getVouchersIdAdmin>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersIdAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getVouchersId>>,
+          Awaited<ReturnType<typeof getVouchersIdAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getVouchersId>>
+          Awaited<ReturnType<typeof getVouchersIdAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetVouchersIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getVouchersId>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersId>>, TError, TData>>, }
+export function useGetVouchersIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getVouchersIdAdmin>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersIdAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary View voucher details
  */
 
-export function useGetVouchersIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getVouchersId>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersId>>, TError, TData>>, }
+export function useGetVouchersIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getVouchersIdAdmin>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersIdAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetVouchersIdInfiniteQueryOptions(id,options)
+  const queryOptions = getGetVouchersIdAdminInfiniteQueryOptions(id,options)
 
   const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -151,12 +158,12 @@ export function useGetVouchersIdInfinite<TData = InfiniteData<Awaited<ReturnType
 /**
  * @summary View voucher details
  */
-export const prefetchGetVouchersIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getVouchersId>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void>(
- queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersId>>, TError, TData>>, }
+export const prefetchGetVouchersIdAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getVouchersIdAdmin>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersIdAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetVouchersIdInfiniteQueryOptions(id,options)
+  const queryOptions = getGetVouchersIdAdminInfiniteQueryOptions(id,options)
 
   await queryClient.prefetchInfiniteQuery(queryOptions);
 
@@ -165,62 +172,62 @@ export const prefetchGetVouchersIdInfiniteQuery = async <TData = Awaited<ReturnT
 
 
 
-export const getGetVouchersIdQueryOptions = <TData = Awaited<ReturnType<typeof getVouchersId>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersId>>, TError, TData>>, }
+export const getGetVouchersIdAdminQueryOptions = <TData = Awaited<ReturnType<typeof getVouchersIdAdmin>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersIdAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetVouchersIdQueryKey(id);
+  const queryKey =  queryOptions?.queryKey ?? getGetVouchersIdAdminQueryKey(id);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getVouchersId>>> = ({ signal }) => getVouchersId(id, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getVouchersIdAdmin>>> = ({ signal }) => getVouchersIdAdmin(id, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getVouchersId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getVouchersIdAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetVouchersIdQueryResult = NonNullable<Awaited<ReturnType<typeof getVouchersId>>>
-export type GetVouchersIdQueryError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void
+export type GetVouchersIdAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getVouchersIdAdmin>>>
+export type GetVouchersIdAdminQueryError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void
 
 
-export function useGetVouchersId<TData = Awaited<ReturnType<typeof getVouchersId>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersId>>, TError, TData>> & Pick<
+export function useGetVouchersIdAdmin<TData = Awaited<ReturnType<typeof getVouchersIdAdmin>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersIdAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getVouchersId>>,
+          Awaited<ReturnType<typeof getVouchersIdAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getVouchersId>>
+          Awaited<ReturnType<typeof getVouchersIdAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetVouchersId<TData = Awaited<ReturnType<typeof getVouchersId>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersId>>, TError, TData>> & Pick<
+export function useGetVouchersIdAdmin<TData = Awaited<ReturnType<typeof getVouchersIdAdmin>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersIdAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getVouchersId>>,
+          Awaited<ReturnType<typeof getVouchersIdAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getVouchersId>>
+          Awaited<ReturnType<typeof getVouchersIdAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetVouchersId<TData = Awaited<ReturnType<typeof getVouchersId>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersId>>, TError, TData>>, }
+export function useGetVouchersIdAdmin<TData = Awaited<ReturnType<typeof getVouchersIdAdmin>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersIdAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary View voucher details
  */
 
-export function useGetVouchersId<TData = Awaited<ReturnType<typeof getVouchersId>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersId>>, TError, TData>>, }
+export function useGetVouchersIdAdmin<TData = Awaited<ReturnType<typeof getVouchersIdAdmin>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersIdAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetVouchersIdQueryOptions(id,options)
+  const queryOptions = getGetVouchersIdAdminQueryOptions(id,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -232,12 +239,12 @@ export function useGetVouchersId<TData = Awaited<ReturnType<typeof getVouchersId
 /**
  * @summary View voucher details
  */
-export const prefetchGetVouchersIdQuery = async <TData = Awaited<ReturnType<typeof getVouchersId>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void>(
- queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersId>>, TError, TData>>, }
+export const prefetchGetVouchersIdAdminQuery = async <TData = Awaited<ReturnType<typeof getVouchersIdAdmin>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersIdAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetVouchersIdQueryOptions(id,options)
+  const queryOptions = getGetVouchersIdAdminQueryOptions(id,options)
 
   await queryClient.prefetchQuery(queryOptions);
 
@@ -247,17 +254,17 @@ export const prefetchGetVouchersIdQuery = async <TData = Awaited<ReturnType<type
 
 
 /**
- * PUT `/vouchers/{id}` — voucher. Requires authentication; route does not declare detailed permissions. Body fields: `title`, `description`, `image_file_id`, `required_points`, `type`, `start_date`, `end_date`, `is_active`, `card_rank_id`, `is_loyalty`, `quantity_total`, `updated_by`. Handled by `voucherProvider.updateVoucher`.
+ * PUT `/vouchers/{id}/admin` — voucher. Cần đăng nhập + `voucher.update_all`. Body fields: `title`, `description`, `image_file_id`, `required_points`, `type`, `start_date`, `end_date`, `is_active`, `card_rank_id`, `is_loyalty`, `quantity_total`, `updated_by`. Handled by `voucherProvider.updateVoucher`.
  * @summary Update voucher
  */
-export const putVouchersId = (
+export const putVouchersIdAdmin = (
     id: string,
     voucherUpdate: VoucherUpdate,
  ) => {
       
       
       return customInstance<Response>(
-      {url: `/vouchers/${id}`, method: 'PUT',
+      {url: `/vouchers/${id}/admin`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: voucherUpdate
     },
@@ -266,11 +273,11 @@ export const putVouchersId = (
   
 
 
-export const getPutVouchersIdMutationOptions = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putVouchersId>>, TError,{id: string;data: VoucherUpdate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putVouchersId>>, TError,{id: string;data: VoucherUpdate}, TContext> => {
+export const getPutVouchersIdAdminMutationOptions = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putVouchersIdAdmin>>, TError,{id: string;data: VoucherUpdate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putVouchersIdAdmin>>, TError,{id: string;data: VoucherUpdate}, TContext> => {
 
-const mutationKey = ['putVouchersId'];
+const mutationKey = ['putVouchersIdAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -280,10 +287,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putVouchersId>>, {id: string;data: VoucherUpdate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putVouchersIdAdmin>>, {id: string;data: VoucherUpdate}> = (props) => {
           const {id,data} = props ?? {};
 
-          return  putVouchersId(id,data,)
+          return  putVouchersIdAdmin(id,data,)
         }
 
         
@@ -291,48 +298,48 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PutVouchersIdMutationResult = NonNullable<Awaited<ReturnType<typeof putVouchersId>>>
-    export type PutVouchersIdMutationBody = VoucherUpdate
-    export type PutVouchersIdMutationError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void
+    export type PutVouchersIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof putVouchersIdAdmin>>>
+    export type PutVouchersIdAdminMutationBody = VoucherUpdate
+    export type PutVouchersIdAdminMutationError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void
 
     /**
  * @summary Update voucher
  */
-export const usePutVouchersId = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putVouchersId>>, TError,{id: string;data: VoucherUpdate}, TContext>, }
+export const usePutVouchersIdAdmin = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putVouchersIdAdmin>>, TError,{id: string;data: VoucherUpdate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putVouchersId>>,
+        Awaited<ReturnType<typeof putVouchersIdAdmin>>,
         TError,
         {id: string;data: VoucherUpdate},
         TContext
       > => {
 
-      const mutationOptions = getPutVouchersIdMutationOptions(options);
+      const mutationOptions = getPutVouchersIdAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * DELETE `/vouchers/{id}` — voucher. Requires authentication; route does not declare detailed permissions. Handled by `voucherProvider.softDeleteVoucher`.
+ * DELETE `/vouchers/{id}/admin` — voucher. Cần đăng nhập + `voucher.delete_all`. Handled by `voucherProvider.softDeleteVoucher`.
  * @summary Delete voucher
  */
-export const deleteVouchersId = (
+export const deleteVouchersIdAdmin = (
     id: string,
  ) => {
       
       
       return customInstance<Response>(
-      {url: `/vouchers/${id}`, method: 'DELETE'
+      {url: `/vouchers/${id}/admin`, method: 'DELETE'
     },
       );
     }
   
 
 
-export const getDeleteVouchersIdMutationOptions = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteVouchersId>>, TError,{id: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof deleteVouchersId>>, TError,{id: string}, TContext> => {
+export const getDeleteVouchersIdAdminMutationOptions = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteVouchersIdAdmin>>, TError,{id: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteVouchersIdAdmin>>, TError,{id: string}, TContext> => {
 
-const mutationKey = ['deleteVouchersId'];
+const mutationKey = ['deleteVouchersIdAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -342,10 +349,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteVouchersId>>, {id: string}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteVouchersIdAdmin>>, {id: string}> = (props) => {
           const {id} = props ?? {};
 
-          return  deleteVouchersId(id,)
+          return  deleteVouchersIdAdmin(id,)
         }
 
         
@@ -353,441 +360,52 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type DeleteVouchersIdMutationResult = NonNullable<Awaited<ReturnType<typeof deleteVouchersId>>>
+    export type DeleteVouchersIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof deleteVouchersIdAdmin>>>
     
-    export type DeleteVouchersIdMutationError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void
+    export type DeleteVouchersIdAdminMutationError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void
 
     /**
  * @summary Delete voucher
  */
-export const useDeleteVouchersId = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteVouchersId>>, TError,{id: string}, TContext>, }
+export const useDeleteVouchersIdAdmin = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteVouchersIdAdmin>>, TError,{id: string}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteVouchersId>>,
+        Awaited<ReturnType<typeof deleteVouchersIdAdmin>>,
         TError,
         {id: string},
         TContext
       > => {
 
-      const mutationOptions = getDeleteVouchersIdMutationOptions(options);
+      const mutationOptions = getDeleteVouchersIdAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/vouchers/statistics` — voucher. Requires authentication; route does not declare detailed permissions. Query parameters: `date_from`, `date_to`. Handled by `voucherProvider.getAll`.
- * @summary View statistics
+ * **POST /vouchers/{id}/redeem/admin** — đổi voucher. Cần đăng nhập + `voucher.redeem`: khách tự đổi voucher cho bản thân (nếu `required_points > 0` sẽ trừ điểm membership và ghi membership transaction; tạo `user_voucher` trạng thái `redeemed`; ownership được kiểm tra trong business layer). Platform admin: gửi `user_id` để đổi giúp khách. Khách đổi voucher sản phẩm bằng điểm: gửi `product_voucher_id`.
+ * @summary Redeem a voucher
  */
-export const getVouchersStatistics = (
-    params?: GetVouchersStatisticsParams,
+export const postVouchersIdRedeemAdmin = (
+    id: string,
+    postVouchersIdRedeemAdminBody?: PostVouchersIdRedeemAdminBody,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<Response>(
-      {url: `/vouchers/statistics`, method: 'GET',
-        params, signal
-    },
-      );
-    }
-  
-
-
-
-export const getGetVouchersStatisticsInfiniteQueryKey = (params?: GetVouchersStatisticsParams,) => {
-    return [
-    'infinite', `/vouchers/statistics`, ...(params ? [params]: [])
-    ] as const;
-    }
-
-export const getGetVouchersStatisticsQueryKey = (params?: GetVouchersStatisticsParams,) => {
-    return [
-    `/vouchers/statistics`, ...(params ? [params]: [])
-    ] as const;
-    }
-
-    
-export const getGetVouchersStatisticsInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getVouchersStatistics>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(params?: GetVouchersStatisticsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersStatistics>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetVouchersStatisticsInfiniteQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getVouchersStatistics>>> = ({ signal }) => getVouchersStatistics(params, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersStatistics>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetVouchersStatisticsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getVouchersStatistics>>>
-export type GetVouchersStatisticsInfiniteQueryError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
-
-
-export function useGetVouchersStatisticsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getVouchersStatistics>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params: undefined |  GetVouchersStatisticsParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersStatistics>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getVouchersStatistics>>,
-          TError,
-          Awaited<ReturnType<typeof getVouchersStatistics>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetVouchersStatisticsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getVouchersStatistics>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetVouchersStatisticsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersStatistics>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getVouchersStatistics>>,
-          TError,
-          Awaited<ReturnType<typeof getVouchersStatistics>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetVouchersStatisticsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getVouchersStatistics>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetVouchersStatisticsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersStatistics>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary View statistics
- */
-
-export function useGetVouchersStatisticsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getVouchersStatistics>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetVouchersStatisticsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersStatistics>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetVouchersStatisticsInfiniteQueryOptions(params,options)
-
-  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary View statistics
- */
-export const prefetchGetVouchersStatisticsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getVouchersStatistics>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- queryClient: QueryClient, params?: GetVouchersStatisticsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersStatistics>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetVouchersStatisticsInfiniteQueryOptions(params,options)
-
-  await queryClient.prefetchInfiniteQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-export const getGetVouchersStatisticsQueryOptions = <TData = Awaited<ReturnType<typeof getVouchersStatistics>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(params?: GetVouchersStatisticsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersStatistics>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetVouchersStatisticsQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getVouchersStatistics>>> = ({ signal }) => getVouchersStatistics(params, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getVouchersStatistics>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetVouchersStatisticsQueryResult = NonNullable<Awaited<ReturnType<typeof getVouchersStatistics>>>
-export type GetVouchersStatisticsQueryError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
-
-
-export function useGetVouchersStatistics<TData = Awaited<ReturnType<typeof getVouchersStatistics>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params: undefined |  GetVouchersStatisticsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersStatistics>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getVouchersStatistics>>,
-          TError,
-          Awaited<ReturnType<typeof getVouchersStatistics>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetVouchersStatistics<TData = Awaited<ReturnType<typeof getVouchersStatistics>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetVouchersStatisticsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersStatistics>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getVouchersStatistics>>,
-          TError,
-          Awaited<ReturnType<typeof getVouchersStatistics>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetVouchersStatistics<TData = Awaited<ReturnType<typeof getVouchersStatistics>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetVouchersStatisticsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersStatistics>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary View statistics
- */
-
-export function useGetVouchersStatistics<TData = Awaited<ReturnType<typeof getVouchersStatistics>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetVouchersStatisticsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersStatistics>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetVouchersStatisticsQueryOptions(params,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary View statistics
- */
-export const prefetchGetVouchersStatisticsQuery = async <TData = Awaited<ReturnType<typeof getVouchersStatistics>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- queryClient: QueryClient, params?: GetVouchersStatisticsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersStatistics>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetVouchersStatisticsQueryOptions(params,options)
-
-  await queryClient.prefetchQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-/**
- * GET `/vouchers/search` — voucher. Requires authentication; route does not declare detailed permissions. Query parameters: `q`, `points_min`, `points_max`, `start_date`, `end_date`, `is_active`, `created_by`, `limit`, `offset`. Handled by `voucherProvider.getAll`.
- * @summary Search
- */
-export const getVouchersSearch = (
-    params?: GetVouchersSearchParams,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<Response>(
-      {url: `/vouchers/search`, method: 'GET',
-        params, signal
-    },
-      );
-    }
-  
-
-
-
-export const getGetVouchersSearchInfiniteQueryKey = (params?: GetVouchersSearchParams,) => {
-    return [
-    'infinite', `/vouchers/search`, ...(params ? [params]: [])
-    ] as const;
-    }
-
-export const getGetVouchersSearchQueryKey = (params?: GetVouchersSearchParams,) => {
-    return [
-    `/vouchers/search`, ...(params ? [params]: [])
-    ] as const;
-    }
-
-    
-export const getGetVouchersSearchInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getVouchersSearch>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(params?: GetVouchersSearchParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersSearch>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetVouchersSearchInfiniteQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getVouchersSearch>>> = ({ signal }) => getVouchersSearch(params, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersSearch>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetVouchersSearchInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getVouchersSearch>>>
-export type GetVouchersSearchInfiniteQueryError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
-
-
-export function useGetVouchersSearchInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getVouchersSearch>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params: undefined |  GetVouchersSearchParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersSearch>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getVouchersSearch>>,
-          TError,
-          Awaited<ReturnType<typeof getVouchersSearch>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetVouchersSearchInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getVouchersSearch>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetVouchersSearchParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersSearch>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getVouchersSearch>>,
-          TError,
-          Awaited<ReturnType<typeof getVouchersSearch>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetVouchersSearchInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getVouchersSearch>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetVouchersSearchParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersSearch>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Search
- */
-
-export function useGetVouchersSearchInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getVouchersSearch>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetVouchersSearchParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersSearch>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetVouchersSearchInfiniteQueryOptions(params,options)
-
-  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary Search
- */
-export const prefetchGetVouchersSearchInfiniteQuery = async <TData = Awaited<ReturnType<typeof getVouchersSearch>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- queryClient: QueryClient, params?: GetVouchersSearchParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersSearch>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetVouchersSearchInfiniteQueryOptions(params,options)
-
-  await queryClient.prefetchInfiniteQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-export const getGetVouchersSearchQueryOptions = <TData = Awaited<ReturnType<typeof getVouchersSearch>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(params?: GetVouchersSearchParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersSearch>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetVouchersSearchQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getVouchersSearch>>> = ({ signal }) => getVouchersSearch(params, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getVouchersSearch>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetVouchersSearchQueryResult = NonNullable<Awaited<ReturnType<typeof getVouchersSearch>>>
-export type GetVouchersSearchQueryError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
-
-
-export function useGetVouchersSearch<TData = Awaited<ReturnType<typeof getVouchersSearch>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params: undefined |  GetVouchersSearchParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersSearch>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getVouchersSearch>>,
-          TError,
-          Awaited<ReturnType<typeof getVouchersSearch>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetVouchersSearch<TData = Awaited<ReturnType<typeof getVouchersSearch>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetVouchersSearchParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersSearch>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getVouchersSearch>>,
-          TError,
-          Awaited<ReturnType<typeof getVouchersSearch>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetVouchersSearch<TData = Awaited<ReturnType<typeof getVouchersSearch>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetVouchersSearchParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersSearch>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Search
- */
-
-export function useGetVouchersSearch<TData = Awaited<ReturnType<typeof getVouchersSearch>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetVouchersSearchParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersSearch>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetVouchersSearchQueryOptions(params,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary Search
- */
-export const prefetchGetVouchersSearchQuery = async <TData = Awaited<ReturnType<typeof getVouchersSearch>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- queryClient: QueryClient, params?: GetVouchersSearchParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersSearch>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetVouchersSearchQueryOptions(params,options)
-
-  await queryClient.prefetchQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-/**
- * POST `/vouchers/revoke` — voucher. Requires authentication; route does not declare detailed permissions. Body fields: `user_voucher_id`, `reason`. Handled by `userVoucher.findByPk`.
- * @summary Revoke
- */
-export const postVouchersRevoke = (
-    postVouchersRevokeBody: PostVouchersRevokeBody,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<Response>(
-      {url: `/vouchers/revoke`, method: 'POST',
+      return customInstance<PostVouchersIdRedeemAdmin200>(
+      {url: `/vouchers/${id}/redeem/admin`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: postVouchersRevokeBody, signal
+      data: postVouchersIdRedeemAdminBody, signal
     },
       );
     }
   
 
 
-export const getPostVouchersRevokeMutationOptions = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postVouchersRevoke>>, TError,{data: PostVouchersRevokeBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postVouchersRevoke>>, TError,{data: PostVouchersRevokeBody}, TContext> => {
+export const getPostVouchersIdRedeemAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postVouchersIdRedeemAdmin>>, TError,{id: string;data: PostVouchersIdRedeemAdminBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postVouchersIdRedeemAdmin>>, TError,{id: string;data: PostVouchersIdRedeemAdminBody}, TContext> => {
 
-const mutationKey = ['postVouchersRevoke'];
+const mutationKey = ['postVouchersIdRedeemAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -797,10 +415,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postVouchersRevoke>>, {data: PostVouchersRevokeBody}> = (props) => {
-          const {data} = props ?? {};
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postVouchersIdRedeemAdmin>>, {id: string;data: PostVouchersIdRedeemAdminBody}> = (props) => {
+          const {id,data} = props ?? {};
 
-          return  postVouchersRevoke(data,)
+          return  postVouchersIdRedeemAdmin(id,data,)
         }
 
         
@@ -808,38 +426,38 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PostVouchersRevokeMutationResult = NonNullable<Awaited<ReturnType<typeof postVouchersRevoke>>>
-    export type PostVouchersRevokeMutationBody = PostVouchersRevokeBody
-    export type PostVouchersRevokeMutationError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
+    export type PostVouchersIdRedeemAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postVouchersIdRedeemAdmin>>>
+    export type PostVouchersIdRedeemAdminMutationBody = PostVouchersIdRedeemAdminBody
+    export type PostVouchersIdRedeemAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Revoke
+ * @summary Redeem a voucher
  */
-export const usePostVouchersRevoke = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postVouchersRevoke>>, TError,{data: PostVouchersRevokeBody}, TContext>, }
+export const usePostVouchersIdRedeemAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postVouchersIdRedeemAdmin>>, TError,{id: string;data: PostVouchersIdRedeemAdminBody}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postVouchersRevoke>>,
+        Awaited<ReturnType<typeof postVouchersIdRedeemAdmin>>,
         TError,
-        {data: PostVouchersRevokeBody},
+        {id: string;data: PostVouchersIdRedeemAdminBody},
         TContext
       > => {
 
-      const mutationOptions = getPostVouchersRevokeMutationOptions(options);
+      const mutationOptions = getPostVouchersIdRedeemAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/vouchers/redeemed` — voucher. Requires authentication; route does not declare detailed permissions. Query parameters: `user_id`, `voucher_id`, `status`, `currentPage`, `pageSize`, `filters`, `sortField`, `sortOrder`. Handled by `userVoucherProvider.getAll`.
- * @summary View redeemed vouchers
+ * GET `/vouchers/statistics/admin` — voucher. Cần đăng nhập + `voucher.view_all`. Query parameters: `date_from`, `date_to`. Handled by `voucherProvider.getAll`.
+ * @summary View statistics
  */
-export const getVouchersRedeemed = (
-    params?: GetVouchersRedeemedParams,
+export const getVouchersStatisticsAdmin = (
+    params?: GetVouchersStatisticsAdminParams,
  signal?: AbortSignal
 ) => {
       
       
       return customInstance<Response>(
-      {url: `/vouchers/redeemed`, method: 'GET',
+      {url: `/vouchers/statistics/admin`, method: 'GET',
         params, signal
     },
       );
@@ -848,75 +466,75 @@ export const getVouchersRedeemed = (
 
 
 
-export const getGetVouchersRedeemedInfiniteQueryKey = (params?: GetVouchersRedeemedParams,) => {
+export const getGetVouchersStatisticsAdminInfiniteQueryKey = (params?: GetVouchersStatisticsAdminParams,) => {
     return [
-    'infinite', `/vouchers/redeemed`, ...(params ? [params]: [])
+    'infinite', `/vouchers/statistics/admin`, ...(params ? [params]: [])
     ] as const;
     }
 
-export const getGetVouchersRedeemedQueryKey = (params?: GetVouchersRedeemedParams,) => {
+export const getGetVouchersStatisticsAdminQueryKey = (params?: GetVouchersStatisticsAdminParams,) => {
     return [
-    `/vouchers/redeemed`, ...(params ? [params]: [])
+    `/vouchers/statistics/admin`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetVouchersRedeemedInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getVouchersRedeemed>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(params?: GetVouchersRedeemedParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersRedeemed>>, TError, TData>>, }
+export const getGetVouchersStatisticsAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getVouchersStatisticsAdmin>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(params?: GetVouchersStatisticsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersStatisticsAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetVouchersRedeemedInfiniteQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getGetVouchersStatisticsAdminInfiniteQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getVouchersRedeemed>>> = ({ signal }) => getVouchersRedeemed(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getVouchersStatisticsAdmin>>> = ({ signal }) => getVouchersStatisticsAdmin(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersRedeemed>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersStatisticsAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetVouchersRedeemedInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getVouchersRedeemed>>>
-export type GetVouchersRedeemedInfiniteQueryError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
+export type GetVouchersStatisticsAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getVouchersStatisticsAdmin>>>
+export type GetVouchersStatisticsAdminInfiniteQueryError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
 
 
-export function useGetVouchersRedeemedInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getVouchersRedeemed>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params: undefined |  GetVouchersRedeemedParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersRedeemed>>, TError, TData>> & Pick<
+export function useGetVouchersStatisticsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getVouchersStatisticsAdmin>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+ params: undefined |  GetVouchersStatisticsAdminParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersStatisticsAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getVouchersRedeemed>>,
+          Awaited<ReturnType<typeof getVouchersStatisticsAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getVouchersRedeemed>>
+          Awaited<ReturnType<typeof getVouchersStatisticsAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetVouchersRedeemedInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getVouchersRedeemed>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetVouchersRedeemedParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersRedeemed>>, TError, TData>> & Pick<
+export function useGetVouchersStatisticsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getVouchersStatisticsAdmin>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+ params?: GetVouchersStatisticsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersStatisticsAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getVouchersRedeemed>>,
+          Awaited<ReturnType<typeof getVouchersStatisticsAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getVouchersRedeemed>>
+          Awaited<ReturnType<typeof getVouchersStatisticsAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetVouchersRedeemedInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getVouchersRedeemed>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetVouchersRedeemedParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersRedeemed>>, TError, TData>>, }
+export function useGetVouchersStatisticsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getVouchersStatisticsAdmin>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+ params?: GetVouchersStatisticsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersStatisticsAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary View redeemed vouchers
+ * @summary View statistics
  */
 
-export function useGetVouchersRedeemedInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getVouchersRedeemed>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetVouchersRedeemedParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersRedeemed>>, TError, TData>>, }
+export function useGetVouchersStatisticsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getVouchersStatisticsAdmin>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+ params?: GetVouchersStatisticsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersStatisticsAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetVouchersRedeemedInfiniteQueryOptions(params,options)
+  const queryOptions = getGetVouchersStatisticsAdminInfiniteQueryOptions(params,options)
 
   const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -926,14 +544,14 @@ export function useGetVouchersRedeemedInfinite<TData = InfiniteData<Awaited<Retu
 }
 
 /**
- * @summary View redeemed vouchers
+ * @summary View statistics
  */
-export const prefetchGetVouchersRedeemedInfiniteQuery = async <TData = Awaited<ReturnType<typeof getVouchersRedeemed>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- queryClient: QueryClient, params?: GetVouchersRedeemedParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersRedeemed>>, TError, TData>>, }
+export const prefetchGetVouchersStatisticsAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getVouchersStatisticsAdmin>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+ queryClient: QueryClient, params?: GetVouchersStatisticsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersStatisticsAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetVouchersRedeemedInfiniteQueryOptions(params,options)
+  const queryOptions = getGetVouchersStatisticsAdminInfiniteQueryOptions(params,options)
 
   await queryClient.prefetchInfiniteQuery(queryOptions);
 
@@ -942,62 +560,62 @@ export const prefetchGetVouchersRedeemedInfiniteQuery = async <TData = Awaited<R
 
 
 
-export const getGetVouchersRedeemedQueryOptions = <TData = Awaited<ReturnType<typeof getVouchersRedeemed>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(params?: GetVouchersRedeemedParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersRedeemed>>, TError, TData>>, }
+export const getGetVouchersStatisticsAdminQueryOptions = <TData = Awaited<ReturnType<typeof getVouchersStatisticsAdmin>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(params?: GetVouchersStatisticsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersStatisticsAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetVouchersRedeemedQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getGetVouchersStatisticsAdminQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getVouchersRedeemed>>> = ({ signal }) => getVouchersRedeemed(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getVouchersStatisticsAdmin>>> = ({ signal }) => getVouchersStatisticsAdmin(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getVouchersRedeemed>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getVouchersStatisticsAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetVouchersRedeemedQueryResult = NonNullable<Awaited<ReturnType<typeof getVouchersRedeemed>>>
-export type GetVouchersRedeemedQueryError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
+export type GetVouchersStatisticsAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getVouchersStatisticsAdmin>>>
+export type GetVouchersStatisticsAdminQueryError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
 
 
-export function useGetVouchersRedeemed<TData = Awaited<ReturnType<typeof getVouchersRedeemed>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params: undefined |  GetVouchersRedeemedParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersRedeemed>>, TError, TData>> & Pick<
+export function useGetVouchersStatisticsAdmin<TData = Awaited<ReturnType<typeof getVouchersStatisticsAdmin>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+ params: undefined |  GetVouchersStatisticsAdminParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersStatisticsAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getVouchersRedeemed>>,
+          Awaited<ReturnType<typeof getVouchersStatisticsAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getVouchersRedeemed>>
+          Awaited<ReturnType<typeof getVouchersStatisticsAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetVouchersRedeemed<TData = Awaited<ReturnType<typeof getVouchersRedeemed>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetVouchersRedeemedParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersRedeemed>>, TError, TData>> & Pick<
+export function useGetVouchersStatisticsAdmin<TData = Awaited<ReturnType<typeof getVouchersStatisticsAdmin>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+ params?: GetVouchersStatisticsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersStatisticsAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getVouchersRedeemed>>,
+          Awaited<ReturnType<typeof getVouchersStatisticsAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getVouchersRedeemed>>
+          Awaited<ReturnType<typeof getVouchersStatisticsAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetVouchersRedeemed<TData = Awaited<ReturnType<typeof getVouchersRedeemed>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetVouchersRedeemedParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersRedeemed>>, TError, TData>>, }
+export function useGetVouchersStatisticsAdmin<TData = Awaited<ReturnType<typeof getVouchersStatisticsAdmin>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+ params?: GetVouchersStatisticsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersStatisticsAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary View redeemed vouchers
+ * @summary View statistics
  */
 
-export function useGetVouchersRedeemed<TData = Awaited<ReturnType<typeof getVouchersRedeemed>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetVouchersRedeemedParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersRedeemed>>, TError, TData>>, }
+export function useGetVouchersStatisticsAdmin<TData = Awaited<ReturnType<typeof getVouchersStatisticsAdmin>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+ params?: GetVouchersStatisticsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersStatisticsAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetVouchersRedeemedQueryOptions(params,options)
+  const queryOptions = getGetVouchersStatisticsAdminQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -1007,14 +625,14 @@ export function useGetVouchersRedeemed<TData = Awaited<ReturnType<typeof getVouc
 }
 
 /**
- * @summary View redeemed vouchers
+ * @summary View statistics
  */
-export const prefetchGetVouchersRedeemedQuery = async <TData = Awaited<ReturnType<typeof getVouchersRedeemed>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- queryClient: QueryClient, params?: GetVouchersRedeemedParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersRedeemed>>, TError, TData>>, }
+export const prefetchGetVouchersStatisticsAdminQuery = async <TData = Awaited<ReturnType<typeof getVouchersStatisticsAdmin>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+ queryClient: QueryClient, params?: GetVouchersStatisticsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersStatisticsAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetVouchersRedeemedQueryOptions(params,options)
+  const queryOptions = getGetVouchersStatisticsAdminQueryOptions(params,options)
 
   await queryClient.prefetchQuery(queryOptions);
 
@@ -1024,30 +642,225 @@ export const prefetchGetVouchersRedeemedQuery = async <TData = Awaited<ReturnTyp
 
 
 /**
- * POST `/vouchers/mark-used` — voucher. Requires the `voucher.update` permission. Body fields: `user_voucher_id`, `note`. Handled by `userVoucher.findByPk`.
- * @summary Mark as used
+ * GET `/vouchers/search/admin` — voucher. Cần đăng nhập + `voucher.view_all`. Query parameters: `q`, `points_min`, `points_max`, `start_date`, `end_date`, `is_active`, `created_by`, `limit`, `offset`. Handled by `voucherProvider.getAll`.
+ * @summary Search
  */
-export const postVouchersMarkUsed = (
-    postVouchersMarkUsedBody: PostVouchersMarkUsedBody,
+export const getVouchersSearchAdmin = (
+    params?: GetVouchersSearchAdminParams,
  signal?: AbortSignal
 ) => {
       
       
       return customInstance<Response>(
-      {url: `/vouchers/mark-used`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: postVouchersMarkUsedBody, signal
+      {url: `/vouchers/search/admin`, method: 'GET',
+        params, signal
     },
       );
     }
   
 
 
-export const getPostVouchersMarkUsedMutationOptions = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postVouchersMarkUsed>>, TError,{data: PostVouchersMarkUsedBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postVouchersMarkUsed>>, TError,{data: PostVouchersMarkUsedBody}, TContext> => {
 
-const mutationKey = ['postVouchersMarkUsed'];
+export const getGetVouchersSearchAdminInfiniteQueryKey = (params?: GetVouchersSearchAdminParams,) => {
+    return [
+    'infinite', `/vouchers/search/admin`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+export const getGetVouchersSearchAdminQueryKey = (params?: GetVouchersSearchAdminParams,) => {
+    return [
+    `/vouchers/search/admin`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getGetVouchersSearchAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getVouchersSearchAdmin>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(params?: GetVouchersSearchAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersSearchAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetVouchersSearchAdminInfiniteQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getVouchersSearchAdmin>>> = ({ signal }) => getVouchersSearchAdmin(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersSearchAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetVouchersSearchAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getVouchersSearchAdmin>>>
+export type GetVouchersSearchAdminInfiniteQueryError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
+
+
+export function useGetVouchersSearchAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getVouchersSearchAdmin>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+ params: undefined |  GetVouchersSearchAdminParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersSearchAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getVouchersSearchAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getVouchersSearchAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetVouchersSearchAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getVouchersSearchAdmin>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+ params?: GetVouchersSearchAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersSearchAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getVouchersSearchAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getVouchersSearchAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetVouchersSearchAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getVouchersSearchAdmin>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+ params?: GetVouchersSearchAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersSearchAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Search
+ */
+
+export function useGetVouchersSearchAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getVouchersSearchAdmin>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+ params?: GetVouchersSearchAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersSearchAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetVouchersSearchAdminInfiniteQueryOptions(params,options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Search
+ */
+export const prefetchGetVouchersSearchAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getVouchersSearchAdmin>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+ queryClient: QueryClient, params?: GetVouchersSearchAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersSearchAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetVouchersSearchAdminInfiniteQueryOptions(params,options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetVouchersSearchAdminQueryOptions = <TData = Awaited<ReturnType<typeof getVouchersSearchAdmin>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(params?: GetVouchersSearchAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersSearchAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetVouchersSearchAdminQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getVouchersSearchAdmin>>> = ({ signal }) => getVouchersSearchAdmin(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getVouchersSearchAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetVouchersSearchAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getVouchersSearchAdmin>>>
+export type GetVouchersSearchAdminQueryError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
+
+
+export function useGetVouchersSearchAdmin<TData = Awaited<ReturnType<typeof getVouchersSearchAdmin>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+ params: undefined |  GetVouchersSearchAdminParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersSearchAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getVouchersSearchAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getVouchersSearchAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetVouchersSearchAdmin<TData = Awaited<ReturnType<typeof getVouchersSearchAdmin>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+ params?: GetVouchersSearchAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersSearchAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getVouchersSearchAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getVouchersSearchAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetVouchersSearchAdmin<TData = Awaited<ReturnType<typeof getVouchersSearchAdmin>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+ params?: GetVouchersSearchAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersSearchAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Search
+ */
+
+export function useGetVouchersSearchAdmin<TData = Awaited<ReturnType<typeof getVouchersSearchAdmin>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+ params?: GetVouchersSearchAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersSearchAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetVouchersSearchAdminQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Search
+ */
+export const prefetchGetVouchersSearchAdminQuery = async <TData = Awaited<ReturnType<typeof getVouchersSearchAdmin>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+ queryClient: QueryClient, params?: GetVouchersSearchAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersSearchAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetVouchersSearchAdminQueryOptions(params,options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * POST `/vouchers/revoke/admin` — voucher. Cần đăng nhập + `voucher.revoke` (thu hồi voucher đã phát cho khách). Body fields: `user_voucher_id`, `reason`. Handled by `userVoucher.findByPk`.
+ * @summary Revoke
+ */
+export const postVouchersRevokeAdmin = (
+    postVouchersRevokeAdminBody: PostVouchersRevokeAdminBody,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<Response>(
+      {url: `/vouchers/revoke/admin`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: postVouchersRevokeAdminBody, signal
+    },
+      );
+    }
+  
+
+
+export const getPostVouchersRevokeAdminMutationOptions = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postVouchersRevokeAdmin>>, TError,{data: PostVouchersRevokeAdminBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postVouchersRevokeAdmin>>, TError,{data: PostVouchersRevokeAdminBody}, TContext> => {
+
+const mutationKey = ['postVouchersRevokeAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -1057,10 +870,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postVouchersMarkUsed>>, {data: PostVouchersMarkUsedBody}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postVouchersRevokeAdmin>>, {data: PostVouchersRevokeAdminBody}> = (props) => {
           const {data} = props ?? {};
 
-          return  postVouchersMarkUsed(data,)
+          return  postVouchersRevokeAdmin(data,)
         }
 
         
@@ -1068,38 +881,38 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PostVouchersMarkUsedMutationResult = NonNullable<Awaited<ReturnType<typeof postVouchersMarkUsed>>>
-    export type PostVouchersMarkUsedMutationBody = PostVouchersMarkUsedBody
-    export type PostVouchersMarkUsedMutationError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
+    export type PostVouchersRevokeAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postVouchersRevokeAdmin>>>
+    export type PostVouchersRevokeAdminMutationBody = PostVouchersRevokeAdminBody
+    export type PostVouchersRevokeAdminMutationError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
 
     /**
- * @summary Mark as used
+ * @summary Revoke
  */
-export const usePostVouchersMarkUsed = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postVouchersMarkUsed>>, TError,{data: PostVouchersMarkUsedBody}, TContext>, }
+export const usePostVouchersRevokeAdmin = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postVouchersRevokeAdmin>>, TError,{data: PostVouchersRevokeAdminBody}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postVouchersMarkUsed>>,
+        Awaited<ReturnType<typeof postVouchersRevokeAdmin>>,
         TError,
-        {data: PostVouchersMarkUsedBody},
+        {data: PostVouchersRevokeAdminBody},
         TContext
       > => {
 
-      const mutationOptions = getPostVouchersMarkUsedMutationOptions(options);
+      const mutationOptions = getPostVouchersRevokeAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/vouchers` — voucher. Requires authentication; route does not declare detailed permissions. Query parameters: `currentPage`, `pageSize`, `filters`, `sortField`, `sortOrder`. Handled by `voucherProvider.getAllWithOptions`.
- * @summary List vouchers
+ * GET `/vouchers/redeemed/admin` — voucher. Cần đăng nhập + `voucher.view_all`. Query parameters: `user_id`, `voucher_id`, `status`, `currentPage`, `pageSize`, `filters`, `sortField`, `sortOrder`. Handled by `userVoucherProvider.getAll`.
+ * @summary View redeemed vouchers
  */
-export const getVouchers = (
-    params?: GetVouchersParams,
+export const getVouchersRedeemedAdmin = (
+    params?: GetVouchersRedeemedAdminParams,
  signal?: AbortSignal
 ) => {
       
       
       return customInstance<Response>(
-      {url: `/vouchers`, method: 'GET',
+      {url: `/vouchers/redeemed/admin`, method: 'GET',
         params, signal
     },
       );
@@ -1108,75 +921,463 @@ export const getVouchers = (
 
 
 
-export const getGetVouchersInfiniteQueryKey = (params?: GetVouchersParams,) => {
+export const getGetVouchersRedeemedAdminInfiniteQueryKey = (params?: GetVouchersRedeemedAdminParams,) => {
     return [
-    'infinite', `/vouchers`, ...(params ? [params]: [])
+    'infinite', `/vouchers/redeemed/admin`, ...(params ? [params]: [])
     ] as const;
     }
 
-export const getGetVouchersQueryKey = (params?: GetVouchersParams,) => {
+export const getGetVouchersRedeemedAdminQueryKey = (params?: GetVouchersRedeemedAdminParams,) => {
     return [
-    `/vouchers`, ...(params ? [params]: [])
+    `/vouchers/redeemed/admin`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetVouchersInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getVouchers>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(params?: GetVouchersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchers>>, TError, TData>>, }
+export const getGetVouchersRedeemedAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getVouchersRedeemedAdmin>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(params?: GetVouchersRedeemedAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersRedeemedAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetVouchersInfiniteQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getGetVouchersRedeemedAdminInfiniteQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getVouchers>>> = ({ signal }) => getVouchers(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getVouchersRedeemedAdmin>>> = ({ signal }) => getVouchersRedeemedAdmin(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchers>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersRedeemedAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetVouchersInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getVouchers>>>
-export type GetVouchersInfiniteQueryError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
+export type GetVouchersRedeemedAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getVouchersRedeemedAdmin>>>
+export type GetVouchersRedeemedAdminInfiniteQueryError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
 
 
-export function useGetVouchersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getVouchers>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params: undefined |  GetVouchersParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchers>>, TError, TData>> & Pick<
+export function useGetVouchersRedeemedAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getVouchersRedeemedAdmin>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+ params: undefined |  GetVouchersRedeemedAdminParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersRedeemedAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getVouchers>>,
+          Awaited<ReturnType<typeof getVouchersRedeemedAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getVouchers>>
+          Awaited<ReturnType<typeof getVouchersRedeemedAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetVouchersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getVouchers>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetVouchersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchers>>, TError, TData>> & Pick<
+export function useGetVouchersRedeemedAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getVouchersRedeemedAdmin>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+ params?: GetVouchersRedeemedAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersRedeemedAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getVouchers>>,
+          Awaited<ReturnType<typeof getVouchersRedeemedAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getVouchers>>
+          Awaited<ReturnType<typeof getVouchersRedeemedAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetVouchersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getVouchers>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetVouchersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchers>>, TError, TData>>, }
+export function useGetVouchersRedeemedAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getVouchersRedeemedAdmin>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+ params?: GetVouchersRedeemedAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersRedeemedAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary View redeemed vouchers
+ */
+
+export function useGetVouchersRedeemedAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getVouchersRedeemedAdmin>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+ params?: GetVouchersRedeemedAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersRedeemedAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetVouchersRedeemedAdminInfiniteQueryOptions(params,options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary View redeemed vouchers
+ */
+export const prefetchGetVouchersRedeemedAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getVouchersRedeemedAdmin>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+ queryClient: QueryClient, params?: GetVouchersRedeemedAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersRedeemedAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetVouchersRedeemedAdminInfiniteQueryOptions(params,options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetVouchersRedeemedAdminQueryOptions = <TData = Awaited<ReturnType<typeof getVouchersRedeemedAdmin>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(params?: GetVouchersRedeemedAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersRedeemedAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetVouchersRedeemedAdminQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getVouchersRedeemedAdmin>>> = ({ signal }) => getVouchersRedeemedAdmin(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getVouchersRedeemedAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetVouchersRedeemedAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getVouchersRedeemedAdmin>>>
+export type GetVouchersRedeemedAdminQueryError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
+
+
+export function useGetVouchersRedeemedAdmin<TData = Awaited<ReturnType<typeof getVouchersRedeemedAdmin>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+ params: undefined |  GetVouchersRedeemedAdminParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersRedeemedAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getVouchersRedeemedAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getVouchersRedeemedAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetVouchersRedeemedAdmin<TData = Awaited<ReturnType<typeof getVouchersRedeemedAdmin>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+ params?: GetVouchersRedeemedAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersRedeemedAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getVouchersRedeemedAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getVouchersRedeemedAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetVouchersRedeemedAdmin<TData = Awaited<ReturnType<typeof getVouchersRedeemedAdmin>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+ params?: GetVouchersRedeemedAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersRedeemedAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary View redeemed vouchers
+ */
+
+export function useGetVouchersRedeemedAdmin<TData = Awaited<ReturnType<typeof getVouchersRedeemedAdmin>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+ params?: GetVouchersRedeemedAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersRedeemedAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetVouchersRedeemedAdminQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary View redeemed vouchers
+ */
+export const prefetchGetVouchersRedeemedAdminQuery = async <TData = Awaited<ReturnType<typeof getVouchersRedeemedAdmin>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+ queryClient: QueryClient, params?: GetVouchersRedeemedAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersRedeemedAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetVouchersRedeemedAdminQueryOptions(params,options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * POST `/vouchers/mark-used/admin` — voucher. Cần đăng nhập + `voucher.mark_used`. Body fields: `user_voucher_id`, `note`. Handled by `userVoucher.findByPk`.
+ * @summary Mark as used
+ */
+export const postVouchersMarkUsedAdmin = (
+    postVouchersMarkUsedAdminBody: PostVouchersMarkUsedAdminBody,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<Response>(
+      {url: `/vouchers/mark-used/admin`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: postVouchersMarkUsedAdminBody, signal
+    },
+      );
+    }
+  
+
+
+export const getPostVouchersMarkUsedAdminMutationOptions = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postVouchersMarkUsedAdmin>>, TError,{data: PostVouchersMarkUsedAdminBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postVouchersMarkUsedAdmin>>, TError,{data: PostVouchersMarkUsedAdminBody}, TContext> => {
+
+const mutationKey = ['postVouchersMarkUsedAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postVouchersMarkUsedAdmin>>, {data: PostVouchersMarkUsedAdminBody}> = (props) => {
+          const {data} = props ?? {};
+
+          return  postVouchersMarkUsedAdmin(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostVouchersMarkUsedAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postVouchersMarkUsedAdmin>>>
+    export type PostVouchersMarkUsedAdminMutationBody = PostVouchersMarkUsedAdminBody
+    export type PostVouchersMarkUsedAdminMutationError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
+
+    /**
+ * @summary Mark as used
+ */
+export const usePostVouchersMarkUsedAdmin = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postVouchersMarkUsedAdmin>>, TError,{data: PostVouchersMarkUsedAdminBody}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postVouchersMarkUsedAdmin>>,
+        TError,
+        {data: PostVouchersMarkUsedAdminBody},
+        TContext
+      > => {
+
+      const mutationOptions = getPostVouchersMarkUsedAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * PUT `/vouchers/bulk/admin` — voucher. Cần đăng nhập + `voucher.update_all`. Body fields: `voucher_ids`, `action`, `updated_by`. Handled by `voucherProvider.bulkUpdate`.
+ * @summary Enable or disable vouchers in bulk
+ */
+export const putVouchersBulkAdmin = (
+    putVouchersBulkAdminBody: PutVouchersBulkAdminBody,
+ ) => {
+      
+      
+      return customInstance<Response>(
+      {url: `/vouchers/bulk/admin`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: putVouchersBulkAdminBody
+    },
+      );
+    }
+  
+
+
+export const getPutVouchersBulkAdminMutationOptions = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putVouchersBulkAdmin>>, TError,{data: PutVouchersBulkAdminBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putVouchersBulkAdmin>>, TError,{data: PutVouchersBulkAdminBody}, TContext> => {
+
+const mutationKey = ['putVouchersBulkAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putVouchersBulkAdmin>>, {data: PutVouchersBulkAdminBody}> = (props) => {
+          const {data} = props ?? {};
+
+          return  putVouchersBulkAdmin(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PutVouchersBulkAdminMutationResult = NonNullable<Awaited<ReturnType<typeof putVouchersBulkAdmin>>>
+    export type PutVouchersBulkAdminMutationBody = PutVouchersBulkAdminBody
+    export type PutVouchersBulkAdminMutationError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
+
+    /**
+ * @summary Enable or disable vouchers in bulk
+ */
+export const usePutVouchersBulkAdmin = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putVouchersBulkAdmin>>, TError,{data: PutVouchersBulkAdminBody}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof putVouchersBulkAdmin>>,
+        TError,
+        {data: PutVouchersBulkAdminBody},
+        TContext
+      > => {
+
+      const mutationOptions = getPutVouchersBulkAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * DELETE `/vouchers/bulk/admin` — voucher. Cần đăng nhập + `voucher.delete_all`. Body fields: `voucher_ids`, `updated_by`. Handled by `voucherProvider.bulkUpdate`.
+ * @summary Delete vouchers in bulk
+ */
+export const deleteVouchersBulkAdmin = (
+    deleteVouchersBulkAdminBody: DeleteVouchersBulkAdminBody,
+ ) => {
+      
+      
+      return customInstance<Response>(
+      {url: `/vouchers/bulk/admin`, method: 'DELETE',
+      headers: {'Content-Type': 'application/json', },
+      data: deleteVouchersBulkAdminBody
+    },
+      );
+    }
+  
+
+
+export const getDeleteVouchersBulkAdminMutationOptions = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteVouchersBulkAdmin>>, TError,{data: DeleteVouchersBulkAdminBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteVouchersBulkAdmin>>, TError,{data: DeleteVouchersBulkAdminBody}, TContext> => {
+
+const mutationKey = ['deleteVouchersBulkAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteVouchersBulkAdmin>>, {data: DeleteVouchersBulkAdminBody}> = (props) => {
+          const {data} = props ?? {};
+
+          return  deleteVouchersBulkAdmin(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteVouchersBulkAdminMutationResult = NonNullable<Awaited<ReturnType<typeof deleteVouchersBulkAdmin>>>
+    export type DeleteVouchersBulkAdminMutationBody = DeleteVouchersBulkAdminBody
+    export type DeleteVouchersBulkAdminMutationError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
+
+    /**
+ * @summary Delete vouchers in bulk
+ */
+export const useDeleteVouchersBulkAdmin = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteVouchersBulkAdmin>>, TError,{data: DeleteVouchersBulkAdminBody}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof deleteVouchersBulkAdmin>>,
+        TError,
+        {data: DeleteVouchersBulkAdminBody},
+        TContext
+      > => {
+
+      const mutationOptions = getDeleteVouchersBulkAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * GET `/vouchers/admin` — voucher. Cần đăng nhập + `voucher.view_all`; với `voucher.view_own` (khách) trả catalog voucher đang hoạt động kèm `mine`/`my_status`. Query parameters: `currentPage`, `pageSize`, `filters`, `sortField`, `sortOrder`. Handled by `voucherProvider.getAllWithOptions`.
+ * @summary List vouchers
+ */
+export const getVouchersAdmin = (
+    params?: GetVouchersAdminParams,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<Response>(
+      {url: `/vouchers/admin`, method: 'GET',
+        params, signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetVouchersAdminInfiniteQueryKey = (params?: GetVouchersAdminParams,) => {
+    return [
+    'infinite', `/vouchers/admin`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+export const getGetVouchersAdminQueryKey = (params?: GetVouchersAdminParams,) => {
+    return [
+    `/vouchers/admin`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getGetVouchersAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getVouchersAdmin>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(params?: GetVouchersAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetVouchersAdminInfiniteQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getVouchersAdmin>>> = ({ signal }) => getVouchersAdmin(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetVouchersAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getVouchersAdmin>>>
+export type GetVouchersAdminInfiniteQueryError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
+
+
+export function useGetVouchersAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getVouchersAdmin>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+ params: undefined |  GetVouchersAdminParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getVouchersAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getVouchersAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetVouchersAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getVouchersAdmin>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+ params?: GetVouchersAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getVouchersAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getVouchersAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetVouchersAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getVouchersAdmin>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+ params?: GetVouchersAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary List vouchers
  */
 
-export function useGetVouchersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getVouchers>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetVouchersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchers>>, TError, TData>>, }
+export function useGetVouchersAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getVouchersAdmin>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+ params?: GetVouchersAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetVouchersInfiniteQueryOptions(params,options)
+  const queryOptions = getGetVouchersAdminInfiniteQueryOptions(params,options)
 
   const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -1188,12 +1389,12 @@ export function useGetVouchersInfinite<TData = InfiniteData<Awaited<ReturnType<t
 /**
  * @summary List vouchers
  */
-export const prefetchGetVouchersInfiniteQuery = async <TData = Awaited<ReturnType<typeof getVouchers>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- queryClient: QueryClient, params?: GetVouchersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchers>>, TError, TData>>, }
+export const prefetchGetVouchersAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getVouchersAdmin>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+ queryClient: QueryClient, params?: GetVouchersAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetVouchersInfiniteQueryOptions(params,options)
+  const queryOptions = getGetVouchersAdminInfiniteQueryOptions(params,options)
 
   await queryClient.prefetchInfiniteQuery(queryOptions);
 
@@ -1202,62 +1403,62 @@ export const prefetchGetVouchersInfiniteQuery = async <TData = Awaited<ReturnTyp
 
 
 
-export const getGetVouchersQueryOptions = <TData = Awaited<ReturnType<typeof getVouchers>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(params?: GetVouchersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchers>>, TError, TData>>, }
+export const getGetVouchersAdminQueryOptions = <TData = Awaited<ReturnType<typeof getVouchersAdmin>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(params?: GetVouchersAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetVouchersQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getGetVouchersAdminQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getVouchers>>> = ({ signal }) => getVouchers(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getVouchersAdmin>>> = ({ signal }) => getVouchersAdmin(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getVouchers>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getVouchersAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetVouchersQueryResult = NonNullable<Awaited<ReturnType<typeof getVouchers>>>
-export type GetVouchersQueryError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
+export type GetVouchersAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getVouchersAdmin>>>
+export type GetVouchersAdminQueryError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
 
 
-export function useGetVouchers<TData = Awaited<ReturnType<typeof getVouchers>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params: undefined |  GetVouchersParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchers>>, TError, TData>> & Pick<
+export function useGetVouchersAdmin<TData = Awaited<ReturnType<typeof getVouchersAdmin>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+ params: undefined |  GetVouchersAdminParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getVouchers>>,
+          Awaited<ReturnType<typeof getVouchersAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getVouchers>>
+          Awaited<ReturnType<typeof getVouchersAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetVouchers<TData = Awaited<ReturnType<typeof getVouchers>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetVouchersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchers>>, TError, TData>> & Pick<
+export function useGetVouchersAdmin<TData = Awaited<ReturnType<typeof getVouchersAdmin>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+ params?: GetVouchersAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getVouchers>>,
+          Awaited<ReturnType<typeof getVouchersAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getVouchers>>
+          Awaited<ReturnType<typeof getVouchersAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetVouchers<TData = Awaited<ReturnType<typeof getVouchers>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetVouchersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchers>>, TError, TData>>, }
+export function useGetVouchersAdmin<TData = Awaited<ReturnType<typeof getVouchersAdmin>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+ params?: GetVouchersAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary List vouchers
  */
 
-export function useGetVouchers<TData = Awaited<ReturnType<typeof getVouchers>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetVouchersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchers>>, TError, TData>>, }
+export function useGetVouchersAdmin<TData = Awaited<ReturnType<typeof getVouchersAdmin>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+ params?: GetVouchersAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetVouchersQueryOptions(params,options)
+  const queryOptions = getGetVouchersAdminQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -1269,12 +1470,12 @@ export function useGetVouchers<TData = Awaited<ReturnType<typeof getVouchers>>, 
 /**
  * @summary List vouchers
  */
-export const prefetchGetVouchersQuery = async <TData = Awaited<ReturnType<typeof getVouchers>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- queryClient: QueryClient, params?: GetVouchersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchers>>, TError, TData>>, }
+export const prefetchGetVouchersAdminQuery = async <TData = Awaited<ReturnType<typeof getVouchersAdmin>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+ queryClient: QueryClient, params?: GetVouchersAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetVouchersQueryOptions(params,options)
+  const queryOptions = getGetVouchersAdminQueryOptions(params,options)
 
   await queryClient.prefetchQuery(queryOptions);
 
@@ -1284,17 +1485,17 @@ export const prefetchGetVouchersQuery = async <TData = Awaited<ReturnType<typeof
 
 
 /**
- * POST `/vouchers` — voucher. Requires authentication; route does not declare detailed permissions. Body fields: `title`, `description`, `image_file_id`, `required_points`, `start_date`, `type`, `end_date`, `card_rank_id`, `is_loyalty`, `quantity_total`, `created_by`. Handled by `voucherProvider.createVoucher`.
+ * POST `/vouchers/admin` — voucher. Cần đăng nhập + `voucher.create`. Body fields: `title`, `description`, `image_file_id`, `required_points`, `start_date`, `type`, `end_date`, `card_rank_id`, `is_loyalty`, `quantity_total`, `created_by`. Handled by `voucherProvider.createVoucher`.
  * @summary Create a new voucher
  */
-export const postVouchers = (
+export const postVouchersAdmin = (
     voucherCreate: VoucherCreate,
  signal?: AbortSignal
 ) => {
       
       
       return customInstance<Response>(
-      {url: `/vouchers`, method: 'POST',
+      {url: `/vouchers/admin`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: voucherCreate, signal
     },
@@ -1303,11 +1504,11 @@ export const postVouchers = (
   
 
 
-export const getPostVouchersMutationOptions = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postVouchers>>, TError,{data: VoucherCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postVouchers>>, TError,{data: VoucherCreate}, TContext> => {
+export const getPostVouchersAdminMutationOptions = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postVouchersAdmin>>, TError,{data: VoucherCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postVouchersAdmin>>, TError,{data: VoucherCreate}, TContext> => {
 
-const mutationKey = ['postVouchers'];
+const mutationKey = ['postVouchersAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -1317,10 +1518,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postVouchers>>, {data: VoucherCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postVouchersAdmin>>, {data: VoucherCreate}> = (props) => {
           const {data} = props ?? {};
 
-          return  postVouchers(data,)
+          return  postVouchersAdmin(data,)
         }
 
         
@@ -1328,217 +1529,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PostVouchersMutationResult = NonNullable<Awaited<ReturnType<typeof postVouchers>>>
-    export type PostVouchersMutationBody = VoucherCreate
-    export type PostVouchersMutationError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
+    export type PostVouchersAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postVouchersAdmin>>>
+    export type PostVouchersAdminMutationBody = VoucherCreate
+    export type PostVouchersAdminMutationError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
 
     /**
  * @summary Create a new voucher
  */
-export const usePostVouchers = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postVouchers>>, TError,{data: VoucherCreate}, TContext>, }
+export const usePostVouchersAdmin = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postVouchersAdmin>>, TError,{data: VoucherCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postVouchers>>,
+        Awaited<ReturnType<typeof postVouchersAdmin>>,
         TError,
         {data: VoucherCreate},
         TContext
       > => {
 
-      const mutationOptions = getPostVouchersMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * PUT `/vouchers/bulk` — voucher. Requires authentication; route does not declare detailed permissions. Body fields: `voucher_ids`, `action`, `updated_by`. Handled by `voucherProvider.bulkUpdate`.
- * @summary Enable or disable vouchers in bulk
- */
-export const putVouchersBulk = (
-    putVouchersBulkBody: PutVouchersBulkBody,
- ) => {
-      
-      
-      return customInstance<Response>(
-      {url: `/vouchers/bulk`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: putVouchersBulkBody
-    },
-      );
-    }
-  
-
-
-export const getPutVouchersBulkMutationOptions = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putVouchersBulk>>, TError,{data: PutVouchersBulkBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putVouchersBulk>>, TError,{data: PutVouchersBulkBody}, TContext> => {
-
-const mutationKey = ['putVouchersBulk'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putVouchersBulk>>, {data: PutVouchersBulkBody}> = (props) => {
-          const {data} = props ?? {};
-
-          return  putVouchersBulk(data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PutVouchersBulkMutationResult = NonNullable<Awaited<ReturnType<typeof putVouchersBulk>>>
-    export type PutVouchersBulkMutationBody = PutVouchersBulkBody
-    export type PutVouchersBulkMutationError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
-
-    /**
- * @summary Enable or disable vouchers in bulk
- */
-export const usePutVouchersBulk = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putVouchersBulk>>, TError,{data: PutVouchersBulkBody}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putVouchersBulk>>,
-        TError,
-        {data: PutVouchersBulkBody},
-        TContext
-      > => {
-
-      const mutationOptions = getPutVouchersBulkMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * DELETE `/vouchers/bulk` — voucher. Requires authentication; route does not declare detailed permissions. Body fields: `voucher_ids`, `updated_by`. Handled by `voucherProvider.bulkUpdate`.
- * @summary Delete vouchers in bulk
- */
-export const deleteVouchersBulk = (
-    deleteVouchersBulkBody: DeleteVouchersBulkBody,
- ) => {
-      
-      
-      return customInstance<Response>(
-      {url: `/vouchers/bulk`, method: 'DELETE',
-      headers: {'Content-Type': 'application/json', },
-      data: deleteVouchersBulkBody
-    },
-      );
-    }
-  
-
-
-export const getDeleteVouchersBulkMutationOptions = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteVouchersBulk>>, TError,{data: DeleteVouchersBulkBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof deleteVouchersBulk>>, TError,{data: DeleteVouchersBulkBody}, TContext> => {
-
-const mutationKey = ['deleteVouchersBulk'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteVouchersBulk>>, {data: DeleteVouchersBulkBody}> = (props) => {
-          const {data} = props ?? {};
-
-          return  deleteVouchersBulk(data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteVouchersBulkMutationResult = NonNullable<Awaited<ReturnType<typeof deleteVouchersBulk>>>
-    export type DeleteVouchersBulkMutationBody = DeleteVouchersBulkBody
-    export type DeleteVouchersBulkMutationError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
-
-    /**
- * @summary Delete vouchers in bulk
- */
-export const useDeleteVouchersBulk = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteVouchersBulk>>, TError,{data: DeleteVouchersBulkBody}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteVouchersBulk>>,
-        TError,
-        {data: DeleteVouchersBulkBody},
-        TContext
-      > => {
-
-      const mutationOptions = getDeleteVouchersBulkMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * POST `/vouchers/{id}/redeem` — voucher. Requires authentication; route does not declare detailed permissions. Body fields: `user_id`, `membership_id`, `note`. Handled by `voucherProvider.isVoucherValidForUser`.
- * @summary Redeem
- */
-export const postVouchersIdRedeem = (
-    id: string,
-    postVouchersIdRedeemBody: PostVouchersIdRedeemBody,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<Response>(
-      {url: `/vouchers/${id}/redeem`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: postVouchersIdRedeemBody, signal
-    },
-      );
-    }
-  
-
-
-export const getPostVouchersIdRedeemMutationOptions = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postVouchersIdRedeem>>, TError,{id: string;data: PostVouchersIdRedeemBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postVouchersIdRedeem>>, TError,{id: string;data: PostVouchersIdRedeemBody}, TContext> => {
-
-const mutationKey = ['postVouchersIdRedeem'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postVouchersIdRedeem>>, {id: string;data: PostVouchersIdRedeemBody}> = (props) => {
-          const {id,data} = props ?? {};
-
-          return  postVouchersIdRedeem(id,data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostVouchersIdRedeemMutationResult = NonNullable<Awaited<ReturnType<typeof postVouchersIdRedeem>>>
-    export type PostVouchersIdRedeemMutationBody = PostVouchersIdRedeemBody
-    export type PostVouchersIdRedeemMutationError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void
-
-    /**
- * @summary Redeem
- */
-export const usePostVouchersIdRedeem = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postVouchersIdRedeem>>, TError,{id: string;data: PostVouchersIdRedeemBody}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postVouchersIdRedeem>>,
-        TError,
-        {id: string;data: PostVouchersIdRedeemBody},
-        TContext
-      > => {
-
-      const mutationOptions = getPostVouchersIdRedeemMutationOptions(options);
+      const mutationOptions = getPostVouchersAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

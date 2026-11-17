@@ -236,71 +236,6 @@ export const prefetchGetSupportSchedulesQuery = async <TData = Awaited<ReturnTyp
 
 
 /**
- * POST `/support/schedules` — support content. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `supportScheduleProvider.post`.
- * @summary Create a support schedule
- */
-export const postSupportSchedules = (
-    supportChannelCreate: SupportChannelCreate,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<Response>(
-      {url: `/support/schedules`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: supportChannelCreate, signal
-    },
-      );
-    }
-  
-
-
-export const getPostSupportSchedulesMutationOptions = <TError = LegacyBadRequestResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postSupportSchedules>>, TError,{data: SupportChannelCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postSupportSchedules>>, TError,{data: SupportChannelCreate}, TContext> => {
-
-const mutationKey = ['postSupportSchedules'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postSupportSchedules>>, {data: SupportChannelCreate}> = (props) => {
-          const {data} = props ?? {};
-
-          return  postSupportSchedules(data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostSupportSchedulesMutationResult = NonNullable<Awaited<ReturnType<typeof postSupportSchedules>>>
-    export type PostSupportSchedulesMutationBody = SupportChannelCreate
-    export type PostSupportSchedulesMutationError = LegacyBadRequestResponse
-
-    /**
- * @summary Create a support schedule
- */
-export const usePostSupportSchedules = <TError = LegacyBadRequestResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postSupportSchedules>>, TError,{data: SupportChannelCreate}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postSupportSchedules>>,
-        TError,
-        {data: SupportChannelCreate},
-        TContext
-      > => {
-
-      const mutationOptions = getPostSupportSchedulesMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
  * GET `/support/schedules/{id}` — support content. Public, no authentication required. Handled by `supportScheduleProvider.getById`.
  * @summary View support schedule details
  */
@@ -495,17 +430,17 @@ export const prefetchGetSupportSchedulesIdQuery = async <TData = Awaited<ReturnT
 
 
 /**
- * PUT `/support/schedules/{id}` — support content. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `supportScheduleProvider.put`.
+ * PUT `/support/schedules/{id}/admin` — support content. This route currently has no authentication or authorization middleware attached. Handled by `supportScheduleProvider.put`.
  * @summary Update a support schedule
  */
-export const putSupportSchedulesId = (
+export const putSupportSchedulesIdAdmin = (
     id: string,
     supportChannelCreate: SupportChannelCreate,
  ) => {
       
       
       return customInstance<Response>(
-      {url: `/support/schedules/${id}`, method: 'PUT',
+      {url: `/support/schedules/${id}/admin`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: supportChannelCreate
     },
@@ -514,11 +449,11 @@ export const putSupportSchedulesId = (
   
 
 
-export const getPutSupportSchedulesIdMutationOptions = <TError = LegacyBadRequestResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putSupportSchedulesId>>, TError,{id: string;data: SupportChannelCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putSupportSchedulesId>>, TError,{id: string;data: SupportChannelCreate}, TContext> => {
+export const getPutSupportSchedulesIdAdminMutationOptions = <TError = LegacyBadRequestResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putSupportSchedulesIdAdmin>>, TError,{id: string;data: SupportChannelCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putSupportSchedulesIdAdmin>>, TError,{id: string;data: SupportChannelCreate}, TContext> => {
 
-const mutationKey = ['putSupportSchedulesId'];
+const mutationKey = ['putSupportSchedulesIdAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -528,10 +463,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putSupportSchedulesId>>, {id: string;data: SupportChannelCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putSupportSchedulesIdAdmin>>, {id: string;data: SupportChannelCreate}> = (props) => {
           const {id,data} = props ?? {};
 
-          return  putSupportSchedulesId(id,data,)
+          return  putSupportSchedulesIdAdmin(id,data,)
         }
 
         
@@ -539,48 +474,48 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PutSupportSchedulesIdMutationResult = NonNullable<Awaited<ReturnType<typeof putSupportSchedulesId>>>
-    export type PutSupportSchedulesIdMutationBody = SupportChannelCreate
-    export type PutSupportSchedulesIdMutationError = LegacyBadRequestResponse | void
+    export type PutSupportSchedulesIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof putSupportSchedulesIdAdmin>>>
+    export type PutSupportSchedulesIdAdminMutationBody = SupportChannelCreate
+    export type PutSupportSchedulesIdAdminMutationError = LegacyBadRequestResponse | void
 
     /**
  * @summary Update a support schedule
  */
-export const usePutSupportSchedulesId = <TError = LegacyBadRequestResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putSupportSchedulesId>>, TError,{id: string;data: SupportChannelCreate}, TContext>, }
+export const usePutSupportSchedulesIdAdmin = <TError = LegacyBadRequestResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putSupportSchedulesIdAdmin>>, TError,{id: string;data: SupportChannelCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putSupportSchedulesId>>,
+        Awaited<ReturnType<typeof putSupportSchedulesIdAdmin>>,
         TError,
         {id: string;data: SupportChannelCreate},
         TContext
       > => {
 
-      const mutationOptions = getPutSupportSchedulesIdMutationOptions(options);
+      const mutationOptions = getPutSupportSchedulesIdAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * DELETE `/support/schedules/{id}` — support content. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `supportScheduleProvider.delete`.
+ * DELETE `/support/schedules/{id}/admin` — support content. This route currently has no authentication or authorization middleware attached. Handled by `supportScheduleProvider.delete`.
  * @summary Delete a support schedule
  */
-export const deleteSupportSchedulesId = (
+export const deleteSupportSchedulesIdAdmin = (
     id: string,
  ) => {
       
       
       return customInstance<Response>(
-      {url: `/support/schedules/${id}`, method: 'DELETE'
+      {url: `/support/schedules/${id}/admin`, method: 'DELETE'
     },
       );
     }
   
 
 
-export const getDeleteSupportSchedulesIdMutationOptions = <TError = LegacyBadRequestResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSupportSchedulesId>>, TError,{id: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof deleteSupportSchedulesId>>, TError,{id: string}, TContext> => {
+export const getDeleteSupportSchedulesIdAdminMutationOptions = <TError = LegacyBadRequestResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSupportSchedulesIdAdmin>>, TError,{id: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteSupportSchedulesIdAdmin>>, TError,{id: string}, TContext> => {
 
-const mutationKey = ['deleteSupportSchedulesId'];
+const mutationKey = ['deleteSupportSchedulesIdAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -590,10 +525,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteSupportSchedulesId>>, {id: string}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteSupportSchedulesIdAdmin>>, {id: string}> = (props) => {
           const {id} = props ?? {};
 
-          return  deleteSupportSchedulesId(id,)
+          return  deleteSupportSchedulesIdAdmin(id,)
         }
 
         
@@ -601,23 +536,88 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type DeleteSupportSchedulesIdMutationResult = NonNullable<Awaited<ReturnType<typeof deleteSupportSchedulesId>>>
+    export type DeleteSupportSchedulesIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof deleteSupportSchedulesIdAdmin>>>
     
-    export type DeleteSupportSchedulesIdMutationError = LegacyBadRequestResponse | void
+    export type DeleteSupportSchedulesIdAdminMutationError = LegacyBadRequestResponse | void
 
     /**
  * @summary Delete a support schedule
  */
-export const useDeleteSupportSchedulesId = <TError = LegacyBadRequestResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSupportSchedulesId>>, TError,{id: string}, TContext>, }
+export const useDeleteSupportSchedulesIdAdmin = <TError = LegacyBadRequestResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSupportSchedulesIdAdmin>>, TError,{id: string}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteSupportSchedulesId>>,
+        Awaited<ReturnType<typeof deleteSupportSchedulesIdAdmin>>,
         TError,
         {id: string},
         TContext
       > => {
 
-      const mutationOptions = getDeleteSupportSchedulesIdMutationOptions(options);
+      const mutationOptions = getDeleteSupportSchedulesIdAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * POST `/support/schedules/admin` — support content. This route currently has no authentication or authorization middleware attached. Handled by `supportScheduleProvider.post`.
+ * @summary Create a support schedule
+ */
+export const postSupportSchedulesAdmin = (
+    supportChannelCreate: SupportChannelCreate,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<Response>(
+      {url: `/support/schedules/admin`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: supportChannelCreate, signal
+    },
+      );
+    }
+  
+
+
+export const getPostSupportSchedulesAdminMutationOptions = <TError = LegacyBadRequestResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postSupportSchedulesAdmin>>, TError,{data: SupportChannelCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postSupportSchedulesAdmin>>, TError,{data: SupportChannelCreate}, TContext> => {
+
+const mutationKey = ['postSupportSchedulesAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postSupportSchedulesAdmin>>, {data: SupportChannelCreate}> = (props) => {
+          const {data} = props ?? {};
+
+          return  postSupportSchedulesAdmin(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostSupportSchedulesAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postSupportSchedulesAdmin>>>
+    export type PostSupportSchedulesAdminMutationBody = SupportChannelCreate
+    export type PostSupportSchedulesAdminMutationError = LegacyBadRequestResponse
+
+    /**
+ * @summary Create a support schedule
+ */
+export const usePostSupportSchedulesAdmin = <TError = LegacyBadRequestResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postSupportSchedulesAdmin>>, TError,{data: SupportChannelCreate}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postSupportSchedulesAdmin>>,
+        TError,
+        {data: SupportChannelCreate},
+        TContext
+      > => {
+
+      const mutationOptions = getPostSupportSchedulesAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -816,71 +816,6 @@ export const prefetchGetSupportLocationsQuery = async <TData = Awaited<ReturnTyp
 
 
 /**
- * POST `/support/locations` — support content. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `supportLocationProvider.post`.
- * @summary Create a support location
- */
-export const postSupportLocations = (
-    supportChannelCreate: SupportChannelCreate,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<Response>(
-      {url: `/support/locations`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: supportChannelCreate, signal
-    },
-      );
-    }
-  
-
-
-export const getPostSupportLocationsMutationOptions = <TError = LegacyBadRequestResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postSupportLocations>>, TError,{data: SupportChannelCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postSupportLocations>>, TError,{data: SupportChannelCreate}, TContext> => {
-
-const mutationKey = ['postSupportLocations'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postSupportLocations>>, {data: SupportChannelCreate}> = (props) => {
-          const {data} = props ?? {};
-
-          return  postSupportLocations(data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostSupportLocationsMutationResult = NonNullable<Awaited<ReturnType<typeof postSupportLocations>>>
-    export type PostSupportLocationsMutationBody = SupportChannelCreate
-    export type PostSupportLocationsMutationError = LegacyBadRequestResponse
-
-    /**
- * @summary Create a support location
- */
-export const usePostSupportLocations = <TError = LegacyBadRequestResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postSupportLocations>>, TError,{data: SupportChannelCreate}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postSupportLocations>>,
-        TError,
-        {data: SupportChannelCreate},
-        TContext
-      > => {
-
-      const mutationOptions = getPostSupportLocationsMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
  * GET `/support/locations/{id}` — support content. Public, no authentication required. Handled by `supportLocationProvider.getById`.
  * @summary View support location details
  */
@@ -1075,17 +1010,17 @@ export const prefetchGetSupportLocationsIdQuery = async <TData = Awaited<ReturnT
 
 
 /**
- * PUT `/support/locations/{id}` — support content. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `supportLocationProvider.put`.
+ * PUT `/support/locations/{id}/admin` — support content. This route currently has no authentication or authorization middleware attached. Handled by `supportLocationProvider.put`.
  * @summary Update a support location
  */
-export const putSupportLocationsId = (
+export const putSupportLocationsIdAdmin = (
     id: string,
     supportChannelCreate: SupportChannelCreate,
  ) => {
       
       
       return customInstance<Response>(
-      {url: `/support/locations/${id}`, method: 'PUT',
+      {url: `/support/locations/${id}/admin`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: supportChannelCreate
     },
@@ -1094,11 +1029,11 @@ export const putSupportLocationsId = (
   
 
 
-export const getPutSupportLocationsIdMutationOptions = <TError = LegacyBadRequestResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putSupportLocationsId>>, TError,{id: string;data: SupportChannelCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putSupportLocationsId>>, TError,{id: string;data: SupportChannelCreate}, TContext> => {
+export const getPutSupportLocationsIdAdminMutationOptions = <TError = LegacyBadRequestResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putSupportLocationsIdAdmin>>, TError,{id: string;data: SupportChannelCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putSupportLocationsIdAdmin>>, TError,{id: string;data: SupportChannelCreate}, TContext> => {
 
-const mutationKey = ['putSupportLocationsId'];
+const mutationKey = ['putSupportLocationsIdAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -1108,10 +1043,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putSupportLocationsId>>, {id: string;data: SupportChannelCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putSupportLocationsIdAdmin>>, {id: string;data: SupportChannelCreate}> = (props) => {
           const {id,data} = props ?? {};
 
-          return  putSupportLocationsId(id,data,)
+          return  putSupportLocationsIdAdmin(id,data,)
         }
 
         
@@ -1119,48 +1054,48 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PutSupportLocationsIdMutationResult = NonNullable<Awaited<ReturnType<typeof putSupportLocationsId>>>
-    export type PutSupportLocationsIdMutationBody = SupportChannelCreate
-    export type PutSupportLocationsIdMutationError = LegacyBadRequestResponse | void
+    export type PutSupportLocationsIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof putSupportLocationsIdAdmin>>>
+    export type PutSupportLocationsIdAdminMutationBody = SupportChannelCreate
+    export type PutSupportLocationsIdAdminMutationError = LegacyBadRequestResponse | void
 
     /**
  * @summary Update a support location
  */
-export const usePutSupportLocationsId = <TError = LegacyBadRequestResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putSupportLocationsId>>, TError,{id: string;data: SupportChannelCreate}, TContext>, }
+export const usePutSupportLocationsIdAdmin = <TError = LegacyBadRequestResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putSupportLocationsIdAdmin>>, TError,{id: string;data: SupportChannelCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putSupportLocationsId>>,
+        Awaited<ReturnType<typeof putSupportLocationsIdAdmin>>,
         TError,
         {id: string;data: SupportChannelCreate},
         TContext
       > => {
 
-      const mutationOptions = getPutSupportLocationsIdMutationOptions(options);
+      const mutationOptions = getPutSupportLocationsIdAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * DELETE `/support/locations/{id}` — support content. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `supportLocationProvider.delete`.
+ * DELETE `/support/locations/{id}/admin` — support content. This route currently has no authentication or authorization middleware attached. Handled by `supportLocationProvider.delete`.
  * @summary Delete a support location
  */
-export const deleteSupportLocationsId = (
+export const deleteSupportLocationsIdAdmin = (
     id: string,
  ) => {
       
       
       return customInstance<Response>(
-      {url: `/support/locations/${id}`, method: 'DELETE'
+      {url: `/support/locations/${id}/admin`, method: 'DELETE'
     },
       );
     }
   
 
 
-export const getDeleteSupportLocationsIdMutationOptions = <TError = LegacyBadRequestResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSupportLocationsId>>, TError,{id: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof deleteSupportLocationsId>>, TError,{id: string}, TContext> => {
+export const getDeleteSupportLocationsIdAdminMutationOptions = <TError = LegacyBadRequestResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSupportLocationsIdAdmin>>, TError,{id: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteSupportLocationsIdAdmin>>, TError,{id: string}, TContext> => {
 
-const mutationKey = ['deleteSupportLocationsId'];
+const mutationKey = ['deleteSupportLocationsIdAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -1170,10 +1105,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteSupportLocationsId>>, {id: string}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteSupportLocationsIdAdmin>>, {id: string}> = (props) => {
           const {id} = props ?? {};
 
-          return  deleteSupportLocationsId(id,)
+          return  deleteSupportLocationsIdAdmin(id,)
         }
 
         
@@ -1181,23 +1116,88 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type DeleteSupportLocationsIdMutationResult = NonNullable<Awaited<ReturnType<typeof deleteSupportLocationsId>>>
+    export type DeleteSupportLocationsIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof deleteSupportLocationsIdAdmin>>>
     
-    export type DeleteSupportLocationsIdMutationError = LegacyBadRequestResponse | void
+    export type DeleteSupportLocationsIdAdminMutationError = LegacyBadRequestResponse | void
 
     /**
  * @summary Delete a support location
  */
-export const useDeleteSupportLocationsId = <TError = LegacyBadRequestResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSupportLocationsId>>, TError,{id: string}, TContext>, }
+export const useDeleteSupportLocationsIdAdmin = <TError = LegacyBadRequestResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSupportLocationsIdAdmin>>, TError,{id: string}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteSupportLocationsId>>,
+        Awaited<ReturnType<typeof deleteSupportLocationsIdAdmin>>,
         TError,
         {id: string},
         TContext
       > => {
 
-      const mutationOptions = getDeleteSupportLocationsIdMutationOptions(options);
+      const mutationOptions = getDeleteSupportLocationsIdAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * POST `/support/locations/admin` — support content. This route currently has no authentication or authorization middleware attached. Handled by `supportLocationProvider.post`.
+ * @summary Create a support location
+ */
+export const postSupportLocationsAdmin = (
+    supportChannelCreate: SupportChannelCreate,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<Response>(
+      {url: `/support/locations/admin`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: supportChannelCreate, signal
+    },
+      );
+    }
+  
+
+
+export const getPostSupportLocationsAdminMutationOptions = <TError = LegacyBadRequestResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postSupportLocationsAdmin>>, TError,{data: SupportChannelCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postSupportLocationsAdmin>>, TError,{data: SupportChannelCreate}, TContext> => {
+
+const mutationKey = ['postSupportLocationsAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postSupportLocationsAdmin>>, {data: SupportChannelCreate}> = (props) => {
+          const {data} = props ?? {};
+
+          return  postSupportLocationsAdmin(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostSupportLocationsAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postSupportLocationsAdmin>>>
+    export type PostSupportLocationsAdminMutationBody = SupportChannelCreate
+    export type PostSupportLocationsAdminMutationError = LegacyBadRequestResponse
+
+    /**
+ * @summary Create a support location
+ */
+export const usePostSupportLocationsAdmin = <TError = LegacyBadRequestResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postSupportLocationsAdmin>>, TError,{data: SupportChannelCreate}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postSupportLocationsAdmin>>,
+        TError,
+        {data: SupportChannelCreate},
+        TContext
+      > => {
+
+      const mutationOptions = getPostSupportLocationsAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -1396,71 +1396,6 @@ export const prefetchGetSupportChannelsQuery = async <TData = Awaited<ReturnType
 
 
 /**
- * POST `/support/channels` — support content. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `supportChannelProvider.post`.
- * @summary Create a support channel
- */
-export const postSupportChannels = (
-    supportChannelCreate: SupportChannelCreate,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<Response>(
-      {url: `/support/channels`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: supportChannelCreate, signal
-    },
-      );
-    }
-  
-
-
-export const getPostSupportChannelsMutationOptions = <TError = LegacyBadRequestResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postSupportChannels>>, TError,{data: SupportChannelCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postSupportChannels>>, TError,{data: SupportChannelCreate}, TContext> => {
-
-const mutationKey = ['postSupportChannels'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postSupportChannels>>, {data: SupportChannelCreate}> = (props) => {
-          const {data} = props ?? {};
-
-          return  postSupportChannels(data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostSupportChannelsMutationResult = NonNullable<Awaited<ReturnType<typeof postSupportChannels>>>
-    export type PostSupportChannelsMutationBody = SupportChannelCreate
-    export type PostSupportChannelsMutationError = LegacyBadRequestResponse
-
-    /**
- * @summary Create a support channel
- */
-export const usePostSupportChannels = <TError = LegacyBadRequestResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postSupportChannels>>, TError,{data: SupportChannelCreate}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postSupportChannels>>,
-        TError,
-        {data: SupportChannelCreate},
-        TContext
-      > => {
-
-      const mutationOptions = getPostSupportChannelsMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
  * GET `/support/channels/{id}` — support content. Public, no authentication required. Handled by `supportChannelProvider.getById`.
  * @summary View support channel details
  */
@@ -1655,17 +1590,17 @@ export const prefetchGetSupportChannelsIdQuery = async <TData = Awaited<ReturnTy
 
 
 /**
- * PUT `/support/channels/{id}` — support content. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `supportChannelProvider.put`.
+ * PUT `/support/channels/{id}/admin` — support content. This route currently has no authentication or authorization middleware attached. Handled by `supportChannelProvider.put`.
  * @summary Update a support channel
  */
-export const putSupportChannelsId = (
+export const putSupportChannelsIdAdmin = (
     id: string,
     supportChannelCreate: SupportChannelCreate,
  ) => {
       
       
       return customInstance<Response>(
-      {url: `/support/channels/${id}`, method: 'PUT',
+      {url: `/support/channels/${id}/admin`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: supportChannelCreate
     },
@@ -1674,11 +1609,11 @@ export const putSupportChannelsId = (
   
 
 
-export const getPutSupportChannelsIdMutationOptions = <TError = LegacyBadRequestResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putSupportChannelsId>>, TError,{id: string;data: SupportChannelCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putSupportChannelsId>>, TError,{id: string;data: SupportChannelCreate}, TContext> => {
+export const getPutSupportChannelsIdAdminMutationOptions = <TError = LegacyBadRequestResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putSupportChannelsIdAdmin>>, TError,{id: string;data: SupportChannelCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putSupportChannelsIdAdmin>>, TError,{id: string;data: SupportChannelCreate}, TContext> => {
 
-const mutationKey = ['putSupportChannelsId'];
+const mutationKey = ['putSupportChannelsIdAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -1688,10 +1623,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putSupportChannelsId>>, {id: string;data: SupportChannelCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putSupportChannelsIdAdmin>>, {id: string;data: SupportChannelCreate}> = (props) => {
           const {id,data} = props ?? {};
 
-          return  putSupportChannelsId(id,data,)
+          return  putSupportChannelsIdAdmin(id,data,)
         }
 
         
@@ -1699,48 +1634,48 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PutSupportChannelsIdMutationResult = NonNullable<Awaited<ReturnType<typeof putSupportChannelsId>>>
-    export type PutSupportChannelsIdMutationBody = SupportChannelCreate
-    export type PutSupportChannelsIdMutationError = LegacyBadRequestResponse | void
+    export type PutSupportChannelsIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof putSupportChannelsIdAdmin>>>
+    export type PutSupportChannelsIdAdminMutationBody = SupportChannelCreate
+    export type PutSupportChannelsIdAdminMutationError = LegacyBadRequestResponse | void
 
     /**
  * @summary Update a support channel
  */
-export const usePutSupportChannelsId = <TError = LegacyBadRequestResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putSupportChannelsId>>, TError,{id: string;data: SupportChannelCreate}, TContext>, }
+export const usePutSupportChannelsIdAdmin = <TError = LegacyBadRequestResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putSupportChannelsIdAdmin>>, TError,{id: string;data: SupportChannelCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putSupportChannelsId>>,
+        Awaited<ReturnType<typeof putSupportChannelsIdAdmin>>,
         TError,
         {id: string;data: SupportChannelCreate},
         TContext
       > => {
 
-      const mutationOptions = getPutSupportChannelsIdMutationOptions(options);
+      const mutationOptions = getPutSupportChannelsIdAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * DELETE `/support/channels/{id}` — support content. Public, no authentication required. Handled by `supportChannelProvider.delete`.
+ * DELETE `/support/channels/{id}/admin` — support content. Public, no authentication required. Handled by `supportChannelProvider.delete`.
  * @summary Delete a support channel
  */
-export const deleteSupportChannelsId = (
+export const deleteSupportChannelsIdAdmin = (
     id: string,
  ) => {
       
       
       return customInstance<Response>(
-      {url: `/support/channels/${id}`, method: 'DELETE'
+      {url: `/support/channels/${id}/admin`, method: 'DELETE'
     },
       );
     }
   
 
 
-export const getDeleteSupportChannelsIdMutationOptions = <TError = LegacyBadRequestResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSupportChannelsId>>, TError,{id: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof deleteSupportChannelsId>>, TError,{id: string}, TContext> => {
+export const getDeleteSupportChannelsIdAdminMutationOptions = <TError = LegacyBadRequestResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSupportChannelsIdAdmin>>, TError,{id: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteSupportChannelsIdAdmin>>, TError,{id: string}, TContext> => {
 
-const mutationKey = ['deleteSupportChannelsId'];
+const mutationKey = ['deleteSupportChannelsIdAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -1750,10 +1685,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteSupportChannelsId>>, {id: string}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteSupportChannelsIdAdmin>>, {id: string}> = (props) => {
           const {id} = props ?? {};
 
-          return  deleteSupportChannelsId(id,)
+          return  deleteSupportChannelsIdAdmin(id,)
         }
 
         
@@ -1761,23 +1696,88 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type DeleteSupportChannelsIdMutationResult = NonNullable<Awaited<ReturnType<typeof deleteSupportChannelsId>>>
+    export type DeleteSupportChannelsIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof deleteSupportChannelsIdAdmin>>>
     
-    export type DeleteSupportChannelsIdMutationError = LegacyBadRequestResponse | void
+    export type DeleteSupportChannelsIdAdminMutationError = LegacyBadRequestResponse | void
 
     /**
  * @summary Delete a support channel
  */
-export const useDeleteSupportChannelsId = <TError = LegacyBadRequestResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSupportChannelsId>>, TError,{id: string}, TContext>, }
+export const useDeleteSupportChannelsIdAdmin = <TError = LegacyBadRequestResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSupportChannelsIdAdmin>>, TError,{id: string}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteSupportChannelsId>>,
+        Awaited<ReturnType<typeof deleteSupportChannelsIdAdmin>>,
         TError,
         {id: string},
         TContext
       > => {
 
-      const mutationOptions = getDeleteSupportChannelsIdMutationOptions(options);
+      const mutationOptions = getDeleteSupportChannelsIdAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * POST `/support/channels/admin` — support content. This route currently has no authentication or authorization middleware attached. Handled by `supportChannelProvider.post`.
+ * @summary Create a support channel
+ */
+export const postSupportChannelsAdmin = (
+    supportChannelCreate: SupportChannelCreate,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<Response>(
+      {url: `/support/channels/admin`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: supportChannelCreate, signal
+    },
+      );
+    }
+  
+
+
+export const getPostSupportChannelsAdminMutationOptions = <TError = LegacyBadRequestResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postSupportChannelsAdmin>>, TError,{data: SupportChannelCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postSupportChannelsAdmin>>, TError,{data: SupportChannelCreate}, TContext> => {
+
+const mutationKey = ['postSupportChannelsAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postSupportChannelsAdmin>>, {data: SupportChannelCreate}> = (props) => {
+          const {data} = props ?? {};
+
+          return  postSupportChannelsAdmin(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostSupportChannelsAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postSupportChannelsAdmin>>>
+    export type PostSupportChannelsAdminMutationBody = SupportChannelCreate
+    export type PostSupportChannelsAdminMutationError = LegacyBadRequestResponse
+
+    /**
+ * @summary Create a support channel
+ */
+export const usePostSupportChannelsAdmin = <TError = LegacyBadRequestResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postSupportChannelsAdmin>>, TError,{data: SupportChannelCreate}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postSupportChannelsAdmin>>,
+        TError,
+        {data: SupportChannelCreate},
+        TContext
+      > => {
+
+      const mutationOptions = getPostSupportChannelsAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

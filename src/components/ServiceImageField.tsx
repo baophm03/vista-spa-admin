@@ -2,8 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Button, Image, Input, Modal, Space, Upload, message } from 'antd'
 import { DeleteOutlined, FolderOpenOutlined, UploadOutlined } from '@ant-design/icons'
-import { usePostFiles } from '@/api/endpoints/files'
-import { getFiles } from '@/api/endpoints/files'
+import { usePostFilesAdmin } from '@/api/endpoints/files'
+import { getFilesAdmin } from '@/api/endpoints/files'
 import { errorMessage, pickData } from '@/api/helpers'
 import { registerUploadedFile, resolveFileSrc, useFileUrlMap, objectKeySrc } from '@/hooks/useFileUrl'
 
@@ -35,7 +35,7 @@ interface GalleryFile {
  *  lên từ thư viện (GET /files), lưu file_id, preview Image, xóa từng ảnh. */
 export default function ServiceImageField({ value, onChange, multiple = false }: Props) {
   const [uploading, setUploading] = useState(false)
-  const uploadMutation = usePostFiles()
+  const uploadMutation = usePostFilesAdmin()
   const urlMap = useFileUrlMap()
   const fileIds = multiple ? (Array.isArray(value) ? value : []) : typeof value === 'string' && value ? [value] : []
   const idsRef = useRef(fileIds)
@@ -47,7 +47,7 @@ export default function ServiceImageField({ value, onChange, multiple = false }:
   const galleryQuery = useQuery({
     queryKey: ['files-gallery'],
     queryFn: async () => {
-      const res = await getFiles()
+      const res = await getFilesAdmin()
       return (pickData<GalleryFile[]>(res as never) ?? (res as unknown as GalleryFile[])) as GalleryFile[]
     },
     enabled: pickerOpen,

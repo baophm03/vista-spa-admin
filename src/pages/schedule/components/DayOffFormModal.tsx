@@ -4,7 +4,7 @@ import dayjs from 'dayjs'
 import ServiceImageField from '@/components/ServiceImageField'
 import type { ShiftTemplate, ScheduleStaff } from '../types'
 import { staffLabel } from '../types'
-import { useGetStaffDaysOffConflicts } from '@/api/endpoints/staff'
+import { useGetStaffDaysOffConflictsAdmin } from '@/api/endpoints/staff'
 import { pickData } from '@/api/helpers'
 
 interface ConflictAppointment {
@@ -30,7 +30,7 @@ export default function DayOffFormModal({ open, form, staff, scheduledTemplates,
   const selectedShiftId = Form.useWatch('shift_template_id', form)
 
   // Lịch hẹn đích danh KTV trùng ngày/ca nghỉ dự kiến — khách thấy trước khi gửi đơn
-  const conflictsQuery = useGetStaffDaysOffConflicts(
+  const conflictsQuery = useGetStaffDaysOffConflictsAdmin(
     {
       staff_id: selectedStaffId ?? '',
       off_date: selectedDate ? dayjs(selectedDate).format('YYYY-MM-DD') : '',

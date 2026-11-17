@@ -7,7 +7,11 @@
  */
 import type { ProductVoucherUpdateDescription } from './productVoucherUpdateDescription';
 import type { ProductVoucherUpdateProductId } from './productVoucherUpdateProductId';
+import type { ProductVoucherUpdateProductCategoryId } from './productVoucherUpdateProductCategoryId';
+import type { ProductVoucherUpdateBranchId } from './productVoucherUpdateBranchId';
 import type { ProductVoucherUpdateCardRankId } from './productVoucherUpdateCardRankId';
+import type { ProductVoucherUpdateIssueMode } from './productVoucherUpdateIssueMode';
+import type { ProductVoucherUpdatePointsCost } from './productVoucherUpdatePointsCost';
 import type { ProductVoucherUpdateDiscountType } from './productVoucherUpdateDiscountType';
 import type { ProductVoucherUpdateMaximumDiscountAmount } from './productVoucherUpdateMaximumDiscountAmount';
 import type { ProductVoucherUpdateQuantityTotal } from './productVoucherUpdateQuantityTotal';
@@ -23,8 +27,13 @@ export interface ProductVoucherUpdate {
   title?: string;
   description?: ProductVoucherUpdateDescription;
   product_id?: ProductVoucherUpdateProductId;
+  product_category_id?: ProductVoucherUpdateProductCategoryId;
+  branch_id?: ProductVoucherUpdateBranchId;
   card_rank_id?: ProductVoucherUpdateCardRankId;
   is_loyalty?: boolean;
+  issue_mode?: ProductVoucherUpdateIssueMode;
+  /** @minimum 0 */
+  points_cost?: ProductVoucherUpdatePointsCost;
   discount_type?: ProductVoucherUpdateDiscountType;
   /** */
   discount_value?: number;

@@ -5,6 +5,8 @@
  * Vista Spa backend API. Uses the NEWSKY+ business error envelope for permission-aware endpoints and the legacy response envelope for existing admin endpoints.
  * OpenAPI spec version: 1.0.0
  */
+import type { VoucherCreateIssueMode } from './voucherCreateIssueMode';
+import type { VoucherCreatePointsCost } from './voucherCreatePointsCost';
 
 /**
  * Create a voucher
@@ -23,6 +25,9 @@ export interface VoucherCreate {
   type?: number;
   card_rank_id?: string;
   is_loyalty?: boolean;
+  issue_mode?: VoucherCreateIssueMode;
+  /** @minimum 0 */
+  points_cost?: VoucherCreatePointsCost;
   /** @minimum 0 */
   quantity_total?: number;
   start_date?: string;

@@ -146,8 +146,6 @@ export const ADJUST_TYPE_LABEL: Record<string, string> = {
   CONVERT: 'Chuyển đổi buổi tặng',
   DISCOUNT: 'Giảm giá',
 }
-export const bonusRemainingOf = (row: CustomerTreatment) =>
-  Math.max(0, Number(row.sessions_bonus ?? 0) - Math.max(0, Number(row.sessions_used ?? 0) - Number(row.sessions_total ?? 0)))
 
 /** Đổi 1 giá trị trường lịch sử điều chỉnh thành chữ dễ đọc. */
 export const formatAdjustValue = (field: string, value: unknown): string => {

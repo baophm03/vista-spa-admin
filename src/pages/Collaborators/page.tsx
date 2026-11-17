@@ -21,15 +21,9 @@ import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { Collaborator } from '@/api/models/collaborator'
-import {
-  getGetCollaboratorsQueryKey,
-  useDeleteCollaboratorsId,
-  useGetCollaborators,
-  usePostCollaborators,
-  usePutCollaboratorsId,
-} from '@/api/endpoints/admin'
-import type { PostCollaboratorsBody } from '@/api/models'
-import type { GetCollaboratorsParams } from '@/api/models/getCollaboratorsParams'
+import { getGetCollaboratorsAdminQueryKey, useDeleteCollaboratorsIdAdmin, useGetCollaboratorsAdmin, usePostCollaboratorsAdmin, usePutCollaboratorsIdAdmin } from '@/api/endpoints/collaborators'
+import type { PostCollaboratorsAdminBody } from '@/api/models'
+import type { GetCollaboratorsAdminParams } from '@/api/models/getCollaboratorsAdminParams'
 import CollaboratorModal from './components/CollaboratorModal'
 import CollaboratorReportDrawer from './components/CollaboratorReportDrawer'
 
@@ -49,7 +43,7 @@ export default function Collaborators() {
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<CollaboratorRow | null>(null)
   const [reportRow, setReportRow] = useState<CollaboratorRow | null>(null)
-  const [listFilters, setListFilters] = useState<GetCollaboratorsParams>({})
+  const [listFilters, setListFilters] = useState<GetCollaboratorsAdminParams>({})
   const [searchText, setSearchText] = useState('')
   const [form] = Form.useForm()
   const queryClient = useQueryClient()
@@ -57,18 +51,18 @@ export default function Collaborators() {
   const canUpdate = ability.can('UPDATE', 'COLLABORATOR')
   const canDelete = ability.can('DELETE', 'COLLABORATOR')
 
-  const listQuery = useGetCollaborators({ ...listFilters, page, limit } as never)
+  const listQuery = useGetCollaboratorsAdmin({ ...listFilters, page, limit } as never)
   const rows = (pickData<CollaboratorRow[] | undefined>(listQuery.data) ?? []) as CollaboratorRow[]
   const total = (listQuery.data as unknown as { meta?: { total?: number } })?.meta?.total ?? rows.length
   const statsMeta = (listQuery.data as unknown as { meta?: { stats?: { total?: number; active?: number; referral_count_sum?: number } } })?.meta?.stats
 
   const invalidate = async () => {
-    await queryClient.invalidateQueries({ queryKey: getGetCollaboratorsQueryKey() })
+    await queryClient.invalidateQueries({ queryKey: getGetCollaboratorsAdminQueryKey() })
   }
 
-  const createMutation = usePostCollaborators({ mutation: { onSuccess: invalidate } })
-  const updateMutation = usePutCollaboratorsId({ mutation: { onSuccess: invalidate } })
-  const deleteMutation = useDeleteCollaboratorsId({ mutation: { onSuccess: invalidate } })
+  const createMutation = usePostCollaboratorsAdmin({ mutation: { onSuccess: invalidate } })
+  const updateMutation = usePutCollaboratorsIdAdmin({ mutation: { onSuccess: invalidate } })
+  const deleteMutation = useDeleteCollaboratorsIdAdmin({ mutation: { onSuccess: invalidate } })
 
   const openEditor = (row?: CollaboratorRow) => {
     setEditing(row ?? null)
@@ -79,11 +73,13 @@ export default function Collaborators() {
             phone: row.phone ?? '',
             referral_code: row.referral_code,
             type: row.type ?? undefined,
+            user_id: row.user_id ?? undefined,
+            customer_profile_id: row.customer_profile_id ?? undefined,
             commission_percent: row.commission_percent ?? undefined,
             note: row.note ?? '',
             is_active: row.is_active !== false,
           }
-        : { name: '', phone: '', referral_code: '', type: undefined, commission_percent: undefined, note: '', is_active: true },
+        : { name: '', phone: '', referral_code: '', type: undefined, user_id: undefined, customer_profile_id: undefined, commission_percent: undefined, note: '', is_active: true },
     )
     setOpen(true)
   }
@@ -91,11 +87,13 @@ export default function Collaborators() {
   const submit = async () => {
     try {
       const values = await form.validateFields()
-      const dto: PostCollaboratorsBody = {
+      const dto: PostCollaboratorsAdminBody = {
         name: values.name,
         phone: values.phone || undefined,
         referral_code: values.referral_code,
         type: values.type || undefined,
+        user_id: values.user_id || undefined,
+        customer_profile_id: values.customer_profile_id || undefined,
         commission_percent: values.commission_percent ?? null,
         note: values.note || undefined,
         is_active: values.is_active !== false,

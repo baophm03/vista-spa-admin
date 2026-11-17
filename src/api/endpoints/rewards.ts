@@ -31,21 +31,16 @@ import type {
 
 import type {
   ConflictResponse,
-  DeleteRewardsId200,
+  DeleteRewardsIdAdmin200,
   ForbiddenResponse,
-  GetRewardRedemptions200,
-  GetRewardRedemptionsParams,
-  GetRewards200,
-  GetRewardsId200,
-  GetRewardsParams,
+  GetRewardsAdmin200,
+  GetRewardsAdminParams,
+  GetRewardsIdAdmin200,
   InternalErrorResponse,
   NotFoundResponse,
-  PostRewards200,
-  PostTreatmentCustomersIdApplyRewardBody,
-  PutRewardRedemptionsIdCancel200,
-  PutRewardRedemptionsIdCancelBody,
-  PutRewardRedemptionsIdUse200,
-  PutRewardsId200,
+  PostRewardsAdmin200,
+  PostTreatmentCustomersIdApplyRewardAdminBody,
+  PutRewardsIdAdmin200,
   Reward,
   UnauthorizedResponse,
   UnprocessableEntityResponse
@@ -61,28 +56,28 @@ import { customInstance } from '../mutator/custom-instance';
  * The redemption must belong to the same customer, still be valid, be a money-discount benefit, and the service must match the package.
  * @summary Apply a redeemed reward to the treatment balance
  */
-export const postTreatmentCustomersIdApplyReward = (
+export const postTreatmentCustomersIdApplyRewardAdmin = (
     id: string,
-    postTreatmentCustomersIdApplyRewardBody: PostTreatmentCustomersIdApplyRewardBody,
+    postTreatmentCustomersIdApplyRewardAdminBody: PostTreatmentCustomersIdApplyRewardAdminBody,
  signal?: AbortSignal
 ) => {
       
       
       return customInstance<void>(
-      {url: `/treatmentCustomers/${id}/apply-reward`, method: 'POST',
+      {url: `/treatment-customers/${id}/apply-reward/admin`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: postTreatmentCustomersIdApplyRewardBody, signal
+      data: postTreatmentCustomersIdApplyRewardAdminBody, signal
     },
       );
     }
   
 
 
-export const getPostTreatmentCustomersIdApplyRewardMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postTreatmentCustomersIdApplyReward>>, TError,{id: string;data: PostTreatmentCustomersIdApplyRewardBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postTreatmentCustomersIdApplyReward>>, TError,{id: string;data: PostTreatmentCustomersIdApplyRewardBody}, TContext> => {
+export const getPostTreatmentCustomersIdApplyRewardAdminMutationOptions = <TError = void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postTreatmentCustomersIdApplyRewardAdmin>>, TError,{id: string;data: PostTreatmentCustomersIdApplyRewardAdminBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postTreatmentCustomersIdApplyRewardAdmin>>, TError,{id: string;data: PostTreatmentCustomersIdApplyRewardAdminBody}, TContext> => {
 
-const mutationKey = ['postTreatmentCustomersIdApplyReward'];
+const mutationKey = ['postTreatmentCustomersIdApplyRewardAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -92,10 +87,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postTreatmentCustomersIdApplyReward>>, {id: string;data: PostTreatmentCustomersIdApplyRewardBody}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postTreatmentCustomersIdApplyRewardAdmin>>, {id: string;data: PostTreatmentCustomersIdApplyRewardAdminBody}> = (props) => {
           const {id,data} = props ?? {};
 
-          return  postTreatmentCustomersIdApplyReward(id,data,)
+          return  postTreatmentCustomersIdApplyRewardAdmin(id,data,)
         }
 
         
@@ -103,38 +98,38 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PostTreatmentCustomersIdApplyRewardMutationResult = NonNullable<Awaited<ReturnType<typeof postTreatmentCustomersIdApplyReward>>>
-    export type PostTreatmentCustomersIdApplyRewardMutationBody = PostTreatmentCustomersIdApplyRewardBody
-    export type PostTreatmentCustomersIdApplyRewardMutationError = void
+    export type PostTreatmentCustomersIdApplyRewardAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postTreatmentCustomersIdApplyRewardAdmin>>>
+    export type PostTreatmentCustomersIdApplyRewardAdminMutationBody = PostTreatmentCustomersIdApplyRewardAdminBody
+    export type PostTreatmentCustomersIdApplyRewardAdminMutationError = void
 
     /**
  * @summary Apply a redeemed reward to the treatment balance
  */
-export const usePostTreatmentCustomersIdApplyReward = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postTreatmentCustomersIdApplyReward>>, TError,{id: string;data: PostTreatmentCustomersIdApplyRewardBody}, TContext>, }
+export const usePostTreatmentCustomersIdApplyRewardAdmin = <TError = void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postTreatmentCustomersIdApplyRewardAdmin>>, TError,{id: string;data: PostTreatmentCustomersIdApplyRewardAdminBody}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postTreatmentCustomersIdApplyReward>>,
+        Awaited<ReturnType<typeof postTreatmentCustomersIdApplyRewardAdmin>>,
         TError,
-        {id: string;data: PostTreatmentCustomersIdApplyRewardBody},
+        {id: string;data: PostTreatmentCustomersIdApplyRewardAdminBody},
         TContext
       > => {
 
-      const mutationOptions = getPostTreatmentCustomersIdApplyRewardMutationOptions(options);
+      const mutationOptions = getPostTreatmentCustomersIdApplyRewardAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **RW-02** — GET /rewards/{id}. Only platform administrators (ADM) can call this.
+ * **RW-02** — GET /rewards/{id}/admin. Cần đăng nhập + `reward.delete_all`.
  * @summary View reward detail
  */
-export const getRewardsId = (
+export const getRewardsIdAdmin = (
     id: string,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<GetRewardsId200>(
-      {url: `/rewards/${id}`, method: 'GET', signal
+      return customInstance<GetRewardsIdAdmin200>(
+      {url: `/rewards/${id}/admin`, method: 'GET', signal
     },
       );
     }
@@ -142,75 +137,75 @@ export const getRewardsId = (
 
 
 
-export const getGetRewardsIdInfiniteQueryKey = (id?: string,) => {
+export const getGetRewardsIdAdminInfiniteQueryKey = (id?: string,) => {
     return [
-    'infinite', `/rewards/${id}`
+    'infinite', `/rewards/${id}/admin`
     ] as const;
     }
 
-export const getGetRewardsIdQueryKey = (id?: string,) => {
+export const getGetRewardsIdAdminQueryKey = (id?: string,) => {
     return [
-    `/rewards/${id}`
+    `/rewards/${id}/admin`
     ] as const;
     }
 
     
-export const getGetRewardsIdInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getRewardsId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRewardsId>>, TError, TData>>, }
+export const getGetRewardsIdAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getRewardsIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRewardsIdAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetRewardsIdInfiniteQueryKey(id);
+  const queryKey =  queryOptions?.queryKey ?? getGetRewardsIdAdminInfiniteQueryKey(id);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRewardsId>>> = ({ signal }) => getRewardsId(id, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRewardsIdAdmin>>> = ({ signal }) => getRewardsIdAdmin(id, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRewardsId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRewardsIdAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetRewardsIdInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getRewardsId>>>
-export type GetRewardsIdInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+export type GetRewardsIdAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getRewardsIdAdmin>>>
+export type GetRewardsIdAdminInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
 
 
-export function useGetRewardsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRewardsId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRewardsId>>, TError, TData>> & Pick<
+export function useGetRewardsIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRewardsIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRewardsIdAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getRewardsId>>,
+          Awaited<ReturnType<typeof getRewardsIdAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getRewardsId>>
+          Awaited<ReturnType<typeof getRewardsIdAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetRewardsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRewardsId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRewardsId>>, TError, TData>> & Pick<
+export function useGetRewardsIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRewardsIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRewardsIdAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getRewardsId>>,
+          Awaited<ReturnType<typeof getRewardsIdAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getRewardsId>>
+          Awaited<ReturnType<typeof getRewardsIdAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetRewardsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRewardsId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRewardsId>>, TError, TData>>, }
+export function useGetRewardsIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRewardsIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRewardsIdAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary View reward detail
  */
 
-export function useGetRewardsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRewardsId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRewardsId>>, TError, TData>>, }
+export function useGetRewardsIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRewardsIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRewardsIdAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetRewardsIdInfiniteQueryOptions(id,options)
+  const queryOptions = getGetRewardsIdAdminInfiniteQueryOptions(id,options)
 
   const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -222,12 +217,12 @@ export function useGetRewardsIdInfinite<TData = InfiniteData<Awaited<ReturnType<
 /**
  * @summary View reward detail
  */
-export const prefetchGetRewardsIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getRewardsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRewardsId>>, TError, TData>>, }
+export const prefetchGetRewardsIdAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getRewardsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRewardsIdAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetRewardsIdInfiniteQueryOptions(id,options)
+  const queryOptions = getGetRewardsIdAdminInfiniteQueryOptions(id,options)
 
   await queryClient.prefetchInfiniteQuery(queryOptions);
 
@@ -236,62 +231,62 @@ export const prefetchGetRewardsIdInfiniteQuery = async <TData = Awaited<ReturnTy
 
 
 
-export const getGetRewardsIdQueryOptions = <TData = Awaited<ReturnType<typeof getRewardsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRewardsId>>, TError, TData>>, }
+export const getGetRewardsIdAdminQueryOptions = <TData = Awaited<ReturnType<typeof getRewardsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRewardsIdAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetRewardsIdQueryKey(id);
+  const queryKey =  queryOptions?.queryKey ?? getGetRewardsIdAdminQueryKey(id);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRewardsId>>> = ({ signal }) => getRewardsId(id, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRewardsIdAdmin>>> = ({ signal }) => getRewardsIdAdmin(id, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getRewardsId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getRewardsIdAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetRewardsIdQueryResult = NonNullable<Awaited<ReturnType<typeof getRewardsId>>>
-export type GetRewardsIdQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+export type GetRewardsIdAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getRewardsIdAdmin>>>
+export type GetRewardsIdAdminQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
 
 
-export function useGetRewardsId<TData = Awaited<ReturnType<typeof getRewardsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRewardsId>>, TError, TData>> & Pick<
+export function useGetRewardsIdAdmin<TData = Awaited<ReturnType<typeof getRewardsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRewardsIdAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getRewardsId>>,
+          Awaited<ReturnType<typeof getRewardsIdAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getRewardsId>>
+          Awaited<ReturnType<typeof getRewardsIdAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetRewardsId<TData = Awaited<ReturnType<typeof getRewardsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRewardsId>>, TError, TData>> & Pick<
+export function useGetRewardsIdAdmin<TData = Awaited<ReturnType<typeof getRewardsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRewardsIdAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getRewardsId>>,
+          Awaited<ReturnType<typeof getRewardsIdAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getRewardsId>>
+          Awaited<ReturnType<typeof getRewardsIdAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetRewardsId<TData = Awaited<ReturnType<typeof getRewardsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRewardsId>>, TError, TData>>, }
+export function useGetRewardsIdAdmin<TData = Awaited<ReturnType<typeof getRewardsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRewardsIdAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary View reward detail
  */
 
-export function useGetRewardsId<TData = Awaited<ReturnType<typeof getRewardsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRewardsId>>, TError, TData>>, }
+export function useGetRewardsIdAdmin<TData = Awaited<ReturnType<typeof getRewardsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRewardsIdAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetRewardsIdQueryOptions(id,options)
+  const queryOptions = getGetRewardsIdAdminQueryOptions(id,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -303,12 +298,12 @@ export function useGetRewardsId<TData = Awaited<ReturnType<typeof getRewardsId>>
 /**
  * @summary View reward detail
  */
-export const prefetchGetRewardsIdQuery = async <TData = Awaited<ReturnType<typeof getRewardsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRewardsId>>, TError, TData>>, }
+export const prefetchGetRewardsIdAdminQuery = async <TData = Awaited<ReturnType<typeof getRewardsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRewardsIdAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetRewardsIdQueryOptions(id,options)
+  const queryOptions = getGetRewardsIdAdminQueryOptions(id,options)
 
   await queryClient.prefetchQuery(queryOptions);
 
@@ -318,17 +313,17 @@ export const prefetchGetRewardsIdQuery = async <TData = Awaited<ReturnType<typeo
 
 
 /**
- * **RW-04** — PUT /rewards/{id} (does not affect already-redeemed entries). Only platform administrators (ADM) can call this. Handled by `row.update`.
+ * **RW-04** — PUT /rewards/{id}/admin (does not affect already-redeemed entries). Cần đăng nhập + `reward.update_all`. Handled by `row.update`.
  * @summary Update a reward
  */
-export const putRewardsId = (
+export const putRewardsIdAdmin = (
     id: string,
     reward: Reward,
  ) => {
       
       
-      return customInstance<PutRewardsId200>(
-      {url: `/rewards/${id}`, method: 'PUT',
+      return customInstance<PutRewardsIdAdmin200>(
+      {url: `/rewards/${id}/admin`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: reward
     },
@@ -337,11 +332,11 @@ export const putRewardsId = (
   
 
 
-export const getPutRewardsIdMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putRewardsId>>, TError,{id: string;data: Reward}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putRewardsId>>, TError,{id: string;data: Reward}, TContext> => {
+export const getPutRewardsIdAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putRewardsIdAdmin>>, TError,{id: string;data: Reward}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putRewardsIdAdmin>>, TError,{id: string;data: Reward}, TContext> => {
 
-const mutationKey = ['putRewardsId'];
+const mutationKey = ['putRewardsIdAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -351,10 +346,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putRewardsId>>, {id: string;data: Reward}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putRewardsIdAdmin>>, {id: string;data: Reward}> = (props) => {
           const {id,data} = props ?? {};
 
-          return  putRewardsId(id,data,)
+          return  putRewardsIdAdmin(id,data,)
         }
 
         
@@ -362,48 +357,48 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PutRewardsIdMutationResult = NonNullable<Awaited<ReturnType<typeof putRewardsId>>>
-    export type PutRewardsIdMutationBody = Reward
-    export type PutRewardsIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+    export type PutRewardsIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof putRewardsIdAdmin>>>
+    export type PutRewardsIdAdminMutationBody = Reward
+    export type PutRewardsIdAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
  * @summary Update a reward
  */
-export const usePutRewardsId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putRewardsId>>, TError,{id: string;data: Reward}, TContext>, }
+export const usePutRewardsIdAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putRewardsIdAdmin>>, TError,{id: string;data: Reward}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putRewardsId>>,
+        Awaited<ReturnType<typeof putRewardsIdAdmin>>,
         TError,
         {id: string;data: Reward},
         TContext
       > => {
 
-      const mutationOptions = getPutRewardsIdMutationOptions(options);
+      const mutationOptions = getPutRewardsIdAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **RW-05** — DELETE /rewards/{id} — soft-deletes the reward (is_deleted=true); rejected with 409 if redemption history exists. Only platform administrators (ADM) can call this.
+ * **RW-05** — DELETE /rewards/{id}/admin — soft-deletes the reward (is_deleted=true); rejected with 409 if redemption history exists. Cần đăng nhập + `reward.delete_all`.
  * @summary Delete a reward
  */
-export const deleteRewardsId = (
+export const deleteRewardsIdAdmin = (
     id: string,
  ) => {
       
       
-      return customInstance<DeleteRewardsId200>(
-      {url: `/rewards/${id}`, method: 'DELETE'
+      return customInstance<DeleteRewardsIdAdmin200>(
+      {url: `/rewards/${id}/admin`, method: 'DELETE'
     },
       );
     }
   
 
 
-export const getDeleteRewardsIdMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteRewardsId>>, TError,{id: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof deleteRewardsId>>, TError,{id: string}, TContext> => {
+export const getDeleteRewardsIdAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteRewardsIdAdmin>>, TError,{id: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteRewardsIdAdmin>>, TError,{id: string}, TContext> => {
 
-const mutationKey = ['deleteRewardsId'];
+const mutationKey = ['deleteRewardsIdAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -413,10 +408,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteRewardsId>>, {id: string}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteRewardsIdAdmin>>, {id: string}> = (props) => {
           const {id} = props ?? {};
 
-          return  deleteRewardsId(id,)
+          return  deleteRewardsIdAdmin(id,)
         }
 
         
@@ -424,38 +419,38 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type DeleteRewardsIdMutationResult = NonNullable<Awaited<ReturnType<typeof deleteRewardsId>>>
+    export type DeleteRewardsIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof deleteRewardsIdAdmin>>>
     
-    export type DeleteRewardsIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+    export type DeleteRewardsIdAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
  * @summary Delete a reward
  */
-export const useDeleteRewardsId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteRewardsId>>, TError,{id: string}, TContext>, }
+export const useDeleteRewardsIdAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteRewardsIdAdmin>>, TError,{id: string}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteRewardsId>>,
+        Awaited<ReturnType<typeof deleteRewardsIdAdmin>>,
         TError,
         {id: string},
         TContext
       > => {
 
-      const mutationOptions = getDeleteRewardsIdMutationOptions(options);
+      const mutationOptions = getDeleteRewardsIdAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **RW-01** — GET /rewards. Requires `reward.read` permission. Query parameters: `is_active`, `available`.
+ * **RW-01** — GET /rewards/admin. Requires `reward.view_all` permission. Query parameters: `is_active`, `available`.
  * @summary Get reward list
  */
-export const getRewards = (
-    params?: GetRewardsParams,
+export const getRewardsAdmin = (
+    params?: GetRewardsAdminParams,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<GetRewards200>(
-      {url: `/rewards`, method: 'GET',
+      return customInstance<GetRewardsAdmin200>(
+      {url: `/rewards/admin`, method: 'GET',
         params, signal
     },
       );
@@ -464,75 +459,75 @@ export const getRewards = (
 
 
 
-export const getGetRewardsInfiniteQueryKey = (params?: GetRewardsParams,) => {
+export const getGetRewardsAdminInfiniteQueryKey = (params?: GetRewardsAdminParams,) => {
     return [
-    'infinite', `/rewards`, ...(params ? [params]: [])
+    'infinite', `/rewards/admin`, ...(params ? [params]: [])
     ] as const;
     }
 
-export const getGetRewardsQueryKey = (params?: GetRewardsParams,) => {
+export const getGetRewardsAdminQueryKey = (params?: GetRewardsAdminParams,) => {
     return [
-    `/rewards`, ...(params ? [params]: [])
+    `/rewards/admin`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetRewardsInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getRewards>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetRewardsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRewards>>, TError, TData>>, }
+export const getGetRewardsAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getRewardsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetRewardsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRewardsAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetRewardsInfiniteQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getGetRewardsAdminInfiniteQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRewards>>> = ({ signal }) => getRewards(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRewardsAdmin>>> = ({ signal }) => getRewardsAdmin(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRewards>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRewardsAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetRewardsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getRewards>>>
-export type GetRewardsInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+export type GetRewardsAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getRewardsAdmin>>>
+export type GetRewardsAdminInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
 
 
-export function useGetRewardsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRewards>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params: undefined |  GetRewardsParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRewards>>, TError, TData>> & Pick<
+export function useGetRewardsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRewardsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetRewardsAdminParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRewardsAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getRewards>>,
+          Awaited<ReturnType<typeof getRewardsAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getRewards>>
+          Awaited<ReturnType<typeof getRewardsAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetRewardsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRewards>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetRewardsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRewards>>, TError, TData>> & Pick<
+export function useGetRewardsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRewardsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetRewardsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRewardsAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getRewards>>,
+          Awaited<ReturnType<typeof getRewardsAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getRewards>>
+          Awaited<ReturnType<typeof getRewardsAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetRewardsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRewards>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetRewardsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRewards>>, TError, TData>>, }
+export function useGetRewardsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRewardsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetRewardsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRewardsAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Get reward list
  */
 
-export function useGetRewardsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRewards>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetRewardsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRewards>>, TError, TData>>, }
+export function useGetRewardsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRewardsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetRewardsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRewardsAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetRewardsInfiniteQueryOptions(params,options)
+  const queryOptions = getGetRewardsAdminInfiniteQueryOptions(params,options)
 
   const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -544,12 +539,12 @@ export function useGetRewardsInfinite<TData = InfiniteData<Awaited<ReturnType<ty
 /**
  * @summary Get reward list
  */
-export const prefetchGetRewardsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getRewards>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient, params?: GetRewardsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRewards>>, TError, TData>>, }
+export const prefetchGetRewardsAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getRewardsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetRewardsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRewardsAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetRewardsInfiniteQueryOptions(params,options)
+  const queryOptions = getGetRewardsAdminInfiniteQueryOptions(params,options)
 
   await queryClient.prefetchInfiniteQuery(queryOptions);
 
@@ -558,62 +553,62 @@ export const prefetchGetRewardsInfiniteQuery = async <TData = Awaited<ReturnType
 
 
 
-export const getGetRewardsQueryOptions = <TData = Awaited<ReturnType<typeof getRewards>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetRewardsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRewards>>, TError, TData>>, }
+export const getGetRewardsAdminQueryOptions = <TData = Awaited<ReturnType<typeof getRewardsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetRewardsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRewardsAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetRewardsQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getGetRewardsAdminQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRewards>>> = ({ signal }) => getRewards(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRewardsAdmin>>> = ({ signal }) => getRewardsAdmin(params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getRewards>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getRewardsAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetRewardsQueryResult = NonNullable<Awaited<ReturnType<typeof getRewards>>>
-export type GetRewardsQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+export type GetRewardsAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getRewardsAdmin>>>
+export type GetRewardsAdminQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
 
 
-export function useGetRewards<TData = Awaited<ReturnType<typeof getRewards>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params: undefined |  GetRewardsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRewards>>, TError, TData>> & Pick<
+export function useGetRewardsAdmin<TData = Awaited<ReturnType<typeof getRewardsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetRewardsAdminParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRewardsAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getRewards>>,
+          Awaited<ReturnType<typeof getRewardsAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getRewards>>
+          Awaited<ReturnType<typeof getRewardsAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetRewards<TData = Awaited<ReturnType<typeof getRewards>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetRewardsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRewards>>, TError, TData>> & Pick<
+export function useGetRewardsAdmin<TData = Awaited<ReturnType<typeof getRewardsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetRewardsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRewardsAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getRewards>>,
+          Awaited<ReturnType<typeof getRewardsAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getRewards>>
+          Awaited<ReturnType<typeof getRewardsAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetRewards<TData = Awaited<ReturnType<typeof getRewards>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetRewardsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRewards>>, TError, TData>>, }
+export function useGetRewardsAdmin<TData = Awaited<ReturnType<typeof getRewardsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetRewardsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRewardsAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Get reward list
  */
 
-export function useGetRewards<TData = Awaited<ReturnType<typeof getRewards>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetRewardsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRewards>>, TError, TData>>, }
+export function useGetRewardsAdmin<TData = Awaited<ReturnType<typeof getRewardsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetRewardsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRewardsAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetRewardsQueryOptions(params,options)
+  const queryOptions = getGetRewardsAdminQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -625,12 +620,12 @@ export function useGetRewards<TData = Awaited<ReturnType<typeof getRewards>>, TE
 /**
  * @summary Get reward list
  */
-export const prefetchGetRewardsQuery = async <TData = Awaited<ReturnType<typeof getRewards>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient, params?: GetRewardsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRewards>>, TError, TData>>, }
+export const prefetchGetRewardsAdminQuery = async <TData = Awaited<ReturnType<typeof getRewardsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetRewardsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRewardsAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetRewardsQueryOptions(params,options)
+  const queryOptions = getGetRewardsAdminQueryOptions(params,options)
 
   await queryClient.prefetchQuery(queryOptions);
 
@@ -640,17 +635,17 @@ export const prefetchGetRewardsQuery = async <TData = Awaited<ReturnType<typeof 
 
 
 /**
- * **RW-03** — POST /rewards. Only platform administrators (ADM) can call this.
+ * **RW-03** — POST /rewards/admin. Cần đăng nhập + `reward.create`.
  * @summary Create a new reward
  */
-export const postRewards = (
+export const postRewardsAdmin = (
     reward: Reward,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<PostRewards200>(
-      {url: `/rewards`, method: 'POST',
+      return customInstance<PostRewardsAdmin200>(
+      {url: `/rewards/admin`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: reward, signal
     },
@@ -659,11 +654,11 @@ export const postRewards = (
   
 
 
-export const getPostRewardsMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postRewards>>, TError,{data: Reward}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postRewards>>, TError,{data: Reward}, TContext> => {
+export const getPostRewardsAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postRewardsAdmin>>, TError,{data: Reward}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postRewardsAdmin>>, TError,{data: Reward}, TContext> => {
 
-const mutationKey = ['postRewards'];
+const mutationKey = ['postRewardsAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -673,10 +668,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postRewards>>, {data: Reward}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postRewardsAdmin>>, {data: Reward}> = (props) => {
           const {data} = props ?? {};
 
-          return  postRewards(data,)
+          return  postRewardsAdmin(data,)
         }
 
         
@@ -684,345 +679,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PostRewardsMutationResult = NonNullable<Awaited<ReturnType<typeof postRewards>>>
-    export type PostRewardsMutationBody = Reward
-    export type PostRewardsMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+    export type PostRewardsAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postRewardsAdmin>>>
+    export type PostRewardsAdminMutationBody = Reward
+    export type PostRewardsAdminMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
  * @summary Create a new reward
  */
-export const usePostRewards = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postRewards>>, TError,{data: Reward}, TContext>, }
+export const usePostRewardsAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postRewardsAdmin>>, TError,{data: Reward}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postRewards>>,
+        Awaited<ReturnType<typeof postRewardsAdmin>>,
         TError,
         {data: Reward},
         TContext
       > => {
 
-      const mutationOptions = getPostRewardsMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * **RW-06** — GET /reward-redemptions: filter by customer, reward, status, date range. Requires `reward.read` permission. Query parameters: `page`, `limit`, `status`, `reward_id`, `customer_profile_id`, `from`, `to`.
- * @summary Get reward redemption list
- */
-export const getRewardRedemptions = (
-    params?: GetRewardRedemptionsParams,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<GetRewardRedemptions200>(
-      {url: `/reward-redemptions`, method: 'GET',
-        params, signal
-    },
-      );
-    }
-  
-
-
-
-export const getGetRewardRedemptionsInfiniteQueryKey = (params?: GetRewardRedemptionsParams,) => {
-    return [
-    'infinite', `/reward-redemptions`, ...(params ? [params]: [])
-    ] as const;
-    }
-
-export const getGetRewardRedemptionsQueryKey = (params?: GetRewardRedemptionsParams,) => {
-    return [
-    `/reward-redemptions`, ...(params ? [params]: [])
-    ] as const;
-    }
-
-    
-export const getGetRewardRedemptionsInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getRewardRedemptions>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetRewardRedemptionsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRewardRedemptions>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetRewardRedemptionsInfiniteQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRewardRedemptions>>> = ({ signal }) => getRewardRedemptions(params, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRewardRedemptions>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetRewardRedemptionsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getRewardRedemptions>>>
-export type GetRewardRedemptionsInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
-
-
-export function useGetRewardRedemptionsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRewardRedemptions>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params: undefined |  GetRewardRedemptionsParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRewardRedemptions>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getRewardRedemptions>>,
-          TError,
-          Awaited<ReturnType<typeof getRewardRedemptions>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetRewardRedemptionsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRewardRedemptions>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetRewardRedemptionsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRewardRedemptions>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getRewardRedemptions>>,
-          TError,
-          Awaited<ReturnType<typeof getRewardRedemptions>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetRewardRedemptionsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRewardRedemptions>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetRewardRedemptionsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRewardRedemptions>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get reward redemption list
- */
-
-export function useGetRewardRedemptionsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRewardRedemptions>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetRewardRedemptionsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRewardRedemptions>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetRewardRedemptionsInfiniteQueryOptions(params,options)
-
-  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary Get reward redemption list
- */
-export const prefetchGetRewardRedemptionsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getRewardRedemptions>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient, params?: GetRewardRedemptionsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRewardRedemptions>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetRewardRedemptionsInfiniteQueryOptions(params,options)
-
-  await queryClient.prefetchInfiniteQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-export const getGetRewardRedemptionsQueryOptions = <TData = Awaited<ReturnType<typeof getRewardRedemptions>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetRewardRedemptionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRewardRedemptions>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetRewardRedemptionsQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRewardRedemptions>>> = ({ signal }) => getRewardRedemptions(params, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getRewardRedemptions>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetRewardRedemptionsQueryResult = NonNullable<Awaited<ReturnType<typeof getRewardRedemptions>>>
-export type GetRewardRedemptionsQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
-
-
-export function useGetRewardRedemptions<TData = Awaited<ReturnType<typeof getRewardRedemptions>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params: undefined |  GetRewardRedemptionsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRewardRedemptions>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getRewardRedemptions>>,
-          TError,
-          Awaited<ReturnType<typeof getRewardRedemptions>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetRewardRedemptions<TData = Awaited<ReturnType<typeof getRewardRedemptions>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetRewardRedemptionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRewardRedemptions>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getRewardRedemptions>>,
-          TError,
-          Awaited<ReturnType<typeof getRewardRedemptions>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetRewardRedemptions<TData = Awaited<ReturnType<typeof getRewardRedemptions>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetRewardRedemptionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRewardRedemptions>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get reward redemption list
- */
-
-export function useGetRewardRedemptions<TData = Awaited<ReturnType<typeof getRewardRedemptions>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetRewardRedemptionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRewardRedemptions>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetRewardRedemptionsQueryOptions(params,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary Get reward redemption list
- */
-export const prefetchGetRewardRedemptionsQuery = async <TData = Awaited<ReturnType<typeof getRewardRedemptions>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient, params?: GetRewardRedemptionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRewardRedemptions>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetRewardRedemptionsQueryOptions(params,options)
-
-  await queryClient.prefetchQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-/**
- * **RW-08** — PUT /reward-redemptions/{id}/use (ISSUED → USED). Requires `reward.redeem_admin` permission. Money-discount rewards must use the apply-to-treatment-package endpoint to reduce debt.
- * @summary Mark a reward as used
- */
-export const putRewardRedemptionsIdUse = (
-    id: string,
- ) => {
-      
-      
-      return customInstance<PutRewardRedemptionsIdUse200>(
-      {url: `/reward-redemptions/${id}/use`, method: 'PUT'
-    },
-      );
-    }
-  
-
-
-export const getPutRewardRedemptionsIdUseMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putRewardRedemptionsIdUse>>, TError,{id: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putRewardRedemptionsIdUse>>, TError,{id: string}, TContext> => {
-
-const mutationKey = ['putRewardRedemptionsIdUse'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putRewardRedemptionsIdUse>>, {id: string}> = (props) => {
-          const {id} = props ?? {};
-
-          return  putRewardRedemptionsIdUse(id,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PutRewardRedemptionsIdUseMutationResult = NonNullable<Awaited<ReturnType<typeof putRewardRedemptionsIdUse>>>
-    
-    export type PutRewardRedemptionsIdUseMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
-
-    /**
- * @summary Mark a reward as used
- */
-export const usePutRewardRedemptionsIdUse = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putRewardRedemptionsIdUse>>, TError,{id: string}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putRewardRedemptionsIdUse>>,
-        TError,
-        {id: string},
-        TContext
-      > => {
-
-      const mutationOptions = getPutRewardRedemptionsIdUseMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * **RW-09** — PUT /reward-redemptions/{id}/cancel: refund points + restore quantity. Requires `reward.update` permission. Body field: `reason`.
- * @summary Cancel a reward redemption
- */
-export const putRewardRedemptionsIdCancel = (
-    id: string,
-    putRewardRedemptionsIdCancelBody: PutRewardRedemptionsIdCancelBody,
- ) => {
-      
-      
-      return customInstance<PutRewardRedemptionsIdCancel200>(
-      {url: `/reward-redemptions/${id}/cancel`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: putRewardRedemptionsIdCancelBody
-    },
-      );
-    }
-  
-
-
-export const getPutRewardRedemptionsIdCancelMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putRewardRedemptionsIdCancel>>, TError,{id: string;data: PutRewardRedemptionsIdCancelBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putRewardRedemptionsIdCancel>>, TError,{id: string;data: PutRewardRedemptionsIdCancelBody}, TContext> => {
-
-const mutationKey = ['putRewardRedemptionsIdCancel'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putRewardRedemptionsIdCancel>>, {id: string;data: PutRewardRedemptionsIdCancelBody}> = (props) => {
-          const {id,data} = props ?? {};
-
-          return  putRewardRedemptionsIdCancel(id,data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PutRewardRedemptionsIdCancelMutationResult = NonNullable<Awaited<ReturnType<typeof putRewardRedemptionsIdCancel>>>
-    export type PutRewardRedemptionsIdCancelMutationBody = PutRewardRedemptionsIdCancelBody
-    export type PutRewardRedemptionsIdCancelMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
-
-    /**
- * @summary Cancel a reward redemption
- */
-export const usePutRewardRedemptionsIdCancel = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putRewardRedemptionsIdCancel>>, TError,{id: string;data: PutRewardRedemptionsIdCancelBody}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putRewardRedemptionsIdCancel>>,
-        TError,
-        {id: string;data: PutRewardRedemptionsIdCancelBody},
-        TContext
-      > => {
-
-      const mutationOptions = getPutRewardRedemptionsIdCancelMutationOptions(options);
+      const mutationOptions = getPostRewardsAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

@@ -32,24 +32,24 @@ import type {
 import type {
   ConflictResponse,
   ForbiddenResponse,
-  GetAppointments200,
+  GetAppointmentsAdmin200,
+  GetAppointmentsAdminParams,
   GetAppointmentsAvailableSlots200,
   GetAppointmentsAvailableSlotsParams,
-  GetAppointmentsId200,
-  GetAppointmentsParams,
+  GetAppointmentsIdAdmin200,
   InternalErrorResponse,
   NotFoundResponse,
-  PostAppointments200,
-  PostAppointmentsBody,
-  PostAppointmentsIdStart200,
-  PostAppointmentsIdStartBody,
-  PutAppointmentsId200,
-  PutAppointmentsIdApprove200,
-  PutAppointmentsIdBody,
-  PutAppointmentsIdCancel200,
-  PutAppointmentsIdNoShow200,
-  PutAppointmentsIdReject200,
-  PutAppointmentsIdRejectBody,
+  PostAppointmentsAdmin200,
+  PostAppointmentsAdminBody,
+  PostAppointmentsIdStartAdmin200,
+  PostAppointmentsIdStartAdminBody,
+  PutAppointmentsIdAdmin200,
+  PutAppointmentsIdAdminBody,
+  PutAppointmentsIdApproveAdmin200,
+  PutAppointmentsIdCancelAdmin200,
+  PutAppointmentsIdNoShowAdmin200,
+  PutAppointmentsIdRejectAdmin200,
+  PutAppointmentsIdRejectAdminBody,
   UnauthorizedResponse,
   UnprocessableEntityResponse
 } from '../models';
@@ -61,17 +61,17 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * **AP-02** — GET /appointments/{id}. Requires the `appointment.read` permission. Branch scope: users limited to a single branch only see that branch's data.
+ * **AP-02** — GET /appointments/{id}/admin. Cần đăng nhập + `appointment.view_all` (branch scope áp dụng) hoặc `appointment.view_own` — chỉ xem được lịch hẹn của chính mình.
  * @summary View appointment details
  */
-export const getAppointmentsId = (
+export const getAppointmentsIdAdmin = (
     id: string,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<GetAppointmentsId200>(
-      {url: `/appointments/${id}`, method: 'GET', signal
+      return customInstance<GetAppointmentsIdAdmin200>(
+      {url: `/appointments/${id}/admin`, method: 'GET', signal
     },
       );
     }
@@ -79,75 +79,75 @@ export const getAppointmentsId = (
 
 
 
-export const getGetAppointmentsIdInfiniteQueryKey = (id?: string,) => {
+export const getGetAppointmentsIdAdminInfiniteQueryKey = (id?: string,) => {
     return [
-    'infinite', `/appointments/${id}`
+    'infinite', `/appointments/${id}/admin`
     ] as const;
     }
 
-export const getGetAppointmentsIdQueryKey = (id?: string,) => {
+export const getGetAppointmentsIdAdminQueryKey = (id?: string,) => {
     return [
-    `/appointments/${id}`
+    `/appointments/${id}/admin`
     ] as const;
     }
 
     
-export const getGetAppointmentsIdInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAppointmentsId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppointmentsId>>, TError, TData>>, }
+export const getGetAppointmentsIdAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAppointmentsIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppointmentsIdAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAppointmentsIdInfiniteQueryKey(id);
+  const queryKey =  queryOptions?.queryKey ?? getGetAppointmentsIdAdminInfiniteQueryKey(id);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAppointmentsId>>> = ({ signal }) => getAppointmentsId(id, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAppointmentsIdAdmin>>> = ({ signal }) => getAppointmentsIdAdmin(id, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppointmentsId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppointmentsIdAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetAppointmentsIdInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAppointmentsId>>>
-export type GetAppointmentsIdInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+export type GetAppointmentsIdAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAppointmentsIdAdmin>>>
+export type GetAppointmentsIdAdminInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
 
 
-export function useGetAppointmentsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppointmentsId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppointmentsId>>, TError, TData>> & Pick<
+export function useGetAppointmentsIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppointmentsIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppointmentsIdAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAppointmentsId>>,
+          Awaited<ReturnType<typeof getAppointmentsIdAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getAppointmentsId>>
+          Awaited<ReturnType<typeof getAppointmentsIdAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAppointmentsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppointmentsId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppointmentsId>>, TError, TData>> & Pick<
+export function useGetAppointmentsIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppointmentsIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppointmentsIdAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAppointmentsId>>,
+          Awaited<ReturnType<typeof getAppointmentsIdAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getAppointmentsId>>
+          Awaited<ReturnType<typeof getAppointmentsIdAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAppointmentsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppointmentsId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppointmentsId>>, TError, TData>>, }
+export function useGetAppointmentsIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppointmentsIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppointmentsIdAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary View appointment details
  */
 
-export function useGetAppointmentsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppointmentsId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppointmentsId>>, TError, TData>>, }
+export function useGetAppointmentsIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppointmentsIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppointmentsIdAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetAppointmentsIdInfiniteQueryOptions(id,options)
+  const queryOptions = getGetAppointmentsIdAdminInfiniteQueryOptions(id,options)
 
   const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -159,12 +159,12 @@ export function useGetAppointmentsIdInfinite<TData = InfiniteData<Awaited<Return
 /**
  * @summary View appointment details
  */
-export const prefetchGetAppointmentsIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAppointmentsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppointmentsId>>, TError, TData>>, }
+export const prefetchGetAppointmentsIdAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAppointmentsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppointmentsIdAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetAppointmentsIdInfiniteQueryOptions(id,options)
+  const queryOptions = getGetAppointmentsIdAdminInfiniteQueryOptions(id,options)
 
   await queryClient.prefetchInfiniteQuery(queryOptions);
 
@@ -173,62 +173,62 @@ export const prefetchGetAppointmentsIdInfiniteQuery = async <TData = Awaited<Ret
 
 
 
-export const getGetAppointmentsIdQueryOptions = <TData = Awaited<ReturnType<typeof getAppointmentsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointmentsId>>, TError, TData>>, }
+export const getGetAppointmentsIdAdminQueryOptions = <TData = Awaited<ReturnType<typeof getAppointmentsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointmentsIdAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAppointmentsIdQueryKey(id);
+  const queryKey =  queryOptions?.queryKey ?? getGetAppointmentsIdAdminQueryKey(id);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAppointmentsId>>> = ({ signal }) => getAppointmentsId(id, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAppointmentsIdAdmin>>> = ({ signal }) => getAppointmentsIdAdmin(id, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAppointmentsId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAppointmentsIdAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetAppointmentsIdQueryResult = NonNullable<Awaited<ReturnType<typeof getAppointmentsId>>>
-export type GetAppointmentsIdQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+export type GetAppointmentsIdAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getAppointmentsIdAdmin>>>
+export type GetAppointmentsIdAdminQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
 
 
-export function useGetAppointmentsId<TData = Awaited<ReturnType<typeof getAppointmentsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointmentsId>>, TError, TData>> & Pick<
+export function useGetAppointmentsIdAdmin<TData = Awaited<ReturnType<typeof getAppointmentsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointmentsIdAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAppointmentsId>>,
+          Awaited<ReturnType<typeof getAppointmentsIdAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getAppointmentsId>>
+          Awaited<ReturnType<typeof getAppointmentsIdAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAppointmentsId<TData = Awaited<ReturnType<typeof getAppointmentsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointmentsId>>, TError, TData>> & Pick<
+export function useGetAppointmentsIdAdmin<TData = Awaited<ReturnType<typeof getAppointmentsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointmentsIdAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAppointmentsId>>,
+          Awaited<ReturnType<typeof getAppointmentsIdAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getAppointmentsId>>
+          Awaited<ReturnType<typeof getAppointmentsIdAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAppointmentsId<TData = Awaited<ReturnType<typeof getAppointmentsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointmentsId>>, TError, TData>>, }
+export function useGetAppointmentsIdAdmin<TData = Awaited<ReturnType<typeof getAppointmentsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointmentsIdAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary View appointment details
  */
 
-export function useGetAppointmentsId<TData = Awaited<ReturnType<typeof getAppointmentsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointmentsId>>, TError, TData>>, }
+export function useGetAppointmentsIdAdmin<TData = Awaited<ReturnType<typeof getAppointmentsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointmentsIdAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetAppointmentsIdQueryOptions(id,options)
+  const queryOptions = getGetAppointmentsIdAdminQueryOptions(id,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -240,12 +240,12 @@ export function useGetAppointmentsId<TData = Awaited<ReturnType<typeof getAppoin
 /**
  * @summary View appointment details
  */
-export const prefetchGetAppointmentsIdQuery = async <TData = Awaited<ReturnType<typeof getAppointmentsId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointmentsId>>, TError, TData>>, }
+export const prefetchGetAppointmentsIdAdminQuery = async <TData = Awaited<ReturnType<typeof getAppointmentsIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointmentsIdAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetAppointmentsIdQueryOptions(id,options)
+  const queryOptions = getGetAppointmentsIdAdminQueryOptions(id,options)
 
   await queryClient.prefetchQuery(queryOptions);
 
@@ -255,30 +255,30 @@ export const prefetchGetAppointmentsIdQuery = async <TData = Awaited<ReturnType<
 
 
 /**
- * **AP-04** — PUT /appointments/{id} (change date/time, gán/đổi KTV phụ trách qua `staff_id` — validate slot còn trống cho KTV đó, loại trừ chính lịch này; dùng cho luồng admin đổi KTV trước khi duyệt đơn xin nghỉ). Requires the `appointment.update` permission. Branch scope: users limited to a single branch only see that branch's data.
- * @summary Update appointment
+ * **AP-04** — PUT /appointments/{id}/admin (đổi ngày/giờ, gán/đổi KTV qua `staff_id` — validate slot còn trống cho KTV đó, loại trừ chính lịch này; dùng cho luồng admin đổi KTV trước khi duyệt đơn xin nghỉ). Cần đăng nhập + `appointment.update_all` (branch scope áp dụng) hoặc `appointment.update_own` — khách tự dời lịch hẹn pending/approved của mình sang slot trống, trước lead time tối thiểu; approved quay lại `pending` chờ duyệt lại (gộp từ PUT /app/appointments/{id}/reschedule). Body: `appt_date`, `start_time`, `staff_id` (UUID — gán/đổi KTV; null = bỏ gán), `note`, `custom_fields`.
+ * @summary Update / reschedule appointment
  */
-export const putAppointmentsId = (
+export const putAppointmentsIdAdmin = (
     id: string,
-    putAppointmentsIdBody: PutAppointmentsIdBody,
+    putAppointmentsIdAdminBody: PutAppointmentsIdAdminBody,
  ) => {
       
       
-      return customInstance<PutAppointmentsId200>(
-      {url: `/appointments/${id}`, method: 'PUT',
+      return customInstance<PutAppointmentsIdAdmin200>(
+      {url: `/appointments/${id}/admin`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
-      data: putAppointmentsIdBody
+      data: putAppointmentsIdAdminBody
     },
       );
     }
   
 
 
-export const getPutAppointmentsIdMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAppointmentsId>>, TError,{id: string;data: PutAppointmentsIdBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putAppointmentsId>>, TError,{id: string;data: PutAppointmentsIdBody}, TContext> => {
+export const getPutAppointmentsIdAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAppointmentsIdAdmin>>, TError,{id: string;data: PutAppointmentsIdAdminBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putAppointmentsIdAdmin>>, TError,{id: string;data: PutAppointmentsIdAdminBody}, TContext> => {
 
-const mutationKey = ['putAppointmentsId'];
+const mutationKey = ['putAppointmentsIdAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -288,10 +288,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putAppointmentsId>>, {id: string;data: PutAppointmentsIdBody}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putAppointmentsIdAdmin>>, {id: string;data: PutAppointmentsIdAdminBody}> = (props) => {
           const {id,data} = props ?? {};
 
-          return  putAppointmentsId(id,data,)
+          return  putAppointmentsIdAdmin(id,data,)
         }
 
         
@@ -299,246 +299,52 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PutAppointmentsIdMutationResult = NonNullable<Awaited<ReturnType<typeof putAppointmentsId>>>
-    export type PutAppointmentsIdMutationBody = PutAppointmentsIdBody
-    export type PutAppointmentsIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+    export type PutAppointmentsIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof putAppointmentsIdAdmin>>>
+    export type PutAppointmentsIdAdminMutationBody = PutAppointmentsIdAdminBody
+    export type PutAppointmentsIdAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Update appointment
+ * @summary Update / reschedule appointment
  */
-export const usePutAppointmentsId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAppointmentsId>>, TError,{id: string;data: PutAppointmentsIdBody}, TContext>, }
+export const usePutAppointmentsIdAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAppointmentsIdAdmin>>, TError,{id: string;data: PutAppointmentsIdAdminBody}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putAppointmentsId>>,
+        Awaited<ReturnType<typeof putAppointmentsIdAdmin>>,
         TError,
-        {id: string;data: PutAppointmentsIdBody},
+        {id: string;data: PutAppointmentsIdAdminBody},
         TContext
       > => {
 
-      const mutationOptions = getPutAppointmentsIdMutationOptions(options);
+      const mutationOptions = getPutAppointmentsIdAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **AP-01** — GET /appointments (technicians only see their own appointments). Requires the `appointment.read` permission. Branch scope: users limited to a single branch only see that branch's data. Query parameters: `page`, `limit`, `branch_id`, `date`, `from_date`, `to_date`, `status`, `staff_id`, `customer_profile_id`.
- * @summary List appointments
+ * **AP-09** — POST /appointments/{id}/start/admin (assigned technician, or ADM/REC: approved → in_progress). Lịch hẹn chỉ là hẹn tư vấn: start chỉ chuyển trạng thái, không tạo buổi điều trị (buổi được tạo từ gói đã bán ở treatment-customers/sessions). Cần đăng nhập + `appointment.start`.
+ * @summary Start appointment
  */
-export const getAppointments = (
-    params?: GetAppointmentsParams,
+export const postAppointmentsIdStartAdmin = (
+    id: string,
+    postAppointmentsIdStartAdminBody: PostAppointmentsIdStartAdminBody,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<GetAppointments200>(
-      {url: `/appointments`, method: 'GET',
-        params, signal
-    },
-      );
-    }
-  
-
-
-
-export const getGetAppointmentsInfiniteQueryKey = (params?: GetAppointmentsParams,) => {
-    return [
-    'infinite', `/appointments`, ...(params ? [params]: [])
-    ] as const;
-    }
-
-export const getGetAppointmentsQueryKey = (params?: GetAppointmentsParams,) => {
-    return [
-    `/appointments`, ...(params ? [params]: [])
-    ] as const;
-    }
-
-    
-export const getGetAppointmentsInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAppointments>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetAppointmentsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppointments>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAppointmentsInfiniteQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAppointments>>> = ({ signal }) => getAppointments(params, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppointments>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAppointmentsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAppointments>>>
-export type GetAppointmentsInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
-
-
-export function useGetAppointmentsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppointments>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params: undefined |  GetAppointmentsParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppointments>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAppointments>>,
-          TError,
-          Awaited<ReturnType<typeof getAppointments>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAppointmentsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppointments>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetAppointmentsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppointments>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAppointments>>,
-          TError,
-          Awaited<ReturnType<typeof getAppointments>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAppointmentsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppointments>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetAppointmentsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppointments>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary List appointments
- */
-
-export function useGetAppointmentsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppointments>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetAppointmentsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppointments>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAppointmentsInfiniteQueryOptions(params,options)
-
-  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary List appointments
- */
-export const prefetchGetAppointmentsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAppointments>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient, params?: GetAppointmentsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppointments>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetAppointmentsInfiniteQueryOptions(params,options)
-
-  await queryClient.prefetchInfiniteQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-export const getGetAppointmentsQueryOptions = <TData = Awaited<ReturnType<typeof getAppointments>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetAppointmentsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointments>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetAppointmentsQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAppointments>>> = ({ signal }) => getAppointments(params, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAppointments>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAppointmentsQueryResult = NonNullable<Awaited<ReturnType<typeof getAppointments>>>
-export type GetAppointmentsQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
-
-
-export function useGetAppointments<TData = Awaited<ReturnType<typeof getAppointments>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params: undefined |  GetAppointmentsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointments>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAppointments>>,
-          TError,
-          Awaited<ReturnType<typeof getAppointments>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAppointments<TData = Awaited<ReturnType<typeof getAppointments>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetAppointmentsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointments>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAppointments>>,
-          TError,
-          Awaited<ReturnType<typeof getAppointments>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAppointments<TData = Awaited<ReturnType<typeof getAppointments>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetAppointmentsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointments>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary List appointments
- */
-
-export function useGetAppointments<TData = Awaited<ReturnType<typeof getAppointments>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetAppointmentsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointments>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetAppointmentsQueryOptions(params,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary List appointments
- */
-export const prefetchGetAppointmentsQuery = async <TData = Awaited<ReturnType<typeof getAppointments>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient, params?: GetAppointmentsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointments>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetAppointmentsQueryOptions(params,options)
-
-  await queryClient.prefetchQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-/**
- * **AP-03** — POST /appointments (book on behalf of a customer, with the same slot check as the app). Requires the `appointment.create` permission. Branch scope: users limited to a single branch only see that branch's data. The body is passed as-is to the business layer.
- * @summary Create a new appointment
- */
-export const postAppointments = (
-    postAppointmentsBody: PostAppointmentsBody,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<PostAppointments200>(
-      {url: `/appointments`, method: 'POST',
+      return customInstance<PostAppointmentsIdStartAdmin200>(
+      {url: `/appointments/${id}/start/admin`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: postAppointmentsBody, signal
+      data: postAppointmentsIdStartAdminBody, signal
     },
       );
     }
   
 
 
-export const getPostAppointmentsMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAppointments>>, TError,{data: PostAppointmentsBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postAppointments>>, TError,{data: PostAppointmentsBody}, TContext> => {
+export const getPostAppointmentsIdStartAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAppointmentsIdStartAdmin>>, TError,{id: string;data: PostAppointmentsIdStartAdminBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postAppointmentsIdStartAdmin>>, TError,{id: string;data: PostAppointmentsIdStartAdminBody}, TContext> => {
 
-const mutationKey = ['postAppointments'];
+const mutationKey = ['postAppointmentsIdStartAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -548,10 +354,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAppointments>>, {data: PostAppointmentsBody}> = (props) => {
-          const {data} = props ?? {};
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAppointmentsIdStartAdmin>>, {id: string;data: PostAppointmentsIdStartAdminBody}> = (props) => {
+          const {id,data} = props ?? {};
 
-          return  postAppointments(data,)
+          return  postAppointmentsIdStartAdmin(id,data,)
         }
 
         
@@ -559,32 +365,283 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PostAppointmentsMutationResult = NonNullable<Awaited<ReturnType<typeof postAppointments>>>
-    export type PostAppointmentsMutationBody = PostAppointmentsBody
-    export type PostAppointmentsMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+    export type PostAppointmentsIdStartAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postAppointmentsIdStartAdmin>>>
+    export type PostAppointmentsIdStartAdminMutationBody = PostAppointmentsIdStartAdminBody
+    export type PostAppointmentsIdStartAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Create a new appointment
+ * @summary Start appointment
  */
-export const usePostAppointments = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAppointments>>, TError,{data: PostAppointmentsBody}, TContext>, }
+export const usePostAppointmentsIdStartAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAppointmentsIdStartAdmin>>, TError,{id: string;data: PostAppointmentsIdStartAdminBody}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postAppointments>>,
+        Awaited<ReturnType<typeof postAppointmentsIdStartAdmin>>,
         TError,
-        {data: PostAppointmentsBody},
+        {id: string;data: PostAppointmentsIdStartAdminBody},
         TContext
       > => {
 
-      const mutationOptions = getPostAppointmentsMutationOptions(options);
+      const mutationOptions = getPostAppointmentsIdStartAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **AP-08** — GET /appointments/available-slots?branch_id&date&staff_id?. Requires the `appointment.read` permission. Branch scope: users limited to a single branch only see that branch's data. Query parameters: `branch_id`, `date`, `staff_id`, `exclude_appointment_id`. Lịch hẹn chỉ là hẹn tư vấn nên không cần service_id.
- * @summary View available time slots
+ * **AP-06** — PUT /appointments/{id}/reject/admin (ADM/REC, `reason` is required). Cần đăng nhập + `appointment.approve`. Body field: `reason`.
+ * @summary Reject appointment
+ */
+export const putAppointmentsIdRejectAdmin = (
+    id: string,
+    putAppointmentsIdRejectAdminBody: PutAppointmentsIdRejectAdminBody,
+ ) => {
+      
+      
+      return customInstance<PutAppointmentsIdRejectAdmin200>(
+      {url: `/appointments/${id}/reject/admin`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: putAppointmentsIdRejectAdminBody
+    },
+      );
+    }
+  
+
+
+export const getPutAppointmentsIdRejectAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAppointmentsIdRejectAdmin>>, TError,{id: string;data: PutAppointmentsIdRejectAdminBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putAppointmentsIdRejectAdmin>>, TError,{id: string;data: PutAppointmentsIdRejectAdminBody}, TContext> => {
+
+const mutationKey = ['putAppointmentsIdRejectAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putAppointmentsIdRejectAdmin>>, {id: string;data: PutAppointmentsIdRejectAdminBody}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  putAppointmentsIdRejectAdmin(id,data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PutAppointmentsIdRejectAdminMutationResult = NonNullable<Awaited<ReturnType<typeof putAppointmentsIdRejectAdmin>>>
+    export type PutAppointmentsIdRejectAdminMutationBody = PutAppointmentsIdRejectAdminBody
+    export type PutAppointmentsIdRejectAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+
+    /**
+ * @summary Reject appointment
+ */
+export const usePutAppointmentsIdRejectAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAppointmentsIdRejectAdmin>>, TError,{id: string;data: PutAppointmentsIdRejectAdminBody}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof putAppointmentsIdRejectAdmin>>,
+        TError,
+        {id: string;data: PutAppointmentsIdRejectAdminBody},
+        TContext
+      > => {
+
+      const mutationOptions = getPutAppointmentsIdRejectAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * **AP-09** — PUT /appointments/{id}/no-show/admin (ADM/REC: approved appointment past its time → no_show). Cần đăng nhập + `appointment.approve`.
+ * @summary Mark customer as no-show
+ */
+export const putAppointmentsIdNoShowAdmin = (
+    id: string,
+ ) => {
+      
+      
+      return customInstance<PutAppointmentsIdNoShowAdmin200>(
+      {url: `/appointments/${id}/no-show/admin`, method: 'PUT'
+    },
+      );
+    }
+  
+
+
+export const getPutAppointmentsIdNoShowAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAppointmentsIdNoShowAdmin>>, TError,{id: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putAppointmentsIdNoShowAdmin>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['putAppointmentsIdNoShowAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putAppointmentsIdNoShowAdmin>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  putAppointmentsIdNoShowAdmin(id,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PutAppointmentsIdNoShowAdminMutationResult = NonNullable<Awaited<ReturnType<typeof putAppointmentsIdNoShowAdmin>>>
+    
+    export type PutAppointmentsIdNoShowAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+
+    /**
+ * @summary Mark customer as no-show
+ */
+export const usePutAppointmentsIdNoShowAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAppointmentsIdNoShowAdmin>>, TError,{id: string}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof putAppointmentsIdNoShowAdmin>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+
+      const mutationOptions = getPutAppointmentsIdNoShowAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * **AP-07** — PUT /appointments/{id}/cancel/admin. Cần đăng nhập + `appointment.update_all` (ADM/REC: hủy lịch pending/approved) hoặc `appointment.update_own` — khách hủy lịch hẹn của chính mình trước lead time tối thiểu (gộp từ PUT /app/appointments/{id}/cancel).
+ * @summary Cancel appointment
+ */
+export const putAppointmentsIdCancelAdmin = (
+    id: string,
+ ) => {
+      
+      
+      return customInstance<PutAppointmentsIdCancelAdmin200>(
+      {url: `/appointments/${id}/cancel/admin`, method: 'PUT'
+    },
+      );
+    }
+  
+
+
+export const getPutAppointmentsIdCancelAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAppointmentsIdCancelAdmin>>, TError,{id: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putAppointmentsIdCancelAdmin>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['putAppointmentsIdCancelAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putAppointmentsIdCancelAdmin>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  putAppointmentsIdCancelAdmin(id,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PutAppointmentsIdCancelAdminMutationResult = NonNullable<Awaited<ReturnType<typeof putAppointmentsIdCancelAdmin>>>
+    
+    export type PutAppointmentsIdCancelAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+
+    /**
+ * @summary Cancel appointment
+ */
+export const usePutAppointmentsIdCancelAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAppointmentsIdCancelAdmin>>, TError,{id: string}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof putAppointmentsIdCancelAdmin>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+
+      const mutationOptions = getPutAppointmentsIdCancelAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * **AP-05** — PUT /appointments/{id}/approve/admin (ADM/REC only). Duyệt lịch hẹn, không gán KTV. Cần đăng nhập + `appointment.approve`.
+ * @summary Approve appointment
+ */
+export const putAppointmentsIdApproveAdmin = (
+    id: string,
+ ) => {
+      
+      
+      return customInstance<PutAppointmentsIdApproveAdmin200>(
+      {url: `/appointments/${id}/approve/admin`, method: 'PUT'
+    },
+      );
+    }
+  
+
+
+export const getPutAppointmentsIdApproveAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAppointmentsIdApproveAdmin>>, TError,{id: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putAppointmentsIdApproveAdmin>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['putAppointmentsIdApproveAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putAppointmentsIdApproveAdmin>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  putAppointmentsIdApproveAdmin(id,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PutAppointmentsIdApproveAdminMutationResult = NonNullable<Awaited<ReturnType<typeof putAppointmentsIdApproveAdmin>>>
+    
+    export type PutAppointmentsIdApproveAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+
+    /**
+ * @summary Approve appointment
+ */
+export const usePutAppointmentsIdApproveAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAppointmentsIdApproveAdmin>>, TError,{id: string}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof putAppointmentsIdApproveAdmin>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+
+      const mutationOptions = getPutAppointmentsIdApproveAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * **AP-08** — GET /appointments/available-slots?branch_id&date&staff_id? — Public, không cần đăng nhập (gộp từ GET /app/available-slots và endpoint quản trị cũ). Dùng bởi miniapp duyệt slot đặt lịch và UI quản trị. Query parameters: `branch_id`, `date`, `staff_id`, `start_time`, `exclude_appointment_id`. Lịch hẹn chỉ là hẹn tư vấn nên không cần service_id. Khi truyền `start_time` (HH:mm), trả về danh sách `staff_ids` rảnh đúng khung giờ. Giới hạn horizon áp dụng khi đặt lịch (booking.customer_horizon_days cho khách, booking.horizon_days mặc định 30 cho hệ thống).
+ * @summary View available time slots (public)
  */
 export const getAppointmentsAvailableSlots = (
-    params?: GetAppointmentsAvailableSlotsParams,
+    params: GetAppointmentsAvailableSlotsParams,
  signal?: AbortSignal
 ) => {
       
@@ -612,7 +669,7 @@ export const getGetAppointmentsAvailableSlotsQueryKey = (params?: GetAppointment
     }
 
     
-export const getGetAppointmentsAvailableSlotsInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetAppointmentsAvailableSlotsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>, TError, TData>>, }
+export const getGetAppointmentsAvailableSlotsInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>>, TError = UnprocessableEntityResponse | InternalErrorResponse>(params: GetAppointmentsAvailableSlotsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
@@ -631,11 +688,11 @@ const {query: queryOptions} = options ?? {};
 }
 
 export type GetAppointmentsAvailableSlotsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>>
-export type GetAppointmentsAvailableSlotsInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+export type GetAppointmentsAvailableSlotsInfiniteQueryError = UnprocessableEntityResponse | InternalErrorResponse
 
 
-export function useGetAppointmentsAvailableSlotsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params: undefined |  GetAppointmentsAvailableSlotsParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>, TError, TData>> & Pick<
+export function useGetAppointmentsAvailableSlotsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>>, TError = UnprocessableEntityResponse | InternalErrorResponse>(
+ params: GetAppointmentsAvailableSlotsParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>,
           TError,
@@ -644,8 +701,8 @@ export function useGetAppointmentsAvailableSlotsInfinite<TData = InfiniteData<Aw
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAppointmentsAvailableSlotsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetAppointmentsAvailableSlotsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>, TError, TData>> & Pick<
+export function useGetAppointmentsAvailableSlotsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>>, TError = UnprocessableEntityResponse | InternalErrorResponse>(
+ params: GetAppointmentsAvailableSlotsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>,
           TError,
@@ -654,16 +711,16 @@ export function useGetAppointmentsAvailableSlotsInfinite<TData = InfiniteData<Aw
       >, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAppointmentsAvailableSlotsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetAppointmentsAvailableSlotsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>, TError, TData>>, }
+export function useGetAppointmentsAvailableSlotsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>>, TError = UnprocessableEntityResponse | InternalErrorResponse>(
+ params: GetAppointmentsAvailableSlotsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary View available time slots
+ * @summary View available time slots (public)
  */
 
-export function useGetAppointmentsAvailableSlotsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetAppointmentsAvailableSlotsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>, TError, TData>>, }
+export function useGetAppointmentsAvailableSlotsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>>, TError = UnprocessableEntityResponse | InternalErrorResponse>(
+ params: GetAppointmentsAvailableSlotsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
@@ -677,10 +734,10 @@ export function useGetAppointmentsAvailableSlotsInfinite<TData = InfiniteData<Aw
 }
 
 /**
- * @summary View available time slots
+ * @summary View available time slots (public)
  */
-export const prefetchGetAppointmentsAvailableSlotsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient, params?: GetAppointmentsAvailableSlotsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>, TError, TData>>, }
+export const prefetchGetAppointmentsAvailableSlotsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>, TError = UnprocessableEntityResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params: GetAppointmentsAvailableSlotsParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
@@ -693,7 +750,7 @@ export const prefetchGetAppointmentsAvailableSlotsInfiniteQuery = async <TData =
 
 
 
-export const getGetAppointmentsAvailableSlotsQueryOptions = <TData = Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetAppointmentsAvailableSlotsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>, TError, TData>>, }
+export const getGetAppointmentsAvailableSlotsQueryOptions = <TData = Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>, TError = UnprocessableEntityResponse | InternalErrorResponse>(params: GetAppointmentsAvailableSlotsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
@@ -712,11 +769,11 @@ const {query: queryOptions} = options ?? {};
 }
 
 export type GetAppointmentsAvailableSlotsQueryResult = NonNullable<Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>>
-export type GetAppointmentsAvailableSlotsQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+export type GetAppointmentsAvailableSlotsQueryError = UnprocessableEntityResponse | InternalErrorResponse
 
 
-export function useGetAppointmentsAvailableSlots<TData = Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params: undefined |  GetAppointmentsAvailableSlotsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>, TError, TData>> & Pick<
+export function useGetAppointmentsAvailableSlots<TData = Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>, TError = UnprocessableEntityResponse | InternalErrorResponse>(
+ params: GetAppointmentsAvailableSlotsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>,
           TError,
@@ -725,8 +782,8 @@ export function useGetAppointmentsAvailableSlots<TData = Awaited<ReturnType<type
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAppointmentsAvailableSlots<TData = Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetAppointmentsAvailableSlotsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>, TError, TData>> & Pick<
+export function useGetAppointmentsAvailableSlots<TData = Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>, TError = UnprocessableEntityResponse | InternalErrorResponse>(
+ params: GetAppointmentsAvailableSlotsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>,
           TError,
@@ -735,16 +792,16 @@ export function useGetAppointmentsAvailableSlots<TData = Awaited<ReturnType<type
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAppointmentsAvailableSlots<TData = Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetAppointmentsAvailableSlotsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>, TError, TData>>, }
+export function useGetAppointmentsAvailableSlots<TData = Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>, TError = UnprocessableEntityResponse | InternalErrorResponse>(
+ params: GetAppointmentsAvailableSlotsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary View available time slots
+ * @summary View available time slots (public)
  */
 
-export function useGetAppointmentsAvailableSlots<TData = Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetAppointmentsAvailableSlotsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>, TError, TData>>, }
+export function useGetAppointmentsAvailableSlots<TData = Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>, TError = UnprocessableEntityResponse | InternalErrorResponse>(
+ params: GetAppointmentsAvailableSlotsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
@@ -758,10 +815,10 @@ export function useGetAppointmentsAvailableSlots<TData = Awaited<ReturnType<type
 }
 
 /**
- * @summary View available time slots
+ * @summary View available time slots (public)
  */
-export const prefetchGetAppointmentsAvailableSlotsQuery = async <TData = Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient, params?: GetAppointmentsAvailableSlotsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>, TError, TData>>, }
+export const prefetchGetAppointmentsAvailableSlotsQuery = async <TData = Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>, TError = UnprocessableEntityResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params: GetAppointmentsAvailableSlotsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointmentsAvailableSlots>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
@@ -775,31 +832,225 @@ export const prefetchGetAppointmentsAvailableSlotsQuery = async <TData = Awaited
 
 
 /**
- * **AP-09** — POST /appointments/{id}/start (assigned technician, or ADM/REC: approved → in_progress). Lịch hẹn chỉ là hẹn tư vấn: start chỉ chuyển trạng thái, không tạo buổi điều trị (buổi được tạo từ gói đã bán ở treatment-customers/sessions). Requires `appointment.start` permission.
- * @summary Start appointment
+ * **AP-01** — GET /appointments/admin. Cần đăng nhập + `appointment.view_all` (danh sách quản trị; KTV chỉ thấy lịch được gán; branch scope áp dụng) hoặc `appointment.view_own` — khi đó trả về các lịch hẹn của hồ sơ khách liên kết với tài khoản (shape miniapp của GET /app/appointments cũ, kèm dịch vụ và KTV, sắp xếp giảm dần theo thời gian). Query parameters: `page`, `limit`, `branch_id`, `date`, `from_date`, `to_date`, `status`, `staff_id`, `customer_profile_id`.
+ * @summary List appointments (management / my bookings)
  */
-export const postAppointmentsIdStart = (
-    id: string,
-    postAppointmentsIdStartBody: PostAppointmentsIdStartBody,
+export const getAppointmentsAdmin = (
+    params?: GetAppointmentsAdminParams,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<PostAppointmentsIdStart200>(
-      {url: `/appointments/${id}/start`, method: 'POST',
+      return customInstance<GetAppointmentsAdmin200>(
+      {url: `/appointments/admin`, method: 'GET',
+        params, signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetAppointmentsAdminInfiniteQueryKey = (params?: GetAppointmentsAdminParams,) => {
+    return [
+    'infinite', `/appointments/admin`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+export const getGetAppointmentsAdminQueryKey = (params?: GetAppointmentsAdminParams,) => {
+    return [
+    `/appointments/admin`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getGetAppointmentsAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAppointmentsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetAppointmentsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppointmentsAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAppointmentsAdminInfiniteQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAppointmentsAdmin>>> = ({ signal }) => getAppointmentsAdmin(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppointmentsAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAppointmentsAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAppointmentsAdmin>>>
+export type GetAppointmentsAdminInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+
+
+export function useGetAppointmentsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppointmentsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetAppointmentsAdminParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppointmentsAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppointmentsAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getAppointmentsAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppointmentsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppointmentsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetAppointmentsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppointmentsAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppointmentsAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getAppointmentsAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppointmentsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppointmentsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetAppointmentsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppointmentsAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List appointments (management / my bookings)
+ */
+
+export function useGetAppointmentsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppointmentsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetAppointmentsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppointmentsAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAppointmentsAdminInfiniteQueryOptions(params,options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary List appointments (management / my bookings)
+ */
+export const prefetchGetAppointmentsAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAppointmentsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetAppointmentsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppointmentsAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetAppointmentsAdminInfiniteQueryOptions(params,options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetAppointmentsAdminQueryOptions = <TData = Awaited<ReturnType<typeof getAppointmentsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetAppointmentsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointmentsAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAppointmentsAdminQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAppointmentsAdmin>>> = ({ signal }) => getAppointmentsAdmin(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAppointmentsAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAppointmentsAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getAppointmentsAdmin>>>
+export type GetAppointmentsAdminQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+
+
+export function useGetAppointmentsAdmin<TData = Awaited<ReturnType<typeof getAppointmentsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetAppointmentsAdminParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointmentsAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppointmentsAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getAppointmentsAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppointmentsAdmin<TData = Awaited<ReturnType<typeof getAppointmentsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetAppointmentsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointmentsAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppointmentsAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getAppointmentsAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppointmentsAdmin<TData = Awaited<ReturnType<typeof getAppointmentsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetAppointmentsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointmentsAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List appointments (management / my bookings)
+ */
+
+export function useGetAppointmentsAdmin<TData = Awaited<ReturnType<typeof getAppointmentsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetAppointmentsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointmentsAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAppointmentsAdminQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary List appointments (management / my bookings)
+ */
+export const prefetchGetAppointmentsAdminQuery = async <TData = Awaited<ReturnType<typeof getAppointmentsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetAppointmentsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointmentsAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetAppointmentsAdminQueryOptions(params,options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * **AP-03** — POST /appointments/admin. Cần đăng nhập + `appointment.create`. Nhánh `appointment.view_own` (khách tự đặt từ miniapp, gộp từ POST /app/appointments): hồ sơ khách suy ra từ tài khoản, trạng thái `pending`, giới hạn đặt trước `booking.customer_horizon_days` (mặc định 7 ngày), slot kín trả 409 `SLOT_UNAVAILABLE`. Nhánh quản trị: đặt hộ khách, cùng rule kiểm tra slot; branch scope áp dụng. Body passed as-is to the business layer.
+ * @summary Create an appointment (staff on behalf / customer for self)
+ */
+export const postAppointmentsAdmin = (
+    postAppointmentsAdminBody: PostAppointmentsAdminBody,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<PostAppointmentsAdmin200>(
+      {url: `/appointments/admin`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: postAppointmentsIdStartBody, signal
+      data: postAppointmentsAdminBody, signal
     },
       );
     }
   
 
 
-export const getPostAppointmentsIdStartMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAppointmentsIdStart>>, TError,{id: string;data: PostAppointmentsIdStartBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postAppointmentsIdStart>>, TError,{id: string;data: PostAppointmentsIdStartBody}, TContext> => {
+export const getPostAppointmentsAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAppointmentsAdmin>>, TError,{data: PostAppointmentsAdminBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postAppointmentsAdmin>>, TError,{data: PostAppointmentsAdminBody}, TContext> => {
 
-const mutationKey = ['postAppointmentsIdStart'];
+const mutationKey = ['postAppointmentsAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -809,10 +1060,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAppointmentsIdStart>>, {id: string;data: PostAppointmentsIdStartBody}> = (props) => {
-          const {id,data} = props ?? {};
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAppointmentsAdmin>>, {data: PostAppointmentsAdminBody}> = (props) => {
+          const {data} = props ?? {};
 
-          return  postAppointmentsIdStart(id,data,)
+          return  postAppointmentsAdmin(data,)
         }
 
         
@@ -820,274 +1071,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PostAppointmentsIdStartMutationResult = NonNullable<Awaited<ReturnType<typeof postAppointmentsIdStart>>>
-    export type PostAppointmentsIdStartMutationBody = PostAppointmentsIdStartBody
-    export type PostAppointmentsIdStartMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+    export type PostAppointmentsAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postAppointmentsAdmin>>>
+    export type PostAppointmentsAdminMutationBody = PostAppointmentsAdminBody
+    export type PostAppointmentsAdminMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Start appointment
+ * @summary Create an appointment (staff on behalf / customer for self)
  */
-export const usePostAppointmentsIdStart = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAppointmentsIdStart>>, TError,{id: string;data: PostAppointmentsIdStartBody}, TContext>, }
+export const usePostAppointmentsAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAppointmentsAdmin>>, TError,{data: PostAppointmentsAdminBody}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postAppointmentsIdStart>>,
+        Awaited<ReturnType<typeof postAppointmentsAdmin>>,
         TError,
-        {id: string;data: PostAppointmentsIdStartBody},
+        {data: PostAppointmentsAdminBody},
         TContext
       > => {
 
-      const mutationOptions = getPostAppointmentsIdStartMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * **AP-06** — PUT /appointments/{id}/reject (ADM/REC, `reason` is required). Requires `appointment.approve` permission. Body field: `reason`.
- * @summary Reject appointment
- */
-export const putAppointmentsIdReject = (
-    id: string,
-    putAppointmentsIdRejectBody: PutAppointmentsIdRejectBody,
- ) => {
-      
-      
-      return customInstance<PutAppointmentsIdReject200>(
-      {url: `/appointments/${id}/reject`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: putAppointmentsIdRejectBody
-    },
-      );
-    }
-  
-
-
-export const getPutAppointmentsIdRejectMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAppointmentsIdReject>>, TError,{id: string;data: PutAppointmentsIdRejectBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putAppointmentsIdReject>>, TError,{id: string;data: PutAppointmentsIdRejectBody}, TContext> => {
-
-const mutationKey = ['putAppointmentsIdReject'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putAppointmentsIdReject>>, {id: string;data: PutAppointmentsIdRejectBody}> = (props) => {
-          const {id,data} = props ?? {};
-
-          return  putAppointmentsIdReject(id,data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PutAppointmentsIdRejectMutationResult = NonNullable<Awaited<ReturnType<typeof putAppointmentsIdReject>>>
-    export type PutAppointmentsIdRejectMutationBody = PutAppointmentsIdRejectBody
-    export type PutAppointmentsIdRejectMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
-
-    /**
- * @summary Reject appointment
- */
-export const usePutAppointmentsIdReject = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAppointmentsIdReject>>, TError,{id: string;data: PutAppointmentsIdRejectBody}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putAppointmentsIdReject>>,
-        TError,
-        {id: string;data: PutAppointmentsIdRejectBody},
-        TContext
-      > => {
-
-      const mutationOptions = getPutAppointmentsIdRejectMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * **AP-09** — PUT /appointments/{id}/no-show (ADM/REC: approved appointment past its time → no_show). Requires `appointment.approve` permission.
- * @summary Mark customer as no-show
- */
-export const putAppointmentsIdNoShow = (
-    id: string,
- ) => {
-      
-      
-      return customInstance<PutAppointmentsIdNoShow200>(
-      {url: `/appointments/${id}/no-show`, method: 'PUT'
-    },
-      );
-    }
-  
-
-
-export const getPutAppointmentsIdNoShowMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAppointmentsIdNoShow>>, TError,{id: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putAppointmentsIdNoShow>>, TError,{id: string}, TContext> => {
-
-const mutationKey = ['putAppointmentsIdNoShow'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putAppointmentsIdNoShow>>, {id: string}> = (props) => {
-          const {id} = props ?? {};
-
-          return  putAppointmentsIdNoShow(id,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PutAppointmentsIdNoShowMutationResult = NonNullable<Awaited<ReturnType<typeof putAppointmentsIdNoShow>>>
-    
-    export type PutAppointmentsIdNoShowMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
-
-    /**
- * @summary Mark customer as no-show
- */
-export const usePutAppointmentsIdNoShow = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAppointmentsIdNoShow>>, TError,{id: string}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putAppointmentsIdNoShow>>,
-        TError,
-        {id: string},
-        TContext
-      > => {
-
-      const mutationOptions = getPutAppointmentsIdNoShowMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * **AP-07** — PUT /appointments/{id}/cancel (ADM/REC: cancel pending/approved appointments). Requires the `appointment.approve` permission.
- * @summary Cancel appointment
- */
-export const putAppointmentsIdCancel = (
-    id: string,
- ) => {
-      
-      
-      return customInstance<PutAppointmentsIdCancel200>(
-      {url: `/appointments/${id}/cancel`, method: 'PUT'
-    },
-      );
-    }
-  
-
-
-export const getPutAppointmentsIdCancelMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAppointmentsIdCancel>>, TError,{id: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putAppointmentsIdCancel>>, TError,{id: string}, TContext> => {
-
-const mutationKey = ['putAppointmentsIdCancel'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putAppointmentsIdCancel>>, {id: string}> = (props) => {
-          const {id} = props ?? {};
-
-          return  putAppointmentsIdCancel(id,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PutAppointmentsIdCancelMutationResult = NonNullable<Awaited<ReturnType<typeof putAppointmentsIdCancel>>>
-    
-    export type PutAppointmentsIdCancelMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
-
-    /**
- * @summary Cancel appointment
- */
-export const usePutAppointmentsIdCancel = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAppointmentsIdCancel>>, TError,{id: string}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putAppointmentsIdCancel>>,
-        TError,
-        {id: string},
-        TContext
-      > => {
-
-      const mutationOptions = getPutAppointmentsIdCancelMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * **AP-05** — PUT /appointments/{id}/approve (ADM/REC only). Duyệt lịch hẹn, không gán KTV. Requires the `appointment.approve` permission.
- * @summary Approve appointment
- */
-export const putAppointmentsIdApprove = (
-    id: string,
- ) => {
-      
-      
-      return customInstance<PutAppointmentsIdApprove200>(
-      {url: `/appointments/${id}/approve`, method: 'PUT'
-    },
-      );
-    }
-  
-
-
-export const getPutAppointmentsIdApproveMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAppointmentsIdApprove>>, TError,{id: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putAppointmentsIdApprove>>, TError,{id: string}, TContext> => {
-
-const mutationKey = ['putAppointmentsIdApprove'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putAppointmentsIdApprove>>, {id: string}> = (props) => {
-          const {id} = props ?? {};
-
-          return  putAppointmentsIdApprove(id,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PutAppointmentsIdApproveMutationResult = NonNullable<Awaited<ReturnType<typeof putAppointmentsIdApprove>>>
-    
-    export type PutAppointmentsIdApproveMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
-
-    /**
- * @summary Approve appointment
- */
-export const usePutAppointmentsIdApprove = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAppointmentsIdApprove>>, TError,{id: string}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putAppointmentsIdApprove>>,
-        TError,
-        {id: string},
-        TContext
-      > => {
-
-      const mutationOptions = getPutAppointmentsIdApproveMutationOptions(options);
+      const mutationOptions = getPostAppointmentsAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

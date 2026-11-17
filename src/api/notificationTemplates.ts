@@ -1,3 +1,6 @@
+// Thin wrapper cho NotificationTemplates — chỉ còn PUT /notification-templates/{id}/admin
+// vì client orval chưa sinh route item (BE {id}/admin.ts chưa có block @openapi, chỉ sinh
+// được GET list /notification-templates/admin qua generated client).
 import { apiClient } from '@/api/mutator/custom-instance'
 
 export interface NotificationTemplate {
@@ -17,9 +20,5 @@ export interface NotificationTemplateUpdate {
   is_enabled: boolean
 }
 
-export const getNotificationTemplates = async () => (await apiClient.get('/notificationTemplates')).data
-
-export const getNotificationTemplate = async (id: string) => (await apiClient.get(`/notificationTemplates/${id}`)).data
-
 export const putNotificationTemplate = async (id: string, data: NotificationTemplateUpdate) =>
-  (await apiClient.put(`/notificationTemplates/${id}`, data)).data
+  (await apiClient.put(`/notification-templates/${id}/admin`, data)).data

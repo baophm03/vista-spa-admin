@@ -165,7 +165,7 @@ export default function TreatmentDetailModal({
               {canReadPayments && <Button
                 block
                 onClick={() =>
-                  void openHtmlPrint(`/invoices/${detail.id}/print`).catch((err) => message.error(errorMessage(err, 'Không mở được phiếu in. Vui lòng kiểm tra cấu hình hóa đơn.')))
+                  void openHtmlPrint(`/invoices/${detail.id}/print/admin`).catch((err) => message.error(errorMessage(err, 'Không mở được phiếu in. Vui lòng kiểm tra cấu hình hóa đơn.')))
                 }
               >
                 In phiếu

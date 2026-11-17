@@ -11,14 +11,8 @@ import { errorMessage, pickData } from '@/api/helpers'
 import { fileSrc } from '@/hooks/useFileUrl'
 import type { AcademyCourse } from '@/api/models/academyCourse'
 import type { Branch } from '@/api/models/branch'
-import {
-  getGetAcademyCoursesQueryKey,
-  useDeleteAcademyCoursesId,
-  useGetAcademyCourses,
-  usePostAcademyCourses,
-  usePutAcademyCoursesId,
-} from '@/api/endpoints/academy'
-import { useGetBranches } from '@/api/endpoints/branches'
+import { getGetAcademyCoursesAdminQueryKey, useDeleteAcademyCoursesIdAdmin, useGetAcademyCoursesAdmin, usePostAcademyCoursesAdmin, usePutAcademyCoursesIdAdmin } from '@/api/endpoints/academy'
+import { useGetBranchesAdmin } from '@/api/endpoints/branches'
 import useCustomFieldDefinitions from '@/hooks/useCustomFieldDefinitions'
 import { Can, useAbility } from '@casl/react'
 import { useState } from 'react'
@@ -37,8 +31,8 @@ export default function AcademyCourses() {
   const [limit] = useState(10)
   const [searchText, setSearchText] = useState('')
   const [search, setSearch] = useState('')
-  const coursesQuery = useGetAcademyCourses({ page, limit, ...(search ? { q: search } : {}) } as never)
-  const branchesQuery = useGetBranches()
+  const coursesQuery = useGetAcademyCoursesAdmin({ page, limit, ...(search ? { q: search } : {}) } as never)
+  const branchesQuery = useGetBranchesAdmin()
   const rows = (pickData<AcademyCourse[]>(coursesQuery.data) ?? []) as AcademyCourse[]
   const total = (coursesQuery.data as unknown as { meta?: { total?: number } })?.meta?.total ?? rows.length
   const statsMeta = (coursesQuery.data as unknown as { meta?: { stats?: { total: number; active: number; hidden: number } } })?.meta?.stats
@@ -54,16 +48,16 @@ export default function AcademyCourses() {
     setSearch(nextKeyword.trim())
     setPage(1)
   }
-  const createMutation = usePostAcademyCourses()
-  const updateMutation = usePutAcademyCoursesId()
-  const deleteMutation = useDeleteAcademyCoursesId()
+  const createMutation = usePostAcademyCoursesAdmin()
+  const updateMutation = usePutAcademyCoursesIdAdmin()
+  const deleteMutation = useDeleteAcademyCoursesIdAdmin()
   const ability = useAbility()
   const { isAdmin } = useCustomerProfileAccess()
-  const canUpdate = isAdmin && ability.can('UPDATE', 'ACADEMY')
-  const canDelete = isAdmin && ability.can('DELETE', 'ACADEMY')
+  const canUpdate = isAdmin && ability.can('UPDATE', 'ACADEMY_COURSE')
+  const canDelete = isAdmin && ability.can('DELETE', 'ACADEMY_COURSE')
 
   const reload = async () => {
-    await queryClient.invalidateQueries({ queryKey: getGetAcademyCoursesQueryKey() })
+    await queryClient.invalidateQueries({ queryKey: getGetAcademyCoursesAdminQueryKey() })
   }
 
   // Thống kê đầu trang — tính phía server qua meta.stats
@@ -157,7 +151,7 @@ export default function AcademyCourses() {
         }
         right={
           isAdmin ? (
-            <Can I="CREATE" a="ACADEMY">
+            <Can I="CREATE" a="ACADEMY_COURSE">
               <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor()}>Thêm khóa học</Button>
             </Can>
           ) : undefined

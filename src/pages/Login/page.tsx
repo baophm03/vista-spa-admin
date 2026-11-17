@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { usePostAuthLogin } from '../../api/endpoints/auth'
+import { usePostAuthLogin } from '@/api/endpoints/auth'
 import { pickData, errorMessage } from '../../api/helpers'
 import { useAuthStore } from '../../stores/auth-store'
 import { useProfileStore, type AdminProfile } from '../../stores/profile-store'
 import { useBrandRuntime } from '../../themeRuntime'
 import links from '../../configs/links'
+import { EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons'
 
 const UserIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -28,6 +29,7 @@ export default function Login() {
   const brand = useBrandRuntime()
   const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [errors, setErrors] = useState<{ identifier?: string; password?: string }>({})
   const [alert, setAlert] = useState('')
   const loginMutation = usePostAuthLogin()
@@ -145,13 +147,22 @@ export default function Login() {
               <LockIcon />
               <input
                 id="password"
-                className={inputClass}
-                type="password"
+                className={`${inputClass} pr-11`}
+                type={showPassword ? 'text' : 'password'}
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 autoComplete="current-password"
               />
+              <button
+                type="button"
+                aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                aria-pressed={showPassword}
+                onClick={() => setShowPassword((visible) => !visible)}
+                className="absolute top-1/2 right-3 inline-flex h-8 w-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-md border-0 bg-transparent text-[#8a8494] transition-colors hover:bg-[rgba(var(--brand-rgb),0.08)] hover:text-[var(--brand-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)]"
+              >
+                {showPassword ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+              </button>
             </div>
             {errors.password && <div className={errorClass}>{errors.password}</div>}
           </div>

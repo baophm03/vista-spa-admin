@@ -30,17 +30,21 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  DeleteStaffProfilesUserId200,
+  DeleteStaffProfilesUserIdAdmin200,
   ForbiddenResponse,
   GetStaffProfiles200,
+  GetStaffProfilesAdmin200,
+  GetStaffProfilesAdminParams,
+  GetStaffProfilesIdAvailableDates200,
+  GetStaffProfilesIdAvailableDatesParams,
   GetStaffProfilesParams,
-  GetStaffProfilesUserId200,
-  GetStaffProfilesUserIdServices200,
+  GetStaffProfilesUserIdAdmin200,
+  GetStaffProfilesUserIdServicesAdmin200,
   InternalErrorResponse,
   NotFoundResponse,
-  PutStaffProfilesUserId200,
-  PutStaffProfilesUserIdServices200,
-  PutStaffProfilesUserIdServicesBody,
+  PutStaffProfilesUserIdAdmin200,
+  PutStaffProfilesUserIdServicesAdmin200,
+  PutStaffProfilesUserIdServicesAdminBody,
   StaffProfileUpsert,
   UnauthorizedResponse,
   UnprocessableEntityResponse
@@ -53,329 +57,8 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * **KT-02** — GET /staff-profiles/{userId}. Requires `staff_profile.read` permission. Returns the display profile along with the account and the services the staff member is responsible for; if no profile exists yet, default values are returned for use in edit forms.
- * @summary Specialist/technician profile details
- */
-export const getStaffProfilesUserId = (
-    userId: string,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<GetStaffProfilesUserId200>(
-      {url: `/staff-profiles/${userId}`, method: 'GET', signal
-    },
-      );
-    }
-  
-
-
-
-export const getGetStaffProfilesUserIdInfiniteQueryKey = (userId?: string,) => {
-    return [
-    'infinite', `/staff-profiles/${userId}`
-    ] as const;
-    }
-
-export const getGetStaffProfilesUserIdQueryKey = (userId?: string,) => {
-    return [
-    `/staff-profiles/${userId}`
-    ] as const;
-    }
-
-    
-export const getGetStaffProfilesUserIdInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getStaffProfilesUserId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(userId: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserId>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetStaffProfilesUserIdInfiniteQueryKey(userId);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getStaffProfilesUserId>>> = ({ signal }) => getStaffProfilesUserId(userId, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(userId),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetStaffProfilesUserIdInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getStaffProfilesUserId>>>
-export type GetStaffProfilesUserIdInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
-
-
-export function useGetStaffProfilesUserIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffProfilesUserId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- userId: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserId>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getStaffProfilesUserId>>,
-          TError,
-          Awaited<ReturnType<typeof getStaffProfilesUserId>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetStaffProfilesUserIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffProfilesUserId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- userId: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserId>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getStaffProfilesUserId>>,
-          TError,
-          Awaited<ReturnType<typeof getStaffProfilesUserId>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetStaffProfilesUserIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffProfilesUserId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- userId: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserId>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Specialist/technician profile details
- */
-
-export function useGetStaffProfilesUserIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffProfilesUserId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- userId: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserId>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetStaffProfilesUserIdInfiniteQueryOptions(userId,options)
-
-  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary Specialist/technician profile details
- */
-export const prefetchGetStaffProfilesUserIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getStaffProfilesUserId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- queryClient: QueryClient, userId: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserId>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetStaffProfilesUserIdInfiniteQueryOptions(userId,options)
-
-  await queryClient.prefetchInfiniteQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-export const getGetStaffProfilesUserIdQueryOptions = <TData = Awaited<ReturnType<typeof getStaffProfilesUserId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(userId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserId>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetStaffProfilesUserIdQueryKey(userId);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getStaffProfilesUserId>>> = ({ signal }) => getStaffProfilesUserId(userId, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(userId),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetStaffProfilesUserIdQueryResult = NonNullable<Awaited<ReturnType<typeof getStaffProfilesUserId>>>
-export type GetStaffProfilesUserIdQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
-
-
-export function useGetStaffProfilesUserId<TData = Awaited<ReturnType<typeof getStaffProfilesUserId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- userId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserId>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getStaffProfilesUserId>>,
-          TError,
-          Awaited<ReturnType<typeof getStaffProfilesUserId>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetStaffProfilesUserId<TData = Awaited<ReturnType<typeof getStaffProfilesUserId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- userId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserId>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getStaffProfilesUserId>>,
-          TError,
-          Awaited<ReturnType<typeof getStaffProfilesUserId>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetStaffProfilesUserId<TData = Awaited<ReturnType<typeof getStaffProfilesUserId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- userId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserId>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Specialist/technician profile details
- */
-
-export function useGetStaffProfilesUserId<TData = Awaited<ReturnType<typeof getStaffProfilesUserId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- userId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserId>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetStaffProfilesUserIdQueryOptions(userId,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary Specialist/technician profile details
- */
-export const prefetchGetStaffProfilesUserIdQuery = async <TData = Awaited<ReturnType<typeof getStaffProfilesUserId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- queryClient: QueryClient, userId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserId>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetStaffProfilesUserIdQueryOptions(userId,options)
-
-  await queryClient.prefetchQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-/**
- * **KT-03** — PUT /staff-profiles/{userId}. Requires `staff_profile.update` permission. Upserts by user account: `display_name`, `photo_file_id`, `title`, `expertise`, `bio`, `show_in_app`, `sort_order`.
- * @summary Create/update a specialist profile (upsert)
- */
-export const putStaffProfilesUserId = (
-    userId: string,
-    staffProfileUpsert: StaffProfileUpsert,
- ) => {
-      
-      
-      return customInstance<PutStaffProfilesUserId200>(
-      {url: `/staff-profiles/${userId}`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: staffProfileUpsert
-    },
-      );
-    }
-  
-
-
-export const getPutStaffProfilesUserIdMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putStaffProfilesUserId>>, TError,{userId: string;data: StaffProfileUpsert}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putStaffProfilesUserId>>, TError,{userId: string;data: StaffProfileUpsert}, TContext> => {
-
-const mutationKey = ['putStaffProfilesUserId'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putStaffProfilesUserId>>, {userId: string;data: StaffProfileUpsert}> = (props) => {
-          const {userId,data} = props ?? {};
-
-          return  putStaffProfilesUserId(userId,data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PutStaffProfilesUserIdMutationResult = NonNullable<Awaited<ReturnType<typeof putStaffProfilesUserId>>>
-    export type PutStaffProfilesUserIdMutationBody = StaffProfileUpsert
-    export type PutStaffProfilesUserIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | UnprocessableEntityResponse | InternalErrorResponse
-
-    /**
- * @summary Create/update a specialist profile (upsert)
- */
-export const usePutStaffProfilesUserId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putStaffProfilesUserId>>, TError,{userId: string;data: StaffProfileUpsert}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putStaffProfilesUserId>>,
-        TError,
-        {userId: string;data: StaffProfileUpsert},
-        TContext
-      > => {
-
-      const mutationOptions = getPutStaffProfilesUserIdMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * **KT-04** — DELETE /staff-profiles/{userId}. Requires `staff_profile.delete` permission. Sets `is_active=false` on the profile (creating the profile if it does not exist). Does not delete the account, and does not affect shifts or booked appointments.
- * @summary Hide a specialist from the Mini App
- */
-export const deleteStaffProfilesUserId = (
-    userId: string,
- ) => {
-      
-      
-      return customInstance<DeleteStaffProfilesUserId200>(
-      {url: `/staff-profiles/${userId}`, method: 'DELETE'
-    },
-      );
-    }
-  
-
-
-export const getDeleteStaffProfilesUserIdMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteStaffProfilesUserId>>, TError,{userId: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof deleteStaffProfilesUserId>>, TError,{userId: string}, TContext> => {
-
-const mutationKey = ['deleteStaffProfilesUserId'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteStaffProfilesUserId>>, {userId: string}> = (props) => {
-          const {userId} = props ?? {};
-
-          return  deleteStaffProfilesUserId(userId,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteStaffProfilesUserIdMutationResult = NonNullable<Awaited<ReturnType<typeof deleteStaffProfilesUserId>>>
-    
-    export type DeleteStaffProfilesUserIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
-
-    /**
- * @summary Hide a specialist from the Mini App
- */
-export const useDeleteStaffProfilesUserId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteStaffProfilesUserId>>, TError,{userId: string}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteStaffProfilesUserId>>,
-        TError,
-        {userId: string},
-        TContext
-      > => {
-
-      const mutationOptions = getDeleteStaffProfilesUserIdMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * **KT-01** — GET /staff-profiles. Requires `staff_profile.read` permission. List of internal staff with display profiles and the services they are responsible for. Parameters: `branch_id`, `service_id`, `show_in_app`, `role_id`, `q`.
- * @summary List specialist/technician profiles
+ * **GET /staff-profiles** — Public, không cần đăng nhập. Danh sách hồ sơ chuyên viên/KTV có cờ `show_in_app` kèm ảnh, chi nhánh và dịch vụ phụ trách, dùng cho màn hình đặt lịch. Query parameters: `branch_id`. Quản trị đầy đủ xem `GET /staff-profiles/admin`.
+ * @summary List technicians shown in the app (public)
  */
 export const getStaffProfiles = (
     params?: GetStaffProfilesParams,
@@ -406,7 +89,7 @@ export const getGetStaffProfilesQueryKey = (params?: GetStaffProfilesParams,) =>
     }
 
     
-export const getGetStaffProfilesInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getStaffProfiles>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetStaffProfilesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffProfiles>>, TError, TData>>, }
+export const getGetStaffProfilesInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getStaffProfiles>>>, TError = InternalErrorResponse>(params?: GetStaffProfilesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffProfiles>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
@@ -425,10 +108,10 @@ const {query: queryOptions} = options ?? {};
 }
 
 export type GetStaffProfilesInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getStaffProfiles>>>
-export type GetStaffProfilesInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+export type GetStaffProfilesInfiniteQueryError = InternalErrorResponse
 
 
-export function useGetStaffProfilesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffProfiles>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+export function useGetStaffProfilesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffProfiles>>>, TError = InternalErrorResponse>(
  params: undefined |  GetStaffProfilesParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffProfiles>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getStaffProfiles>>,
@@ -438,7 +121,7 @@ export function useGetStaffProfilesInfinite<TData = InfiniteData<Awaited<ReturnT
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetStaffProfilesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffProfiles>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+export function useGetStaffProfilesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffProfiles>>>, TError = InternalErrorResponse>(
  params?: GetStaffProfilesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffProfiles>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getStaffProfiles>>,
@@ -448,15 +131,15 @@ export function useGetStaffProfilesInfinite<TData = InfiniteData<Awaited<ReturnT
       >, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetStaffProfilesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffProfiles>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+export function useGetStaffProfilesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffProfiles>>>, TError = InternalErrorResponse>(
  params?: GetStaffProfilesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffProfiles>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary List specialist/technician profiles
+ * @summary List technicians shown in the app (public)
  */
 
-export function useGetStaffProfilesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffProfiles>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+export function useGetStaffProfilesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffProfiles>>>, TError = InternalErrorResponse>(
  params?: GetStaffProfilesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffProfiles>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -471,9 +154,9 @@ export function useGetStaffProfilesInfinite<TData = InfiniteData<Awaited<ReturnT
 }
 
 /**
- * @summary List specialist/technician profiles
+ * @summary List technicians shown in the app (public)
  */
-export const prefetchGetStaffProfilesInfiniteQuery = async <TData = Awaited<ReturnType<typeof getStaffProfiles>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+export const prefetchGetStaffProfilesInfiniteQuery = async <TData = Awaited<ReturnType<typeof getStaffProfiles>>, TError = InternalErrorResponse>(
  queryClient: QueryClient, params?: GetStaffProfilesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffProfiles>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
@@ -487,7 +170,7 @@ export const prefetchGetStaffProfilesInfiniteQuery = async <TData = Awaited<Retu
 
 
 
-export const getGetStaffProfilesQueryOptions = <TData = Awaited<ReturnType<typeof getStaffProfiles>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetStaffProfilesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffProfiles>>, TError, TData>>, }
+export const getGetStaffProfilesQueryOptions = <TData = Awaited<ReturnType<typeof getStaffProfiles>>, TError = InternalErrorResponse>(params?: GetStaffProfilesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffProfiles>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
@@ -506,10 +189,10 @@ const {query: queryOptions} = options ?? {};
 }
 
 export type GetStaffProfilesQueryResult = NonNullable<Awaited<ReturnType<typeof getStaffProfiles>>>
-export type GetStaffProfilesQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+export type GetStaffProfilesQueryError = InternalErrorResponse
 
 
-export function useGetStaffProfiles<TData = Awaited<ReturnType<typeof getStaffProfiles>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+export function useGetStaffProfiles<TData = Awaited<ReturnType<typeof getStaffProfiles>>, TError = InternalErrorResponse>(
  params: undefined |  GetStaffProfilesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffProfiles>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getStaffProfiles>>,
@@ -519,7 +202,7 @@ export function useGetStaffProfiles<TData = Awaited<ReturnType<typeof getStaffPr
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetStaffProfiles<TData = Awaited<ReturnType<typeof getStaffProfiles>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+export function useGetStaffProfiles<TData = Awaited<ReturnType<typeof getStaffProfiles>>, TError = InternalErrorResponse>(
  params?: GetStaffProfilesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffProfiles>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getStaffProfiles>>,
@@ -529,15 +212,15 @@ export function useGetStaffProfiles<TData = Awaited<ReturnType<typeof getStaffPr
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetStaffProfiles<TData = Awaited<ReturnType<typeof getStaffProfiles>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+export function useGetStaffProfiles<TData = Awaited<ReturnType<typeof getStaffProfiles>>, TError = InternalErrorResponse>(
  params?: GetStaffProfilesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffProfiles>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary List specialist/technician profiles
+ * @summary List technicians shown in the app (public)
  */
 
-export function useGetStaffProfiles<TData = Awaited<ReturnType<typeof getStaffProfiles>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+export function useGetStaffProfiles<TData = Awaited<ReturnType<typeof getStaffProfiles>>, TError = InternalErrorResponse>(
  params?: GetStaffProfilesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffProfiles>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -552,9 +235,9 @@ export function useGetStaffProfiles<TData = Awaited<ReturnType<typeof getStaffPr
 }
 
 /**
- * @summary List specialist/technician profiles
+ * @summary List technicians shown in the app (public)
  */
-export const prefetchGetStaffProfilesQuery = async <TData = Awaited<ReturnType<typeof getStaffProfiles>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+export const prefetchGetStaffProfilesQuery = async <TData = Awaited<ReturnType<typeof getStaffProfiles>>, TError = InternalErrorResponse>(
  queryClient: QueryClient, params?: GetStaffProfilesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffProfiles>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
@@ -569,17 +252,17 @@ export const prefetchGetStaffProfilesQuery = async <TData = Awaited<ReturnType<t
 
 
 /**
- * **KT-05** — GET /staff-profiles/{userId}/services. Requires `staff_profile.read` permission. Returns the `service_ids` currently assigned to the technician.
- * @summary List services a technician is responsible for
+ * **KT-02** — GET /staff-profiles/{userId}/admin. Requires `staff_profile.view_all` permission. Returns the display profile along with the account and the services the staff member is responsible for; if no profile exists yet, default values are returned for use in edit forms.
+ * @summary Specialist/technician profile details
  */
-export const getStaffProfilesUserIdServices = (
+export const getStaffProfilesUserIdAdmin = (
     userId: string,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<GetStaffProfilesUserIdServices200>(
-      {url: `/staff-profiles/${userId}/services`, method: 'GET', signal
+      return customInstance<GetStaffProfilesUserIdAdmin200>(
+      {url: `/staff-profiles/${userId}/admin`, method: 'GET', signal
     },
       );
     }
@@ -587,75 +270,396 @@ export const getStaffProfilesUserIdServices = (
 
 
 
-export const getGetStaffProfilesUserIdServicesInfiniteQueryKey = (userId?: string,) => {
+export const getGetStaffProfilesUserIdAdminInfiniteQueryKey = (userId?: string,) => {
     return [
-    'infinite', `/staff-profiles/${userId}/services`
+    'infinite', `/staff-profiles/${userId}/admin`
     ] as const;
     }
 
-export const getGetStaffProfilesUserIdServicesQueryKey = (userId?: string,) => {
+export const getGetStaffProfilesUserIdAdminQueryKey = (userId?: string,) => {
     return [
-    `/staff-profiles/${userId}/services`
+    `/staff-profiles/${userId}/admin`
     ] as const;
     }
 
     
-export const getGetStaffProfilesUserIdServicesInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getStaffProfilesUserIdServices>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(userId: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserIdServices>>, TError, TData>>, }
+export const getGetStaffProfilesUserIdAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getStaffProfilesUserIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(userId: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserIdAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetStaffProfilesUserIdServicesInfiniteQueryKey(userId);
+  const queryKey =  queryOptions?.queryKey ?? getGetStaffProfilesUserIdAdminInfiniteQueryKey(userId);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getStaffProfilesUserIdServices>>> = ({ signal }) => getStaffProfilesUserIdServices(userId, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getStaffProfilesUserIdAdmin>>> = ({ signal }) => getStaffProfilesUserIdAdmin(userId, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(userId),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserIdServices>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(userId),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserIdAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetStaffProfilesUserIdServicesInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getStaffProfilesUserIdServices>>>
-export type GetStaffProfilesUserIdServicesInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+export type GetStaffProfilesUserIdAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getStaffProfilesUserIdAdmin>>>
+export type GetStaffProfilesUserIdAdminInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
 
 
-export function useGetStaffProfilesUserIdServicesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffProfilesUserIdServices>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- userId: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserIdServices>>, TError, TData>> & Pick<
+export function useGetStaffProfilesUserIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffProfilesUserIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ userId: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserIdAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getStaffProfilesUserIdServices>>,
+          Awaited<ReturnType<typeof getStaffProfilesUserIdAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getStaffProfilesUserIdServices>>
+          Awaited<ReturnType<typeof getStaffProfilesUserIdAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetStaffProfilesUserIdServicesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffProfilesUserIdServices>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- userId: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserIdServices>>, TError, TData>> & Pick<
+export function useGetStaffProfilesUserIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffProfilesUserIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ userId: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserIdAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getStaffProfilesUserIdServices>>,
+          Awaited<ReturnType<typeof getStaffProfilesUserIdAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getStaffProfilesUserIdServices>>
+          Awaited<ReturnType<typeof getStaffProfilesUserIdAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetStaffProfilesUserIdServicesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffProfilesUserIdServices>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- userId: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserIdServices>>, TError, TData>>, }
+export function useGetStaffProfilesUserIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffProfilesUserIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ userId: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserIdAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Specialist/technician profile details
+ */
+
+export function useGetStaffProfilesUserIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffProfilesUserIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ userId: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserIdAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetStaffProfilesUserIdAdminInfiniteQueryOptions(userId,options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Specialist/technician profile details
+ */
+export const prefetchGetStaffProfilesUserIdAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getStaffProfilesUserIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ queryClient: QueryClient, userId: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserIdAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetStaffProfilesUserIdAdminInfiniteQueryOptions(userId,options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetStaffProfilesUserIdAdminQueryOptions = <TData = Awaited<ReturnType<typeof getStaffProfilesUserIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(userId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserIdAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetStaffProfilesUserIdAdminQueryKey(userId);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getStaffProfilesUserIdAdmin>>> = ({ signal }) => getStaffProfilesUserIdAdmin(userId, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(userId),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserIdAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetStaffProfilesUserIdAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getStaffProfilesUserIdAdmin>>>
+export type GetStaffProfilesUserIdAdminQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+
+
+export function useGetStaffProfilesUserIdAdmin<TData = Awaited<ReturnType<typeof getStaffProfilesUserIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ userId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserIdAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getStaffProfilesUserIdAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getStaffProfilesUserIdAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetStaffProfilesUserIdAdmin<TData = Awaited<ReturnType<typeof getStaffProfilesUserIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ userId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserIdAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getStaffProfilesUserIdAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getStaffProfilesUserIdAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetStaffProfilesUserIdAdmin<TData = Awaited<ReturnType<typeof getStaffProfilesUserIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ userId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserIdAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Specialist/technician profile details
+ */
+
+export function useGetStaffProfilesUserIdAdmin<TData = Awaited<ReturnType<typeof getStaffProfilesUserIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ userId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserIdAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetStaffProfilesUserIdAdminQueryOptions(userId,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Specialist/technician profile details
+ */
+export const prefetchGetStaffProfilesUserIdAdminQuery = async <TData = Awaited<ReturnType<typeof getStaffProfilesUserIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ queryClient: QueryClient, userId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserIdAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetStaffProfilesUserIdAdminQueryOptions(userId,options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * **KT-03** — PUT /staff-profiles/{userId}/admin. Requires `staff_profile.update_all` permission. Upserts by user account: `display_name`, `photo_file_id`, `title`, `expertise`, `bio`, `show_in_app`, `sort_order`.
+ * @summary Create/update a specialist profile (upsert)
+ */
+export const putStaffProfilesUserIdAdmin = (
+    userId: string,
+    staffProfileUpsert: StaffProfileUpsert,
+ ) => {
+      
+      
+      return customInstance<PutStaffProfilesUserIdAdmin200>(
+      {url: `/staff-profiles/${userId}/admin`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: staffProfileUpsert
+    },
+      );
+    }
+  
+
+
+export const getPutStaffProfilesUserIdAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putStaffProfilesUserIdAdmin>>, TError,{userId: string;data: StaffProfileUpsert}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putStaffProfilesUserIdAdmin>>, TError,{userId: string;data: StaffProfileUpsert}, TContext> => {
+
+const mutationKey = ['putStaffProfilesUserIdAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putStaffProfilesUserIdAdmin>>, {userId: string;data: StaffProfileUpsert}> = (props) => {
+          const {userId,data} = props ?? {};
+
+          return  putStaffProfilesUserIdAdmin(userId,data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PutStaffProfilesUserIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof putStaffProfilesUserIdAdmin>>>
+    export type PutStaffProfilesUserIdAdminMutationBody = StaffProfileUpsert
+    export type PutStaffProfilesUserIdAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | UnprocessableEntityResponse | InternalErrorResponse
+
+    /**
+ * @summary Create/update a specialist profile (upsert)
+ */
+export const usePutStaffProfilesUserIdAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putStaffProfilesUserIdAdmin>>, TError,{userId: string;data: StaffProfileUpsert}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof putStaffProfilesUserIdAdmin>>,
+        TError,
+        {userId: string;data: StaffProfileUpsert},
+        TContext
+      > => {
+
+      const mutationOptions = getPutStaffProfilesUserIdAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * **KT-04** — DELETE /staff-profiles/{userId}/admin. Requires `staff_profile.delete_all` permission. Sets `is_active=false` on the profile (creating the profile if it does not exist). Does not delete the account, and does not affect shifts or booked appointments.
+ * @summary Hide a specialist from the Mini App
+ */
+export const deleteStaffProfilesUserIdAdmin = (
+    userId: string,
+ ) => {
+      
+      
+      return customInstance<DeleteStaffProfilesUserIdAdmin200>(
+      {url: `/staff-profiles/${userId}/admin`, method: 'DELETE'
+    },
+      );
+    }
+  
+
+
+export const getDeleteStaffProfilesUserIdAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteStaffProfilesUserIdAdmin>>, TError,{userId: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteStaffProfilesUserIdAdmin>>, TError,{userId: string}, TContext> => {
+
+const mutationKey = ['deleteStaffProfilesUserIdAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteStaffProfilesUserIdAdmin>>, {userId: string}> = (props) => {
+          const {userId} = props ?? {};
+
+          return  deleteStaffProfilesUserIdAdmin(userId,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteStaffProfilesUserIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof deleteStaffProfilesUserIdAdmin>>>
+    
+    export type DeleteStaffProfilesUserIdAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+
+    /**
+ * @summary Hide a specialist from the Mini App
+ */
+export const useDeleteStaffProfilesUserIdAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteStaffProfilesUserIdAdmin>>, TError,{userId: string}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof deleteStaffProfilesUserIdAdmin>>,
+        TError,
+        {userId: string},
+        TContext
+      > => {
+
+      const mutationOptions = getDeleteStaffProfilesUserIdAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * **KT-05** — GET /staff-profiles/{userId}/services/admin. Requires `staff_profile.view_all` permission. Returns the `service_ids` currently assigned to the technician.
+ * @summary List services a technician is responsible for
+ */
+export const getStaffProfilesUserIdServicesAdmin = (
+    userId: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetStaffProfilesUserIdServicesAdmin200>(
+      {url: `/staff-profiles/${userId}/services/admin`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetStaffProfilesUserIdServicesAdminInfiniteQueryKey = (userId?: string,) => {
+    return [
+    'infinite', `/staff-profiles/${userId}/services/admin`
+    ] as const;
+    }
+
+export const getGetStaffProfilesUserIdServicesAdminQueryKey = (userId?: string,) => {
+    return [
+    `/staff-profiles/${userId}/services/admin`
+    ] as const;
+    }
+
+    
+export const getGetStaffProfilesUserIdServicesAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getStaffProfilesUserIdServicesAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(userId: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserIdServicesAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetStaffProfilesUserIdServicesAdminInfiniteQueryKey(userId);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getStaffProfilesUserIdServicesAdmin>>> = ({ signal }) => getStaffProfilesUserIdServicesAdmin(userId, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(userId),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserIdServicesAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetStaffProfilesUserIdServicesAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getStaffProfilesUserIdServicesAdmin>>>
+export type GetStaffProfilesUserIdServicesAdminInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+
+
+export function useGetStaffProfilesUserIdServicesAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffProfilesUserIdServicesAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ userId: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserIdServicesAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getStaffProfilesUserIdServicesAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getStaffProfilesUserIdServicesAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetStaffProfilesUserIdServicesAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffProfilesUserIdServicesAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ userId: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserIdServicesAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getStaffProfilesUserIdServicesAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getStaffProfilesUserIdServicesAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetStaffProfilesUserIdServicesAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffProfilesUserIdServicesAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ userId: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserIdServicesAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary List services a technician is responsible for
  */
 
-export function useGetStaffProfilesUserIdServicesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffProfilesUserIdServices>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- userId: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserIdServices>>, TError, TData>>, }
+export function useGetStaffProfilesUserIdServicesAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffProfilesUserIdServicesAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ userId: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserIdServicesAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetStaffProfilesUserIdServicesInfiniteQueryOptions(userId,options)
+  const queryOptions = getGetStaffProfilesUserIdServicesAdminInfiniteQueryOptions(userId,options)
 
   const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -667,12 +671,12 @@ export function useGetStaffProfilesUserIdServicesInfinite<TData = InfiniteData<A
 /**
  * @summary List services a technician is responsible for
  */
-export const prefetchGetStaffProfilesUserIdServicesInfiniteQuery = async <TData = Awaited<ReturnType<typeof getStaffProfilesUserIdServices>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- queryClient: QueryClient, userId: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserIdServices>>, TError, TData>>, }
+export const prefetchGetStaffProfilesUserIdServicesAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getStaffProfilesUserIdServicesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ queryClient: QueryClient, userId: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserIdServicesAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetStaffProfilesUserIdServicesInfiniteQueryOptions(userId,options)
+  const queryOptions = getGetStaffProfilesUserIdServicesAdminInfiniteQueryOptions(userId,options)
 
   await queryClient.prefetchInfiniteQuery(queryOptions);
 
@@ -681,62 +685,62 @@ export const prefetchGetStaffProfilesUserIdServicesInfiniteQuery = async <TData 
 
 
 
-export const getGetStaffProfilesUserIdServicesQueryOptions = <TData = Awaited<ReturnType<typeof getStaffProfilesUserIdServices>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(userId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserIdServices>>, TError, TData>>, }
+export const getGetStaffProfilesUserIdServicesAdminQueryOptions = <TData = Awaited<ReturnType<typeof getStaffProfilesUserIdServicesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(userId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserIdServicesAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetStaffProfilesUserIdServicesQueryKey(userId);
+  const queryKey =  queryOptions?.queryKey ?? getGetStaffProfilesUserIdServicesAdminQueryKey(userId);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getStaffProfilesUserIdServices>>> = ({ signal }) => getStaffProfilesUserIdServices(userId, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getStaffProfilesUserIdServicesAdmin>>> = ({ signal }) => getStaffProfilesUserIdServicesAdmin(userId, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(userId),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserIdServices>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(userId),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserIdServicesAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetStaffProfilesUserIdServicesQueryResult = NonNullable<Awaited<ReturnType<typeof getStaffProfilesUserIdServices>>>
-export type GetStaffProfilesUserIdServicesQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+export type GetStaffProfilesUserIdServicesAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getStaffProfilesUserIdServicesAdmin>>>
+export type GetStaffProfilesUserIdServicesAdminQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
 
 
-export function useGetStaffProfilesUserIdServices<TData = Awaited<ReturnType<typeof getStaffProfilesUserIdServices>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- userId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserIdServices>>, TError, TData>> & Pick<
+export function useGetStaffProfilesUserIdServicesAdmin<TData = Awaited<ReturnType<typeof getStaffProfilesUserIdServicesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ userId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserIdServicesAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getStaffProfilesUserIdServices>>,
+          Awaited<ReturnType<typeof getStaffProfilesUserIdServicesAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getStaffProfilesUserIdServices>>
+          Awaited<ReturnType<typeof getStaffProfilesUserIdServicesAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetStaffProfilesUserIdServices<TData = Awaited<ReturnType<typeof getStaffProfilesUserIdServices>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- userId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserIdServices>>, TError, TData>> & Pick<
+export function useGetStaffProfilesUserIdServicesAdmin<TData = Awaited<ReturnType<typeof getStaffProfilesUserIdServicesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ userId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserIdServicesAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getStaffProfilesUserIdServices>>,
+          Awaited<ReturnType<typeof getStaffProfilesUserIdServicesAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getStaffProfilesUserIdServices>>
+          Awaited<ReturnType<typeof getStaffProfilesUserIdServicesAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetStaffProfilesUserIdServices<TData = Awaited<ReturnType<typeof getStaffProfilesUserIdServices>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- userId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserIdServices>>, TError, TData>>, }
+export function useGetStaffProfilesUserIdServicesAdmin<TData = Awaited<ReturnType<typeof getStaffProfilesUserIdServicesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ userId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserIdServicesAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary List services a technician is responsible for
  */
 
-export function useGetStaffProfilesUserIdServices<TData = Awaited<ReturnType<typeof getStaffProfilesUserIdServices>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- userId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserIdServices>>, TError, TData>>, }
+export function useGetStaffProfilesUserIdServicesAdmin<TData = Awaited<ReturnType<typeof getStaffProfilesUserIdServicesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ userId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserIdServicesAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetStaffProfilesUserIdServicesQueryOptions(userId,options)
+  const queryOptions = getGetStaffProfilesUserIdServicesAdminQueryOptions(userId,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -748,12 +752,12 @@ export function useGetStaffProfilesUserIdServices<TData = Awaited<ReturnType<typ
 /**
  * @summary List services a technician is responsible for
  */
-export const prefetchGetStaffProfilesUserIdServicesQuery = async <TData = Awaited<ReturnType<typeof getStaffProfilesUserIdServices>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- queryClient: QueryClient, userId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserIdServices>>, TError, TData>>, }
+export const prefetchGetStaffProfilesUserIdServicesAdminQuery = async <TData = Awaited<ReturnType<typeof getStaffProfilesUserIdServicesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ queryClient: QueryClient, userId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffProfilesUserIdServicesAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetStaffProfilesUserIdServicesQueryOptions(userId,options)
+  const queryOptions = getGetStaffProfilesUserIdServicesAdminQueryOptions(userId,options)
 
   await queryClient.prefetchQuery(queryOptions);
 
@@ -763,30 +767,30 @@ export const prefetchGetStaffProfilesUserIdServicesQuery = async <TData = Awaite
 
 
 /**
- * **KT-06** — PUT /staff-profiles/{userId}/services. Requires `staff_profile.update` permission. Replaces the entire `service_ids[]` (N-N user–service mapping) in a single call; supports filtering responsible technicians when booking (BR-10).
+ * **KT-06** — PUT /staff-profiles/{userId}/services/admin. Requires `staff_profile.update_all` permission. Replaces the entire `service_ids[]` (N-N user–service mapping) in a single call; supports filtering responsible technicians when booking (BR-10).
  * @summary Replace the list of services a technician is responsible for
  */
-export const putStaffProfilesUserIdServices = (
+export const putStaffProfilesUserIdServicesAdmin = (
     userId: string,
-    putStaffProfilesUserIdServicesBody: PutStaffProfilesUserIdServicesBody,
+    putStaffProfilesUserIdServicesAdminBody: PutStaffProfilesUserIdServicesAdminBody,
  ) => {
       
       
-      return customInstance<PutStaffProfilesUserIdServices200>(
-      {url: `/staff-profiles/${userId}/services`, method: 'PUT',
+      return customInstance<PutStaffProfilesUserIdServicesAdmin200>(
+      {url: `/staff-profiles/${userId}/services/admin`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
-      data: putStaffProfilesUserIdServicesBody
+      data: putStaffProfilesUserIdServicesAdminBody
     },
       );
     }
   
 
 
-export const getPutStaffProfilesUserIdServicesMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putStaffProfilesUserIdServices>>, TError,{userId: string;data: PutStaffProfilesUserIdServicesBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putStaffProfilesUserIdServices>>, TError,{userId: string;data: PutStaffProfilesUserIdServicesBody}, TContext> => {
+export const getPutStaffProfilesUserIdServicesAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putStaffProfilesUserIdServicesAdmin>>, TError,{userId: string;data: PutStaffProfilesUserIdServicesAdminBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putStaffProfilesUserIdServicesAdmin>>, TError,{userId: string;data: PutStaffProfilesUserIdServicesAdminBody}, TContext> => {
 
-const mutationKey = ['putStaffProfilesUserIdServices'];
+const mutationKey = ['putStaffProfilesUserIdServicesAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -796,10 +800,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putStaffProfilesUserIdServices>>, {userId: string;data: PutStaffProfilesUserIdServicesBody}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putStaffProfilesUserIdServicesAdmin>>, {userId: string;data: PutStaffProfilesUserIdServicesAdminBody}> = (props) => {
           const {userId,data} = props ?? {};
 
-          return  putStaffProfilesUserIdServices(userId,data,)
+          return  putStaffProfilesUserIdServicesAdmin(userId,data,)
         }
 
         
@@ -807,24 +811,428 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PutStaffProfilesUserIdServicesMutationResult = NonNullable<Awaited<ReturnType<typeof putStaffProfilesUserIdServices>>>
-    export type PutStaffProfilesUserIdServicesMutationBody = PutStaffProfilesUserIdServicesBody
-    export type PutStaffProfilesUserIdServicesMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | UnprocessableEntityResponse | InternalErrorResponse
+    export type PutStaffProfilesUserIdServicesAdminMutationResult = NonNullable<Awaited<ReturnType<typeof putStaffProfilesUserIdServicesAdmin>>>
+    export type PutStaffProfilesUserIdServicesAdminMutationBody = PutStaffProfilesUserIdServicesAdminBody
+    export type PutStaffProfilesUserIdServicesAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
  * @summary Replace the list of services a technician is responsible for
  */
-export const usePutStaffProfilesUserIdServices = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putStaffProfilesUserIdServices>>, TError,{userId: string;data: PutStaffProfilesUserIdServicesBody}, TContext>, }
+export const usePutStaffProfilesUserIdServicesAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putStaffProfilesUserIdServicesAdmin>>, TError,{userId: string;data: PutStaffProfilesUserIdServicesAdminBody}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putStaffProfilesUserIdServices>>,
+        Awaited<ReturnType<typeof putStaffProfilesUserIdServicesAdmin>>,
         TError,
-        {userId: string;data: PutStaffProfilesUserIdServicesBody},
+        {userId: string;data: PutStaffProfilesUserIdServicesAdminBody},
         TContext
       > => {
 
-      const mutationOptions = getPutStaffProfilesUserIdServicesMutationOptions(options);
+      const mutationOptions = getPutStaffProfilesUserIdServicesAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
+    /**
+ * **GET /staff-profiles/{id}/available-dates** — Public, không cần đăng nhập. Dùng cho luồng đặt lịch của khách ('chọn KTV trước'): trả về các ngày (YYYY-MM-DD) trong [from, to] mà KTV có ca làm việc hoạt động tại chi nhánh, trừ ngày nghỉ cả ngày đã duyệt. Khoảng thời gian được kẹp trong [hôm nay, hôm nay + booking.customer_horizon_days]. Query parameters: `branch_id` (required), `from`, `to` (YYYY-MM-DD, required).
+ * @summary Dates a technician is scheduled to work (public)
+ */
+export const getStaffProfilesIdAvailableDates = (
+    id: string,
+    params: GetStaffProfilesIdAvailableDatesParams,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetStaffProfilesIdAvailableDates200>(
+      {url: `/staff-profiles/${id}/available-dates`, method: 'GET',
+        params, signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetStaffProfilesIdAvailableDatesInfiniteQueryKey = (id?: string,
+    params?: GetStaffProfilesIdAvailableDatesParams,) => {
+    return [
+    'infinite', `/staff-profiles/${id}/available-dates`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+export const getGetStaffProfilesIdAvailableDatesQueryKey = (id?: string,
+    params?: GetStaffProfilesIdAvailableDatesParams,) => {
+    return [
+    `/staff-profiles/${id}/available-dates`, ...(params ? [params]: [])
+    ] as const;
+    }
+
     
+export const getGetStaffProfilesIdAvailableDatesInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getStaffProfilesIdAvailableDates>>>, TError = void | InternalErrorResponse>(id: string,
+    params: GetStaffProfilesIdAvailableDatesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffProfilesIdAvailableDates>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetStaffProfilesIdAvailableDatesInfiniteQueryKey(id,params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getStaffProfilesIdAvailableDates>>> = ({ signal }) => getStaffProfilesIdAvailableDates(id,params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffProfilesIdAvailableDates>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetStaffProfilesIdAvailableDatesInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getStaffProfilesIdAvailableDates>>>
+export type GetStaffProfilesIdAvailableDatesInfiniteQueryError = void | InternalErrorResponse
+
+
+export function useGetStaffProfilesIdAvailableDatesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffProfilesIdAvailableDates>>>, TError = void | InternalErrorResponse>(
+ id: string,
+    params: GetStaffProfilesIdAvailableDatesParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffProfilesIdAvailableDates>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getStaffProfilesIdAvailableDates>>,
+          TError,
+          Awaited<ReturnType<typeof getStaffProfilesIdAvailableDates>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetStaffProfilesIdAvailableDatesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffProfilesIdAvailableDates>>>, TError = void | InternalErrorResponse>(
+ id: string,
+    params: GetStaffProfilesIdAvailableDatesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffProfilesIdAvailableDates>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getStaffProfilesIdAvailableDates>>,
+          TError,
+          Awaited<ReturnType<typeof getStaffProfilesIdAvailableDates>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetStaffProfilesIdAvailableDatesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffProfilesIdAvailableDates>>>, TError = void | InternalErrorResponse>(
+ id: string,
+    params: GetStaffProfilesIdAvailableDatesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffProfilesIdAvailableDates>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Dates a technician is scheduled to work (public)
+ */
+
+export function useGetStaffProfilesIdAvailableDatesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffProfilesIdAvailableDates>>>, TError = void | InternalErrorResponse>(
+ id: string,
+    params: GetStaffProfilesIdAvailableDatesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffProfilesIdAvailableDates>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetStaffProfilesIdAvailableDatesInfiniteQueryOptions(id,params,options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Dates a technician is scheduled to work (public)
+ */
+export const prefetchGetStaffProfilesIdAvailableDatesInfiniteQuery = async <TData = Awaited<ReturnType<typeof getStaffProfilesIdAvailableDates>>, TError = void | InternalErrorResponse>(
+ queryClient: QueryClient, id: string,
+    params: GetStaffProfilesIdAvailableDatesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffProfilesIdAvailableDates>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetStaffProfilesIdAvailableDatesInfiniteQueryOptions(id,params,options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetStaffProfilesIdAvailableDatesQueryOptions = <TData = Awaited<ReturnType<typeof getStaffProfilesIdAvailableDates>>, TError = void | InternalErrorResponse>(id: string,
+    params: GetStaffProfilesIdAvailableDatesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffProfilesIdAvailableDates>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetStaffProfilesIdAvailableDatesQueryKey(id,params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getStaffProfilesIdAvailableDates>>> = ({ signal }) => getStaffProfilesIdAvailableDates(id,params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getStaffProfilesIdAvailableDates>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetStaffProfilesIdAvailableDatesQueryResult = NonNullable<Awaited<ReturnType<typeof getStaffProfilesIdAvailableDates>>>
+export type GetStaffProfilesIdAvailableDatesQueryError = void | InternalErrorResponse
+
+
+export function useGetStaffProfilesIdAvailableDates<TData = Awaited<ReturnType<typeof getStaffProfilesIdAvailableDates>>, TError = void | InternalErrorResponse>(
+ id: string,
+    params: GetStaffProfilesIdAvailableDatesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffProfilesIdAvailableDates>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getStaffProfilesIdAvailableDates>>,
+          TError,
+          Awaited<ReturnType<typeof getStaffProfilesIdAvailableDates>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetStaffProfilesIdAvailableDates<TData = Awaited<ReturnType<typeof getStaffProfilesIdAvailableDates>>, TError = void | InternalErrorResponse>(
+ id: string,
+    params: GetStaffProfilesIdAvailableDatesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffProfilesIdAvailableDates>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getStaffProfilesIdAvailableDates>>,
+          TError,
+          Awaited<ReturnType<typeof getStaffProfilesIdAvailableDates>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetStaffProfilesIdAvailableDates<TData = Awaited<ReturnType<typeof getStaffProfilesIdAvailableDates>>, TError = void | InternalErrorResponse>(
+ id: string,
+    params: GetStaffProfilesIdAvailableDatesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffProfilesIdAvailableDates>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Dates a technician is scheduled to work (public)
+ */
+
+export function useGetStaffProfilesIdAvailableDates<TData = Awaited<ReturnType<typeof getStaffProfilesIdAvailableDates>>, TError = void | InternalErrorResponse>(
+ id: string,
+    params: GetStaffProfilesIdAvailableDatesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffProfilesIdAvailableDates>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetStaffProfilesIdAvailableDatesQueryOptions(id,params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Dates a technician is scheduled to work (public)
+ */
+export const prefetchGetStaffProfilesIdAvailableDatesQuery = async <TData = Awaited<ReturnType<typeof getStaffProfilesIdAvailableDates>>, TError = void | InternalErrorResponse>(
+ queryClient: QueryClient, id: string,
+    params: GetStaffProfilesIdAvailableDatesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffProfilesIdAvailableDates>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetStaffProfilesIdAvailableDatesQueryOptions(id,params,options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * **KT-01** — GET /staff-profiles/admin. Requires `staff_profile.view_all` permission. List of internal staff with display profiles and the services they are responsible for. Parameters: `branch_id`, `service_id`, `show_in_app`, `role_id`, `q`.
+ * @summary List specialist/technician profiles
+ */
+export const getStaffProfilesAdmin = (
+    params?: GetStaffProfilesAdminParams,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetStaffProfilesAdmin200>(
+      {url: `/staff-profiles/admin`, method: 'GET',
+        params, signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetStaffProfilesAdminInfiniteQueryKey = (params?: GetStaffProfilesAdminParams,) => {
+    return [
+    'infinite', `/staff-profiles/admin`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+export const getGetStaffProfilesAdminQueryKey = (params?: GetStaffProfilesAdminParams,) => {
+    return [
+    `/staff-profiles/admin`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getGetStaffProfilesAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getStaffProfilesAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetStaffProfilesAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffProfilesAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetStaffProfilesAdminInfiniteQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getStaffProfilesAdmin>>> = ({ signal }) => getStaffProfilesAdmin(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffProfilesAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetStaffProfilesAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getStaffProfilesAdmin>>>
+export type GetStaffProfilesAdminInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+
+
+export function useGetStaffProfilesAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffProfilesAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetStaffProfilesAdminParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffProfilesAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getStaffProfilesAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getStaffProfilesAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetStaffProfilesAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffProfilesAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetStaffProfilesAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffProfilesAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getStaffProfilesAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getStaffProfilesAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetStaffProfilesAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffProfilesAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetStaffProfilesAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffProfilesAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List specialist/technician profiles
+ */
+
+export function useGetStaffProfilesAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getStaffProfilesAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetStaffProfilesAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffProfilesAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetStaffProfilesAdminInfiniteQueryOptions(params,options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary List specialist/technician profiles
+ */
+export const prefetchGetStaffProfilesAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getStaffProfilesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetStaffProfilesAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getStaffProfilesAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetStaffProfilesAdminInfiniteQueryOptions(params,options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetStaffProfilesAdminQueryOptions = <TData = Awaited<ReturnType<typeof getStaffProfilesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetStaffProfilesAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffProfilesAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetStaffProfilesAdminQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getStaffProfilesAdmin>>> = ({ signal }) => getStaffProfilesAdmin(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getStaffProfilesAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetStaffProfilesAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getStaffProfilesAdmin>>>
+export type GetStaffProfilesAdminQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+
+
+export function useGetStaffProfilesAdmin<TData = Awaited<ReturnType<typeof getStaffProfilesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetStaffProfilesAdminParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffProfilesAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getStaffProfilesAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getStaffProfilesAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetStaffProfilesAdmin<TData = Awaited<ReturnType<typeof getStaffProfilesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetStaffProfilesAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffProfilesAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getStaffProfilesAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getStaffProfilesAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetStaffProfilesAdmin<TData = Awaited<ReturnType<typeof getStaffProfilesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetStaffProfilesAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffProfilesAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List specialist/technician profiles
+ */
+
+export function useGetStaffProfilesAdmin<TData = Awaited<ReturnType<typeof getStaffProfilesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetStaffProfilesAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffProfilesAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetStaffProfilesAdminQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary List specialist/technician profiles
+ */
+export const prefetchGetStaffProfilesAdminQuery = async <TData = Awaited<ReturnType<typeof getStaffProfilesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetStaffProfilesAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getStaffProfilesAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetStaffProfilesAdminQueryOptions(params,options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+

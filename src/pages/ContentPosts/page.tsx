@@ -1,7 +1,7 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { Alert, Button, Form, Input, Modal, Select, Space, Table, Tabs, Tag, Typography, message } from 'antd'
-import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, PlusOutlined, SendOutlined, UndoOutlined } from '@ant-design/icons'
+import { Alert, Button, Form, Image, Input, Modal, Select, Space, Table, Tabs, Tag, Typography, message } from 'antd'
+import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, PictureOutlined, PlusOutlined, SearchOutlined, SendOutlined, UndoOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
 import ToolbarRow from '@/components/base/ToolbarRow'
@@ -9,23 +9,11 @@ import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
 import { errorMessage, pickData, pickMeta } from '@/api/helpers'
 import type { ContentCategory } from '@/api/models/contentCategory'
-import {
-  getGetContentPostsQueryKey,
-  getGetContentCategoriesQueryKey,
-  useDeleteContentCategoriesId,
-  useDeleteContentPostsId,
-  useGetContentCategories,
-  useGetContentPosts,
-  usePostContentCategories,
-  usePostContentPosts,
-  usePutContentCategoriesId,
-  usePutContentPostsId,
-  usePutContentPostsIdUnpublish,
-} from '@/api/endpoints/content'
+import { getGetContentPostsAdminQueryKey, getGetContentCategoriesAdminQueryKey, useDeleteContentCategoriesIdAdmin, useDeleteContentPostsIdAdmin, useGetContentCategoriesAdmin, useGetContentPostsAdmin, usePostContentCategoriesAdmin, usePostContentPostsAdmin, usePutContentCategoriesIdAdmin, usePutContentPostsIdAdmin, usePutContentPostsIdUnpublishAdmin } from '@/api/endpoints/content'
 import { apiClient } from '@/api/mutator/custom-instance'
 import { Can, useAbility } from '@casl/react'
-import { usePostFiles } from '@/api/endpoints/files'
-import { objectKeySrc, registerUploadedFile } from '@/hooks/useFileUrl'
+import { usePostFilesAdmin } from '@/api/endpoints/files'
+import { objectKeySrc, registerUploadedFile, fileSrc, resolveFileSrc, useFileUrlMap } from '@/hooks/useFileUrl'
 import ContentPostDrawer from './components/ContentPostDrawer'
 import PostPreviewModal from './components/PostPreviewModal'
 import CategoryModal from './components/CategoryModal'
@@ -39,9 +27,10 @@ const STATUS_META: Record<string, { label: string; color: string }> = {
   ARCHIVED: { label: 'Đã gỡ', color: 'red' },
 }
 
-/** Gửi publish kèm notify — body riêng nên gọi thẳng apiClient (hook chỉ nhận id). */
+/** Gửi publish kèm notify — BE nhận body {notify} nhưng client sinh ra chưa khai báo
+ * requestBody nên hook chỉ nhận id; giữ raw call với URL /admin mới. */
 async function publishPost(id: string, notify: boolean) {
-  await apiClient.put(`/contentPosts/${id}/publish`, { notify })
+  await apiClient.put(`/content-posts/${id}/publish/admin`, { notify })
 }
 
 export default function ContentPosts() {
@@ -61,35 +50,40 @@ export default function ContentPosts() {
   const [uploadingCover, setUploadingCover] = useState(false)
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
   const [previewOpen, setPreviewOpen] = useState(false)
-  const [previewData, setPreviewData] = useState<PostFormValues | null>(null)
+  const [previewCoverSrc, setPreviewCoverSrc] = useState<string | null>(null)
 
-  const applyPostSearch = (value: string) => {
-    setPostSearchInput(value)
-    setPostFilter((f) => ({ ...f, q: value.trim() || undefined }))
-    setPostPage(1)
-  }
+  // Gõ tìm tiêu đề có debounce 400ms — giống các page danh sách khác
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setPostPage(1)
+      setPostFilter((f) => ({ ...f, q: postSearchInput.trim() || undefined }))
+    }, 400)
+    return () => clearTimeout(timer)
+  }, [postSearchInput])
+  const [previewData, setPreviewData] = useState<PostFormValues | null>(null)
   const [postForm] = Form.useForm<PostFormValues>()
   const [categoryForm] = Form.useForm<CategoryFormValues>()
-  const uploadMutation = usePostFiles()
+  const uploadMutation = usePostFilesAdmin()
+  const fileUrlMap = useFileUrlMap()
 
-  const postsQuery = useGetContentPosts({ ...postFilter, page: postPage, limit: 20 })
-  const categoriesQuery = useGetContentCategories()
+  const postsQuery = useGetContentPostsAdmin({ ...postFilter, page: postPage, limit: 20 })
+  const categoriesQuery = useGetContentCategoriesAdmin()
   const posts = (pickData<ContentPostRow[]>(postsQuery.data) ?? []) as ContentPostRow[]
   const postTotal = pickMeta(postsQuery.data)?.total ?? posts.length
   const categories = (pickData<ContentCategory[]>(categoriesQuery.data) ?? []) as ContentCategory[]
   const categoryById = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories])
 
-  const createPostMutation = usePostContentPosts()
-  const updatePostMutation = usePutContentPostsId()
-  const deletePostMutation = useDeleteContentPostsId()
-  const unpublishMutation = usePutContentPostsIdUnpublish()
-  const createCategoryMutation = usePostContentCategories()
-  const updateCategoryMutation = usePutContentCategoriesId()
-  const deleteCategoryMutation = useDeleteContentCategoriesId()
+  const createPostMutation = usePostContentPostsAdmin()
+  const updatePostMutation = usePutContentPostsIdAdmin()
+  const deletePostMutation = useDeleteContentPostsIdAdmin()
+  const unpublishMutation = usePutContentPostsIdUnpublishAdmin()
+  const createCategoryMutation = usePostContentCategoriesAdmin()
+  const updateCategoryMutation = usePutContentCategoriesIdAdmin()
+  const deleteCategoryMutation = useDeleteContentCategoriesIdAdmin()
 
   const reload = async () => {
-    await queryClient.invalidateQueries({ queryKey: getGetContentPostsQueryKey() })
-    await queryClient.invalidateQueries({ queryKey: getGetContentCategoriesQueryKey() })
+    await queryClient.invalidateQueries({ queryKey: getGetContentPostsAdminQueryKey() })
+    await queryClient.invalidateQueries({ queryKey: getGetContentCategoriesAdminQueryKey() })
   }
 
   const openPostEditor = (row?: ContentPostRow) => {
@@ -169,6 +163,22 @@ export default function ContentPosts() {
 
   const openPreview = () => {
     setPreviewData(postForm.getFieldsValue(true))
+    setPreviewCoverSrc(null)
+    setPreviewOpen(true)
+  }
+
+  /** Xem chi tiết bài viết đã lưu — dựng dữ liệu preview từ row. */
+  const openRowDetail = (row: ContentPostRow) => {
+    const withFile = row as ContentPostRow & { cover_file?: { id?: string; path?: string }; cover_file_id?: string }
+    setPreviewData({
+      title: row.title,
+      slug: row.slug ?? undefined,
+      summary: row.summary ?? undefined,
+      content: row.content ?? undefined,
+      cover_file_id: withFile.cover_file?.id ?? withFile.cover_file_id,
+      video_url: row.video_url ?? undefined,
+    })
+    setPreviewCoverSrc(fileSrc(withFile.cover_file))
     setPreviewOpen(true)
   }
 
@@ -208,6 +218,20 @@ export default function ContentPosts() {
 
   const postColumns = [
     {
+      title: 'Ảnh bìa', key: 'cover', width: 90,
+      render: (_: unknown, row: ContentPostRow) => {
+        const withFile = row as ContentPostRow & { cover_file?: { path?: string }; cover_file_id?: string }
+        const src = fileSrc(withFile.cover_file) ?? resolveFileSrc(fileUrlMap, withFile.cover_file_id)
+        return src ? (
+          <Image src={src} alt={row.title} width={48} height={48} style={{ objectFit: 'cover', borderRadius: 8 }} />
+        ) : (
+          <div style={{ width: 48, height: 48, borderRadius: 8, background: 'var(--brand-bg)', display: 'grid', placeItems: 'center', color: '#B9BDC2' }}>
+            <PictureOutlined />
+          </div>
+        )
+      },
+    },
+    {
       title: 'Tiêu đề', dataIndex: 'title', key: 'title', render: (v: string, row: ContentPostRow) => (
         <Space size={6}>
           <Typography.Text strong={!!row.is_pinned}>{v}{row.is_pinned ? ' 📌' : ''}</Typography.Text>
@@ -223,6 +247,7 @@ export default function ContentPosts() {
       render: (_: unknown, row: ContentPostRow) => (
         <RowActionsMenu
           items={[
+            { key: 'view', icon: <EyeOutlined />, label: 'Xem chi tiết', view: true },
             ...(ability.can('UPDATE' as never, 'CONTENT')
               ? [
                 ...(row.status !== 'PUBLISHED'
@@ -236,7 +261,8 @@ export default function ContentPosts() {
               : []),
           ]}
           onSelect={(key) => {
-            if (key === 'publish') { setPublishTarget(row); setNotify(!row.notified_at) }
+            if (key === 'view') openRowDetail(row)
+            else if (key === 'publish') { setPublishTarget(row); setNotify(!row.notified_at) }
             else if (key === 'unpublish') {
               Modal.confirm({
                 title: 'Gỡ bài xuất bản?',
@@ -345,13 +371,13 @@ export default function ContentPosts() {
                     value={postFilter.status}
                     onChange={(v) => { setPostFilter((f) => ({ ...f, status: v })); setPostPage(1) }}
                   />
-                  <Input.Search
+                  <Input
                     allowClear
+                    prefix={<SearchOutlined className="text-[var(--brand-text-inactive,#A9ADB2)]" />}
                     placeholder="Tìm tiêu đề"
-                    className="w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]"
+                    className="w-[220px]!"
                     value={postSearchInput}
-                    onChange={(event) => { setPostSearchInput(event.target.value); if (!event.target.value) applyPostSearch('') }}
-                    onSearch={applyPostSearch}
+                    onChange={(event) => setPostSearchInput(event.target.value)}
                   />
                   <Can I="CREATE" a="CONTENT">
                     <Button type="primary" icon={<PlusOutlined />} onClick={() => openPostEditor()}>Tạo bài viết</Button>
@@ -401,7 +427,7 @@ export default function ContentPosts() {
         uploadContentImage={uploadContentImage}
       />
 
-      <PostPreviewModal open={previewOpen} data={previewData} onClose={() => setPreviewOpen(false)} />
+      <PostPreviewModal open={previewOpen} data={previewData} coverSrc={previewCoverSrc} onClose={() => setPreviewOpen(false)} />
 
       <CategoryModal
         open={categoryModal}

@@ -28,6 +28,10 @@ import type { CommissionEntryPercent } from './commissionEntryPercent';
 import type { CommissionEntryVoidReason } from './commissionEntryVoidReason';
 import type { CommissionEntryVoidedAt } from './commissionEntryVoidedAt';
 import type { CommissionEntryVoidedBy } from './commissionEntryVoidedBy';
+import type { CommissionEntryPayoutStatus } from './commissionEntryPayoutStatus';
+import type { CommissionEntryPaidAt } from './commissionEntryPaidAt';
+import type { CommissionEntryPaidBy } from './commissionEntryPaidBy';
+import type { CommissionEntryPayoutNote } from './commissionEntryPayoutNote';
 
 /**
  * Commission ledger entry
@@ -62,4 +66,8 @@ export interface CommissionEntry {
   void_reason?: CommissionEntryVoidReason;
   voided_at?: CommissionEntryVoidedAt;
   voided_by?: CommissionEntryVoidedBy;
+  payout_status?: CommissionEntryPayoutStatus;
+  paid_at?: CommissionEntryPaidAt;
+  paid_by?: CommissionEntryPaidBy;
+  payout_note?: CommissionEntryPayoutNote;
 }

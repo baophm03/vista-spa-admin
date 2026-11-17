@@ -13,7 +13,6 @@ import type { CustomerProfileCreateCustomFields } from './customerProfileCreateC
 export interface CustomerProfileCreate {
   full_name: string;
   phone: string;
-  branch_id: string;
   birthday?: string;
   address?: string;
   email?: string;

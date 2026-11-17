@@ -15,16 +15,10 @@ import { errorMessage, pickData } from '@/api/helpers'
 import { fileSrc, resolveFileSrc, useFileUrlMap } from '@/hooks/useFileUrl'
 import type { Branch } from '@/api/models/branch'
 import type { Service } from '@/api/models/service'
-import {
-  getGetTreatmentPackagesQueryKey,
-  useDeleteTreatmentPackagesId,
-  useGetPackageTypes,
-  useGetService,
-  useGetTreatmentPackages,
-  usePostTreatmentPackages,
-  usePutTreatmentPackagesId,
-} from '@/api/endpoints/services'
-import { useGetBranches } from '@/api/endpoints/branches'
+import { getGetTreatmentPackagesAdminQueryKey, useDeleteTreatmentPackagesIdAdmin, useGetTreatmentPackagesAdmin, usePostTreatmentPackagesAdmin, usePutTreatmentPackagesIdAdmin } from '@/api/endpoints/treatment-packages'
+import { useGetPackageTypesAdmin } from '@/api/endpoints/package-types'
+import { useGetServiceAdmin } from '@/api/endpoints/services'
+import { useGetBranchesAdmin } from '@/api/endpoints/branches'
 import { useBrandCurrency } from '@/themeRuntime'
 
 import TreatmentPackageModal from './components/TreatmentPackageModal'
@@ -59,14 +53,14 @@ export default function Treatments() {
   const [packagePage, setPackagePage] = useState(1)
   const [packageLimit] = useState(10)
 
-  const packagesQuery = useGetTreatmentPackages({
+  const packagesQuery = useGetTreatmentPackagesAdmin({
     page: packagePage,
     limit: packageLimit,
     ...(packageSearch.trim() ? { q: packageSearch.trim() } : {}),
   } as never)
-  const packageTypesQuery = useGetPackageTypes({ limit: 200 })
-  const servicesQuery = useGetService({ page: 1, limit: 200 })
-  const branchesQuery = useGetBranches()
+  const packageTypesQuery = useGetPackageTypesAdmin({ limit: 200 })
+  const servicesQuery = useGetServiceAdmin({ page: 1, limit: 200 })
+  const branchesQuery = useGetBranchesAdmin()
 
   const rows = (pickData<TreatmentPackageRow[]>(packagesQuery.data) ?? []) as TreatmentPackageRow[]
   const total = (packagesQuery.data as unknown as { meta?: { total?: number } })?.meta?.total ?? rows.length
@@ -97,12 +91,12 @@ export default function Treatments() {
   const serviceById = useMemo(() => new Map(services.map((service) => [service.id, service.title])), [services])
   const urlMap = useFileUrlMap()
 
-  const createPackageMutation = usePostTreatmentPackages()
-  const updatePackageMutation = usePutTreatmentPackagesId()
-  const deletePackageMutation = useDeleteTreatmentPackagesId()
+  const createPackageMutation = usePostTreatmentPackagesAdmin()
+  const updatePackageMutation = usePutTreatmentPackagesIdAdmin()
+  const deletePackageMutation = useDeleteTreatmentPackagesIdAdmin()
 
   const reloadPackages = useCallback(async () => {
-    await queryClient.invalidateQueries({ queryKey: getGetTreatmentPackagesQueryKey() })
+    await queryClient.invalidateQueries({ queryKey: getGetTreatmentPackagesAdminQueryKey() })
   }, [queryClient])
 
   const openPackageModal = (row?: TreatmentPackageRow) => {

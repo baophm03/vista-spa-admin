@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Alert, Button, Modal, Table, Tabs, Tag, Typography } from 'antd'
 import { ReloadOutlined } from '@ant-design/icons'
 import { useBrandDateTime } from '@/themeRuntime'
-import { getCustomerProfilesIdCodeHistory, getCustomerProfilesIdPoints } from '@/api/endpoints/customer-profiles'
+import { getCustomerProfilesIdCodeHistoryAdmin, getCustomerProfilesIdPointsAdmin } from '@/api/endpoints/customer-profiles'
 import type { MembershipTransaction } from '@/api/models'
 import { errorMessage, pickData } from '@/api/helpers'
 import ListPagination from '@/components/base/ListPagination'
@@ -65,8 +65,8 @@ export default function CustomerCodeHistoryModal({
     setPointsError('')
     setPointPage(1)
     const results = await Promise.allSettled([
-      getCustomerProfilesIdCodeHistory(profileId),
-      ...(includePointsHistory ? [getCustomerProfilesIdPoints(profileId)] : []),
+      getCustomerProfilesIdCodeHistoryAdmin(profileId),
+      ...(includePointsHistory ? [getCustomerProfilesIdPointsAdmin(profileId)] : []),
     ])
 
     const codeResult = results[0]

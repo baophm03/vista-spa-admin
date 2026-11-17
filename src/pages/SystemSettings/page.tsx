@@ -7,11 +7,11 @@ import PageTitle from '@/components/base/PageTitle'
 import SystemSettingField from '@/components/settings/SystemSettingField'
 import { sameSettingValue, settingSections } from '@/components/settings/systemSettings'
 import type { SystemSetting, SystemSettingUpdate } from '@/components/settings/systemSettings'
-import { getGetSettingsQueryKey, getSettings, putSettings } from '@/api/endpoints/settings'
-import { getGetAppConfigQueryKey } from '@/api/endpoints/app'
-import { useGetBranches } from '@/api/endpoints/branches'
+import { getGetSettingsAdminQueryKey, getSettingsAdmin, putSettingsAdmin } from '@/api/endpoints/settings'
+import { getGetConfigQueryKey } from '@/api/endpoints/config'
+import { useGetBranchesAdmin } from '@/api/endpoints/branches'
 import type { Branch } from '@/api/models/branch'
-import type { PutSettingsBody } from '@/api/models/putSettingsBody'
+import type { PutSettingsAdminBody } from '@/api/models/putSettingsAdminBody'
 import { errorMessage, pickData } from '@/api/helpers'
 import { ability } from '@/configs/casl/ability'
 
@@ -72,11 +72,11 @@ function SettingsEditor({ canEdit }: { canEdit: boolean }) {
   const [draftState, setDraftState] = useState<{ scope: string; values: Record<string, unknown> } | null>(null)
   const queryClient = useQueryClient()
   const canSelectBranch = ability.can('READ', 'BRANCH')
-  const branchesQuery = useGetBranches(undefined, { query: { enabled: canSelectBranch } })
+  const branchesQuery = useGetBranchesAdmin(undefined, { query: { enabled: canSelectBranch } })
   const params = branchId ? { branch_id: branchId } : undefined
   const settingsQuery = useQuery({
-    queryKey: getGetSettingsQueryKey(params),
-    queryFn: async () => pickData<SystemSetting[]>(await getSettings(params)) ?? [],
+    queryKey: getGetSettingsAdminQueryKey(params),
+    queryFn: async () => pickData<SystemSetting[]>(await getSettingsAdmin(params)) ?? [],
   })
   const settings = settingsQuery.data ?? EMPTY_SETTINGS
   const branches = pickData<Branch[]>(branchesQuery.data) ?? []
@@ -96,11 +96,11 @@ function SettingsEditor({ canEdit }: { canEdit: boolean }) {
   ), [settings, draft, branchId])
 
   const saveMutation = useMutation({
-    mutationFn: async (items: SystemSettingUpdate[]) => putSettings({ items } as unknown as PutSettingsBody),
+    mutationFn: async (items: SystemSettingUpdate[]) => putSettingsAdmin({ items } as unknown as PutSettingsAdminBody),
     onSuccess: async () => {
       message.success('Đã lưu cấu hình hệ thống')
-      await queryClient.invalidateQueries({ queryKey: getGetSettingsQueryKey() })
-      await queryClient.invalidateQueries({ queryKey: getGetAppConfigQueryKey() })
+      await queryClient.invalidateQueries({ queryKey: getGetSettingsAdminQueryKey() })
+      await queryClient.invalidateQueries({ queryKey: getGetConfigQueryKey() })
     },
     onError: (error) => message.error(errorMessage(error)),
   })

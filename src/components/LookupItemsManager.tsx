@@ -8,14 +8,11 @@ import TableEmpty from '@/components/base/TableEmpty'
 import { paginateRows } from '@/utils/listTable'
 import type { LookupItem } from '@/api/models/lookupItem'
 import type { LookupList } from '@/api/models/lookupList'
-import type { PostLookupListsIdItemsBody } from '@/api/models/postLookupListsIdItemsBody'
-import type { PutLookupItemsIdBody } from '@/api/models/putLookupItemsIdBody'
-import type { PutLookupListsIdBody } from '@/api/models/putLookupListsIdBody'
-import {
-  postLookupListsIdItems,
-  putLookupItemsId,
-	} from '@/api/endpoints/lookup-items'
-import { getLookupListsId, putLookupListsId } from '@/api/endpoints/lookup-lists'
+import type { PostLookupListsIdItemsAdminBody } from '@/api/models/postLookupListsIdItemsAdminBody'
+import type { PutLookupItemsIdAdminBody } from '@/api/models/putLookupItemsIdAdminBody'
+import type { PutLookupListsIdAdminBody } from '@/api/models/putLookupListsIdAdminBody'
+import { postLookupListsIdItemsAdmin, putLookupItemsIdAdmin } from '@/api/endpoints/lookup-items'
+import { getLookupListsIdAdmin, putLookupListsIdAdmin } from '@/api/endpoints/lookup-lists'
 import { Can } from '@casl/react'
 
 type LookupItemWithColor = LookupItem & { color?: string | null }
@@ -51,7 +48,7 @@ export default function LookupItemsManager({ listId }: { listId: string }) {
     setLoading(true)
     setError('')
     try {
-      const list = pickData<LookupList & { lookup_items?: LookupItemWithColor[] }>(await getLookupListsId(listId))
+      const list = pickData<LookupList & { lookup_items?: LookupItemWithColor[] }>(await getLookupListsIdAdmin(listId))
       setItems((list?.lookup_items ?? []).slice().sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0) || a.code.localeCompare(b.code)))
     } catch (err) {
       setError(errorMessage(err))
@@ -76,8 +73,8 @@ export default function LookupItemsManager({ listId }: { listId: string }) {
     setSaving(true)
     try {
       const dto = { ...values, color: normalizeLookupColor(values.color) }
-      if (editing) await putLookupItemsId(editing.id, dto as unknown as PutLookupItemsIdBody)
-      else await postLookupListsIdItems(listId, dto as unknown as PostLookupListsIdItemsBody)
+      if (editing) await putLookupItemsIdAdmin(editing.id, dto as unknown as PutLookupItemsIdAdminBody)
+      else await postLookupListsIdItemsAdmin(listId, dto as unknown as PostLookupListsIdItemsAdminBody)
       setOpen(false)
       message.success(editing ? 'Đã cập nhật mục chọn' : 'Đã thêm mục chọn')
       await load()
@@ -92,7 +89,7 @@ export default function LookupItemsManager({ listId }: { listId: string }) {
     setSaving(true)
     try {
       // Ẩn/bật đi qua PUT is_active; DELETE giờ là xóa mềm thật (is_deleted).
-      await putLookupItemsId(row.id, { is_active: row.is_active === false } as PutLookupItemsIdBody)
+      await putLookupItemsIdAdmin(row.id, { is_active: row.is_active === false } as PutLookupItemsIdAdminBody)
       message.success(row.is_active === false ? 'Đã bật lại mục chọn' : 'Đã ẩn mục chọn; dữ liệu cũ được giữ lại')
       await load()
     } catch (err) {
@@ -114,7 +111,7 @@ export default function LookupItemsManager({ listId }: { listId: string }) {
     setSaving(true)
     try {
       // Backend nhận mảng ID; model orval gen sai kiểu string nên phải cast
-      await putLookupListsId(listId, { item_order: next.map((item) => item.id) } as unknown as PutLookupListsIdBody)
+      await putLookupListsIdAdmin(listId, { item_order: next.map((item) => item.id) } as unknown as PutLookupListsIdAdminBody)
       await load()
     } catch (err) {
       message.error(errorMessage(err))

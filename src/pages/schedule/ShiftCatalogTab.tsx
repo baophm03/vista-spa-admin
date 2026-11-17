@@ -9,13 +9,7 @@ import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import TableEmpty from '@/components/base/TableEmpty'
 import ToolbarRow from '@/components/base/ToolbarRow'
-import {
-  deleteShiftTemplatesId,
-  getGetShiftTemplatesQueryKey,
-  postShiftTemplates,
-  putShiftTemplatesId,
-  useGetShiftTemplates,
-} from '@/api/endpoints/staff'
+import { deleteShiftTemplatesIdAdmin, getGetShiftTemplatesAdminQueryKey, postShiftTemplatesAdmin, putShiftTemplatesIdAdmin, useGetShiftTemplatesAdmin } from '@/api/endpoints/staff'
 import type { ShiftTemplate } from './types'
 import type { SchedulePageData } from './types'
 import ShiftCatalogFormModal, { ALL_BRANCHES } from './components/ShiftCatalogFormModal'
@@ -30,12 +24,12 @@ export default function ShiftCatalogTab({ branches, access, loadingShared }: Pro
   const [page, setPage] = useState(1)
   const [form] = Form.useForm()
 
-  const templatesQuery = useGetShiftTemplates({ page, limit: 10, ...(branchFilter ? { branch_id: branchFilter } : {}) } as never)
+  const templatesQuery = useGetShiftTemplatesAdmin({ page, limit: 10, ...(branchFilter ? { branch_id: branchFilter } : {}) } as never)
   const rows = (pickData<ShiftTemplate[] | undefined>(templatesQuery.data) ?? []) as ShiftTemplate[]
   const error = templatesQuery.isError ? errorMessage(templatesQuery.error) : ''
 
   const reload = useCallback(
-    () => queryClient.invalidateQueries({ queryKey: getGetShiftTemplatesQueryKey() }),
+    () => queryClient.invalidateQueries({ queryKey: getGetShiftTemplatesAdminQueryKey() }),
     [queryClient],
   )
 
@@ -69,8 +63,8 @@ export default function ShiftCatalogTab({ branches, access, loadingShared }: Pro
       ...(!editing ? { branch_id: values.branch_id === ALL_BRANCHES ? null : values.branch_id } : {}),
     }
     try {
-      if (editing) await putShiftTemplatesId(editing.id, dto)
-      else await postShiftTemplates(dto)
+      if (editing) await putShiftTemplatesIdAdmin(editing.id, dto)
+      else await postShiftTemplatesAdmin(dto)
       message.success(editing ? 'Đã cập nhật ca' : 'Đã tạo ca')
       setOpen(false)
       await reload()
@@ -79,7 +73,7 @@ export default function ShiftCatalogTab({ branches, access, loadingShared }: Pro
 
   const deleteShift = async (row: ShiftTemplate) => {
     try {
-      await deleteShiftTemplatesId(row.id)
+      await deleteShiftTemplatesIdAdmin(row.id)
       message.success('Đã xóa ca làm việc')
       await reload()
     } catch (err) { message.error(errorMessage(err)) }

@@ -6,6 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { ProductOrderUserId } from './productOrderUserId';
+import type { ProductOrderBranchId } from './productOrderBranchId';
 import type { ProductOrderAddress } from './productOrderAddress';
 import type { ProductOrderNote } from './productOrderNote';
 import type { ProductOrderUserVoucherId } from './productOrderUserVoucherId';
@@ -18,6 +19,7 @@ export interface ProductOrder {
   id: string;
   code: string;
   user_id?: ProductOrderUserId;
+  branch_id?: ProductOrderBranchId;
   customer_name: string;
   phone: string;
   address?: ProductOrderAddress;

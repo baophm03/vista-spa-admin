@@ -1,4 +1,4 @@
-import { Button, DatePicker, Drawer, Form, Image, Input, InputNumber, Select, Space, Switch, Typography, Upload } from 'antd'
+import { Button, DatePicker, Form, Image, Input, InputNumber, Modal, Select, Space, Switch, Typography, Upload } from 'antd'
 import { EyeOutlined, UploadOutlined } from '@ant-design/icons'
 import type { FormInstance } from 'antd'
 import type { ContentCategory } from '@/api/models/contentCategory'
@@ -40,13 +40,16 @@ export default function ContentPostDrawer({
 }: ContentPostDrawerProps) {
   const urlMap = useFileUrlMap()
   return (
-    <Drawer
+    <Modal
       title={editing ? 'Sửa bài viết' : 'Tạo bài viết mới (Nháp)'}
       open={open}
-      onClose={onClose}
-      width={760}
-      extra={(
+      onCancel={onClose}
+      centered
+      width={1200}
+      styles={{ body: { maxHeight: 'calc(100vh - 160px)', overflowY: 'auto' } }}
+      footer={(
         <Space>
+          <Button onClick={onClose}>Đóng</Button>
           <Button icon={<EyeOutlined />} onClick={onPreview}>Xem trước</Button>
           <Button type="primary" loading={saving} onClick={onSubmit}>Lưu</Button>
         </Space>
@@ -60,29 +63,39 @@ export default function ContentPostDrawer({
           if (typeof changed.title === 'string' && !slugManuallyEdited) form.setFieldValue('slug', makePostSlug(changed.title))
         }}
       >
-        <Form.Item name="category_id" label="Chuyên mục" rules={[{ required: true, message: 'Chọn chuyên mục' }]}>
-          <Select options={categories.map((c) => ({ value: c.id, label: c.name }))} placeholder="Chọn chuyên mục" />
-        </Form.Item>
-        <Form.Item name="title" label="Tiêu đề" rules={[{ required: true, message: 'Nhập tiêu đề' }]}>
-          <Input placeholder="Tiêu đề bài viết" />
-        </Form.Item>
-        <Form.Item name="slug" label="Đường dẫn bài viết" extra="Tự tạo từ tiêu đề. Có thể sửa đường dẫn hoặc tạo lại từ tiêu đề.">
-          <Input
-            placeholder="Tự tạo từ tiêu đề"
-            addonAfter={(
-              <Button
-                type="text"
-                size="small"
-                onClick={() => {
-                  setSlugManuallyEdited(false)
-                  form.setFieldValue('slug', makePostSlug(form.getFieldValue('title')))
-                }}
-              >
-                Tạo lại
-              </Button>
+        <div className="content-post-main-fields-row">
+          <Form.Item name="category_id" label="Chuyên mục" rules={[{ required: true, message: 'Chọn chuyên mục' }]}>
+            <Select options={categories.map((c) => ({ value: c.id, label: c.name }))} placeholder="Chọn chuyên mục" />
+          </Form.Item>
+          <Form.Item
+            name="title"
+            label={(
+              <span>
+                Tiêu đề <Typography.Text type="secondary">· Đường dẫn tự tạo</Typography.Text>
+              </span>
             )}
-          />
-        </Form.Item>
+            rules={[{ required: true, message: 'Nhập tiêu đề' }]}
+          >
+            <Input placeholder="Tiêu đề bài viết" />
+          </Form.Item>
+          <Form.Item name="slug" label="Đường dẫn bài viết">
+            <Input
+              placeholder="Tự tạo từ tiêu đề"
+              addonAfter={(
+                <Button
+                  type="text"
+                  size="small"
+                  onClick={() => {
+                    setSlugManuallyEdited(false)
+                    form.setFieldValue('slug', makePostSlug(form.getFieldValue('title')))
+                  }}
+                >
+                  Tạo lại
+                </Button>
+              )}
+            />
+          </Form.Item>
+        </div>
         <Form.Item name="summary" label="Tóm tắt ngắn">
           <Input.TextArea rows={2} placeholder="Hiển thị ở danh sách và thông báo broadcast" />
         </Form.Item>
@@ -111,26 +124,24 @@ export default function ContentPostDrawer({
             }}
           </Form.Item>
         </Form.Item>
-        <Form.Item name="video_url" label="Video (YouTube/TikTok/Facebook embed URL)">
-          <Input placeholder="https://www.youtube.com/embed/…" />
-        </Form.Item>
-        <Space wrap>
+        <div className="content-post-settings-row">
+          <Form.Item name="video_url" label="Video (YouTube/TikTok/Facebook embed URL)">
+            <Input placeholder="https://www.youtube.com/embed/…" />
+          </Form.Item>
           <Form.Item name="publish_at" label="Bắt đầu xuất bản">
-            <DatePicker showTime style={{ width: 200 }} />
+            <DatePicker showTime style={{ width: '100%' }} />
           </Form.Item>
           <Form.Item name="expire_at" label="Tự hạ bài lúc">
-            <DatePicker showTime style={{ width: 200 }} />
+            <DatePicker showTime style={{ width: '100%' }} />
           </Form.Item>
-        </Space>
-        <Space wrap>
-          <Form.Item name="is_pinned" label="Ghim bài" valuePropName="checked">
+          <Form.Item className="content-post-pin-item" name="is_pinned" label="Ghim bài" valuePropName="checked">
             <Switch />
           </Form.Item>
           <Form.Item name="sort_order" label="Thứ tự hiển thị">
-            <InputNumber min={0} style={{ width: 120 }} />
+            <InputNumber min={0} style={{ width: '100%' }} />
           </Form.Item>
-        </Space>
+        </div>
       </Form>
-    </Drawer>
+    </Modal>
   )
 }

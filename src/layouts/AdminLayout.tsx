@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { ConfigProvider, Layout } from 'antd'
 import { useQueryClient } from '@tanstack/react-query'
 import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { useGetUsersGetMyInfo } from '../api/endpoints/users'
+import { useGetAuthMe } from '@/api/endpoints/users'
 import { clearAuth } from '../api/mutator/custom-instance'
 import { AdminHeader, AdminSidebar, getPageTitle } from '.'
 import { canAccessPage, getProfileRoleNames, isKtvRoleName, isReceptionistRoleName } from './sidebarMenu'
@@ -22,7 +22,7 @@ export default function AdminLayout() {
   const accessToken = useAuthStore((state) => state.accessToken)
   const profile = useProfileStore((state) => state.profile)
   const setProfile = useProfileStore((state) => state.setProfile)
-  const profileQuery = useGetUsersGetMyInfo({ query: { enabled: Boolean(accessToken) } })
+  const profileQuery = useGetAuthMe({ query: { enabled: Boolean(accessToken) } })
   const [collapsed, setCollapsed] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 

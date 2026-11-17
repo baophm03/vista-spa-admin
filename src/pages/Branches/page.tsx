@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react'
-import { Alert, Button, Form, Input, Modal, Select, Table, Tag, Typography, message } from 'antd'
-import { CheckCircleOutlined, DeleteOutlined, EditOutlined, EnvironmentOutlined, PauseCircleOutlined, PlusOutlined } from '@ant-design/icons'
+import { Alert, Button, Form, Image, Input, Modal, Select, Table, Tag, Typography, message } from 'antd'
+import { CheckCircleOutlined, DeleteOutlined, EditOutlined, EnvironmentOutlined, PauseCircleOutlined, PictureOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
 import PageTitle from '@/components/base/PageTitle'
 import StatCards, { type StatItem } from '@/components/base/StatCards'
+import ListFilterPopover from '@/components/base/ListFilterPopover'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
 import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
@@ -11,17 +12,9 @@ import { useCustomerProfileAccess } from '@/utils/customerProfileAccess'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { Branch } from '@/api/models/branch'
 import type { BranchUpdate } from '@/api/models/branchUpdate'
-import {
-  getGetBranchesNextCodeQueryKey,
-  getGetBranchesQueryKey,
-  useDeleteBranchesId,
-  useGetBranches,
-  useGetBranchesNextCode,
-  usePostBranches,
-  usePostBranchesIdActivate,
-  usePostBranchesIdDeactivate,
-  usePutBranchesId,
-} from '@/api/endpoints/branches'
+import { getGetBranchesNextCodeAdminQueryKey, getGetBranchesAdminQueryKey, useDeleteBranchesIdAdmin, useGetBranchesAdmin, useGetBranchesNextCodeAdmin, usePostBranchesAdmin, usePostBranchesIdActivateAdmin, usePostBranchesIdDeactivateAdmin, usePutBranchesIdAdmin } from '@/api/endpoints/branches'
+import { usePostFilesAdmin } from '@/api/endpoints/files'
+import { fileSrc, registerUploadedFile, resolveFileSrc, useFileUrlMap } from '@/hooks/useFileUrl'
 import { Can, useAbility } from '@casl/react'
 import { useQueryClient } from '@tanstack/react-query'
 import BranchModal from './components/BranchModal'
@@ -29,27 +22,52 @@ import type { BranchFormValues } from './components/constants'
 
 type StatusFilter = 'all' | 'active' | 'inactive'
 
+type BranchColumnKey = 'image' | 'code' | 'name' | 'address' | 'phone' | 'status'
+
+const BRANCH_COLUMN_OPTIONS: { label: string; value: BranchColumnKey }[] = [
+  { label: 'Ảnh', value: 'image' },
+  { label: 'Mã cơ sở', value: 'code' },
+  { label: 'Tên cơ sở', value: 'name' },
+  { label: 'Địa chỉ', value: 'address' },
+  { label: 'Số điện thoại', value: 'phone' },
+  { label: 'Trạng thái', value: 'status' },
+]
+
+const DEFAULT_VISIBLE_COLUMNS = BRANCH_COLUMN_OPTIONS.map((column) => column.value)
+
 export default function Branches() {
   const [searchText, setSearchText] = useState('')
   const [keyword, setKeyword] = useState('')
   const [page, setPage] = useState(1)
+  const [filterOpen, setFilterOpen] = useState(false)
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
+  const [visibleColumns, setVisibleColumns] = useState<BranchColumnKey[]>(DEFAULT_VISIBLE_COLUMNS)
+  const [draftVisibleColumns, setDraftVisibleColumns] = useState<BranchColumnKey[]>(DEFAULT_VISIBLE_COLUMNS)
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<Branch | null>(null)
   const [form] = Form.useForm<BranchFormValues>()
+  const [filterForm] = Form.useForm()
+  const [uploadingImage, setUploadingImage] = useState(false)
+  const fileUrlMap = useFileUrlMap()
   const queryClient = useQueryClient()
   const { isAdmin, isReceptionist, isTechnician } = useCustomerProfileAccess()
   const hideSummaryForTechnician = isTechnician && !isAdmin && !isReceptionist
 
-  const branchesQuery = useGetBranches({ page, limit: 10, ...(statusFilter !== 'all' ? { status: statusFilter } : {}), ...(keyword ? { q: keyword } : {}) } as never)
-  const nextCodeQuery = useGetBranchesNextCode({ query: { enabled: open && !editing } })
+  const branchesQuery = useGetBranchesAdmin({
+    page,
+    limit: 10,
+    ...(statusFilter !== 'all' ? { status: statusFilter } : {}),
+    ...(keyword ? { q: keyword } : {}),
+  } as never)
+  const nextCodeQuery = useGetBranchesNextCodeAdmin({ query: { enabled: open && !editing } })
   const nextCode = pickData<{ code?: string }>(nextCodeQuery.data)?.code
-  const createMutation = usePostBranches()
-  const updateMutation = usePutBranchesId()
+  const createMutation = usePostBranchesAdmin()
+  const updateMutation = usePutBranchesIdAdmin()
   // Ngừng hoạt động = POST /branches/{id}/deactivate (is_active=false); DELETE /branches/{id} là xóa mềm is_deleted.
-  const deactivateMutation = usePostBranchesIdDeactivate()
-  const deleteBranchMutation = useDeleteBranchesId()
-  const activateMutation = usePostBranchesIdActivate()
+  const deactivateMutation = usePostBranchesIdDeactivateAdmin()
+  const deleteBranchMutation = useDeleteBranchesIdAdmin()
+  const activateMutation = usePostBranchesIdActivateAdmin()
+  const uploadMutation = usePostFilesAdmin()
   const ability = useAbility()
   const canUpdate = ability.can('UPDATE', 'BRANCH')
   const canDelete = ability.can('DELETE', 'BRANCH')
@@ -57,9 +75,11 @@ export default function Branches() {
   const rows = (pickData<Branch[]>(branchesQuery.data) ?? []) as Branch[]
 
   const invalidate = () => {
-    queryClient.invalidateQueries({ queryKey: getGetBranchesQueryKey() })
-    queryClient.invalidateQueries({ queryKey: getGetBranchesNextCodeQueryKey() })
+    queryClient.invalidateQueries({ queryKey: getGetBranchesAdminQueryKey() })
+    queryClient.invalidateQueries({ queryKey: getGetBranchesNextCodeAdminQueryKey() })
   }
+
+  const visibleRows = rows
 
   const applySearch = (nextKeyword: string) => {
     setSearchText(nextKeyword)
@@ -67,7 +87,7 @@ export default function Branches() {
     setPage(1)
   }
 
-  // Thống kê đầu trang — từ meta.stats của BE (đã trừ điều kiện status)
+  // Thống kê đến từ server nên vẫn đúng khi danh sách đang phân trang hoặc lọc.
   const statsMeta = (branchesQuery.data as unknown as { meta?: { stats?: { total: number; active: number; inactive: number } } })?.meta?.stats
   const statItems = useMemo<StatItem[]>(() => {
     if (hideSummaryForTechnician) return []
@@ -79,15 +99,39 @@ export default function Branches() {
     ]
   }, [statsMeta, hideSummaryForTechnician])
 
-  const applyStatusFilter = (value: StatusFilter) => {
-    setStatusFilter(value)
+  const applyFilters = (values: Record<string, unknown>) => {
+    if (draftVisibleColumns.length === 0) {
+      message.error('Hãy giữ lại ít nhất một cột hiển thị')
+      return
+    }
+    setStatusFilter(values.status === 'active' || values.status === 'inactive' ? values.status : 'all')
+    setVisibleColumns(draftVisibleColumns)
+    setFilterOpen(false)
     setPage(1)
+  }
+
+  const clearFilters = () => {
+    filterForm.resetFields()
+    setSearchText('')
+    setKeyword('')
+    setStatusFilter('all')
+    setDraftVisibleColumns(DEFAULT_VISIBLE_COLUMNS)
+    setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)
+    setPage(1)
+  }
+
+  const openFilters = (nextOpen: boolean) => {
+    setFilterOpen(nextOpen)
+    if (!nextOpen) return
+    filterForm.setFieldsValue({ status: statusFilter === 'all' ? undefined : statusFilter })
+    setSearchText(keyword)
+    setDraftVisibleColumns(visibleColumns)
   }
 
   const openCreate = () => {
     setEditing(null)
     form.resetFields()
-    form.setFieldsValue({ name: '', address: '', phone: '' })
+    form.setFieldsValue({ name: '', address: '', phone: '', image_file_id: undefined })
     setOpen(true)
   }
 
@@ -98,8 +142,36 @@ export default function Branches() {
       name: branch.name,
       address: branch.address ?? '',
       phone: branch.phone ?? '',
+      image_file_id: (branch as Branch & { image_file?: { id?: string }; image_file_id?: string }).image_file?.id
+        ?? (branch as Branch & { image_file_id?: string }).image_file_id
+        ?? undefined,
     })
     setOpen(true)
+  }
+
+  /** Upload ảnh cơ sở — giống luồng ảnh bìa bài viết (POST /files → set form field). */
+  const uploadImage = async (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      message.error('Vui lòng chọn tệp ảnh')
+      return false
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      message.error('Ảnh không được vượt quá 10 MB')
+      return false
+    }
+    setUploadingImage(true)
+    try {
+      const uploaded = pickData<{ id?: string; path?: string }>(await uploadMutation.mutateAsync({ data: { file } }))
+      if (!uploaded?.id) throw new Error('Máy chủ không trả về file')
+      registerUploadedFile(uploaded.id, uploaded.path)
+      form.setFieldValue('image_file_id', uploaded.id)
+      message.success('Đã tải ảnh lên')
+    } catch (err) {
+      message.error(`Tải ảnh lên thất bại: ${errorMessage(err)}`)
+    } finally {
+      setUploadingImage(false)
+    }
+    return false
   }
 
   const closeModal = () => {
@@ -120,6 +192,7 @@ export default function Branches() {
       name: values.name.trim(),
       address: values.address?.trim() ?? '',
       phone: values.phone?.trim() ?? '',
+      image_file_id: values.image_file_id || null,
     }
 
     try {
@@ -129,10 +202,10 @@ export default function Branches() {
           address: payload.address,
           phone: payload.phone,
         }
-        await updateMutation.mutateAsync({ id: editing.id, data: body })
+        await updateMutation.mutateAsync({ id: editing.id, data: { ...body, image_file_id: payload.image_file_id } as BranchUpdate })
         message.success('Đã cập nhật cơ sở')
       } else {
-        await createMutation.mutateAsync({ data: payload })
+        await createMutation.mutateAsync({ data: payload as never })
         message.success('Đã thêm cơ sở')
       }
       setOpen(false)
@@ -179,7 +252,26 @@ export default function Branches() {
     }
   }
 
+  const activeFilterCount = (statusFilter !== 'all' ? 1 : 0) + (keyword ? 1 : 0)
+
   const columns = [
+    {
+      key: 'image',
+      title: 'Ảnh',
+      dataIndex: 'image_file_id',
+      width: 90,
+      render: (_: unknown, row: Branch) => {
+        const withFile = row as Branch & { image_file?: { path?: string }; image_file_id?: string }
+        const src = fileSrc(withFile.image_file) ?? resolveFileSrc(fileUrlMap, withFile.image_file_id)
+        return src ? (
+          <Image src={src} alt={row.name} width={48} height={48} style={{ objectFit: 'cover', borderRadius: 8 }} />
+        ) : (
+          <div style={{ width: 48, height: 48, borderRadius: 8, background: 'var(--brand-bg)', display: 'grid', placeItems: 'center', color: '#B9BDC2' }}>
+            <PictureOutlined />
+          </div>
+        )
+      },
+    },
     {
       key: 'code',
       title: 'Mã cơ sở',
@@ -253,7 +345,8 @@ export default function Branches() {
       ),
     },
   ].filter((column) =>
-    column.key !== 'actions' || canUpdate || canDelete,
+    (column.key !== 'actions' || canUpdate || canDelete) &&
+    (column.key === 'actions' || visibleColumns.includes(column.key as BranchColumnKey)),
   )
 
   return (
@@ -264,24 +357,40 @@ export default function Branches() {
         subtitle="Danh sách cơ sở spa trong hệ thống"
         left={
           <>
-            <Input.Search
+            <Input
               allowClear
+              prefix={<SearchOutlined className="text-[var(--brand-text-inactive,#A9ADB2)]" />}
               placeholder="Tìm theo mã hoặc tên cơ sở"
-              className="w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]"
+              className="w-[260px]!"
               value={searchText}
-              onChange={(e) => { setSearchText(e.target.value); if (!e.target.value) applySearch('') }}
-              onSearch={(v) => applySearch(v)}
+              onChange={(event) => {
+                setSearchText(event.target.value)
+                if (!event.target.value) applySearch('')
+              }}
+              onPressEnter={() => applySearch(searchText)}
             />
-            <Select
-              allowClear
-              placeholder="Tất cả trạng thái"
-              style={{ width: 170 }}
-              value={statusFilter === 'all' ? undefined : statusFilter}
-              onChange={(value) => applyStatusFilter((value as StatusFilter) ?? 'all')}
-              options={[
-                { value: 'active', label: 'Đang hoạt động' },
-                { value: 'inactive', label: 'Đã ngừng' },
-              ]}
+            <ListFilterPopover
+              open={filterOpen}
+              onOpenChange={openFilters}
+              activeFilterCount={activeFilterCount}
+              form={filterForm}
+              onApply={applyFilters}
+              onClear={clearFilters}
+              columnOptions={BRANCH_COLUMN_OPTIONS}
+              draftVisibleColumns={draftVisibleColumns}
+              onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as BranchColumnKey[])}
+              filterItems={(
+                <Form.Item name="status" label="Trạng thái" className="mb-0!">
+                  <Select
+                    allowClear
+                    placeholder="Tất cả"
+                    options={[
+                      { value: 'active', label: 'Đang hoạt động' },
+                      { value: 'inactive', label: 'Đã ngừng' },
+                    ]}
+                  />
+                </Form.Item>
+              )}
             />
           </>
         }
@@ -311,7 +420,7 @@ export default function Branches() {
         className="desktop-only"
         rowKey="id"
         loading={branchesQuery.isLoading}
-        dataSource={rows}
+        dataSource={visibleRows}
         columns={columns}
         scroll={{ x: 980 }}
         pagination={false}
@@ -320,7 +429,7 @@ export default function Branches() {
         }}
       />
       <MobileCards
-        rows={rows}
+        rows={visibleRows}
         rowKey={(row) => row.id}
         loading={branchesQuery.isLoading}
         emptyText={keyword.trim() || statusFilter !== 'all' ? 'Không tìm thấy cơ sở phù hợp' : 'Chưa có cơ sở nào'}
@@ -340,7 +449,13 @@ export default function Branches() {
           </>
         )}
       />
-      <ListPagination page={page} limit={10} total={(branchesQuery.data as unknown as { meta?: { total?: number } })?.meta?.total ?? rows.length} onChange={setPage} noun="cơ sở" />
+      <ListPagination
+        page={page}
+        limit={10}
+        total={(branchesQuery.data as unknown as { meta?: { total?: number } })?.meta?.total ?? visibleRows.length}
+        onChange={setPage}
+        noun="cơ sở"
+      />
 
       <BranchModal
         open={open}
@@ -348,6 +463,8 @@ export default function Branches() {
         nextCode={nextCode}
         form={form}
         saving={saving}
+        uploadingImage={uploadingImage}
+        uploadImage={uploadImage}
         onCancel={closeModal}
         onSubmit={() => void submit()}
       />

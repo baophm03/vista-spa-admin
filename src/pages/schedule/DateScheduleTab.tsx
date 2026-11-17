@@ -9,18 +9,7 @@ import TableEmpty from '@/components/base/TableEmpty'
 import ToolbarRow from '@/components/base/ToolbarRow'
 import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import type { StaffScheduleDate as StaffScheduleDateRow, ShiftTemplate as ShiftTemplateRow } from './types'
-import {
-  deleteStaffScheduleDatesId,
-  getGetBranchDateNotesQueryKey,
-  getGetShiftTemplatesQueryKey,
-  getGetStaffScheduleDatesQueryKey,
-  postBranchDateNotes,
-  postStaffScheduleDates,
-  putStaffScheduleDatesId,
-  useGetBranchDateNotes,
-  useGetShiftTemplates,
-  useGetStaffScheduleDates,
-} from '@/api/endpoints/staff'
+import { deleteStaffScheduleDatesIdAdmin, getGetBranchDateNotesAdminQueryKey, getGetShiftTemplatesAdminQueryKey, getGetStaffScheduleDatesAdminQueryKey, postBranchDateNotesAdmin, postStaffScheduleDatesAdmin, putStaffScheduleDatesIdAdmin, useGetBranchDateNotesAdmin, useGetShiftTemplatesAdmin, useGetStaffScheduleDatesAdmin } from '@/api/endpoints/staff'
 import type { SchedulePageData, ScheduleStaff } from './types'
 import { staffLabel } from './types'
 import DateScheduleFormModal, { toFormDates } from './components/DateScheduleFormModal'
@@ -94,15 +83,15 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
   }
   if (canManage && branchFilter) dateParams.branch_id = branchFilter
   if (staffFilter) dateParams.staff_id = staffFilter
-  const dateSchedulesQuery = useGetStaffScheduleDates(dateParams as never)
-  const templatesQuery = useGetShiftTemplates(branchFilter ? { branch_id: branchFilter } : {})
+  const dateSchedulesQuery = useGetStaffScheduleDatesAdmin(dateParams as never)
+  const templatesQuery = useGetShiftTemplatesAdmin(branchFilter ? { branch_id: branchFilter } : {})
   // Ghi chú theo ngày của cơ sở (lễ, sự kiện, họp...) — hiển thị ở tiêu đề cột ngày
   const noteParams: Record<string, unknown> = {
     from_date: weekStart.format('YYYY-MM-DD'),
     to_date: weekStart.add(6, 'day').format('YYYY-MM-DD'),
   }
   if (canManage && branchFilter) noteParams.branch_id = branchFilter
-  const notesQuery = useGetBranchDateNotes(noteParams as never)
+  const notesQuery = useGetBranchDateNotesAdmin(noteParams as never)
   const [noteEditing, setNoteEditing] = useState<NoteEditTarget | null>(null)
   const [noteSaving, setNoteSaving] = useState(false)
   const [noteForm] = Form.useForm()
@@ -205,14 +194,14 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
     setSaving(true)
     try {
       if (editing) {
-        await putStaffScheduleDatesId(editing.id, {
+        await putStaffScheduleDatesIdAdmin(editing.id, {
           work_date: dates[0],
           shift_template_id: values.shift_template_id,
           note: values.note || undefined,
         } as never)
         message.success('Đã cập nhật lịch theo ngày')
       } else {
-        const result = await postStaffScheduleDates({
+        const result = await postStaffScheduleDatesAdmin({
           staff_id: values.staff_id,
           branch_id: values.branch_id,
           dates,
@@ -226,7 +215,7 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
         else message.success(`Đã đăng ký ${created} ca theo ngày${skipped ? ` (bỏ qua ${skipped} ca đã có sẵn)` : ''}`)
       }
       setOpen(false)
-      void queryClient.invalidateQueries({ queryKey: getGetStaffScheduleDatesQueryKey() })
+      void queryClient.invalidateQueries({ queryKey: getGetStaffScheduleDatesAdminQueryKey() })
     } catch (err) {
       message.error(errorMessage(err))
     } finally {
@@ -236,12 +225,12 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
 
   const remove = async (row: StaffScheduleDateWithStaff, confirmed = false) => {
     try {
-      await deleteStaffScheduleDatesId(
+      await deleteStaffScheduleDatesIdAdmin(
         row.id,
         confirmed ? { confirm_future_appointments: 'true' } : undefined,
       )
       message.success('Đã xóa lịch theo ngày. Các lịch hẹn đã đặt được giữ nguyên.')
-      void queryClient.invalidateQueries({ queryKey: getGetStaffScheduleDatesQueryKey() })
+      void queryClient.invalidateQueries({ queryKey: getGetStaffScheduleDatesAdminQueryKey() })
     } catch (err: unknown) {
       const response = (err as { response?: { data?: { code?: string; details?: Record<string, unknown> } } })?.response?.data
       if (!confirmed && response?.code === 'FUTURE_APPOINTMENTS_EXIST') {
@@ -270,7 +259,7 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
 
   const refreshShared = () => {
     void dateSchedulesQuery.refetch()
-    void queryClient.invalidateQueries({ queryKey: getGetShiftTemplatesQueryKey() })
+    void queryClient.invalidateQueries({ queryKey: getGetShiftTemplatesAdminQueryKey() })
   }
 
   const openNoteForm = (date: Dayjs, currentNotes: string[] = []) => {
@@ -290,13 +279,13 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
     }
     setNoteSaving(true)
     try {
-      await postBranchDateNotes({
+      await postBranchDateNotesAdmin({
         branch_id: values.branch_id,
         note_date: noteEditing.date.format('YYYY-MM-DD'),
         note: String(values.note ?? '').trim(),
       } as never)
       message.success(String(values.note ?? '').trim() ? 'Đã lưu ghi chú ngày' : 'Đã xoá ghi chú ngày')
-      void queryClient.invalidateQueries({ queryKey: getGetBranchDateNotesQueryKey() })
+      void queryClient.invalidateQueries({ queryKey: getGetBranchDateNotesAdminQueryKey() })
       setNoteEditing(null)
     } catch (err) {
       message.error(errorMessage(err))
@@ -353,11 +342,11 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
         title: (
           <div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
-              <span style={iso === today ? { color: 'var(--brand-dark)', fontWeight: 700 } : undefined}>
+              <span style={iso === today ? { color: 'var(--brand-on-primary)', fontWeight: 700, textDecoration: 'underline', textUnderlineOffset: 3 } : undefined}>
                 {WEEKDAY_LABELS[date.day()]} {date.format('DD/MM')}
               </span>
               {canManage && (
-                <Button aria-label={`Sửa ghi chú ngày ${date.format('DD/MM')}`} type="text" size="small" icon={<EditOutlined />} onClick={() => openNoteForm(date, notesByDate.get(iso) ?? [])} />
+                <Button aria-label={`Sửa ghi chú ngày ${date.format('DD/MM')}`} type="text" size="small" icon={<EditOutlined />} style={{ color: 'var(--brand-on-primary)' }} onClick={() => openNoteForm(date, notesByDate.get(iso) ?? [])} />
               )}
             </div>
             {noteText && (
@@ -365,7 +354,7 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
                 <div
                   role={canManage ? 'button' : undefined}
                   onClick={() => canManage && openNoteForm(date, notesByDate.get(iso) ?? [])}
-                  style={{ fontSize: 11, lineHeight: 1.3, color: 'var(--brand-dark)', whiteSpace: 'normal', textAlign: 'center', cursor: canManage ? 'pointer' : 'default' }}
+                  style={{ fontSize: 11, lineHeight: 1.3, color: 'var(--brand-on-primary)', opacity: 0.92, whiteSpace: 'normal', textAlign: 'center', cursor: canManage ? 'pointer' : 'default' }}
                 >
                   {noteText.length > 46 ? `${noteText.slice(0, 46)}…` : noteText}
                 </div>

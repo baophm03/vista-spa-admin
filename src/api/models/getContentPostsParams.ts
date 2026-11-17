@@ -7,16 +7,8 @@
  */
 
 export type GetContentPostsParams = {
-status?: string;
-category_id?: string;
-q?: string;
 /**
- * @minimum 1
- */
-page?: number;
-/**
- * @minimum 1
- * @maximum 200
+ * @maximum 20
  */
 limit?: number;
 };

@@ -26,7 +26,7 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  GetInvoicesCustomerTreatmentIdPrintParams,
+  GetInvoicesCustomerTreatmentIdPrintAdminParams,
   NotFoundResponse,
   UnauthorizedResponse
 } from '../models';
@@ -38,18 +38,18 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * **INV-01** — GET /invoices/{customerTreatmentId}/print. Returns the print sheet HTML (thermal K80 / A5 sizes) containing brand, customer, service package, financial, warranty commitment and QR code information. Only works when the `module.invoice` setting is true (default false — enable it in System Settings). Requires the `customer.read` permission.
+ * **INV-01** — GET /invoices/{customerTreatmentId}/print/admin. Returns the print sheet HTML (thermal K80 / A5 sizes) containing brand, customer, service package, financial, warranty commitment and QR code information. Only works when the `module.invoice` setting is true (default false — enable it in System Settings). Cần đăng nhập + `invoice.view_all`.
  * @summary Invoice print sheet for a treatment package (print-ready HTML)
  */
-export const getInvoicesCustomerTreatmentIdPrint = (
+export const getInvoicesCustomerTreatmentIdPrintAdmin = (
     customerTreatmentId: string,
-    params?: GetInvoicesCustomerTreatmentIdPrintParams,
+    params?: GetInvoicesCustomerTreatmentIdPrintAdminParams,
  signal?: AbortSignal
 ) => {
       
       
       return customInstance<string>(
-      {url: `/invoices/${customerTreatmentId}/print`, method: 'GET',
+      {url: `/invoices/${customerTreatmentId}/print/admin`, method: 'GET',
         params, signal
     },
       );
@@ -58,82 +58,82 @@ export const getInvoicesCustomerTreatmentIdPrint = (
 
 
 
-export const getGetInvoicesCustomerTreatmentIdPrintInfiniteQueryKey = (customerTreatmentId?: string,
-    params?: GetInvoicesCustomerTreatmentIdPrintParams,) => {
+export const getGetInvoicesCustomerTreatmentIdPrintAdminInfiniteQueryKey = (customerTreatmentId?: string,
+    params?: GetInvoicesCustomerTreatmentIdPrintAdminParams,) => {
     return [
-    'infinite', `/invoices/${customerTreatmentId}/print`, ...(params ? [params]: [])
+    'infinite', `/invoices/${customerTreatmentId}/print/admin`, ...(params ? [params]: [])
     ] as const;
     }
 
-export const getGetInvoicesCustomerTreatmentIdPrintQueryKey = (customerTreatmentId?: string,
-    params?: GetInvoicesCustomerTreatmentIdPrintParams,) => {
+export const getGetInvoicesCustomerTreatmentIdPrintAdminQueryKey = (customerTreatmentId?: string,
+    params?: GetInvoicesCustomerTreatmentIdPrintAdminParams,) => {
     return [
-    `/invoices/${customerTreatmentId}/print`, ...(params ? [params]: [])
+    `/invoices/${customerTreatmentId}/print/admin`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetInvoicesCustomerTreatmentIdPrintInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrint>>>, TError = UnauthorizedResponse | NotFoundResponse>(customerTreatmentId: string,
-    params?: GetInvoicesCustomerTreatmentIdPrintParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrint>>, TError, TData>>, }
+export const getGetInvoicesCustomerTreatmentIdPrintAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrintAdmin>>>, TError = UnauthorizedResponse | NotFoundResponse>(customerTreatmentId: string,
+    params?: GetInvoicesCustomerTreatmentIdPrintAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrintAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetInvoicesCustomerTreatmentIdPrintInfiniteQueryKey(customerTreatmentId,params);
+  const queryKey =  queryOptions?.queryKey ?? getGetInvoicesCustomerTreatmentIdPrintAdminInfiniteQueryKey(customerTreatmentId,params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrint>>> = ({ signal }) => getInvoicesCustomerTreatmentIdPrint(customerTreatmentId,params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrintAdmin>>> = ({ signal }) => getInvoicesCustomerTreatmentIdPrintAdmin(customerTreatmentId,params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(customerTreatmentId),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrint>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(customerTreatmentId),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrintAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetInvoicesCustomerTreatmentIdPrintInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrint>>>
-export type GetInvoicesCustomerTreatmentIdPrintInfiniteQueryError = UnauthorizedResponse | NotFoundResponse
+export type GetInvoicesCustomerTreatmentIdPrintAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrintAdmin>>>
+export type GetInvoicesCustomerTreatmentIdPrintAdminInfiniteQueryError = UnauthorizedResponse | NotFoundResponse
 
 
-export function useGetInvoicesCustomerTreatmentIdPrintInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrint>>>, TError = UnauthorizedResponse | NotFoundResponse>(
+export function useGetInvoicesCustomerTreatmentIdPrintAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrintAdmin>>>, TError = UnauthorizedResponse | NotFoundResponse>(
  customerTreatmentId: string,
-    params: undefined |  GetInvoicesCustomerTreatmentIdPrintParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrint>>, TError, TData>> & Pick<
+    params: undefined |  GetInvoicesCustomerTreatmentIdPrintAdminParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrintAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrint>>,
+          Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrintAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrint>>
+          Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrintAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetInvoicesCustomerTreatmentIdPrintInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrint>>>, TError = UnauthorizedResponse | NotFoundResponse>(
+export function useGetInvoicesCustomerTreatmentIdPrintAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrintAdmin>>>, TError = UnauthorizedResponse | NotFoundResponse>(
  customerTreatmentId: string,
-    params?: GetInvoicesCustomerTreatmentIdPrintParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrint>>, TError, TData>> & Pick<
+    params?: GetInvoicesCustomerTreatmentIdPrintAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrintAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrint>>,
+          Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrintAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrint>>
+          Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrintAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetInvoicesCustomerTreatmentIdPrintInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrint>>>, TError = UnauthorizedResponse | NotFoundResponse>(
+export function useGetInvoicesCustomerTreatmentIdPrintAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrintAdmin>>>, TError = UnauthorizedResponse | NotFoundResponse>(
  customerTreatmentId: string,
-    params?: GetInvoicesCustomerTreatmentIdPrintParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrint>>, TError, TData>>, }
+    params?: GetInvoicesCustomerTreatmentIdPrintAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrintAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Invoice print sheet for a treatment package (print-ready HTML)
  */
 
-export function useGetInvoicesCustomerTreatmentIdPrintInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrint>>>, TError = UnauthorizedResponse | NotFoundResponse>(
+export function useGetInvoicesCustomerTreatmentIdPrintAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrintAdmin>>>, TError = UnauthorizedResponse | NotFoundResponse>(
  customerTreatmentId: string,
-    params?: GetInvoicesCustomerTreatmentIdPrintParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrint>>, TError, TData>>, }
+    params?: GetInvoicesCustomerTreatmentIdPrintAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrintAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetInvoicesCustomerTreatmentIdPrintInfiniteQueryOptions(customerTreatmentId,params,options)
+  const queryOptions = getGetInvoicesCustomerTreatmentIdPrintAdminInfiniteQueryOptions(customerTreatmentId,params,options)
 
   const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -145,13 +145,13 @@ export function useGetInvoicesCustomerTreatmentIdPrintInfinite<TData = InfiniteD
 /**
  * @summary Invoice print sheet for a treatment package (print-ready HTML)
  */
-export const prefetchGetInvoicesCustomerTreatmentIdPrintInfiniteQuery = async <TData = Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrint>>, TError = UnauthorizedResponse | NotFoundResponse>(
+export const prefetchGetInvoicesCustomerTreatmentIdPrintAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrintAdmin>>, TError = UnauthorizedResponse | NotFoundResponse>(
  queryClient: QueryClient, customerTreatmentId: string,
-    params?: GetInvoicesCustomerTreatmentIdPrintParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrint>>, TError, TData>>, }
+    params?: GetInvoicesCustomerTreatmentIdPrintAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrintAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetInvoicesCustomerTreatmentIdPrintInfiniteQueryOptions(customerTreatmentId,params,options)
+  const queryOptions = getGetInvoicesCustomerTreatmentIdPrintAdminInfiniteQueryOptions(customerTreatmentId,params,options)
 
   await queryClient.prefetchInfiniteQuery(queryOptions);
 
@@ -160,67 +160,67 @@ export const prefetchGetInvoicesCustomerTreatmentIdPrintInfiniteQuery = async <T
 
 
 
-export const getGetInvoicesCustomerTreatmentIdPrintQueryOptions = <TData = Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrint>>, TError = UnauthorizedResponse | NotFoundResponse>(customerTreatmentId: string,
-    params?: GetInvoicesCustomerTreatmentIdPrintParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrint>>, TError, TData>>, }
+export const getGetInvoicesCustomerTreatmentIdPrintAdminQueryOptions = <TData = Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrintAdmin>>, TError = UnauthorizedResponse | NotFoundResponse>(customerTreatmentId: string,
+    params?: GetInvoicesCustomerTreatmentIdPrintAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrintAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetInvoicesCustomerTreatmentIdPrintQueryKey(customerTreatmentId,params);
+  const queryKey =  queryOptions?.queryKey ?? getGetInvoicesCustomerTreatmentIdPrintAdminQueryKey(customerTreatmentId,params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrint>>> = ({ signal }) => getInvoicesCustomerTreatmentIdPrint(customerTreatmentId,params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrintAdmin>>> = ({ signal }) => getInvoicesCustomerTreatmentIdPrintAdmin(customerTreatmentId,params, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(customerTreatmentId),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrint>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(customerTreatmentId),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrintAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetInvoicesCustomerTreatmentIdPrintQueryResult = NonNullable<Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrint>>>
-export type GetInvoicesCustomerTreatmentIdPrintQueryError = UnauthorizedResponse | NotFoundResponse
+export type GetInvoicesCustomerTreatmentIdPrintAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrintAdmin>>>
+export type GetInvoicesCustomerTreatmentIdPrintAdminQueryError = UnauthorizedResponse | NotFoundResponse
 
 
-export function useGetInvoicesCustomerTreatmentIdPrint<TData = Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrint>>, TError = UnauthorizedResponse | NotFoundResponse>(
+export function useGetInvoicesCustomerTreatmentIdPrintAdmin<TData = Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrintAdmin>>, TError = UnauthorizedResponse | NotFoundResponse>(
  customerTreatmentId: string,
-    params: undefined |  GetInvoicesCustomerTreatmentIdPrintParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrint>>, TError, TData>> & Pick<
+    params: undefined |  GetInvoicesCustomerTreatmentIdPrintAdminParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrintAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrint>>,
+          Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrintAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrint>>
+          Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrintAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetInvoicesCustomerTreatmentIdPrint<TData = Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrint>>, TError = UnauthorizedResponse | NotFoundResponse>(
+export function useGetInvoicesCustomerTreatmentIdPrintAdmin<TData = Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrintAdmin>>, TError = UnauthorizedResponse | NotFoundResponse>(
  customerTreatmentId: string,
-    params?: GetInvoicesCustomerTreatmentIdPrintParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrint>>, TError, TData>> & Pick<
+    params?: GetInvoicesCustomerTreatmentIdPrintAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrintAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrint>>,
+          Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrintAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrint>>
+          Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrintAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetInvoicesCustomerTreatmentIdPrint<TData = Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrint>>, TError = UnauthorizedResponse | NotFoundResponse>(
+export function useGetInvoicesCustomerTreatmentIdPrintAdmin<TData = Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrintAdmin>>, TError = UnauthorizedResponse | NotFoundResponse>(
  customerTreatmentId: string,
-    params?: GetInvoicesCustomerTreatmentIdPrintParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrint>>, TError, TData>>, }
+    params?: GetInvoicesCustomerTreatmentIdPrintAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrintAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Invoice print sheet for a treatment package (print-ready HTML)
  */
 
-export function useGetInvoicesCustomerTreatmentIdPrint<TData = Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrint>>, TError = UnauthorizedResponse | NotFoundResponse>(
+export function useGetInvoicesCustomerTreatmentIdPrintAdmin<TData = Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrintAdmin>>, TError = UnauthorizedResponse | NotFoundResponse>(
  customerTreatmentId: string,
-    params?: GetInvoicesCustomerTreatmentIdPrintParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrint>>, TError, TData>>, }
+    params?: GetInvoicesCustomerTreatmentIdPrintAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrintAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetInvoicesCustomerTreatmentIdPrintQueryOptions(customerTreatmentId,params,options)
+  const queryOptions = getGetInvoicesCustomerTreatmentIdPrintAdminQueryOptions(customerTreatmentId,params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -232,13 +232,13 @@ export function useGetInvoicesCustomerTreatmentIdPrint<TData = Awaited<ReturnTyp
 /**
  * @summary Invoice print sheet for a treatment package (print-ready HTML)
  */
-export const prefetchGetInvoicesCustomerTreatmentIdPrintQuery = async <TData = Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrint>>, TError = UnauthorizedResponse | NotFoundResponse>(
+export const prefetchGetInvoicesCustomerTreatmentIdPrintAdminQuery = async <TData = Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrintAdmin>>, TError = UnauthorizedResponse | NotFoundResponse>(
  queryClient: QueryClient, customerTreatmentId: string,
-    params?: GetInvoicesCustomerTreatmentIdPrintParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrint>>, TError, TData>>, }
+    params?: GetInvoicesCustomerTreatmentIdPrintAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrintAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetInvoicesCustomerTreatmentIdPrintQueryOptions(customerTreatmentId,params,options)
+  const queryOptions = getGetInvoicesCustomerTreatmentIdPrintAdminQueryOptions(customerTreatmentId,params,options)
 
   await queryClient.prefetchQuery(queryOptions);
 

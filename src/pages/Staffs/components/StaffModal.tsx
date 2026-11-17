@@ -10,21 +10,32 @@ interface StaffModalProps {
   branches: Branch[]
   roles: { id: string; role_name: string; code: string | null }[]
   branchRequired: boolean
+  globalAdminSelected: boolean
+  globalAdminAlreadyExists: boolean
+  canEditAccess: boolean
   onCancel: () => void
   onOk: () => void
 }
 
-export default function StaffModal({ form, open, editing, branches, roles, branchRequired, onCancel, onOk }: StaffModalProps) {
+export default function StaffModal({ form, open, editing, branches, roles, branchRequired, globalAdminSelected, globalAdminAlreadyExists, canEditAccess, onCancel, onOk }: StaffModalProps) {
   return (
     <Modal
-      title={editing ? 'Sửa chuyên viên' : 'Thêm chuyên viên'}
+      title={editing ? 'Sửa tài khoản' : 'Thêm tài khoản'}
       open={open}
       onCancel={onCancel}
       onOk={onOk}
       okText="Lưu"
       cancelText="Hủy"
     >
-      <Form form={form} layout="vertical" className="mt-3">
+      <Form
+        form={form}
+        layout="vertical"
+        className="mt-3"
+        onValuesChange={(changedValues) => {
+          // Chuyển từ chế độ toàn hệ thống sang cơ sở thì yêu cầu chọn vai trò rõ ràng.
+          if (changedValues.branch_id) form.setFieldValue('role_id', undefined)
+        }}
+      >
         <Form.Item name="zalo_name" label="Họ tên" rules={[{ required: true, message: 'Nhập họ tên' }]}>
           <Input placeholder="VD: Trần Hoa" />
         </Form.Item>
@@ -43,13 +54,16 @@ export default function StaffModal({ form, open, editing, branches, roles, branc
               name="branch_id"
               label="Cơ sở"
               rules={branchRequired ? [{ required: true, message: 'Chọn cơ sở cho nhân viên/KTV' }] : []}
-              extra={branchRequired ? undefined : 'Để trống nếu tài khoản quản trị cần truy cập toàn hệ thống.'}
+              extra={!editing && globalAdminSelected
+                ? `Không chọn cơ sở sẽ tạo quản trị viên toàn hệ thống cấp cao nhất.${globalAdminAlreadyExists ? ' Tài khoản cấp cao nhất hiện đã tồn tại.' : ''}`
+                : undefined}
             >
               <Select
                 className="w-full"
-                allowClear={!branchRequired}
+                allowClear={!editing && canEditAccess}
+                disabled={!canEditAccess}
                 options={branches.map((branch) => ({ value: branch.id, label: branch.name }))}
-                placeholder={branchRequired ? 'Chọn cơ sở' : 'Chọn cơ sở hoặc để trống'}
+                placeholder="Chọn cơ sở (để trống = toàn hệ thống)"
               />
             </Form.Item>
           </Col>
@@ -82,10 +96,11 @@ export default function StaffModal({ form, open, editing, branches, roles, branc
         </Row>
         <Row gutter={12}>
           <Col xs={24} sm={12}>
-            <Form.Item name="role_id" label="Vai trò" rules={[{ required: true, message: 'Chọn vai trò' }]}>
+            <Form.Item name="role_id" label="Vai trò" rules={globalAdminSelected ? [] : [{ required: true, message: 'Chọn vai trò' }]}>
               <Select
                 className="w-full"
                 allowClear
+                disabled={!canEditAccess || globalAdminSelected}
                 options={roles.map((r) => ({ value: r.id, label: r.role_name }))}
                 placeholder="Chọn vai trò"
               />

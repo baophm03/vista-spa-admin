@@ -1,6 +1,6 @@
 import { Alert, Button, Descriptions, Modal, Spin, Tag } from 'antd'
 import dayjs from 'dayjs'
-import { useGetDiscountRulesId } from '@/api/endpoints/settings'
+import { useGetDiscountRulesIdAdmin } from '@/api/endpoints/discount-rules'
 import { errorMessage } from '@/api/helpers'
 import { APPLIES_TO_OPTIONS, AUDIENCE_META } from './constants'
 
@@ -11,7 +11,7 @@ interface DiscountDetailModalProps {
 }
 
 export default function DiscountDetailModal({ ruleId, services, onClose }: DiscountDetailModalProps) {
-  const detailQuery = useGetDiscountRulesId(ruleId ?? '', {
+  const detailQuery = useGetDiscountRulesIdAdmin(ruleId ?? '', {
     query: { enabled: !!ruleId, retry: false },
   })
   const detailRule = detailQuery.data?.responseData

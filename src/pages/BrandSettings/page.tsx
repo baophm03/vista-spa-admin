@@ -1,14 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Alert, Avatar, Button, Card, ColorPicker, Col, Descriptions, Form, Input, Row, Select, Space, Spin, Tag, Typography, Upload, message } from 'antd'
-import { SaveOutlined, UploadOutlined } from '@ant-design/icons'
+import { Alert, Avatar, Button, Card, ColorPicker, Col, Descriptions, Form, Input, Modal, Row, Select, Space, Spin, Tag, Typography, Upload, message } from 'antd'
+import { SaveOutlined, UndoOutlined, UploadOutlined } from '@ant-design/icons'
 import PageTitle from '@/components/base/PageTitle'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { BrandSettings } from '@/api/models/brandSettings'
 import type { BrandSettingsUpdate } from '@/api/models/brandSettingsUpdate'
 import type { FileUpload } from '@/api/models/fileUpload'
-import { getGetSettingsBrandQueryKey, getSettingsBrand, putSettingsBrand } from '@/api/endpoints/settings'
-import { postFiles } from '@/api/endpoints/files'
+import { getGetSettingsBrandAdminQueryKey, getSettingsBrandAdmin, putSettingsBrandAdmin } from '@/api/endpoints/settings'
+import { postFilesAdmin } from '@/api/endpoints/files'
 import { Can } from '@casl/react'
 import links from '@/configs/links'
 import { fileSrc } from '@/hooks/useFileUrl'
@@ -18,6 +18,18 @@ const FALLBACK_TIMEZONES = [
   'Asia/Ho_Chi_Minh', 'Asia/Bangkok', 'Asia/Singapore', 'Asia/Tokyo', 'Asia/Seoul',
   'Australia/Sydney', 'Europe/London', 'Europe/Paris', 'America/Los_Angeles', 'America/New_York', 'UTC',
 ]
+
+/** Giá trị gốc theo seed settingDefinitions (BE) — dùng cho nút Khôi phục mặc định (logo giữ nguyên). */
+const DEFAULT_BRAND = {
+  name: 'NewSky Vista®',
+  primaryColor: '#8E63A9',
+  secondaryColor: '#D01A7E',
+  tertiaryColor: '#FFD700',
+  backgroundColor: '',
+  timezone: 'Asia/Ho_Chi_Minh',
+  currency: 'VND',
+  language: 'vi',
+}
 
 const MODULE_LABELS: Record<string, string> = {
   'module.academy': 'Khóa học',
@@ -109,8 +121,8 @@ export default function BrandSettings() {
     return pickData<BrandSettings>(body.responseData ?? body)
   }
   const settingsQuery = useQuery({
-    queryKey: getGetSettingsBrandQueryKey(),
-    queryFn: async () => normalizeSettings(await getSettingsBrand()),
+    queryKey: getGetSettingsBrandAdminQueryKey(),
+    queryFn: async () => normalizeSettings(await getSettingsBrandAdmin()),
   })
   const [primaryColor, setPrimaryColor] = useState(runtime.primaryColor)
   const [tertiaryColor, setTertiaryColor] = useState(runtime.tertiaryColor || '#FFD700')
@@ -143,7 +155,7 @@ export default function BrandSettings() {
 
   const saveMutation = useMutation({
     mutationFn: async (values: BrandFormValues) =>
-      putSettingsBrand({
+      putSettingsBrandAdmin({
         brand: {
           name: values.brand.name,
           logo_file_id: logoFileId || null,
@@ -157,10 +169,10 @@ export default function BrandSettings() {
     onSuccess: async (result) => {
       const data = pickData<BrandSettings>(result)
       if (data?.brand && data?.locale) {
-        queryClient.setQueryData(getGetSettingsBrandQueryKey(), data)
+        queryClient.setQueryData(getGetSettingsBrandAdminQueryKey(), data)
         applyBrandSettings(data)
       } else {
-        await queryClient.invalidateQueries({ queryKey: getGetSettingsBrandQueryKey() })
+        await queryClient.invalidateQueries({ queryKey: getGetSettingsBrandAdminQueryKey() })
       }
       message.success('Đã lưu cấu hình thương hiệu')
     },
@@ -180,7 +192,7 @@ export default function BrandSettings() {
     try {
       // POST /files trả object file phẳng { id, path, file_name, ... }
       // Payload gửi id (FK sang bảng files); path chỉ dùng cho preview
-      const uploaded = pickData<{ id?: string; path?: string }>(await postFiles({ file } as FileUpload))
+      const uploaded = pickData<{ id?: string; path?: string }>(await postFilesAdmin({ file } as FileUpload))
       const fileId = uploaded?.id ?? ''
       const path = uploaded?.path ?? ''
       if (!fileId || !path) throw new Error('Upload không trả về thông tin file')
@@ -201,6 +213,29 @@ export default function BrandSettings() {
     form.setFieldValue(['brand', 'logo_file_id'], '')
   }
 
+  /** Khôi phục tên, màu, múi giờ/tiền tệ/ngôn ngữ về mặc định gốc — logo giữ nguyên. */
+  const resetAll = () => {
+    form.setFieldsValue({
+      brand: { name: DEFAULT_BRAND.name },
+      locale: { timezone: DEFAULT_BRAND.timezone, currency: DEFAULT_BRAND.currency, language: DEFAULT_BRAND.language },
+    })
+    setPrimaryColor(DEFAULT_BRAND.primaryColor)
+    setSecondaryColor(DEFAULT_BRAND.secondaryColor)
+    setTertiaryColor(DEFAULT_BRAND.tertiaryColor)
+    setBackgroundColor(DEFAULT_BRAND.backgroundColor)
+    message.info('Đã khôi phục giá trị mặc định (giữ nguyên logo); nhấn Lưu cấu hình để áp dụng')
+  }
+
+  const confirmResetAll = () => {
+    Modal.confirm({
+      title: 'Khôi phục về mặc định?',
+      content: 'Tên thương hiệu, màu sắc và khu vực sẽ về giá trị gốc (logo giữ nguyên). Các thay đổi chưa lưu sẽ mất; nhấn Lưu cấu hình để áp dụng.',
+      okText: 'Khôi phục',
+      cancelText: 'Hủy',
+      onOk: resetAll,
+    })
+  }
+
   const save = async (values: BrandFormValues) => {
     await saveMutation.mutateAsync(values)
   }
@@ -211,7 +246,12 @@ export default function BrandSettings() {
         <>
           <PageTitle
             subtitle="Thông tin thương hiệu, giao diện và khu vực"
-            right={canEdit ? <Button type="primary" icon={<SaveOutlined />} loading={saveMutation.isPending} onClick={() => form.submit()}>Lưu cấu hình</Button> : undefined}
+            right={canEdit ? (
+              <Space>
+                <Button icon={<UndoOutlined />} onClick={confirmResetAll}>Khôi phục mặc định</Button>
+                <Button type="primary" icon={<SaveOutlined />} loading={saveMutation.isPending} onClick={() => form.submit()}>Lưu cấu hình</Button>
+              </Space>
+            ) : undefined}
           >
             Thương hiệu và khu vực
           </PageTitle>
@@ -242,28 +282,30 @@ export default function BrandSettings() {
                           </Space>
                         </Space>
                       </Form.Item>
-                      <Form.Item label="Màu chủ đạo">
-                        <ColorPicker value={primaryColor} onChange={(color) => setPrimaryColor(color.toHexString())} showText disabled={!canEdit} />
-                      </Form.Item>
-                      <Form.Item label="Màu bổ trợ" extra="Filter chips, nút phụ, badge">
-                        <ColorPicker value={secondaryColor} onChange={(color) => setSecondaryColor(color.toHexString())} showText disabled={!canEdit} />
-                      </Form.Item>
-                      <Form.Item label="Màu nhấn" extra="Điểm nhấn, huy hiệu khuyến mãi, thẻ thông tin đặc biệt">
-                        <ColorPicker value={tertiaryColor} onChange={(color) => setTertiaryColor(color.toHexString())} showText disabled={!canEdit} />
-                      </Form.Item>
-                      <Form.Item label="Màu nền trang" extra="Bỏ trống để tự suy từ màu chủ đạo">
-                        <Space>
-                          <ColorPicker
-                            value={backgroundColor || undefined}
-                            onChange={(color) => setBackgroundColor(color.toHexString())}
-                            allowClear
-                            onClear={() => setBackgroundColor('')}
-                            showText
-                            disabled={!canEdit}
-                          />
-                          {!backgroundColor && <Typography.Text type="secondary">Tự động</Typography.Text>}
-                        </Space>
-                      </Form.Item>
+                      <div className="grid grid-cols-1 gap-x-6 sm:grid-cols-2">
+                        <Form.Item label="Màu chủ đạo">
+                          <ColorPicker value={primaryColor} onChange={(color) => setPrimaryColor(color.toHexString())} showText disabled={!canEdit} />
+                        </Form.Item>
+                        <Form.Item label="Màu bổ trợ" extra="Filter chips, nút phụ, badge">
+                          <ColorPicker value={secondaryColor} onChange={(color) => setSecondaryColor(color.toHexString())} showText disabled={!canEdit} />
+                        </Form.Item>
+                        <Form.Item label="Màu nhấn" extra="Điểm nhấn, huy hiệu khuyến mãi, thẻ thông tin đặc biệt">
+                          <ColorPicker value={tertiaryColor} onChange={(color) => setTertiaryColor(color.toHexString())} showText disabled={!canEdit} />
+                        </Form.Item>
+                        <Form.Item label="Màu nền trang" extra="Bỏ trống để tự suy từ màu chủ đạo">
+                          <Space>
+                            <ColorPicker
+                              value={backgroundColor || undefined}
+                              onChange={(color) => setBackgroundColor(color.toHexString())}
+                              allowClear
+                              onClear={() => setBackgroundColor('')}
+                              showText
+                              disabled={!canEdit}
+                            />
+                            {!backgroundColor && <Typography.Text type="secondary">Tự động</Typography.Text>}
+                          </Space>
+                        </Form.Item>
+                      </div>
                     </Card>
                   </Col>
                   <Col xs={24} lg={10}>

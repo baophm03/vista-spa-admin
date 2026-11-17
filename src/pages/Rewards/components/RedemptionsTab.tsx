@@ -18,13 +18,8 @@ import { useBrandDateTime } from '@/themeRuntime'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
 import { errorMessage, pickData, pickMeta } from '@/api/helpers'
-import {
-  getGetRewardRedemptionsQueryKey,
-  getGetRewardsQueryKey,
-  useGetRewardRedemptions,
-  usePutRewardRedemptionsIdCancel,
-  usePutRewardRedemptionsIdUse,
-} from '@/api/endpoints/rewards'
+import { getGetRewardRedemptionsAdminQueryKey, useGetRewardRedemptionsAdmin, usePutRewardRedemptionsIdCancelAdmin, usePutRewardRedemptionsIdUseAdmin } from '@/api/endpoints/reward-redemptions'
+import { getGetRewardsAdminQueryKey } from '@/api/endpoints/rewards'
 import CancelRedemptionModal from './CancelRedemptionModal'
 import { REDEMPTION_META, type RewardRedemptionRow } from './constants'
 
@@ -44,7 +39,7 @@ export default function RedemptionsTab() {
   }
 
   const redemptionParams = { page, limit: 10, ...(statusFilter ? { status: statusFilter } : {}), ...(customerSearch ? { q: customerSearch } : {}) }
-  const redemptionsQuery = useGetRewardRedemptions(redemptionParams)
+  const redemptionsQuery = useGetRewardRedemptionsAdmin(redemptionParams)
   // responseData: RewardRedemptionRow[] + meta.total
   const rows = (pickData<RewardRedemptionRow[]>(redemptionsQuery.data) ?? []) as RewardRedemptionRow[]
   const total = pickMeta(redemptionsQuery.data)?.total ?? rows.length
@@ -52,12 +47,12 @@ export default function RedemptionsTab() {
 
   const invalidate = async () => {
     await Promise.all([
-      queryClient.invalidateQueries({ queryKey: getGetRewardRedemptionsQueryKey() }),
-      queryClient.invalidateQueries({ queryKey: getGetRewardsQueryKey() }),
+      queryClient.invalidateQueries({ queryKey: getGetRewardRedemptionsAdminQueryKey() }),
+      queryClient.invalidateQueries({ queryKey: getGetRewardsAdminQueryKey() }),
     ])
   }
 
-  const markUsedMutation = usePutRewardRedemptionsIdUse()
+  const markUsedMutation = usePutRewardRedemptionsIdUseAdmin()
 
   const markUsed = async (row: RewardRedemptionRow) => {
     try {
@@ -69,7 +64,7 @@ export default function RedemptionsTab() {
     }
   }
 
-  const cancelMutation = usePutRewardRedemptionsIdCancel()
+  const cancelMutation = usePutRewardRedemptionsIdCancelAdmin()
 
   const submitCancel = async () => {
     if (!cancelTarget) return

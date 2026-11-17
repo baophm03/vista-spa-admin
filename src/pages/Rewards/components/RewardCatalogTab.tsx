@@ -20,16 +20,13 @@ import ListPagination from '@/components/base/ListPagination'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { Reward } from '@/api/models/reward'
-import {
-  getGetRewardRedemptionsQueryKey,
-  getGetRewardsQueryKey,
-  useDeleteRewardsId,
-  useGetRewards,
-  usePostRewards,
-  usePutRewardsId,
-} from '@/api/endpoints/rewards'
-import { usePostCustomerProfilesIdRedeemReward } from '@/api/endpoints/customer-profiles'
-import { getVoucherCategory, type VoucherCategory, type VoucherCategoryRow } from '@/api/custom/voucherCategories'
+import { getGetRewardRedemptionsAdminQueryKey } from '@/api/endpoints/reward-redemptions'
+import { getGetRewardsAdminQueryKey, useDeleteRewardsIdAdmin, useGetRewardsAdmin, usePostRewardsAdmin, usePutRewardsIdAdmin } from '@/api/endpoints/rewards'
+import { usePostCustomerProfilesIdRedeemRewardAdmin } from '@/api/endpoints/customer-profiles'
+import { getAcademyCourseVouchersAdmin } from '@/api/endpoints/academy-course-vouchers'
+import { getProductVouchersAdmin } from '@/api/endpoints/product-vouchers'
+import { getTreatmentPackageVouchersAdmin } from '@/api/endpoints/treatment-package-vouchers'
+import type { VoucherCategory, VoucherCategoryRow } from '@/pages/Vouchers/components/constants'
 import { Can, useAbility } from '@casl/react'
 import RedeemModal from './RedeemModal'
 import RewardModal, { type RewardVoucherOption } from './RewardModal'
@@ -62,7 +59,7 @@ export default function RewardCatalogTab() {
     setPage(1)
   }
   // Admin (canUpdate) xem cả quà đã ẩn → không gửi is_active; người thường chỉ thấy quà đang hoạt động
-  const rewardsQuery = useGetRewards({
+  const rewardsQuery = useGetRewardsAdmin({
     page,
     limit,
     q: search || undefined,
@@ -78,7 +75,11 @@ export default function RewardCatalogTab() {
     queryFn: async () => {
       const categories: VoucherCategory[] = ['treatment-package', 'academy-course', 'product']
       const lists = await Promise.all(categories.map(async (category) => {
-        const payload = pickData<VoucherCategoryRow[] | undefined>(await getVoucherCategory(category, { page: 1, limit: 200 }))
+        const payload = pickData<VoucherCategoryRow[] | undefined>(await (category === 'treatment-package'
+          ? getTreatmentPackageVouchersAdmin({ page: 1, limit: 200 } as never)
+          : category === 'academy-course'
+            ? getAcademyCourseVouchersAdmin({ page: 1, limit: 200 } as never)
+            : getProductVouchersAdmin({ page: 1, limit: 200 } as never)))
         return { category, rows: payload ?? [] }
       }))
       const today = dayjs().format('YYYY-MM-DD')
@@ -103,15 +104,15 @@ export default function RewardCatalogTab() {
   })
   const vouchers: RewardVoucherOption[] = vouchersQuery.data ?? []
 
-  const createMutation = usePostRewards()
-  const updateMutation = usePutRewardsId()
-  const deleteMutation = useDeleteRewardsId()
-  const redeemMutation = usePostCustomerProfilesIdRedeemReward()
+  const createMutation = usePostRewardsAdmin()
+  const updateMutation = usePutRewardsIdAdmin()
+  const deleteMutation = useDeleteRewardsIdAdmin()
+  const redeemMutation = usePostCustomerProfilesIdRedeemRewardAdmin()
 
   const refresh = async () => {
     await Promise.all([
-      queryClient.invalidateQueries({ queryKey: getGetRewardsQueryKey() }),
-      queryClient.invalidateQueries({ queryKey: getGetRewardRedemptionsQueryKey() }),
+      queryClient.invalidateQueries({ queryKey: getGetRewardsAdminQueryKey() }),
+      queryClient.invalidateQueries({ queryKey: getGetRewardRedemptionsAdminQueryKey() }),
     ])
   }
 

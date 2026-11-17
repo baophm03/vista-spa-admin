@@ -17,14 +17,14 @@ import type {
 
 import type {
   ConflictResponse,
-  DeleteLookupItemsId200,
+  DeleteLookupItemsIdAdmin200,
   ForbiddenResponse,
   InternalErrorResponse,
   NotFoundResponse,
-  PostLookupListsIdItems200,
-  PostLookupListsIdItemsBody,
-  PutLookupItemsId200,
-  PutLookupItemsIdBody,
+  PostLookupListsIdItemsAdmin200,
+  PostLookupListsIdItemsAdminBody,
+  PutLookupItemsIdAdmin200,
+  PutLookupItemsIdAdminBody,
   UnauthorizedResponse,
   UnprocessableEntityResponse
 } from '../models';
@@ -36,31 +36,31 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * **LK-07** — POST /lookup-lists/{id}/items. Requires the `lookup.update` permission. Body fields: `code`, `label`, `sort_order`, `color`.
+ * **LK-07** — POST /lookup-lists/{id}/items/admin. Cần đăng nhập + `lookup.update_all`. Body fields: `code`, `label`, `sort_order`, `color`.
  * @summary Manage lookup items
  */
-export const postLookupListsIdItems = (
+export const postLookupListsIdItemsAdmin = (
     id: string,
-    postLookupListsIdItemsBody: PostLookupListsIdItemsBody,
+    postLookupListsIdItemsAdminBody: PostLookupListsIdItemsAdminBody,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<PostLookupListsIdItems200>(
-      {url: `/lookupLists/${id}/items`, method: 'POST',
+      return customInstance<PostLookupListsIdItemsAdmin200>(
+      {url: `/lookup-lists/${id}/items/admin`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: postLookupListsIdItemsBody, signal
+      data: postLookupListsIdItemsAdminBody, signal
     },
       );
     }
   
 
 
-export const getPostLookupListsIdItemsMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postLookupListsIdItems>>, TError,{id: string;data: PostLookupListsIdItemsBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postLookupListsIdItems>>, TError,{id: string;data: PostLookupListsIdItemsBody}, TContext> => {
+export const getPostLookupListsIdItemsAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postLookupListsIdItemsAdmin>>, TError,{id: string;data: PostLookupListsIdItemsAdminBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postLookupListsIdItemsAdmin>>, TError,{id: string;data: PostLookupListsIdItemsAdminBody}, TContext> => {
 
-const mutationKey = ['postLookupListsIdItems'];
+const mutationKey = ['postLookupListsIdItemsAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -70,10 +70,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postLookupListsIdItems>>, {id: string;data: PostLookupListsIdItemsBody}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postLookupListsIdItemsAdmin>>, {id: string;data: PostLookupListsIdItemsAdminBody}> = (props) => {
           const {id,data} = props ?? {};
 
-          return  postLookupListsIdItems(id,data,)
+          return  postLookupListsIdItemsAdmin(id,data,)
         }
 
         
@@ -81,51 +81,51 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PostLookupListsIdItemsMutationResult = NonNullable<Awaited<ReturnType<typeof postLookupListsIdItems>>>
-    export type PostLookupListsIdItemsMutationBody = PostLookupListsIdItemsBody
-    export type PostLookupListsIdItemsMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+    export type PostLookupListsIdItemsAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postLookupListsIdItemsAdmin>>>
+    export type PostLookupListsIdItemsAdminMutationBody = PostLookupListsIdItemsAdminBody
+    export type PostLookupListsIdItemsAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
  * @summary Manage lookup items
  */
-export const usePostLookupListsIdItems = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postLookupListsIdItems>>, TError,{id: string;data: PostLookupListsIdItemsBody}, TContext>, }
+export const usePostLookupListsIdItemsAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postLookupListsIdItemsAdmin>>, TError,{id: string;data: PostLookupListsIdItemsAdminBody}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postLookupListsIdItems>>,
+        Awaited<ReturnType<typeof postLookupListsIdItemsAdmin>>,
         TError,
-        {id: string;data: PostLookupListsIdItemsBody},
+        {id: string;data: PostLookupListsIdItemsAdminBody},
         TContext
       > => {
 
-      const mutationOptions = getPostLookupListsIdItemsMutationOptions(options);
+      const mutationOptions = getPostLookupListsIdItemsAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **LK-08** — PUT /lookup-items/{id} — only label/sort_order/is_active can be changed. Requires the `lookup.update` permission. Body fields: `label`, `color`, `sort_order`, `is_active`.
+ * **LK-08** — PUT /lookup-items/{id}/admin — only label/sort_order/is_active can be changed. Cần đăng nhập + `lookup.update_all`. Body fields: `label`, `color`, `sort_order`, `is_active`.
  * @summary Update a lookup item
  */
-export const putLookupItemsId = (
+export const putLookupItemsIdAdmin = (
     id: string,
-    putLookupItemsIdBody: PutLookupItemsIdBody,
+    putLookupItemsIdAdminBody: PutLookupItemsIdAdminBody,
  ) => {
       
       
-      return customInstance<PutLookupItemsId200>(
-      {url: `/lookupItems/${id}`, method: 'PUT',
+      return customInstance<PutLookupItemsIdAdmin200>(
+      {url: `/lookup-items/${id}/admin`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
-      data: putLookupItemsIdBody
+      data: putLookupItemsIdAdminBody
     },
       );
     }
   
 
 
-export const getPutLookupItemsIdMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putLookupItemsId>>, TError,{id: string;data: PutLookupItemsIdBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putLookupItemsId>>, TError,{id: string;data: PutLookupItemsIdBody}, TContext> => {
+export const getPutLookupItemsIdAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putLookupItemsIdAdmin>>, TError,{id: string;data: PutLookupItemsIdAdminBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putLookupItemsIdAdmin>>, TError,{id: string;data: PutLookupItemsIdAdminBody}, TContext> => {
 
-const mutationKey = ['putLookupItemsId'];
+const mutationKey = ['putLookupItemsIdAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -135,10 +135,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putLookupItemsId>>, {id: string;data: PutLookupItemsIdBody}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putLookupItemsIdAdmin>>, {id: string;data: PutLookupItemsIdAdminBody}> = (props) => {
           const {id,data} = props ?? {};
 
-          return  putLookupItemsId(id,data,)
+          return  putLookupItemsIdAdmin(id,data,)
         }
 
         
@@ -146,48 +146,48 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PutLookupItemsIdMutationResult = NonNullable<Awaited<ReturnType<typeof putLookupItemsId>>>
-    export type PutLookupItemsIdMutationBody = PutLookupItemsIdBody
-    export type PutLookupItemsIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+    export type PutLookupItemsIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof putLookupItemsIdAdmin>>>
+    export type PutLookupItemsIdAdminMutationBody = PutLookupItemsIdAdminBody
+    export type PutLookupItemsIdAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
  * @summary Update a lookup item
  */
-export const usePutLookupItemsId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putLookupItemsId>>, TError,{id: string;data: PutLookupItemsIdBody}, TContext>, }
+export const usePutLookupItemsIdAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putLookupItemsIdAdmin>>, TError,{id: string;data: PutLookupItemsIdAdminBody}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putLookupItemsId>>,
+        Awaited<ReturnType<typeof putLookupItemsIdAdmin>>,
         TError,
-        {id: string;data: PutLookupItemsIdBody},
+        {id: string;data: PutLookupItemsIdAdminBody},
         TContext
       > => {
 
-      const mutationOptions = getPutLookupItemsIdMutationOptions(options);
+      const mutationOptions = getPutLookupItemsIdAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **LK-09** — DELETE /lookup-items/{id} — soft delete (is_active=false), not a hard delete. Requires the `lookup.delete` permission.
+ * **LK-09** — DELETE /lookup-items/{id}/admin — soft delete (is_active=false), not a hard delete. Cần đăng nhập + `lookup.delete_all`.
  * @summary Delete a lookup item
  */
-export const deleteLookupItemsId = (
+export const deleteLookupItemsIdAdmin = (
     id: string,
  ) => {
       
       
-      return customInstance<DeleteLookupItemsId200>(
-      {url: `/lookupItems/${id}`, method: 'DELETE'
+      return customInstance<DeleteLookupItemsIdAdmin200>(
+      {url: `/lookup-items/${id}/admin`, method: 'DELETE'
     },
       );
     }
   
 
 
-export const getDeleteLookupItemsIdMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteLookupItemsId>>, TError,{id: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof deleteLookupItemsId>>, TError,{id: string}, TContext> => {
+export const getDeleteLookupItemsIdAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteLookupItemsIdAdmin>>, TError,{id: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteLookupItemsIdAdmin>>, TError,{id: string}, TContext> => {
 
-const mutationKey = ['deleteLookupItemsId'];
+const mutationKey = ['deleteLookupItemsIdAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -197,10 +197,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteLookupItemsId>>, {id: string}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteLookupItemsIdAdmin>>, {id: string}> = (props) => {
           const {id} = props ?? {};
 
-          return  deleteLookupItemsId(id,)
+          return  deleteLookupItemsIdAdmin(id,)
         }
 
         
@@ -208,23 +208,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type DeleteLookupItemsIdMutationResult = NonNullable<Awaited<ReturnType<typeof deleteLookupItemsId>>>
+    export type DeleteLookupItemsIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof deleteLookupItemsIdAdmin>>>
     
-    export type DeleteLookupItemsIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+    export type DeleteLookupItemsIdAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
  * @summary Delete a lookup item
  */
-export const useDeleteLookupItemsId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteLookupItemsId>>, TError,{id: string}, TContext>, }
+export const useDeleteLookupItemsIdAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteLookupItemsIdAdmin>>, TError,{id: string}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteLookupItemsId>>,
+        Awaited<ReturnType<typeof deleteLookupItemsIdAdmin>>,
         TError,
         {id: string},
         TContext
       > => {
 
-      const mutationOptions = getDeleteLookupItemsIdMutationOptions(options);
+      const mutationOptions = getDeleteLookupItemsIdAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

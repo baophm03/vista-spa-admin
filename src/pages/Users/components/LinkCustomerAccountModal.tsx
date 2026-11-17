@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Alert, Avatar, Button, Modal, Space, Typography, message } from 'antd'
 import { UserOutlined } from '@ant-design/icons'
 import type { CustomerProfile } from '@/api/models/customerProfile'
-import { getCustomerProfilesIdLinkUser, postCustomerProfilesIdLinkUser } from '@/api/endpoints/customer-profiles'
+import { getCustomerProfilesIdLinkUserAdmin, postCustomerProfilesIdLinkUserAdmin } from '@/api/endpoints/customer-profiles'
 import { errorMessage, pickData } from '@/api/helpers'
 
 interface CustomerAccountPreview {
@@ -31,7 +31,7 @@ export default function LinkCustomerAccountModal({ open, profile, onCancel, onLi
     setError('')
     setAccount(null)
     try {
-      setAccount(pickData<CustomerAccountPreview>(await getCustomerProfilesIdLinkUser(profile.id)))
+      setAccount(pickData<CustomerAccountPreview>(await getCustomerProfilesIdLinkUserAdmin(profile.id)))
     } catch (err) {
       const reason = errorMessage(err)
       setError(/không tìm thấy tài khoản/i.test(reason)
@@ -56,7 +56,7 @@ export default function LinkCustomerAccountModal({ open, profile, onCancel, onLi
     if (!profile || !account) return
     setSaving(true)
     try {
-      await postCustomerProfilesIdLinkUser(profile.id, { phone: profile.phone } as never)
+      await postCustomerProfilesIdLinkUserAdmin(profile.id, { phone: profile.phone } as never)
       message.success('Đã liên kết hồ sơ với tài khoản')
       await onLinked()
       onCancel()

@@ -32,8 +32,8 @@ import type {
 import type {
   BranchCreate,
   LegacyBadRequestResponse,
-  PostScreeningBranchesBranchSlugPackagesBody,
-  PostScreeningBranchesBranchSlugPackagesPackageSlugItemsBody,
+  PostScreeningBranchesBranchSlugPackagesAdminBody,
+  PostScreeningBranchesBranchSlugPackagesPackageSlugItemsAdminBody,
   Response
 } from '../models';
 
@@ -238,71 +238,6 @@ export const prefetchGetScreeningBranchesQuery = async <TData = Awaited<ReturnTy
 
 
 /**
- * POST `/screening/branches` — screening content. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `screeningBranchProvider.post`.
- * @summary Create a screening branch
- */
-export const postScreeningBranches = (
-    branchCreate: BranchCreate,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<Response>(
-      {url: `/screening/branches`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: branchCreate, signal
-    },
-      );
-    }
-  
-
-
-export const getPostScreeningBranchesMutationOptions = <TError = LegacyBadRequestResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postScreeningBranches>>, TError,{data: BranchCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postScreeningBranches>>, TError,{data: BranchCreate}, TContext> => {
-
-const mutationKey = ['postScreeningBranches'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postScreeningBranches>>, {data: BranchCreate}> = (props) => {
-          const {data} = props ?? {};
-
-          return  postScreeningBranches(data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostScreeningBranchesMutationResult = NonNullable<Awaited<ReturnType<typeof postScreeningBranches>>>
-    export type PostScreeningBranchesMutationBody = BranchCreate
-    export type PostScreeningBranchesMutationError = LegacyBadRequestResponse
-
-    /**
- * @summary Create a screening branch
- */
-export const usePostScreeningBranches = <TError = LegacyBadRequestResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postScreeningBranches>>, TError,{data: BranchCreate}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postScreeningBranches>>,
-        TError,
-        {data: BranchCreate},
-        TContext
-      > => {
-
-      const mutationOptions = getPostScreeningBranchesMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
  * GET `/screening/branches/{branchSlug}` — screening content. Public, no authentication required. Handled by `screeningBranchProvider.getOne`.
  * @summary View branch details
  */
@@ -497,17 +432,17 @@ export const prefetchGetScreeningBranchesBranchSlugQuery = async <TData = Awaite
 
 
 /**
- * PUT `/screening/branches/{branchSlug}` — screening content. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `screeningBranchProvider.getOne`.
+ * PUT `/screening/branches/{branchSlug}/admin` — screening content. This route currently has no authentication or authorization middleware attached. Handled by `screeningBranchProvider.getOne`.
  * @summary Update a branch
  */
-export const putScreeningBranchesBranchSlug = (
+export const putScreeningBranchesBranchSlugAdmin = (
     branchSlug: string,
     branchCreate: BranchCreate,
  ) => {
       
       
       return customInstance<Response>(
-      {url: `/screening/branches/${branchSlug}`, method: 'PUT',
+      {url: `/screening/branches/${branchSlug}/admin`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: branchCreate
     },
@@ -516,11 +451,11 @@ export const putScreeningBranchesBranchSlug = (
   
 
 
-export const getPutScreeningBranchesBranchSlugMutationOptions = <TError = LegacyBadRequestResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putScreeningBranchesBranchSlug>>, TError,{branchSlug: string;data: BranchCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putScreeningBranchesBranchSlug>>, TError,{branchSlug: string;data: BranchCreate}, TContext> => {
+export const getPutScreeningBranchesBranchSlugAdminMutationOptions = <TError = LegacyBadRequestResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putScreeningBranchesBranchSlugAdmin>>, TError,{branchSlug: string;data: BranchCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putScreeningBranchesBranchSlugAdmin>>, TError,{branchSlug: string;data: BranchCreate}, TContext> => {
 
-const mutationKey = ['putScreeningBranchesBranchSlug'];
+const mutationKey = ['putScreeningBranchesBranchSlugAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -530,10 +465,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putScreeningBranchesBranchSlug>>, {branchSlug: string;data: BranchCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putScreeningBranchesBranchSlugAdmin>>, {branchSlug: string;data: BranchCreate}> = (props) => {
           const {branchSlug,data} = props ?? {};
 
-          return  putScreeningBranchesBranchSlug(branchSlug,data,)
+          return  putScreeningBranchesBranchSlugAdmin(branchSlug,data,)
         }
 
         
@@ -541,48 +476,48 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PutScreeningBranchesBranchSlugMutationResult = NonNullable<Awaited<ReturnType<typeof putScreeningBranchesBranchSlug>>>
-    export type PutScreeningBranchesBranchSlugMutationBody = BranchCreate
-    export type PutScreeningBranchesBranchSlugMutationError = LegacyBadRequestResponse | void
+    export type PutScreeningBranchesBranchSlugAdminMutationResult = NonNullable<Awaited<ReturnType<typeof putScreeningBranchesBranchSlugAdmin>>>
+    export type PutScreeningBranchesBranchSlugAdminMutationBody = BranchCreate
+    export type PutScreeningBranchesBranchSlugAdminMutationError = LegacyBadRequestResponse | void
 
     /**
  * @summary Update a branch
  */
-export const usePutScreeningBranchesBranchSlug = <TError = LegacyBadRequestResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putScreeningBranchesBranchSlug>>, TError,{branchSlug: string;data: BranchCreate}, TContext>, }
+export const usePutScreeningBranchesBranchSlugAdmin = <TError = LegacyBadRequestResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putScreeningBranchesBranchSlugAdmin>>, TError,{branchSlug: string;data: BranchCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putScreeningBranchesBranchSlug>>,
+        Awaited<ReturnType<typeof putScreeningBranchesBranchSlugAdmin>>,
         TError,
         {branchSlug: string;data: BranchCreate},
         TContext
       > => {
 
-      const mutationOptions = getPutScreeningBranchesBranchSlugMutationOptions(options);
+      const mutationOptions = getPutScreeningBranchesBranchSlugAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * DELETE `/screening/branches/{branchSlug}` — screening content. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `screeningBranchProvider.getOne`.
+ * DELETE `/screening/branches/{branchSlug}/admin` — screening content. This route currently has no authentication or authorization middleware attached. Handled by `screeningBranchProvider.getOne`.
  * @summary Delete a branch
  */
-export const deleteScreeningBranchesBranchSlug = (
+export const deleteScreeningBranchesBranchSlugAdmin = (
     branchSlug: string,
  ) => {
       
       
       return customInstance<Response>(
-      {url: `/screening/branches/${branchSlug}`, method: 'DELETE'
+      {url: `/screening/branches/${branchSlug}/admin`, method: 'DELETE'
     },
       );
     }
   
 
 
-export const getDeleteScreeningBranchesBranchSlugMutationOptions = <TError = LegacyBadRequestResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteScreeningBranchesBranchSlug>>, TError,{branchSlug: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof deleteScreeningBranchesBranchSlug>>, TError,{branchSlug: string}, TContext> => {
+export const getDeleteScreeningBranchesBranchSlugAdminMutationOptions = <TError = LegacyBadRequestResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteScreeningBranchesBranchSlugAdmin>>, TError,{branchSlug: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteScreeningBranchesBranchSlugAdmin>>, TError,{branchSlug: string}, TContext> => {
 
-const mutationKey = ['deleteScreeningBranchesBranchSlug'];
+const mutationKey = ['deleteScreeningBranchesBranchSlugAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -592,10 +527,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteScreeningBranchesBranchSlug>>, {branchSlug: string}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteScreeningBranchesBranchSlugAdmin>>, {branchSlug: string}> = (props) => {
           const {branchSlug} = props ?? {};
 
-          return  deleteScreeningBranchesBranchSlug(branchSlug,)
+          return  deleteScreeningBranchesBranchSlugAdmin(branchSlug,)
         }
 
         
@@ -603,23 +538,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type DeleteScreeningBranchesBranchSlugMutationResult = NonNullable<Awaited<ReturnType<typeof deleteScreeningBranchesBranchSlug>>>
+    export type DeleteScreeningBranchesBranchSlugAdminMutationResult = NonNullable<Awaited<ReturnType<typeof deleteScreeningBranchesBranchSlugAdmin>>>
     
-    export type DeleteScreeningBranchesBranchSlugMutationError = LegacyBadRequestResponse | void
+    export type DeleteScreeningBranchesBranchSlugAdminMutationError = LegacyBadRequestResponse | void
 
     /**
  * @summary Delete a branch
  */
-export const useDeleteScreeningBranchesBranchSlug = <TError = LegacyBadRequestResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteScreeningBranchesBranchSlug>>, TError,{branchSlug: string}, TContext>, }
+export const useDeleteScreeningBranchesBranchSlugAdmin = <TError = LegacyBadRequestResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteScreeningBranchesBranchSlugAdmin>>, TError,{branchSlug: string}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteScreeningBranchesBranchSlug>>,
+        Awaited<ReturnType<typeof deleteScreeningBranchesBranchSlugAdmin>>,
         TError,
         {branchSlug: string},
         TContext
       > => {
 
-      const mutationOptions = getDeleteScreeningBranchesBranchSlugMutationOptions(options);
+      const mutationOptions = getDeleteScreeningBranchesBranchSlugAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -833,135 +768,6 @@ export const prefetchGetScreeningBranchesBranchSlugPackagesPackageSlugQuery = as
 
 
 /**
- * PUT `/screening/branches/{branchSlug}/packages/{packageSlug}` — screening content. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `screeningBranchProvider.getOne`.
- * @summary Update a screening package
- */
-export const putScreeningBranchesBranchSlugPackagesPackageSlug = (
-    branchSlug: string,
-    packageSlug: string,
-    branchCreate: BranchCreate,
- ) => {
-      
-      
-      return customInstance<Response>(
-      {url: `/screening/branches/${branchSlug}/packages/${packageSlug}`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: branchCreate
-    },
-      );
-    }
-  
-
-
-export const getPutScreeningBranchesBranchSlugPackagesPackageSlugMutationOptions = <TError = LegacyBadRequestResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putScreeningBranchesBranchSlugPackagesPackageSlug>>, TError,{branchSlug: string;packageSlug: string;data: BranchCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putScreeningBranchesBranchSlugPackagesPackageSlug>>, TError,{branchSlug: string;packageSlug: string;data: BranchCreate}, TContext> => {
-
-const mutationKey = ['putScreeningBranchesBranchSlugPackagesPackageSlug'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putScreeningBranchesBranchSlugPackagesPackageSlug>>, {branchSlug: string;packageSlug: string;data: BranchCreate}> = (props) => {
-          const {branchSlug,packageSlug,data} = props ?? {};
-
-          return  putScreeningBranchesBranchSlugPackagesPackageSlug(branchSlug,packageSlug,data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PutScreeningBranchesBranchSlugPackagesPackageSlugMutationResult = NonNullable<Awaited<ReturnType<typeof putScreeningBranchesBranchSlugPackagesPackageSlug>>>
-    export type PutScreeningBranchesBranchSlugPackagesPackageSlugMutationBody = BranchCreate
-    export type PutScreeningBranchesBranchSlugPackagesPackageSlugMutationError = LegacyBadRequestResponse | void
-
-    /**
- * @summary Update a screening package
- */
-export const usePutScreeningBranchesBranchSlugPackagesPackageSlug = <TError = LegacyBadRequestResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putScreeningBranchesBranchSlugPackagesPackageSlug>>, TError,{branchSlug: string;packageSlug: string;data: BranchCreate}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putScreeningBranchesBranchSlugPackagesPackageSlug>>,
-        TError,
-        {branchSlug: string;packageSlug: string;data: BranchCreate},
-        TContext
-      > => {
-
-      const mutationOptions = getPutScreeningBranchesBranchSlugPackagesPackageSlugMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * DELETE `/screening/branches/{branchSlug}/packages/{packageSlug}` — screening content. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `screeningBranchProvider.getOne`.
- * @summary Delete a screening package
- */
-export const deleteScreeningBranchesBranchSlugPackagesPackageSlug = (
-    branchSlug: string,
-    packageSlug: string,
- ) => {
-      
-      
-      return customInstance<Response>(
-      {url: `/screening/branches/${branchSlug}/packages/${packageSlug}`, method: 'DELETE'
-    },
-      );
-    }
-  
-
-
-export const getDeleteScreeningBranchesBranchSlugPackagesPackageSlugMutationOptions = <TError = LegacyBadRequestResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteScreeningBranchesBranchSlugPackagesPackageSlug>>, TError,{branchSlug: string;packageSlug: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof deleteScreeningBranchesBranchSlugPackagesPackageSlug>>, TError,{branchSlug: string;packageSlug: string}, TContext> => {
-
-const mutationKey = ['deleteScreeningBranchesBranchSlugPackagesPackageSlug'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteScreeningBranchesBranchSlugPackagesPackageSlug>>, {branchSlug: string;packageSlug: string}> = (props) => {
-          const {branchSlug,packageSlug} = props ?? {};
-
-          return  deleteScreeningBranchesBranchSlugPackagesPackageSlug(branchSlug,packageSlug,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteScreeningBranchesBranchSlugPackagesPackageSlugMutationResult = NonNullable<Awaited<ReturnType<typeof deleteScreeningBranchesBranchSlugPackagesPackageSlug>>>
-    
-    export type DeleteScreeningBranchesBranchSlugPackagesPackageSlugMutationError = LegacyBadRequestResponse | void
-
-    /**
- * @summary Delete a screening package
- */
-export const useDeleteScreeningBranchesBranchSlugPackagesPackageSlug = <TError = LegacyBadRequestResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteScreeningBranchesBranchSlugPackagesPackageSlug>>, TError,{branchSlug: string;packageSlug: string}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteScreeningBranchesBranchSlugPackagesPackageSlug>>,
-        TError,
-        {branchSlug: string;packageSlug: string},
-        TContext
-      > => {
-
-      const mutationOptions = getDeleteScreeningBranchesBranchSlugPackagesPackageSlugMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
  * GET `/screening/branches/{branchSlug}/packages` — screening content. Public, no authentication required. Handled by `screeningBranchProvider.getOne`.
  * @summary List screening packages of a branch
  */
@@ -1156,31 +962,31 @@ export const prefetchGetScreeningBranchesBranchSlugPackagesQuery = async <TData 
 
 
 /**
- * POST `/screening/branches/{branchSlug}/packages` — screening content. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. The body is passed as-is to the business layer. Handled by `screeningBranchProvider.getOne`.
- * @summary Create a screening package for a branch
+ * PUT `/screening/branches/{branchSlug}/packages/{packageSlug}/admin` — screening content. This route currently has no authentication or authorization middleware attached. Handled by `screeningBranchProvider.getOne`.
+ * @summary Update a screening package
  */
-export const postScreeningBranchesBranchSlugPackages = (
+export const putScreeningBranchesBranchSlugPackagesPackageSlugAdmin = (
     branchSlug: string,
-    postScreeningBranchesBranchSlugPackagesBody: PostScreeningBranchesBranchSlugPackagesBody,
- signal?: AbortSignal
-) => {
+    packageSlug: string,
+    branchCreate: BranchCreate,
+ ) => {
       
       
       return customInstance<Response>(
-      {url: `/screening/branches/${branchSlug}/packages`, method: 'POST',
+      {url: `/screening/branches/${branchSlug}/packages/${packageSlug}/admin`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
-      data: postScreeningBranchesBranchSlugPackagesBody, signal
+      data: branchCreate
     },
       );
     }
   
 
 
-export const getPostScreeningBranchesBranchSlugPackagesMutationOptions = <TError = LegacyBadRequestResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postScreeningBranchesBranchSlugPackages>>, TError,{branchSlug: string;data: PostScreeningBranchesBranchSlugPackagesBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postScreeningBranchesBranchSlugPackages>>, TError,{branchSlug: string;data: PostScreeningBranchesBranchSlugPackagesBody}, TContext> => {
+export const getPutScreeningBranchesBranchSlugPackagesPackageSlugAdminMutationOptions = <TError = LegacyBadRequestResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putScreeningBranchesBranchSlugPackagesPackageSlugAdmin>>, TError,{branchSlug: string;packageSlug: string;data: BranchCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putScreeningBranchesBranchSlugPackagesPackageSlugAdmin>>, TError,{branchSlug: string;packageSlug: string;data: BranchCreate}, TContext> => {
 
-const mutationKey = ['postScreeningBranchesBranchSlugPackages'];
+const mutationKey = ['putScreeningBranchesBranchSlugPackagesPackageSlugAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -1190,10 +996,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postScreeningBranchesBranchSlugPackages>>, {branchSlug: string;data: PostScreeningBranchesBranchSlugPackagesBody}> = (props) => {
-          const {branchSlug,data} = props ?? {};
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putScreeningBranchesBranchSlugPackagesPackageSlugAdmin>>, {branchSlug: string;packageSlug: string;data: BranchCreate}> = (props) => {
+          const {branchSlug,packageSlug,data} = props ?? {};
 
-          return  postScreeningBranchesBranchSlugPackages(branchSlug,data,)
+          return  putScreeningBranchesBranchSlugPackagesPackageSlugAdmin(branchSlug,packageSlug,data,)
         }
 
         
@@ -1201,23 +1007,86 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PostScreeningBranchesBranchSlugPackagesMutationResult = NonNullable<Awaited<ReturnType<typeof postScreeningBranchesBranchSlugPackages>>>
-    export type PostScreeningBranchesBranchSlugPackagesMutationBody = PostScreeningBranchesBranchSlugPackagesBody
-    export type PostScreeningBranchesBranchSlugPackagesMutationError = LegacyBadRequestResponse | void
+    export type PutScreeningBranchesBranchSlugPackagesPackageSlugAdminMutationResult = NonNullable<Awaited<ReturnType<typeof putScreeningBranchesBranchSlugPackagesPackageSlugAdmin>>>
+    export type PutScreeningBranchesBranchSlugPackagesPackageSlugAdminMutationBody = BranchCreate
+    export type PutScreeningBranchesBranchSlugPackagesPackageSlugAdminMutationError = LegacyBadRequestResponse | void
 
     /**
- * @summary Create a screening package for a branch
+ * @summary Update a screening package
  */
-export const usePostScreeningBranchesBranchSlugPackages = <TError = LegacyBadRequestResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postScreeningBranchesBranchSlugPackages>>, TError,{branchSlug: string;data: PostScreeningBranchesBranchSlugPackagesBody}, TContext>, }
+export const usePutScreeningBranchesBranchSlugPackagesPackageSlugAdmin = <TError = LegacyBadRequestResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putScreeningBranchesBranchSlugPackagesPackageSlugAdmin>>, TError,{branchSlug: string;packageSlug: string;data: BranchCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postScreeningBranchesBranchSlugPackages>>,
+        Awaited<ReturnType<typeof putScreeningBranchesBranchSlugPackagesPackageSlugAdmin>>,
         TError,
-        {branchSlug: string;data: PostScreeningBranchesBranchSlugPackagesBody},
+        {branchSlug: string;packageSlug: string;data: BranchCreate},
         TContext
       > => {
 
-      const mutationOptions = getPostScreeningBranchesBranchSlugPackagesMutationOptions(options);
+      const mutationOptions = getPutScreeningBranchesBranchSlugPackagesPackageSlugAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * DELETE `/screening/branches/{branchSlug}/packages/{packageSlug}/admin` — screening content. This route currently has no authentication or authorization middleware attached. Handled by `screeningBranchProvider.getOne`.
+ * @summary Delete a screening package
+ */
+export const deleteScreeningBranchesBranchSlugPackagesPackageSlugAdmin = (
+    branchSlug: string,
+    packageSlug: string,
+ ) => {
+      
+      
+      return customInstance<Response>(
+      {url: `/screening/branches/${branchSlug}/packages/${packageSlug}/admin`, method: 'DELETE'
+    },
+      );
+    }
+  
+
+
+export const getDeleteScreeningBranchesBranchSlugPackagesPackageSlugAdminMutationOptions = <TError = LegacyBadRequestResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteScreeningBranchesBranchSlugPackagesPackageSlugAdmin>>, TError,{branchSlug: string;packageSlug: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteScreeningBranchesBranchSlugPackagesPackageSlugAdmin>>, TError,{branchSlug: string;packageSlug: string}, TContext> => {
+
+const mutationKey = ['deleteScreeningBranchesBranchSlugPackagesPackageSlugAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteScreeningBranchesBranchSlugPackagesPackageSlugAdmin>>, {branchSlug: string;packageSlug: string}> = (props) => {
+          const {branchSlug,packageSlug} = props ?? {};
+
+          return  deleteScreeningBranchesBranchSlugPackagesPackageSlugAdmin(branchSlug,packageSlug,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteScreeningBranchesBranchSlugPackagesPackageSlugAdminMutationResult = NonNullable<Awaited<ReturnType<typeof deleteScreeningBranchesBranchSlugPackagesPackageSlugAdmin>>>
+    
+    export type DeleteScreeningBranchesBranchSlugPackagesPackageSlugAdminMutationError = LegacyBadRequestResponse | void
+
+    /**
+ * @summary Delete a screening package
+ */
+export const useDeleteScreeningBranchesBranchSlugPackagesPackageSlugAdmin = <TError = LegacyBadRequestResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteScreeningBranchesBranchSlugPackagesPackageSlugAdmin>>, TError,{branchSlug: string;packageSlug: string}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof deleteScreeningBranchesBranchSlugPackagesPackageSlugAdmin>>,
+        TError,
+        {branchSlug: string;packageSlug: string},
+        TContext
+      > => {
+
+      const mutationOptions = getDeleteScreeningBranchesBranchSlugPackagesPackageSlugAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -1446,137 +1315,6 @@ export const prefetchGetScreeningBranchesBranchSlugPackagesPackageSlugItemsIdQue
 
 
 /**
- * PUT `/screening/branches/{branchSlug}/packages/{packageSlug}/items/{id}` — screening content. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `screeningPackageItemProvider.getById`.
- * @summary Update an item
- */
-export const putScreeningBranchesBranchSlugPackagesPackageSlugItemsId = (
-    branchSlug: string,
-    packageSlug: string,
-    id: string,
-    branchCreate: BranchCreate,
- ) => {
-      
-      
-      return customInstance<Response>(
-      {url: `/screening/branches/${branchSlug}/packages/${packageSlug}/items/${id}`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: branchCreate
-    },
-      );
-    }
-  
-
-
-export const getPutScreeningBranchesBranchSlugPackagesPackageSlugItemsIdMutationOptions = <TError = LegacyBadRequestResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putScreeningBranchesBranchSlugPackagesPackageSlugItemsId>>, TError,{branchSlug: string;packageSlug: string;id: string;data: BranchCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putScreeningBranchesBranchSlugPackagesPackageSlugItemsId>>, TError,{branchSlug: string;packageSlug: string;id: string;data: BranchCreate}, TContext> => {
-
-const mutationKey = ['putScreeningBranchesBranchSlugPackagesPackageSlugItemsId'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putScreeningBranchesBranchSlugPackagesPackageSlugItemsId>>, {branchSlug: string;packageSlug: string;id: string;data: BranchCreate}> = (props) => {
-          const {branchSlug,packageSlug,id,data} = props ?? {};
-
-          return  putScreeningBranchesBranchSlugPackagesPackageSlugItemsId(branchSlug,packageSlug,id,data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PutScreeningBranchesBranchSlugPackagesPackageSlugItemsIdMutationResult = NonNullable<Awaited<ReturnType<typeof putScreeningBranchesBranchSlugPackagesPackageSlugItemsId>>>
-    export type PutScreeningBranchesBranchSlugPackagesPackageSlugItemsIdMutationBody = BranchCreate
-    export type PutScreeningBranchesBranchSlugPackagesPackageSlugItemsIdMutationError = LegacyBadRequestResponse | void
-
-    /**
- * @summary Update an item
- */
-export const usePutScreeningBranchesBranchSlugPackagesPackageSlugItemsId = <TError = LegacyBadRequestResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putScreeningBranchesBranchSlugPackagesPackageSlugItemsId>>, TError,{branchSlug: string;packageSlug: string;id: string;data: BranchCreate}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putScreeningBranchesBranchSlugPackagesPackageSlugItemsId>>,
-        TError,
-        {branchSlug: string;packageSlug: string;id: string;data: BranchCreate},
-        TContext
-      > => {
-
-      const mutationOptions = getPutScreeningBranchesBranchSlugPackagesPackageSlugItemsIdMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * DELETE `/screening/branches/{branchSlug}/packages/{packageSlug}/items/{id}` — screening content. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `screeningPackageItemProvider.getById`.
- * @summary Delete an item
- */
-export const deleteScreeningBranchesBranchSlugPackagesPackageSlugItemsId = (
-    branchSlug: string,
-    packageSlug: string,
-    id: string,
- ) => {
-      
-      
-      return customInstance<Response>(
-      {url: `/screening/branches/${branchSlug}/packages/${packageSlug}/items/${id}`, method: 'DELETE'
-    },
-      );
-    }
-  
-
-
-export const getDeleteScreeningBranchesBranchSlugPackagesPackageSlugItemsIdMutationOptions = <TError = LegacyBadRequestResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteScreeningBranchesBranchSlugPackagesPackageSlugItemsId>>, TError,{branchSlug: string;packageSlug: string;id: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof deleteScreeningBranchesBranchSlugPackagesPackageSlugItemsId>>, TError,{branchSlug: string;packageSlug: string;id: string}, TContext> => {
-
-const mutationKey = ['deleteScreeningBranchesBranchSlugPackagesPackageSlugItemsId'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteScreeningBranchesBranchSlugPackagesPackageSlugItemsId>>, {branchSlug: string;packageSlug: string;id: string}> = (props) => {
-          const {branchSlug,packageSlug,id} = props ?? {};
-
-          return  deleteScreeningBranchesBranchSlugPackagesPackageSlugItemsId(branchSlug,packageSlug,id,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteScreeningBranchesBranchSlugPackagesPackageSlugItemsIdMutationResult = NonNullable<Awaited<ReturnType<typeof deleteScreeningBranchesBranchSlugPackagesPackageSlugItemsId>>>
-    
-    export type DeleteScreeningBranchesBranchSlugPackagesPackageSlugItemsIdMutationError = LegacyBadRequestResponse | void
-
-    /**
- * @summary Delete an item
- */
-export const useDeleteScreeningBranchesBranchSlugPackagesPackageSlugItemsId = <TError = LegacyBadRequestResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteScreeningBranchesBranchSlugPackagesPackageSlugItemsId>>, TError,{branchSlug: string;packageSlug: string;id: string}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteScreeningBranchesBranchSlugPackagesPackageSlugItemsId>>,
-        TError,
-        {branchSlug: string;packageSlug: string;id: string},
-        TContext
-      > => {
-
-      const mutationOptions = getDeleteScreeningBranchesBranchSlugPackagesPackageSlugItemsIdMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
  * GET `/screening/branches/{branchSlug}/packages/{packageSlug}/items` — screening content. Public, no authentication required. Handled by `screeningBranchProvider.getOne`.
  * @summary List items of a screening package
  */
@@ -1786,32 +1524,32 @@ export const prefetchGetScreeningBranchesBranchSlugPackagesPackageSlugItemsQuery
 
 
 /**
- * POST `/screening/branches/{branchSlug}/packages/{packageSlug}/items` — screening content. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. The body is passed as-is to the business layer. Handled by `screeningBranchProvider.getOne`.
- * @summary Add an item to a screening package
+ * PUT `/screening/branches/{branchSlug}/packages/{packageSlug}/items/{id}/admin` — screening content. This route currently has no authentication or authorization middleware attached. Handled by `screeningPackageItemProvider.getById`.
+ * @summary Update an item
  */
-export const postScreeningBranchesBranchSlugPackagesPackageSlugItems = (
+export const putScreeningBranchesBranchSlugPackagesPackageSlugItemsIdAdmin = (
     branchSlug: string,
     packageSlug: string,
-    postScreeningBranchesBranchSlugPackagesPackageSlugItemsBody: PostScreeningBranchesBranchSlugPackagesPackageSlugItemsBody,
- signal?: AbortSignal
-) => {
+    id: string,
+    branchCreate: BranchCreate,
+ ) => {
       
       
       return customInstance<Response>(
-      {url: `/screening/branches/${branchSlug}/packages/${packageSlug}/items`, method: 'POST',
+      {url: `/screening/branches/${branchSlug}/packages/${packageSlug}/items/${id}/admin`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
-      data: postScreeningBranchesBranchSlugPackagesPackageSlugItemsBody, signal
+      data: branchCreate
     },
       );
     }
   
 
 
-export const getPostScreeningBranchesBranchSlugPackagesPackageSlugItemsMutationOptions = <TError = LegacyBadRequestResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postScreeningBranchesBranchSlugPackagesPackageSlugItems>>, TError,{branchSlug: string;packageSlug: string;data: PostScreeningBranchesBranchSlugPackagesPackageSlugItemsBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postScreeningBranchesBranchSlugPackagesPackageSlugItems>>, TError,{branchSlug: string;packageSlug: string;data: PostScreeningBranchesBranchSlugPackagesPackageSlugItemsBody}, TContext> => {
+export const getPutScreeningBranchesBranchSlugPackagesPackageSlugItemsIdAdminMutationOptions = <TError = LegacyBadRequestResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putScreeningBranchesBranchSlugPackagesPackageSlugItemsIdAdmin>>, TError,{branchSlug: string;packageSlug: string;id: string;data: BranchCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putScreeningBranchesBranchSlugPackagesPackageSlugItemsIdAdmin>>, TError,{branchSlug: string;packageSlug: string;id: string;data: BranchCreate}, TContext> => {
 
-const mutationKey = ['postScreeningBranchesBranchSlugPackagesPackageSlugItems'];
+const mutationKey = ['putScreeningBranchesBranchSlugPackagesPackageSlugItemsIdAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -1821,10 +1559,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postScreeningBranchesBranchSlugPackagesPackageSlugItems>>, {branchSlug: string;packageSlug: string;data: PostScreeningBranchesBranchSlugPackagesPackageSlugItemsBody}> = (props) => {
-          const {branchSlug,packageSlug,data} = props ?? {};
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putScreeningBranchesBranchSlugPackagesPackageSlugItemsIdAdmin>>, {branchSlug: string;packageSlug: string;id: string;data: BranchCreate}> = (props) => {
+          const {branchSlug,packageSlug,id,data} = props ?? {};
 
-          return  postScreeningBranchesBranchSlugPackagesPackageSlugItems(branchSlug,packageSlug,data,)
+          return  putScreeningBranchesBranchSlugPackagesPackageSlugItemsIdAdmin(branchSlug,packageSlug,id,data,)
         }
 
         
@@ -1832,23 +1570,285 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PostScreeningBranchesBranchSlugPackagesPackageSlugItemsMutationResult = NonNullable<Awaited<ReturnType<typeof postScreeningBranchesBranchSlugPackagesPackageSlugItems>>>
-    export type PostScreeningBranchesBranchSlugPackagesPackageSlugItemsMutationBody = PostScreeningBranchesBranchSlugPackagesPackageSlugItemsBody
-    export type PostScreeningBranchesBranchSlugPackagesPackageSlugItemsMutationError = LegacyBadRequestResponse | void
+    export type PutScreeningBranchesBranchSlugPackagesPackageSlugItemsIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof putScreeningBranchesBranchSlugPackagesPackageSlugItemsIdAdmin>>>
+    export type PutScreeningBranchesBranchSlugPackagesPackageSlugItemsIdAdminMutationBody = BranchCreate
+    export type PutScreeningBranchesBranchSlugPackagesPackageSlugItemsIdAdminMutationError = LegacyBadRequestResponse | void
+
+    /**
+ * @summary Update an item
+ */
+export const usePutScreeningBranchesBranchSlugPackagesPackageSlugItemsIdAdmin = <TError = LegacyBadRequestResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putScreeningBranchesBranchSlugPackagesPackageSlugItemsIdAdmin>>, TError,{branchSlug: string;packageSlug: string;id: string;data: BranchCreate}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof putScreeningBranchesBranchSlugPackagesPackageSlugItemsIdAdmin>>,
+        TError,
+        {branchSlug: string;packageSlug: string;id: string;data: BranchCreate},
+        TContext
+      > => {
+
+      const mutationOptions = getPutScreeningBranchesBranchSlugPackagesPackageSlugItemsIdAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * DELETE `/screening/branches/{branchSlug}/packages/{packageSlug}/items/{id}/admin` — screening content. This route currently has no authentication or authorization middleware attached. Handled by `screeningPackageItemProvider.getById`.
+ * @summary Delete an item
+ */
+export const deleteScreeningBranchesBranchSlugPackagesPackageSlugItemsIdAdmin = (
+    branchSlug: string,
+    packageSlug: string,
+    id: string,
+ ) => {
+      
+      
+      return customInstance<Response>(
+      {url: `/screening/branches/${branchSlug}/packages/${packageSlug}/items/${id}/admin`, method: 'DELETE'
+    },
+      );
+    }
+  
+
+
+export const getDeleteScreeningBranchesBranchSlugPackagesPackageSlugItemsIdAdminMutationOptions = <TError = LegacyBadRequestResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteScreeningBranchesBranchSlugPackagesPackageSlugItemsIdAdmin>>, TError,{branchSlug: string;packageSlug: string;id: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteScreeningBranchesBranchSlugPackagesPackageSlugItemsIdAdmin>>, TError,{branchSlug: string;packageSlug: string;id: string}, TContext> => {
+
+const mutationKey = ['deleteScreeningBranchesBranchSlugPackagesPackageSlugItemsIdAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteScreeningBranchesBranchSlugPackagesPackageSlugItemsIdAdmin>>, {branchSlug: string;packageSlug: string;id: string}> = (props) => {
+          const {branchSlug,packageSlug,id} = props ?? {};
+
+          return  deleteScreeningBranchesBranchSlugPackagesPackageSlugItemsIdAdmin(branchSlug,packageSlug,id,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteScreeningBranchesBranchSlugPackagesPackageSlugItemsIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof deleteScreeningBranchesBranchSlugPackagesPackageSlugItemsIdAdmin>>>
+    
+    export type DeleteScreeningBranchesBranchSlugPackagesPackageSlugItemsIdAdminMutationError = LegacyBadRequestResponse | void
+
+    /**
+ * @summary Delete an item
+ */
+export const useDeleteScreeningBranchesBranchSlugPackagesPackageSlugItemsIdAdmin = <TError = LegacyBadRequestResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteScreeningBranchesBranchSlugPackagesPackageSlugItemsIdAdmin>>, TError,{branchSlug: string;packageSlug: string;id: string}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof deleteScreeningBranchesBranchSlugPackagesPackageSlugItemsIdAdmin>>,
+        TError,
+        {branchSlug: string;packageSlug: string;id: string},
+        TContext
+      > => {
+
+      const mutationOptions = getDeleteScreeningBranchesBranchSlugPackagesPackageSlugItemsIdAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * POST `/screening/branches/{branchSlug}/packages/{packageSlug}/items/admin` — screening content. This route currently has no authentication or authorization middleware attached. The body is passed as-is to the business layer. Handled by `screeningBranchProvider.getOne`.
+ * @summary Add an item to a screening package
+ */
+export const postScreeningBranchesBranchSlugPackagesPackageSlugItemsAdmin = (
+    branchSlug: string,
+    packageSlug: string,
+    postScreeningBranchesBranchSlugPackagesPackageSlugItemsAdminBody: PostScreeningBranchesBranchSlugPackagesPackageSlugItemsAdminBody,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<Response>(
+      {url: `/screening/branches/${branchSlug}/packages/${packageSlug}/items/admin`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: postScreeningBranchesBranchSlugPackagesPackageSlugItemsAdminBody, signal
+    },
+      );
+    }
+  
+
+
+export const getPostScreeningBranchesBranchSlugPackagesPackageSlugItemsAdminMutationOptions = <TError = LegacyBadRequestResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postScreeningBranchesBranchSlugPackagesPackageSlugItemsAdmin>>, TError,{branchSlug: string;packageSlug: string;data: PostScreeningBranchesBranchSlugPackagesPackageSlugItemsAdminBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postScreeningBranchesBranchSlugPackagesPackageSlugItemsAdmin>>, TError,{branchSlug: string;packageSlug: string;data: PostScreeningBranchesBranchSlugPackagesPackageSlugItemsAdminBody}, TContext> => {
+
+const mutationKey = ['postScreeningBranchesBranchSlugPackagesPackageSlugItemsAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postScreeningBranchesBranchSlugPackagesPackageSlugItemsAdmin>>, {branchSlug: string;packageSlug: string;data: PostScreeningBranchesBranchSlugPackagesPackageSlugItemsAdminBody}> = (props) => {
+          const {branchSlug,packageSlug,data} = props ?? {};
+
+          return  postScreeningBranchesBranchSlugPackagesPackageSlugItemsAdmin(branchSlug,packageSlug,data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostScreeningBranchesBranchSlugPackagesPackageSlugItemsAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postScreeningBranchesBranchSlugPackagesPackageSlugItemsAdmin>>>
+    export type PostScreeningBranchesBranchSlugPackagesPackageSlugItemsAdminMutationBody = PostScreeningBranchesBranchSlugPackagesPackageSlugItemsAdminBody
+    export type PostScreeningBranchesBranchSlugPackagesPackageSlugItemsAdminMutationError = LegacyBadRequestResponse | void
 
     /**
  * @summary Add an item to a screening package
  */
-export const usePostScreeningBranchesBranchSlugPackagesPackageSlugItems = <TError = LegacyBadRequestResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postScreeningBranchesBranchSlugPackagesPackageSlugItems>>, TError,{branchSlug: string;packageSlug: string;data: PostScreeningBranchesBranchSlugPackagesPackageSlugItemsBody}, TContext>, }
+export const usePostScreeningBranchesBranchSlugPackagesPackageSlugItemsAdmin = <TError = LegacyBadRequestResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postScreeningBranchesBranchSlugPackagesPackageSlugItemsAdmin>>, TError,{branchSlug: string;packageSlug: string;data: PostScreeningBranchesBranchSlugPackagesPackageSlugItemsAdminBody}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postScreeningBranchesBranchSlugPackagesPackageSlugItems>>,
+        Awaited<ReturnType<typeof postScreeningBranchesBranchSlugPackagesPackageSlugItemsAdmin>>,
         TError,
-        {branchSlug: string;packageSlug: string;data: PostScreeningBranchesBranchSlugPackagesPackageSlugItemsBody},
+        {branchSlug: string;packageSlug: string;data: PostScreeningBranchesBranchSlugPackagesPackageSlugItemsAdminBody},
         TContext
       > => {
 
-      const mutationOptions = getPostScreeningBranchesBranchSlugPackagesPackageSlugItemsMutationOptions(options);
+      const mutationOptions = getPostScreeningBranchesBranchSlugPackagesPackageSlugItemsAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * POST `/screening/branches/{branchSlug}/packages/admin` — screening content. This route currently has no authentication or authorization middleware attached. The body is passed as-is to the business layer. Handled by `screeningBranchProvider.getOne`.
+ * @summary Create a screening package for a branch
+ */
+export const postScreeningBranchesBranchSlugPackagesAdmin = (
+    branchSlug: string,
+    postScreeningBranchesBranchSlugPackagesAdminBody: PostScreeningBranchesBranchSlugPackagesAdminBody,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<Response>(
+      {url: `/screening/branches/${branchSlug}/packages/admin`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: postScreeningBranchesBranchSlugPackagesAdminBody, signal
+    },
+      );
+    }
+  
+
+
+export const getPostScreeningBranchesBranchSlugPackagesAdminMutationOptions = <TError = LegacyBadRequestResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postScreeningBranchesBranchSlugPackagesAdmin>>, TError,{branchSlug: string;data: PostScreeningBranchesBranchSlugPackagesAdminBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postScreeningBranchesBranchSlugPackagesAdmin>>, TError,{branchSlug: string;data: PostScreeningBranchesBranchSlugPackagesAdminBody}, TContext> => {
+
+const mutationKey = ['postScreeningBranchesBranchSlugPackagesAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postScreeningBranchesBranchSlugPackagesAdmin>>, {branchSlug: string;data: PostScreeningBranchesBranchSlugPackagesAdminBody}> = (props) => {
+          const {branchSlug,data} = props ?? {};
+
+          return  postScreeningBranchesBranchSlugPackagesAdmin(branchSlug,data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostScreeningBranchesBranchSlugPackagesAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postScreeningBranchesBranchSlugPackagesAdmin>>>
+    export type PostScreeningBranchesBranchSlugPackagesAdminMutationBody = PostScreeningBranchesBranchSlugPackagesAdminBody
+    export type PostScreeningBranchesBranchSlugPackagesAdminMutationError = LegacyBadRequestResponse | void
+
+    /**
+ * @summary Create a screening package for a branch
+ */
+export const usePostScreeningBranchesBranchSlugPackagesAdmin = <TError = LegacyBadRequestResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postScreeningBranchesBranchSlugPackagesAdmin>>, TError,{branchSlug: string;data: PostScreeningBranchesBranchSlugPackagesAdminBody}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postScreeningBranchesBranchSlugPackagesAdmin>>,
+        TError,
+        {branchSlug: string;data: PostScreeningBranchesBranchSlugPackagesAdminBody},
+        TContext
+      > => {
+
+      const mutationOptions = getPostScreeningBranchesBranchSlugPackagesAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * POST `/screening/branches/admin` — screening content. This route currently has no authentication or authorization middleware attached. Handled by `screeningBranchProvider.post`.
+ * @summary Create a screening branch
+ */
+export const postScreeningBranchesAdmin = (
+    branchCreate: BranchCreate,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<Response>(
+      {url: `/screening/branches/admin`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: branchCreate, signal
+    },
+      );
+    }
+  
+
+
+export const getPostScreeningBranchesAdminMutationOptions = <TError = LegacyBadRequestResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postScreeningBranchesAdmin>>, TError,{data: BranchCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postScreeningBranchesAdmin>>, TError,{data: BranchCreate}, TContext> => {
+
+const mutationKey = ['postScreeningBranchesAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postScreeningBranchesAdmin>>, {data: BranchCreate}> = (props) => {
+          const {data} = props ?? {};
+
+          return  postScreeningBranchesAdmin(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostScreeningBranchesAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postScreeningBranchesAdmin>>>
+    export type PostScreeningBranchesAdminMutationBody = BranchCreate
+    export type PostScreeningBranchesAdminMutationError = LegacyBadRequestResponse
+
+    /**
+ * @summary Create a screening branch
+ */
+export const usePostScreeningBranchesAdmin = <TError = LegacyBadRequestResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postScreeningBranchesAdmin>>, TError,{data: BranchCreate}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postScreeningBranchesAdmin>>,
+        TError,
+        {data: BranchCreate},
+        TContext
+      > => {
+
+      const mutationOptions = getPostScreeningBranchesAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

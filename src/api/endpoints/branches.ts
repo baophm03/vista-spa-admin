@@ -33,18 +33,19 @@ import type {
   BranchCreate,
   BranchUpdate,
   ConflictResponse,
-  DeleteBranchesId200,
+  DeleteBranchesIdAdmin200,
   ForbiddenResponse,
   GetBranches200,
-  GetBranchesId200,
-  GetBranchesNextCode200,
-  GetBranchesParams,
+  GetBranchesAdmin200,
+  GetBranchesAdminParams,
+  GetBranchesIdAdmin200,
+  GetBranchesNextCodeAdmin200,
   InternalErrorResponse,
   NotFoundResponse,
-  PostBranches200,
-  PostBranchesIdActivate200,
-  PostBranchesIdDeactivate200,
-  PutBranchesId200,
+  PostBranchesAdmin200,
+  PostBranchesIdActivateAdmin200,
+  PostBranchesIdDeactivateAdmin200,
+  PutBranchesIdAdmin200,
   UnauthorizedResponse,
   UnprocessableEntityResponse
 } from '../models';
@@ -56,533 +57,17 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * **BR-02** — GET /branches/{id}. Requires `branch.read` permission. Branch scope: users limited to a single branch only see that branch's data.
- * @summary Get branch details
- */
-export const getBranchesId = (
-    id: string,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<GetBranchesId200>(
-      {url: `/branches/${id}`, method: 'GET', signal
-    },
-      );
-    }
-  
-
-
-
-export const getGetBranchesIdInfiniteQueryKey = (id?: string,) => {
-    return [
-    'infinite', `/branches/${id}`
-    ] as const;
-    }
-
-export const getGetBranchesIdQueryKey = (id?: string,) => {
-    return [
-    `/branches/${id}`
-    ] as const;
-    }
-
-    
-export const getGetBranchesIdInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getBranchesId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranchesId>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetBranchesIdInfiniteQueryKey(id);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getBranchesId>>> = ({ signal }) => getBranchesId(id, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranchesId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetBranchesIdInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getBranchesId>>>
-export type GetBranchesIdInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
-
-
-export function useGetBranchesIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getBranchesId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranchesId>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getBranchesId>>,
-          TError,
-          Awaited<ReturnType<typeof getBranchesId>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetBranchesIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getBranchesId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranchesId>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getBranchesId>>,
-          TError,
-          Awaited<ReturnType<typeof getBranchesId>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetBranchesIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getBranchesId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranchesId>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get branch details
- */
-
-export function useGetBranchesIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getBranchesId>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranchesId>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetBranchesIdInfiniteQueryOptions(id,options)
-
-  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary Get branch details
- */
-export const prefetchGetBranchesIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getBranchesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranchesId>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetBranchesIdInfiniteQueryOptions(id,options)
-
-  await queryClient.prefetchInfiniteQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-export const getGetBranchesIdQueryOptions = <TData = Awaited<ReturnType<typeof getBranchesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranchesId>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetBranchesIdQueryKey(id);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getBranchesId>>> = ({ signal }) => getBranchesId(id, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getBranchesId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetBranchesIdQueryResult = NonNullable<Awaited<ReturnType<typeof getBranchesId>>>
-export type GetBranchesIdQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
-
-
-export function useGetBranchesId<TData = Awaited<ReturnType<typeof getBranchesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranchesId>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getBranchesId>>,
-          TError,
-          Awaited<ReturnType<typeof getBranchesId>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetBranchesId<TData = Awaited<ReturnType<typeof getBranchesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranchesId>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getBranchesId>>,
-          TError,
-          Awaited<ReturnType<typeof getBranchesId>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetBranchesId<TData = Awaited<ReturnType<typeof getBranchesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranchesId>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get branch details
- */
-
-export function useGetBranchesId<TData = Awaited<ReturnType<typeof getBranchesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranchesId>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetBranchesIdQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary Get branch details
- */
-export const prefetchGetBranchesIdQuery = async <TData = Awaited<ReturnType<typeof getBranchesId>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
- queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranchesId>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetBranchesIdQueryOptions(id,options)
-
-  await queryClient.prefetchQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-/**
- * **BR-04** — PUT /branches/{id}: the branch code is auto-generated by the system and cannot be edited. Requires `branch.update` permission. Branch scope: users limited to a single branch only see that branch's data. Editing to a name and address that duplicates another branch is blocked (phone numbers are excluded from the comparison since a shared hotline number may be reused). Body fields: `name`, `address`, `phone`.
- * @summary Update a branch
- */
-export const putBranchesId = (
-    id: string,
-    branchUpdate: BranchUpdate,
- ) => {
-      
-      
-      return customInstance<PutBranchesId200>(
-      {url: `/branches/${id}`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: branchUpdate
-    },
-      );
-    }
-  
-
-
-export const getPutBranchesIdMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putBranchesId>>, TError,{id: string;data: BranchUpdate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putBranchesId>>, TError,{id: string;data: BranchUpdate}, TContext> => {
-
-const mutationKey = ['putBranchesId'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putBranchesId>>, {id: string;data: BranchUpdate}> = (props) => {
-          const {id,data} = props ?? {};
-
-          return  putBranchesId(id,data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PutBranchesIdMutationResult = NonNullable<Awaited<ReturnType<typeof putBranchesId>>>
-    export type PutBranchesIdMutationBody = BranchUpdate
-    export type PutBranchesIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
-
-    /**
- * @summary Update a branch
- */
-export const usePutBranchesId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putBranchesId>>, TError,{id: string;data: BranchUpdate}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putBranchesId>>,
-        TError,
-        {id: string;data: BranchUpdate},
-        TContext
-      > => {
-
-      const mutationOptions = getPutBranchesIdMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * **BR-05** — DELETE /branches/{id}: soft-deletes the branch (sets `is_deleted=true`) after checking lifecycle blockers; historical data is preserved. Requires `branch.delete` permission. Branch scope: users limited to a single branch only see that branch's data. Returns 409 if the branch still has dependent data.
- * @summary Delete a branch
- */
-export const deleteBranchesId = (
-    id: string,
- ) => {
-      
-      
-      return customInstance<DeleteBranchesId200>(
-      {url: `/branches/${id}`, method: 'DELETE'
-    },
-      );
-    }
-  
-
-
-export const getDeleteBranchesIdMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteBranchesId>>, TError,{id: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof deleteBranchesId>>, TError,{id: string}, TContext> => {
-
-const mutationKey = ['deleteBranchesId'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteBranchesId>>, {id: string}> = (props) => {
-          const {id} = props ?? {};
-
-          return  deleteBranchesId(id,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteBranchesIdMutationResult = NonNullable<Awaited<ReturnType<typeof deleteBranchesId>>>
-    
-    export type DeleteBranchesIdMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
-
-    /**
- * @summary Delete a branch
- */
-export const useDeleteBranchesId = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteBranchesId>>, TError,{id: string}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteBranchesId>>,
-        TError,
-        {id: string},
-        TContext
-      > => {
-
-      const mutationOptions = getDeleteBranchesIdMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * **BR-07** — GET /branches/next-code. Requires `branch.create` permission. Returns the branch code that will be auto-generated on the next creation, following the `CS` + sequence rule (e.g. `CS02`). The actual code is still assigned by BR-03 on save.
- * @summary Preview the next branch code
- */
-export const getBranchesNextCode = (
-    
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<GetBranchesNextCode200>(
-      {url: `/branches/next-code`, method: 'GET', signal
-    },
-      );
-    }
-  
-
-
-
-export const getGetBranchesNextCodeInfiniteQueryKey = () => {
-    return [
-    'infinite', `/branches/next-code`
-    ] as const;
-    }
-
-export const getGetBranchesNextCodeQueryKey = () => {
-    return [
-    `/branches/next-code`
-    ] as const;
-    }
-
-    
-export const getGetBranchesNextCodeInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getBranchesNextCode>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranchesNextCode>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetBranchesNextCodeInfiniteQueryKey();
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getBranchesNextCode>>> = ({ signal }) => getBranchesNextCode(signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranchesNextCode>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetBranchesNextCodeInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getBranchesNextCode>>>
-export type GetBranchesNextCodeInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
-
-
-export function useGetBranchesNextCodeInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getBranchesNextCode>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranchesNextCode>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getBranchesNextCode>>,
-          TError,
-          Awaited<ReturnType<typeof getBranchesNextCode>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetBranchesNextCodeInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getBranchesNextCode>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranchesNextCode>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getBranchesNextCode>>,
-          TError,
-          Awaited<ReturnType<typeof getBranchesNextCode>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetBranchesNextCodeInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getBranchesNextCode>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranchesNextCode>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Preview the next branch code
- */
-
-export function useGetBranchesNextCodeInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getBranchesNextCode>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranchesNextCode>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetBranchesNextCodeInfiniteQueryOptions(options)
-
-  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary Preview the next branch code
- */
-export const prefetchGetBranchesNextCodeInfiniteQuery = async <TData = Awaited<ReturnType<typeof getBranchesNextCode>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranchesNextCode>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetBranchesNextCodeInfiniteQueryOptions(options)
-
-  await queryClient.prefetchInfiniteQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-export const getGetBranchesNextCodeQueryOptions = <TData = Awaited<ReturnType<typeof getBranchesNextCode>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranchesNextCode>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetBranchesNextCodeQueryKey();
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getBranchesNextCode>>> = ({ signal }) => getBranchesNextCode(signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getBranchesNextCode>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetBranchesNextCodeQueryResult = NonNullable<Awaited<ReturnType<typeof getBranchesNextCode>>>
-export type GetBranchesNextCodeQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
-
-
-export function useGetBranchesNextCode<TData = Awaited<ReturnType<typeof getBranchesNextCode>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranchesNextCode>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getBranchesNextCode>>,
-          TError,
-          Awaited<ReturnType<typeof getBranchesNextCode>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetBranchesNextCode<TData = Awaited<ReturnType<typeof getBranchesNextCode>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranchesNextCode>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getBranchesNextCode>>,
-          TError,
-          Awaited<ReturnType<typeof getBranchesNextCode>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetBranchesNextCode<TData = Awaited<ReturnType<typeof getBranchesNextCode>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranchesNextCode>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Preview the next branch code
- */
-
-export function useGetBranchesNextCode<TData = Awaited<ReturnType<typeof getBranchesNextCode>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranchesNextCode>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetBranchesNextCodeQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary Preview the next branch code
- */
-export const prefetchGetBranchesNextCodeQuery = async <TData = Awaited<ReturnType<typeof getBranchesNextCode>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranchesNextCode>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetBranchesNextCodeQueryOptions(options)
-
-  await queryClient.prefetchQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-/**
- * **BR-01** — GET /branches. Requires `branch.read` permission. Branch scope: users limited to a single branch only see that branch's data. Query parameters: `status`.
- * @summary List branches
+ * **GET /branches** — Public, không cần đăng nhập. Trả về toàn bộ cơ sở đang hoạt động (`is_active=true`) cho khách duyệt/đặt lịch: `id`, `name`, `address`, `phone`. Quản trị đầy đủ xem `GET /branches/admin`.
+ * @summary List active branches (public)
  */
 export const getBranches = (
-    params?: GetBranchesParams,
+    
  signal?: AbortSignal
 ) => {
       
       
       return customInstance<GetBranches200>(
-      {url: `/branches`, method: 'GET',
-        params, signal
+      {url: `/branches`, method: 'GET', signal
     },
       );
     }
@@ -590,29 +75,29 @@ export const getBranches = (
 
 
 
-export const getGetBranchesInfiniteQueryKey = (params?: GetBranchesParams,) => {
+export const getGetBranchesInfiniteQueryKey = () => {
     return [
-    'infinite', `/branches`, ...(params ? [params]: [])
+    'infinite', `/branches`
     ] as const;
     }
 
-export const getGetBranchesQueryKey = (params?: GetBranchesParams,) => {
+export const getGetBranchesQueryKey = () => {
     return [
-    `/branches`, ...(params ? [params]: [])
+    `/branches`
     ] as const;
     }
 
     
-export const getGetBranchesInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getBranches>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetBranchesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranches>>, TError, TData>>, }
+export const getGetBranchesInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getBranches>>>, TError = InternalErrorResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranches>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetBranchesInfiniteQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getGetBranchesInfiniteQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getBranches>>> = ({ signal }) => getBranches(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getBranches>>> = ({ signal }) => getBranches(signal);
 
       
 
@@ -622,11 +107,11 @@ const {query: queryOptions} = options ?? {};
 }
 
 export type GetBranchesInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getBranches>>>
-export type GetBranchesInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+export type GetBranchesInfiniteQueryError = InternalErrorResponse
 
 
-export function useGetBranchesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getBranches>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params: undefined |  GetBranchesParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranches>>, TError, TData>> & Pick<
+export function useGetBranchesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getBranches>>>, TError = InternalErrorResponse>(
+  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranches>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getBranches>>,
           TError,
@@ -635,8 +120,8 @@ export function useGetBranchesInfinite<TData = InfiniteData<Awaited<ReturnType<t
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetBranchesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getBranches>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetBranchesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranches>>, TError, TData>> & Pick<
+export function useGetBranchesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getBranches>>>, TError = InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranches>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getBranches>>,
           TError,
@@ -645,20 +130,20 @@ export function useGetBranchesInfinite<TData = InfiniteData<Awaited<ReturnType<t
       >, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetBranchesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getBranches>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetBranchesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranches>>, TError, TData>>, }
+export function useGetBranchesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getBranches>>>, TError = InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranches>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary List branches
+ * @summary List active branches (public)
  */
 
-export function useGetBranchesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getBranches>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetBranchesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranches>>, TError, TData>>, }
+export function useGetBranchesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getBranches>>>, TError = InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranches>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetBranchesInfiniteQueryOptions(params,options)
+  const queryOptions = getGetBranchesInfiniteQueryOptions(options)
 
   const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -668,14 +153,14 @@ export function useGetBranchesInfinite<TData = InfiniteData<Awaited<ReturnType<t
 }
 
 /**
- * @summary List branches
+ * @summary List active branches (public)
  */
-export const prefetchGetBranchesInfiniteQuery = async <TData = Awaited<ReturnType<typeof getBranches>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient, params?: GetBranchesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranches>>, TError, TData>>, }
+export const prefetchGetBranchesInfiniteQuery = async <TData = Awaited<ReturnType<typeof getBranches>>, TError = InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranches>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetBranchesInfiniteQueryOptions(params,options)
+  const queryOptions = getGetBranchesInfiniteQueryOptions(options)
 
   await queryClient.prefetchInfiniteQuery(queryOptions);
 
@@ -684,16 +169,16 @@ export const prefetchGetBranchesInfiniteQuery = async <TData = Awaited<ReturnTyp
 
 
 
-export const getGetBranchesQueryOptions = <TData = Awaited<ReturnType<typeof getBranches>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetBranchesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranches>>, TError, TData>>, }
+export const getGetBranchesQueryOptions = <TData = Awaited<ReturnType<typeof getBranches>>, TError = InternalErrorResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranches>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetBranchesQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getGetBranchesQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getBranches>>> = ({ signal }) => getBranches(params, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getBranches>>> = ({ signal }) => getBranches(signal);
 
       
 
@@ -703,11 +188,11 @@ const {query: queryOptions} = options ?? {};
 }
 
 export type GetBranchesQueryResult = NonNullable<Awaited<ReturnType<typeof getBranches>>>
-export type GetBranchesQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+export type GetBranchesQueryError = InternalErrorResponse
 
 
-export function useGetBranches<TData = Awaited<ReturnType<typeof getBranches>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params: undefined |  GetBranchesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranches>>, TError, TData>> & Pick<
+export function useGetBranches<TData = Awaited<ReturnType<typeof getBranches>>, TError = InternalErrorResponse>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranches>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getBranches>>,
           TError,
@@ -716,8 +201,8 @@ export function useGetBranches<TData = Awaited<ReturnType<typeof getBranches>>, 
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetBranches<TData = Awaited<ReturnType<typeof getBranches>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetBranchesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranches>>, TError, TData>> & Pick<
+export function useGetBranches<TData = Awaited<ReturnType<typeof getBranches>>, TError = InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranches>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getBranches>>,
           TError,
@@ -726,20 +211,20 @@ export function useGetBranches<TData = Awaited<ReturnType<typeof getBranches>>, 
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetBranches<TData = Awaited<ReturnType<typeof getBranches>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetBranchesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranches>>, TError, TData>>, }
+export function useGetBranches<TData = Awaited<ReturnType<typeof getBranches>>, TError = InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranches>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary List branches
+ * @summary List active branches (public)
  */
 
-export function useGetBranches<TData = Awaited<ReturnType<typeof getBranches>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetBranchesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranches>>, TError, TData>>, }
+export function useGetBranches<TData = Awaited<ReturnType<typeof getBranches>>, TError = InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranches>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetBranchesQueryOptions(params,options)
+  const queryOptions = getGetBranchesQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -749,14 +234,14 @@ export function useGetBranches<TData = Awaited<ReturnType<typeof getBranches>>, 
 }
 
 /**
- * @summary List branches
+ * @summary List active branches (public)
  */
-export const prefetchGetBranchesQuery = async <TData = Awaited<ReturnType<typeof getBranches>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient, params?: GetBranchesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranches>>, TError, TData>>, }
+export const prefetchGetBranchesQuery = async <TData = Awaited<ReturnType<typeof getBranches>>, TError = InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranches>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetBranchesQueryOptions(params,options)
+  const queryOptions = getGetBranchesQueryOptions(options)
 
   await queryClient.prefetchQuery(queryOptions);
 
@@ -766,17 +251,853 @@ export const prefetchGetBranchesQuery = async <TData = Awaited<ReturnType<typeof
 
 
 /**
- * **BR-03** — POST /branches. Requires `branch.create` permission. The branch `code` is auto-generated by the system using the `CS` + sequence rule (e.g. `CS01`, `CS02`) and serves as the customer code prefix; the client does not send `code`. Duplicate creation is blocked: a branch with the same name and address as an existing one returns 409 (phone numbers are excluded from the comparison since a shared hotline number may be reused). Body fields: `name`, `address`, `phone`.
+ * **BR-02** — GET /branches/{id}/admin. Cần đăng nhập + `branch.view_all`. Branch scope: user gắn 1 cơ sở chỉ thấy dữ liệu cơ sở đó.
+ * @summary Get branch details
+ */
+export const getBranchesIdAdmin = (
+    id: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetBranchesIdAdmin200>(
+      {url: `/branches/${id}/admin`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetBranchesIdAdminInfiniteQueryKey = (id?: string,) => {
+    return [
+    'infinite', `/branches/${id}/admin`
+    ] as const;
+    }
+
+export const getGetBranchesIdAdminQueryKey = (id?: string,) => {
+    return [
+    `/branches/${id}/admin`
+    ] as const;
+    }
+
+    
+export const getGetBranchesIdAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getBranchesIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranchesIdAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetBranchesIdAdminInfiniteQueryKey(id);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getBranchesIdAdmin>>> = ({ signal }) => getBranchesIdAdmin(id, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranchesIdAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetBranchesIdAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getBranchesIdAdmin>>>
+export type GetBranchesIdAdminInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+
+
+export function useGetBranchesIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getBranchesIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranchesIdAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getBranchesIdAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getBranchesIdAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetBranchesIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getBranchesIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranchesIdAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getBranchesIdAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getBranchesIdAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetBranchesIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getBranchesIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranchesIdAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get branch details
+ */
+
+export function useGetBranchesIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getBranchesIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranchesIdAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetBranchesIdAdminInfiniteQueryOptions(id,options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Get branch details
+ */
+export const prefetchGetBranchesIdAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getBranchesIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranchesIdAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetBranchesIdAdminInfiniteQueryOptions(id,options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetBranchesIdAdminQueryOptions = <TData = Awaited<ReturnType<typeof getBranchesIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranchesIdAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetBranchesIdAdminQueryKey(id);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getBranchesIdAdmin>>> = ({ signal }) => getBranchesIdAdmin(id, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getBranchesIdAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetBranchesIdAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getBranchesIdAdmin>>>
+export type GetBranchesIdAdminQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+
+
+export function useGetBranchesIdAdmin<TData = Awaited<ReturnType<typeof getBranchesIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranchesIdAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getBranchesIdAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getBranchesIdAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetBranchesIdAdmin<TData = Awaited<ReturnType<typeof getBranchesIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranchesIdAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getBranchesIdAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getBranchesIdAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetBranchesIdAdmin<TData = Awaited<ReturnType<typeof getBranchesIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranchesIdAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get branch details
+ */
+
+export function useGetBranchesIdAdmin<TData = Awaited<ReturnType<typeof getBranchesIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranchesIdAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetBranchesIdAdminQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Get branch details
+ */
+export const prefetchGetBranchesIdAdminQuery = async <TData = Awaited<ReturnType<typeof getBranchesIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranchesIdAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetBranchesIdAdminQueryOptions(id,options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * **BR-04** — PUT /branches/{id}/admin: mã cơ sở tự sinh, không chỉnh được. Cần đăng nhập + `branch.update_all`. Branch scope: user gắn 1 cơ sở chỉ thao tác cơ sở đó. Chặn sửa trùng tên + địa chỉ với cơ sở khác (không so sánh số điện thoại vì hotline dùng chung). Body: `name`, `address`, `phone`, `image_file_id` (uuid, optional — ảnh đại diện cơ sở; gửi null để gỡ ảnh).
+ * @summary Update a branch
+ */
+export const putBranchesIdAdmin = (
+    id: string,
+    branchUpdate: BranchUpdate,
+ ) => {
+      
+      
+      return customInstance<PutBranchesIdAdmin200>(
+      {url: `/branches/${id}/admin`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: branchUpdate
+    },
+      );
+    }
+  
+
+
+export const getPutBranchesIdAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putBranchesIdAdmin>>, TError,{id: string;data: BranchUpdate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putBranchesIdAdmin>>, TError,{id: string;data: BranchUpdate}, TContext> => {
+
+const mutationKey = ['putBranchesIdAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putBranchesIdAdmin>>, {id: string;data: BranchUpdate}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  putBranchesIdAdmin(id,data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PutBranchesIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof putBranchesIdAdmin>>>
+    export type PutBranchesIdAdminMutationBody = BranchUpdate
+    export type PutBranchesIdAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+
+    /**
+ * @summary Update a branch
+ */
+export const usePutBranchesIdAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putBranchesIdAdmin>>, TError,{id: string;data: BranchUpdate}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof putBranchesIdAdmin>>,
+        TError,
+        {id: string;data: BranchUpdate},
+        TContext
+      > => {
+
+      const mutationOptions = getPutBranchesIdAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * **BR-05** — DELETE /branches/{id}/admin: soft-delete (`is_deleted=true`) sau khi kiểm tra ràng buộc dữ liệu; dữ liệu lịch sử được giữ nguyên. Cần đăng nhập + `branch.delete_all`. Trả 409 nếu cơ sở còn dữ liệu phụ thuộc.
+ * @summary Delete a branch
+ */
+export const deleteBranchesIdAdmin = (
+    id: string,
+ ) => {
+      
+      
+      return customInstance<DeleteBranchesIdAdmin200>(
+      {url: `/branches/${id}/admin`, method: 'DELETE'
+    },
+      );
+    }
+  
+
+
+export const getDeleteBranchesIdAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteBranchesIdAdmin>>, TError,{id: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteBranchesIdAdmin>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['deleteBranchesIdAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteBranchesIdAdmin>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteBranchesIdAdmin(id,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteBranchesIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof deleteBranchesIdAdmin>>>
+    
+    export type DeleteBranchesIdAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+
+    /**
+ * @summary Delete a branch
+ */
+export const useDeleteBranchesIdAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteBranchesIdAdmin>>, TError,{id: string}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof deleteBranchesIdAdmin>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+
+      const mutationOptions = getDeleteBranchesIdAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * POST `/branches/{id}/deactivate/admin` — ngừng hoạt động cơ sở (không xoá dữ liệu). Cần đăng nhập + `branch.update_all`.
+ * @summary Deactivate a branch
+ */
+export const postBranchesIdDeactivateAdmin = (
+    id: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<PostBranchesIdDeactivateAdmin200>(
+      {url: `/branches/${id}/deactivate/admin`, method: 'POST', signal
+    },
+      );
+    }
+  
+
+
+export const getPostBranchesIdDeactivateAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postBranchesIdDeactivateAdmin>>, TError,{id: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postBranchesIdDeactivateAdmin>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['postBranchesIdDeactivateAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postBranchesIdDeactivateAdmin>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  postBranchesIdDeactivateAdmin(id,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostBranchesIdDeactivateAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postBranchesIdDeactivateAdmin>>>
+    
+    export type PostBranchesIdDeactivateAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+
+    /**
+ * @summary Deactivate a branch
+ */
+export const usePostBranchesIdDeactivateAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postBranchesIdDeactivateAdmin>>, TError,{id: string}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postBranchesIdDeactivateAdmin>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+
+      const mutationOptions = getPostBranchesIdDeactivateAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * POST `/branches/{id}/activate/admin` — kích hoạt lại cơ sở. Cần đăng nhập + `branch.update_all`.
+ * @summary Activate a branch
+ */
+export const postBranchesIdActivateAdmin = (
+    id: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<PostBranchesIdActivateAdmin200>(
+      {url: `/branches/${id}/activate/admin`, method: 'POST', signal
+    },
+      );
+    }
+  
+
+
+export const getPostBranchesIdActivateAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postBranchesIdActivateAdmin>>, TError,{id: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postBranchesIdActivateAdmin>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['postBranchesIdActivateAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postBranchesIdActivateAdmin>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  postBranchesIdActivateAdmin(id,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostBranchesIdActivateAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postBranchesIdActivateAdmin>>>
+    
+    export type PostBranchesIdActivateAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+
+    /**
+ * @summary Activate a branch
+ */
+export const usePostBranchesIdActivateAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postBranchesIdActivateAdmin>>, TError,{id: string}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postBranchesIdActivateAdmin>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+
+      const mutationOptions = getPostBranchesIdActivateAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * GET `/branches/next-code/admin` — xem trước mã cơ sở tiếp theo (rule `CS` + số thứ tự). Cần đăng nhập + `branch.create`.
+ * @summary Preview next auto-generated branch code
+ */
+export const getBranchesNextCodeAdmin = (
+    
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetBranchesNextCodeAdmin200>(
+      {url: `/branches/next-code/admin`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetBranchesNextCodeAdminInfiniteQueryKey = () => {
+    return [
+    'infinite', `/branches/next-code/admin`
+    ] as const;
+    }
+
+export const getGetBranchesNextCodeAdminQueryKey = () => {
+    return [
+    `/branches/next-code/admin`
+    ] as const;
+    }
+
+    
+export const getGetBranchesNextCodeAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getBranchesNextCodeAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranchesNextCodeAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetBranchesNextCodeAdminInfiniteQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getBranchesNextCodeAdmin>>> = ({ signal }) => getBranchesNextCodeAdmin(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranchesNextCodeAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetBranchesNextCodeAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getBranchesNextCodeAdmin>>>
+export type GetBranchesNextCodeAdminInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+
+
+export function useGetBranchesNextCodeAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getBranchesNextCodeAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranchesNextCodeAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getBranchesNextCodeAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getBranchesNextCodeAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetBranchesNextCodeAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getBranchesNextCodeAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranchesNextCodeAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getBranchesNextCodeAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getBranchesNextCodeAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetBranchesNextCodeAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getBranchesNextCodeAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranchesNextCodeAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Preview next auto-generated branch code
+ */
+
+export function useGetBranchesNextCodeAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getBranchesNextCodeAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranchesNextCodeAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetBranchesNextCodeAdminInfiniteQueryOptions(options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Preview next auto-generated branch code
+ */
+export const prefetchGetBranchesNextCodeAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getBranchesNextCodeAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranchesNextCodeAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetBranchesNextCodeAdminInfiniteQueryOptions(options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetBranchesNextCodeAdminQueryOptions = <TData = Awaited<ReturnType<typeof getBranchesNextCodeAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranchesNextCodeAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetBranchesNextCodeAdminQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getBranchesNextCodeAdmin>>> = ({ signal }) => getBranchesNextCodeAdmin(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getBranchesNextCodeAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetBranchesNextCodeAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getBranchesNextCodeAdmin>>>
+export type GetBranchesNextCodeAdminQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+
+
+export function useGetBranchesNextCodeAdmin<TData = Awaited<ReturnType<typeof getBranchesNextCodeAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranchesNextCodeAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getBranchesNextCodeAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getBranchesNextCodeAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetBranchesNextCodeAdmin<TData = Awaited<ReturnType<typeof getBranchesNextCodeAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranchesNextCodeAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getBranchesNextCodeAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getBranchesNextCodeAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetBranchesNextCodeAdmin<TData = Awaited<ReturnType<typeof getBranchesNextCodeAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranchesNextCodeAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Preview next auto-generated branch code
+ */
+
+export function useGetBranchesNextCodeAdmin<TData = Awaited<ReturnType<typeof getBranchesNextCodeAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranchesNextCodeAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetBranchesNextCodeAdminQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Preview next auto-generated branch code
+ */
+export const prefetchGetBranchesNextCodeAdminQuery = async <TData = Awaited<ReturnType<typeof getBranchesNextCodeAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranchesNextCodeAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetBranchesNextCodeAdminQueryOptions(options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * **BR-01** — GET /branches/admin. Cần đăng nhập + `branch.view_all`. Branch scope: user gắn 1 cơ sở chỉ thấy dữ liệu cơ sở đó. Query parameters: `status`.
+ * @summary List branches (management)
+ */
+export const getBranchesAdmin = (
+    params?: GetBranchesAdminParams,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetBranchesAdmin200>(
+      {url: `/branches/admin`, method: 'GET',
+        params, signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetBranchesAdminInfiniteQueryKey = (params?: GetBranchesAdminParams,) => {
+    return [
+    'infinite', `/branches/admin`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+export const getGetBranchesAdminQueryKey = (params?: GetBranchesAdminParams,) => {
+    return [
+    `/branches/admin`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getGetBranchesAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getBranchesAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetBranchesAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranchesAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetBranchesAdminInfiniteQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getBranchesAdmin>>> = ({ signal }) => getBranchesAdmin(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranchesAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetBranchesAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getBranchesAdmin>>>
+export type GetBranchesAdminInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+
+
+export function useGetBranchesAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getBranchesAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetBranchesAdminParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranchesAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getBranchesAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getBranchesAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetBranchesAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getBranchesAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetBranchesAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranchesAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getBranchesAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getBranchesAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetBranchesAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getBranchesAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetBranchesAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranchesAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List branches (management)
+ */
+
+export function useGetBranchesAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getBranchesAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetBranchesAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranchesAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetBranchesAdminInfiniteQueryOptions(params,options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary List branches (management)
+ */
+export const prefetchGetBranchesAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getBranchesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetBranchesAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getBranchesAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetBranchesAdminInfiniteQueryOptions(params,options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetBranchesAdminQueryOptions = <TData = Awaited<ReturnType<typeof getBranchesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetBranchesAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranchesAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetBranchesAdminQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getBranchesAdmin>>> = ({ signal }) => getBranchesAdmin(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getBranchesAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetBranchesAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getBranchesAdmin>>>
+export type GetBranchesAdminQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+
+
+export function useGetBranchesAdmin<TData = Awaited<ReturnType<typeof getBranchesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetBranchesAdminParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranchesAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getBranchesAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getBranchesAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetBranchesAdmin<TData = Awaited<ReturnType<typeof getBranchesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetBranchesAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranchesAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getBranchesAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getBranchesAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetBranchesAdmin<TData = Awaited<ReturnType<typeof getBranchesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetBranchesAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranchesAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List branches (management)
+ */
+
+export function useGetBranchesAdmin<TData = Awaited<ReturnType<typeof getBranchesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetBranchesAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranchesAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetBranchesAdminQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary List branches (management)
+ */
+export const prefetchGetBranchesAdminQuery = async <TData = Awaited<ReturnType<typeof getBranchesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetBranchesAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBranchesAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetBranchesAdminQueryOptions(params,options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * **BR-03** — POST /branches/admin. Cần đăng nhập + `branch.create`. Mã cơ sở (`code`) do hệ thống tự sinh theo rule `CS` + số thứ tự (VD `CS01`, `CS02`), client không gửi `code`. Chặn trùng lặp: cơ sở trùng tên + địa chỉ đã tồn tại trả 409 (không so sánh số điện thoại vì hotline dùng chung). Body: `name`, `address`, `phone`, `image_file_id` (uuid, optional — ảnh đại diện cơ sở, tham chiếu file id đã upload).
  * @summary Create a new branch
  */
-export const postBranches = (
+export const postBranchesAdmin = (
     branchCreate: BranchCreate,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<PostBranches200>(
-      {url: `/branches`, method: 'POST',
+      return customInstance<PostBranchesAdmin200>(
+      {url: `/branches/admin`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: branchCreate, signal
     },
@@ -785,11 +1106,11 @@ export const postBranches = (
   
 
 
-export const getPostBranchesMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postBranches>>, TError,{data: BranchCreate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postBranches>>, TError,{data: BranchCreate}, TContext> => {
+export const getPostBranchesAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postBranchesAdmin>>, TError,{data: BranchCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postBranchesAdmin>>, TError,{data: BranchCreate}, TContext> => {
 
-const mutationKey = ['postBranches'];
+const mutationKey = ['postBranchesAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -799,10 +1120,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postBranches>>, {data: BranchCreate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postBranchesAdmin>>, {data: BranchCreate}> = (props) => {
           const {data} = props ?? {};
 
-          return  postBranches(data,)
+          return  postBranchesAdmin(data,)
         }
 
         
@@ -810,149 +1131,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PostBranchesMutationResult = NonNullable<Awaited<ReturnType<typeof postBranches>>>
-    export type PostBranchesMutationBody = BranchCreate
-    export type PostBranchesMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+    export type PostBranchesAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postBranchesAdmin>>>
+    export type PostBranchesAdminMutationBody = BranchCreate
+    export type PostBranchesAdminMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
  * @summary Create a new branch
  */
-export const usePostBranches = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postBranches>>, TError,{data: BranchCreate}, TContext>, }
+export const usePostBranchesAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postBranchesAdmin>>, TError,{data: BranchCreate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postBranches>>,
+        Awaited<ReturnType<typeof postBranchesAdmin>>,
         TError,
         {data: BranchCreate},
         TContext
       > => {
 
-      const mutationOptions = getPostBranchesMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * POST `/branches/{id}/deactivate` — ngừng hoạt động cơ sở (is_active=false), khác với DELETE là xóa mềm. Bị chặn khi còn booking/điều trị đang chạy. Requires `branch.update` permission. Branch scope: users limited to a single branch only see that branch's data.
- * @summary Deactivate a branch (is_active=false, giữ nguyên dữ liệu)
- */
-export const postBranchesIdDeactivate = (
-    id: string,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<PostBranchesIdDeactivate200>(
-      {url: `/branches/${id}/deactivate`, method: 'POST', signal
-    },
-      );
-    }
-  
-
-
-export const getPostBranchesIdDeactivateMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postBranchesIdDeactivate>>, TError,{id: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postBranchesIdDeactivate>>, TError,{id: string}, TContext> => {
-
-const mutationKey = ['postBranchesIdDeactivate'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postBranchesIdDeactivate>>, {id: string}> = (props) => {
-          const {id} = props ?? {};
-
-          return  postBranchesIdDeactivate(id,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostBranchesIdDeactivateMutationResult = NonNullable<Awaited<ReturnType<typeof postBranchesIdDeactivate>>>
-    
-    export type PostBranchesIdDeactivateMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
-
-    /**
- * @summary Deactivate a branch (is_active=false, giữ nguyên dữ liệu)
- */
-export const usePostBranchesIdDeactivate = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postBranchesIdDeactivate>>, TError,{id: string}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postBranchesIdDeactivate>>,
-        TError,
-        {id: string},
-        TContext
-      > => {
-
-      const mutationOptions = getPostBranchesIdDeactivateMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * POST `/branches/{id}/activate` — branch. Requires `branch.update` permission. Branch scope: users limited to a single branch only see that branch's data. Handled by `item.update`.
- * @summary Activate a branch
- */
-export const postBranchesIdActivate = (
-    id: string,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<PostBranchesIdActivate200>(
-      {url: `/branches/${id}/activate`, method: 'POST', signal
-    },
-      );
-    }
-  
-
-
-export const getPostBranchesIdActivateMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postBranchesIdActivate>>, TError,{id: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postBranchesIdActivate>>, TError,{id: string}, TContext> => {
-
-const mutationKey = ['postBranchesIdActivate'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postBranchesIdActivate>>, {id: string}> = (props) => {
-          const {id} = props ?? {};
-
-          return  postBranchesIdActivate(id,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostBranchesIdActivateMutationResult = NonNullable<Awaited<ReturnType<typeof postBranchesIdActivate>>>
-    
-    export type PostBranchesIdActivateMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
-
-    /**
- * @summary Activate a branch
- */
-export const usePostBranchesIdActivate = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postBranchesIdActivate>>, TError,{id: string}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postBranchesIdActivate>>,
-        TError,
-        {id: string},
-        TContext
-      > => {
-
-      const mutationOptions = getPostBranchesIdActivateMutationOptions(options);
+      const mutationOptions = getPostBranchesAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

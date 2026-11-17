@@ -8,6 +8,8 @@
 import type { VoucherUpdateDescription } from './voucherUpdateDescription';
 import type { VoucherUpdateImageFilepath } from './voucherUpdateImageFilepath';
 import type { VoucherUpdateCardRankId } from './voucherUpdateCardRankId';
+import type { VoucherUpdateIssueMode } from './voucherUpdateIssueMode';
+import type { VoucherUpdatePointsCost } from './voucherUpdatePointsCost';
 import type { VoucherUpdateQuantityTotal } from './voucherUpdateQuantityTotal';
 import type { VoucherUpdateStartDate } from './voucherUpdateStartDate';
 import type { VoucherUpdateEndDate } from './voucherUpdateEndDate';
@@ -29,6 +31,9 @@ export interface VoucherUpdate {
   type?: number;
   card_rank_id?: VoucherUpdateCardRankId;
   is_loyalty?: boolean;
+  issue_mode?: VoucherUpdateIssueMode;
+  /** @minimum 0 */
+  points_cost?: VoucherUpdatePointsCost;
   /** @minimum 0 */
   quantity_total?: VoucherUpdateQuantityTotal;
   start_date?: VoucherUpdateStartDate;

@@ -12,6 +12,8 @@ import type { VoucherEndDate } from './voucherEndDate';
 import type { VoucherCreatedBy } from './voucherCreatedBy';
 import type { VoucherUpdatedBy } from './voucherUpdatedBy';
 import type { VoucherCardRankId } from './voucherCardRankId';
+import type { VoucherIssueMode } from './voucherIssueMode';
+import type { VoucherPointsCost } from './voucherPointsCost';
 import type { VoucherQuantityTotal } from './voucherQuantityTotal';
 
 /**
@@ -37,6 +39,9 @@ export interface Voucher {
   type?: number;
   card_rank_id?: VoucherCardRankId;
   is_loyalty?: boolean;
+  issue_mode?: VoucherIssueMode;
+  /** @minimum 0 */
+  points_cost?: VoucherPointsCost;
   /** @minimum 0 */
   quantity_total?: VoucherQuantityTotal;
   /** @minimum 0 */

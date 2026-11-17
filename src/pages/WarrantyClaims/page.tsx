@@ -8,16 +8,11 @@ import PageTitle from '@/components/base/PageTitle'
 import ListPagination from '@/components/base/ListPagination'
 import { errorMessage, pickData } from '@/api/helpers'
 import { Can } from '@casl/react'
-import type { PutWarrantyClaimsIdRejectBody } from '@/api/models/putWarrantyClaimsIdRejectBody'
-import {
-  getGetWarrantyClaimsQueryKey,
-  useGetTreatmentCustomers,
-  useGetWarrantyClaims,
-  usePostWarrantyClaims,
-  usePutWarrantyClaimsIdReject,
-} from '@/api/endpoints/treatment-customers'
+import type { PutWarrantyClaimsIdRejectAdminBody } from '@/api/models/putWarrantyClaimsIdRejectAdminBody'
+import { getGetWarrantyClaimsAdminQueryKey, useGetWarrantyClaimsAdmin, usePostWarrantyClaimsAdmin, usePutWarrantyClaimsIdRejectAdmin } from '@/api/endpoints/warranty-claims'
+import { useGetTreatmentCustomersAdmin } from '@/api/endpoints/treatment-customers'
 import { STATUS_META } from './components/constants'
-import { usePostFiles } from '@/api/endpoints/files'
+import { usePostFilesAdmin } from '@/api/endpoints/files'
 import { registerUploadedFile } from '@/hooks/useFileUrl'
 import { useCustomerProfileAccess } from '@/utils/customerProfileAccess'
 import { useBrandDateTime } from '@/themeRuntime'
@@ -25,7 +20,7 @@ import WarrantyClaimCreateModal from './components/WarrantyClaimCreateModal'
 import WarrantyClaimDetailDrawer from './components/WarrantyClaimDetailDrawer'
 import WarrantyClaimRejectModal from './components/WarrantyClaimRejectModal'
 import { STATUS_FILTER_OPTIONS, snapshotField, type ClaimRow } from './components/constants'
-import { useGetBranches } from '@/api/endpoints/branches'
+import { useGetBranchesAdmin } from '@/api/endpoints/branches'
 import type {Branch} from '@/api/models'
 
 export default function WarrantyClaims() {
@@ -40,20 +35,20 @@ export default function WarrantyClaims() {
   const queryClient = useQueryClient()
   const { isAdmin } = useCustomerProfileAccess()
   const { formatDateTime } = useBrandDateTime()
-  const uploadMutation = usePostFiles()
+  const uploadMutation = usePostFilesAdmin()
   const [uploadingContract, setUploadingContract] = useState(false)
-  const branchesQuery = useGetBranches()
+  const branchesQuery = useGetBranchesAdmin()
 const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as Branch[], [branchesQuery.data])
 
 
   // Danh sách claims — phân trang server-side (page/limit/status)
-  const claimsQuery = useGetWarrantyClaims({ page, limit: 10, ...(statusFilter ? { status: statusFilter } : {}) })
+  const claimsQuery = useGetWarrantyClaimsAdmin({ page, limit: 10, ...(statusFilter ? { status: statusFilter } : {}) })
   const rows = (claimsQuery.data?.responseData ?? []) as ClaimRow[]
   const total = claimsQuery.data?.meta?.total ?? rows.length
 
   // Lookup: khách hàng + gói liệu trình để hiển thị tên (claim chỉ trả customer_treatment_id)
   // Gói FINISHED (dùng trong form tiếp nhận — chỉ gói hoàn tất mới được bảo hành)
-  const finishedTreatmentsQuery = useGetTreatmentCustomers(
+  const finishedTreatmentsQuery = useGetTreatmentCustomersAdmin(
     { page: 1, limit: 200, status: 'FINISHED' },
     { query: { enabled: createOpen } },
   )
@@ -62,7 +57,7 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
   const contractFileId = Form.useWatch('contract_file_id', createForm) as string | undefined
 
   const invalidate = async () => {
-    await queryClient.invalidateQueries({ queryKey: getGetWarrantyClaimsQueryKey() })
+    await queryClient.invalidateQueries({ queryKey: getGetWarrantyClaimsAdminQueryKey() })
   }
 
   const customerLabel = (claim: ClaimRow) => {
@@ -92,14 +87,14 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
     }
   }
 
-  const rejectMutation = usePutWarrantyClaimsIdReject()
-  const createMutation = usePostWarrantyClaims()
+  const rejectMutation = usePutWarrantyClaimsIdRejectAdmin()
+  const createMutation = usePostWarrantyClaimsAdmin()
 
   const submitReject = async () => {
     if (!rejectTarget) return
     try {
       const values = await rejectForm.validateFields()
-      await rejectMutation.mutateAsync({ id: rejectTarget.id, data: { reason: values.reason } as PutWarrantyClaimsIdRejectBody })
+      await rejectMutation.mutateAsync({ id: rejectTarget.id, data: { reason: values.reason } as PutWarrantyClaimsIdRejectAdminBody })
       message.success('Đã từ chối yêu cầu bảo hành')
       setRejectTarget(null)
       setDetailId(null)
@@ -179,7 +174,7 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
           </>
         }
         right={
-          <Can I="UPDATE" a="CUSTOMER">
+          <Can I="UPDATE" a="WARRANTY_CLAIM">
             <Button type="primary" icon={<PlusOutlined />} onClick={() => { createForm.resetFields(); setCreateOpen(true) }}>
               Tiếp nhận bảo hành
             </Button>

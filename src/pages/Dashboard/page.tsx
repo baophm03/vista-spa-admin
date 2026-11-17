@@ -26,9 +26,9 @@ import TableEmpty from '@/components/base/TableEmpty'
 import { pickData, pickMeta } from '@/api/helpers'
 import { Can } from '@casl/react'
 import { useBrandColors, useBrandCurrency } from '@/themeRuntime'
-import { getReportsAppointments, getReportsDebts, getReportsRanks, getReportsRevenue } from '@/api/endpoints/reports'
-import { getCustomerProfiles } from '@/api/endpoints/customer-profiles'
-import { getAppointments } from '@/api/endpoints/appointments'
+import { getReportsAppointmentsAdmin, getReportsDebtsAdmin, getReportsRanksAdmin, getReportsRevenueAdmin } from '@/api/endpoints/reports'
+import { getCustomerProfilesAdmin } from '@/api/endpoints/customer-profiles'
+import { getAppointmentsAdmin } from '@/api/endpoints/appointments'
 import type { Appointment } from '@/api/models/appointment'
 import ReportsTab from '../ReportsTab/page'
 
@@ -81,12 +81,12 @@ function Overview({
     const today = dayjs().format('YYYY-MM-DD')
     const from = dayjs().subtract(6, 'month').format('YYYY-MM-DD')
     if (canSeeAllReports) {
-      void getCustomerProfiles({ page: 1, limit: 1 })
+      void getCustomerProfilesAdmin({ page: 1, limit: 1 })
         .then((body) => setTotalCustomers(pickMeta(body)?.total ?? 0))
         .catch(() => undefined)
     }
     if (canSeeRevenue) {
-      void getReportsRevenue({ from_date: from, to_date: today, group_by: 'month' })
+      void getReportsRevenueAdmin({ from_date: from, to_date: today, group_by: 'month' })
         .then((body) => {
           const rows = (pickData<any[]>(body) ?? []) as any[]
           const merged = new Map<string, number>()
@@ -96,7 +96,7 @@ function Overview({
         .catch(() => undefined)
     }
     if (canSeeRanks) {
-      void getReportsRanks({})
+      void getReportsRanksAdmin({})
         .then((body) =>
           setRankData(
             ((((pickData<any>(body) ?? {}) as any)?.ranks ?? []) as any[])
@@ -107,7 +107,7 @@ function Overview({
         .catch(() => undefined)
     }
     if (canSeeAppointmentStats) {
-      void getReportsAppointments({ from_date: from, to_date: today })
+      void getReportsAppointmentsAdmin({ from_date: from, to_date: today })
         .then((body) => {
           const map: Record<string, number> = {}
           for (const s of ((((pickData<any>(body) ?? {}) as any)?.by_status ?? []) as any[])) map[s.status] = Number(s.count)
@@ -116,12 +116,12 @@ function Overview({
         .catch(() => undefined)
     }
     if (canReadAppointments) {
-      void getAppointments({ page: 1, limit: 5 })
+      void getAppointmentsAdmin({ page: 1, limit: 5 })
         .then((body) => setRecent((pickData<AppointmentRow[]>(body) ?? []) as AppointmentRow[]))
         .catch(() => undefined)
     }
     if (canSeeDebt) {
-      void getReportsDebts({})
+      void getReportsDebtsAdmin({})
         .then((body) => setDebtTotal(((pickData<any[]>(body) ?? []) as any[]).reduce((s, r) => s + Number(r.debt_amount ?? 0), 0)))
         .catch(() => undefined)
     }

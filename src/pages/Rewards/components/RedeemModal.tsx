@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Alert, Descriptions, Form, type FormInstance, Modal, Select, Typography } from 'antd'
-import { useGetCustomerProfiles, useGetCustomerProfilesIdPoints } from '@/api/endpoints/customer-profiles'
+import { useGetCustomerProfilesAdmin, useGetCustomerProfilesIdPointsAdmin } from '@/api/endpoints/customer-profiles'
 import { pickData } from '@/api/helpers'
 import type { CustomerProfile } from '@/api/models/customerProfile'
-import type { GetCustomerProfilesIdPoints200AllOfResponseData } from '@/api/models/getCustomerProfilesIdPoints200AllOfResponseData'
+import type { GetCustomerProfilesIdPointsAdmin200AllOfResponseData } from '@/api/models/getCustomerProfilesIdPointsAdmin200AllOfResponseData'
 import type { RewardRow } from './constants'
 
 interface RedeemModalProps {
@@ -50,7 +50,7 @@ export default function RedeemModal({
   const selectedCustomer = selection.rewardId === redeemTarget?.id ? selection.customer : undefined
   const customerId = selectedCustomer?.id
 
-  const customersQuery = useGetCustomerProfiles(
+  const customersQuery = useGetCustomerProfilesAdmin(
     { page: 1, limit: 50, q: customerSearch || undefined },
     { query: { enabled: open } },
   )
@@ -60,10 +60,10 @@ export default function RedeemModal({
     .filter((item, index, all) => all.findIndex((candidate) => candidate.id === item.id) === index)
     .map((item) => ({ value: item.id, label: `${item.full_name} — ${item.phone}` }))
 
-  const pointsQuery = useGetCustomerProfilesIdPoints(customerId ?? '', {
+  const pointsQuery = useGetCustomerProfilesIdPointsAdmin(customerId ?? '', {
     query: { enabled: Boolean(customerId) },
   })
-  const pointsData = pickData<GetCustomerProfilesIdPoints200AllOfResponseData>(pointsQuery.data)
+  const pointsData = pickData<GetCustomerProfilesIdPointsAdmin200AllOfResponseData>(pointsQuery.data)
   const balance = customerId && typeof pointsData?.points === 'number' ? Math.max(0, pointsData.points) : undefined
   const cost = Number(redeemTarget?.points_cost ?? 0)
   const remaining = balance === undefined ? undefined : balance - cost

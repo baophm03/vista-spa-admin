@@ -9,9 +9,9 @@ import TableEmpty from '@/components/base/TableEmpty'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { Notification } from '@/api/models/notification'
-import { useGetCustomerProfiles } from '@/api/endpoints/customer-profiles'
-import { useGetNotifications, usePostNotifications, usePutNotificationsId } from '@/api/endpoints/admin'
-import { useGetUsers } from '@/api/endpoints/users'
+import { useGetCustomerProfilesAdmin } from '@/api/endpoints/customer-profiles'
+import { useGetNotificationsAdmin, usePostNotificationsAdmin, usePostNotificationsIdReadAdmin } from '@/api/endpoints/notifications'
+import { useGetUsersAdmin } from '@/api/endpoints/users'
 import { groupNotifications, type NotificationGroup } from '@/utils/notificationGroups'
 import { Can } from '@casl/react'
 import { useBrandDateTime } from '@/themeRuntime'
@@ -45,11 +45,11 @@ const EVENT_META: Record<string, { label: string; color: string }> = {
 
 export default function Notifications() {
   const { formatDateTime } = useBrandDateTime()
-  const notificationsQuery = useGetNotifications()
-  const profilesQuery = useGetCustomerProfiles()
-  const usersQuery = useGetUsers({ currentPage: 1, pageSize: 500 })
-  const sendMutation = usePostNotifications()
-  const markReadMutation = usePutNotificationsId()
+  const notificationsQuery = useGetNotificationsAdmin()
+  const profilesQuery = useGetCustomerProfilesAdmin()
+  const usersQuery = useGetUsersAdmin({ currentPage: 1, pageSize: 500 })
+  const sendMutation = usePostNotificationsAdmin()
+  const markReadMutation = usePostNotificationsIdReadAdmin()
   // Envelope chuẩn: responseData: Notification[] + meta.total
   const payload = pickData<NotificationRow[] | { rows?: NotificationRow[] }>(notificationsQuery.data)
   const rows = (Array.isArray(payload) ? payload : payload?.rows ?? []) as NotificationRow[]

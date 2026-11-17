@@ -32,23 +32,14 @@ import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
 import TableEmpty from '@/components/base/TableEmpty'
 import { errorMessage, pickData } from '@/api/helpers'
-import {
-  deleteProductCategoriesId,
-  getGetProductCategoriesQueryKey,
-  getGetProductsQueryKey,
-  getProductCategories,
-  getProducts,
-  postProductCategories,
-  postProducts,
-  putProductCategoriesId,
-  putProductsId,
-} from '@/api/endpoints/products'
-import { usePostFiles } from '@/api/endpoints/files'
+import { deleteProductCategoriesIdAdmin, getGetProductCategoriesAdminQueryKey, getProductCategoriesAdmin, postProductCategoriesAdmin, putProductCategoriesIdAdmin } from '@/api/endpoints/product-categories'
+import { getGetProductsAdminQueryKey, getProductsAdmin, postProductsAdmin, putProductsIdAdmin } from '@/api/endpoints/products'
+import { usePostFilesAdmin } from '@/api/endpoints/files'
 import { fileSrc, registerUploadedFile, resolveFileSrc, useFileUrlMap } from '@/hooks/useFileUrl'
 import type { ProductCreate } from '@/api/models/productCreate'
 import type { ProductUpdate } from '@/api/models/productUpdate'
-import type { PostProductCategoriesBody } from '@/api/models/postProductCategoriesBody'
-import type { PutProductCategoriesIdBody } from '@/api/models/putProductCategoriesIdBody'
+import type { PostProductCategoriesAdminBody } from '@/api/models/postProductCategoriesAdminBody'
+import type { PutProductCategoriesIdAdminBody } from '@/api/models/putProductCategoriesIdAdminBody'
 import { useBrandCurrency } from '@/themeRuntime'
 import { useCustomerProfileAccess } from '@/utils/customerProfileAccess'
 import ProductDetailModal from './components/ProductDetailModal'
@@ -95,15 +86,15 @@ export default function Products() {
 
   // Danh sách đầy đủ cho bộ lọc / modal tạo sản phẩm
   const allCategoriesQuery = useQuery({
-    queryKey: getGetProductCategoriesQueryKey(),
-    queryFn: async () => (pickData<ProductCategoryRow[]>(await getProductCategories({ page: 1, limit: 200 } as never)) ?? []) as ProductCategoryRow[],
+    queryKey: getGetProductCategoriesAdminQueryKey(),
+    queryFn: async () => (pickData<ProductCategoryRow[]>(await getProductCategoriesAdmin({ page: 1, limit: 200 } as never)) ?? []) as ProductCategoryRow[],
   })
   const categories = allCategoriesQuery.data ?? []
 
   // Bảng danh mục (tab "Danh mục") — tìm kiếm + phân trang phía server
   const categoriesTableQuery = useQuery({
-    queryKey: [...getGetProductCategoriesQueryKey(), 'table', categoryPage, limit, categorySearch] as const,
-    queryFn: async () => getProductCategories({
+    queryKey: [...getGetProductCategoriesAdminQueryKey(), 'table', categoryPage, limit, categorySearch] as const,
+    queryFn: async () => getProductCategoriesAdmin({
       page: categoryPage,
       limit,
       ...(categorySearch ? { q: categorySearch } : {}),
@@ -113,14 +104,14 @@ export default function Products() {
   const categoryTotal = (categoriesTableQuery.data as unknown as { meta?: { total?: number } })?.meta?.total ?? categoryRows.length
 
   const productsQuery = useQuery({
-    queryKey: getGetProductsQueryKey({
+    queryKey: getGetProductsAdminQueryKey({
       page,
       limit,
       ...(search ? { q: search } : {}),
       ...(categoryFilter ? { category_id: categoryFilter } : {}),
       ...(statusFilter !== undefined ? { is_active: statusFilter } : {}),
     } as never),
-    queryFn: async () => getProducts({
+    queryFn: async () => getProductsAdmin({
       page,
       limit,
       ...(search ? { q: search } : {}),
@@ -145,22 +136,22 @@ export default function Products() {
     setPage(1)
   }
 
-  const uploadMutation = usePostFiles()
+  const uploadMutation = usePostFilesAdmin()
   const urlMap = useFileUrlMap()
-  const createMutation = useMutation({ mutationFn: async (dto: ProductCreate) => postProducts(dto) })
+  const createMutation = useMutation({ mutationFn: async (dto: ProductCreate) => postProductsAdmin(dto) })
   const updateMutation = useMutation({
-    mutationFn: async ({ id, dto }: { id: string; dto: ProductUpdate }) => putProductsId(id, dto),
+    mutationFn: async ({ id, dto }: { id: string; dto: ProductUpdate }) => putProductsIdAdmin(id, dto),
   })
-  const createCategoryMutation = useMutation({ mutationFn: async (dto: PostProductCategoriesBody) => postProductCategories(dto) })
+  const createCategoryMutation = useMutation({ mutationFn: async (dto: PostProductCategoriesAdminBody) => postProductCategoriesAdmin(dto) })
   const updateCategoryMutation = useMutation({
-    mutationFn: async ({ id, dto }: { id: string; dto: PutProductCategoriesIdBody }) => putProductCategoriesId(id, dto),
+    mutationFn: async ({ id, dto }: { id: string; dto: PutProductCategoriesIdAdminBody }) => putProductCategoriesIdAdmin(id, dto),
   })
-  const deleteCategoryMutation = useMutation({ mutationFn: async (id: string) => deleteProductCategoriesId(id) })
+  const deleteCategoryMutation = useMutation({ mutationFn: async (id: string) => deleteProductCategoriesIdAdmin(id) })
 
   const invalidateAll = async () => {
     await Promise.all([
-      queryClient.invalidateQueries({ queryKey: getGetProductsQueryKey() }),
-      queryClient.invalidateQueries({ queryKey: getGetProductCategoriesQueryKey() }),
+      queryClient.invalidateQueries({ queryKey: getGetProductsAdminQueryKey() }),
+      queryClient.invalidateQueries({ queryKey: getGetProductCategoriesAdminQueryKey() }),
     ])
   }
 
@@ -175,10 +166,29 @@ export default function Products() {
             price: p.price ?? undefined,
             buy_url: p.buy_url ?? undefined,
             description: p.description ?? undefined,
+            brand: p.brand ?? undefined,
+            original_price: p.original_price ?? undefined,
+            short_description: p.short_description ?? undefined,
+            attributes: (p.attributes ?? []).map((item) => ({ label: item.label ?? '', value: item.value ?? '' })),
+            tags: p.tags ?? [],
             cover_file_id: p.cover_file?.id ?? p.cover_file_id ?? undefined,
             gallery_file_ids: (p.product_galleries ?? []).map((gallery) => gallery.file?.id ?? gallery.file_id),
           }
-        : { name: '', sku: undefined, category_id: undefined, price: undefined, buy_url: undefined, description: undefined, cover_file_id: undefined, gallery_file_ids: [] },
+        : {
+            name: '',
+            sku: undefined,
+            category_id: undefined,
+            price: undefined,
+            buy_url: undefined,
+            description: undefined,
+            brand: undefined,
+            original_price: undefined,
+            short_description: undefined,
+            attributes: [],
+            tags: [],
+            cover_file_id: undefined,
+            gallery_file_ids: [],
+          },
     )
     setOpen(true)
   }
@@ -194,6 +204,13 @@ export default function Products() {
         price: values.price ?? undefined,
         buy_url: values.buy_url || undefined,
         description: values.description || undefined,
+        brand: values.brand?.trim() || null,
+        original_price: values.original_price ?? null,
+        short_description: values.short_description?.trim() || null,
+        attributes: (values.attributes ?? [])
+          .filter((item: { label?: string }) => item?.label?.trim())
+          .map((item: { label?: string; value?: string }) => ({ label: item.label?.trim(), value: item.value?.trim() ?? '' })),
+        tags: values.tags ?? [],
         cover_file_id: values.cover_file_id || undefined,
         gallery_file_ids: values.gallery_file_ids ?? [],
       } as unknown as ProductCreate
@@ -239,7 +256,7 @@ export default function Products() {
       catForm.resetFields()
       setEditingCategory(null)
       setCategoryModalOpen(false)
-      await queryClient.invalidateQueries({ queryKey: getGetProductCategoriesQueryKey() })
+      await queryClient.invalidateQueries({ queryKey: getGetProductCategoriesAdminQueryKey() })
     } catch (err) {
       message.error(errorMessage(err))
     } finally {
@@ -255,7 +272,7 @@ export default function Products() {
         setEditingCategory(null)
         catForm.resetFields()
       }
-      await queryClient.invalidateQueries({ queryKey: getGetProductCategoriesQueryKey() })
+      await queryClient.invalidateQueries({ queryKey: getGetProductCategoriesAdminQueryKey() })
     } catch (err) {
       message.error(errorMessage(err))
     }
@@ -268,7 +285,7 @@ export default function Products() {
         dto: { name: row.name, is_active: row.is_active === false },
       })
       message.success(row.is_active === false ? 'Đã hiển thị lại danh mục' : 'Đã ẩn danh mục; danh mục vẫn còn trong danh sách quản trị')
-      await queryClient.invalidateQueries({ queryKey: getGetProductCategoriesQueryKey() })
+      await queryClient.invalidateQueries({ queryKey: getGetProductCategoriesAdminQueryKey() })
     } catch (err) {
       message.error(errorMessage(err))
     }
@@ -370,9 +387,38 @@ export default function Products() {
             render: (_, p) => (
               <div>
                 <div style={{ fontWeight: 600 }}>{p.name}</div>
-                {p.sku && <Typography.Text type="secondary" style={{ fontSize: 12 }}>SKU: {p.sku}</Typography.Text>}
+                {(p.brand || p.sku) && (
+                  <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                    {p.brand ?? ''}{p.brand && p.sku ? ' · ' : ''}{p.sku ? `SKU: ${p.sku}` : ''}
+                  </Typography.Text>
+                )}
+                {(p.tags?.length ?? 0) > 0 && (
+                  <div style={{ marginTop: 4, display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                    {p.tags!.map((tag) => (
+                      <Tag key={tag} style={{ marginInlineEnd: 0, fontSize: 11, lineHeight: '18px', padding: '0 6px' }}>{tag}</Tag>
+                    ))}
+                  </div>
+                )}
               </div>
             ),
+          },
+          {
+            title: 'Mô tả',
+            key: 'description',
+            dataIndex: 'description',
+            ellipsis: { showTitle: false },
+            render: (v?: string | null) =>
+              v ? (
+                <Typography.Paragraph
+                  type="secondary"
+                  style={{ margin: 0, whiteSpace: 'pre-wrap' }}
+                  ellipsis={{ rows: 2, expandable: false, tooltip: v }}
+                >
+                  {v}
+                </Typography.Paragraph>
+              ) : (
+                '—'
+              ),
           },
           {
             title: 'Danh mục',
@@ -381,7 +427,20 @@ export default function Products() {
             width: 150,
             render: (_, p) => p.category?.name || '—',
           },
-          { title: 'Giá hiển thị', key: 'price', dataIndex: 'price', width: 130, render: (v?: number | null) => formatPrice(v, currency) },
+          {
+            title: 'Giá hiển thị',
+            key: 'price',
+            dataIndex: 'price',
+            width: 150,
+            render: (v?: number | null, p?: ProductRow) => (
+              <div>
+                <div>{formatPrice(v, currency)}</div>
+                {p?.original_price
+                  ? <Typography.Text delete type="secondary" style={{ fontSize: 12 }}>{formatPrice(p.original_price, currency)}</Typography.Text>
+                  : null}
+              </div>
+            ),
+          },
           {
             title: 'Liên kết',
             key: 'link',

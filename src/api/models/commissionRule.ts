@@ -8,6 +8,7 @@
 import type { CommissionRulePayeeType } from './commissionRulePayeeType';
 import type { CommissionRuleBase } from './commissionRuleBase';
 import type { CommissionRulePercent } from './commissionRulePercent';
+import type { CommissionRuleFixedAmount } from './commissionRuleFixedAmount';
 import type { CommissionRuleServiceId } from './commissionRuleServiceId';
 import type { CommissionRuleStaffId } from './commissionRuleStaffId';
 import type { CommissionRuleBranchId } from './commissionRuleBranchId';
@@ -30,6 +31,11 @@ export interface CommissionRule {
    * @maximum 100
    */
   percent?: CommissionRulePercent;
+  /**
+   * Fixed commission per occurrence (VND); mutually exclusive with percent
+   * @minimum 0
+   */
+  fixed_amount?: CommissionRuleFixedAmount;
   service_id?: CommissionRuleServiceId;
   staff_id?: CommissionRuleStaffId;
   branch_id?: CommissionRuleBranchId;

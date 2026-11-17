@@ -13,5 +13,4 @@ export type TreatmentPackageVoucherCreateDiscountType = typeof TreatmentPackageV
 export const TreatmentPackageVoucherCreateDiscountType = {
   PERCENT: 'PERCENT',
   AMOUNT: 'AMOUNT',
-  GIFT: 'GIFT',
 } as const;

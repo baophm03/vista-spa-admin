@@ -30,22 +30,11 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  GetUsersMedicalPatientdocsImaging200,
-  GetUsersMedicalPatientdocsImagingParams,
-  GetUsersParams,
-  GetUsersServiceAvailableParams,
-  GetUsersServiceParams,
-  GetUsersVouchersIdParams,
-  GetUsersVouchersMyVouchersParams,
-  GetUsersVouchersParams,
+  GetUsersAdminParams,
   LegacyBadRequestResponse,
   LegacyUnauthorizedResponse,
-  PostUsersMembershipFeeExchangePointsBody,
-  PostUsersMembershipFeeSyncBody,
-  PostUsersServiceExchangeBody,
-  PostUsersZaloBody,
-  PutUsersAdminIdBody,
-  PutUsersZaloIdParams,
+  PostAuthZaloBody,
+  PutUsersIdAdminBody,
   Response,
   UserCreate
 } from '../models';
@@ -57,3735 +46,30 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * Returns a list of accounts with member, voucher and role data. Supports search by name/email/phone number and filters by status, branch, role, and `has_role` to only return internal staff (with an assigned role). Branch-restricted users only see data within their assigned scope.
- * @summary Search and filter users
- */
-export const getUsers = (
-    params?: GetUsersParams,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<Response>(
-      {url: `/users`, method: 'GET',
-        params, signal
-    },
-      );
-    }
-  
-
-
-
-export const getGetUsersInfiniteQueryKey = (params?: GetUsersParams,) => {
-    return [
-    'infinite', `/users`, ...(params ? [params]: [])
-    ] as const;
-    }
-
-export const getGetUsersQueryKey = (params?: GetUsersParams,) => {
-    return [
-    `/users`, ...(params ? [params]: [])
-    ] as const;
-    }
-
-    
-export const getGetUsersInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getUsers>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(params?: GetUsersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsers>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetUsersInfiniteQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsers>>> = ({ signal }) => getUsers(params, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsers>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetUsersInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getUsers>>>
-export type GetUsersInfiniteQueryError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
-
-
-export function useGetUsersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsers>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params: undefined |  GetUsersParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsers>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsers>>,
-          TError,
-          Awaited<ReturnType<typeof getUsers>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsers>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetUsersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsers>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsers>>,
-          TError,
-          Awaited<ReturnType<typeof getUsers>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsers>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetUsersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsers>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Search and filter users
- */
-
-export function useGetUsersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsers>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetUsersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsers>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetUsersInfiniteQueryOptions(params,options)
-
-  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary Search and filter users
- */
-export const prefetchGetUsersInfiniteQuery = async <TData = Awaited<ReturnType<typeof getUsers>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- queryClient: QueryClient, params?: GetUsersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsers>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetUsersInfiniteQueryOptions(params,options)
-
-  await queryClient.prefetchInfiniteQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-export const getGetUsersQueryOptions = <TData = Awaited<ReturnType<typeof getUsers>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(params?: GetUsersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsers>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetUsersQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsers>>> = ({ signal }) => getUsers(params, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getUsers>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetUsersQueryResult = NonNullable<Awaited<ReturnType<typeof getUsers>>>
-export type GetUsersQueryError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
-
-
-export function useGetUsers<TData = Awaited<ReturnType<typeof getUsers>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params: undefined |  GetUsersParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsers>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsers>>,
-          TError,
-          Awaited<ReturnType<typeof getUsers>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsers<TData = Awaited<ReturnType<typeof getUsers>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetUsersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsers>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsers>>,
-          TError,
-          Awaited<ReturnType<typeof getUsers>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsers<TData = Awaited<ReturnType<typeof getUsers>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetUsersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsers>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Search and filter users
- */
-
-export function useGetUsers<TData = Awaited<ReturnType<typeof getUsers>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetUsersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsers>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetUsersQueryOptions(params,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary Search and filter users
- */
-export const prefetchGetUsersQuery = async <TData = Awaited<ReturnType<typeof getUsers>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- queryClient: QueryClient, params?: GetUsersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsers>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetUsersQueryOptions(params,options)
-
-  await queryClient.prefetchQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-/**
- * Returns the account information tied to the current bearer token, including the member profile and roles. Used by both staff and logged-in customers.
- * @summary View my account profile
- */
-export const getUsersGetMyInfo = (
-    
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<Response>(
-      {url: `/users/getMyInfo`, method: 'GET', signal
-    },
-      );
-    }
-  
-
-
-
-export const getGetUsersGetMyInfoInfiniteQueryKey = () => {
-    return [
-    'infinite', `/users/getMyInfo`
-    ] as const;
-    }
-
-export const getGetUsersGetMyInfoQueryKey = () => {
-    return [
-    `/users/getMyInfo`
-    ] as const;
-    }
-
-    
-export const getGetUsersGetMyInfoInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getUsersGetMyInfo>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersGetMyInfo>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetUsersGetMyInfoInfiniteQueryKey();
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersGetMyInfo>>> = ({ signal }) => getUsersGetMyInfo(signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersGetMyInfo>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetUsersGetMyInfoInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersGetMyInfo>>>
-export type GetUsersGetMyInfoInfiniteQueryError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
-
-
-export function useGetUsersGetMyInfoInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersGetMyInfo>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
-  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersGetMyInfo>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersGetMyInfo>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersGetMyInfo>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersGetMyInfoInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersGetMyInfo>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersGetMyInfo>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersGetMyInfo>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersGetMyInfo>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersGetMyInfoInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersGetMyInfo>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersGetMyInfo>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary View my account profile
- */
-
-export function useGetUsersGetMyInfoInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersGetMyInfo>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersGetMyInfo>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetUsersGetMyInfoInfiniteQueryOptions(options)
-
-  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary View my account profile
- */
-export const prefetchGetUsersGetMyInfoInfiniteQuery = async <TData = Awaited<ReturnType<typeof getUsersGetMyInfo>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersGetMyInfo>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetUsersGetMyInfoInfiniteQueryOptions(options)
-
-  await queryClient.prefetchInfiniteQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-export const getGetUsersGetMyInfoQueryOptions = <TData = Awaited<ReturnType<typeof getUsersGetMyInfo>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersGetMyInfo>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetUsersGetMyInfoQueryKey();
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersGetMyInfo>>> = ({ signal }) => getUsersGetMyInfo(signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getUsersGetMyInfo>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetUsersGetMyInfoQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersGetMyInfo>>>
-export type GetUsersGetMyInfoQueryError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
-
-
-export function useGetUsersGetMyInfo<TData = Awaited<ReturnType<typeof getUsersGetMyInfo>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersGetMyInfo>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersGetMyInfo>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersGetMyInfo>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersGetMyInfo<TData = Awaited<ReturnType<typeof getUsersGetMyInfo>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersGetMyInfo>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersGetMyInfo>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersGetMyInfo>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersGetMyInfo<TData = Awaited<ReturnType<typeof getUsersGetMyInfo>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersGetMyInfo>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary View my account profile
- */
-
-export function useGetUsersGetMyInfo<TData = Awaited<ReturnType<typeof getUsersGetMyInfo>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersGetMyInfo>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetUsersGetMyInfoQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary View my account profile
- */
-export const prefetchGetUsersGetMyInfoQuery = async <TData = Awaited<ReturnType<typeof getUsersGetMyInfo>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersGetMyInfo>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetUsersGetMyInfoQueryOptions(options)
-
-  await queryClient.prefetchQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-/**
- * PUT `/users/zalo/{id}` — user. Requires authentication; route does not declare detailed permissions. Query parameters: `currentPage`, `pageSize`, `filters`, `sortField`, `sortOrder`. Handled by `userProvider.put`.
- * @summary Update Zalo info
- */
-export const putUsersZaloId = (
-    id: string,
-    userCreate: UserCreate,
-    params?: PutUsersZaloIdParams,
- ) => {
-      
-      
-      return customInstance<Response>(
-      {url: `/users/zalo/${id}`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: userCreate,
-        params
-    },
-      );
-    }
-  
-
-
-export const getPutUsersZaloIdMutationOptions = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putUsersZaloId>>, TError,{id: string;data: UserCreate;params?: PutUsersZaloIdParams}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putUsersZaloId>>, TError,{id: string;data: UserCreate;params?: PutUsersZaloIdParams}, TContext> => {
-
-const mutationKey = ['putUsersZaloId'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putUsersZaloId>>, {id: string;data: UserCreate;params?: PutUsersZaloIdParams}> = (props) => {
-          const {id,data,params} = props ?? {};
-
-          return  putUsersZaloId(id,data,params,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PutUsersZaloIdMutationResult = NonNullable<Awaited<ReturnType<typeof putUsersZaloId>>>
-    export type PutUsersZaloIdMutationBody = UserCreate
-    export type PutUsersZaloIdMutationError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void
-
-    /**
- * @summary Update Zalo info
- */
-export const usePutUsersZaloId = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putUsersZaloId>>, TError,{id: string;data: UserCreate;params?: PutUsersZaloIdParams}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putUsersZaloId>>,
-        TError,
-        {id: string;data: UserCreate;params?: PutUsersZaloIdParams},
-        TContext
-      > => {
-
-      const mutationOptions = getPutUsersZaloIdMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * POST `/users/zalo` — user. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Body fields: `phone_number`, `zalo_name`, `zalo_id`, `zalo_avatar`, `zalo_id_by_oa`. Handled by `userProvider.getOne`.
- * @summary Link a Zalo account to a user
- */
-export const postUsersZalo = (
-    postUsersZaloBody: PostUsersZaloBody,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<Response>(
-      {url: `/users/zalo`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: postUsersZaloBody, signal
-    },
-      );
-    }
-  
-
-
-export const getPostUsersZaloMutationOptions = <TError = LegacyBadRequestResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postUsersZalo>>, TError,{data: PostUsersZaloBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postUsersZalo>>, TError,{data: PostUsersZaloBody}, TContext> => {
-
-const mutationKey = ['postUsersZalo'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postUsersZalo>>, {data: PostUsersZaloBody}> = (props) => {
-          const {data} = props ?? {};
-
-          return  postUsersZalo(data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostUsersZaloMutationResult = NonNullable<Awaited<ReturnType<typeof postUsersZalo>>>
-    export type PostUsersZaloMutationBody = PostUsersZaloBody
-    export type PostUsersZaloMutationError = LegacyBadRequestResponse
-
-    /**
- * @summary Link a Zalo account to a user
- */
-export const usePostUsersZalo = <TError = LegacyBadRequestResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postUsersZalo>>, TError,{data: PostUsersZaloBody}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postUsersZalo>>,
-        TError,
-        {data: PostUsersZaloBody},
-        TContext
-      > => {
-
-      const mutationOptions = getPostUsersZaloMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * GET `/users/weekly` — user. Public, no authentication required. Handled by `userProvider.getAll`.
- * @summary View weekly user statistics
- */
-export const getUsersWeekly = (
-    
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<Response>(
-      {url: `/users/weekly`, method: 'GET', signal
-    },
-      );
-    }
-  
-
-
-
-export const getGetUsersWeeklyInfiniteQueryKey = () => {
-    return [
-    'infinite', `/users/weekly`
-    ] as const;
-    }
-
-export const getGetUsersWeeklyQueryKey = () => {
-    return [
-    `/users/weekly`
-    ] as const;
-    }
-
-    
-export const getGetUsersWeeklyInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getUsersWeekly>>>, TError = LegacyBadRequestResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersWeekly>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetUsersWeeklyInfiniteQueryKey();
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersWeekly>>> = ({ signal }) => getUsersWeekly(signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersWeekly>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetUsersWeeklyInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersWeekly>>>
-export type GetUsersWeeklyInfiniteQueryError = LegacyBadRequestResponse
-
-
-export function useGetUsersWeeklyInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersWeekly>>>, TError = LegacyBadRequestResponse>(
-  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersWeekly>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersWeekly>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersWeekly>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersWeeklyInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersWeekly>>>, TError = LegacyBadRequestResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersWeekly>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersWeekly>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersWeekly>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersWeeklyInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersWeekly>>>, TError = LegacyBadRequestResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersWeekly>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary View weekly user statistics
- */
-
-export function useGetUsersWeeklyInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersWeekly>>>, TError = LegacyBadRequestResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersWeekly>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetUsersWeeklyInfiniteQueryOptions(options)
-
-  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary View weekly user statistics
- */
-export const prefetchGetUsersWeeklyInfiniteQuery = async <TData = Awaited<ReturnType<typeof getUsersWeekly>>, TError = LegacyBadRequestResponse>(
- queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersWeekly>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetUsersWeeklyInfiniteQueryOptions(options)
-
-  await queryClient.prefetchInfiniteQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-export const getGetUsersWeeklyQueryOptions = <TData = Awaited<ReturnType<typeof getUsersWeekly>>, TError = LegacyBadRequestResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersWeekly>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetUsersWeeklyQueryKey();
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersWeekly>>> = ({ signal }) => getUsersWeekly(signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getUsersWeekly>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetUsersWeeklyQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersWeekly>>>
-export type GetUsersWeeklyQueryError = LegacyBadRequestResponse
-
-
-export function useGetUsersWeekly<TData = Awaited<ReturnType<typeof getUsersWeekly>>, TError = LegacyBadRequestResponse>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersWeekly>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersWeekly>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersWeekly>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersWeekly<TData = Awaited<ReturnType<typeof getUsersWeekly>>, TError = LegacyBadRequestResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersWeekly>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersWeekly>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersWeekly>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersWeekly<TData = Awaited<ReturnType<typeof getUsersWeekly>>, TError = LegacyBadRequestResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersWeekly>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary View weekly user statistics
- */
-
-export function useGetUsersWeekly<TData = Awaited<ReturnType<typeof getUsersWeekly>>, TError = LegacyBadRequestResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersWeekly>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetUsersWeeklyQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary View weekly user statistics
- */
-export const prefetchGetUsersWeeklyQuery = async <TData = Awaited<ReturnType<typeof getUsersWeekly>>, TError = LegacyBadRequestResponse>(
- queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersWeekly>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetUsersWeeklyQueryOptions(options)
-
-  await queryClient.prefetchQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-/**
- * GET `/users/vouchers/{id}` — user. Public, no authentication required. Query parameters: `user_id`. Handled by `voucherProvider.getById`.
- * @summary View voucher details
- */
-export const getUsersVouchersId = (
-    id: string,
-    params?: GetUsersVouchersIdParams,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<Response>(
-      {url: `/users/vouchers/${id}`, method: 'GET',
-        params, signal
-    },
-      );
-    }
-  
-
-
-
-export const getGetUsersVouchersIdInfiniteQueryKey = (id?: string,
-    params?: GetUsersVouchersIdParams,) => {
-    return [
-    'infinite', `/users/vouchers/${id}`, ...(params ? [params]: [])
-    ] as const;
-    }
-
-export const getGetUsersVouchersIdQueryKey = (id?: string,
-    params?: GetUsersVouchersIdParams,) => {
-    return [
-    `/users/vouchers/${id}`, ...(params ? [params]: [])
-    ] as const;
-    }
-
-    
-export const getGetUsersVouchersIdInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getUsersVouchersId>>>, TError = LegacyBadRequestResponse | void>(id: string,
-    params?: GetUsersVouchersIdParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersVouchersId>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetUsersVouchersIdInfiniteQueryKey(id,params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersVouchersId>>> = ({ signal }) => getUsersVouchersId(id,params, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersVouchersId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetUsersVouchersIdInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersVouchersId>>>
-export type GetUsersVouchersIdInfiniteQueryError = LegacyBadRequestResponse | void
-
-
-export function useGetUsersVouchersIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersVouchersId>>>, TError = LegacyBadRequestResponse | void>(
- id: string,
-    params: undefined |  GetUsersVouchersIdParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersVouchersId>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersVouchersId>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersVouchersId>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersVouchersIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersVouchersId>>>, TError = LegacyBadRequestResponse | void>(
- id: string,
-    params?: GetUsersVouchersIdParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersVouchersId>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersVouchersId>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersVouchersId>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersVouchersIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersVouchersId>>>, TError = LegacyBadRequestResponse | void>(
- id: string,
-    params?: GetUsersVouchersIdParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersVouchersId>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary View voucher details
- */
-
-export function useGetUsersVouchersIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersVouchersId>>>, TError = LegacyBadRequestResponse | void>(
- id: string,
-    params?: GetUsersVouchersIdParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersVouchersId>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetUsersVouchersIdInfiniteQueryOptions(id,params,options)
-
-  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary View voucher details
- */
-export const prefetchGetUsersVouchersIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getUsersVouchersId>>, TError = LegacyBadRequestResponse | void>(
- queryClient: QueryClient, id: string,
-    params?: GetUsersVouchersIdParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersVouchersId>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetUsersVouchersIdInfiniteQueryOptions(id,params,options)
-
-  await queryClient.prefetchInfiniteQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-export const getGetUsersVouchersIdQueryOptions = <TData = Awaited<ReturnType<typeof getUsersVouchersId>>, TError = LegacyBadRequestResponse | void>(id: string,
-    params?: GetUsersVouchersIdParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersVouchersId>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetUsersVouchersIdQueryKey(id,params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersVouchersId>>> = ({ signal }) => getUsersVouchersId(id,params, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getUsersVouchersId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetUsersVouchersIdQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersVouchersId>>>
-export type GetUsersVouchersIdQueryError = LegacyBadRequestResponse | void
-
-
-export function useGetUsersVouchersId<TData = Awaited<ReturnType<typeof getUsersVouchersId>>, TError = LegacyBadRequestResponse | void>(
- id: string,
-    params: undefined |  GetUsersVouchersIdParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersVouchersId>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersVouchersId>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersVouchersId>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersVouchersId<TData = Awaited<ReturnType<typeof getUsersVouchersId>>, TError = LegacyBadRequestResponse | void>(
- id: string,
-    params?: GetUsersVouchersIdParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersVouchersId>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersVouchersId>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersVouchersId>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersVouchersId<TData = Awaited<ReturnType<typeof getUsersVouchersId>>, TError = LegacyBadRequestResponse | void>(
- id: string,
-    params?: GetUsersVouchersIdParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersVouchersId>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary View voucher details
- */
-
-export function useGetUsersVouchersId<TData = Awaited<ReturnType<typeof getUsersVouchersId>>, TError = LegacyBadRequestResponse | void>(
- id: string,
-    params?: GetUsersVouchersIdParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersVouchersId>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetUsersVouchersIdQueryOptions(id,params,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary View voucher details
- */
-export const prefetchGetUsersVouchersIdQuery = async <TData = Awaited<ReturnType<typeof getUsersVouchersId>>, TError = LegacyBadRequestResponse | void>(
- queryClient: QueryClient, id: string,
-    params?: GetUsersVouchersIdParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersVouchersId>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetUsersVouchersIdQueryOptions(id,params,options)
-
-  await queryClient.prefetchQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-/**
- * GET `/users/vouchers/my-vouchers` — user. Requires authentication; route does not declare detailed permissions. Query parameters: `status`, `currentPage`, `pageSize`, `filters`, `sortField`, `sortOrder`. Handled by `membership.findOne`.
- * @summary View my vouchers
- */
-export const getUsersVouchersMyVouchers = (
-    params?: GetUsersVouchersMyVouchersParams,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<Response>(
-      {url: `/users/vouchers/my-vouchers`, method: 'GET',
-        params, signal
-    },
-      );
-    }
-  
-
-
-
-export const getGetUsersVouchersMyVouchersInfiniteQueryKey = (params?: GetUsersVouchersMyVouchersParams,) => {
-    return [
-    'infinite', `/users/vouchers/my-vouchers`, ...(params ? [params]: [])
-    ] as const;
-    }
-
-export const getGetUsersVouchersMyVouchersQueryKey = (params?: GetUsersVouchersMyVouchersParams,) => {
-    return [
-    `/users/vouchers/my-vouchers`, ...(params ? [params]: [])
-    ] as const;
-    }
-
-    
-export const getGetUsersVouchersMyVouchersInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getUsersVouchersMyVouchers>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(params?: GetUsersVouchersMyVouchersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersVouchersMyVouchers>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetUsersVouchersMyVouchersInfiniteQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersVouchersMyVouchers>>> = ({ signal }) => getUsersVouchersMyVouchers(params, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersVouchersMyVouchers>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetUsersVouchersMyVouchersInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersVouchersMyVouchers>>>
-export type GetUsersVouchersMyVouchersInfiniteQueryError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
-
-
-export function useGetUsersVouchersMyVouchersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersVouchersMyVouchers>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params: undefined |  GetUsersVouchersMyVouchersParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersVouchersMyVouchers>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersVouchersMyVouchers>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersVouchersMyVouchers>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersVouchersMyVouchersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersVouchersMyVouchers>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetUsersVouchersMyVouchersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersVouchersMyVouchers>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersVouchersMyVouchers>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersVouchersMyVouchers>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersVouchersMyVouchersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersVouchersMyVouchers>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetUsersVouchersMyVouchersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersVouchersMyVouchers>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary View my vouchers
- */
-
-export function useGetUsersVouchersMyVouchersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersVouchersMyVouchers>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetUsersVouchersMyVouchersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersVouchersMyVouchers>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetUsersVouchersMyVouchersInfiniteQueryOptions(params,options)
-
-  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary View my vouchers
- */
-export const prefetchGetUsersVouchersMyVouchersInfiniteQuery = async <TData = Awaited<ReturnType<typeof getUsersVouchersMyVouchers>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- queryClient: QueryClient, params?: GetUsersVouchersMyVouchersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersVouchersMyVouchers>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetUsersVouchersMyVouchersInfiniteQueryOptions(params,options)
-
-  await queryClient.prefetchInfiniteQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-export const getGetUsersVouchersMyVouchersQueryOptions = <TData = Awaited<ReturnType<typeof getUsersVouchersMyVouchers>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(params?: GetUsersVouchersMyVouchersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersVouchersMyVouchers>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetUsersVouchersMyVouchersQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersVouchersMyVouchers>>> = ({ signal }) => getUsersVouchersMyVouchers(params, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getUsersVouchersMyVouchers>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetUsersVouchersMyVouchersQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersVouchersMyVouchers>>>
-export type GetUsersVouchersMyVouchersQueryError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
-
-
-export function useGetUsersVouchersMyVouchers<TData = Awaited<ReturnType<typeof getUsersVouchersMyVouchers>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params: undefined |  GetUsersVouchersMyVouchersParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersVouchersMyVouchers>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersVouchersMyVouchers>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersVouchersMyVouchers>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersVouchersMyVouchers<TData = Awaited<ReturnType<typeof getUsersVouchersMyVouchers>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetUsersVouchersMyVouchersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersVouchersMyVouchers>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersVouchersMyVouchers>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersVouchersMyVouchers>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersVouchersMyVouchers<TData = Awaited<ReturnType<typeof getUsersVouchersMyVouchers>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetUsersVouchersMyVouchersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersVouchersMyVouchers>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary View my vouchers
- */
-
-export function useGetUsersVouchersMyVouchers<TData = Awaited<ReturnType<typeof getUsersVouchersMyVouchers>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetUsersVouchersMyVouchersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersVouchersMyVouchers>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetUsersVouchersMyVouchersQueryOptions(params,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary View my vouchers
- */
-export const prefetchGetUsersVouchersMyVouchersQuery = async <TData = Awaited<ReturnType<typeof getUsersVouchersMyVouchers>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- queryClient: QueryClient, params?: GetUsersVouchersMyVouchersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersVouchersMyVouchers>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetUsersVouchersMyVouchersQueryOptions(params,options)
-
-  await queryClient.prefetchQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-/**
- * GET `/users/vouchers` — user. Requires authentication; route does not declare detailed permissions. Query parameters: `points_max`, `category`, `sort_by`, `currentPage`, `pageSize`, `filters`, `sortField`, `sortOrder`. Handled by `membership.findOne`.
- * @summary Manage customer vouchers
- */
-export const getUsersVouchers = (
-    params?: GetUsersVouchersParams,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<Response>(
-      {url: `/users/vouchers`, method: 'GET',
-        params, signal
-    },
-      );
-    }
-  
-
-
-
-export const getGetUsersVouchersInfiniteQueryKey = (params?: GetUsersVouchersParams,) => {
-    return [
-    'infinite', `/users/vouchers`, ...(params ? [params]: [])
-    ] as const;
-    }
-
-export const getGetUsersVouchersQueryKey = (params?: GetUsersVouchersParams,) => {
-    return [
-    `/users/vouchers`, ...(params ? [params]: [])
-    ] as const;
-    }
-
-    
-export const getGetUsersVouchersInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getUsersVouchers>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(params?: GetUsersVouchersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersVouchers>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetUsersVouchersInfiniteQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersVouchers>>> = ({ signal }) => getUsersVouchers(params, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersVouchers>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetUsersVouchersInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersVouchers>>>
-export type GetUsersVouchersInfiniteQueryError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
-
-
-export function useGetUsersVouchersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersVouchers>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params: undefined |  GetUsersVouchersParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersVouchers>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersVouchers>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersVouchers>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersVouchersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersVouchers>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetUsersVouchersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersVouchers>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersVouchers>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersVouchers>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersVouchersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersVouchers>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetUsersVouchersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersVouchers>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Manage customer vouchers
- */
-
-export function useGetUsersVouchersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersVouchers>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetUsersVouchersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersVouchers>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetUsersVouchersInfiniteQueryOptions(params,options)
-
-  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary Manage customer vouchers
- */
-export const prefetchGetUsersVouchersInfiniteQuery = async <TData = Awaited<ReturnType<typeof getUsersVouchers>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- queryClient: QueryClient, params?: GetUsersVouchersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersVouchers>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetUsersVouchersInfiniteQueryOptions(params,options)
-
-  await queryClient.prefetchInfiniteQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-export const getGetUsersVouchersQueryOptions = <TData = Awaited<ReturnType<typeof getUsersVouchers>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(params?: GetUsersVouchersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersVouchers>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetUsersVouchersQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersVouchers>>> = ({ signal }) => getUsersVouchers(params, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getUsersVouchers>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetUsersVouchersQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersVouchers>>>
-export type GetUsersVouchersQueryError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
-
-
-export function useGetUsersVouchers<TData = Awaited<ReturnType<typeof getUsersVouchers>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params: undefined |  GetUsersVouchersParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersVouchers>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersVouchers>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersVouchers>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersVouchers<TData = Awaited<ReturnType<typeof getUsersVouchers>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetUsersVouchersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersVouchers>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersVouchers>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersVouchers>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersVouchers<TData = Awaited<ReturnType<typeof getUsersVouchers>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetUsersVouchersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersVouchers>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Manage customer vouchers
- */
-
-export function useGetUsersVouchers<TData = Awaited<ReturnType<typeof getUsersVouchers>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetUsersVouchersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersVouchers>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetUsersVouchersQueryOptions(params,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary Manage customer vouchers
- */
-export const prefetchGetUsersVouchersQuery = async <TData = Awaited<ReturnType<typeof getUsersVouchers>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- queryClient: QueryClient, params?: GetUsersVouchersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersVouchers>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetUsersVouchersQueryOptions(params,options)
-
-  await queryClient.prefetchQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-/**
- * POST `/users/vouchers/{id}/redeem` — user. Requires authentication; route does not declare detailed permissions. Handled by `voucherProvider.isVoucherValidForUser`.
- * @summary Redeem
- */
-export const postUsersVouchersIdRedeem = (
-    id: string,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<Response>(
-      {url: `/users/vouchers/${id}/redeem`, method: 'POST', signal
-    },
-      );
-    }
-  
-
-
-export const getPostUsersVouchersIdRedeemMutationOptions = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postUsersVouchersIdRedeem>>, TError,{id: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postUsersVouchersIdRedeem>>, TError,{id: string}, TContext> => {
-
-const mutationKey = ['postUsersVouchersIdRedeem'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postUsersVouchersIdRedeem>>, {id: string}> = (props) => {
-          const {id} = props ?? {};
-
-          return  postUsersVouchersIdRedeem(id,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostUsersVouchersIdRedeemMutationResult = NonNullable<Awaited<ReturnType<typeof postUsersVouchersIdRedeem>>>
-    
-    export type PostUsersVouchersIdRedeemMutationError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void
-
-    /**
- * @summary Redeem
- */
-export const usePostUsersVouchersIdRedeem = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postUsersVouchersIdRedeem>>, TError,{id: string}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postUsersVouchersIdRedeem>>,
-        TError,
-        {id: string},
-        TContext
-      > => {
-
-      const mutationOptions = getPostUsersVouchersIdRedeemMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * GET `/users/service` — user. Requires authentication; route does not declare detailed permissions. Query parameters: `page`, `limit`, `status`, `service_type`.
- * @summary List of exchanged services
- */
-export const getUsersService = (
-    params?: GetUsersServiceParams,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<Response>(
-      {url: `/users/service`, method: 'GET',
-        params, signal
-    },
-      );
-    }
-  
-
-
-
-export const getGetUsersServiceInfiniteQueryKey = (params?: GetUsersServiceParams,) => {
-    return [
-    'infinite', `/users/service`, ...(params ? [params]: [])
-    ] as const;
-    }
-
-export const getGetUsersServiceQueryKey = (params?: GetUsersServiceParams,) => {
-    return [
-    `/users/service`, ...(params ? [params]: [])
-    ] as const;
-    }
-
-    
-export const getGetUsersServiceInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getUsersService>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(params?: GetUsersServiceParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersService>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetUsersServiceInfiniteQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersService>>> = ({ signal }) => getUsersService(params, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersService>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetUsersServiceInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersService>>>
-export type GetUsersServiceInfiniteQueryError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
-
-
-export function useGetUsersServiceInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersService>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params: undefined |  GetUsersServiceParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersService>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersService>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersService>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersServiceInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersService>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetUsersServiceParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersService>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersService>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersService>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersServiceInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersService>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetUsersServiceParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersService>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary List of exchanged services
- */
-
-export function useGetUsersServiceInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersService>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetUsersServiceParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersService>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetUsersServiceInfiniteQueryOptions(params,options)
-
-  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary List of exchanged services
- */
-export const prefetchGetUsersServiceInfiniteQuery = async <TData = Awaited<ReturnType<typeof getUsersService>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- queryClient: QueryClient, params?: GetUsersServiceParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersService>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetUsersServiceInfiniteQueryOptions(params,options)
-
-  await queryClient.prefetchInfiniteQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-export const getGetUsersServiceQueryOptions = <TData = Awaited<ReturnType<typeof getUsersService>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(params?: GetUsersServiceParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersService>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetUsersServiceQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersService>>> = ({ signal }) => getUsersService(params, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getUsersService>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetUsersServiceQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersService>>>
-export type GetUsersServiceQueryError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
-
-
-export function useGetUsersService<TData = Awaited<ReturnType<typeof getUsersService>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params: undefined |  GetUsersServiceParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersService>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersService>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersService>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersService<TData = Awaited<ReturnType<typeof getUsersService>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetUsersServiceParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersService>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersService>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersService>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersService<TData = Awaited<ReturnType<typeof getUsersService>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetUsersServiceParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersService>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary List of exchanged services
- */
-
-export function useGetUsersService<TData = Awaited<ReturnType<typeof getUsersService>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetUsersServiceParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersService>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetUsersServiceQueryOptions(params,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary List of exchanged services
- */
-export const prefetchGetUsersServiceQuery = async <TData = Awaited<ReturnType<typeof getUsersService>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- queryClient: QueryClient, params?: GetUsersServiceParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersService>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetUsersServiceQueryOptions(params,options)
-
-  await queryClient.prefetchQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-/**
- * POST `/users/service/exchange` — user. Requires authentication; route does not declare detailed permissions. Body field: `service_id`.
- * @summary Exchange points for a service
- */
-export const postUsersServiceExchange = (
-    postUsersServiceExchangeBody: PostUsersServiceExchangeBody,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<Response>(
-      {url: `/users/service/exchange`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: postUsersServiceExchangeBody, signal
-    },
-      );
-    }
-  
-
-
-export const getPostUsersServiceExchangeMutationOptions = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postUsersServiceExchange>>, TError,{data: PostUsersServiceExchangeBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postUsersServiceExchange>>, TError,{data: PostUsersServiceExchangeBody}, TContext> => {
-
-const mutationKey = ['postUsersServiceExchange'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postUsersServiceExchange>>, {data: PostUsersServiceExchangeBody}> = (props) => {
-          const {data} = props ?? {};
-
-          return  postUsersServiceExchange(data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostUsersServiceExchangeMutationResult = NonNullable<Awaited<ReturnType<typeof postUsersServiceExchange>>>
-    export type PostUsersServiceExchangeMutationBody = PostUsersServiceExchangeBody
-    export type PostUsersServiceExchangeMutationError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
-
-    /**
- * @summary Exchange points for a service
- */
-export const usePostUsersServiceExchange = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postUsersServiceExchange>>, TError,{data: PostUsersServiceExchangeBody}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postUsersServiceExchange>>,
-        TError,
-        {data: PostUsersServiceExchangeBody},
-        TContext
-      > => {
-
-      const mutationOptions = getPostUsersServiceExchangeMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * GET `/users/service/available` — user. Requires authentication; route does not declare detailed permissions. Query parameters: `page`, `limit`, `search`. Handled by `membership.findOne`.
- * @summary View available services
- */
-export const getUsersServiceAvailable = (
-    params?: GetUsersServiceAvailableParams,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<Response>(
-      {url: `/users/service/available`, method: 'GET',
-        params, signal
-    },
-      );
-    }
-  
-
-
-
-export const getGetUsersServiceAvailableInfiniteQueryKey = (params?: GetUsersServiceAvailableParams,) => {
-    return [
-    'infinite', `/users/service/available`, ...(params ? [params]: [])
-    ] as const;
-    }
-
-export const getGetUsersServiceAvailableQueryKey = (params?: GetUsersServiceAvailableParams,) => {
-    return [
-    `/users/service/available`, ...(params ? [params]: [])
-    ] as const;
-    }
-
-    
-export const getGetUsersServiceAvailableInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getUsersServiceAvailable>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(params?: GetUsersServiceAvailableParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersServiceAvailable>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetUsersServiceAvailableInfiniteQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersServiceAvailable>>> = ({ signal }) => getUsersServiceAvailable(params, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersServiceAvailable>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetUsersServiceAvailableInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersServiceAvailable>>>
-export type GetUsersServiceAvailableInfiniteQueryError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
-
-
-export function useGetUsersServiceAvailableInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersServiceAvailable>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params: undefined |  GetUsersServiceAvailableParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersServiceAvailable>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersServiceAvailable>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersServiceAvailable>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersServiceAvailableInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersServiceAvailable>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetUsersServiceAvailableParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersServiceAvailable>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersServiceAvailable>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersServiceAvailable>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersServiceAvailableInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersServiceAvailable>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetUsersServiceAvailableParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersServiceAvailable>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary View available services
- */
-
-export function useGetUsersServiceAvailableInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersServiceAvailable>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetUsersServiceAvailableParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersServiceAvailable>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetUsersServiceAvailableInfiniteQueryOptions(params,options)
-
-  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary View available services
- */
-export const prefetchGetUsersServiceAvailableInfiniteQuery = async <TData = Awaited<ReturnType<typeof getUsersServiceAvailable>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- queryClient: QueryClient, params?: GetUsersServiceAvailableParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersServiceAvailable>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetUsersServiceAvailableInfiniteQueryOptions(params,options)
-
-  await queryClient.prefetchInfiniteQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-export const getGetUsersServiceAvailableQueryOptions = <TData = Awaited<ReturnType<typeof getUsersServiceAvailable>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(params?: GetUsersServiceAvailableParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersServiceAvailable>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetUsersServiceAvailableQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersServiceAvailable>>> = ({ signal }) => getUsersServiceAvailable(params, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getUsersServiceAvailable>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetUsersServiceAvailableQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersServiceAvailable>>>
-export type GetUsersServiceAvailableQueryError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
-
-
-export function useGetUsersServiceAvailable<TData = Awaited<ReturnType<typeof getUsersServiceAvailable>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params: undefined |  GetUsersServiceAvailableParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersServiceAvailable>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersServiceAvailable>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersServiceAvailable>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersServiceAvailable<TData = Awaited<ReturnType<typeof getUsersServiceAvailable>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetUsersServiceAvailableParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersServiceAvailable>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersServiceAvailable>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersServiceAvailable>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersServiceAvailable<TData = Awaited<ReturnType<typeof getUsersServiceAvailable>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetUsersServiceAvailableParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersServiceAvailable>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary View available services
- */
-
-export function useGetUsersServiceAvailable<TData = Awaited<ReturnType<typeof getUsersServiceAvailable>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- params?: GetUsersServiceAvailableParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersServiceAvailable>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetUsersServiceAvailableQueryOptions(params,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary View available services
- */
-export const prefetchGetUsersServiceAvailableQuery = async <TData = Awaited<ReturnType<typeof getUsersServiceAvailable>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- queryClient: QueryClient, params?: GetUsersServiceAvailableParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersServiceAvailable>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetUsersServiceAvailableQueryOptions(params,options)
-
-  await queryClient.prefetchQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-/**
- * GET `/users/ranks` — user. Public, no authentication required. Handled by `membershipProvider.getRankStatistics`.
- * @summary View customer membership ranks
- */
-export const getUsersRanks = (
-    
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<Response>(
-      {url: `/users/ranks`, method: 'GET', signal
-    },
-      );
-    }
-  
-
-
-
-export const getGetUsersRanksInfiniteQueryKey = () => {
-    return [
-    'infinite', `/users/ranks`
-    ] as const;
-    }
-
-export const getGetUsersRanksQueryKey = () => {
-    return [
-    `/users/ranks`
-    ] as const;
-    }
-
-    
-export const getGetUsersRanksInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getUsersRanks>>>, TError = LegacyBadRequestResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersRanks>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetUsersRanksInfiniteQueryKey();
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersRanks>>> = ({ signal }) => getUsersRanks(signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersRanks>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetUsersRanksInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersRanks>>>
-export type GetUsersRanksInfiniteQueryError = LegacyBadRequestResponse
-
-
-export function useGetUsersRanksInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersRanks>>>, TError = LegacyBadRequestResponse>(
-  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersRanks>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersRanks>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersRanks>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersRanksInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersRanks>>>, TError = LegacyBadRequestResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersRanks>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersRanks>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersRanks>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersRanksInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersRanks>>>, TError = LegacyBadRequestResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersRanks>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary View customer membership ranks
- */
-
-export function useGetUsersRanksInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersRanks>>>, TError = LegacyBadRequestResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersRanks>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetUsersRanksInfiniteQueryOptions(options)
-
-  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary View customer membership ranks
- */
-export const prefetchGetUsersRanksInfiniteQuery = async <TData = Awaited<ReturnType<typeof getUsersRanks>>, TError = LegacyBadRequestResponse>(
- queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersRanks>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetUsersRanksInfiniteQueryOptions(options)
-
-  await queryClient.prefetchInfiniteQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-export const getGetUsersRanksQueryOptions = <TData = Awaited<ReturnType<typeof getUsersRanks>>, TError = LegacyBadRequestResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersRanks>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetUsersRanksQueryKey();
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersRanks>>> = ({ signal }) => getUsersRanks(signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getUsersRanks>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetUsersRanksQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersRanks>>>
-export type GetUsersRanksQueryError = LegacyBadRequestResponse
-
-
-export function useGetUsersRanks<TData = Awaited<ReturnType<typeof getUsersRanks>>, TError = LegacyBadRequestResponse>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersRanks>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersRanks>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersRanks>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersRanks<TData = Awaited<ReturnType<typeof getUsersRanks>>, TError = LegacyBadRequestResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersRanks>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersRanks>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersRanks>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersRanks<TData = Awaited<ReturnType<typeof getUsersRanks>>, TError = LegacyBadRequestResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersRanks>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary View customer membership ranks
- */
-
-export function useGetUsersRanks<TData = Awaited<ReturnType<typeof getUsersRanks>>, TError = LegacyBadRequestResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersRanks>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetUsersRanksQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary View customer membership ranks
- */
-export const prefetchGetUsersRanksQuery = async <TData = Awaited<ReturnType<typeof getUsersRanks>>, TError = LegacyBadRequestResponse>(
- queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersRanks>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetUsersRanksQueryOptions(options)
-
-  await queryClient.prefetchQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-/**
- * POST `/users/membershipFee/syncAll` — user. Requires authentication; route does not declare detailed permissions. Handled by `membershipProvider.syncAllMemberships`.
- * @summary Sync all memberships
- */
-export const postUsersMembershipFeeSyncAll = (
-    
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<Response>(
-      {url: `/users/membershipFee/syncAll`, method: 'POST', signal
-    },
-      );
-    }
-  
-
-
-export const getPostUsersMembershipFeeSyncAllMutationOptions = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postUsersMembershipFeeSyncAll>>, TError,void, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postUsersMembershipFeeSyncAll>>, TError,void, TContext> => {
-
-const mutationKey = ['postUsersMembershipFeeSyncAll'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postUsersMembershipFeeSyncAll>>, void> = () => {
-          
-
-          return  postUsersMembershipFeeSyncAll()
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostUsersMembershipFeeSyncAllMutationResult = NonNullable<Awaited<ReturnType<typeof postUsersMembershipFeeSyncAll>>>
-    
-    export type PostUsersMembershipFeeSyncAllMutationError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
-
-    /**
- * @summary Sync all memberships
- */
-export const usePostUsersMembershipFeeSyncAll = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postUsersMembershipFeeSyncAll>>, TError,void, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postUsersMembershipFeeSyncAll>>,
-        TError,
-        void,
-        TContext
-      > => {
-
-      const mutationOptions = getPostUsersMembershipFeeSyncAllMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * POST `/users/membershipFee/sync` — user. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Body field: `userId`. Handled by `membershipProvider.syncMembershipData`.
- * @summary Sync membership data by userId
- */
-export const postUsersMembershipFeeSync = (
-    postUsersMembershipFeeSyncBody: PostUsersMembershipFeeSyncBody,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<Response>(
-      {url: `/users/membershipFee/sync`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: postUsersMembershipFeeSyncBody, signal
-    },
-      );
-    }
-  
-
-
-export const getPostUsersMembershipFeeSyncMutationOptions = <TError = LegacyBadRequestResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postUsersMembershipFeeSync>>, TError,{data: PostUsersMembershipFeeSyncBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postUsersMembershipFeeSync>>, TError,{data: PostUsersMembershipFeeSyncBody}, TContext> => {
-
-const mutationKey = ['postUsersMembershipFeeSync'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postUsersMembershipFeeSync>>, {data: PostUsersMembershipFeeSyncBody}> = (props) => {
-          const {data} = props ?? {};
-
-          return  postUsersMembershipFeeSync(data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostUsersMembershipFeeSyncMutationResult = NonNullable<Awaited<ReturnType<typeof postUsersMembershipFeeSync>>>
-    export type PostUsersMembershipFeeSyncMutationBody = PostUsersMembershipFeeSyncBody
-    export type PostUsersMembershipFeeSyncMutationError = LegacyBadRequestResponse | void
-
-    /**
- * @summary Sync membership data by userId
- */
-export const usePostUsersMembershipFeeSync = <TError = LegacyBadRequestResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postUsersMembershipFeeSync>>, TError,{data: PostUsersMembershipFeeSyncBody}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postUsersMembershipFeeSync>>,
-        TError,
-        {data: PostUsersMembershipFeeSyncBody},
-        TContext
-      > => {
-
-      const mutationOptions = getPostUsersMembershipFeeSyncMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * POST `/users/membershipFee/resetYearly` — user. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Handled by `membershipProvider.resetYearlyRanks`.
- * @summary Reset membership ranks yearly
- */
-export const postUsersMembershipFeeResetYearly = (
-    
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<Response>(
-      {url: `/users/membershipFee/resetYearly`, method: 'POST', signal
-    },
-      );
-    }
-  
-
-
-export const getPostUsersMembershipFeeResetYearlyMutationOptions = <TError = LegacyBadRequestResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postUsersMembershipFeeResetYearly>>, TError,void, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postUsersMembershipFeeResetYearly>>, TError,void, TContext> => {
-
-const mutationKey = ['postUsersMembershipFeeResetYearly'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postUsersMembershipFeeResetYearly>>, void> = () => {
-          
-
-          return  postUsersMembershipFeeResetYearly()
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostUsersMembershipFeeResetYearlyMutationResult = NonNullable<Awaited<ReturnType<typeof postUsersMembershipFeeResetYearly>>>
-    
-    export type PostUsersMembershipFeeResetYearlyMutationError = LegacyBadRequestResponse
-
-    /**
- * @summary Reset membership ranks yearly
- */
-export const usePostUsersMembershipFeeResetYearly = <TError = LegacyBadRequestResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postUsersMembershipFeeResetYearly>>, TError,void, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postUsersMembershipFeeResetYearly>>,
-        TError,
-        void,
-        TContext
-      > => {
-
-      const mutationOptions = getPostUsersMembershipFeeResetYearlyMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * GET `/users/membershipFee` — user. Requires authentication; route does not declare detailed permissions. Handled by `membershipProvider.getMembershipInfo`.
- * @summary View my membership information
- */
-export const getUsersMembershipFee = (
-    
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<Response>(
-      {url: `/users/membershipFee`, method: 'GET', signal
-    },
-      );
-    }
-  
-
-
-
-export const getGetUsersMembershipFeeInfiniteQueryKey = () => {
-    return [
-    'infinite', `/users/membershipFee`
-    ] as const;
-    }
-
-export const getGetUsersMembershipFeeQueryKey = () => {
-    return [
-    `/users/membershipFee`
-    ] as const;
-    }
-
-    
-export const getGetUsersMembershipFeeInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getUsersMembershipFee>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMembershipFee>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetUsersMembershipFeeInfiniteQueryKey();
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersMembershipFee>>> = ({ signal }) => getUsersMembershipFee(signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMembershipFee>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetUsersMembershipFeeInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersMembershipFee>>>
-export type GetUsersMembershipFeeInfiniteQueryError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
-
-
-export function useGetUsersMembershipFeeInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersMembershipFee>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
-  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMembershipFee>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersMembershipFee>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersMembershipFee>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersMembershipFeeInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersMembershipFee>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMembershipFee>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersMembershipFee>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersMembershipFee>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersMembershipFeeInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersMembershipFee>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMembershipFee>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary View my membership information
- */
-
-export function useGetUsersMembershipFeeInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersMembershipFee>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMembershipFee>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetUsersMembershipFeeInfiniteQueryOptions(options)
-
-  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary View my membership information
- */
-export const prefetchGetUsersMembershipFeeInfiniteQuery = async <TData = Awaited<ReturnType<typeof getUsersMembershipFee>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMembershipFee>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetUsersMembershipFeeInfiniteQueryOptions(options)
-
-  await queryClient.prefetchInfiniteQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-export const getGetUsersMembershipFeeQueryOptions = <TData = Awaited<ReturnType<typeof getUsersMembershipFee>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMembershipFee>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetUsersMembershipFeeQueryKey();
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersMembershipFee>>> = ({ signal }) => getUsersMembershipFee(signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getUsersMembershipFee>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetUsersMembershipFeeQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersMembershipFee>>>
-export type GetUsersMembershipFeeQueryError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
-
-
-export function useGetUsersMembershipFee<TData = Awaited<ReturnType<typeof getUsersMembershipFee>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMembershipFee>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersMembershipFee>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersMembershipFee>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersMembershipFee<TData = Awaited<ReturnType<typeof getUsersMembershipFee>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMembershipFee>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersMembershipFee>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersMembershipFee>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersMembershipFee<TData = Awaited<ReturnType<typeof getUsersMembershipFee>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMembershipFee>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary View my membership information
- */
-
-export function useGetUsersMembershipFee<TData = Awaited<ReturnType<typeof getUsersMembershipFee>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMembershipFee>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetUsersMembershipFeeQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary View my membership information
- */
-export const prefetchGetUsersMembershipFeeQuery = async <TData = Awaited<ReturnType<typeof getUsersMembershipFee>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
- queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMembershipFee>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetUsersMembershipFeeQueryOptions(options)
-
-  await queryClient.prefetchQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-/**
- * POST `/users/membershipFee` — user. Requires authentication; route does not declare detailed permissions. Handled by `membershipProvider.syncMembershipData`.
- * @summary Sync my membership data
- */
-export const postUsersMembershipFee = (
-    
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<Response>(
-      {url: `/users/membershipFee`, method: 'POST', signal
-    },
-      );
-    }
-  
-
-
-export const getPostUsersMembershipFeeMutationOptions = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postUsersMembershipFee>>, TError,void, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postUsersMembershipFee>>, TError,void, TContext> => {
-
-const mutationKey = ['postUsersMembershipFee'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postUsersMembershipFee>>, void> = () => {
-          
-
-          return  postUsersMembershipFee()
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostUsersMembershipFeeMutationResult = NonNullable<Awaited<ReturnType<typeof postUsersMembershipFee>>>
-    
-    export type PostUsersMembershipFeeMutationError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
-
-    /**
- * @summary Sync my membership data
- */
-export const usePostUsersMembershipFee = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postUsersMembershipFee>>, TError,void, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postUsersMembershipFee>>,
-        TError,
-        void,
-        TContext
-      > => {
-
-      const mutationOptions = getPostUsersMembershipFeeMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * POST `/users/membershipFee/exchangePoints` — user. Requires authentication; route does not declare detailed permissions. Body field: `action`. Handled by `membership.findOne`.
- * @summary Create exchangePoints for user
- */
-export const postUsersMembershipFeeExchangePoints = (
-    postUsersMembershipFeeExchangePointsBody: PostUsersMembershipFeeExchangePointsBody,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<Response>(
-      {url: `/users/membershipFee/exchangePoints`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: postUsersMembershipFeeExchangePointsBody, signal
-    },
-      );
-    }
-  
-
-
-export const getPostUsersMembershipFeeExchangePointsMutationOptions = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postUsersMembershipFeeExchangePoints>>, TError,{data: PostUsersMembershipFeeExchangePointsBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postUsersMembershipFeeExchangePoints>>, TError,{data: PostUsersMembershipFeeExchangePointsBody}, TContext> => {
-
-const mutationKey = ['postUsersMembershipFeeExchangePoints'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postUsersMembershipFeeExchangePoints>>, {data: PostUsersMembershipFeeExchangePointsBody}> = (props) => {
-          const {data} = props ?? {};
-
-          return  postUsersMembershipFeeExchangePoints(data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostUsersMembershipFeeExchangePointsMutationResult = NonNullable<Awaited<ReturnType<typeof postUsersMembershipFeeExchangePoints>>>
-    export type PostUsersMembershipFeeExchangePointsMutationBody = PostUsersMembershipFeeExchangePointsBody
-    export type PostUsersMembershipFeeExchangePointsMutationError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
-
-    /**
- * @summary Create exchangePoints for user
- */
-export const usePostUsersMembershipFeeExchangePoints = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postUsersMembershipFeeExchangePoints>>, TError,{data: PostUsersMembershipFeeExchangePointsBody}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postUsersMembershipFeeExchangePoints>>,
-        TError,
-        {data: PostUsersMembershipFeeExchangePointsBody},
-        TContext
-      > => {
-
-      const mutationOptions = getPostUsersMembershipFeeExchangePointsMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * GET `/users/medical/patients` — users. Public, no authentication required. Handled by `externalAPIService.get`.
- * @summary Look up patients
- */
-export const getUsersMedicalPatients = (
-    
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<Response>(
-      {url: `/users/medical/patients`, method: 'GET', signal
-    },
-      );
-    }
-  
-
-
-
-export const getGetUsersMedicalPatientsInfiniteQueryKey = () => {
-    return [
-    'infinite', `/users/medical/patients`
-    ] as const;
-    }
-
-export const getGetUsersMedicalPatientsQueryKey = () => {
-    return [
-    `/users/medical/patients`
-    ] as const;
-    }
-
-    
-export const getGetUsersMedicalPatientsInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getUsersMedicalPatients>>>, TError = LegacyBadRequestResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatients>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetUsersMedicalPatientsInfiniteQueryKey();
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersMedicalPatients>>> = ({ signal }) => getUsersMedicalPatients(signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatients>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetUsersMedicalPatientsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersMedicalPatients>>>
-export type GetUsersMedicalPatientsInfiniteQueryError = LegacyBadRequestResponse
-
-
-export function useGetUsersMedicalPatientsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersMedicalPatients>>>, TError = LegacyBadRequestResponse>(
-  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatients>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersMedicalPatients>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersMedicalPatients>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersMedicalPatientsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersMedicalPatients>>>, TError = LegacyBadRequestResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatients>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersMedicalPatients>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersMedicalPatients>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersMedicalPatientsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersMedicalPatients>>>, TError = LegacyBadRequestResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatients>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Look up patients
- */
-
-export function useGetUsersMedicalPatientsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersMedicalPatients>>>, TError = LegacyBadRequestResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatients>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetUsersMedicalPatientsInfiniteQueryOptions(options)
-
-  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary Look up patients
- */
-export const prefetchGetUsersMedicalPatientsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getUsersMedicalPatients>>, TError = LegacyBadRequestResponse>(
- queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatients>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetUsersMedicalPatientsInfiniteQueryOptions(options)
-
-  await queryClient.prefetchInfiniteQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-export const getGetUsersMedicalPatientsQueryOptions = <TData = Awaited<ReturnType<typeof getUsersMedicalPatients>>, TError = LegacyBadRequestResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatients>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetUsersMedicalPatientsQueryKey();
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersMedicalPatients>>> = ({ signal }) => getUsersMedicalPatients(signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatients>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetUsersMedicalPatientsQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersMedicalPatients>>>
-export type GetUsersMedicalPatientsQueryError = LegacyBadRequestResponse
-
-
-export function useGetUsersMedicalPatients<TData = Awaited<ReturnType<typeof getUsersMedicalPatients>>, TError = LegacyBadRequestResponse>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatients>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersMedicalPatients>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersMedicalPatients>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersMedicalPatients<TData = Awaited<ReturnType<typeof getUsersMedicalPatients>>, TError = LegacyBadRequestResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatients>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersMedicalPatients>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersMedicalPatients>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersMedicalPatients<TData = Awaited<ReturnType<typeof getUsersMedicalPatients>>, TError = LegacyBadRequestResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatients>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Look up patients
- */
-
-export function useGetUsersMedicalPatients<TData = Awaited<ReturnType<typeof getUsersMedicalPatients>>, TError = LegacyBadRequestResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatients>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetUsersMedicalPatientsQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary Look up patients
- */
-export const prefetchGetUsersMedicalPatientsQuery = async <TData = Awaited<ReturnType<typeof getUsersMedicalPatients>>, TError = LegacyBadRequestResponse>(
- queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatients>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetUsersMedicalPatientsQueryOptions(options)
-
-  await queryClient.prefetchQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-/**
- * GET `/users/medical/patientparaclinicals` — users. Public, no authentication required. Handled by `externalAPIService.get`.
- * @summary View paraclinical results
- */
-export const getUsersMedicalPatientparaclinicals = (
-    
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<Response>(
-      {url: `/users/medical/patientparaclinicals`, method: 'GET', signal
-    },
-      );
-    }
-  
-
-
-
-export const getGetUsersMedicalPatientparaclinicalsInfiniteQueryKey = () => {
-    return [
-    'infinite', `/users/medical/patientparaclinicals`
-    ] as const;
-    }
-
-export const getGetUsersMedicalPatientparaclinicalsQueryKey = () => {
-    return [
-    `/users/medical/patientparaclinicals`
-    ] as const;
-    }
-
-    
-export const getGetUsersMedicalPatientparaclinicalsInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getUsersMedicalPatientparaclinicals>>>, TError = LegacyBadRequestResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientparaclinicals>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetUsersMedicalPatientparaclinicalsInfiniteQueryKey();
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersMedicalPatientparaclinicals>>> = ({ signal }) => getUsersMedicalPatientparaclinicals(signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientparaclinicals>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetUsersMedicalPatientparaclinicalsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersMedicalPatientparaclinicals>>>
-export type GetUsersMedicalPatientparaclinicalsInfiniteQueryError = LegacyBadRequestResponse
-
-
-export function useGetUsersMedicalPatientparaclinicalsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersMedicalPatientparaclinicals>>>, TError = LegacyBadRequestResponse>(
-  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientparaclinicals>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersMedicalPatientparaclinicals>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersMedicalPatientparaclinicals>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersMedicalPatientparaclinicalsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersMedicalPatientparaclinicals>>>, TError = LegacyBadRequestResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientparaclinicals>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersMedicalPatientparaclinicals>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersMedicalPatientparaclinicals>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersMedicalPatientparaclinicalsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersMedicalPatientparaclinicals>>>, TError = LegacyBadRequestResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientparaclinicals>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary View paraclinical results
- */
-
-export function useGetUsersMedicalPatientparaclinicalsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersMedicalPatientparaclinicals>>>, TError = LegacyBadRequestResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientparaclinicals>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetUsersMedicalPatientparaclinicalsInfiniteQueryOptions(options)
-
-  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary View paraclinical results
- */
-export const prefetchGetUsersMedicalPatientparaclinicalsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getUsersMedicalPatientparaclinicals>>, TError = LegacyBadRequestResponse>(
- queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientparaclinicals>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetUsersMedicalPatientparaclinicalsInfiniteQueryOptions(options)
-
-  await queryClient.prefetchInfiniteQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-export const getGetUsersMedicalPatientparaclinicalsQueryOptions = <TData = Awaited<ReturnType<typeof getUsersMedicalPatientparaclinicals>>, TError = LegacyBadRequestResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientparaclinicals>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetUsersMedicalPatientparaclinicalsQueryKey();
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersMedicalPatientparaclinicals>>> = ({ signal }) => getUsersMedicalPatientparaclinicals(signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientparaclinicals>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetUsersMedicalPatientparaclinicalsQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersMedicalPatientparaclinicals>>>
-export type GetUsersMedicalPatientparaclinicalsQueryError = LegacyBadRequestResponse
-
-
-export function useGetUsersMedicalPatientparaclinicals<TData = Awaited<ReturnType<typeof getUsersMedicalPatientparaclinicals>>, TError = LegacyBadRequestResponse>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientparaclinicals>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersMedicalPatientparaclinicals>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersMedicalPatientparaclinicals>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersMedicalPatientparaclinicals<TData = Awaited<ReturnType<typeof getUsersMedicalPatientparaclinicals>>, TError = LegacyBadRequestResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientparaclinicals>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersMedicalPatientparaclinicals>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersMedicalPatientparaclinicals>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersMedicalPatientparaclinicals<TData = Awaited<ReturnType<typeof getUsersMedicalPatientparaclinicals>>, TError = LegacyBadRequestResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientparaclinicals>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary View paraclinical results
- */
-
-export function useGetUsersMedicalPatientparaclinicals<TData = Awaited<ReturnType<typeof getUsersMedicalPatientparaclinicals>>, TError = LegacyBadRequestResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientparaclinicals>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetUsersMedicalPatientparaclinicalsQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary View paraclinical results
- */
-export const prefetchGetUsersMedicalPatientparaclinicalsQuery = async <TData = Awaited<ReturnType<typeof getUsersMedicalPatientparaclinicals>>, TError = LegacyBadRequestResponse>(
- queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientparaclinicals>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetUsersMedicalPatientparaclinicalsQueryOptions(options)
-
-  await queryClient.prefetchQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-/**
- * GET `/users/medical/patientexams` — users. Public, no authentication required. Handled by `externalAPIService.get`.
- * @summary View patient exam results
- */
-export const getUsersMedicalPatientexams = (
-    
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<Response>(
-      {url: `/users/medical/patientexams`, method: 'GET', signal
-    },
-      );
-    }
-  
-
-
-
-export const getGetUsersMedicalPatientexamsInfiniteQueryKey = () => {
-    return [
-    'infinite', `/users/medical/patientexams`
-    ] as const;
-    }
-
-export const getGetUsersMedicalPatientexamsQueryKey = () => {
-    return [
-    `/users/medical/patientexams`
-    ] as const;
-    }
-
-    
-export const getGetUsersMedicalPatientexamsInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getUsersMedicalPatientexams>>>, TError = LegacyBadRequestResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientexams>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetUsersMedicalPatientexamsInfiniteQueryKey();
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersMedicalPatientexams>>> = ({ signal }) => getUsersMedicalPatientexams(signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientexams>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetUsersMedicalPatientexamsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersMedicalPatientexams>>>
-export type GetUsersMedicalPatientexamsInfiniteQueryError = LegacyBadRequestResponse
-
-
-export function useGetUsersMedicalPatientexamsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersMedicalPatientexams>>>, TError = LegacyBadRequestResponse>(
-  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientexams>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersMedicalPatientexams>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersMedicalPatientexams>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersMedicalPatientexamsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersMedicalPatientexams>>>, TError = LegacyBadRequestResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientexams>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersMedicalPatientexams>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersMedicalPatientexams>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersMedicalPatientexamsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersMedicalPatientexams>>>, TError = LegacyBadRequestResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientexams>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary View patient exam results
- */
-
-export function useGetUsersMedicalPatientexamsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersMedicalPatientexams>>>, TError = LegacyBadRequestResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientexams>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetUsersMedicalPatientexamsInfiniteQueryOptions(options)
-
-  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary View patient exam results
- */
-export const prefetchGetUsersMedicalPatientexamsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getUsersMedicalPatientexams>>, TError = LegacyBadRequestResponse>(
- queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientexams>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetUsersMedicalPatientexamsInfiniteQueryOptions(options)
-
-  await queryClient.prefetchInfiniteQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-export const getGetUsersMedicalPatientexamsQueryOptions = <TData = Awaited<ReturnType<typeof getUsersMedicalPatientexams>>, TError = LegacyBadRequestResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientexams>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetUsersMedicalPatientexamsQueryKey();
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersMedicalPatientexams>>> = ({ signal }) => getUsersMedicalPatientexams(signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientexams>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetUsersMedicalPatientexamsQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersMedicalPatientexams>>>
-export type GetUsersMedicalPatientexamsQueryError = LegacyBadRequestResponse
-
-
-export function useGetUsersMedicalPatientexams<TData = Awaited<ReturnType<typeof getUsersMedicalPatientexams>>, TError = LegacyBadRequestResponse>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientexams>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersMedicalPatientexams>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersMedicalPatientexams>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersMedicalPatientexams<TData = Awaited<ReturnType<typeof getUsersMedicalPatientexams>>, TError = LegacyBadRequestResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientexams>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersMedicalPatientexams>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersMedicalPatientexams>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersMedicalPatientexams<TData = Awaited<ReturnType<typeof getUsersMedicalPatientexams>>, TError = LegacyBadRequestResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientexams>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary View patient exam results
- */
-
-export function useGetUsersMedicalPatientexams<TData = Awaited<ReturnType<typeof getUsersMedicalPatientexams>>, TError = LegacyBadRequestResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientexams>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetUsersMedicalPatientexamsQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary View patient exam results
- */
-export const prefetchGetUsersMedicalPatientexamsQuery = async <TData = Awaited<ReturnType<typeof getUsersMedicalPatientexams>>, TError = LegacyBadRequestResponse>(
- queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientexams>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetUsersMedicalPatientexamsQueryOptions(options)
-
-  await queryClient.prefetchQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-/**
- * GET `/users/medical/patientdocs` — users. Public, no authentication required. Handled by `externalAPIService.get`.
- * @summary View medical record documents
- */
-export const getUsersMedicalPatientdocs = (
-    
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<Response>(
-      {url: `/users/medical/patientdocs`, method: 'GET', signal
-    },
-      );
-    }
-  
-
-
-
-export const getGetUsersMedicalPatientdocsInfiniteQueryKey = () => {
-    return [
-    'infinite', `/users/medical/patientdocs`
-    ] as const;
-    }
-
-export const getGetUsersMedicalPatientdocsQueryKey = () => {
-    return [
-    `/users/medical/patientdocs`
-    ] as const;
-    }
-
-    
-export const getGetUsersMedicalPatientdocsInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getUsersMedicalPatientdocs>>>, TError = LegacyBadRequestResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientdocs>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetUsersMedicalPatientdocsInfiniteQueryKey();
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersMedicalPatientdocs>>> = ({ signal }) => getUsersMedicalPatientdocs(signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientdocs>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetUsersMedicalPatientdocsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersMedicalPatientdocs>>>
-export type GetUsersMedicalPatientdocsInfiniteQueryError = LegacyBadRequestResponse
-
-
-export function useGetUsersMedicalPatientdocsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersMedicalPatientdocs>>>, TError = LegacyBadRequestResponse>(
-  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientdocs>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersMedicalPatientdocs>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersMedicalPatientdocs>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersMedicalPatientdocsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersMedicalPatientdocs>>>, TError = LegacyBadRequestResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientdocs>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersMedicalPatientdocs>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersMedicalPatientdocs>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersMedicalPatientdocsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersMedicalPatientdocs>>>, TError = LegacyBadRequestResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientdocs>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary View medical record documents
- */
-
-export function useGetUsersMedicalPatientdocsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersMedicalPatientdocs>>>, TError = LegacyBadRequestResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientdocs>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetUsersMedicalPatientdocsInfiniteQueryOptions(options)
-
-  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary View medical record documents
- */
-export const prefetchGetUsersMedicalPatientdocsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getUsersMedicalPatientdocs>>, TError = LegacyBadRequestResponse>(
- queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientdocs>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetUsersMedicalPatientdocsInfiniteQueryOptions(options)
-
-  await queryClient.prefetchInfiniteQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-export const getGetUsersMedicalPatientdocsQueryOptions = <TData = Awaited<ReturnType<typeof getUsersMedicalPatientdocs>>, TError = LegacyBadRequestResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientdocs>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetUsersMedicalPatientdocsQueryKey();
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersMedicalPatientdocs>>> = ({ signal }) => getUsersMedicalPatientdocs(signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientdocs>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetUsersMedicalPatientdocsQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersMedicalPatientdocs>>>
-export type GetUsersMedicalPatientdocsQueryError = LegacyBadRequestResponse
-
-
-export function useGetUsersMedicalPatientdocs<TData = Awaited<ReturnType<typeof getUsersMedicalPatientdocs>>, TError = LegacyBadRequestResponse>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientdocs>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersMedicalPatientdocs>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersMedicalPatientdocs>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersMedicalPatientdocs<TData = Awaited<ReturnType<typeof getUsersMedicalPatientdocs>>, TError = LegacyBadRequestResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientdocs>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersMedicalPatientdocs>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersMedicalPatientdocs>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersMedicalPatientdocs<TData = Awaited<ReturnType<typeof getUsersMedicalPatientdocs>>, TError = LegacyBadRequestResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientdocs>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary View medical record documents
- */
-
-export function useGetUsersMedicalPatientdocs<TData = Awaited<ReturnType<typeof getUsersMedicalPatientdocs>>, TError = LegacyBadRequestResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientdocs>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetUsersMedicalPatientdocsQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary View medical record documents
- */
-export const prefetchGetUsersMedicalPatientdocsQuery = async <TData = Awaited<ReturnType<typeof getUsersMedicalPatientdocs>>, TError = LegacyBadRequestResponse>(
- queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientdocs>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetUsersMedicalPatientdocsQueryOptions(options)
-
-  await queryClient.prefetchQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-/**
- * GET `/users/medical/patientdocs/imaging` — users. Public, no authentication required. Query parameters: `docUrl`. Body fields: `docUrl`. Handled by `externalAPIService.get`.
- * @summary View imaging documents
- */
-export const getUsersMedicalPatientdocsImaging = (
-    params?: GetUsersMedicalPatientdocsImagingParams,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<GetUsersMedicalPatientdocsImaging200>(
-      {url: `/users/medical/patientdocs/imaging`, method: 'GET',
-        params, signal
-    },
-      );
-    }
-  
-
-
-
-export const getGetUsersMedicalPatientdocsImagingInfiniteQueryKey = (params?: GetUsersMedicalPatientdocsImagingParams,) => {
-    return [
-    'infinite', `/users/medical/patientdocs/imaging`, ...(params ? [params]: [])
-    ] as const;
-    }
-
-export const getGetUsersMedicalPatientdocsImagingQueryKey = (params?: GetUsersMedicalPatientdocsImagingParams,) => {
-    return [
-    `/users/medical/patientdocs/imaging`, ...(params ? [params]: [])
-    ] as const;
-    }
-
-    
-export const getGetUsersMedicalPatientdocsImagingInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getUsersMedicalPatientdocsImaging>>>, TError = LegacyBadRequestResponse>(params?: GetUsersMedicalPatientdocsImagingParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientdocsImaging>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetUsersMedicalPatientdocsImagingInfiniteQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersMedicalPatientdocsImaging>>> = ({ signal }) => getUsersMedicalPatientdocsImaging(params, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientdocsImaging>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetUsersMedicalPatientdocsImagingInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersMedicalPatientdocsImaging>>>
-export type GetUsersMedicalPatientdocsImagingInfiniteQueryError = LegacyBadRequestResponse
-
-
-export function useGetUsersMedicalPatientdocsImagingInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersMedicalPatientdocsImaging>>>, TError = LegacyBadRequestResponse>(
- params: undefined |  GetUsersMedicalPatientdocsImagingParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientdocsImaging>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersMedicalPatientdocsImaging>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersMedicalPatientdocsImaging>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersMedicalPatientdocsImagingInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersMedicalPatientdocsImaging>>>, TError = LegacyBadRequestResponse>(
- params?: GetUsersMedicalPatientdocsImagingParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientdocsImaging>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersMedicalPatientdocsImaging>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersMedicalPatientdocsImaging>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersMedicalPatientdocsImagingInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersMedicalPatientdocsImaging>>>, TError = LegacyBadRequestResponse>(
- params?: GetUsersMedicalPatientdocsImagingParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientdocsImaging>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary View imaging documents
- */
-
-export function useGetUsersMedicalPatientdocsImagingInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersMedicalPatientdocsImaging>>>, TError = LegacyBadRequestResponse>(
- params?: GetUsersMedicalPatientdocsImagingParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientdocsImaging>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetUsersMedicalPatientdocsImagingInfiniteQueryOptions(params,options)
-
-  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary View imaging documents
- */
-export const prefetchGetUsersMedicalPatientdocsImagingInfiniteQuery = async <TData = Awaited<ReturnType<typeof getUsersMedicalPatientdocsImaging>>, TError = LegacyBadRequestResponse>(
- queryClient: QueryClient, params?: GetUsersMedicalPatientdocsImagingParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientdocsImaging>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetUsersMedicalPatientdocsImagingInfiniteQueryOptions(params,options)
-
-  await queryClient.prefetchInfiniteQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-export const getGetUsersMedicalPatientdocsImagingQueryOptions = <TData = Awaited<ReturnType<typeof getUsersMedicalPatientdocsImaging>>, TError = LegacyBadRequestResponse>(params?: GetUsersMedicalPatientdocsImagingParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientdocsImaging>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetUsersMedicalPatientdocsImagingQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersMedicalPatientdocsImaging>>> = ({ signal }) => getUsersMedicalPatientdocsImaging(params, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientdocsImaging>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetUsersMedicalPatientdocsImagingQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersMedicalPatientdocsImaging>>>
-export type GetUsersMedicalPatientdocsImagingQueryError = LegacyBadRequestResponse
-
-
-export function useGetUsersMedicalPatientdocsImaging<TData = Awaited<ReturnType<typeof getUsersMedicalPatientdocsImaging>>, TError = LegacyBadRequestResponse>(
- params: undefined |  GetUsersMedicalPatientdocsImagingParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientdocsImaging>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersMedicalPatientdocsImaging>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersMedicalPatientdocsImaging>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersMedicalPatientdocsImaging<TData = Awaited<ReturnType<typeof getUsersMedicalPatientdocsImaging>>, TError = LegacyBadRequestResponse>(
- params?: GetUsersMedicalPatientdocsImagingParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientdocsImaging>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersMedicalPatientdocsImaging>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersMedicalPatientdocsImaging>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersMedicalPatientdocsImaging<TData = Awaited<ReturnType<typeof getUsersMedicalPatientdocsImaging>>, TError = LegacyBadRequestResponse>(
- params?: GetUsersMedicalPatientdocsImagingParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientdocsImaging>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary View imaging documents
- */
-
-export function useGetUsersMedicalPatientdocsImaging<TData = Awaited<ReturnType<typeof getUsersMedicalPatientdocsImaging>>, TError = LegacyBadRequestResponse>(
- params?: GetUsersMedicalPatientdocsImagingParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientdocsImaging>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetUsersMedicalPatientdocsImagingQueryOptions(params,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary View imaging documents
- */
-export const prefetchGetUsersMedicalPatientdocsImagingQuery = async <TData = Awaited<ReturnType<typeof getUsersMedicalPatientdocsImaging>>, TError = LegacyBadRequestResponse>(
- queryClient: QueryClient, params?: GetUsersMedicalPatientdocsImagingParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientdocsImaging>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetUsersMedicalPatientdocsImagingQueryOptions(params,options)
-
-  await queryClient.prefetchQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-/**
- * GET `/users/medical/patientamount` — users. Public, no authentication required. Handled by `externalAPIService.get`.
- * @summary View patient's paid amount
- */
-export const getUsersMedicalPatientamount = (
-    
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<Response>(
-      {url: `/users/medical/patientamount`, method: 'GET', signal
-    },
-      );
-    }
-  
-
-
-
-export const getGetUsersMedicalPatientamountInfiniteQueryKey = () => {
-    return [
-    'infinite', `/users/medical/patientamount`
-    ] as const;
-    }
-
-export const getGetUsersMedicalPatientamountQueryKey = () => {
-    return [
-    `/users/medical/patientamount`
-    ] as const;
-    }
-
-    
-export const getGetUsersMedicalPatientamountInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getUsersMedicalPatientamount>>>, TError = LegacyBadRequestResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientamount>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetUsersMedicalPatientamountInfiniteQueryKey();
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersMedicalPatientamount>>> = ({ signal }) => getUsersMedicalPatientamount(signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientamount>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetUsersMedicalPatientamountInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersMedicalPatientamount>>>
-export type GetUsersMedicalPatientamountInfiniteQueryError = LegacyBadRequestResponse
-
-
-export function useGetUsersMedicalPatientamountInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersMedicalPatientamount>>>, TError = LegacyBadRequestResponse>(
-  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientamount>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersMedicalPatientamount>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersMedicalPatientamount>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersMedicalPatientamountInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersMedicalPatientamount>>>, TError = LegacyBadRequestResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientamount>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersMedicalPatientamount>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersMedicalPatientamount>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersMedicalPatientamountInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersMedicalPatientamount>>>, TError = LegacyBadRequestResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientamount>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary View patient's paid amount
- */
-
-export function useGetUsersMedicalPatientamountInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersMedicalPatientamount>>>, TError = LegacyBadRequestResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientamount>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetUsersMedicalPatientamountInfiniteQueryOptions(options)
-
-  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary View patient's paid amount
- */
-export const prefetchGetUsersMedicalPatientamountInfiniteQuery = async <TData = Awaited<ReturnType<typeof getUsersMedicalPatientamount>>, TError = LegacyBadRequestResponse>(
- queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientamount>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetUsersMedicalPatientamountInfiniteQueryOptions(options)
-
-  await queryClient.prefetchInfiniteQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-export const getGetUsersMedicalPatientamountQueryOptions = <TData = Awaited<ReturnType<typeof getUsersMedicalPatientamount>>, TError = LegacyBadRequestResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientamount>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetUsersMedicalPatientamountQueryKey();
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersMedicalPatientamount>>> = ({ signal }) => getUsersMedicalPatientamount(signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientamount>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetUsersMedicalPatientamountQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersMedicalPatientamount>>>
-export type GetUsersMedicalPatientamountQueryError = LegacyBadRequestResponse
-
-
-export function useGetUsersMedicalPatientamount<TData = Awaited<ReturnType<typeof getUsersMedicalPatientamount>>, TError = LegacyBadRequestResponse>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientamount>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersMedicalPatientamount>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersMedicalPatientamount>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersMedicalPatientamount<TData = Awaited<ReturnType<typeof getUsersMedicalPatientamount>>, TError = LegacyBadRequestResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientamount>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getUsersMedicalPatientamount>>,
-          TError,
-          Awaited<ReturnType<typeof getUsersMedicalPatientamount>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetUsersMedicalPatientamount<TData = Awaited<ReturnType<typeof getUsersMedicalPatientamount>>, TError = LegacyBadRequestResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientamount>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary View patient's paid amount
- */
-
-export function useGetUsersMedicalPatientamount<TData = Awaited<ReturnType<typeof getUsersMedicalPatientamount>>, TError = LegacyBadRequestResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientamount>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetUsersMedicalPatientamountQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary View patient's paid amount
- */
-export const prefetchGetUsersMedicalPatientamountQuery = async <TData = Awaited<ReturnType<typeof getUsersMedicalPatientamount>>, TError = LegacyBadRequestResponse>(
- queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersMedicalPatientamount>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetUsersMedicalPatientamountQueryOptions(options)
-
-  await queryClient.prefetchQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-/**
- * PUT `/users/admin/{id}` — users. Only platform administrators (ADM) may call this. Body fields: `email`, `phone_number`, `password`, `role_id`, `zalo_name`, `branch_id`, `is_active`. Handled by `userProvider.getById`.
+ * PUT `/users/{id}/admin` — users. Only platform administrators (ADM) may call this. Body fields: `email`, `phone_number`, `password`, `role_id`, `zalo_name`, `branch_id`, `is_active`. Handled by `userProvider.getById`.
  * @summary Update an admin
  */
-export const putUsersAdminId = (
+export const putUsersIdAdmin = (
     id: string,
-    putUsersAdminIdBody: PutUsersAdminIdBody,
+    putUsersIdAdminBody: PutUsersIdAdminBody,
  ) => {
       
       
       return customInstance<Response>(
-      {url: `/users/admin/${id}`, method: 'PUT',
+      {url: `/users/${id}/admin`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
-      data: putUsersAdminIdBody
+      data: putUsersIdAdminBody
     },
       );
     }
   
 
 
-export const getPutUsersAdminIdMutationOptions = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putUsersAdminId>>, TError,{id: string;data: PutUsersAdminIdBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putUsersAdminId>>, TError,{id: string;data: PutUsersAdminIdBody}, TContext> => {
+export const getPutUsersIdAdminMutationOptions = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putUsersIdAdmin>>, TError,{id: string;data: PutUsersIdAdminBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putUsersIdAdmin>>, TError,{id: string;data: PutUsersIdAdminBody}, TContext> => {
 
-const mutationKey = ['putUsersAdminId'];
+const mutationKey = ['putUsersIdAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -3795,10 +79,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putUsersAdminId>>, {id: string;data: PutUsersAdminIdBody}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putUsersIdAdmin>>, {id: string;data: PutUsersIdAdminBody}> = (props) => {
           const {id,data} = props ?? {};
 
-          return  putUsersAdminId(id,data,)
+          return  putUsersIdAdmin(id,data,)
         }
 
         
@@ -3806,48 +90,48 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PutUsersAdminIdMutationResult = NonNullable<Awaited<ReturnType<typeof putUsersAdminId>>>
-    export type PutUsersAdminIdMutationBody = PutUsersAdminIdBody
-    export type PutUsersAdminIdMutationError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void
+    export type PutUsersIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof putUsersIdAdmin>>>
+    export type PutUsersIdAdminMutationBody = PutUsersIdAdminBody
+    export type PutUsersIdAdminMutationError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void
 
     /**
  * @summary Update an admin
  */
-export const usePutUsersAdminId = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putUsersAdminId>>, TError,{id: string;data: PutUsersAdminIdBody}, TContext>, }
+export const usePutUsersIdAdmin = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putUsersIdAdmin>>, TError,{id: string;data: PutUsersIdAdminBody}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putUsersAdminId>>,
+        Awaited<ReturnType<typeof putUsersIdAdmin>>,
         TError,
-        {id: string;data: PutUsersAdminIdBody},
+        {id: string;data: PutUsersIdAdminBody},
         TContext
       > => {
 
-      const mutationOptions = getPutUsersAdminIdMutationOptions(options);
+      const mutationOptions = getPutUsersIdAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * DELETE `/users/admin/{id}` — users. Only platform administrators (ADM) may call this. Handled by `userProvider.getById`.
+ * DELETE `/users/{id}/admin` — users. Only platform administrators (ADM) may call this. Handled by `userProvider.getById`.
  * @summary Delete an admin
  */
-export const deleteUsersAdminId = (
+export const deleteUsersIdAdmin = (
     id: string,
  ) => {
       
       
       return customInstance<Response>(
-      {url: `/users/admin/${id}`, method: 'DELETE'
+      {url: `/users/${id}/admin`, method: 'DELETE'
     },
       );
     }
   
 
 
-export const getDeleteUsersAdminIdMutationOptions = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteUsersAdminId>>, TError,{id: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof deleteUsersAdminId>>, TError,{id: string}, TContext> => {
+export const getDeleteUsersIdAdminMutationOptions = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteUsersIdAdmin>>, TError,{id: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteUsersIdAdmin>>, TError,{id: string}, TContext> => {
 
-const mutationKey = ['deleteUsersAdminId'];
+const mutationKey = ['deleteUsersIdAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -3857,10 +141,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteUsersAdminId>>, {id: string}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteUsersIdAdmin>>, {id: string}> = (props) => {
           const {id} = props ?? {};
 
-          return  deleteUsersAdminId(id,)
+          return  deleteUsersIdAdmin(id,)
         }
 
         
@@ -3868,28 +152,223 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type DeleteUsersAdminIdMutationResult = NonNullable<Awaited<ReturnType<typeof deleteUsersAdminId>>>
+    export type DeleteUsersIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof deleteUsersIdAdmin>>>
     
-    export type DeleteUsersAdminIdMutationError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void
+    export type DeleteUsersIdAdminMutationError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void
 
     /**
  * @summary Delete an admin
  */
-export const useDeleteUsersAdminId = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteUsersAdminId>>, TError,{id: string}, TContext>, }
+export const useDeleteUsersIdAdmin = <TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse | void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteUsersIdAdmin>>, TError,{id: string}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteUsersAdminId>>,
+        Awaited<ReturnType<typeof deleteUsersIdAdmin>>,
         TError,
         {id: string},
         TContext
       > => {
 
-      const mutationOptions = getDeleteUsersAdminIdMutationOptions(options);
+      const mutationOptions = getDeleteUsersIdAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * POST `/users/admin` — users. Only platform administrators (ADM) may call this. Body fields: `email`, `phone_number`, `password`, `role_id`, `full_name`, `branch_id`. Handled by `roleProvider.getById`.
+ * GET `/users/admin` — Returns a list of accounts with member, voucher and role data. Cần đăng nhập + `user.view_all`. Supports search by name/email/phone number and filters by status, branch, role, and `has_role` to only return internal staff (with an assigned role). Branch-restricted users only see data within their assigned scope.
+ * @summary Search and filter users
+ */
+export const getUsersAdmin = (
+    params?: GetUsersAdminParams,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<Response>(
+      {url: `/users/admin`, method: 'GET',
+        params, signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetUsersAdminInfiniteQueryKey = (params?: GetUsersAdminParams,) => {
+    return [
+    'infinite', `/users/admin`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+export const getGetUsersAdminQueryKey = (params?: GetUsersAdminParams,) => {
+    return [
+    `/users/admin`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getGetUsersAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getUsersAdmin>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(params?: GetUsersAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetUsersAdminInfiniteQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersAdmin>>> = ({ signal }) => getUsersAdmin(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetUsersAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersAdmin>>>
+export type GetUsersAdminInfiniteQueryError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
+
+
+export function useGetUsersAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersAdmin>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+ params: undefined |  GetUsersAdminParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUsersAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getUsersAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersAdmin>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+ params?: GetUsersAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUsersAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getUsersAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersAdmin>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+ params?: GetUsersAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Search and filter users
+ */
+
+export function useGetUsersAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersAdmin>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+ params?: GetUsersAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetUsersAdminInfiniteQueryOptions(params,options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Search and filter users
+ */
+export const prefetchGetUsersAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getUsersAdmin>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+ queryClient: QueryClient, params?: GetUsersAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetUsersAdminInfiniteQueryOptions(params,options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetUsersAdminQueryOptions = <TData = Awaited<ReturnType<typeof getUsersAdmin>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(params?: GetUsersAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetUsersAdminQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersAdmin>>> = ({ signal }) => getUsersAdmin(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getUsersAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetUsersAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersAdmin>>>
+export type GetUsersAdminQueryError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
+
+
+export function useGetUsersAdmin<TData = Awaited<ReturnType<typeof getUsersAdmin>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+ params: undefined |  GetUsersAdminParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUsersAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getUsersAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersAdmin<TData = Awaited<ReturnType<typeof getUsersAdmin>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+ params?: GetUsersAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUsersAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getUsersAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersAdmin<TData = Awaited<ReturnType<typeof getUsersAdmin>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+ params?: GetUsersAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Search and filter users
+ */
+
+export function useGetUsersAdmin<TData = Awaited<ReturnType<typeof getUsersAdmin>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+ params?: GetUsersAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetUsersAdminQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Search and filter users
+ */
+export const prefetchGetUsersAdminQuery = async <TData = Awaited<ReturnType<typeof getUsersAdmin>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+ queryClient: QueryClient, params?: GetUsersAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetUsersAdminQueryOptions(params,options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * POST `/users/admin` — only the highest system administrator may create accounts. Cần đăng nhập + `staff_profile.create`. Leaving `branch_id` blank creates the highest system administrator; selecting a branch creates a branch-scoped account and requires `role_id`.
  * @summary Manage admin accounts
  */
 export const postUsersAdmin = (
@@ -3953,4 +432,262 @@ export const usePostUsersAdmin = <TError = LegacyBadRequestResponse | LegacyUnau
 
       return useMutation(mutationOptions, queryClient);
     }
+    /**
+ * POST `/auth/zalo` — user. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Body fields: `phone_number`, `zalo_name`, `zalo_id`, `zalo_avatar`, `zalo_id_by_oa`. Handled by `userProvider.getOne`.
+ * @summary Link a Zalo account to a user
+ */
+export const postAuthZalo = (
+    postAuthZaloBody: PostAuthZaloBody,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<Response>(
+      {url: `/auth/zalo`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: postAuthZaloBody, signal
+    },
+      );
+    }
+  
+
+
+export const getPostAuthZaloMutationOptions = <TError = LegacyBadRequestResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAuthZalo>>, TError,{data: PostAuthZaloBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postAuthZalo>>, TError,{data: PostAuthZaloBody}, TContext> => {
+
+const mutationKey = ['postAuthZalo'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAuthZalo>>, {data: PostAuthZaloBody}> = (props) => {
+          const {data} = props ?? {};
+
+          return  postAuthZalo(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostAuthZaloMutationResult = NonNullable<Awaited<ReturnType<typeof postAuthZalo>>>
+    export type PostAuthZaloMutationBody = PostAuthZaloBody
+    export type PostAuthZaloMutationError = LegacyBadRequestResponse
+
+    /**
+ * @summary Link a Zalo account to a user
+ */
+export const usePostAuthZalo = <TError = LegacyBadRequestResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAuthZalo>>, TError,{data: PostAuthZaloBody}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postAuthZalo>>,
+        TError,
+        {data: PostAuthZaloBody},
+        TContext
+      > => {
+
+      const mutationOptions = getPostAuthZaloMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * Returns the account information tied to the current bearer token, including the member profile and roles. Used by both staff and logged-in customers.
+ * @summary View my account profile
+ */
+export const getAuthMe = (
     
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<Response>(
+      {url: `/auth/me`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetAuthMeInfiniteQueryKey = () => {
+    return [
+    'infinite', `/auth/me`
+    ] as const;
+    }
+
+export const getGetAuthMeQueryKey = () => {
+    return [
+    `/auth/me`
+    ] as const;
+    }
+
+    
+export const getGetAuthMeInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAuthMe>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAuthMe>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAuthMeInfiniteQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAuthMe>>> = ({ signal }) => getAuthMe(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAuthMe>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAuthMeInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAuthMe>>>
+export type GetAuthMeInfiniteQueryError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
+
+
+export function useGetAuthMeInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAuthMe>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAuthMe>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAuthMe>>,
+          TError,
+          Awaited<ReturnType<typeof getAuthMe>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAuthMeInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAuthMe>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAuthMe>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAuthMe>>,
+          TError,
+          Awaited<ReturnType<typeof getAuthMe>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAuthMeInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAuthMe>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAuthMe>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary View my account profile
+ */
+
+export function useGetAuthMeInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAuthMe>>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAuthMe>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAuthMeInfiniteQueryOptions(options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary View my account profile
+ */
+export const prefetchGetAuthMeInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAuthMe>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAuthMe>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetAuthMeInfiniteQueryOptions(options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetAuthMeQueryOptions = <TData = Awaited<ReturnType<typeof getAuthMe>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthMe>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAuthMeQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAuthMe>>> = ({ signal }) => getAuthMe(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAuthMe>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAuthMeQueryResult = NonNullable<Awaited<ReturnType<typeof getAuthMe>>>
+export type GetAuthMeQueryError = LegacyBadRequestResponse | LegacyUnauthorizedResponse
+
+
+export function useGetAuthMe<TData = Awaited<ReturnType<typeof getAuthMe>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthMe>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAuthMe>>,
+          TError,
+          Awaited<ReturnType<typeof getAuthMe>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAuthMe<TData = Awaited<ReturnType<typeof getAuthMe>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthMe>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAuthMe>>,
+          TError,
+          Awaited<ReturnType<typeof getAuthMe>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAuthMe<TData = Awaited<ReturnType<typeof getAuthMe>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthMe>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary View my account profile
+ */
+
+export function useGetAuthMe<TData = Awaited<ReturnType<typeof getAuthMe>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthMe>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAuthMeQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary View my account profile
+ */
+export const prefetchGetAuthMeQuery = async <TData = Awaited<ReturnType<typeof getAuthMe>>, TError = LegacyBadRequestResponse | LegacyUnauthorizedResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAuthMe>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetAuthMeQueryOptions(options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+

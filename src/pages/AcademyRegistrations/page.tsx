@@ -7,14 +7,11 @@ import PageTitle from '@/components/base/PageTitle'
 import ListPagination from '@/components/base/ListPagination'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { AcademyCourse } from '@/api/models/academyCourse'
-import { getVoucherCategory, type VoucherCategoryRow } from '@/api/custom/voucherCategories'
-import {
-  getGetAcademyRegistrationsQueryKey,
-  useGetAcademyRegistrationsFindStudent,
-  usePutAcademyRegistrationsIdStatus,
-} from '@/api/endpoints/academy'
-import { useGetAcademyCourses } from '@/api/endpoints/academy'
-import { useGetUsers } from '@/api/endpoints/users'
+import { getAcademyCourseVouchersAdmin } from '@/api/endpoints/academy-course-vouchers'
+import type { VoucherCategoryRow } from '@/pages/Vouchers/components/constants'
+import { getGetAcademyRegistrationsAdminQueryKey, postAcademyRegistrationsAdmin, useGetAcademyRegistrationsFindStudentAdmin, usePutAcademyRegistrationsIdStatusAdmin } from '@/api/endpoints/academy'
+import { useGetAcademyCoursesAdmin } from '@/api/endpoints/academy'
+import { useGetUsersAdmin } from '@/api/endpoints/users'
 import { apiClient } from '@/api/mutator/custom-instance'
 import { useBrandCurrency } from '@/themeRuntime'
 import { Can } from '@casl/react'
@@ -53,13 +50,13 @@ export default function AcademyRegistrations() {
     setPage(1)
   }
 
-  const coursesQuery = useGetAcademyCourses({ page: 1, limit: 200 } as never)
-  const courseVouchersQuery = useQuery({ queryKey: ['voucher-category', 'academy-course'], queryFn: () => getVoucherCategory('academy-course') })
+  const coursesQuery = useGetAcademyCoursesAdmin({ page: 1, limit: 200 } as never)
+  const courseVouchersQuery = useQuery({ queryKey: ['voucher-category', 'academy-course'], queryFn: () => getAcademyCourseVouchersAdmin() })
   const registrationsQuery = useGetRegistrationsSafe(filter, page, limit)
-  const usersQuery = useGetUsers({ currentPage: 1, pageSize: 200, has_role: true })
+  const usersQuery = useGetUsersAdmin({ currentPage: 1, pageSize: 200, has_role: true })
   const lookupPhone = /^0\d{9}$/.test(lookupValue.trim()) ? lookupValue.trim() : undefined
   const lookupEmail = lookupValue.includes('@') ? lookupValue.trim() : undefined
-  const lookupQuery = useGetAcademyRegistrationsFindStudent(
+  const lookupQuery = useGetAcademyRegistrationsFindStudentAdmin(
     lookupPhone || lookupEmail ? { phone: lookupPhone, email: lookupEmail } : undefined,
     { query: { enabled: !!(lookupPhone || lookupEmail), retry: false } },
   )
@@ -73,10 +70,10 @@ export default function AcademyRegistrations() {
   const lookupRows = (pickData<RegistrationRow[]>(lookupQuery.data) ?? []) as RegistrationRow[]
   const courseById = useMemo(() => new Map(courses.map((c) => [c.id, c])), [courses])
 
-  const statusMutation = usePutAcademyRegistrationsIdStatus()
+  const statusMutation = usePutAcademyRegistrationsIdStatusAdmin()
 
   const reload = async () => {
-    await queryClient.invalidateQueries({ queryKey: getGetAcademyRegistrationsQueryKey() })
+    await queryClient.invalidateQueries({ queryKey: getGetAcademyRegistrationsAdminQueryKey() })
   }
 
   const openUpdate = (row: RegistrationRow) => {
@@ -107,7 +104,7 @@ export default function AcademyRegistrations() {
 
   const createFromLookup = async (row: RegistrationRow) => {
     try {
-      await apiClient.post('/academy/registrations', {
+      await postAcademyRegistrationsAdmin({
         course_id: row.course_id,
         full_name: row.full_name,
         phone: row.phone,
@@ -131,7 +128,7 @@ export default function AcademyRegistrations() {
     try {
       const values = await createForm.validateFields()
       setCreating(true)
-      await apiClient.post('/academy/registrations', {
+      await postAcademyRegistrationsAdmin({
         full_name: values.full_name,
         phone: values.phone,
         email: values.email || undefined,
@@ -219,7 +216,7 @@ export default function AcademyRegistrations() {
           </>
         }
         right={
-          <Can I="CREATE" a="ACADEMY">
+          <Can I="CREATE" a="ACADEMY_REGISTRATION">
             <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>Thêm đăng ký</Button>
           </Can>
         }
@@ -277,7 +274,8 @@ export default function AcademyRegistrations() {
   )
 }
 
-/** Wrapper: BE hỗ trợ q + page/limit sau khi cập nhật — gọi qua apiClient để không phụ thuộc client sinh lại. */
+/** Wrapper: BE hỗ trợ q + page/limit nhưng spec chưa khai báo (client sinh ra chỉ có
+ * branch_id/course_id/status/phone) — giữ raw call với URL /admin mới. */
 function useGetRegistrationsSafe(filter: { status?: string; course_id?: string; q?: string }, page: number, limit: number) {
   const [data, setData] = useState<unknown>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -291,7 +289,7 @@ function useGetRegistrationsSafe(filter: { status?: string; course_id?: string; 
     if (filter.status) params.set('status', filter.status)
     if (filter.course_id) params.set('course_id', filter.course_id)
     if (filter.q) params.set('q', filter.q)
-    apiClient.get(`/academy/registrations?${params.toString()}`)
+    apiClient.get(`/academy/registrations/admin?${params.toString()}`)
       .then((res) => { if (alive) { setData(res.data); setError(null) } })
       .catch((err) => { if (alive) setError(err) })
       .finally(() => { if (alive) setIsLoading(false) })

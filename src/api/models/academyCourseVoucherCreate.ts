@@ -7,6 +7,9 @@
  */
 import type { AcademyCourseVoucherCreateDescription } from './academyCourseVoucherCreateDescription';
 import type { AcademyCourseVoucherCreateAcademyCourseId } from './academyCourseVoucherCreateAcademyCourseId';
+import type { AcademyCourseVoucherCreateBranchId } from './academyCourseVoucherCreateBranchId';
+import type { AcademyCourseVoucherCreateIssueMode } from './academyCourseVoucherCreateIssueMode';
+import type { AcademyCourseVoucherCreatePointsCost } from './academyCourseVoucherCreatePointsCost';
 import type { AcademyCourseVoucherCreateDiscountType } from './academyCourseVoucherCreateDiscountType';
 import type { AcademyCourseVoucherCreateQuantityTotal } from './academyCourseVoucherCreateQuantityTotal';
 import type { AcademyCourseVoucherCreateImageFileId } from './academyCourseVoucherCreateImageFileId';
@@ -21,10 +24,14 @@ export interface AcademyCourseVoucherCreate {
   title: string;
   description?: AcademyCourseVoucherCreateDescription;
   academy_course_id?: AcademyCourseVoucherCreateAcademyCourseId;
+  branch_id?: AcademyCourseVoucherCreateBranchId;
   is_loyalty?: boolean;
-  discount_type: AcademyCourseVoucherCreateDiscountType;
+  issue_mode?: AcademyCourseVoucherCreateIssueMode;
   /** @minimum 0 */
-  discount_value?: number;
+  points_cost?: AcademyCourseVoucherCreatePointsCost;
+  discount_type: AcademyCourseVoucherCreateDiscountType;
+  /** */
+  discount_value: number;
   /** @minimum 0 */
   minimum_tuition?: number;
   /** @minimum 1 */

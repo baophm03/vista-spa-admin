@@ -30,13 +30,13 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  DeleteTreatmentCustomersIdDiscountsDiscountId200,
-  GetCustomerProfilesIdAvailableDiscounts200,
+  DeleteTreatmentCustomersIdDiscountsDiscountIdAdmin200,
+  GetCustomerProfilesIdAvailableDiscountsAdmin200,
   NotFoundResponse,
-  PostTreatmentCustomersIdApplyDiscount200,
-  PostTreatmentCustomersIdApplyDiscountBody,
-  PostTreatmentCustomersIdManualDiscount200,
-  PostTreatmentCustomersIdManualDiscountBody
+  PostTreatmentCustomersIdApplyDiscountAdmin200,
+  PostTreatmentCustomersIdApplyDiscountAdminBody,
+  PostTreatmentCustomersIdManualDiscountAdmin200,
+  PostTreatmentCustomersIdManualDiscountAdminBody
 } from '../models';
 
 import { customInstance } from '../mutator/custom-instance';
@@ -49,28 +49,28 @@ import { customInstance } from '../mutator/custom-instance';
  * **DC-09** — POST /treatmentCustomers/{id}/manual-discount. Giảm giá thủ công không qua voucher: body `{ mode: 'percent' | 'amount', value }`. mode percent — tổng % cộng dồn không vượt trần hệ thống `discount.max_total_percent`; mode amount — không vượt công nợ còn lại. Ghi treatment_adjustment (DISCOUNT, payload.manual=true) — gỡ bằng luồng gỡ ưu đãi hiện có.
  * @summary Apply a manual discount (percent or amount) without any voucher rule
  */
-export const postTreatmentCustomersIdManualDiscount = (
+export const postTreatmentCustomersIdManualDiscountAdmin = (
     id: string,
-    postTreatmentCustomersIdManualDiscountBody: PostTreatmentCustomersIdManualDiscountBody,
+    postTreatmentCustomersIdManualDiscountAdminBody: PostTreatmentCustomersIdManualDiscountAdminBody,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<PostTreatmentCustomersIdManualDiscount200>(
-      {url: `/treatmentCustomers/${id}/manual-discount`, method: 'POST',
+      return customInstance<PostTreatmentCustomersIdManualDiscountAdmin200>(
+      {url: `/treatment-customers/${id}/manual-discount/admin`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: postTreatmentCustomersIdManualDiscountBody, signal
+      data: postTreatmentCustomersIdManualDiscountAdminBody, signal
     },
       );
     }
   
 
 
-export const getPostTreatmentCustomersIdManualDiscountMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postTreatmentCustomersIdManualDiscount>>, TError,{id: string;data: PostTreatmentCustomersIdManualDiscountBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postTreatmentCustomersIdManualDiscount>>, TError,{id: string;data: PostTreatmentCustomersIdManualDiscountBody}, TContext> => {
+export const getPostTreatmentCustomersIdManualDiscountAdminMutationOptions = <TError = void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postTreatmentCustomersIdManualDiscountAdmin>>, TError,{id: string;data: PostTreatmentCustomersIdManualDiscountAdminBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postTreatmentCustomersIdManualDiscountAdmin>>, TError,{id: string;data: PostTreatmentCustomersIdManualDiscountAdminBody}, TContext> => {
 
-const mutationKey = ['postTreatmentCustomersIdManualDiscount'];
+const mutationKey = ['postTreatmentCustomersIdManualDiscountAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -80,10 +80,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postTreatmentCustomersIdManualDiscount>>, {id: string;data: PostTreatmentCustomersIdManualDiscountBody}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postTreatmentCustomersIdManualDiscountAdmin>>, {id: string;data: PostTreatmentCustomersIdManualDiscountAdminBody}> = (props) => {
           const {id,data} = props ?? {};
 
-          return  postTreatmentCustomersIdManualDiscount(id,data,)
+          return  postTreatmentCustomersIdManualDiscountAdmin(id,data,)
         }
 
         
@@ -91,115 +91,49 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PostTreatmentCustomersIdManualDiscountMutationResult = NonNullable<Awaited<ReturnType<typeof postTreatmentCustomersIdManualDiscount>>>
-    export type PostTreatmentCustomersIdManualDiscountMutationBody = PostTreatmentCustomersIdManualDiscountBody
-    export type PostTreatmentCustomersIdManualDiscountMutationError = void
+    export type PostTreatmentCustomersIdManualDiscountAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postTreatmentCustomersIdManualDiscountAdmin>>>
+    export type PostTreatmentCustomersIdManualDiscountAdminMutationBody = PostTreatmentCustomersIdManualDiscountAdminBody
+    export type PostTreatmentCustomersIdManualDiscountAdminMutationError = void
 
     /**
  * @summary Apply a manual discount (percent or amount) without any voucher rule
  */
-export const usePostTreatmentCustomersIdManualDiscount = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postTreatmentCustomersIdManualDiscount>>, TError,{id: string;data: PostTreatmentCustomersIdManualDiscountBody}, TContext>, }
+export const usePostTreatmentCustomersIdManualDiscountAdmin = <TError = void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postTreatmentCustomersIdManualDiscountAdmin>>, TError,{id: string;data: PostTreatmentCustomersIdManualDiscountAdminBody}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postTreatmentCustomersIdManualDiscount>>,
+        Awaited<ReturnType<typeof postTreatmentCustomersIdManualDiscountAdmin>>,
         TError,
-        {id: string;data: PostTreatmentCustomersIdManualDiscountBody},
+        {id: string;data: PostTreatmentCustomersIdManualDiscountAdminBody},
         TContext
       > => {
 
-      const mutationOptions = getPostTreatmentCustomersIdManualDiscountMutationOptions(options);
+      const mutationOptions = getPostTreatmentCustomersIdManualDiscountAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **DC-07** — POST /customer-treatments/{id}/apply-discount. Body: rule_id, percent (% within the rule's range; exceeding it requires permission `discount.override`).
- * @summary Apply a discount to the treatment package
- */
-export const postTreatmentCustomersIdApplyDiscount = (
-    id: string,
-    postTreatmentCustomersIdApplyDiscountBody: PostTreatmentCustomersIdApplyDiscountBody,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<PostTreatmentCustomersIdApplyDiscount200>(
-      {url: `/treatmentCustomers/${id}/apply-discount`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: postTreatmentCustomersIdApplyDiscountBody, signal
-    },
-      );
-    }
-  
-
-
-export const getPostTreatmentCustomersIdApplyDiscountMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postTreatmentCustomersIdApplyDiscount>>, TError,{id: string;data: PostTreatmentCustomersIdApplyDiscountBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postTreatmentCustomersIdApplyDiscount>>, TError,{id: string;data: PostTreatmentCustomersIdApplyDiscountBody}, TContext> => {
-
-const mutationKey = ['postTreatmentCustomersIdApplyDiscount'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postTreatmentCustomersIdApplyDiscount>>, {id: string;data: PostTreatmentCustomersIdApplyDiscountBody}> = (props) => {
-          const {id,data} = props ?? {};
-
-          return  postTreatmentCustomersIdApplyDiscount(id,data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostTreatmentCustomersIdApplyDiscountMutationResult = NonNullable<Awaited<ReturnType<typeof postTreatmentCustomersIdApplyDiscount>>>
-    export type PostTreatmentCustomersIdApplyDiscountMutationBody = PostTreatmentCustomersIdApplyDiscountBody
-    export type PostTreatmentCustomersIdApplyDiscountMutationError = void
-
-    /**
- * @summary Apply a discount to the treatment package
- */
-export const usePostTreatmentCustomersIdApplyDiscount = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postTreatmentCustomersIdApplyDiscount>>, TError,{id: string;data: PostTreatmentCustomersIdApplyDiscountBody}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postTreatmentCustomersIdApplyDiscount>>,
-        TError,
-        {id: string;data: PostTreatmentCustomersIdApplyDiscountBody},
-        TContext
-      > => {
-
-      const mutationOptions = getPostTreatmentCustomersIdApplyDiscountMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * **DC-08** — DELETE /customer-treatments/{id}/discounts/{discountId}. Can only be removed if no payment was made after it was applied.
+ * **DC-08** — DELETE /treatment-customers/{id}/discounts//admin{discountId}. Can only be removed if no payment was made after it was applied.
  * @summary Remove a discount from the package
  */
-export const deleteTreatmentCustomersIdDiscountsDiscountId = (
+export const deleteTreatmentCustomersIdDiscountsDiscountIdAdmin = (
     id: string,
     discountId: string,
  ) => {
       
       
-      return customInstance<DeleteTreatmentCustomersIdDiscountsDiscountId200>(
-      {url: `/treatmentCustomers/${id}/discounts/${discountId}`, method: 'DELETE'
+      return customInstance<DeleteTreatmentCustomersIdDiscountsDiscountIdAdmin200>(
+      {url: `/treatment-customers/${id}/discounts/${discountId}/admin`, method: 'DELETE'
     },
       );
     }
   
 
 
-export const getDeleteTreatmentCustomersIdDiscountsDiscountIdMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTreatmentCustomersIdDiscountsDiscountId>>, TError,{id: string;discountId: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof deleteTreatmentCustomersIdDiscountsDiscountId>>, TError,{id: string;discountId: string}, TContext> => {
+export const getDeleteTreatmentCustomersIdDiscountsDiscountIdAdminMutationOptions = <TError = void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTreatmentCustomersIdDiscountsDiscountIdAdmin>>, TError,{id: string;discountId: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteTreatmentCustomersIdDiscountsDiscountIdAdmin>>, TError,{id: string;discountId: string}, TContext> => {
 
-const mutationKey = ['deleteTreatmentCustomersIdDiscountsDiscountId'];
+const mutationKey = ['deleteTreatmentCustomersIdDiscountsDiscountIdAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -209,10 +143,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteTreatmentCustomersIdDiscountsDiscountId>>, {id: string;discountId: string}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteTreatmentCustomersIdDiscountsDiscountIdAdmin>>, {id: string;discountId: string}> = (props) => {
           const {id,discountId} = props ?? {};
 
-          return  deleteTreatmentCustomersIdDiscountsDiscountId(id,discountId,)
+          return  deleteTreatmentCustomersIdDiscountsDiscountIdAdmin(id,discountId,)
         }
 
         
@@ -220,38 +154,104 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type DeleteTreatmentCustomersIdDiscountsDiscountIdMutationResult = NonNullable<Awaited<ReturnType<typeof deleteTreatmentCustomersIdDiscountsDiscountId>>>
+    export type DeleteTreatmentCustomersIdDiscountsDiscountIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof deleteTreatmentCustomersIdDiscountsDiscountIdAdmin>>>
     
-    export type DeleteTreatmentCustomersIdDiscountsDiscountIdMutationError = void
+    export type DeleteTreatmentCustomersIdDiscountsDiscountIdAdminMutationError = void
 
     /**
  * @summary Remove a discount from the package
  */
-export const useDeleteTreatmentCustomersIdDiscountsDiscountId = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTreatmentCustomersIdDiscountsDiscountId>>, TError,{id: string;discountId: string}, TContext>, }
+export const useDeleteTreatmentCustomersIdDiscountsDiscountIdAdmin = <TError = void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTreatmentCustomersIdDiscountsDiscountIdAdmin>>, TError,{id: string;discountId: string}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteTreatmentCustomersIdDiscountsDiscountId>>,
+        Awaited<ReturnType<typeof deleteTreatmentCustomersIdDiscountsDiscountIdAdmin>>,
         TError,
         {id: string;discountId: string},
         TContext
       > => {
 
-      const mutationOptions = getDeleteTreatmentCustomersIdDiscountsDiscountIdMutationOptions(options);
+      const mutationOptions = getDeleteTreatmentCustomersIdDiscountsDiscountIdAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **DC-06** — GET /customer-profiles/{id}/available-discounts. Filters rules by membership tier / returning customer / referral / upsell.
+ * **DC-07** — POST /treatment-customers/{id}/apply-discount/admin. Body: rule_id, percent (% within the rule's range; exceeding it requires permission `discount.override`).
+ * @summary Apply a discount to the treatment package
+ */
+export const postTreatmentCustomersIdApplyDiscountAdmin = (
+    id: string,
+    postTreatmentCustomersIdApplyDiscountAdminBody: PostTreatmentCustomersIdApplyDiscountAdminBody,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<PostTreatmentCustomersIdApplyDiscountAdmin200>(
+      {url: `/treatment-customers/${id}/apply-discount/admin`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: postTreatmentCustomersIdApplyDiscountAdminBody, signal
+    },
+      );
+    }
+  
+
+
+export const getPostTreatmentCustomersIdApplyDiscountAdminMutationOptions = <TError = void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postTreatmentCustomersIdApplyDiscountAdmin>>, TError,{id: string;data: PostTreatmentCustomersIdApplyDiscountAdminBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postTreatmentCustomersIdApplyDiscountAdmin>>, TError,{id: string;data: PostTreatmentCustomersIdApplyDiscountAdminBody}, TContext> => {
+
+const mutationKey = ['postTreatmentCustomersIdApplyDiscountAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postTreatmentCustomersIdApplyDiscountAdmin>>, {id: string;data: PostTreatmentCustomersIdApplyDiscountAdminBody}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  postTreatmentCustomersIdApplyDiscountAdmin(id,data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostTreatmentCustomersIdApplyDiscountAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postTreatmentCustomersIdApplyDiscountAdmin>>>
+    export type PostTreatmentCustomersIdApplyDiscountAdminMutationBody = PostTreatmentCustomersIdApplyDiscountAdminBody
+    export type PostTreatmentCustomersIdApplyDiscountAdminMutationError = void
+
+    /**
+ * @summary Apply a discount to the treatment package
+ */
+export const usePostTreatmentCustomersIdApplyDiscountAdmin = <TError = void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postTreatmentCustomersIdApplyDiscountAdmin>>, TError,{id: string;data: PostTreatmentCustomersIdApplyDiscountAdminBody}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postTreatmentCustomersIdApplyDiscountAdmin>>,
+        TError,
+        {id: string;data: PostTreatmentCustomersIdApplyDiscountAdminBody},
+        TContext
+      > => {
+
+      const mutationOptions = getPostTreatmentCustomersIdApplyDiscountAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * **DC-06** — GET /customer-profiles/{id}/available-discounts/admin. Cần đăng nhập + `discount.view_all`. Filters rules by membership tier / returning customer / referral / upsell.
  * @summary Discounts the customer is eligible for
  */
-export const getCustomerProfilesIdAvailableDiscounts = (
+export const getCustomerProfilesIdAvailableDiscountsAdmin = (
     id: string,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<GetCustomerProfilesIdAvailableDiscounts200>(
-      {url: `/customerProfiles/${id}/available-discounts`, method: 'GET', signal
+      return customInstance<GetCustomerProfilesIdAvailableDiscountsAdmin200>(
+      {url: `/customer-profiles/${id}/available-discounts/admin`, method: 'GET', signal
     },
       );
     }
@@ -259,75 +259,75 @@ export const getCustomerProfilesIdAvailableDiscounts = (
 
 
 
-export const getGetCustomerProfilesIdAvailableDiscountsInfiniteQueryKey = (id?: string,) => {
+export const getGetCustomerProfilesIdAvailableDiscountsAdminInfiniteQueryKey = (id?: string,) => {
     return [
-    'infinite', `/customerProfiles/${id}/available-discounts`
+    'infinite', `/customer-profiles/${id}/available-discounts/admin`
     ] as const;
     }
 
-export const getGetCustomerProfilesIdAvailableDiscountsQueryKey = (id?: string,) => {
+export const getGetCustomerProfilesIdAvailableDiscountsAdminQueryKey = (id?: string,) => {
     return [
-    `/customerProfiles/${id}/available-discounts`
+    `/customer-profiles/${id}/available-discounts/admin`
     ] as const;
     }
 
     
-export const getGetCustomerProfilesIdAvailableDiscountsInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscounts>>>, TError = NotFoundResponse>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscounts>>, TError, TData>>, }
+export const getGetCustomerProfilesIdAvailableDiscountsAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>>, TError = NotFoundResponse>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetCustomerProfilesIdAvailableDiscountsInfiniteQueryKey(id);
+  const queryKey =  queryOptions?.queryKey ?? getGetCustomerProfilesIdAvailableDiscountsAdminInfiniteQueryKey(id);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscounts>>> = ({ signal }) => getCustomerProfilesIdAvailableDiscounts(id, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>> = ({ signal }) => getCustomerProfilesIdAvailableDiscountsAdmin(id, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscounts>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetCustomerProfilesIdAvailableDiscountsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscounts>>>
-export type GetCustomerProfilesIdAvailableDiscountsInfiniteQueryError = NotFoundResponse
+export type GetCustomerProfilesIdAvailableDiscountsAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>>
+export type GetCustomerProfilesIdAvailableDiscountsAdminInfiniteQueryError = NotFoundResponse
 
 
-export function useGetCustomerProfilesIdAvailableDiscountsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscounts>>>, TError = NotFoundResponse>(
- id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscounts>>, TError, TData>> & Pick<
+export function useGetCustomerProfilesIdAvailableDiscountsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>>, TError = NotFoundResponse>(
+ id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscounts>>,
+          Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscounts>>
+          Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetCustomerProfilesIdAvailableDiscountsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscounts>>>, TError = NotFoundResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscounts>>, TError, TData>> & Pick<
+export function useGetCustomerProfilesIdAvailableDiscountsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>>, TError = NotFoundResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscounts>>,
+          Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscounts>>
+          Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetCustomerProfilesIdAvailableDiscountsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscounts>>>, TError = NotFoundResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscounts>>, TError, TData>>, }
+export function useGetCustomerProfilesIdAvailableDiscountsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>>, TError = NotFoundResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Discounts the customer is eligible for
  */
 
-export function useGetCustomerProfilesIdAvailableDiscountsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscounts>>>, TError = NotFoundResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscounts>>, TError, TData>>, }
+export function useGetCustomerProfilesIdAvailableDiscountsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>>, TError = NotFoundResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetCustomerProfilesIdAvailableDiscountsInfiniteQueryOptions(id,options)
+  const queryOptions = getGetCustomerProfilesIdAvailableDiscountsAdminInfiniteQueryOptions(id,options)
 
   const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -339,12 +339,12 @@ export function useGetCustomerProfilesIdAvailableDiscountsInfinite<TData = Infin
 /**
  * @summary Discounts the customer is eligible for
  */
-export const prefetchGetCustomerProfilesIdAvailableDiscountsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscounts>>, TError = NotFoundResponse>(
- queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscounts>>, TError, TData>>, }
+export const prefetchGetCustomerProfilesIdAvailableDiscountsAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>, TError = NotFoundResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetCustomerProfilesIdAvailableDiscountsInfiniteQueryOptions(id,options)
+  const queryOptions = getGetCustomerProfilesIdAvailableDiscountsAdminInfiniteQueryOptions(id,options)
 
   await queryClient.prefetchInfiniteQuery(queryOptions);
 
@@ -353,62 +353,62 @@ export const prefetchGetCustomerProfilesIdAvailableDiscountsInfiniteQuery = asyn
 
 
 
-export const getGetCustomerProfilesIdAvailableDiscountsQueryOptions = <TData = Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscounts>>, TError = NotFoundResponse>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscounts>>, TError, TData>>, }
+export const getGetCustomerProfilesIdAvailableDiscountsAdminQueryOptions = <TData = Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>, TError = NotFoundResponse>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetCustomerProfilesIdAvailableDiscountsQueryKey(id);
+  const queryKey =  queryOptions?.queryKey ?? getGetCustomerProfilesIdAvailableDiscountsAdminQueryKey(id);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscounts>>> = ({ signal }) => getCustomerProfilesIdAvailableDiscounts(id, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>> = ({ signal }) => getCustomerProfilesIdAvailableDiscountsAdmin(id, signal);
 
       
 
       
 
-   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscounts>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetCustomerProfilesIdAvailableDiscountsQueryResult = NonNullable<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscounts>>>
-export type GetCustomerProfilesIdAvailableDiscountsQueryError = NotFoundResponse
+export type GetCustomerProfilesIdAvailableDiscountsAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>>
+export type GetCustomerProfilesIdAvailableDiscountsAdminQueryError = NotFoundResponse
 
 
-export function useGetCustomerProfilesIdAvailableDiscounts<TData = Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscounts>>, TError = NotFoundResponse>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscounts>>, TError, TData>> & Pick<
+export function useGetCustomerProfilesIdAvailableDiscountsAdmin<TData = Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>, TError = NotFoundResponse>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscounts>>,
+          Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscounts>>
+          Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetCustomerProfilesIdAvailableDiscounts<TData = Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscounts>>, TError = NotFoundResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscounts>>, TError, TData>> & Pick<
+export function useGetCustomerProfilesIdAvailableDiscountsAdmin<TData = Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>, TError = NotFoundResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscounts>>,
+          Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscounts>>
+          Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetCustomerProfilesIdAvailableDiscounts<TData = Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscounts>>, TError = NotFoundResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscounts>>, TError, TData>>, }
+export function useGetCustomerProfilesIdAvailableDiscountsAdmin<TData = Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>, TError = NotFoundResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Discounts the customer is eligible for
  */
 
-export function useGetCustomerProfilesIdAvailableDiscounts<TData = Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscounts>>, TError = NotFoundResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscounts>>, TError, TData>>, }
+export function useGetCustomerProfilesIdAvailableDiscountsAdmin<TData = Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>, TError = NotFoundResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetCustomerProfilesIdAvailableDiscountsQueryOptions(id,options)
+  const queryOptions = getGetCustomerProfilesIdAvailableDiscountsAdminQueryOptions(id,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -420,12 +420,12 @@ export function useGetCustomerProfilesIdAvailableDiscounts<TData = Awaited<Retur
 /**
  * @summary Discounts the customer is eligible for
  */
-export const prefetchGetCustomerProfilesIdAvailableDiscountsQuery = async <TData = Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscounts>>, TError = NotFoundResponse>(
- queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscounts>>, TError, TData>>, }
+export const prefetchGetCustomerProfilesIdAvailableDiscountsAdminQuery = async <TData = Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>, TError = NotFoundResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetCustomerProfilesIdAvailableDiscountsQueryOptions(id,options)
+  const queryOptions = getGetCustomerProfilesIdAvailableDiscountsAdminQueryOptions(id,options)
 
   await queryClient.prefetchQuery(queryOptions);
 

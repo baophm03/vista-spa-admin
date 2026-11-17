@@ -11,18 +11,9 @@ import {
 import { useQueries } from '@tanstack/react-query'
 import PageTitle from '@/components/base/PageTitle'
 import { errorMessage, pickData } from '@/api/helpers'
-import type { PutRolesIdPermissionsBody } from '@/api/models/putRolesIdPermissionsBody'
-import {
-  getGetRolesIdPermissionsQueryOptions,
-  getGetRolesIdPermissionsQueryKey,
-  getGetRolesQueryKey,
-  useDeleteRolesId,
-  useGetPermissions,
-  useGetRoles,
-  usePostRoles,
-  usePutRolesId,
-  usePutRolesIdPermissions,
-} from '@/api/endpoints/roles'
+import type { PutRolesIdPermissionsAdminBody } from '@/api/models/putRolesIdPermissionsAdminBody'
+import { getGetRolesIdPermissionsAdminQueryOptions, getGetRolesIdPermissionsAdminQueryKey, getGetRolesAdminQueryKey, useDeleteRolesIdAdmin, useGetRolesAdmin, usePostRolesAdmin, usePutRolesIdAdmin, usePutRolesIdPermissionsAdmin } from '@/api/endpoints/roles'
+import { useGetPermissionsAdmin } from '@/api/endpoints/permissions'
 import { useQueryClient } from '@tanstack/react-query'
 import { Can } from '@casl/react'
 import { permKey, permissionSetToArray } from '@/configs/permissions'
@@ -33,12 +24,12 @@ import { SYSTEM_ROLES, type PermRow, type RoleRow } from './components/constants
 
 export default function Roles() {
   const queryClient = useQueryClient()
-  const rolesQuery = useGetRoles()
-  const permissionsQuery = useGetPermissions()
-  const createRoleMutation = usePostRoles()
-  const updateRoleMutation = usePutRolesId()
-  const deleteRoleMutation = useDeleteRolesId()
-  const setPermissionsMutation = usePutRolesIdPermissions()
+  const rolesQuery = useGetRolesAdmin()
+  const permissionsQuery = useGetPermissionsAdmin()
+  const createRoleMutation = usePostRolesAdmin()
+  const updateRoleMutation = usePutRolesIdAdmin()
+  const deleteRoleMutation = useDeleteRolesIdAdmin()
+  const setPermissionsMutation = usePutRolesIdPermissionsAdmin()
 
   // Legacy envelope: responseData = { count, rows, totalPages, currentPage }
   const roles = (pickData<{ rows?: RoleRow[] }>(rolesQuery.data)?.rows ?? []) as RoleRow[]
@@ -48,7 +39,7 @@ export default function Roles() {
   ) as PermRow[]
 
   const rolePermissionQueries = useQueries({
-    queries: roles.map((role) => getGetRolesIdPermissionsQueryOptions(role.id)),
+    queries: roles.map((role) => getGetRolesIdPermissionsAdminQueryOptions(role.id)),
   })
   const permCountByRole = new Map<string, number>(
     roles.map((role, index) => {
@@ -102,14 +93,14 @@ export default function Roles() {
     setEditOpen(true)
   }
   const openPermissions = (role: RoleRow) => {
-    const cached = queryClient.getQueryData<{ module?: string; action?: string }[]>(getGetRolesIdPermissionsQueryKey(role.id))
+    const cached = queryClient.getQueryData<{ module?: string; action?: string }[]>(getGetRolesIdPermissionsAdminQueryKey(role.id))
     const pairs = (pickData<{ module?: string; action?: string }[]>(cached as unknown as unknown[]) ?? []) as { module?: string; action?: string }[]
     setPermRole(role)
     setGranted(new Set((Array.isArray(pairs) ? pairs : []).filter((p) => p.module && p.action).map((p) => permKey(p.module!, p.action!))))
     setPermOpen(true)
   }
 
-  const invalidateRoles = () => queryClient.invalidateQueries({ queryKey: getGetRolesQueryKey() })
+  const invalidateRoles = () => queryClient.invalidateQueries({ queryKey: getGetRolesAdminQueryKey() })
 
   const saveRole = async () => {
     if (!roleName.trim()) {
@@ -172,10 +163,10 @@ export default function Roles() {
       await setPermissionsMutation.mutateAsync({
         id: permRole.id,
         // Submit mảng {module, action} — định dạng PUT /roles/{id}/permissions của meu-be
-        data: { permissions: permissionSetToArray(granted) } as unknown as PutRolesIdPermissionsBody,
+        data: { permissions: permissionSetToArray(granted) } as unknown as PutRolesIdPermissionsAdminBody,
       })
       message.success('Đã cập nhật quyền hạn')
-      queryClient.removeQueries({ queryKey: getGetRolesIdPermissionsQueryKey(permRole.id) })
+      queryClient.removeQueries({ queryKey: getGetRolesIdPermissionsAdminQueryKey(permRole.id) })
       setPermOpen(false)
       await invalidateRoles()
     } catch (err) {
