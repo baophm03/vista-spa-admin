@@ -8,6 +8,8 @@
 import type { AcademyCourseVoucherDescription } from './academyCourseVoucherDescription';
 import type { AcademyCourseVoucherAcademyCourseId } from './academyCourseVoucherAcademyCourseId';
 import type { AcademyCourseVoucherTargetName } from './academyCourseVoucherTargetName';
+import type { AcademyCourseVoucherIssueMode } from './academyCourseVoucherIssueMode';
+import type { AcademyCourseVoucherPointsCost } from './academyCourseVoucherPointsCost';
 import type { AcademyCourseVoucherDiscountType } from './academyCourseVoucherDiscountType';
 import type { AcademyCourseVoucherQuantityTotal } from './academyCourseVoucherQuantityTotal';
 import type { AcademyCourseVoucherImageFileId } from './academyCourseVoucherImageFileId';
@@ -23,8 +25,13 @@ export interface AcademyCourseVoucher {
   title: string;
   description?: AcademyCourseVoucherDescription;
   academy_course_id?: AcademyCourseVoucherAcademyCourseId;
+  branch_id?: string | null;
+  branch_name?: string | null;
   target_name?: AcademyCourseVoucherTargetName;
   is_loyalty?: boolean;
+  issue_mode?: AcademyCourseVoucherIssueMode;
+  /** @minimum 0 */
+  points_cost?: AcademyCourseVoucherPointsCost;
   discount_type?: AcademyCourseVoucherDiscountType;
   /** @minimum 0 */
   discount_value?: number;

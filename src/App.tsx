@@ -4,6 +4,7 @@ import Login from './pages/Login/page'
 import Dashboard from './pages/Dashboard/page'
 import Users from './pages/Users/page'
 import Vouchers from './pages/Vouchers/page'
+import VoucherCustomers from './pages/VoucherCustomers/page'
 import Services from './pages/services/page'
 import Appointments from './pages/Appointments/page'
 import Treatments from './pages/Treatments/page'
@@ -47,6 +48,7 @@ export default function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/users" element={<Users />} />
           <Route path="/vouchers" element={<Vouchers />} />
+          <Route path="/voucher-customers" element={<VoucherCustomers />} />
           <Route path="/services" element={<Services />} />
           <Route path="/appointments" element={<Appointments />} />
           <Route path="/treatments" element={<Treatments />} />

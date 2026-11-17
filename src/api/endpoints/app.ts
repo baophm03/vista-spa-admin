@@ -47,6 +47,8 @@ import type {
   GetAppMeMembership200,
   GetAppMeOrders200,
   GetAppMeProductVouchers200,
+  GetAppMeProductVouchersParams,
+  GetAppMeRedeemableProductVouchers200,
   GetAppMeReferrals200,
   GetAppMeTreatments200,
   GetAppMeTreatmentsId200,
@@ -80,6 +82,8 @@ import type {
   PostAppMeFavoritesBody,
   PostAppMeLinkProfile200,
   PostAppMeLinkProfileBody,
+  PostAppMeProductVoucherRedeem200,
+  PostAppMeProductVoucherRedeemBody,
   PostAppMeReferralsApply200,
   PostAppMeReferralsApplyBody,
   PostAppMeWarrantyClaims200,
@@ -3614,17 +3618,17 @@ export const prefetchGetAppMeReferralsQuery = async <TData = Awaited<ReturnType<
 
 
 /**
- * Returns active, not-yet-used product vouchers belonging to the signed-in customer, with discount rules and eligible product.
- * @summary Get my usable product vouchers
+ * AUTO product vouchers configured with a points cost (Shopee-style 'save voucher with points'), with the customer's current points balance and per-voucher affordability.
+ * @summary Product vouchers redeemable with loyalty points
  */
-export const getAppMeProductVouchers = (
+export const getAppMeRedeemableProductVouchers = (
 
  signal?: AbortSignal
 ) => {
 
 
-      return customInstance<GetAppMeProductVouchers200>(
-      {url: `/app/me/product-vouchers`, method: 'GET', signal
+      return customInstance<GetAppMeRedeemableProductVouchers200>(
+      {url: `/app/me/redeemable-product-vouchers`, method: 'GET', signal
     },
       );
     }
@@ -3632,29 +3636,224 @@ export const getAppMeProductVouchers = (
 
 
 
-export const getGetAppMeProductVouchersInfiniteQueryKey = () => {
+export const getGetAppMeRedeemableProductVouchersInfiniteQueryKey = () => {
     return [
-    'infinite', `/app/me/product-vouchers`
+    'infinite', `/app/me/redeemable-product-vouchers`
     ] as const;
     }
 
-export const getGetAppMeProductVouchersQueryKey = () => {
+export const getGetAppMeRedeemableProductVouchersQueryKey = () => {
     return [
-    `/app/me/product-vouchers`
+    `/app/me/redeemable-product-vouchers`
     ] as const;
     }
 
 
-export const getGetAppMeProductVouchersInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAppMeProductVouchers>>>, TError = UnauthorizedResponse | InternalErrorResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeProductVouchers>>, TError, TData>>, }
+export const getGetAppMeRedeemableProductVouchersInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAppMeRedeemableProductVouchers>>>, TError = UnauthorizedResponse | InternalErrorResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeRedeemableProductVouchers>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAppMeProductVouchersInfiniteQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getGetAppMeRedeemableProductVouchersInfiniteQueryKey();
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAppMeProductVouchers>>> = ({ signal }) => getAppMeProductVouchers(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAppMeRedeemableProductVouchers>>> = ({ signal }) => getAppMeRedeemableProductVouchers(signal);
+
+
+
+
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeRedeemableProductVouchers>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAppMeRedeemableProductVouchersInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAppMeRedeemableProductVouchers>>>
+export type GetAppMeRedeemableProductVouchersInfiniteQueryError = UnauthorizedResponse | InternalErrorResponse
+
+
+export function useGetAppMeRedeemableProductVouchersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppMeRedeemableProductVouchers>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeRedeemableProductVouchers>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppMeRedeemableProductVouchers>>,
+          TError,
+          Awaited<ReturnType<typeof getAppMeRedeemableProductVouchers>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppMeRedeemableProductVouchersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppMeRedeemableProductVouchers>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeRedeemableProductVouchers>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppMeRedeemableProductVouchers>>,
+          TError,
+          Awaited<ReturnType<typeof getAppMeRedeemableProductVouchers>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppMeRedeemableProductVouchersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppMeRedeemableProductVouchers>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeRedeemableProductVouchers>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Product vouchers redeemable with loyalty points
+ */
+
+export function useGetAppMeRedeemableProductVouchersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppMeRedeemableProductVouchers>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeRedeemableProductVouchers>>, TError, TData>>, }
+ , queryClient?: QueryClient
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAppMeRedeemableProductVouchersInfiniteQueryOptions(options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Product vouchers redeemable with loyalty points
+ */
+export const prefetchGetAppMeRedeemableProductVouchersInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAppMeRedeemableProductVouchers>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeRedeemableProductVouchers>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetAppMeRedeemableProductVouchersInfiniteQueryOptions(options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetAppMeRedeemableProductVouchersQueryOptions = <TData = Awaited<ReturnType<typeof getAppMeRedeemableProductVouchers>>, TError = UnauthorizedResponse | InternalErrorResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMeRedeemableProductVouchers>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAppMeRedeemableProductVouchersQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAppMeRedeemableProductVouchers>>> = ({ signal }) => getAppMeRedeemableProductVouchers(signal);
+
+
+
+
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAppMeRedeemableProductVouchers>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAppMeRedeemableProductVouchersQueryResult = NonNullable<Awaited<ReturnType<typeof getAppMeRedeemableProductVouchers>>>
+export type GetAppMeRedeemableProductVouchersQueryError = UnauthorizedResponse | InternalErrorResponse
+
+
+export function useGetAppMeRedeemableProductVouchers<TData = Awaited<ReturnType<typeof getAppMeRedeemableProductVouchers>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMeRedeemableProductVouchers>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppMeRedeemableProductVouchers>>,
+          TError,
+          Awaited<ReturnType<typeof getAppMeRedeemableProductVouchers>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppMeRedeemableProductVouchers<TData = Awaited<ReturnType<typeof getAppMeRedeemableProductVouchers>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMeRedeemableProductVouchers>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppMeRedeemableProductVouchers>>,
+          TError,
+          Awaited<ReturnType<typeof getAppMeRedeemableProductVouchers>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppMeRedeemableProductVouchers<TData = Awaited<ReturnType<typeof getAppMeRedeemableProductVouchers>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMeRedeemableProductVouchers>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Product vouchers redeemable with loyalty points
+ */
+
+export function useGetAppMeRedeemableProductVouchers<TData = Awaited<ReturnType<typeof getAppMeRedeemableProductVouchers>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMeRedeemableProductVouchers>>, TError, TData>>, }
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAppMeRedeemableProductVouchersQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Product vouchers redeemable with loyalty points
+ */
+export const prefetchGetAppMeRedeemableProductVouchersQuery = async <TData = Awaited<ReturnType<typeof getAppMeRedeemableProductVouchers>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMeRedeemableProductVouchers>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetAppMeRedeemableProductVouchersQueryOptions(options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * Vouchers from all sources — reward/points redemption (redeemed), rank auto-gift (gifted) and manual assignment (voucher_customer). Optional query `items` (JSON array of {product_id, qty}) evaluates the actual discount per voucher against the cart and flags the best one (Shopee-style suggestion).
+ * @summary Get my usable product vouchers (unified wallet)
+ */
+export const getAppMeProductVouchers = (
+    params?: GetAppMeProductVouchersParams,
+ signal?: AbortSignal
+) => {
+
+
+      return customInstance<GetAppMeProductVouchers200>(
+      {url: `/app/me/product-vouchers`, method: 'GET',
+        params, signal
+    },
+      );
+    }
+
+
+
+
+export const getGetAppMeProductVouchersInfiniteQueryKey = (params?: GetAppMeProductVouchersParams,) => {
+    return [
+    'infinite', `/app/me/product-vouchers`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+export const getGetAppMeProductVouchersQueryKey = (params?: GetAppMeProductVouchersParams,) => {
+    return [
+    `/app/me/product-vouchers`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+
+export const getGetAppMeProductVouchersInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAppMeProductVouchers>>>, TError = UnauthorizedResponse | InternalErrorResponse>(params?: GetAppMeProductVouchersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeProductVouchers>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAppMeProductVouchersInfiniteQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAppMeProductVouchers>>> = ({ signal }) => getAppMeProductVouchers(params, signal);
 
 
 
@@ -3668,7 +3867,7 @@ export type GetAppMeProductVouchersInfiniteQueryError = UnauthorizedResponse | I
 
 
 export function useGetAppMeProductVouchersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppMeProductVouchers>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
-  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeProductVouchers>>, TError, TData>> & Pick<
+ params: undefined |  GetAppMeProductVouchersParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeProductVouchers>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAppMeProductVouchers>>,
           TError,
@@ -3678,7 +3877,7 @@ export function useGetAppMeProductVouchersInfinite<TData = InfiniteData<Awaited<
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetAppMeProductVouchersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppMeProductVouchers>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeProductVouchers>>, TError, TData>> & Pick<
+ params?: GetAppMeProductVouchersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeProductVouchers>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAppMeProductVouchers>>,
           TError,
@@ -3688,19 +3887,19 @@ export function useGetAppMeProductVouchersInfinite<TData = InfiniteData<Awaited<
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetAppMeProductVouchersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppMeProductVouchers>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeProductVouchers>>, TError, TData>>, }
+ params?: GetAppMeProductVouchersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeProductVouchers>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Get my usable product vouchers
+ * @summary Get my usable product vouchers (unified wallet)
  */
 
 export function useGetAppMeProductVouchersInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppMeProductVouchers>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeProductVouchers>>, TError, TData>>, }
+ params?: GetAppMeProductVouchersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeProductVouchers>>, TError, TData>>, }
  , queryClient?: QueryClient
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetAppMeProductVouchersInfiniteQueryOptions(options)
+  const queryOptions = getGetAppMeProductVouchersInfiniteQueryOptions(params,options)
 
   const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -3710,14 +3909,14 @@ export function useGetAppMeProductVouchersInfinite<TData = InfiniteData<Awaited<
 }
 
 /**
- * @summary Get my usable product vouchers
+ * @summary Get my usable product vouchers (unified wallet)
  */
 export const prefetchGetAppMeProductVouchersInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAppMeProductVouchers>>, TError = UnauthorizedResponse | InternalErrorResponse>(
- queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeProductVouchers>>, TError, TData>>, }
+ queryClient: QueryClient, params?: GetAppMeProductVouchersParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppMeProductVouchers>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetAppMeProductVouchersInfiniteQueryOptions(options)
+  const queryOptions = getGetAppMeProductVouchersInfiniteQueryOptions(params,options)
 
   await queryClient.prefetchInfiniteQuery(queryOptions);
 
@@ -3726,16 +3925,16 @@ export const prefetchGetAppMeProductVouchersInfiniteQuery = async <TData = Await
 
 
 
-export const getGetAppMeProductVouchersQueryOptions = <TData = Awaited<ReturnType<typeof getAppMeProductVouchers>>, TError = UnauthorizedResponse | InternalErrorResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMeProductVouchers>>, TError, TData>>, }
+export const getGetAppMeProductVouchersQueryOptions = <TData = Awaited<ReturnType<typeof getAppMeProductVouchers>>, TError = UnauthorizedResponse | InternalErrorResponse>(params?: GetAppMeProductVouchersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMeProductVouchers>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAppMeProductVouchersQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getGetAppMeProductVouchersQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAppMeProductVouchers>>> = ({ signal }) => getAppMeProductVouchers(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAppMeProductVouchers>>> = ({ signal }) => getAppMeProductVouchers(params, signal);
 
 
 
@@ -3749,7 +3948,7 @@ export type GetAppMeProductVouchersQueryError = UnauthorizedResponse | InternalE
 
 
 export function useGetAppMeProductVouchers<TData = Awaited<ReturnType<typeof getAppMeProductVouchers>>, TError = UnauthorizedResponse | InternalErrorResponse>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMeProductVouchers>>, TError, TData>> & Pick<
+ params: undefined |  GetAppMeProductVouchersParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMeProductVouchers>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAppMeProductVouchers>>,
           TError,
@@ -3759,7 +3958,7 @@ export function useGetAppMeProductVouchers<TData = Awaited<ReturnType<typeof get
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetAppMeProductVouchers<TData = Awaited<ReturnType<typeof getAppMeProductVouchers>>, TError = UnauthorizedResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMeProductVouchers>>, TError, TData>> & Pick<
+ params?: GetAppMeProductVouchersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMeProductVouchers>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAppMeProductVouchers>>,
           TError,
@@ -3769,19 +3968,19 @@ export function useGetAppMeProductVouchers<TData = Awaited<ReturnType<typeof get
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetAppMeProductVouchers<TData = Awaited<ReturnType<typeof getAppMeProductVouchers>>, TError = UnauthorizedResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMeProductVouchers>>, TError, TData>>, }
+ params?: GetAppMeProductVouchersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMeProductVouchers>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Get my usable product vouchers
+ * @summary Get my usable product vouchers (unified wallet)
  */
 
 export function useGetAppMeProductVouchers<TData = Awaited<ReturnType<typeof getAppMeProductVouchers>>, TError = UnauthorizedResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMeProductVouchers>>, TError, TData>>, }
+ params?: GetAppMeProductVouchersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMeProductVouchers>>, TError, TData>>, }
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetAppMeProductVouchersQueryOptions(options)
+  const queryOptions = getGetAppMeProductVouchersQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -3791,14 +3990,14 @@ export function useGetAppMeProductVouchers<TData = Awaited<ReturnType<typeof get
 }
 
 /**
- * @summary Get my usable product vouchers
+ * @summary Get my usable product vouchers (unified wallet)
  */
 export const prefetchGetAppMeProductVouchersQuery = async <TData = Awaited<ReturnType<typeof getAppMeProductVouchers>>, TError = UnauthorizedResponse | InternalErrorResponse>(
- queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMeProductVouchers>>, TError, TData>>, }
+ queryClient: QueryClient, params?: GetAppMeProductVouchersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppMeProductVouchers>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetAppMeProductVouchersQueryOptions(options)
+  const queryOptions = getGetAppMeProductVouchersQueryOptions(params,options)
 
   await queryClient.prefetchQuery(queryOptions);
 
@@ -3808,6 +4007,71 @@ export const prefetchGetAppMeProductVouchersQuery = async <TData = Awaited<Retur
 
 
 /**
+ * Exchanges loyalty points for an AUTO product voucher configured with a points cost. Deducts membership points (ledger entry), reserves quantity and puts the voucher into the customer wallet ready for checkout.
+ * @summary Redeem a product voucher with loyalty points
+ */
+export const postAppMeProductVoucherRedeem = (
+    postAppMeProductVoucherRedeemBody: PostAppMeProductVoucherRedeemBody,
+ signal?: AbortSignal
+) => {
+
+
+      return customInstance<PostAppMeProductVoucherRedeem200>(
+      {url: `/app/me/product-voucher-redeem`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: postAppMeProductVoucherRedeemBody, signal
+    },
+      );
+    }
+
+
+
+export const getPostAppMeProductVoucherRedeemMutationOptions = <TError = UnauthorizedResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAppMeProductVoucherRedeem>>, TError,{data: PostAppMeProductVoucherRedeemBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postAppMeProductVoucherRedeem>>, TError,{data: PostAppMeProductVoucherRedeemBody}, TContext> => {
+
+const mutationKey = ['postAppMeProductVoucherRedeem'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAppMeProductVoucherRedeem>>, {data: PostAppMeProductVoucherRedeemBody}> = (props) => {
+          const {data} = props ?? {};
+
+          return  postAppMeProductVoucherRedeem(data,)
+        }
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostAppMeProductVoucherRedeemMutationResult = NonNullable<Awaited<ReturnType<typeof postAppMeProductVoucherRedeem>>>
+    export type PostAppMeProductVoucherRedeemMutationBody = PostAppMeProductVoucherRedeemBody
+    export type PostAppMeProductVoucherRedeemMutationError = UnauthorizedResponse | InternalErrorResponse
+
+    /**
+ * @summary Redeem a product voucher with loyalty points
+ */
+export const usePostAppMeProductVoucherRedeem = <TError = UnauthorizedResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAppMeProductVoucherRedeem>>, TError,{data: PostAppMeProductVoucherRedeemBody}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postAppMeProductVoucherRedeem>>,
+        TError,
+        {data: PostAppMeProductVoucherRedeemBody},
+        TContext
+      > => {
+
+      const mutationOptions = getPostAppMeProductVoucherRedeemMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
  * **APP-06** — GET /app/me/membership. Customer scope: only operate on the data of the logged-in customer. Returns the point balance and the latest up to 100 point transactions in `points_history`. Handled by `appService.myMembership`.
  * @summary Get membership information
  */

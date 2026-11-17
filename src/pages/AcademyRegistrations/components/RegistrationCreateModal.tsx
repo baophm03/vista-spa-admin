@@ -27,7 +27,7 @@ export default function RegistrationCreateModal({ open, form, courses, vouchers,
   const voucherSummary = (voucher: VoucherCategoryRow) => {
     if (voucher.discount_type === 'AMOUNT') return `Giảm ${Number(voucher.discount_value ?? 0).toLocaleString('vi-VN')} đ`
     if (voucher.discount_type === 'PERCENT') return `Giảm ${Number(voucher.discount_value ?? 0).toLocaleString('vi-VN')}%`
-    return 'Tặng quà / quyền lợi'
+    return 'Ưu đãi cũ cần cập nhật'
   }
 
   return (

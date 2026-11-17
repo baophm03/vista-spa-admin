@@ -126,10 +126,12 @@ function buildAutoMapFields(kind: 'customer-profiles' | 'customer-treatments', d
     key,
     aliases: [key, FIELD_LABELS[key] ?? key, ...(AUTO_MAP_ALIASES[key] ?? [])].map(normalizeHeaderText),
   }))
-  fields.push({
-    key: 'branch_id',
-    aliases: ['branch_id', 'Cơ sở áp dụng', 'Cơ sở trong file (tùy chọn)', 'Cơ sở', ...(AUTO_MAP_ALIASES.branch_id ?? [])].map(normalizeHeaderText),
-  })
+  if (kind === 'customer-treatments') {
+    fields.push({
+      key: 'branch_id',
+      aliases: ['branch_id', 'Cơ sở áp dụng', 'Cơ sở trong file (tùy chọn)', 'Cơ sở', ...(AUTO_MAP_ALIASES.branch_id ?? [])].map(normalizeHeaderText),
+    })
+  }
   for (const def of defs) {
     fields.push({ key: `custom_fields.${def.key}`, aliases: [def.key, def.label ?? ''].map(normalizeHeaderText).filter(Boolean) })
   }
@@ -563,6 +565,11 @@ export default function Imports() {
                   Có thể ghép cột Cơ sở bên dưới để lấy cơ sở riêng từng dòng.
                 </Typography.Text>
               </Form.Item>
+            )}
+            {kind !== 'customer-treatments' && (
+              <Typography.Text type="secondary" style={{ alignSelf: 'center', maxWidth: 360, lineHeight: 1.5 }}>
+                Hồ sơ khách hàng không gắn với cơ sở và được dùng chung toàn hệ thống.
+              </Typography.Text>
             )}
           </div>
 

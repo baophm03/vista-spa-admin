@@ -1,11 +1,13 @@
 import { useState } from 'react'
-import { Alert, Button, Form, Input, Modal, Table, Tabs, Tag, Typography, message } from 'antd'
+import { Alert, Button, Form, Input, Modal, Select, Table, Tabs, Tag, Typography, message } from 'antd'
 import type { TableColumnsType } from 'antd'
 import { CheckCircleOutlined, ClockCircleOutlined, DeleteOutlined, EditOutlined, GiftOutlined, PauseCircleOutlined, PlusOutlined } from '@ant-design/icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { Can, useAbility } from '@casl/react'
 import { useGetCardRanks } from '@/api/endpoints/membership'
+import { useGetBranches } from '@/api/endpoints/branches'
+import type { Branch } from '@/api/models/branch'
 import PageTitle from '../../components/base/PageTitle'
 import StatCards, { type StatItem } from '../../components/base/StatCards'
 import RowActionsMenu from '../../components/base/RowActionsMenu'
@@ -13,7 +15,8 @@ import ListPagination from '../../components/base/ListPagination'
 import { errorMessage, pickData } from '@/api/helpers'
 import { getTreatmentPackages } from '@/api/endpoints/services'
 import { getAcademyCourses } from '@/api/endpoints/academy'
-import { getProducts } from '@/api/endpoints/products'
+import { getProductCategories, getProducts } from '@/api/endpoints/products'
+import type { ProductCategory } from '@/api/models/productCategory'
 import {
   deleteVoucherCategory,
   getVoucherCategory,
@@ -21,9 +24,11 @@ import {
   putVoucherCategory,
   type VoucherCategory,
   type VoucherCategoryRow,
+  type VoucherCategoryWrite,
 } from '@/api/custom/voucherCategories'
 import VoucherModal from './components/VoucherModal'
 import { CATEGORY_META } from './components/constants'
+import { useBrandCurrency } from '@/themeRuntime'
 
 const PAGE_SIZE = 10
 const CATEGORIES: VoucherCategory[] = ['treatment-package', 'academy-course', 'product']
@@ -54,6 +59,7 @@ async function loadTargets(category: VoucherCategory) {
 
 function VoucherCategoryTab({ category }: { category: VoucherCategory }) {
   const ability = useAbility()
+  const { format: formatMoney } = useBrandCurrency()
   const canUpdate = ability.can('UPDATE', 'VOUCHER')
   const queryClient = useQueryClient()
   const [page, setPage] = useState(1)
@@ -61,9 +67,11 @@ function VoucherCategoryTab({ category }: { category: VoucherCategory }) {
   const [search, setSearch] = useState('')
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<VoucherCategoryRow | null>(null)
+  const [branchFilter, setBranchFilter] = useState<string | undefined>()
   const [form] = Form.useForm()
   const meta = CATEGORY_META[category]
-  const listKey = ['voucher-category', category]
+  const listKey = ['voucher-category', category, branchFilter]
+  const listKeyBase = ['voucher-category', category]
 
   const applySearch = (nextKeyword: string) => {
     setSearchInput(nextKeyword)
@@ -73,20 +81,41 @@ function VoucherCategoryTab({ category }: { category: VoucherCategory }) {
 
   const vouchersQuery = useQuery({
     queryKey: [...listKey, page, search],
-    queryFn: () => getVoucherCategory(category, { page, limit: PAGE_SIZE, ...(search ? { q: search } : {}) }),
+    queryFn: () => getVoucherCategory(category, {
+      page,
+      limit: PAGE_SIZE,
+      ...(search ? { q: search } : {}),
+      ...(branchFilter ? { branch_id: branchFilter } : {}),
+    }),
   })
+  const branchesQuery = useGetBranches({ status: 'active' })
   const targetsQuery = useQuery({ queryKey: ['voucher-category-targets', category], queryFn: () => loadTargets(category) })
+  const productCategoriesQuery = useQuery({
+    queryKey: ['voucher-product-categories'],
+    enabled: category === 'product',
+    queryFn: async () => {
+      const categories = pickData<ProductCategory[]>(await getProductCategories()) ?? []
+      return categories.filter((item) => item.is_active !== false).map((item) => ({ value: item.id, label: item.name }))
+    },
+  })
   const ranksQuery = useGetCardRanks({ is_active: true })
   const rows = toRows(vouchersQuery.data)
   const total = (vouchersQuery.data as unknown as { meta?: { total?: number } })?.meta?.total ?? rows.length
   const statsMeta = (vouchersQuery.data as unknown as { meta?: { stats?: { total?: number; active?: number; expired?: number } } })?.meta?.stats
   const targets = targetsQuery.data ?? []
+  const productCategories = productCategoriesQuery.data ?? []
+  const branches = ((pickData<Branch[]>(branchesQuery.data) ?? []) as Branch[])
+    .filter((branch) => branch.is_active !== false)
+    .map((branch) => ({ value: branch.id, label: branch.name }))
   const ranks = (ranksQuery.data?.responseData ?? [])
     .filter((rank) => rank.is_active !== false)
     .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
     .map((rank) => ({ value: rank.id, label: rank.name }))
-  const createMutation = useMutation({ mutationFn: (body: Partial<VoucherCategoryRow>) => postVoucherCategory(category, body) })
-  const updateMutation = useMutation({ mutationFn: ({ id, body }: { id: string; body: Partial<VoucherCategoryRow> }) => putVoucherCategory(category, id, body) })
+  const targetLabelFor = (row: VoucherCategoryRow) => category === 'product' && row.product_category_id
+    ? `Danh mục: ${row.target_name || '—'}`
+    : row.target_name || `Tất cả ${meta.label.replace('Voucher ', '').toLowerCase()}`
+  const createMutation = useMutation({ mutationFn: (body: VoucherCategoryWrite) => postVoucherCategory(category, body) })
+  const updateMutation = useMutation({ mutationFn: ({ id, body }: { id: string; body: VoucherCategoryWrite }) => putVoucherCategory(category, id, body) })
   const hideMutation = useMutation({ mutationFn: (id: string) => deleteVoucherCategory(category, id) })
 
   const statItems: StatItem[] = [
@@ -102,20 +131,27 @@ function VoucherCategoryTab({ category }: { category: VoucherCategory }) {
       form.setFieldsValue({
         ...row,
         [meta.targetField]: row[meta.targetField] ?? undefined,
+        product_target_type: row.product_category_id ? 'CATEGORY' : row.product_id ? 'PRODUCT' : 'ALL',
+        product_category_id: row.product_category_id ?? undefined,
+        branch_id: row.branch_id ?? undefined,
         quantity_total: row.quantity_total ?? undefined,
-        card_rank_id: category === 'academy-course' ? undefined : row.card_rank_id ?? undefined,
-        is_loyalty: row.is_loyalty ?? false,
-        discount_type: row.discount_type ?? (category === 'product' ? 'AMOUNT' : 'GIFT'),
-        discount_value: Number(row.discount_value ?? 0),
+        card_rank_id: category === 'academy-course' || row.issue_mode === 'FIXED' ? undefined : row.card_rank_id ?? undefined,
+        issue_mode: row.issue_mode ?? 'AUTO',
+        points_cost: row.points_cost ?? undefined,
+        discount_type: row.discount_type === 'GIFT' ? undefined : row.discount_type ?? (category === 'academy-course' ? 'PERCENT' : 'AMOUNT'),
+        discount_value: row.discount_type === 'GIFT' ? undefined : Number(row.discount_value ?? 0),
         minimum_order_amount: Number(row.minimum_order_amount ?? 0),
         maximum_discount_amount: row.maximum_discount_amount == null ? undefined : Number(row.maximum_discount_amount),
         minimum_tuition: Number(row.minimum_tuition ?? 0),
         max_uses_per_student: row.max_uses_per_student ?? 1,
         start_date: row.start_date ? dayjs(row.start_date) : undefined,
         end_date: row.end_date ? dayjs(row.end_date) : undefined,
+        date_range: row.start_date || row.end_date
+          ? [row.start_date ? dayjs(row.start_date) : null, row.end_date ? dayjs(row.end_date) : null]
+          : undefined,
       })
     } else {
-      form.setFieldsValue({ title: '', card_rank_id: undefined, is_loyalty: false, is_active: true, discount_type: category === 'treatment-package' || category === 'product' ? 'AMOUNT' : category === 'academy-course' ? 'PERCENT' : undefined, discount_value: undefined, minimum_tuition: 0, minimum_order_amount: 0, maximum_discount_amount: undefined, max_uses_per_student: 1 })
+      form.setFieldsValue({ title: '', branch_id: undefined, card_rank_id: undefined, issue_mode: 'AUTO', points_cost: undefined, is_active: true, product_target_type: 'ALL', product_id: undefined, product_category_id: undefined, discount_type: category === 'treatment-package' || category === 'product' ? 'AMOUNT' : category === 'academy-course' ? 'PERCENT' : undefined, discount_value: undefined, minimum_tuition: 0, minimum_order_amount: 0, maximum_discount_amount: undefined, max_uses_per_student: 1 })
     }
     setOpen(true)
   }
@@ -123,11 +159,27 @@ function VoucherCategoryTab({ category }: { category: VoucherCategory }) {
   const submit = async () => {
     try {
       const values = await form.validateFields()
-      const body: Partial<VoucherCategoryRow> = {
-        ...values,
-        [meta.targetField]: values[meta.targetField] || null,
-        ...(category !== 'academy-course' ? { card_rank_id: values.card_rank_id || null } : {}),
-        is_loyalty: Boolean(values.is_loyalty),
+      const formValues = { ...values }
+      delete formValues.date_range
+      delete formValues.product_target_type
+      const targetValues = category === 'product'
+        ? {
+            product_id: values.product_target_type === 'PRODUCT' ? values.product_id || null : null,
+            product_category_id: values.product_target_type === 'CATEGORY' ? values.product_category_id || null : null,
+          }
+        : { [meta.targetField]: values[meta.targetField] || null }
+      const body: VoucherCategoryWrite = {
+        ...formValues,
+        ...targetValues,
+        branch_id: values.branch_id || null,
+        discount_value: values.discount_value,
+        issue_mode: values.issue_mode === 'FIXED' ? 'FIXED' : 'AUTO',
+        ...(values.issue_mode === 'FIXED'
+          ? { card_rank_id: null }
+          : {
+              ...(category !== 'academy-course' ? { card_rank_id: values.card_rank_id || null } : {}),
+            }),
+        points_cost: values.points_cost ?? null,
         quantity_total: values.quantity_total ?? null,
         start_date: values.start_date ? values.start_date.format('YYYY-MM-DD') : null,
         end_date: values.end_date ? values.end_date.format('YYYY-MM-DD') : null,
@@ -140,7 +192,7 @@ function VoucherCategoryTab({ category }: { category: VoucherCategory }) {
         message.success('Đã thêm voucher')
       }
       setOpen(false)
-      await queryClient.invalidateQueries({ queryKey: listKey })
+      await queryClient.invalidateQueries({ queryKey: listKeyBase })
     } catch (err) {
       if ((err as { errorFields?: unknown })?.errorFields) return
       message.error(errorMessage(err, 'Không thể lưu voucher'))
@@ -152,7 +204,7 @@ function VoucherCategoryTab({ category }: { category: VoucherCategory }) {
     try {
       await updateMutation.mutateAsync({ id: row.id, body: { is_active: false } })
       message.success('Đã tắt voucher; voucher vẫn còn trong danh sách quản trị')
-      await queryClient.invalidateQueries({ queryKey: listKey })
+      await queryClient.invalidateQueries({ queryKey: listKeyBase })
     } catch (err) {
       message.error(errorMessage(err, 'Không thể tắt voucher'))
     }
@@ -162,7 +214,7 @@ function VoucherCategoryTab({ category }: { category: VoucherCategory }) {
     try {
       await hideMutation.mutateAsync(row.id)
       message.success('Đã xóa voucher')
-      await queryClient.invalidateQueries({ queryKey: listKey })
+      await queryClient.invalidateQueries({ queryKey: listKeyBase })
     } catch (err) {
       message.error(errorMessage(err, 'Không thể xóa voucher'))
     }
@@ -170,44 +222,126 @@ function VoucherCategoryTab({ category }: { category: VoucherCategory }) {
 
   const columns: TableColumnsType<VoucherCategoryRow> = [
     {
-      title: 'Tên voucher', dataIndex: 'title', width: 240, ellipsis: true,
-      render: (value: string) => <Typography.Text strong ellipsis={{ tooltip: value }}>{value}</Typography.Text>,
+      title: 'Voucher',
+      key: 'mobile-summary',
+      width: 210,
+      responsive: ['xs'],
+      render: (_value: unknown, row: VoucherCategoryRow) => {
+        const target = targetLabelFor(row)
+        const benefit = row.discount_type === 'GIFT'
+          ? 'Ưu đãi cũ cần cập nhật'
+          : row.discount_type === 'AMOUNT'
+            ? `Giảm ${formatMoney(row.discount_value)}`
+            : `Giảm ${Number(row.discount_value ?? 0).toLocaleString('vi-VN')}%`
+        const expired = Boolean(row.end_date && dayjs(row.end_date).isBefore(dayjs(), 'day'))
+        const status = expired ? 'Hết hạn' : row.is_active ? 'Hoạt động' : 'Tắt'
+        const period = row.start_date || row.end_date
+          ? `${row.start_date ? dayjs(row.start_date).format('DD/MM/YYYY') : '—'} → ${row.end_date ? dayjs(row.end_date).format('DD/MM/YYYY') : '—'}`
+          : 'Không giới hạn'
+        const issue = row.issue_mode === 'FIXED'
+          ? 'Gán thủ công'
+          : `Tự động${category !== 'academy-course' ? ` · ${row.card_rank_name || 'Mọi hạng'}` : ''}`
+        const details = [row.branch_name || 'Tất cả cơ sở', issue, row.points_cost == null ? 'Miễn phí' : `${Number(row.points_cost).toLocaleString('vi-VN')} điểm`, status, period].join(' · ')
+        return (
+          <div>
+            <Typography.Text strong ellipsis={{ tooltip: row.title }}>{row.title}</Typography.Text>
+            <Typography.Text style={{ display: 'block' }} ellipsis={{ tooltip: benefit }}>{benefit}</Typography.Text>
+            <Typography.Text type="secondary" style={{ display: 'block', fontSize: 12 }} ellipsis={{ tooltip: target }}>{target}</Typography.Text>
+            <Typography.Text type="secondary" style={{ display: 'block', fontSize: 12 }} ellipsis={{ tooltip: details }}>{details}</Typography.Text>
+          </div>
+        )
+      },
     },
-    ...(category === 'academy-course' || category === 'treatment-package' || category === 'product' ? [{
-      title: 'Ưu đãi', key: 'benefit', width: 190,
-      render: (_value: unknown, row: VoucherCategoryRow) => {
-        if (row.discount_type === 'GIFT') return <Tag color="purple">Quà tặng / quyền lợi</Tag>
-        if (row.discount_type === 'AMOUNT') return `Giảm ${Number(row.discount_value ?? 0).toLocaleString('vi-VN')} đ`
-        return `Giảm ${Number(row.discount_value ?? 0).toLocaleString('vi-VN')}%`
-      },
-    }, ...(category === 'academy-course' ? [{
-      title: 'Điều kiện', key: 'conditions', width: 230,
-      render: (_value: unknown, row: VoucherCategoryRow) => {
-        const condition = `${Number(row.minimum_tuition ?? 0) > 0 ? `Học phí từ ${Number(row.minimum_tuition).toLocaleString('vi-VN')} đ` : 'Không yêu cầu học phí tối thiểu'} · Tối đa ${row.max_uses_per_student ?? 1} lần/học viên`
-        return <Typography.Text type="secondary" ellipsis={{ tooltip: condition }}>{condition}</Typography.Text>
-      },
-    }] : category === 'product' ? [{
-      title: 'Điều kiện', key: 'conditions', width: 230,
-      render: (_value: unknown, row: VoucherCategoryRow) => {
-        const condition = `${Number(row.minimum_order_amount ?? 0) > 0 ? `Đơn từ ${Number(row.minimum_order_amount).toLocaleString('vi-VN')} đ` : 'Không yêu cầu tối thiểu'}${row.discount_type === 'PERCENT' && row.maximum_discount_amount != null ? ` · Giảm tối đa ${Number(row.maximum_discount_amount).toLocaleString('vi-VN')} đ` : ''}`
-        return <Typography.Text type="secondary" ellipsis={{ tooltip: condition }}>{condition}</Typography.Text>
-      },
-    }] : [])] : []),
     {
-      title: 'Áp dụng cho', dataIndex: 'target_name', width: 220, ellipsis: true,
-      render: (value?: string) => {
-        const label = value || `Tất cả ${meta.label.replace('Voucher ', '').toLowerCase()}`
-        return <Typography.Text ellipsis={{ tooltip: label }}>{label}</Typography.Text>
+      title: 'Voucher', dataIndex: 'title', width: 165,
+      responsive: ['sm'],
+      render: (value: string, row) => {
+        const target = targetLabelFor(row)
+        return (
+          <div>
+            <Typography.Text strong ellipsis={{ tooltip: value }}>{value}</Typography.Text>
+            <Typography.Text type="secondary" style={{ display: 'block', fontSize: 12 }} ellipsis={{ tooltip: target }}>{target}</Typography.Text>
+          </div>
+        )
       },
     },
-    ...(category !== 'academy-course' ? [{ title: 'Hạng khách', dataIndex: 'card_rank_name', width: 150, render: (value?: string) => value ? <Tag color="gold">{value}</Tag> : <Tag>Tất cả hạng</Tag> }] : []),
-    { title: 'Đối tượng', dataIndex: 'is_loyalty', width: 150, render: (value: boolean) => value ? <Tag color="magenta">Khách cũ</Tag> : <Tag>Mọi khách</Tag> },
-    { title: 'Số lượng', width: 120, render: (_value, row) => row.quantity_total == null ? 'Không giới hạn' : `${Math.max(Number(row.quantity_total) - Number(row.quantity_given ?? 0), 0)}/${row.quantity_total}` },
-    { title: 'Bắt đầu', dataIndex: 'start_date', width: 120, render: (value?: string) => value ? dayjs(value).format('DD/MM/YYYY') : '—' },
-    { title: 'Kết thúc', dataIndex: 'end_date', width: 120, render: (value?: string) => value ? dayjs(value).format('DD/MM/YYYY') : '—' },
-    { title: 'Trạng thái', dataIndex: 'is_active', width: 130, render: (value: boolean, row) => row.end_date && dayjs(row.end_date).isBefore(dayjs(), 'day') ? <Tag>Đã hết hạn</Tag> : value ? <Tag color="green">Hoạt động</Tag> : <Tag>Tắt</Tag> },
+    {
+      title: 'Ưu đãi', key: 'benefit', width: 195,
+      responsive: ['sm'],
+      render: (_value: unknown, row: VoucherCategoryRow) => {
+        const benefit = row.discount_type === 'GIFT'
+          ? 'Ưu đãi cũ cần cập nhật'
+          : row.discount_type === 'AMOUNT'
+            ? `Giảm ${formatMoney(row.discount_value)}`
+            : `Giảm ${Number(row.discount_value ?? 0).toLocaleString('vi-VN')}%`
+        const condition = category === 'academy-course'
+          ? [
+              Number(row.minimum_tuition ?? 0) > 0 ? `Học phí từ ${formatMoney(row.minimum_tuition)}` : null,
+              `Tối đa ${row.max_uses_per_student ?? 1} lần/học viên`,
+            ].filter(Boolean).join(' · ')
+          : category === 'product'
+            ? [
+                Number(row.minimum_order_amount ?? 0) > 0 ? `Sản phẩm áp dụng từ ${formatMoney(row.minimum_order_amount)}` : null,
+                row.discount_type === 'PERCENT' && row.maximum_discount_amount != null ? `Giảm tối đa ${formatMoney(row.maximum_discount_amount)}` : null,
+              ].filter(Boolean).join(' · ')
+            : ''
+        return (
+          <div>
+            <Typography.Text ellipsis={{ tooltip: benefit }}>{benefit}</Typography.Text>
+            {condition && <Typography.Text type="secondary" style={{ display: 'block', fontSize: 12 }} ellipsis={{ tooltip: condition }}>{condition}</Typography.Text>}
+          </div>
+        )
+      },
+    },
+    {
+      title: 'Phát hành',
+      key: 'issue',
+      width: 140,
+      responsive: ['xl'],
+      render: (_value: unknown, row: VoucherCategoryRow) => {
+        if (row.issue_mode === 'FIXED') return <Tag color="blue">Gán thủ công</Tag>
+        const audience = category === 'academy-course' ? '' : row.card_rank_name || 'Mọi hạng'
+        const points = row.points_cost == null ? 'Miễn phí' : `${Number(row.points_cost).toLocaleString('vi-VN')} điểm`
+        const details = [audience, points].filter(Boolean).join(' · ')
+        return (
+          <div>
+            <Tag color="cyan">Tự động</Tag>
+            <Typography.Text type="secondary" style={{ display: 'block', fontSize: 12 }} ellipsis={{ tooltip: details }}>{details}</Typography.Text>
+          </div>
+        )
+      },
+    },
+    {
+      title: 'Cơ sở',
+      dataIndex: 'branch_name',
+      key: 'branch',
+      width: 130,
+      responsive: ['lg'],
+      render: (value?: string | null) => value || 'Tất cả cơ sở',
+    },
+    {
+      title: 'Số lượng',
+      key: 'quantity',
+      width: 80,
+      responsive: ['xl'],
+      render: (_value: unknown, row: VoucherCategoryRow) => row.quantity_total == null
+        ? <Typography.Text ellipsis={{ tooltip: 'Không giới hạn' }}>Không giới hạn</Typography.Text>
+        : `${Math.max(Number(row.quantity_total) - Number(row.quantity_given ?? 0), 0)}/${row.quantity_total}`,
+    },
+    {
+      title: 'Thời hạn',
+      width: 150,
+      responsive: ['xl'],
+      render: (_value: unknown, row: VoucherCategoryRow) => {
+        const start = row.start_date ? dayjs(row.start_date).format('DD/MM/YYYY') : null
+        const end = row.end_date ? dayjs(row.end_date).format('DD/MM/YYYY') : null
+        const period = !start && !end ? 'Không giới hạn' : `${start ?? '—'} → ${end ?? '—'}`
+        return <Typography.Text ellipsis={{ tooltip: period }}>{period}</Typography.Text>
+      },
+    },
+    { title: 'Trạng thái', dataIndex: 'is_active', width: 85, responsive: ['sm'], render: (value: boolean, row) => row.end_date && dayjs(row.end_date).isBefore(dayjs(), 'day') ? <Tag>Hết hạn</Tag> : value ? <Tag color="green">Hoạt động</Tag> : <Tag>Tắt</Tag> },
     ...(canUpdate ? [{
-      title: 'Hành động', key: 'actions', align: 'center' as const, width: 110, fixed: 'right' as const,
+      title: 'Hành động', key: 'actions', align: 'center' as const, width: 56,
       render: (_value: unknown, row: VoucherCategoryRow) => (
         <RowActionsMenu
           items={[
@@ -237,6 +371,12 @@ function VoucherCategoryTab({ category }: { category: VoucherCategory }) {
           onChange={(event) => { setSearchInput(event.target.value); if (!event.target.value) applySearch('') }}
           onSearch={(v) => applySearch(v)}
         />
+        <Select
+          value={branchFilter ?? 'ALL'}
+          style={{ width: 220 }}
+          options={[{ value: 'ALL', label: 'Tất cả cơ sở' }, ...branches]}
+          onChange={(value) => { setBranchFilter(value === 'ALL' ? undefined : value); setPage(1) }}
+        />
         <Can I="UPDATE" a="VOUCHER">
           <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>Thêm voucher</Button>
         </Can>
@@ -250,7 +390,6 @@ function VoucherCategoryTab({ category }: { category: VoucherCategory }) {
         pagination={false}
         columns={columns}
         tableLayout="fixed"
-        scroll={{ x: 'max-content' }}
       />
       <ListPagination page={page} limit={PAGE_SIZE} total={total} onChange={setPage} noun="voucher" />
       <VoucherModal
@@ -258,6 +397,9 @@ function VoucherCategoryTab({ category }: { category: VoucherCategory }) {
         open={open}
         category={category}
         targets={targets}
+        productCategories={productCategories}
+        branches={branches}
+        branchesLoading={branchesQuery.isLoading}
         ranks={ranks}
         editing={editing}
         onCancel={() => setOpen(false)}

@@ -214,8 +214,9 @@ function buildBalancedWheelPrizes(sourcePrizes: SpinWheelPrize[]): SpinWheelPriz
   return sourcePrizes
 }
 
-const SPIN_TURNS = 5
-const ANIMATION_MS = 4200
+const SPIN_TURNS = 6
+const ANIMATION_MS = 2600
+const STOP_EASING = 'cubic-bezier(0.35, 0.3, 0.55, 1)'
 
 export default function WheelSpinModal({
   open,
@@ -230,11 +231,12 @@ export default function WheelSpinModal({
   onClose,
 }: WheelSpinModalProps) {
   const [rotation, setRotation] = useState(0)
-  const [transitioning, setTransitioning] = useState(false)
   const [revealed, setRevealed] = useState(false)
   const [highlightedSegmentIndex, setHighlightedSegmentIndex] = useState<number | null>(null)
   const [termsOpen, setTermsOpen] = useState(false)
   const wheelRef = useRef<HTMLDivElement>(null)
+  const spinAnimationRef = useRef<Animation | null>(null)
+  const stopAnimationRef = useRef<Animation | null>(null)
 
   // Danh sách nan quạt được chuẩn hóa (luôn đủ ít nhất 5 cánh đều đặn)
   const displayPrizes = useMemo(() => buildBalancedWheelPrizes(prizes), [prizes])
@@ -250,26 +252,44 @@ export default function WheelSpinModal({
   const handleSpin = () => {
     if (waiting || !canSpinAgain) return
     setRevealed(false)
-    setTransitioning(false)
     setHighlightedSegmentIndex(null)
+    const wheel = wheelRef.current
+    if (wheel) {
+      spinAnimationRef.current?.cancel()
+      stopAnimationRef.current?.cancel()
+      const start = rotation
+      spinAnimationRef.current = wheel.animate(
+        [
+          { transform: `rotate(${start}deg)` },
+          { transform: `rotate(${start + 360}deg)` },
+        ],
+        { duration: 500, easing: 'linear', iterations: Infinity },
+      )
+    }
     onSpin()
   }
 
   useEffect(() => {
+    spinAnimationRef.current?.cancel()
+    stopAnimationRef.current?.cancel()
+    spinAnimationRef.current = null
+    stopAnimationRef.current = null
     if (!open) return
+    if (wheelRef.current) wheelRef.current.style.transform = 'rotate(0deg)'
     setRotation(0)
-    setTransitioning(false)
     setRevealed(false)
     setHighlightedSegmentIndex(null)
     setTermsOpen(false)
   }, [open])
 
   useEffect(() => {
-    if (!open || !result) return
+    const wheel = wheelRef.current
+    if (!open || !result || !wheel) return
 
-    const current = currentRotationDeg(wheelRef.current)
-    setRotation(current)
-    setTransitioning(false)
+    const current = currentRotationDeg(wheel)
+    wheel.style.transform = `rotate(${current}deg)`
+    spinAnimationRef.current?.cancel()
+    spinAnimationRef.current = null
 
     // Tìm vị trí nan quạt trúng thưởng
     const matchingIndices: number[] = []
@@ -289,37 +309,41 @@ export default function WheelSpinModal({
     const targetMod = (((-angleOfIndex + jitter) % 360) + 360) % 360
     const target = current + SPIN_TURNS * 360 + ((targetMod - (current % 360) + 360) % 360)
 
-    const frame = requestAnimationFrame(() => {
-      setTransitioning(true)
+    const animation = wheel.animate(
+      [
+        { transform: `rotate(${current}deg)` },
+        { transform: `rotate(${target}deg)` },
+      ],
+      { duration: ANIMATION_MS, easing: STOP_EASING, fill: 'forwards' },
+    )
+    stopAnimationRef.current = animation
+    animation.onfinish = () => {
+      wheel.style.transform = `rotate(${target}deg)`
+      animation.cancel()
+      stopAnimationRef.current = null
       setRotation(target)
-    })
-    const timer = setTimeout(() => {
-      setTransitioning(false)
       setHighlightedSegmentIndex(targetIndex)
       setRevealed(true)
-    }, ANIMATION_MS + 80)
+    }
+
     return () => {
-      cancelAnimationFrame(frame)
-      clearTimeout(timer)
+      animation.onfinish = null
+      animation.cancel()
+      if (stopAnimationRef.current === animation) stopAnimationRef.current = null
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, result])
 
-  // Làm sáng lần lượt nan quạt đang đi qua kim chỉ trong lúc vòng quay chuyển động.
   useEffect(() => {
-    if (!open || (!waiting && !transitioning)) return
+    const wheel = wheelRef.current
+    if (!open || !error || !wheel) return
 
-    const updateHighlightedSegment = () => {
-      const current = currentRotationDeg(wheelRef.current)
-      const pointerAngle = (((-current + segAngle / 2) % 360) + 360) % 360
-      const index = Math.floor(pointerAngle / segAngle) % segmentCount
-      setHighlightedSegmentIndex(index)
-    }
-
-    updateHighlightedSegment()
-    const interval = window.setInterval(updateHighlightedSegment, 60)
-    return () => window.clearInterval(interval)
-  }, [open, waiting, transitioning, segAngle, segmentCount])
+    const current = currentRotationDeg(wheel)
+    wheel.style.transform = `rotate(${current}deg)`
+    spinAnimationRef.current?.cancel()
+    spinAnimationRef.current = null
+    setRotation(current)
+  }, [open, error])
 
   // Conic gradient bắt đầu từ -segAngle / 2 để ô số 0 nằm chính giữa đỉnh 12h
   const wheelGradient = useMemo(() => {
@@ -486,11 +510,10 @@ export default function WheelSpinModal({
                   ref={wheelRef}
                   role="img"
                   aria-label={`Vòng quay ${wheelName || 'may mắn'}`}
-                  className={`relative h-full w-full rounded-full ${waiting ? 'animate-spin [animation-duration:1.15s] motion-reduce:animate-none' : ''}`}
+                  className="relative h-full w-full rounded-full"
                   style={{
                     background: wheelGradient,
                     transform: `rotate(${rotation}deg)`,
-                    transition: transitioning ? `transform ${ANIMATION_MS}ms cubic-bezier(0.12, 0.78, 0.18, 1)` : undefined,
                   }}
                 >
                   {/* Nan quạt màu trắng sắc nét */}
@@ -737,22 +760,19 @@ export default function WheelSpinModal({
         {revealed && isWinningResult && prize && (
           <div
             role="status"
-            className="relative mt-3 flex w-full max-w-[400px] items-center gap-3 overflow-hidden rounded-2xl border border-[#E8D9C4] bg-[#FFFDF9] px-4 py-3 shadow-[0_6px_18px_rgba(71,42,67,0.12)]"
+            className="mt-3 flex w-full max-w-[400px] items-center gap-3 rounded-lg border border-[var(--brand-border-soft)] bg-[var(--brand-bg-card,#FFFFFF)] px-4 py-3 text-left"
           >
-            <span aria-hidden="true" className="absolute inset-y-3 left-0 w-[3px] rounded-r-full bg-[#C5A05C]" />
-            <div className="grid size-11 shrink-0 place-items-center rounded-[14px] border border-[#E7D7E7] bg-[#F5EAF5] text-xl text-[#813B89]">
-              <GiftOutlined />
-            </div>
+            <GiftOutlined aria-hidden="true" className="shrink-0 text-lg text-[var(--brand-primary)]" />
             <div className="min-w-0 flex-1 text-left">
-              <div className="text-xs font-medium text-[#856C80]">
+              <div className="text-xs text-[var(--brand-textSecondary)]">
                 Bạn vừa nhận
               </div>
-              <div className="break-words text-base font-semibold leading-snug text-[#48234F]">
+              <div className="break-words text-sm font-semibold leading-snug text-[var(--brand-text)]">
                 {prize.name || 'Phần quà may mắn'}
               </div>
             </div>
             {prize.prize_type && (
-              <span className="shrink-0 rounded-lg border border-[#E7D8E8] bg-[#F7F0F7] px-2.5 py-1.5 text-xs font-semibold text-[#75437C]">
+              <span className="shrink-0 border-l border-[var(--brand-border-soft)] pl-3 text-xs text-[var(--brand-textSecondary)]">
                 {PRIZE_TYPE_META[prize.prize_type]?.label ?? prize.prize_type}
               </span>
             )}

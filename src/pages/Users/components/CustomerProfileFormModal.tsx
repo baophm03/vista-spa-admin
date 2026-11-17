@@ -43,7 +43,7 @@ export default function CustomerProfileFormModal({ form, open, editing, profileF
           </Col>
         </Row>
         <Row gutter={12}>
-          <Col xs={24} sm={8}>
+          <Col xs={24} sm={12}>
             <Form.Item
               name="birthday"
               label="Ngày sinh"

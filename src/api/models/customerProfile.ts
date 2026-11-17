@@ -19,7 +19,6 @@ import type { CustomerProfileCreatedBy } from './customerProfileCreatedBy';
 export interface CustomerProfile {
   id: string;
   user_id?: CustomerProfileUserId;
-  branch_id: string;
   customer_code: string;
   qr_token?: string;
   full_name: string;

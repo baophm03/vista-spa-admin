@@ -44,7 +44,7 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * **IMP-01** — POST /imports/{kind}. Upload a CSV/XLSX file with column mapping. Map the optional `branch_id` column to use each row's branch (by branch name, code, or ID); otherwise the top-level `branch_id` is the default. Set `preview_headers=true` to read its first row as column headers without importing. `dry_run=true` (default) only validates and returns a per-row error report without writing to the DB. Files larger than 2MB (or `process_mode=async`) are queued for the background worker instead — the response then returns `{ job_id, async: true }`; poll GET /import-jobs/{job_id} for progress and the final report. Requires the `import.run` permission.
+ * **IMP-01** — POST /imports/{kind}. Upload a CSV/XLSX file with column mapping. For `customer-treatments`, an optional `branch_id` column or top-level branch sets the treatment location; `customer-profiles` are global and do not accept a branch. Set `preview_headers=true` to read its first row as column headers without importing. `dry_run=true` (default) only validates and returns a per-row error report without writing to the DB. Files larger than 2MB (or `process_mode=async`) are queued for the background worker instead — the response then returns `{ job_id, async: true }`; poll GET /import-jobs/{job_id} for progress and the final report. Requires the `import.run` permission.
  * @summary Import legacy customer data (customer-profiles / customer-treatments)
  */
 export const postImportsKind = (

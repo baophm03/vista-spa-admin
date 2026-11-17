@@ -29,7 +29,7 @@ const DEFAULT_STATUS_COLORS: Record<string, string> = {
   completed: '#52C41A',
 }
 const fieldHelp: Record<string, string> = {
-  'customer_code.format': 'Mã cơ sở + số thứ tự tự tăng. Xem ví dụ bên dưới.',
+  'customer_code.format': 'Tiền tố tùy chọn và số thứ tự tự tăng trên toàn hệ thống.',
   'customer_code.regen_on_rank_up': 'Tự đổi mã khách khi khách lên hạng.',
   'customer.shared_across_branches': 'Bật để các cơ sở cùng dùng một hồ sơ khách.',
   'rank.metric': 'Tính hạng theo tiền đã trả, giá trị gói hoặc lấy mức cao hơn.',
@@ -115,8 +115,12 @@ function CustomerCodeFormatField({ value, disabled, onChange }: {
   disabled?: boolean
   onChange: (value: unknown) => void
 }) {
-  const format = typeof value === 'string' ? value : '{branch}-{seq:6}'
-  const match = /^(.*?)\{branch\}([-_:]?)\{seq(?::(\d+))?\}(.*?)$/.exec(format)
+  const rawFormat = typeof value === 'string' ? value : 'KH-{seq:6}'
+  const format = rawFormat
+    .replace(/\{branch\}/g, '')
+    .replace(/[-_:]{2,}/g, '-')
+    .replace(/^[-_:]+/, '')
+  const match = /^(.*?)\{seq(?::(\d+))?\}(.*?)$/.exec(format)
 
   if (!match) {
     return (
@@ -127,31 +131,20 @@ function CustomerCodeFormatField({ value, disabled, onChange }: {
     )
   }
 
-  const [, prefix, separator, rawDigitCount, suffix] = match
+  const [, prefix, rawDigitCount, suffix] = match
   const digitCount = Math.min(99, Math.max(1, Number(rawDigitCount) || 1))
-  const separatorOptions = [
-    { value: '-', label: 'Gạch ngang (-)' },
-    { value: '_', label: 'Gạch dưới (_)' },
-    { value: ':', label: 'Hai chấm (:)' },
-    { value: '', label: 'Không dùng dấu' },
-  ]
-
-  const updateFormat = (nextSeparator: string, nextDigitCount: number) => {
-    onChange(`${prefix}{branch}${nextSeparator}{seq:${nextDigitCount}}${suffix}`)
-  }
-  const preview = `${prefix}CN01${separator}${'1'.padStart(digitCount, '0')}${suffix}`
+  const updateFormat = (nextDigitCount: number) => onChange(`${prefix}{seq:${nextDigitCount}}${suffix}`)
+  const preview = `${prefix}${'1'.padStart(digitCount, '0')}${suffix}`
 
   return (
     <div className="space-y-3">
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_6rem]">
         <label className="min-w-0">
-          <Typography.Text type="secondary" className="mb-1 block text-xs!">Dấu nối giữa hai phần</Typography.Text>
-          <Select
-            className="w-full"
-            value={separator}
-            options={separatorOptions}
+          <Typography.Text type="secondary" className="mb-1 block text-xs!">Tiền tố mã khách</Typography.Text>
+          <Input
+            value={prefix}
             disabled={disabled}
-            onChange={(nextSeparator: string) => updateFormat(nextSeparator, digitCount)}
+            onChange={(event) => onChange(`${event.target.value}{seq:${digitCount}}${suffix}`)}
           />
         </label>
         <label className="min-w-0">
@@ -165,7 +158,7 @@ function CustomerCodeFormatField({ value, disabled, onChange }: {
             value={digitCount}
             disabled={disabled}
             onChange={(nextDigitCount) => {
-              if (typeof nextDigitCount === 'number') updateFormat(separator, nextDigitCount)
+              if (typeof nextDigitCount === 'number') updateFormat(nextDigitCount)
             }}
           />
         </label>
