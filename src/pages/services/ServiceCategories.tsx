@@ -1,15 +1,14 @@
 import { useMemo, useState } from 'react'
 import { Button, Form, Input, Modal, Popconfirm, Space, Table, Tag, message } from 'antd'
 import type { TableColumnsType } from 'antd'
-import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
+import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, PlusOutlined } from '@ant-design/icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Can, useAbility } from '@casl/react'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ServiceCategoryModal from './components/ServiceCategoryModal'
 import ListPagination from '@/components/base/ListPagination'
 import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
-import { paginateRows } from '@/utils/listTable'
-import { errorMessage, pickData } from '@/api/helpers'
+import { errorMessage } from '@/api/helpers'
 import {
   deleteServiceCategoriesId,
   getGetServiceCategoriesQueryKey,
@@ -36,15 +35,15 @@ export default function ServiceCategories() {
   const [form] = Form.useForm()
 
   const categoriesQuery = useQuery({
-    queryKey: getGetServiceCategoriesQueryKey(),
-    queryFn: async () => (pickData<ServiceCategoryRow[]>(await getServiceCategories()) ?? []) as ServiceCategoryRow[],
+    queryKey: [getGetServiceCategoriesQueryKey(), page, search],
+    queryFn: async () =>
+      (await getServiceCategories({ page, limit: 10, ...(search.trim() ? { q: search.trim() } : {}) } as never)) as unknown as {
+        responseData?: ServiceCategoryRow[]
+        meta?: { total?: number }
+      },
   })
-  const rows = categoriesQuery.data ?? []
-  const filteredRows = useMemo(() => {
-    const keyword = search.trim().toLocaleLowerCase('vi-VN')
-    if (!keyword) return rows
-    return rows.filter((row) => [row.name, row.parent?.name].filter(Boolean).join(' ').toLocaleLowerCase('vi-VN').includes(keyword))
-  }, [rows, search])
+  const rows = (categoriesQuery.data?.responseData ?? []) as ServiceCategoryRow[]
+  const total = categoriesQuery.data?.meta?.total ?? rows.length
 
   const createMutation = useMutation({
     mutationFn: async (dto: ServiceCategoryCreate) => postServiceCategories(dto),
@@ -167,13 +166,13 @@ export default function ServiceCategories() {
   return (
     <>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
-        <Input
+        <Input.Search
           allowClear
-          prefix={<SearchOutlined className="text-[var(--brand-text-inactive,#A9ADB2)]" />}
           placeholder="Tìm tên danh mục"
-          style={{ width: 260 }}
+          className="w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]"
           value={search}
-          onChange={(event) => { setSearch(event.target.value); setPage(1) }}
+          onChange={(event) => { setSearch(event.target.value); if (!event.target.value) setPage(1) }}
+          onSearch={(value) => { setSearch(value); setPage(1) }}
         />
         <Space>
           <Can I="CREATE" a="SERVICE">
@@ -183,9 +182,9 @@ export default function ServiceCategories() {
           </Can>
         </Space>
       </div>
-      <Table<ServiceCategoryRow> className="desktop-only" rowKey="id" loading={categoriesQuery.isLoading} dataSource={paginateRows(filteredRows, page, 10)} columns={columns} pagination={false} />
+      <Table<ServiceCategoryRow> className="desktop-only" rowKey="id" loading={categoriesQuery.isLoading} dataSource={rows} columns={columns} pagination={false} />
       <MobileCards
-        rows={paginateRows(filteredRows, page, 10)}
+        rows={rows}
         rowKey={(row) => row.id}
         loading={categoriesQuery.isLoading}
         emptyText="Chưa có danh mục nào"
@@ -233,7 +232,7 @@ export default function ServiceCategories() {
           </>
         )}
       />
-      <ListPagination page={page} limit={10} total={filteredRows.length} onChange={setPage} noun="danh mục dịch vụ" />
+      <ListPagination page={page} limit={10} total={total} onChange={setPage} noun="danh mục dịch vụ" />
       <ServiceCategoryModal
         open={open}
         editing={editing}

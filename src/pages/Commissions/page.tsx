@@ -116,8 +116,15 @@ const DEFAULT_VISIBLE_COLUMNS: CommissionColumnKey[] = [
 type ManagementRow = {
   id: string
   kind: 'COMMISSION' | 'REFERRAL'
-  commission?: CommissionEntry
+  commission?: CommissionEntryWithRelations
   referral?: ReferralRow
+}
+
+type CommissionEntryWithRelations = CommissionEntry & {
+  payee_user?: Pick<User, 'zalo_name' | 'email'> | null
+  collaborator?: Pick<Collaborator, 'name'> | null
+  customer_profile?: { full_name?: string; phone?: string } | null
+  referrer_profile?: { full_name?: string; phone?: string } | null
 }
 
 function formatVnd(v?: number | null): string {
@@ -199,7 +206,7 @@ function LedgerTab({ canReadReferral, canReadCommission }: { canReadReferral: bo
 
   const listQuery = useGetCommissions({ ...filters, page: 1, limit: 200 }, { query: { enabled: canReadCommission } })
   const referralQuery = useGetReferrals(undefined, { query: { enabled: canReadReferral } })
-  const commissionRows = useMemo(() => pickData<CommissionEntry[]>(listQuery.data) ?? [], [listQuery.data])
+  const commissionRows = useMemo(() => pickData<CommissionEntryWithRelations[]>(listQuery.data) ?? [], [listQuery.data])
   const meta = pickMeta(listQuery.data)
   const referrals = useMemo(() => {
     const raw = pickData<unknown>(referralQuery.data)
@@ -217,7 +224,7 @@ function LedgerTab({ canReadReferral, canReadCommission }: { canReadReferral: bo
     const staffById = new Map(users.map((user) => [user.id, user.zalo_name || user.email || undefined]))
     const collaboratorById = new Map(collaborators.map((row) => [row.id, row.name]))
     const customerById = new Map(customers.map((row) => [row.id, row.full_name]))
-    return (row: CommissionEntry): string => {
+    return (row: CommissionEntryWithRelations): string => {
       if (row.payee_type === 'STAFF') {
         return row.payee_user?.zalo_name || row.payee_user?.email || staffById.get(row.payee_user_id ?? row.staff_id ?? '') || '—'
       }

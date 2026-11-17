@@ -10,7 +10,6 @@ import TableEmpty from '@/components/base/TableEmpty'
 import LookupItemsManager from '@/components/LookupItemsManager'
 import CustomFieldEditorModal from './components/CustomFieldEditorModal'
 import type { CustomFieldFormValues } from './components/CustomFieldEditorModal'
-import { paginateRows } from '@/utils/listTable'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { CustomFieldDef } from '@/api/models/customFieldDef'
 import type { CustomFieldDefEntity } from '@/api/models/customFieldDefEntity'
@@ -112,6 +111,7 @@ function CustomerFieldsConfig({ entity, sectionTitle }: {
   const [rows, setRows] = useState<CustomFieldDef[]>([])
   const [lookupLists, setLookupLists] = useState<LookupList[]>([])
   const [page, setPage] = useState(1)
+  const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(false)
   const [editing, setEditing] = useState<CustomFieldDef | null>(null)
   const [saving, setSaving] = useState(false)
@@ -122,16 +122,17 @@ function CustomerFieldsConfig({ entity, sectionTitle }: {
   const canToggleRow = (row: CustomFieldDef) =>
     ability.can(row.is_active === false ? 'UPDATE' : 'DELETE', 'CUSTOM_FIELD')
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (nextPage = 1) => {
     setLoading(true)
     try {
       const [definitions, catalogs] = await Promise.all([
-        getCustomFieldDefs({ entity }),
+        getCustomFieldDefs({ entity, page: nextPage, limit: 10 } as never),
         getLookupLists({ is_active: true }),
       ])
       setRows((pickData<CustomFieldDef[]>(definitions) ?? []) as CustomFieldDef[])
+      setTotal((definitions as unknown as { meta?: { total?: number } })?.meta?.total ?? 0)
       setLookupLists((pickData<LookupList[]>(catalogs) ?? []) as LookupList[])
-      setPage(1)
+      setPage(nextPage)
     } catch (err) {
       message.error(errorMessage(err))
     } finally {
@@ -257,7 +258,7 @@ function CustomerFieldsConfig({ entity, sectionTitle }: {
     <Table<CustomFieldDef>
       rowKey="id"
       loading={loading}
-      dataSource={paginateRows(rows, page, 10)}
+      dataSource={rows}
       pagination={false}
       locale={{
         emptyText: entity === 'SERVICE' ? (
@@ -318,7 +319,7 @@ function CustomerFieldsConfig({ entity, sectionTitle }: {
           {customFieldsTable}
         </>
       )}
-      <ListPagination page={page} limit={10} total={rows.length} onChange={setPage} noun="trường tùy chỉnh" />
+      <ListPagination page={page} limit={10} total={total} onChange={setPage} noun="trường tùy chỉnh" />
       <CustomFieldEditorModal
         entity={entity}
         sectionTitle={sectionTitle}

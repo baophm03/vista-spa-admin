@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useState } from 'react'
 import {
   Button,
   Form,
@@ -6,9 +6,7 @@ import {
   Input,
   InputNumber,
   Modal,
-  Popconfirm,
   Select,
-  Space,
   Table,
   Tabs,
   Tag,
@@ -24,7 +22,6 @@ import {
   LinkOutlined,
   PictureOutlined,
   PlusOutlined,
-  SearchOutlined,
   ShoppingOutlined,
 } from '@ant-design/icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -34,7 +31,6 @@ import ListFilterPopover from '@/components/base/ListFilterPopover'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
 import TableEmpty from '@/components/base/TableEmpty'
-import { paginateRows } from '@/utils/listTable'
 import { errorMessage, pickData } from '@/api/helpers'
 import {
   deleteProductCategoriesId,
@@ -91,50 +87,63 @@ export default function Products() {
   const [catSaving, setCatSaving] = useState(false)
   const [categoryModalOpen, setCategoryModalOpen] = useState(false)
   const [categorySearchInput, setCategorySearchInput] = useState('')
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  const [categorySearch, setCategorySearch] = useState('')
+  const [categoryPage, setCategoryPage] = useState(1)
+  const [limit] = useState(10)
 
   const activeFilterCount = [categoryFilter, statusFilter !== undefined].filter(Boolean).length + (search ? 1 : 0)
 
-  const categoriesQuery = useQuery({
+  // Danh sách đầy đủ cho bộ lọc / modal tạo sản phẩm
+  const allCategoriesQuery = useQuery({
     queryKey: getGetProductCategoriesQueryKey(),
-    queryFn: async () => (pickData<ProductCategoryRow[]>(await getProductCategories()) ?? []) as ProductCategoryRow[],
+    queryFn: async () => (pickData<ProductCategoryRow[]>(await getProductCategories({ page: 1, limit: 200 } as never)) ?? []) as ProductCategoryRow[],
   })
-  const categories = categoriesQuery.data ?? []
+  const categories = allCategoriesQuery.data ?? []
+
+  // Bảng danh mục (tab "Danh mục") — tìm kiếm + phân trang phía server
+  const categoriesTableQuery = useQuery({
+    queryKey: [...getGetProductCategoriesQueryKey(), 'table', categoryPage, limit, categorySearch] as const,
+    queryFn: async () => getProductCategories({
+      page: categoryPage,
+      limit,
+      ...(categorySearch ? { q: categorySearch } : {}),
+    } as never),
+  })
+  const categoryRows = (pickData<ProductCategoryRow[] | undefined>(categoriesTableQuery.data) ?? []) as ProductCategoryRow[]
+  const categoryTotal = (categoriesTableQuery.data as unknown as { meta?: { total?: number } })?.meta?.total ?? categoryRows.length
 
   const productsQuery = useQuery({
     queryKey: getGetProductsQueryKey({
+      page,
+      limit,
       ...(search ? { q: search } : {}),
       ...(categoryFilter ? { category_id: categoryFilter } : {}),
       ...(statusFilter !== undefined ? { is_active: statusFilter } : {}),
-    }),
-    queryFn: async () => (pickData<ProductRow[]>(await getProducts({
+    } as never),
+    queryFn: async () => getProducts({
+      page,
+      limit,
       ...(search ? { q: search } : {}),
       ...(categoryFilter ? { category_id: categoryFilter } : {}),
       ...(statusFilter !== undefined ? { is_active: statusFilter } : {}),
-    })) ?? []) as ProductRow[],
+    } as never),
   })
-  const rows = productsQuery.data ?? []
+  const rows = (pickData<ProductRow[] | undefined>(productsQuery.data) ?? []) as ProductRow[]
+  const total = (productsQuery.data as unknown as { meta?: { total?: number } })?.meta?.total ?? rows.length
+  const statsMeta = (productsQuery.data as unknown as { meta?: { stats?: { total: number; selling: number; hidden: number } } })?.meta?.stats
 
-  // Thống kê đầu trang — chỉ đáng tin khi không có bộ lọc phía server (khi đó rows là danh sách đầy đủ)
-  const statItems = useMemo<StatItem[]>(() => {
-    if (search || categoryFilter || statusFilter !== undefined) return []
-    const sellingCount = rows.filter((row) => row.is_active !== false).length
-    return [
-      { key: 'total', label: 'Tổng sản phẩm', value: rows.length.toLocaleString('vi-VN'), icon: <ShoppingOutlined />, tone: 'primary' },
-      { key: 'selling', label: 'Đang bán', value: sellingCount.toLocaleString('vi-VN'), icon: <EyeOutlined />, tone: 'secondary' },
-      { key: 'hidden', label: 'Đã ẩn', value: (rows.length - sellingCount).toLocaleString('vi-VN'), icon: <EyeInvisibleOutlined />, tone: 'neutral' },
-    ]
-  }, [rows, search, categoryFilter, statusFilter])
+  // Thống kê đầu trang — tính phía server qua meta.stats
+  const statItems: StatItem[] = [
+    { key: 'total', label: 'Tổng sản phẩm', value: (statsMeta?.total ?? 0).toLocaleString('vi-VN'), icon: <ShoppingOutlined />, tone: 'primary' },
+    { key: 'selling', label: 'Đang bán', value: (statsMeta?.selling ?? 0).toLocaleString('vi-VN'), icon: <EyeOutlined />, tone: 'secondary' },
+    { key: 'hidden', label: 'Đã ẩn', value: (statsMeta?.hidden ?? 0).toLocaleString('vi-VN'), icon: <EyeInvisibleOutlined />, tone: 'neutral' },
+  ]
 
-  // Tìm kiếm debounce 400ms
-  useEffect(() => {
-    clearTimeout(debounceRef.current)
-    debounceRef.current = setTimeout(() => {
-      setSearch(searchInput.trim())
-      setPage(1)
-    }, 400)
-    return () => clearTimeout(debounceRef.current)
-  }, [searchInput])
+  const applySearch = (value: string) => {
+    setSearchInput(value)
+    setSearch(value.trim())
+    setPage(1)
+  }
 
   const uploadMutation = usePostFiles()
   const urlMap = useFileUrlMap()
@@ -230,16 +239,6 @@ export default function Products() {
     }
   }
 
-  const toggleVisibility = async (row: ProductRow) => {
-    try {
-      await updateMutation.mutateAsync({ id: row.id, dto: { name: row.name, is_active: row.is_active === false } })
-      message.success(row.is_active === false ? 'Đã hiển thị lại sản phẩm' : 'Đã ẩn sản phẩm khỏi app')
-      await queryClient.invalidateQueries({ queryKey: getGetProductsQueryKey() })
-    } catch (err) {
-      message.error(errorMessage(err))
-    }
-  }
-
   const uploadImage = async (file: File): Promise<string | null> => {
     try {
       const uploaded = pickData<{ id?: string; path?: string }>(await uploadMutation.mutateAsync({ data: { file } }))
@@ -305,18 +304,13 @@ export default function Products() {
     <>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-          <Input
+          <Input.Search
             allowClear
-            prefix={<SearchOutlined className="text-[var(--brand-text-inactive,#A9ADB2)]" />}
             placeholder="Tìm theo tên hoặc mã SKU"
-            className="w-[260px]!"
+            className="w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]"
             value={searchInput}
-            onChange={(event) => setSearchInput(event.target.value)}
-            onPressEnter={() => {
-              clearTimeout(debounceRef.current)
-              setSearch(searchInput.trim())
-              setPage(1)
-            }}
+            onChange={(event) => { setSearchInput(event.target.value); if (!event.target.value) applySearch('') }}
+            onSearch={applySearch}
           />
           <ListFilterPopover
             open={filterOpen}
@@ -375,7 +369,7 @@ export default function Products() {
       <Table<ProductRow>
         rowKey="id"
         loading={productsQuery.isFetching}
-        dataSource={paginateRows(rows, page, 10)}
+        dataSource={rows}
         locale={{ emptyText: <TableEmpty description="Chưa có sản phẩm nào khớp điều kiện" /> }}
         pagination={false}
         onRow={(row) => ({ onClick: () => setViewing(row), style: { cursor: 'pointer' } })}
@@ -479,27 +473,10 @@ export default function Products() {
             render: (_, p) => (
               <RowActionsMenu
                 items={[
-                  ...(isAdmin
-                    ? [
-                        { key: 'edit', icon: <EditOutlined />, label: 'Sửa' },
-                        p.is_active === false
-                          ? { key: 'show', icon: <EyeOutlined />, label: 'Hiện lại' }
-                          : { key: 'hide', icon: <EyeInvisibleOutlined />, label: 'Ẩn', danger: true },
-                      ]
-                    : []),
+                  ...(isAdmin ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []),
                 ]}
                 onSelect={(key) => {
                   if (key === 'edit') openModal(p)
-                  else if (key === 'show') void toggleVisibility(p)
-                  else if (key === 'hide') {
-                    Modal.confirm({
-                      title: 'Ẩn sản phẩm này khỏi app?',
-                      okText: 'Ẩn',
-                      okButtonProps: { danger: true },
-                      cancelText: 'Hủy',
-                      onOk: () => toggleVisibility(p),
-                    })
-                  }
                 }}
               />
             ),
@@ -508,20 +485,20 @@ export default function Products() {
           column.key === 'actions' ? true : visibleColumns.includes(String(column.key)),
         )}
       />
-      <ListPagination page={page} limit={10} total={rows.length} onChange={setPage} noun="sản phẩm" hideOnSinglePage />
+      <ListPagination page={page} limit={limit} total={total} onChange={setPage} noun="sản phẩm" hideOnSinglePage />
     </>
   )
 
   const categoriesContent = (
     <>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
-        <Input
+        <Input.Search
           allowClear
-          prefix={<SearchOutlined className="text-[var(--brand-text-inactive,#A9ADB2)]" />}
           placeholder="Tìm tên danh mục"
-          className="w-[260px]!"
+          className="w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]"
           value={categorySearchInput}
-          onChange={(event) => setCategorySearchInput(event.target.value)}
+          onChange={(event) => { setCategorySearchInput(event.target.value); if (!event.target.value) { setCategorySearch(''); setCategoryPage(1) } }}
+          onSearch={(value) => { setCategorySearch(value.trim()); setCategoryPage(1) }}
         />
         {isAdmin && (
           <Button type="primary" icon={<PlusOutlined />} onClick={() => { setEditingCategory(null); catForm.resetFields(); setCategoryModalOpen(true) }}>
@@ -531,9 +508,8 @@ export default function Products() {
       </div>
       <Table<ProductCategoryRow>
         rowKey="id"
-        size="small"
-        dataSource={categories.filter((category) =>
-          !categorySearchInput.trim() || category.name.toLowerCase().includes(categorySearchInput.trim().toLowerCase()))}
+        loading={categoriesTableQuery.isFetching}
+        dataSource={categoryRows}
         pagination={false}
         locale={{ emptyText: <TableEmpty description="Chưa có danh mục nào" /> }}
         columns={[
@@ -549,35 +525,49 @@ export default function Products() {
           {
             title: 'Hành động',
             key: 'actions',
-            width: 130,
+            width: 90,
             align: 'center' as const,
+            fixed: 'right',
             render: (_, c) => (
-              <Space size={4}>
-                <Button size="small" type="text" icon={<EditOutlined />} onClick={() => { setEditingCategory(c); catForm.setFieldsValue({ name: c.name, sort_order: c.sort_order ?? 0 }); setCategoryModalOpen(true) }} />
-                <Popconfirm
-                  title={c.is_active === false ? 'Hiện lại danh mục này?' : 'Ẩn danh mục này?'}
-                  description={c.is_active === false ? 'Danh mục sẽ hiển thị lại trên app.' : 'Danh mục bị ẩn khỏi app nhưng vẫn còn trong danh sách quản trị.'}
-                  okText={c.is_active === false ? 'Hiện' : 'Ẩn'}
-                  cancelText="Hủy"
-                  onConfirm={() => void toggleCategoryVisibility(c)}
-                >
-                  <Button size="small" type="text" icon={c.is_active === false ? <EyeOutlined /> : <EyeInvisibleOutlined />} />
-                </Popconfirm>
-                <Popconfirm
-                  title="Xóa danh mục này?"
-                  description="Chỉ xóa được khi không còn sản phẩm tham chiếu."
-                  okText="Xóa"
-                  okButtonProps={{ danger: true }}
-                  cancelText="Hủy"
-                  onConfirm={() => void removeCategory(c)}
-                >
-                  <Button size="small" type="text" danger icon={<DeleteOutlined />} />
-                </Popconfirm>
-              </Space>
+              <RowActionsMenu
+                items={[
+                  { key: 'edit', icon: <EditOutlined />, label: 'Sửa' },
+                  c.is_active === false
+                    ? { key: 'show', icon: <EyeOutlined />, label: 'Hiện lại' }
+                    : { key: 'hide', icon: <EyeInvisibleOutlined />, label: 'Ẩn', danger: true },
+                  { key: 'delete', icon: <DeleteOutlined />, danger: true, label: 'Xóa' },
+                ]}
+                onSelect={(key) => {
+                  if (key === 'edit') {
+                    setEditingCategory(c)
+                    catForm.setFieldsValue({ name: c.name, sort_order: c.sort_order ?? 0 })
+                    setCategoryModalOpen(true)
+                  } else if (key === 'show' || key === 'hide') {
+                    Modal.confirm({
+                      title: c.is_active === false ? 'Hiện lại danh mục này?' : 'Ẩn danh mục này?',
+                      content: c.is_active === false ? 'Danh mục sẽ hiển thị lại trên app.' : 'Danh mục bị ẩn khỏi app nhưng vẫn còn trong danh sách quản trị.',
+                      okText: c.is_active === false ? 'Hiện' : 'Ẩn',
+                      okButtonProps: key === 'hide' ? { danger: true } : undefined,
+                      cancelText: 'Hủy',
+                      onOk: () => void toggleCategoryVisibility(c),
+                    })
+                  } else if (key === 'delete') {
+                    Modal.confirm({
+                      title: 'Xóa danh mục này?',
+                      content: 'Chỉ xóa được khi không còn sản phẩm tham chiếu.',
+                      okText: 'Xóa',
+                      okButtonProps: { danger: true },
+                      cancelText: 'Hủy',
+                      onOk: () => void removeCategory(c),
+                    })
+                  }
+                }}
+              />
             ),
           },
         ]}
       />
+      <ListPagination page={categoryPage} limit={limit} total={categoryTotal} onChange={setCategoryPage} noun="danh mục" />
       <Modal
         title={editingCategory ? 'Sửa danh mục' : 'Tạo danh mục'}
         open={isAdmin && categoryModalOpen}

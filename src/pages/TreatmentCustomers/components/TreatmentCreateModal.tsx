@@ -7,8 +7,6 @@ import type { ProfileRow } from './constants'
 import { QUOTA_LABEL } from './constants'
 import type { Branch } from '@/api/models'
 
-const labelStyle = { fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#8A8D93', fontWeight: 600 } as const
-
 interface TreatmentCreateModalProps {
   form: FormInstance
   open: boolean
@@ -43,75 +41,74 @@ export default function TreatmentCreateModal({
   onOk,
 }: TreatmentCreateModalProps) {
   return (
-      <Modal
-        title="Thêm khách vào liệu trình"
-        open={open}
-        onCancel={onCancel}
-        onOk={onOk}
-        okText="Lưu"
-        cancelText="Hủy"
-        confirmLoading={submitting}
-      >
-        <Form form={form} layout="vertical" className="mt-3">
-          <Form.Item name="customer_profile_id" label="Khách hàng" rules={[{ required: true, message: 'Chọn khách hàng' }]}>
-            <Select
-              showSearch
-              filterOption={false}
-              placeholder="Gõ tên hoặc SĐT để tìm khách"
-              onSearch={onSearch}
-              options={customerOptions.map((c) => ({ value: c.id, label: `${c.full_name} — ${c.phone}` }))}
-            />
-          </Form.Item>
-          <Form.Item name="package_id" label="Liệu trình" rules={[{ required: true, message: 'Chọn liệu trình' }]}>
-            <Select
-              showSearch
-              optionFilterProp="label"
-              placeholder="Chọn liệu trình"
-              loading={packagesLoading}
-              onChange={onPackageChange}
-              options={packages.filter((p) => p.is_active).map((p) => ({
-                value: p.id,
-                label: `${p.name} (${QUOTA_LABEL[p.quota_type ?? ''] ?? p.quota_type})`,
-              }))}
-            />
-          </Form.Item>
-           <Form.Item name="branch_id" label={<span style={labelStyle}>Cơ sở</span>}>
-                          <Select
-                            allowClear
-                            showSearch
-                            optionFilterProp="label"
-                            placeholder="Chọn cơ sở"
-                            notFoundContent="Chưa có cơ sở"
-                            options={branches.map((branch) => ({ value: branch.id, label: branch.name }))}
-                          />
-                        </Form.Item>
-          <Form.Item
-            name="total_amount"
-            label="Số tiền"
-            extra={(() => {
-              const listMin = Number(selectedSalePackage?.list_price ?? 0)
-              const listMax = Math.max(listMin, Number(selectedSalePackage?.list_price_max ?? listMin))
-              const listNote = !selectedSalePackage
-                ? 'Chọn liệu trình để xem giá niêm yết gói.'
-                : listMin > 0
-                  ? `Giá niêm yết gói: ${listMin.toLocaleString('vi-VN')}${listMax > listMin ? `–${listMax.toLocaleString('vi-VN')}` : ''} ₫`
-                  : 'Gói này chưa có giá niêm yết — nhập số tiền bán.'
-              const valueNote = selectedSalePackage?.quota_type === 'VALUE' ? 'Định mức sử dụng của gói này sẽ tự bằng số tiền bán.' : undefined
-              return [listNote, valueNote].filter(Boolean).join(' · ') || undefined
-            })()}
-            rules={[{ required: true, message: 'Nhập số tiền' }]}
-          >
-            <InputNumber min={0} step={100000} suffix={currencySymbol} className="w-full!" />
-          </Form.Item>
-          <Form.Item name="sessions_bonus" label="Buổi tặng" extra="Cộng thêm vào số buổi của gói — để trống nếu không tặng">
-            <InputNumber min={0} precision={0} className="w-full!" />
-          </Form.Item>
-          <Form.Item name="expires_at" label="Hạn sử dụng" extra="Để trống nếu gói không giới hạn thời gian">
-            <DatePicker className="w-full!" />
-          </Form.Item>
-          <CustomFieldFormItems definitions={customFieldDefs} />
-        </Form>
-      </Modal>
+    <Modal
+      title="Thêm khách vào liệu trình"
+      open={open}
+      onCancel={onCancel}
+      onOk={onOk}
+      okText="Lưu"
+      cancelText="Hủy"
+      confirmLoading={submitting}
+    >
+      <Form form={form} layout="vertical" className="mt-3">
+        <Form.Item name="customer_profile_id" label="Khách hàng" rules={[{ required: true, message: 'Chọn khách hàng' }]}>
+          <Select
+            showSearch
+            filterOption={false}
+            placeholder="Gõ tên hoặc SĐT để tìm khách"
+            onSearch={onSearch}
+            options={customerOptions.map((c) => ({ value: c.id, label: `${c.full_name} — ${c.phone}` }))}
+          />
+        </Form.Item>
+        <Form.Item name="package_id" label="Liệu trình" rules={[{ required: true, message: 'Chọn liệu trình' }]}>
+          <Select
+            showSearch
+            optionFilterProp="label"
+            placeholder="Chọn liệu trình"
+            loading={packagesLoading}
+            onChange={onPackageChange}
+            options={packages.filter((p) => p.is_active).map((p) => ({
+              value: p.id,
+              label: `${p.name} (${QUOTA_LABEL[p.quota_type ?? ''] ?? p.quota_type})`,
+            }))}
+          />
+        </Form.Item>
+        <Form.Item name="branch_id" label="Cơ sở" rules={[{ required: true, message: 'Chọn cơ sở' }]}>
+          <Select
+            showSearch
+            optionFilterProp="label"
+            placeholder="Chọn cơ sở"
+            notFoundContent="Chưa có cơ sở"
+            options={branches.map((branch) => ({ value: branch.id, label: branch.name }))}
+          />
+        </Form.Item>
+        <Form.Item
+          name="total_amount"
+          label="Số tiền"
+          extra={(() => {
+            const listMin = Number(selectedSalePackage?.list_price ?? 0)
+            const listMax = Math.max(listMin, Number(selectedSalePackage?.list_price_max ?? listMin))
+            const listNote = !selectedSalePackage
+              ? 'Chọn liệu trình để xem giá niêm yết gói.'
+              : listMin > 0
+                ? `Giá niêm yết gói: ${listMin.toLocaleString('vi-VN')}${listMax > listMin ? `–${listMax.toLocaleString('vi-VN')}` : ''} ₫`
+                : 'Gói này chưa có giá niêm yết — nhập số tiền bán.'
+            const valueNote = selectedSalePackage?.quota_type === 'VALUE' ? 'Định mức sử dụng của gói này sẽ tự bằng số tiền bán.' : undefined
+            return [listNote, valueNote].filter(Boolean).join(' · ') || undefined
+          })()}
+          rules={[{ required: true, message: 'Nhập số tiền' }]}
+        >
+          <InputNumber min={0} step={100000} suffix={currencySymbol} className="w-full!" />
+        </Form.Item>
+        <Form.Item name="sessions_bonus" label="Buổi tặng" extra="Cộng thêm vào số buổi của gói — để trống nếu không tặng">
+          <InputNumber min={0} precision={0} className="w-full!" />
+        </Form.Item>
+        <Form.Item name="expires_at" label="Hạn sử dụng" extra="Để trống nếu gói không giới hạn thời gian">
+          <DatePicker className="w-full!" />
+        </Form.Item>
+        <CustomFieldFormItems definitions={customFieldDefs} />
+      </Form>
+    </Modal>
   )
 }
 

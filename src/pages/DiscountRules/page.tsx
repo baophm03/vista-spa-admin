@@ -19,7 +19,6 @@ import StatCards, { type StatItem } from '@/components/base/StatCards'
 import ListFilterPopover from '@/components/base/ListFilterPopover'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
-import { paginateRows } from '@/utils/listTable'
 import { errorMessage } from '@/api/helpers'
 import {
   getGetDiscountRulesQueryKey,
@@ -70,11 +69,12 @@ export default function DiscountRules() {
   const canUpdate = ability.can('UPDATE', 'DISCOUNT')
   const canDelete = ability.can('DELETE', 'DISCOUNT')
 
-  const rulesQuery = useGetDiscountRules()
+  const rulesQuery = useGetDiscountRules({ page, limit: 10 } as never)
   const ranksQuery = useGetCardRanks(undefined, { query: { enabled: open } })
   const servicesQuery = useGetService({ page: 1, limit: 200, is_active: true }, { query: { enabled: open || !!detailRuleId } })
   const rules = useMemo(() => rulesQuery.data?.responseData ?? [], [rulesQuery.data])
   const ranks = useMemo(() => ranksQuery.data?.responseData ?? [], [ranksQuery.data])
+  const rulesStatsMeta = (rulesQuery.data as unknown as { meta?: { stats?: { total: number; active: number; hidden: number } } })?.meta?.stats
   const services = useMemo(() => {
     const data = servicesQuery.data?.responseData as unknown
     if (Array.isArray(data)) return data as { id: string; title: string }[]
@@ -85,11 +85,10 @@ export default function DiscountRules() {
     await queryClient.invalidateQueries({ queryKey: getGetDiscountRulesQueryKey() })
   }
 
-  // Thống kê đầu trang — rules là danh sách đầy đủ client-side (query không có bộ lọc server)
-  const activeRuleCount = rules.filter((row) => row.is_active !== false).length
+  // Thống kê đầu trang — từ meta.stats của BE
   const statItems: StatItem[] = [
-    { key: 'total', label: 'Tổng quy tắc', value: rules.length.toLocaleString('vi-VN'), icon: <TagsOutlined />, tone: 'primary' },
-    { key: 'active', label: 'Đang áp dụng', value: activeRuleCount.toLocaleString('vi-VN'), icon: <CheckCircleOutlined />, tone: 'secondary' },
+    { key: 'total', label: 'Tổng quy tắc', value: (rulesStatsMeta?.total ?? 0).toLocaleString('vi-VN'), icon: <TagsOutlined />, tone: 'primary' },
+    { key: 'active', label: 'Đang áp dụng', value: (rulesStatsMeta?.active ?? 0).toLocaleString('vi-VN'), icon: <CheckCircleOutlined />, tone: 'secondary' },
   ]
 
   const createMutation = usePostDiscountRules({ mutation: { onSuccess: invalidate } })
@@ -311,7 +310,7 @@ export default function DiscountRules() {
               title="Nhân viên chỉ được chọn mức giảm trong khoảng của quy tắc. Nếu cần áp dụng ngoài khoảng này, hãy liên hệ quản trị viên để được cấp quyền duyệt ngoại lệ. Khi kết hợp nhiều ưu đãi, gồm ưu đãi theo hạng thẻ, tổng mức giảm không được vượt giới hạn của quy tắc."
             />
             <Table<DiscountRule>
-              rowKey="id" loading={rulesQuery.isLoading} dataSource={paginateRows(rules, page, 10)} columns={columns}
+              rowKey="id" loading={rulesQuery.isLoading} dataSource={rules} columns={columns}
               scroll={{ x: 1150 }}
               pagination={false}
               onRow={(row) => ({
@@ -319,7 +318,7 @@ export default function DiscountRules() {
                 style: { cursor: 'pointer' },
               })}
             />
-            <ListPagination page={page} limit={10} total={rules.length} onChange={setPage} noun="quyết định giảm giá" />
+            <ListPagination page={page} limit={10} total={(rulesQuery.data as unknown as { meta?: { total?: number } })?.meta?.total ?? rules.length} onChange={setPage} noun="quyết định giảm giá" />
             <DiscountDetailModal
               ruleId={detailRuleId}
               services={services}

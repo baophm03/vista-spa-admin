@@ -12,7 +12,6 @@ export interface ProfileRow {
   id: string
   full_name?: string
   phone?: string
-  branch_id?: string | null
 }
 
 export interface StaffRow {
@@ -22,7 +21,7 @@ export interface StaffRow {
 }
 
 export type AppointmentRow = Appointment & {
-  customer_profile?: { id?: string; full_name?: string; phone?: string; branch_id?: string | null } | null
+  customer_profile?: { id?: string; full_name?: string; phone?: string } | null
   service?: { title?: string; duration_minutes?: number; price?: number | string | null; price_max?: number | string | null } | null
   staff?: { zalo_name?: string } | null
   service_amount?: number | string | null

@@ -9,18 +9,15 @@ import {
 } from 'antd'
 import {
   FileAddOutlined,
-  SearchOutlined,
 } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import type { Dayjs } from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
-import { paginateRows } from '@/utils/listTable'
 import type { CustomerHealthRecord } from '@/api/models/customerHealthRecord'
 import type { CustomerTreatment } from '@/api/models/customerTreatment'
 import {
-  getCustomerProfiles,
   getCustomerProfilesIdHealthRecords,
   getHealthRecordsLatest,
   postCustomerProfilesIdHealthRecords,
@@ -51,6 +48,7 @@ import { useGetBranches } from '@/api/endpoints/branches'
   const [searchText, setSearchText] = useState('')
   const [keyword, setKeyword] = useState('')
   const [page, setPage] = useState(1)
+  const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(false)
   const [detail, setDetail] = useState<HealthRow | null>(null)
   const [history, setHistory] = useState<CustomerHealthRecord[]>([])
@@ -73,17 +71,22 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
   
 
 
-  const load = useCallback(async (): Promise<HealthRow[] | null> => {
+  const load = useCallback(async (nextPage = page, search = keyword): Promise<HealthRow[] | null> => {
     setLoading(true)
     try {
-      const [profileResult, latestRecords] = await Promise.all([
-        getCustomerProfiles({ page: 1, limit: 200 }),
-        getHealthRecordsLatest(),
-      ])
-      const latestByProfile = new Map(
-        (pickData<CustomerHealthRecord[]>(latestRecords) ?? []).map((record) => [record.customer_profile_id, record]),
-      )
-      const nextRows = (pickData<HealthRow[]>(profileResult) ?? []).map((row) => ({ ...row, latestRecord: latestByProfile.get(row.id) }))
+      // BE trả bản ghi phiếu khám mới nhất của từng khách kèm customer_profile + tìm q trên khách/nội dung phiếu
+      const latestRecords = await getHealthRecordsLatest({
+        page: nextPage,
+        limit: 10,
+        ...(search.trim() ? { q: search.trim() } : {}),
+      } as never)
+      const latestList = (pickData<CustomerHealthRecord[]>(latestRecords) ?? []) as CustomerHealthRecord[]
+      const nextRows = latestList.map((record) => ({
+        ...((record as unknown as { customer_profile?: Record<string, unknown> }).customer_profile ?? {}),
+        id: record.customer_profile_id,
+        latestRecord: record,
+      })) as unknown as HealthRow[]
+      setTotal((latestRecords as unknown as { meta?: { total?: number } })?.meta?.total ?? nextRows.length)
       setRows(nextRows)
       return nextRows
     } catch (err) {
@@ -92,7 +95,7 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [page, keyword])
 
   useEffect(() => {
     void load()
@@ -165,16 +168,6 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
     }
   }, [detail, detailRefresh])
 
-  const filteredRows = useMemo(() => {
-    const term = keyword.trim().toLocaleLowerCase('vi')
-    if (!term) return rows
-    return rows.filter((row) => {
-      const fields = currentHealth(row, skinTypes)
-      return [row.full_name, row.phone, row.email, row.customer_code, fields.condition, fields.medical_history]
-        .some((value) => value?.toLocaleLowerCase('vi').includes(term))
-    })
-  }, [rows, keyword, skinTypes])
-
   const applySearch = (nextKeyword: string) => {
     setSearchText(nextKeyword)
     setKeyword(nextKeyword.trim())
@@ -196,7 +189,7 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
       products_used: record?.products_used ?? undefined,
       advice: record?.advice ?? undefined,
       note: record?.note ?? undefined,
-      branch_id: (record as { branch_id?: string } | null)?.branch_id ?? row.branch_id ?? undefined,
+      branch_id: (record as { branch_id?: string } | null)?.branch_id ?? undefined,
     })
     setModalOpen(true)
   }
@@ -245,17 +238,13 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
       <PageTitle
         subtitle="Hồ sơ sức khỏe và chỉ số của khách hàng"
         left={
-          <Input
+          <Input.Search
             allowClear
-            prefix={<SearchOutlined className="text-[var(--brand-text-inactive,#A9ADB2)]" />}
             placeholder="Tìm khách, SĐT, tình trạng da..."
-            className="w-[260px]!"
+            className="w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]"
             value={searchText}
-            onChange={(event) => {
-              setSearchText(event.target.value)
-              if (!event.target.value) applySearch('')
-            }}
-            onPressEnter={() => applySearch(searchText)}
+            onChange={(e) => { setSearchText(e.target.value); if (!e.target.value) applySearch('') }}
+            onSearch={(v) => applySearch(v)}
           />
         }
       >
@@ -265,7 +254,7 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
       <Table<HealthRow>
         rowKey="id"
         loading={loading}
-        dataSource={paginateRows(filteredRows, page, 10)}
+        dataSource={rows}
         scroll={{ x: 900 }}
         pagination={false}
         onRow={(row) => ({ onClick: () => setDetail(row), style: { cursor: 'pointer' } })}
@@ -305,11 +294,6 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
             render: (_, row) => currentHealth(row, skinTypes).checked_by || '—',
           },
           {
-  title: 'Cơ sở',
-  width: 130,
-  render: (_, row) => branches.find((branch) => branch.id === row.branch_id)?.name ?? '—',
-},
-          {
             title: 'Ngày khám',
             width: 115,
             render: (_, row) => displayDate(currentHealth(row, skinTypes).checked_date),
@@ -332,7 +316,7 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
           },
         ]}
       />
-      <ListPagination page={page} limit={10} total={filteredRows.length} onChange={setPage} noun="hồ sơ sức khỏe" />
+      <ListPagination page={page} limit={10} total={total} onChange={setPage} noun="hồ sơ sức khỏe" />
 
       <HealthRecordDrawer
         detail={detail}

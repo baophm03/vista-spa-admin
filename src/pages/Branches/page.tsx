@@ -8,7 +8,6 @@ import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
 import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import TableEmpty from '@/components/base/TableEmpty'
-import { paginateRows } from '@/utils/listTable'
 import { useCustomerProfileAccess } from '@/utils/customerProfileAccess'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { Branch } from '@/api/models/branch'
@@ -46,14 +45,6 @@ const BRANCH_COLUMN_OPTIONS: { label: string; value: BranchColumnKey }[] = [
 
 const DEFAULT_VISIBLE_COLUMNS = BRANCH_COLUMN_OPTIONS.map((column) => column.value)
 
-/** So sánh không dấu, bỏ đ (search tiếng Việt). */
-const foldForSearch = (value: string) =>
-  value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/đ/gi, 'd')
-    .toLocaleLowerCase('vi')
-
 export default function Branches() {
   const [searchText, setSearchText] = useState('')
   const [keyword, setKeyword] = useState('')
@@ -72,7 +63,12 @@ export default function Branches() {
   const { isAdmin, isReceptionist, isTechnician } = useCustomerProfileAccess()
   const hideSummaryForTechnician = isTechnician && !isAdmin && !isReceptionist
 
-  const branchesQuery = useGetBranches(statusFilter === 'all' ? undefined : { status: statusFilter })
+  const branchesQuery = useGetBranches({
+    page,
+    limit: 10,
+    ...(statusFilter !== 'all' ? { status: statusFilter } : {}),
+    ...(keyword ? { q: keyword } : {}),
+  } as never)
   const nextCodeQuery = useGetBranchesNextCode({ query: { enabled: open && !editing } })
   const nextCode = pickData<{ code?: string }>(nextCodeQuery.data)?.code
   const createMutation = usePostBranches()
@@ -93,14 +89,7 @@ export default function Branches() {
     queryClient.invalidateQueries({ queryKey: getGetBranchesNextCodeQueryKey() })
   }
 
-  const visibleRows = useMemo(() => {
-    const term = foldForSearch(keyword.trim())
-    return rows.filter((row) => {
-      if (statusFilter === 'active' && !row.is_active) return false
-      if (statusFilter === 'inactive' && row.is_active) return false
-      return !term || foldForSearch(`${row.code} ${row.name}`).includes(term)
-    })
-  }, [rows, keyword, statusFilter])
+  const visibleRows = rows
 
   const applySearch = (nextKeyword: string) => {
     setSearchText(nextKeyword)
@@ -108,17 +97,17 @@ export default function Branches() {
     setPage(1)
   }
 
-  // Thống kê đầu trang — chỉ đáng tin khi không lọc trạng thái phía server (khi đó rows là danh sách đầy đủ)
+  // Thống kê đến từ server nên vẫn đúng khi danh sách đang phân trang hoặc lọc.
+  const statsMeta = (branchesQuery.data as unknown as { meta?: { stats?: { total: number; active: number; inactive: number } } })?.meta?.stats
   const statItems = useMemo<StatItem[]>(() => {
     if (hideSummaryForTechnician) return []
-    if (statusFilter !== 'all') return []
-    const activeCount = rows.filter((row) => !!row.is_active).length
+    if (!statsMeta) return []
     return [
-      { key: 'total', label: 'Tổng cơ sở', value: rows.length.toLocaleString('vi-VN'), icon: <EnvironmentOutlined />, tone: 'primary' },
-      { key: 'active', label: 'Đang hoạt động', value: activeCount.toLocaleString('vi-VN'), icon: <CheckCircleOutlined />, tone: 'secondary' },
-      { key: 'inactive', label: 'Đã ngừng', value: (rows.length - activeCount).toLocaleString('vi-VN'), icon: <PauseCircleOutlined />, tone: 'neutral' },
+      { key: 'total', label: 'Tổng cơ sở', value: statsMeta.total.toLocaleString('vi-VN'), icon: <EnvironmentOutlined />, tone: 'primary' },
+      { key: 'active', label: 'Đang hoạt động', value: statsMeta.active.toLocaleString('vi-VN'), icon: <CheckCircleOutlined />, tone: 'secondary' },
+      { key: 'inactive', label: 'Đã ngừng', value: statsMeta.inactive.toLocaleString('vi-VN'), icon: <PauseCircleOutlined />, tone: 'neutral' },
     ]
-  }, [rows, statusFilter, hideSummaryForTechnician])
+  }, [statsMeta, hideSummaryForTechnician])
 
   const applyFilters = (values: Record<string, unknown>) => {
     if (draftVisibleColumns.length === 0) {
@@ -441,7 +430,7 @@ export default function Branches() {
         className="desktop-only"
         rowKey="id"
         loading={branchesQuery.isLoading}
-        dataSource={paginateRows(visibleRows, page, 10)}
+        dataSource={visibleRows}
         columns={columns}
         scroll={{ x: 980 }}
         pagination={false}
@@ -450,7 +439,7 @@ export default function Branches() {
         }}
       />
       <MobileCards
-        rows={paginateRows(visibleRows, page, 10)}
+        rows={visibleRows}
         rowKey={(row) => row.id}
         loading={branchesQuery.isLoading}
         emptyText={keyword.trim() || statusFilter !== 'all' ? 'Không tìm thấy cơ sở phù hợp' : 'Chưa có cơ sở nào'}
@@ -470,7 +459,13 @@ export default function Branches() {
           </>
         )}
       />
-      <ListPagination page={page} limit={10} total={visibleRows.length} onChange={setPage} noun="cơ sở" />
+      <ListPagination
+        page={page}
+        limit={10}
+        total={(branchesQuery.data as unknown as { meta?: { total?: number } })?.meta?.total ?? visibleRows.length}
+        onChange={setPage}
+        noun="cơ sở"
+      />
 
       <BranchModal
         open={open}

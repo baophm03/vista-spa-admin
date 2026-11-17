@@ -1,10 +1,9 @@
-import { useEffect, useState } from 'react'
-import { Form, Input, Modal, Select, Table, Tag, Typography, message } from 'antd'
+import { useState } from 'react'
+import { Input, Modal, Select, Table, Tag, Typography, message } from 'antd'
 import type { TableColumnsType } from 'antd'
-import { CheckOutlined, SearchOutlined, StopOutlined } from '@ant-design/icons'
+import { CheckOutlined, StopOutlined } from '@ant-design/icons'
 import { useQuery } from '@tanstack/react-query'
 import PageTitle from '@/components/base/PageTitle'
-import ListFilterPopover from '@/components/base/ListFilterPopover'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
 import { errorMessage, pickData, pickMeta } from '@/api/helpers'
@@ -19,19 +18,6 @@ import {
   type ProductOrderStatus,
 } from './components/constants'
 
-type OrderColumnKey = 'code' | 'customer' | 'items' | 'total_amount' | 'status' | 'created_at'
-
-const ORDER_COLUMN_OPTIONS: { label: string; value: OrderColumnKey }[] = [
-  { label: 'Mã đơn', value: 'code' },
-  { label: 'Khách hàng', value: 'customer' },
-  { label: 'Sản phẩm', value: 'items' },
-  { label: 'Tổng tiền', value: 'total_amount' },
-  { label: 'Trạng thái', value: 'status' },
-  { label: 'Ngày đặt', value: 'created_at' },
-]
-
-const DEFAULT_VISIBLE_COLUMNS = ORDER_COLUMN_OPTIONS.map((column) => column.value)
-
 export default function Orders() {
   const { currency } = useBrandCurrency()
   const { isAdmin } = useCustomerProfileAccess()
@@ -41,11 +27,7 @@ export default function Orders() {
   const [searchText, setSearchText] = useState('')
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<ProductOrderStatus | undefined>()
-  const [filterOpen, setFilterOpen] = useState(false)
-  const [visibleColumns, setVisibleColumns] = useState<OrderColumnKey[]>(DEFAULT_VISIBLE_COLUMNS)
-  const [draftVisibleColumns, setDraftVisibleColumns] = useState<OrderColumnKey[]>(DEFAULT_VISIBLE_COLUMNS)
   const [detail, setDetail] = useState<ProductOrderRow | null>(null)
-  const [filterForm] = Form.useForm()
 
   const ordersQuery = useQuery({
     queryKey: getGetProductOrdersQueryKey({
@@ -65,41 +47,9 @@ export default function Orders() {
   const rows = (pickData<ProductOrderRow[]>(ordersQuery.data) ?? []) as ProductOrderRow[]
   const total = pickMeta(ordersQuery.data)?.total ?? rows.length
 
-  // Debounce 300ms cho ô tìm kiếm
-  useEffect(() => {
-    const timer = window.setTimeout(() => setSearch(searchText), 300)
-    return () => window.clearTimeout(timer)
-  }, [searchText])
-
   const applySearch = (nextKeyword: string) => {
     setSearchText(nextKeyword)
     setSearch(nextKeyword.trim())
-    setPage(1)
-  }
-
-  const openFilters = (nextOpen: boolean) => {
-    setFilterOpen(nextOpen)
-    if (!nextOpen) return
-    filterForm.setFieldsValue({ status: statusFilter })
-    setDraftVisibleColumns(visibleColumns)
-  }
-
-  const applyFilters = (values: Record<string, unknown>) => {
-    if (draftVisibleColumns.length === 0) {
-      message.error('Hãy giữ lại ít nhất một cột hiển thị')
-      return
-    }
-    setStatusFilter((values.status as ProductOrderStatus) || undefined)
-    setVisibleColumns(draftVisibleColumns)
-    setPage(1)
-    setFilterOpen(false)
-  }
-
-  const clearFilters = () => {
-    filterForm.resetFields()
-    setStatusFilter(undefined)
-    setDraftVisibleColumns(DEFAULT_VISIBLE_COLUMNS)
-    setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)
     setPage(1)
   }
 
@@ -189,42 +139,27 @@ export default function Orders() {
     },
   ]
 
-  const activeFilterCount = (statusFilter ? 1 : 0) + (search ? 1 : 0)
-
   return (
     <>
       <PageTitle
         subtitle="Theo dõi và xử lý đơn hàng từ cửa hàng"
         left={
           <>
-            <Input
+            <Input.Search
               allowClear
-              prefix={<SearchOutlined className="text-[var(--brand-text-inactive,#A9ADB2)]" />}
               placeholder="Tìm mã đơn, tên, SĐT"
-              className="w-[260px]!"
+              className="w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]"
               value={searchText}
-              onChange={(event) => {
-                setSearchText(event.target.value)
-                setPage(1)
-                if (!event.target.value) setSearch('')
-              }}
-              onPressEnter={() => applySearch(searchText)}
+              onChange={(e) => { setSearchText(e.target.value); if (!e.target.value) applySearch('') }}
+              onSearch={(v) => applySearch(v)}
             />
-            <ListFilterPopover
-              open={filterOpen}
-              onOpenChange={openFilters}
-              activeFilterCount={activeFilterCount}
-              form={filterForm}
-              onApply={applyFilters}
-              onClear={clearFilters}
-              columnOptions={ORDER_COLUMN_OPTIONS}
-              draftVisibleColumns={draftVisibleColumns}
-              onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as OrderColumnKey[])}
-              filterItems={(
-                <Form.Item name="status" label="Trạng thái" className="mb-0!">
-                  <Select allowClear placeholder="Tất cả" options={Object.entries(STATUS_META).map(([value, meta]) => ({ value, label: meta.label }))} />
-                </Form.Item>
-              )}
+            <Select
+              allowClear
+              placeholder="Trạng thái"
+              style={{ width: 170 }}
+              value={statusFilter}
+              onChange={(value) => { setStatusFilter(value as ProductOrderStatus | undefined); setPage(1) }}
+              options={Object.entries(STATUS_META).map(([value, meta]) => ({ value, label: meta.label }))}
             />
           </>
         }
@@ -242,9 +177,7 @@ export default function Orders() {
           onClick: () => setDetail(row),
           style: { cursor: 'pointer' },
         })}
-        columns={columns.filter((column) =>
-          column.key === 'actions' || visibleColumns.includes(column.key as OrderColumnKey),
-        )}
+        columns={columns}
       />
       <ListPagination page={page} limit={limit} total={total} onChange={setPage} noun="đơn hàng" />
 

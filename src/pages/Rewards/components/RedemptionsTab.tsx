@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import {
   Alert,
   Button,
@@ -37,13 +37,11 @@ export default function RedemptionsTab() {
   const [cancelTarget, setCancelTarget] = useState<RewardRedemptionRow | null>(null)
   const [cancelForm] = Form.useForm()
   const queryClient = useQueryClient()
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      setCustomerSearch(customerSearchInput.trim())
-      setPage(1)
-    }, 300)
-    return () => window.clearTimeout(timer)
-  }, [customerSearchInput])
+  const applySearch = (value: string) => {
+    setCustomerSearchInput(value)
+    setCustomerSearch(value.trim())
+    setPage(1)
+  }
 
   const redemptionParams = { page, limit: 10, ...(statusFilter ? { status: statusFilter } : {}), ...(customerSearch ? { q: customerSearch } : {}) }
   const redemptionsQuery = useGetRewardRedemptions(redemptionParams)
@@ -143,10 +141,10 @@ export default function RedemptionsTab() {
           <Input.Search
             allowClear
             value={customerSearchInput}
-            onChange={(event) => setCustomerSearchInput(event.target.value)}
-            onSearch={(value) => { setCustomerSearchInput(value); setCustomerSearch(value.trim()); setPage(1) }}
+            onChange={(event) => { setCustomerSearchInput(event.target.value); if (!event.target.value) applySearch('') }}
+            onSearch={applySearch}
             placeholder="Tìm theo tên khách hàng"
-            style={{ width: 320, maxWidth: '100%' }}
+            className="w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]"
           />
           <Select
             allowClear

@@ -1,14 +1,14 @@
 import { useCallback, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import dayjs, { type Dayjs } from 'dayjs'
-import { Alert, Button, Form, Popconfirm, Select, Space, Table, Tag, message } from 'antd'
-import { EditOutlined, PlusOutlined, ReloadOutlined } from '@ant-design/icons'
+import { Alert, Button, Form, Modal, Popconfirm, Select, Table, Tag, message } from 'antd'
+import { DeleteOutlined, EditOutlined, PlusOutlined, ReloadOutlined } from '@ant-design/icons'
 import { errorMessage, pickData } from '@/api/helpers'
 import ListPagination from '@/components/base/ListPagination'
 import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
+import RowActionsMenu from '@/components/base/RowActionsMenu'
 import TableEmpty from '@/components/base/TableEmpty'
 import ToolbarRow from '@/components/base/ToolbarRow'
-import { paginateRows } from '@/utils/listTable'
 import {
   deleteShiftTemplatesId,
   getGetShiftTemplatesQueryKey,
@@ -30,7 +30,7 @@ export default function ShiftCatalogTab({ branches, access, loadingShared }: Pro
   const [page, setPage] = useState(1)
   const [form] = Form.useForm()
 
-  const templatesQuery = useGetShiftTemplates(branchFilter ? { branch_id: branchFilter } : {})
+  const templatesQuery = useGetShiftTemplates({ page, limit: 10, ...(branchFilter ? { branch_id: branchFilter } : {}) } as never)
   const rows = (pickData<ShiftTemplate[] | undefined>(templatesQuery.data) ?? []) as ShiftTemplate[]
   const error = templatesQuery.isError ? errorMessage(templatesQuery.error) : ''
 
@@ -90,10 +90,27 @@ export default function ShiftCatalogTab({ branches, access, loadingShared }: Pro
     { title: 'Thời gian', key: 'time', render: (_: unknown, row: ShiftTemplate) => `${row.start_time.slice(0, 5)}–${row.end_time.slice(0, 5)}` },
     { title: 'Áp dụng', key: 'branch', render: (_: unknown, row: ShiftTemplate) => row.branch_id ? branches.find((branch) => branch.id === row.branch_id)?.name || 'Cơ sở' : 'Mọi cơ sở' },
     { title: 'Trạng thái', dataIndex: 'is_active', key: 'status', render: (value: boolean) => <Tag color={value === false ? 'default' : 'green'}>{value === false ? 'Đã ẩn' : 'Đang dùng'}</Tag> },
-    ...(access.isAdmin ? [{ title: 'Thao tác', align: 'center' as const, key: 'actions', width: 180, render: (_: unknown, row: ShiftTemplate) => <Space>
-      <Button icon={<EditOutlined />} size="small" onClick={() => openForm(row)}>Sửa</Button>
-      <Popconfirm title="Xóa ca làm việc này?" description="Không thể xóa nếu lịch KTV vẫn đang sử dụng ca." okText="Xóa" cancelText="Hủy" onConfirm={() => void deleteShift(row)}><Button size="small" danger>Xóa</Button></Popconfirm>
-    </Space> }] : []),
+    ...(access.isAdmin ? [{ title: 'Thao tác', align: 'center' as const, key: 'actions', width: 90, fixed: 'right' as const, render: (_: unknown, row: ShiftTemplate) => (
+      <RowActionsMenu
+        items={[
+          { key: 'edit', icon: <EditOutlined />, label: 'Sửa' },
+          { key: 'delete', icon: <DeleteOutlined />, label: 'Xóa', danger: true },
+        ]}
+        onSelect={(key) => {
+          if (key === 'edit') openForm(row)
+          else if (key === 'delete') {
+            Modal.confirm({
+              title: 'Xóa ca làm việc này?',
+              content: 'Không thể xóa nếu lịch KTV vẫn đang sử dụng ca.',
+              okText: 'Xóa',
+              okButtonProps: { danger: true },
+              cancelText: 'Hủy',
+              onOk: () => void deleteShift(row),
+            })
+          }
+        }}
+      />
+    ) }] : []),
   ]
 
   return <div>
@@ -105,11 +122,11 @@ export default function ShiftCatalogTab({ branches, access, loadingShared }: Pro
     <Table<ShiftTemplate>
       className="desktop-only"
       rowKey="id" size="middle" pagination={false}
-      loading={loadingShared || templatesQuery.isLoading} dataSource={paginateRows(rows, page, 10)} columns={columns}
+      loading={loadingShared || templatesQuery.isLoading} dataSource={rows} columns={columns}
       locale={{ emptyText: <TableEmpty description="Chưa có ca làm nào được cấu hình" /> }}
     />
     <MobileCards
-      rows={paginateRows(rows, page, 10)}
+      rows={rows}
       rowKey={(row) => row.id}
       loading={loadingShared || templatesQuery.isLoading}
       emptyText="Chưa có ca làm nào được cấu hình"
@@ -132,7 +149,7 @@ export default function ShiftCatalogTab({ branches, access, loadingShared }: Pro
         </>
       )}
     />
-    <ListPagination page={page} limit={10} total={rows.length} onChange={setPage} noun="ca làm việc" />
+    <ListPagination page={page} limit={10} total={(templatesQuery.data as unknown as { meta?: { total?: number } })?.meta?.total ?? rows.length} onChange={setPage} noun="ca làm việc" />
 
     <ShiftCatalogFormModal
       open={open}

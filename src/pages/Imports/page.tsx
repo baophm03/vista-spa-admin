@@ -234,7 +234,7 @@ export default function Imports() {
   const mappingFields = [
     ...requiredBaseImportFields,
     ...mainOptionalBaseFields,
-    branchField,
+    ...(kind === 'customer-treatments' ? [branchField] : []),
     ...requiredCustomFields,
     ...optionalFields,
   ]
@@ -458,7 +458,7 @@ export default function Imports() {
       file: originFile,
       dry_run: dryRun,
       column_mapping: JSON.stringify(mapping),
-      branch_id: branchId || undefined,
+      ...(kind === 'customer-treatments' && branchId ? { branch_id: branchId } : {}),
       // File lớn → yêu cầu BE xếp hàng xử lý nền (worker), tránh treo request
       process_mode: processInBackground ? 'async' : undefined,
     }
@@ -477,7 +477,7 @@ export default function Imports() {
       message.warning('Chưa đọc được tiêu đề cột trong file')
       return
     }
-    if (!dryRun && !branchId && (mapping.branch_id == null || mapping.branch_id < 0)) {
+    if (kind === 'customer-treatments' && !dryRun && !branchId && (mapping.branch_id == null || mapping.branch_id < 0)) {
       message.warning('Chọn cơ sở mặc định hoặc ghép cột Cơ sở trong file')
       return
     }
@@ -551,17 +551,19 @@ export default function Imports() {
                 options={Object.entries(KIND_LABELS).map(([value, label]) => ({ value, label }))}
               />
             </Form.Item>
-            <Form.Item label="Cơ sở mặc định" style={{ width: '100%', minWidth: 0, marginBottom: 8 }} required={mapping.branch_id == null || mapping.branch_id < 0}>
-              <Select
-                placeholder="Dùng khi file không có cơ sở"
-                options={branches.map((b) => ({ value: b.id, label: b.name }))}
-                value={branchId}
-                onChange={(value) => { setBranchId(value); setReport(null) }}
-              />
-              <Typography.Text type="secondary" style={{ display: 'block', whiteSpace: 'normal', lineHeight: 1.4 }}>
-                Có thể ghép cột Cơ sở bên dưới để lấy cơ sở riêng từng dòng.
-              </Typography.Text>
-            </Form.Item>
+            {kind === 'customer-treatments' && (
+              <Form.Item label="Cơ sở mặc định" style={{ width: '100%', minWidth: 0, marginBottom: 8 }} required={mapping.branch_id == null || mapping.branch_id < 0}>
+                <Select
+                  placeholder="Dùng khi file không có cơ sở"
+                  options={branches.map((b) => ({ value: b.id, label: b.name }))}
+                  value={branchId}
+                  onChange={(value) => { setBranchId(value); setReport(null) }}
+                />
+                <Typography.Text type="secondary" style={{ display: 'block', whiteSpace: 'normal', lineHeight: 1.4 }}>
+                  Có thể ghép cột Cơ sở bên dưới để lấy cơ sở riêng từng dòng.
+                </Typography.Text>
+              </Form.Item>
+            )}
           </div>
 
           <Form.Item label="File dữ liệu (.csv / .xlsx)">

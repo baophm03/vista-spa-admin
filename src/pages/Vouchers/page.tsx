@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { Alert, Button, Form, Modal, Table, Tabs, Tag, Typography, message } from 'antd'
+import { Alert, Button, Form, Input, Modal, Table, Tabs, Tag, Typography, message } from 'antd'
 import type { TableColumnsType } from 'antd'
-import { CheckCircleOutlined, ClockCircleOutlined, DeleteOutlined, EditOutlined, GiftOutlined, MinusCircleOutlined, PauseCircleOutlined, PlusOutlined } from '@ant-design/icons'
+import { CheckCircleOutlined, ClockCircleOutlined, DeleteOutlined, EditOutlined, GiftOutlined, PauseCircleOutlined, PlusOutlined } from '@ant-design/icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { Can, useAbility } from '@casl/react'
@@ -10,7 +10,6 @@ import PageTitle from '../../components/base/PageTitle'
 import StatCards, { type StatItem } from '../../components/base/StatCards'
 import RowActionsMenu from '../../components/base/RowActionsMenu'
 import ListPagination from '../../components/base/ListPagination'
-import { paginateRows } from '../../utils/listTable'
 import { errorMessage, pickData } from '@/api/helpers'
 import { getTreatmentPackages } from '@/api/endpoints/services'
 import { getAcademyCourses } from '@/api/endpoints/academy'
@@ -31,8 +30,7 @@ const CATEGORIES: VoucherCategory[] = ['treatment-package', 'academy-course', 'p
 
 function toRows(payload: unknown): VoucherCategoryRow[] {
   const data = pickData<any>(payload)
-  if (Array.isArray(data)) return data
-  return Array.isArray(data?.rows) ? data.rows : []
+  return Array.isArray(data) ? data : []
 }
 
 function toTargets(payload: unknown, collectionKeys: string[]) {
@@ -59,16 +57,29 @@ function VoucherCategoryTab({ category }: { category: VoucherCategory }) {
   const canUpdate = ability.can('UPDATE', 'VOUCHER')
   const queryClient = useQueryClient()
   const [page, setPage] = useState(1)
+  const [searchInput, setSearchInput] = useState('')
+  const [search, setSearch] = useState('')
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<VoucherCategoryRow | null>(null)
   const [form] = Form.useForm()
   const meta = CATEGORY_META[category]
   const listKey = ['voucher-category', category]
 
-  const vouchersQuery = useQuery({ queryKey: listKey, queryFn: () => getVoucherCategory(category) })
+  const applySearch = (nextKeyword: string) => {
+    setSearchInput(nextKeyword)
+    setSearch(nextKeyword.trim())
+    setPage(1)
+  }
+
+  const vouchersQuery = useQuery({
+    queryKey: [...listKey, page, search],
+    queryFn: () => getVoucherCategory(category, { page, limit: PAGE_SIZE, ...(search ? { q: search } : {}) }),
+  })
   const targetsQuery = useQuery({ queryKey: ['voucher-category-targets', category], queryFn: () => loadTargets(category) })
   const ranksQuery = useGetCardRanks({ is_active: true })
   const rows = toRows(vouchersQuery.data)
+  const total = (vouchersQuery.data as unknown as { meta?: { total?: number } })?.meta?.total ?? rows.length
+  const statsMeta = (vouchersQuery.data as unknown as { meta?: { stats?: { total?: number; active?: number; expired?: number } } })?.meta?.stats
   const targets = targetsQuery.data ?? []
   const ranks = (ranksQuery.data?.responseData ?? [])
     .filter((rank) => rank.is_active !== false)
@@ -79,10 +90,9 @@ function VoucherCategoryTab({ category }: { category: VoucherCategory }) {
   const hideMutation = useMutation({ mutationFn: (id: string) => deleteVoucherCategory(category, id) })
 
   const statItems: StatItem[] = [
-    { key: 'total', label: 'Tổng voucher', value: rows.length.toLocaleString('vi-VN'), icon: <GiftOutlined />, tone: 'primary' },
-    { key: 'active', label: 'Đang hoạt động', value: rows.filter((row) => row.is_active).length.toLocaleString('vi-VN'), icon: <CheckCircleOutlined />, tone: 'secondary' },
-    { key: 'inactive', label: 'Đã tắt', value: rows.filter((row) => !row.is_active).length.toLocaleString('vi-VN'), icon: <MinusCircleOutlined />, tone: 'neutral' },
-    { key: 'expired', label: 'Đã hết hạn', value: rows.filter((row) => row.end_date && dayjs(row.end_date).isBefore(dayjs(), 'day')).length.toLocaleString('vi-VN'), icon: <ClockCircleOutlined />, tone: 'neutral' },
+    { key: 'total', label: 'Tổng voucher', value: (statsMeta?.total ?? total).toLocaleString('vi-VN'), icon: <GiftOutlined />, tone: 'primary' },
+    { key: 'active', label: 'Đang hoạt động', value: (statsMeta?.active ?? 0).toLocaleString('vi-VN'), icon: <CheckCircleOutlined />, tone: 'secondary' },
+    { key: 'expired', label: 'Đã hết hạn', value: (statsMeta?.expired ?? 0).toLocaleString('vi-VN'), icon: <ClockCircleOutlined />, tone: 'neutral' },
   ]
 
   const openModal = (row?: VoucherCategoryRow) => {
@@ -218,7 +228,15 @@ function VoucherCategoryTab({ category }: { category: VoucherCategory }) {
   return (
     <>
       <StatCards items={statItems} />
-      <div style={{ display: 'flex', justifyContent: 'flex-end', margin: '16px 0' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '16px 0', gap: 12, flexWrap: 'wrap' }}>
+        <Input.Search
+          allowClear
+          placeholder="Tìm theo tên voucher"
+          className="w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]"
+          value={searchInput}
+          onChange={(event) => { setSearchInput(event.target.value); if (!event.target.value) applySearch('') }}
+          onSearch={(v) => applySearch(v)}
+        />
         <Can I="UPDATE" a="VOUCHER">
           <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>Thêm voucher</Button>
         </Can>
@@ -228,13 +246,13 @@ function VoucherCategoryTab({ category }: { category: VoucherCategory }) {
       <Table<VoucherCategoryRow>
         rowKey="id"
         loading={vouchersQuery.isLoading}
-        dataSource={paginateRows(rows, page, PAGE_SIZE)}
+        dataSource={rows}
         pagination={false}
         columns={columns}
         tableLayout="fixed"
         scroll={{ x: 'max-content' }}
       />
-      <ListPagination page={page} limit={PAGE_SIZE} total={rows.length} onChange={setPage} noun="voucher" />
+      <ListPagination page={page} limit={PAGE_SIZE} total={total} onChange={setPage} noun="voucher" />
       <VoucherModal
         form={form}
         open={open}

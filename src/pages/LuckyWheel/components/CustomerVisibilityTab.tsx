@@ -1,7 +1,7 @@
-import { useDeferredValue, useState } from 'react'
+import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Alert, Button, Card, Form, Input, Modal, Select, Space, Spin, Switch, Table, Tag, Tooltip, Typography, message } from 'antd'
-import { BellOutlined, FilterOutlined, SearchOutlined } from '@ant-design/icons'
+import { BellOutlined, FilterOutlined } from '@ant-design/icons'
 import { useAbility } from '@casl/react'
 import ListPagination from '@/components/base/ListPagination'
 import { getGetAppConfigQueryKey } from '@/api/endpoints/app'
@@ -82,13 +82,13 @@ export default function CustomerVisibilityTab({ canEdit, wheels, wheelsLoading =
   const canSendNotifications = useAbility().can('CREATE', 'NOTIFICATION')
   const queryClient = useQueryClient()
   const [searchText, setSearchText] = useState('')
+  const [appliedSearch, setAppliedSearch] = useState('')
   const [customerPage, setCustomerPage] = useState(1)
   const [selectedWheelId, setSelectedWheelId] = useState<string>()
   const [notificationOpen, setNotificationOpen] = useState(false)
   const [notificationTarget, setNotificationTarget] = useState<WheelNotificationTarget>({ type: 'all' })
   const [notificationForm] = Form.useForm<WheelNotificationFormValues>()
   const notificationChannel = Form.useWatch('channel', notificationForm) ?? 'app'
-  const deferredSearch = useDeferredValue(searchText.trim())
   const settingsQuery = useQuery({
     queryKey: getGetSettingsQueryKey(),
     queryFn: async () => pickData<SystemSetting[]>(await getSettings()) ?? [],
@@ -111,13 +111,13 @@ export default function CustomerVisibilityTab({ canEdit, wheels, wheelsLoading =
   const customerParams: GetCustomerProfilesParams = {
     page: customerPage,
     limit: CUSTOMER_PAGE_SIZE,
-    ...(deferredSearch ? { q: deferredSearch } : {}),
+    ...(appliedSearch ? { q: appliedSearch } : {}),
   }
   const customerQuery = useQuery({
     queryKey: getGetCustomerProfilesQueryKey(customerParams),
     queryFn: async () => getCustomerProfiles(customerParams),
   })
-  const eligibleCustomerParams = { search: deferredSearch || undefined, limit: 200 }
+  const eligibleCustomerParams = { search: appliedSearch || undefined, limit: 200 }
   const eligibleCustomerQuery = useQuery({
     queryKey: getGetLuckyWheelsIdEligibleCustomersQueryKey(selectedWheelId, eligibleCustomerParams),
     queryFn: async () => getLuckyWheelsIdEligibleCustomers(selectedWheelId!, eligibleCustomerParams),
@@ -357,18 +357,18 @@ export default function CustomerVisibilityTab({ canEdit, wheels, wheelsLoading =
                   Bật hoặc tắt quyền quay cho từng khách. Công tắc áp dụng trên tất cả vòng quay; chọn vòng quay bên dưới để xem khách đủ điều kiện của chương trình đó.
                 </Typography.Text>
                 <div className="flex w-full flex-col gap-3 sm:flex-row">
-                  <Input
+                  <Input.Search
                     allowClear
                     className="w-full sm:max-w-2xl"
-                    prefix={<SearchOutlined />}
                     placeholder={selectedWheelId
                       ? 'Tìm theo tên hoặc số điện thoại'
                       : 'Tìm theo tên, mã hoặc số điện thoại'}
                     value={searchText}
                     onChange={(event) => {
                       setSearchText(event.target.value)
-                      setCustomerPage(1)
+                      if (!event.target.value) { setAppliedSearch(''); setCustomerPage(1) }
                     }}
+                    onSearch={(value) => { setAppliedSearch(value.trim()); setCustomerPage(1) }}
                   />
                   <Select
                     allowClear
@@ -484,8 +484,8 @@ export default function CustomerVisibilityTab({ canEdit, wheels, wheelsLoading =
                     },
                   ]}
                   locale={{ emptyText: selectedWheelId
-                    ? deferredSearch ? 'Không có khách đủ điều kiện phù hợp.' : 'Vòng quay này chưa có khách đủ điều kiện.'
-                    : deferredSearch ? 'Không tìm thấy khách hàng phù hợp.' : 'Chưa có khách hàng nào.' }}
+                    ? appliedSearch ? 'Không có khách đủ điều kiện phù hợp.' : 'Vòng quay này chưa có khách đủ điều kiện.'
+                    : appliedSearch ? 'Không tìm thấy khách hàng phù hợp.' : 'Chưa có khách hàng nào.' }}
                 />
                 <ListPagination
                   page={customerPage}

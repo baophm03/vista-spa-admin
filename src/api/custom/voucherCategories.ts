@@ -37,8 +37,10 @@ const paths: Record<VoucherCategory, string> = {
 
 export const voucherCategoryPath = (category: VoucherCategory) => paths[category]
 
-export async function getVoucherCategory(category: VoucherCategory) {
-  return (await apiClient.get(paths[category])).data
+export type VoucherCategoryListParams = { page?: number; limit?: number; q?: string }
+
+export async function getVoucherCategory(category: VoucherCategory, params?: VoucherCategoryListParams) {
+  return (await apiClient.get(paths[category], { params })).data
 }
 
 export async function postVoucherCategory(category: VoucherCategory, data: Partial<VoucherCategoryRow>) {

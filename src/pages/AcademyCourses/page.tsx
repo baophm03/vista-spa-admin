@@ -1,13 +1,11 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { Alert, Button, Form, Modal, Table, Tag, message } from 'antd'
+import { Alert, Button, Form, Input, Modal, Table, Tag, message } from 'antd'
 import { BookOutlined, CheckCircleOutlined, DeleteOutlined, EditOutlined, EyeInvisibleOutlined, PlusOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
 import StatCards, { type StatItem } from '@/components/base/StatCards'
-import ListFilterPopover from '@/components/base/ListFilterPopover'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
-import { paginateRows } from '@/utils/listTable'
 import { normalizeCustomFieldValues } from '@/components/CustomFieldFormItems'
 import { errorMessage, pickData } from '@/api/helpers'
 import { fileSrc } from '@/hooks/useFileUrl'
@@ -30,37 +28,32 @@ import AcademyCourseDetailModal from './components/AcademyCourseDetailModal'
 import AcademyCourseFormModal from './components/AcademyCourseFormModal'
 import { CATEGORY_OPTIONS, LEVEL_OPTIONS, type CourseFormValues } from './components/constants'
 
-type CourseColumnKey = 'code' | 'name' | 'category' | 'level' | 'tuition' | 'is_active' | 'branch'
-
-const COURSE_COLUMN_OPTIONS: { label: string; value: CourseColumnKey }[] = [
-  { label: 'Mã khóa', value: 'code' },
-  { label: 'Tên khóa học', value: 'name' },
-  { label: 'Danh mục', value: 'category' },
-  { label: 'Trình độ', value: 'level' },
-  { label: 'Cơ sở', value: 'branch' },
-  { label: 'Học phí', value: 'tuition' },
-  { label: 'Trạng thái', value: 'is_active' },
-]
-
-const DEFAULT_VISIBLE_COLUMNS = COURSE_COLUMN_OPTIONS.map((column) => column.value)
 
 export default function AcademyCourses() {
   const queryClient = useQueryClient()
   const { format: formatMoney } = useBrandCurrency()
   const courseFields = useCustomFieldDefinitions('COURSE')
-  const coursesQuery = useGetAcademyCourses()
+  const [page, setPage] = useState(1)
+  const [limit] = useState(10)
+  const [searchText, setSearchText] = useState('')
+  const [search, setSearch] = useState('')
+  const coursesQuery = useGetAcademyCourses({ page, limit, ...(search ? { q: search } : {}) } as never)
   const branchesQuery = useGetBranches()
   const rows = (pickData<AcademyCourse[]>(coursesQuery.data) ?? []) as AcademyCourse[]
-  const [page, setPage] = useState(1)
+  const total = (coursesQuery.data as unknown as { meta?: { total?: number } })?.meta?.total ?? rows.length
+  const statsMeta = (coursesQuery.data as unknown as { meta?: { stats?: { total: number; active: number; hidden: number } } })?.meta?.stats
   const [detail, setDetail] = useState<AcademyCourse | null>(null)
   const branches = (pickData<Branch[]>(branchesQuery.data) ?? []) as Branch[]
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<AcademyCourse | null>(null)
   const [saving, setSaving] = useState(false)
-  const [visibleColumns, setVisibleColumns] = useState<CourseColumnKey[]>(DEFAULT_VISIBLE_COLUMNS)
-  const [draftVisibleColumns, setDraftVisibleColumns] = useState<CourseColumnKey[]>(DEFAULT_VISIBLE_COLUMNS)
-  const [filterOpen, setFilterOpen] = useState(false)
   const [form] = Form.useForm<CourseFormValues>()
+
+  const applySearch = (nextKeyword: string) => {
+    setSearchText(nextKeyword)
+    setSearch(nextKeyword.trim())
+    setPage(1)
+  }
   const createMutation = usePostAcademyCourses()
   const updateMutation = usePutAcademyCoursesId()
   const deleteMutation = useDeleteAcademyCoursesId()
@@ -73,12 +66,11 @@ export default function AcademyCourses() {
     await queryClient.invalidateQueries({ queryKey: getGetAcademyCoursesQueryKey() })
   }
 
-  // Thống kê đầu trang — rows là danh sách đầy đủ client-side (query không có bộ lọc server)
-  const activeCourseCount = rows.filter((row) => !!row.is_active).length
+  // Thống kê đầu trang — tính phía server qua meta.stats
   const statItems: StatItem[] = [
-    { key: 'total', label: 'Tổng khóa học', value: rows.length.toLocaleString('vi-VN'), icon: <BookOutlined />, tone: 'primary' },
-    { key: 'active', label: 'Đang mở', value: activeCourseCount.toLocaleString('vi-VN'), icon: <CheckCircleOutlined />, tone: 'secondary' },
-    { key: 'hidden', label: 'Đã ẩn', value: (rows.length - activeCourseCount).toLocaleString('vi-VN'), icon: <EyeInvisibleOutlined />, tone: 'neutral' },
+    { key: 'total', label: 'Tổng khóa học', value: (statsMeta?.total ?? 0).toLocaleString('vi-VN'), icon: <BookOutlined />, tone: 'primary' },
+    { key: 'active', label: 'Đang mở', value: (statsMeta?.active ?? 0).toLocaleString('vi-VN'), icon: <CheckCircleOutlined />, tone: 'secondary' },
+    { key: 'hidden', label: 'Đã ẩn', value: (statsMeta?.hidden ?? 0).toLocaleString('vi-VN'), icon: <EyeInvisibleOutlined />, tone: 'neutral' },
   ]
 
   const openEditor = (row?: AcademyCourse) => {
@@ -154,25 +146,13 @@ export default function AcademyCourses() {
       <PageTitle
         subtitle="Khóa học đào tạo spa của trung tâm"
         left={
-          <ListFilterPopover
-            open={filterOpen}
-            onOpenChange={setFilterOpen}
-            activeFilterCount={0}
-            onApply={() => {
-              if (draftVisibleColumns.length === 0) {
-                message.error('Hãy giữ lại ít nhất một cột hiển thị')
-                return
-              }
-              setVisibleColumns(draftVisibleColumns)
-              setFilterOpen(false)
-            }}
-            onClear={() => {
-              setDraftVisibleColumns(DEFAULT_VISIBLE_COLUMNS)
-              setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)
-            }}
-            columnOptions={COURSE_COLUMN_OPTIONS}
-            draftVisibleColumns={draftVisibleColumns}
-            onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as CourseColumnKey[])}
+          <Input.Search
+            allowClear
+            placeholder="Tìm tên khóa học"
+            className="w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]"
+            value={searchText}
+            onChange={(e) => { setSearchText(e.target.value); if (!e.target.value) applySearch('') }}
+            onSearch={(v) => applySearch(v)}
           />
         }
         right={
@@ -189,7 +169,7 @@ export default function AcademyCourses() {
       <Table<AcademyCourse>
         rowKey="id"
         loading={coursesQuery.isLoading}
-        dataSource={paginateRows(rows, page, 10)}
+        dataSource={rows}
         scroll={{ x: 900 }}
         pagination={false}
         onRow={(row) => ({
@@ -262,10 +242,10 @@ export default function AcademyCourses() {
             },
           },
         ].filter((column) =>
-          column.key === 'actions' || visibleColumns.includes(column.key as CourseColumnKey),
+          column.key === 'actions',
         )}
       />
-      <ListPagination page={page} limit={10} total={rows.length} onChange={setPage} noun="khóa học" />
+      <ListPagination page={page} limit={limit} total={total} onChange={setPage} noun="khóa học" />
       <AcademyCourseDetailModal
         detail={detail}
         branches={branches}

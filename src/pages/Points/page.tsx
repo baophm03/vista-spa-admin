@@ -1,12 +1,11 @@
 import { useRef, useState } from 'react'
 import { Button, Col, Form, Input, Modal, Row, Select, Space, Table, Tabs, Tag, Typography, message } from 'antd'
-import { ArrowDownOutlined, ArrowUpOutlined, ClockCircleOutlined, CrownOutlined, DeleteOutlined, EditOutlined, EyeOutlined, PlusOutlined, SearchOutlined, SyncOutlined } from '@ant-design/icons'
+import { ArrowDownOutlined, ArrowUpOutlined, ClockCircleOutlined, CrownOutlined, DeleteOutlined, EditOutlined, PlusOutlined, SyncOutlined } from '@ant-design/icons'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Can, useAbility } from '@casl/react'
 import { useBrandCurrency } from '@/themeRuntime'
 import { customInstance } from '../../api/mutator/custom-instance'
 import PageTitle from '../../components/base/PageTitle'
-import ListFilterPopover from '../../components/base/ListFilterPopover'
 import RowActionsMenu from '../../components/base/RowActionsMenu'
 import ListPagination from '../../components/base/ListPagination'
 import TableEmpty from '../../components/base/TableEmpty'
@@ -31,8 +30,6 @@ import AdjustPointsModal from './components/AdjustPointsModal'
 import RankOverrideModal from './components/RankOverrideModal'
 import CardRankModal from './components/CardRankModal'
 import {
-  DEFAULT_VISIBLE_COLUMNS,
-  POINT_COLUMN_OPTIONS,
   RANK_THEMES,
   REF_TYPE_LABELS,
   hexLuminance,
@@ -40,7 +37,6 @@ import {
   rankThemeFromColor,
   type CardRankRow,
   type MemberRow,
-  type PointColumnKey,
   type ProfileLite,
   type RankRow,
 } from './components/constants'
@@ -88,11 +84,8 @@ export default function Points() {
   const canViewHistory = ability.can('READ', 'CUSTOMER') && canAdjust
   const [page, setPage] = useState(1)
   const [limit] = useState(10)
-  const [filterOpen, setFilterOpen] = useState(false)
   const [searchText, setSearchText] = useState('')
   const [filters, setFilters] = useState<{ q?: string; rank_id?: string }>({})
-  const [visibleColumns, setVisibleColumns] = useState<PointColumnKey[]>(DEFAULT_VISIBLE_COLUMNS)
-  const [draftVisibleColumns, setDraftVisibleColumns] = useState<PointColumnKey[]>(DEFAULT_VISIBLE_COLUMNS)
   const [adjusting, setAdjusting] = useState<MemberRow | null>(null)
   const [overrideTarget, setOverrideTarget] = useState<{ row: MemberRow } | null>(null)
   const [historyTarget, setHistoryTarget] = useState<MemberRow | null>(null)
@@ -100,7 +93,6 @@ export default function Points() {
   const [historyPage, setHistoryPage] = useState(1)
   const [form] = Form.useForm()
   const [overrideForm] = Form.useForm()
-  const [filterForm] = Form.useForm()
   // Tabs chính: bảng thành viên / lịch sử điểm (khu card hạng nằm ngoài, hiện chung cho cả 2 tab)
   const [activeTab, setActiveTab] = useState('members')
   const adjustSubmitLock = useRef(false)
@@ -114,7 +106,6 @@ export default function Points() {
   const ranksData = (ranksQuery.data?.responseData ?? (ranksQuery.data as any)?.data ?? []) as RankRow[]
   const ranks = Array.isArray(ranksData) ? [...ranksData].sort((a, b) => a.sort_order - b.sort_order) : []
   const loading = memberProfilesQuery.isLoading
-  const activeFilterCount = Number(Boolean(filters.q)) + Number(Boolean(filters.rank_id))
 
   // ===== CRUD hạng thẻ ngay trên card (gộp từ page /card-ranks) =====
 
@@ -231,36 +222,6 @@ export default function Points() {
     setPage(1)
   }
 
-  const openFilters = (nextOpen: boolean) => {
-    setFilterOpen(nextOpen)
-    if (!nextOpen) return
-    filterForm.setFieldsValue({ rank_id: filters.rank_id })
-    setDraftVisibleColumns(visibleColumns)
-  }
-
-  const applyFilters = (values: Record<string, unknown>) => {
-    if (draftVisibleColumns.length === 0) {
-      message.error('Hãy giữ lại ít nhất một cột hiển thị')
-      return
-    }
-    const nextFilters: typeof filters = {}
-    if (searchText.trim()) nextFilters.q = searchText.trim()
-    if (typeof values.rank_id === 'string' && values.rank_id) nextFilters.rank_id = values.rank_id
-    setFilters(nextFilters)
-    setVisibleColumns(draftVisibleColumns)
-    setPage(1)
-    setFilterOpen(false)
-  }
-
-  const clearFilters = () => {
-    filterForm.resetFields()
-    setSearchText('')
-    setFilters({})
-    setDraftVisibleColumns(DEFAULT_VISIBLE_COLUMNS)
-    setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)
-    setPage(1)
-  }
-
   // Lịch sử điểm: log toàn bộ biến động điểm của mọi khách (LY-03) — có thể lọc theo khách / nhận-trừ
   const [historyDirection, setHistoryDirection] = useState<'' | 'plus' | 'minus'>('')
   const profilesQuery = useGetCustomerProfiles({ page: 1, limit: 200 })
@@ -335,38 +296,6 @@ export default function Points() {
     <>
       <PageTitle
         subtitle="Tích điểm, xét hạng và điều chỉnh điểm cho hội viên"
-        left={
-          <>
-            <Input
-              allowClear
-              prefix={<SearchOutlined className="text-[var(--brand-text-inactive,#A9ADB2)]" />}
-              placeholder="Tìm tên, SĐT, mã khách..."
-              className="w-[260px]!"
-              value={searchText}
-              onChange={(event) => {
-                setSearchText(event.target.value)
-                if (!event.target.value) applySearch('')
-              }}
-              onPressEnter={() => applySearch(searchText)}
-            />
-            <ListFilterPopover
-              open={filterOpen}
-              onOpenChange={openFilters}
-              activeFilterCount={activeFilterCount}
-              form={filterForm}
-              onApply={applyFilters}
-              onClear={clearFilters}
-              columnOptions={POINT_COLUMN_OPTIONS}
-              draftVisibleColumns={draftVisibleColumns}
-              onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as PointColumnKey[])}
-              filterItems={(
-                <Form.Item name="rank_id" label="Hạng thành viên" className="mb-0!">
-                  <Select allowClear placeholder="Tất cả hạng" options={ranks.map((rank) => ({ value: rank.id, label: rank.name }))} />
-                </Form.Item>
-              )}
-            />
-          </>
-        }
       >
         Điểm & Hạng thành viên
       </PageTitle>
@@ -511,6 +440,27 @@ export default function Points() {
             label: 'Thành viên & điểm hiện có',
             children: (
               <>
+                {/* Tìm kiếm + bộ lọc chỉ áp dụng cho bảng thành viên — đặt trong tab, không để trên card hạng */}
+                <div style={{ marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 12, flexWrap: 'wrap' }}>
+                  <Space wrap>
+                    <Input.Search
+                      allowClear
+                      placeholder="Tìm tên, SĐT, mã khách..."
+                      className="w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]"
+                      value={searchText}
+                      onChange={(e) => { setSearchText(e.target.value); if (!e.target.value) applySearch('') }}
+                      onSearch={(v) => applySearch(v)}
+                    />
+                    <Select
+                      allowClear
+                      placeholder="Tất cả hạng"
+                      style={{ width: 170 }}
+                      value={filters.rank_id}
+                      onChange={(value) => { setFilters((current) => ({ ...current, rank_id: value ?? undefined })); setPage(1) }}
+                      options={ranks.map((rank) => ({ value: rank.id, label: rank.name }))}
+                    />
+                  </Space>
+                </div>
                 <Table
                   rowKey="id"
                   loading={loading}
@@ -524,6 +474,7 @@ export default function Points() {
           {
             key: 'customer',
             title: 'Khách hàng',
+            width: 200,
             render: (_value: unknown, row: MemberRow) => (
               <div>
                 <div style={{ fontWeight: 500 }}>{row.full_name || row.user?.zalo_name || '—'}</div>
@@ -569,7 +520,6 @@ export default function Points() {
                   ...(canAdjust ? [{ key: 'adjust', icon: <EditOutlined />, label: 'Điều chỉnh điểm' }] : []),
                   ...(canOverride ? [{ key: 'override', icon: <CrownOutlined />, label: 'Gán hạng' }] : []),
                   ...(canRecalc ? [{ key: 'recalc', icon: <SyncOutlined />, label: 'Tính lại hạng' }] : []),
-                  ...(canViewHistory ? [{ key: 'history', icon: <EyeOutlined />, label: 'Chi tiết' }] : []),
                 ]}
                 onSelect={(key) => {
                   if (key === 'adjust') {
@@ -585,16 +535,13 @@ export default function Points() {
                       cancelText: 'Hủy',
                       onOk: () => doRecalc(row),
                     })
-                  } else if (key === 'history') {
-                    setHistoryTarget(row)
                   }
                 }}
               />
             ),
           },
         ].filter((column) =>
-          (column.key !== 'actions' || canAdjust || canOverride || canRecalc || canViewHistory) &&
-          (column.key === 'actions' || visibleColumns.includes(column.key as PointColumnKey)),
+          (column.key !== 'actions' || canAdjust || canOverride || canRecalc || canViewHistory),
         )}
       />
       <ListPagination page={page} limit={limit} total={total} onChange={setPage} noun="thành viên" />

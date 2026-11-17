@@ -96,6 +96,7 @@ export default function Staffs() {
   const [filterForm] = Form.useForm()
   const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const selectedBranchId = Form.useWatch('branch_id', form)
+  const selectedRoleId = Form.useWatch('role_id', form)
 
   const usersQuery = useGetUsers({
     currentPage: page,
@@ -172,6 +173,7 @@ export default function Staffs() {
   const roles = roleRows.map((role) => ({ id: role.id, role_name: role.role_name ?? role.name ?? role.id, code: role.code ?? null }))
   const branches = (pickData<Branch[]>(branchesQuery.data) ?? []) as Branch[]
   const adminRoleId = roles.find((role) => isAdminRole(role.code))?.id
+  const selectedRole = roles.find((role) => role.id === selectedRoleId)
 
   useEffect(() => {
     if (!open || editing || selectedBranchId || !adminRoleId) return
@@ -180,7 +182,7 @@ export default function Staffs() {
 
   const loading = usersQuery.isLoading
   const globalAdminSelected = !selectedBranchId
-  const branchRequired = !globalAdminSelected
+  const branchRequired = !selectedRoleId || !roles.length || !isAdminRole(selectedRole?.code)
   const activeFilterCount = [branchFilter, roleFilter, statusFilter].filter(Boolean).length + (search ? 1 : 0)
 
   // Gõ tìm kiếm có debounce 400ms, quay về trang 1.

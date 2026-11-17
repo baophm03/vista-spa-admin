@@ -5,7 +5,6 @@ import { PlusOutlined, SearchOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
 import ListPagination from '@/components/base/ListPagination'
-import { paginateRows } from '@/utils/listTable'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { AcademyCourse } from '@/api/models/academyCourse'
 import { getVoucherCategory, type VoucherCategoryRow } from '@/api/custom/voucherCategories'
@@ -38,6 +37,7 @@ export default function AcademyRegistrations() {
   const [filter, setFilter] = useState<{ status?: string; course_id?: string; q?: string }>({})
   const [searchInput, setSearchInput] = useState('')
   const [page, setPage] = useState(1)
+  const [limit] = useState(10)
   const [lookupValue, setLookupValue] = useState('')
   const [updateTarget, setUpdateTarget] = useState<RegistrationRow | null>(null)
   const [saving, setSaving] = useState(false)
@@ -47,18 +47,15 @@ export default function AcademyRegistrations() {
   const [lookupOpen, setLookupOpen] = useState(false)
   const [createForm] = Form.useForm()
 
-  // Gõ tìm kiếm có debounce 400ms — giống các page danh sách khác
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setPage(1)
-      setFilter((f) => ({ ...f, q: searchInput.trim() || undefined }))
-    }, 400)
-    return () => clearTimeout(timer)
-  }, [searchInput])
+  const applySearch = (value: string) => {
+    setSearchInput(value)
+    setFilter((f) => ({ ...f, q: value.trim() || undefined }))
+    setPage(1)
+  }
 
-  const coursesQuery = useGetAcademyCourses()
+  const coursesQuery = useGetAcademyCourses({ page: 1, limit: 200 } as never)
   const courseVouchersQuery = useQuery({ queryKey: ['voucher-category', 'academy-course'], queryFn: () => getVoucherCategory('academy-course') })
-  const registrationsQuery = useGetRegistrationsSafe(filter)
+  const registrationsQuery = useGetRegistrationsSafe(filter, page, limit)
   const usersQuery = useGetUsers({ currentPage: 1, pageSize: 200, has_role: true })
   const lookupPhone = /^0\d{9}$/.test(lookupValue.trim()) ? lookupValue.trim() : undefined
   const lookupEmail = lookupValue.includes('@') ? lookupValue.trim() : undefined
@@ -71,6 +68,7 @@ export default function AcademyRegistrations() {
   const courseVouchersPayload = pickData<any>(courseVouchersQuery.data)
   const courseVouchers = (Array.isArray(courseVouchersPayload) ? courseVouchersPayload : courseVouchersPayload?.rows ?? []) as VoucherCategoryRow[]
   const registrations = (pickData<RegistrationRow[]>(registrationsQuery.data) ?? []) as RegistrationRow[]
+  const total = (registrationsQuery.data as unknown as { meta?: { total?: number } } | null)?.meta?.total ?? registrations.length
   const staffs = (pickData<{ rows?: Array<{ id: string; zalo_name?: string }> } | undefined>(usersQuery.data)?.rows ?? []) as Array<{ id: string; zalo_name?: string }>
   const lookupRows = (pickData<RegistrationRow[]>(lookupQuery.data) ?? []) as RegistrationRow[]
   const courseById = useMemo(() => new Map(courses.map((c) => [c.id, c])), [courses])
@@ -194,13 +192,13 @@ export default function AcademyRegistrations() {
           <>
             {/* Icon viết dạng children (không qua prop icon) để chữ không bị ẩn trên mobile — giữ nguyên như desktop */}
             <Button onClick={() => setLookupOpen(true)}><SearchOutlined /> Tra cứu học viên</Button>
-            <Input
+            <Input.Search
               allowClear
-              prefix={<SearchOutlined className="text-[var(--brand-text-inactive,#A9ADB2)]" />}
               placeholder="Tìm tên / SĐT / email"
-              className="w-[240px]!"
+              className="w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]"
               value={searchInput}
-              onChange={(event) => setSearchInput(event.target.value)}
+              onChange={(event) => { setSearchInput(event.target.value); if (!event.target.value) applySearch('') }}
+              onSearch={applySearch}
             />
             <Select
               allowClear
@@ -208,7 +206,7 @@ export default function AcademyRegistrations() {
               className="w-[220px]"
               options={courses.map((c) => ({ value: c.id, label: c.name }))}
               value={filter.course_id}
-              onChange={(v) => setFilter((f) => ({ ...f, course_id: v }))}
+              onChange={(v) => { setFilter((f) => ({ ...f, course_id: v })); setPage(1) }}
             />
             <Select
               allowClear
@@ -216,7 +214,7 @@ export default function AcademyRegistrations() {
               className="w-[160px]"
               options={Object.entries(STATUS_META).map(([value, m]) => ({ value, label: m.label }))}
               value={filter.status}
-              onChange={(v) => setFilter((f) => ({ ...f, status: v }))}
+              onChange={(v) => { setFilter((f) => ({ ...f, status: v })); setPage(1) }}
             />
           </>
         }
@@ -234,7 +232,7 @@ export default function AcademyRegistrations() {
         rowKey="id"
         loading={registrationsQuery.isLoading}
         columns={columns}
-        dataSource={paginateRows(registrations, page, 10)}
+        dataSource={registrations}
         scroll={{ x: 1100 }}
         pagination={false}
         onRow={(row) => ({
@@ -242,7 +240,7 @@ export default function AcademyRegistrations() {
           style: { cursor: 'pointer' },
         })}
       />
-      <ListPagination page={page} limit={10} total={registrations.length} onChange={setPage} noun="đăng ký" />
+      <ListPagination page={page} limit={limit} total={total} onChange={setPage} noun="đăng ký" />
 
       <StudentLookupModal
         open={lookupOpen}
@@ -279,8 +277,8 @@ export default function AcademyRegistrations() {
   )
 }
 
-/** Wrapper: BE hỗ trợ q sau khi cập nhật — gọi qua apiClient để không phụ thuộc client sinh lại. */
-function useGetRegistrationsSafe(filter: { status?: string; course_id?: string; q?: string }) {
+/** Wrapper: BE hỗ trợ q + page/limit sau khi cập nhật — gọi qua apiClient để không phụ thuộc client sinh lại. */
+function useGetRegistrationsSafe(filter: { status?: string; course_id?: string; q?: string }, page: number, limit: number) {
   const [data, setData] = useState<unknown>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<unknown>(null)
@@ -288,6 +286,8 @@ function useGetRegistrationsSafe(filter: { status?: string; course_id?: string; 
     let alive = true
     setIsLoading(true)
     const params = new URLSearchParams()
+    params.set('page', String(page))
+    params.set('limit', String(limit))
     if (filter.status) params.set('status', filter.status)
     if (filter.course_id) params.set('course_id', filter.course_id)
     if (filter.q) params.set('q', filter.q)
@@ -297,6 +297,6 @@ function useGetRegistrationsSafe(filter: { status?: string; course_id?: string; 
       .finally(() => { if (alive) setIsLoading(false) })
     return () => { alive = false }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filter.status, filter.course_id, filter.q])
+  }, [filter.status, filter.course_id, filter.q, page, limit])
   return { data, isLoading, isError: !!error, error }
 }
