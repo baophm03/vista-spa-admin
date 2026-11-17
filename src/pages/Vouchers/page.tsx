@@ -17,22 +17,53 @@ import { getTreatmentPackagesAdmin } from '@/api/endpoints/treatment-packages'
 import { getAcademyCoursesAdmin } from '@/api/endpoints/academy'
 import { getProductCategoriesAdmin } from '@/api/endpoints/product-categories'
 import { getProductsAdmin } from '@/api/endpoints/products'
-import type { ProductCategory } from '@/api/models/productCategory'
 import {
-  deleteVoucherCategory,
-  getVoucherCategory,
-  postVoucherCategory,
-  putVoucherCategory,
-  type VoucherCategory,
-  type VoucherCategoryRow,
-  type VoucherCategoryWrite,
-} from '@/api/custom/voucherCategories'
+  deleteTreatmentPackageVouchersIdAdmin,
+  getTreatmentPackageVouchersAdmin,
+  postTreatmentPackageVouchersAdmin,
+  putTreatmentPackageVouchersIdAdmin,
+} from '@/api/endpoints/treatment-package-vouchers'
+import {
+  deleteAcademyCourseVouchersIdAdmin,
+  getAcademyCourseVouchersAdmin,
+  postAcademyCourseVouchersAdmin,
+  putAcademyCourseVouchersIdAdmin,
+} from '@/api/endpoints/academy-course-vouchers'
+import {
+  deleteProductVouchersIdAdmin,
+  getProductVouchersAdmin,
+  postProductVouchersAdmin,
+  putProductVouchersIdAdmin,
+} from '@/api/endpoints/product-vouchers'
+import type { ProductCategory } from '@/api/models/productCategory'
 import VoucherModal from './components/VoucherModal'
-import { CATEGORY_META } from './components/constants'
+import { CATEGORY_META, type VoucherCategory, type VoucherCategoryRow, type VoucherCategoryWrite } from './components/constants'
 import { useBrandCurrency } from '@/themeRuntime'
 
 const PAGE_SIZE = 10
 const CATEGORIES: VoucherCategory[] = ['treatment-package', 'academy-course', 'product']
+
+// Dispatch theo danh mục —generated client tách CRUD voucher theo 3 module *-vouchers (URL /admin).
+function listVoucherCategory(category: VoucherCategory, params: Record<string, unknown>) {
+  if (category === 'treatment-package') return getTreatmentPackageVouchersAdmin(params as never)
+  if (category === 'academy-course') return getAcademyCourseVouchersAdmin(params as never)
+  return getProductVouchersAdmin(params as never)
+}
+function createVoucherCategory(category: VoucherCategory, body: VoucherCategoryWrite) {
+  if (category === 'treatment-package') return postTreatmentPackageVouchersAdmin(body as never)
+  if (category === 'academy-course') return postAcademyCourseVouchersAdmin(body as never)
+  return postProductVouchersAdmin(body as never)
+}
+function updateVoucherCategory(category: VoucherCategory, id: string, body: VoucherCategoryWrite) {
+  if (category === 'treatment-package') return putTreatmentPackageVouchersIdAdmin(id, body as never)
+  if (category === 'academy-course') return putAcademyCourseVouchersIdAdmin(id, body as never)
+  return putProductVouchersIdAdmin(id, body as never)
+}
+function removeVoucherCategory(category: VoucherCategory, id: string) {
+  if (category === 'treatment-package') return deleteTreatmentPackageVouchersIdAdmin(id)
+  if (category === 'academy-course') return deleteAcademyCourseVouchersIdAdmin(id)
+  return deleteProductVouchersIdAdmin(id)
+}
 
 function toRows(payload: unknown): VoucherCategoryRow[] {
   const data = pickData<any>(payload)
@@ -82,7 +113,7 @@ function VoucherCategoryTab({ category }: { category: VoucherCategory }) {
 
   const vouchersQuery = useQuery({
     queryKey: [...listKey, page, search],
-    queryFn: () => getVoucherCategory(category, {
+    queryFn: () => listVoucherCategory(category, {
       page,
       limit: PAGE_SIZE,
       ...(search ? { q: search } : {}),
@@ -115,9 +146,9 @@ function VoucherCategoryTab({ category }: { category: VoucherCategory }) {
   const targetLabelFor = (row: VoucherCategoryRow) => category === 'product' && row.product_category_id
     ? `Danh mục: ${row.target_name || '—'}`
     : row.target_name || `Tất cả ${meta.label.replace('Voucher ', '').toLowerCase()}`
-  const createMutation = useMutation({ mutationFn: (body: VoucherCategoryWrite) => postVoucherCategory(category, body) })
-  const updateMutation = useMutation({ mutationFn: ({ id, body }: { id: string; body: VoucherCategoryWrite }) => putVoucherCategory(category, id, body) })
-  const hideMutation = useMutation({ mutationFn: (id: string) => deleteVoucherCategory(category, id) })
+  const createMutation = useMutation({ mutationFn: (body: VoucherCategoryWrite) => createVoucherCategory(category, body) })
+  const updateMutation = useMutation({ mutationFn: ({ id, body }: { id: string; body: VoucherCategoryWrite }) => updateVoucherCategory(category, id, body) })
+  const hideMutation = useMutation({ mutationFn: (id: string) => removeVoucherCategory(category, id) })
 
   const statItems: StatItem[] = [
     { key: 'total', label: 'Tổng voucher', value: (statsMeta?.total ?? total).toLocaleString('vi-VN'), icon: <GiftOutlined />, tone: 'primary' },

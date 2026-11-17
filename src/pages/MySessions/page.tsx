@@ -6,8 +6,9 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
 import { errorMessage, pickData } from '@/api/helpers'
-import { customInstance } from '@/api/mutator/custom-instance'
-import { usePutSessionsIdDoneAdmin, usePutSessionsIdStartAdmin } from '@/api/endpoints/treatment-sessions'
+
+import { getSessionsAdmin, usePutSessionsIdDoneAdmin, usePutSessionsIdStartAdmin } from '@/api/endpoints/treatment-sessions'
+import type { GetSessionsAdminParams } from '@/api/models/getSessionsAdminParams'
 import type { TreatmentSession } from '@/api/models/treatmentSession'
 import ListPagination from '@/components/base/ListPagination'
 import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
@@ -21,12 +22,6 @@ type SessionRow = TreatmentSession & {
     customer_profile?: { id?: string; customer_code?: string; full_name?: string; phone?: string } | null
     package?: { id?: string; name?: string } | null
   } | null
-}
-
-type SessionsResponse = {
-  responseData?: SessionRow[] | { rows?: SessionRow[] }
-  data?: SessionRow[]
-  meta?: { page?: number; limit?: number; total?: number }
 }
 
 const STATUS_OPTIONS = [
@@ -64,11 +59,7 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
 
   const sessionsQuery = useQuery({
     queryKey: ['my-sessions'],
-    queryFn: () => customInstance<SessionsResponse>({
-      url: '/sessions',
-      method: 'GET',
-      params: { page: 1, limit: 200 },
-    }),
+    queryFn: () => getSessionsAdmin({ page: 1, limit: 200 } as GetSessionsAdminParams),
   })
   const sessionRows = (pickData<SessionRow[]>(sessionsQuery.data) ?? []) as SessionRow[]
 

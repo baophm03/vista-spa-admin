@@ -13,8 +13,17 @@ import { errorMessage, pickData } from '@/api/helpers'
 import type { CustomerTreatment } from '@/api/models/customerTreatment'
 import type { TreatmentPackage } from '@/api/models/treatmentPackage'
 import { getCustomerProfilesAdmin, useGetCustomerProfilesAdmin, useGetCustomerProfilesIdPointsAdmin } from '@/api/endpoints/customer-profiles'
-import { getVoucherCustomerView, useVoucherCustomer, type VoucherCustomerRow } from '@/api/custom/voucherCustomers'
-import { getVoucherCategory, type VoucherCategoryRow } from '@/api/custom/voucherCategories'
+import { getTreatmentPackageVoucherCustomersAdmin } from '@/api/endpoints/treatment-package-voucher-customers'
+import { getTreatmentPackageVouchersAdmin } from '@/api/endpoints/treatment-package-vouchers'
+import { apiClient } from '@/api/mutator/custom-instance'
+import type { VoucherCustomerRow, VoucherCategoryRow } from '@/pages/Vouchers/components/constants'
+
+/** Đánh dấu voucher đã dùng khi staff áp vào gói lúc thanh toán. BE có PATCH
+ * /treatment-package-voucher-customers/{id}/admin (voucherCustomerItem factory) nhưng
+ * route chưa khai báo @openapi nên orval chưa sinh ra — giữ raw call với URL /admin mới. */
+async function useVoucherCustomer(_category: 'treatment-package', assignmentId: string) {
+  await apiClient.patch(`/treatment-package-voucher-customers/${assignmentId}/admin`, { status: 'USED' })
+}
 import { usePostTreatmentCustomersIdManualDiscountAdmin } from '@/api/endpoints/discounts'
 import { usePostTreatmentCustomersIdRedeemPointsAdmin } from '@/api/endpoints/treatment-customers'
 import { getTreatmentCustomersIdAvailableSlotsAdmin, getTreatmentCustomersIdPaymentsAdmin, getTreatmentCustomersIdAdmin, getGetTreatmentCustomersAdminQueryKey, useGetTreatmentCustomersAdmin, usePostTreatmentCustomersAdmin, usePostTreatmentCustomersIdPaymentsAdmin, usePutTreatmentCustomersIdCancelAdmin } from '@/api/endpoints/treatment-customers'
@@ -415,8 +424,8 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
     queryKey: ['pay-customer-vouchers', promoCustomerProfileId, promoRow?.package_id],
     queryFn: async () => {
       const [view, defs] = await Promise.all([
-        getVoucherCustomerView('treatment-package', { customer_profile_id: promoCustomerProfileId! }),
-        getVoucherCategory('treatment-package'),
+        getTreatmentPackageVoucherCustomersAdmin({ customer_profile_id: promoCustomerProfileId! } as never),
+        getTreatmentPackageVouchersAdmin(),
       ])
       const viewData = pickData<VoucherCustomerRow[] | { rows?: VoucherCustomerRow[] }>(view)
       const rows = (Array.isArray(viewData) ? viewData : viewData?.rows ?? []).filter((row) => row.status === 'ACTIVE')

@@ -34,13 +34,12 @@ import {
   type CustomerOption,
   type ReferralRow,
 } from '@/pages/Referrals/components/constants'
-import { markCommissionPayouts } from '@/api/commissionPayouts'
 import { PAYEE_LABEL } from './components/constants'
 import ListPagination from '@/components/base/ListPagination'
 import { paginateRows } from '@/utils/listTable'
 import { isTechnicianUser, type UserWithRoleAssignments } from '@/utils/userRoles'
 import { errorMessage, pickData, pickMeta } from '@/api/helpers'
-import { getGetCommissionsAdminQueryKey, getGetCommissionsSummaryAdminQueryKey, useGetCommissionsAdmin, useGetCommissionsSummaryAdmin, usePostCommissionsIdVoidAdmin, usePutCommissionsIdAdmin } from '@/api/endpoints/commissions'
+import { getGetCommissionsAdminQueryKey, getGetCommissionsSummaryAdminQueryKey, postCommissionsPayoutsAdmin, useGetCommissionsAdmin, useGetCommissionsSummaryAdmin, usePostCommissionsIdVoidAdmin, usePutCommissionsIdAdmin } from '@/api/endpoints/commissions'
 import { getGetReferralsAdminQueryKey, useGetReferralsAdmin, usePostReferralsAdmin, usePutReferralsIdAdmin } from '@/api/endpoints/referrals'
 import { useGetCollaboratorsAdmin } from '@/api/endpoints/collaborators'
 import { useGetBranchesAdmin } from '@/api/endpoints/branches'
@@ -436,7 +435,7 @@ function LedgerTab({ canReadReferral, canReadCommission }: { canReadReferral: bo
     try {
       const values = await payoutForm.validateFields()
       setPayoutLoading(true)
-      await markCommissionPayouts({
+      await postCommissionsPayoutsAdmin({
         commission_entry_ids: selectedIds,
         paid_at: (values.paid_at as Dayjs).format('YYYY-MM-DD'),
         payout_note: values.payout_note,

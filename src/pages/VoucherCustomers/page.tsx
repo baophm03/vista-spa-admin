@@ -11,15 +11,36 @@ import { paginateRows } from '../../utils/listTable'
 import { errorMessage, pickData, pickMeta } from '@/api/helpers'
 import { getCustomerProfilesAdmin } from '@/api/endpoints/customer-profiles'
 import type { CustomerProfile } from '@/api/models/customerProfile'
-import { getVoucherCategory, type VoucherCategory } from '@/api/custom/voucherCategories'
-import {
-  assignVoucherCustomer,
-  getVoucherCustomerView,
-  revokeVoucherCustomer,
-  type VoucherCustomerAssignment,
-  type VoucherCustomerRow,
-} from '@/api/custom/voucherCustomers'
-import { CATEGORY_META } from '../Vouchers/components/constants'
+import { getAcademyCourseVoucherCustomersAdmin, postAcademyCourseVoucherCustomersAdmin, deleteAcademyCourseVoucherCustomersIdAdmin } from '@/api/endpoints/academy-course-voucher-customers'
+import { getAcademyCourseVouchersAdmin } from '@/api/endpoints/academy-course-vouchers'
+import { getTreatmentPackageVoucherCustomersAdmin, postTreatmentPackageVoucherCustomersAdmin, deleteTreatmentPackageVoucherCustomersIdAdmin } from '@/api/endpoints/treatment-package-voucher-customers'
+import { getTreatmentPackageVouchersAdmin } from '@/api/endpoints/treatment-package-vouchers'
+import { getProductVoucherCustomersAdmin, postProductVoucherCustomersAdmin, deleteProductVoucherCustomersIdAdmin } from '@/api/endpoints/product-voucher-customers'
+import { getProductVouchersAdmin } from '@/api/endpoints/product-vouchers'
+import { CATEGORY_META, type VoucherCategory, type VoucherCustomerAssignment, type VoucherCustomerRow } from '../Vouchers/components/constants'
+
+// Dispatch theo danh mục — generated client tách 3 module *-voucher-customers (URL /admin).
+function listVoucherCategory(category: VoucherCategory, params: Record<string, unknown> = {}) {
+  if (category === 'treatment-package') return getTreatmentPackageVouchersAdmin(params as never)
+  if (category === 'academy-course') return getAcademyCourseVouchersAdmin(params as never)
+  return getProductVouchersAdmin(params as never)
+}
+
+function getVoucherCustomerView(category: VoucherCategory, params: Record<string, unknown> = {}) {
+  if (category === 'treatment-package') return getTreatmentPackageVoucherCustomersAdmin(params as never)
+  if (category === 'academy-course') return getAcademyCourseVoucherCustomersAdmin(params as never)
+  return getProductVoucherCustomersAdmin(params as never)
+}
+function assignVoucherCustomer(category: VoucherCategory, body: VoucherCustomerAssignment) {
+  if (category === 'treatment-package') return postTreatmentPackageVoucherCustomersAdmin(body as never)
+  if (category === 'academy-course') return postAcademyCourseVoucherCustomersAdmin(body as never)
+  return postProductVoucherCustomersAdmin(body as never)
+}
+function revokeVoucherCustomer(category: VoucherCategory, assignmentId: string) {
+  if (category === 'treatment-package') return deleteTreatmentPackageVoucherCustomersIdAdmin(assignmentId)
+  if (category === 'academy-course') return deleteAcademyCourseVoucherCustomersIdAdmin(assignmentId)
+  return deleteProductVoucherCustomersIdAdmin(assignmentId)
+}
 import { useGetBranchesAdmin } from '@/api/endpoints/branches'
 import type { Branch } from '@/api/models/branch'
 
@@ -61,7 +82,7 @@ function VoucherCustomerTab({ category, branches }: { category: VoucherCategory;
   // Danh sách voucher đang hoạt động của loại này để gán (voucher Cố định là chính).
   const vouchersQuery = useQuery({
     queryKey: ['voucher-category', category, assignmentBranchId],
-    queryFn: () => getVoucherCategory(category, assignmentBranchId ? { branch_id: assignmentBranchId } : {}),
+    queryFn: () => listVoucherCategory(category, assignmentBranchId ? { branch_id: assignmentBranchId } : {}),
   })
   const voucherOptions = toRows<{ id: string; title: string; branch_id?: string | null; branch_name?: string | null; is_active: boolean; end_date?: string | null }>(vouchersQuery.data)
     .filter((row) => row.is_active && (!row.end_date || dayjs(row.end_date).isAfter(dayjs(), 'day')))

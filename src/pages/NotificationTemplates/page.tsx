@@ -6,11 +6,11 @@ import PageTitle from '@/components/base/PageTitle'
 import TableEmpty from '@/components/base/TableEmpty'
 import { errorMessage, pickData } from '@/api/helpers'
 import {
-  getNotificationTemplates,
   putNotificationTemplate,
   type NotificationTemplate,
   type NotificationTemplateUpdate,
 } from '@/api/notificationTemplates'
+import { getNotificationTemplatesAdmin } from '@/api/endpoints/notification-templates'
 import { useProfileStore } from '@/stores/profile-store'
 import NotificationTemplateModal from './components/NotificationTemplateModal'
 import {
@@ -31,7 +31,7 @@ export default function NotificationTemplates() {
   const templatesQuery = useQuery({
     queryKey,
     queryFn: async () => {
-      const response = await getNotificationTemplates()
+      const response = await getNotificationTemplatesAdmin()
       const payload = pickData<unknown>(response)
       if (Array.isArray(payload)) return payload as NotificationTemplate[]
       if (payload && typeof payload === 'object') {

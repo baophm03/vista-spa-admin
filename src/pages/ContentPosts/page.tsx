@@ -27,9 +27,10 @@ const STATUS_META: Record<string, { label: string; color: string }> = {
   ARCHIVED: { label: 'Đã gỡ', color: 'red' },
 }
 
-/** Gửi publish kèm notify — body riêng nên gọi thẳng apiClient (hook chỉ nhận id). */
+/** Gửi publish kèm notify — BE nhận body {notify} nhưng client sinh ra chưa khai báo
+ * requestBody nên hook chỉ nhận id; giữ raw call với URL /admin mới. */
 async function publishPost(id: string, notify: boolean) {
-  await apiClient.put(`/contentPosts/${id}/publish`, { notify })
+  await apiClient.put(`/content-posts/${id}/publish/admin`, { notify })
 }
 
 export default function ContentPosts() {

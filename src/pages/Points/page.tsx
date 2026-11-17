@@ -4,7 +4,7 @@ import { ArrowDownOutlined, ArrowUpOutlined, ClockCircleOutlined, CrownOutlined,
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Can, useAbility } from '@casl/react'
 import { useBrandCurrency } from '@/themeRuntime'
-import { customInstance } from '../../api/mutator/custom-instance'
+
 import PageTitle from '../../components/base/PageTitle'
 import RowActionsMenu from '../../components/base/RowActionsMenu'
 import ListPagination from '../../components/base/ListPagination'
@@ -12,6 +12,7 @@ import TableEmpty from '../../components/base/TableEmpty'
 import CustomerCodeHistoryModal from '../../components/CustomerCodeHistoryModal'
 import { errorMessage } from '../../api/helpers'
 import { getGetCardRanksAdminQueryKey, useDeleteCardRanksIdAdmin, useGetCardRanksAdmin, usePostCardRanksAdmin, usePutCardRanksIdAdmin } from '@/api/endpoints/card-ranks'
+import { getMembershipTransactionsAdmin } from '@/api/endpoints/memberships'
 import { usePostMembershipsCustomerProfileIdPointsAdjustAdmin, usePostMembershipsCustomerProfileIdRankOverrideAdmin, usePostMembershipsCustomerProfileIdRecalculateAdmin } from '@/api/endpoints/memberships'
 import type { MembershipTransaction } from '../../api/models'
 import type { PostCardRanksAdminBody } from '../../api/models/postCardRanksAdminBody'
@@ -223,11 +224,11 @@ export default function Points() {
   if (historyDirection) historyParams.direction = historyDirection
   const historyQuery = useQuery({
     queryKey: ['membership-transactions', historyParams],
-    queryFn: () => customInstance<any>({ url: '/membershipTransactions', method: 'GET', params: historyParams }),
+    queryFn: () => getMembershipTransactionsAdmin(historyParams as never),
   })
   const historyData = (historyQuery.data?.responseData ?? (historyQuery.data as any)?.data ?? null) as { rows?: HistoryRow[]; count?: number } | null
   const historyRows = historyData?.rows ?? []
-  const historyTotal = historyQuery.data?.meta?.total ?? historyData?.count ?? historyRows.length
+  const historyTotal = ((historyQuery.data as unknown as { meta?: { total?: number } } | null)?.meta?.total) ?? historyData?.count ?? historyRows.length
 
   const rankName = (id?: string) => ranks.find((r) => r.id === id)?.name ?? '—'
 

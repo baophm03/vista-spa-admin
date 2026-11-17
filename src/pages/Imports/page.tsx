@@ -5,7 +5,9 @@ import { InboxOutlined, PlayCircleOutlined, SafetyOutlined, ThunderboltOutlined 
 import dayjs from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
 import { errorMessage, pickData } from '@/api/helpers'
-import { usePostImportsKindAdmin } from '@/api/endpoints/imports'
+import { getImportJobsAdmin, getImportJobsIdAdmin, postImportsKindAdmin } from '@/api/endpoints/imports'
+import { getGetCustomerProfilesAdminQueryKey } from '@/api/endpoints/customer-profiles'
+import { getGetTreatmentCustomersAdminQueryKey } from '@/api/endpoints/treatment-customers'
 import { useGetBranchesAdmin } from '@/api/endpoints/branches'
 import { getCustomFieldDefsAdmin } from '@/api/endpoints/custom-field-defs'
 import { apiClient } from '@/api/mutator/custom-instance'
@@ -244,7 +246,6 @@ export default function Imports() {
     ...FIELD_LABELS,
     ...Object.fromEntries(customFieldDefs.map((definition) => [`custom_fields.${definition.key}`, definition.label])),
   }
-  const importMutation = usePostImportsKindAdmin()
 
   const renderFieldMappings = (fieldList: ImportField[]) => {
     return (
@@ -341,13 +342,10 @@ export default function Imports() {
     setHeadersLoading(true)
     // File lớn nên bật sẵn chế độ xử lý nền (user vẫn tắt được)
     setProcessInBackground(Boolean(file && file.size > 100 * 1024))
-    const body = new FormData()
-    body.append('file', file as File)
-    body.append('preview_headers', 'true')
     try {
-      const response = await apiClient.post(`/imports/${kind}`, body)
+      const response = await postImportsKindAdmin(kind, { file: file as File, preview_headers: true })
       if (headerRequestId.current !== requestId) return
-      const headers = pickData<string[]>(response.data) ?? []
+      const headers = pickData<string[]>(response) ?? []
       setSourceHeaders(headers)
       setSourceColumns(headers.map((header, index) => ({
         label: `${header || 'Không có tiêu đề'} (cột ${index + 1})`,
@@ -402,7 +400,7 @@ export default function Imports() {
     let cancelled = false
     const timer = setInterval(async () => {
       try {
-        const res = await apiClient.get(`/import-jobs/${activeJob.id}`)
+        const res = await getImportJobsIdAdmin(activeJob.id)
         const job = pickData<Record<string, any>>(res)
         if (cancelled || !job) return
         setJobProgress({ status: job.status, processed: job.processed_rows ?? 0, total: job.total_rows ?? 0, errorMessage: job.error_message ?? null })
@@ -425,8 +423,8 @@ export default function Imports() {
           await reloadHistory()
           if (!job.dry_run) {
             message.success(`Đã nhập: tạo ${job.created_count ?? 0}, cập nhật ${job.updated_count ?? 0}`)
-            await queryClient.invalidateQueries({ queryKey: ['getCustomerProfilesAdmin'] })
-            await queryClient.invalidateQueries({ queryKey: ['getTreatmentCustomersAdmin'] })
+            await queryClient.invalidateQueries({ queryKey: getGetCustomerProfilesAdminQueryKey() })
+            await queryClient.invalidateQueries({ queryKey: getGetTreatmentCustomersAdminQueryKey() })
           }
         } else if (job.status === 'FAILED') {
           setActiveJob(null)
@@ -445,25 +443,26 @@ export default function Imports() {
 
   const reloadHistory = async () => {
     try {
-      const res = await apiClient.get('/imports/all')
-      setHistory((pickData<HistoryRow[]>(res.data) ?? []) as HistoryRow[])
+      // GET /imports/all cũ không còn — dùng GET /import-jobs/admin (50 job nền gần nhất)
+      const res = await getImportJobsAdmin()
+      setHistory((pickData<HistoryRow[]>(res) ?? []) as HistoryRow[])
     } catch {
       /* lịch sử chỉ mang tham khảo */
     }
   }
 
-  // orval tự dựng lại FormData từ các thuộc tính của body object — truyền FormData thẳng vào
-  // mutation sẽ bị bỏ qua (body.file/dry_run/... đều undefined) và sinh request rỗng.
+  // orval tự dựng FormData chỉ với các field spec khai báo (bỏ qua process_mode),
+  // nên chạy import thật vẫn gọi thẳng apiClient với URL /admin mới.
   const buildImportBody = (dryRun: boolean) => {
     const originFile = fileList[0]?.originFileObj as File | undefined
-    return {
-      file: originFile,
-      dry_run: dryRun,
-      column_mapping: JSON.stringify(mapping),
-      ...(kind === 'customer-treatments' && branchId ? { branch_id: branchId } : {}),
-      // File lớn → yêu cầu BE xếp hàng xử lý nền (worker), tránh treo request
-      process_mode: processInBackground ? 'async' : undefined,
-    }
+    const body = new FormData()
+    if (originFile) body.append('file', originFile)
+    body.append('dry_run', String(dryRun))
+    body.append('column_mapping', JSON.stringify(mapping))
+    if (kind === 'customer-treatments' && branchId) body.append('branch_id', branchId)
+    // File lớn → yêu cầu BE xếp hàng xử lý nền (worker), tránh treo request
+    if (processInBackground) body.append('process_mode', 'async')
+    return body
   }
 
   const runImport = async (dryRun: boolean) => {
@@ -494,8 +493,8 @@ export default function Imports() {
     }
     setRunning(true)
     try {
-      const res = await importMutation.mutateAsync({ kind, data: buildImportBody(dryRun) as never })
-      const data = pickData<ImportReport & { job_id?: string; async?: boolean }>(res)
+      const response = await apiClient.post(`/imports/${kind}/admin`, buildImportBody(dryRun))
+      const data = pickData<ImportReport & { job_id?: string; async?: boolean }>(response.data)
       if (data?.job_id) {
         // File lớn đã nộp việc cho worker — theo dõi tiến độ thay vì đợi
         setReport(null)
@@ -509,8 +508,8 @@ export default function Imports() {
       await reloadHistory()
       if (!dryRun) {
         message.success(`Đã nhập: tạo ${data?.created_count ?? 0}, cập nhật ${data?.updated_count ?? 0}`)
-        await queryClient.invalidateQueries({ queryKey: ['getCustomerProfilesAdmin'] })
-        await queryClient.invalidateQueries({ queryKey: ['getTreatmentCustomersAdmin'] })
+        await queryClient.invalidateQueries({ queryKey: getGetCustomerProfilesAdminQueryKey() })
+        await queryClient.invalidateQueries({ queryKey: getGetTreatmentCustomersAdminQueryKey() })
       }
     } catch (err) {
       message.error(errorMessage(err))

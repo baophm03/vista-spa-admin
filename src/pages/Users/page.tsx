@@ -124,7 +124,7 @@ export default function Users() {
     if (!profileAccess.canViewQr) setQrUrl('')
     const [summaryResult, qrResult] = await Promise.allSettled([
       getCustomerProfilesIdSummaryAdmin(profileId),
-      profileAccess.canViewQr ? apiClient.get(`/customerProfiles/${profileId}/qr`, { responseType: 'blob' }) : Promise.resolve(null),
+      profileAccess.canViewQr ? apiClient.get(`/customer-profiles/${profileId}/qr/admin`, { responseType: 'blob' }) : Promise.resolve(null),
     ])
     if (summaryResult.status === 'fulfilled') setSummary(pickData<CustomerProfileSummary>(summaryResult.value) ?? null)
     else {
@@ -242,7 +242,7 @@ export default function Users() {
         if (value !== undefined && value !== null && value !== '') query.set(key, String(value))
       }
       const qs = query.toString()
-      await downloadBlob(`/customerProfiles/export${qs ? `?${qs}` : ''}`, `customer-profiles-${dayjs().format('YYYYMMDD-HHmm')}.csv`)
+      await downloadBlob(`/customer-profiles/export/admin${qs ? `?${qs}` : ''}`, `customer-profiles-${dayjs().format('YYYYMMDD-HHmm')}.csv`)
       message.success('Đã xuất danh sách khách hàng')
     } catch (err) {
       message.error(errorMessage(err))
@@ -259,7 +259,7 @@ export default function Users() {
       setQrUrl('')
       setQrLoading(true)
       setQrError('')
-      const response = await apiClient.get(`/customerProfiles/${selected.id}/qr`, { responseType: 'blob' })
+      const response = await apiClient.get(`/customer-profiles/${selected.id}/qr/admin`, { responseType: 'blob' })
       setQrUrl(URL.createObjectURL(response.data as Blob))
       message.success('Đã tạo lại mã QR; mã cũ không còn hiệu lực')
     } catch (err) {

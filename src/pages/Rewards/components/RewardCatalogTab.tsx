@@ -23,7 +23,10 @@ import type { Reward } from '@/api/models/reward'
 import { getGetRewardRedemptionsAdminQueryKey } from '@/api/endpoints/reward-redemptions'
 import { getGetRewardsAdminQueryKey, useDeleteRewardsIdAdmin, useGetRewardsAdmin, usePostRewardsAdmin, usePutRewardsIdAdmin } from '@/api/endpoints/rewards'
 import { usePostCustomerProfilesIdRedeemRewardAdmin } from '@/api/endpoints/customer-profiles'
-import { getVoucherCategory, type VoucherCategory, type VoucherCategoryRow } from '@/api/custom/voucherCategories'
+import { getAcademyCourseVouchersAdmin } from '@/api/endpoints/academy-course-vouchers'
+import { getProductVouchersAdmin } from '@/api/endpoints/product-vouchers'
+import { getTreatmentPackageVouchersAdmin } from '@/api/endpoints/treatment-package-vouchers'
+import type { VoucherCategory, VoucherCategoryRow } from '@/pages/Vouchers/components/constants'
 import { Can, useAbility } from '@casl/react'
 import RedeemModal from './RedeemModal'
 import RewardModal, { type RewardVoucherOption } from './RewardModal'
@@ -72,7 +75,11 @@ export default function RewardCatalogTab() {
     queryFn: async () => {
       const categories: VoucherCategory[] = ['treatment-package', 'academy-course', 'product']
       const lists = await Promise.all(categories.map(async (category) => {
-        const payload = pickData<VoucherCategoryRow[] | undefined>(await getVoucherCategory(category, { page: 1, limit: 200 }))
+        const payload = pickData<VoucherCategoryRow[] | undefined>(await (category === 'treatment-package'
+          ? getTreatmentPackageVouchersAdmin({ page: 1, limit: 200 } as never)
+          : category === 'academy-course'
+            ? getAcademyCourseVouchersAdmin({ page: 1, limit: 200 } as never)
+            : getProductVouchersAdmin({ page: 1, limit: 200 } as never)))
         return { category, rows: payload ?? [] }
       }))
       const today = dayjs().format('YYYY-MM-DD')
