@@ -286,13 +286,18 @@ export default function CustomerVisibilityTab({ canEdit, wheels, wheelsLoading =
     }
   }
 
-  const openNotificationModal = (target: WheelNotificationTarget) => {
-    setNotificationTarget(target)
+  // Nội dung mời quay — điền sẵn theo đích gửi (áp lại sau khi modal mở xong để chắc chắn ăn)
+  const applyWheelNotificationPreset = (target: WheelNotificationTarget) => {
     notificationForm.setFieldsValue({
       channel: target.type === 'customer' && !target.userId ? 'email' : 'app',
       title: 'Vòng quay may mắn đang mở',
       body: 'Vòng quay may mắn của NewSky Vista đang mở. Hãy vào ứng dụng để tham gia và nhận quà nhé!',
     })
+  }
+
+  const openNotificationModal = (target: WheelNotificationTarget) => {
+    setNotificationTarget(target)
+    applyWheelNotificationPreset(target)
     setNotificationOpen(true)
   }
 
@@ -502,7 +507,10 @@ export default function CustomerVisibilityTab({ canEdit, wheels, wheelsLoading =
           cancelText="Để sau"
           confirmLoading={sendNotificationMutation.isPending}
           okButtonProps={{ disabled: (notificationTarget.type === 'all' && (notificationCustomersQuery.isLoading || notificationCustomersQuery.isError)) || notificationRecipients.length === 0 }}
-          destroyOnClose
+          forceRender
+          afterOpenChange={(open) => {
+            if (open) applyWheelNotificationPreset(notificationTarget)
+          }}
         >
           <Space direction="vertical" className="w-full" size={12}>
             <Alert
@@ -519,7 +527,7 @@ export default function CustomerVisibilityTab({ canEdit, wheels, wheelsLoading =
                 ? 'Email sẽ gửi đến địa chỉ trong hồ sơ khách hàng hoặc tài khoản đã liên kết.'
                 : 'Thông báo sẽ gửi trong ứng dụng cho khách đang được bật quyền quay.'}
             />
-            <Form form={notificationForm} layout="vertical" preserve={false}>
+            <Form form={notificationForm} layout="vertical">
               <Form.Item name="channel" label="Gửi bằng" rules={[{ required: true, message: 'Chọn cách gửi thông báo' }]}>
                 <Select
                   options={[

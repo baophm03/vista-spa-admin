@@ -11,6 +11,10 @@ import type { ProductDescription } from './productDescription';
 import type { ProductPrice } from './productPrice';
 import type { ProductCoverUrl } from './productCoverUrl';
 import type { ProductBuyUrl } from './productBuyUrl';
+import type { ProductBrand } from './productBrand';
+import type { ProductOriginalPrice } from './productOriginalPrice';
+import type { ProductShortDescription } from './productShortDescription';
+import type { ProductAttributesItem } from './productAttributesItem';
 
 /**
  * Retail product
@@ -26,6 +30,12 @@ export interface Product {
   cover_url?: ProductCoverUrl;
   gallery?: string[];
   buy_url?: ProductBuyUrl;
+  brand?: ProductBrand;
+  /** @minimum 0 */
+  original_price?: ProductOriginalPrice;
+  short_description?: ProductShortDescription;
+  attributes?: ProductAttributesItem[];
+  tags?: string[];
   is_active?: boolean;
   created_at?: string;
   updated_at?: string;

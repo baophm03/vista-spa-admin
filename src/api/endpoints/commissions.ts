@@ -45,6 +45,7 @@ import type {
   PostCommissionsBody,
   PostCommissionsIdVoid200,
   PostCommissionsIdVoidBody,
+  PostCommissionsPayoutsBody,
   PutCommissionRulesId200,
   PutCommissionRulesIdBody,
   PutCommissionsId200,
@@ -320,6 +321,71 @@ export const prefetchGetCommissionsSummaryQuery = async <TData = Awaited<ReturnT
 
 
 /**
+ * Atomically marks selected active commission entries as paid. Legacy referral entries marked paid are initially returned as RECONCILE and require explicit confirmation.
+ * @summary Confirm payout for commission entries
+ */
+export const postCommissionsPayouts = (
+    postCommissionsPayoutsBody: PostCommissionsPayoutsBody,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<void>(
+      {url: `/commissions/payouts`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: postCommissionsPayoutsBody, signal
+    },
+      );
+    }
+  
+
+
+export const getPostCommissionsPayoutsMutationOptions = <TError = void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postCommissionsPayouts>>, TError,{data: PostCommissionsPayoutsBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postCommissionsPayouts>>, TError,{data: PostCommissionsPayoutsBody}, TContext> => {
+
+const mutationKey = ['postCommissionsPayouts'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postCommissionsPayouts>>, {data: PostCommissionsPayoutsBody}> = (props) => {
+          const {data} = props ?? {};
+
+          return  postCommissionsPayouts(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostCommissionsPayoutsMutationResult = NonNullable<Awaited<ReturnType<typeof postCommissionsPayouts>>>
+    export type PostCommissionsPayoutsMutationBody = PostCommissionsPayoutsBody
+    export type PostCommissionsPayoutsMutationError = void
+
+    /**
+ * @summary Confirm payout for commission entries
+ */
+export const usePostCommissionsPayouts = <TError = void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postCommissionsPayouts>>, TError,{data: PostCommissionsPayoutsBody}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postCommissionsPayouts>>,
+        TError,
+        {data: PostCommissionsPayoutsBody},
+        TContext
+      > => {
+
+      const mutationOptions = getPostCommissionsPayoutsMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
  * **CM-06** — GET /commissions. Filters: payee_type, staff_id, collaborator_id, customer_profile_id, branch_id, date_from, date_to, mode, status, page, limit.
  * @summary Commission ledger
  */
@@ -1161,7 +1227,7 @@ export const prefetchGetCommissionRulesQuery = async <TData = Awaited<ReturnType
 
 
 /**
- * **CM-03** — POST /commission-rules. Body: name, payee_type (STAFF|COLLABORATOR|CUSTOMER_REFERRER), base (PAYMENT|SESSION_VALUE), percent, service_id?, staff_id?, branch_id?, priority, valid_from?, valid_to?.
+ * **CM-03** — POST /commission-rules. Body: name, payee_type (STAFF|COLLABORATOR|CUSTOMER_REFERRER), base (PAYMENT|SESSION_VALUE), percent or fixed_amount (mutually exclusive), service_id?, staff_id?, branch_id?, priority, valid_from?, valid_to?.
  * @summary Create a commission rule
  */
 export const postCommissionRules = (

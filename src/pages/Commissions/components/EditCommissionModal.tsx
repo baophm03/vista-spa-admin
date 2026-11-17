@@ -13,7 +13,7 @@ type Props = {
 export default function EditCommissionModal({ open, targetMode, form, loading, onClose, onSubmit }: Props) {
   return (
     <Modal
-      title="Sửa bút toán hoa hồng"
+      title="Sửa khoản hoa hồng"
       open={open}
       onCancel={onClose}
       onOk={onSubmit}
@@ -26,7 +26,7 @@ export default function EditCommissionModal({ open, targetMode, form, loading, o
           type="warning"
           showIcon
           style={{ marginBottom: 12 }}
-          title="Bút toán tự động sẽ chuyển thành NHẬP TAY vĩnh viễn sau khi sửa (không còn tính lại tự động)."
+          title="Khoản được tính tự động sẽ chuyển sang nhập tay sau khi sửa và không còn được tính lại theo quy tắc."
         />
       )}
       <Form form={form} layout="vertical" style={{ marginTop: 12 }}>

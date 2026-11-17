@@ -9,9 +9,12 @@ export interface AdminProfile {
   phone_number?: string
   zalo_name?: string
   full_name?: string
+  branch_id?: string | null
   is_active?: boolean
+  is_admin?: boolean
+  is_super_admin?: boolean
   roles?: string[]
-  user_roles?: { role?: { role_name?: string } | null }[]
+  user_roles?: { role?: { role_name?: string; code?: string | null } | null }[]
   permissions?: Permission[]
   [key: string]: unknown
 }

@@ -14,6 +14,12 @@ export type PutCommissionRulesIdBody = {
   base?: PutCommissionRulesIdBodyBase;
   /** @nullable */
   percent?: number | null;
+  /**
+   * Fixed commission per occurrence (VND); mutually exclusive with percent.
+   * @minimum 0
+   * @nullable
+   */
+  fixed_amount?: number | null;
   service_id?: string;
   staff_id?: string;
   branch_id?: string;

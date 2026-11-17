@@ -8,6 +8,8 @@
 import type { TreatmentPackageVoucherCreateDescription } from './treatmentPackageVoucherCreateDescription';
 import type { TreatmentPackageVoucherCreateTreatmentPackageId } from './treatmentPackageVoucherCreateTreatmentPackageId';
 import type { TreatmentPackageVoucherCreateCardRankId } from './treatmentPackageVoucherCreateCardRankId';
+import type { TreatmentPackageVoucherCreateIssueMode } from './treatmentPackageVoucherCreateIssueMode';
+import type { TreatmentPackageVoucherCreatePointsCost } from './treatmentPackageVoucherCreatePointsCost';
 import type { TreatmentPackageVoucherCreateDiscountType } from './treatmentPackageVoucherCreateDiscountType';
 import type { TreatmentPackageVoucherCreateQuantityTotal } from './treatmentPackageVoucherCreateQuantityTotal';
 import type { TreatmentPackageVoucherCreateImageFileId } from './treatmentPackageVoucherCreateImageFileId';
@@ -22,8 +24,12 @@ export interface TreatmentPackageVoucherCreate {
   title: string;
   description?: TreatmentPackageVoucherCreateDescription;
   treatment_package_id?: TreatmentPackageVoucherCreateTreatmentPackageId;
+  branch_id?: string | null;
   card_rank_id?: TreatmentPackageVoucherCreateCardRankId;
   is_loyalty?: boolean;
+  issue_mode?: TreatmentPackageVoucherCreateIssueMode;
+  /** @minimum 0 */
+  points_cost?: TreatmentPackageVoucherCreatePointsCost;
   discount_type?: TreatmentPackageVoucherCreateDiscountType;
   /** @minimum 0 */
   discount_value?: number;

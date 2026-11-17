@@ -44,7 +44,7 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * **IMP-01** — POST /imports/{kind}. Multipart file (.csv/.xlsx) or JSON `rows`. `dry_run=true` (default) only validates and returns a per-row error report without writing to the DB. Requires the `import.run` permission.
+ * **IMP-01** — POST /imports/{kind}. Upload a CSV/XLSX file with column mapping. For `customer-treatments`, an optional `branch_id` column or top-level branch sets the treatment location; `customer-profiles` are global and do not accept a branch. Set `preview_headers=true` to read its first row as column headers without importing. `dry_run=true` (default) only validates and returns a per-row error report without writing to the DB. Files larger than 2MB (or `process_mode=async`) are queued for the background worker instead — the response then returns `{ job_id, async: true }`; poll GET /import-jobs/{job_id} for progress and the final report. Requires the `import.run` permission.
  * @summary Import legacy customer data (customer-profiles / customer-treatments)
  */
 export const postImportsKind = (
@@ -59,6 +59,9 @@ if(postImportsKindBody.file !== undefined) {
  }
 if(postImportsKindBody.dry_run !== undefined) {
  formData.append(`dry_run`, postImportsKindBody.dry_run.toString())
+ }
+if(postImportsKindBody.preview_headers !== undefined) {
+ formData.append(`preview_headers`, postImportsKindBody.preview_headers.toString())
  }
 if(postImportsKindBody.branch_id !== undefined) {
  formData.append(`branch_id`, postImportsKindBody.branch_id)
@@ -308,6 +311,394 @@ export const prefetchGetImportsIdQuery = async <TData = Awaited<ReturnType<typeo
   ): Promise<QueryClient> => {
 
   const queryOptions = getGetImportsIdQueryOptions(id,options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * **IMP-04** — GET /import-jobs/{id}. Returns job status (`QUEUED/PARSING/VALIDATING/IMPORTING/DONE/FAILED`), progress (`processed_rows/total_rows`) and, when finished, the full per-row report (errors, warnings, preview). Requires the `import.run` permission.
+ * @summary Background import job progress and report
+ */
+export const getImportJobsId = (
+    id: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<void>(
+      {url: `/import-jobs/${id}`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetImportJobsIdInfiniteQueryKey = (id?: string,) => {
+    return [
+    'infinite', `/import-jobs/${id}`
+    ] as const;
+    }
+
+export const getGetImportJobsIdQueryKey = (id?: string,) => {
+    return [
+    `/import-jobs/${id}`
+    ] as const;
+    }
+
+    
+export const getGetImportJobsIdInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getImportJobsId>>>, TError = UnauthorizedResponse | NotFoundResponse>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportJobsId>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetImportJobsIdInfiniteQueryKey(id);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getImportJobsId>>> = ({ signal }) => getImportJobsId(id, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportJobsId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetImportJobsIdInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getImportJobsId>>>
+export type GetImportJobsIdInfiniteQueryError = UnauthorizedResponse | NotFoundResponse
+
+
+export function useGetImportJobsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getImportJobsId>>>, TError = UnauthorizedResponse | NotFoundResponse>(
+ id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportJobsId>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getImportJobsId>>,
+          TError,
+          Awaited<ReturnType<typeof getImportJobsId>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetImportJobsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getImportJobsId>>>, TError = UnauthorizedResponse | NotFoundResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportJobsId>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getImportJobsId>>,
+          TError,
+          Awaited<ReturnType<typeof getImportJobsId>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetImportJobsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getImportJobsId>>>, TError = UnauthorizedResponse | NotFoundResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportJobsId>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Background import job progress and report
+ */
+
+export function useGetImportJobsIdInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getImportJobsId>>>, TError = UnauthorizedResponse | NotFoundResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportJobsId>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetImportJobsIdInfiniteQueryOptions(id,options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Background import job progress and report
+ */
+export const prefetchGetImportJobsIdInfiniteQuery = async <TData = Awaited<ReturnType<typeof getImportJobsId>>, TError = UnauthorizedResponse | NotFoundResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportJobsId>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetImportJobsIdInfiniteQueryOptions(id,options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetImportJobsIdQueryOptions = <TData = Awaited<ReturnType<typeof getImportJobsId>>, TError = UnauthorizedResponse | NotFoundResponse>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportJobsId>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetImportJobsIdQueryKey(id);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getImportJobsId>>> = ({ signal }) => getImportJobsId(id, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getImportJobsId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetImportJobsIdQueryResult = NonNullable<Awaited<ReturnType<typeof getImportJobsId>>>
+export type GetImportJobsIdQueryError = UnauthorizedResponse | NotFoundResponse
+
+
+export function useGetImportJobsId<TData = Awaited<ReturnType<typeof getImportJobsId>>, TError = UnauthorizedResponse | NotFoundResponse>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportJobsId>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getImportJobsId>>,
+          TError,
+          Awaited<ReturnType<typeof getImportJobsId>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetImportJobsId<TData = Awaited<ReturnType<typeof getImportJobsId>>, TError = UnauthorizedResponse | NotFoundResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportJobsId>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getImportJobsId>>,
+          TError,
+          Awaited<ReturnType<typeof getImportJobsId>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetImportJobsId<TData = Awaited<ReturnType<typeof getImportJobsId>>, TError = UnauthorizedResponse | NotFoundResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportJobsId>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Background import job progress and report
+ */
+
+export function useGetImportJobsId<TData = Awaited<ReturnType<typeof getImportJobsId>>, TError = UnauthorizedResponse | NotFoundResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportJobsId>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetImportJobsIdQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Background import job progress and report
+ */
+export const prefetchGetImportJobsIdQuery = async <TData = Awaited<ReturnType<typeof getImportJobsId>>, TError = UnauthorizedResponse | NotFoundResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportJobsId>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetImportJobsIdQueryOptions(id,options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * **IMP-03** — GET /import-jobs. Up to the 50 most recent background import jobs (newest first). Requires the `import.run` permission.
+ * @summary List recent background import jobs
+ */
+export const getImportJobs = (
+    
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<void>(
+      {url: `/import-jobs`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetImportJobsInfiniteQueryKey = () => {
+    return [
+    'infinite', `/import-jobs`
+    ] as const;
+    }
+
+export const getGetImportJobsQueryKey = () => {
+    return [
+    `/import-jobs`
+    ] as const;
+    }
+
+    
+export const getGetImportJobsInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getImportJobs>>>, TError = UnauthorizedResponse | ForbiddenResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportJobs>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetImportJobsInfiniteQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getImportJobs>>> = ({ signal }) => getImportJobs(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportJobs>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetImportJobsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getImportJobs>>>
+export type GetImportJobsInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse
+
+
+export function useGetImportJobsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getImportJobs>>>, TError = UnauthorizedResponse | ForbiddenResponse>(
+  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportJobs>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getImportJobs>>,
+          TError,
+          Awaited<ReturnType<typeof getImportJobs>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetImportJobsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getImportJobs>>>, TError = UnauthorizedResponse | ForbiddenResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportJobs>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getImportJobs>>,
+          TError,
+          Awaited<ReturnType<typeof getImportJobs>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetImportJobsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getImportJobs>>>, TError = UnauthorizedResponse | ForbiddenResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportJobs>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List recent background import jobs
+ */
+
+export function useGetImportJobsInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getImportJobs>>>, TError = UnauthorizedResponse | ForbiddenResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportJobs>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetImportJobsInfiniteQueryOptions(options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary List recent background import jobs
+ */
+export const prefetchGetImportJobsInfiniteQuery = async <TData = Awaited<ReturnType<typeof getImportJobs>>, TError = UnauthorizedResponse | ForbiddenResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getImportJobs>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetImportJobsInfiniteQueryOptions(options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetImportJobsQueryOptions = <TData = Awaited<ReturnType<typeof getImportJobs>>, TError = UnauthorizedResponse | ForbiddenResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportJobs>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetImportJobsQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getImportJobs>>> = ({ signal }) => getImportJobs(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getImportJobs>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetImportJobsQueryResult = NonNullable<Awaited<ReturnType<typeof getImportJobs>>>
+export type GetImportJobsQueryError = UnauthorizedResponse | ForbiddenResponse
+
+
+export function useGetImportJobs<TData = Awaited<ReturnType<typeof getImportJobs>>, TError = UnauthorizedResponse | ForbiddenResponse>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportJobs>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getImportJobs>>,
+          TError,
+          Awaited<ReturnType<typeof getImportJobs>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetImportJobs<TData = Awaited<ReturnType<typeof getImportJobs>>, TError = UnauthorizedResponse | ForbiddenResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportJobs>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getImportJobs>>,
+          TError,
+          Awaited<ReturnType<typeof getImportJobs>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetImportJobs<TData = Awaited<ReturnType<typeof getImportJobs>>, TError = UnauthorizedResponse | ForbiddenResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportJobs>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List recent background import jobs
+ */
+
+export function useGetImportJobs<TData = Awaited<ReturnType<typeof getImportJobs>>, TError = UnauthorizedResponse | ForbiddenResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportJobs>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetImportJobsQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary List recent background import jobs
+ */
+export const prefetchGetImportJobsQuery = async <TData = Awaited<ReturnType<typeof getImportJobs>>, TError = UnauthorizedResponse | ForbiddenResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportJobs>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetImportJobsQueryOptions(options)
 
   await queryClient.prefetchQuery(queryOptions);
 

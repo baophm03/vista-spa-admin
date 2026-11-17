@@ -8,6 +8,7 @@
 import type { GetCommissionsPayeeType } from './getCommissionsPayeeType';
 import type { GetCommissionsMode } from './getCommissionsMode';
 import type { GetCommissionsStatus } from './getCommissionsStatus';
+import type { GetCommissionsPayoutStatus } from './getCommissionsPayoutStatus';
 
 export type GetCommissionsParams = {
 payee_type?: GetCommissionsPayeeType;
@@ -17,6 +18,7 @@ customer_profile_id?: string;
 branch_id?: string;
 mode?: GetCommissionsMode;
 status?: GetCommissionsStatus;
+payout_status?: GetCommissionsPayoutStatus;
 date_from?: string;
 date_to?: string;
 /**

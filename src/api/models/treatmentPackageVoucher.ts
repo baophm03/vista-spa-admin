@@ -10,6 +10,8 @@ import type { TreatmentPackageVoucherTreatmentPackageId } from './treatmentPacka
 import type { TreatmentPackageVoucherCardRankId } from './treatmentPackageVoucherCardRankId';
 import type { TreatmentPackageVoucherCardRankName } from './treatmentPackageVoucherCardRankName';
 import type { TreatmentPackageVoucherTargetName } from './treatmentPackageVoucherTargetName';
+import type { TreatmentPackageVoucherIssueMode } from './treatmentPackageVoucherIssueMode';
+import type { TreatmentPackageVoucherPointsCost } from './treatmentPackageVoucherPointsCost';
 import type { TreatmentPackageVoucherDiscountType } from './treatmentPackageVoucherDiscountType';
 import type { TreatmentPackageVoucherQuantityTotal } from './treatmentPackageVoucherQuantityTotal';
 import type { TreatmentPackageVoucherImageFileId } from './treatmentPackageVoucherImageFileId';
@@ -25,10 +27,15 @@ export interface TreatmentPackageVoucher {
   title: string;
   description?: TreatmentPackageVoucherDescription;
   treatment_package_id?: TreatmentPackageVoucherTreatmentPackageId;
+  branch_id?: string | null;
+  branch_name?: string | null;
   card_rank_id?: TreatmentPackageVoucherCardRankId;
   card_rank_name?: TreatmentPackageVoucherCardRankName;
   target_name?: TreatmentPackageVoucherTargetName;
   is_loyalty?: boolean;
+  issue_mode?: TreatmentPackageVoucherIssueMode;
+  /** @minimum 0 */
+  points_cost?: TreatmentPackageVoucherPointsCost;
   discount_type?: TreatmentPackageVoucherDiscountType;
   /** @minimum 0 */
   discount_value?: number;

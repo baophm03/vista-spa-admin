@@ -10,13 +10,13 @@ import {
   message,
 } from 'antd'
 import type { TableColumnsType } from 'antd'
-import { ClockCircleOutlined, EditOutlined, PayCircleOutlined, PlusOutlined, ShareAltOutlined } from '@ant-design/icons'
+import { EditOutlined, PlusOutlined } from '@ant-design/icons'
+import dayjs from 'dayjs'
 import { useQueryClient } from '@tanstack/react-query'
 import { Can, useAbility } from '@casl/react'
-import PageTitle from '@/components/base/PageTitle'
-import StatCards, { type StatItem } from '@/components/base/StatCards'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
+import { paginateRows } from '@/utils/listTable'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { PostReferralsBody, PutReferralsIdBody } from '@/api/models'
 import {
@@ -31,6 +31,7 @@ import { useGetDiscountRules } from '@/api/endpoints/settings'
 import type { DiscountRule } from '@/api/models'
 import ReferralModal from './components/ReferralModal'
 import {
+  COMMISSION_STATUS_META,
   REFERRER_TYPE_META,
   STATUS_META,
   formatVnd,
@@ -38,23 +39,23 @@ import {
   type ReferralRow,
 } from './components/constants'
 
-export default function Referrals() {
+export default function ReferralsPanel() {
   const ability = useAbility()
   const canUpdate = ability.can('UPDATE', 'REFERRAL')
   const [open, setOpen] = useState(false)
   const [page, setPage] = useState(1)
-  const [limit] = useState(10)
   const [editing, setEditing] = useState<ReferralRow | null>(null)
   const [form] = Form.useForm()
   const queryClient = useQueryClient()
 
-  const listQuery = useGetReferrals({ page, limit } as never)
-  const rows = (pickData<ReferralRow[] | undefined>(listQuery.data) ?? []) as ReferralRow[]
-  const total = (listQuery.data as unknown as { meta?: { total?: number } })?.meta?.total ?? rows.length
-  const statsMeta = (listQuery.data as unknown as { meta?: { stats?: { total?: number; pending?: number; paid?: number } } })?.meta?.stats
+  const listQuery = useGetReferrals()
+  const rows = useMemo(() => {
+    const raw = pickData<unknown>(listQuery.data)
+    return (Array.isArray(raw) ? raw : (raw as { rows?: ReferralRow[] } | null)?.rows ?? []) as ReferralRow[]
+  }, [listQuery.data])
 
   // Map tên CTV để hiển thị "người giới thiệu" khi referrer_type = COLLABORATOR
-  const collaboratorsQuery = useGetCollaborators({ page: 1, limit: 200, is_active: true } as never)
+  const collaboratorsQuery = useGetCollaborators({ is_active: true })
   const collaboratorNameById = useMemo(() => {
     const raw = pickData<unknown>(collaboratorsQuery.data)
     const list = (Array.isArray(raw) ? raw : (raw as { rows?: { id: string; name: string }[] } | null)?.rows ?? []) as { id: string; name: string }[]
@@ -111,7 +112,7 @@ export default function Referrals() {
   const openEdit = (row: ReferralRow) => {
     setEditing(row)
     form.setFieldsValue({
-      status: row.status,
+      status: row.status === 'PAID' ? undefined : row.status,
       discount_rule_id: row.discount_rule_id,
       note: row.note,
     })
@@ -141,18 +142,11 @@ export default function Referrals() {
 
   const referrerLabel = (row: ReferralRow): string => {
     if (row.referrer_type === 'COLLABORATOR') {
-      return collaboratorNameById.get(row.referrer_id) ?? row.referrer_id
+      return collaboratorNameById.get(row.referrer_id) ?? '—'
     }
-    const customer = customers.find((c) => c.id === row.referrer_id)
-    return customer?.full_name || customer?.phone || row.referrer_id
+    // BE đã resolve tên người giới thiệu (referrer_profile) — không phụ thuộc danh sách khách phân trang
+    return row.referrer_profile?.full_name || row.referrer_profile?.phone || '—'
   }
-
-  // Thống kê đầu trang — lấy từ meta.stats phía server
-  const statItems: StatItem[] = [
-    { key: 'total', label: 'Tổng lượt giới thiệu', value: (statsMeta?.total ?? total).toLocaleString('vi-VN'), icon: <ShareAltOutlined />, tone: 'primary' },
-    { key: 'pending', label: 'Chờ duyệt', value: (statsMeta?.pending ?? 0).toLocaleString('vi-VN'), icon: <ClockCircleOutlined />, tone: 'tertiary' },
-    { key: 'paid', label: 'Đã chi trả', value: (statsMeta?.paid ?? 0).toLocaleString('vi-VN'), icon: <PayCircleOutlined />, tone: 'secondary' },
-  ]
 
   const columns: TableColumnsType<ReferralRow> = [
     {
@@ -200,15 +194,26 @@ export default function Referrals() {
       render: (_v, row) => {
         const total = row.commission_total ?? 0
         const status = row.commission_status
-        if (total === 0) return <Typography.Text type="secondary">—</Typography.Text>
+        if (total === 0) {
+          if (status === 'VOID') return <Tag color="red">Hoa hồng đã hủy</Tag>
+          return row.commission_payout_status === 'RECONCILE'
+            ? <Tag color="orange">Cần đối soát lượt chi cũ</Tag>
+            : <Typography.Text type="secondary">—</Typography.Text>
+        }
+        const paid = row.commission_paid_total ?? 0
+        const unpaid = row.commission_unpaid_total ?? 0
+        const reconcile = row.commission_reconcile_total ?? 0
         return (
           <Space direction="vertical" size={0}>
             <span style={{ fontWeight: 600, color: '#389e0d' }}>{formatVnd(total)}</span>
             {status && (
-              <Tag color={status === 'PAID' ? 'green' : status === 'APPROVED' ? 'blue' : 'default'} style={{ margin: 0 }}>
-                {status === 'PAID' ? 'Đã chi trả' : status === 'APPROVED' ? 'Đã duyệt' : status}
+              <Tag color={COMMISSION_STATUS_META[status]?.color ?? 'default'} style={{ margin: 0 }}>
+                {COMMISSION_STATUS_META[status]?.label ?? status}
               </Tag>
             )}
+            {paid > 0 && <Tag color="green" style={{ margin: 0 }}>Đã chi: {formatVnd(paid)}</Tag>}
+            {unpaid > 0 && <Tag color="gold" style={{ margin: 0 }}>Chưa chi: {formatVnd(unpaid)}</Tag>}
+            {reconcile > 0 && <Tag color="orange" style={{ margin: 0 }}>Cần đối soát: {formatVnd(reconcile)}</Tag>}
           </Space>
         )
       },
@@ -231,7 +236,9 @@ export default function Referrals() {
       title: 'Hành động', key: 'actions', align: 'center', width: 90, fixed: 'right',
       render: (_v, row) => (
         <RowActionsMenu
-          items={[{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }]}
+          items={[
+            { key: 'edit', icon: <EditOutlined />, label: 'Sửa lượt giới thiệu' },
+          ]}
           onSelect={(key) => {
             if (key === 'edit') openEdit(row)
           }}
@@ -245,17 +252,11 @@ export default function Referrals() {
       {(allowed) =>
         allowed ? (
           <>
-            <StatCards items={statItems} />
-            <PageTitle
-              subtitle="Lịch sử giới thiệu khách hàng từ CTV hoặc khách hàng khác"
-              right={
-                <Can I="CREATE" a="REFERRAL">
-                  <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>Ghi nhận giới thiệu</Button>
-                </Can>
-              }
-            >
-              Lịch sử giới thiệu
-            </PageTitle>
+            <Space className="mb-4! w-full! justify-end" wrap>
+              <Can I="CREATE" a="REFERRAL">
+                <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>Ghi nhận giới thiệu</Button>
+              </Can>
+            </Space>
             {listQuery.isError && (
               <Alert
                 className="mb-4" type="error" showIcon
@@ -265,12 +266,43 @@ export default function Referrals() {
               />
             )}
             <Table<ReferralRow>
-              rowKey="id" loading={listQuery.isLoading} dataSource={rows}
+              rowKey="id" loading={listQuery.isLoading} dataSource={paginateRows(rows, page, 10)}
               scroll={{ x: 'max-content' }}
+              expandable={{
+                rowExpandable: (row) => (row.commission_entries?.length ?? 0) > 0 || row.commission_payout_status === 'RECONCILE',
+                expandedRowRender: (row) => {
+                  const entries = row.commission_entries ?? []
+                  if (entries.length === 0) {
+                    return <Typography.Text type="warning">Lượt này từng được đánh dấu đã chi, nhưng không có khoản hoa hồng chi tiết để đối chiếu.</Typography.Text>
+                  }
+                  return (
+                    <Space direction="vertical" size={6} className="w-full!">
+                      {entries.map((entry) => {
+                        const wasVoided = entry.status === 'VOID' || entry.status === 'CANCELLED'
+                        const payoutStatus = entry.payout_status || 'UNPAID'
+                        const payoutLabel = payoutStatus === 'PAID' ? 'Đã chi' : payoutStatus === 'RECONCILE' ? 'Cần đối soát' : 'Chưa chi'
+                        const payoutColor = payoutStatus === 'PAID' ? 'green' : payoutStatus === 'RECONCILE' ? 'orange' : 'gold'
+                        return (
+                          <Space key={entry.id} wrap>
+                            <Typography.Text type="secondary">{entry.period_date ? dayjs(entry.period_date).format('DD/MM/YYYY') : 'Không rõ ngày'}</Typography.Text>
+                            <Typography.Text>{entry.reason || 'Hoa hồng giới thiệu'}</Typography.Text>
+                            <Typography.Text strong>{formatVnd(entry.amount)}</Typography.Text>
+                            <Tag color={wasVoided ? 'red' : payoutColor}>{wasVoided ? 'Đã hủy' : payoutLabel}</Tag>
+                            {!wasVoided && entry.paid_at && <Typography.Text type="secondary">Ngày chi: {dayjs(entry.paid_at).format('DD/MM/YYYY')}</Typography.Text>}
+                            {!wasVoided && entry.payout_note && <Typography.Text type="secondary">Ghi chú: {entry.payout_note}</Typography.Text>}
+                            {wasVoided && entry.voided_at && <Typography.Text type="secondary">Ngày hủy: {dayjs(entry.voided_at).format('DD/MM/YYYY')}</Typography.Text>}
+                            {wasVoided && entry.void_reason && <Typography.Text type="secondary">Lý do hủy: {entry.void_reason}</Typography.Text>}
+                          </Space>
+                        )
+                      })}
+                    </Space>
+                  )
+                },
+              }}
               columns={columns.filter((column) => column.key !== 'actions' || canUpdate)}
               pagination={false}
             />
-            <ListPagination page={page} limit={limit} total={total} onChange={setPage} noun="lượt giới thiệu" />
+            <ListPagination page={page} limit={10} total={rows.length} onChange={setPage} noun="lượt giới thiệu" />
 
             <ReferralModal
               open={open}
@@ -288,12 +320,10 @@ export default function Referrals() {
               customersQueryLoading={customersQuery.isLoading}
               alreadyReferredIds={alreadyReferredIds}
             />
+
           </>
         ) : (
-          <>
-            <PageTitle subtitle="Theo dõi lượt giới thiệu và hoa hồng giới thiệu">Lịch sử giới thiệu</PageTitle>
-            <Alert type="warning" showIcon title="Tài khoản của bạn chưa được cấp quyền xem lịch sử giới thiệu. Vui lòng liên hệ quản trị viên." />
-          </>
+          <Alert type="warning" showIcon title="Tài khoản của bạn chưa được cấp quyền xem lịch sử giới thiệu. Vui lòng liên hệ quản trị viên." />
         )
       }
     </Can>

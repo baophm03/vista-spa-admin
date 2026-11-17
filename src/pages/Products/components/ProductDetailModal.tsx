@@ -1,4 +1,4 @@
-import { Button, Descriptions, Image, Modal, Space, Typography } from 'antd'
+import { Button, Descriptions, Image, Modal, Space, Tag, Typography } from 'antd'
 import links from '@/configs/links'
 import { resolveFileSrc, useFileUrlMap } from '@/hooks/useFileUrl'
 import { formatPrice, type ProductRow } from './constants'
@@ -67,9 +67,36 @@ export default function ProductDetailModal({ viewing, onClose, currency }: Produ
 
           <Descriptions bordered size="small" column={1}>
             <Descriptions.Item label="Tên sản phẩm">{viewing.name}</Descriptions.Item>
+            <Descriptions.Item label="Thương hiệu">{viewing.brand || '—'}</Descriptions.Item>
+            <Descriptions.Item label="Mô tả ngắn">{viewing.short_description || '—'}</Descriptions.Item>
             <Descriptions.Item label="Mã SKU">{viewing.sku || '—'}</Descriptions.Item>
             <Descriptions.Item label="Danh mục">{viewing.category?.name || '—'}</Descriptions.Item>
-            <Descriptions.Item label="Giá hiển thị">{formatPrice(viewing.price, currency)}</Descriptions.Item>
+            <Descriptions.Item label="Giá hiển thị">
+              <Space size={8}>
+                <span>{formatPrice(viewing.price, currency)}</span>
+                {viewing.original_price
+                  ? <Typography.Text delete type="secondary">{formatPrice(viewing.original_price, currency)}</Typography.Text>
+                  : null}
+              </Space>
+            </Descriptions.Item>
+            <Descriptions.Item label="Nhãn">
+              {(viewing.tags?.length ?? 0) > 0
+                ? viewing.tags!.map((tag) => <Tag key={tag}>{tag}</Tag>)
+                : '—'}
+            </Descriptions.Item>
+            <Descriptions.Item label="Thông tin sản phẩm">
+              {(viewing.attributes?.length ?? 0) > 0
+                ? (
+                  <div style={{ display: 'grid', gap: 4 }}>
+                    {viewing.attributes!.map((item, index) => (
+                      <div key={index}>
+                        <strong>{item.label}</strong>: {item.value || '—'}
+                      </div>
+                    ))}
+                  </div>
+                )
+                : '—'}
+            </Descriptions.Item>
             <Descriptions.Item label="Liên kết mua hàng">
               {viewing.buy_url ? (
                 <a href={viewing.buy_url} target="_blank" rel="noreferrer">

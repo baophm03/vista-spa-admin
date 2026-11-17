@@ -19,6 +19,7 @@ export const formatPrice = (price: number | null | undefined, currency: string) 
 export const PRODUCT_COLUMNS = [
   { value: 'cover', label: 'Ảnh' },
   { value: 'name', label: 'Sản phẩm' },
+  { value: 'description', label: 'Mô tả' },
   { value: 'category', label: 'Danh mục' },
   { value: 'price', label: 'Giá hiển thị' },
   { value: 'link', label: 'Liên kết' },

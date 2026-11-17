@@ -11,6 +11,10 @@ import type { ProductUpdateDescription } from './productUpdateDescription';
 import type { ProductUpdatePrice } from './productUpdatePrice';
 import type { ProductUpdateCoverUrl } from './productUpdateCoverUrl';
 import type { ProductUpdateBuyUrl } from './productUpdateBuyUrl';
+import type { ProductUpdateBrand } from './productUpdateBrand';
+import type { ProductUpdateOriginalPrice } from './productUpdateOriginalPrice';
+import type { ProductUpdateShortDescription } from './productUpdateShortDescription';
+import type { ProductUpdateAttributesItem } from './productUpdateAttributesItem';
 
 /**
  * Partial product update
@@ -26,5 +30,11 @@ export interface ProductUpdate {
   /** @maxItems 12 */
   gallery?: string[];
   buy_url?: ProductUpdateBuyUrl;
+  brand?: ProductUpdateBrand;
+  /** @minimum 0 */
+  original_price?: ProductUpdateOriginalPrice;
+  short_description?: ProductUpdateShortDescription;
+  attributes?: ProductUpdateAttributesItem[];
+  tags?: string[];
   is_active?: boolean;
 }

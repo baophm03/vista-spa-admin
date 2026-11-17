@@ -12,10 +12,18 @@ export interface VoucherCategoryRow {
   treatment_package_id?: string | null
   academy_course_id?: string | null
   product_id?: string | null
+  product_category_id?: string | null
+  branch_id?: string | null
+  branch_name?: string | null
   target_name?: string | null
   card_rank_id?: string | null
   card_rank_name?: string | null
   is_loyalty: boolean
+  /** AUTO: cấp tự động theo hạng khách; FIXED: gán tay qua trang Áp dụng voucher KH. */
+  issue_mode?: 'AUTO' | 'FIXED' | null
+  /** Số điểm thưởng cần để đổi lấy voucher (chỉ áp dụng cho chế độ Tự động); NULL = miễn phí. */
+  points_cost?: number | null
+  /** GIFT chỉ còn xuất hiện trên dữ liệu cũ; voucher mới dùng PERCENT hoặc AMOUNT. */
   discount_type?: 'PERCENT' | 'AMOUNT' | 'GIFT'
   discount_value?: number | string | null
   minimum_order_amount?: number | string | null
@@ -29,6 +37,10 @@ export interface VoucherCategoryRow {
   is_active: boolean
 }
 
+export type VoucherCategoryWrite = Omit<Partial<VoucherCategoryRow>, 'discount_type'> & {
+  discount_type?: 'PERCENT' | 'AMOUNT'
+}
+
 const paths: Record<VoucherCategory, string> = {
   'treatment-package': '/treatment-package-vouchers',
   'academy-course': '/academy-course-vouchers',
@@ -37,17 +49,17 @@ const paths: Record<VoucherCategory, string> = {
 
 export const voucherCategoryPath = (category: VoucherCategory) => paths[category]
 
-export type VoucherCategoryListParams = { page?: number; limit?: number; q?: string }
+export type VoucherCategoryListParams = { page?: number; limit?: number; q?: string; branch_id?: string }
 
 export async function getVoucherCategory(category: VoucherCategory, params?: VoucherCategoryListParams) {
   return (await apiClient.get(paths[category], { params })).data
 }
 
-export async function postVoucherCategory(category: VoucherCategory, data: Partial<VoucherCategoryRow>) {
+export async function postVoucherCategory(category: VoucherCategory, data: VoucherCategoryWrite) {
   return (await apiClient.post(paths[category], data)).data
 }
 
-export async function putVoucherCategory(category: VoucherCategory, id: string, data: Partial<VoucherCategoryRow>) {
+export async function putVoucherCategory(category: VoucherCategory, id: string, data: VoucherCategoryWrite) {
   return (await apiClient.put(`${paths[category]}/${id}`, data)).data
 }
 

@@ -258,7 +258,7 @@ export const prefetchGetProductsIdQuery = async <TData = Awaited<ReturnType<type
 
 
 /**
- * PUT `/products/{id}` — products. Only platform administrators (ADM) can call this. Body fields: `name`, `sku`, `category_id`, `price`, `description`, `cover_file_id`, `buy_url`, `is_active`, `gallery_file_ids`.
+ * PUT `/products/{id}` — products. Only platform administrators (ADM) can call this. Body fields: `name`, `sku`, `category_id`, `price`, `description`, `cover_file_id`, `buy_url`, `is_active`, `gallery_file_ids`, `brand`, `original_price`, `short_description`, `attributes`, `tags`.
  * @summary Update a product
  */
 export const putProductsId = (
@@ -580,7 +580,7 @@ export const prefetchGetProductsQuery = async <TData = Awaited<ReturnType<typeof
 
 
 /**
- * POST `/products` — products. Only platform administrators (ADM) can call this. Body fields: `sku`, `category_id`, `price`, `description`, `cover_file_id`, `buy_url`, `name`, `gallery_file_ids`.
+ * POST `/products` — products. Only platform administrators (ADM) can call this. Body fields: `sku`, `category_id`, `price`, `description`, `cover_file_id`, `buy_url`, `name`, `gallery_file_ids`, `brand`, `original_price`, `short_description`, `attributes`, `tags`.
  * @summary Create a new product
  */
 export const postProducts = (

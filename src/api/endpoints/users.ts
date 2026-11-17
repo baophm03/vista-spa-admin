@@ -3889,7 +3889,7 @@ export const useDeleteUsersAdminId = <TError = LegacyBadRequestResponse | Legacy
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * POST `/users/admin` — users. Only platform administrators (ADM) may call this. Body fields: `email`, `phone_number`, `password`, `role_id`, `full_name`, `branch_id`. Handled by `roleProvider.getById`.
+ * POST `/users/admin` — only the highest system administrator may create accounts. Leaving `branch_id` blank creates the highest system administrator; selecting a branch creates a branch-scoped account and requires `role_id`.
  * @summary Manage admin accounts
  */
 export const postUsersAdmin = (

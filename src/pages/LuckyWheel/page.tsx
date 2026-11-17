@@ -195,17 +195,23 @@ export default function LuckyWheel() {
     setSpinPage(1)
   }
 
+  // Nội dung mời quay — điền sẵn cho khách được chọn
+  const applyCustomerNotificationPreset = (customer: EligibleWheelCustomer | null) => {
+    if (!customer) return
+    customerNotificationForm.setFieldsValue({
+      channel: customer.user_id ? 'app' : 'email',
+      title: 'Vòng quay may mắn đang mở',
+      body: `Chương trình “${selected?.name ?? 'Vòng quay may mắn'}” đang mở. Hãy vào ứng dụng để tham gia và nhận quà nhé!`,
+    })
+  }
+
   const openCustomerNotification = (customer: EligibleWheelCustomer) => {
     if (!customer.user_id && !customer.email) {
       message.warning('Khách chưa có tài khoản ứng dụng hoặc email để nhận thông báo')
       return
     }
     setCustomerNotificationTarget(customer)
-    customerNotificationForm.setFieldsValue({
-      channel: customer.user_id ? 'app' : 'email',
-      title: 'Vòng quay may mắn đang mở',
-      body: `Chương trình “${selected?.name ?? 'Vòng quay may mắn'}” đang mở. Hãy vào ứng dụng để tham gia và nhận quà nhé!`,
-    })
+    applyCustomerNotificationPreset(customer)
     setCustomerNotificationOpen(true)
   }
 
@@ -967,7 +973,11 @@ export default function LuckyWheel() {
         okText="Gửi thông báo"
         cancelText="Hủy"
         confirmLoading={customerNotificationMutation.isPending}
-        destroyOnClose
+        forceRender
+        afterOpenChange={(open) => {
+          // setFieldsValue trước khi modal mount không ăn với Form trong antd — áp lại sau khi mở xong
+          if (open) applyCustomerNotificationPreset(customerNotificationTarget)
+        }}
       >
         <Space direction="vertical" className="w-full" size={12}>
           <Alert
@@ -978,7 +988,7 @@ export default function LuckyWheel() {
               ? `Email nhận: ${customerNotificationTarget.email}`
               : 'Có thể gửi trong ứng dụng hoặc qua email tài khoản khách hàng.'}
           />
-          <Form form={customerNotificationForm} layout="vertical" preserve={false}>
+          <Form form={customerNotificationForm} layout="vertical">
             <Form.Item name="channel" label="Gửi bằng" rules={[{ required: true, message: 'Chọn cách gửi thông báo' }]}>
               <Select
                 options={[

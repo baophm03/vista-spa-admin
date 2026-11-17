@@ -1,0 +1,36 @@
+.voucher-form .ant-form-item {
+  margin-bottom: 12px !important;
+}
+
+.voucher-active-col .ant-form-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.voucher-active-col .ant-form-item-label {
+  display: flex;
+  justify-content: flex-start;
+  width: 100%;
+  max-width: 100%;
+  padding: 0 0 8px;
+}
+
+.voucher-active-col .ant-form-item-label > label {
+  height: auto;
+}
+
+.voucher-active-col .ant-form-item-control {
+  width: 100%;
+}
+
+.voucher-active-col .ant-form-item-control-input {
+  min-height: auto;
+}
+
+.voucher-active-col .ant-form-item-control-input-content {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  min-height: 32px;
+}

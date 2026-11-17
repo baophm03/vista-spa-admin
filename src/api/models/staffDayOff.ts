@@ -10,6 +10,8 @@ import type { StaffDayOffReason } from './staffDayOffReason';
 import type { StaffDayOffStatus } from './staffDayOffStatus';
 import type { StaffDayOffApprovedBy } from './staffDayOffApprovedBy';
 import type { StaffDayOffRejectReason } from './staffDayOffRejectReason';
+import type { StaffDayOffImageFileId } from './staffDayOffImageFileId';
+import type { StaffDayOffImageFile } from './staffDayOffImageFile';
 
 /**
  * Staff day-off request
@@ -23,6 +25,9 @@ export interface StaffDayOff {
   status?: StaffDayOffStatus;
   approved_by?: StaffDayOffApprovedBy;
   reject_reason?: StaffDayOffRejectReason;
+  image_file_id?: StaffDayOffImageFileId;
+  /** Attached proof image */
+  image_file?: StaffDayOffImageFile;
   created_at?: string;
   updated_at?: string;
 }

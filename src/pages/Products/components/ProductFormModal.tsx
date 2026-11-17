@@ -14,7 +14,7 @@ import {
   Upload,
   message,
 } from 'antd'
-import { DeleteOutlined, PictureOutlined } from '@ant-design/icons'
+import { DeleteOutlined, PictureOutlined, PlusOutlined } from '@ant-design/icons'
 import { resolveFileSrc, useFileUrlMap } from '@/hooks/useFileUrl'
 import type { ProductCategoryRow, ProductRow } from './constants'
 
@@ -96,6 +96,54 @@ export default function ProductFormModal({
             </Form.Item>
           </Col>
         </Row>
+        <Row gutter={12}>
+          <Col xs={24} sm={12}>
+            <Form.Item name="brand" label="Thương hiệu">
+              <Input placeholder="VD: CeraVe" maxLength={100} />
+            </Form.Item>
+          </Col>
+          <Col xs={24} sm={12}>
+            <Form.Item name="original_price" label="Giá niêm yết" extra="Hiển thị gạch ngang cạnh giá bán.">
+              <InputNumber<number>
+                style={{ width: '100%' }}
+                min={0}
+                step={1000}
+                suffix={currencySymbol}
+                formatter={(v) => `${v ?? 0}`.replace(/\B(?=(\d{3})+(?!\d))/g, '.')}
+                parser={(v) => Number((v ?? '').replace(/\./g, ''))}
+                placeholder="VD: 400000"
+              />
+            </Form.Item>
+          </Col>
+        </Row>
+        <Form.Item name="short_description" label="Mô tả ngắn" extra="Dòng hiển thị dưới tên sản phẩm trên app.">
+          <Input.TextArea rows={2} maxLength={300} placeholder="VD: Sữa rửa mặt dưỡng ẩm cho da thường đến khô" />
+        </Form.Item>
+        <Form.Item name="tags" label="Nhãn" extra="Nhập rồi nhấn Enter để thêm, VD: Mới, Bán chạy.">
+          <Select mode="tags" allowClear open={false} tokenSeparators={[',']} placeholder="VD: Mới, Bán chạy" />
+        </Form.Item>
+        <Form.Item label="Thông tin sản phẩm" extra="Bảng thuộc tính hiển thị ở trang chi tiết, VD: Kết cấu, Loại da, Quy cách.">
+          <Form.List name="attributes">
+            {(fields, { add, remove }) => (
+              <div style={{ display: 'grid', gap: 8 }}>
+                {fields.map((field) => (
+                  <Space key={field.key} align="baseline" style={{ display: 'flex' }}>
+                    <Form.Item name={[field.name, 'label']} noStyle>
+                      <Input placeholder="Tên (VD: Loại da)" style={{ width: 180 }} maxLength={100} />
+                    </Form.Item>
+                    <Form.Item name={[field.name, 'value']} noStyle>
+                      <Input placeholder="Giá trị (VD: Da thường đến khô)" style={{ flex: 1, minWidth: 200 }} maxLength={500} />
+                    </Form.Item>
+                    <Button size="small" type="text" danger icon={<DeleteOutlined />} onClick={() => remove(field.name)} />
+                  </Space>
+                ))}
+                <Button size="small" type="dashed" icon={<PlusOutlined />} onClick={() => add()} style={{ width: 160 }}>
+                  Thêm dòng
+                </Button>
+              </div>
+            )}
+          </Form.List>
+        </Form.Item>
         <Form.Item name="buy_url" label="Liên kết mua hàng" extra="App chỉ hiển thị và dẫn liên kết; mua trực tiếp trong app chưa bật.">
           <Input placeholder="https://..." />
         </Form.Item>
