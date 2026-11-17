@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Alert, Button, Form, Input, Modal, Select, Table, Tabs, Tag, Typography, message } from 'antd'
 import type { TableColumnsType } from 'antd'
-import { CheckCircleOutlined, ClockCircleOutlined, DeleteOutlined, EditOutlined, GiftOutlined, PauseCircleOutlined, PlusOutlined } from '@ant-design/icons'
+import { CheckCircleOutlined, ClockCircleOutlined, DeleteOutlined, EditOutlined, GiftOutlined, PlusOutlined } from '@ant-design/icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { Can, useAbility } from '@casl/react'
@@ -199,17 +199,6 @@ function VoucherCategoryTab({ category }: { category: VoucherCategory }) {
     }
   }
 
-  // Tắt voucher = ngừng phát hành (is_active=false qua PUT); DELETE riêng là xóa mềm is_deleted.
-  const hide = async (row: VoucherCategoryRow) => {
-    try {
-      await updateMutation.mutateAsync({ id: row.id, body: { is_active: false } })
-      message.success('Đã tắt voucher; voucher vẫn còn trong danh sách quản trị')
-      await queryClient.invalidateQueries({ queryKey: listKeyBase })
-    } catch (err) {
-      message.error(errorMessage(err, 'Không thể tắt voucher'))
-    }
-  }
-
   const remove = async (row: VoucherCategoryRow) => {
     try {
       await hideMutation.mutateAsync(row.id)
@@ -299,7 +288,15 @@ function VoucherCategoryTab({ category }: { category: VoucherCategory }) {
       width: 140,
       responsive: ['xl'],
       render: (_value: unknown, row: VoucherCategoryRow) => {
-        if (row.issue_mode === 'FIXED') return <Tag color="blue">Gán thủ công</Tag>
+        if (row.issue_mode === 'FIXED') {
+          const points = row.points_cost == null ? 'Miễn phí' : `${Number(row.points_cost).toLocaleString('vi-VN')} điểm`
+          return (
+            <div>
+              <Tag color="blue">Gán thủ công</Tag>
+              <Typography.Text type="secondary" style={{ display: 'block', fontSize: 12 }} ellipsis={{ tooltip: points }}>{points}</Typography.Text>
+            </div>
+          )
+        }
         const audience = category === 'academy-course' ? '' : row.card_rank_name || 'Mọi hạng'
         const points = row.points_cost == null ? 'Miễn phí' : `${Number(row.points_cost).toLocaleString('vi-VN')} điểm`
         const details = [audience, points].filter(Boolean).join(' · ')
@@ -346,12 +343,10 @@ function VoucherCategoryTab({ category }: { category: VoucherCategory }) {
         <RowActionsMenu
           items={[
             { key: 'edit', icon: <EditOutlined />, label: 'Sửa' },
-            ...(row.is_active ? [{ key: 'hide', icon: <PauseCircleOutlined />, label: 'Tắt voucher' }] : []),
             { key: 'delete', icon: <DeleteOutlined />, label: 'Xóa', danger: true },
           ]}
           onSelect={(key) => {
             if (key === 'edit') openModal(row)
-            if (key === 'hide') Modal.confirm({ title: 'Tắt voucher này?', content: 'Voucher ngừng phát hành nhưng vẫn còn trong danh sách; có thể bật lại trong modal Sửa.', okText: 'Tắt voucher', cancelText: 'Hủy', onOk: () => hide(row) })
             if (key === 'delete') Modal.confirm({ title: 'Xóa voucher này?', content: 'Xóa mềm (is_deleted). Không xóa được voucher đã phát hành cho khách hoặc đang cấu hình ở quà/vòng quay.', okText: 'Xóa', okButtonProps: { danger: true }, cancelText: 'Hủy', onOk: () => remove(row) })
           }}
         />

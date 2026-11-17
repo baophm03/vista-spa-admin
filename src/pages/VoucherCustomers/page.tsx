@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Alert, Button, Form, Input, Modal, Popconfirm, Select, Table, Tabs, Tag, Typography, message } from 'antd'
 import type { TableColumnsType } from 'antd'
-import { PlusOutlined, SearchOutlined } from '@ant-design/icons'
+import { DeleteOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { useAbility } from '@casl/react'
@@ -16,6 +16,7 @@ import {
   assignVoucherCustomer,
   getVoucherCustomerView,
   revokeVoucherCustomer,
+  type VoucherCustomerAssignment,
   type VoucherCustomerRow,
 } from '@/api/custom/voucherCustomers'
 import { CATEGORY_META } from '../Vouchers/components/constants'
@@ -70,7 +71,7 @@ function VoucherCustomerTab({ category, branches }: { category: VoucherCategory;
   // Chọn khách hàng — chỉ mở khi modal gán đang mở.
   const customersQuery = useInfiniteQuery({
     queryKey: ['voucher-customer-select', customerSearch, assignmentBranchId],
-    enabled: assignOpen,
+    enabled: assignOpen && Boolean(assignmentBranchId),
     initialPageParam: 1,
     queryFn: ({ pageParam }) => getCustomerProfiles({ page: pageParam, limit: 50, ...(customerSearch ? { q: customerSearch } : {}), ...(assignmentBranchId ? { branch_id: assignmentBranchId } : {}) }),
     getNextPageParam: (lastPage, allPages) => {
@@ -86,7 +87,7 @@ function VoucherCustomerTab({ category, branches }: { category: VoucherCategory;
   }))
 
   const assignMutation = useMutation({
-    mutationFn: (body: { voucher_id: string; customer_profile_id: string; note?: string }) => assignVoucherCustomer(category, body),
+    mutationFn: (body: VoucherCustomerAssignment) => assignVoucherCustomer(category, body),
   })
   const revokeMutation = useMutation({
     mutationFn: (assignmentId: string) => revokeVoucherCustomer(category, assignmentId),
@@ -95,8 +96,8 @@ function VoucherCustomerTab({ category, branches }: { category: VoucherCategory;
   const submitAssign = async () => {
     try {
       const values = await form.validateFields()
-      await assignMutation.mutateAsync({ voucher_id: values.voucher_id, customer_profile_id: values.customer_profile_id, note: values.note || undefined })
-      message.success('Đã gán voucher cho khách hàng')
+      await assignMutation.mutateAsync({ voucher_id: values.voucher_id, customer_profile_id: values.customer_profile_id, branch_id: assignmentBranchId })
+      message.success('Đã đổi voucher cho khách hàng')
       form.resetFields()
       setCustomerSearch('')
       setAssignOpen(false)
@@ -104,7 +105,7 @@ function VoucherCustomerTab({ category, branches }: { category: VoucherCategory;
       await queryClient.invalidateQueries({ queryKey: ['voucher-customer-view', category] })
     } catch (err) {
       if ((err as { errorFields?: unknown })?.errorFields) return
-      message.error(errorMessage(err, 'Không thể gán voucher'))
+      message.error(errorMessage(err, 'Không thể đổi voucher'))
     }
   }
 
@@ -131,7 +132,7 @@ function VoucherCustomerTab({ category, branches }: { category: VoucherCategory;
         const period = row.start_date || row.end_date
           ? `${row.start_date ? dayjs(row.start_date).format('DD/MM/YYYY') : '—'} → ${row.end_date ? dayjs(row.end_date).format('DD/MM/YYYY') : '—'}`
           : 'Không giới hạn'
-        const details = [row.source === 'AUTO' ? 'Tự động' : 'Gán thủ công', row.points_cost == null ? 'Miễn phí' : `${Number(row.points_cost).toLocaleString('vi-VN')} điểm`, status, period, row.note]
+        const details = [row.source === 'AUTO' ? 'Tự động' : 'Gán thủ công', row.points_cost == null ? 'Miễn phí' : `${Number(row.points_cost).toLocaleString('vi-VN')} điểm`, status, period]
           .filter(Boolean)
           .join(' · ')
         return (
@@ -173,7 +174,7 @@ function VoucherCustomerTab({ category, branches }: { category: VoucherCategory;
       ),
     },
     {
-      title: 'Cơ sở khách',
+      title: 'Cơ sở',
       dataIndex: 'branch_name',
       width: 130,
       responsive: ['lg'],
@@ -213,14 +214,6 @@ function VoucherCustomerTab({ category, branches }: { category: VoucherCategory;
         return <Typography.Text type={expired ? 'secondary' : undefined} delete={expired} ellipsis={{ tooltip: period }}>{period}</Typography.Text>
       },
     },
-    {
-      title: 'Ghi chú',
-      dataIndex: 'note',
-      width: 110,
-      responsive: ['xl'],
-      ellipsis: true,
-      render: (value?: string | null) => value || '—',
-    },
     ...(canUpdate ? [{
       title: 'Hành động',
       key: 'actions',
@@ -235,7 +228,7 @@ function VoucherCustomerTab({ category, branches }: { category: VoucherCategory;
           cancelText="Hủy"
           onConfirm={() => void revoke(row)}
         >
-          <Button size="small" danger>Gỡ</Button>
+          <Button size="small" danger icon={<DeleteOutlined />} title="Gỡ voucher" />
         </Popconfirm>
       ) : (
         <Typography.Text type="secondary">—</Typography.Text>
@@ -271,7 +264,7 @@ function VoucherCustomerTab({ category, branches }: { category: VoucherCategory;
             setAssignmentBranchId(branchFilter ?? (branches.length === 1 ? branches[0].value : undefined))
             setAssignOpen(true)
           }}>
-            Gán voucher
+            Đổi voucher
           </Button>
         )}
       </div>
@@ -290,24 +283,24 @@ function VoucherCustomerTab({ category, branches }: { category: VoucherCategory;
       <ListPagination page={page} limit={PAGE_SIZE} total={rows.length} onChange={setPage} noun="bản ghi" hideOnSinglePage />
 
       <Modal
-        title={`Gán ${CATEGORY_META[category].label.toLowerCase()} cho khách hàng`}
+        title={`Đổi ${CATEGORY_META[category].label.toLowerCase()} cho khách hàng`}
         open={assignOpen}
         onCancel={() => setAssignOpen(false)}
         onOk={() => void submitAssign()}
         confirmLoading={assignMutation.isPending}
-        okText="Gán"
+        okText="Đổi"
         cancelText="Hủy"
         width={560}
         destroyOnClose
       >
         <Form form={form} layout="vertical" style={{ marginTop: 12 }}>
-          <Form.Item label="Cơ sở khách hàng" help="Chọn cơ sở để lọc khách và voucher áp dụng tại cơ sở đó.">
+          <Form.Item label="Cơ sở" required>
             <Select
               allowClear
               showSearch
               optionFilterProp="label"
               value={assignmentBranchId}
-              placeholder="Tất cả cơ sở"
+              placeholder="Chọn cơ sở"
               options={branches}
               onChange={(value) => {
                 setAssignmentBranchId(value || undefined)
@@ -319,14 +312,14 @@ function VoucherCustomerTab({ category, branches }: { category: VoucherCategory;
           <Form.Item
             name="customer_profile_id"
             label="Khách hàng"
-            help="Chọn từ hồ sơ CRM, kể cả khách chưa liên kết tài khoản."
             rules={[{ required: true, message: 'Chọn khách hàng' }]}
           >
             <Select
               showSearch
               allowClear
+              disabled={!assignmentBranchId}
               filterOption={false}
-              placeholder="Tìm theo tên, SĐT hoặc mã khách hàng"
+              placeholder={assignmentBranchId ? 'Tìm theo tên, SĐT hoặc mã khách hàng' : 'Chọn cơ sở trước'}
               options={customerOptions}
               onSearch={(value) => setCustomerSearch(value.trim())}
               onPopupScroll={(event) => {
@@ -344,10 +337,14 @@ function VoucherCustomerTab({ category, branches }: { category: VoucherCategory;
             />
           </Form.Item>
           <Form.Item name="voucher_id" label="Voucher" rules={[{ required: true, message: 'Chọn voucher' }]}>
-            <Select showSearch allowClear optionFilterProp="label" placeholder="Chỉ voucher đang hoạt động" options={voucherOptions} />
-          </Form.Item>
-          <Form.Item name="note" label="Ghi chú">
-            <Input.TextArea rows={2} maxLength={255} placeholder="VD: Tặng kèm liệu trình tháng 11" />
+            <Select
+              showSearch
+              allowClear
+              disabled={!assignmentBranchId}
+              optionFilterProp="label"
+              placeholder={assignmentBranchId ? 'Chỉ voucher đang hoạt động' : 'Chọn cơ sở trước'}
+              options={voucherOptions}
+            />
           </Form.Item>
         </Form>
       </Modal>
@@ -363,8 +360,8 @@ export default function VoucherCustomers() {
     .map((branch) => ({ value: branch.id, label: branch.name }))
   return (
     <>
-      <PageTitle subtitle="Gán voucher cho khách hàng và xem các voucher khách đang có (tự động theo hạng hoặc gán tay)">
-        Áp dụng voucher KH
+      <PageTitle subtitle="Đổi voucher cho khách hàng và xem các voucher khách đang có (tự động theo hạng hoặc gán tay)">
+        Voucher khách hàng
       </PageTitle>
       <Tabs
         activeKey={activeTab}

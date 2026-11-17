@@ -19,7 +19,7 @@ export interface VoucherCategoryRow {
   card_rank_id?: string | null
   card_rank_name?: string | null
   is_loyalty: boolean
-  /** AUTO: cấp tự động theo hạng khách; FIXED: gán tay qua trang Áp dụng voucher KH. */
+  /** AUTO: cấp tự động theo hạng khách; FIXED: gán tay qua trang Voucher khách hàng. */
   issue_mode?: 'AUTO' | 'FIXED' | null
   /** Số điểm thưởng cần để đổi lấy voucher (chỉ áp dụng cho chế độ Tự động); NULL = miễn phí. */
   points_cost?: number | null
