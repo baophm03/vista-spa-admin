@@ -390,20 +390,22 @@ function VoucherCategoryTab({ category }: { category: VoucherCategory }) {
     <>
       <StatCards items={statItems} />
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '16px 0', gap: 12, flexWrap: 'wrap' }}>
-        <Input.Search
-          allowClear
-          placeholder="Tìm theo tên voucher"
-          className="w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]"
-          value={searchInput}
-          onChange={(event) => { setSearchInput(event.target.value); if (!event.target.value) applySearch('') }}
-          onSearch={(v) => applySearch(v)}
-        />
-        <Select
-          value={branchFilter ?? 'ALL'}
-          style={{ width: 220 }}
-          options={[{ value: 'ALL', label: 'Tất cả cơ sở' }, ...branches]}
-          onChange={(value) => { setBranchFilter(value === 'ALL' ? undefined : value); setPage(1) }}
-        />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+          <Input.Search
+            allowClear
+            placeholder="Tìm theo tên voucher"
+            className="w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]"
+            value={searchInput}
+            onChange={(event) => { setSearchInput(event.target.value); if (!event.target.value) applySearch('') }}
+            onSearch={(v) => applySearch(v)}
+          />
+          <Select
+            value={branchFilter ?? 'ALL'}
+            style={{ width: 220 }}
+            options={[{ value: 'ALL', label: 'Tất cả cơ sở' }, ...branches]}
+            onChange={(value) => { setBranchFilter(value === 'ALL' ? undefined : value); setPage(1) }}
+          />
+        </div>
         <Can I="UPDATE" a="VOUCHER">
           <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>Thêm voucher</Button>
         </Can>

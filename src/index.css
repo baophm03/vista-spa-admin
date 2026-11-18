@@ -207,6 +207,15 @@ h4.ant-typography {
   }
 }
 
+/* Ẩn thanh cuộn nhưng vẫn cuộn được bằng wheel/trackpad (khung lưới giờ lịch) */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 /* ===== Responsive table → card cho mobile (KTV dùng điện thoại) =====
    Page bọc Table bằng class "desktop-only" và render danh sách card bằng
    class "mobile-only" — tại mỗi bề rộng CHỈ MỘT TRONG HAI dạng hiển thị. */

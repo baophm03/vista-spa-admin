@@ -1,18 +1,24 @@
-import { useMemo, useState } from 'react'
+import { useContext, useEffect, useMemo, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import dayjs, { type Dayjs } from 'dayjs'
-import { Alert, Button, Form, Input, Modal, Popconfirm, Select, Space, Table, Tag, Tooltip, Typography, message } from 'antd'
-import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons'
+import { Alert, Button, Form, Grid, Input, Modal, Select, Table, Tag, Tooltip, message } from 'antd'
+import { DeleteOutlined, MenuFoldOutlined, PlusOutlined, TeamOutlined } from '@ant-design/icons'
 import { errorMessage, pickData } from '@/api/helpers'
-import PeriodNavigator from '@/components/base/PeriodNavigator'
-import TableEmpty from '@/components/base/TableEmpty'
-import ToolbarRow from '@/components/base/ToolbarRow'
 import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import type { StaffScheduleDate as StaffScheduleDateRow, ShiftTemplate as ShiftTemplateRow } from './types'
 import { deleteStaffScheduleDatesIdAdmin, getGetBranchDateNotesAdminQueryKey, getGetShiftTemplatesAdminQueryKey, getGetStaffScheduleDatesAdminQueryKey, postBranchDateNotesAdmin, postStaffScheduleDatesAdmin, putStaffScheduleDatesIdAdmin, useGetBranchDateNotesAdmin, useGetShiftTemplatesAdmin, useGetStaffScheduleDatesAdmin } from '@/api/endpoints/staff'
 import type { SchedulePageData, ScheduleStaff } from './types'
 import { staffLabel } from './types'
 import DateScheduleFormModal, { toFormDates } from './components/DateScheduleFormModal'
+import CalendarToolbar, { type CalendarView } from './calendar/CalendarToolbar'
+import { ToolbarSlotContext } from './ToolbarSlotContext'
+import MiniMonthCalendar from './calendar/MiniMonthCalendar'
+import ShiftFilterPanel from './calendar/ShiftFilterPanel'
+import StaffFilterPanel from './calendar/StaffFilterPanel'
+import ScheduleTimeGrid, { type ScheduleBlock } from './calendar/ScheduleTimeGrid'
+import { ShiftDetailContent } from './calendar/ShiftDetailPanel'
+import QuickCreatePopover from './calendar/QuickCreatePopover'
 
 interface Props extends SchedulePageData { loadingShared: boolean }
 interface ConflictAppointment { id: string; appt_date: string; start_time: string; customer_profile?: { full_name?: string }; service?: { title?: string } }
@@ -48,6 +54,7 @@ const shiftLabel = (template?: ShiftTemplateRow | null) =>
 
 export default function DateScheduleTab({ branches, staff, access, loadingShared }: Props) {
   const queryClient = useQueryClient()
+  const isMobile = !Grid.useBreakpoint().md
   const isTechSelf = access.isTechnician && !access.isAdmin
   // KTV chỉ được tự đăng ký/sửa/xóa ca của TUẦN KẾ TIẾP — mở mặc định ở tuần kế tiếp
   const nextWeekStart = mondayOf(dayjs()).add(1, 'week')
@@ -55,40 +62,46 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
   const registrationDeadline = mondayOf(dayjs()).add(6, 'day').endOf('day')
   const registrationOpen = dayjs().isBefore(registrationDeadline)
   const deadlineText = registrationDeadline.format('HH:mm [ngày] DD/MM/YYYY')
-  const [weekStart, setWeekStart] = useState<Dayjs>(() => (isTechSelf ? nextWeekStart : mondayOf(dayjs())))
+
+  const canManage = access.isAdmin
+  const [view, setView] = useState<CalendarView>('week')
+  const [anchor, setAnchor] = useState<Dayjs>(() => (isTechSelf ? nextWeekStart : dayjs()))
+  const [leftPanelOpen, setLeftPanelOpen] = useState(true)
   const [branchFilter, setBranchFilter] = useState<string>()
-  const [staffFilter, setStaffFilter] = useState<string>()
+  const [hiddenStaff, setHiddenStaff] = useState<Set<string>>(() => new Set())
+  const [hiddenShifts, setHiddenShifts] = useState<Set<string>>(() => new Set())
+  const [selectedBlockKey, setSelectedBlockKey] = useState<string | null>(null)
   const [open, setOpen] = useState(false)
   const [saving, setSaving] = useState(false)
   const [editing, setEditing] = useState<StaffScheduleDateWithStaff | null>(null)
   const [form] = Form.useForm()
   const selectedBranch = Form.useWatch('branch_id', form)
-  const canManage = access.isAdmin
-  const viewingNextWeek = weekStart.isSame(nextWeekStart, 'day')
   const ownBranchId = staff.find((person) => person.id === access.currentUserId)?.branch_id
-  const today = dayjs().format('YYYY-MM-DD')
-  const weekDates = useMemo(() => Array.from({ length: 7 }, (_, index) => weekStart.add(index, 'day')), [weekStart])
-  const staffForBranchFilter = useMemo(
-    () => staff.filter((person) => !!person.branch_id && (!branchFilter || person.branch_id === branchFilter)),
-    [staff, branchFilter],
-  )
-  const staffForSelectedBranch = useMemo(
-    () => staff.filter((person) => !!selectedBranch && person.branch_id === selectedBranch),
-    [staff, selectedBranch],
-  )
+
+  const weekStart = mondayOf(anchor)
+  const viewingNextWeek = weekStart.isSame(nextWeekStart, 'day')
+  /** Phạm vi ngày hiển thị theo view hiện tại (đồng thời là phạm vi fetch). */
+  const range = useMemo((): [Dayjs, Dayjs] => {
+    if (view === 'day') return [anchor.startOf('day'), anchor.startOf('day')]
+    if (view === 'month') return [anchor.startOf('month'), anchor.endOf('month')]
+    return [weekStart, weekStart.add(6, 'day')]
+  }, [view, anchor, weekStart])
+  const days = useMemo(() => {
+    if (view === 'day') return [range[0]]
+    return Array.from({ length: 7 }, (_, index) => range[0].add(index, 'day'))
+  }, [view, range])
 
   const dateParams: Record<string, unknown> = {
-    from_date: weekStart.format('YYYY-MM-DD'),
-    to_date: weekStart.add(6, 'day').format('YYYY-MM-DD'),
+    from_date: range[0].format('YYYY-MM-DD'),
+    to_date: range[1].format('YYYY-MM-DD'),
   }
   if (canManage && branchFilter) dateParams.branch_id = branchFilter
-  if (staffFilter) dateParams.staff_id = staffFilter
   const dateSchedulesQuery = useGetStaffScheduleDatesAdmin(dateParams as never)
   const templatesQuery = useGetShiftTemplatesAdmin(branchFilter ? { branch_id: branchFilter } : {})
   // Ghi chú theo ngày của cơ sở (lễ, sự kiện, họp...) — hiển thị ở tiêu đề cột ngày
   const noteParams: Record<string, unknown> = {
-    from_date: weekStart.format('YYYY-MM-DD'),
-    to_date: weekStart.add(6, 'day').format('YYYY-MM-DD'),
+    from_date: range[0].format('YYYY-MM-DD'),
+    to_date: range[1].format('YYYY-MM-DD'),
   }
   if (canManage && branchFilter) noteParams.branch_id = branchFilter
   const notesQuery = useGetBranchDateNotesAdmin(noteParams as never)
@@ -98,6 +111,16 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
 
   const dateRows = (pickData<StaffScheduleDateWithStaff[] | undefined>(dateSchedulesQuery.data) ?? []) as StaffScheduleDateWithStaff[]
   const templates = (pickData<ShiftTemplateRow[] | undefined>(templatesQuery.data) ?? []) as ShiftTemplateRow[]
+
+  // Các ngày có ca làm — dùng cho chấm nhỏ trên mini calendar
+  const eventDates = useMemo(() => {
+    const dates = new Set<string>()
+    for (const row of dateRows) {
+      if (row.is_active === false) continue
+      dates.add(String(row.work_date).slice(0, 10))
+    }
+    return dates
+  }, [dateRows])
   const dateNotes = (pickData<{ branch_id: string; note_date: string; note: string }[] | undefined>(notesQuery.data) ?? [])
   const notesByDate = useMemo(() => {
     const map = new Map<string, string[]>()
@@ -115,19 +138,63 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
   ].filter(Boolean).join(' · ')
   const loading = loadingShared || dateSchedulesQuery.isLoading || templatesQuery.isLoading
 
-  const visibleStaff = useMemo(() => {
+  // Danh sách KTV hiển thị trong panel lọc: nhân sự theo cơ sở + bất kỳ ai có lịch trong phạm vi
+  const filterStaff = useMemo(() => {
     const filtered = staff.filter((person) => !canManage || !branchFilter || person.branch_id === branchFilter)
     const all = new Map(filtered.map((person) => [person.id, person]))
     for (const row of dateRows) {
       if (!all.has(row.staff_id)) all.set(row.staff_id, { id: row.staff_id, branch_id: row.branch_id })
     }
-    return [...all.values()].filter((person) => !staffFilter || person.id === staffFilter)
-  }, [staff, dateRows, canManage, branchFilter, staffFilter])
+    return [...all.values()]
+  }, [staff, dateRows, canManage, branchFilter])
+
+  // Map id → thông tin KTV (dùng cho avatar/tên trên khối ca & panel)
+  const staffById = useMemo(() => {
+    const map = new Map(staff.map((person) => [person.id, person]))
+    for (const row of dateRows) {
+      if (!map.has(row.staff_id)) map.set(row.staff_id, { id: row.staff_id, branch_id: row.branch_id })
+    }
+    return map
+  }, [staff, dateRows])
+
+  // Ẩn/hiện KTV hoặc ca bằng checkbox → lọc dòng trước khi group thành khối ca
+  const filteredRows = useMemo(
+    () => dateRows.filter((row) => {
+      if (row.is_active === false) return false
+      if (hiddenStaff.has(row.staff_id)) return false
+      const templateId = String(row.shift_template_id ?? row.shift_template?.id ?? '')
+      return !hiddenShifts.has(templateId)
+    }),
+    [dateRows, hiddenStaff, hiddenShifts],
+  )
+
+  /** Group dòng lịch thành "khối ca" theo (ngày + ca): 1 khối = 1 ca làm với N KTV. */
+  const blocks = useMemo<ScheduleBlock[]>(() => {
+    const map = new Map<string, ScheduleBlock>()
+    for (const row of filteredRows) {
+      const iso = String(row.work_date).slice(0, 10)
+      const templateId = row.shift_template_id ?? row.shift_template?.id ?? 'none'
+      const key = `${iso}|${templateId}`
+      const existing = map.get(key)
+      if (existing) existing.rows.push(row)
+      else {
+        map.set(key, {
+          key,
+          date: dayjs(iso),
+          template: templates.find((item) => item.id === templateId) ?? row.shift_template ?? null,
+          rows: [row],
+          templateIndex: templates.findIndex((item) => item.id === templateId),
+        })
+      }
+    }
+    return [...map.values()].sort((a, b) => a.date.valueOf() - b.date.valueOf())
+  }, [filteredRows, templates])
+
 
   const shiftsForCell = (personId: string, date: Dayjs): DateCellShift[] => {
     const iso = date.format('YYYY-MM-DD')
     return dateRows
-      .filter((row) => row.staff_id === personId && row.work_date?.slice(0, 10) === iso && row.is_active !== false)
+      .filter((row) => row.staff_id === personId && String(row.work_date).slice(0, 10) === iso && row.is_active !== false)
       .map((row): DateCellShift => ({
         key: `date-${row.id}`,
         row,
@@ -136,7 +203,17 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
       }))
   }
 
-  const openForm = (row?: StaffScheduleDateWithStaff) => {
+  const rowInNextWeek = (row: StaffScheduleDateWithStaff) => {
+    const iso = String(row.work_date).slice(0, 10)
+    return iso >= nextWeekStart.format('YYYY-MM-DD') && iso <= nextWeekStart.add(6, 'day').format('YYYY-MM-DD')
+  }
+  const canEditRow = (row: StaffScheduleDateWithStaff) =>
+    canManage || (isTechSelf && row.staff_id === access.currentUserId && registrationOpen && rowInNextWeek(row))
+
+  const openForm = (
+    row?: StaffScheduleDateWithStaff,
+    preset?: { date?: Dayjs; staffId?: string; templateId?: string },
+  ) => {
     setEditing(row ?? null)
     const rowStaff = row ? staff.find((person) => person.id === row.staff_id) : undefined
     if (isTechSelf) {
@@ -151,17 +228,17 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
       } : {
         staff_id: staffId,
         branch_id: ownBranchId,
-        work_dates: undefined,
-        shift_template_id: undefined,
+        work_dates: preset?.date ? [preset.date] : undefined,
+        shift_template_id: preset?.templateId ? [preset.templateId] : undefined,
         note: undefined,
       })
       setOpen(true)
       return
     }
-    const branchId = row?.branch_id || branchFilter || rowStaff?.branch_id || staff.find((person) => person.id === staffFilter)?.branch_id || branches[0]?.id
+    const branchId = row?.branch_id || branchFilter || rowStaff?.branch_id || branches[0]?.id
     const staffId = row
       ? (rowStaff?.branch_id === branchId ? row.staff_id : undefined)
-      : (staff.find((person) => person.id === staffFilter)?.branch_id === branchId ? staffFilter : undefined)
+      : (preset?.staffId && staff.find((person) => person.id === preset.staffId)?.branch_id === branchId ? preset.staffId : undefined)
     form.setFieldsValue(row ? {
       staff_id: staffId,
       branch_id: branchId,
@@ -171,8 +248,8 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
     } : {
       staff_id: staffId,
       branch_id: branchId,
-      work_dates: undefined,
-      shift_template_id: undefined,
+      work_dates: preset?.date ? [preset.date] : undefined,
+      shift_template_id: preset?.templateId ? [preset.templateId] : undefined,
       note: undefined,
     })
     setOpen(true)
@@ -257,9 +334,63 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
     }
   }
 
+  /** Xóa cả khối ca (mọi KTV của 1 ca trong 1 ngày). 409 gom chung 1 modal xác nhận. */
+  const removeBlock = async (block: ScheduleBlock) => {
+    const affected: ConflictAppointment[] = []
+    const blockedRows: StaffScheduleDateWithStaff[] = []
+    for (const row of block.rows) {
+      try {
+        await deleteStaffScheduleDatesIdAdmin(row.id)
+      } catch (err: unknown) {
+        const response = (err as { response?: { data?: { code?: string; details?: Record<string, unknown> } } })?.response?.data
+        if (response?.code === 'FUTURE_APPOINTMENTS_EXIST') {
+          blockedRows.push(row)
+          affected.push(...((response.details?.affected_appointments ?? []) as ConflictAppointment[]))
+        } else message.error(errorMessage(err))
+      }
+    }
+    const finish = async () => {
+      for (const row of blockedRows) {
+        try {
+          await deleteStaffScheduleDatesIdAdmin(row.id, { confirm_future_appointments: 'true' })
+        } catch (err) {
+          message.error(errorMessage(err))
+        }
+      }
+      message.success('Đã xóa ca làm việc. Các lịch hẹn đã đặt được giữ nguyên.')
+      void queryClient.invalidateQueries({ queryKey: getGetStaffScheduleDatesAdminQueryKey() })
+      setSelectedBlockKey(null)
+    }
+    if (affected.length) {
+      Modal.confirm({
+        title: `Có ${affected.length} lịch hẹn bị ảnh hưởng`,
+        width: 680,
+        content: <div>
+          <p>Xóa ca chỉ ngừng sinh ca cho ngày này. Các lịch hẹn bên dưới vẫn được giữ nguyên để Admin xử lý riêng.</p>
+          <Table<ConflictAppointment>
+            rowKey="id" size="small" pagination={false} scroll={{ y: 240 }} dataSource={affected}
+            columns={[
+              { title: 'Ngày', dataIndex: 'appt_date', render: (v: string) => new Date(`${v}T00:00:00`).toLocaleDateString('vi-VN') },
+              { title: 'Giờ', dataIndex: 'start_time', render: (v: string) => v?.slice(0, 5) },
+              { title: 'Khách', dataIndex: ['customer_profile', 'full_name'], render: (v) => v || '—' },
+              { title: 'Dịch vụ', dataIndex: ['service', 'title'], render: (v) => v || '—' },
+            ]}
+          />
+        </div>,
+        okText: 'Xác nhận xóa lịch', cancelText: 'Quay lại',
+        onOk: () => finish(),
+      })
+    } else if (block.rows.length > blockedRows.length) {
+      message.success('Đã xóa ca làm việc. Các lịch hẹn đã đặt được giữ nguyên.')
+       void queryClient.invalidateQueries({ queryKey: getGetStaffScheduleDatesAdminQueryKey() })
+      setSelectedBlockKey(null)
+    }
+  }
+
   const refreshShared = () => {
     void dateSchedulesQuery.refetch()
     void queryClient.invalidateQueries({ queryKey: getGetShiftTemplatesAdminQueryKey() })
+    void notesQuery.refetch()
   }
 
   const openNoteForm = (date: Dayjs, currentNotes: string[] = []) => {
@@ -294,92 +425,132 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
     }
   }
 
-  const renderShiftTags = (shifts: DateCellShift[], compact: boolean) => {
-    const canEditCell = (row: StaffScheduleDateWithStaff) =>
-      canManage
-      || (isTechSelf && row.staff_id === access.currentUserId && viewingNextWeek && registrationOpen)
-    const lockTooltip = registrationOpen
-      ? 'Tuần đã bắt đầu — dùng tab Xin nghỉ hoặc liên hệ Admin'
-      : 'Đã hết hạn đăng ký (23:59 Chủ nhật tuần hiện tại) — liên hệ Admin để thay đổi lịch'
-    return (
-    <Space direction="vertical" size={4} style={{ display: 'flex' }}>
-      {shifts.map((item) => {
-        const editable = canEditCell(item.row)
-        return (
-        <Space key={item.key} direction="vertical" size={2} style={{ display: 'flex' }}>
-          <Space size={2} style={{ display: 'flex' }}>
-            <Tooltip title={item.note ? `Ghi chú: ${item.note}` : (!editable && isTechSelf ? lockTooltip : undefined)}>
-              <Tag color="geekblue" style={{ margin: 0, whiteSpace: 'normal', textAlign: 'left', cursor: editable ? 'pointer' : undefined }} onClick={() => editable && openForm(item.row)}>
-                {shiftLabel(item.template)}
-              </Tag>
-            </Tooltip>
-            {editable && <Popconfirm title="Xóa lịch ngày này?" okText="Kiểm tra và xóa" cancelText="Hủy" onConfirm={() => remove(item.row)}>
-              <Button aria-label="Xóa lịch theo ngày" type="text" size="small" danger icon={<DeleteOutlined />} />
-            </Popconfirm>}
-          </Space>
-          {item.note && (
-            <Typography.Text
-              type="secondary"
-              style={{ display: 'block', fontSize: 11, lineHeight: 1.35, color: 'var(--brand-dark)', whiteSpace: 'normal', overflowWrap: 'anywhere', paddingLeft: 2 }}
-            >
-              {item.note}
-            </Typography.Text>
-          )}
-        </Space>
-        )
-      })}
-      {!shifts.length && !compact && <span style={{ color: '#aaa' }}>—</span>}
-    </Space>
-    )
+  const selectBlock = (block: ScheduleBlock) => setSelectedBlockKey(block.key)
+  const selectDay = (date: Dayjs) => {
+    setAnchor(date)
+    setView('day')
+    setSelectedBlockKey(null)
+  }
+  const toggleStaff = (staffId: string) => {
+    setHiddenStaff((current) => {
+      const next = new Set(current)
+      if (next.has(staffId)) next.delete(staffId)
+      else next.add(staffId)
+      return next
+    })
+  }
+  const toggleShift = (templateId: string) => {
+    setHiddenShifts((current) => {
+      const next = new Set(current)
+      if (next.has(templateId)) next.delete(templateId)
+      else next.add(templateId)
+      return next
+    })
+  }
+  const toggleAllShifts = (visible: boolean) => setHiddenShifts(visible ? new Set() : new Set(templates.map((t) => t.id)))
+
+  // Nội dung popup chi tiết khi bấm vào khối ca (Popover bám theo khối)
+  const renderBlockDetail = (block: ScheduleBlock) => (
+    <div style={{ padding: 14 }}>
+      <ShiftDetailContent
+        block={block}
+        staffById={staffById}
+        branches={branches}
+        canManage={canManage}
+        canEditRow={canEditRow}
+        onEditRow={(row: StaffScheduleDateWithStaff) => openForm(row)}
+        onRemoveRow={(row: StaffScheduleDateWithStaff) => void remove(row)}
+        onDuplicate={(duplicated: ScheduleBlock) => {
+          const first = duplicated.rows[0]
+          openForm(undefined, { staffId: first?.staff_id, templateId: String(duplicated.template?.id ?? first?.shift_template_id ?? '') })
+          setSelectedBlockKey(null)
+        }}
+        onDeleteBlock={(target: ScheduleBlock) => void removeBlock(target)}
+        onClose={() => setSelectedBlockKey(null)}
+      />
+    </div>
+  )
+
+  /** Tạo nhanh từ popup: validate cơ sở rồi POST — giữ nguyên luật KTV thuộc cơ sở. */
+  const quickSubmit = async (payload: { staffId: string; branchId?: string; templateIds: string[]; note?: string; date: Dayjs }) => {
+    const finalStaffId = isTechSelf ? String(access.currentUserId) : payload.staffId
+    const person = staff.find((candidate) => candidate.id === finalStaffId)
+    const finalBranchId = isTechSelf
+      ? (person?.branch_id ?? ownBranchId)
+      : (payload.branchId ?? person?.branch_id ?? branchFilter ?? branches[0]?.id)
+    if (!finalBranchId) {
+      message.error('Chọn cơ sở trước khi tạo ca')
+      throw new Error('missing branch')
+    }
+    if (!person?.branch_id || person.branch_id !== finalBranchId) {
+      message.error('KTV chưa được gán vào cơ sở đã chọn. Hãy kiểm tra lại nhân sự trước khi xếp lịch.')
+      throw new Error('staff branch mismatch')
+    }
+    try {
+      const result = await postStaffScheduleDatesAdmin({
+        staff_id: finalStaffId,
+        branch_id: finalBranchId,
+        dates: [payload.date.format('YYYY-MM-DD')],
+        shift_template_ids: payload.templateIds,
+        note: payload.note || undefined,
+      } as never)
+      const counts = (result as { meta?: { created_count?: number; skipped_count?: number } })?.meta
+      const created = counts?.created_count ?? 0
+      const skipped = counts?.skipped_count ?? 0
+      if (!created) message.info('Không có ca mới nào được đăng ký — các ca đã chọn đều có sẵn trong lịch')
+      else message.success(`Đã đăng ký ${created} ca theo ngày${skipped ? ` (bỏ qua ${skipped} ca đã có sẵn)` : ''}`)
+      void queryClient.invalidateQueries({ queryKey: getGetStaffScheduleDatesAdminQueryKey() })
+    } catch (err) {
+      message.error(errorMessage(err))
+      throw err
+    }
   }
 
-  const columns = [
-    { title: 'KTV', dataIndex: 'id', key: 'staff', width: 160, fixed: 'left' as const, render: (id: string) => <strong>{staffLabel(visibleStaff.find((person) => person.id === id))}</strong> },
-    ...weekDates.map((date) => {
-      const iso = date.format('YYYY-MM-DD')
-      const noteText = (notesByDate.get(iso) ?? []).join(' · ')
-      return {
-        title: (
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
-              <span style={iso === today ? { color: 'var(--brand-on-primary)', fontWeight: 700, textDecoration: 'underline', textUnderlineOffset: 3 } : undefined}>
-                {WEEKDAY_LABELS[date.day()]} {date.format('DD/MM')}
-              </span>
-              {canManage && (
-                <Button aria-label={`Sửa ghi chú ngày ${date.format('DD/MM')}`} type="text" size="small" icon={<EditOutlined />} style={{ color: 'var(--brand-on-primary)' }} onClick={() => openNoteForm(date, notesByDate.get(iso) ?? [])} />
-              )}
-            </div>
-            {noteText && (
-              <Tooltip title={noteText}>
-                <div
-                  role={canManage ? 'button' : undefined}
-                  onClick={() => canManage && openNoteForm(date, notesByDate.get(iso) ?? [])}
-                  style={{ fontSize: 11, lineHeight: 1.3, color: 'var(--brand-on-primary)', opacity: 0.92, whiteSpace: 'normal', textAlign: 'center', cursor: canManage ? 'pointer' : 'default' }}
-                >
-                  {noteText.length > 46 ? `${noteText.slice(0, 46)}…` : noteText}
-                </div>
-              </Tooltip>
-            )}
-          </div>
-        ),
-        key: `date-${iso}`,
-        render: (_: unknown, person: ScheduleStaff) => renderShiftTags(shiftsForCell(person.id, date), false),
-      }
-    }),
-  ]
+  const renderQuickCreate = ({ date, close }: { date: Dayjs; close: () => void }) => (
+    <QuickCreatePopover
+      date={date}
+      staff={staff}
+      branches={canManage ? branches : []}
+      branchFilter={branchFilter}
+      templates={templates}
+      isTechSelf={isTechSelf}
+      currentUserId={access.currentUserId}
+      canManage={canManage}
+      onSubmit={(payload) => quickSubmit({ ...payload, date })}
+      onMoreOptions={(preset) => {
+        close()
+        openForm(undefined, { date, ...preset })
+      }}
+      onClose={close}
+    />
+  )
 
-  return <div>
-    {isTechSelf && <ToolbarRow>
-      <PeriodNavigator
-        value={[weekStart, weekStart.add(6, 'day')]}
-        onChange={(value) => { const start = value?.[0]; if (start) setWeekStart(mondayOf(start)) }}
-        onPrev={() => setWeekStart((week) => week.subtract(1, 'week'))}
-        onNext={() => setWeekStart((week) => week.add(1, 'week'))}
-        prevLabel="Tuần trước"
-        nextLabel="Tuần sau"
-      />
-      <Button type="primary" icon={<PlusOutlined />} disabled={isTechSelf && !registrationOpen} onClick={() => openForm()}>Đăng ký ca</Button>
-    </ToolbarRow>}
+  // Toolbar portal lên slot giữa header trang (giữa title và tabs) — 1 hàng như mockup.
+  // Slot ref gắn sau commit đầu tiên nên đợi 1 effect để lấy node.
+  const toolbarSlotRef = useContext(ToolbarSlotContext)
+  const [toolbarSlot, setToolbarSlot] = useState<HTMLDivElement | null>(null)
+  useEffect(() => {
+    setToolbarSlot(toolbarSlotRef?.current ?? null)
+  }, [toolbarSlotRef])
+
+  const showCreate = canManage || isTechSelf
+  const createDisabled = isTechSelf && !registrationOpen
+  const createLabel = canManage ? 'Tạo ca làm' : 'Đăng ký ca'
+
+  return <div className="flex h-full min-h-0 flex-col">
+    {toolbarSlot && createPortal(
+      <CalendarToolbar
+        view={view}
+        onViewChange={(nextView) => { setView(nextView); setSelectedBlockKey(null) }}
+        branches={canManage ? branches : []}
+        branchFilter={branchFilter}
+        onBranchChange={(value) => { setBranchFilter(value); setSelectedBlockKey(null) }}
+        onRefresh={refreshShared}
+        leftPanelOpen={leftPanelOpen && !isMobile}
+        onToggleLeftPanel={() => setLeftPanelOpen((current) => !current)}
+      />,
+      toolbarSlot,
+    )}
     {isTechSelf && viewingNextWeek && !registrationOpen && (
       <Alert
         type="warning"
@@ -396,81 +567,190 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
         message="Bạn chỉ được tự đăng ký/sửa/xóa ca cho TUẦN KẾ TIẾP. Ca trong tuần đã bắt đầu muốn thay đổi: dùng tab Xin nghỉ hoặc liên hệ Admin."
       />
     )}
-    {canManage && <ToolbarRow>
-      <Select allowClear placeholder="Tất cả cơ sở" style={{ width: 190 }} value={branchFilter} onChange={(value) => {
-        setBranchFilter(value)
-        const selectedStaff = staff.find((person) => person.id === staffFilter)
-        if (value && selectedStaff?.branch_id !== value) setStaffFilter(undefined)
-      }} options={branches.map((branch) => ({ value: branch.id, label: branch.name }))} />
-      <Select allowClear showSearch optionFilterProp="label" placeholder="Tất cả KTV" style={{ width: 220 }} value={staffFilter} onChange={setStaffFilter} options={staffForBranchFilter.map((person) => ({ value: person.id, label: staffLabel(person) }))} />
-      <PeriodNavigator
-        value={[weekStart, weekStart.add(6, 'day')]}
-        onChange={(value) => { const start = value?.[0]; if (start) setWeekStart(mondayOf(start)) }}
-        onPrev={() => setWeekStart((week) => week.subtract(1, 'week'))}
-        onNext={() => setWeekStart((week) => week.add(1, 'week'))}
-        prevLabel="Tuần trước"
-        nextLabel="Tuần sau"
-      />
-      <Button type="primary" icon={<PlusOutlined />} onClick={() => openForm()}>Đăng ký theo ngày</Button>
-    </ToolbarRow>}
     {!!error && <Alert type="error" showIcon message="Không tải được lịch theo ngày" description={error} action={<Button size="small" onClick={refreshShared}>Thử lại</Button>} style={{ marginBottom: 16 }} />}
-    <Table<ScheduleStaff>
-      className="desktop-only"
-      rowKey="id" size="middle" pagination={false} tableLayout="fixed" scroll={{ x: 1120 }}
-      loading={loading} dataSource={visibleStaff} columns={columns}
-      locale={{ emptyText: <TableEmpty description={staff.length ? 'Không có KTV trong bộ lọc này' : 'Chưa có danh sách KTV'} /> }}
-    />
+
+    {/* Calendar kiểu Google — desktop trở lên. Chỉ lưới giờ cuộn trong khung, panel trái tự cuộn riêng. */}
+    <div className="desktop-only min-h-0! flex-1!">
+      <div style={{ display: 'flex', gap: 8, height: '100%' }}>
+        {leftPanelOpen && !isMobile && (
+          <div style={{
+            width: 265,
+            flexShrink: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 12,
+            border: '1px solid var(--brand-border-soft)',
+            borderRadius: 12,
+            background: '#fff',
+            padding: 12,
+            boxSizing: 'border-box',
+            minHeight: 0,
+            overflowY: 'auto',
+          }}>
+            {/* Nút tạo ca kiểu Google Calendar — đầu panel trái */}
+            {showCreate && (
+              <Button
+                icon={<PlusOutlined style={{ fontSize: 18, color: '#3B3C3D' }} />}
+                disabled={createDisabled}
+                onClick={() => openForm()}
+                style={{
+                  height: 44,
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'flex-start',
+                  gap: 10,
+                  borderRadius: 16,
+                  border: '1px solid var(--brand-border-soft)',
+                  background: '#fff',
+                  fontWeight: 600,
+                  fontSize: 14,
+                  color: '#3B3C3D',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.14), 0 2px 8px rgba(0,0,0,0.08)',
+                  paddingInline: 16,
+                }}
+              >
+                {createLabel}
+              </Button>
+            )}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+              <Tooltip title="Thu bảng điều khiển trái">
+                <Button
+                  aria-label="Thu bảng điều khiển trái"
+                  type="text"
+                  size="small"
+                  icon={<MenuFoldOutlined style={{ fontSize: 14, color: '#6F7071' }} />}
+                  onClick={() => setLeftPanelOpen(false)}
+                />
+              </Tooltip>
+            </div>
+            <MiniMonthCalendar
+              value={anchor}
+              onSelect={(date) => { setAnchor(date); setSelectedBlockKey(null) }}
+              eventDates={eventDates}
+            />
+            <div style={{ borderTop: '1px solid var(--brand-border-soft, #EFE7EC)' }} />
+            <ShiftFilterPanel
+              templates={templates}
+              hidden={hiddenShifts}
+              onToggle={toggleShift}
+              onToggleAll={toggleAllShifts}
+            />
+            <div style={{ borderTop: '1px solid var(--brand-border-soft, #EFE7EC)' }} />
+            <StaffFilterPanel
+              staff={filterStaff}
+              hidden={hiddenStaff}
+              onToggle={toggleStaff}
+            />
+          </div>
+        )}
+        {!leftPanelOpen && !isMobile && (
+          // Đã thu gọn: rail dọc với FAB tạo ca + nút mở panel (kiểu Google Calendar)
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+            {showCreate && (
+              <Tooltip title={createDisabled ? `Đã hết hạn đăng ký (hạn ${deadlineText})` : createLabel} placement="right">
+                <Button
+                  aria-label={createLabel}
+                  disabled={createDisabled}
+                  onClick={() => openForm()}
+                  icon={<PlusOutlined style={{ fontSize: 18, color: '#3B3C3D' }} />}
+                  style={{
+                    width: 40, height: 40, borderRadius: '50%',
+                    background: '#fff', border: '1px solid var(--brand-border-soft)',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.14), 0 2px 8px rgba(0,0,0,0.08)',
+                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                  }}
+                />
+              </Tooltip>
+            )}
+            <Tooltip title="Mở bảng điều khiển trái (mini calendar + lọc KTV)" placement="right">
+              <Button
+                aria-label="Mở bảng điều khiển trái"
+                type="text"
+                icon={<TeamOutlined style={{ fontSize: 16 }} />}
+                onClick={() => setLeftPanelOpen(true)}
+                style={{ width: 32, height: 40, border: '1px solid var(--brand-border-soft)', borderRadius: 10, background: '#fff', flexShrink: 0 }}
+              />
+            </Tooltip>
+          </div>
+        )}
+        <div style={{ flex: 1, minWidth: 0, minHeight: 0 }}>
+          <ScheduleTimeGrid
+            view={view}
+            days={days}
+            blocks={blocks}
+            loading={loading}
+            notesByDate={notesByDate}
+            canManage={canManage}
+            staffById={staffById}
+            selectedKey={selectedBlockKey}
+            onSelectBlock={selectBlock}
+            renderBlockDetail={renderBlockDetail}
+            onCloseBlockDetail={() => setSelectedBlockKey(null)}
+            renderQuickCreate={renderQuickCreate}
+            onSelectDay={selectDay}
+            onEditNote={openNoteForm}
+          />
+        </div>
+      </div>
+    </div>
+
+    {/* Mobile: giữ danh sách card, panel chi tiết chuyển thành Drawer */}
     {dateNotes.length > 0 && (
       <Alert
         type="warning"
         showIcon
         style={{ marginBottom: 12 }}
         className="mobile-only"
-        message={<Space direction="vertical" size={2} style={{ display: 'flex' }}>
+        message={<div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {dateNotes.map((item, index) => (
             <span key={`${item.branch_id}-${item.note_date}-${index}`}>
               {WEEKDAY_LABELS[dayjs(item.note_date).day()]} {dayjs(item.note_date).format('DD/MM')}: {item.note}
             </span>
           ))}
-        </Space>}
+        </div>}
       />
     )}
-    <MobileCards<MobileDateRow>
-      rows={visibleStaff.flatMap((person) => {
-        const dayRows: MobileDateRow[] = weekDates.map((date) => ({
-          key: `${person.id}-${date.format('YYYY-MM-DD')}`,
-          person,
-          date,
-          shifts: shiftsForCell(person.id, date),
-        })).filter((item) => item.shifts.length > 0)
-        return dayRows.length ? dayRows : [{ key: `${person.id}-empty`, person, date: null, shifts: [] }]
-      })}
-      rowKey={(item) => item.key}
-      loading={loading}
-      emptyText={staff.length ? 'Không có KTV trong bộ lọc này' : 'Chưa có danh sách KTV'}
-      renderCard={(item) => (
-        <>
-          <div className="mobile-card-head">
-            <div>
-              <div className="mobile-card-title">{staffLabel(visibleStaff.find((entry) => entry.id === item.person.id))}</div>
-              <div className="mobile-card-sub">{item.date ? `Lịch ${WEEKDAY_LABELS[item.date.day()]} ${item.date.format('DD/MM')}` : 'Lịch tuần này'}</div>
+    <div className="mobile-only">
+      <MobileCards<MobileDateRow>
+        rows={filterStaff.flatMap((person) => {
+          // Mobile luôn hiển thị tuần của anchor bất kể view (day/week/month)
+          const mobileDays = Array.from({ length: 7 }, (_, index) => weekStart.add(index, 'day'))
+          const dayRows: MobileDateRow[] = mobileDays.map((date) => ({
+            key: `${person.id}-${date.format('YYYY-MM-DD')}`,
+            person,
+            date,
+            shifts: shiftsForCell(person.id, date),
+          })).filter((item) => item.shifts.length > 0)
+          return dayRows.length ? dayRows : [{ key: `${person.id}-empty`, person, date: null, shifts: [] }]
+        })}
+        rowKey={(item) => item.key}
+        loading={loading}
+        emptyText={staff.length ? 'Không có KTV trong bộ lọc này' : 'Chưa có danh sách KTV'}
+        renderCard={(item) => (
+          <>
+            <div className="mobile-card-head">
+              <div>
+                <div className="mobile-card-title">{staffLabel(filterStaff.find((entry) => entry.id === item.person.id))}</div>
+                <div className="mobile-card-sub">{item.date ? `Lịch ${WEEKDAY_LABELS[item.date.day()]} ${item.date.format('DD/MM')}` : 'Lịch tuần này'}</div>
+              </div>
+              {item.shifts.length
+                ? <Tag color="geekblue" style={{ marginInlineEnd: 0 }}>{item.shifts.length} ca</Tag>
+                : <Tag style={{ marginInlineEnd: 0 }}>Chưa có lịch</Tag>}
             </div>
-            {item.shifts.length
-              ? <Tag color="geekblue" style={{ marginInlineEnd: 0 }}>{item.shifts.length} ca</Tag>
-              : <Tag style={{ marginInlineEnd: 0 }}>Chưa có lịch</Tag>}
-          </div>
-          <div className="mobile-card-rows">
-            {item.shifts.map((shiftItem) => (
-              <MobileCardRow
-                key={shiftItem.key}
-                label="Ca"
-                value={shiftLabel(shiftItem.template) + (shiftItem.note ? ` — ${shiftItem.note}` : '')}
-              />
-            ))}
-          </div>
-        </>
-      )}
-    />
+            <div className="mobile-card-rows">
+              {item.shifts.map((shiftItem) => (
+                <MobileCardRow
+                  key={shiftItem.key}
+                  label="Ca"
+                  value={shiftLabel(shiftItem.template) + (shiftItem.note ? ` — ${shiftItem.note}` : '')}
+                />
+              ))}
+            </div>
+          </>
+        )}
+      />
+    </div>
 
     <DateScheduleFormModal
       open={open}
@@ -480,7 +760,7 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
       branches={branches}
       branchFilter={branchFilter}
       selectedBranch={selectedBranch}
-      staffForSelectedBranch={staffForSelectedBranch}
+      staffForSelectedBranch={staff.filter((person) => !!selectedBranch && person.branch_id === selectedBranch)}
       templates={templates}
       lockStaffAndBranch={isTechSelf}
       saving={saving}

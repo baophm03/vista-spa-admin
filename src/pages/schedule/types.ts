@@ -6,6 +6,7 @@ import type { ShiftTemplate } from '@/api/models/shiftTemplate'
 export interface ScheduleStaff {
   id: string
   zalo_name?: string
+  zalo_avatar?: string | null
   email?: string
   phone_number?: string
   branch_id?: string

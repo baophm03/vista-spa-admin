@@ -9,7 +9,8 @@ export default function PermissionGate({ children }: { children: ReactNode }) {
   const location = useLocation()
   const profile = useProfileStore((s) => s.profile)
   if (!profile) return <>{children}</>
-  const allowed = canAccessPage(location.pathname, getProfileRoleNames(profile), !!profile.is_admin)
+  const isGlobalAdmin = Boolean(profile.is_admin || profile.is_super_admin)
+  const allowed = canAccessPage(location.pathname, getProfileRoleNames(profile), isGlobalAdmin)
   if (allowed) return <>{children}</>
   return (
     <Result

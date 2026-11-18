@@ -56,7 +56,8 @@ export default function AdminLayout() {
   // Chuyển non-admin khỏi trang chủ khi Dashboard không được phép truy cập.
   if (location.pathname === '/' && activeProfile) {
     const roles = getProfileRoleNames(activeProfile as Parameters<typeof getProfileRoleNames>[0])
-    if (!canAccessPage('/', roles, !!activeProfile.is_admin)) {
+    const isGlobalAdmin = Boolean(activeProfile.is_admin || activeProfile.is_super_admin)
+    if (!canAccessPage('/', roles, isGlobalAdmin)) {
       const landingPath = roles.some(isKtvRoleName)
         ? '/my-sessions'
         : roles.some(isReceptionistRoleName)

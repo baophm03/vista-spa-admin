@@ -24,6 +24,7 @@ import PageTitle from '@/components/base/PageTitle'
 import StatCards, { type StatItem } from '@/components/base/StatCards'
 import TableEmpty from '@/components/base/TableEmpty'
 import { pickData, pickMeta } from '@/api/helpers'
+import { fillPeriodBuckets } from '@/utils/chartPeriods'
 import { Can } from '@casl/react'
 import { useBrandColors, useBrandCurrency } from '@/themeRuntime'
 import { getReportsAppointmentsAdmin, getReportsDebtsAdmin, getReportsRanksAdmin, getReportsRevenueAdmin } from '@/api/endpoints/reports'
@@ -89,9 +90,9 @@ function Overview({
       void getReportsRevenueAdmin({ from_date: from, to_date: today, group_by: 'month' })
         .then((body) => {
           const rows = (pickData<any[]>(body) ?? []) as any[]
-          const merged = new Map<string, number>()
-          for (const r of rows) merged.set(r.period, (merged.get(r.period) ?? 0) + Number(r.revenue))
-          setRevenueData([...merged.entries()].map(([period, revenue]) => ({ period, revenue: revenue / 1_000_000 })))
+          // Fill đủ các tháng trong 6 tháng gần nhất (tháng không phát sinh = 0)
+          // để chart luôn có trục thời gian thay vì báo "chưa đủ dữ liệu".
+          setRevenueData(fillPeriodBuckets(from, today, 'month', rows).map((r) => ({ ...r, revenue: r.revenue / 1_000_000 })))
         })
         .catch(() => undefined)
     }
@@ -168,9 +169,9 @@ function Overview({
       {(canSeeRevenue || canSeeRanks) && <Row gutter={[16, 16]} style={{ marginBottom: 20 }}>
         {canSeeRevenue && <Col xs={24} lg={canSeeRanks ? 16 : 24}>
           <Card title="Doanh thu theo tháng (6 tháng gần nhất)">
-            {revenueData.length < 2 ? (
+            {revenueData.length === 0 ? (
               <div style={{ height: 280, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <TableEmpty title="Chưa có dữ liệu doanh thu" description={revenueData.length === 0 ? undefined : 'Chưa đủ dữ liệu — cần ít nhất 2 tháng'} />
+                <TableEmpty title="Chưa có dữ liệu doanh thu" />
               </div>
             ) : (
               <ResponsiveContainer width="100%" height={280}>
