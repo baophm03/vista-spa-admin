@@ -12,5 +12,4 @@ export type CommissionRuleBase = typeof CommissionRuleBase[keyof typeof Commissi
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const CommissionRuleBase = {
   PAYMENT: 'PAYMENT',
-  SESSION_VALUE: 'SESSION_VALUE',
 } as const;

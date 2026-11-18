@@ -6,12 +6,11 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type CommissionRulePayeeType = typeof CommissionRulePayeeType[keyof typeof CommissionRulePayeeType];
+export type PostCommissionRulesAdminBodyType = typeof PostCommissionRulesAdminBodyType[keyof typeof PostCommissionRulesAdminBodyType];
 
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const CommissionRulePayeeType = {
-  STAFF: 'STAFF',
-  COLLABORATOR: 'COLLABORATOR',
-  CUSTOMER_REFERRER: 'CUSTOMER_REFERRER',
+export const PostCommissionRulesAdminBodyType = {
+  REFERRAL: 'REFERRAL',
+  SESSION: 'SESSION',
 } as const;

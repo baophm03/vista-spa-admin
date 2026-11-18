@@ -6,4 +6,9 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type CommissionEntryBranchId = string | null;
+export type PostCustomersAdminBody = {
+  phone_number: string;
+  email?: string;
+  full_name?: string;
+  password?: string;
+};

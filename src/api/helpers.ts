@@ -32,7 +32,6 @@ const userFacingLabels: Record<string, string> = {
   'commission.rule_manage': 'quyền quản lý quy tắc hoa hồng',
   'commission.read': 'quyền xem hoa hồng',
   'commission.auto_enabled': 'tính năng tính hoa hồng tự động',
-  'collaborator.read': 'quyền xem danh sách cộng tác viên',
   'referral.read': 'quyền xem lịch sử giới thiệu',
   'module.invoice': 'cấu hình hóa đơn',
   'payment.methods': 'danh mục phương thức thanh toán',

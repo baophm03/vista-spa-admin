@@ -33,7 +33,6 @@ import AcademyCourses from './pages/AcademyCourses/page'
 import AccessLogs from './pages/AccessLogs/page'
 import WarrantyClaims from './pages/WarrantyClaims/page'
 import Commissions from './pages/Commissions/page'
-import Collaborators from './pages/Collaborators/page'
 import DiscountRules from './pages/DiscountRules/page'
 import ContentPosts from './pages/ContentPosts/page'
 import AcademyRegistrations from './pages/AcademyRegistrations/page'
@@ -46,7 +45,8 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route element={<AdminLayout />}>
           <Route path="/" element={<Dashboard />} />
-          <Route path="/users" element={<Users />} />
+          <Route path="/users" element={<Navigate to="/customers" replace />} />
+          <Route path="/customers" element={<Users />} />
           <Route path="/vouchers" element={<Vouchers />} />
           <Route path="/voucher-customers" element={<VoucherCustomers />} />
           <Route path="/services" element={<Services />} />
@@ -72,10 +72,9 @@ export default function App() {
           <Route path="/rewards" element={<Rewards />} />
           <Route path="/warranty-claims" element={<WarrantyClaims />} />
           <Route path="/card-ranks" element={<Navigate to="/points" replace />} />
-          <Route path="/commission-rules" element={<Navigate to="/commissions?tab=rules" replace />} />
+          <Route path="/commission-rules" element={<Navigate to="/commissions" replace />} />
           <Route path="/commissions" element={<Commissions />} />
-          <Route path="/collaborators" element={<Collaborators />} />
-          <Route path="/referrals" element={<Navigate to="/commissions?tab=referrals" replace />} />
+          <Route path="/referrals" element={<Navigate to="/commissions" replace />} />
           <Route path="/discount-rules" element={<DiscountRules />} />
           <Route path="/branches" element={<Branches />} />
           <Route path="/imports" element={<Imports />} />

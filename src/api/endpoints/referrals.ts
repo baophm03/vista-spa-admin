@@ -53,7 +53,7 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * **CO-08** — PUT /referrals/{id}/admin — update discount_rule_id/note; no DELETE. Cần đăng nhập + `referral.update_all`. Commissions belong to the commission_entry ledger.
+ * **CO-08** — PUT /referrals/{id}/admin — update discount_rule_id/note; no DELETE. Cần đăng nhập + `referral.update_all`.
  * @summary Update a referral
  */
 export const putReferralsIdAdmin = (
@@ -118,7 +118,7 @@ export const usePutReferralsIdAdmin = <TError = UnauthorizedResponse | Forbidden
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **APP-23** — POST /referrals/apply/admin (gộp từ POST /app/me/referrals/apply). Luôn self-scope theo tài khoản đăng nhập — cần đăng nhập + `referral.create`. Body field: `code`. Resolve mã `CTV-XXXXXX` (collaborator đang active, ưu tiên) hoặc `customer_code` của khách khác, rồi tạo referral + tự gắn quy tắc ưu đãi NEW_BY_REFERRAL đang bật. Chặn: mã của chính mình, đã được giới thiệu, hoặc đã có gói liệu trình.
+ * **APP-23** — POST /referrals/apply/admin (gộp từ POST /app/me/referrals/apply). Luôn self-scope theo tài khoản đăng nhập — cần đăng nhập + `referral.create`. Body field: `code`. Resolve mã giới thiệu `CTV-XXXXXX` (users.ref_code) hoặc `customer_code` của khách khác, rồi tạo referral + tự gắn quy tắc ưu đãi NEW_BY_REFERRAL đang bật. Chặn: mã của chính mình, đã được giới thiệu, hoặc đã có gói liệu trình.
  * @summary Khách tự nhập mã giới thiệu
  */
 export const postReferralsApplyAdmin = (
@@ -378,7 +378,7 @@ export const prefetchGetReferralsAdminQuery = async <TData = Awaited<ReturnType<
 
 
 /**
- * **CO-07** — POST /referrals/admin — mỗi khách mới chỉ có một lượt giới thiệu (UNIQUE referred_profile_id). Cần đăng nhập + `referral.create`. Body fields: `referrer_type`, `referrer_id`, `referred_profile_id`, `discount_rule_id?`, `note?`. Commission is recorded in commission_entry. (Khách tự nhập mã giới thiệu dùng POST /referrals/apply/admin.)
+ * **CO-07** — POST /referrals/admin — mỗi khách mới chỉ có một lượt giới thiệu (UNIQUE referred_profile_id). Cần đăng nhập + `referral.create`. Body fields: `referrer_type`, `referrer_id`, `referred_profile_id`, `discount_rule_id?`, `note?`. (Khách tự nhập mã giới thiệu dùng POST /referrals/apply/admin.)
  * @summary Create a new referral (staff)
  */
 export const postReferralsAdmin = (

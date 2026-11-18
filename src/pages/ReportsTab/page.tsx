@@ -83,8 +83,7 @@ const STATUS_LABEL: Record<string, string> = {
 
 const ACTOR_LABEL: Record<string, string> = {
   STAFF: 'KTV / Nhân viên',
-  COLLABORATOR: 'Cộng tác viên',
-  REFERRER_CUSTOMER: 'Khách giới thiệu',
+  REFERRER_CUSTOMER: 'User giới thiệu',
 }
 
 const PAYMENT_STATUS_LABEL: Record<string, string> = {
@@ -95,8 +94,7 @@ const PAYMENT_STATUS_LABEL: Record<string, string> = {
 
 const SOURCE_LABEL: Record<string, string> = {
   organic: 'Khách tự đến',
-  collaborator: 'Giới thiệu bởi CTV',
-  referral_customer: 'Giới thiệu bởi khách cũ',
+  referral_customer: 'Giới thiệu bởi user cũ',
 }
 
 function CsvButton<T>({ filename, columns, rows }: { filename: string; columns: CsvColumn<T>[]; rows: T[] }) {
@@ -272,7 +270,7 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
       ? [{ key: 'customer', label: customerOptions.find((o) => o.value === customerProfileId)?.label ?? 'Khách', onClose: () => setCustomerProfileId(undefined) }]
       : []),
     ...(staffId
-      ? [{ key: 'staff', label: staffOptions.find((o) => o.value === staffId)?.label ?? 'KTV/CTV', onClose: () => setStaffId(undefined) }]
+      ? [{ key: 'staff', label: staffOptions.find((o) => o.value === staffId)?.label ?? 'KTV', onClose: () => setStaffId(undefined) }]
       : []),
   ]
 
@@ -323,10 +321,10 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
         />
       </div>
       <div>
-        <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>KTV / CTV</Typography.Text>
+        <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>KTV</Typography.Text>
         <Select
           style={{ width: '100%' }}
-          placeholder="Tất cả KTV / CTV"
+          placeholder="Tất cả KTV"
           allowClear
           showSearch
           optionFilterProp="label"

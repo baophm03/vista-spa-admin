@@ -1,10 +1,8 @@
 import { useMemo, useState } from 'react'
-import { Alert, Button, Modal, Spin, Tag, Typography, message } from 'antd'
+import { Alert, Button, Spin, Tag, Typography, message } from 'antd'
 import {
-  DeleteOutlined,
   EditOutlined,
   KeyOutlined,
-  PlusOutlined,
   SafetyCertificateOutlined,
   SafetyOutlined,
 } from '@ant-design/icons'
@@ -12,7 +10,7 @@ import { useQueries } from '@tanstack/react-query'
 import PageTitle from '@/components/base/PageTitle'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { PutRolesIdPermissionsAdminBody } from '@/api/models/putRolesIdPermissionsAdminBody'
-import { getGetRolesIdPermissionsAdminQueryOptions, getGetRolesIdPermissionsAdminQueryKey, getGetRolesAdminQueryKey, useDeleteRolesIdAdmin, useGetRolesAdmin, usePostRolesAdmin, usePutRolesIdAdmin, usePutRolesIdPermissionsAdmin } from '@/api/endpoints/roles'
+import { getGetRolesIdPermissionsAdminQueryOptions, getGetRolesIdPermissionsAdminQueryKey, getGetRolesAdminQueryKey, useGetRolesAdmin, usePutRolesIdAdmin, usePutRolesIdPermissionsAdmin } from '@/api/endpoints/roles'
 import { useGetPermissionsAdmin } from '@/api/endpoints/permissions'
 import { useQueryClient } from '@tanstack/react-query'
 import { Can } from '@casl/react'
@@ -20,22 +18,33 @@ import { permKey, permissionSetToArray } from '@/configs/permissions'
 
 import RoleEditModal from './components/RoleEditModal'
 import RolePermissionModal from './components/RolePermissionModal'
-import { SYSTEM_ROLES, type PermRow, type RoleRow } from './components/constants'
+import { type PermRow, type RoleRow } from './components/constants'
 
 export default function Roles() {
   const queryClient = useQueryClient()
   const rolesQuery = useGetRolesAdmin()
   const permissionsQuery = useGetPermissionsAdmin()
-  const createRoleMutation = usePostRolesAdmin()
   const updateRoleMutation = usePutRolesIdAdmin()
-  const deleteRoleMutation = useDeleteRolesIdAdmin()
   const setPermissionsMutation = usePutRolesIdPermissionsAdmin()
 
   // Legacy envelope: responseData = { count, rows, totalPages, currentPage }
   const roles = (pickData<{ rows?: RoleRow[] }>(rolesQuery.data)?.rows ?? []) as RoleRow[]
-  const permissionsPayload = pickData<PermRow[] | { rows?: PermRow[] }>(permissionsQuery.data)
-  const perms = (
+  // GET /permissions/admin trả catalog nested: [{ module, label, actions: [{ action, label }] }]
+  // → flatten thành PermRow { id, key, module, action, description }
+  const permissionsPayload = pickData<
+    Array<{ module?: string; actions?: Array<{ action?: string; label?: string; description?: string }> }> | { rows?: unknown[] }
+  >(permissionsQuery.data)
+  const catalogEntries = (
     Array.isArray(permissionsPayload) ? permissionsPayload : permissionsPayload?.rows ?? []
+  ) as Array<{ module?: string; actions?: Array<{ action?: string; label?: string; description?: string }> }>
+  const perms = catalogEntries.flatMap((entry) =>
+    (entry?.actions ?? []).map((a) => ({
+      id: `${entry.module}:${a.action}`,
+      key: `${entry.module}:${a.action}`,
+      module: String(entry.module ?? ''),
+      action: String(a.action ?? ''),
+      description: a.description ?? a.label,
+    })),
   ) as PermRow[]
 
   const rolePermissionQueries = useQueries({
@@ -78,13 +87,6 @@ export default function Roles() {
   }, [perms])
   const totalPerms = perms.length
 
-  const openCreate = () => {
-    setEditingRole(null)
-    setRoleName('')
-    setRoleCode('')
-    setRoleDescription('')
-    setEditOpen(true)
-  }
   const openEdit = (role: RoleRow) => {
     setEditingRole(role)
     setRoleName(role.role_name)
@@ -107,25 +109,15 @@ export default function Roles() {
       message.warning('Nhập tên vai trò')
       return
     }
+    if (!editingRole) return
     setSaving(true)
     try {
-      if (editingRole) {
-        // code cố định sau khi tạo — không gửi khi sửa
-        await updateRoleMutation.mutateAsync({
-          id: editingRole.id,
-          data: { role_name: roleName.trim(), description: roleDescription.trim() || undefined },
-        })
-        message.success('Đã cập nhật vai trò')
-      } else {
-        await createRoleMutation.mutateAsync({
-          data: {
-            role_name: roleName.trim(),
-            description: roleDescription.trim() || undefined,
-            ...(roleCode.trim() ? { code: roleCode.trim().toLowerCase() } : {}),
-          } as never,
-        })
-        message.success('Đã tạo vai trò mới')
-      }
+      // code cố định — chỉ cho sửa tên/mô tả, không cho tạo/xóa role
+      await updateRoleMutation.mutateAsync({
+        id: editingRole.id,
+        data: { role_name: roleName.trim(), description: roleDescription.trim() || undefined },
+      })
+      message.success('Đã cập nhật vai trò')
       setEditOpen(false)
       await invalidateRoles()
     } catch (err) {
@@ -176,54 +168,9 @@ export default function Roles() {
     }
   }
 
-  const confirmDelete = async (role: RoleRow) => {
-    setSaving(true)
-    try {
-      await deleteRoleMutation.mutateAsync({ id: role.id })
-      message.success('Đã xóa vai trò')
-      await invalidateRoles()
-    } catch (err) {
-      message.error(errorMessage(err, 'Không thể xóa vai trò'))
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  const askDelete = (role: RoleRow) => {
-    Modal.confirm({
-      title: 'Xóa vai trò',
-      content: (
-        <p className="pt-2 text-sm text-slate-600">
-          Bạn chắc chắn muốn xóa vai trò <strong>{role.role_name}</strong>? Hành động này không thể
-          hoàn tác — các tài khoản đang gán vai trò này sẽ mất quyền truy cập tương ứng.
-        </p>
-      ),
-      okText: 'Xóa vai trò',
-      okButtonProps: { danger: true },
-      cancelText: 'Hủy',
-      onOk: () => confirmDelete(role),
-    })
-  }
-
   return (
     <>
-      <PageTitle
-        subtitle="Vai trò và phân quyền truy cập hệ thống"
-        right={
-          <Can I="MANAGE" a="PERMISSION">
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              className="rounded-xl"
-              onClick={openCreate}
-            >
-              Tạo vai trò mới
-            </Button>
-          </Can>
-        }
-      >
-        Phân quyền
-      </PageTitle>
+      <PageTitle subtitle="Vai trò và phân quyền truy cập hệ thống">Phân quyền</PageTitle>
 
       {loadError && (
         <Alert
@@ -248,7 +195,6 @@ export default function Roles() {
       <Spin spinning={loading}>
         <div className="grid gap-4">
           {roles.map((role) => {
-            const isSystem = SYSTEM_ROLES.includes(role.role_name)
             return (
               <div
                 key={role.id}
@@ -297,16 +243,6 @@ export default function Roles() {
                     >
                       Phân quyền
                     </Button>
-                    <Button
-                      type="text"
-                      size="small"
-                      icon={<DeleteOutlined />}
-                      disabled={isSystem}
-                      className="rounded-xl text-red-600 hover:bg-red-50! disabled:opacity-50"
-                      onClick={() => askDelete(role)}
-                    >
-                      Xóa
-                    </Button>
                   </Can>
                 </div>
               </div>
@@ -352,8 +288,6 @@ export default function Roles() {
         onSetModulePerms={setModulePerms}
         onSetAllPerms={setAllPerms}
       />
-
-      {/* Xóa vai trò dùng Modal.confirm nhỏ — gọi trực tiếp trong askDelete */}
     </>
   )
 }

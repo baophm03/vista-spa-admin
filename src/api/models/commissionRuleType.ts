@@ -6,12 +6,14 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type CommissionEntryStatus = typeof CommissionEntryStatus[keyof typeof CommissionEntryStatus];
+/**
+ * Nhiệm vụ: REFERRAL = khi phát sinh thanh toán; SESSION = khi hoàn thành buổi điều trị
+ */
+export type CommissionRuleType = typeof CommissionRuleType[keyof typeof CommissionRuleType];
 
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const CommissionEntryStatus = {
-  ACTIVE: 'ACTIVE',
-  CANCELLED: 'CANCELLED',
-  VOID: 'VOID',
+export const CommissionRuleType = {
+  REFERRAL: 'REFERRAL',
+  SESSION: 'SESSION',
 } as const;

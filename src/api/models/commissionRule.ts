@@ -5,7 +5,9 @@
  * Vista Spa backend API. Uses the NEWSKY+ business error envelope for permission-aware endpoints and the legacy response envelope for existing admin endpoints.
  * OpenAPI spec version: 1.0.0
  */
-import type { CommissionRulePayeeType } from './commissionRulePayeeType';
+import type { CommissionRulePayeeRoleId } from './commissionRulePayeeRoleId';
+import type { CommissionRulePayeeRole } from './commissionRulePayeeRole';
+import type { CommissionRuleType } from './commissionRuleType';
 import type { CommissionRuleBase } from './commissionRuleBase';
 import type { CommissionRulePercent } from './commissionRulePercent';
 import type { CommissionRuleFixedAmount } from './commissionRuleFixedAmount';
@@ -24,7 +26,11 @@ import type { CommissionRuleCreatedBy } from './commissionRuleCreatedBy';
 export interface CommissionRule {
   id: string;
   name: string;
-  payee_type: CommissionRulePayeeType;
+  payee_role_id: CommissionRulePayeeRoleId;
+  /** Role người nhận: { id, code (ktv|customer), role_name } */
+  payee_role?: CommissionRulePayeeRole;
+  /** Nhiệm vụ: REFERRAL = khi phát sinh thanh toán; SESSION = khi hoàn thành buổi điều trị */
+  type?: CommissionRuleType;
   base?: CommissionRuleBase;
   /**
    * @minimum 0

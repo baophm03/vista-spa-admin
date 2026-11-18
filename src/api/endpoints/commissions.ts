@@ -30,26 +30,15 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  DeleteCommissionRulesIdAdmin200,
   ForbiddenResponse,
   GetCommissionRulesAdmin200,
   GetCommissionRulesIdAdmin200,
-  GetCommissionsAdmin200,
-  GetCommissionsAdminParams,
-  GetCommissionsSummaryAdmin200,
-  GetCommissionsSummaryAdminParams,
   NotFoundResponse,
   PostCommissionRulesAdmin200,
   PostCommissionRulesAdminBody,
-  PostCommissionsAdmin200,
-  PostCommissionsAdminBody,
-  PostCommissionsIdVoidAdmin200,
-  PostCommissionsIdVoidAdminBody,
-  PostCommissionsPayoutsAdminBody,
   PutCommissionRulesIdAdmin200,
   PutCommissionRulesIdAdminBody,
-  PutCommissionsIdAdmin200,
-  PutCommissionsIdAdminBody,
+  Response,
   UnauthorizedResponse,
   UnprocessableEntityResponse
 } from '../models';
@@ -61,657 +50,6 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * **CM-08** — PUT /commissions/{id}. Body: percent?, amount?, reason (required). An AUTO entry is permanently converted to MANUAL.
- * @summary Update a commission entry
- */
-export const putCommissionsIdAdmin = (
-    id: string,
-    putCommissionsIdAdminBody: PutCommissionsIdAdminBody,
- ) => {
-      
-      
-      return customInstance<PutCommissionsIdAdmin200>(
-      {url: `/commissions/${id}/admin`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: putCommissionsIdAdminBody
-    },
-      );
-    }
-  
-
-
-export const getPutCommissionsIdAdminMutationOptions = <TError = NotFoundResponse | UnprocessableEntityResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putCommissionsIdAdmin>>, TError,{id: string;data: PutCommissionsIdAdminBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putCommissionsIdAdmin>>, TError,{id: string;data: PutCommissionsIdAdminBody}, TContext> => {
-
-const mutationKey = ['putCommissionsIdAdmin'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putCommissionsIdAdmin>>, {id: string;data: PutCommissionsIdAdminBody}> = (props) => {
-          const {id,data} = props ?? {};
-
-          return  putCommissionsIdAdmin(id,data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PutCommissionsIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof putCommissionsIdAdmin>>>
-    export type PutCommissionsIdAdminMutationBody = PutCommissionsIdAdminBody
-    export type PutCommissionsIdAdminMutationError = NotFoundResponse | UnprocessableEntityResponse
-
-    /**
- * @summary Update a commission entry
- */
-export const usePutCommissionsIdAdmin = <TError = NotFoundResponse | UnprocessableEntityResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putCommissionsIdAdmin>>, TError,{id: string;data: PutCommissionsIdAdminBody}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putCommissionsIdAdmin>>,
-        TError,
-        {id: string;data: PutCommissionsIdAdminBody},
-        TContext
-      > => {
-
-      const mutationOptions = getPutCommissionsIdAdminMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * **CM-09** — POST /commissions/{id}/void. Body: void_reason (required). No data is deleted.
- * @summary Void a commission entry
- */
-export const postCommissionsIdVoidAdmin = (
-    id: string,
-    postCommissionsIdVoidAdminBody: PostCommissionsIdVoidAdminBody,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<PostCommissionsIdVoidAdmin200>(
-      {url: `/commissions/${id}/void/admin`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: postCommissionsIdVoidAdminBody, signal
-    },
-      );
-    }
-  
-
-
-export const getPostCommissionsIdVoidAdminMutationOptions = <TError = NotFoundResponse | UnprocessableEntityResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postCommissionsIdVoidAdmin>>, TError,{id: string;data: PostCommissionsIdVoidAdminBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postCommissionsIdVoidAdmin>>, TError,{id: string;data: PostCommissionsIdVoidAdminBody}, TContext> => {
-
-const mutationKey = ['postCommissionsIdVoidAdmin'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postCommissionsIdVoidAdmin>>, {id: string;data: PostCommissionsIdVoidAdminBody}> = (props) => {
-          const {id,data} = props ?? {};
-
-          return  postCommissionsIdVoidAdmin(id,data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostCommissionsIdVoidAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postCommissionsIdVoidAdmin>>>
-    export type PostCommissionsIdVoidAdminMutationBody = PostCommissionsIdVoidAdminBody
-    export type PostCommissionsIdVoidAdminMutationError = NotFoundResponse | UnprocessableEntityResponse
-
-    /**
- * @summary Void a commission entry
- */
-export const usePostCommissionsIdVoidAdmin = <TError = NotFoundResponse | UnprocessableEntityResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postCommissionsIdVoidAdmin>>, TError,{id: string;data: PostCommissionsIdVoidAdminBody}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postCommissionsIdVoidAdmin>>,
-        TError,
-        {id: string;data: PostCommissionsIdVoidAdminBody},
-        TContext
-      > => {
-
-      const mutationOptions = getPostCommissionsIdVoidAdminMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * **CM-10** — GET /commissions/summary/admin. Filters: group_by (day|week|month), payee_type, staff_id, collaborator_id, branch_id, date_from, date_to. Results are grouped by recipient.
- * @summary Commission summary report
- */
-export const getCommissionsSummaryAdmin = (
-    params?: GetCommissionsSummaryAdminParams,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<GetCommissionsSummaryAdmin200>(
-      {url: `/commissions/summary/admin`, method: 'GET',
-        params, signal
-    },
-      );
-    }
-  
-
-
-
-export const getGetCommissionsSummaryAdminInfiniteQueryKey = (params?: GetCommissionsSummaryAdminParams,) => {
-    return [
-    'infinite', `/commissions/summary/admin`, ...(params ? [params]: [])
-    ] as const;
-    }
-
-export const getGetCommissionsSummaryAdminQueryKey = (params?: GetCommissionsSummaryAdminParams,) => {
-    return [
-    `/commissions/summary/admin`, ...(params ? [params]: [])
-    ] as const;
-    }
-
-    
-export const getGetCommissionsSummaryAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getCommissionsSummaryAdmin>>>, TError = unknown>(params?: GetCommissionsSummaryAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCommissionsSummaryAdmin>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetCommissionsSummaryAdminInfiniteQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCommissionsSummaryAdmin>>> = ({ signal }) => getCommissionsSummaryAdmin(params, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCommissionsSummaryAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetCommissionsSummaryAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getCommissionsSummaryAdmin>>>
-export type GetCommissionsSummaryAdminInfiniteQueryError = unknown
-
-
-export function useGetCommissionsSummaryAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCommissionsSummaryAdmin>>>, TError = unknown>(
- params: undefined |  GetCommissionsSummaryAdminParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCommissionsSummaryAdmin>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getCommissionsSummaryAdmin>>,
-          TError,
-          Awaited<ReturnType<typeof getCommissionsSummaryAdmin>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetCommissionsSummaryAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCommissionsSummaryAdmin>>>, TError = unknown>(
- params?: GetCommissionsSummaryAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCommissionsSummaryAdmin>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getCommissionsSummaryAdmin>>,
-          TError,
-          Awaited<ReturnType<typeof getCommissionsSummaryAdmin>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetCommissionsSummaryAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCommissionsSummaryAdmin>>>, TError = unknown>(
- params?: GetCommissionsSummaryAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCommissionsSummaryAdmin>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Commission summary report
- */
-
-export function useGetCommissionsSummaryAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCommissionsSummaryAdmin>>>, TError = unknown>(
- params?: GetCommissionsSummaryAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCommissionsSummaryAdmin>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetCommissionsSummaryAdminInfiniteQueryOptions(params,options)
-
-  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary Commission summary report
- */
-export const prefetchGetCommissionsSummaryAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getCommissionsSummaryAdmin>>, TError = unknown>(
- queryClient: QueryClient, params?: GetCommissionsSummaryAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCommissionsSummaryAdmin>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetCommissionsSummaryAdminInfiniteQueryOptions(params,options)
-
-  await queryClient.prefetchInfiniteQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-export const getGetCommissionsSummaryAdminQueryOptions = <TData = Awaited<ReturnType<typeof getCommissionsSummaryAdmin>>, TError = unknown>(params?: GetCommissionsSummaryAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissionsSummaryAdmin>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetCommissionsSummaryAdminQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCommissionsSummaryAdmin>>> = ({ signal }) => getCommissionsSummaryAdmin(params, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCommissionsSummaryAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetCommissionsSummaryAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getCommissionsSummaryAdmin>>>
-export type GetCommissionsSummaryAdminQueryError = unknown
-
-
-export function useGetCommissionsSummaryAdmin<TData = Awaited<ReturnType<typeof getCommissionsSummaryAdmin>>, TError = unknown>(
- params: undefined |  GetCommissionsSummaryAdminParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissionsSummaryAdmin>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getCommissionsSummaryAdmin>>,
-          TError,
-          Awaited<ReturnType<typeof getCommissionsSummaryAdmin>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetCommissionsSummaryAdmin<TData = Awaited<ReturnType<typeof getCommissionsSummaryAdmin>>, TError = unknown>(
- params?: GetCommissionsSummaryAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissionsSummaryAdmin>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getCommissionsSummaryAdmin>>,
-          TError,
-          Awaited<ReturnType<typeof getCommissionsSummaryAdmin>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetCommissionsSummaryAdmin<TData = Awaited<ReturnType<typeof getCommissionsSummaryAdmin>>, TError = unknown>(
- params?: GetCommissionsSummaryAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissionsSummaryAdmin>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Commission summary report
- */
-
-export function useGetCommissionsSummaryAdmin<TData = Awaited<ReturnType<typeof getCommissionsSummaryAdmin>>, TError = unknown>(
- params?: GetCommissionsSummaryAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissionsSummaryAdmin>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetCommissionsSummaryAdminQueryOptions(params,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary Commission summary report
- */
-export const prefetchGetCommissionsSummaryAdminQuery = async <TData = Awaited<ReturnType<typeof getCommissionsSummaryAdmin>>, TError = unknown>(
- queryClient: QueryClient, params?: GetCommissionsSummaryAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissionsSummaryAdmin>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetCommissionsSummaryAdminQueryOptions(params,options)
-
-  await queryClient.prefetchQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-/**
- * Atomically marks selected active commission entries as paid. Legacy referral entries marked paid are initially returned as RECONCILE and require explicit confirmation.
- * @summary Confirm payout for commission entries
- */
-export const postCommissionsPayoutsAdmin = (
-    postCommissionsPayoutsAdminBody: PostCommissionsPayoutsAdminBody,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<void>(
-      {url: `/commissions/payouts/admin`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: postCommissionsPayoutsAdminBody, signal
-    },
-      );
-    }
-  
-
-
-export const getPostCommissionsPayoutsAdminMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postCommissionsPayoutsAdmin>>, TError,{data: PostCommissionsPayoutsAdminBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postCommissionsPayoutsAdmin>>, TError,{data: PostCommissionsPayoutsAdminBody}, TContext> => {
-
-const mutationKey = ['postCommissionsPayoutsAdmin'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postCommissionsPayoutsAdmin>>, {data: PostCommissionsPayoutsAdminBody}> = (props) => {
-          const {data} = props ?? {};
-
-          return  postCommissionsPayoutsAdmin(data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostCommissionsPayoutsAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postCommissionsPayoutsAdmin>>>
-    export type PostCommissionsPayoutsAdminMutationBody = PostCommissionsPayoutsAdminBody
-    export type PostCommissionsPayoutsAdminMutationError = void
-
-    /**
- * @summary Confirm payout for commission entries
- */
-export const usePostCommissionsPayoutsAdmin = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postCommissionsPayoutsAdmin>>, TError,{data: PostCommissionsPayoutsAdminBody}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postCommissionsPayoutsAdmin>>,
-        TError,
-        {data: PostCommissionsPayoutsAdminBody},
-        TContext
-      > => {
-
-      const mutationOptions = getPostCommissionsPayoutsAdminMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * **CM-06** — GET /commissions/admin. Filters: payee_type, staff_id, collaborator_id, customer_profile_id, branch_id, date_from, date_to, mode, status, page, limit.
- * @summary Commission ledger
- */
-export const getCommissionsAdmin = (
-    params?: GetCommissionsAdminParams,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<GetCommissionsAdmin200>(
-      {url: `/commissions/admin`, method: 'GET',
-        params, signal
-    },
-      );
-    }
-  
-
-
-
-export const getGetCommissionsAdminInfiniteQueryKey = (params?: GetCommissionsAdminParams,) => {
-    return [
-    'infinite', `/commissions/admin`, ...(params ? [params]: [])
-    ] as const;
-    }
-
-export const getGetCommissionsAdminQueryKey = (params?: GetCommissionsAdminParams,) => {
-    return [
-    `/commissions/admin`, ...(params ? [params]: [])
-    ] as const;
-    }
-
-    
-export const getGetCommissionsAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getCommissionsAdmin>>>, TError = unknown>(params?: GetCommissionsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCommissionsAdmin>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetCommissionsAdminInfiniteQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCommissionsAdmin>>> = ({ signal }) => getCommissionsAdmin(params, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCommissionsAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetCommissionsAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getCommissionsAdmin>>>
-export type GetCommissionsAdminInfiniteQueryError = unknown
-
-
-export function useGetCommissionsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCommissionsAdmin>>>, TError = unknown>(
- params: undefined |  GetCommissionsAdminParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCommissionsAdmin>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getCommissionsAdmin>>,
-          TError,
-          Awaited<ReturnType<typeof getCommissionsAdmin>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetCommissionsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCommissionsAdmin>>>, TError = unknown>(
- params?: GetCommissionsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCommissionsAdmin>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getCommissionsAdmin>>,
-          TError,
-          Awaited<ReturnType<typeof getCommissionsAdmin>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetCommissionsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCommissionsAdmin>>>, TError = unknown>(
- params?: GetCommissionsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCommissionsAdmin>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Commission ledger
- */
-
-export function useGetCommissionsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCommissionsAdmin>>>, TError = unknown>(
- params?: GetCommissionsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCommissionsAdmin>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetCommissionsAdminInfiniteQueryOptions(params,options)
-
-  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary Commission ledger
- */
-export const prefetchGetCommissionsAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getCommissionsAdmin>>, TError = unknown>(
- queryClient: QueryClient, params?: GetCommissionsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCommissionsAdmin>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetCommissionsAdminInfiniteQueryOptions(params,options)
-
-  await queryClient.prefetchInfiniteQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-export const getGetCommissionsAdminQueryOptions = <TData = Awaited<ReturnType<typeof getCommissionsAdmin>>, TError = unknown>(params?: GetCommissionsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissionsAdmin>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetCommissionsAdminQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCommissionsAdmin>>> = ({ signal }) => getCommissionsAdmin(params, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCommissionsAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetCommissionsAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getCommissionsAdmin>>>
-export type GetCommissionsAdminQueryError = unknown
-
-
-export function useGetCommissionsAdmin<TData = Awaited<ReturnType<typeof getCommissionsAdmin>>, TError = unknown>(
- params: undefined |  GetCommissionsAdminParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissionsAdmin>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getCommissionsAdmin>>,
-          TError,
-          Awaited<ReturnType<typeof getCommissionsAdmin>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetCommissionsAdmin<TData = Awaited<ReturnType<typeof getCommissionsAdmin>>, TError = unknown>(
- params?: GetCommissionsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissionsAdmin>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getCommissionsAdmin>>,
-          TError,
-          Awaited<ReturnType<typeof getCommissionsAdmin>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetCommissionsAdmin<TData = Awaited<ReturnType<typeof getCommissionsAdmin>>, TError = unknown>(
- params?: GetCommissionsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissionsAdmin>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Commission ledger
- */
-
-export function useGetCommissionsAdmin<TData = Awaited<ReturnType<typeof getCommissionsAdmin>>, TError = unknown>(
- params?: GetCommissionsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissionsAdmin>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetCommissionsAdminQueryOptions(params,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary Commission ledger
- */
-export const prefetchGetCommissionsAdminQuery = async <TData = Awaited<ReturnType<typeof getCommissionsAdmin>>, TError = unknown>(
- queryClient: QueryClient, params?: GetCommissionsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissionsAdmin>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetCommissionsAdminQueryOptions(params,options)
-
-  await queryClient.prefetchQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-/**
- * **CM-07** — POST /commissions/admin. Provide either `amount` or `base_amount` + `percent`; supports attaching `customer_treatment_id`/`session_id` and a branch.
- * @summary Create a manual commission entry
- */
-export const postCommissionsAdmin = (
-    postCommissionsAdminBody: PostCommissionsAdminBody,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<PostCommissionsAdmin200>(
-      {url: `/commissions/admin`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: postCommissionsAdminBody, signal
-    },
-      );
-    }
-  
-
-
-export const getPostCommissionsAdminMutationOptions = <TError = UnprocessableEntityResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postCommissionsAdmin>>, TError,{data: PostCommissionsAdminBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postCommissionsAdmin>>, TError,{data: PostCommissionsAdminBody}, TContext> => {
-
-const mutationKey = ['postCommissionsAdmin'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postCommissionsAdmin>>, {data: PostCommissionsAdminBody}> = (props) => {
-          const {data} = props ?? {};
-
-          return  postCommissionsAdmin(data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostCommissionsAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postCommissionsAdmin>>>
-    export type PostCommissionsAdminMutationBody = PostCommissionsAdminBody
-    export type PostCommissionsAdminMutationError = UnprocessableEntityResponse
-
-    /**
- * @summary Create a manual commission entry
- */
-export const usePostCommissionsAdmin = <TError = UnprocessableEntityResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postCommissionsAdmin>>, TError,{data: PostCommissionsAdminBody}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postCommissionsAdmin>>,
-        TError,
-        {data: PostCommissionsAdminBody},
-        TContext
-      > => {
-
-      const mutationOptions = getPostCommissionsAdminMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
  * **CM-02** — GET /commission-rules/{id}.
  * @summary Get commission rule details
  */
@@ -906,8 +244,8 @@ export const prefetchGetCommissionRulesIdAdminQuery = async <TData = Awaited<Ret
 
 
 /**
- * **CM-04** — PUT /commission-rules/{id}. Does not affect entries that have already been settled.
- * @summary Update a commission rule
+ * **CM-04** — PUT /commission-rules/{id}. Quy tắc là danh mục cố định: chỉ nhận `percent`/`fixed_amount` (giá trị), `service_id`/`staff_id`/`branch_id` (phạm vi) và `is_active`. Các trường `name`, `payee_type`, `base`, `priority`, `valid_from/valid_to` cố định theo kịch bản — bỏ qua nếu client gửi.
+ * @summary Update a commission rule (chỉ giá trị + phạm vi)
  */
 export const putCommissionRulesIdAdmin = (
     id: string,
@@ -955,7 +293,7 @@ const {mutation: mutationOptions} = options ?
     export type PutCommissionRulesIdAdminMutationError = NotFoundResponse
 
     /**
- * @summary Update a commission rule
+ * @summary Update a commission rule (chỉ giá trị + phạm vi)
  */
 export const usePutCommissionRulesIdAdmin = <TError = NotFoundResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putCommissionRulesIdAdmin>>, TError,{id: string;data: PutCommissionRulesIdAdminBody}, TContext>, }
@@ -971,15 +309,15 @@ export const usePutCommissionRulesIdAdmin = <TError = NotFoundResponse,
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **CM-05** — DELETE /commission-rules/{id}. Sets is_active=false.
- * @summary Deactivate a commission rule (soft delete)
+ * **CM-05** — DELETE /commission-rules/{id}. Xóa hẳn quy tắc (dùng khi cơ sở ngừng hoạt động hoặc tạo nhầm).
+ * @summary Delete a commission rule
  */
 export const deleteCommissionRulesIdAdmin = (
     id: string,
  ) => {
       
       
-      return customInstance<DeleteCommissionRulesIdAdmin200>(
+      return customInstance<Response>(
       {url: `/commission-rules/${id}/admin`, method: 'DELETE'
     },
       );
@@ -1017,7 +355,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteCommissionRulesIdAdminMutationError = NotFoundResponse
 
     /**
- * @summary Deactivate a commission rule (soft delete)
+ * @summary Delete a commission rule
  */
 export const useDeleteCommissionRulesIdAdmin = <TError = NotFoundResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteCommissionRulesIdAdmin>>, TError,{id: string}, TContext>, }
@@ -1227,7 +565,7 @@ export const prefetchGetCommissionRulesAdminQuery = async <TData = Awaited<Retur
 
 
 /**
- * **CM-03** — POST /commission-rules. Body: name, payee_type (STAFF|COLLABORATOR|CUSTOMER_REFERRER), base (PAYMENT|SESSION_VALUE), percent or fixed_amount (mutually exclusive), service_id?, staff_id?, branch_id?, priority, valid_from?, valid_to?.
+ * **CM-03** — POST /commission-rules. Body: `name`, `type` (REFERRAL|SESSION — điều kiện kích hoạt cố định, payee_role được suy ra), `branch_id` (bắt buộc), `percent`/`fixed_amount` (loại trừ nhau), `service_id?`, `staff_id?`, `is_active?`. Mỗi điều kiện kích hoạt + người cụ thể chỉ có 1 quy tắc trong mỗi cơ sở (409 nếu trùng).
  * @summary Create a commission rule
  */
 export const postCommissionRulesAdmin = (
@@ -1246,7 +584,7 @@ export const postCommissionRulesAdmin = (
   
 
 
-export const getPostCommissionRulesAdminMutationOptions = <TError = UnprocessableEntityResponse,
+export const getPostCommissionRulesAdminMutationOptions = <TError = void | UnprocessableEntityResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postCommissionRulesAdmin>>, TError,{data: PostCommissionRulesAdminBody}, TContext>, }
 ): UseMutationOptions<Awaited<ReturnType<typeof postCommissionRulesAdmin>>, TError,{data: PostCommissionRulesAdminBody}, TContext> => {
 
@@ -1273,12 +611,12 @@ const {mutation: mutationOptions} = options ?
 
     export type PostCommissionRulesAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postCommissionRulesAdmin>>>
     export type PostCommissionRulesAdminMutationBody = PostCommissionRulesAdminBody
-    export type PostCommissionRulesAdminMutationError = UnprocessableEntityResponse
+    export type PostCommissionRulesAdminMutationError = void | UnprocessableEntityResponse
 
     /**
  * @summary Create a commission rule
  */
-export const usePostCommissionRulesAdmin = <TError = UnprocessableEntityResponse,
+export const usePostCommissionRulesAdmin = <TError = void | UnprocessableEntityResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postCommissionRulesAdmin>>, TError,{data: PostCommissionRulesAdminBody}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof postCommissionRulesAdmin>>,

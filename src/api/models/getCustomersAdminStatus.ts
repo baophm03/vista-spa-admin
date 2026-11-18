@@ -6,12 +6,11 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type CommissionSummaryRowPayeeType = typeof CommissionSummaryRowPayeeType[keyof typeof CommissionSummaryRowPayeeType];
+export type GetCustomersAdminStatus = typeof GetCustomersAdminStatus[keyof typeof GetCustomersAdminStatus];
 
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const CommissionSummaryRowPayeeType = {
-  STAFF: 'STAFF',
-  COLLABORATOR: 'COLLABORATOR',
-  CUSTOMER_REFERRER: 'CUSTOMER_REFERRER',
+export const GetCustomersAdminStatus = {
+  active: 'active',
+  inactive: 'inactive',
 } as const;

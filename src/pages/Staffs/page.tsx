@@ -37,6 +37,7 @@ import {
   DEFAULT_VISIBLE_COLUMNS,
   STAFF_COLUMN_OPTIONS,
   isAdminRole,
+  isStaffRole,
   isTechnicianRole,
   type StaffColumnKey,
   type StaffRow,
@@ -166,7 +167,10 @@ export default function Staffs() {
   const roleRows = (pickData<{ rows?: { id: string; role_name?: string; name?: string; code?: string | null }[] }>(rolesQuery.data) as
     | { rows?: { id: string; role_name?: string; name?: string; code?: string | null }[] }
     | undefined)?.rows ?? []
-  const roles = roleRows.map((role) => ({ id: role.id, role_name: role.role_name ?? role.name ?? role.id, code: role.code ?? null }))
+  // Loại vai trò Khách hàng — tài khoản khách không thuộc trang quản lý nhân sự
+  const roles = roleRows
+    .filter((role) => isStaffRole(role.code))
+    .map((role) => ({ id: role.id, role_name: role.role_name ?? role.name ?? role.id, code: role.code ?? null }))
   const branches = (pickData<Branch[]>(branchesQuery.data) ?? []) as Branch[]
   const adminRoleId = roles.find((role) => isAdminRole(role.code))?.id
   const selectedRole = roles.find((role) => role.id === selectedRoleId)

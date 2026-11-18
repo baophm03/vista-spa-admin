@@ -6,4 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type CommissionEntryPercent = number | null;
+export type CommissionRulePayeeRoleId = string | null;

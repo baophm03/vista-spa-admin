@@ -6,4 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type CommissionEntryPayeeType = 'STAFF' | 'COLLABORATOR' | 'CUSTOMER_REFERRER' | null;
+/**
+ * Role người nhận: { id, code (ktv|customer), role_name }
+ */
+export type CommissionRulePayeeRoleAnyOf = { [key: string]: unknown };

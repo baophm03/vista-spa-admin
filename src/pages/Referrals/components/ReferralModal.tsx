@@ -20,8 +20,6 @@ interface ReferralModalProps {
   discountRules: DiscountRule[]
   referrerTypeValue: string | undefined
   customers: CustomerOption[]
-  collaboratorsQueryLoading: boolean
-  collaboratorNameById: Map<string, string>
   customersQueryLoading: boolean
   alreadyReferredIds: Set<string>
 }
@@ -37,8 +35,6 @@ export default function ReferralModal({
   discountRules,
   referrerTypeValue,
   customers,
-  collaboratorsQueryLoading,
-  collaboratorNameById,
   customersQueryLoading,
   alreadyReferredIds,
 }: ReferralModalProps) {
@@ -46,7 +42,7 @@ export default function ReferralModal({
 
   return (
     <Modal
-      title={editing ? 'Sửa giới thiệu' : 'Ghi nhận giới thiệu'}
+      title={editing ? 'Sửa giới thiệu' : 'Ghi nhận hoa hồng'}
       open={open}
       onCancel={onCancel}
       onOk={onSubmit}
@@ -92,34 +88,24 @@ export default function ReferralModal({
             </Form.Item>
             <Form.Item
               name="referrer_id"
-              label={referrerTypeValue === 'CUSTOMER' ? 'Khách giới thiệu' : 'Cộng tác viên giới thiệu'}
+              label="User giới thiệu"
               rules={[{ required: true, message: 'Chọn người giới thiệu' }]}
             >
-              {referrerTypeValue === 'CUSTOMER' ? (
-                <Select
-                  showSearch
-                  optionFilterProp="label"
-                  placeholder="Chọn khách hàng"
-                  onChange={(value) => {
-                    // Khách không thể tự giới thiệu chính mình — nếu đã chọn trùng thì xóa phía "được giới thiệu"
-                    if (form.getFieldValue('referred_profile_id') === value) {
-                      form.setFieldValue('referred_profile_id', undefined)
-                    }
-                  }}
-                  options={customers.map((c) => ({
-                    value: c.id,
-                    label: [c.full_name, c.phone].filter(Boolean).join(' — ') || c.id,
-                  }))}
-                />
-              ) : (
-                <Select
-                  showSearch
-                  optionFilterProp="label"
-                  placeholder="Chọn cộng tác viên"
-                  loading={collaboratorsQueryLoading}
-                  options={[...collaboratorNameById.entries()].map(([value, label]) => ({ value, label }))}
-                />
-              )}
+              <Select
+                showSearch
+                optionFilterProp="label"
+                placeholder="Chọn khách hàng"
+                onChange={(value) => {
+                  // Khách không thể tự giới thiệu chính mình — nếu đã chọn trùng thì xóa phía "được giới thiệu"
+                  if (form.getFieldValue('referred_profile_id') === value) {
+                    form.setFieldValue('referred_profile_id', undefined)
+                  }
+                }}
+                options={customers.map((c) => ({
+                  value: c.id,
+                  label: [c.full_name, c.phone].filter(Boolean).join(' — ') || c.id,
+                }))}
+              />
             </Form.Item>
             <Form.Item
               name="referred_profile_id"
