@@ -1,13 +1,15 @@
-import { useContext, useEffect, useMemo, useState } from 'react'
+import { useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import dayjs, { type Dayjs } from 'dayjs'
-import { Alert, Button, Form, Grid, Input, Modal, Select, Table, Tag, Tooltip, message } from 'antd'
-import { DeleteOutlined, MenuFoldOutlined, PlusOutlined, TeamOutlined } from '@ant-design/icons'
+import { Alert, Button, Dropdown, Form, Grid, Input, Modal, Select, Space, Table, Tag, Tooltip, message } from 'antd'
+import type { MenuProps } from 'antd'
+import { CalendarOutlined, DeleteOutlined, DownOutlined, MenuFoldOutlined, MenuUnfoldOutlined, PlusOutlined } from '@ant-design/icons'
 import { errorMessage, pickData } from '@/api/helpers'
 import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import type { StaffScheduleDate as StaffScheduleDateRow, ShiftTemplate as ShiftTemplateRow } from './types'
-import { deleteStaffScheduleDatesIdAdmin, getGetBranchDateNotesAdminQueryKey, getGetShiftTemplatesAdminQueryKey, getGetStaffScheduleDatesAdminQueryKey, postBranchDateNotesAdmin, postStaffScheduleDatesAdmin, putStaffScheduleDatesIdAdmin, useGetBranchDateNotesAdmin, useGetShiftTemplatesAdmin, useGetStaffScheduleDatesAdmin } from '@/api/endpoints/staff'
+import { getGetBranchDateNotesAdminQueryKey, getGetShiftTemplatesAdminQueryKey, getGetStaffScheduleDatesAdminQueryKey, postBranchDateNotesAdmin, postStaffScheduleDatesAdmin, putStaffScheduleDatesIdAdmin, useGetBranchDateNotesAdmin, useGetShiftTemplatesAdmin, useGetStaffScheduleDatesAdmin } from '@/api/endpoints/staff'
+import { customInstance } from '@/api/mutator/custom-instance'
 import type { SchedulePageData, ScheduleStaff } from './types'
 import { staffLabel } from './types'
 import DateScheduleFormModal, { toFormDates } from './components/DateScheduleFormModal'
@@ -23,6 +25,7 @@ import QuickCreatePopover from './calendar/QuickCreatePopover'
 interface Props extends SchedulePageData { loadingShared: boolean }
 interface ConflictAppointment { id: string; appt_date: string; start_time: string; customer_profile?: { full_name?: string }; service?: { title?: string } }
 type StaffScheduleDateWithStaff = StaffScheduleDateRow & { shift_template?: ShiftTemplateRow | null }
+type ShiftTemplateWithDeletion = ShiftTemplateRow & { is_deleted?: boolean; deleted_at?: string | null }
 interface DateCellShift {
   key: string
   row: StaffScheduleDateWithStaff
@@ -78,7 +81,7 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
   const selectedBranch = Form.useWatch('branch_id', form)
   const ownBranchId = staff.find((person) => person.id === access.currentUserId)?.branch_id
 
-  const weekStart = mondayOf(anchor)
+  const weekStart = useMemo(() => mondayOf(anchor), [anchor])
   const viewingNextWeek = weekStart.isSame(nextWeekStart, 'day')
   /** Phạm vi ngày hiển thị theo view hiện tại (đồng thời là phạm vi fetch). */
   const range = useMemo((): [Dayjs, Dayjs] => {
@@ -97,7 +100,10 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
   }
   if (canManage && branchFilter) dateParams.branch_id = branchFilter
   const dateSchedulesQuery = useGetStaffScheduleDatesAdmin(dateParams as never)
-  const templatesQuery = useGetShiftTemplatesAdmin(branchFilter ? { branch_id: branchFilter } : {})
+  const templatesQuery = useGetShiftTemplatesAdmin({
+    ...(branchFilter ? { branch_id: branchFilter } : {}),
+    active: 'true',
+  })
   // Ghi chú theo ngày của cơ sở (lễ, sự kiện, họp...) — hiển thị ở tiêu đề cột ngày
   const noteParams: Record<string, unknown> = {
     from_date: range[0].format('YYYY-MM-DD'),
@@ -110,17 +116,32 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
   const [noteForm] = Form.useForm()
 
   const dateRows = (pickData<StaffScheduleDateWithStaff[] | undefined>(dateSchedulesQuery.data) ?? []) as StaffScheduleDateWithStaff[]
-  const templates = (pickData<ShiftTemplateRow[] | undefined>(templatesQuery.data) ?? []) as ShiftTemplateRow[]
+  const rawTemplates = (pickData<ShiftTemplateWithDeletion[] | undefined>(templatesQuery.data) ?? []) as ShiftTemplateWithDeletion[]
+  const templates = rawTemplates.filter((template) =>
+    template.is_active !== false && !template.is_deleted && !template.deleted_at,
+  )
+  const liveTemplateIds = useMemo(() => new Set(templates.map((template) => template.id)), [templates])
+  const liveStaffIds = useMemo(() => new Set(staff.map((person) => person.id)), [staff])
+
+  // Bỏ lịch mồ côi của nhân viên đã khóa/xóa và lịch còn tham chiếu tới ca đã xóa.
+  // Khi danh mục ca đang lỗi/chưa tải xong, giữ dữ liệu lịch để tránh làm trống màn hình tạm thời.
+  const visibleDateRows = useMemo(() => dateRows.filter((row) => {
+    if (row.is_active === false || !liveStaffIds.has(row.staff_id)) return false
+    const template = row.shift_template as ShiftTemplateWithDeletion | null | undefined
+    if (template?.is_deleted || template?.deleted_at) return false
+    const templateId = String(row.shift_template_id ?? template?.id ?? '')
+    if (!templateId) return false
+    return !templatesQuery.isSuccess || liveTemplateIds.has(templateId)
+  }), [dateRows, liveStaffIds, liveTemplateIds, templatesQuery.isSuccess])
 
   // Các ngày có ca làm — dùng cho chấm nhỏ trên mini calendar
   const eventDates = useMemo(() => {
     const dates = new Set<string>()
-    for (const row of dateRows) {
-      if (row.is_active === false) continue
+    for (const row of visibleDateRows) {
       dates.add(String(row.work_date).slice(0, 10))
     }
     return dates
-  }, [dateRows])
+  }, [visibleDateRows])
   const dateNotes = (pickData<{ branch_id: string; note_date: string; note: string }[] | undefined>(notesQuery.data) ?? [])
   const notesByDate = useMemo(() => {
     const map = new Map<string, string[]>()
@@ -138,34 +159,24 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
   ].filter(Boolean).join(' · ')
   const loading = loadingShared || dateSchedulesQuery.isLoading || templatesQuery.isLoading
 
-  // Danh sách KTV hiển thị trong panel lọc: nhân sự theo cơ sở + bất kỳ ai có lịch trong phạm vi
+  // Chỉ lấy nhân sự còn tồn tại trong danh sách KTV; không bổ sung lại nhân viên từ lịch cũ.
   const filterStaff = useMemo(() => {
-    const filtered = staff.filter((person) => !canManage || !branchFilter || person.branch_id === branchFilter)
-    const all = new Map(filtered.map((person) => [person.id, person]))
-    for (const row of dateRows) {
-      if (!all.has(row.staff_id)) all.set(row.staff_id, { id: row.staff_id, branch_id: row.branch_id })
-    }
-    return [...all.values()]
-  }, [staff, dateRows, canManage, branchFilter])
+    return staff.filter((person) => !canManage || !branchFilter || person.branch_id === branchFilter)
+  }, [staff, canManage, branchFilter])
 
   // Map id → thông tin KTV (dùng cho avatar/tên trên khối ca & panel)
   const staffById = useMemo(() => {
-    const map = new Map(staff.map((person) => [person.id, person]))
-    for (const row of dateRows) {
-      if (!map.has(row.staff_id)) map.set(row.staff_id, { id: row.staff_id, branch_id: row.branch_id })
-    }
-    return map
-  }, [staff, dateRows])
+    return new Map(staff.map((person) => [person.id, person]))
+  }, [staff])
 
   // Ẩn/hiện KTV hoặc ca bằng checkbox → lọc dòng trước khi group thành khối ca
   const filteredRows = useMemo(
-    () => dateRows.filter((row) => {
-      if (row.is_active === false) return false
+    () => visibleDateRows.filter((row) => {
       if (hiddenStaff.has(row.staff_id)) return false
       const templateId = String(row.shift_template_id ?? row.shift_template?.id ?? '')
       return !hiddenShifts.has(templateId)
     }),
-    [dateRows, hiddenStaff, hiddenShifts],
+    [visibleDateRows, hiddenStaff, hiddenShifts],
   )
 
   /** Group dòng lịch thành "khối ca" theo (ngày + ca): 1 khối = 1 ca làm với N KTV. */
@@ -193,7 +204,7 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
 
   const shiftsForCell = (personId: string, date: Dayjs): DateCellShift[] => {
     const iso = date.format('YYYY-MM-DD')
-    return dateRows
+    return visibleDateRows
       .filter((row) => row.staff_id === personId && String(row.work_date).slice(0, 10) === iso && row.is_active !== false)
       .map((row): DateCellShift => ({
         key: `date-${row.id}`,
@@ -212,10 +223,18 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
 
   const openForm = (
     row?: StaffScheduleDateWithStaff,
-    preset?: { date?: Dayjs; staffId?: string; templateId?: string },
+    preset?: { date?: Dayjs; staffId?: string; templateId?: string; branchId?: string },
   ) => {
     setEditing(row ?? null)
     const rowStaff = row ? staff.find((person) => person.id === row.staff_id) : undefined
+    const presetStaff = staff.find((person) => person.id === preset?.staffId)
+    const branchId = isTechSelf
+      ? ownBranchId
+      : row?.branch_id || branchFilter || preset?.branchId || rowStaff?.branch_id || presetStaff?.branch_id || branches[0]?.id
+    const presetTemplate = templates.find((template) =>
+      template.id === preset?.templateId && (!template.branch_id || template.branch_id === branchId),
+    )
+    const presetShiftIds = presetTemplate ? [presetTemplate.id] : undefined
     if (isTechSelf) {
       // KTV tự đăng ký: khóa staff + cơ sở theo hồ sơ của mình
       const staffId = row && row.staff_id === access.currentUserId ? row.staff_id : access.currentUserId
@@ -229,13 +248,12 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
         staff_id: staffId,
         branch_id: ownBranchId,
         work_dates: preset?.date ? [preset.date] : undefined,
-        shift_template_id: preset?.templateId ? [preset.templateId] : undefined,
+        shift_template_id: presetShiftIds,
         note: undefined,
       })
       setOpen(true)
       return
     }
-    const branchId = row?.branch_id || branchFilter || rowStaff?.branch_id || branches[0]?.id
     const staffId = row
       ? (rowStaff?.branch_id === branchId ? row.staff_id : undefined)
       : (preset?.staffId && staff.find((person) => person.id === preset.staffId)?.branch_id === branchId ? preset.staffId : undefined)
@@ -249,7 +267,7 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
       staff_id: staffId,
       branch_id: branchId,
       work_dates: preset?.date ? [preset.date] : undefined,
-      shift_template_id: preset?.templateId ? [preset.templateId] : undefined,
+      shift_template_id: presetShiftIds,
       note: undefined,
     })
     setOpen(true)
@@ -300,12 +318,47 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
     }
   }
 
-  const remove = async (row: StaffScheduleDateWithStaff, confirmed = false) => {
+  const deleteSchedule = (id: string, reason: string, confirmed = false) =>
+    customInstance({
+      url: `/staff-schedule-dates/${encodeURIComponent(id)}/admin`,
+      method: 'DELETE',
+      data: { reason, confirm_future_appointments: confirmed },
+    })
+
+  const confirmDeleteReason = (title: string, onConfirm: (reason: string) => Promise<void>) => {
+    let reason = ''
+    const dialog = Modal.confirm({
+      title,
+      width: 440,
+      centered: true,
+      icon: <DeleteOutlined style={{ color: '#cf1322' }} />,
+      content: (
+        <label style={{ display: 'block', padding: '8px 0 20px' }}>
+          <span style={{ display: 'block', fontWeight: 600, marginBottom: 6 }}>Lý do xóa <span style={{ color: '#cf1322' }}>*</span></span>
+          <Input.TextArea
+          aria-label="Lý do xóa"
+          placeholder="Nhập lý do để xác nhận"
+          rows={3}
+          maxLength={500}
+          showCount
+          style={{ resize: 'none' }}
+          onChange={(event) => {
+            reason = event.target.value.trim()
+            dialog.update({ okButtonProps: { danger: true, disabled: !reason } })
+          }}
+          />
+        </label>
+      ),
+      okText: title.startsWith('Gỡ') ? 'Gỡ KTV' : 'Xóa ca',
+      cancelText: 'Hủy',
+      okButtonProps: { danger: true, disabled: true },
+      onOk: () => reason ? onConfirm(reason) : Promise.reject(),
+    })
+  }
+
+  const remove = async (row: StaffScheduleDateWithStaff, reason: string, confirmed = false) => {
     try {
-      await deleteStaffScheduleDatesIdAdmin(
-        row.id,
-        confirmed ? { confirm_future_appointments: 'true' } : undefined,
-      )
+      await deleteSchedule(row.id, reason, confirmed)
       message.success('Đã xóa lịch theo ngày. Các lịch hẹn đã đặt được giữ nguyên.')
       void queryClient.invalidateQueries({ queryKey: getGetStaffScheduleDatesAdminQueryKey() })
     } catch (err: unknown) {
@@ -328,19 +381,19 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
             />
           </div>,
           okText: 'Xác nhận xóa lịch', cancelText: 'Quay lại',
-          onOk: () => remove(row, true),
+          onOk: () => remove(row, reason, true),
         })
       } else message.error(errorMessage(err))
     }
   }
 
   /** Xóa cả khối ca (mọi KTV của 1 ca trong 1 ngày). 409 gom chung 1 modal xác nhận. */
-  const removeBlock = async (block: ScheduleBlock) => {
+  const removeBlock = async (block: ScheduleBlock, reason: string) => {
     const affected: ConflictAppointment[] = []
     const blockedRows: StaffScheduleDateWithStaff[] = []
     for (const row of block.rows) {
       try {
-        await deleteStaffScheduleDatesIdAdmin(row.id)
+        await deleteSchedule(row.id, reason)
       } catch (err: unknown) {
         const response = (err as { response?: { data?: { code?: string; details?: Record<string, unknown> } } })?.response?.data
         if (response?.code === 'FUTURE_APPOINTMENTS_EXIST') {
@@ -352,7 +405,7 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
     const finish = async () => {
       for (const row of blockedRows) {
         try {
-          await deleteStaffScheduleDatesIdAdmin(row.id, { confirm_future_appointments: 'true' })
+          await deleteSchedule(row.id, reason, true)
         } catch (err) {
           message.error(errorMessage(err))
         }
@@ -459,13 +512,13 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
         canManage={canManage}
         canEditRow={canEditRow}
         onEditRow={(row: StaffScheduleDateWithStaff) => openForm(row)}
-        onRemoveRow={(row: StaffScheduleDateWithStaff) => void remove(row)}
+        onRemoveRow={(row: StaffScheduleDateWithStaff) => confirmDeleteReason('Gỡ KTV khỏi ca?', (reason) => remove(row, reason))}
         onDuplicate={(duplicated: ScheduleBlock) => {
           const first = duplicated.rows[0]
-          openForm(undefined, { staffId: first?.staff_id, templateId: String(duplicated.template?.id ?? first?.shift_template_id ?? '') })
+          openForm(undefined, { staffId: first?.staff_id, branchId: first?.branch_id, templateId: duplicated.template?.id ?? first?.shift_template_id })
           setSelectedBlockKey(null)
         }}
-        onDeleteBlock={(target: ScheduleBlock) => void removeBlock(target)}
+        onDeleteBlock={(target: ScheduleBlock) => confirmDeleteReason('Xóa ca làm việc?', (reason) => removeBlock(target, reason))}
         onClose={() => setSelectedBlockKey(null)}
       />
     </div>
@@ -529,17 +582,47 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
   // Slot ref gắn sau commit đầu tiên nên đợi 1 effect để lấy node.
   const toolbarSlotRef = useContext(ToolbarSlotContext)
   const [toolbarSlot, setToolbarSlot] = useState<HTMLDivElement | null>(null)
+  const calendarViewportRef = useRef<HTMLDivElement>(null)
+  const [calendarViewportHeight, setCalendarViewportHeight] = useState(0)
   useEffect(() => {
     setToolbarSlot(toolbarSlotRef?.current ?? null)
   }, [toolbarSlotRef])
 
+  useLayoutEffect(() => {
+    const measureViewport = () => {
+      const viewport = calendarViewportRef.current
+      if (!viewport || window.innerWidth < 768) return
+      const top = viewport.getBoundingClientRect().top
+      const nextHeight = Math.max(320, window.innerHeight - top - 12)
+      setCalendarViewportHeight((current) => Math.abs(current - nextHeight) < 1 ? current : nextHeight)
+    }
+
+    measureViewport()
+    const observer = new ResizeObserver(measureViewport)
+    if (calendarViewportRef.current?.parentElement) observer.observe(calendarViewportRef.current.parentElement)
+    window.addEventListener('resize', measureViewport)
+    return () => {
+      observer.disconnect()
+      window.removeEventListener('resize', measureViewport)
+    }
+  })
+
   const showCreate = canManage || isTechSelf
   const createDisabled = isTechSelf && !registrationOpen
   const createLabel = canManage ? 'Tạo ca làm' : 'Đăng ký ca'
+  const createMenuItems: MenuProps['items'] = [
+    {
+      key: 'selected-day',
+      icon: <CalendarOutlined />,
+      label: `Tạo cho ngày ${anchor.format('DD/MM/YYYY')}`,
+    },
+  ]
 
   return <div className="flex h-full min-h-0 flex-col">
     {toolbarSlot && createPortal(
       <CalendarToolbar
+        anchor={anchor}
+        onAnchorChange={(date) => { setAnchor(date); setSelectedBlockKey(null) }}
         view={view}
         onViewChange={(nextView) => { setView(nextView); setSelectedBlockKey(null) }}
         branches={canManage ? branches : []}
@@ -569,112 +652,152 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
     )}
     {!!error && <Alert type="error" showIcon message="Không tải được lịch theo ngày" description={error} action={<Button size="small" onClick={refreshShared}>Thử lại</Button>} style={{ marginBottom: 16 }} />}
 
-    {/* Calendar kiểu Google — desktop trở lên. Chỉ lưới giờ cuộn trong khung, panel trái tự cuộn riêng. */}
-    <div className="desktop-only min-h-0! flex-1!">
-      <div style={{ display: 'flex', gap: 8, height: '100%' }}>
+    {/* Calendar kiểu Google — desktop trở lên. Lưới giờ, danh sách ca và KTV cuộn trong vùng riêng. */}
+    <div
+      ref={calendarViewportRef}
+      className="desktop-only min-h-0! overflow-hidden!"
+      style={{ height: calendarViewportHeight || undefined, flexShrink: 0 }}
+    >
+      <div style={{ display: 'flex', gap: 8, height: '100%', minHeight: 0, overflow: 'hidden' }}>
         {leftPanelOpen && !isMobile && (
           <div style={{
             width: 265,
             flexShrink: 0,
             display: 'flex',
             flexDirection: 'column',
-            gap: 12,
+            gap: 8,
             border: '1px solid var(--brand-border-soft)',
             borderRadius: 12,
             background: '#fff',
             padding: 12,
             boxSizing: 'border-box',
             minHeight: 0,
-            overflowY: 'auto',
+            overflow: 'hidden',
           }}>
-            {/* Nút tạo ca kiểu Google Calendar — đầu panel trái */}
-            {showCreate && (
-              <Button
-                icon={<PlusOutlined style={{ fontSize: 18, color: '#3B3C3D' }} />}
-                disabled={createDisabled}
-                onClick={() => openForm()}
-                style={{
-                  height: 44,
-                  width: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'flex-start',
-                  gap: 10,
-                  borderRadius: 16,
-                  border: '1px solid var(--brand-border-soft)',
-                  background: '#fff',
-                  fontWeight: 600,
-                  fontSize: 14,
-                  color: '#3B3C3D',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.14), 0 2px 8px rgba(0,0,0,0.08)',
-                  paddingInline: 16,
-                }}
-              >
-                {createLabel}
-              </Button>
-            )}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8, flexShrink: 0 }}>
+              {showCreate && (
+                <Space.Compact
+                  style={{
+                    flex: '1 1 0',
+                    minWidth: 0,
+                  }}
+                >
+                  <Button
+                    type="primary"
+                    icon={<PlusOutlined style={{ fontSize: 16 }} />}
+                    disabled={createDisabled}
+                    onClick={() => openForm()}
+                    style={{
+                      flex: '1 1 0',
+                      minWidth: 0,
+                      height: 40,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      borderRadius: '10px 0 0 10px',
+                      fontWeight: 600,
+                      fontSize: 14,
+                      boxShadow: 'none',
+                      paddingInline: 8,
+                    }}
+                  >
+                    {createLabel}
+                  </Button>
+                  <Dropdown
+                    trigger={['click']}
+                    menu={{
+                      items: createMenuItems,
+                      onClick: ({ key }) => {
+                        if (key === 'selected-day') openForm(undefined, { date: anchor })
+                      },
+                    }}
+                  >
+                    <Button
+                      aria-label="Tùy chọn tạo ca"
+                      title="Tùy chọn tạo ca"
+                      disabled={createDisabled}
+                      type="primary"
+                      icon={<DownOutlined style={{ fontSize: 11 }} />}
+                      style={{
+                        width: 36,
+                        height: 40,
+                        flexShrink: 0,
+                        padding: 0,
+                        borderRadius: '0 10px 10px 0',
+                        borderInlineStartColor: 'rgba(255,255,255,0.32)',
+                        boxShadow: 'none',
+                      }}
+                    />
+                  </Dropdown>
+                </Space.Compact>
+              )}
               <Tooltip title="Thu bảng điều khiển trái">
                 <Button
                   aria-label="Thu bảng điều khiển trái"
                   type="text"
-                  size="small"
+                  style={{ width: 40, height: 40, flexShrink: 0, borderRadius: 8, padding: 0 }}
                   icon={<MenuFoldOutlined style={{ fontSize: 14, color: '#6F7071' }} />}
                   onClick={() => setLeftPanelOpen(false)}
                 />
               </Tooltip>
             </div>
-            <MiniMonthCalendar
-              value={anchor}
-              onSelect={(date) => { setAnchor(date); setSelectedBlockKey(null) }}
-              eventDates={eventDates}
-            />
-            <div style={{ borderTop: '1px solid var(--brand-border-soft, #EFE7EC)' }} />
-            <ShiftFilterPanel
-              templates={templates}
-              hidden={hiddenShifts}
-              onToggle={toggleShift}
-              onToggleAll={toggleAllShifts}
-            />
-            <div style={{ borderTop: '1px solid var(--brand-border-soft, #EFE7EC)' }} />
-            <StaffFilterPanel
-              staff={filterStaff}
-              hidden={hiddenStaff}
-              onToggle={toggleStaff}
-            />
+            <div style={{ flexShrink: 0 }}>
+              <MiniMonthCalendar
+                value={anchor}
+                onSelect={(date) => { setAnchor(date); setSelectedBlockKey(null) }}
+                eventDates={eventDates}
+              />
+            </div>
+            <div style={{ borderTop: '1px solid var(--brand-border-soft, #EFE7EC)', flexShrink: 0 }} />
+            <div style={{ flexShrink: 0 }}>
+              <ShiftFilterPanel
+                templates={templates}
+                hidden={hiddenShifts}
+                onToggle={toggleShift}
+                onToggleAll={toggleAllShifts}
+              />
+            </div>
+            <div style={{ borderTop: '1px solid var(--brand-border-soft, #EFE7EC)', flexShrink: 0 }} />
+            <div style={{ display: 'flex', flex: '1 1 auto', minHeight: 0 }}>
+              <StaffFilterPanel
+                staff={filterStaff}
+                hidden={hiddenStaff}
+                onToggle={toggleStaff}
+              />
+            </div>
           </div>
         )}
         {!leftPanelOpen && !isMobile && (
-          // Đã thu gọn: rail dọc với FAB tạo ca + nút mở panel (kiểu Google Calendar)
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, flexShrink: 0, alignSelf: 'flex-start' }}>
             {showCreate && (
               <Tooltip title={createDisabled ? `Đã hết hạn đăng ký (hạn ${deadlineText})` : createLabel} placement="right">
                 <Button
                   aria-label={createLabel}
+                  type="default"
                   disabled={createDisabled}
                   onClick={() => openForm()}
-                  icon={<PlusOutlined style={{ fontSize: 18, color: '#3B3C3D' }} />}
+                  icon={<PlusOutlined style={{ fontSize: 17 }} />}
                   style={{
-                    width: 40, height: 40, borderRadius: '50%',
-                    background: '#fff', border: '1px solid var(--brand-border-soft)',
-                    boxShadow: '0 1px 3px rgba(0,0,0,0.14), 0 2px 8px rgba(0,0,0,0.08)',
+                    width: 40, height: 40, borderRadius: 10, padding: 0,
+                    ...(createDisabled ? {} : { background: 'var(--brand-tint)', color: 'var(--brand-primary)', borderColor: 'var(--brand-border-soft)' }),
+                    boxShadow: 'none',
                     display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                   }}
                 />
               </Tooltip>
             )}
-            <Tooltip title="Mở bảng điều khiển trái (mini calendar + lọc KTV)" placement="right">
+            <Tooltip title="Mở lịch thu nhỏ và bộ lọc" placement="right">
               <Button
                 aria-label="Mở bảng điều khiển trái"
-                type="text"
-                icon={<TeamOutlined style={{ fontSize: 16 }} />}
+                type="default"
+                icon={<MenuUnfoldOutlined style={{ fontSize: 16 }} />}
                 onClick={() => setLeftPanelOpen(true)}
-                style={{ width: 32, height: 40, border: '1px solid var(--brand-border-soft)', borderRadius: 10, background: '#fff', flexShrink: 0 }}
+                style={{ width: 40, height: 40, borderRadius: 10, padding: 0, boxShadow: 'none' }}
               />
             </Tooltip>
           </div>
         )}
-        <div style={{ flex: 1, minWidth: 0, minHeight: 0 }}>
+        <div style={{ position: 'relative', display: 'flex', flex: 1, flexDirection: 'column', minWidth: 0, minHeight: 0, height: '100%', overflow: 'hidden' }}>
           <ScheduleTimeGrid
             view={view}
             days={days}

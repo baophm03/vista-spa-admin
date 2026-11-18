@@ -32,6 +32,7 @@ export default function AdminLayout() {
   const activeProfile = profile ?? responseProfile
 
   const pageTitle = getPageTitle(location.pathname)
+  const isSchedulePage = location.pathname === '/schedule'
 
   useEffect(() => {
     // Chỉ gọi API khi đã có token — tránh bắn request lỗi trước khi guard redirect
@@ -111,9 +112,9 @@ export default function AdminLayout() {
             onLogout={logout}
           />
 
-          <Content className="min-h-0 flex-1 overflow-y-auto bg-[var(--brand-bg)]! p-3! sm:p-4! lg:p-6! [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-xl [&::-webkit-scrollbar-thumb]:bg-[var(--brand-border)]">
+          <Content className={`min-h-0 flex-1 bg-[var(--brand-bg)]! p-3! sm:p-4! lg:p-6! overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-xl [&::-webkit-scrollbar-thumb]:bg-[var(--brand-border)] ${isSchedulePage ? 'md:overflow-hidden' : ''}`}>
             {/* Nền trang theo brand.background_color — bảng/card bên trong có nền trắng riêng nên vẫn dễ đọc */}
-            <div className="min-h-full">
+            <div className={isSchedulePage ? 'min-h-full md:h-full md:min-h-0' : 'min-h-full'}>
               <PermissionGate>
                 <Outlet />
               </PermissionGate>

@@ -216,6 +216,34 @@ h4.ant-typography {
   display: none;
 }
 
+/* Schedule tabs need a definite desktop height so the time grid owns scrolling. */
+@media (min-width: 768px) {
+  .staff-schedule-tabs.ant-tabs {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .staff-schedule-tabs > .ant-tabs-content-holder {
+    flex: 1 1 0px !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .staff-schedule-tabs .ant-tabs-content,
+  .staff-schedule-tabs .ant-tabs-tabpane {
+    height: 100% !important;
+    min-height: 0 !important;
+  }
+
+  .staff-schedule-tabs .ant-tabs-content,
+  .staff-schedule-tabs .ant-tabs-tabpane {
+    overflow: hidden !important;
+  }
+}
+
 /* ===== Responsive table → card cho mobile (KTV dùng điện thoại) =====
    Page bọc Table bằng class "desktop-only" và render danh sách card bằng
    class "mobile-only" — tại mỗi bề rộng CHỈ MỘT TRONG HAI dạng hiển thị. */

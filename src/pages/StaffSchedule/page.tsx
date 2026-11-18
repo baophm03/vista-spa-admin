@@ -1,11 +1,14 @@
 import { useMemo, useRef, useState } from 'react'
+import { useAbility } from '@casl/react'
 import { Alert, Tabs, Typography } from 'antd'
 import type { TabsProps } from 'antd'
 import { pickData } from '@/api/helpers'
 import { ToolbarSlotContext } from '../schedule/ToolbarSlotContext'
 import { useGetBranchesAdmin } from '@/api/endpoints/branches'
 import { useGetUsersAdmin } from '@/api/endpoints/users'
+import { useGetStaffProfilesAdmin } from '@/api/endpoints/staff-profiles'
 import type { Branch } from '@/api/models/branch'
+import type { StaffProfileRow } from '@/api/models/staffProfileRow'
 import { useCustomerProfileAccess, normalizeRole } from '@/utils/customerProfileAccess'
 import { useProfileStore } from '@/stores/profile-store'
 import type { ScheduleAccess, ScheduleStaff } from '../schedule/types'
@@ -14,6 +17,7 @@ import ShiftCatalogTab from '../schedule/ShiftCatalogTab'
 import DayOffTab from '../schedule/DayOffTab'
 
 export default function StaffSchedule() {
+  const ability = useAbility()
   const profile = useProfileStore((s) => s.profile)
   const { isAdmin, isReceptionist, isTechnician } = useCustomerProfileAccess()
   const [activeTab, setActiveTab] = useState('dates')
@@ -21,12 +25,27 @@ export default function StaffSchedule() {
   const toolbarSlotRef = useRef<HTMLDivElement | null>(null)
 
   const isOwnScheduleOnly = isTechnician && !isAdmin
+  const canReadStaffProfiles = !!profile?.is_admin || isAdmin || ability.can('READ', 'STAFF_PROFILE')
   // KTV được xem cơ sở của mình; dữ liệu này cũng giúp hiển thị phạm vi áp dụng của mẫu ca.
   const branchesQuery = useGetBranchesAdmin(undefined)
   const branches = (pickData<Branch[] | undefined>(branchesQuery.data) ?? []) as Branch[]
 
-  const staffsQuery = useGetUsersAdmin({ currentPage: 1, pageSize: 500, has_role: true }, { query: { enabled: !isOwnScheduleOnly } })
+  const staffsQuery = useGetUsersAdmin(
+    { currentPage: 1, pageSize: 500, has_role: true, status: 'active' },
+    { query: { enabled: !isOwnScheduleOnly, refetchOnMount: 'always', refetchOnWindowFocus: 'always' } },
+  )
   const allUsers = (pickData<{ rows?: ScheduleStaff[] } | undefined>(staffsQuery.data)?.rows ?? []) as ScheduleStaff[]
+  const staffProfilesQuery = useGetStaffProfilesAdmin(undefined, {
+    query: {
+      enabled: !isOwnScheduleOnly && canReadStaffProfiles,
+      refetchOnMount: 'always',
+      refetchOnWindowFocus: 'always',
+    },
+  })
+  const inactiveStaffProfileIds = useMemo(() => {
+    const rows = (pickData<StaffProfileRow[] | undefined>(staffProfilesQuery.data) ?? []) as StaffProfileRow[]
+    return new Set(rows.filter((row) => row.is_active === false).map((row) => row.user_id))
+  }, [staffProfilesQuery.data])
   const ownStaff: ScheduleStaff | null = profile?.id ? {
     id: profile.id,
     zalo_name: profile.zalo_name,
@@ -36,17 +55,18 @@ export default function StaffSchedule() {
   const staff = useMemo(
     () => isOwnScheduleOnly
       ? (ownStaff ? [ownStaff] : [])
-      : allUsers.filter((person) => person.user_roles?.some(({ role }) => {
+      : allUsers.filter((person) => person.is_active !== false && !inactiveStaffProfileIds.has(person.id) && person.user_roles?.some(({ role }) => {
           const roleName = normalizeRole(role?.role_name)
           return roleName.includes('ktv') || roleName.includes('ky thuat vien') || roleName === 'technician'
         })),
-    [allUsers, isOwnScheduleOnly, ownStaff],
+    [allUsers, inactiveStaffProfileIds, isOwnScheduleOnly, ownStaff],
   )
 
-  const loadingShared = branchesQuery.isLoading || (!isOwnScheduleOnly && staffsQuery.isLoading)
+  const loadingShared = branchesQuery.isLoading || (!isOwnScheduleOnly && staffsQuery.isLoading) || (!isOwnScheduleOnly && canReadStaffProfiles && staffProfilesQuery.isLoading)
   const sharedError = [
     branchesQuery.isError ? `Cơ sở: ${branchesQuery.error?.message ?? ''}` : '',
     !isOwnScheduleOnly && staffsQuery.isError ? `Danh sách nhân sự: ${staffsQuery.error?.message ?? ''}` : '',
+    !isOwnScheduleOnly && canReadStaffProfiles && staffProfilesQuery.isError ? `Hồ sơ nhân sự: ${staffProfilesQuery.error?.message ?? ''}` : '',
   ].filter(Boolean).join(' · ')
 
   const access: ScheduleAccess = useMemo(
@@ -63,9 +83,19 @@ export default function StaffSchedule() {
     () => ({ branches, staff, sharedError, retryShared: () => {
       void branchesQuery.refetch()
       if (!isOwnScheduleOnly) void staffsQuery.refetch()
+      if (!isOwnScheduleOnly && canReadStaffProfiles) void staffProfilesQuery.refetch()
     }, access }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [branches, staff, sharedError, access, isOwnScheduleOnly],
+    [
+      branches,
+      staff,
+      sharedError,
+      access,
+      isOwnScheduleOnly,
+      canReadStaffProfiles,
+      branchesQuery.refetch,
+      staffsQuery.refetch,
+      staffProfilesQuery.refetch,
+    ],
   )
 
   const items = [
@@ -95,19 +125,20 @@ export default function StaffSchedule() {
   // trang không cuộn, chỉ lưới giờ cuộn trong khung (ScheduleTimeGrid tự lo overflow).
   return <>
     <ToolbarSlotContext.Provider value={toolbarSlotRef}>
-      <div className="flex h-[calc(100dvh-88px)] flex-col sm:h-[calc(100dvh-96px)] lg:h-[calc(100dvh-112px)]">
+      <div className="flex h-[calc(100dvh-88px)] min-h-0 flex-col sm:h-[calc(100dvh-96px)] md:overflow-hidden lg:h-[calc(100dvh-112px)]">
       <Tabs
-        className="flex! min-h-0! flex-1! flex-col! [&>.ant-tabs-content-holder]:min-h-0! [&>.ant-tabs-content-holder]:flex-1! [&_.ant-tabs-content]:h-full! [&_.ant-tabs-tabpane]:h-full! [&_.ant-tabs-tabpane]:min-h-0!"
+        className="staff-schedule-tabs flex! flex-1! flex-col!"
         activeKey={activeTab}
         onChange={(key: string) => setActiveTab(key)}
         items={items}
         renderTabBar={renderTabBar}
       />
+      {!!sharedError && <Alert className="shrink-0!" style={{ marginTop: 12 }} type="warning" showIcon message="Một phần dữ liệu dùng chung chưa tải được" description={sharedError} action={<a onClick={() => {
+        void branchesQuery.refetch()
+        if (!isOwnScheduleOnly) void staffsQuery.refetch()
+        if (!isOwnScheduleOnly && canReadStaffProfiles) void staffProfilesQuery.refetch()
+      }}>Tải lại</a>} />}
       </div>
     </ToolbarSlotContext.Provider>
-    {!!sharedError && <Alert style={{ marginTop: 12 }} type="warning" showIcon message="Một phần dữ liệu dùng chung chưa tải được" description={sharedError} action={<a onClick={() => {
-      void branchesQuery.refetch()
-      if (!isOwnScheduleOnly) void staffsQuery.refetch()
-    }}>Tải lại</a>} />}
   </>
 }
