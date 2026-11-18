@@ -26,8 +26,9 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  LegacyBadRequestResponse,
-  Response
+  ForbiddenResponse,
+  Response,
+  UnauthorizedResponse
 } from '../models';
 
 import { customInstance } from '../mutator/custom-instance';
@@ -37,17 +38,17 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * GET `/membership/rank-tier-info` — membership rank. Public, no authentication required.
+ * GET `/membership/rank-tier-info/admin` — thông tin hạng & quyền lợi theo hạng. Cần đăng nhập + `MEMBERSHIP:READ` (READ_ALL hoặc READ_OWN).
  * @summary View membership rank and tier benefits information
  */
-export const getMembershipRankTierInfo = (
+export const getMembershipRankTierInfoAdmin = (
     
  signal?: AbortSignal
 ) => {
       
       
       return customInstance<Response>(
-      {url: `/membership/rank-tier-info`, method: 'GET', signal
+      {url: `/membership/rank-tier-info/admin`, method: 'GET', signal
     },
       );
     }
@@ -55,75 +56,75 @@ export const getMembershipRankTierInfo = (
 
 
 
-export const getGetMembershipRankTierInfoInfiniteQueryKey = () => {
+export const getGetMembershipRankTierInfoAdminInfiniteQueryKey = () => {
     return [
-    'infinite', `/membership/rank-tier-info`
+    'infinite', `/membership/rank-tier-info/admin`
     ] as const;
     }
 
-export const getGetMembershipRankTierInfoQueryKey = () => {
+export const getGetMembershipRankTierInfoAdminQueryKey = () => {
     return [
-    `/membership/rank-tier-info`
+    `/membership/rank-tier-info/admin`
     ] as const;
     }
 
     
-export const getGetMembershipRankTierInfoInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getMembershipRankTierInfo>>>, TError = LegacyBadRequestResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getMembershipRankTierInfo>>, TError, TData>>, }
+export const getGetMembershipRankTierInfoAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getMembershipRankTierInfoAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getMembershipRankTierInfoAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetMembershipRankTierInfoInfiniteQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getGetMembershipRankTierInfoAdminInfiniteQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMembershipRankTierInfo>>> = ({ signal }) => getMembershipRankTierInfo(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMembershipRankTierInfoAdmin>>> = ({ signal }) => getMembershipRankTierInfoAdmin(signal);
 
       
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getMembershipRankTierInfo>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getMembershipRankTierInfoAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetMembershipRankTierInfoInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getMembershipRankTierInfo>>>
-export type GetMembershipRankTierInfoInfiniteQueryError = LegacyBadRequestResponse
+export type GetMembershipRankTierInfoAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getMembershipRankTierInfoAdmin>>>
+export type GetMembershipRankTierInfoAdminInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse
 
 
-export function useGetMembershipRankTierInfoInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getMembershipRankTierInfo>>>, TError = LegacyBadRequestResponse>(
-  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getMembershipRankTierInfo>>, TError, TData>> & Pick<
+export function useGetMembershipRankTierInfoAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getMembershipRankTierInfoAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse>(
+  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getMembershipRankTierInfoAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getMembershipRankTierInfo>>,
+          Awaited<ReturnType<typeof getMembershipRankTierInfoAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getMembershipRankTierInfo>>
+          Awaited<ReturnType<typeof getMembershipRankTierInfoAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetMembershipRankTierInfoInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getMembershipRankTierInfo>>>, TError = LegacyBadRequestResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getMembershipRankTierInfo>>, TError, TData>> & Pick<
+export function useGetMembershipRankTierInfoAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getMembershipRankTierInfoAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getMembershipRankTierInfoAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getMembershipRankTierInfo>>,
+          Awaited<ReturnType<typeof getMembershipRankTierInfoAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getMembershipRankTierInfo>>
+          Awaited<ReturnType<typeof getMembershipRankTierInfoAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetMembershipRankTierInfoInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getMembershipRankTierInfo>>>, TError = LegacyBadRequestResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getMembershipRankTierInfo>>, TError, TData>>, }
+export function useGetMembershipRankTierInfoAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getMembershipRankTierInfoAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getMembershipRankTierInfoAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary View membership rank and tier benefits information
  */
 
-export function useGetMembershipRankTierInfoInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getMembershipRankTierInfo>>>, TError = LegacyBadRequestResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getMembershipRankTierInfo>>, TError, TData>>, }
+export function useGetMembershipRankTierInfoAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getMembershipRankTierInfoAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getMembershipRankTierInfoAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetMembershipRankTierInfoInfiniteQueryOptions(options)
+  const queryOptions = getGetMembershipRankTierInfoAdminInfiniteQueryOptions(options)
 
   const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -135,12 +136,12 @@ export function useGetMembershipRankTierInfoInfinite<TData = InfiniteData<Awaite
 /**
  * @summary View membership rank and tier benefits information
  */
-export const prefetchGetMembershipRankTierInfoInfiniteQuery = async <TData = Awaited<ReturnType<typeof getMembershipRankTierInfo>>, TError = LegacyBadRequestResponse>(
- queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getMembershipRankTierInfo>>, TError, TData>>, }
+export const prefetchGetMembershipRankTierInfoAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getMembershipRankTierInfoAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getMembershipRankTierInfoAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetMembershipRankTierInfoInfiniteQueryOptions(options)
+  const queryOptions = getGetMembershipRankTierInfoAdminInfiniteQueryOptions(options)
 
   await queryClient.prefetchInfiniteQuery(queryOptions);
 
@@ -149,62 +150,62 @@ export const prefetchGetMembershipRankTierInfoInfiniteQuery = async <TData = Awa
 
 
 
-export const getGetMembershipRankTierInfoQueryOptions = <TData = Awaited<ReturnType<typeof getMembershipRankTierInfo>>, TError = LegacyBadRequestResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMembershipRankTierInfo>>, TError, TData>>, }
+export const getGetMembershipRankTierInfoAdminQueryOptions = <TData = Awaited<ReturnType<typeof getMembershipRankTierInfoAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMembershipRankTierInfoAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetMembershipRankTierInfoQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getGetMembershipRankTierInfoAdminQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMembershipRankTierInfo>>> = ({ signal }) => getMembershipRankTierInfo(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMembershipRankTierInfoAdmin>>> = ({ signal }) => getMembershipRankTierInfoAdmin(signal);
 
       
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getMembershipRankTierInfo>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getMembershipRankTierInfoAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetMembershipRankTierInfoQueryResult = NonNullable<Awaited<ReturnType<typeof getMembershipRankTierInfo>>>
-export type GetMembershipRankTierInfoQueryError = LegacyBadRequestResponse
+export type GetMembershipRankTierInfoAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getMembershipRankTierInfoAdmin>>>
+export type GetMembershipRankTierInfoAdminQueryError = UnauthorizedResponse | ForbiddenResponse
 
 
-export function useGetMembershipRankTierInfo<TData = Awaited<ReturnType<typeof getMembershipRankTierInfo>>, TError = LegacyBadRequestResponse>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMembershipRankTierInfo>>, TError, TData>> & Pick<
+export function useGetMembershipRankTierInfoAdmin<TData = Awaited<ReturnType<typeof getMembershipRankTierInfoAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMembershipRankTierInfoAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getMembershipRankTierInfo>>,
+          Awaited<ReturnType<typeof getMembershipRankTierInfoAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getMembershipRankTierInfo>>
+          Awaited<ReturnType<typeof getMembershipRankTierInfoAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetMembershipRankTierInfo<TData = Awaited<ReturnType<typeof getMembershipRankTierInfo>>, TError = LegacyBadRequestResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMembershipRankTierInfo>>, TError, TData>> & Pick<
+export function useGetMembershipRankTierInfoAdmin<TData = Awaited<ReturnType<typeof getMembershipRankTierInfoAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMembershipRankTierInfoAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getMembershipRankTierInfo>>,
+          Awaited<ReturnType<typeof getMembershipRankTierInfoAdmin>>,
           TError,
-          Awaited<ReturnType<typeof getMembershipRankTierInfo>>
+          Awaited<ReturnType<typeof getMembershipRankTierInfoAdmin>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetMembershipRankTierInfo<TData = Awaited<ReturnType<typeof getMembershipRankTierInfo>>, TError = LegacyBadRequestResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMembershipRankTierInfo>>, TError, TData>>, }
+export function useGetMembershipRankTierInfoAdmin<TData = Awaited<ReturnType<typeof getMembershipRankTierInfoAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMembershipRankTierInfoAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary View membership rank and tier benefits information
  */
 
-export function useGetMembershipRankTierInfo<TData = Awaited<ReturnType<typeof getMembershipRankTierInfo>>, TError = LegacyBadRequestResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMembershipRankTierInfo>>, TError, TData>>, }
+export function useGetMembershipRankTierInfoAdmin<TData = Awaited<ReturnType<typeof getMembershipRankTierInfoAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMembershipRankTierInfoAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetMembershipRankTierInfoQueryOptions(options)
+  const queryOptions = getGetMembershipRankTierInfoAdminQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -216,12 +217,12 @@ export function useGetMembershipRankTierInfo<TData = Awaited<ReturnType<typeof g
 /**
  * @summary View membership rank and tier benefits information
  */
-export const prefetchGetMembershipRankTierInfoQuery = async <TData = Awaited<ReturnType<typeof getMembershipRankTierInfo>>, TError = LegacyBadRequestResponse>(
- queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMembershipRankTierInfo>>, TError, TData>>, }
+export const prefetchGetMembershipRankTierInfoAdminQuery = async <TData = Awaited<ReturnType<typeof getMembershipRankTierInfoAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMembershipRankTierInfoAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetMembershipRankTierInfoQueryOptions(options)
+  const queryOptions = getGetMembershipRankTierInfoAdminQueryOptions(options)
 
   await queryClient.prefetchQuery(queryOptions);
 

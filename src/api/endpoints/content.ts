@@ -56,6 +56,7 @@ import type {
   PutContentPostsIdAdmin200,
   PutContentPostsIdAdminBody,
   PutContentPostsIdPublishAdmin200,
+  PutContentPostsIdPublishAdminBody,
   PutContentPostsIdUnpublishAdmin200,
   Response,
   UnauthorizedResponse,
@@ -1422,16 +1423,19 @@ export const usePutContentPostsIdUnpublishAdmin = <TError = UnauthorizedResponse
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **CMS-11** — PUT /content-posts/{id}/publish/admin — DRAFT/ARCHIVED → PUBLISHED. Requires `content.publish` permission.
+ * **CMS-11** — PUT /content-posts/{id}/publish/admin — DRAFT/ARCHIVED → PUBLISHED. Requires `content.publish` permission. Body tùy chọn: `{ notify: boolean }` — gửi thông báo cho khách khi xuất bản.
  * @summary Publish a post
  */
 export const putContentPostsIdPublishAdmin = (
     id: string,
+    putContentPostsIdPublishAdminBody?: PutContentPostsIdPublishAdminBody,
  ) => {
       
       
       return customInstance<PutContentPostsIdPublishAdmin200>(
-      {url: `/content-posts/${id}/publish/admin`, method: 'PUT'
+      {url: `/content-posts/${id}/publish/admin`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: putContentPostsIdPublishAdminBody
     },
       );
     }
@@ -1439,8 +1443,8 @@ export const putContentPostsIdPublishAdmin = (
 
 
 export const getPutContentPostsIdPublishAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putContentPostsIdPublishAdmin>>, TError,{id: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putContentPostsIdPublishAdmin>>, TError,{id: string}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putContentPostsIdPublishAdmin>>, TError,{id: string;data: PutContentPostsIdPublishAdminBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putContentPostsIdPublishAdmin>>, TError,{id: string;data: PutContentPostsIdPublishAdminBody}, TContext> => {
 
 const mutationKey = ['putContentPostsIdPublishAdmin'];
 const {mutation: mutationOptions} = options ?
@@ -1452,10 +1456,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putContentPostsIdPublishAdmin>>, {id: string}> = (props) => {
-          const {id} = props ?? {};
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putContentPostsIdPublishAdmin>>, {id: string;data: PutContentPostsIdPublishAdminBody}> = (props) => {
+          const {id,data} = props ?? {};
 
-          return  putContentPostsIdPublishAdmin(id,)
+          return  putContentPostsIdPublishAdmin(id,data,)
         }
 
         
@@ -1464,18 +1468,18 @@ const {mutation: mutationOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type PutContentPostsIdPublishAdminMutationResult = NonNullable<Awaited<ReturnType<typeof putContentPostsIdPublishAdmin>>>
-    
+    export type PutContentPostsIdPublishAdminMutationBody = PutContentPostsIdPublishAdminBody
     export type PutContentPostsIdPublishAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
  * @summary Publish a post
  */
 export const usePutContentPostsIdPublishAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putContentPostsIdPublishAdmin>>, TError,{id: string}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putContentPostsIdPublishAdmin>>, TError,{id: string;data: PutContentPostsIdPublishAdminBody}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof putContentPostsIdPublishAdmin>>,
         TError,
-        {id: string},
+        {id: string;data: PutContentPostsIdPublishAdminBody},
         TContext
       > => {
 

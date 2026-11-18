@@ -104,6 +104,68 @@ export const useDeleteAcademyCourseVoucherCustomersIdAdmin = <TError = unknown,
       return useMutation(mutationOptions, queryClient);
     }
     /**
+ * PATCH `/academy-course-voucher-customers/{id}/admin` — đánh dấu voucher đã sử dụng (status USED). Cần đăng nhập + `voucher.update_all`.
+ * @summary Mark a voucher assignment as USED
+ */
+export const patchAcademyCourseVoucherCustomersIdAdmin = (
+    id: string,
+ ) => {
+      
+      
+      return customInstance<void>(
+      {url: `/academy-course-voucher-customers/${id}/admin`, method: 'PATCH'
+    },
+      );
+    }
+  
+
+
+export const getPatchAcademyCourseVoucherCustomersIdAdminMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchAcademyCourseVoucherCustomersIdAdmin>>, TError,{id: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof patchAcademyCourseVoucherCustomersIdAdmin>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['patchAcademyCourseVoucherCustomersIdAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof patchAcademyCourseVoucherCustomersIdAdmin>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  patchAcademyCourseVoucherCustomersIdAdmin(id,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PatchAcademyCourseVoucherCustomersIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof patchAcademyCourseVoucherCustomersIdAdmin>>>
+    
+    export type PatchAcademyCourseVoucherCustomersIdAdminMutationError = unknown
+
+    /**
+ * @summary Mark a voucher assignment as USED
+ */
+export const usePatchAcademyCourseVoucherCustomersIdAdmin = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchAcademyCourseVoucherCustomersIdAdmin>>, TError,{id: string}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof patchAcademyCourseVoucherCustomersIdAdmin>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+
+      const mutationOptions = getPatchAcademyCourseVoucherCustomersIdAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
  * GET `/academy-course-voucher-customers/admin` — combined view. Query parameters: `q`, `user_id`, `customer_profile_id`. Cần đăng nhập + `voucher.view_all`.
  * @summary List vouchers each customer currently holds (auto by rank + manual assignments)
  */

@@ -34,6 +34,7 @@ import type {
   DeleteShiftTemplatesIdAdmin200,
   DeleteStaffDaysOffIdAdmin200,
   DeleteStaffScheduleDatesIdAdmin200,
+  DeleteStaffScheduleDatesIdAdminBody,
   DeleteStaffScheduleDatesIdAdminParams,
   ForbiddenResponse,
   GetBranchDateNotesAdmin200,
@@ -340,12 +341,15 @@ export const usePutStaffScheduleDatesIdAdmin = <TError = UnauthorizedResponse | 
  */
 export const deleteStaffScheduleDatesIdAdmin = (
     id: string,
+    deleteStaffScheduleDatesIdAdminBody: DeleteStaffScheduleDatesIdAdminBody,
     params?: DeleteStaffScheduleDatesIdAdminParams,
  ) => {
       
       
       return customInstance<DeleteStaffScheduleDatesIdAdmin200>(
       {url: `/staff-schedule-dates/${id}/admin`, method: 'DELETE',
+      headers: {'Content-Type': 'application/json', },
+      data: deleteStaffScheduleDatesIdAdminBody,
         params
     },
       );
@@ -354,8 +358,8 @@ export const deleteStaffScheduleDatesIdAdmin = (
 
 
 export const getDeleteStaffScheduleDatesIdAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteStaffScheduleDatesIdAdmin>>, TError,{id: string;params?: DeleteStaffScheduleDatesIdAdminParams}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof deleteStaffScheduleDatesIdAdmin>>, TError,{id: string;params?: DeleteStaffScheduleDatesIdAdminParams}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteStaffScheduleDatesIdAdmin>>, TError,{id: string;data: DeleteStaffScheduleDatesIdAdminBody;params?: DeleteStaffScheduleDatesIdAdminParams}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteStaffScheduleDatesIdAdmin>>, TError,{id: string;data: DeleteStaffScheduleDatesIdAdminBody;params?: DeleteStaffScheduleDatesIdAdminParams}, TContext> => {
 
 const mutationKey = ['deleteStaffScheduleDatesIdAdmin'];
 const {mutation: mutationOptions} = options ?
@@ -367,10 +371,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteStaffScheduleDatesIdAdmin>>, {id: string;params?: DeleteStaffScheduleDatesIdAdminParams}> = (props) => {
-          const {id,params} = props ?? {};
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteStaffScheduleDatesIdAdmin>>, {id: string;data: DeleteStaffScheduleDatesIdAdminBody;params?: DeleteStaffScheduleDatesIdAdminParams}> = (props) => {
+          const {id,data,params} = props ?? {};
 
-          return  deleteStaffScheduleDatesIdAdmin(id,params,)
+          return  deleteStaffScheduleDatesIdAdmin(id,data,params,)
         }
 
         
@@ -379,18 +383,18 @@ const {mutation: mutationOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type DeleteStaffScheduleDatesIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof deleteStaffScheduleDatesIdAdmin>>>
-    
+    export type DeleteStaffScheduleDatesIdAdminMutationBody = DeleteStaffScheduleDatesIdAdminBody
     export type DeleteStaffScheduleDatesIdAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
  * @summary Delete a date-specific work schedule
  */
 export const useDeleteStaffScheduleDatesIdAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteStaffScheduleDatesIdAdmin>>, TError,{id: string;params?: DeleteStaffScheduleDatesIdAdminParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteStaffScheduleDatesIdAdmin>>, TError,{id: string;data: DeleteStaffScheduleDatesIdAdminBody;params?: DeleteStaffScheduleDatesIdAdminParams}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof deleteStaffScheduleDatesIdAdmin>>,
         TError,
-        {id: string;params?: DeleteStaffScheduleDatesIdAdminParams},
+        {id: string;data: DeleteStaffScheduleDatesIdAdminBody;params?: DeleteStaffScheduleDatesIdAdminParams},
         TContext
       > => {
 

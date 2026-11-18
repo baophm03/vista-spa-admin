@@ -104,6 +104,68 @@ export const useDeleteTreatmentPackageVoucherCustomersIdAdmin = <TError = unknow
       return useMutation(mutationOptions, queryClient);
     }
     /**
+ * PATCH `/treatment-package-voucher-customers/{id}/admin` — đánh dấu voucher đã sử dụng (status USED). Cần đăng nhập + `voucher.update_all`.
+ * @summary Mark a voucher assignment as USED
+ */
+export const patchTreatmentPackageVoucherCustomersIdAdmin = (
+    id: string,
+ ) => {
+      
+      
+      return customInstance<void>(
+      {url: `/treatment-package-voucher-customers/${id}/admin`, method: 'PATCH'
+    },
+      );
+    }
+  
+
+
+export const getPatchTreatmentPackageVoucherCustomersIdAdminMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchTreatmentPackageVoucherCustomersIdAdmin>>, TError,{id: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof patchTreatmentPackageVoucherCustomersIdAdmin>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['patchTreatmentPackageVoucherCustomersIdAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof patchTreatmentPackageVoucherCustomersIdAdmin>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  patchTreatmentPackageVoucherCustomersIdAdmin(id,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PatchTreatmentPackageVoucherCustomersIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof patchTreatmentPackageVoucherCustomersIdAdmin>>>
+    
+    export type PatchTreatmentPackageVoucherCustomersIdAdminMutationError = unknown
+
+    /**
+ * @summary Mark a voucher assignment as USED
+ */
+export const usePatchTreatmentPackageVoucherCustomersIdAdmin = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchTreatmentPackageVoucherCustomersIdAdmin>>, TError,{id: string}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof patchTreatmentPackageVoucherCustomersIdAdmin>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+
+      const mutationOptions = getPatchTreatmentPackageVoucherCustomersIdAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
  * GET `/treatment-package-voucher-customers/admin` — combined view. Query parameters: `q`, `user_id`, `customer_profile_id`. Cần đăng nhập + `voucher.view_all`.
  * @summary List vouchers each customer currently holds (auto by rank + manual assignments)
  */
