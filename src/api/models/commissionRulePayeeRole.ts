@@ -8,6 +8,6 @@
 import type { CommissionRulePayeeRoleAnyOf } from './commissionRulePayeeRoleAnyOf';
 
 /**
- * Role người nhận: { id, code (ktv|customer), role_name }
+ * Role người nhận: { id, code (ktv|customer), role_name } — BE chỉ select 3 trường này
  */
 export type CommissionRulePayeeRole = CommissionRulePayeeRoleAnyOf | null;

@@ -14,11 +14,9 @@ const RATE_TYPE_OPTIONS: { value: RateType; label: string }[] = [
 interface Props {
   open: boolean
   /** null = tạo mới; có giá trị = sửa (name/type/base cố định) */
-  editing: (CommissionRule & { type?: string }) | null
+  editing: CommissionRule | null
   form: FormInstance
   saving: boolean
-  /** Tên cơ sở đang chọn (hiển thị ngữ cảnh) */
-  branchName?: string
   users: User[]
   usersLoading: boolean
   customers: User[]
@@ -32,7 +30,6 @@ export default function CommissionRuleModal({
   editing,
   form,
   saving,
-  branchName,
   users,
   usersLoading,
   customers,

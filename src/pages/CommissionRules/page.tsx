@@ -25,7 +25,7 @@ import { useGetUsersAdmin } from '@/api/endpoints/users'
 import { useGetCustomersAdmin } from '@/api/endpoints/customers'
 import type { Branch, CommissionRule, User } from '@/api/models'
 import CommissionRuleModal, { type RateType } from './components/CommissionRuleModal'
-import { PAYEE_META, ruleTypeMeta, type RuleRow } from './components/constants'
+import { PAYEE_META, ruleTypeMeta } from './components/constants'
 
 function formatVnd(v?: number | null): string {
   if (v == null) return '—'
@@ -35,7 +35,7 @@ function formatVnd(v?: number | null): string {
 export default function CommissionRulesPanel() {
   const [page, setPage] = useState(1)
   const [open, setOpen] = useState(false)
-  const [editing, setEditing] = useState<RuleRow | null>(null)
+  const [editing, setEditing] = useState<CommissionRule | null>(null)
   const [form] = Form.useForm()
   const queryClient = useQueryClient()
   const ability = useAbility()
@@ -51,14 +51,14 @@ export default function CommissionRulesPanel() {
   }, [branches, selectedBranchId])
 
   const rulesQuery = useGetCommissionRulesAdmin(
-    { branch_id: selectedBranchId! },
+    selectedBranchId ? { branch_id: selectedBranchId } : undefined,
     { query: { enabled: !!selectedBranchId } },
   )
   const usersQuery = useGetUsersAdmin({ currentPage: 1, pageSize: 200, has_role: true })
   const customersQuery = useGetCustomersAdmin({ currentPage: 1, pageSize: 500 })
   const rules = useMemo(() => {
     const raw = pickData<CommissionRule[]>(rulesQuery.data)
-    return (Array.isArray(raw) ? raw : []) as RuleRow[]
+    return Array.isArray(raw) ? raw : []
   }, [rulesQuery.data])
   const users = (pickData<{ rows?: User[] } | undefined>(usersQuery.data)?.rows ?? []) as (User & UserWithRoleAssignments)[]
   const technicians = useMemo(() => users.filter(isTechnicianUser), [users])
@@ -87,7 +87,7 @@ export default function CommissionRulesPanel() {
     setOpen(true)
   }
 
-  const openEditor = (row: RuleRow) => {
+  const openEditor = (row: CommissionRule) => {
     setEditing(row)
     form.setFieldsValue({
       name: row.name,
@@ -140,7 +140,7 @@ export default function CommissionRulesPanel() {
     }
   }
 
-  const remove = async (row: RuleRow) => {
+  const remove = async (row: CommissionRule) => {
     try {
       await deleteMutation.mutateAsync({ id: row.id! })
       message.success(`Đã xóa quy tắc "${row.name}"`)
@@ -149,7 +149,7 @@ export default function CommissionRulesPanel() {
     }
   }
 
-  const askDelete = (row: RuleRow) => {
+  const askDelete = (row: CommissionRule) => {
     Modal.confirm({
       title: 'Xóa quy tắc này?',
       content: `Quy tắc "${row.name}" của cơ sở đang chọn sẽ bị xóa hẳn.`,
@@ -160,7 +160,7 @@ export default function CommissionRulesPanel() {
     })
   }
 
-  const columns: TableColumnsType<RuleRow> = ([
+  const allColumns: TableColumnsType<CommissionRule> = [
     {
       key: 'name',
       title: 'Tên quy tắc', dataIndex: 'name', width: 220, ellipsis: true,
@@ -172,7 +172,7 @@ export default function CommissionRulesPanel() {
       render: (_v, row) => {
         const code = row.payee_role?.code ?? ''
         const meta = PAYEE_META[code]
-        return meta ? <Tag color={meta.color}>{meta.label}</Tag> : <Tag>{row.payee_role?.role_name ?? code ?? '—'}</Tag>
+        return meta ? <Tag color={meta.color}>{meta.label}</Tag> : <Tag>{row.payee_role?.role_name || code || '—'}</Tag>
       },
     },
     {
@@ -211,9 +211,8 @@ export default function CommissionRulesPanel() {
         />
       ),
     },
-  ] as TableColumnsType<CommissionRule>).filter((column) =>
-    column.key !== 'actions' || canManage,
-  )
+  ]
+  const columns = allColumns.filter((column) => column.key !== 'actions' || canManage)
 
   return (
     <Can I="RULE_MANAGE" a="COMMISSION" passThrough>
@@ -242,7 +241,7 @@ export default function CommissionRulesPanel() {
                 action={<Button size="small" onClick={() => void rulesQuery.refetch()}>Thử lại</Button>}
               />
             )}
-            <Table<RuleRow>
+            <Table<CommissionRule>
               rowKey="id" loading={rulesQuery.isLoading} dataSource={paginateRows(rules, page, 10)} columns={columns}
               scroll={{ x: 800 }}
               pagination={false}
