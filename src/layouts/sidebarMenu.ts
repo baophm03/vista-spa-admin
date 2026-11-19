@@ -98,7 +98,7 @@ export const menuItems: MenuItem[] = [
     label: 'Nhân sự',
     icon: null,
     children: [
-      { key: '/staffs', icon: createElement(UserSwitchOutlined), label: 'Chuyên viên/KTV', permission: { action: 'READ', subject: 'STAFF_PROFILE' } },
+      { key: '/users', icon: createElement(UserSwitchOutlined), label: 'Tài khoản nhân sự', permission: { action: 'READ', subject: 'USER_PROFILE' } },
       { key: '/schedule', icon: createElement(ClockCircleOutlined), label: 'Lịch làm việc', permission: { action: 'READ', subject: 'SCHEDULE' } },
     ],
   },

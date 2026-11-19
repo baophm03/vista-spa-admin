@@ -368,7 +368,7 @@ export const prefetchGetUsersAdminQuery = async <TData = Awaited<ReturnType<type
 
 
 /**
- * POST `/users/admin` — only the highest system administrator may create accounts. Cần đăng nhập + `staff_profile.create`. Leaving `branch_id` blank creates the highest system administrator; selecting a branch creates a branch-scoped account and requires `role_id`.
+ * POST `/users/admin` — only the highest system administrator may create accounts. Cần đăng nhập + `user_profile.create`. Leaving `branch_id` blank creates the highest system administrator; selecting a branch creates a branch-scoped account and requires `role_id`.
  * @summary Manage admin accounts
  */
 export const postUsersAdmin = (
