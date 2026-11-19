@@ -32,6 +32,7 @@ import type {
 import type {
   ForbiddenResponse,
   GetCommissionRulesAdmin200,
+  GetCommissionRulesAdminParams,
   GetCommissionRulesIdAdmin200,
   NotFoundResponse,
   PostCommissionRulesAdmin200,
@@ -371,17 +372,18 @@ export const useDeleteCommissionRulesIdAdmin = <TError = NotFoundResponse,
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **CM-01** — GET /commission-rules. Requires `commission.rule_manage` permission.
+ * **CM-01** — GET /commission-rules. Requires `commission.rule_manage` permission. Query parameters: `branch_id` (lọc theo cơ sở), `page`, `limit` (không truyền page/limit → trả toàn bộ).
  * @summary List commission rules
  */
 export const getCommissionRulesAdmin = (
-    
+    params?: GetCommissionRulesAdminParams,
  signal?: AbortSignal
 ) => {
       
       
       return customInstance<GetCommissionRulesAdmin200>(
-      {url: `/commission-rules/admin`, method: 'GET', signal
+      {url: `/commission-rules/admin`, method: 'GET',
+        params, signal
     },
       );
     }
@@ -389,29 +391,29 @@ export const getCommissionRulesAdmin = (
 
 
 
-export const getGetCommissionRulesAdminInfiniteQueryKey = () => {
+export const getGetCommissionRulesAdminInfiniteQueryKey = (params?: GetCommissionRulesAdminParams,) => {
     return [
-    'infinite', `/commission-rules/admin`
+    'infinite', `/commission-rules/admin`, ...(params ? [params]: [])
     ] as const;
     }
 
-export const getGetCommissionRulesAdminQueryKey = () => {
+export const getGetCommissionRulesAdminQueryKey = (params?: GetCommissionRulesAdminParams,) => {
     return [
-    `/commission-rules/admin`
+    `/commission-rules/admin`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetCommissionRulesAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getCommissionRulesAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCommissionRulesAdmin>>, TError, TData>>, }
+export const getGetCommissionRulesAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getCommissionRulesAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse>(params?: GetCommissionRulesAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCommissionRulesAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetCommissionRulesAdminInfiniteQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getGetCommissionRulesAdminInfiniteQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCommissionRulesAdmin>>> = ({ signal }) => getCommissionRulesAdmin(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCommissionRulesAdmin>>> = ({ signal }) => getCommissionRulesAdmin(params, signal);
 
       
 
@@ -425,7 +427,7 @@ export type GetCommissionRulesAdminInfiniteQueryError = UnauthorizedResponse | F
 
 
 export function useGetCommissionRulesAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCommissionRulesAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse>(
-  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCommissionRulesAdmin>>, TError, TData>> & Pick<
+ params: undefined |  GetCommissionRulesAdminParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCommissionRulesAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getCommissionRulesAdmin>>,
           TError,
@@ -435,7 +437,7 @@ export function useGetCommissionRulesAdminInfinite<TData = InfiniteData<Awaited<
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetCommissionRulesAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCommissionRulesAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCommissionRulesAdmin>>, TError, TData>> & Pick<
+ params?: GetCommissionRulesAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCommissionRulesAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getCommissionRulesAdmin>>,
           TError,
@@ -445,7 +447,7 @@ export function useGetCommissionRulesAdminInfinite<TData = InfiniteData<Awaited<
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetCommissionRulesAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCommissionRulesAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCommissionRulesAdmin>>, TError, TData>>, }
+ params?: GetCommissionRulesAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCommissionRulesAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
@@ -453,11 +455,11 @@ export function useGetCommissionRulesAdminInfinite<TData = InfiniteData<Awaited<
  */
 
 export function useGetCommissionRulesAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCommissionRulesAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCommissionRulesAdmin>>, TError, TData>>, }
+ params?: GetCommissionRulesAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCommissionRulesAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetCommissionRulesAdminInfiniteQueryOptions(options)
+  const queryOptions = getGetCommissionRulesAdminInfiniteQueryOptions(params,options)
 
   const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -470,11 +472,11 @@ export function useGetCommissionRulesAdminInfinite<TData = InfiniteData<Awaited<
  * @summary List commission rules
  */
 export const prefetchGetCommissionRulesAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getCommissionRulesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse>(
- queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCommissionRulesAdmin>>, TError, TData>>, }
+ queryClient: QueryClient, params?: GetCommissionRulesAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCommissionRulesAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetCommissionRulesAdminInfiniteQueryOptions(options)
+  const queryOptions = getGetCommissionRulesAdminInfiniteQueryOptions(params,options)
 
   await queryClient.prefetchInfiniteQuery(queryOptions);
 
@@ -483,16 +485,16 @@ export const prefetchGetCommissionRulesAdminInfiniteQuery = async <TData = Await
 
 
 
-export const getGetCommissionRulesAdminQueryOptions = <TData = Awaited<ReturnType<typeof getCommissionRulesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissionRulesAdmin>>, TError, TData>>, }
+export const getGetCommissionRulesAdminQueryOptions = <TData = Awaited<ReturnType<typeof getCommissionRulesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse>(params?: GetCommissionRulesAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissionRulesAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetCommissionRulesAdminQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getGetCommissionRulesAdminQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCommissionRulesAdmin>>> = ({ signal }) => getCommissionRulesAdmin(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCommissionRulesAdmin>>> = ({ signal }) => getCommissionRulesAdmin(params, signal);
 
       
 
@@ -506,7 +508,7 @@ export type GetCommissionRulesAdminQueryError = UnauthorizedResponse | Forbidden
 
 
 export function useGetCommissionRulesAdmin<TData = Awaited<ReturnType<typeof getCommissionRulesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissionRulesAdmin>>, TError, TData>> & Pick<
+ params: undefined |  GetCommissionRulesAdminParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissionRulesAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getCommissionRulesAdmin>>,
           TError,
@@ -516,7 +518,7 @@ export function useGetCommissionRulesAdmin<TData = Awaited<ReturnType<typeof get
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetCommissionRulesAdmin<TData = Awaited<ReturnType<typeof getCommissionRulesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissionRulesAdmin>>, TError, TData>> & Pick<
+ params?: GetCommissionRulesAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissionRulesAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getCommissionRulesAdmin>>,
           TError,
@@ -526,7 +528,7 @@ export function useGetCommissionRulesAdmin<TData = Awaited<ReturnType<typeof get
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetCommissionRulesAdmin<TData = Awaited<ReturnType<typeof getCommissionRulesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissionRulesAdmin>>, TError, TData>>, }
+ params?: GetCommissionRulesAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissionRulesAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
@@ -534,11 +536,11 @@ export function useGetCommissionRulesAdmin<TData = Awaited<ReturnType<typeof get
  */
 
 export function useGetCommissionRulesAdmin<TData = Awaited<ReturnType<typeof getCommissionRulesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissionRulesAdmin>>, TError, TData>>, }
+ params?: GetCommissionRulesAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissionRulesAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetCommissionRulesAdminQueryOptions(options)
+  const queryOptions = getGetCommissionRulesAdminQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -551,11 +553,11 @@ export function useGetCommissionRulesAdmin<TData = Awaited<ReturnType<typeof get
  * @summary List commission rules
  */
 export const prefetchGetCommissionRulesAdminQuery = async <TData = Awaited<ReturnType<typeof getCommissionRulesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse>(
- queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissionRulesAdmin>>, TError, TData>>, }
+ queryClient: QueryClient, params?: GetCommissionRulesAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissionRulesAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetCommissionRulesAdminQueryOptions(options)
+  const queryOptions = getGetCommissionRulesAdminQueryOptions(params,options)
 
   await queryClient.prefetchQuery(queryOptions);
 

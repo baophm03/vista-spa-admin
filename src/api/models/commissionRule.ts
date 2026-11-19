@@ -27,7 +27,7 @@ export interface CommissionRule {
   id: string;
   name: string;
   payee_role_id: CommissionRulePayeeRoleId;
-  /** Role người nhận: { id, code (ktv|customer), role_name } */
+  /** Role người nhận: { id, code (ktv|customer), role_name } — BE chỉ select 3 trường này */
   payee_role?: CommissionRulePayeeRole;
   /** Nhiệm vụ: REFERRAL = khi phát sinh thanh toán; SESSION = khi hoàn thành buổi điều trị */
   type?: CommissionRuleType;
