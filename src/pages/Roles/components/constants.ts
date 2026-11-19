@@ -22,7 +22,6 @@ export const MODULE_LABELS: Record<string, string> = {
   appointment: 'Lịch hẹn',
   branch: 'Cơ sở',
   card_rank: 'Hạng thẻ',
-  collaborator: 'Cộng tác viên',
   commission: 'Hoa hồng',
   content: 'Nội dung app',
   customer: 'Khách hàng',

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { Avatar, Button, Form, Input, Modal, Select, Space, Switch, Table, Tag, Tooltip, Typography, message } from 'antd'
 import { useAbility } from '@casl/react'
 import {
@@ -22,7 +23,7 @@ import type { UserCreate } from '@/api/models/userCreate'
 import type { PutUsersIdAdminBody } from '@/api/models/putUsersIdAdminBody'
 import type { StaffProfileRow } from '@/api/models/staffProfileRow'
 import { useProfileStore } from '@/stores/profile-store'
-import { useDeleteUsersIdAdmin, usePostUsersAdmin, usePutUsersIdAdmin, useGetUsersAdmin } from '@/api/endpoints/users'
+import { getGetUsersAdminQueryKey, useDeleteUsersIdAdmin, usePostUsersAdmin, usePutUsersIdAdmin, useGetUsersAdmin } from '@/api/endpoints/users'
 import { useGetRolesAdmin } from '@/api/endpoints/roles'
 import { useGetBranchesAdmin } from '@/api/endpoints/branches'
 import { useGetServiceAdmin } from '@/api/endpoints/services'
@@ -36,12 +37,14 @@ import {
   DEFAULT_VISIBLE_COLUMNS,
   STAFF_COLUMN_OPTIONS,
   isAdminRole,
+  isStaffRole,
   isTechnicianRole,
   type StaffColumnKey,
   type StaffRow,
 } from './components/constants'
 
 export default function Staffs() {
+  const queryClient = useQueryClient()
   const ability = useAbility()
   const urlMap = useFileUrlMap()
   const currentUser = useProfileStore((state) => state.profile)
@@ -164,7 +167,10 @@ export default function Staffs() {
   const roleRows = (pickData<{ rows?: { id: string; role_name?: string; name?: string; code?: string | null }[] }>(rolesQuery.data) as
     | { rows?: { id: string; role_name?: string; name?: string; code?: string | null }[] }
     | undefined)?.rows ?? []
-  const roles = roleRows.map((role) => ({ id: role.id, role_name: role.role_name ?? role.name ?? role.id, code: role.code ?? null }))
+  // Loại vai trò Khách hàng — tài khoản khách không thuộc trang quản lý nhân sự
+  const roles = roleRows
+    .filter((role) => isStaffRole(role.code))
+    .map((role) => ({ id: role.id, role_name: role.role_name ?? role.name ?? role.id, code: role.code ?? null }))
   const branches = (pickData<Branch[]>(branchesQuery.data) ?? []) as Branch[]
   const adminRoleId = roles.find((role) => isAdminRole(role.code))?.id
   const selectedRole = roles.find((role) => role.id === selectedRoleId)
@@ -285,7 +291,7 @@ export default function Staffs() {
         message.success('Đã thêm chuyên viên')
       }
       setOpen(false)
-      await usersQuery.refetch()
+      await queryClient.invalidateQueries({ queryKey: getGetUsersAdminQueryKey() })
     } catch (err) {
       message.error(errorMessage(err))
     }
@@ -302,7 +308,7 @@ export default function Staffs() {
       } else {
         message.success('Đã khóa tài khoản. Hồ sơ và lịch đã đặt được giữ nguyên.')
       }
-      await usersQuery.refetch()
+      await queryClient.invalidateQueries({ queryKey: getGetUsersAdminQueryKey() })
     } catch (err) {
       message.error(errorMessage(err))
     }
@@ -313,7 +319,7 @@ export default function Staffs() {
     try {
       await updateMutation.mutateAsync({ id: row.id, data: { is_active: true } })
       message.success('Đã khôi phục tài khoản. Lịch tuần cũ có hiệu lực trở lại.')
-      await usersQuery.refetch()
+      await queryClient.invalidateQueries({ queryKey: getGetUsersAdminQueryKey() })
     } catch (err) {
       message.error(errorMessage(err))
     }

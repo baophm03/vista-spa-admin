@@ -41,6 +41,7 @@ import dayjs, { Dayjs } from 'dayjs'
 import { pickData } from '@/api/helpers'
 import ListPagination from '@/components/base/ListPagination'
 import { paginateRows } from '@/utils/listTable'
+import { fillPeriodBuckets } from '@/utils/chartPeriods'
 import { useAbility } from '@casl/react'
 import { useBrandColors, useBrandCurrency } from '@/themeRuntime'
 import { toCsv, downloadCsv, type CsvColumn } from '@/utils/csv'
@@ -82,8 +83,7 @@ const STATUS_LABEL: Record<string, string> = {
 
 const ACTOR_LABEL: Record<string, string> = {
   STAFF: 'KTV / Nhân viên',
-  COLLABORATOR: 'Cộng tác viên',
-  REFERRER_CUSTOMER: 'Khách giới thiệu',
+  REFERRER_CUSTOMER: 'User giới thiệu',
 }
 
 const PAYMENT_STATUS_LABEL: Record<string, string> = {
@@ -94,8 +94,7 @@ const PAYMENT_STATUS_LABEL: Record<string, string> = {
 
 const SOURCE_LABEL: Record<string, string> = {
   organic: 'Khách tự đến',
-  collaborator: 'Giới thiệu bởi CTV',
-  referral_customer: 'Giới thiệu bởi khách cũ',
+  referral_customer: 'Giới thiệu bởi user cũ',
 }
 
 function CsvButton<T>({ filename, columns, rows }: { filename: string; columns: CsvColumn<T>[]; rows: T[] }) {
@@ -231,10 +230,10 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
 
   // ----- Derived chart data -----
   const revenueMerged = useMemo(() => {
-    const merged = new Map<string, number>()
-    for (const r of revenue) merged.set(r.period, (merged.get(r.period) ?? 0) + Number(r.revenue))
-    return [...merged.entries()].map(([period, v]) => ({ period, revenue: v / 1_000_000 }))
-  }, [revenue])
+    // Fill đủ các kỳ trong khoảng lọc (kỳ không phát sinh = 0) để chart
+    // hiển thị cả khi kỳ chọn chỉ có 1 kỳ có doanh thu.
+    return fillPeriodBuckets(range[0], range[1], groupBy, revenue).map((r) => ({ ...r, revenue: r.revenue / 1_000_000 }))
+  }, [revenue, range, groupBy])
   const revenueTotal = revenueMerged.reduce((s, r) => s + r.revenue, 0)
   const debtsTotal = debts.reduce((s, d) => s + Number(d.debt_amount ?? 0), 0)
   const rankData = (ranks.ranks ?? []).filter((r) => Number(r.member_count) > 0).map((r) => ({ name: r.rank_name, value: Number(r.member_count) }))
@@ -271,7 +270,7 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
       ? [{ key: 'customer', label: customerOptions.find((o) => o.value === customerProfileId)?.label ?? 'Khách', onClose: () => setCustomerProfileId(undefined) }]
       : []),
     ...(staffId
-      ? [{ key: 'staff', label: staffOptions.find((o) => o.value === staffId)?.label ?? 'KTV/CTV', onClose: () => setStaffId(undefined) }]
+      ? [{ key: 'staff', label: staffOptions.find((o) => o.value === staffId)?.label ?? 'KTV', onClose: () => setStaffId(undefined) }]
       : []),
   ]
 
@@ -322,10 +321,10 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
         />
       </div>
       <div>
-        <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>KTV / CTV</Typography.Text>
+        <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>KTV</Typography.Text>
         <Select
           style={{ width: '100%' }}
-          placeholder="Tất cả KTV / CTV"
+          placeholder="Tất cả KTV"
           allowClear
           showSearch
           optionFilterProp="label"
@@ -390,9 +389,9 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
                 { header: 'Số lần thanh toán', value: (r: any) => r.payment_count },
               ]} />}
             >
-              {revenueMerged.length < 2 ? (
+              {revenueMerged.length === 0 ? (
                 <div style={{ flex: 1, minHeight: 260, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <TableEmpty title="Chưa đủ dữ liệu doanh thu trong kỳ" />
+                  <TableEmpty title="Chưa có dữ liệu doanh thu trong kỳ" />
                 </div>
               ) : (
                 <ResponsiveContainer width="100%" height={260}>

@@ -20,7 +20,6 @@ import { paginateRows } from '@/utils/listTable'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { PostReferralsAdminBody, PutReferralsIdAdminBody } from '@/api/models'
 import { getGetReferralsAdminQueryKey, useGetReferralsAdmin, usePostReferralsAdmin, usePutReferralsIdAdmin } from '@/api/endpoints/referrals'
-import { useGetCollaboratorsAdmin } from '@/api/endpoints/collaborators'
 import { useGetCustomerProfilesAdmin } from '@/api/endpoints/customer-profiles'
 import { useGetDiscountRulesAdmin } from '@/api/endpoints/discount-rules'
 import type { DiscountRule } from '@/api/models'
@@ -49,15 +48,7 @@ export default function ReferralsPanel() {
     return (Array.isArray(raw) ? raw : (raw as { rows?: ReferralRow[] } | null)?.rows ?? []) as ReferralRow[]
   }, [listQuery.data])
 
-  // Map tên CTV để hiển thị "người giới thiệu" khi referrer_type = COLLABORATOR
-  const collaboratorsQuery = useGetCollaboratorsAdmin({ is_active: true })
-  const collaboratorNameById = useMemo(() => {
-    const raw = pickData<unknown>(collaboratorsQuery.data)
-    const list = (Array.isArray(raw) ? raw : (raw as { rows?: { id: string; name: string }[] } | null)?.rows ?? []) as { id: string; name: string }[]
-    return new Map(list.map((c) => [c.id, c.name]))
-  }, [collaboratorsQuery.data])
-
-  // Danh sách khách hàng — dùng cho "khách được giới thiệu" và referrer CUSTOMER
+  // Danh sách khách hàng — dùng cho "khách được giới thiệu" và referrer (user giới thiệu)
   const customersQuery = useGetCustomerProfilesAdmin({ page: 1, limit: 200 })
   const customers = useMemo(() => {
     const raw = pickData<unknown>(customersQuery.data)
@@ -100,7 +91,7 @@ export default function ReferralsPanel() {
   const openCreate = () => {
     setEditing(null)
     form.resetFields()
-    form.setFieldsValue({ referrer_type: 'COLLABORATOR' })
+    form.setFieldsValue({ referrer_type: 'CUSTOMER' })
     setOpen(true)
   }
 
@@ -136,9 +127,6 @@ export default function ReferralsPanel() {
   }
 
   const referrerLabel = (row: ReferralRow): string => {
-    if (row.referrer_type === 'COLLABORATOR') {
-      return collaboratorNameById.get(row.referrer_id) ?? '—'
-    }
     // BE đã resolve tên người giới thiệu (referrer_profile) — không phụ thuộc danh sách khách phân trang
     return row.referrer_profile?.full_name || row.referrer_profile?.phone || '—'
   }
@@ -249,7 +237,7 @@ export default function ReferralsPanel() {
           <>
             <Space className="mb-4! w-full! justify-end" wrap>
               <Can I="CREATE" a="REFERRAL">
-                <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>Ghi nhận giới thiệu</Button>
+                <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>Ghi nhận hoa hồng</Button>
               </Can>
             </Space>
             {listQuery.isError && (
@@ -310,8 +298,6 @@ export default function ReferralsPanel() {
               discountRules={discountRules}
               referrerTypeValue={referrerTypeValue}
               customers={customers}
-              collaboratorsQueryLoading={collaboratorsQuery.isLoading}
-              collaboratorNameById={collaboratorNameById}
               customersQueryLoading={customersQuery.isLoading}
               alreadyReferredIds={alreadyReferredIds}
             />

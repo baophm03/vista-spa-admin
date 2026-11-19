@@ -11,4 +11,17 @@ branch_id?: string;
 course_id?: string;
 status?: string;
 phone?: string;
+/**
+ * Tìm kiếm tự do (tên/SĐT/email học viên)
+ */
+q?: string;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 200
+ */
+limit?: number;
 };

@@ -23,16 +23,17 @@ function stripMenuMetadata<T extends MenuItem>(item: T): T {
 function useFilteredMenuItems(): MenuItem[] {
   const profile = useProfileStore((s) => s.profile)
   const roles = getProfileRoleNames(profile)
+  const isGlobalAdmin = Boolean(profile?.is_admin || profile?.is_super_admin)
   return menuItems
     .map((entry) => {
       if ('children' in entry) {
         return stripMenuMetadata({
           ...entry, children: (entry.children ?? [])
-            .filter((child) => hasPagePermission(child, roles, !!profile?.is_admin))
+            .filter((child) => hasPagePermission(child, roles, isGlobalAdmin))
             .map(stripMenuMetadata)
         })
       }
-      return hasPagePermission(entry, roles, !!profile?.is_admin) ? stripMenuMetadata(entry) : null
+      return hasPagePermission(entry, roles, isGlobalAdmin) ? stripMenuMetadata(entry) : null
     })
     .filter((entry): entry is MenuItem => entry !== null)
     .filter((entry) => !('children' in entry) || (entry.children ?? []).length > 0)

@@ -1,20 +1,19 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   Alert,
   Button,
   Form,
   Modal,
+  Select,
   Space,
   Table,
   Tag,
   message,
 } from 'antd'
 import type { TableColumnsType } from 'antd'
-import { EditOutlined, PauseCircleOutlined, PlusOutlined } from '@ant-design/icons'
+import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons'
 import { useQueryClient } from '@tanstack/react-query'
-import dayjs from 'dayjs'
 import { Can, useAbility } from '@casl/react'
-import ListFilterPopover from '@/components/base/ListFilterPopover'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
 import { paginateRows } from '@/utils/listTable'
@@ -22,26 +21,11 @@ import { isTechnicianUser, type UserWithRoleAssignments } from '@/utils/userRole
 import { errorMessage, pickData } from '@/api/helpers'
 import { getGetCommissionRulesAdminQueryKey, useDeleteCommissionRulesIdAdmin, useGetCommissionRulesAdmin, usePostCommissionRulesAdmin, usePutCommissionRulesIdAdmin } from '@/api/endpoints/commissions'
 import { useGetBranchesAdmin } from '@/api/endpoints/branches'
-import { useGetServiceAdmin } from '@/api/endpoints/services'
 import { useGetUsersAdmin } from '@/api/endpoints/users'
-import type { Branch, CommissionRule, PostCommissionRulesAdminBody, Service, User } from '@/api/models'
+import { useGetCustomersAdmin } from '@/api/endpoints/customers'
+import type { Branch, CommissionRule, User } from '@/api/models'
 import CommissionRuleModal, { type RateType } from './components/CommissionRuleModal'
-import { BASE_OPTIONS, PAYEE_META, type PayeeType } from './components/constants'
-
-type CommissionColumnKey = 'name' | 'payee_type' | 'base' | 'rate' | 'scope' | 'priority' | 'validity' | 'is_active'
-
-const COMMISSION_COLUMN_OPTIONS: { label: string; value: CommissionColumnKey }[] = [
-  { label: 'Tên quy tắc', value: 'name' },
-  { label: 'Người nhận', value: 'payee_type' },
-  { label: 'Căn tính', value: 'base' },
-  { label: 'Giá trị hoa hồng', value: 'rate' },
-  { label: 'Phạm vi', value: 'scope' },
-  { label: 'Ưu tiên', value: 'priority' },
-  { label: 'Hạn', value: 'validity' },
-  { label: 'Trạng thái', value: 'is_active' },
-]
-
-const DEFAULT_VISIBLE_COLUMNS = COMMISSION_COLUMN_OPTIONS.map((column) => column.value)
+import { PAYEE_META, ruleTypeMeta, type RuleRow } from './components/constants'
 
 function formatVnd(v?: number | null): string {
   if (v == null) return '—'
@@ -51,61 +35,70 @@ function formatVnd(v?: number | null): string {
 export default function CommissionRulesPanel() {
   const [page, setPage] = useState(1)
   const [open, setOpen] = useState(false)
-  const [editing, setEditing] = useState<CommissionRule | null>(null)
-  const [visibleColumns, setVisibleColumns] = useState<CommissionColumnKey[]>(DEFAULT_VISIBLE_COLUMNS)
-  const [draftVisibleColumns, setDraftVisibleColumns] = useState<CommissionColumnKey[]>(DEFAULT_VISIBLE_COLUMNS)
-  const [filterOpen, setFilterOpen] = useState(false)
+  const [editing, setEditing] = useState<RuleRow | null>(null)
   const [form] = Form.useForm()
   const queryClient = useQueryClient()
   const ability = useAbility()
   const canManage = ability.can('RULE_MANAGE', 'COMMISSION')
 
-  const rulesQuery = useGetCommissionRulesAdmin()
   const branchesQuery = useGetBranchesAdmin({ status: 'active' })
-  const servicesQuery = useGetServiceAdmin({ page: 1, limit: 200, is_active: true })
+  const branches = (pickData<Branch[] | undefined>(branchesQuery.data) ?? []) as Branch[]
+  const [selectedBranchId, setSelectedBranchId] = useState<string>()
+
+  // Mặc định chọn cơ sở đầu tiên khi tải xong
+  useEffect(() => {
+    if (!selectedBranchId && branches.length) setSelectedBranchId(branches[0]!.id)
+  }, [branches, selectedBranchId])
+
+  const rulesQuery = useGetCommissionRulesAdmin(
+    { branch_id: selectedBranchId! },
+    { query: { enabled: !!selectedBranchId } },
+  )
   const usersQuery = useGetUsersAdmin({ currentPage: 1, pageSize: 200, has_role: true })
+  const customersQuery = useGetCustomersAdmin({ currentPage: 1, pageSize: 500 })
   const rules = useMemo(() => {
     const raw = pickData<CommissionRule[]>(rulesQuery.data)
-    return Array.isArray(raw) ? raw : []
+    return (Array.isArray(raw) ? raw : []) as RuleRow[]
   }, [rulesQuery.data])
-  const branches = (pickData<Branch[] | undefined>(branchesQuery.data) ?? []) as Branch[]
-  const services = (pickData<{ services?: Service[] } | undefined>(servicesQuery.data)?.services ?? []) as Service[]
   const users = (pickData<{ rows?: User[] } | undefined>(usersQuery.data)?.rows ?? []) as (User & UserWithRoleAssignments)[]
   const technicians = useMemo(() => users.filter(isTechnicianUser), [users])
-  const branchNameById = useMemo(() => new Map(branches.map((branch) => [branch.id, branch.name])), [branches])
-  const serviceNameById = useMemo(() => new Map(services.map((service) => [service.id, service.title])), [services])
-  const userNameById = useMemo(() => new Map(users.map((user) => [user.id, user.zalo_name || user.email || user.id])), [users])
+  const customers = (pickData<{ rows?: User[] } | undefined>(customersQuery.data)?.rows ?? []) as (User & UserWithRoleAssignments)[]
 
   const invalidate = async () => {
     await queryClient.invalidateQueries({ queryKey: getGetCommissionRulesAdminQueryKey() })
   }
 
-  const createMutation = usePostCommissionRulesAdmin({ mutation: { onSuccess: invalidate } })
   const updateMutation = usePutCommissionRulesIdAdmin({ mutation: { onSuccess: invalidate } })
+  const createMutation = usePostCommissionRulesAdmin({ mutation: { onSuccess: invalidate } })
   const deleteMutation = useDeleteCommissionRulesIdAdmin({ mutation: { onSuccess: invalidate } })
 
-  const openEditor = (row?: CommissionRule) => {
-    setEditing(row ?? null)
-    form.setFieldsValue(
-      row
-        ? {
-            name: row.name,
-            payee_type: row.payee_type,
-            base: row.base ?? (row.payee_type === 'STAFF' ? 'SESSION_VALUE' : 'PAYMENT'),
-            rate_type: (row.fixed_amount != null ? 'AMOUNT' : 'PERCENT') as RateType,
-            percent: row.fixed_amount != null ? undefined : row.percent ?? undefined,
-            fixed_amount: row.fixed_amount ?? undefined,
-            priority: row.priority ?? 0,
-            service_id: row.service_id ?? undefined,
-            staff_id: row.staff_id ?? undefined,
-            branch_id: row.branch_id ?? undefined,
-            valid_range: row.valid_from || row.valid_to
-              ? [row.valid_from ? dayjs(row.valid_from) : null, row.valid_to ? dayjs(row.valid_to) : null]
-              : undefined,
-            is_active: row.is_active ?? true,
-          }
-        : { name: '', payee_type: 'STAFF', base: 'SESSION_VALUE', rate_type: 'PERCENT' as RateType, percent: undefined, fixed_amount: undefined, priority: 0, is_active: true },
-    )
+  const openCreate = () => {
+    setEditing(null)
+    form.setFieldsValue({
+      name: '',
+      type: undefined,
+      rate_type: 'PERCENT' as RateType,
+      percent: 10,
+      fixed_amount: undefined,
+      service_id: undefined,
+      staff_id: undefined,
+      is_active: true,
+    })
+    setOpen(true)
+  }
+
+  const openEditor = (row: RuleRow) => {
+    setEditing(row)
+    form.setFieldsValue({
+      name: row.name,
+      type: row.type ?? undefined,
+      rate_type: (row.fixed_amount != null ? 'AMOUNT' : 'PERCENT') as RateType,
+      percent: row.fixed_amount != null ? undefined : row.percent ?? undefined,
+      fixed_amount: row.fixed_amount ?? undefined,
+      service_id: row.service_id ?? undefined,
+      staff_id: row.staff_id ?? undefined,
+      is_active: row.is_active ?? true,
+    })
     setOpen(true)
   }
 
@@ -113,26 +106,31 @@ export default function CommissionRulesPanel() {
     try {
       const values = await form.validateFields()
       const rateType: RateType = values.rate_type ?? 'PERCENT'
-      const dto: PostCommissionRulesAdminBody = {
-        name: values.name,
-        payee_type: values.payee_type,
-        base: values.base,
-        // Hai kiểu giá trị loại trừ nhau — gửi null tường minh để đổi kiểu khi sửa không bị giữ giá trị cũ.
-        percent: rateType === 'PERCENT' ? values.percent ?? null : null,
-        fixed_amount: rateType === 'AMOUNT' ? values.fixed_amount ?? null : null,
-        priority: values.priority ?? 0,
-        is_active: !!values.is_active,
-        valid_from: values.valid_range?.[0]?.format('YYYY-MM-DD') ?? undefined,
-        valid_to: values.valid_range?.[1]?.format('YYYY-MM-DD') ?? undefined,
-        service_id: values.service_id || undefined,
-        staff_id: values.staff_id || undefined,
-        branch_id: values.branch_id || undefined,
-      }
       if (editing) {
-        await updateMutation.mutateAsync({ id: editing.id!, data: dto })
+        // Sửa: tên + giá trị + thu hẹp theo dịch vụ/người + bật/ngắt (type cố định)
+        const dto = {
+          name: values.name.trim(),
+          percent: rateType === 'PERCENT' ? values.percent ?? null : null,
+          fixed_amount: rateType === 'AMOUNT' ? values.fixed_amount ?? null : null,
+          service_id: values.service_id || null,
+          staff_id: values.staff_id || null,
+          is_active: !!values.is_active,
+        }
+        await updateMutation.mutateAsync({ id: editing.id!, data: dto as never })
         message.success('Đã cập nhật quy tắc hoa hồng')
       } else {
-        await createMutation.mutateAsync({ data: dto })
+        await createMutation.mutateAsync({
+          data: {
+            name: values.name.trim(),
+            type: values.type,
+            branch_id: selectedBranchId!,
+            percent: rateType === 'PERCENT' ? values.percent ?? null : null,
+            fixed_amount: rateType === 'AMOUNT' ? values.fixed_amount ?? null : null,
+            service_id: values.service_id || null,
+            staff_id: values.staff_id || null,
+            is_active: !!values.is_active,
+          } as never,
+        })
         message.success('Đã tạo quy tắc hoa hồng')
       }
       setOpen(false)
@@ -142,53 +140,55 @@ export default function CommissionRulesPanel() {
     }
   }
 
-  const remove = async (row: CommissionRule) => {
+  const remove = async (row: RuleRow) => {
     try {
       await deleteMutation.mutateAsync({ id: row.id! })
-      message.success(`Đã ngừng quy tắc "${row.name}"`)
+      message.success(`Đã xóa quy tắc "${row.name}"`)
     } catch (err) {
-      message.error(errorMessage(err, 'Không ngừng được quy tắc'))
+      message.error(errorMessage(err, 'Không xóa được quy tắc'))
     }
   }
 
-  const columns: TableColumnsType<CommissionRule> = ([
+  const askDelete = (row: RuleRow) => {
+    Modal.confirm({
+      title: 'Xóa quy tắc này?',
+      content: `Quy tắc "${row.name}" của cơ sở đang chọn sẽ bị xóa hẳn.`,
+      okText: 'Xóa',
+      okButtonProps: { danger: true },
+      cancelText: 'Hủy',
+      onOk: () => remove(row),
+    })
+  }
+
+  const columns: TableColumnsType<RuleRow> = ([
     {
       key: 'name',
-      title: 'Tên quy tắc', dataIndex: 'name', width: 200, ellipsis: true,
+      title: 'Tên quy tắc', dataIndex: 'name', width: 220, ellipsis: true,
       render: (v: string) => <span style={{ fontWeight: 500 }}>{v}</span>,
     },
     {
-      key: 'payee_type',
-      title: 'Người nhận', dataIndex: 'payee_type', width: 150,
-      render: (v: PayeeType) => {
-        const meta = PAYEE_META[v]
-        return meta ? <Tag color={meta.color}>{meta.label}</Tag> : <Tag>{v}</Tag>
+      key: 'payee_role',
+      title: 'Người nhận', width: 160,
+      render: (_v, row) => {
+        const code = row.payee_role?.code ?? ''
+        const meta = PAYEE_META[code]
+        return meta ? <Tag color={meta.color}>{meta.label}</Tag> : <Tag>{row.payee_role?.role_name ?? code ?? '—'}</Tag>
       },
     },
-    { key: 'base', title: 'Tính hoa hồng theo', dataIndex: 'base', width: 190, render: (v?: string) => BASE_OPTIONS.find((o) => o.value === v)?.label ?? '—' },
     {
-      key: 'rate', title: 'Giá trị hoa hồng', width: 130, align: 'right',
+      key: 'type',
+      title: 'Kích hoạt khi', dataIndex: 'type', width: 190,
+      render: (v?: string) => {
+        const meta = ruleTypeMeta(v)
+        return meta ? <Tag color={meta.color}>{meta.label}</Tag> : <Tag>{v ?? '—'}</Tag>
+      },
+    },
+    {
+      key: 'rate', title: 'Hoa hồng nhận được', width: 150, align: 'right',
       render: (_v, row) => {
         if (row.fixed_amount != null) return `${formatVnd(row.fixed_amount)}/lần`
         return row.percent != null ? `${row.percent}%` : '—'
       },
-    },
-    {
-      key: 'scope',
-      title: 'Phạm vi', width: 170,
-      render: (_v, row) => {
-        const parts: string[] = []
-        if (row.service_id) parts.push(serviceNameById.get(row.service_id) ?? 'Theo dịch vụ')
-        if (row.staff_id) parts.push(userNameById.get(row.staff_id) ?? 'Theo KTV')
-        if (row.branch_id) parts.push(branchNameById.get(row.branch_id) ?? 'Theo cơ sở')
-        return parts.length ? parts.join(', ') : <Tag>Toàn hệ thống</Tag>
-      },
-    },
-    { key: 'priority', title: 'Ưu tiên', dataIndex: 'priority', width: 80, align: 'center', render: (v?: number) => v ?? 0 },
-    {
-      key: 'validity',
-      title: 'Hạn', width: 160,
-      render: (_v, row) => (row.valid_from || row.valid_to ? `${row.valid_from ?? '...'} → ${row.valid_to ?? '...'}` : 'Không giới hạn'),
     },
     {
       key: 'is_active',
@@ -197,32 +197,22 @@ export default function CommissionRulesPanel() {
     },
     {
       key: 'actions',
-      title: 'Hành động', align: 'center' as const, width: 90, fixed: 'right',
+      title: 'Hành động', align: 'center' as const, width: 110, fixed: 'right',
       render: (_v, row) => (
         <RowActionsMenu
           items={[
             { key: 'edit', icon: <EditOutlined />, label: 'Sửa' },
-            { key: 'deactivate', icon: <PauseCircleOutlined />, danger: true, label: 'Ngừng' },
+            { key: 'delete', icon: <DeleteOutlined />, danger: true, label: 'Xóa' },
           ]}
           onSelect={(key) => {
             if (key === 'edit') openEditor(row)
-            else if (key === 'deactivate') {
-              Modal.confirm({
-                title: 'Ngừng quy tắc này?',
-                content: 'Quy tắc sẽ không áp dụng cho giao dịch mới; bút toán đã sinh không đổi.',
-                okText: 'Ngừng',
-                okButtonProps: { danger: true },
-                cancelText: 'Hủy',
-                onOk: () => remove(row),
-              })
-            }
+            else if (key === 'delete') askDelete(row)
           }}
         />
       ),
     },
   ] as TableColumnsType<CommissionRule>).filter((column) =>
-    (column.key !== 'actions' || canManage) &&
-    (column.key === 'actions' || visibleColumns.includes(column.key as CommissionColumnKey)),
+    column.key !== 'actions' || canManage,
   )
 
   return (
@@ -231,27 +221,18 @@ export default function CommissionRulesPanel() {
         allowed ? (
           <>
             <Space className="mb-4! w-full! justify-end" wrap>
-              <ListFilterPopover
-                open={filterOpen}
-                onOpenChange={setFilterOpen}
-                activeFilterCount={0}
-                onApply={() => {
-                  if (draftVisibleColumns.length === 0) {
-                    message.error('Hãy giữ lại ít nhất một cột hiển thị')
-                    return
-                  }
-                  setVisibleColumns(draftVisibleColumns)
-                  setFilterOpen(false)
-                }}
-                onClear={() => {
-                  setDraftVisibleColumns(DEFAULT_VISIBLE_COLUMNS)
-                  setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)
-                }}
-                columnOptions={COMMISSION_COLUMN_OPTIONS}
-                draftVisibleColumns={draftVisibleColumns}
-                onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as CommissionColumnKey[])}
+              <Select
+                showSearch optionFilterProp="label"
+                className="w-[240px]!"
+                placeholder="Chọn cơ sở"
+                loading={branchesQuery.isLoading}
+                value={selectedBranchId}
+                onChange={(v) => { setSelectedBranchId(v); setPage(1) }}
+                options={branches.map((branch) => ({ value: branch.id, label: branch.name }))}
               />
-              <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor()}>Thêm quy tắc</Button>
+              <Can I="RULE_MANAGE" a="COMMISSION">
+                <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>Thêm quy tắc</Button>
+              </Can>
             </Space>
             {rulesQuery.isError && (
               <Alert
@@ -261,13 +242,9 @@ export default function CommissionRulesPanel() {
                 action={<Button size="small" onClick={() => void rulesQuery.refetch()}>Thử lại</Button>}
               />
             )}
-            <Alert
-              type="info" showIcon style={{ marginBottom: 16 }}
-              message="Tính hoa hồng tự động chỉ hoạt động khi được bật trong Cài đặt hệ thống. Khi nhiều quy tắc cùng phù hợp, hệ thống ưu tiên quy tắc cụ thể hơn theo dịch vụ, KTV hoặc cơ sở, sau đó xét mức ưu tiên."
-            />
-            <Table<CommissionRule>
+            <Table<RuleRow>
               rowKey="id" loading={rulesQuery.isLoading} dataSource={paginateRows(rules, page, 10)} columns={columns}
-              scroll={{ x: 1340 }}
+              scroll={{ x: 800 }}
               pagination={false}
             />
             <ListPagination page={page} limit={10} total={rules.length} onChange={setPage} noun="quy tắc hoa hồng" />
@@ -276,12 +253,10 @@ export default function CommissionRulesPanel() {
               editing={editing}
               form={form}
               saving={createMutation.isPending || updateMutation.isPending}
-              services={services}
-              servicesLoading={servicesQuery.isLoading}
               users={technicians}
               usersLoading={usersQuery.isLoading}
-              branches={branches}
-              branchesLoading={branchesQuery.isLoading}
+              customers={customers}
+              customersLoading={customersQuery.isLoading}
               onCancel={() => setOpen(false)}
               onSubmit={() => void submit()}
             />

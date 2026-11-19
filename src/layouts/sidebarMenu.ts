@@ -57,7 +57,7 @@ export const menuItems: MenuItem[] = [
     label: 'Khách hàng',
     icon: null,
     children: [
-      { key: '/users', icon: createElement(TeamOutlined), label: 'Danh sách khách', permission: { action: 'READ', subject: 'CUSTOMER_PROFILE' } },
+      { key: '/customers', icon: createElement(TeamOutlined), label: 'Danh sách khách', permission: { action: 'READ', subject: 'CUSTOMER_PROFILE' } },
       { key: '/appointments', icon: createElement(CalendarOutlined), label: 'Lịch hẹn', permission: { action: 'READ', subject: 'APPOINTMENT' } },
       { key: '/treatment-customers', icon: createElement(SolutionOutlined), label: 'Liệu trình KH', permission: { action: 'READ', subject: 'TREATMENT_PACKAGE' } },
       { key: '/my-sessions', icon: createElement(ExperimentOutlined), label: 'Buổi của tôi', permission: { action: 'READ', subject: 'TREATMENT_SESSION' }, ktvOnly: true },
@@ -90,8 +90,7 @@ export const menuItems: MenuItem[] = [
       { key: '/vouchers', icon: createElement(GiftOutlined), label: 'Voucher', permission: { action: 'READ', subject: 'VOUCHER' } },
       { key: '/voucher-customers', icon: createElement(SendOutlined), label: 'Voucher khách hàng', permission: { action: 'READ', subject: 'VOUCHER' } },
       { key: '/luckywheel', icon: createElement(ThunderboltOutlined), label: 'Quay số may mắn', permission: { action: 'READ', subject: 'WHEEL' } },
-      { key: '/commissions', icon: createElement(ProfileOutlined), label: 'Giới thiệu & Hoa hồng', permission: { action: 'READ', subject: 'COMMISSION' } },
-      { key: '/collaborators', icon: createElement(TeamOutlined), label: 'Cộng tác viên', permission: { action: 'READ', subject: 'COLLABORATOR' } },
+      { key: '/commissions', icon: createElement(GiftOutlined), label: 'Hoa hồng', permission: { action: 'READ', subject: 'COMMISSION' } },
     ],
   },
   {

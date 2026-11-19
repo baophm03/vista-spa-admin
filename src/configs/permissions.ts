@@ -136,28 +136,35 @@ const SUBJECT_ALIASES: Record<string, string[]> = {
   NOTIFICATION_TEMPLATE: ["NOTIFICATION"],
 };
 
-export const updateCaslAbility = (user: { permissions?: Permission[] } | null) => {
-  const rules: RawRuleOf<AppAbility>[] = [];
+export const updateCaslAbility = (user: {
+  permissions?: Permission[]
+  is_admin?: boolean
+  is_super_admin?: boolean
+} | null) => {
+  const isGlobalAdmin = Boolean(user?.is_admin || user?.is_super_admin)
+  const rules: RawRuleOf<AppAbility>[] = []
 
-  for (const p of normalizePermissions(user?.permissions)) {
-    // Wildcard realhub: '*:*' → toàn quyền; 'MODULE:*' → mọi action của module.
-    const subject = p.module === "*" ? "all" : p.module;
-    let action = p.action === "*" ? "manage" : p.action;
-    rules.push({ action: action as Actions, subject });
+  if (isGlobalAdmin) {
+    rules.push({ action: "manage", subject: "all" })
+  } else {
+    for (const p of normalizePermissions(user?.permissions)) {
+      // Wildcard realhub: '*:*' → toàn quyền; 'MODULE:*' → mọi action của module.
+      const subject = p.module === "*" ? "all" : p.module
+      const action = p.action === "*" ? "manage" : p.action
+      rules.push({ action: action as Actions, subject })
 
-    // 'MODULE:ACTION_ALL' / 'MODULE:ACTION_OWN' (realhub scope) → FE pages check
-    // base action ('READ', 'UPDATE', 'DELETE') nên emit thêm rule base tương ứng.
-    // Trả về nhiều rule riêng (thay vì inverted fields) để page checks scope-agnostic pass.
-    if (action.endsWith("_ALL") || action.endsWith("_OWN")) {
-      const base = action.replace(/_(ALL|OWN)$/, "");
-      rules.push({ action: base as Actions, subject });
-      for (const alias of SUBJECT_ALIASES[subject] ?? []) {
-        rules.push({ action: base as Actions, subject: alias });
+      // Realhub scopes map to the base actions that existing pages check.
+      if (action.endsWith("_ALL") || action.endsWith("_OWN")) {
+        const base = action.replace(/_(ALL|OWN)$/, "")
+        rules.push({ action: base as Actions, subject })
+        for (const alias of SUBJECT_ALIASES[subject] ?? []) {
+          rules.push({ action: base as Actions, subject: alias })
+        }
       }
-    }
 
-    for (const alias of SUBJECT_ALIASES[subject] ?? []) {
-      rules.push({ action: action as Actions, subject: alias });
+      for (const alias of SUBJECT_ALIASES[subject] ?? []) {
+        rules.push({ action: action as Actions, subject: alias })
+      }
     }
   }
 

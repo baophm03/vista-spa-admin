@@ -20,6 +20,11 @@ export function isAdminRole(code?: string | null): boolean {
   return String(code || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase() === 'admin'
 }
 
+/** Vai trò thuộc trang quản lý nhân sự (loại trừ Khách hàng — customer chỉ được gán tự động). */
+export function isStaffRole(code?: string | null): boolean {
+  return String(code || '').trim().toLowerCase() !== 'customer'
+}
+
 export type StaffColumnKey = 'staff' | 'role' | 'branch' | 'status' | 'phone' | 'email' | 'profile' | 'in_app'
 
 export const STAFF_COLUMN_OPTIONS: { label: string; value: StaffColumnKey }[] = [

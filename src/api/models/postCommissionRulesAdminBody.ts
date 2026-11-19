@@ -5,31 +5,15 @@
  * Vista Spa backend API. Uses the NEWSKY+ business error envelope for permission-aware endpoints and the legacy response envelope for existing admin endpoints.
  * OpenAPI spec version: 1.0.0
  */
-import type { PostCommissionRulesAdminBodyPayeeType } from './postCommissionRulesAdminBodyPayeeType';
-import type { PostCommissionRulesAdminBodyBase } from './postCommissionRulesAdminBodyBase';
+import type { PostCommissionRulesAdminBodyType } from './postCommissionRulesAdminBodyType';
 
 export type PostCommissionRulesAdminBody = {
   name: string;
-  payee_type: PostCommissionRulesAdminBodyPayeeType;
-  base?: PostCommissionRulesAdminBodyBase;
-  /**
-   * @minimum 0
-   * @maximum 100
-   * @nullable
-   */
-  percent?: number | null;
-  /**
-   * Fixed commission per occurrence (VND); mutually exclusive with percent.
-   * @minimum 0
-   * @nullable
-   */
-  fixed_amount?: number | null;
+  type: PostCommissionRulesAdminBodyType;
+  branch_id: string;
+  percent?: number;
+  fixed_amount?: number;
   service_id?: string;
   staff_id?: string;
-  branch_id?: string;
-  /** @minimum 0 */
-  priority?: number;
-  valid_from?: string;
-  valid_to?: string;
   is_active?: boolean;
 };

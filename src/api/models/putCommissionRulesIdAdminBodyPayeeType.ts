@@ -12,6 +12,5 @@ export type PutCommissionRulesIdAdminBodyPayeeType = typeof PutCommissionRulesId
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const PutCommissionRulesIdAdminBodyPayeeType = {
   STAFF: 'STAFF',
-  COLLABORATOR: 'COLLABORATOR',
   CUSTOMER_REFERRER: 'CUSTOMER_REFERRER',
 } as const;

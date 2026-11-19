@@ -7,6 +7,7 @@
  */
 import {
   useInfiniteQuery,
+  useMutation,
   useQuery
 } from '@tanstack/react-query';
 import type {
@@ -15,15 +16,25 @@ import type {
   DefinedUseInfiniteQueryResult,
   DefinedUseQueryResult,
   InfiniteData,
+  MutationFunction,
   QueryClient,
   QueryFunction,
   QueryKey,
   UndefinedInitialDataOptions,
   UseInfiniteQueryOptions,
   UseInfiniteQueryResult,
+  UseMutationOptions,
+  UseMutationResult,
   UseQueryOptions,
   UseQueryResult
 } from '@tanstack/react-query';
+
+import type {
+  ForbiddenResponse,
+  PutNotificationTemplatesIdAdminBody,
+  Response,
+  UnauthorizedResponse
+} from '../models';
 
 import { customInstance } from '../mutator/custom-instance';
 
@@ -32,6 +43,265 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
+ * GET `/notification-templates/{id}/admin` — xem chi tiết mẫu thông báo. Cần đăng nhập + `NOTIFICATION_TEMPLATE:READ_ALL`.
+ * @summary Get a notification template
+ */
+export const getNotificationTemplatesIdAdmin = (
+    id: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<Response>(
+      {url: `/notification-templates/${id}/admin`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetNotificationTemplatesIdAdminInfiniteQueryKey = (id?: string,) => {
+    return [
+    'infinite', `/notification-templates/${id}/admin`
+    ] as const;
+    }
+
+export const getGetNotificationTemplatesIdAdminQueryKey = (id?: string,) => {
+    return [
+    `/notification-templates/${id}/admin`
+    ] as const;
+    }
+
+    
+export const getGetNotificationTemplatesIdAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getNotificationTemplatesIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getNotificationTemplatesIdAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetNotificationTemplatesIdAdminInfiniteQueryKey(id);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getNotificationTemplatesIdAdmin>>> = ({ signal }) => getNotificationTemplatesIdAdmin(id, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getNotificationTemplatesIdAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetNotificationTemplatesIdAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getNotificationTemplatesIdAdmin>>>
+export type GetNotificationTemplatesIdAdminInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse
+
+
+export function useGetNotificationTemplatesIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getNotificationTemplatesIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse>(
+ id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getNotificationTemplatesIdAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getNotificationTemplatesIdAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getNotificationTemplatesIdAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetNotificationTemplatesIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getNotificationTemplatesIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getNotificationTemplatesIdAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getNotificationTemplatesIdAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getNotificationTemplatesIdAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetNotificationTemplatesIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getNotificationTemplatesIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getNotificationTemplatesIdAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get a notification template
+ */
+
+export function useGetNotificationTemplatesIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getNotificationTemplatesIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getNotificationTemplatesIdAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetNotificationTemplatesIdAdminInfiniteQueryOptions(id,options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Get a notification template
+ */
+export const prefetchGetNotificationTemplatesIdAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getNotificationTemplatesIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getNotificationTemplatesIdAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetNotificationTemplatesIdAdminInfiniteQueryOptions(id,options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetNotificationTemplatesIdAdminQueryOptions = <TData = Awaited<ReturnType<typeof getNotificationTemplatesIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getNotificationTemplatesIdAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetNotificationTemplatesIdAdminQueryKey(id);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getNotificationTemplatesIdAdmin>>> = ({ signal }) => getNotificationTemplatesIdAdmin(id, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getNotificationTemplatesIdAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetNotificationTemplatesIdAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getNotificationTemplatesIdAdmin>>>
+export type GetNotificationTemplatesIdAdminQueryError = UnauthorizedResponse | ForbiddenResponse
+
+
+export function useGetNotificationTemplatesIdAdmin<TData = Awaited<ReturnType<typeof getNotificationTemplatesIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getNotificationTemplatesIdAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getNotificationTemplatesIdAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getNotificationTemplatesIdAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetNotificationTemplatesIdAdmin<TData = Awaited<ReturnType<typeof getNotificationTemplatesIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getNotificationTemplatesIdAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getNotificationTemplatesIdAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getNotificationTemplatesIdAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetNotificationTemplatesIdAdmin<TData = Awaited<ReturnType<typeof getNotificationTemplatesIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getNotificationTemplatesIdAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get a notification template
+ */
+
+export function useGetNotificationTemplatesIdAdmin<TData = Awaited<ReturnType<typeof getNotificationTemplatesIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getNotificationTemplatesIdAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetNotificationTemplatesIdAdminQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Get a notification template
+ */
+export const prefetchGetNotificationTemplatesIdAdminQuery = async <TData = Awaited<ReturnType<typeof getNotificationTemplatesIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getNotificationTemplatesIdAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetNotificationTemplatesIdAdminQueryOptions(id,options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * PUT `/notification-templates/{id}/admin` — sửa mẫu thông báo (title, body, is_enabled theo channel). Cần đăng nhập + `NOTIFICATION_TEMPLATE:UPDATE_ALL`.
+ * @summary Update a notification template
+ */
+export const putNotificationTemplatesIdAdmin = (
+    id: string,
+    putNotificationTemplatesIdAdminBody: PutNotificationTemplatesIdAdminBody,
+ ) => {
+      
+      
+      return customInstance<Response>(
+      {url: `/notification-templates/${id}/admin`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: putNotificationTemplatesIdAdminBody
+    },
+      );
+    }
+  
+
+
+export const getPutNotificationTemplatesIdAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putNotificationTemplatesIdAdmin>>, TError,{id: string;data: PutNotificationTemplatesIdAdminBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putNotificationTemplatesIdAdmin>>, TError,{id: string;data: PutNotificationTemplatesIdAdminBody}, TContext> => {
+
+const mutationKey = ['putNotificationTemplatesIdAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putNotificationTemplatesIdAdmin>>, {id: string;data: PutNotificationTemplatesIdAdminBody}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  putNotificationTemplatesIdAdmin(id,data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PutNotificationTemplatesIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof putNotificationTemplatesIdAdmin>>>
+    export type PutNotificationTemplatesIdAdminMutationBody = PutNotificationTemplatesIdAdminBody
+    export type PutNotificationTemplatesIdAdminMutationError = UnauthorizedResponse | ForbiddenResponse
+
+    /**
+ * @summary Update a notification template
+ */
+export const usePutNotificationTemplatesIdAdmin = <TError = UnauthorizedResponse | ForbiddenResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putNotificationTemplatesIdAdmin>>, TError,{id: string;data: PutNotificationTemplatesIdAdminBody}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof putNotificationTemplatesIdAdmin>>,
+        TError,
+        {id: string;data: PutNotificationTemplatesIdAdminBody},
+        TContext
+      > => {
+
+      const mutationOptions = getPutNotificationTemplatesIdAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
  * Only Admin and receptionist can view. Returns the list of allowed variables per event.
  * @summary View notification template list
  */

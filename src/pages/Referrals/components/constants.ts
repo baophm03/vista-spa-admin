@@ -1,10 +1,9 @@
 import type { Referral } from '@/api/models'
 
-export const REFERRER_TYPES = ['COLLABORATOR', 'CUSTOMER'] as const
+export const REFERRER_TYPES = ['CUSTOMER'] as const
 
 export const REFERRER_TYPE_META: Record<string, { label: string; color: string }> = {
-  COLLABORATOR: { label: 'Cộng tác viên', color: 'blue' },
-  CUSTOMER: { label: 'Khách hàng', color: 'green' },
+  CUSTOMER: { label: 'Khách hàng cũ', color: 'green' },
 }
 
 export const STATUS_META: Record<string, { label: string; color: string }> = {

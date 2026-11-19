@@ -11,6 +11,5 @@ export type ReferralReferrerType = typeof ReferralReferrerType[keyof typeof Refe
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ReferralReferrerType = {
-  COLLABORATOR: 'COLLABORATOR',
   CUSTOMER: 'CUSTOMER',
 } as const;
