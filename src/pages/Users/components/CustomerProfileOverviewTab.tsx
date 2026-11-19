@@ -1,3 +1,4 @@
+import CustomerRankCard from './CustomerRankCard'
 import { useMemo, useState } from 'react'
 import { Button, Card, Descriptions, Form, Input, InputNumber, Modal, Select, Space, Tag, message } from 'antd'
 import dayjs from 'dayjs'
@@ -112,21 +113,28 @@ export default function CustomerProfileOverviewTab({ profile, summary, fieldDefi
     }
   }
 
+  const rankName = membership?.card_rank?.name || summary?.rank?.name || profile.user?.membership?.card_rank?.name
+
   return (
     <div className="grid gap-[18px] pt-2">
       <Card
         title="Hội viên & thẻ hạng"
-        extra={<Tag color="purple">{membership?.card_rank?.name || summary?.rank?.name || 'Chưa có hạng'}</Tag>}
+        extra={<Tag color="purple" className="me-0!">{rankName || 'Chưa có hạng'}</Tag>}
         loading={!summary}
       >
-        <Descriptions size="small" column={{ xs: 1, sm: 2, lg: 4 }}>
-          <Descriptions.Item label="Chi tiêu trong năm">{money(membership?.year_spent ?? 0)}</Descriptions.Item>
-          <Descriptions.Item label="Điểm khả dụng">{Number(membership?.lifetime_points ?? summary?.points ?? 0).toLocaleString('vi-VN')}</Descriptions.Item>
-          <Descriptions.Item label="Ngày đạt hạng">{membership?.rank_achieved_at ? dayjs(membership.rank_achieved_at).format('DD/MM/YYYY') : '—'}</Descriptions.Item>
-          <Descriptions.Item label="Hiệu lực">{membership?.card_rank?.validity === 'PERMANENT' ? 'Vĩnh viễn' : membership?.rank_expires_at ? `Đến ${dayjs(membership.rank_expires_at).format('DD/MM/YYYY')}` : '—'}</Descriptions.Item>
-        </Descriptions>
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
+          <CustomerRankCard rankName={rankName} />
+          <div className="min-w-[min(100%,18rem)] flex-1">
+            <Descriptions size="small" layout="vertical" colon={false} column={{ xs: 1, sm: 2, lg: 2 }}>
+              <Descriptions.Item label="Chi tiêu trong năm">{money(membership?.year_spent ?? 0)}</Descriptions.Item>
+              <Descriptions.Item label="Điểm khả dụng">{Number(membership?.lifetime_points ?? summary?.points ?? 0).toLocaleString('vi-VN')}</Descriptions.Item>
+              <Descriptions.Item label="Ngày đạt hạng">{membership?.rank_achieved_at ? dayjs(membership.rank_achieved_at).format('DD/MM/YYYY') : '—'}</Descriptions.Item>
+              <Descriptions.Item label="Hiệu lực">{membership?.card_rank?.validity === 'PERMANENT' ? 'Vĩnh viễn' : membership?.rank_expires_at ? `Đến ${dayjs(membership.rank_expires_at).format('DD/MM/YYYY')}` : '—'}</Descriptions.Item>
+            </Descriptions>
+          </div>
+        </div>
         {membership?.card_rank?.benefits && <div className="mb-3 text-sm text-gray-600">{membership.card_rank.benefits}</div>}
-        <Space wrap>
+        <Space wrap className="mt-2 w-full border-t border-slate-100 pt-3">
           <Can I="POINTS_ADJUST" a="MEMBERSHIP">
             <Button onClick={() => { adjustForm.resetFields(); adjustForm.setFieldsValue({ reason: '' }); setAdjustOpen(true) }}>Điều chỉnh điểm</Button>
           </Can>
