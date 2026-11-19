@@ -216,7 +216,7 @@ export default function ReferralsPanel() {
       },
     },
     {
-      title: 'Hành động', key: 'actions', align: 'center', width: 90, fixed: 'right',
+      title: 'Thao tác', key: 'actions', align: 'center', width: 90, fixed: 'right',
       render: (_v, row) => (
         <RowActionsMenu
           items={[
@@ -229,6 +229,10 @@ export default function ReferralsPanel() {
       ),
     },
   ]
+
+  const pageRows = paginateRows(rows, page, 10)
+  const canExpandReferral = (row: ReferralRow) =>
+    (row.commission_entries?.length ?? 0) > 0 || row.commission_payout_status === 'RECONCILE'
 
   return (
     <Can I="READ" a="REFERRAL" passThrough>
@@ -249,10 +253,12 @@ export default function ReferralsPanel() {
               />
             )}
             <Table<ReferralRow>
-              rowKey="id" loading={listQuery.isLoading} dataSource={paginateRows(rows, page, 10)}
+              className="[&_.ant-table-thead_th]:whitespace-nowrap"
+              rowKey="id" loading={listQuery.isLoading} dataSource={pageRows}
               scroll={{ x: 'max-content' }}
               expandable={{
-                rowExpandable: (row) => (row.commission_entries?.length ?? 0) > 0 || row.commission_payout_status === 'RECONCILE',
+                showExpandColumn: pageRows.some(canExpandReferral),
+                rowExpandable: canExpandReferral,
                 expandedRowRender: (row) => {
                   const entries = row.commission_entries ?? []
                   if (entries.length === 0) {

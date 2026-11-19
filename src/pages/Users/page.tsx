@@ -486,7 +486,7 @@ export default function Users() {
           },
           {
             key: 'actions',
-            title: 'Hành động', align: 'center' as const,
+            title: 'Thao tác', align: 'center' as const,
             width: 90,
             fixed: 'right' as const,
             render: (_: unknown, row: CustomerProfileRow) => (

@@ -236,10 +236,10 @@ function VoucherCustomerTab({ category, branches }: { category: VoucherCategory;
       },
     },
     ...(canUpdate ? [{
-      title: 'Hành động',
+      title: 'Thao tác',
       key: 'actions',
       align: 'center' as const,
-      width: 56,
+      width: 88,
       render: (_value: unknown, row: VoucherCustomerRow) => row.source === 'FIXED' && row.assignment_id && row.status === 'ACTIVE' ? (
         <Popconfirm
           title="Gỡ voucher này khỏi khách hàng?"
@@ -293,6 +293,7 @@ function VoucherCustomerTab({ category, branches }: { category: VoucherCategory;
         <Alert type="error" showIcon style={{ marginBottom: 16 }} message="Không tải được danh sách voucher khách hàng" description={errorMessage(viewQuery.error)} action={<Button size="small" onClick={() => void viewQuery.refetch()}>Thử lại</Button>} />
       )}
       <Table<VoucherCustomerRow>
+        className="[&_.ant-table-thead_th]:whitespace-nowrap"
         rowKey={(row) => `${row.source}-${row.assignment_id ?? row.voucher_id}-${row.customer_profile_id ?? row.user_id ?? 'customer'}`}
         loading={viewQuery.isLoading}
         dataSource={paginateRows(rows, page, PAGE_SIZE)}

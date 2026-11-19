@@ -66,7 +66,7 @@ function SessionRequiredFieldsSetting() {
   })
 
   return (
-    <Card className="mb-4" title="Nhật ký buổi điều trị">
+    <Card className="mb-4!" title="Nhật ký buổi điều trị">
       {settingsQuery.isError ? (
         <Alert type="error" showIcon message="Không tải được cấu hình trường bắt buộc" description={errorMessage(settingsQuery.error)} />
       ) : (
@@ -220,7 +220,7 @@ function CustomerFieldsConfig({ entity, sectionTitle }: {
     ...(entity === 'CUSTOMER_PROFILE' ? [{ title: 'Hiển thị với khách', dataIndex: 'visible_to_customer', render: (value: boolean) => value ? 'Có' : 'Không' }] : []),
     { title: 'Trạng thái', dataIndex: 'is_active', render: (value: boolean) => <Tag color={value === false ? 'default' : 'green'}>{value === false ? 'Đã ẩn' : 'Đang dùng'}</Tag> },
     {
-      title: 'Hành động', key: 'actions', align: 'center' as const, width: 90,
+      title: 'Thao tác', key: 'actions', align: 'center' as const, width: 90,
       render: (_: unknown, row: CustomFieldDef) => (
         <RowActionsMenu
           items={[

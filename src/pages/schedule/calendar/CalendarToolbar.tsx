@@ -1,6 +1,7 @@
-import { Button, ConfigProvider, Divider, Dropdown, Popover, Select, Typography } from 'antd'
+import { Button, Dropdown, Popover, Segmented, Select, Tooltip } from 'antd'
 import type { MenuProps } from 'antd'
-import { CalendarOutlined, CheckOutlined, DownOutlined, FilterOutlined, LeftOutlined, ReloadOutlined, RightOutlined } from '@ant-design/icons'
+import type { ReactNode } from 'react'
+import { CalendarOutlined, DownOutlined, FilterOutlined, LeftOutlined, MoreOutlined, ReloadOutlined, RightOutlined } from '@ant-design/icons'
 import dayjs, { type Dayjs } from 'dayjs'
 import type { Branch } from '@/api/models/branch'
 
@@ -10,6 +11,12 @@ const VIEW_LABEL: Record<CalendarView, string> = { day: 'Ngày', week: 'Tuần',
 const VIEW_OPTIONS: CalendarView[] = ['day', 'week', 'month']
 
 interface Props {
+  compact?: boolean
+  roster?: { selected: boolean; onSelect: () => void }
+  panelLabel?: string
+  extra?: ReactNode
+  activeFilterCount?: number
+  periodLabel?: string
   anchor: Dayjs
   onAnchorChange: (date: Dayjs) => void
   view: CalendarView
@@ -19,92 +26,129 @@ interface Props {
   branchFilter?: string
   onBranchChange: (branchId?: string) => void
   onRefresh: () => void
+  refreshing?: boolean
   leftPanelOpen: boolean
   onToggleLeftPanel: () => void
 }
 
-/** Toolbar kiểu Google Calendar: Ngày/Tuần/Tháng + lọc. (Tạo ca nằm ở panel trái; chọn ngày qua mini calendar.) */
+/** Toolbar kiểu Google Calendar / Notion Calendar: "Hôm nay" + mũi tên + nhãn kỳ ở trái,
+ *  chuyển Ngày/Tuần/Tháng dạng segmented + lọc ở phải. */
 export default function CalendarToolbar({
-  anchor, onAnchorChange, view, onViewChange,
-  branches, branchFilter, onBranchChange, onRefresh,
+  compact = false, roster, panelLabel, extra, activeFilterCount = 0, anchor, onAnchorChange, view, onViewChange, periodLabel,
+  branches, branchFilter, onBranchChange, onRefresh, refreshing = false,
   leftPanelOpen, onToggleLeftPanel,
 }: Props) {
   const moreItems: MenuProps['items'] = [
     { key: 'refresh', icon: <ReloadOutlined />, label: 'Làm mới dữ liệu' },
-    { key: 'panel', icon: <CalendarOutlined />, label: leftPanelOpen ? 'Ẩn bảng điều khiển trái' : 'Hiện bảng điều khiển trái' },
+    ...(!compact ? [{ key: 'panel', icon: <CalendarOutlined />, label: leftPanelOpen ? 'Ẩn bảng điều khiển trái' : 'Hiện bảng điều khiển trái' }] : []),
   ]
+  const iconSize = compact ? 'h-8! w-8!' : 'h-9! w-9!'
+  const shift = (amount: number) =>
+    onAnchorChange(anchor.add(amount, view === 'day' ? 'day' : view === 'week' ? 'week' : 'month'))
+  const branchName = branches.find((branch) => branch.id === branchFilter)?.name
+  const viewOptions = VIEW_OPTIONS.map((option) => ({ value: option, label: VIEW_LABEL[option] }))
+  const compactTextButton = 'h-8! shrink-0 rounded-lg! px-2.5! text-[13px]! font-semibold! text-[var(--brand-primary)]! hover:bg-[var(--brand-tint)]!'
 
   return (
-    // Nằm trong hàng header trang lịch (portal vào slot giữa title và tabs):
-    // Ngày / lùi / tiến / tháng ở trái — chế độ xem và bộ lọc ở phải.
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', width: '100%', paddingTop: 10 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+    <div className={`flex w-full flex-wrap items-center justify-between gap-x-4 ${compact ? 'gap-y-2 py-1.5' : 'gap-y-2 px-3 py-2.5 sm:px-4'}`}>
+      {/* Nhóm trái: Hôm nay · ◀ ▶ · nhãn kỳ */}
+      <div className={`flex min-w-0 items-center ${compact ? 'gap-1' : 'gap-0.5'}`}>
         <Button
-          size="middle"
+          type="text"
           onClick={() => onAnchorChange(dayjs())}
-          style={{ height: 40, borderRadius: 20, paddingInline: 18, fontSize: 14, fontWeight: 500 }}
+          className={compact ? compactTextButton : 'h-9! shrink-0 rounded-lg! px-3! font-semibold! text-[var(--brand-primary)]! hover:bg-[var(--brand-tint)]!'}
         >
           Hôm nay
         </Button>
-        <Button
-          type="text"
-          size="middle"
-          aria-label="Khoảng thời gian trước"
-          icon={<LeftOutlined style={{ fontSize: 14, color: '#3C4043' }} />}
-          onClick={() => onAnchorChange(anchor.subtract(1, view === 'day' ? 'day' : view === 'week' ? 'week' : 'month'))}
-          style={{ width: 36, height: 40, padding: 0 }}
-        />
-        <Button
-          type="text"
-          size="middle"
-          aria-label="Khoảng thời gian sau"
-          icon={<RightOutlined style={{ fontSize: 14, color: '#3C4043' }} />}
-          onClick={() => onAnchorChange(anchor.add(1, view === 'day' ? 'day' : view === 'week' ? 'week' : 'month'))}
-          style={{ width: 36, height: 40, padding: 0 }}
-        />
-        <Typography.Text style={{ fontSize: 18, fontWeight: 500, color: '#1F1F1F', marginLeft: 8, whiteSpace: 'nowrap' }}>
-          Tháng {anchor.format('M, YYYY')}
-        </Typography.Text>
+        <Tooltip title="Kỳ trước">
+          <Button
+            type="text"
+            shape="circle"
+            aria-label="Khoảng thời gian trước"
+            icon={<LeftOutlined style={{ fontSize: 13 }} />}
+            onClick={() => shift(-1)}
+            className={`${iconSize} shrink-0 text-neutral-600!`}
+          />
+        </Tooltip>
+        <Tooltip title="Kỳ sau">
+          <Button
+            type="text"
+            shape="circle"
+            aria-label="Khoảng thời gian sau"
+            icon={<RightOutlined style={{ fontSize: 13 }} />}
+            onClick={() => shift(1)}
+            className={`${iconSize} shrink-0 text-neutral-600!`}
+          />
+        </Tooltip>
+        <span className={`min-w-0 text-neutral-800 ${compact ? 'ml-1 text-[13px] font-semibold leading-5 tabular-nums sm:ml-2' : 'ml-2 truncate text-[19px] font-medium tracking-tight sm:text-[21px]'}`}>
+          {periodLabel ?? `Tháng ${anchor.format('M, YYYY')}`}
+        </span>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-        <ConfigProvider theme={{ components: { Menu: { itemHeight: 34, itemBorderRadius: 6, itemSelectedBg: 'var(--brand-tint)', itemSelectedColor: 'var(--brand-primary)' } } }}>
-        <Dropdown
-          trigger={['click']}
-          placement="bottomRight"
-          menu={{
-            items: VIEW_OPTIONS.map((option) => ({
-              key: option,
-              label: (
-                <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, minWidth: 96 }}>
-                  {VIEW_LABEL[option]}
-                  {option === view && <CheckOutlined aria-hidden style={{ fontSize: 12 }} />}
+
+      {/* Nhóm phải: chuyển chế độ xem + bộ lọc + menu thêm */}
+      <div className={`flex items-center ${compact ? 'flex-wrap gap-1' : 'gap-1.5'}`}>
+        {compact ? (
+          <Dropdown
+            trigger={['click']}
+            placement="bottomRight"
+            overlayClassName="[&_.ant-dropdown-menu]:min-w-24! [&_.ant-dropdown-menu]:rounded-lg! [&_.ant-dropdown-menu]:p-1! [&_.ant-dropdown-menu-item]:rounded-md! [&_.ant-dropdown-menu-item]:px-2.5! [&_.ant-dropdown-menu-item]:py-1! [&_.ant-dropdown-menu-item]:text-sm! [&_.ant-dropdown-menu-item-selected]:bg-[var(--brand-tint)]! [&_.ant-dropdown-menu-item-selected]:text-[var(--brand-primary)]!"
+            menu={{
+              items: [
+                ...viewOptions.map(({ value, label }) => ({ key: value, label })),
+                ...(roster ? [{ type: 'divider' as const }, { key: 'roster', label: 'Bảng phân ca' }] : []),
+              ],
+              selectable: true,
+              selectedKeys: [roster?.selected ? 'roster' : view],
+              onClick: ({ key }) => key === 'roster' ? roster?.onSelect() : onViewChange(key as CalendarView),
+            }}
+          >
+            <Button type="text" aria-haspopup="menu" aria-label={'Chế độ xem: ' + (roster?.selected ? 'Bảng phân ca' : VIEW_LABEL[view])} className={`${compactTextButton} gap-1.5!`}>
+              {roster?.selected ? 'Bảng phân ca' : VIEW_LABEL[view]}
+              <DownOutlined aria-hidden className="text-[9px]!" />
+            </Button>
+          </Dropdown>
+        ) : (
+          <Segmented
+            aria-label="Chế độ xem"
+            value={view}
+            onChange={(value) => onViewChange(value as CalendarView)}
+            options={viewOptions}
+            className="[&_.ant-segmented-item]:font-medium"
+          />
+        )}
+        {compact && (
+          <Tooltip title={activeFilterCount > 0 ? `Đang áp dụng ${activeFilterCount} bộ lọc` : (panelLabel ?? 'Ngày và bộ lọc')}>
+            <Button
+              type="text"
+              icon={<FilterOutlined />}
+              aria-label={activeFilterCount > 0 ? `Mở bộ lọc lịch hẹn, ${activeFilterCount} bộ lọc đang áp dụng` : (panelLabel ?? 'Mở bộ lọc lịch hẹn')}
+              aria-expanded={leftPanelOpen}
+              onClick={onToggleLeftPanel}
+              className={activeFilterCount > 0
+                ? 'h-8! gap-1.5! bg-[var(--brand-tint)]! px-2! text-[var(--brand-dark)]!'
+                : `${iconSize} text-neutral-600!`}
+            >
+              {activeFilterCount > 0 && (
+                <span aria-hidden className="grid h-4 min-w-4 place-items-center rounded-full bg-[var(--brand-primary)] px-1 text-[10px] font-semibold leading-none text-[var(--brand-on-primary)]">
+                  {activeFilterCount}
                 </span>
-              ),
-            })),
-            selectable: true,
-            selectedKeys: [view],
-            onClick: ({ key }) => onViewChange(key as CalendarView),
-          }}
-        >
-          <Button aria-label={`Chế độ xem: ${VIEW_LABEL[view]}`} aria-haspopup="menu" icon={<CalendarOutlined />} style={{ height: 36, borderRadius: 8, boxShadow: 'none', fontWeight: 500 }}>
-            {VIEW_LABEL[view]}
-            <DownOutlined style={{ fontSize: 10, color: '#5F6368' }} />
-          </Button>
-        </Dropdown>
-        </ConfigProvider>
+              )}
+            </Button>
+          </Tooltip>
+        )}
         {!!branches.length && (
           <Popover
             trigger="click"
             placement="bottomRight"
             content={
-              <div style={{ width: 240 }}>
-                <div style={{ fontWeight: 600, marginBottom: 8 }}>Lọc theo cơ sở</div>
+              <div className="w-60">
+                <div className="mb-2 text-[13px] font-semibold text-neutral-800">Lọc theo cơ sở</div>
                 <Select
                   allowClear
                   showSearch
                   optionFilterProp="label"
                   placeholder="Tất cả cơ sở"
-                  style={{ width: '100%' }}
+                  className="w-full"
                   value={branchFilter}
                   onChange={(value) => onBranchChange(value)}
                   options={branches.map((branch) => ({ value: branch.id, label: branch.name }))}
@@ -112,22 +156,40 @@ export default function CalendarToolbar({
               </div>
             }
           >
-            <Button
-              aria-label="Lọc cơ sở"
-              type="text"
-              icon={<FilterOutlined />}
-              data-branch-active={branchFilter ? 'true' : undefined}
-              style={branchFilter ? { color: 'var(--brand-primary)' } : undefined}
-            />
+            <Tooltip title={branchName ? `Cơ sở: ${branchName}` : 'Lọc cơ sở'}>
+              <Button
+                aria-label="Lọc cơ sở"
+                type="text"
+                shape="circle"
+                icon={<FilterOutlined style={{ fontSize: compact ? 14 : 15 }} />}
+                className={`${iconSize} ${branchFilter ? 'bg-[var(--brand-tint)]! text-[var(--brand-primary)]!' : 'text-neutral-600!'}`}
+              />
+            </Tooltip>
           </Popover>
         )}
-        <Divider type="vertical" />
-        <Dropdown
-          menu={{ items: moreItems, onClick: ({ key }) => (key === 'refresh' ? onRefresh() : onToggleLeftPanel()) }}
-          trigger={['click']}
-        >
-          <Button aria-label="Thêm tùy chọn" type="text" icon={<span style={{ fontWeight: 700, letterSpacing: 1 }}>⋮</span>} />
-        </Dropdown>
+        {compact ? (
+          <div className="flex items-center gap-1.5">
+            <Tooltip title={refreshing ? undefined : 'Làm mới dữ liệu'}>
+              <Button
+                aria-label="Làm mới dữ liệu"
+                type="text"
+                shape="circle"
+                icon={<ReloadOutlined />}
+                loading={refreshing}
+                onClick={onRefresh}
+                className={`${iconSize} shrink-0 text-neutral-600!`}
+              />
+            </Tooltip>
+            <span role="status" className="text-xs text-neutral-600">
+              {refreshing ? 'Đang cập nhật dữ liệu' : ''}
+            </span>
+          </div>
+        ) : (
+          <Dropdown menu={{ items: moreItems, onClick: ({ key }) => (key === 'refresh' ? onRefresh() : onToggleLeftPanel()) }} trigger={['click']}>
+            <Button aria-label="Thêm tùy chọn" type="text" shape="circle" icon={<MoreOutlined style={{ fontSize: 16 }} />} className={`${iconSize} shrink-0 text-neutral-600!`} />
+          </Dropdown>
+        )}
+        {extra && <div className="ml-2 shrink-0">{extra}</div>}
       </div>
     </div>
   )

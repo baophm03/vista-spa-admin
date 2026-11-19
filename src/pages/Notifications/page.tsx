@@ -252,7 +252,7 @@ export default function Notifications() {
             render: (_, group: NotificationGroup<NotificationRow>) => (group.unreadIds.length === 0 ? <Tag>Đã đọc</Tag> : <Tag color="processing">Chưa đọc</Tag>),
           },
           {
-            title: 'Hành động', align: 'center' as const,
+            title: 'Thao tác', align: 'center' as const,
             key: 'actions',
             width: 90,
             fixed: 'right' as const,

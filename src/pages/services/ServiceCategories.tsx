@@ -117,7 +117,7 @@ export default function ServiceCategories() {
         render: (active?: boolean) => <Tag color={active === false ? 'default' : 'green'}>{active === false ? 'Đã ẩn' : 'Đang dùng'}</Tag>,
       },
       {
-        title: 'Hành động',
+        title: 'Thao tác',
         key: 'actions',
         align: 'center' as const,
         width: 90,

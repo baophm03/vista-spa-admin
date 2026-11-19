@@ -370,7 +370,7 @@ function VoucherCategoryTab({ category }: { category: VoucherCategory }) {
     },
     { title: 'Trạng thái', dataIndex: 'is_active', width: 85, responsive: ['sm'], render: (value: boolean, row) => row.end_date && dayjs(row.end_date).isBefore(dayjs(), 'day') ? <Tag>Hết hạn</Tag> : value ? <Tag color="green">Hoạt động</Tag> : <Tag>Tắt</Tag> },
     ...(canUpdate ? [{
-      title: 'Hành động', key: 'actions', align: 'center' as const, width: 56,
+      title: 'Thao tác', key: 'actions', align: 'center' as const, width: 88,
       render: (_value: unknown, row: VoucherCategoryRow) => (
         <RowActionsMenu
           items={[
@@ -413,6 +413,7 @@ function VoucherCategoryTab({ category }: { category: VoucherCategory }) {
       {vouchersQuery.isError && <Alert type="error" showIcon style={{ marginBottom: 16 }} message="Không tải được danh sách voucher" description={errorMessage(vouchersQuery.error)} action={<Button size="small" onClick={() => void vouchersQuery.refetch()}>Thử lại</Button>} />}
       {targetsQuery.isError && <Alert type="warning" showIcon style={{ marginBottom: 16 }} message={`Không tải được danh sách ${meta.label.replace('Voucher ', '').toLowerCase()}`} description={errorMessage(targetsQuery.error)} />}
       <Table<VoucherCategoryRow>
+        className="[&_.ant-table-thead_th]:whitespace-nowrap"
         rowKey="id"
         loading={vouchersQuery.isLoading}
         dataSource={rows}

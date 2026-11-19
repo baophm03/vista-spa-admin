@@ -6,6 +6,8 @@ import {
   RightOutlined,
   SyncOutlined,
 } from '@ant-design/icons'
+import links from '@/configs/links'
+import { useBrandRuntime } from '@/themeRuntime'
 import { PRIZE_TYPE_META } from './constants'
 
 /** Màu cánh sáng và tím xen kẽ; dùng sắc tím nhạt riêng cho cánh cuối nếu số cánh lẻ. */
@@ -230,6 +232,8 @@ export default function WheelSpinModal({
   onSpin,
   onClose,
 }: WheelSpinModalProps) {
+  const brand = useBrandRuntime()
+  const logoSrc = brand.logoUrl ? links.imageEndpoint + brand.logoUrl : '/phung-nguyen-logo-clean.png'
   const [rotation, setRotation] = useState(0)
   const [revealed, setRevealed] = useState(false)
   const [highlightedSegmentIndex, setHighlightedSegmentIndex] = useState<number | null>(null)
@@ -393,12 +397,9 @@ export default function WheelSpinModal({
         {/* Dùng ảnh logo đầy đủ nội dung thương hiệu */}
         <div className="flex items-center">
           <img
-            src="/phung-nguyen-logo-clean.png"
-            alt="Logo NewSky Vista Skin & Spa"
-            className="h-20 sm:h-24 md:h-28 lg:h-32 w-auto max-w-[320px] object-contain drop-shadow-md transition-transform hover:scale-105"
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = '/phung-nguyen-newsky-vista-logo-transparent.png'
-            }}
+            src={logoSrc}
+            alt={brand.name}
+            className="h-[clamp(2.75rem,8dvh,5rem)] w-auto max-w-[min(40vw,12rem)] object-contain drop-shadow-md transition-transform hover:scale-105"
           />
         </div>
 
@@ -416,7 +417,7 @@ export default function WheelSpinModal({
       </header>
 
       {/* Main Container */}
-      <main className="relative z-10 mx-auto flex w-full max-w-[1400px] flex-1 flex-col items-center px-4 pb-6 pt-1 sm:px-8">
+      <main className="relative z-10 mx-auto flex w-full max-w-[1400px] flex-1 flex-col items-center px-4 pb-4 pt-1 sm:px-8">
         {/* Huy hiệu VÒNG QUAY MAY MẮN kết hợp tên chương trình sang trọng */}
         <div className="inline-flex h-12 items-center gap-3 rounded-full border border-[#E8D9D0] bg-white/85 px-4 shadow-[0_5px_18px_rgba(97,55,102,0.10)] backdrop-blur-sm">
           <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[#F5EAF6] text-sm text-[#8D42A0]">
@@ -441,7 +442,7 @@ export default function WheelSpinModal({
         {/* Tiêu đề chính không bị lỗi tách dấu Tiếng Việt */}
         <h1
           id="lucky-wheel-title"
-          className="relative mb-0 mt-2 font-bold leading-[1.15] text-[#341144] text-[clamp(2.1rem,4.4vw,3.75rem)]"
+          className="relative mb-0 mt-2 font-bold leading-[1.15] text-[#341144] text-[clamp(1.65rem,min(4vw,5dvh),3rem)]"
           style={{ fontFamily: "'Playfair Display', 'Be Vietnam Pro', serif", letterSpacing: '0px' }}
         >
           {revealed ? (isWinningResult ? 'Chúc mừng bạn, ' : 'Hẹn bạn lần sau, ') : 'Tham gia ngay, '}
@@ -471,8 +472,8 @@ export default function WheelSpinModal({
 
         {/* Khung Vòng quay may mắn - Chuẩn xác 100% ánh kim loại Champagne Gold */}
         <div
-          className="relative mt-4 aspect-square shrink-0 select-none"
-          style={{ width: 'min(88vw, 33.5rem, 55dvh)' }}
+          className="relative mt-4 aspect-square shrink-0 select-none [container-type:inline-size]"
+          style={{ width: 'min(84vw, 29rem, 46dvh)' }}
         >
           {/* LỚP 1: Vành kim loại ngoài Champagne Gold Metallic (conic-gradient tạo luồng sáng quét đa chiều) */}
           <div
@@ -594,17 +595,17 @@ export default function WheelSpinModal({
                         }}
                       >
                         {/* Icon to rõ nét chuẩn thiết kế */}
-                        <div className="mb-1 flex items-center justify-center text-[#5A176B] drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)]">
+                        <div className="mb-[0.8cqw] flex items-center justify-center text-[#5A176B] [&_svg]:size-[7cqw] drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)]">
                           <PrizeIcon />
                         </div>
 
                         {/* Tên giải 2 dòng to rõ, sang trọng */}
                         <div className="flex flex-col items-center leading-[1.16] text-[#441254]">
-                          <span className="text-[clamp(0.75rem,1.18vw,0.95rem)] font-medium text-[#561B69] drop-shadow-[0_1px_0_rgba(255,255,255,0.6)]">
+                          <span className="text-[3.1cqw] font-medium text-[#561B69] drop-shadow-[0_1px_0_rgba(255,255,255,0.6)]">
                             {line1}
                           </span>
                           {line2 && (
-                            <span className="text-[clamp(0.82rem,1.32vw,1.08rem)] font-medium text-[#380E45] drop-shadow-[0_1px_0_rgba(255,255,255,0.6)]">
+                            <span className="text-[3.5cqw] font-medium text-[#380E45] drop-shadow-[0_1px_0_rgba(255,255,255,0.6)]">
                               {line2}
                             </span>
                           )}
@@ -694,7 +695,7 @@ export default function WheelSpinModal({
             aria-label={waiting ? 'Vòng quay đang quay' : 'Nhấn để quay ngay'}
             disabled={waiting || (Boolean(result) && !revealed) || !canSpinAgain || prizes.length === 0}
             onClick={handleSpin}
-            className="absolute left-1/2 top-1/2 z-20 grid size-[6.8rem] -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full p-[5px] sm:p-[6px] shadow-[0_8px_25px_rgba(70,15,85,0.26),0_0_14px_rgba(245,210,120,0.3)] transition-all hover:scale-[1.04] active:scale-[0.98] disabled:cursor-default sm:size-[8.2rem] md:size-[8.8rem]"
+            className="absolute left-1/2 top-1/2 z-20 grid size-[26%] -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full p-[1cqw] shadow-[0_8px_25px_rgba(70,15,85,0.26),0_0_14px_rgba(245,210,120,0.3)] transition-all hover:scale-[1.04] active:scale-[0.98] disabled:cursor-default"
             style={{
               background: `conic-gradient(
                 from 215deg,
@@ -728,14 +729,14 @@ export default function WheelSpinModal({
                   boxShadow: 'inset 0 2px 5px rgba(255, 255, 255, 1), inset 0 -3px 8px rgba(180, 110, 30, 0.22), inset 0 0 0 1.5px rgba(255, 255, 255, 0.95)',
                 }}
               >
-                <span className="text-[clamp(1rem,1.55vw,1.25rem)] font-black tracking-[0.14em] text-[#4E1462] drop-shadow-[0_1px_0_rgba(255,255,255,0.85)]">
+                <span className="text-[4.1cqw] leading-tight font-black tracking-[0.14em] text-[#4E1462] drop-shadow-[0_1px_0_rgba(255,255,255,0.85)]">
                   QUAY
                 </span>
-                <span className="text-[clamp(1rem,1.55vw,1.25rem)] font-black tracking-[0.14em] text-[#4E1462] drop-shadow-[0_1px_0_rgba(255,255,255,0.85)]">
+                <span className="text-[4.1cqw] leading-tight font-black tracking-[0.14em] text-[#4E1462] drop-shadow-[0_1px_0_rgba(255,255,255,0.85)]">
                   NGAY
                 </span>
                 {/* Mũi tên tam giác vàng gold ánh kim */}
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="mt-0.5" aria-hidden="true">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="mt-0.5 size-[2cqw]" aria-hidden="true">
                   <polygon points="3.5 1.5 10 6 3.5 10.5" fill="url(#centerPlayTriangleGold)" />
                   <defs>
                     <linearGradient id="centerPlayTriangleGold" x1="0" y1="0" x2="1" y2="1">
@@ -750,6 +751,8 @@ export default function WheelSpinModal({
         </div>
 
         {/* Thông báo lỗi nếu có */}
+        {!prizes.length && <p role="status" className="mt-3 text-sm text-[#663F72]">Vòng quay chưa tải được danh sách giải thưởng hoặc chưa có giải.</p>}
+
         {error && (
           <div role="alert" className="mt-3 max-w-md rounded-xl border border-rose-200 bg-white/95 px-4 py-2 text-xs font-medium text-rose-700 shadow-sm sm:text-sm">
             {error}
@@ -796,7 +799,7 @@ export default function WheelSpinModal({
           loading={waiting}
           disabled={waiting || (Boolean(result) && !revealed) || (!result && (!canSpinAgain || prizes.length === 0))}
           onClick={result && revealed && !canSpinAgain ? onClose : handleSpin}
-          className="!mt-4 !h-[3.5rem] !min-w-[16rem] !rounded-full !border !border-[#F0A6F6]/70 !px-8 !text-sm !font-bold !tracking-wider !text-white !shadow-[0_10px_30px_rgba(142,35,165,0.42)] transition-transform hover:scale-[1.02] active:scale-[0.98] sm:!h-[3.85rem] sm:!min-w-[18rem] sm:!text-base"
+          className="!mt-3 !h-11 !min-w-[16rem] !rounded-full !border !border-[#F0A6F6]/70 !px-8 !text-sm !font-bold !tracking-wider !text-white !shadow-[0_10px_30px_rgba(142,35,165,0.42)] transition-transform hover:scale-[1.02] active:scale-[0.98] sm:!h-12 sm:!min-w-[18rem] sm:!text-base"
           style={{
             background: 'linear-gradient(90deg, #A828A4 0%, #8E23A5 50%, #6E1F9A 100%)',
           }}

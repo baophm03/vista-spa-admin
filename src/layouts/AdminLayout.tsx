@@ -33,6 +33,8 @@ export default function AdminLayout() {
 
   const pageTitle = getPageTitle(location.pathname)
   const isSchedulePage = location.pathname === '/schedule'
+  const isAppointmentsPage = /^\/appointments\/?$/.test(location.pathname)
+  const usesFullHeightContent = isSchedulePage || isAppointmentsPage
 
   useEffect(() => {
     // Chỉ gọi API khi đã có token — tránh bắn request lỗi trước khi guard redirect
@@ -112,9 +114,9 @@ export default function AdminLayout() {
             onLogout={logout}
           />
 
-          <Content className={`min-h-0 flex-1 bg-[var(--brand-bg)]! p-3! sm:p-4! lg:p-6! overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-xl [&::-webkit-scrollbar-thumb]:bg-[var(--brand-border)] ${isSchedulePage ? 'md:overflow-hidden' : ''}`}>
+          <Content className={`min-h-0 flex-1 overflow-y-auto bg-[var(--brand-bg)]! px-3! pb-3! sm:px-4! sm:pb-4! lg:px-6! lg:pb-6! [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-xl [&::-webkit-scrollbar-thumb]:bg-[var(--brand-border)] ${isAppointmentsPage ? 'pt-2!' : 'pt-3! sm:pt-4! lg:pt-6!'} ${isSchedulePage ? 'md:overflow-hidden' : ''}`}>
             {/* Nền trang theo brand.background_color — bảng/card bên trong có nền trắng riêng nên vẫn dễ đọc */}
-            <div className={isSchedulePage ? 'min-h-full md:h-full md:min-h-0' : 'min-h-full'}>
+            <div className={usesFullHeightContent ? 'min-h-full md:h-full md:min-h-0' : 'min-h-full'}>
               <PermissionGate>
                 <Outlet />
               </PermissionGate>

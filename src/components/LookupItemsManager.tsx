@@ -157,7 +157,7 @@ export default function LookupItemsManager({ listId }: { listId: string }) {
           { title: 'Màu', dataIndex: 'color', width: 110, render: (value?: string | null) => { const color = normalizeLookupColor(value); return color ? <Tag color={color}>{color.toUpperCase()}</Tag> : '—' } },
           { title: 'Thứ tự', dataIndex: 'sort_order', width: 90 },
           { title: 'Trạng thái', dataIndex: 'is_active', width: 120, render: (value?: boolean) => <Tag color={value === false ? 'default' : 'green'}>{value === false ? 'Đã ẩn' : 'Đang dùng'}</Tag> },
-          ...(canUpdate || canDelete ? [{ title: 'Hành động', key: 'actions', align: 'center' as const, width: 90, render: (_: unknown, row: LookupItemWithColor) => {
+          ...(canUpdate || canDelete ? [{ title: 'Thao tác', key: 'actions', align: 'center' as const, width: 90, render: (_: unknown, row: LookupItemWithColor) => {
             // index là vị trí trong trang hiện tại; quy đổi về vị trí trong mảng items đầy đủ
             const globalIndex = items.findIndex((item) => item.id === row.id)
             const toggleItem = { key: 'toggle', label: row.is_active === false ? 'Bật lại' : 'Ẩn', danger: row.is_active !== false, disabled: saving }

@@ -99,6 +99,8 @@ export default function LuckyWheel() {
   const wheelsQuery = useGetLuckyWheelsAdmin({ page: wheelPage, limit: TABLE_PAGE_SIZE } as never)
   const branchesQuery = useGetBranchesAdmin()
   const prizesQuery = useGetLuckyWheelsIdPrizesAdmin(selected?.id ?? '', { page: prizePage, limit: TABLE_PAGE_SIZE } as never)
+  const spinPrizesQuery = useGetLuckyWheelsIdPrizesAdmin(selected?.id ?? '', { query: { enabled: spinModalOpen && Boolean(selected?.id) } })
+  const spinPrizes = spinPrizesQuery.data?.responseData ?? []
   const spinsQuery = useGetLuckyWheelsIdSpinsAdmin(selected?.id ?? '', { page: spinPage, limit: TABLE_PAGE_SIZE } as never)
   const eligibleQuery = useGetLuckyWheelsIdEligibleCustomersAdmin(
     // eslint-disable-next-line
@@ -383,13 +385,16 @@ export default function LuckyWheel() {
 
   /** Quay thử chỉ tạo kết quả giả trên giao diện; quay cho khách mới ghi lượt vào hệ thống. */
   const spinRandomForCustomer = async () => {
-    if (!selected) return
+    if (!selected) {
+      setSpinError('Chưa chọn vòng quay.')
+      return
+    }
 
     if (spinPreviewMode) {
       setSpinResult(null)
       setSpinError(null)
       setSpinStarted(true)
-      const previewPrizes = prizes.length ? prizes : [
+      const previewPrizes = spinPrizes.length ? spinPrizes : [
         { id: 'sample-1', name: 'Voucher Giảm 50%', prize_type: 'VOUCHER', weight: 1 },
         { id: 'sample-2', name: 'Liệu trình Chăm sóc da', prize_type: 'SERVICE', weight: 1 },
         { id: 'sample-3', name: 'Voucher Giảm 30%', prize_type: 'VOUCHER', weight: 1 },
@@ -413,12 +418,12 @@ export default function LuckyWheel() {
       return
     }
 
-    if (!chosenCustomer?.customer_profile_id) return
-    if (
-      (chosenCustomer.spins_left ?? 0) <= 0
-      || spinForCustomerMutation.isPending
-    ) return
-    const customerProfileId = chosenCustomer.customer_profile_id
+    if (spinForCustomerMutation.isPending) return
+    const customerProfileId = chosenCustomer?.customer_profile_id
+    if (!customerProfileId || (chosenCustomer?.spins_left ?? 0) <= 0) {
+      setSpinError(customerProfileId ? 'Khách hàng đã hết lượt quay.' : 'Không tìm thấy hồ sơ khách hàng. Vui lòng chọn lại khách.')
+      return
+    }
     setSpinResult(null)
     setSpinError(null)
     setSpinStarted(true)
@@ -426,8 +431,8 @@ export default function LuckyWheel() {
       const res = await spinForCustomerMutation.mutateAsync({
         id: selected.id,
         data: {
-          customer_profile_id: chosenCustomer.customer_profile_id ?? '',
-          request_key: `admin-${selected.id}-${chosenCustomer.customer_profile_id}-${Date.now()}`,
+          customer_profile_id: customerProfileId,
+          request_key: `admin-${selected.id}-${customerProfileId}-${Date.now()}`,
         },
       })
       setChosenCustomer((customer) => customer?.customer_profile_id === customerProfileId
@@ -444,7 +449,7 @@ export default function LuckyWheel() {
       setSpinResult((res.responseData ?? {}) as WheelSpinResult)
     } catch (err) {
       console.error('Lucky wheel spin failed', err)
-      setSpinError('Chưa quay được lúc này. Bạn thử lại hoặc nhờ nhân viên hỗ trợ nhé.')
+      setSpinError(errorMessage(err, 'Không thể quay cho khách. Vui lòng thử lại.'))
       setSpinStarted(false)
     }
   }
@@ -495,6 +500,10 @@ export default function LuckyWheel() {
 
   const openCustomerSpin = () => {
     if (!chosenCustomer || (chosenCustomer.spins_left ?? 0) <= 0 || spinForCustomerMutation.isPending) return
+    if (!chosenCustomer.customer_profile_id) {
+      message.error('Không tìm thấy hồ sơ khách hàng để quay.')
+      return
+    }
     setSpinPreviewMode(false)
     setSpinResult(null)
     setSpinError(null)
@@ -604,7 +613,7 @@ export default function LuckyWheel() {
             { title: 'Lượt/user', dataIndex: 'spins_per_user', width: 90 },
             { title: 'Trạng thái', dataIndex: 'is_active', width: 100, render: (v) => (v ? <Tag color="green">Đang mở</Tag> : <Tag>Tắt</Tag>) },
             {
-              title: 'Hành động',
+              title: 'Thao tác',
               key: 'actions',
               align: 'center' as const,
               width: 90,
@@ -686,7 +695,7 @@ export default function LuckyWheel() {
                 { title: 'Trọng số', dataIndex: 'weight', width: 90 },
                 { title: 'Số lượng', key: 'qty', width: 120, render: (_, row) => (row.quantity_total != null ? `${row.quantity_given}/${row.quantity_total}` : '∞') },
                 {
-                  title: 'Hành động',
+                  title: 'Thao tác',
                   key: 'actions',
                   align: 'center' as const,
                   width: 90,
@@ -937,13 +946,13 @@ export default function LuckyWheel() {
 
       <WheelSpinModal
         open={spinModalOpen}
-        prizes={prizes}
+        prizes={spinPrizes}
         wheelName={selected?.name}
         customerName={spinPreviewMode ? undefined : chosenCustomer?.full_name}
         spinsLeft={spinPreviewMode ? undefined : chosenCustomer?.spins_left}
         waiting={spinStarted && !spinResult && !spinError}
         result={spinResult}
-        error={spinError}
+        error={spinError ?? (spinPrizesQuery.isError ? errorMessage(spinPrizesQuery.error, 'Không tải được danh sách giải thưởng.') : null)}
         onSpin={() => void spinRandomForCustomer()}
         onClose={closeSpinModal}
       />

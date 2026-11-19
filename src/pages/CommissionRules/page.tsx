@@ -19,11 +19,12 @@ import ListPagination from '@/components/base/ListPagination'
 import { paginateRows } from '@/utils/listTable'
 import { isTechnicianUser, type UserWithRoleAssignments } from '@/utils/userRoles'
 import { errorMessage, pickData } from '@/api/helpers'
+import { customInstance } from '@/api/mutator/custom-instance'
 import { getGetCommissionRulesAdminQueryKey, useDeleteCommissionRulesIdAdmin, useGetCommissionRulesAdmin, usePostCommissionRulesAdmin, usePutCommissionRulesIdAdmin } from '@/api/endpoints/commissions'
 import { useGetBranchesAdmin } from '@/api/endpoints/branches'
 import { useGetUsersAdmin } from '@/api/endpoints/users'
 import { useGetCustomersAdmin } from '@/api/endpoints/customers'
-import type { Branch, CommissionRule, User } from '@/api/models'
+import type { Branch, CommissionRule, GetCommissionRulesAdmin200, User } from '@/api/models'
 import CommissionRuleModal, { type RateType } from './components/CommissionRuleModal'
 import { PAYEE_META, ruleTypeMeta, type RuleRow } from './components/constants'
 
@@ -50,10 +51,18 @@ export default function CommissionRulesPanel() {
     if (!selectedBranchId && branches.length) setSelectedBranchId(branches[0]!.id)
   }, [branches, selectedBranchId])
 
-  const rulesQuery = useGetCommissionRulesAdmin(
-    { branch_id: selectedBranchId! },
-    { query: { enabled: !!selectedBranchId } },
-  )
+  const rulesQuery = useGetCommissionRulesAdmin({
+    query: {
+      enabled: canManage && !!selectedBranchId,
+      queryKey: [...getGetCommissionRulesAdminQueryKey(), selectedBranchId],
+      queryFn: ({ signal }) => customInstance<GetCommissionRulesAdmin200>({
+        url: '/commission-rules/admin',
+        method: 'GET',
+        params: { branch_id: selectedBranchId },
+        signal,
+      }),
+    },
+  })
   const usersQuery = useGetUsersAdmin({ currentPage: 1, pageSize: 200, has_role: true })
   const customersQuery = useGetCustomersAdmin({ currentPage: 1, pageSize: 500 })
   const rules = useMemo(() => {
@@ -197,7 +206,7 @@ export default function CommissionRulesPanel() {
     },
     {
       key: 'actions',
-      title: 'Hành động', align: 'center' as const, width: 110, fixed: 'right',
+      title: 'Thao tác', align: 'center' as const, width: 110, fixed: 'right',
       render: (_v, row) => (
         <RowActionsMenu
           items={[

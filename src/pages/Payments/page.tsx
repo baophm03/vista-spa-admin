@@ -150,7 +150,7 @@ export default function Payments() {
     },
     {
       key: 'actions',
-      title: 'Hành động',
+      title: 'Thao tác',
       width: 90,
       align: 'center' as const,
       fixed: 'right' as const,
