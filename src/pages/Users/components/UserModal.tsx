@@ -9,15 +9,12 @@ interface UserModalProps {
   editing: UserRow | null
   branches: Branch[]
   roles: { id: string; role_name: string; code: string | null }[]
-  branchRequired: boolean
-  globalAdminSelected: boolean
-  globalAdminAlreadyExists: boolean
   canEditAccess: boolean
   onCancel: () => void
   onOk: () => void
 }
 
-export default function UserModal({ form, open, editing, branches, roles, branchRequired, globalAdminSelected, globalAdminAlreadyExists, canEditAccess, onCancel, onOk }: UserModalProps) {
+export default function UserModal({ form, open, editing, branches, roles, canEditAccess, onCancel, onOk }: UserModalProps) {
   return (
     <Modal
       title={editing ? 'Sửa tài khoản' : 'Thêm tài khoản'}
@@ -27,15 +24,7 @@ export default function UserModal({ form, open, editing, branches, roles, branch
       okText="Lưu"
       cancelText="Hủy"
     >
-      <Form
-        form={form}
-        layout="vertical"
-        className="mt-3"
-        onValuesChange={(changedValues) => {
-          // Chuyển từ chế độ toàn hệ thống sang cơ sở thì yêu cầu chọn vai trò rõ ràng.
-          if (changedValues.branch_id) form.setFieldValue('role_id', undefined)
-        }}
-      >
+      <Form form={form} layout="vertical" className="mt-3">
         <Form.Item name="zalo_name" label="Họ tên" rules={[{ required: true, message: 'Nhập họ tên' }]}>
           <Input placeholder="VD: Trần Hoa" />
         </Form.Item>
@@ -53,17 +42,15 @@ export default function UserModal({ form, open, editing, branches, roles, branch
             <Form.Item
               name="branch_id"
               label="Cơ sở"
-              rules={branchRequired ? [{ required: true, message: 'Chọn cơ sở cho nhân viên/KTV' }] : []}
-              extra={!editing && globalAdminSelected
-                ? `Không chọn cơ sở sẽ tạo quản trị viên toàn hệ thống cấp cao nhất.${globalAdminAlreadyExists ? ' Tài khoản cấp cao nhất hiện đã tồn tại.' : ''}`
-                : undefined}
+              rules={[{ required: true, message: 'Chọn cơ sở cho nhân viên/KTV' }]}
             >
               <Select
                 className="w-full"
-                allowClear={!editing && canEditAccess}
+                showSearch
+                optionFilterProp="label"
                 disabled={!canEditAccess}
                 options={branches.map((branch) => ({ value: branch.id, label: branch.name }))}
-                placeholder="Chọn cơ sở (để trống = toàn hệ thống)"
+                placeholder="Chọn cơ sở"
               />
             </Form.Item>
           </Col>
@@ -96,11 +83,11 @@ export default function UserModal({ form, open, editing, branches, roles, branch
         </Row>
         <Row gutter={12}>
           <Col xs={24} sm={12}>
-            <Form.Item name="role_id" label="Vai trò" rules={globalAdminSelected ? [] : [{ required: true, message: 'Chọn vai trò' }]}>
+            <Form.Item name="role_id" label="Vai trò" rules={[{ required: true, message: 'Chọn vai trò' }]}>
               <Select
                 className="w-full"
                 allowClear
-                disabled={!canEditAccess || globalAdminSelected}
+                disabled={!canEditAccess}
                 options={roles.map((r) => ({ value: r.id, label: r.role_name }))}
                 placeholder="Chọn vai trò"
               />
