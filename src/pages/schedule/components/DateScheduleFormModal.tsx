@@ -46,7 +46,7 @@ export default function DateScheduleFormModal({ open, form, editing, staff, bran
           type="info"
           showIcon
           style={{ marginBottom: 12 }}
-          message="KTV chỉ được tự đăng ký ca cho tuần kế tiếp"
+          message="Nhân viên chỉ được tự đăng ký ca cho tuần kế tiếp"
           description={`Cần đăng ký trước 00h thứ 2 đầu tuần kế tiếp (tuần kế tiếp: ${nextMonday.format('DD/MM')} – ${nextMonday.add(6, 'day').format('DD/MM')}). Muốn thay đổi ca tuần hiện tại: dùng tab Xin nghỉ hoặc liên hệ Admin.`}
         />
       )}
@@ -62,13 +62,13 @@ export default function DateScheduleFormModal({ open, form, editing, staff, bran
       }}>
         <Form.Item
           name="staff_id"
-          label="KTV"
-          rules={[{ required: true, message: 'Chọn KTV' }, {
+          label="Nhân viên"
+          rules={[{ required: true, message: 'Chọn nhân viên' }, {
             validator: async (_, staffId: string | undefined) => {
               if (!staffId) return
               const person = staff.find((candidate) => candidate.id === staffId)
               if (!selectedBranch || !person?.branch_id || person.branch_id !== selectedBranch) {
-                throw new Error('KTV phải được gán vào đúng cơ sở đã chọn')
+                throw new Error('Nhân viên phải được gán vào đúng cơ sở đã chọn')
               }
             },
           }]}
@@ -77,7 +77,7 @@ export default function DateScheduleFormModal({ open, form, editing, staff, bran
             disabled={lockStaffAndBranch || !selectedBranch}
             showSearch
             optionFilterProp="label"
-            notFoundContent="Không có KTV đã được gán vào cơ sở này"
+            notFoundContent="Không có nhân viên đã được gán vào cơ sở này"
             options={staffForSelectedBranch.map((person) => ({ value: person.id, label: staffLabel(person) }))}
           />
         </Form.Item>

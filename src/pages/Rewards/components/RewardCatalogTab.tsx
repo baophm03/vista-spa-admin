@@ -223,21 +223,23 @@ export default function RewardCatalogTab() {
     },
     {
       key: 'type', title: 'Loại', dataIndex: 'type', width: 130,
-      render: (v: RewardType, row) => (
+      render: (v: RewardType | 'BENEFIT', row) => (
         <div>
-          <Tag color={TYPE_META[v]?.color}>{TYPE_META[v]?.label ?? v}</Tag>
+          {v === 'BENEFIT'
+            ? <Tag color="blue">Quyền lợi</Tag>
+            : <Tag color={TYPE_META[v]?.color}>{TYPE_META[v]?.label ?? v}</Tag>}
           {v === 'VOUCHER' && row.voucher ? (
             <Typography.Text type="secondary" ellipsis style={{ fontSize: 12, display: 'block' }}>{row.voucher.title}</Typography.Text>
           ) : null}
         </div>
       ),
     },
-    { key: 'points_cost', title: 'Điểm quy đổi', dataIndex: 'points_cost', width: 110, align: 'right', render: (v: number) => v.toLocaleString('vi-VN') },
+    { key: 'points_cost', title: <span className="whitespace-nowrap">Điểm quy đổi</span>, dataIndex: 'points_cost', width: 130, align: 'right', render: (v: number) => v.toLocaleString('vi-VN') },
     { key: 'remaining', title: 'Còn lại', width: 140, render: (_v, row) => remainingLabel(row) },
     { key: 'validity', title: 'Thời hạn', width: 200, render: (_v, row) => `${row.valid_from ? dayjs(String(row.valid_from)).format('DD/MM/YYYY') : '—'} → ${row.valid_to ? dayjs(String(row.valid_to)).format('DD/MM/YYYY') : '—'}` },
     { key: 'is_active', title: 'Trạng thái', dataIndex: 'is_active', width: 100, render: (v: boolean) => (v ? <Tag color="green">Đang đổi</Tag> : <Tag>Đã ẩn</Tag>) },
     {
-      key: 'actions', title: 'Hành động', align: 'center' as const, width: 110, fixed: 'right' as const,
+      key: 'actions', title: 'Thao tác', align: 'center' as const, width: 110, fixed: 'right' as const,
       render: (_v, row) => (
         <RowActionsMenu
           items={[

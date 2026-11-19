@@ -170,7 +170,7 @@ export default function CommissionRulesPanel() {
       key: 'payee_role',
       title: 'Người nhận', width: 160,
       render: (_v, row) => {
-        const code = row.payee_role?.code ?? ''
+        const code = String(row.payee_role?.code ?? '').toLowerCase()
         const meta = PAYEE_META[code]
         return meta ? <Tag color={meta.color}>{meta.label}</Tag> : <Tag>{row.payee_role?.role_name || code || '—'}</Tag>
       },
@@ -197,7 +197,7 @@ export default function CommissionRulesPanel() {
     },
     {
       key: 'actions',
-      title: 'Hành động', align: 'center' as const, width: 110, fixed: 'right',
+      title: 'Thao tác', align: 'center' as const, width: 110, fixed: 'right',
       render: (_v, row) => (
         <RowActionsMenu
           items={[

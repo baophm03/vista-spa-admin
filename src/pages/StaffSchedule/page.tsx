@@ -1,15 +1,17 @@
 import { useMemo, useRef, useState } from 'react'
 import { useAbility } from '@casl/react'
-import { Alert, Tabs, Typography } from 'antd'
+import { Alert, Tabs } from 'antd'
 import type { TabsProps } from 'antd'
 import { pickData } from '@/api/helpers'
+import PageTitle from '@/components/base/PageTitle'
 import { ToolbarSlotContext } from '../schedule/ToolbarSlotContext'
 import { useGetBranchesAdmin } from '@/api/endpoints/branches'
 import { useGetUsersAdmin } from '@/api/endpoints/users'
-import { useGetStaffProfilesAdmin } from '@/api/endpoints/staff-profiles'
+import { useGetUserProfilesAdmin } from '@/api/endpoints/user-profiles'
 import type { Branch } from '@/api/models/branch'
-import type { StaffProfileRow } from '@/api/models/staffProfileRow'
-import { useCustomerProfileAccess, normalizeRole } from '@/utils/customerProfileAccess'
+import type { UserProfileRow } from '@/api/models/userProfileRow'
+import { useCustomerProfileAccess } from '@/utils/customerProfileAccess'
+import { isReceptionistUser, isTechnicianUser } from '@/utils/userRoles'
 import { useProfileStore } from '@/stores/profile-store'
 import type { ScheduleAccess, ScheduleStaff } from '../schedule/types'
 import DateScheduleTab from '../schedule/DateScheduleTab'
@@ -25,7 +27,7 @@ export default function StaffSchedule() {
   const toolbarSlotRef = useRef<HTMLDivElement | null>(null)
 
   const isOwnScheduleOnly = isTechnician && !isAdmin
-  const canReadStaffProfiles = !!profile?.is_admin || isAdmin || ability.can('READ', 'STAFF_PROFILE')
+  const canReadStaffProfiles = !!profile?.is_admin || isAdmin || ability.can('READ', 'USER_PROFILE')
   // KTV được xem cơ sở của mình; dữ liệu này cũng giúp hiển thị phạm vi áp dụng của mẫu ca.
   const branchesQuery = useGetBranchesAdmin(undefined)
   const branches = (pickData<Branch[] | undefined>(branchesQuery.data) ?? []) as Branch[]
@@ -35,7 +37,7 @@ export default function StaffSchedule() {
     { query: { enabled: !isOwnScheduleOnly, refetchOnMount: 'always', refetchOnWindowFocus: 'always' } },
   )
   const allUsers = (pickData<{ rows?: ScheduleStaff[] } | undefined>(staffsQuery.data)?.rows ?? []) as ScheduleStaff[]
-  const staffProfilesQuery = useGetStaffProfilesAdmin(undefined, {
+  const staffProfilesQuery = useGetUserProfilesAdmin(undefined, {
     query: {
       enabled: !isOwnScheduleOnly && canReadStaffProfiles,
       refetchOnMount: 'always',
@@ -43,7 +45,7 @@ export default function StaffSchedule() {
     },
   })
   const inactiveStaffProfileIds = useMemo(() => {
-    const rows = (pickData<StaffProfileRow[] | undefined>(staffProfilesQuery.data) ?? []) as StaffProfileRow[]
+    const rows = (pickData<UserProfileRow[] | undefined>(staffProfilesQuery.data) ?? []) as UserProfileRow[]
     return new Set(rows.filter((row) => row.is_active === false).map((row) => row.user_id))
   }, [staffProfilesQuery.data])
   const ownStaff: ScheduleStaff | null = profile?.id ? {
@@ -55,10 +57,8 @@ export default function StaffSchedule() {
   const staff = useMemo(
     () => isOwnScheduleOnly
       ? (ownStaff ? [ownStaff] : [])
-      : allUsers.filter((person) => person.is_active !== false && !inactiveStaffProfileIds.has(person.id) && person.user_roles?.some(({ role }) => {
-          const roleName = normalizeRole(role?.role_name)
-          return roleName.includes('ktv') || roleName.includes('ky thuat vien') || roleName === 'technician'
-        })),
+      // Lịch dùng chung cho cả KTV ('staff'/'ktv'/'technician') lẫn lễ tân ('rec'/'Lễ tân'...)
+      : allUsers.filter((person) => person.is_active !== false && !inactiveStaffProfileIds.has(person.id) && (isTechnicianUser(person) || isReceptionistUser(person))),
     [allUsers, inactiveStaffProfileIds, isOwnScheduleOnly, ownStaff],
   )
 
@@ -104,21 +104,13 @@ export default function StaffSchedule() {
     { key: 'days-off', label: 'Ngày nghỉ', children: activeTab === 'days-off' ? <DayOffTab {...shared} loadingShared={loadingShared} /> : null },
   ]
 
-  // Tab giữ nguyên vị trí cùng hàng tiêu đề (căn phải); mô tả xuống dòng riêng dưới tiêu đề;
-  // cỡ chữ + khoảng cách tab dùng mặc định antd như các trang khác.
-  // Lưu ý: antd v6 chỉ style ink bar khi .ant-tabs-nav là con TRỰC TIẾP của 1 div duy nhất
-  // (selector `> div > .ant-tabs-nav`) — TabNavBar phải là con trực tiếp của wrapper, không lồng thêm div.
   const renderTabBar: NonNullable<TabsProps['renderTabBar']> = (props, TabNavBar) => (
-    <div className="mb-4 flex shrink-0! flex-wrap items-center justify-between gap-x-4 gap-y-2 [&_.ant-tabs-nav]:mb-0!">
-      <div className="min-w-0">
-        <Typography.Title level={4} className="m-0! text-xl! sm:text-2xl!">Lịch làm việc KTV</Typography.Title>
-        <Typography.Text type="secondary" className="mt-1 block text-sm!">
-          Xếp lịch làm việc KTV theo từng ngày cụ thể
-        </Typography.Text>
-      </div>
-      {/* Cụm toolbar của tab "Lịch làm việc" portal vào đây — nằm GIỮA hàng, không dồn góc phải */}
-      <div ref={toolbarSlotRef} className="flex min-w-0 flex-1 items-center justify-center gap-2" />
+    <div className="mb-2 grid min-w-0 shrink-0! grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-1 [&_.ant-tabs-nav]:col-span-2 [&_.ant-tabs-nav]:col-start-1 [&_.ant-tabs-nav]:row-start-2 [&_.ant-tabs-nav]:mb-0! [&_.ant-tabs-nav]:min-w-0 [&_.ant-tabs-nav]:before:hidden sm:[&_.ant-tabs-nav]:col-span-1 sm:[&_.ant-tabs-nav]:col-start-2 sm:[&_.ant-tabs-nav]:row-start-1 [&_.ant-tabs-tab]:h-9 [&_.ant-tabs-tab]:px-1! [&_.ant-tabs-tab]:py-0! [&_.ant-tabs-tab]:text-[13px]!">
+      <PageTitle className="col-span-2 col-start-1 row-start-1 mb-0! sm:col-span-1" subtitle="Xếp lịch làm việc nhân viên theo từng ngày cụ thể">
+        Lịch làm việc nhân viên
+      </PageTitle>
       <TabNavBar {...props} />
+      <div ref={toolbarSlotRef} className="col-span-2 col-start-1 row-start-3 min-w-0 empty:hidden sm:row-start-2" />
     </div>
   )
   // Chiếm đúng phần còn lại của viewport (header 64px + padding Content 24/32/48px) —
@@ -131,6 +123,8 @@ export default function StaffSchedule() {
         activeKey={activeTab}
         onChange={(key: string) => setActiveTab(key)}
         items={items}
+        size="small"
+        tabBarGutter={16}
         renderTabBar={renderTabBar}
       />
       {!!sharedError && <Alert className="shrink-0!" style={{ marginTop: 12 }} type="warning" showIcon message="Một phần dữ liệu dùng chung chưa tải được" description={sharedError} action={<a onClick={() => {

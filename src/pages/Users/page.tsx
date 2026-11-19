@@ -1,608 +1,563 @@
-import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
-import { Button, Form, Grid, Input, InputNumber, Modal, Col, Row, Select, Space, Table, Tag, Typography, message } from 'antd'
-import { DeleteOutlined, DownloadOutlined, EditOutlined, PlusOutlined, QrcodeOutlined } from '@ant-design/icons'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import dayjs from 'dayjs'
-import type { Dayjs } from 'dayjs'
+import { Avatar, Button, Form, Input, Modal, Select, Space, Switch, Table, Tag, Tooltip, Typography, message } from 'antd'
+import { useAbility } from '@casl/react'
+import {
+  AppstoreOutlined,
+  EditOutlined,
+  LockOutlined,
+  PlusOutlined,
+  ProfileOutlined,
+  SearchOutlined,
+  UndoOutlined,
+  UserOutlined,
+} from '@ant-design/icons'
 import PageTitle from '@/components/base/PageTitle'
-import ListFilterPopover from '@/components/base/ListFilterPopover'
-import ListPagination from '@/components/base/ListPagination'
-import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
-import CustomerCodeHistoryModal from '@/components/CustomerCodeHistoryModal'
-import LinkCustomerAccountModal from './components/LinkCustomerAccountModal'
-import { normalizeCustomerCustomFields, type CustomFieldDefWithOptions } from './components/CustomerProfileCustomFields'
-import type { CustomerProfileRow, CustomerProfileSummary } from './components/CustomerProfileOverviewTab'
-import { useBrandCurrency } from '@/themeRuntime'
-import type { CardRank } from '@/api/models/cardRank'
-import type { CustomerProfile } from '@/api/models/customerProfile'
-import type { CustomerProfileCreate } from '@/api/models/customerProfileCreate'
-import type { GetCustomerProfilesAdminParams } from '@/api/models/getCustomerProfilesAdminParams'
-import { deleteCustomerProfilesIdAdmin, getCustomerProfilesByQrAdmin, getCustomerProfilesIdAdmin, getCustomerProfilesIdSummaryAdmin, getGetCustomerProfilesAdminQueryKey, postCustomerProfilesAdmin, postCustomerProfilesIdQrResetAdmin, putCustomerProfilesIdAdmin, useGetCustomerProfilesAdmin } from '@/api/endpoints/customer-profiles'
-import { getCardRanksAdmin } from '@/api/endpoints/card-ranks'
-import { getCustomFieldDefsAdmin } from '@/api/endpoints/custom-field-defs'
-import { apiClient } from '@/api/mutator/custom-instance'
-import { downloadBlob, errorMessage, pickData } from '@/api/helpers'
-import { useCustomerProfileAccess } from '@/utils/customerProfileAccess'
+import ListPagination from '@/components/base/ListPagination'
+import TableEmpty from '@/components/base/TableEmpty'
+import { errorMessage, pickData } from '@/api/helpers'
+import type { Branch } from '@/api/models/branch'
+import type { UserCreate } from '@/api/models/userCreate'
+import type { PutUsersIdAdminBody } from '@/api/models/putUsersIdAdminBody'
+import type { UserProfileRow } from '@/api/models/userProfileRow'
+import { useProfileStore } from '@/stores/profile-store'
+import { getGetUsersAdminQueryKey, useDeleteUsersIdAdmin, usePostUsersAdmin, usePutUsersIdAdmin, useGetUsersAdmin } from '@/api/endpoints/users'
+import { useGetRolesAdmin } from '@/api/endpoints/roles'
+import { useGetBranchesAdmin } from '@/api/endpoints/branches'
+import { useGetServiceAdmin } from '@/api/endpoints/services'
+import { fileSrc, resolveFileSrc, useFileUrlMap } from '@/hooks/useFileUrl'
+import { useGetUserProfilesAdmin, useGetUserProfilesUserIdAdmin, useGetUserProfilesUserIdServicesAdmin, usePutUserProfilesUserIdAdmin, usePutUserProfilesUserIdServicesAdmin } from '@/api/endpoints/user-profiles'
 
-const CustomerQrScannerModal = lazy(() => import('./components/CustomerQrScannerModal'))
-import CustomerAvatar from './components/CustomerAvatar'
-import CustomerDetailDrawer from './components/CustomerDetailDrawer'
-import CustomerProfileFormModal from './components/CustomerProfileFormModal'
-
-function escapeHtml(value: string) {
-  return value.replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char] ?? char)
-}
-
-type CustomerColumnKey = 'customer_code' | 'full_name' | 'phone' | 'email' | 'rank'
-
-const CUSTOMER_COLUMN_OPTIONS: { label: string; value: CustomerColumnKey }[] = [
-  { label: 'Mã khách hàng', value: 'customer_code' },
-  { label: 'Tên khách hàng', value: 'full_name' },
-  { label: 'Số điện thoại', value: 'phone' },
-  { label: 'Email', value: 'email' },
-  { label: 'Hạng / Tài khoản', value: 'rank' },
-]
-
-const DEFAULT_VISIBLE_COLUMNS = CUSTOMER_COLUMN_OPTIONS.map((column) => column.value)
-
-interface CustomerProfileListFilters {
-  birth_month?: number
-  rank_id?: string
-  min_spent?: number
-  max_spent?: number
-  has_debt?: 'true' | 'false'
-}
-
-function buildListParams(filters: CustomerProfileListFilters, keyword: string, page: number, limit: number) {
-  const params: Record<string, unknown> = { ...filters, page, limit }
-  if (keyword.trim()) params.q = keyword.trim()
-  else delete params.q
-  return params
-}
+import UserModal from './components/UserModal'
+import UserProfileModal from './components/UserProfileModal'
+import UsersServicesModal from './components/UsersServicesModal'
+import {
+  isAdminRole,
+  isUserRole,
+  roleTagColor,
+  type UserRow,
+} from './components/constants'
 
 export default function Users() {
-  const { symbol: currencySymbol } = useBrandCurrency()
   const queryClient = useQueryClient()
-  const profileAccess = useCustomerProfileAccess()
+  const ability = useAbility()
+  const urlMap = useFileUrlMap()
+  const currentUser = useProfileStore((state) => state.profile)
+  const isPlatformAdmin = !!currentUser?.is_admin
+  const isSuperAdmin = !!currentUser?.is_super_admin
+  const currentUserRoleNames = currentUser?.roles ?? []
+  const currentUserRoleRows = (currentUser?.user_roles ?? []) as { role?: { code?: string | null } | null }[]
+  const isBranchAdmin = !isPlatformAdmin && (
+    currentUserRoleNames.some((role) => role.trim().toLowerCase() === 'admin') ||
+    currentUserRoleRows.some(({ role }) => isAdminRole(role?.code))
+  )
+  const currentBranchId = typeof currentUser?.branch_id === 'string' ? currentUser.branch_id : undefined
+  const canReadUserProfile = isPlatformAdmin || ability.can('READ', 'User_PROFILE')
+  const canUpdateUserProfile = isPlatformAdmin || ability.can('UPDATE', 'User_PROFILE')
+  const canCreateUser = isSuperAdmin
+  const isGlobalAdminRow = (row: UserRow) => Boolean(
+    row.is_admin || (!row.branch_id && row.user_roles?.some(({ role }) => isAdminRole(role?.code))),
+  )
+  const isHighestAdminRow = (row: UserRow) => Boolean(
+    row.is_super_admin || (!row.branch_id && row.user_roles?.some(({ role }) => isAdminRole(role?.code))),
+  )
+  const canManageUserRow = (row: UserRow) => {
+    const targetIsAdminRole = row.user_roles?.some(({ role }) => isAdminRole(role?.code)) ?? false
+    const targetIsGlobalAdmin = isGlobalAdminRow(row)
+    const targetIsHighestAdmin = isHighestAdminRow(row)
+    if (isSuperAdmin) return !targetIsHighestAdmin || row.id === currentUser?.id
+    if (isPlatformAdmin) return !targetIsHighestAdmin && !targetIsGlobalAdmin && !targetIsAdminRole
+    return Boolean(
+      isBranchAdmin && currentBranchId && row.branch_id === currentBranchId &&
+      !row.is_admin && !row.is_super_admin && !targetIsAdminRole,
+    )
+  }
   const [page, setPage] = useState(1)
   const [limit] = useState(10)
-  const [searchText, setSearchText] = useState('')
-  const [keyword, setKeyword] = useState('')
-  const [filterOpen, setFilterOpen] = useState(false)
-  const [visibleColumns, setVisibleColumns] = useState<CustomerColumnKey[]>(DEFAULT_VISIBLE_COLUMNS)
-  const [draftVisibleColumns, setDraftVisibleColumns] = useState<CustomerColumnKey[]>(DEFAULT_VISIBLE_COLUMNS)
-  const [filters, setFilters] = useState<CustomerProfileListFilters>({})
-  const [selected, setSelected] = useState<CustomerProfileRow | null>(null)
-  const [summary, setSummary] = useState<CustomerProfileSummary | null>(null)
-  const [qrUrl, setQrUrl] = useState<string>('')
-  const [qrLoading, setQrLoading] = useState(false)
-  const [qrError, setQrError] = useState('')
-  const [scannerOpen, setScannerOpen] = useState(false)
-  const [qrLookupLoading, setQrLookupLoading] = useState(false)
+  const [searchInput, setSearchInput] = useState('')
+  const [search, setSearch] = useState('')
+  const [branchFilter, setBranchFilter] = useState<string>()
   const [open, setOpen] = useState(false)
-  const [editing, setEditing] = useState<CustomerProfileRow | null>(null)
-  const [historyOpen, setHistoryOpen] = useState(false)
-  const [linkOpen, setLinkOpen] = useState(false)
-  const [ranks, setRanks] = useState<CardRank[]>([])
-  const [profileFieldDefs, setProfileFieldDefs] = useState<CustomFieldDefWithOptions[]>([])
-  const [exporting, setExporting] = useState(false)
-  const [resettingQr, setResettingQr] = useState(false)
+  const [editing, setEditing] = useState<UserRow | null>(null)
   const [form] = Form.useForm()
-  const [filterForm] = Form.useForm()
-  // Mobile (dưới breakpoint md): nút công cụ hiện chữ thay vì chỉ icon
-  const isMobile = !Grid.useBreakpoint().md
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
-  const listParams = buildListParams(filters, keyword, page, limit) as GetCustomerProfilesAdminParams
-  const listQuery = useGetCustomerProfilesAdmin(listParams)
-  const listBody = listQuery.data
-  const rows = (listBody?.responseData ?? []) as CustomerProfileRow[]
-  const total = listBody?.meta?.total ?? rows.length
-  const loading = listQuery.isLoading
+  const usersQuery = useGetUsersAdmin({
+    currentPage: page,
+    pageSize: limit,
+    has_role: true,
+    ...(search ? { q: search } : {}),
+    ...(branchFilter ? { branch_id: branchFilter } : {}),
+  })
+  const rolesQuery = useGetRolesAdmin()
+  const branchesQuery = useGetBranchesAdmin()
+  const createMutation = usePostUsersAdmin()
+  const updateMutation = usePutUsersIdAdmin()
+  const deleteMutation = useDeleteUsersIdAdmin()
+
+  // KT — hồ sơ chuyên viên & dịch vụ phụ trách
+  const [profileOpen, setProfileOpen] = useState(false)
+  const [profileUser, setProfileUser] = useState<UserRow | null>(null)
+  const [profileForm] = Form.useForm()
+  const [servicesOpen, setServicesOpen] = useState(false)
+  const [servicesUser, setServicesUser] = useState<UserRow | null>(null)
+  const [checkedServiceIds, setCheckedServiceIds] = useState<string[]>([])
+
+  const UserProfilesQuery = useGetUserProfilesAdmin(branchFilter ? { branch_id: branchFilter } : undefined, {
+    query: { enabled: canReadUserProfile },
+  })
+  const profileRows = (pickData<UserProfileRow[]>(UserProfilesQuery.data) ?? []) as UserProfileRow[]
+  const profileByUser = useMemo(() => new Map(profileRows.map((row) => [row.user_id, row])), [profileRows])
+  const servicesQuery = useGetServiceAdmin({ is_active: true, limit: 200 })
+  const serviceRows = (pickData<{ services?: { id: string; title?: string }[] }>(servicesQuery.data)?.services ?? []) as {
+    id: string
+    title?: string
+  }[]
+  const profileDetailQuery = useGetUserProfilesUserIdAdmin(profileUser?.id ?? 'none', {
+    query: { enabled: profileOpen && !!profileUser && canReadUserProfile },
+  })
+  const UserservicesQuery = useGetUserProfilesUserIdServicesAdmin(servicesUser?.id ?? 'none', {
+    query: { enabled: servicesOpen && !!servicesUser && canUpdateUserProfile && canManageUserRow(servicesUser) },
+  })
+  const profileDetails = pickData<UserProfileRow>(profileDetailQuery.data)
+  const upsertProfileMutation = usePutUserProfilesUserIdAdmin()
+  const assignServicesMutation = usePutUserProfilesUserIdServicesAdmin()
 
   useEffect(() => {
-    if (!qrUrl.startsWith('blob:')) return
-    return () => URL.revokeObjectURL(qrUrl)
-  }, [qrUrl])
+    if (!profileOpen) return
+    const profile = pickData<UserProfileRow>(profileDetailQuery.data)
+    if (!profile) return
+    profileForm.setFieldsValue({
+      display_name: profile.display_name,
+      title: profile.title ?? '',
+      photo_file_id: (profile as any).photo_file?.id ?? profile.photo_file_id ?? '',
+      expertise: profile.expertise ?? '',
+      bio: profile.bio ?? '',
+      sort_order: profile.sort_order ?? 0,
+      show_in_app: profile.show_in_app !== false,
+    })
+  }, [profileOpen, profileDetailQuery.data, profileForm])
 
   useEffect(() => {
-    getCardRanksAdmin()
-      .then((body) => setRanks((pickData<CardRank[]>(body) ?? [])
-        .filter((rank) => rank.is_active !== false)
-        .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))))
-      .catch(() => undefined)
-    getCustomFieldDefsAdmin({ entity: 'CUSTOMER_PROFILE', is_active: true })
-      .then((body) => setProfileFieldDefs(pickData<CustomFieldDefWithOptions[]>(body) ?? []))
-      .catch((err) => message.error('Không tải được cấu hình trường hồ sơ: ' + errorMessage(err)))
-  }, [])
+    if (!servicesOpen) return
+    const data = pickData<{ service_ids?: string[] }>(UserservicesQuery.data)
+    if (data) setCheckedServiceIds(data.service_ids ?? [])
+  }, [servicesOpen, UserservicesQuery.data])
 
-  const loadProfileDetails = async (profileId: string) => {
-    const fresh = pickData<CustomerProfileRow>(await getCustomerProfilesIdAdmin(profileId))
-    setSelected(fresh)
-    setQrLoading(profileAccess.canViewQr)
-    setQrError('')
-    if (!profileAccess.canViewQr) setQrUrl('')
-    const [summaryResult, qrResult] = await Promise.allSettled([
-      getCustomerProfilesIdSummaryAdmin(profileId),
-      profileAccess.canViewQr ? apiClient.get(`/customer-profiles/${profileId}/qr/admin`, { responseType: 'blob' }) : Promise.resolve(null),
-    ])
-    if (summaryResult.status === 'fulfilled') setSummary(pickData<CustomerProfileSummary>(summaryResult.value) ?? null)
-    else {
-      setSummary(null)
-      message.error('Không tải được tổng hợp hồ sơ: ' + errorMessage(summaryResult.reason))
-    }
-    if (!profileAccess.canViewQr) {
-      setQrUrl('')
-    } else if (qrResult.status === 'fulfilled' && qrResult.value) {
-      setQrUrl(URL.createObjectURL((qrResult.value as { data: Blob }).data))
-    } else {
-      setQrUrl('')
-      const error = errorMessage(qrResult.status === 'rejected' ? qrResult.reason : 'Không nhận được ảnh QR')
-      setQrError(error)
-      message.error(`Không tải được mã QR: ${error}`)
-    }
-    setQrLoading(false)
-  }
+  // Legacy envelope: responseData = { count, rows, totalPages, currentPage }
+  const usersPage = pickData<{ count?: number; rows?: UserRow[] }>(usersQuery.data)
+  const rows = (Array.isArray(usersPage) ? [] : usersPage?.rows ?? []) as UserRow[]
+  const total = Array.isArray(usersPage) ? 0 : usersPage?.count ?? rows.length
 
-  const refreshList = useCallback(() => {
-    void queryClient.invalidateQueries({ queryKey: getGetCustomerProfilesAdminQueryKey() })
-  }, [queryClient])
+  const roleRows = (pickData<{ rows?: { id: string; role_name?: string; name?: string; code?: string | null }[] }>(rolesQuery.data) as
+    | { rows?: { id: string; role_name?: string; name?: string; code?: string | null }[] }
+    | undefined)?.rows ?? []
+  // Loại vai trò Khách hàng — tài khoản khách không thuộc trang quản lý nhân sự
+  const roles = roleRows
+    .filter((role) => isUserRole(role.code))
+    .map((role) => ({ id: role.id, role_name: role.role_name ?? role.name ?? role.id, code: role.code ?? null }))
+  const branches = (pickData<Branch[]>(branchesQuery.data) ?? []) as Branch[]
 
-  const refreshSelected = async () => {
-    if (!selected) return
-    try {
-      await loadProfileDetails(selected.id)
-      refreshList()
-    } catch (err) {
-      message.error(errorMessage(err))
-    }
-  }
+  const loading = usersQuery.isLoading
 
-  const openDetail = async (row: CustomerProfileRow) => {
-    setSelected(row)
-    setSummary(null)
-    setQrUrl('')
-    try {
-      await loadProfileDetails(row.id)
-    } catch (err) {
-      message.error(errorMessage(err))
-    }
-  }
+  // Gõ tìm kiếm có debounce 400ms, quay về trang 1.
+  useEffect(() => {
+    clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => {
+      setPage(1)
+      setSearch(searchInput.trim())
+    }, 400)
+    return () => clearTimeout(debounceRef.current)
+  }, [searchInput])
 
-  const lookupQrToken = async (token: string) => {
-    setScannerOpen(false)
-    setQrLookupLoading(true)
-    try {
-      const profile = pickData<CustomerProfile>(await getCustomerProfilesByQrAdmin({ token }))
-      if (profile) await openDetail(profile as CustomerProfileRow)
-    } catch (err) {
-      message.error('Không tìm thấy hồ sơ theo QR: ' + errorMessage(err))
-    } finally {
-      setQrLookupLoading(false)
-    }
-  }
-
-  const applyFilters = (values: Record<string, unknown>) => {
-    const minSpent = typeof values.min_spent === 'number' ? values.min_spent : undefined
-    const maxSpent = typeof values.max_spent === 'number' ? values.max_spent : undefined
-    if (minSpent !== undefined && maxSpent !== undefined && minSpent > maxSpent) {
-      message.error('Chi tiêu từ không được lớn hơn chi tiêu đến')
-      return
-    }
-    if (draftVisibleColumns.length === 0) {
-      message.error('Hãy giữ lại ít nhất một cột hiển thị')
-      return
-    }
-
-    const next: CustomerProfileListFilters = {}
-    if (typeof values.birth_month === 'number') next.birth_month = values.birth_month
-    if (typeof values.rank_id === 'string' && values.rank_id) next.rank_id = values.rank_id
-    if (minSpent !== undefined) next.min_spent = minSpent
-    if (maxSpent !== undefined) next.max_spent = maxSpent
-    if (values.has_debt === 'true' || values.has_debt === 'false') next.has_debt = values.has_debt
-    setFilters(next)
-    setKeyword(searchText.trim())
-    setVisibleColumns(draftVisibleColumns)
-    setPage(1)
-    setFilterOpen(false)
-  }
-
-  const applySearch = (nextKeyword: string) => {
-    setSearchText(nextKeyword)
-    setKeyword(nextKeyword.trim())
+  /** Áp dụng ngay từ khóa (Enter hoặc khi xóa hết) mà không chờ debounce. */
+  const applySearch = (value: string) => {
+    clearTimeout(debounceRef.current)
+    setSearchInput(value)
+    setSearch(value.trim())
     setPage(1)
   }
 
-  const clearFilters = () => {
-    filterForm.resetFields()
-    setSearchText('')
-    setKeyword('')
-    setFilters({})
-    setDraftVisibleColumns(DEFAULT_VISIBLE_COLUMNS)
-    setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)
-    setPage(1)
-  }
-
-  const openFilters = (nextOpen: boolean) => {
-    setFilterOpen(nextOpen)
-    if (!nextOpen) return
-    filterForm.setFieldsValue(filters)
-    setSearchText(keyword)
-    setDraftVisibleColumns(visibleColumns)
-  }
-
-  const downloadCsv = async () => {
-    setExporting(true)
-    try {
-      const params = buildListParams(filters, keyword, page, limit)
-      delete params.page
-      delete params.limit
-      const query = new URLSearchParams()
-      for (const [key, value] of Object.entries(params)) {
-        if (value !== undefined && value !== null && value !== '') query.set(key, String(value))
-      }
-      const qs = query.toString()
-      await downloadBlob(`/customer-profiles/export/admin${qs ? `?${qs}` : ''}`, `customer-profiles-${dayjs().format('YYYYMMDD-HHmm')}.csv`)
-      message.success('Đã xuất danh sách khách hàng')
-    } catch (err) {
-      message.error(errorMessage(err))
-    } finally {
-      setExporting(false)
-    }
-  }
-
-  const resetQr = async () => {
-    if (!selected) return
-    setResettingQr(true)
-    try {
-      await postCustomerProfilesIdQrResetAdmin(selected.id)
-      setQrUrl('')
-      setQrLoading(true)
-      setQrError('')
-      const response = await apiClient.get(`/customer-profiles/${selected.id}/qr/admin`, { responseType: 'blob' })
-      setQrUrl(URL.createObjectURL(response.data as Blob))
-      message.success('Đã tạo lại mã QR; mã cũ không còn hiệu lực')
-    } catch (err) {
-      const error = errorMessage(err)
-      setQrError(error)
-      message.error(error)
-    } finally {
-      setQrLoading(false)
-      setResettingQr(false)
-    }
-  }
-
-  const openModal = async (customer?: CustomerProfileRow) => {
-    form.resetFields()
-    setOpen(false)
-    if (!customer) {
-      setEditing(null)
-      form.setFieldsValue({ full_name: '', phone: '', email: '', custom_fields: {} })
-      setOpen(true)
-      return
-    }
-
-    try {
-      const fresh = pickData<CustomerProfileRow>(await getCustomerProfilesIdAdmin(customer.id))
-      setEditing(fresh)
-      form.setFieldsValue({
-        full_name: fresh.full_name,
-        phone: fresh.phone,
-        email: fresh.email,
-        birthday: fresh.birthday ? dayjs(fresh.birthday) : undefined,
-        address: fresh.address,
-        note: fresh.note,
-        custom_fields: fresh.custom_fields ?? {},
-      })
-      setOpen(true)
-    } catch (err) {
-      message.error(errorMessage(err))
-    }
+  const openModal = (s?: UserRow) => {
+    if (s ? !canManageUserRow(s) : !canCreateUser) return
+    setEditing(s ?? null)
+    form.setFieldsValue(
+      s
+        ? {
+          zalo_name: s.zalo_name,
+          email: s.email,
+          phone_number: s.phone_number,
+          branch_id: s.branch_id ?? undefined,
+          role_id: s.user_roles?.[0]?.role_id,
+          password: '',
+        }
+        : {
+          zalo_name: '',
+          email: '',
+          phone_number: '',
+          password: '',
+          role_id: undefined,
+          branch_id: undefined,
+        },
+    )
+    setOpen(true)
   }
 
   const submit = async () => {
+    if (editing ? !canManageUserRow(editing) : !canCreateUser) return
     const values = await form.validateFields()
-    const { custom_fields: enteredCustomFields = {}, ...profileValues } = values as {
-      custom_fields?: Record<string, unknown>
-    } & Record<string, unknown>
-    const payload = {
-      ...(profileValues as Record<string, unknown>),
-      custom_fields: normalizeCustomerCustomFields(profileFieldDefs, enteredCustomFields, editing?.custom_fields ?? {}) ?? undefined,
-      birthday: values.birthday ? (values.birthday as Dayjs).format('YYYY-MM-DD') : undefined,
-    } as unknown as CustomerProfileCreate
     try {
       if (editing) {
-        await putCustomerProfilesIdAdmin(editing.id, payload)
-        message.success('Đã cập nhật khách hàng')
+        // branch_id: gửi null tường minh để cho phép gỡ cơ sở (undefined = giữ nguyên)
+        const payload: PutUsersIdAdminBody = {
+          zalo_name: values.zalo_name,
+          email: values.email,
+          phone_number: values.phone_number,
+          ...(isSuperAdmin && !editing.is_super_admin ? {
+            branch_id: (values.branch_id || null) as PutUsersIdAdminBody['branch_id'],
+            role_id: values.role_id,
+          } : {}),
+          ...(values.password ? { password: values.password } : {}),
+        }
+        await updateMutation.mutateAsync({ id: editing.id, data: payload })
+        message.success(values.password ? 'Đã cập nhật tài khoản và mật khẩu mới' : 'Đã cập nhật tài khoản')
       } else {
-        await postCustomerProfilesAdmin(payload as unknown as { [key: string]: unknown })
-        message.success('Đã thêm khách hàng')
+        const payload: UserCreate = {
+          email: values.email,
+          phone_number: values.phone_number,
+          password: values.password,
+          role_id: values.role_id,
+          full_name: values.zalo_name,
+          branch_id: values.branch_id,
+        }
+        await createMutation.mutateAsync({ data: payload })
+        message.success('Đã thêm chuyên viên')
       }
       setOpen(false)
-      refreshList()
-      if (selected && editing?.id === selected.id) await refreshSelected()
+      await queryClient.invalidateQueries({ queryKey: getGetUsersAdminQueryKey() })
     } catch (err) {
       message.error(errorMessage(err))
     }
   }
 
-  const remove = async (row: CustomerProfileRow) => {
+  /** LIFE-01 — khóa mềm: giữ hồ sơ/lịch, thu hồi phiên; báo số lịch hẹn tương lai cần xử lý. */
+  const deactivate = async (row: UserRow) => {
+    if (!canManageUserRow(row)) return
     try {
-      await deleteCustomerProfilesIdAdmin(row.id)
-      message.success('Đã xóa khách hàng')
-      if (selected?.id === row.id) setSelected(null)
-      refreshList()
+      const result = await deleteMutation.mutateAsync({ id: row.id })
+      const futureCount = Number(pickData<{ future_appointments?: number }>(result)?.future_appointments ?? 0)
+      if (futureCount > 0) {
+        message.warning(`Đã khóa tài khoản. Có ${futureCount} lịch hẹn tương lai cần phân công lại cho KTV khác.`)
+      } else {
+        message.success('Đã khóa tài khoản. Hồ sơ và lịch đã đặt được giữ nguyên.')
+      }
+      await queryClient.invalidateQueries({ queryKey: getGetUsersAdminQueryKey() })
     } catch (err) {
       message.error(errorMessage(err))
     }
   }
 
-  const downloadQr = () => {
-    if (!selected || !qrUrl) return
-    const anchor = document.createElement('a')
-    anchor.href = qrUrl
-    anchor.download = `${selected.customer_code}.png`
-    anchor.click()
-  }
-
-  const printQr = () => {
-    if (!selected || !qrUrl) return
-    const printWindow = window.open('', '_blank', 'popup,width=440,height=620')
-    if (!printWindow) {
-      message.error('Trình duyệt đang chặn cửa sổ in. Hãy cho phép cửa sổ bật lên rồi thử lại.')
-      return
+  const restore = async (row: UserRow) => {
+    if (!canManageUserRow(row)) return
+    try {
+      await updateMutation.mutateAsync({ id: row.id, data: { is_active: true } })
+      message.success('Đã khôi phục tài khoản. Lịch tuần cũ có hiệu lực trở lại.')
+      await queryClient.invalidateQueries({ queryKey: getGetUsersAdminQueryKey() })
+    } catch (err) {
+      message.error(errorMessage(err))
     }
-    const customerName = escapeHtml(selected.full_name)
-    const customerCode = escapeHtml(selected.customer_code)
-    printWindow.document.write(`<!doctype html><html lang="vi"><head><meta charset="utf-8"><title>QR ${customerCode}</title><style>
-      *{box-sizing:border-box}body{font-family:Arial,sans-serif;margin:0;padding:24px;color:#26352d}.card{width:320px;margin:0 auto;border:1px solid #dce8df;border-radius:16px;padding:22px;text-align:center}.brand{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#5b7868}.name{font-size:20px;font-weight:700;margin:10px 0 6px}.code{font-family:monospace;font-size:16px;font-weight:700}img{width:210px;height:210px;image-rendering:pixelated;margin-top:16px}@media print{body{padding:0}.card{border:0}}
-      </style></head><body><main class="card"><div class="brand">Vista</div><div class="name">${customerName}</div><div class="code">${customerCode}</div><img src="${qrUrl}" alt="QR ${customerCode}"></main><script>window.onload=()=>{setTimeout(()=>{window.focus();window.print();window.close()},150)}</script></body></html>`)
-    printWindow.document.close()
   }
 
-  const rowRankName = (row: CustomerProfileRow) => row.user?.membership?.card_rank?.name
-  const activeFilterCount = Object.values(filters).filter((value) => value !== undefined && value !== '').length + (keyword ? 1 : 0)
+  const openProfile = (row: UserRow) => {
+    if (!canReadUserProfile) return
+    setProfileUser(row)
+    profileForm.resetFields()
+    setProfileOpen(true)
+  }
+
+  const submitProfile = async () => {
+    if (!profileUser || !canUpdateUserProfile || !canManageUserRow(profileUser)) return
+    const values = await profileForm.validateFields()
+    try {
+      await upsertProfileMutation.mutateAsync({
+        userId: profileUser.id,
+        data: {
+          display_name: values.display_name,
+          title: values.title,
+          photo_file_id: values.photo_file_id || null,
+          expertise: values.expertise,
+          bio: values.bio,
+          sort_order: values.sort_order ?? 0,
+          show_in_app: !!values.show_in_app,
+        },
+      })
+      message.success('Đã lưu hồ sơ chuyên viên')
+      setProfileOpen(false)
+      await UserProfilesQuery.refetch()
+    } catch (err) {
+      message.error(errorMessage(err))
+    }
+  }
+
+  const toggleInApp = async (row: UserRow, showInApp: boolean) => {
+    if (!canUpdateUserProfile || !canManageUserRow(row)) return
+    try {
+      await upsertProfileMutation.mutateAsync({ userId: row.id, data: { show_in_app: showInApp } })
+      message.success(showInApp ? 'Đã hiện chuyên viên trên app' : 'Đã ẩn chuyên viên khỏi app')
+      await UserProfilesQuery.refetch()
+    } catch (err) {
+      message.error(errorMessage(err))
+    }
+  }
+
+  const openServices = (row: UserRow) => {
+    if (!canUpdateUserProfile || !canManageUserRow(row)) return
+    setServicesUser(row)
+    setCheckedServiceIds([])
+    setServicesOpen(true)
+  }
+
+  const submitServices = async () => {
+    if (!servicesUser || !canUpdateUserProfile || !canManageUserRow(servicesUser)) return
+    try {
+      await assignServicesMutation.mutateAsync({ userId: servicesUser.id, data: { service_ids: checkedServiceIds } })
+      message.success('Đã cập nhật dịch vụ phụ trách')
+      setServicesOpen(false)
+      await UserProfilesQuery.refetch()
+    } catch (err) {
+      message.error(errorMessage(err))
+    }
+  }
 
   return (
     <>
       <PageTitle
-        subtitle="Quản lý cơ sở dữ liệu và phân hạng thành viên"
+        subtitle="Quản lý thông tin và vai trò của nhân viên"
         left={
           <>
-            <Input.Search
+            <Input
               allowClear
-              placeholder="Tìm tên, SĐT, email, mã KH..."
-              className="w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]"
-              value={searchText}
-              onChange={(event) => { setSearchText(event.target.value); if (!event.target.value) applySearch('') }}
-              onSearch={(v) => applySearch(v)}
+              prefix={<SearchOutlined className="text-[var(--brand-text-inactive,#A9ADB2)]" />}
+              placeholder="Tìm theo tên, email, SĐT"
+              className="w-[260px]!"
+              value={searchInput}
+              onChange={(e) => {
+                setSearchInput(e.target.value)
+                if (!e.target.value) applySearch('')
+              }}
+              onPressEnter={() => applySearch(searchInput)}
             />
-            {profileAccess.canRead && (
-              <Button icon={<QrcodeOutlined />} loading={qrLookupLoading} onClick={() => setScannerOpen(true)} aria-label="Quét QR" title="Quét QR">
-                {/* Desktop: hiện chữ dễ nhận biết; mobile giữ icon gọn thanh công cụ */}
-                {!isMobile ? 'Quét QR' : undefined}
-              </Button>
-            )}
-            <ListFilterPopover
-              iconOnly={isMobile}
-              open={filterOpen}
-              onOpenChange={openFilters}
-              activeFilterCount={activeFilterCount}
-              form={filterForm}
-              onApply={applyFilters}
-              onClear={clearFilters}
-              columnOptions={CUSTOMER_COLUMN_OPTIONS}
-              draftVisibleColumns={draftVisibleColumns}
-              onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as CustomerColumnKey[])}
-              filterItems={(
-                <>
-                  <Row gutter={8}>
-                    <Col span={12}>
-                      <Form.Item name="birth_month" label="Tháng sinh" className="mb-2.5!">
-                        <Select allowClear placeholder="Tất cả" options={Array.from({ length: 12 }, (_, index) => ({ value: index + 1, label: `Tháng ${index + 1}` }))} />
-                      </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                      <Form.Item name="rank_id" label="Hạng thành viên" className="mb-2.5!">
-                        <Select allowClear placeholder="Tất cả" options={ranks.map((rank) => ({ value: rank.id, label: rank.name }))} />
-                      </Form.Item>
-                    </Col>
-                  </Row>
-                  <Row gutter={8}>
-                    <Col span={12}>
-                      <Form.Item name="min_spent" label="Chi tiêu từ" className="mb-2.5!">
-                        <InputNumber min={0} step={100000} suffix={currencySymbol} placeholder="Tối thiểu" className="w-full!" />
-                      </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                      <Form.Item name="max_spent" label="Chi tiêu đến" className="mb-2.5!">
-                        <InputNumber min={0} step={100000} suffix={currencySymbol} placeholder="Tối đa" className="w-full!" />
-                      </Form.Item>
-                    </Col>
-                  </Row>
-                  <Form.Item name="has_debt" label="Công nợ" className="mb-0!">
-                    <Select allowClear placeholder="Tất cả" options={[{ value: 'true', label: 'Có nợ' }, { value: 'false', label: 'Không nợ' }]} />
-                  </Form.Item>
-                </>
-              )}
+            <Select
+              allowClear
+              showSearch
+              optionFilterProp="label"
+              placeholder="Tất cả cơ sở"
+              className="w-[220px]!"
+              value={branchFilter}
+              onChange={(value) => {
+                setBranchFilter(value)
+                setPage(1)
+              }}
+              options={branches.map((branch) => ({ value: branch.id, label: branch.name }))}
             />
-            {profileAccess.canExport && (
-              <Button icon={<DownloadOutlined />} loading={exporting} onClick={() => void downloadCsv()} aria-label="Xuất CSV" title="Xuất CSV">
-                {!isMobile ? 'Xuất CSV' : undefined}
-              </Button>
-            )}
           </>
         }
-        right={
-          profileAccess.canManage ? (
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => void openModal()}>
-              Thêm khách hàng
-            </Button>
-          ) : undefined
-        }
+        right={canCreateUser ? (
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>Thêm chuyên viên</Button>
+        ) : undefined}
       >
-        Khách hàng
+        Quản lý nhân sự
       </PageTitle>
-      <Table<CustomerProfileRow>
-        className="desktop-only"
+      {usersQuery.isError && (
+        <div className="mb-4">
+          <Typography.Text type="danger">Không tải được danh sách nhân viên: {errorMessage(usersQuery.error)}</Typography.Text>
+        </div>
+      )}
+      <Table<UserRow>
         rowKey="id"
         loading={loading}
         dataSource={rows}
-        scroll={{ x: 950 }}
+        locale={{ emptyText: <TableEmpty description="Chưa có nhân viên nào khớp điều kiện." /> }}
+        scroll={{ x: 1160 }}
         pagination={false}
-        onRow={(row) => ({
-          onClick: profileAccess.canRead ? () => void openDetail(row) : undefined,
-          style: profileAccess.canRead ? { cursor: 'pointer' } : undefined,
-        })}
+        onRow={(s) => ({ onClick: () => openProfile(s), style: { cursor: 'pointer' } })}
         columns={[
           {
-            key: 'customer_code',
-            title: 'Mã KH',
-            dataIndex: 'customer_code',
+            title: 'Nhân viên',
+            key: 'User',
+            dataIndex: 'zalo_name',
+            width: 220,
+            render: (_: unknown, s: UserRow) => {
+              const profile = profileByUser.get(s.id)
+              const photo = fileSrc((profile as any)?.photo_file) ?? resolveFileSrc(urlMap, profile?.photo_file_id)
+              return (
+                <Space>
+                  {photo ? (
+                    <img src={photo} alt="" width={36} height={36} className="rounded-full object-cover" />
+                  ) : (
+                    <Avatar size={36} className="bg-[var(--brand-primary)]!" icon={<UserOutlined />} />
+                  )}
+                  <Space direction="vertical" size={0}>
+                    <span className="font-semibold">{s.zalo_name || s.email || '—'}</span>
+                    {s.email && <Typography.Text type="secondary" className="text-xs!">{s.email}</Typography.Text>}
+                  </Space>
+                </Space>
+              )
+            },
+          },
+          {
+            title: 'Vai trò',
+            key: 'role',
+            width: 220,
+            render: (_: unknown, s: UserRow) => (
+              <Tag color={roleTagColor(s.user_roles?.[0]?.role?.code)}>{s.user_roles?.[0]?.role?.role_name || 'Nhân viên'}</Tag>
+            ),
+          },
+          {
+            title: 'Trạng thái',
+            key: 'status',
+            dataIndex: 'is_active',
+            width: 110,
+            render: (v: boolean | undefined) => (v === false ? <Tag>Đã nghỉ việc</Tag> : <Tag color="green">Đang làm</Tag>),
+          },
+          { title: 'SĐT', key: 'phone', dataIndex: 'phone_number', width: 130, render: (v: string | undefined) => v || '—' },
+          {
+            title: 'Chức danh & dịch vụ phụ trách',
+            key: 'profile',
+            width: 250,
+            render: (_: unknown, s: UserRow) => {
+              const profile = profileByUser.get(s.id)
+              const serviceTags = (profile?.service_ids ?? [])
+                .map((serviceId) => serviceRows.find((service) => service.id === serviceId)?.title || 'Dịch vụ đã ẩn')
+              return (
+                <Space direction="vertical" size={4}>
+                  <Typography.Text>{profile?.title || '—'}</Typography.Text>
+                  <Space size={4} wrap>
+                    {serviceTags.length === 0 && <Typography.Text type="secondary">Chưa gán dịch vụ</Typography.Text>}
+                    {serviceTags.length === 1 && <Tag color="blue">{serviceTags[0]}</Tag>}
+                    {serviceTags.length >= 2 && (
+                      <>
+                        <Tag color="blue">{serviceTags[0]}</Tag>
+                        <Tooltip title={serviceTags.join(', ')}>
+                          <Tag color="blue">+{serviceTags.length - 1} dịch vụ</Tag>
+                        </Tooltip>
+                      </>
+                    )}
+                  </Space>
+                </Space>
+              )
+            },
+          },
+          {
+            title: <span className="whitespace-nowrap">Hiện trên app</span>,
+            key: 'in_app',
             width: 130,
-            render: (value: string) => <Typography.Text code>{value}</Typography.Text>,
+            render: (_: unknown, s: UserRow) => {
+              const profile = profileByUser.get(s.id)
+              if (!canUpdateUserProfile || !canManageUserRow(s)) {
+                return (
+                  <Tag color={profile?.show_in_app === false ? 'default' : 'green'}>
+                    {profile?.show_in_app === false ? 'Đã ẩn' : 'Đang hiện'}
+                  </Tag>
+                )
+              }
+              return (
+                <div onClick={(e) => e.stopPropagation()}>
+                  <Switch
+                    checked={profile?.show_in_app !== false}
+                    size="small"
+                    loading={upsertProfileMutation.isPending}
+                    onChange={(checked) => void toggleInApp(s, checked)}
+                  />
+                </div>
+              )
+            },
           },
           {
-            key: 'full_name',
-            title: 'Khách hàng',
-            dataIndex: 'full_name',
-            width: 180,
-            render: (value: string, row: CustomerProfileRow) => (
-              <Space>
-                <CustomerAvatar profile={row} />
-                <span style={{ fontWeight: 500 }}>{value}</span>
-              </Space>
-            ),
-          },
-          { key: 'phone', title: 'Số điện thoại', dataIndex: 'phone', width: 120 },
-          { key: 'email', title: 'Email', dataIndex: 'email', width: 190, render: (value: string | undefined, row: CustomerProfileRow) => value || row.user?.email || '—' },
-          {
-            title: 'Hạng / Tài khoản',
-            key: 'rank',
-            width: 120,
-            render: (_: unknown, row: CustomerProfileRow) => row.user_id
-              ? <Tag color="purple">{rowRankName(row) ?? 'Đã liên kết'}</Tag>
-              : <Tag>Chưa liên kết</Tag>,
-          },
-          {
+            title: 'Thao tác', align: 'center' as const,
             key: 'actions',
-            title: 'Hành động', align: 'center' as const,
-            width: 90,
+            width: 100,
             fixed: 'right' as const,
-            render: (_: unknown, row: CustomerProfileRow) => (
-              <RowActionsMenu
-                items={[
-                  ...(profileAccess.canManage ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []),
-                  ...(profileAccess.canDelete ? [{ key: 'delete', icon: <DeleteOutlined />, danger: true, label: 'Xóa' }] : []),
-                ]}
-                onSelect={(key) => {
-                  if (key === 'edit') void openModal(row)
-                  else if (key === 'delete') {
-                    Modal.confirm({
-                      title: 'Xóa (ẩn) khách hàng này?',
-                      okText: 'Xóa',
-                      okButtonProps: { danger: true },
-                      cancelText: 'Hủy',
-                      onOk: () => remove(row),
-                    })
-                  }
-                }}
-              />
-            ),
+            render: (_: unknown, s: UserRow) => {
+              const canManageRow = canManageUserRow(s)
+              const actionItems = [
+                ...(canManageRow ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []),
+                ...(canReadUserProfile ? [{ key: 'profile', icon: <ProfileOutlined />, label: canUpdateUserProfile && canManageRow ? 'Hồ sơ' : 'Xem hồ sơ' }] : []),
+                ...(canUpdateUserProfile && canManageRow ? [{ key: 'services', icon: <AppstoreOutlined />, label: 'Dịch vụ' }] : []),
+                ...(canManageRow && !isHighestAdminRow(s)
+                  ? s.is_active === false
+                    ? [{ key: 'restore', icon: <UndoOutlined />, label: 'Khôi phục' }]
+                    : [{ key: 'deactivate', icon: <LockOutlined />, danger: true, label: 'Khóa' }]
+                  : []),
+              ]
+              if (!actionItems.length) return <Typography.Text type="secondary">—</Typography.Text>
+              return (
+                <RowActionsMenu
+                  items={actionItems}
+                  onSelect={(key) => {
+                    if (key === 'edit') openModal(s)
+                    else if (key === 'profile') openProfile(s)
+                    else if (key === 'services') openServices(s)
+                    else if (key === 'restore') {
+                      Modal.confirm({
+                        title: 'Khôi phục tài khoản này?',
+                        content: 'Nhân viên sẽ đăng nhập lại được và lịch tuần cũ có hiệu lực trở lại.',
+                        okText: 'Khôi phục',
+                        cancelText: 'Hủy',
+                        onOk: () => restore(s),
+                      })
+                    } else if (key === 'deactivate') {
+                      Modal.confirm({
+                        title: 'Khóa tài khoản nhân viên này?',
+                        content: 'Thu hồi phiên đăng nhập, không còn xuất hiện khi xếp ca/slot mới. Hồ sơ và lịch hẹn đã đặt được giữ nguyên.',
+                        okText: 'Khóa',
+                        okButtonProps: { danger: true },
+                        cancelText: 'Hủy',
+                        onOk: () => deactivate(s),
+                      })
+                    }
+                  }}
+                />
+              )
+            },
           },
-        ].filter((column) =>
-          (column.key !== 'actions' || profileAccess.canManage || profileAccess.canDelete) &&
-          (column.key === 'actions' || visibleColumns.includes(column.key as CustomerColumnKey)),
-        )}
+        ]}
       />
-      <MobileCards
-        rows={rows}
-        rowKey={(row) => row.id}
-        onCardClick={profileAccess.canRead ? (row) => void openDetail(row) : undefined}
-        loading={loading}
-        emptyText="Chưa có khách hàng nào"
-        renderCard={(row) => (
-          <>
-            <div className="mobile-card-head">
-              <div>
-                <div className="mobile-card-title">{row.full_name}</div>
-                <div className="mobile-card-sub"><Typography.Text code style={{ fontSize: 12 }}>{row.customer_code}</Typography.Text></div>
-              </div>
-              {row.user_id
-                ? <Tag color="purple">{rowRankName(row) ?? 'Đã liên kết'}</Tag>
-                : <Tag>Chưa liên kết</Tag>}
-            </div>
-            <div className="mobile-card-rows">
-              <MobileCardRow label="Số điện thoại" value={row.phone || '—'} />
-              <MobileCardRow label="Email" value={row.email || row.user?.email || '—'} />
-            </div>
-            {(profileAccess.canManage || profileAccess.canDelete) && (
-              <div className="mobile-card-actions">
-                {profileAccess.canManage && <Button size="small" icon={<EditOutlined />} onClick={(event) => { event.stopPropagation(); void openModal(row) }}>Sửa</Button>}
-                {profileAccess.canDelete && <Button size="small" danger icon={<DeleteOutlined />} onClick={(event) => {
-                  event.stopPropagation()
-                  Modal.confirm({
-                    title: 'Xóa (ẩn) khách hàng này?',
-                    okText: 'Xóa',
-                    okButtonProps: { danger: true },
-                    cancelText: 'Hủy',
-                    onOk: () => remove(row),
-                  })
-                }}>Xóa</Button>}
-              </div>
-            )}
-          </>
-        )}
-      />
-      <ListPagination page={page} limit={limit} total={total} onChange={setPage} noun="khách hàng" />
+      <ListPagination page={page} limit={limit} total={total} onChange={setPage} noun="nhân viên" />
 
-      <CustomerDetailDrawer
-        selected={selected}
-        summary={summary}
-        qrUrl={qrUrl}
-        qrLoading={qrLoading}
-        qrError={qrError}
-        profileFieldDefs={profileFieldDefs}
-        canViewQr={profileAccess.canViewQr}
-        isAdmin={profileAccess.isAdmin}
-        canManage={profileAccess.canManage}
-        resettingQr={resettingQr}
-        onClose={() => setSelected(null)}
-        onDownloadQr={downloadQr}
-        onPrintQr={printQr}
-        onResetQr={() => void resetQr()}
-        onLink={() => setLinkOpen(true)}
-        onHistory={() => setHistoryOpen(true)}
-        onMembershipUpdated={refreshSelected}
-      />
-
-
-      <CustomerProfileFormModal
+      <UserModal
         form={form}
         open={open}
         editing={editing}
-        profileFieldDefs={profileFieldDefs}
+        branches={branches}
+        roles={roles}
+        canEditAccess={isSuperAdmin && !editing?.is_super_admin}
         onCancel={() => setOpen(false)}
-        onOk={() => void submit()}
+        onOk={submit}
       />
 
-
-      {scannerOpen && (
-        <Suspense fallback={null}>
-          <CustomerQrScannerModal open onClose={() => setScannerOpen(false)} onToken={(token) => void lookupQrToken(token)} />
-        </Suspense>
-      )}
-
-      <LinkCustomerAccountModal
-        open={linkOpen}
-        profile={selected}
-        onCancel={() => setLinkOpen(false)}
-        onLinked={refreshSelected}
+      <UserProfileModal
+        form={profileForm}
+        open={profileOpen}
+        profileUser={profileUser}
+        canUpdate={canUpdateUserProfile && !!profileUser && canManageUserRow(profileUser)}
+        profileDetails={profileDetails}
+        saving={upsertProfileMutation.isPending}
+        onCancel={() => setProfileOpen(false)}
+        onOk={() => void submitProfile()}
       />
-      <CustomerCodeHistoryModal
-        open={historyOpen}
-        profileId={selected?.id}
-        onClose={() => setHistoryOpen(false)}
+
+      <UsersServicesModal
+        open={servicesOpen}
+        servicesUser={servicesUser}
+        serviceRows={serviceRows}
+        checkedServiceIds={checkedServiceIds}
+        loading={UserservicesQuery.isLoading}
+        saving={assignServicesMutation.isPending}
+        onCheckedChange={setCheckedServiceIds}
+        onCancel={() => setServicesOpen(false)}
+        onOk={() => void submitServices()}
       />
     </>
   )

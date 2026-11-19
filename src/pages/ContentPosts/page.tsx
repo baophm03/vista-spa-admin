@@ -243,7 +243,7 @@ export default function ContentPosts() {
     { title: 'Xuất bản', dataIndex: 'published_at', key: 'published_at', width: 130, render: (v: string) => (v ? dayjs(v).format('DD/MM/YYYY HH:mm') : '—') },
     { title: 'Lượt xem', dataIndex: 'view_count', key: 'view_count', width: 90, align: 'right' as const },
     {
-      title: 'Hành động', key: 'actions', width: 90, align: 'center' as const,
+      title: 'Thao tác', key: 'actions', width: 90, align: 'center' as const,
       render: (_: unknown, row: ContentPostRow) => (
         <RowActionsMenu
           items={[
@@ -300,7 +300,7 @@ export default function ContentPosts() {
       render: (v: boolean) => <Tag color={v ? 'green' : 'red'}>{v ? 'Hiện' : 'Ẩn'}</Tag>
     },
     {
-      title: 'Hành động', key: 'actions', width: 90, align: 'center' as const,
+      title: 'Thao tác', key: 'actions', width: 90, align: 'center' as const,
       render: (_: unknown, row: ContentCategory) => (
         <RowActionsMenu
           items={[
@@ -384,6 +384,7 @@ export default function ContentPosts() {
                   </Can>
                 </ToolbarRow>
                 <Table
+                  className="[&_.ant-table-thead_th]:whitespace-nowrap"
                   rowKey="id"
                   loading={postsQuery.isLoading}
                   columns={postColumns}
@@ -404,7 +405,14 @@ export default function ContentPosts() {
                     <Button type="primary" icon={<PlusOutlined />} onClick={() => { setEditingCategory(null); categoryForm.resetFields(); categoryForm.setFieldsValue({ display_type: 'NEWS', sort_order: 0, is_active: true }); setCategoryModal(true) }}>Tạo chuyên mục</Button>
                   </Can>
                 </ToolbarRow>
-                <Table rowKey="id" loading={categoriesQuery.isLoading} columns={categoryColumns} dataSource={categories} pagination={false} />
+                <Table
+                  className="[&_.ant-table-thead_th]:whitespace-nowrap"
+                  rowKey="id"
+                  loading={categoriesQuery.isLoading}
+                  columns={categoryColumns}
+                  dataSource={categories}
+                  pagination={false}
+                />
               </>
             ),
           },

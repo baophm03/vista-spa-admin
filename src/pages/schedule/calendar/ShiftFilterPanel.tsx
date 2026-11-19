@@ -37,7 +37,7 @@ export default function ShiftFilterPanel({ templates, hidden, onToggle, onToggle
           <Typography.Text strong style={{ fontSize: 13, color: '#2B2C2D' }}>Tất cả ca làm</Typography.Text>
         </CheckCircle>
         <div
-          className="flex max-h-[84px] flex-col gap-2.5 overflow-y-auto overscroll-contain pr-1 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[var(--brand-border)]"
+          className="flex max-h-48 flex-col gap-2.5 overflow-y-auto overscroll-contain pr-1 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[var(--brand-border)]"
         >
           {sorted.map((template, index) => {
             const style = shiftStyle(template, index)

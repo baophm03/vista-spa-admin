@@ -35,7 +35,7 @@ export interface SystemSettingUpdate {
 export const settingSections = [
   { key: 'member', label: 'Hội viên & hạng thẻ', groups: ['rank', 'customer_code', 'customer'] },
   { key: 'booking', label: 'Đặt lịch hẹn', groups: ['booking', 'reminder', 'job'] },
-  { key: 'points', label: 'Tích điểm & đổi quà', groups: ['points'] },
+  { key: 'points', label: 'Tích & đổi điểm', groups: ['points'] },
   {
     key: 'sales-customer-programs',
     label: 'Bán hàng & chương trình khách hàng',

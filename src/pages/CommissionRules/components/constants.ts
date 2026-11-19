@@ -1,6 +1,8 @@
-/** Người nhận quy tắc — nối với bảng roles qua payee_role_id, phân biệt bằng role code. */
+/** Người nhận quy tắc — nối với bảng roles qua payee_role_id, phân biệt bằng role code
+ *  (đã lowercase; DB có thể seed code khác chuẩn như 'STAFF' thay vì 'ktv'). */
 export const PAYEE_META: Record<string, { label: string; color: string }> = {
   ktv: { label: 'Kỹ thuật viên', color: 'blue' },
+  staff: { label: 'Kỹ thuật viên', color: 'blue' },
   customer: { label: 'Khách hàng cũ', color: 'geekblue' },
 }
 
@@ -15,15 +17,16 @@ export const RULE_TYPE_META: Record<RuleTaskType, { label: string; description: 
   },
   SESSION: {
     label: 'Hoàn thành buổi điều trị',
-    description: 'Phát sinh khi buổi điều trị được Lễ tân/Admin xác nhận Hoàn thành (KTV bấm "Xong" không tính)',
+    description: 'Phát sinh khi buổi điều trị được đánh dấu "Đã làm" (Xong) — hệ thống tự tạo bản ghi hoa hồng chờ admin duyệt',
     color: 'purple',
   },
 }
 
-/** Điều kiện kích hoạt → role code của người nhận (cố định, khớp BE TYPE_ROLE_CODE). */
+/** Điều kiện kích hoạt → vai trò người nhận (cố định, khớp BE TYPE_ROLE_CODE).
+ *  'staff' = vai trò KTV (code hiện tại 'STAFF', code cũ 'ktv'). */
 export const TYPE_ROLE_CODE: Record<RuleTaskType, string> = {
   REFERRAL: 'customer',
-  SESSION: 'ktv',
+  SESSION: 'staff',
 }
 
 export const ruleTypeMeta = (type?: string | null) =>

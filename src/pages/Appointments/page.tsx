@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSearchParams } from 'react-router-dom'
 import { Can, useAbility } from '@casl/react'
 import {
@@ -7,12 +7,12 @@ import {
   Form,
   Input,
   Modal,
-  Select,
-  Segmented,
+  Alert,
+  Drawer,
+  Tabs,
   message,
 } from 'antd'
 import {
-  CalendarOutlined,
   CheckOutlined,
   CloseOutlined,
   EditOutlined,
@@ -20,19 +20,20 @@ import {
   PlayCircleOutlined,
   PlusOutlined,
   StopOutlined,
-  UnorderedListOutlined,
 } from '@ant-design/icons'
 import dayjs from 'dayjs'
+
 import PageTitle from '@/components/base/PageTitle'
-import PeriodNavigator from '@/components/base/PeriodNavigator'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
 import { normalizeCustomFieldValues } from '@/components/CustomFieldFormItems'
 import useCustomFieldDefinitions from '@/hooks/useCustomFieldDefinitions'
-import { errorMessage, pickData, pickMeta } from '@/api/helpers'
+import { errorMessage, pickData } from '@/api/helpers'
+import { useBrandDateTime } from '@/themeRuntime'
 import type { Appointment } from '@/api/models/appointment'
 import type { Branch } from '@/api/models/branch'
-import { getAppointmentsAvailableSlots, getGetAppointmentsAdminQueryKey, useGetAppointmentsAdmin, usePostAppointmentsAdmin, usePostAppointmentsIdStartAdmin, usePutAppointmentsIdAdmin, usePutAppointmentsIdApproveAdmin, usePutAppointmentsIdCancelAdmin, usePutAppointmentsIdNoShowAdmin, usePutAppointmentsIdRejectAdmin, getAppointmentsIdAdmin } from '@/api/endpoints/appointments'
+import type { GetAppointmentsAdminParams } from '@/api/models/getAppointmentsAdminParams'
+import { getAppointmentsAvailableSlots, getGetAppointmentsAdminQueryKey, usePostAppointmentsAdmin, usePostAppointmentsIdStartAdmin, usePutAppointmentsIdAdmin, usePutAppointmentsIdApproveAdmin, usePutAppointmentsIdCancelAdmin, usePutAppointmentsIdNoShowAdmin, usePutAppointmentsIdRejectAdmin, getAppointmentsIdAdmin } from '@/api/endpoints/appointments'
 import { getGetCustomerProfilesAdminQueryKey, postCustomerProfilesAdmin, useGetCustomerProfilesAdmin } from '@/api/endpoints/customer-profiles'
 import { useGetUsersAdmin } from '@/api/endpoints/users'
 import { useGetBranchesAdmin } from '@/api/endpoints/branches'
@@ -40,23 +41,16 @@ import AppointmentDetailModal from './components/AppointmentDetailModal'
 import AppointmentFormModal from './components/AppointmentFormModal'
 import AppointmentsCalendar from './components/AppointmentsCalendar'
 import AppointmentsTable from './components/AppointmentsTable'
+import AppointmentCalendarFilterPanel from './components/AppointmentCalendarFilterPanel'
 import QuickCustomerModal from './components/QuickCustomerModal'
 import type { AppointmentRow, ProfileRow, Slot } from './components/constants'
+import CalendarToolbar, { type CalendarView } from '../schedule/calendar/CalendarToolbar'
+import MiniMonthCalendar from '../schedule/calendar/MiniMonthCalendar'
+import { appointmentDay, fetchCalendarAppointments, getCalendarDays, getPeriodLabel, timeInMinutes } from './calendar'
+import { useGetStaffScheduleDatesAdmin } from '@/api/endpoints/staff'
+import type { StaffScheduleDate, ShiftTemplate } from '../schedule/types'
 
-function mondayOf(date: dayjs.Dayjs) {
-  return date.startOf('day').subtract((date.day() + 6) % 7, 'day')
-}
-
-const FILTERS = [
-  { value: 'all', label: 'Tất cả' },
-  { value: 'pending', label: 'Chờ duyệt' },
-  { value: 'approved', label: 'Đã duyệt' },
-  { value: 'in_progress', label: 'Đang làm' },
-  { value: 'completed', label: 'Hoàn tất' },
-  { value: 'cancelled', label: 'Đã hủy' },
-  { value: 'rejected', label: 'Từ chối' },
-  { value: 'no_show', label: 'Không đến' },
-]
+const EMPTY_ROWS: AppointmentRow[] = []
 
 interface UsersRowsPick {
   rows?: {
@@ -64,12 +58,13 @@ interface UsersRowsPick {
     zalo_name?: string
     email?: string
     branch_id?: string
-    user_roles?: { role?: { role_name?: string } }[]
+    user_roles?: { role?: { role_name?: string; code?: string } }[]
   }[]
 }
 
 export default function Appointments() {
   const queryClient = useQueryClient()
+  const { getDateTimeParts } = useBrandDateTime()
   const [searchParams, setSearchParams] = useSearchParams()
   const ability = useAbility()
   const canApprove = ability.can('APPROVE' as never, 'APPOINTMENT')
@@ -77,12 +72,15 @@ export default function Appointments() {
   const canStart = ability.can('START' as never, 'APPOINTMENT')
   // Mặc định mở ở dạng lịch
   const [displayMode, setDisplayMode] = useState<'calendar' | 'list'>('calendar')
-  const [calendarView, setCalendarView] = useState<'day' | 'week'>('week')
+  const [calendarView, setCalendarView] = useState<CalendarView>('week')
   const [calendarDate, setCalendarDate] = useState(() => dayjs())
+  const [filterDrawerOpen, setFilterDrawerOpen] = useState(false)
+  const [hiddenCalendarStaff, setHiddenCalendarStaff] = useState<Set<string>>(() => new Set())
+  const [unassignedVisible, setUnassignedVisible] = useState(true)
   const [page, setPage] = useState(1)
   const [limit] = useState(10)
   const [filter, setFilter] = useState('all')
-  const [dateFilter, setDateFilter] = useState<[string | null, string | null]>([null, null])
+
   const [branchFilter, setBranchFilter] = useState<string | undefined>()
   const [open, setOpen] = useState(false)
   const [selectedAppointment, setSelectedAppointment] = useState<AppointmentRow | null>(null)
@@ -106,37 +104,46 @@ export default function Appointments() {
   const selectedDateValue = Form.useWatch('appt_date', form)
   const selectedDate = selectedDateValue ? dayjs(selectedDateValue).format('YYYY-MM-DD') : ''
 
-  const listParams = useMemo(() => {
-    const params: Record<string, unknown> = { page, limit }
-    if (filter !== 'all') params.status = filter
-    if (dateFilter[0]) params.from_date = dateFilter[0]
-    if (dateFilter[1]) params.to_date = dateFilter[1]
-    if (branchFilter) params.branch_id = branchFilter
-    return params
-  }, [page, limit, filter, dateFilter, branchFilter])
-
-  const appointmentsQuery = useGetAppointmentsAdmin(listParams as never, { query: { enabled: displayMode === 'list' } })
-  const rows = useMemo(() => pickData<AppointmentRow[] | undefined>(appointmentsQuery.data) ?? [], [appointmentsQuery.data])
-  const total = pickMeta(appointmentsQuery.data)?.total ?? rows.length
-
-  const calendarStart = calendarView === 'week' ? mondayOf(calendarDate) : calendarDate.startOf('day')
-  const calendarEnd = calendarView === 'week' ? calendarStart.add(6, 'day') : calendarStart
-  const calendarParams = useMemo(() => {
-    const viewFrom = calendarStart.format('YYYY-MM-DD')
-    const viewTo = calendarEnd.format('YYYY-MM-DD')
-    const params: Record<string, unknown> = {
-      page: 1,
-      limit: 200,
-      from_date: dateFilter[0] && dateFilter[0] > viewFrom ? dateFilter[0] : viewFrom,
-      to_date: dateFilter[1] && dateFilter[1] < viewTo ? dateFilter[1] : viewTo,
+  const calendarDays = useMemo(() => getCalendarDays(calendarDate, calendarView), [calendarDate, calendarView])
+  const calendarParams: GetAppointmentsAdminParams = {
+    from_date: calendarDays[0].format('YYYY-MM-DD'),
+    to_date: calendarDays[calendarDays.length - 1].format('YYYY-MM-DD'),
+    status: filter === 'all' ? undefined : filter,
+    branch_id: branchFilter,
+  }
+  const calendarAppointmentsQuery = useQuery({
+    queryKey: [...getGetAppointmentsAdminQueryKey(), 'calendar', calendarParams],
+    queryFn: ({ signal }) => fetchCalendarAppointments(calendarParams, signal),
+  })
+  const allCalendarRows = calendarAppointmentsQuery.data ?? EMPTY_ROWS
+  const shiftsQuery = useGetStaffScheduleDatesAdmin({
+    from_date: calendarParams.from_date,
+    to_date: calendarParams.to_date,
+    branch_id: branchFilter,
+  }, { query: { enabled: displayMode === 'calendar' && calendarView !== 'month', retry: false } })
+  const shiftHourRange = useMemo(() => {
+    const shifts = pickData<Array<StaffScheduleDate & { shift_template?: ShiftTemplate & { is_deleted?: boolean } }> | undefined>(shiftsQuery.data) ?? []
+    let start = Infinity
+    let end = -Infinity
+    for (const shift of shifts) {
+      const template = shift.shift_template
+      if (shift.is_active === false || hiddenCalendarStaff.has(shift.staff_id) || !template || template.is_deleted) continue
+      const from = timeInMinutes(template.start_time)
+      const to = timeInMinutes(template.end_time)
+      if (from === null || to === null || to <= from) continue
+      start = Math.min(start, from)
+      end = Math.max(end, to)
     }
-    if (filter !== 'all') params.status = filter
-    if (branchFilter) params.branch_id = branchFilter
-    return params
-  }, [calendarStart, calendarEnd, dateFilter, filter, branchFilter])
-  const calendarAppointmentsQuery = useGetAppointmentsAdmin(calendarParams as never, { query: { enabled: displayMode === 'calendar' } })
-  const calendarRows = useMemo(() => pickData<AppointmentRow[] | undefined>(calendarAppointmentsQuery.data) ?? [], [calendarAppointmentsQuery.data])
-  const calendarDays = Array.from({ length: calendarView === 'week' ? 7 : 1 }, (_, index) => calendarStart.add(index, 'day'))
+    return start < end ? { start, end } : undefined
+  }, [shiftsQuery.data, hiddenCalendarStaff])
+  const calendarRows = useMemo(() => {
+    return allCalendarRows.filter((row) => row.staff_id
+      ? !hiddenCalendarStaff.has(row.staff_id)
+      : unassignedVisible)
+  }, [allCalendarRows, hiddenCalendarStaff, unassignedVisible])
+  const listPage = Math.min(page, Math.max(1, Math.ceil(calendarRows.length / limit)))
+  const listRows = calendarRows.slice((listPage - 1) * limit, listPage * limit)
+  const eventDates = useMemo(() => new Set(calendarRows.map(appointmentDay)), [calendarRows])
 
   useEffect(() => {
     const timer = window.setTimeout(() => setCustomerSearch(customerSearchInput.trim()), 250)
@@ -159,11 +166,23 @@ export default function Appointments() {
   const allUsers = (pickData<UsersRowsPick | undefined>(usersQuery.data)?.rows ?? [])
   const staffOptions = useMemo(() => allUsers
     .filter((person) => (person.user_roles ?? []).some(({ role }) => {
-      const roleName = String(role?.role_name || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase()
-      return roleName.includes('ktv') || roleName.includes('ky thuat vien') || roleName === 'technician'
+      const normalized = (value: string | null | undefined) => String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase()
+      const roleCode = normalized(role?.code)
+      const roleName = normalized(role?.role_name)
+      // Code 'staff' là chuẩn hiện tại (role cũ từng là 'ktv'); role_name dự phòng ('Kỹ thuật viên / ...')
+      return roleCode === 'staff' || roleCode === 'ktv' || roleName.includes('ktv') || roleName.includes('ky thuat vien') || roleName === 'technician'
     }))
     .map((person) => ({ id: person.id, label: person.zalo_name || person.email || person.id, branchId: person.branch_id })), [allUsers])
-
+  const staffNames = new Map(staffOptions.map(({ id, label }) => [id, label]))
+  const staffName = (row: AppointmentRow) => row.staff_id
+    ? row.staff?.zalo_name || staffNames.get(row.staff_id) || row.staff_id
+    : 'Chưa phân công'
+  const calendarStaff = new Map(staffOptions
+    .filter((person) => !branchFilter || person.branchId === branchFilter)
+    .map(({ id, label }) => [id, label]))
+  for (const row of allCalendarRows) {
+    if (row.staff_id) calendarStaff.set(row.staff_id, staffName(row))
+  }
   const createMutation = usePostAppointmentsAdmin()
   const rescheduleMutation = usePutAppointmentsIdAdmin()
   const approveMutation = usePutAppointmentsIdApproveAdmin()
@@ -221,12 +240,27 @@ export default function Appointments() {
   }, [open, selectedDate, editing?.id, form, formBranchId, branchFilter, branches, pickStaffFirst, formStaffId])
 
   // Khung giờ cho select "Giờ hẹn" — suy ra từ slot của ngày đã chọn (đã theo đúng chế độ switch)
-  const modalTimeOptions = useMemo(() => {
-    const times = [...new Set(slots.map((slot) => slot.start_time.slice(0, 5)))].sort()
-    return times.map((t) => ({ value: t, label: t }))
-  }, [slots])
+  const currentDateTime = getDateTimeParts(new Date())
+  const modalTimeOptions = [...new Set(slots.map((slot) => slot.start_time.slice(0, 5)))]
+    .filter((time) => !currentDateTime || `${selectedDate}T${time}` > `${currentDateTime.date}T${currentDateTime.time}`)
+    .sort()
+    .map((time) => ({ value: time, label: time }))
 
-  const openModal = (appointment?: Appointment) => {
+  const disablePastDate = (date: dayjs.Dayjs) => {
+    const today = getDateTimeParts(new Date())?.date
+    return !!today && date.format('YYYY-MM-DD') < today
+  }
+
+  const openModal = (appointment?: Appointment, createDate?: dayjs.Dayjs) => {
+    if (createDate && disablePastDate(createDate)) {
+      message.warning('Chọn ngày hẹn từ hôm nay trở đi')
+      return
+    }
+    const now = getDateTimeParts(new Date())
+    const editDate = appointment?.appt_date.slice(0, 10)
+    const editTime = appointment?.start_time?.slice(0, 5)
+    const editDateIsPast = !!editDate && !!now && editDate < now.date
+    const editTimeIsPast = editDateIsPast || (!!now && editDate === now.date && !!editTime && editTime <= now.time)
     setEditing(appointment ?? null)
     setSlots([])
     setPickStaffFirst(false)
@@ -250,12 +284,12 @@ export default function Appointments() {
           customer_profile_id: appointment.customer_profile_id,
           staff_id: appointment.staff_id ?? undefined,
           branch_id: appointment.branch_id ?? undefined,
-          appt_date: dayjs(appointment.appt_date),
-          start_time: appointment.start_time?.slice(0, 5),
+          appt_date: editDateIsPast ? undefined : dayjs(editDate),
+          start_time: editTimeIsPast ? undefined : editTime,
           note: appointment.note,
           custom_fields: appointment.custom_fields ?? {},
         }
-        : { appt_date: dayjs().add(1, 'day'), branch_id: branchFilter ?? branches[0]?.id, custom_fields: {} },
+        : { appt_date: createDate ?? dayjs(now?.date).add(1, 'day'), branch_id: branchFilter ?? branches[0]?.id, custom_fields: {} },
     )
     setOpen(true)
   }
@@ -327,6 +361,11 @@ export default function Appointments() {
         start_time: values.start_time,
         note: values.note,
         custom_fields: normalizeCustomFieldValues(appointmentCustomFields, values.custom_fields ?? {}, editing?.custom_fields ?? {}),
+      }
+      const now = getDateTimeParts(new Date())
+      if (now && `${payload.appt_date}T${payload.start_time}` <= `${now.date}T${now.time}`) {
+        form.setFields([{ name: 'start_time', errors: ['Giờ hẹn phải sau thời điểm hiện tại'] }])
+        return
       }
       if (editing) {
         await rescheduleMutation.mutateAsync({ id: editing.id, data: payload as never })
@@ -441,122 +480,188 @@ export default function Appointments() {
     )
   }
 
-  // Navigator kiểu /schedule: [<] [khoảng ngày] [>] — dùng chung cho cả chế độ Lịch và Danh sách
-  const navAnchor = displayMode === 'calendar'
-    ? [calendarStart, calendarEnd] as const
-    : (dateFilter[0] && dateFilter[1]
-      ? [dayjs(dateFilter[0]), dayjs(dateFilter[1])] as const
-      : [mondayOf(dayjs()), mondayOf(dayjs()).add(6, 'day')] as const)
-  const navStep = displayMode === 'calendar' && calendarView === 'day' ? 1 : 7
-  const navPrev = () => {
-    if (displayMode === 'calendar') setCalendarDate((date) => date.subtract(navStep, 'day'))
-    else {
-      const start = mondayOf(navAnchor[0].subtract(navStep, 'day'))
-      setDateFilter([start.format('YYYY-MM-DD'), start.add(6, 'day').format('YYYY-MM-DD')])
-      setPage(1)
-    }
+  const changeCalendarDate = (date: dayjs.Dayjs) => {
+    setCalendarDate(date)
+    setPage(1)
   }
-  const navNext = () => {
-    if (displayMode === 'calendar') setCalendarDate((date) => date.add(navStep, 'day'))
-    else {
-      const start = mondayOf(navAnchor[0].add(navStep, 'day'))
-      setDateFilter([start.format('YYYY-MM-DD'), start.add(6, 'day').format('YYYY-MM-DD')])
-      setPage(1)
-    }
+  const changeCalendarView = (view: CalendarView) => {
+    setCalendarView(view)
+    setPage(1)
   }
-  const navApply = (value: [dayjs.Dayjs | null, dayjs.Dayjs | null] | null) => {
-    const start = value?.[0]
-    if (!start) return
-    if (displayMode === 'calendar') setCalendarDate(calendarView === 'week' ? mondayOf(start) : start)
-    else {
-      const end = value?.[1] ?? start
-      setDateFilter([start.format('YYYY-MM-DD'), end.format('YYYY-MM-DD')])
-      setPage(1)
-    }
+  const changeBranch = (value?: string) => {
+    setBranchFilter(value)
+    setHiddenCalendarStaff(new Set())
+    setUnassignedVisible(true)
+    setPage(1)
   }
+  const toggleCalendarStaff = (staffId: string) => {
+    setPage(1)
+    setHiddenCalendarStaff((current) => {
+      const next = new Set(current)
+      if (next.has(staffId)) next.delete(staffId)
+      else next.add(staffId)
+      return next
+    })
+  }
+  const toggleAllCalendarStaff = (visible: boolean) => {
+    setPage(1)
+    setHiddenCalendarStaff(visible ? new Set() : new Set(calendarStaff.keys()))
+  }
+  const canCreate = ability.can('CREATE' as never, 'APPOINTMENT')
+  const createButton = (
+    <Can I="CREATE" a="APPOINTMENT">
+      <Button type="primary" className="h-9! shrink-0 rounded-lg! px-3.5! text-[13px]! font-semibold! shadow-none!" icon={<PlusOutlined />} onClick={() => openModal()} aria-label="Thêm lịch hẹn">
+        Thêm lịch hẹn
+      </Button>
+    </Can>
+  )
+  const calendarFilterCount = [Boolean(branchFilter), hiddenCalendarStaff.size > 0, !unassignedVisible, filter !== 'all'].filter(Boolean).length
+  const hasCalendarFilters = calendarFilterCount > 0
+  const calendarMonth = (onSelectDate: (date: dayjs.Dayjs) => void) => (
+    <MiniMonthCalendar
+      value={calendarDate}
+      view={calendarView}
+      onSelect={onSelectDate}
+      onMonthChange={changeCalendarDate}
+      eventDates={eventDates}
+      eventLabel="có lịch hẹn"
+    />
+  )
+
+  const calendarFilterPanel = (
+    <AppointmentCalendarFilterPanel
+      branches={branches}
+      staff={Array.from(calendarStaff, ([id, label]) => ({ id, label }))}
+      branchFilter={branchFilter}
+      hiddenStaff={hiddenCalendarStaff}
+      unassignedVisible={unassignedVisible}
+      statusFilter={filter}
+      activeFilterCount={calendarFilterCount}
+      onBranchChange={changeBranch}
+      onToggleStaff={toggleCalendarStaff}
+      onToggleAllStaff={toggleAllCalendarStaff}
+      onToggleUnassigned={() => {
+        setUnassignedVisible((visible) => !visible)
+        setPage(1)
+      }}
+      onStatusChange={(value) => { setFilter(value); setPage(1) }}
+      onReset={() => {
+        changeBranch(undefined)
+        setFilter('all')
+        setPage(1)
+      }}
+    />
+  )
+
+  const calendarToolbar = (
+    <CalendarToolbar
+      compact
+      anchor={calendarDate}
+      onAnchorChange={changeCalendarDate}
+      view={calendarView}
+      onViewChange={changeCalendarView}
+      periodLabel={getPeriodLabel(calendarDate, calendarView, calendarDays)}
+      activeFilterCount={calendarFilterCount}
+      branches={[]}
+      branchFilter={branchFilter}
+      onBranchChange={changeBranch}
+      onRefresh={refresh}
+      refreshing={calendarAppointmentsQuery.isFetching}
+      leftPanelOpen={filterDrawerOpen}
+      onToggleLeftPanel={() => setFilterDrawerOpen((open) => !open)}
+    />
+  )
 
   return (
-    <>
-      <PageTitle
-        subtitle="Quản lý lịch hẹn dịch vụ theo lịch hoặc danh sách"
-        left={
-          <>
-            {displayMode === 'calendar' && (
-              <>
-                <Segmented
-                  value={calendarView}
-                  options={[{ label: 'Ngày', value: 'day' }, { label: 'Tuần', value: 'week' }]}
-                  onChange={(value) => setCalendarView(value as 'day' | 'week')}
+    <div className={displayMode === 'calendar' ? 'md:flex md:h-full md:min-h-0 md:flex-col' : undefined}>
+      <div className="mb-2 grid min-w-0 shrink-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-1">
+        <PageTitle
+          className="col-span-2 col-start-1 row-start-1 mb-0! sm:col-span-1"
+          subtitle="Quản lý lịch hẹn và theo dõi các buổi hẹn của khách hàng"
+        >
+          Lịch hẹn
+        </PageTitle>
+        <div className="col-span-2 col-start-1 row-start-3 min-w-0 sm:row-start-2">
+          {calendarToolbar}
+        </div>
+        <div className="col-span-2 col-start-1 row-start-2 flex flex-wrap items-center justify-end gap-x-4 gap-y-2 sm:col-span-1 sm:col-start-2 sm:row-start-1">
+          <Tabs
+            aria-label="Hiển thị lịch hẹn"
+            size="small"
+            tabBarGutter={16}
+            activeKey={displayMode}
+            items={[{ key: 'calendar', label: 'Lịch' }, { key: 'list', label: 'Danh sách' }]}
+            onChange={(value) => setDisplayMode(value as 'calendar' | 'list')}
+            className="[&_.ant-tabs-nav]:mb-0! [&_.ant-tabs-nav]:before:hidden [&_.ant-tabs-tab]:h-9 [&_.ant-tabs-tab]:px-1! [&_.ant-tabs-tab]:py-0! [&_.ant-tabs-tab]:text-[13px]! [&_.ant-tabs-content-holder]:hidden"
+          />
+          {createButton}
+        </div>
+      </div>
+      <Drawer title="Ngày và bộ lọc" placement="right" size="min(344px, 100vw)" open={filterDrawerOpen} onClose={() => setFilterDrawerOpen(false)}>
+        <div className="flex flex-col gap-4">
+          {calendarMonth((date) => { changeCalendarDate(date); setFilterDrawerOpen(false) })}
+          {calendarFilterPanel}
+        </div>
+      </Drawer>
+      {displayMode === 'calendar' && (
+        <section aria-label="Lịch hẹn theo thời gian" className="flex min-w-0 flex-col overflow-hidden md:min-h-0 md:flex-1">
+          <div className="flex min-h-0 min-w-0 flex-1 gap-3">
+            <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-2 overflow-hidden rounded-lg border border-[var(--brand-border-soft)] bg-white shadow-sm">
+              {calendarAppointmentsQuery.isError && (
+                <Alert type="error" showIcon title="Không tải được lịch hẹn"
+                  description={errorMessage(calendarAppointmentsQuery.error)}
+                  action={<Button onClick={() => void calendarAppointmentsQuery.refetch()}>Thử lại</Button>} />
+              )}
+              {(!calendarAppointmentsQuery.isError || calendarAppointmentsQuery.data) && (
+                <AppointmentsCalendar
+                  rows={calendarRows}
+                  loading={calendarAppointmentsQuery.isPending}
+                  filtered={hasCalendarFilters}
+                  hourHeight={68}
+                  hourRange={shiftHourRange}
+                  view={calendarView}
+                  anchor={calendarDate}
+                  days={calendarDays}
+                  staffName={staffName}
+                  selectedKey={selectedAppointment?.id ?? null}
+                  onSelect={setSelectedAppointment}
+                  onSelectDay={(date) => { changeCalendarDate(date); changeCalendarView('day') }}
+                  onViewWeek={() => changeCalendarView('week')}
+                  onCreate={canCreate ? (date) => openModal(undefined, date) : undefined}
                 />
-              </>
-            )}
-            <PeriodNavigator
-              value={[navAnchor[0], navAnchor[1]]}
-              onChange={navApply}
-              onPrev={navPrev}
-              onNext={navNext}
-            />
-            <Segmented
-              value={displayMode}
-              options={[
-                { label: 'Lịch', value: 'calendar', icon: <CalendarOutlined /> },
-                { label: 'Danh sách', value: 'list', icon: <UnorderedListOutlined /> },
-              ]}
-              onChange={(value) => setDisplayMode(value as 'calendar' | 'list')}
-            />
-            <Select
-              allowClear
-              showSearch
-              optionFilterProp="label"
-              placeholder="Chọn cơ sở"
-              style={{ width: 180 }}
-              value={branchFilter}
-              onChange={(value) => { setBranchFilter(value); setPage(1) }}
-              options={branches.map((branch) => ({ value: branch.id, label: branch.name }))}
-            />
-            <Select
-              style={{ width: 160 }}
-              value={filter}
-              onChange={(value) => { setFilter(value); setPage(1) }}
-              options={FILTERS}
-            />
-          </>
-        }
-        right={
-          <Can I="CREATE" a="APPOINTMENT">
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
-              Thêm lịch hẹn
-            </Button>
-          </Can>
-        }
-      >
-        Lịch hẹn
-      </PageTitle>
-      {displayMode === 'calendar' ? (
-        <AppointmentsCalendar
-          rows={calendarRows}
-          loading={calendarAppointmentsQuery.isFetching}
-          view={calendarView}
-          days={calendarDays}
-          branchName={branchName}
-          onSelect={setSelectedAppointment}
-        />
-      ) : (
-        <AppointmentsTable
-          rows={rows}
-          loading={appointmentsQuery.isFetching}
-          branchName={branchName}
-          onRowClick={setSelectedAppointment}
-          renderActions={renderRowActions}
-        />
+              )}
+            </div>
+          </div>
+        </section>
       )}
-      {displayMode !== 'calendar' && <ListPagination page={page} limit={limit} total={total} onChange={setPage} noun="lịch hẹn" />}
+      {displayMode === 'list' && (
+        <>
+          {calendarAppointmentsQuery.isError && (
+            <Alert type="error" showIcon title="Không tải được lịch hẹn"
+              description={errorMessage(calendarAppointmentsQuery.error)}
+              action={<Button onClick={() => void calendarAppointmentsQuery.refetch()}>Thử lại</Button>} />
+          )}
+          {(!calendarAppointmentsQuery.isError || calendarAppointmentsQuery.data) && (
+            <AppointmentsTable
+              rows={listRows}
+              loading={calendarAppointmentsQuery.isPending}
+              branchName={branchName}
+              staffName={staffName}
+              onRowClick={setSelectedAppointment}
+              renderActions={renderRowActions}
+            />
+          )}
+        </>
+      )}
+      {displayMode !== 'calendar' && <ListPagination page={listPage} limit={limit} total={calendarRows.length} onChange={setPage} noun="lịch hẹn" />}
 
       <AppointmentDetailModal
         appointment={selectedAppointment}
         canStart={canStart}
         isPast={selectedAppointment ? isPastAppointment(selectedAppointment) : false}
         canStartToday={selectedAppointment ? canStartAppointmentToday(selectedAppointment) : false}
+        staffName={staffName}
+        branchName={branchName}
         onClose={() => setSelectedAppointment(null)}
         onEdit={(row) => openModal(row)}
         onApprove={(row) => void approve(row)}
@@ -582,6 +687,7 @@ export default function Appointments() {
         pickStaffFirst={pickStaffFirst}
         onPickStaffFirstChange={setPickStaffFirst}
         selectedDate={selectedDate}
+        disablePastDate={disablePastDate}
         branches={branches}
         appointmentCustomFields={appointmentCustomFields}
         onCancel={() => setOpen(false)}
@@ -593,6 +699,6 @@ export default function Appointments() {
         onCancel={() => setQuickCustomerOpen(false)}
         onOk={() => void submitQuickCustomer()}
       />
-    </>
+    </div>
   )
 }

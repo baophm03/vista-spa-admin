@@ -197,7 +197,7 @@ export default function AcademyCourses() {
           { key: 'is_active', title: 'Trạng thái', dataIndex: 'is_active', width: 110, render: (value: boolean) => <Tag color={value ? 'green' : 'default'}>{value ? 'Đang mở' : 'Đã ẩn'}</Tag> },
           {
             key: 'actions',
-            title: 'Hành động', align: 'center' as const,
+            title: 'Thao tác', align: 'center' as const,
             width: 90,
             fixed: 'right' as const,
             render: (_: unknown, row: AcademyCourse) => {
@@ -236,7 +236,7 @@ export default function AcademyCourses() {
             },
           },
         ].filter((column) =>
-          column.key === 'actions',
+          column.key !== 'actions' || canUpdate || canDelete,
         )}
       />
       <ListPagination page={page} limit={limit} total={total} onChange={setPage} noun="khóa học" />

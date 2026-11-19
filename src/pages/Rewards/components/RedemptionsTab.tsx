@@ -108,7 +108,7 @@ export default function RedemptionsTab() {
     { key: 'created_at', title: 'Ngày đổi', dataIndex: 'created_at', width: 150, render: (v: string) => formatDateTime(v) },
     { key: 'cancel_reason', title: 'Lý do hủy', dataIndex: 'cancel_reason', ellipsis: true, render: (v?: string) => v || '—' },
     {
-      key: 'actions', title: 'Hành động', align: 'center' as const, width: 90, fixed: 'right' as const,
+      key: 'actions', title: 'Thao tác', align: 'center' as const, width: 90, fixed: 'right' as const,
       render: (_v, row) => (
         <RowActionsMenu
           items={row.status === 'ISSUED'

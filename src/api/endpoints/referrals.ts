@@ -36,12 +36,8 @@ import type {
   GetReferralsAdminParams,
   InternalErrorResponse,
   NotFoundResponse,
-  PostReferralsAdmin200,
-  PostReferralsAdminBody,
   PostReferralsApplyAdmin200,
   PostReferralsApplyAdminBody,
-  PutReferralsIdAdmin200,
-  PutReferralsIdAdminBody,
   UnauthorizedResponse,
   UnprocessableEntityResponse
 } from '../models';
@@ -53,71 +49,6 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * **CO-08** — PUT /referrals/{id}/admin — update discount_rule_id/note; no DELETE. Cần đăng nhập + `referral.update_all`.
- * @summary Update a referral
- */
-export const putReferralsIdAdmin = (
-    id: string,
-    putReferralsIdAdminBody: PutReferralsIdAdminBody,
- ) => {
-      
-      
-      return customInstance<PutReferralsIdAdmin200>(
-      {url: `/referrals/${id}/admin`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: putReferralsIdAdminBody
-    },
-      );
-    }
-  
-
-
-export const getPutReferralsIdAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putReferralsIdAdmin>>, TError,{id: string;data: PutReferralsIdAdminBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putReferralsIdAdmin>>, TError,{id: string;data: PutReferralsIdAdminBody}, TContext> => {
-
-const mutationKey = ['putReferralsIdAdmin'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putReferralsIdAdmin>>, {id: string;data: PutReferralsIdAdminBody}> = (props) => {
-          const {id,data} = props ?? {};
-
-          return  putReferralsIdAdmin(id,data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PutReferralsIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof putReferralsIdAdmin>>>
-    export type PutReferralsIdAdminMutationBody = PutReferralsIdAdminBody
-    export type PutReferralsIdAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
-
-    /**
- * @summary Update a referral
- */
-export const usePutReferralsIdAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putReferralsIdAdmin>>, TError,{id: string;data: PutReferralsIdAdminBody}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putReferralsIdAdmin>>,
-        TError,
-        {id: string;data: PutReferralsIdAdminBody},
-        TContext
-      > => {
-
-      const mutationOptions = getPutReferralsIdAdminMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
  * **APP-23** — POST /referrals/apply/admin (gộp từ POST /app/me/referrals/apply). Luôn self-scope theo tài khoản đăng nhập — cần đăng nhập + `referral.create`. Body field: `code`. Resolve mã giới thiệu `CTV-XXXXXX` (users.ref_code) hoặc `customer_code` của khách khác, rồi tạo referral + tự gắn quy tắc ưu đãi NEW_BY_REFERRAL đang bật. Chặn: mã của chính mình, đã được giới thiệu, hoặc đã có gói liệu trình.
  * @summary Khách tự nhập mã giới thiệu
  */
@@ -377,69 +308,3 @@ export const prefetchGetReferralsAdminQuery = async <TData = Awaited<ReturnType<
 
 
 
-/**
- * **CO-07** — POST /referrals/admin — mỗi khách mới chỉ có một lượt giới thiệu (UNIQUE referred_profile_id). Cần đăng nhập + `referral.create`. Body fields: `referrer_type`, `referrer_id`, `referred_profile_id`, `discount_rule_id?`, `note?`. (Khách tự nhập mã giới thiệu dùng POST /referrals/apply/admin.)
- * @summary Create a new referral (staff)
- */
-export const postReferralsAdmin = (
-    postReferralsAdminBody: PostReferralsAdminBody,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<PostReferralsAdmin200>(
-      {url: `/referrals/admin`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: postReferralsAdminBody, signal
-    },
-      );
-    }
-  
-
-
-export const getPostReferralsAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postReferralsAdmin>>, TError,{data: PostReferralsAdminBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postReferralsAdmin>>, TError,{data: PostReferralsAdminBody}, TContext> => {
-
-const mutationKey = ['postReferralsAdmin'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postReferralsAdmin>>, {data: PostReferralsAdminBody}> = (props) => {
-          const {data} = props ?? {};
-
-          return  postReferralsAdmin(data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostReferralsAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postReferralsAdmin>>>
-    export type PostReferralsAdminMutationBody = PostReferralsAdminBody
-    export type PostReferralsAdminMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
-
-    /**
- * @summary Create a new referral (staff)
- */
-export const usePostReferralsAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postReferralsAdmin>>, TError,{data: PostReferralsAdminBody}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postReferralsAdmin>>,
-        TError,
-        {data: PostReferralsAdminBody},
-        TContext
-      > => {
-
-      const mutationOptions = getPostReferralsAdminMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    

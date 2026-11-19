@@ -24,9 +24,9 @@ export default function StaffFilterPanel({ staff, hidden, onToggle }: Props) {
   return (
     <div style={{ display: 'flex', flex: '1 1 auto', flexDirection: 'column', minHeight: 0 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexShrink: 0 }}>
-        <Typography.Text strong style={{ fontSize: 14, color: '#1F1F1F' }}>KTV</Typography.Text>
+        <Typography.Text strong style={{ fontSize: 14, color: '#1F1F1F' }}>Nhân viên</Typography.Text>
         <Button
-          aria-label={collapsed ? 'Mở danh sách KTV' : 'Thu gọn danh sách KTV'}
+          aria-label={collapsed ? 'Mở danh sách nhân viên' : 'Thu gọn danh sách nhân viên'}
           type="text" size="small"
           icon={collapsed ? <DownOutlined /> : <UpOutlined />}
           onClick={() => setCollapsed((current) => !current)}
@@ -37,7 +37,7 @@ export default function StaffFilterPanel({ staff, hidden, onToggle }: Props) {
           allowClear
           size="small"
           prefix={<SearchOutlined style={{ color: '#9AA0A6' }} />}
-          placeholder="Tìm KTV..."
+          placeholder="Tìm nhân viên..."
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           style={{ flexShrink: 0 }}
@@ -66,7 +66,7 @@ export default function StaffFilterPanel({ staff, hidden, onToggle }: Props) {
             )
           })}
           {filteredStaff.length === 0 && (
-            <Typography.Text type="secondary" style={{ fontSize: 12 }}>Không có KTV nào khớp</Typography.Text>
+            <Typography.Text type="secondary" style={{ fontSize: 12 }}>Không có nhân viên nào khớp</Typography.Text>
           )}
         </div>
       </div>

@@ -27,7 +27,6 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import PageTitle from '@/components/base/PageTitle'
 import StatCards, { type StatItem } from '@/components/base/StatCards'
-import ListFilterPopover from '@/components/base/ListFilterPopover'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
 import TableEmpty from '@/components/base/TableEmpty'
@@ -45,8 +44,6 @@ import { useCustomerProfileAccess } from '@/utils/customerProfileAccess'
 import ProductDetailModal from './components/ProductDetailModal'
 import ProductFormModal from './components/ProductFormModal'
 import {
-  DEFAULT_PRODUCT_COLUMNS,
-  PRODUCT_COLUMNS,
   formatPrice,
   type ProductCategoryRow,
   type ProductRow,
@@ -62,10 +59,6 @@ export default function Products() {
   const [activeTab, setActiveTab] = useState<'products' | 'categories'>('products')
   const [categoryFilter, setCategoryFilter] = useState<string>()
   const [statusFilter, setStatusFilter] = useState<boolean>()
-  const [visibleColumns, setVisibleColumns] = useState<string[]>(DEFAULT_PRODUCT_COLUMNS)
-  const [draftVisibleColumns, setDraftVisibleColumns] = useState<string[]>(DEFAULT_PRODUCT_COLUMNS)
-  const [filterOpen, setFilterOpen] = useState(false)
-  const [filterForm] = Form.useForm()
   const [form] = Form.useForm()
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<ProductRow | null>(null)
@@ -81,8 +74,6 @@ export default function Products() {
   const [categorySearch, setCategorySearch] = useState('')
   const [categoryPage, setCategoryPage] = useState(1)
   const [limit] = useState(10)
-
-  const activeFilterCount = [categoryFilter, statusFilter !== undefined].filter(Boolean).length + (search ? 1 : 0)
 
   // Danh sách đầy đủ cho bộ lọc / modal tạo sản phẩm
   const allCategoriesQuery = useQuery({
@@ -303,52 +294,24 @@ export default function Products() {
             onChange={(event) => { setSearchInput(event.target.value); if (!event.target.value) applySearch('') }}
             onSearch={applySearch}
           />
-          <ListFilterPopover
-            open={filterOpen}
-            onOpenChange={(next) => {
-              setFilterOpen(next)
-              if (next) {
-                filterForm.setFieldsValue({ category_id: categoryFilter, status: statusFilter === undefined ? undefined : String(statusFilter) })
-                setDraftVisibleColumns(visibleColumns)
-              }
-            }}
-            activeFilterCount={activeFilterCount}
-            form={filterForm}
-            onApply={(values) => {
-              if (!draftVisibleColumns.length) {
-                message.error('Hãy giữ lại ít nhất một cột hiển thị')
-                return
-              }
-              setCategoryFilter(typeof values.category_id === 'string' ? values.category_id : undefined)
-              setStatusFilter(values.status === '' || values.status === undefined || values.status === null ? undefined : values.status === 'true')
-              setVisibleColumns(draftVisibleColumns)
-              setFilterOpen(false)
-              setPage(1)
-            }}
-            onClear={() => {
-              filterForm.resetFields()
-              setCategoryFilter(undefined)
-              setStatusFilter(undefined)
-              setVisibleColumns(DEFAULT_PRODUCT_COLUMNS)
-              setDraftVisibleColumns(DEFAULT_PRODUCT_COLUMNS)
-              setPage(1)
-            }}
-            columnOptions={PRODUCT_COLUMNS}
-            draftVisibleColumns={draftVisibleColumns}
-            onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as string[])}
-            filterItems={(
-              <>
-                <Form.Item name="category_id" label="Danh mục" className="mb-2.5!">
-                  <Select allowClear placeholder="Tất cả danh mục" options={categories.map((c) => ({ value: c.id, label: c.name }))} />
-                </Form.Item>
-                <Form.Item name="status" label="Trạng thái" className="mb-0!">
-                  <Select allowClear placeholder="Tất cả trạng thái" options={[
-                    { value: 'true', label: 'Đang bán' },
-                    { value: 'false', label: 'Đã ẩn' },
-                  ]} />
-                </Form.Item>
-              </>
-            )}
+          <Select
+            allowClear
+            placeholder="Tất cả danh mục"
+            style={{ width: 180 }}
+            value={categoryFilter}
+            onChange={(value) => { setCategoryFilter(value); setPage(1) }}
+            options={categories.map((c) => ({ value: c.id, label: c.name }))}
+          />
+          <Select
+            allowClear
+            placeholder="Tất cả trạng thái"
+            style={{ width: 170 }}
+            value={statusFilter === undefined ? undefined : String(statusFilter)}
+            onChange={(value) => { setStatusFilter(value === undefined ? undefined : value === 'true'); setPage(1) }}
+            options={[
+              { value: 'true', label: 'Đang bán' },
+              { value: 'false', label: 'Đã ẩn' },
+            ]}
           />
         </div>
         {isAdmin && (
@@ -457,7 +420,7 @@ export default function Products() {
             render: (v?: boolean) => (v === false ? <Tag>Đã ẩn</Tag> : <Tag color="green">Đang bán</Tag>),
           },
           {
-            title: 'Hành động', align: 'center' as const,
+            title: 'Thao tác', align: 'center' as const,
             key: 'actions',
             width: 90,
             fixed: 'right' as const,
@@ -472,9 +435,7 @@ export default function Products() {
               />
             ),
           },
-        ] satisfies TableColumnsType<ProductRow>).filter((column) =>
-          column.key === 'actions' ? true : visibleColumns.includes(String(column.key)),
-        )}
+        ] satisfies TableColumnsType<ProductRow>)}
       />
       <ListPagination page={page} limit={limit} total={total} onChange={setPage} noun="sản phẩm" hideOnSinglePage />
     </>
@@ -514,7 +475,7 @@ export default function Products() {
             render: (v?: boolean) => (v === false ? <Tag>Đã ẩn</Tag> : <Tag color="green">Đang dùng</Tag>),
           },
           {
-            title: 'Hành động',
+            title: 'Thao tác',
             key: 'actions',
             width: 90,
             align: 'center' as const,

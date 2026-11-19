@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { DatePicker, Form, InputNumber, Modal, Select } from 'antd'
 import type { FormInstance } from 'antd'
 import CustomFieldFormItems from '@/components/CustomFieldFormItems'
@@ -5,7 +6,9 @@ import type { CustomFieldDefWithOptions } from '@/components/CustomFieldFormItem
 import type { TreatmentPackage } from '@/api/models/treatmentPackage'
 import type { ProfileRow } from './constants'
 import { QUOTA_LABEL } from './constants'
-import type { Branch } from '@/api/models'
+import { errorMessage, pickData } from '@/api/helpers'
+import { useGetUsersAdmin } from '@/api/endpoints/users'
+import type { Branch, User } from '@/api/models'
 
 interface TreatmentCreateModalProps {
   form: FormInstance
@@ -40,6 +43,46 @@ export default function TreatmentCreateModal({
   onCancel,
   onOk,
 }: TreatmentCreateModalProps) {
+  // Người giới thiệu — nhận hoa hồng "Khi phát sinh thanh toán". Search server-side
+  // theo tên / SĐT / email / mã giới thiệu (debounce 300ms).
+  const [referrerQuery, setReferrerQuery] = useState('')
+  const referrerTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const handleReferrerSearch = (keyword: string) => {
+    if (referrerTimer.current) clearTimeout(referrerTimer.current)
+    referrerTimer.current = setTimeout(() => setReferrerQuery(keyword.trim()), 300)
+  }
+
+  const referrersQuery = useGetUsersAdmin(
+    {
+      currentPage: 1,
+      pageSize: 50,
+      scope: 'customers',
+      status: 'active',
+      ...(referrerQuery ? { q: referrerQuery } : {}),
+    },
+    { query: { enabled: open } },
+  )
+
+  const referrerOptions = useMemo(
+    () =>
+      (pickData<{ rows?: User[] } | undefined>(referrersQuery.data)?.rows ?? []).map((user) => ({
+        value: user.id,
+        label: [
+          user.full_name || user.zalo_name || 'Khách',
+          user.phone_number || user.email || '',
+          user.ref_code || '',
+        ]
+          .filter(Boolean)
+          .join(' · '),
+      })),
+    [referrersQuery.data],
+  )
+
+  useEffect(() => () => {
+    if (referrerTimer.current) clearTimeout(referrerTimer.current)
+  }, [])
+
   return (
     <Modal
       title="Thêm khách vào liệu trình"
@@ -80,6 +123,22 @@ export default function TreatmentCreateModal({
             placeholder="Chọn cơ sở"
             notFoundContent="Chưa có cơ sở"
             options={branches.map((branch) => ({ value: branch.id, label: branch.name }))}
+          />
+        </Form.Item>
+        <Form.Item
+          name="referrer_id"
+          label="Người giới thiệu"
+          extra="Tùy chọn — khách này sẽ nhận hoa hồng khi liệu trình phát sinh thanh toán (theo quy tắc 'Khi phát sinh thanh toán')"
+        >
+          <Select
+            allowClear
+            showSearch
+            filterOption={false}
+            loading={referrersQuery.isFetching}
+            placeholder="Tìm theo tên, SĐT, email hoặc mã giới thiệu"
+            onSearch={handleReferrerSearch}
+            notFoundContent={referrersQuery.isFetching ? 'Đang tìm...' : errorMessage(referrersQuery.error) || 'Không tìm thấy khách phù hợp'}
+            options={referrerOptions}
           />
         </Form.Item>
         <Form.Item

@@ -95,7 +95,7 @@ export default function ShiftCatalogTab({ branches, access, loadingShared }: Pro
           else if (key === 'delete') {
             Modal.confirm({
               title: 'Xóa ca làm việc này?',
-              content: 'Không thể xóa nếu lịch KTV vẫn đang sử dụng ca.',
+              content: 'Không thể xóa nếu lịch nhân viên vẫn đang sử dụng ca.',
               okText: 'Xóa',
               okButtonProps: { danger: true },
               cancelText: 'Hủy',
@@ -137,7 +137,7 @@ export default function ShiftCatalogTab({ branches, access, loadingShared }: Pro
           {access.isAdmin && (
             <div className="mobile-card-actions">
               <Button icon={<EditOutlined />} size="small" onClick={() => openForm(row)}>Sửa</Button>
-              <Popconfirm title="Xóa ca làm việc này?" description="Không thể xóa nếu lịch KTV vẫn đang sử dụng ca." okText="Xóa" cancelText="Hủy" onConfirm={() => void deleteShift(row)}><Button size="small" danger>Xóa</Button></Popconfirm>
+              <Popconfirm title="Xóa ca làm việc này?" description="Không thể xóa nếu lịch nhân viên vẫn đang sử dụng ca." okText="Xóa" cancelText="Hủy" onConfirm={() => void deleteShift(row)}><Button size="small" danger>Xóa</Button></Popconfirm>
             </div>
           )}
         </>

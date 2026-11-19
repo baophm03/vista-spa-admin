@@ -224,7 +224,7 @@ export default function DiscountRules() {
     },
     {
       key: 'actions',
-      title: 'Hành động', align: 'center' as const, width: 120, fixed: 'right',
+      title: 'Thao tác', align: 'center' as const, width: 120, fixed: 'right',
       render: (_v, row) => (
         <RowActionsMenu
           items={[
