@@ -134,16 +134,20 @@ function entryPermissions(entry: { permission?: PagePermission | PagePermission[
  */
 export function isKtvRoleName(role: string): boolean {
   const normalized = role.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
-  return normalized.includes('ktv') || normalized.includes('ky thuat vien') || normalized.includes('technician')
+  // Nhận cả code ('STAFF' hiện tại / 'ktv' cũ) lẫn role_name ('Kỹ thuật viên / ...')
+  return normalized.includes('staff') || normalized.includes('ktv') || normalized.includes('ky thuat vien') || normalized.includes('technician')
 }
 
 export function isReceptionistRoleName(role: string): boolean {
   const normalized = role.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase()
-  return normalized === 'rec' || normalized === 'le tan' || normalized === 'receptionist'
+  // Nhận cả code ('REC') lẫn role_name ('Lễ tân / Chăm sóc khách hàng'...)
+  return normalized === 'rec' || normalized.includes('le tan') || normalized.includes('cham soc khach hang') || normalized.includes('receptionist')
 }
 
 function isAdminRoleName(role: string): boolean {
-  return role.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase() === 'admin'
+  const normalized = role.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase()
+  // Nhận cả code ('ADMIN') lẫn role_name ('Quản trị viên')
+  return normalized === 'admin' || normalized.includes('quan tri')
 }
 
 export function getProfileRoleNames(profile?: {

@@ -199,13 +199,13 @@ function ShiftBlockCard({
     >
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 4, flexShrink: 0 }}>
         <Typography.Text strong ellipsis style={{ minWidth: 0, fontSize: 14.5, lineHeight: 1.35, color: style.text }}>{template?.name ?? 'Ca làm việc'}</Typography.Text>
-        {hasHiddenNote && <Tooltip title="KTV chưa hiện tên có ghi chú · Bấm để xem"><FileTextOutlined style={{ flexShrink: 0, fontSize: 13 }} /></Tooltip>}
+        {hasHiddenNote && <Tooltip title="Nhân viên chưa hiện tên có ghi chú · Bấm để xem"><FileTextOutlined style={{ flexShrink: 0, fontSize: 13 }} /></Tooltip>}
       </div>
       <div style={{ display: 'flex', alignItems: 'baseline', flexWrap: 'wrap', flexShrink: 0, columnGap: 6, fontSize: 12, lineHeight: 1.4, fontVariantNumeric: 'tabular-nums' }}>
         <span style={{ color: '#414b56' }}>{timeLabel}</span>
         {template && <span style={{ color: '#59636e' }}>{formatDuration(template.start_time, template.end_time)}</span>}
       </div>
-        <ul ref={staffListRef} aria-label="Kỹ thuật viên trong ca" style={{ margin: '9px 0 0', padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: STAFF_ROW_GAP, flex: 1, minHeight: 0, overflow: 'hidden' }}>
+        <ul ref={staffListRef} aria-label="Nhân viên trong ca" style={{ margin: '9px 0 0', padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: STAFF_ROW_GAP, flex: 1, minHeight: 0, overflow: 'hidden' }}>
           {staffOfBlock.slice(0, visibleCount).map((person) => (
             <li key={`${block.key}-staff-${person.rowId}`} style={{ display: 'flex', alignItems: 'center', gap: 7, minWidth: 0 }}>
               <span style={{ position: 'relative', display: 'flex', flexShrink: 0 }}>
@@ -222,12 +222,12 @@ function ShiftBlockCard({
           ))}
           {visibleCount > 0 && staffOfBlock.length > visibleCount && (
             <li style={{ paddingInlineStart: visibleCount ? STAFF_AVATAR_SIZE + 7 : 0, fontSize: 12, lineHeight: `${STAFF_AVATAR_SIZE}px`, color: '#59636e' }}>
-              +{staffOfBlock.length - visibleCount} KTV khác
+              +{staffOfBlock.length - visibleCount} nhân viên khác
             </li>
           )}
         </ul>
       <div style={{ flexShrink: 0, marginTop: 4, textAlign: 'center', fontSize: 12, color: '#59636e' }}>
-        {staffOfBlock.length} KTV
+        {staffOfBlock.length} nhân viên
       </div>
     </div>
   )
@@ -493,7 +493,7 @@ export default function ScheduleTimeGrid<Block extends GridBlock>({
                         {template?.name ?? 'Ca làm'}
                       </span>
                       <span style={{ display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', opacity: 0.85 }}>
-                        {template ? `${template.start_time.slice(0, 5)} · ${block.rows.length} KTV` : '—'}
+                        {template ? `${template.start_time.slice(0, 5)} · ${block.rows.length} nhân viên` : '—'}
                       </span>
                     </div>
                   )

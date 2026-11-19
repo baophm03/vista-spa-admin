@@ -54,7 +54,7 @@ export default function DayOffFormModal({ open, form, staff, scheduledTemplates,
       <Form form={form} layout="vertical" style={{ marginTop: 16 }} onValuesChange={(changed) => {
         if (changed.staff_id !== undefined || changed.off_date !== undefined) form.setFieldValue('shift_template_id', undefined)
       }}>
-        <Form.Item name="staff_id" label="KTV" rules={[{ required: true, message: 'Chọn KTV' }]}>
+        <Form.Item name="staff_id" label="Nhân viên" rules={[{ required: true, message: 'Chọn nhân viên' }]}>
           <Select disabled={isTechnician} showSearch optionFilterProp="label" options={staff.map((person) => ({ value: person.id, label: staffLabel(person) }))} />
         </Form.Item>
         <Form.Item name="off_date" label="Ngày nghỉ" rules={[{ required: true, message: 'Chọn ngày nghỉ' }]}><DatePicker format="DD/MM/YYYY" style={{ width: '100%' }} /></Form.Item>
@@ -77,7 +77,7 @@ export default function DayOffFormModal({ open, form, staff, scheduledTemplates,
             description={
               <Space direction="vertical" size={6} style={{ display: 'flex' }}>
                 <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                  Bạn vẫn có thể gửi đơn — Admin sẽ gọi xin khách đổi sang KTV khác trước khi duyệt. Nếu khách không đồng ý đổi người, theo nghiệp vụ KTV vẫn phải đi làm (trừ bất khả kháng).
+                  Bạn vẫn có thể gửi đơn — Admin sẽ gọi xin khách đổi sang nhân viên khác trước khi duyệt. Nếu khách không đồng ý đổi người, theo nghiệp vụ nhân viên vẫn phải đi làm (trừ bất khả kháng).
                 </Typography.Text>
                 <Table<ConflictAppointment>
                   rowKey="id" size="small" pagination={false} scroll={{ y: 200 }} dataSource={conflicts}

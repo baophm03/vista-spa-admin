@@ -128,6 +128,12 @@ export default function TreatmentDetailModal({
                   <span>Còn lại</span><strong>{sessionUsage(detail).remaining} buổi</strong>
                 </div>
               )}
+              {detail.referrer && (
+                <div className="flex justify-between gap-2.5">
+                  <span>Người giới thiệu</span>
+                  <strong>{detail.referrer.full_name || detail.referrer.zalo_name}</strong>
+                </div>
+              )}
               <div className="flex items-center justify-between gap-2.5">
                 <span>Trạng thái</span>
                 <Tag color={STATUS_META[detail.status ?? '']?.color} className="me-0">
@@ -147,7 +153,7 @@ export default function TreatmentDetailModal({
               </div>
             )}
             <div className="mt-4 flex flex-col gap-2">
-              {canCreateSessions && detail.status === 'ACTIVE' && detail.quota_type !== 'UNLIMITED' && (
+              {canCreateSessions && detail.status === 'ACTIVE' && (
                 <Button block disabled={addingSessionId !== null} loading={addingSessionId === detail.id} onClick={() => onAddSession(detail)}>
                   +1 buổi
                 </Button>

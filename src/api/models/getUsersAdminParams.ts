@@ -5,6 +5,7 @@
  * Vista Spa backend API. Uses the NEWSKY+ business error envelope for permission-aware endpoints and the legacy response envelope for existing admin endpoints.
  * OpenAPI spec version: 1.0.0
  */
+import type { GetUsersAdminScope } from './getUsersAdminScope';
 import type { GetUsersAdminSortOrder } from './getUsersAdminSortOrder';
 
 export type GetUsersAdminParams = {
@@ -13,6 +14,10 @@ search?: string;
 branch_id?: string;
 role_id?: string;
 status?: string;
+/**
+ * all = không lọc; customers = chỉ tài khoản khách; staff = chỉ nhân sự (mặc định)
+ */
+scope?: GetUsersAdminScope;
 has_role?: boolean;
 /**
  * @minimum 1

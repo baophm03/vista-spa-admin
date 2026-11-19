@@ -62,7 +62,7 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
 
   const customerLabel = (claim: ClaimRow) => {
     const profile = claim.customer_treatment?.customer_profile
-    if (!profile) return claim.customer_treatment_id
+    if (!profile) return claim.customer_treatment_id ?? '—'
     const name = profile.full_name ?? 'Khách hàng'
     return profile.phone ? `${name} — ${profile.phone}` : name
   }
@@ -134,13 +134,14 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
 },
     {
       title: 'Mã liệu trình', key: 'treatmentCode', width: 150,
-      render: (_v, row) => row.customer_treatment?.id?.slice(0, 8).toUpperCase() ?? row.customer_treatment_id.slice(0, 8).toUpperCase(),
+      render: (_v, row) => (row.customer_treatment?.id ?? row.customer_treatment_id)?.slice(0, 8).toUpperCase() ?? '—',
     },
     {
       title: 'Gói liệu trình', key: 'package', render: (_v, row) => (
         <Typography.Link
           onClick={(event) => {
             event.stopPropagation()
+            if (!row.customer_treatment_id) return
             navigate(`/treatment-customers?treatment_id=${encodeURIComponent(row.customer_treatment_id)}`)
           }}
         >

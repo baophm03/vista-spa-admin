@@ -5,8 +5,5 @@
  * Vista Spa backend API. Uses the NEWSKY+ business error envelope for permission-aware endpoints and the legacy response envelope for existing admin endpoints.
  * OpenAPI spec version: 1.0.0
  */
-import type { Referral } from './referral';
 
-export type PutReferralsIdAdmin200AllOf = {
-  responseData?: Referral;
-};
+export type CommissionEntryUpdatedAt = string | null;

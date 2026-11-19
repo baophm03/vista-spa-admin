@@ -7,7 +7,6 @@
  */
 import type { AppointmentServiceId } from './appointmentServiceId';
 import type { AppointmentStaffId } from './appointmentStaffId';
-import type { AppointmentCustomerTreatmentId } from './appointmentCustomerTreatmentId';
 import type { AppointmentEndTime } from './appointmentEndTime';
 import type { AppointmentStatus } from './appointmentStatus';
 import type { AppointmentCreatedVia } from './appointmentCreatedVia';
@@ -24,7 +23,7 @@ export interface Appointment {
   customer_profile_id: string;
   service_id?: AppointmentServiceId;
   staff_id?: AppointmentStaffId;
-  customer_treatment_id?: AppointmentCustomerTreatmentId;
+  customer_treatment_id?: string;
   treatment_package_id?: string;
   appt_date: string;
   start_time: string;

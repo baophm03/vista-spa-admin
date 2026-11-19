@@ -173,7 +173,7 @@ export const useDeleteUsersIdAdmin = <TError = LegacyBadRequestResponse | Legacy
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/users/admin` — danh sách tài khoản NHÂN SỰ (mặc định scope=staff: có role khác 'customer'; dùng `scope=all` để tra cứu hỗn hợp). Supports search by name/email/phone number and filters by status, branch, role. Tài khoản khách dùng GET `/customers/admin`. Cần đăng nhập + `user.view_all`. Branch-restricted users only see data within their assigned scope.
+ * GET `/users/admin` — danh sách tài khoản NHÂN SỰ (mặc định scope=staff: có role khác 'customer'/'admin' và không mang role 'admin'; dùng `scope=all` để tra cứu hỗn hợp, `scope=customers` cho tài khoản khách). Supports search by name/email/phone number and filters by status, branch, role. Tài khoản khách dùng GET `/customers/admin`. Cần đăng nhập + `user.view_all`. Branch-restricted users only see data within their assigned scope.
  * @summary Search and filter users
  */
 export const getUsersAdmin = (

@@ -5,6 +5,7 @@
  * Vista Spa backend API. Uses the NEWSKY+ business error envelope for permission-aware endpoints and the legacy response envelope for existing admin endpoints.
  * OpenAPI spec version: 1.0.0
  */
+import type { PaymentLogCustomerTreatmentId } from './paymentLogCustomerTreatmentId';
 import type { PaymentLogMethod } from './paymentLogMethod';
 import type { PaymentLogPaidAt } from './paymentLogPaidAt';
 import type { PaymentLogNote } from './paymentLogNote';
@@ -18,7 +19,7 @@ import type { PaymentLogVoidReason } from './paymentLogVoidReason';
  */
 export interface PaymentLog {
   id: string;
-  customer_treatment_id: string;
+  customer_treatment_id: PaymentLogCustomerTreatmentId;
   /** @minimum 0 */
   amount: number;
   method: PaymentLogMethod;
