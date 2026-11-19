@@ -13,7 +13,7 @@ export default function Commissions() {
     { key: 'rules', label: 'Quy tắc', children: <CommissionRulesPanel /> },
   ]
 
-  const defaultTab = tabItems.some((tab) => tab.key === requestedTab) ? requestedTab : 'received'
+  const defaultTab = requestedTab && tabItems.some((tab) => tab.key === requestedTab) ? requestedTab : 'received'
 
   return (
     <>

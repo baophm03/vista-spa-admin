@@ -16,7 +16,6 @@ import {
   DollarOutlined,
   DownloadOutlined,
   FilterOutlined,
-  TeamOutlined,
   UserAddOutlined,
   WalletOutlined,
 } from '@ant-design/icons'
@@ -48,9 +47,8 @@ import { toCsv, downloadCsv, type CsvColumn } from '@/utils/csv'
 import { getBranchesAdmin } from '@/api/endpoints/branches'
 import { getCustomerProfilesAdmin } from '@/api/endpoints/customer-profiles'
 import { getUsersAdmin } from '@/api/endpoints/users'
-import { getReportsAppointmentsAdmin, getReportsCommissionsAdmin, getReportsDebtsAdmin, getReportsNewCustomersAdmin, getReportsRanksAdmin, getReportsRevenueAdmin, getReportsSessionsUsedAdmin } from '@/api/endpoints/reports'
+import { getReportsAppointmentsAdmin, getReportsDebtsAdmin, getReportsNewCustomersAdmin, getReportsRanksAdmin, getReportsRevenueAdmin, getReportsSessionsUsedAdmin } from '@/api/endpoints/reports'
 import type { GetReportsAppointmentsAdminParams } from '@/api/models/getReportsAppointmentsAdminParams'
-import type { GetReportsCommissionsAdminParams } from '@/api/models/getReportsCommissionsAdminParams'
 import type { GetReportsDebtsAdminParams } from '@/api/models/getReportsDebtsAdminParams'
 import type { GetReportsNewCustomersAdminParams } from '@/api/models/getReportsNewCustomersAdminParams'
 import type { GetReportsRanksAdminParams } from '@/api/models/getReportsRanksAdminParams'
@@ -79,11 +77,6 @@ const STATUS_LABEL: Record<string, string> = {
   cancelled: 'Đã hủy',
   rejected: 'Từ chối',
   no_show: 'Không đến',
-}
-
-const ACTOR_LABEL: Record<string, string> = {
-  STAFF: 'KTV / Nhân viên',
-  REFERRER_CUSTOMER: 'User giới thiệu',
 }
 
 const PAYMENT_STATUS_LABEL: Record<string, string> = {
@@ -127,7 +120,6 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
     const action = actionParts.join('.').toUpperCase()
     return ability.can('READ' as never, 'REPORT') || ability.can(action as never, 'REPORT')
   }, [ability])
-  const canSeeCommission = canReport('report.commission.read')
 
   // Filters (applied)
   const [range, setRange] = useState<[Dayjs, Dayjs]>([dayjs().subtract(29, 'day'), dayjs()])
@@ -155,7 +147,6 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
   const [appointments, setAppointments] = useState<{ by_status?: any[]; by_staff?: any[] }>({})
   const [newCustomers, setNewCustomers] = useState<{ by_period?: any[]; by_source?: any[] }>({})
   const [sessions, setSessions] = useState<{ by_period?: any[]; remaining?: any[] }>({})
-  const [commissions, setCommissions] = useState<{ by_period?: any[]; by_actor?: any[] }>({})
   const [debtsPage, setDebtsPage] = useState(1)
   const [remainingPage, setRemainingPage] = useState(1)
 
@@ -199,10 +190,9 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
       canReport('report.appointment.read') ? settled(getReportsAppointmentsAdmin(params as GetReportsAppointmentsAdminParams).then((body) => setAppointments((pickData<any>(body) ?? {}) as { by_status?: any[]; by_staff?: any[] }))) : Promise.resolve(),
       canReport('report.customer.read') ? settled(getReportsNewCustomersAdmin(params as GetReportsNewCustomersAdminParams).then((body) => setNewCustomers((pickData<any>(body) ?? {}) as { by_period?: any[]; by_source?: any[] }))) : Promise.resolve(),
       canReport('report.session.read') ? settled(getReportsSessionsUsedAdmin(params as GetReportsSessionsUsedAdminParams).then((body) => setSessions((pickData<any>(body) ?? {}) as { by_period?: any[]; remaining?: any[] }))) : Promise.resolve(),
-      canSeeCommission ? settled(getReportsCommissionsAdmin(params as GetReportsCommissionsAdminParams).then((body) => setCommissions((pickData<any>(body) ?? {}) as { by_period?: any[]; by_actor?: any[] }))) : Promise.resolve(),
     ])
     setLoading(false)
-  }, [params, branchId, customerProfileId, canReport, canSeeCommission])
+  }, [params, branchId, customerProfileId, canReport])
 
   useEffect(() => {
     void load()
@@ -244,15 +234,12 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
   }))
   const newCustTotal = newCustPeriod.reduce((s, r) => s + r.new_count, 0)
   const sessionsPeriod = (sessions.by_period ?? []).map((r) => ({ period: r.period, sessions_used: Number(r.sessions_used) }))
-  const commissionPeriod = (commissions.by_period ?? []).map((r) => ({ period: r.period, total: Number(r.total_amount) / 1_000_000 }))
-  const commissionTotal = commissionPeriod.reduce((s, r) => s + r.total, 0)
 
   const statItems: StatItem[] = [
     { key: 'revenue', label: 'Doanh thu đã thu', value: fmtCompactMoney(revenueTotal * 1_000_000), icon: <DollarOutlined />, tone: 'tertiary', perm: 'report.revenue.read' },
     { key: 'debt', label: 'Công nợ còn lại', value: fmtCompactMoney(debtsTotal), icon: <WalletOutlined />, tone: 'neutral', perm: 'report.debt.read' },
     { key: 'newCustomers', label: 'Khách mới', value: newCustTotal.toLocaleString('vi-VN'), icon: <UserAddOutlined />, tone: 'primary', perm: 'report.customer.read' },
     { key: 'sessions', label: 'Buổi hoàn tất', value: sessionsPeriod.reduce((s, r) => s + r.sessions_used, 0).toLocaleString('vi-VN'), icon: <CheckCircleOutlined />, tone: 'secondary', perm: 'report.session.read' },
-    { key: 'commission', label: 'Hoa hồng', value: fmtCompactMoney(commissionTotal * 1_000_000), icon: <TeamOutlined />, tone: 'tertiary', perm: 'report.commission.read' },
   ].filter((k) => canReport(k.perm)) as StatItem[]
 
   const activeFilterCount =
@@ -635,49 +622,6 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
     </>
   )
 
-  const commissionSection = canSeeCommission && (
-    <Card
-      style={{ marginTop: 16 }}
-      title={`Hoa hồng — tổng ${fmtCompactMoney(commissionTotal * 1_000_000)}`}
-      extra={<CsvButton filename="bao-cao-hoa-hong" rows={commissions.by_actor ?? []} columns={[
-        { header: 'Đối tượng', value: (r: any) => ACTOR_LABEL[r.actor_type] ?? r.actor_type },
-        { header: 'Tên', value: (r: any) => r.actor_name },
-        { header: 'Tổng hoa hồng', value: (r: any) => r.total_amount },
-        { header: 'Số bút toán', value: (r: any) => r.entry_count },
-      ]} />}
-    >
-      <Row gutter={[16, 16]}>
-        <Col xs={24} lg={12}>
-          {commissionPeriod.length === 0 ? (
-            <TableEmpty title="Chưa có hoa hồng trong kỳ" />
-          ) : (
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={commissionPeriod}>
-                <CartesianGrid strokeDasharray="3 3" stroke={brand.border} vertical={false} />
-                <XAxis dataKey="period" tick={{ fontSize: 11, fill: '#6F7071' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 11, fill: '#6F7071' }} tickFormatter={(v) => fmtCompactMoney(Number(v) * 1_000_000)} axisLine={false} tickLine={false} />
-                <Tooltip contentStyle={tooltipStyle} formatter={(v: any) => fmtCompactMoney(Number(v) * 1_000_000)} />
-                <Bar dataKey="total" name="Hoa hồng (tr)" fill="#E06666" radius={[6, 6, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          )}
-        </Col>
-        <Col xs={24} lg={12}>
-          <Table
-            rowKey={(_, i) => String(i)}
-            dataSource={commissions.by_actor ?? []}
-            pagination={false}
-            columns={[
-              { title: 'Đối tượng', dataIndex: 'actor_type', render: (v: string) => ACTOR_LABEL[v] ?? v },
-              { title: 'Tên', dataIndex: 'actor_name', render: (v: any) => v || '(không tên)' },
-              { title: 'Tổng', dataIndex: 'total_amount', width: 130, align: 'right', render: (v: any) => fmtMoney(v) },
-            ]}
-          />
-        </Col>
-      </Row>
-    </Card>
-  )
-
   return (
     <div className="rpt-section">
       <style>{`
@@ -686,7 +630,7 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
       `}</style>
       {filterBar}
       {kpiRow}
-      {section === 'money' && <>{moneySection}{commissionSection}</>}
+      {section === 'money' && moneySection}
       {section === 'customers' && customerSection}
       {section === 'ops' && opsSection}
     </div>

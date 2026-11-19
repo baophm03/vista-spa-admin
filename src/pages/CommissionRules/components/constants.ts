@@ -1,5 +1,3 @@
-import type { CommissionRule } from '@/api/models'
-
 /** Người nhận quy tắc — nối với bảng roles qua payee_role_id, phân biệt bằng role code. */
 export const PAYEE_META: Record<string, { label: string; color: string }> = {
   ktv: { label: 'Kỹ thuật viên', color: 'blue' },
@@ -30,10 +28,3 @@ export const TYPE_ROLE_CODE: Record<RuleTaskType, string> = {
 
 export const ruleTypeMeta = (type?: string | null) =>
   RULE_TYPE_META[(type ?? '') as RuleTaskType] ?? null
-
-/** CommissionRule model gen chưa có `type`/`payee_role_id`/`payee_role` (migration 109+112) — mở rộng cục bộ. */
-export type RuleRow = CommissionRule & {
-  type?: string
-  payee_role_id?: string
-  payee_role?: { id?: string; code?: string | null; role_name?: string | null } | null
-}
