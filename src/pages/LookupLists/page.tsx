@@ -175,7 +175,7 @@ export default function LookupLists() {
                 { title: 'Loại', dataIndex: 'is_system', width: 110, render: (value?: boolean) => <Tag color={value ? 'blue' : 'default'}>{value ? 'Hệ thống' : 'Tự tạo'}</Tag> },
                 { title: 'Trạng thái', dataIndex: 'is_active', width: 130, render: (value?: boolean) => <Tag color={value === false ? 'default' : 'green'}>{value === false ? 'Đã tắt' : 'Đang hoạt động'}</Tag> },
                 {
-                  title: 'Hành động', align: 'center' as const, key: 'actions', width: 90, fixed: 'right' as const, render: (_: unknown, row: LookupList) => (
+                  title: 'Thao tác', align: 'center' as const, key: 'actions', width: 90, fixed: 'right' as const, render: (_: unknown, row: LookupList) => (
                     <RowActionsMenu
                       items={[
                         ...(canUpdate ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []),

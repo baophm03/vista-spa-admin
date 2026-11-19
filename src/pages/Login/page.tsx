@@ -147,7 +147,7 @@ export default function Login() {
               <LockIcon />
               <input
                 id="password"
-                className={`${inputClass} pr-11`}
+                className={`${inputClass} pr-11 [&::-ms-reveal]:hidden`}
                 type={showPassword ? 'text' : 'password'}
                 placeholder="••••••••"
                 value={password}

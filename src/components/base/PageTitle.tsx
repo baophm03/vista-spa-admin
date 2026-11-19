@@ -7,9 +7,9 @@ import type { ReactNode } from 'react'
  * - right: hành động chính (thường là nút tạo mới)
  * Tất cả item cùng nằm 1 nhóm, căn phải (justify-end); mobile (<768px) nút có icon tự ẩn chữ chỉ còn icon.
  */
-export default function PageTitle({ children, subtitle, left, right }: { children: ReactNode; subtitle?: ReactNode; left?: ReactNode; right?: ReactNode }) {
+export default function PageTitle({ children, subtitle, left, right, className }: { children: ReactNode; subtitle?: ReactNode; left?: ReactNode; right?: ReactNode; className?: string }) {
   return (
-    <div className="mb-5 flex min-w-0 flex-col gap-3">
+    <div className={`mb-5 flex min-w-0 flex-col gap-3 ${className ?? ''}`}>
       <div className="min-w-0">
         <Typography.Title level={4} className="m-0! min-w-0 break-words text-xl! sm:text-2xl!">
           {children}

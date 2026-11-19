@@ -1,5 +1,6 @@
 import { Col, DatePicker, Form, Input, Modal, Row, Select, Space, Switch, Typography } from 'antd'
 import type { FormInstance } from 'antd'
+import type { Dayjs } from 'dayjs'
 import CustomFieldFormItems from '@/components/CustomFieldFormItems'
 import type { CustomFieldDefWithOptions } from '@/components/CustomFieldFormItems'
 import type { Appointment } from '@/api/models/appointment'
@@ -27,6 +28,7 @@ export interface AppointmentFormModalProps {
   allStaffOptions: StaffOption[]
   timeOptions: { value: string; label: string }[]
   selectedDate: string
+  disablePastDate: (date: Dayjs) => boolean
   branches: Branch[]
   appointmentCustomFields: CustomFieldDefWithOptions[]
   pickStaffFirst: boolean
@@ -38,7 +40,7 @@ export interface AppointmentFormModalProps {
 export default function AppointmentFormModal({
   open, editing, form, isSaving, slotsLoading, profilesLoading,
   onCustomerSearch, onSelectProfile, profileOptions, allStaffOptions, timeOptions,
-  selectedDate, branches, appointmentCustomFields, pickStaffFirst, onPickStaffFirstChange,
+  selectedDate, disablePastDate, branches, appointmentCustomFields, pickStaffFirst, onPickStaffFirstChange,
   onCancel, onSubmit,
 }: AppointmentFormModalProps) {
 
@@ -87,12 +89,12 @@ export default function AppointmentFormModal({
         <Row gutter={12}>
           <Col xs={24} sm={12}>
             <Form.Item name="appt_date" label="Ngày hẹn" rules={[{ required: true, message: 'Chọn ngày hẹn' }]}>
-              <DatePicker format="DD/MM/YYYY" style={{ width: '100%' }} onChange={() => { if (pickStaffFirst) form.setFieldValue('start_time', undefined) }} />
+              <DatePicker format="DD/MM/YYYY" style={{ width: '100%' }} disabledDate={disablePastDate} onChange={() => form.setFieldValue('start_time', undefined)} />
             </Form.Item>
           </Col>
           <Col xs={24} sm={12}>
             <Form.Item name="start_time" label="Giờ hẹn" rules={[{ required: true, message: 'Chọn giờ hẹn' }]}>
-              <Select disabled={!selectedDate || !timeOptions.length} options={timeOptions} placeholder={!selectedDate ? 'Chọn ngày hẹn trước' : timeOptions.length ? 'Chọn giờ trống' : pickStaffFirst ? 'KTV không có lịch trống ngày này' : 'Chưa cấu hình ca làm việc'} />
+              <Select loading={slotsLoading} disabled={!selectedDate || !timeOptions.length} options={timeOptions} placeholder={!selectedDate ? 'Chọn ngày hẹn trước' : slotsLoading ? 'Đang tải giờ hẹn…' : timeOptions.length ? 'Chọn giờ trống' : 'Không còn giờ hẹn phù hợp'} />
             </Form.Item>
           </Col>
         </Row>

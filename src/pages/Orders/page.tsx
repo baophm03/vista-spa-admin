@@ -100,7 +100,7 @@ export default function Orders() {
     { key: 'created_at', title: 'Ngày đặt', dataIndex: 'created_at', width: 170, render: (v?: string | null) => (v ? formatDateTime(v) : '—') },
     {
       key: 'actions',
-      title: 'Hành động', align: 'center' as const,
+      title: 'Thao tác', align: 'center' as const,
       width: 120,
       fixed: 'right' as const,
       render: (_v, row) => {

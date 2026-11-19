@@ -60,7 +60,7 @@ function SidebarContent({
           <img
             src={`${links.imageEndpoint}${brand.logoUrl}`}
             alt={brand.name}
-            className="h-[34px] w-[34px] shrink-0 rounded-xl object-contain"
+            className="h-[34px] w-[34px] shrink-0 rounded-none object-contain"
           />
         ) : (
           <div className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-xl bg-[linear-gradient(135deg,var(--brand-dark),var(--brand-primary))] text-base font-bold text-white">

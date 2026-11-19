@@ -449,7 +449,7 @@ export default function Users() {
         loading={loading}
         dataSource={rows}
         locale={{ emptyText: <TableEmpty description="Chưa có nhân viên nào khớp điều kiện." /> }}
-        scroll={{ x: 1335 }}
+        scroll={{ x: 1355 }}
         pagination={false}
         onRow={(s) => ({ onClick: () => openProfile(s), style: { cursor: 'pointer' } })}
         columns={[
@@ -530,9 +530,9 @@ export default function Users() {
             },
           },
           {
-            title: 'Hiện trên app',
+            title: <span className="whitespace-nowrap">Hiện trên app</span>,
             key: 'in_app',
-            width: 110,
+            width: 130,
             render: (_: unknown, s: UserRow) => {
               const profile = profileByUser.get(s.id)
               if (!canUpdateUserProfile || !canManageUserRow(s)) {
@@ -555,7 +555,7 @@ export default function Users() {
             },
           },
           {
-            title: 'Hành động', align: 'center' as const,
+            title: 'Thao tác', align: 'center' as const,
             key: 'actions',
             width: 100,
             fixed: 'right' as const,

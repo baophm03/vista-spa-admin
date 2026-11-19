@@ -37,6 +37,7 @@ export function ShiftDetailContent({
   const template: ShiftTemplate | null = block.template
   const date: Dayjs = block.date
   const branch = branches.find((item) => item.id === block.rows[0]?.branch_id)
+  const hasLeave = block.rows.some((row) => row.onLeave)
   const canTouchAny = block.rows.some((row) => canEditRow(row))
 
   return (
@@ -88,7 +89,10 @@ export function ShiftDetailContent({
                   {staffLabel(person).slice(0, 1).toUpperCase()}
                 </Avatar>
                 <div style={{ minWidth: 0, flex: 1 }}>
-                  <Typography.Text strong ellipsis style={{ display: 'block', fontSize: 12.5 }}>{staffLabel(person)}</Typography.Text>
+                  <div className="flex min-w-0 items-center gap-1">
+                    <Typography.Text strong ellipsis={{ tooltip: staffLabel(person) }} style={{ minWidth: 0, fontSize: 12.5 }}>{staffLabel(person)}</Typography.Text>
+                    {row.onLeave && <span className="shrink-0 text-xs font-semibold" title="Nghỉ phép" aria-label="Nghỉ phép">(P)</span>}
+                  </div>
                   {row.note && (
                     <Typography.Text type="secondary" style={{ display: 'block', fontSize: 12, lineHeight: 1.5, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>
                       {row.note}
@@ -113,10 +117,10 @@ export function ShiftDetailContent({
             Chỉnh sửa
           </Button>
         )}
-        {canManage && (
+        {canManage && canTouchAny && (
           <Button icon={<CopyOutlined />} onClick={() => onDuplicate(block)}>Nhân bản</Button>
         )}
-        {(canManage || canTouchAny) && (
+        {!hasLeave && (canManage || canTouchAny) && (
           <Button danger icon={<DeleteOutlined />} onClick={() => onDeleteBlock(block)}>Xóa</Button>
         )}
       </div>
