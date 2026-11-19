@@ -6,9 +6,9 @@ import { pickData } from '@/api/helpers'
 import { ToolbarSlotContext } from '../schedule/ToolbarSlotContext'
 import { useGetBranchesAdmin } from '@/api/endpoints/branches'
 import { useGetUsersAdmin } from '@/api/endpoints/users'
-import { useGetStaffProfilesAdmin } from '@/api/endpoints/staff-profiles'
+import { useGetUserProfilesAdmin } from '@/api/endpoints/user-profiles'
 import type { Branch } from '@/api/models/branch'
-import type { StaffProfileRow } from '@/api/models/staffProfileRow'
+import type { UserProfileRow } from '@/api/models/userProfileRow'
 import { useCustomerProfileAccess, normalizeRole } from '@/utils/customerProfileAccess'
 import { useProfileStore } from '@/stores/profile-store'
 import type { ScheduleAccess, ScheduleStaff } from '../schedule/types'
@@ -25,7 +25,7 @@ export default function StaffSchedule() {
   const toolbarSlotRef = useRef<HTMLDivElement | null>(null)
 
   const isOwnScheduleOnly = isTechnician && !isAdmin
-  const canReadStaffProfiles = !!profile?.is_admin || isAdmin || ability.can('READ', 'STAFF_PROFILE')
+  const canReadStaffProfiles = !!profile?.is_admin || isAdmin || ability.can('READ', 'USER_PROFILE')
   // KTV được xem cơ sở của mình; dữ liệu này cũng giúp hiển thị phạm vi áp dụng của mẫu ca.
   const branchesQuery = useGetBranchesAdmin(undefined)
   const branches = (pickData<Branch[] | undefined>(branchesQuery.data) ?? []) as Branch[]
@@ -35,7 +35,7 @@ export default function StaffSchedule() {
     { query: { enabled: !isOwnScheduleOnly, refetchOnMount: 'always', refetchOnWindowFocus: 'always' } },
   )
   const allUsers = (pickData<{ rows?: ScheduleStaff[] } | undefined>(staffsQuery.data)?.rows ?? []) as ScheduleStaff[]
-  const staffProfilesQuery = useGetStaffProfilesAdmin(undefined, {
+  const staffProfilesQuery = useGetUserProfilesAdmin(undefined, {
     query: {
       enabled: !isOwnScheduleOnly && canReadStaffProfiles,
       refetchOnMount: 'always',
@@ -43,7 +43,7 @@ export default function StaffSchedule() {
     },
   })
   const inactiveStaffProfileIds = useMemo(() => {
-    const rows = (pickData<StaffProfileRow[] | undefined>(staffProfilesQuery.data) ?? []) as StaffProfileRow[]
+    const rows = (pickData<UserProfileRow[] | undefined>(staffProfilesQuery.data) ?? []) as UserProfileRow[]
     return new Set(rows.filter((row) => row.is_active === false).map((row) => row.user_id))
   }, [staffProfilesQuery.data])
   const ownStaff: ScheduleStaff | null = profile?.id ? {
