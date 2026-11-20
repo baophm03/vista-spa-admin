@@ -101,6 +101,16 @@ export default function Customers() {
   const loading = listQuery.isLoading
 
   useEffect(() => {
+    const nextKeyword = searchText.trim()
+    if (nextKeyword === keyword) return
+    const timer = window.setTimeout(() => {
+      setKeyword(nextKeyword)
+      setPage(1)
+    }, nextKeyword ? 300 : 0)
+    return () => window.clearTimeout(timer)
+  }, [searchText, keyword])
+
+  useEffect(() => {
     if (!qrUrl.startsWith('blob:')) return
     return () => URL.revokeObjectURL(qrUrl)
   }, [qrUrl])
@@ -207,12 +217,6 @@ export default function Customers() {
     setFilterOpen(false)
   }
 
-  const applySearch = (nextKeyword: string) => {
-    setSearchText(nextKeyword)
-    setKeyword(nextKeyword.trim())
-    setPage(1)
-  }
-
   const clearFilters = () => {
     filterForm.resetFields()
     setSearchText('')
@@ -227,7 +231,6 @@ export default function Customers() {
     setFilterOpen(nextOpen)
     if (!nextOpen) return
     filterForm.setFieldsValue(filters)
-    setSearchText(keyword)
     setDraftVisibleColumns(visibleColumns)
   }
 
@@ -374,8 +377,9 @@ export default function Customers() {
               placeholder="Tìm tên, SĐT, email, mã KH..."
               className="w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]"
               value={searchText}
-              onChange={(event) => { setSearchText(event.target.value); if (!event.target.value) applySearch('') }}
-              onSearch={(v) => applySearch(v)}
+              onChange={(event) => setSearchText(event.target.value)}
+              aria-label="Tìm khách hàng"
+              onSearch={(value) => { setKeyword(value.trim()); setPage(1) }}
             />
             {profileAccess.canRead && (
               <Button icon={<QrcodeOutlined />} loading={qrLookupLoading} onClick={() => setScannerOpen(true)} aria-label="Quét QR" title="Quét QR">

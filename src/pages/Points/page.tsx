@@ -1,3 +1,4 @@
+import { getRankCardArt } from '@/utils/rankCardArt'
 import { useRef, useState } from 'react'
 import { Button, Col, Form, Input, Modal, Row, Select, Space, Table, Tabs, Tag, Typography, message } from 'antd'
 import { ArrowDownOutlined, ArrowUpOutlined, ClockCircleOutlined, CrownOutlined, DeleteOutlined, EditOutlined, PlusOutlined, SyncOutlined } from '@ant-design/icons'
@@ -312,13 +313,14 @@ export default function Points() {
 
         <Row gutter={[20, 20]} style={{ marginTop: 22 }}>
           {ranks.map((r, index) => {
+            const front = getRankCardArt(r.name)
             const fallback = RANK_THEMES[index % RANK_THEMES.length]
             const theme = r.color ? rankThemeFromColor(r.color, fallback) : fallback
             const RankIcon = theme.icon
             return (
               <Col xs={24} md={8} key={r.id} style={{ display: 'flex' }}>
                 <div
-                  style={{
+                  style={front ? { width: '100%' } : {
                     position: 'relative',
                     overflow: 'hidden',
                     width: '100%',
@@ -329,8 +331,9 @@ export default function Points() {
                     boxShadow: '0 1px 2px rgba(38, 53, 45, 0.04)',
                   }}
                 >
-                  <div aria-hidden style={{ position: 'absolute', top: -30, right: -30, width: 110, height: 110, borderRadius: '50%', background: theme.circle }} />
-                  <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+                  {!front && <div aria-hidden style={{ position: 'absolute', top: -30, right: -30, width: 110, height: 110, borderRadius: '50%', background: theme.circle }} />}
+                  <div style={{ position: 'relative', display: 'flex', justifyContent: front ? 'flex-end' : 'space-between', alignItems: 'flex-start', gap: 8 }}>
+                    {!front && (
                     <span
                       style={{
                         display: 'inline-flex',
@@ -351,7 +354,7 @@ export default function Points() {
                     >
                       <RankIcon style={{ fontSize: 13, flexShrink: 0 }} />
                       {r.name}
-                    </span>
+                    </span>)}
                     <Space size={0} style={{ flexShrink: 0 }}>
                       {(canUpdateRank || canDeleteRank) && (
                         <>
@@ -373,13 +376,22 @@ export default function Points() {
                           )}
                         </>
                       )}
-                      {!canUpdateRank && !canDeleteRank && (
+                      {!front && !canUpdateRank && !canDeleteRank && (
                         <Typography.Text type="secondary" style={{ fontSize: 12 }}>
                           Điều kiện
                         </Typography.Text>
                       )}
                     </Space>
                   </div>
+                  {front && (
+                    <img
+                      src={import.meta.env.BASE_URL + 'rank-cards/' + front + '.png'}
+                      alt={'Mặt trước thẻ ' + r.name}
+                      loading="lazy"
+                      className="block h-auto w-full object-contain"
+                    />
+                  )}
+                  {!front && <>
                   <div style={{ position: 'relative', textAlign: 'right', marginTop: 4, fontSize: 22, fontWeight: 700, color: 'var(--brand-dark, #26352D)' }}>
                     {r.min_spent ? `Từ ${formatMoney(r.min_spent)}` : 'Không ngưỡng'}
                   </div>
@@ -411,6 +423,7 @@ export default function Points() {
                       {r.benefits || 'Chưa mô tả quyền lợi'}
                     </Typography.Text>
                   </div>
+                  </>}
                 </div>
               </Col>
             )
