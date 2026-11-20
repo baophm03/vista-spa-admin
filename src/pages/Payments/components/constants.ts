@@ -22,6 +22,7 @@ export const PAYMENT_COLUMN_OPTIONS: { label: string; value: PaymentColumnKey }[
 export const DEFAULT_VISIBLE_COLUMNS = PAYMENT_COLUMN_OPTIONS.map((column) => column.value)
 
 export interface LedgerRow extends PaymentLog {
+  cashier_name?: string | null
   branch_id?: string
   customer_treatment?: {
     customer_profile?: { full_name?: string; phone?: string }

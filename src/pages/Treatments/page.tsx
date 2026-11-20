@@ -187,19 +187,19 @@ export default function Treatments() {
     {
       title: 'Ảnh',
       key: 'image',
-      width: 76,
+      width: 54,
       render: (_, row) => {
         const src = fileSrc((row as any).image_file) ?? resolveFileSrc(urlMap, row.image_file_id)
         return src
-          ? <Image src={src} width={48} height={48} style={{ objectFit: 'cover', borderRadius: 8 }} />
-          : <div style={{ width: 48, height: 48, borderRadius: 8, background: 'var(--brand-bg)', display: 'grid', placeItems: 'center', color: '#B9BDC2' }}><PictureOutlined /></div>
+          ? <Image src={src} width={36} height={36} style={{ objectFit: 'cover', borderRadius: 8 }} />
+          : <div style={{ width: 36, height: 36, borderRadius: 8, background: 'var(--brand-bg)', display: 'grid', placeItems: 'center', color: '#B9BDC2' }}><PictureOutlined /></div>
       },
     },
     {
       title: 'Gói liệu trình',
       key: 'name',
       dataIndex: 'name',
-      width: 250,
+      width: '23%',
       render: (name, row) => (
         <div>
           <Typography.Text strong>{name}</Typography.Text>
@@ -207,12 +207,12 @@ export default function Treatments() {
         </div>
       ),
     },
-    { title: 'Cơ sở', key: 'branch', dataIndex: 'branch_id', width: 140, render: (id) => id ? branches.find((branch) => branch.id === id)?.name ?? '—' : 'Tất cả cơ sở' },
+    { title: 'Cơ sở', key: 'branch', dataIndex: 'branch_id', width: '10%', render: (id) => id ? branches.find((branch) => branch.id === id)?.name ?? '—' : 'Tất cả cơ sở' },
     {
       title: 'Loại gói',
       key: 'type',
       dataIndex: 'package_type_id',
-      width: 190,
+      width: '13%',
       render: (_value, row) => {
         const type = row.package_type && typeof row.package_type === 'object'
           ? row.package_type
@@ -223,22 +223,22 @@ export default function Treatments() {
     {
       title: 'Dịch vụ',
       key: 'services',
-      width: 220,
+
       render: (_value, row) => {
         const ids = row.service_ids?.length ? row.service_ids : row.service_id ? [row.service_id] : []
         return ids.length ? ids.map((id) => serviceById.get(id) ?? 'Dịch vụ').join(', ') : '—'
       },
     },
-    { title: 'Giá niêm yết', key: 'price', width: 170, render: (_value, row) => priceLabel(row, formatMoney) },
+    { title: 'Giá niêm yết', key: 'price', width: '14%', render: (_value, row) => priceLabel(row, formatMoney) },
     {
       title: 'Thời hạn',
       key: 'validity',
-      width: 130,
+      width: '11%',
       render: (_value, row) => row.validity_value && row.validity_unit
         ? String(row.validity_value) + ' ' + (VALIDITY_LABEL[row.validity_unit] ?? row.validity_unit)
         : 'Không thời hạn',
     },
-    { title: 'Trạng thái', key: 'status', dataIndex: 'is_active', width: 140, render: (active) => active ? <Tag color="green">Đang sử dụng</Tag> : <Tag>Ngưng sử dụng</Tag> },
+    { title: 'Trạng thái', key: 'status', dataIndex: 'is_active', width: '13%', render: (active) => active ? <Tag color="green">Đang sử dụng</Tag> : <Tag>Ngưng sử dụng</Tag> },
   ]
 
   const packagesContent = (
@@ -262,11 +262,11 @@ export default function Treatments() {
       </div>
       {packagesQuery.isError && <Alert type="error" showIcon message="Không tải được danh mục gói" description={errorMessage(packagesQuery.error)} style={{ margin: '12px 0' }} />}
       <Table<TreatmentPackageRow>
-        className="desktop-only"
+        className="desktop-only [&_.ant-table-cell]:px-2! [&_.ant-table-tbody_.ant-table-cell]:[overflow-wrap:anywhere] [&_.ant-table-thead_th]:whitespace-nowrap! [&_.ant-tag]:whitespace-normal [&_.ant-tag]:me-0!"
         rowKey="id"
         loading={packagesQuery.isLoading}
         dataSource={rows}
-        scroll={{ x: 1100 }}
+        tableLayout="fixed"
         pagination={false}
         onRow={(row) => ({
           onClick: () => setDetailRow(row),
@@ -277,8 +277,7 @@ export default function Treatments() {
           ...(canManage ? [{
             title: 'Thao tác', align: 'center' as const,
             key: 'actions',
-            width: 140,
-            fixed: 'right' as const,
+            width: 88,
             render: (_value: unknown, row: TreatmentPackageRow) => (
               <div onClick={(e) => e.stopPropagation()}>
                 <RowActionsMenu

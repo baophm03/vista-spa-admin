@@ -207,7 +207,7 @@ function ShiftBlockCard({
       </div>
         <ul ref={staffListRef} aria-label="Nhân viên trong ca" style={{ margin: '9px 0 0', padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: STAFF_ROW_GAP, flex: 1, minHeight: 0, overflow: 'hidden' }}>
           {staffOfBlock.slice(0, visibleCount).map((person) => (
-            <li key={`${block.key}-staff-${person.rowId}`} style={{ display: 'flex', alignItems: 'center', gap: 7, minWidth: 0 }}>
+            <li key={`${block.key}-staff-${person.rowId}`} style={{ display: 'flex', alignItems: 'center', gap: 5, marginInlineStart: -2, minWidth: 0, flexShrink: 0 }}>
               <span style={{ position: 'relative', display: 'flex', flexShrink: 0 }}>
                 <StaffAvatar name={person.name} avatar={person.avatar} color={style.text} />
                 {person.note && (
@@ -216,8 +216,8 @@ function ShiftBlockCard({
                   </Tooltip>
                 )}
               </span>
-              <Typography.Text ellipsis={{ tooltip: person.name }} style={{ flex: '1 1 auto', minWidth: 0, fontSize: 14, lineHeight: 1.3, color: '#303842' }}>{person.name}</Typography.Text>
-              {person.onLeave && <span className="shrink-0 text-xs font-semibold" title="Nghỉ phép" aria-label="Nghỉ phép">(P)</span>}
+              <span title={person.name} className="min-w-0 flex-1 truncate text-xs leading-[1.3] text-[#303842]">{person.name}</span>
+              {person.onLeave && <span className="shrink-0 text-[10px] font-semibold" title="Nghỉ phép" aria-label="Nghỉ phép">(P)</span>}
             </li>
           ))}
           {visibleCount > 0 && staffOfBlock.length > visibleCount && (
@@ -629,7 +629,9 @@ export default function ScheduleTimeGrid<Block extends GridBlock>({
                   <div
                     key={block.key}
                     data-block-key={block.key}
-                    className="hover:z-[20] focus-within:z-[20]"
+                    className={renderEvent
+                      ? 'hover:z-[20] focus-within:z-[20]'
+                      : 'hover:left-1! hover:w-[calc(100%_-_8px)]! hover:z-[25]! focus-visible:z-[20]'}
                     style={{
                       position: 'absolute',
                       top,

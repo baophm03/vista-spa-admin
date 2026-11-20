@@ -64,7 +64,7 @@ export default function Payments() {
     | { rows?: { id: string; zalo_name?: string; email?: string }[] }
     | undefined)?.rows ?? []
 
-  const staffById = new Map(staffRows.map((s) => [s.id, s.zalo_name || s.email || s.id]))
+  const staffById = new Map(staffRows.map((s) => [s.id, s.zalo_name || s.email]))
   const branchById = new Map(branches.map((b) => [b.id, b.name]))
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: getGetPaymentsAdminQueryKey() })
@@ -146,7 +146,7 @@ export default function Payments() {
       title: 'Thu ngân',
       dataIndex: 'entered_by',
       width: 130,
-      render: (v: string) => (v && staffById.get(v)) || v || '—',
+      render: (v: string | undefined, row: LedgerRow) => row.cashier_name || (v ? staffById.get(v) || 'Không rõ thu ngân' : '—'),
     },
     {
       key: 'actions',
@@ -207,7 +207,7 @@ export default function Payments() {
               style={{ width: 160 }}
               value={staffFilter}
               onChange={(value) => { setStaffFilter(value); setPage(1) }}
-              options={staffRows.map((s) => ({ value: s.id, label: s.zalo_name || s.email || s.id }))}
+              options={staffRows.map((s) => ({ value: s.id, label: s.zalo_name || s.email }))}
             />
             <DatePicker.RangePicker
               placeholder={['Từ ngày', 'Đến ngày']}
