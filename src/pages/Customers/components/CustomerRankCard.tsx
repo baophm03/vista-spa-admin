@@ -1,11 +1,12 @@
 import { useRef, useState } from 'react'
 import { ExpandOutlined, MinusOutlined, PlusOutlined, ReloadOutlined, SwapOutlined } from '@ant-design/icons'
 import { Button, Modal } from 'antd'
+import dayjs from 'dayjs'
 import { getRankCardArt } from '@/utils/rankCardArt'
 
 const initialPose = { x: 0, y: 0 }
 
-export default function CustomerRankCard({ rankName }: { rankName?: string }) {
+export default function CustomerRankCard({ rankName, achievedAt, expiresAt }: { rankName?: string; achievedAt?: string | null; expiresAt?: string | null }) {
   const [open, setOpen] = useState(false)
   const [pose, setPose] = useState(initialPose)
   const [zoom, setZoom] = useState(100)
@@ -16,6 +17,19 @@ export default function CustomerRankCard({ rankName }: { rankName?: string }) {
 
   const imageBase = import.meta.env.BASE_URL + 'rank-cards/' + art
   const faceWidth = (back: boolean) => (art === 'gold' || (art === 'diamond' && back)) ? '133.5%' : '124.6%'
+  const positions = art === 'gold' ? [44.1, 50.1, 63.4, 69.3] : [41, 46.5, 59, 64.3]
+  const dateParts = [achievedAt, expiresAt].flatMap((value) => {
+    const date = value ? dayjs(value) : null
+    return date?.isValid() ? [date.format('MM'), date.format('YY')] : ['', '']
+  })
+  const dates = (art === 'gold' || art === 'diamond') && dateParts.map((value, index) => value && (
+    <span key={index}
+      className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 text-[2.65cqw] font-bold leading-none tabular-nums text-slate-950"
+      style={{ left: positions[index] + '%', top: '84.3%' }}
+    >
+      {value}
+    </span>
+  ))
   const reset = () => { setPose(initialPose); setZoom(100) }
 
   return (
@@ -24,11 +38,12 @@ export default function CustomerRankCard({ rankName }: { rankName?: string }) {
         type="button"
         aria-label={'Mở trình xem thẻ ' + rankName}
         onClick={() => { reset(); setOpen(true) }}
-        className="group relative isolate block aspect-[5/3] w-full max-w-64 cursor-zoom-in overflow-hidden rounded-md border-0 bg-transparent p-0 focus-visible:outline-2 focus-visible:outline-offset-4"
+        className="group relative isolate block [container-type:inline-size] aspect-[5/3] w-full max-w-64 cursor-zoom-in overflow-hidden rounded-md border-0 bg-transparent p-0 focus-visible:outline-2 focus-visible:outline-offset-4"
       >
         <img src={imageBase + '.png'} alt={'Mặt trước thẻ ' + rankName}
           className="absolute left-1/2 top-1/2 h-[127.5%] max-w-none -translate-x-1/2 -translate-y-1/2"
           style={{ width: faceWidth(false) }} />
+        {dates}
         <span aria-hidden className="absolute bottom-2 right-2 grid size-7 place-items-center rounded-full bg-black/55 text-xs text-white group-hover:bg-black/75">
           <ExpandOutlined />
         </span>
@@ -81,7 +96,7 @@ export default function CustomerRankCard({ rankName }: { rankName?: string }) {
             >
               {[false, true].map((back) => (
                 <div key={String(back)}
-                  className="absolute inset-0 overflow-hidden [clip-path:inset(0_round_clamp(5px,1vw,14px))] [backface-visibility:hidden]"
+                  className="absolute inset-0 overflow-hidden [container-type:inline-size] [clip-path:inset(0_round_clamp(5px,1vw,14px))] [backface-visibility:hidden]"
                   style={{ transform: back ? 'rotateY(180deg)' : undefined }}
                 >
                   <img draggable={false} src={imageBase + (back ? '-back.png' : '.png')}
@@ -89,6 +104,7 @@ export default function CustomerRankCard({ rankName }: { rankName?: string }) {
                     className="absolute left-1/2 top-1/2 h-[127.5%] max-w-none -translate-x-1/2 -translate-y-1/2"
                     style={{ width: faceWidth(back) }}
                   />
+                  {!back && dates}
                 </div>
               ))}
             </div>
