@@ -14,6 +14,9 @@ import type { UserEmail } from './userEmail';
 import type { UserAddress } from './userAddress';
 import type { UserBirthday } from './userBirthday';
 import type { UserBranchId } from './userBranchId';
+import type { UserFullName } from './userFullName';
+import type { UserCustomerCode } from './userCustomerCode';
+import type { UserRefCode } from './userRefCode';
 import type { UserCreatedBy } from './userCreatedBy';
 import type { UserUpdatedBy } from './userUpdatedBy';
 import type { Membership } from './membership';
@@ -34,6 +37,10 @@ export interface User {
   birthday?: UserBirthday;
   branch_id?: UserBranchId;
   is_active?: boolean;
+  full_name?: UserFullName;
+  customer_code?: UserCustomerCode;
+  /** Mã giới thiệu (CTV-XXXXXX) — dùng để tìm người giới thiệu */
+  ref_code?: UserRefCode;
   created_by?: UserCreatedBy;
   updated_by?: UserUpdatedBy;
   created_at?: string;

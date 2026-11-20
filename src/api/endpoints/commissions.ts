@@ -30,13 +30,27 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  ConflictResponse,
+  DeleteCommissionEntriesIdAdmin200,
   ForbiddenResponse,
+  GetCommissionEntriesAdmin200,
+  GetCommissionEntriesAdminParams,
   GetCommissionRulesAdmin200,
   GetCommissionRulesAdminParams,
   GetCommissionRulesIdAdmin200,
+  InternalErrorResponse,
   NotFoundResponse,
+  PostCommissionEntriesAdmin200,
+  PostCommissionEntriesAdminBody,
   PostCommissionRulesAdmin200,
   PostCommissionRulesAdminBody,
+  PutCommissionEntriesIdAdmin200,
+  PutCommissionEntriesIdAdminBody,
+  PutCommissionEntriesIdApproveAdmin200,
+  PutCommissionEntriesIdCancelAdmin200,
+  PutCommissionEntriesIdCancelAdminBody,
+  PutCommissionEntriesIdRejectAdmin200,
+  PutCommissionEntriesIdRejectAdminBody,
   PutCommissionRulesIdAdmin200,
   PutCommissionRulesIdAdminBody,
   Response,
@@ -628,6 +642,585 @@ export const usePostCommissionRulesAdmin = <TError = void | UnprocessableEntityR
       > => {
 
       const mutationOptions = getPostCommissionRulesAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * **CE-06** — PUT /commission-entries/{id}/admin. Cần đăng nhập + `commission.update`. Chỉ được sửa duy nhất trường `amount` (số tiền hoa hồng nhận được), chỉ với entry PENDING/APPROVED. Sửa entry APPROVED làm thay đổi số dư; lịch sử sửa lưu vào `edit_log`.
+ * @summary Edit the commission amount of an entry
+ */
+export const putCommissionEntriesIdAdmin = (
+    id: string,
+    putCommissionEntriesIdAdminBody: PutCommissionEntriesIdAdminBody,
+ ) => {
+      
+      
+      return customInstance<PutCommissionEntriesIdAdmin200>(
+      {url: `/commission-entries/${id}/admin`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: putCommissionEntriesIdAdminBody
+    },
+      );
+    }
+  
+
+
+export const getPutCommissionEntriesIdAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putCommissionEntriesIdAdmin>>, TError,{id: string;data: PutCommissionEntriesIdAdminBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putCommissionEntriesIdAdmin>>, TError,{id: string;data: PutCommissionEntriesIdAdminBody}, TContext> => {
+
+const mutationKey = ['putCommissionEntriesIdAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putCommissionEntriesIdAdmin>>, {id: string;data: PutCommissionEntriesIdAdminBody}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  putCommissionEntriesIdAdmin(id,data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PutCommissionEntriesIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof putCommissionEntriesIdAdmin>>>
+    export type PutCommissionEntriesIdAdminMutationBody = PutCommissionEntriesIdAdminBody
+    export type PutCommissionEntriesIdAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+
+    /**
+ * @summary Edit the commission amount of an entry
+ */
+export const usePutCommissionEntriesIdAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putCommissionEntriesIdAdmin>>, TError,{id: string;data: PutCommissionEntriesIdAdminBody}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof putCommissionEntriesIdAdmin>>,
+        TError,
+        {id: string;data: PutCommissionEntriesIdAdminBody},
+        TContext
+      > => {
+
+      const mutationOptions = getPutCommissionEntriesIdAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * **CE-07** — DELETE /commission-entries/{id}/admin. Cần đăng nhập + `commission.delete`. XÓA HẲN bản ghi ở bất kỳ trạng thái (dùng khi phát sinh nhầm). Xóa entry APPROVED sẽ trừ thẳng khỏi số dư KTV.
+ * @summary Delete a commission entry
+ */
+export const deleteCommissionEntriesIdAdmin = (
+    id: string,
+ ) => {
+      
+      
+      return customInstance<DeleteCommissionEntriesIdAdmin200>(
+      {url: `/commission-entries/${id}/admin`, method: 'DELETE'
+    },
+      );
+    }
+  
+
+
+export const getDeleteCommissionEntriesIdAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteCommissionEntriesIdAdmin>>, TError,{id: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteCommissionEntriesIdAdmin>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['deleteCommissionEntriesIdAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteCommissionEntriesIdAdmin>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteCommissionEntriesIdAdmin(id,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteCommissionEntriesIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof deleteCommissionEntriesIdAdmin>>>
+    
+    export type DeleteCommissionEntriesIdAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+
+    /**
+ * @summary Delete a commission entry
+ */
+export const useDeleteCommissionEntriesIdAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteCommissionEntriesIdAdmin>>, TError,{id: string}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof deleteCommissionEntriesIdAdmin>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+
+      const mutationOptions = getDeleteCommissionEntriesIdAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * **CE-03** — PUT /commission-entries/{id}/reject/admin. Cần đăng nhập + `commission.update`. Từ chối entry PENDING → REJECTED, bắt buộc `reject_reason` (≤1000 ký tự). Không ảnh hưởng số dư (chỉ APPROVED được tính).
+ * @summary Reject a commission entry
+ */
+export const putCommissionEntriesIdRejectAdmin = (
+    id: string,
+    putCommissionEntriesIdRejectAdminBody: PutCommissionEntriesIdRejectAdminBody,
+ ) => {
+      
+      
+      return customInstance<PutCommissionEntriesIdRejectAdmin200>(
+      {url: `/commission-entries/${id}/reject/admin`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: putCommissionEntriesIdRejectAdminBody
+    },
+      );
+    }
+  
+
+
+export const getPutCommissionEntriesIdRejectAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putCommissionEntriesIdRejectAdmin>>, TError,{id: string;data: PutCommissionEntriesIdRejectAdminBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putCommissionEntriesIdRejectAdmin>>, TError,{id: string;data: PutCommissionEntriesIdRejectAdminBody}, TContext> => {
+
+const mutationKey = ['putCommissionEntriesIdRejectAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putCommissionEntriesIdRejectAdmin>>, {id: string;data: PutCommissionEntriesIdRejectAdminBody}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  putCommissionEntriesIdRejectAdmin(id,data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PutCommissionEntriesIdRejectAdminMutationResult = NonNullable<Awaited<ReturnType<typeof putCommissionEntriesIdRejectAdmin>>>
+    export type PutCommissionEntriesIdRejectAdminMutationBody = PutCommissionEntriesIdRejectAdminBody
+    export type PutCommissionEntriesIdRejectAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+
+    /**
+ * @summary Reject a commission entry
+ */
+export const usePutCommissionEntriesIdRejectAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putCommissionEntriesIdRejectAdmin>>, TError,{id: string;data: PutCommissionEntriesIdRejectAdminBody}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof putCommissionEntriesIdRejectAdmin>>,
+        TError,
+        {id: string;data: PutCommissionEntriesIdRejectAdminBody},
+        TContext
+      > => {
+
+      const mutationOptions = getPutCommissionEntriesIdRejectAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * **CE-04** — PUT /commission-entries/{id}/cancel/admin. Cần đăng nhập + `commission.update`. Hủy entry PENDING hoặc APPROVED → CANCELLED, bắt buộc `cancel_reason` (≤1000 ký tự). Hủy entry APPROVED sẽ trừ khỏi số dư KTV (số dư = SUM amount theo APPROVED).
+ * @summary Cancel a commission entry
+ */
+export const putCommissionEntriesIdCancelAdmin = (
+    id: string,
+    putCommissionEntriesIdCancelAdminBody: PutCommissionEntriesIdCancelAdminBody,
+ ) => {
+      
+      
+      return customInstance<PutCommissionEntriesIdCancelAdmin200>(
+      {url: `/commission-entries/${id}/cancel/admin`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: putCommissionEntriesIdCancelAdminBody
+    },
+      );
+    }
+  
+
+
+export const getPutCommissionEntriesIdCancelAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putCommissionEntriesIdCancelAdmin>>, TError,{id: string;data: PutCommissionEntriesIdCancelAdminBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putCommissionEntriesIdCancelAdmin>>, TError,{id: string;data: PutCommissionEntriesIdCancelAdminBody}, TContext> => {
+
+const mutationKey = ['putCommissionEntriesIdCancelAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putCommissionEntriesIdCancelAdmin>>, {id: string;data: PutCommissionEntriesIdCancelAdminBody}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  putCommissionEntriesIdCancelAdmin(id,data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PutCommissionEntriesIdCancelAdminMutationResult = NonNullable<Awaited<ReturnType<typeof putCommissionEntriesIdCancelAdmin>>>
+    export type PutCommissionEntriesIdCancelAdminMutationBody = PutCommissionEntriesIdCancelAdminBody
+    export type PutCommissionEntriesIdCancelAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+
+    /**
+ * @summary Cancel a commission entry
+ */
+export const usePutCommissionEntriesIdCancelAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putCommissionEntriesIdCancelAdmin>>, TError,{id: string;data: PutCommissionEntriesIdCancelAdminBody}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof putCommissionEntriesIdCancelAdmin>>,
+        TError,
+        {id: string;data: PutCommissionEntriesIdCancelAdminBody},
+        TContext
+      > => {
+
+      const mutationOptions = getPutCommissionEntriesIdCancelAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * **CE-02** — PUT /commission-entries/{id}/approve/admin. Cần đăng nhập + `commission.update`. Duyệt entry PENDING → APPROVED: hoa hồng chính thức thuộc về KTV (được cộng vào số dư = SUM amount theo APPROVED). Idempotent khi đã APPROVED.
+ * @summary Approve a commission entry
+ */
+export const putCommissionEntriesIdApproveAdmin = (
+    id: string,
+ ) => {
+      
+      
+      return customInstance<PutCommissionEntriesIdApproveAdmin200>(
+      {url: `/commission-entries/${id}/approve/admin`, method: 'PUT'
+    },
+      );
+    }
+  
+
+
+export const getPutCommissionEntriesIdApproveAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putCommissionEntriesIdApproveAdmin>>, TError,{id: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putCommissionEntriesIdApproveAdmin>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['putCommissionEntriesIdApproveAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putCommissionEntriesIdApproveAdmin>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  putCommissionEntriesIdApproveAdmin(id,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PutCommissionEntriesIdApproveAdminMutationResult = NonNullable<Awaited<ReturnType<typeof putCommissionEntriesIdApproveAdmin>>>
+    
+    export type PutCommissionEntriesIdApproveAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | InternalErrorResponse
+
+    /**
+ * @summary Approve a commission entry
+ */
+export const usePutCommissionEntriesIdApproveAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putCommissionEntriesIdApproveAdmin>>, TError,{id: string}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof putCommissionEntriesIdApproveAdmin>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+
+      const mutationOptions = getPutCommissionEntriesIdApproveAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * **CE-01** — GET /commission-entries/admin. Cần đăng nhập + `commission.read`. Sổ cái hoa hồng: mỗi lần buổi điều trị được đánh dấu done, hệ thống tự tạo 1 entry PENDING cho KTV phụ trách theo quy tắc type=SESSION khớp cơ sở. Admin duyệt → APPROVED (hoa hồng chính thức thuộc KTV; số dư = SUM amount theo APPROVED). Branch scope: user giới hạn 1 cơ sở chỉ thấy entry cơ sở đó. Query parameters: `page`, `limit`, `branch_id`, `staff_id`, `status` (PENDING/APPROVED/REJECTED/CANCELLED), `from_date`, `to_date` (theo period_date).
+ * @summary List commission entries
+ */
+export const getCommissionEntriesAdmin = (
+    params?: GetCommissionEntriesAdminParams,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetCommissionEntriesAdmin200>(
+      {url: `/commission-entries/admin`, method: 'GET',
+        params, signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetCommissionEntriesAdminInfiniteQueryKey = (params?: GetCommissionEntriesAdminParams,) => {
+    return [
+    'infinite', `/commission-entries/admin`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+export const getGetCommissionEntriesAdminQueryKey = (params?: GetCommissionEntriesAdminParams,) => {
+    return [
+    `/commission-entries/admin`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getGetCommissionEntriesAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getCommissionEntriesAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetCommissionEntriesAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCommissionEntriesAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetCommissionEntriesAdminInfiniteQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCommissionEntriesAdmin>>> = ({ signal }) => getCommissionEntriesAdmin(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCommissionEntriesAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetCommissionEntriesAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getCommissionEntriesAdmin>>>
+export type GetCommissionEntriesAdminInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+
+
+export function useGetCommissionEntriesAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCommissionEntriesAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetCommissionEntriesAdminParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCommissionEntriesAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getCommissionEntriesAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getCommissionEntriesAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetCommissionEntriesAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCommissionEntriesAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetCommissionEntriesAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCommissionEntriesAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getCommissionEntriesAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getCommissionEntriesAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetCommissionEntriesAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCommissionEntriesAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetCommissionEntriesAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCommissionEntriesAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List commission entries
+ */
+
+export function useGetCommissionEntriesAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCommissionEntriesAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetCommissionEntriesAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCommissionEntriesAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetCommissionEntriesAdminInfiniteQueryOptions(params,options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary List commission entries
+ */
+export const prefetchGetCommissionEntriesAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getCommissionEntriesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetCommissionEntriesAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCommissionEntriesAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetCommissionEntriesAdminInfiniteQueryOptions(params,options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetCommissionEntriesAdminQueryOptions = <TData = Awaited<ReturnType<typeof getCommissionEntriesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetCommissionEntriesAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissionEntriesAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetCommissionEntriesAdminQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCommissionEntriesAdmin>>> = ({ signal }) => getCommissionEntriesAdmin(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCommissionEntriesAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetCommissionEntriesAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getCommissionEntriesAdmin>>>
+export type GetCommissionEntriesAdminQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+
+
+export function useGetCommissionEntriesAdmin<TData = Awaited<ReturnType<typeof getCommissionEntriesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetCommissionEntriesAdminParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissionEntriesAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getCommissionEntriesAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getCommissionEntriesAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetCommissionEntriesAdmin<TData = Awaited<ReturnType<typeof getCommissionEntriesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetCommissionEntriesAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissionEntriesAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getCommissionEntriesAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getCommissionEntriesAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetCommissionEntriesAdmin<TData = Awaited<ReturnType<typeof getCommissionEntriesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetCommissionEntriesAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissionEntriesAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List commission entries
+ */
+
+export function useGetCommissionEntriesAdmin<TData = Awaited<ReturnType<typeof getCommissionEntriesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetCommissionEntriesAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissionEntriesAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetCommissionEntriesAdminQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary List commission entries
+ */
+export const prefetchGetCommissionEntriesAdminQuery = async <TData = Awaited<ReturnType<typeof getCommissionEntriesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetCommissionEntriesAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCommissionEntriesAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetCommissionEntriesAdminQueryOptions(params,options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * **CE-05** — POST /commission-entries/admin. Cần đăng nhập + `commission.create`. THÊM THỦ CÔNG entry hoa hồng không gắn buổi/thanh toán — luôn ở trạng thái PENDING, admin duyệt mới chính thức vào số dư. Body fields: `staff_id` (người nhận, bắt buộc), `branch_id` (bắt buộc), `amount` (bắt buộc, > 0), `customer_treatment_id?`, `base_amount?`, `period_date?`, `note?`.
+ * @summary Create a manual commission entry
+ */
+export const postCommissionEntriesAdmin = (
+    postCommissionEntriesAdminBody: PostCommissionEntriesAdminBody,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<PostCommissionEntriesAdmin200>(
+      {url: `/commission-entries/admin`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: postCommissionEntriesAdminBody, signal
+    },
+      );
+    }
+  
+
+
+export const getPostCommissionEntriesAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postCommissionEntriesAdmin>>, TError,{data: PostCommissionEntriesAdminBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postCommissionEntriesAdmin>>, TError,{data: PostCommissionEntriesAdminBody}, TContext> => {
+
+const mutationKey = ['postCommissionEntriesAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postCommissionEntriesAdmin>>, {data: PostCommissionEntriesAdminBody}> = (props) => {
+          const {data} = props ?? {};
+
+          return  postCommissionEntriesAdmin(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostCommissionEntriesAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postCommissionEntriesAdmin>>>
+    export type PostCommissionEntriesAdminMutationBody = PostCommissionEntriesAdminBody
+    export type PostCommissionEntriesAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | UnprocessableEntityResponse | InternalErrorResponse
+
+    /**
+ * @summary Create a manual commission entry
+ */
+export const usePostCommissionEntriesAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postCommissionEntriesAdmin>>, TError,{data: PostCommissionEntriesAdminBody}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postCommissionEntriesAdmin>>,
+        TError,
+        {data: PostCommissionEntriesAdminBody},
+        TContext
+      > => {
+
+      const mutationOptions = getPostCommissionEntriesAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

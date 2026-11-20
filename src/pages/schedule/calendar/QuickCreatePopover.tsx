@@ -85,16 +85,16 @@ export default function QuickCreatePopover({
         </span>
 
         <div>
-          <Typography.Text type="secondary" style={{ fontSize: 11, display: 'block', marginBottom: 4 }}>KTV</Typography.Text>
+          <Typography.Text type="secondary" style={{ fontSize: 11, display: 'block', marginBottom: 4 }}>Nhân viên</Typography.Text>
           <Select
             showSearch
             optionFilterProp="label"
-            placeholder="Chọn KTV"
+            placeholder="Chọn nhân viên"
             size="small"
             style={{ width: '100%' }}
             value={staffId}
             disabled={isTechSelf}
-            notFoundContent="Không có KTV ở cơ sở này"
+            notFoundContent="Không có nhân viên ở cơ sở này"
             onChange={(value) => { setStaffId(value); setTemplateIds([]) }}
             options={staffOptions.map((person) => ({ value: person.id, label: staffLabel(person) }))}
           />

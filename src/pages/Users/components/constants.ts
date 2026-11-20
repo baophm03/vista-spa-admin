@@ -10,11 +10,6 @@ export interface UserRow {
   user_roles?: { role_id?: string; role?: { role_name?: string; code?: string | null } }[]
 }
 
-/** Nhận diện vai trò KTV (bỏ dấu, lowercase). */
-export function isTechnicianRole(code?: string | null): boolean {
-  return String(code || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase() === 'ktv'
-}
-
 /** Nhận diện vai trò Admin (có thể là Admin cơ sở hoặc toàn hệ thống). */
 export function isAdminRole(code?: string | null): boolean {
   return String(code || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase() === 'admin'
@@ -25,17 +20,11 @@ export function isUserRole(code?: string | null): boolean {
   return String(code || '').trim().toLowerCase() !== 'customer'
 }
 
-export type UserColumnKey = 'User' | 'role' | 'branch' | 'status' | 'phone' | 'email' | 'profile' | 'in_app'
-
-export const User_COLUMN_OPTIONS: { label: string; value: UserColumnKey }[] = [
-  { label: 'Nhân viên', value: 'User' },
-  { label: 'Vai trò', value: 'role' },
-  { label: 'Cơ sở', value: 'branch' },
-  { label: 'Trạng thái', value: 'status' },
-  { label: 'SĐT', value: 'phone' },
-  { label: 'Email', value: 'email' },
-  { label: 'Chức danh & dịch vụ phụ trách', value: 'profile' },
-  { label: 'Hiện trên app', value: 'in_app' },
-]
-
-export const DEFAULT_VISIBLE_COLUMNS = User_COLUMN_OPTIONS.map((column) => column.value)
+/** Màu badge vai trò: KTV/chuyên viên (staff) — xanh, lễ tân (rec) — cam, admin — đỏ, còn lại — tím. */
+export function roleTagColor(code?: string | null): string {
+  const normalized = String(code || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase()
+  if (normalized === 'staff') return 'green'
+  if (normalized === 'rec') return 'orange'
+  if (normalized === 'admin') return 'red'
+  return 'purple'
+}

@@ -6,4 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type AppointmentCustomerTreatmentId = string | null;
+export type CommissionEntryStaffAnyOfEmail = string | null;

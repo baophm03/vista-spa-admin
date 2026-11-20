@@ -11,7 +11,7 @@ export interface ScheduleStaff {
   email?: string
   phone_number?: string
   branch_id?: string
-  user_roles?: { role?: { role_name?: string } }[]
+  user_roles?: { role?: { role_name?: string; code?: string; receptionist?: boolean } }[]
 }
 
 export interface ScheduleUser {
@@ -37,7 +37,7 @@ export interface SchedulePageData {
 export type { StaffDayOff, StaffScheduleDate, ShiftTemplate }
 
 export function staffLabel(staff?: ScheduleStaff | { id: string; zalo_name?: string; email?: string; phone_number?: string }): string {
-  if (!staff) return 'KTV';
+  if (!staff) return 'Nhân viên';
   return staff.zalo_name || staff.email || staff.phone_number || staff.id.slice(0, 8)
 }
 

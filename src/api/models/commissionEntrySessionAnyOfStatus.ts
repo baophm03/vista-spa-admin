@@ -6,9 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type PutReferralsIdAdminBody = {
-  /** @nullable */
-  discount_rule_id?: string | null;
-  status?: string;
-  note?: string;
-};
+export type CommissionEntrySessionAnyOfStatus = string | null;

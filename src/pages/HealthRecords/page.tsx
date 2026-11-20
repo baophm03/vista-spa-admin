@@ -96,11 +96,14 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
     void load()
     const loadExaminerOptions = async () => {
       const result = await getUsersAdmin({ currentPage: 1, pageSize: 200, has_role: true }).catch(() => null)
-      const userRows = (pickData<{ rows?: Array<{ id: string; zalo_name?: string; email?: string; user_roles?: Array<{ role?: { role_name?: string } | null }> }> }>(result)?.rows ?? [])
+      const userRows = (pickData<{ rows?: Array<{ id: string; zalo_name?: string; email?: string; user_roles?: Array<{ role?: { code?: string | null; role_name?: string | null } | null }> }> }>(result)?.rows ?? [])
       const ktvUsers = userRows.filter((user) =>
         (user.user_roles ?? []).some((assignment) => {
-          const roleName = String(assignment.role?.role_name ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('vi')
-          return roleName === 'ktv' || roleName.includes('chuyen vien') || roleName.includes('ky thuat vien')
+          const normalized = (value: string | null | undefined) => String(value ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('vi')
+          const roleCode = normalized(assignment.role?.code)
+          const roleName = normalized(assignment.role?.role_name)
+          // Code 'staff' là chuẩn hiện tại (role cũ từng là 'ktv'); role_name dự phòng ('Kỹ thuật viên / Chuyên viên')
+          return roleCode === 'staff' || roleCode === 'ktv' || roleName === 'ktv' || roleName.includes('chuyen vien') || roleName.includes('ky thuat vien')
         }),
       )
 

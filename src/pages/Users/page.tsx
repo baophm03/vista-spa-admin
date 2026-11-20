@@ -13,7 +13,6 @@ import {
   UserOutlined,
 } from '@ant-design/icons'
 import PageTitle from '@/components/base/PageTitle'
-import ListFilterPopover from '@/components/base/ListFilterPopover'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
 import TableEmpty from '@/components/base/TableEmpty'
@@ -34,12 +33,9 @@ import UserModal from './components/UserModal'
 import UserProfileModal from './components/UserProfileModal'
 import UsersServicesModal from './components/UsersServicesModal'
 import {
-  DEFAULT_VISIBLE_COLUMNS,
-  User_COLUMN_OPTIONS,
   isAdminRole,
   isUserRole,
-  isTechnicianRole,
-  type UserColumnKey,
+  roleTagColor,
   type UserRow,
 } from './components/constants'
 
@@ -82,18 +78,10 @@ export default function Users() {
   const [searchInput, setSearchInput] = useState('')
   const [search, setSearch] = useState('')
   const [branchFilter, setBranchFilter] = useState<string>()
-  const [roleFilter, setRoleFilter] = useState<string>()
-  const [statusFilter, setStatusFilter] = useState<string>()
-  const [filterOpen, setFilterOpen] = useState(false)
-  const [visibleColumns, setVisibleColumns] = useState<UserColumnKey[]>(DEFAULT_VISIBLE_COLUMNS)
-  const [draftVisibleColumns, setDraftVisibleColumns] = useState<UserColumnKey[]>(DEFAULT_VISIBLE_COLUMNS)
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<UserRow | null>(null)
   const [form] = Form.useForm()
-  const [filterForm] = Form.useForm()
   const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
-  const selectedBranchId = Form.useWatch('branch_id', form)
-  const selectedRoleId = Form.useWatch('role_id', form)
 
   const usersQuery = useGetUsersAdmin({
     currentPage: page,
@@ -101,8 +89,6 @@ export default function Users() {
     has_role: true,
     ...(search ? { q: search } : {}),
     ...(branchFilter ? { branch_id: branchFilter } : {}),
-    ...(roleFilter ? { role_id: roleFilter } : {}),
-    ...(statusFilter ? { status: statusFilter } : {}),
   })
   const rolesQuery = useGetRolesAdmin()
   const branchesQuery = useGetBranchesAdmin()
@@ -172,18 +158,8 @@ export default function Users() {
     .filter((role) => isUserRole(role.code))
     .map((role) => ({ id: role.id, role_name: role.role_name ?? role.name ?? role.id, code: role.code ?? null }))
   const branches = (pickData<Branch[]>(branchesQuery.data) ?? []) as Branch[]
-  const adminRoleId = roles.find((role) => isAdminRole(role.code))?.id
-  const selectedRole = roles.find((role) => role.id === selectedRoleId)
-
-  useEffect(() => {
-    if (!open || editing || selectedBranchId || !adminRoleId) return
-    if (form.getFieldValue('role_id') !== adminRoleId) form.setFieldValue('role_id', adminRoleId)
-  }, [open, editing, selectedBranchId, adminRoleId, form])
 
   const loading = usersQuery.isLoading
-  const globalAdminSelected = !selectedBranchId
-  const branchRequired = !selectedRoleId || !roles.length || !isAdminRole(selectedRole?.code)
-  const activeFilterCount = [branchFilter, roleFilter, statusFilter].filter(Boolean).length + (search ? 1 : 0)
 
   // Gõ tìm kiếm có debounce 400ms, quay về trang 1.
   useEffect(() => {
@@ -200,36 +176,6 @@ export default function Users() {
     clearTimeout(debounceRef.current)
     setSearchInput(value)
     setSearch(value.trim())
-    setPage(1)
-  }
-
-  const openFilters = (nextOpen: boolean) => {
-    setFilterOpen(nextOpen)
-    if (!nextOpen) return
-    filterForm.setFieldsValue({ branch_id: branchFilter, role_id: roleFilter, status: statusFilter })
-    setDraftVisibleColumns(visibleColumns)
-  }
-
-  const applyFilters = (values: Record<string, unknown>) => {
-    if (!draftVisibleColumns.length) {
-      message.error('Hãy giữ lại ít nhất một cột hiển thị')
-      return
-    }
-    setBranchFilter(typeof values.branch_id === 'string' ? values.branch_id : undefined)
-    setRoleFilter(typeof values.role_id === 'string' ? values.role_id : undefined)
-    setStatusFilter(typeof values.status === 'string' ? values.status : undefined)
-    setVisibleColumns(draftVisibleColumns)
-    setPage(1)
-    setFilterOpen(false)
-  }
-
-  const clearFilters = () => {
-    filterForm.resetFields()
-    setBranchFilter(undefined)
-    setRoleFilter(undefined)
-    setStatusFilter(undefined)
-    setDraftVisibleColumns(DEFAULT_VISIBLE_COLUMNS)
-    setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)
     setPage(1)
   }
 
@@ -252,7 +198,6 @@ export default function Users() {
           phone_number: '',
           password: '',
           role_id: undefined,
-          // Bỏ trống cơ sở mặc định sẽ tạo quản trị viên toàn hệ thống.
           branch_id: undefined,
         },
     )
@@ -272,7 +217,6 @@ export default function Users() {
           ...(isSuperAdmin && !editing.is_super_admin ? {
             branch_id: (values.branch_id || null) as PutUsersIdAdminBody['branch_id'],
             role_id: values.role_id,
-            is_admin: !values.branch_id,
           } : {}),
           ...(values.password ? { password: values.password } : {}),
         }
@@ -283,9 +227,9 @@ export default function Users() {
           email: values.email,
           phone_number: values.phone_number,
           password: values.password,
-          role_id: values.role_id ?? adminRoleId,
+          role_id: values.role_id,
           full_name: values.zalo_name,
-          branch_id: values.branch_id || undefined,
+          branch_id: values.branch_id,
         }
         await createMutation.mutateAsync({ data: payload })
         message.success('Đã thêm chuyên viên')
@@ -404,32 +348,18 @@ export default function Users() {
               }}
               onPressEnter={() => applySearch(searchInput)}
             />
-            <ListFilterPopover
-              open={filterOpen}
-              onOpenChange={openFilters}
-              activeFilterCount={activeFilterCount}
-              form={filterForm}
-              onApply={applyFilters}
-              onClear={clearFilters}
-              columnOptions={User_COLUMN_OPTIONS}
-              draftVisibleColumns={draftVisibleColumns}
-              onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as UserColumnKey[])}
-              filterItems={(
-                <>
-                  <Form.Item name="branch_id" label="Cơ sở" className="mb-2.5!">
-                    <Select allowClear placeholder="Tất cả cơ sở" options={branches.map((branch) => ({ value: branch.id, label: branch.name }))} />
-                  </Form.Item>
-                  <Form.Item name="role_id" label="Vai trò" className="mb-2.5!">
-                    <Select allowClear placeholder="Tất cả vai trò" options={roles.map((role) => ({ value: role.id, label: role.role_name }))} />
-                  </Form.Item>
-                  <Form.Item name="status" label="Trạng thái" className="mb-0!">
-                    <Select allowClear placeholder="Tất cả trạng thái" options={[
-                      { value: 'active', label: 'Đang làm' },
-                      { value: 'inactive', label: 'Đã nghỉ việc' },
-                    ]} />
-                  </Form.Item>
-                </>
-              )}
+            <Select
+              allowClear
+              showSearch
+              optionFilterProp="label"
+              placeholder="Tất cả cơ sở"
+              className="w-[220px]!"
+              value={branchFilter}
+              onChange={(value) => {
+                setBranchFilter(value)
+                setPage(1)
+              }}
+              options={branches.map((branch) => ({ value: branch.id, label: branch.name }))}
             />
           </>
         }
@@ -437,7 +367,7 @@ export default function Users() {
           <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>Thêm chuyên viên</Button>
         ) : undefined}
       >
-        Chuyên viên / KTV
+        Quản lý nhân sự
       </PageTitle>
       {usersQuery.isError && (
         <div className="mb-4">
@@ -449,7 +379,7 @@ export default function Users() {
         loading={loading}
         dataSource={rows}
         locale={{ emptyText: <TableEmpty description="Chưa có nhân viên nào khớp điều kiện." /> }}
-        scroll={{ x: 1355 }}
+        scroll={{ x: 1160 }}
         pagination={false}
         onRow={(s) => ({ onClick: () => openProfile(s), style: { cursor: 'pointer' } })}
         columns={[
@@ -457,7 +387,7 @@ export default function Users() {
             title: 'Nhân viên',
             key: 'User',
             dataIndex: 'zalo_name',
-            width: 180,
+            width: 220,
             render: (_: unknown, s: UserRow) => {
               const profile = profileByUser.get(s.id)
               const photo = fileSrc((profile as any)?.photo_file) ?? resolveFileSrc(urlMap, profile?.photo_file_id)
@@ -468,7 +398,10 @@ export default function Users() {
                   ) : (
                     <Avatar size={36} className="bg-[var(--brand-primary)]!" icon={<UserOutlined />} />
                   )}
-                  <span className="font-semibold">{s.zalo_name || s.email || '—'}</span>
+                  <Space direction="vertical" size={0}>
+                    <span className="font-semibold">{s.zalo_name || s.email || '—'}</span>
+                    {s.email && <Typography.Text type="secondary" className="text-xs!">{s.email}</Typography.Text>}
+                  </Space>
                 </Space>
               )
             },
@@ -476,22 +409,10 @@ export default function Users() {
           {
             title: 'Vai trò',
             key: 'role',
-            width: 120,
+            width: 220,
             render: (_: unknown, s: UserRow) => (
-              <Tag color="purple">{s.user_roles?.[0]?.role?.role_name || 'Nhân viên'}</Tag>
+              <Tag color={roleTagColor(s.user_roles?.[0]?.role?.code)}>{s.user_roles?.[0]?.role?.role_name || 'Nhân viên'}</Tag>
             ),
-          },
-          {
-            title: 'Cơ sở',
-            key: 'branch',
-            dataIndex: 'branch_id',
-            width: 150,
-            render: (branchId: string | null | undefined, s: UserRow) => {
-              if (branchId) return branches.find((branch) => branch.id === branchId)?.name || 'Cơ sở'
-              const hasTechnicianRole = s.user_roles?.some(({ role }) => isTechnicianRole(role?.code))
-              const isGlobalAdmin = isGlobalAdminRow(s)
-              return isGlobalAdmin && !hasTechnicianRole ? 'Toàn hệ thống' : <Tag color="orange">Chưa gán</Tag>
-            },
           },
           {
             title: 'Trạng thái',
@@ -501,7 +422,6 @@ export default function Users() {
             render: (v: boolean | undefined) => (v === false ? <Tag>Đã nghỉ việc</Tag> : <Tag color="green">Đang làm</Tag>),
           },
           { title: 'SĐT', key: 'phone', dataIndex: 'phone_number', width: 130, render: (v: string | undefined) => v || '—' },
-          { title: 'Email', key: 'email', dataIndex: 'email', width: 185, ellipsis: true, render: (v: string | undefined) => v || '—' },
           {
             title: 'Chức danh & dịch vụ phụ trách',
             key: 'profile',
@@ -602,7 +522,7 @@ export default function Users() {
               )
             },
           },
-        ].filter((column) => column.key === 'actions' || visibleColumns.includes(column.key as UserColumnKey))}
+        ]}
       />
       <ListPagination page={page} limit={limit} total={total} onChange={setPage} noun="nhân viên" />
 
@@ -612,9 +532,6 @@ export default function Users() {
         editing={editing}
         branches={branches}
         roles={roles}
-        branchRequired={branchRequired}
-        globalAdminSelected={globalAdminSelected}
-        globalAdminAlreadyExists={isSuperAdmin && !editing}
         canEditAccess={isSuperAdmin && !editing?.is_super_admin}
         onCancel={() => setOpen(false)}
         onOk={submit}

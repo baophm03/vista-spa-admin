@@ -58,7 +58,7 @@ interface UsersRowsPick {
     zalo_name?: string
     email?: string
     branch_id?: string
-    user_roles?: { role?: { role_name?: string } }[]
+    user_roles?: { role?: { role_name?: string; code?: string } }[]
   }[]
 }
 
@@ -166,8 +166,11 @@ export default function Appointments() {
   const allUsers = (pickData<UsersRowsPick | undefined>(usersQuery.data)?.rows ?? [])
   const staffOptions = useMemo(() => allUsers
     .filter((person) => (person.user_roles ?? []).some(({ role }) => {
-      const roleName = String(role?.role_name || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase()
-      return roleName.includes('ktv') || roleName.includes('ky thuat vien') || roleName === 'technician'
+      const normalized = (value: string | null | undefined) => String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase()
+      const roleCode = normalized(role?.code)
+      const roleName = normalized(role?.role_name)
+      // Code 'staff' là chuẩn hiện tại (role cũ từng là 'ktv'); role_name dự phòng ('Kỹ thuật viên / ...')
+      return roleCode === 'staff' || roleCode === 'ktv' || roleName.includes('ktv') || roleName.includes('ky thuat vien') || roleName === 'technician'
     }))
     .map((person) => ({ id: person.id, label: person.zalo_name || person.email || person.id, branchId: person.branch_id })), [allUsers])
   const staffNames = new Map(staffOptions.map(({ id, label }) => [id, label]))

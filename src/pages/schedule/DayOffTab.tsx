@@ -36,8 +36,8 @@ function showBlockedByAppointmentsModal(appointments: ConflictAppointment[], nav
     content: (
       <div>
         <p style={{ marginBottom: 8 }}>
-          Tuyệt đối <b>không hủy lịch của khách</b>: gọi điện xin lỗi khách và xin phép đổi sang KTV khác,
-          sau đó mở từng lịch hẹn bên dưới để đổi KTV. Xử lý xong hết thì quay lại bấm "Duyệt".
+          Tuyệt đối <b>không hủy lịch của khách</b>: gọi điện xin lỗi khách và xin phép đổi sang nhân viên khác,
+          sau đó mở từng lịch hẹn bên dưới để đổi nhân viên. Xử lý xong hết thì quay lại bấm "Duyệt".
         </p>
         <Table<ConflictAppointment>
           rowKey="id" size="small" pagination={false} scroll={{ y: 260 }} dataSource={appointments}
@@ -90,7 +90,7 @@ async function showConflictsPreview(row: StaffDayOff) {
 }
 type DayOffColumnKey = 'staff' | 'date' | 'time' | 'reason' | 'status'
 const DAY_OFF_COLUMN_OPTIONS: { label: string; value: DayOffColumnKey }[] = [
-  { label: 'KTV', value: 'staff' },
+  { label: 'Nhân viên', value: 'staff' },
   { label: 'Ngày nghỉ', value: 'date' },
   { label: 'Thời gian nghỉ', value: 'time' },
   { label: 'Lý do', value: 'reason' },
@@ -241,7 +241,7 @@ export default function DayOffTab({ branches, staff, access, loadingShared }: Pr
   }
 
   const columns = [
-    { title: 'KTV', dataIndex: 'staff_id', key: 'staff', render: (id: string, row: StaffDayOff) => staffLabel((row as StaffDayOff & { staff?: { id: string; zalo_name?: string; email?: string; phone_number?: string } }).staff ?? staff.find((person) => person.id === id)) },
+    { title: 'Nhân viên', dataIndex: 'staff_id', key: 'staff', render: (id: string, row: StaffDayOff) => staffLabel((row as StaffDayOff & { staff?: { id: string; zalo_name?: string; email?: string; phone_number?: string } }).staff ?? staff.find((person) => person.id === id)) },
     { title: 'Ngày nghỉ', dataIndex: 'off_date', key: 'date', render: (value: string) => dayjs(value).format('DD/MM/YYYY') },
     { title: 'Thời gian nghỉ', key: 'time', render: (_: unknown, row: StaffDayOff) => (row as StaffDayOff & { shift_template?: { name?: string } }).shift_template?.name || templates.find((template) => template.id === row.shift_template_id)?.name || 'Cả ngày' },
     {
@@ -313,8 +313,8 @@ export default function DayOffTab({ branches, staff, access, loadingShared }: Pr
               {access.isAdmin && <Form.Item name="branch_id" label="Cơ sở" style={{ marginBottom: 10 }}>
                 <Select allowClear placeholder="Tất cả cơ sở" options={branches.map((branch) => ({ value: branch.id, label: branch.name }))} />
               </Form.Item>}
-              {!isTechnician && <Form.Item name="staff_id" label="KTV" style={{ marginBottom: 10 }}>
-                <Select allowClear showSearch optionFilterProp="label" placeholder="Tất cả KTV" options={staff.map((person) => ({ value: person.id, label: staffLabel(person) }))} />
+              {!isTechnician && <Form.Item name="staff_id" label="Nhân viên" style={{ marginBottom: 10 }}>
+                <Select allowClear showSearch optionFilterProp="label" placeholder="Tất cả nhân viên" options={staff.map((person) => ({ value: person.id, label: staffLabel(person) }))} />
               </Form.Item>}
               <Form.Item name="range" label="Khoảng ngày nghỉ" style={{ marginBottom: 10 }}>
                 <DatePicker.RangePicker format="DD/MM/YYYY" style={{ width: '100%' }} />

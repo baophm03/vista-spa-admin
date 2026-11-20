@@ -296,7 +296,7 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
     if (isTechSelf) values.staff_id = access.currentUserId
     const selectedStaff = staff.find((person) => person.id === values.staff_id)
     if (!selectedStaff?.branch_id || selectedStaff.branch_id !== values.branch_id) {
-      message.error('KTV chưa được gán vào cơ sở đã chọn. Hãy kiểm tra lại nhân sự trước khi xếp lịch.')
+      message.error('Nhân viên chưa được gán vào cơ sở đã chọn. Hãy kiểm tra lại nhân sự trước khi xếp lịch.')
       return
     }
     const dates: string[] = Array.isArray(values.work_dates)
@@ -367,7 +367,7 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
           />
         </label>
       ),
-      okText: title.startsWith('Gỡ') ? 'Gỡ KTV' : 'Xóa ca',
+      okText: title.startsWith('Gỡ') ? 'Gỡ nhân viên' : 'Xóa ca',
       cancelText: 'Hủy',
       okButtonProps: { danger: true, disabled: true },
       onOk: () => reason ? onConfirm(reason) : Promise.reject(),
@@ -532,7 +532,7 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
         canManage={canManage}
         canEditRow={canEditRow}
         onEditRow={(row: StaffScheduleDateWithStaff) => openForm(row)}
-        onRemoveRow={(row: StaffScheduleDateWithStaff) => confirmDeleteReason('Gỡ KTV khỏi ca?', (reason) => remove(row, reason))}
+        onRemoveRow={(row: StaffScheduleDateWithStaff) => confirmDeleteReason('Gỡ nhân viên khỏi ca?', (reason) => remove(row, reason))}
         onDuplicate={(duplicated: ScheduleBlock) => {
           const first = duplicated.rows.find((row) => !row.onLeave)
           if (!first) return
@@ -557,7 +557,7 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
       throw new Error('missing branch')
     }
     if (!person?.branch_id || person.branch_id !== finalBranchId) {
-      message.error('KTV chưa được gán vào cơ sở đã chọn. Hãy kiểm tra lại nhân sự trước khi xếp lịch.')
+      message.error('Nhân viên chưa được gán vào cơ sở đã chọn. Hãy kiểm tra lại nhân sự trước khi xếp lịch.')
       throw new Error('staff branch mismatch')
     }
     try {
@@ -739,9 +739,9 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
           pagination={false}
           scroll={{ x: 1040 }}
           dataSource={filterStaff.filter((person) => !hiddenStaff.has(person.id))}
-          locale={{ emptyText: 'Không có KTV phù hợp bộ lọc' }}
+          locale={{ emptyText: 'Không có nhân viên phù hợp bộ lọc' }}
           columns={[
-            { title: 'KTV', key: 'staff', fixed: 'left', width: 176, render: (_, person) => staffLabel(person) },
+            { title: 'Nhân viên', key: 'staff', fixed: 'left', width: 176, render: (_, person) => staffLabel(person) },
             ...days.map((date) => {
               const dateKey = date.format('YYYY-MM-DD')
               const notes = notesByDate.get(dateKey) ?? []
@@ -878,7 +878,7 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
         })}
         rowKey={(item) => item.key}
         loading={loading}
-        emptyText={staff.length ? 'Không có KTV trong bộ lọc này' : 'Chưa có danh sách KTV'}
+        emptyText={staff.length ? 'Không có nhân viên trong bộ lọc này' : 'Chưa có danh sách nhân viên'}
         renderCard={(item) => (
           <>
             <div className="mobile-card-head">

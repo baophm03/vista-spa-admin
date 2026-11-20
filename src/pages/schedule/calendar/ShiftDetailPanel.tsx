@@ -66,7 +66,7 @@ export function ShiftDetailContent({
       <div style={{ marginTop: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
           <TeamOutlined style={{ color: style.border }} />
-          <Typography.Text strong style={{ fontSize: 13 }}>{block.rows.length} KTV</Typography.Text>
+          <Typography.Text strong style={{ fontSize: 13 }}>{block.rows.length} nhân viên</Typography.Text>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {block.rows.map((row) => {

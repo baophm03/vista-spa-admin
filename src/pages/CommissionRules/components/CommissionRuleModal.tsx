@@ -107,7 +107,7 @@ export default function CommissionRuleModal({
                   </span>
                 )}
               >
-                {payeeRoleCode === 'ktv' ? (
+                {payeeRoleCode === 'staff' ? (
                   <Select allowClear showSearch optionFilterProp="label" loading={usersLoading} placeholder="Tất cả KTV"
                     options={users.map((user) => ({ value: user.id, label: user.zalo_name || user.email || user.id }))} />
                 ) : (

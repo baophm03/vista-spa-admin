@@ -14,6 +14,8 @@ import type { CustomerTreatmentStartedAt } from './customerTreatmentStartedAt';
 import type { CustomerTreatmentFinishedAt } from './customerTreatmentFinishedAt';
 import type { CustomerTreatmentExpiresAt } from './customerTreatmentExpiresAt';
 import type { CustomerTreatmentParentTreatmentId } from './customerTreatmentParentTreatmentId';
+import type { CustomerTreatmentReferrerId } from './customerTreatmentReferrerId';
+import type { CustomerTreatmentReferrer } from './customerTreatmentReferrer';
 import type { CustomerTreatmentNote } from './customerTreatmentNote';
 import type { CustomerTreatmentCustomFields } from './customerTreatmentCustomFields';
 
@@ -56,6 +58,8 @@ export interface CustomerTreatment {
   /** @minimum 0 */
   sessions_bonus?: number;
   parent_treatment_id?: CustomerTreatmentParentTreatmentId;
+  referrer_id?: CustomerTreatmentReferrerId;
+  referrer?: CustomerTreatmentReferrer;
   note?: CustomerTreatmentNote;
   custom_fields?: CustomerTreatmentCustomFields;
   created_at?: string;
