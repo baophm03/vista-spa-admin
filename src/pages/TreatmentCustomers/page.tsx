@@ -321,6 +321,7 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
           scheduled_at: scheduledDate.hour(Number(scheduledTime.slice(0, 2))).minute(Number(scheduledTime.slice(3, 5))).second(0).millisecond(0).toISOString(),
           staff_id: staffId,
         } : {}),
+        ...(values.session_value != null ? { session_value: Number(values.session_value) } : {}),
         custom_fields: normalizeCustomFieldValues(
           sessionCustomFields,
           (values.custom_fields ?? {}) as Record<string, unknown>,
@@ -855,6 +856,8 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
         onLoadSlots={(date) => void loadAddSessionSlots(date)}
         staffOptions={staffOptions}
         customFieldDefs={sessionCustomFields}
+        quotaType={addSessionFor?.quota_type}
+        remainingValue={addSessionFor ? Math.max(Number(addSessionFor.value_total || 0) - Number(addSessionFor.value_used || 0), 0) : undefined}
         submitting={addingSessionId !== null}
         onCancel={() => setAddSessionFor(null)}
         onOk={() => void submitNewSession()}

@@ -17,6 +17,9 @@ interface TreatmentAddSessionModalProps {
   onLoadSlots: (date: Dayjs) => void
   staffOptions: { value: string; label: string }[]
   customFieldDefs: CustomFieldDefWithOptions[]
+  /** quota_type của liệu trình đang tạo buổi — VALUE bắt buộc nhập giá tiền buổi */
+  quotaType?: string | null
+  remainingValue?: number
   submitting: boolean
   onCancel: () => void
   onOk: () => void
@@ -33,10 +36,13 @@ export default function TreatmentAddSessionModal({
   onLoadSlots,
   staffOptions,
   customFieldDefs,
+  quotaType,
+  remainingValue,
   submitting,
   onCancel,
   onOk,
 }: TreatmentAddSessionModalProps) {
+  const needsSessionValue = quotaType === 'VALUE'
   return (
       <Modal
         title="Thông tin buổi điều trị mới"
@@ -90,6 +96,16 @@ export default function TreatmentAddSessionModal({
               </Form.Item>
             </Col>
           </Row>}
+          {needsSessionValue && (
+            <Form.Item
+              name="session_value"
+              label="Giá tiền buổi (₫)"
+              rules={[{ required: true, message: 'Gói bán theo giá tiền: cần nhập giá tiền cho buổi mới' }]}
+              extra={remainingValue != null ? `Còn lại có thể gán: ${Number(remainingValue).toLocaleString('vi-VN')} ₫` : undefined}
+            >
+              <InputNumber min={1} step={100000} style={{ width: '100%' }} />
+            </Form.Item>
+          )}
           <CustomFieldFormItems definitions={customFieldDefs} />
           {customFieldDefs.length === 0 && <Typography.Text type="secondary">Chưa có trường tùy chỉnh cho buổi điều trị.</Typography.Text>}
         </Form>
