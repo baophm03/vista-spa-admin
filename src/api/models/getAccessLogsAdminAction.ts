@@ -15,5 +15,6 @@ export const GetAccessLogsAdminAction = {
   VIEW_SESSION: 'VIEW_SESSION',
   VIEW_PHOTO: 'VIEW_PHOTO',
   DELETE_PHOTO: 'DELETE_PHOTO',
+  REOPEN_SESSION: 'REOPEN_SESSION',
   EXPORT: 'EXPORT',
 } as const;

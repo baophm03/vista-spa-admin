@@ -112,7 +112,8 @@ export default function TreatmentCreateModal({
             onChange={onPackageChange}
             options={packages.filter((p) => p.is_active).map((p) => ({
               value: p.id,
-              label: `${p.name} (${QUOTA_LABEL[p.quota_type ?? ''] ?? p.quota_type})`,
+              // (Loại gói · Cách tính) — loại gói đọc từ package_type.code, mặc định Gói lẻ
+              label: `${p.name} (${String((p as TreatmentPackage & { package_type?: { code?: string } }).package_type?.code ?? '').toUpperCase() === 'COMBO' ? 'Gói Combo' : 'Gói lẻ'} · ${QUOTA_LABEL[p.quota_type ?? ''] ?? p.quota_type})`,
             }))}
           />
         </Form.Item>
@@ -159,7 +160,7 @@ export default function TreatmentCreateModal({
         >
           <InputNumber min={0} step={100000} suffix={currencySymbol} className="w-full!" />
         </Form.Item>
-        <Form.Item name="sessions_bonus" label="Buổi tặng" extra="Cộng thêm vào số buổi của gói — để trống nếu không tặng">
+        <Form.Item name="sessions_bonus" label="Buổi tặng" extra="Bỏ trống để sử dụng cấu hình mặc định">
           <InputNumber min={0} precision={0} className="w-full!" />
         </Form.Item>
         <Form.Item name="expires_at" label="Hạn sử dụng" extra="Để trống nếu gói không giới hạn thời gian">

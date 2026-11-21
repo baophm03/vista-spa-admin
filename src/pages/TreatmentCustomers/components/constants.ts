@@ -4,6 +4,7 @@ import type { LookupItem } from '@/api/models/lookupItem'
 import type { MembershipTransaction } from '@/api/models/membershipTransaction'
 import type { RewardRedemption } from '@/api/models/rewardRedemption'
 import type { CustomFieldDefWithOptions } from '@/components/CustomFieldFormItems'
+import { normalizeCustomFieldValues } from '@/components/CustomFieldFormItems'
 
 export interface Slot {
   date?: string
@@ -43,6 +44,7 @@ export interface SessionRow {
   appointment_id?: string
   scheduled_at?: string
   appointment?: { appt_date?: string; start_time?: string }
+  service?: { id?: string; title?: string }
   started_at?: string
   done_at?: string
   completed_at?: string
@@ -79,8 +81,8 @@ export type RewardRedemptionRow = RewardRedemption & {
 
 export const QUOTA_LABEL: Record<string, string> = {
   SESSIONS: 'Theo số buổi',
-  VALUE: 'Theo định mức tiền',
-  UNLIMITED: 'Trọn gói',
+  VALUE: 'Theo mức tiền',
+  UNLIMITED: 'Trọn đời',
 }
 
 export const FILTERS = [
@@ -128,6 +130,38 @@ export const sessionUsage = (treatment: CustomerTreatment) => {
     remaining: Math.max(0, total - used),
     percent: total > 0 ? Math.min(100, Math.round((used / total) * 100)) : 0,
   }
+}
+
+/**
+ * Buổi tặng còn lại = sessions_bonus − max(sessions_bonus_used, sessions_used − sessions_total).
+ * Ưu tiên bộ đếm sessions_bonus_used (chính xác cho combo — buổi tặng có thể tiêu trước khi hết tổng buổi mua);
+ * fallback chênh lệch sessions_used − sessions_total cho dữ liệu cũ chưa đánh dấu is_bonus.
+ * Khớp công thức backend (treatmentService convert + sessionService).
+ */
+export const bonusRemaining = (
+  treatment: Pick<CustomerTreatment, 'sessions_bonus' | 'sessions_bonus_used' | 'sessions_used' | 'sessions_total'>,
+): number =>
+  Math.max(
+    0,
+    Number(treatment.sessions_bonus ?? 0) -
+      Math.max(Number(treatment.sessions_bonus_used ?? 0), Math.max(0, Number(treatment.sessions_used ?? 0) - Number(treatment.sessions_total ?? 0))),
+  )
+
+/** CT-04 — Gói dto cho PUT /treatment-customers/{id}/admin: chỉ gửi total_amount khi thay đổi (đã thu tiền backend sẽ chặn). */
+export const buildTreatmentEditDto = (
+  row: CustomerTreatment,
+  values: { total_amount?: number | null; expires_at?: { format: (format: string) => string } | null; note?: string; custom_fields?: Record<string, unknown> },
+  customFieldDefs: CustomFieldDefWithOptions[],
+): Record<string, unknown> => {
+  const dto: Record<string, unknown> = {
+    note: values.note?.trim() || null,
+    expires_at: values.expires_at ? values.expires_at.format('YYYY-MM-DD') : null,
+    custom_fields: normalizeCustomFieldValues(customFieldDefs, values.custom_fields ?? {}, row.custom_fields ?? {}),
+  }
+  if (values.total_amount != null && Number(values.total_amount) !== Number(row.total_amount ?? 0)) {
+    dto.total_amount = Number(values.total_amount)
+  }
+  return dto
 }
 
 export const ADJUST_TYPE_OPTIONS = [

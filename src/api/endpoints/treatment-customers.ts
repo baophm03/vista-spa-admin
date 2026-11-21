@@ -846,7 +846,7 @@ export const usePutTreatmentCustomersIdCancelAdmin = <TError = UnauthorizedRespo
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/treatmentCustomers/{id}/available-slots` — customer treatment package. Cần đăng nhập + `treatment.view_all`. Branch scope: users limited to a single branch only see that branch's data. Query parameters: `date`, `exclude_session_id`, `staff_id`.
+ * GET `/treatmentCustomers/{id}/available-slots` — customer treatment package. Cần đăng nhập + `treatment.view_all`. Branch scope: users limited to a single branch only see that branch's data. Query parameters: `date`, `exclude_session_id`, `staff_id`, `service_id` (bắt buộc truyền cho liệu trình combo — slot tính theo dịch vụ chọn; gói lẻ bỏ qua, tự dùng dịch vụ của gói).
  * @summary View available time slots
  */
 export const getTreatmentCustomersIdAvailableSlotsAdmin = (
@@ -1575,7 +1575,7 @@ export const usePostTreatmentCustomersAdmin = <TError = UnauthorizedResponse | F
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **PH-03** — DELETE /photos/{id}/admin (soft, writes access_log DELETE_PHOTO, ADM). Cần đăng nhập + `treatment_session.delete_all`.
+ * **PH-03** — DELETE /photos/{id}/admin (soft, writes a photo-deletion audit event and is restricted to the assigned branch). Cần đăng nhập + `treatment_session.delete_all`.
  * @summary Delete a skin condition photo
  */
 export const deletePhotosIdAdmin = (

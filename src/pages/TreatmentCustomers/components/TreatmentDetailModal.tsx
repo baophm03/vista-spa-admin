@@ -5,7 +5,7 @@ import { openHtmlPrint, errorMessage } from '@/api/helpers'
 import type { CustomerTreatment } from '@/api/models/customerTreatment'
 import type { CustomFieldDefWithOptions } from '@/components/CustomFieldFormItems'
 import { useBrandDateTime } from '@/themeRuntime'
-import { PAY_METHOD, QUOTA_LABEL, STATUS_META, sessionUsage, treatmentProgress, type PaymentRow } from './constants'
+import { PAY_METHOD, QUOTA_LABEL, STATUS_META, bonusRemaining, sessionUsage, treatmentProgress, type PaymentRow } from './constants'
 import { SubHead } from './shared'
 import SessionTimeline from './SessionTimeline'
 import PointsHistoryPanel from './PointsHistoryPanel'
@@ -38,6 +38,8 @@ interface TreatmentDetailModalProps {
   refresh: () => void
   refreshSelectedDetail: () => Promise<void>
   onCancelTreatment: (row: CustomerTreatment) => Promise<void>
+  onConvert: (row: CustomerTreatment) => void
+  onEdit: (row: CustomerTreatment) => void
   onClose: () => void
 }
 
@@ -69,6 +71,8 @@ export default function TreatmentDetailModal({
   refresh,
   refreshSelectedDetail,
   onCancelTreatment,
+  onConvert,
+  onEdit,
   onClose,
 }: TreatmentDetailModalProps) {
   const { formatDateTime } = useBrandDateTime()
@@ -91,7 +95,7 @@ export default function TreatmentDetailModal({
             style={isMobile ? undefined : { position: 'sticky', top: 0, maxHeight: 'calc(100vh - 140px)', overflowY: 'auto' }}
           >
             <Typography.Text type="secondary" className="text-xs font-extrabold tracking-[1.2px]">
-              {detail.quota_type === 'UNLIMITED' ? 'LIỆU TRÌNH TRỌN GÓI' : 'TIẾN ĐỘ LIỆU TRÌNH'}
+              {detail.quota_type === 'UNLIMITED' ? 'LIỆU TRÌNH TRỌN ĐỜI' : 'TIẾN ĐỘ LIỆU TRÌNH'}
             </Typography.Text>
             <Typography.Title level={4} className="mt-[5px]! mb-0!">{packageName(detail)}</Typography.Title>
             <Typography.Text type="secondary" className="block text-[13px]">
@@ -128,6 +132,33 @@ export default function TreatmentDetailModal({
                   <span>Còn lại</span><strong>{sessionUsage(detail).remaining} buổi</strong>
                 </div>
               )}
+              {/* Buổi tặng còn lại = sessions_bonus - sessions_bonus_used (helper chung, khớp công thức backend) */}
+              {detail.quota_type === 'SESSIONS' && Number(detail.sessions_bonus ?? 0) > 0 && (
+                <div className="flex justify-between gap-2.5">
+                  <span>Buổi tặng còn lại</span>
+                  <strong>{bonusRemaining(detail)} buổi</strong>
+                </div>
+              )}
+              {/* Combo: quota còn lại theo từng dịch vụ */}
+              {!!detail.services?.length && (
+                <>
+                  <Divider className="my-3!" />
+                  <Typography.Text type="secondary" className="text-xs font-extrabold tracking-[1.2px]">
+                    QUOTA THEO DỊCH VỤ
+                  </Typography.Text>
+                  <div className="mt-2 grid gap-[7px] text-[13px]">
+                    {detail.services.map((service) => (
+                      <div key={service.service_id} className="flex items-center justify-between gap-2.5">
+                        <span className="truncate">{service.service_name}</span>
+                        <strong className="whitespace-nowrap">
+                          {service.qty_remaining}/{service.qty_total} buổi
+                          {!!service.qty_reserved && <span className="font-medium text-[#777]"> · giữ {service.qty_reserved}</span>}
+                        </strong>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
               {detail.referrer && (
                 <div className="flex justify-between gap-2.5">
                   <span>Người giới thiệu</span>
@@ -156,6 +187,18 @@ export default function TreatmentDetailModal({
               {canCreateSessions && detail.status === 'ACTIVE' && (
                 <Button block disabled={addingSessionId !== null} loading={addingSessionId === detail.id} onClick={() => onAddSession(detail)}>
                   +1 buổi
+                </Button>
+              )}
+              {/* TA-02 — Đổi buổi tặng: chỉ hiện khi còn buổi tặng khả dụng (quyền chi tiết do backend chốt: convertible_note hoặc treatment.convert) */}
+              {canUpdate && detail.status === 'ACTIVE' && detail.quota_type === 'SESSIONS' && bonusRemaining(detail) > 0 && (
+                <Button block onClick={() => onConvert(detail)}>
+                  Đổi buổi tặng
+                </Button>
+              )}
+              {/* CT-04 — Sửa số tiền (chưa thu tiền) / hạn sử dụng / ghi chú / custom fields */}
+              {canUpdate && detail.status !== 'CANCELLED' && (
+                <Button block onClick={() => onEdit(detail)}>
+                  Sửa liệu trình
                 </Button>
               )}
               {canUpdate && detail.status !== 'CANCELLED' && (detail.debt_amount ?? 0) > 0 && (

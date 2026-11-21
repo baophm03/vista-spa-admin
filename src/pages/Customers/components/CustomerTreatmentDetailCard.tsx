@@ -31,7 +31,7 @@ const PAYMENT_STATUS: Record<string, { label: string; color: string }> = {
 const QUOTA_LABEL: Record<string, string> = {
   SESSIONS: 'Theo số buổi',
   VALUE: 'Theo định mức tiền',
-  UNLIMITED: 'Trọn gói',
+  UNLIMITED: 'Trọn đời',
 }
 
 const PAYMENT_METHOD: Record<string, string> = {
