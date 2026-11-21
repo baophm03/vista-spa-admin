@@ -6,6 +6,15 @@ import type { CustomFieldDefWithOptions } from '@/components/CustomFieldFormItem
 import type { Slot } from './constants'
 import CustomFieldFormItems from '@/components/CustomFieldFormItems'
 
+interface ComboServiceQuotaOption {
+  service_id?: string
+  service_name?: string | null
+  qty_total?: number
+  qty_used?: number
+  qty_reserved?: number
+  qty_remaining?: number
+}
+
 interface TreatmentAddSessionModalProps {
   form: FormInstance
   open: boolean
@@ -20,6 +29,8 @@ interface TreatmentAddSessionModalProps {
   /** quota_type của liệu trình đang tạo buổi — VALUE bắt buộc nhập giá tiền buổi */
   quotaType?: string | null
   remainingValue?: number
+  /** Combo: quota còn lại theo từng dịch vụ — bắt buộc chọn dịch vụ còn quota cho buổi mới */
+  comboServices?: ComboServiceQuotaOption[]
   submitting: boolean
   onCancel: () => void
   onOk: () => void
@@ -38,11 +49,13 @@ export default function TreatmentAddSessionModal({
   customFieldDefs,
   quotaType,
   remainingValue,
+  comboServices,
   submitting,
   onCancel,
   onOk,
 }: TreatmentAddSessionModalProps) {
   const needsSessionValue = quotaType === 'VALUE'
+  const isCombo = (comboServices?.length ?? 0) > 0
   return (
     <Modal
       title="Thông tin buổi điều trị mới"
@@ -54,6 +67,27 @@ export default function TreatmentAddSessionModal({
       cancelText="Hủy"
     >
       <Form form={form} layout="vertical" className="mt-3">
+        {isCombo && (
+          <Form.Item
+            name="service_id"
+            label="Dịch vụ thực hiện"
+            rules={[{ required: true, message: 'Gói combo: chọn dịch vụ cho buổi mới' }]}
+            extra="Buổi này sẽ trừ đúng 1 quota của dịch vụ được chọn"
+          >
+            <Select
+              showSearch
+              optionFilterProp="label"
+              placeholder="Chọn dịch vụ còn quota"
+              options={comboServices!
+                .filter((service) => !!service.service_id)
+                .map((service) => ({
+                  value: service.service_id!,
+                  label: `${service.service_name ?? service.service_id} — còn ${service.qty_remaining ?? 0}/${service.qty_total ?? 0} buổi`,
+                  disabled: (service.qty_remaining ?? 0) <= 0,
+                }))}
+            />
+          </Form.Item>
+        )}
         {canSchedule && <Row gutter={12}>
           <Col span={12}>
             <Form.Item name="scheduled_date" label="Ngày hẹn">

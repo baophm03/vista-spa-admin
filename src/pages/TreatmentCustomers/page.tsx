@@ -189,6 +189,13 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
   const openDetail = (row: CustomerTreatment) => {
     setDetail(row)
     setDetailTab('sessions')
+    // Lấy chi tiết mới nhất — combo trả thêm services[] (quota còn lại theo từng dịch vụ)
+    getTreatmentCustomersIdAdmin(row.id)
+      .then((response) => {
+        const fresh = pickData<CustomerTreatment>(response)
+        if (fresh) setDetail((current) => (current?.id === row.id ? fresh : current))
+      })
+      .catch(() => undefined)
     if (!canReadPayments) {
       setPayments([])
       setPayLoading(false)
@@ -261,6 +268,9 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
     }
   }
 
+  const [comboServices, setComboServices] = useState<CustomerTreatment['services']>()
+  const comboServiceSeq = useRef(0)
+
   const addSession = (row: CustomerTreatment) => {
     if (addingSessionId !== null) return
     addSessionForm.resetFields()
@@ -268,6 +278,15 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
     addSessionSlotSequence.current += 1
     setAddSessionSlots([])
     setAddSessionFor(row)
+    // Combo: lấy quota còn lại theo từng dịch vụ từ chi tiết liệu trình
+    const seq = ++comboServiceSeq.current
+    setComboServices(undefined)
+    getTreatmentCustomersIdAdmin(row.id)
+      .then((response) => {
+        const fresh = pickData<CustomerTreatment>(response)
+        if (seq === comboServiceSeq.current && fresh?.services?.length) setComboServices(fresh.services)
+      })
+      .catch(() => undefined)
   }
 
   const loadAddSessionSlots = useCallback(async (date: Dayjs) => {
@@ -317,6 +336,7 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
     setAddingSessionId(addSessionFor.id)
     try {
       await postTreatmentCustomersIdSessionsAdmin(addSessionFor.id, {
+        ...(values.service_id ? { service_id: String(values.service_id) } : {}),
         ...(scheduledDate && scheduledTime && staffId ? {
           scheduled_at: scheduledDate.hour(Number(scheduledTime.slice(0, 2))).minute(Number(scheduledTime.slice(3, 5))).second(0).millisecond(0).toISOString(),
           staff_id: staffId,
@@ -858,6 +878,7 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
         customFieldDefs={sessionCustomFields}
         quotaType={addSessionFor?.quota_type}
         remainingValue={addSessionFor ? Math.max(Number(addSessionFor.value_total || 0) - Number(addSessionFor.value_used || 0), 0) : undefined}
+        comboServices={comboServices ?? undefined}
         submitting={addingSessionId !== null}
         onCancel={() => setAddSessionFor(null)}
         onOk={() => void submitNewSession()}

@@ -43,6 +43,7 @@ export interface SessionRow {
   appointment_id?: string
   scheduled_at?: string
   appointment?: { appt_date?: string; start_time?: string }
+  service?: { id?: string; title?: string }
   started_at?: string
   done_at?: string
   completed_at?: string
@@ -79,8 +80,8 @@ export type RewardRedemptionRow = RewardRedemption & {
 
 export const QUOTA_LABEL: Record<string, string> = {
   SESSIONS: 'Theo số buổi',
-  VALUE: 'Theo định mức tiền',
-  UNLIMITED: 'Trọn gói',
+  VALUE: 'Theo mức tiền',
+  UNLIMITED: 'Trọn đời',
 }
 
 export const FILTERS = [

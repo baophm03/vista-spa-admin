@@ -373,6 +373,11 @@ export default function SessionTimeline({
                       Bảo hành
                     </span>
                   )}
+                  {!!s.service?.title && (
+                    <span className="rounded-full bg-[var(--brand-bg)] px-3 py-[3px] text-[13px] font-bold text-[#26211F]" style={{ border: '1px solid var(--brand-border)' }}>
+                      {s.service.title}
+                    </span>
+                  )}
                 </Space>
                 {(ctStatus === 'ACTIVE' || s.is_warranty) && (
                     <Space size={6} wrap className="ml-auto">

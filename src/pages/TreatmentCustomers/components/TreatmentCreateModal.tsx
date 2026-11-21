@@ -112,7 +112,8 @@ export default function TreatmentCreateModal({
             onChange={onPackageChange}
             options={packages.filter((p) => p.is_active).map((p) => ({
               value: p.id,
-              label: `${p.name} (${QUOTA_LABEL[p.quota_type ?? ''] ?? p.quota_type})`,
+              // (Loại gói · Cách tính) — loại gói đọc từ package_type.code, mặc định Gói lẻ
+              label: `${p.name} (${String((p as TreatmentPackage & { package_type?: { code?: string } }).package_type?.code ?? '').toUpperCase() === 'COMBO' ? 'Gói Combo' : 'Gói lẻ'} · ${QUOTA_LABEL[p.quota_type ?? ''] ?? p.quota_type})`,
             }))}
           />
         </Form.Item>

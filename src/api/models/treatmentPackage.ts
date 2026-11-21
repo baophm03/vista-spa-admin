@@ -14,6 +14,7 @@ import type { TreatmentPackageListPriceMax } from './treatmentPackageListPriceMa
 import type { TreatmentPackageValidityUnit } from './treatmentPackageValidityUnit';
 import type { TreatmentPackageConvertibleNote } from './treatmentPackageConvertibleNote';
 import type { TreatmentPackageServiceId } from './treatmentPackageServiceId';
+import type { TreatmentPackageServicesItem } from './treatmentPackageServicesItem';
 import type { TreatmentPackageCustomFields } from './treatmentPackageCustomFields';
 
 /**
@@ -43,6 +44,10 @@ export interface TreatmentPackage {
   bonus_sessions_default?: number;
   convertible_note?: TreatmentPackageConvertibleNote;
   service_id?: TreatmentPackageServiceId;
+  /** Response: id các dịch vụ áp dụng (computed từ bảng link, gói lẻ 1 dịch vụ, combo N dịch vụ) */
+  service_ids?: string[];
+  /** Input tạo/sửa gói combo: >= 2 phần tử {service_id, qty} — qty là số buổi riêng của dịch vụ đó, tổng buổi gói = SUM(qty). Response: echo cấu hình đang áp dụng */
+  services?: TreatmentPackageServicesItem[];
   is_active?: boolean;
   custom_fields?: TreatmentPackageCustomFields;
   created_at?: string;
