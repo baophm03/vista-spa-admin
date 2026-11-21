@@ -3,8 +3,8 @@ import type { Branch } from '@/api/models/branch'
 import type { Service } from '@/api/models/service'
 import type { CustomFieldDefWithOptions } from '@/components/CustomFieldFormItems'
 import {
-  FIXED_PACKAGE_TYPE_LABEL,
   VALIDITY_LABEL,
+  calcLabel,
   priceLabel,
   type PackageTypeRow,
   type TreatmentPackageRow,
@@ -20,14 +20,16 @@ export default function TreatmentPackageDetailModal({ row, branches, services, p
   onClose: () => void
   onEdit: (row: TreatmentPackageRow) => void
 }) {
-  const type = row
-    ? (row.package_type && typeof row.package_type === 'object'
-        ? row.package_type
-        : packageTypeById.get(String(row.package_type_id)))
-    : undefined
-  const typeLabel = type
-    ? FIXED_PACKAGE_TYPE_LABEL[String(type.code).toUpperCase()] ?? type.name ?? type.code
-    : 'Chưa phân loại'
+  const typeLabel = row ? calcLabel(row, packageTypeById) : 'Chưa phân loại'
+  // Loại gói theo cấu trúc: COMBO = Gói Combo, còn lại (4 loại cố định + dữ liệu cũ) đều là Gói lẻ
+  const kindLabel = (() => {
+    const type = row
+      ? (row.package_type && typeof row.package_type === 'object'
+          ? row.package_type
+          : packageTypeById.get(String(row.package_type_id)))
+      : undefined
+    return String(type?.code ?? '').toUpperCase() === 'COMBO' ? 'Gói Combo' : 'Gói lẻ'
+  })()
   const serviceNames = row?.service_ids?.length
     ? row.service_ids.map((id) => services.find((service) => service.id === id)?.title ?? 'Dịch vụ').join(', ')
     : row?.service_id
@@ -48,8 +50,9 @@ export default function TreatmentPackageDetailModal({ row, branches, services, p
       {row && (
         <Descriptions bordered size="small" column={1} style={{ marginTop: 12 }}>
           <Descriptions.Item label="Tên gói">{row.name}</Descriptions.Item>
-          <Descriptions.Item label="Loại gói"><Tag color="purple">{typeLabel}</Tag></Descriptions.Item>
           <Descriptions.Item label="Cơ sở">{row.branch_id ? branches.find((branch) => branch.id === row.branch_id)?.name ?? '—' : 'Tất cả cơ sở'}</Descriptions.Item>
+          <Descriptions.Item label="Loại gói"><Tag color="geekblue">{kindLabel}</Tag></Descriptions.Item>
+          <Descriptions.Item label="Cách tính"><Tag color="purple">{typeLabel}</Tag></Descriptions.Item>
           <Descriptions.Item label="Dịch vụ áp dụng">{serviceNames}</Descriptions.Item>
           <Descriptions.Item label="Hạn mức">
             {row.quota_type === 'SESSIONS'

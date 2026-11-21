@@ -24,10 +24,14 @@ import { useBrandCurrency } from '@/themeRuntime'
 import TreatmentPackageModal from './components/TreatmentPackageModal'
 import TreatmentPackageDetailModal from './components/TreatmentPackageDetailModal'
 import {
+  FIXED_PACKAGE_TYPE_CODES,
+  SINGLE_SESSION_TYPE_CODE,
   FIXED_PACKAGE_TYPE_CODE,
+  VALUE_QUOTA_TYPE_CODE,
   UNLIMITED_PACKAGE_TYPE_CODE,
   VALIDITY_LABEL,
 
+  calcLabel,
   priceLabel,
   type PackageTypeRow,
   type QuotaType,
@@ -107,7 +111,6 @@ export default function Treatments() {
     const type = packageTypeId ? packageTypeById.get(String(packageTypeId)) : undefined
     packageForm.setFieldsValue(row ? {
       ...row,
-      package_type_id: packageTypeId ? String(packageTypeId) : undefined,
       quota_type: row.quota_type ?? (type && String(type.code).toUpperCase() === UNLIMITED_PACKAGE_TYPE_CODE ? 'UNLIMITED' : 'SESSIONS'),
       has_warranty: !!row.warranty_text,
       list_price: row.list_price ?? 0,
@@ -115,7 +118,6 @@ export default function Treatments() {
       custom_fields: row.custom_fields ?? {},
     } : {
       name: '',
-      package_type_id: packageTypeByCode.get(FIXED_PACKAGE_TYPE_CODE)?.id,
       quota_type: 'SESSIONS',
       total_sessions: 5,
       has_warranty: false,
@@ -133,12 +135,25 @@ export default function Treatments() {
     try {
       const quotaType = values.quota_type as QuotaType
       const warrantyText = values.warranty_text?.trim() || null
+      // package_type_id suy ra từ "Cách tính" + số buổi (4 loại cố định trong DB):
+      // SESSIONS + 1 buổi → SINGLE_SESSION (dịch vụ lẻ); SESSIONS + >= 2 → FIXED_PACKAGE; VALUE → VALUE_QUOTA; UNLIMITED → UNLIMITED_PACKAGE
+      const derivePackageTypeId = (quota: QuotaType, sessions?: number | null) => {
+        const code = quota === 'SESSIONS'
+          ? (Number(sessions) === 1 ? SINGLE_SESSION_TYPE_CODE : FIXED_PACKAGE_TYPE_CODE)
+          : quota === 'VALUE' ? VALUE_QUOTA_TYPE_CODE : UNLIMITED_PACKAGE_TYPE_CODE
+        return packageTypeByCode.get(code)?.id
+      }
+      const editingTypeId = editingPackage ? String(editingPackage.package_type_id ?? editingPackage.package_type?.id ?? '') : ''
+      const editingTypeCode = (editingTypeId ? packageTypeById.get(editingTypeId)?.code : '')?.toUpperCase() ?? ''
+      const packageTypeId = editingTypeId && !FIXED_PACKAGE_TYPE_CODES.includes(editingTypeCode)
+        ? editingTypeId // gói dữ liệu cũ thuộc loại khác 4 loại cố định — giữ nguyên loại của nó
+        : derivePackageTypeId(quotaType, values.total_sessions)
       const dto = {
         ...values,
         name: String(values.name).trim(),
         is_active: values.is_active !== false,
         branch_id: values.branch_id || null,
-        package_type_id: values.package_type_id,
+        package_type_id: packageTypeId,
         quota_type: quotaType,
         total_sessions: quotaType === 'SESSIONS' ? Number(values.total_sessions) : null,
         total_value: quotaType === 'VALUE' ? Number(values.list_price) : null,
@@ -199,7 +214,7 @@ export default function Treatments() {
       title: 'Gói liệu trình',
       key: 'name',
       dataIndex: 'name',
-      width: '23%',
+      width: '20%',
       render: (name, row) => (
         <div>
           <Typography.Text strong>{name}</Typography.Text>
@@ -207,38 +222,46 @@ export default function Treatments() {
         </div>
       ),
     },
-    { title: 'Cơ sở', key: 'branch', dataIndex: 'branch_id', width: '10%', render: (id) => id ? branches.find((branch) => branch.id === id)?.name ?? '—' : 'Tất cả cơ sở' },
+    { title: 'Cơ sở', key: 'branch', dataIndex: 'branch_id', width: '8%', render: (id) => id ? branches.find((branch) => branch.id === id)?.name ?? '—' : 'Tất cả cơ sở' },
     {
       title: 'Loại gói',
-      key: 'type',
+      key: 'package_kind',
       dataIndex: 'package_type_id',
-      width: '13%',
+      width: '8%',
       render: (_value, row) => {
+        // Loại gói theo cấu trúc: COMBO = Gói Combo, còn lại (4 loại cố định + dữ liệu cũ) đều là Gói lẻ
         const type = row.package_type && typeof row.package_type === 'object'
           ? row.package_type
           : packageTypeById.get(String(row.package_type_id))
-        return <Tag color="purple">{type?.name ?? type?.code ?? 'Chưa phân loại'}</Tag>
+        return <Tag color="geekblue">{String(type?.code ?? '').toUpperCase() === 'COMBO' ? 'Gói Combo' : 'Gói lẻ'}</Tag>
       },
+    },
+    {
+      title: 'Cách tính',
+      key: 'type',
+      dataIndex: 'package_type_id',
+      width: '11%',
+      render: (_value, row) => <Tag color="purple">{calcLabel(row, packageTypeById)}</Tag>,
     },
     {
       title: 'Dịch vụ',
       key: 'services',
-
+      // không set width — cột tự động chiếm phần còn lại của bảng (các width khác phải tổng < 100%)
       render: (_value, row) => {
         const ids = row.service_ids?.length ? row.service_ids : row.service_id ? [row.service_id] : []
         return ids.length ? ids.map((id) => serviceById.get(id) ?? 'Dịch vụ').join(', ') : '—'
       },
     },
-    { title: 'Giá niêm yết', key: 'price', width: '14%', render: (_value, row) => priceLabel(row, formatMoney) },
+    { title: 'Giá niêm yết', key: 'price', width: '12%', render: (_value, row) => priceLabel(row, formatMoney) },
     {
       title: 'Thời hạn',
       key: 'validity',
-      width: '11%',
+      width: '9%',
       render: (_value, row) => row.validity_value && row.validity_unit
         ? String(row.validity_value) + ' ' + (VALIDITY_LABEL[row.validity_unit] ?? row.validity_unit)
         : 'Không thời hạn',
     },
-    { title: 'Trạng thái', key: 'status', dataIndex: 'is_active', width: '13%', render: (active) => active ? <Tag color="green">Đang sử dụng</Tag> : <Tag>Ngưng sử dụng</Tag> },
+    { title: 'Trạng thái', key: 'status', dataIndex: 'is_active', width: '10%', render: (active) => active ? <Tag color="green">Đang sử dụng</Tag> : <Tag>Ngưng sử dụng</Tag> },
   ]
 
   const packagesContent = (
@@ -335,8 +358,6 @@ export default function Treatments() {
         form={packageForm}
         open={packageOpen}
         editing={editingPackage}
-        packageTypes={packageTypes}
-        packageTypeById={packageTypeById}
         services={services}
         branches={branches}
         packageCustomFields={packageCustomFields}

@@ -79,8 +79,8 @@ export type RewardRedemptionRow = RewardRedemption & {
 
 export const QUOTA_LABEL: Record<string, string> = {
   SESSIONS: 'Theo số buổi',
-  VALUE: 'Theo định mức tiền',
-  UNLIMITED: 'Trọn gói',
+  VALUE: 'Theo mức tiền',
+  UNLIMITED: 'Trọn đời',
 }
 
 export const FILTERS = [
