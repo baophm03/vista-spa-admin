@@ -128,6 +128,26 @@ export default function TreatmentDetailModal({
                   <span>Còn lại</span><strong>{sessionUsage(detail).remaining} buổi</strong>
                 </div>
               )}
+              {/* Combo: quota còn lại theo từng dịch vụ */}
+              {!!detail.services?.length && (
+                <>
+                  <Divider className="my-3!" />
+                  <Typography.Text type="secondary" className="text-xs font-extrabold tracking-[1.2px]">
+                    QUOTA THEO DỊCH VỤ
+                  </Typography.Text>
+                  <div className="mt-2 grid gap-[7px] text-[13px]">
+                    {detail.services.map((service) => (
+                      <div key={service.service_id} className="flex items-center justify-between gap-2.5">
+                        <span className="truncate">{service.service_name}</span>
+                        <strong className="whitespace-nowrap">
+                          {service.qty_remaining}/{service.qty_total} buổi
+                          {!!service.qty_reserved && <span className="font-medium text-[#777]"> · giữ {service.qty_reserved}</span>}
+                        </strong>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
               {detail.referrer && (
                 <div className="flex justify-between gap-2.5">
                   <span>Người giới thiệu</span>

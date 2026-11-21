@@ -43,6 +43,7 @@ export interface SessionRow {
   appointment_id?: string
   scheduled_at?: string
   appointment?: { appt_date?: string; start_time?: string }
+  service?: { id?: string; title?: string }
   started_at?: string
   done_at?: string
   completed_at?: string

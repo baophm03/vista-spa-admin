@@ -45,6 +45,7 @@ export const CALC_OPTIONS = Object.entries(CALC_LABEL).map(([value, label]) => (
  * - UNLIMITED_PACKAGE: trọn đời, không giới hạn số buổi
  */
 export const SINGLE_SESSION_TYPE_CODE = 'SINGLE_SESSION'
+export const COMBO_TYPE_CODE = 'COMBO'
 export const FIXED_PACKAGE_TYPE_CODE = 'FIXED_PACKAGE'
 export const VALUE_QUOTA_TYPE_CODE = 'VALUE_QUOTA'
 export const UNLIMITED_PACKAGE_TYPE_CODE = 'UNLIMITED_PACKAGE'

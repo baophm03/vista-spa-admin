@@ -30,11 +30,22 @@ export default function TreatmentPackageDetailModal({ row, branches, services, p
       : undefined
     return String(type?.code ?? '').toUpperCase() === 'COMBO' ? 'Gói Combo' : 'Gói lẻ'
   })()
-  const serviceNames = row?.service_ids?.length
-    ? row.service_ids.map((id) => services.find((service) => service.id === id)?.title ?? 'Dịch vụ').join(', ')
-    : row?.service_id
-      ? services.find((service) => service.id === row.service_id)?.title ?? '—'
-      : '—'
+  const serviceNames = (() => {
+    // Combo: hiển thị kèm số buổi riêng của từng dịch vụ (services[] từ bảng link)
+    if (row?.services?.length) {
+      return row.services
+        .map((entry) => {
+          const title = services.find((service) => service.id === entry.service_id)?.title ?? 'Dịch vụ'
+          return Number(entry.qty) > 1 ? `${title} (${entry.qty} buổi)` : title
+        })
+        .join(', ')
+    }
+    return row?.service_ids?.length
+      ? row.service_ids.map((id) => services.find((service) => service.id === id)?.title ?? 'Dịch vụ').join(', ')
+      : row?.service_id
+        ? services.find((service) => service.id === row.service_id)?.title ?? '—'
+        : '—'
+  })()
 
   return (
     <Modal
