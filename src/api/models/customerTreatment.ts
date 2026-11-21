@@ -5,6 +5,7 @@
  * Vista Spa backend API. Uses the NEWSKY+ business error envelope for permission-aware endpoints and the legacy response envelope for existing admin endpoints.
  * OpenAPI spec version: 1.0.0
  */
+import type { CustomerTreatmentPackageId } from './customerTreatmentPackageId';
 import type { CustomerTreatmentPackageSnapshot } from './customerTreatmentPackageSnapshot';
 import type { CustomerTreatmentPackageTypeId } from './customerTreatmentPackageTypeId';
 import type { CustomerTreatmentQuotaType } from './customerTreatmentQuotaType';
@@ -26,7 +27,7 @@ import type { CustomerTreatmentServicesItem } from './customerTreatmentServicesI
 export interface CustomerTreatment {
   id: string;
   customer_profile_id: string;
-  package_id: string;
+  package_id: CustomerTreatmentPackageId;
   branch_id: string;
   package_snapshot?: CustomerTreatmentPackageSnapshot;
   package_type_id?: CustomerTreatmentPackageTypeId;
@@ -58,6 +59,11 @@ export interface CustomerTreatment {
   expires_at?: CustomerTreatmentExpiresAt;
   /** @minimum 0 */
   sessions_bonus?: number;
+  /**
+   * Số buổi tặng đã dùng — buổi tặng còn lại = sessions_bonus - sessions_bonus_used
+   * @minimum 0
+   */
+  sessions_bonus_used?: number;
   parent_treatment_id?: CustomerTreatmentParentTreatmentId;
   referrer_id?: CustomerTreatmentReferrerId;
   referrer?: CustomerTreatmentReferrer;

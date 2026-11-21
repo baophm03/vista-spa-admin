@@ -160,7 +160,7 @@ export default function TreatmentCreateModal({
         >
           <InputNumber min={0} step={100000} suffix={currencySymbol} className="w-full!" />
         </Form.Item>
-        <Form.Item name="sessions_bonus" label="Buổi tặng" extra="Cộng thêm vào số buổi của gói — để trống nếu không tặng">
+        <Form.Item name="sessions_bonus" label="Buổi tặng" extra="Bỏ trống để sử dụng cấu hình mặc định">
           <InputNumber min={0} precision={0} className="w-full!" />
         </Form.Item>
         <Form.Item name="expires_at" label="Hạn sử dụng" extra="Để trống nếu gói không giới hạn thời gian">

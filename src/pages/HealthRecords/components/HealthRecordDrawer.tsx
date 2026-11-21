@@ -134,7 +134,7 @@ export default function HealthRecordDrawer({
                 <Space direction="vertical" size={8} style={{ width: '100%' }}>
                   {detailTreatments.map((treatment) => (
                     <div key={treatment.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <Typography.Text style={{ flex: 1 }}>{packageNames[treatment.package_id] || 'Gói liệu trình'}</Typography.Text>
+                      <Typography.Text style={{ flex: 1 }}>{(treatment.package_id && packageNames[treatment.package_id]) || (treatment.package_snapshot as { name?: string } | undefined)?.name || 'Gói liệu trình'}</Typography.Text>
                       <Typography.Text type="secondary">
                         {treatment.quota_type === 'SESSIONS'
                           ? `${treatment.sessions_used ?? 0}/${treatment.sessions_total ?? '?'} buổi`

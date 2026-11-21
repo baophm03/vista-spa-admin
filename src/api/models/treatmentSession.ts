@@ -43,6 +43,8 @@ export interface TreatmentSession {
   /** @minimum 0 */
   product_amount?: number;
   is_warranty?: boolean;
+  /** Buổi tiêu vào hạn mức buổi tặng (combo: dùng được cho mọi dịch vụ khi hết quota riêng) */
+  is_bonus?: boolean;
   diary?: TreatmentSessionDiary;
   skin_note?: TreatmentSessionSkinNote;
   concern?: TreatmentSessionConcern;

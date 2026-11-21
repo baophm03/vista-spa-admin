@@ -182,7 +182,7 @@ export default function TreatmentPackageModal({
           rules={[{ required: true, message: 'Chọn cách tính' }]}
           extra={isCombo
             ? 'Gói combo chỉ hỗ trợ cách tính theo số buổi — mỗi dịch vụ có quota riêng theo số buổi đã nhập.'
-            : 'Dịch vụ lẻ = gói lẻ tính theo số buổi với đúng 1 buổi.'}
+            : undefined}
         >
           {isCombo ? (
             <Select disabled options={[{ value: 'SESSIONS', label: 'Theo số buổi' }]} />
@@ -206,7 +206,6 @@ export default function TreatmentPackageModal({
                 name="total_sessions"
                 label="Số buổi"
                 rules={[{ required: true, message: 'Nhập số buổi' }]}
-                extra="Nhập 1 = dịch vụ lẻ; từ 2 buổi trở lên là gói theo buổi."
               >
                 <InputNumber min={1} precision={0} style={{ width: '100%' }} />
               </Form.Item>
@@ -219,6 +218,14 @@ export default function TreatmentPackageModal({
                 <Input value="Không giới hạn" disabled style={{ width: '100%' }} />
               </Form.Item>
             )}
+          </Col>
+          <Col span={8}>
+            <Form.Item
+              name="bonus_sessions_default"
+              label="Buổi tặng mặc định"
+            >
+              <InputNumber min={0} precision={0} style={{ width: '100%' }} />
+            </Form.Item>
           </Col>
           <Col span={8}>
             <Form.Item name="branch_id" label="Cơ sở">

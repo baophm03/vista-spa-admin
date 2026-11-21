@@ -26,7 +26,7 @@ async function useVoucherCustomer(_category: 'treatment-package', assignmentId: 
 }
 import { usePostTreatmentCustomersIdManualDiscountAdmin } from '@/api/endpoints/discounts'
 import { usePostTreatmentCustomersIdRedeemPointsAdmin } from '@/api/endpoints/treatment-customers'
-import { getTreatmentCustomersIdAvailableSlotsAdmin, getTreatmentCustomersIdPaymentsAdmin, getTreatmentCustomersIdAdmin, getGetTreatmentCustomersAdminQueryKey, useGetTreatmentCustomersAdmin, usePostTreatmentCustomersAdmin, usePostTreatmentCustomersIdPaymentsAdmin, usePutTreatmentCustomersIdCancelAdmin } from '@/api/endpoints/treatment-customers'
+import { getTreatmentCustomersIdAvailableSlotsAdmin, getTreatmentCustomersIdPaymentsAdmin, getTreatmentCustomersIdAdmin, getGetTreatmentCustomersAdminQueryKey, useGetTreatmentCustomersAdmin, usePostTreatmentCustomersAdmin, usePostTreatmentCustomersIdConvertAdmin, usePostTreatmentCustomersIdPaymentsAdmin, usePutTreatmentCustomersIdAdmin, usePutTreatmentCustomersIdCancelAdmin } from '@/api/endpoints/treatment-customers'
 import { postTreatmentCustomersIdSessionsAdmin } from '@/api/endpoints/treatment-sessions'
 import { useGetTreatmentPackagesAdmin } from '@/api/endpoints/treatment-packages'
 import { useGetLookupListsAdmin } from '@/api/endpoints/lookup-lists'
@@ -39,11 +39,14 @@ import TreatmentCreateModal from './components/TreatmentCreateModal'
 import TreatmentAddSessionModal from './components/TreatmentAddSessionModal'
 import TreatmentPaymentModal, { type PromoTab } from './components/TreatmentPaymentModal'
 import TreatmentDetailModal from './components/TreatmentDetailModal'
+import TreatmentConvertModal from './components/TreatmentConvertModal'
+import TreatmentEditModal from './components/TreatmentEditModal'
 import {
   FILTERS,
   HIDDEN_TREATMENT_SYSTEM_FIELDS,
   STATUS_META,
   TREATMENT_SYSTEM_FIELD_LABELS,
+  buildTreatmentEditDto,
   customFieldValueText,
   readableCustomFieldLabel,
   sessionUsage,
@@ -53,7 +56,9 @@ import {
   type Slot,
 } from './components/constants'
 import type { Branch } from '@/api/models'
+import type { Service } from '@/api/models/service'
 import { useGetBranchesAdmin } from '@/api/endpoints/branches'
+import { useGetServiceAdmin } from '@/api/endpoints/services'
 
 export default function TreatmentCustomers() {
   const { format: formatMoney, symbol: currencySymbol } = useBrandCurrency()
@@ -96,6 +101,16 @@ export default function TreatmentCustomers() {
   // Gói đang thu tiền — tách khỏi `detail` để thu tiền từ danh sách không bật drawer chi tiết
   const [payTargetId, setPayTargetId] = useState<string | null>(null)
   const [payForm] = Form.useForm()
+  // TA-02 — Đổi buổi tặng sang dịch vụ khác
+  const [convertOpen, setConvertOpen] = useState(false)
+  const [convertRow, setConvertRow] = useState<CustomerTreatment | null>(null)
+  const [convertForm] = Form.useForm()
+  const [convertSaving, setConvertSaving] = useState(false)
+  // CT-04 — Sửa liệu trình khách (tiền/hạn/ghi chú/custom fields)
+  const [editOpen, setEditOpen] = useState(false)
+  const [editRow, setEditRow] = useState<CustomerTreatment | null>(null)
+  const [editForm] = Form.useForm()
+  const [editSaving, setEditSaving] = useState(false)
   // Ưu đãi & đổi điểm (DC-06/07/08, LY-02) — nhúng trong modal thanh toán
   const [promoRow, setPromoRow] = useState<CustomerTreatment | null>(null)
   const [redeemForm] = Form.useForm()
@@ -119,6 +134,8 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
   const profiles = (pickData<ProfileRow[] | undefined>(profilesQuery.data) ?? []) as ProfileRow[]
   const packagesQuery = useGetTreatmentPackagesAdmin({ page: 1, limit: 200, is_active: true })
   const packages = (pickData<TreatmentPackage[] | undefined>(packagesQuery.data) ?? []) as TreatmentPackage[]
+  const servicesQuery = useGetServiceAdmin({ page: 1, limit: 200 })
+  const services = (pickData<{ services?: Service[] } | undefined>(servicesQuery.data)?.services ?? []) as Service[]
   const selectedSalePackageId = Form.useWatch('package_id', createForm)
   const selectedSalePackage = packages.find((pkg) => pkg.id === selectedSalePackageId)
   const staffsQuery = useGetUsersAdmin({ currentPage: 1, pageSize: 200, has_role: true })
@@ -151,10 +168,74 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
   const createInFlightRef = useRef(false)
   const createPaymentMutation = usePostTreatmentCustomersIdPaymentsAdmin()
   const cancelMutation = usePutTreatmentCustomersIdCancelAdmin()
+  const convertMutation = usePostTreatmentCustomersIdConvertAdmin()
+  const editMutation = usePutTreatmentCustomersIdAdmin()
 
   const refresh = useCallback(() => {
     void queryClient.invalidateQueries({ queryKey: getGetTreatmentCustomersAdminQueryKey() })
   }, [queryClient])
+
+  // TA-02 — Đổi buổi tặng: gói mới cho khách có giá 0₫, buổi chuyển thành buổi MUA của gói mới (không qua modal create nên không dính bonus_sessions_default)
+  const openConvert = (row: CustomerTreatment) => {
+    setConvertRow(row)
+    convertForm.resetFields()
+    setConvertOpen(true)
+  }
+
+  const submitConvert = async () => {
+    if (!convertRow) return
+    const values = await convertForm.validateFields()
+    setConvertSaving(true)
+    try {
+      await convertMutation.mutateAsync({
+        id: convertRow.id,
+        data: {
+          service_id: String(values.service_id),
+          from_sessions: Number(values.from_sessions),
+          reason: String(values.reason).trim(),
+        },
+      })
+      message.success(`Đã chuyển ${Number(values.from_sessions)} buổi tặng sang dịch vụ mới`)
+      setConvertOpen(false)
+      refresh()
+    } catch (err) {
+      if (!(err as { errorFields?: unknown })?.errorFields) message.error(errorMessage(err))
+    } finally {
+      setConvertSaving(false)
+    }
+  }
+
+  // CT-04 — Sửa liệu trình khách
+  const openEdit = (row: CustomerTreatment) => {
+    setEditRow(row)
+    editForm.resetFields()
+    editForm.setFieldsValue({
+      total_amount: row.total_amount ?? undefined,
+      expires_at: row.expires_at ? dayjs(row.expires_at) : undefined,
+      note: row.note ?? undefined,
+      custom_fields: row.custom_fields ?? {},
+    })
+    setEditOpen(true)
+  }
+
+  const submitEdit = async () => {
+    if (!editRow) return
+    const values = await editForm.validateFields()
+    setEditSaving(true)
+    try {
+      await editMutation.mutateAsync({
+        id: editRow.id,
+        data: buildTreatmentEditDto(editRow, values, customerTreatmentCustomFields) as never,
+      })
+      message.success('Đã cập nhật liệu trình')
+      setEditOpen(false)
+      refresh()
+    } catch (err) {
+      if (!(err as { errorFields?: unknown })?.errorFields) message.error(errorMessage(err))
+    } finally {
+      setEditSaving(false)
+    }
+  }
 
   const profileOf = (id: string) => profiles.find((p) => p.id === id)
   const profileName = (row: CustomerTreatment) =>
@@ -243,7 +324,17 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
 
   const onCreatePackageChange = (id: string) => {
     const pkg = packages.find((p) => p.id === id)
-    if (pkg) createForm.setFieldsValue({ total_amount: pkg.list_price ?? undefined })
+    if (!pkg) return
+    // Tự fill giá & buổi tặng mặc định từ gói — chỉ khi ô đang bỏ trống (không ghi đè giá trị đã nhập tay)
+    const current = createForm.getFieldsValue(['total_amount', 'sessions_bonus'])
+    const isEmpty = (value: unknown) => value == null || value === ''
+    createForm.setFieldsValue({
+      total_amount: isEmpty(current.total_amount) ? pkg.list_price ?? undefined : current.total_amount,
+      sessions_bonus:
+        isEmpty(current.sessions_bonus) && Number(pkg.bonus_sessions_default) > 0
+          ? Number(pkg.bonus_sessions_default)
+          : current.sessions_bonus,
+    })
   }
 
   const submitCreate = async () => {
@@ -769,7 +860,7 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
               if (row.quota_type === 'VALUE') {
                 return <Tag color="gold">Định mức {formatMoney(row.value_used)} / {formatMoney(row.value_total)}</Tag>
               }
-              return <Tag color="gold">Trọn gói</Tag>
+              return <Tag color="gold">Trọn đời</Tag>
             },
           },
           {
@@ -826,7 +917,7 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
                   ? <MobileCardRow label="Số buổi" value={`Đã dùng ${usage.used}/${usage.total} · Còn ${usage.remaining}`} />
                   : row.quota_type === 'VALUE'
                     ? <MobileCardRow label="Định mức" value={`${formatMoney(row.value_used)} / ${formatMoney(row.value_total)}`} />
-                    : <MobileCardRow label="Loại gói" value="Trọn gói" />}
+                    : <MobileCardRow label="Loại gói" value="Trọn đời" />}
                 {row.expires_at && <MobileCardRow label="Hạn dùng" value={dayjs(row.expires_at).format('DD/MM/YYYY')} />}
                 {canReadPayments && <MobileCardRow label="Thanh toán" value={
                   <Tag color={(row.debt_amount ?? 0) > 0 ? 'orange' : 'green'} className="m-0!">
@@ -958,7 +1049,31 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
         refresh={refresh}
         refreshSelectedDetail={refreshSelectedDetail}
         onCancelTreatment={cancelTreatment}
+        onConvert={openConvert}
+        onEdit={openEdit}
         onClose={() => setDetail(null)}
+      />
+
+      <TreatmentConvertModal
+        form={convertForm}
+        open={convertOpen}
+        row={convertRow}
+        services={services}
+        servicesLoading={servicesQuery.isLoading}
+        submitting={convertSaving}
+        onCancel={() => setConvertOpen(false)}
+        onOk={() => void submitConvert()}
+      />
+
+      <TreatmentEditModal
+        form={editForm}
+        open={editOpen}
+        row={editRow}
+        currencySymbol={currencySymbol}
+        customFieldDefs={customerTreatmentCustomFields}
+        submitting={editSaving}
+        onCancel={() => setEditOpen(false)}
+        onOk={() => void submitEdit()}
       />
     </>
   )

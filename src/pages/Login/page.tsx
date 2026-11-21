@@ -108,11 +108,6 @@ export default function Login() {
           <div className="mx-auto mt-[18px] h-0.5 w-10 bg-[var(--brand-tertiary)]" />
         </div>
 
-        <div className="mb-7">
-          <h1 className="m-0 mb-1.5 text-[22px] font-semibold text-[#292331]">Đăng nhập quản trị</h1>
-          <p className="m-0 text-[13px] text-[#8a8494]">Dùng email hoặc số điện thoại đã đăng ký với hệ thống.</p>
-        </div>
-
         {alert && (
           <div className="mb-[18px] rounded-xl border border-[#f5c6d4] bg-[#fdf0f3] px-3.5 py-2.5 text-[13px] text-[#d4385f]">
             {alert}
