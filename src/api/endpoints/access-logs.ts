@@ -40,8 +40,8 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * **AL-01** — GET /access-logs/admin (ADM). Cần đăng nhập + `access_log.view_all`. Query parameters: `page`, `limit`, `branch_id` (the acting staff member's branch), `user_id`, `customer_profile_id`, `action`, `from`, `to`. Branch-limited users can only view logs of that branch.
- * @summary List access logs
+ * Compatibility route for older clients. Requires `SYSTEM_AUDIT:READ_ALL`; branch scope is enforced server-side. Legacy `user_id`, `action`, `from_date`, and `to_date` filters are still accepted.
+ * @summary List audit events (legacy route)
  */
 export const getAccessLogsAdmin = (
     params?: GetAccessLogsAdminParams,
@@ -119,7 +119,7 @@ export function useGetAccessLogsAdminInfinite<TData = InfiniteData<Awaited<Retur
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary List access logs
+ * @summary List audit events (legacy route)
  */
 
 export function useGetAccessLogsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAccessLogsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -137,7 +137,7 @@ export function useGetAccessLogsAdminInfinite<TData = InfiniteData<Awaited<Retur
 }
 
 /**
- * @summary List access logs
+ * @summary List audit events (legacy route)
  */
 export const prefetchGetAccessLogsAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAccessLogsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetAccessLogsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAccessLogsAdmin>>, TError, TData>>, }
@@ -200,7 +200,7 @@ export function useGetAccessLogsAdmin<TData = Awaited<ReturnType<typeof getAcces
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary List access logs
+ * @summary List audit events (legacy route)
  */
 
 export function useGetAccessLogsAdmin<TData = Awaited<ReturnType<typeof getAccessLogsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
@@ -218,7 +218,7 @@ export function useGetAccessLogsAdmin<TData = Awaited<ReturnType<typeof getAcces
 }
 
 /**
- * @summary List access logs
+ * @summary List audit events (legacy route)
  */
 export const prefetchGetAccessLogsAdminQuery = async <TData = Awaited<ReturnType<typeof getAccessLogsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
  queryClient: QueryClient, params?: GetAccessLogsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAccessLogsAdmin>>, TError, TData>>, }

@@ -14,7 +14,7 @@ export type GetAccessLogsAdminParams = {
 page?: number;
 /**
  * @minimum 1
- * @maximum 200
+ * @maximum 100
  */
 limit?: number;
 user_id?: string;

@@ -272,7 +272,7 @@ export const prefetchGetHealthRecordsAdminQuery = async <TData = Awaited<ReturnT
 
 
 /**
- * **CP-02** — GET /customer-profiles/{id}/admin (writes a VIEW_PROFILE access_log). Cần đăng nhập + `customer_profile.view_all`. Scoped theo customerProfileScope (KTV chỉ xem khách có buổi được phân công).
+ * **CP-02** — GET /customer-profiles/{id}/admin (writes a customer-profile data-access audit event). Cần đăng nhập + `customer_profile.view_all`. Scoped theo customerProfileScope (KTV chỉ xem khách có buổi được phân công).
  * @summary View customer profile detail
  */
 export const getCustomerProfilesIdAdmin = (
@@ -593,7 +593,7 @@ export const useDeleteCustomerProfilesIdAdmin = <TError = UnauthorizedResponse |
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **CP-06** — GET /customer-profiles/{id}/summary/admin (writes an access_log). Cần đăng nhập + `customer_profile.view_all`.
+ * **CP-06** — GET /customer-profiles/{id}/summary/admin (writes a customer-profile data-access audit event). Cần đăng nhập + `customer_profile.view_all`.
  * @summary View profile summary
  */
 export const getCustomerProfilesIdSummaryAdmin = (
@@ -2554,7 +2554,7 @@ export const usePostCustomerProfilesLinkAdmin = <TError = UnauthorizedResponse |
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **CP-08** — GET /customer-profiles/export/admin (CSV, writes an EXPORT access_log). Cần đăng nhập + `customer_profile.export`. Scoped theo customerProfileScope.
+ * **CP-08** — GET /customer-profiles/export/admin (CSV, writes a customer-data export audit event). Cần đăng nhập + `customer_profile.export`. Scoped theo customerProfileScope.
  * @summary Export customer profiles (CSV)
  */
 export const getCustomerProfilesExportAdmin = (

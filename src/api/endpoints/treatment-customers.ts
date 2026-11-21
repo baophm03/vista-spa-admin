@@ -1575,7 +1575,7 @@ export const usePostTreatmentCustomersAdmin = <TError = UnauthorizedResponse | F
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **PH-03** — DELETE /photos/{id}/admin (soft, writes access_log DELETE_PHOTO, ADM). Cần đăng nhập + `treatment_session.delete_all`.
+ * **PH-03** — DELETE /photos/{id}/admin (soft, writes a photo-deletion audit event and is restricted to the assigned branch). Cần đăng nhập + `treatment_session.delete_all`.
  * @summary Delete a skin condition photo
  */
 export const deletePhotosIdAdmin = (

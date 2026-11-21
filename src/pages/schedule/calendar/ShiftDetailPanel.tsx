@@ -111,17 +111,17 @@ export function ShiftDetailContent({
         </div>
       </div>
 
-      <div style={{ marginTop: 14, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 4, flexWrap: 'wrap' }}>
+      <div style={{ marginTop: 14, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 6, flexWrap: 'nowrap' }}>
         {canTouchAny && (
-          <Button type="primary" icon={<EditOutlined />} onClick={() => onEditRow(block.rows.find((row) => canEditRow(row))!)}>
+          <Button size="small" type="primary" icon={<EditOutlined />} onClick={() => onEditRow(block.rows.find((row) => canEditRow(row))!)}>
             Chỉnh sửa
           </Button>
         )}
         {canManage && canTouchAny && (
-          <Button icon={<CopyOutlined />} onClick={() => onDuplicate(block)}>Nhân bản</Button>
+          <Button size="small" icon={<CopyOutlined />} onClick={() => onDuplicate(block)}>Nhân bản</Button>
         )}
         {!hasLeave && (canManage || canTouchAny) && (
-          <Button danger icon={<DeleteOutlined />} onClick={() => onDeleteBlock(block)}>Xóa</Button>
+          <Button size="small" danger icon={<DeleteOutlined />} onClick={() => onDeleteBlock(block)}>Xóa</Button>
         )}
       </div>
     </div>

@@ -59,7 +59,7 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * **SS-01** — GET /treatment-customers/{id}/sessions/admin (writes an access_log entry). Cần đăng nhập + `treatment.view_all` (KTV chỉ thấy buổi được phân công) hoặc `treatment.view_own` — khách xem nhật ký buổi của gói liệu trình của chính mình, mới nhất trước (gộp từ GET /app/me/treatments/{id}/sessions cũ).
+ * **SS-01** — GET /treatment-customers/{id}/sessions/admin (writes a treatment-history data-access audit event). Cần đăng nhập + `treatment.view_all` (KTV chỉ thấy buổi được phân công) hoặc `treatment.view_own` — khách xem nhật ký buổi của gói liệu trình của chính mình, mới nhất trước (gộp từ GET /app/me/treatments/{id}/sessions cũ).
  * @summary View treatment sessions
  */
 export const getTreatmentCustomersIdSessionsAdmin = (
@@ -319,7 +319,7 @@ export const usePostTreatmentCustomersIdSessionsAdmin = <TError = UnauthorizedRe
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **SS-03** — GET /sessions/{id}/admin (writes access_log VIEW_SESSION). Cần đăng nhập + `treatment_session.view_all`; technicians can only view sessions assigned to them. Hidden customer profiles do not appear.
+ * **SS-03** — GET /sessions/{id}/admin (writes a treatment-session data-access audit event). Cần đăng nhập + `treatment_session.view_all`; technicians can only view sessions assigned to them. Hidden customer profiles do not appear.
  * @summary View treatment session details
  */
 export const getSessionsIdAdmin = (
@@ -830,7 +830,7 @@ export const usePostSessionsIdPhotosAdmin = <TError = UnauthorizedResponse | For
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **PH-02** — GET /sessions/{id}/photos/admin (newest first, writes access_log VIEW_PHOTO). Cần đăng nhập + `treatment_session.view_all`; technicians can only view photos of sessions assigned to them. Hidden customer profiles do not appear.
+ * **PH-02** — GET /sessions/{id}/photos/admin (newest first, writes a treatment-photo data-access audit event). Cần đăng nhập + `treatment_session.view_all`; technicians can only view photos of sessions assigned to them. Hidden customer profiles do not appear.
  * @summary Manage treatment session photos
  */
 export const getSessionsIdPhotosAdmin = (

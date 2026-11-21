@@ -118,7 +118,7 @@ export const menuItems: MenuItem[] = [
       { key: '/notification-templates', icon: createElement(BellOutlined), label: 'Mẫu thông báo', permission: { action: 'READ', subject: 'NOTIFICATION_TEMPLATE' }, receptionistOrAdminOnly: true },
       { key: '/notifications', icon: createElement(BellOutlined), label: 'Thông báo', permission: { action: 'READ', subject: 'NOTIFICATION' } },
       { key: '/roles', icon: createElement(SafetyOutlined), label: 'Phân quyền', permission: { action: 'MANAGE', subject: 'PERMISSION' } },
-      { key: '/access-logs', icon: createElement(HistoryOutlined), label: 'Nhật ký truy cập', permission: { action: 'MANAGE', subject: 'PERMISSION' } },
+      { key: '/access-logs', icon: createElement(HistoryOutlined), label: 'Nhật ký', permission: { action: 'READ_ALL', subject: 'SYSTEM_AUDIT' } },
     ],
   },
 ]
