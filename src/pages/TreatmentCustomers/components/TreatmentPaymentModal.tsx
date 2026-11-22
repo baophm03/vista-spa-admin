@@ -1,4 +1,4 @@
-import { Alert, Card, Form, Input, InputNumber, Modal, Select, Space, Spin, Tabs, Typography } from 'antd'
+import { Alert, Card, Form, Grid, Input, InputNumber, Modal, Select, Space, Spin, Tabs, Typography } from 'antd'
 import type { FormInstance } from 'antd'
 import type { LookupItem } from '@/api/models/lookupItem'
 import type { CustomerTreatment } from '@/api/models/customerTreatment'
@@ -238,6 +238,39 @@ export default function TreatmentPaymentModal({
         : 'Giảm trực tiếp'
     : null
 
+  const isMobile = !Grid.useBreakpoint().md
+
+  // Panel "Hóa đơn" — desktop cột phải 260px; mobile đưa lên đầu, full-width
+  const billPanel = (
+    <div
+      style={{
+        width: isMobile ? '100%' : 260,
+        boxSizing: isMobile ? 'border-box' : undefined,
+        flexShrink: 0,
+        background: 'var(--brand-bg, #fafafa)',
+        borderRadius: 10,
+        padding: isMobile ? 12 : 16,
+        alignSelf: 'flex-start',
+      }}
+    >
+      <Typography.Title level={5} style={{ marginTop: 0, marginBottom: isMobile ? 8 : 12 }}>Hóa đơn</Typography.Title>
+      <Space direction="vertical" size={6} className="w-full!">
+        <BillRow label="Số tiền gốc" value={formatMoney(promoRow?.total_amount ?? 0)} />
+        <BillRow label="Ưu đãi đã áp dụng" value={`-${formatMoney(appliedDiscountAmount)}`} muted={appliedDiscountAmount <= 0} />
+        {selectedPromoLabel && <BillRow label={selectedPromoLabel} value={`-${formatMoney(promoDiscount)}`} />}
+        <BillRow label="Đã thanh toán" value={`-${formatMoney(paidAmount)}`} muted={paidAmount <= 0} />
+      </Space>
+      <div style={{ borderTop: '1px dashed #d9d9d9', margin: isMobile ? '8px 0' : '12px 0', paddingTop: isMobile ? 8 : 12 }}>
+        <BillRow label="Còn lại" value={formatMoney(remainingAmount)} strong />
+      </div>
+      {promoRow?.points_used ? (
+        <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+          Điểm đã dùng: {promoRow.points_used.toLocaleString('vi-VN')} ({formatMoney(promoRow.points_discount ?? 0)})
+        </Typography.Text>
+      ) : null}
+    </div>
+  )
+
   return (
     <Modal
       title="Ghi nhận thanh toán"
@@ -248,9 +281,10 @@ export default function TreatmentPaymentModal({
       cancelText="Hủy"
       confirmLoading={submitting}
       okButtonProps={{ disabled: lookupLoading || !!lookupError || activePaymentMethods.length === 0 }}
-      width={880}
+      width={isMobile ? 'calc(100vw - 24px)' : 'min(880px, calc(100vw - 24px))'}
     >
-      <div style={{ display: 'flex', gap: 20, alignItems: 'stretch' }}>
+      <div style={{ display: 'flex', gap: isMobile ? 12 : 20, alignItems: 'stretch', flexDirection: isMobile ? 'column' : 'row' }}>
+        {isMobile && billPanel}
         <div style={{ flex: 1, minWidth: 0 }}>
           {promoItems.length > 0 && (
             <Tabs
@@ -276,23 +310,7 @@ export default function TreatmentPaymentModal({
             </Form.Item>
           </Form>
         </div>
-        <div style={{ width: 260, flexShrink: 0, background: 'var(--brand-bg, #fafafa)', borderRadius: 10, padding: 16, alignSelf: 'flex-start' }}>
-          <Typography.Title level={5} style={{ marginTop: 0, marginBottom: 12 }}>Hóa đơn</Typography.Title>
-          <Space direction="vertical" size={6} className="w-full!">
-            <BillRow label="Số tiền gốc" value={formatMoney(promoRow?.total_amount ?? 0)} />
-            <BillRow label="Ưu đãi đã áp dụng" value={`-${formatMoney(appliedDiscountAmount)}`} muted={appliedDiscountAmount <= 0} />
-            {selectedPromoLabel && <BillRow label={selectedPromoLabel} value={`-${formatMoney(promoDiscount)}`} />}
-            <BillRow label="Đã thanh toán" value={`-${formatMoney(paidAmount)}`} muted={paidAmount <= 0} />
-          </Space>
-          <div style={{ borderTop: '1px dashed #d9d9d9', margin: '12px 0', paddingTop: 12 }}>
-            <BillRow label="Còn lại" value={formatMoney(remainingAmount)} strong />
-          </div>
-          {promoRow?.points_used ? (
-            <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-              Điểm đã dùng: {promoRow.points_used.toLocaleString('vi-VN')} ({formatMoney(promoRow.points_discount ?? 0)})
-            </Typography.Text>
-          ) : null}
-        </div>
+        {!isMobile && billPanel}
       </div>
     </Modal>
   )

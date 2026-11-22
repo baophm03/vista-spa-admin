@@ -1,12 +1,14 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Button, Form, Input, Progress, Select, Table, Tag, Typography, message } from 'antd'
-import { CheckCircleOutlined, PlayCircleOutlined, PlusOutlined, TeamOutlined, WalletOutlined } from '@ant-design/icons'
+import { Button, Col, Form, Grid, Input, Progress, Row, Select, Table, Tag, Typography, message } from 'antd'
+import { CheckCircleOutlined, FilterOutlined, PlayCircleOutlined, PlusOutlined, SearchOutlined, TeamOutlined, WalletOutlined } from '@ant-design/icons'
 import dayjs, { type Dayjs } from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
 import StatCards, { type StatItem } from '@/components/base/StatCards'
+import MobileStatCards from '@/components/base/MobileStatCards'
 import ListPagination from '@/components/base/ListPagination'
+import ListFilterPopover from '@/components/base/ListFilterPopover'
 import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import { normalizeCustomFieldValues } from '@/components/CustomFieldFormItems'
 import { errorMessage, pickData } from '@/api/helpers'
@@ -79,11 +81,16 @@ export default function TreatmentCustomers() {
   const [search, setSearch] = useState('')
   const [pkgFilter, setPkgFilter] = useState<string>()
   const [branchFilter, setBranchFilter] = useState<string>()
+  const isMobile = !Grid.useBreakpoint().md
+  const [filterForm] = Form.useForm()
+  const [filterOpen, setFilterOpen] = useState(false)
   const [createOpen, setCreateOpen] = useState(false)
   const [createForm] = Form.useForm()
   // Modal chi tiết
   const [detailTab, setDetailTab] = useState<'sessions' | 'payments' | 'points'>('sessions')
   const [detail, setDetail] = useState<CustomerTreatment | null>(null)
+  // Mobile tách popup chi tiết: 'summary' = panel tóm tắt+nút (nhẹ), 'tabs' = Buổi/TT/Điểm
+  const [detailMobileSection, setDetailMobileSection] = useState<'summary' | 'tabs'>('summary')
   const [sessionsRefreshKey, setSessionsRefreshKey] = useState(0)
   const [sessionToEdit, setSessionToEdit] = useState<{ treatmentId: string; sessionId: string } | null>(null)
   const [addSessionFor, setAddSessionFor] = useState<CustomerTreatment | null>(null)
@@ -260,6 +267,15 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
     setPage(1)
   }
 
+  // Mobile: gõ là lọc luôn (debounce 300ms); desktop giữ nguyên phải bấm nút tìm
+  useEffect(() => {
+    if (!isMobile) return
+    const next = searchInput.trim()
+    if (next === search) return
+    const timer = window.setTimeout(() => { setSearch(next); setPage(1) }, next ? 300 : 0)
+    return () => window.clearTimeout(timer)
+  }, [isMobile, searchInput, search])
+
   const stats = {
     total: statsMeta?.total ?? 0,
     ongoing: statsMeta?.ongoing ?? 0,
@@ -267,7 +283,8 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
     debt: statsMeta?.debt_sum ?? 0,
   }
 
-  const openDetail = (row: CustomerTreatment) => {
+  const openDetail = (row: CustomerTreatment, mobileSection: 'summary' | 'tabs' = 'summary') => {
+    setDetailMobileSection(mobileSection)
     setDetail(row)
     setDetailTab('sessions')
     // Lấy chi tiết mới nhất — combo trả thêm services[] (quota còn lại theo từng dịch vụ)
@@ -728,6 +745,94 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
     return true
   }
 
+  const activeFilterCount = (filter !== 'all' ? 1 : 0) + (pkgFilter ? 1 : 0) + (branchFilter ? 1 : 0) + (search ? 1 : 0)
+
+  const applyFilters = (values: Record<string, unknown>) => {
+    setFilter(typeof values.status === 'string' && values.status ? values.status : 'all')
+    setPkgFilter(typeof values.package_id === 'string' && values.package_id ? values.package_id : undefined)
+    setBranchFilter(typeof values.branch_id === 'string' && values.branch_id ? values.branch_id : undefined)
+    setPage(1)
+    setFilterOpen(false)
+  }
+
+  const clearFilters = () => {
+    filterForm.resetFields()
+    setFilter('all')
+    setPkgFilter(undefined)
+    setBranchFilter(undefined)
+    setSearchInput('')
+    setSearch('')
+    setPage(1)
+  }
+
+  const openFilters = (nextOpen: boolean) => {
+    setFilterOpen(nextOpen)
+    if (!nextOpen) return
+    filterForm.setFieldsValue({ status: filter, package_id: pkgFilter, branch_id: branchFilter })
+  }
+
+  // Nút pill mobile theo Figma "Mobile / Danh sách khách": trắng, viền hairline, radius 10, icon tím
+  const mobilePillStyle = {
+    flex: 1,
+    height: 44,
+    borderRadius: 10,
+    border: '1px solid var(--brand-border-soft)',
+    background: '#fff',
+    cursor: 'pointer',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    fontSize: 13,
+    fontWeight: 500,
+    color: 'var(--brand-primary)',
+    padding: 0,
+  } as const
+
+  const renderFilterPopover = (trigger?: ReactNode) => (
+    <ListFilterPopover
+      iconOnly={isMobile}
+      trigger={trigger}
+      open={filterOpen}
+      onOpenChange={openFilters}
+      activeFilterCount={activeFilterCount}
+      form={filterForm}
+      onApply={applyFilters}
+      onClear={clearFilters}
+      filterItems={(
+        <>
+          <Form.Item name="package_id" label="Gói liệu trình" className="mb-2.5!">
+            <Select
+              allowClear
+              showSearch
+              optionFilterProp="label"
+              placeholder="Tất cả"
+              options={packages.map((pkg) => ({ value: pkg.id, label: pkg.name }))}
+            />
+          </Form.Item>
+          <Row gutter={8}>
+            <Col span={12}>
+              <Form.Item name="status" label="Trạng thái" className="mb-0!">
+                <Select options={FILTERS} />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item name="branch_id" label="Cơ sở" className="mb-0!">
+                <Select
+                  allowClear
+                  showSearch
+                  optionFilterProp="label"
+                  placeholder="Tất cả"
+                  options={branches.map((branch) => ({ value: branch.id, label: branch.name }))}
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+        </>
+      )}
+    />
+  )
+
   const statItems: StatItem[] = [
     { key: 'total', label: 'Tổng lượt đăng ký', value: stats.total.toLocaleString('vi-VN'), icon: <TeamOutlined />, tone: 'primary' },
     { key: 'ongoing', label: 'Đang thực hiện', value: stats.ongoing.toLocaleString('vi-VN'), icon: <PlayCircleOutlined />, tone: 'secondary' },
@@ -746,10 +851,13 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
     <>
       {/* Thống kê đầu trang — cùng số liệu với rows đã tải (limit 500), thay hàng Card/Statistic cũ */}
       <StatCards items={statItems} />
+      {/* Bản compact 2×2 cho mobile — component theo Figma "Vista Admin / Chỉ số liệu trình" */}
+      <MobileStatCards items={statItems} loading={treatmentsQuery.isLoading} />
 
       <PageTitle
         subtitle="Khách hàng đang thực hiện liệu trình"
         left={
+          !isMobile ? (
           <>
             <Input.Search
               allowClear
@@ -787,17 +895,76 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
               options={branches.map((branch) => ({ value: branch.id, label: branch.name }))}
             />
           </>
+          ) : undefined
         }
         right={
+          !isMobile ? (
           <Can I="UPDATE" a="CUSTOMER_PROFILE">
             <Button type="primary" icon={<PlusOutlined />} onClick={() => openCreateModal()}>
               Thêm khách vào liệu trình
             </Button>
           </Can>
+          ) : undefined
         }
       >
         Liệu trình khách hàng
       </PageTitle>
+      {/* Toolbar mobile gộp 1 hàng: search co giãn + nút lọc icon + nút thêm */}
+      {isMobile && (
+        <div style={{ display: 'flex', gap: 10, marginBottom: 14 }}>
+          <Input
+            allowClear
+            prefix={<SearchOutlined style={{ color: '#655E71' }} />}
+            placeholder="Tìm tên hoặc SĐT khách hàng"
+            value={searchInput}
+            onChange={(event) => setSearchInput(event.target.value)}
+            aria-label="Tìm khách hàng"
+            style={{ flex: 1, minWidth: 0, height: 44, borderRadius: 12 }}
+          />
+          {renderFilterPopover(
+            <button
+              type="button"
+              aria-label="Bộ lọc"
+              style={{ ...mobilePillStyle, flex: '0 0 44px', position: 'relative' }}
+            >
+              <FilterOutlined style={{ color: 'var(--brand-primary)', fontSize: 15 }} />
+              {activeFilterCount > 0 && (
+                <span
+                  aria-hidden
+                  style={{
+                    position: 'absolute',
+                    top: -5,
+                    right: -5,
+                    minWidth: 16,
+                    height: 16,
+                    borderRadius: 8,
+                    background: 'var(--brand-primary)',
+                    color: '#fff',
+                    fontSize: 10,
+                    fontWeight: 600,
+                    lineHeight: '16px',
+                    textAlign: 'center',
+                    padding: '0 4px',
+                  }}
+                >
+                  {activeFilterCount}
+                </span>
+              )}
+            </button>,
+          )}
+          {/* Nút thêm chuyển từ header xuống cùng hàng công cụ trên mobile */}
+          <Can I="UPDATE" a="CUSTOMER_PROFILE">
+            <button
+              type="button"
+              aria-label="Thêm khách vào liệu trình"
+              style={{ ...mobilePillStyle, flex: '0 0 44px', background: 'var(--brand-primary)', borderColor: 'var(--brand-primary)', color: '#fff' }}
+              onClick={() => openCreateModal()}
+            >
+              <PlusOutlined style={{ fontSize: 15 }} />
+            </button>
+          </Can>
+        </div>
+      )}
 
       <Table<CustomerTreatment>
         className="desktop-only"
@@ -905,33 +1072,38 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
           return (
             <>
               <div className="mobile-card-head">
-                <div>
-                  <div className="mobile-card-title">{profileName(row)}</div>
-                  <div className="mobile-card-sub">{packageName(row)} · {profilePhone(row) || '—'} · Mã G-{treatmentCode(row)}</div>
-                </div>
+                <div className="mobile-card-title">{profileName(row)}</div>
                 <Tag color={STATUS_META[row.status as string]?.color}>{STATUS_META[row.status as string]?.label ?? row.status}</Tag>
               </div>
               <div className="mobile-card-rows">
+                <MobileCardRow label="Mã gói" value={`G-${treatmentCode(row)}`} />
+                <MobileCardRow label="Gói" value={packageName(row)} />
                 <MobileCardRow label="Cơ sở" value={(row as CustomerTreatment & { branch?: { name?: string } }).branch?.name || branches.find((branch) => branch.id === row.branch_id)?.name || '—'} />
                 {usage
-                  ? <MobileCardRow label="Số buổi" value={`Đã dùng ${usage.used}/${usage.total} · Còn ${usage.remaining}`} />
+                  ? <MobileCardRow label="Tiến độ" value={`${usage.used}/${usage.total} buổi`} />
                   : row.quota_type === 'VALUE'
-                    ? <MobileCardRow label="Định mức" value={`${formatMoney(row.value_used)} / ${formatMoney(row.value_total)}`} />
-                    : <MobileCardRow label="Loại gói" value="Trọn đời" />}
-                {row.expires_at && <MobileCardRow label="Hạn dùng" value={dayjs(row.expires_at).format('DD/MM/YYYY')} />}
-                {canReadPayments && <MobileCardRow label="Thanh toán" value={
-                  <Tag color={(row.debt_amount ?? 0) > 0 ? 'orange' : 'green'} className="m-0!">
-                    {(row.debt_amount ?? 0) > 0 ? `Còn nợ ${formatMoney(row.debt_amount)}` : 'Đã trả đủ'}
-                  </Tag>
-                } />}
+                    ? <MobileCardRow label="Tiến độ" value={`Định mức ${formatMoney(row.value_used)} / ${formatMoney(row.value_total)}`} />
+                    : <MobileCardRow label="Tiến độ" value="Trọn đời" />}
+                {canReadPayments && (
+                  <MobileCardRow
+                    label="Thanh toán"
+                    value={
+                      <>
+                        {formatMoney(row.paid_amount)} / {formatMoney(row.total_amount)}
+                        {(row.debt_amount ?? 0) > 0 && (
+                          <span style={{ color: '#B45309' }}> · Nợ {formatMoney(row.debt_amount)}</span>
+                        )}
+                      </>
+                    }
+                  />
+                )}
+                <MobileCardRow label="Hạn sử dụng" value={row.expires_at ? dayjs(row.expires_at).format('DD/MM/YYYY') : 'Không hạn'} />
               </div>
+              {/* 2 nút tách cho mobile: "Tổng quan" mở panel tóm tắt+nút thao tác,
+                  "Chi tiết" mở tab Buổi / Lịch sử thanh toán / Điểm thưởng — khỏi popup quá tải */}
               <div className="mobile-card-actions">
-                {row.status === 'ACTIVE' && canCreateSessions && (
-                  <Button size="small" type="primary" icon={<PlusOutlined />} disabled={addingSessionId !== null} onClick={() => addSession(row)}>+1 buổi</Button>
-                )}
-                {canReadPayments && (row.debt_amount ?? 0) > 0 && row.status !== 'CANCELLED' && (
-                  <Button size="small" onClick={() => void openPay(row.id)}>Thu tiền</Button>
-                )}
+                <Button size="small" type="primary" onClick={(event) => { event.stopPropagation(); openDetail(row, 'summary') }}>Tổng quan</Button>
+                <Button size="small" onClick={(event) => { event.stopPropagation(); openDetail(row, 'tabs') }}>Chi tiết</Button>
               </div>
             </>
           )
@@ -1024,6 +1196,7 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
       <TreatmentDetailModal
         detail={detail}
         payOpen={payOpen}
+        mobileSection={detailMobileSection}
         detailTab={detailTab}
         onTabChange={(tab) => setDetailTab(tab)}
         profileName={profileName}

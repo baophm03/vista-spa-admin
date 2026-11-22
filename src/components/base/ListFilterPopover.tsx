@@ -1,4 +1,4 @@
-import { Badge, Button, Checkbox, Divider, Form, Popover, Space, Tag, Typography } from 'antd'
+import { Badge, Button, Checkbox, Divider, Form, Grid, Popover, Space, Typography } from 'antd'
 import type { FormInstance } from 'antd'
 import type { ReactNode } from 'react'
 import { FilterOutlined } from '@ant-design/icons'
@@ -24,6 +24,8 @@ interface ListFilterPopoverProps {
   onDraftVisibleColumnsChange?: (values: string[]) => void
   /** Chỉ hiện nút icon, số lọc đang bật thành badge — dùng cho thanh công cụ 1 hàng */
   iconOnly?: boolean
+  /** Node trigger tùy biến (ưu tiên hơn iconOnly) — dùng cho nút pill mobile theo Figma. */
+  trigger?: ReactNode
 }
 
 export default function ListFilterPopover({
@@ -38,21 +40,29 @@ export default function ListFilterPopover({
   draftVisibleColumns,
   onDraftVisibleColumnsChange,
   iconOnly,
+  trigger,
 }: ListFilterPopoverProps) {
+  // Mobile: popover full-width theo Figma "Danh sách khách · Bộ lọc" (358px/390px)
+  const isMobile = !Grid.useBreakpoint().md
   return (
     <Popover
       trigger="click"
       placement="bottomRight"
+      // Mobile: CSS .pinned-popover ghim vào mép phải viewport, hết lệch khỏi màn hình
+      rootClassName="pinned-popover"
       open={open}
       onOpenChange={onOpenChange}
       content={(
-        <div style={{ width: 300, maxHeight: 'min(70vh, 580px)', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ width: isMobile ? 'calc(100vw - 60px)' : 300, maxHeight: 'min(70vh, 580px)', display: 'flex', flexDirection: 'column' }}>
           <div style={{ overflowY: 'auto', paddingRight: 4 }}>
             {columnOptions && draftVisibleColumns && onDraftVisibleColumnsChange && (
               <>
                 <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 10 }}>
-                  <Typography.Text strong>Cột hiển thị</Typography.Text>
-                  <Tag style={{ marginInlineEnd: 0 }}>{draftVisibleColumns.length}/{columnOptions.length} cột</Tag>
+                  <Typography.Text strong style={{ fontSize: 14 }}>Cột hiển thị</Typography.Text>
+                  {/* Chip đếm cột theo Figma: nền tím nhạt #F2E5F4, radius 7, chữ 11px */}
+                  <span style={{ padding: '4px 7px', borderRadius: 7, background: '#f2e5f4', color: '#655E71', fontSize: 11, fontWeight: 500, lineHeight: 'normal' }}>
+                    {draftVisibleColumns.length}/{columnOptions.length} cột
+                  </span>
                 </Space>
                 <Checkbox.Group
                   value={draftVisibleColumns}
@@ -73,19 +83,31 @@ export default function ListFilterPopover({
             )}
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, paddingTop: 12, marginTop: 12, borderTop: '1px solid var(--brand-border-soft)' }}>
-            <Button onClick={onClear}>Xóa lọc</Button>
-            <Button type="primary" onClick={() => (filterItems && form ? form.submit() : onApply({}))}>Xác nhận</Button>
+            {/* Figma: Xóa lọc trắng viền chữ tím / Xác nhận tím đặc, h44 r10 trên mobile */}
+            <Button
+              onClick={onClear}
+              style={isMobile ? { height: 44, borderRadius: 10, color: 'var(--brand-primary)', fontWeight: 500 } : undefined}
+            >
+              Xóa lọc
+            </Button>
+            <Button
+              type="primary"
+              onClick={() => (filterItems && form ? form.submit() : onApply({}))}
+              style={isMobile ? { height: 44, borderRadius: 10, fontWeight: 500 } : undefined}
+            >
+              Xác nhận
+            </Button>
           </div>
         </div>
       )}
     >
-      {iconOnly
+      {trigger ?? (iconOnly
         ? (
           <Badge count={activeFilterCount} size="small" offset={[-4, 4]}>
             <Button icon={<FilterOutlined />} aria-label="Bộ lọc" title="Bộ lọc" />
           </Badge>
         )
-        : <Button icon={<FilterOutlined />}>Bộ lọc{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}</Button>}
+        : <Button icon={<FilterOutlined />}>Bộ lọc{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}</Button>)}
     </Popover>
   )
 }

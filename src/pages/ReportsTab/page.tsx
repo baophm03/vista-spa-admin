@@ -4,6 +4,7 @@ import {
   Card,
   Col,
   DatePicker,
+  Grid,
   Popover,
   Row,
   Select,
@@ -12,14 +13,19 @@ import {
   Typography,
 } from 'antd'
 import {
+  CalendarOutlined,
   CheckCircleOutlined,
   DollarOutlined,
   DownloadOutlined,
   FilterOutlined,
+  LeftOutlined,
+  RightOutlined,
   UserAddOutlined,
   WalletOutlined,
 } from '@ant-design/icons'
 import StatCards, { type StatItem } from '@/components/base/StatCards'
+import MobileStatCards from '@/components/base/MobileStatCards'
+import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import TableEmpty from '@/components/base/TableEmpty'
 import {
   Area,
@@ -134,6 +140,9 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
   const [draftCustomerId, setDraftCustomerId] = useState<string | null>(null)
   const [draftStaffId, setDraftStaffId] = useState<string | null>(null)
   const [filterOpen, setFilterOpen] = useState(false)
+  const [periodOpen, setPeriodOpen] = useState(false)
+  // Mobile (<768px): stat compact, table chuyển thành card
+  const isMobile = !Grid.useBreakpoint().md
 
   const [loading, setLoading] = useState(false)
 
@@ -262,37 +271,42 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
   ]
 
   const filterForm = (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12, width: 300 }}>
-      <div>
-        <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>Kỳ</Typography.Text>
-        <RangePicker
-          style={{ width: '100%' }}
-          value={draftRange ?? range}
-          onChange={(v) => setDraftRange(v as [Dayjs, Dayjs] | null)}
-          allowClear={false}
-        />
-      </div>
-      <div>
-        <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>Nhóm theo</Typography.Text>
-        <Select
-          style={{ width: '100%' }}
-          options={GROUP_OPTIONS}
-          value={draftGroupBy ?? groupBy}
-          onChange={(v) => setDraftGroupBy(v)}
-        />
-      </div>
-      <div>
-        <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>Cơ sở</Typography.Text>
-        <Select
-          style={{ width: '100%' }}
-          placeholder="Tất cả cơ sở"
-          allowClear
-          showSearch
-          optionFilterProp="label"
-          options={branchOptions}
-          value={draftBranchId ?? branchId ?? null}
-          onChange={(v) => setDraftBranchId(v ?? null)}
-        />
+    // Mobile: bỏ field "Kỳ" (đã có pill ngày ngoài thanh) + gộp 2 cột cho thấp popup
+    <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? 10 : 12, width: isMobile ? '100%' : 300 }}>
+      {!isMobile && (
+        <div>
+          <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>Kỳ</Typography.Text>
+          <RangePicker
+            style={{ width: '100%' }}
+            value={draftRange ?? range}
+            onChange={(v) => setDraftRange(v as [Dayjs, Dayjs] | null)}
+            allowClear={false}
+          />
+        </div>
+      )}
+      <div style={isMobile ? { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 } : undefined}>
+        <div>
+          <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>Nhóm theo</Typography.Text>
+          <Select
+            style={{ width: '100%' }}
+            options={GROUP_OPTIONS}
+            value={draftGroupBy ?? groupBy}
+            onChange={(v) => setDraftGroupBy(v)}
+          />
+        </div>
+        <div style={isMobile ? undefined : { marginTop: 12 }}>
+          <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>Cơ sở</Typography.Text>
+          <Select
+            style={{ width: '100%' }}
+            placeholder="Tất cả cơ sở"
+            allowClear
+            showSearch
+            optionFilterProp="label"
+            options={branchOptions}
+            value={draftBranchId ?? branchId ?? null}
+            onChange={(v) => setDraftBranchId(v ?? null)}
+          />
+        </div>
       </div>
       <div>
         <Typography.Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>Khách hàng</Typography.Text>
@@ -360,7 +374,137 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
     </Card>
   )
 
-  const kpiRow = <StatCards items={statItems} />
+  /** Mobile: thanh chọn kỳ [<] [📅 dd/mm → dd/mm] [>] + nút Bộ lọc dạng pill,
+   *  theo pattern "Chọn khoảng tuần" / select lọc trong Figma — 3 nút rời,
+   *  pill trắng viền mảnh cao 44, bỏ Card bọc và chip kỳ dài dòng. */
+  const shiftPeriod = (dir: -1 | 1) => {
+    const days = range[1].diff(range[0], 'day') + 1
+    setRange([range[0].add(days * dir, 'day'), range[1].add(days * dir, 'day')])
+  }
+  // Nút/pill mobile theo Figma: nền trắng phẳng, viền hairline --brand-border-soft,
+  // radius 10-12, shadow rất mỏng — nhẹ hơn antd Button mặc định (viền đậm + shadow đáy).
+  const navBtnStyle = {
+    width: 40,
+    height: 40,
+    flexShrink: 0,
+    borderRadius: 10,
+    border: '1px solid var(--brand-border-soft)',
+    background: '#fff',
+    color: 'var(--brand-primary)',
+    cursor: 'pointer',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: 13,
+    padding: 0,
+  } as const
+  const pillBtnStyle = {
+    height: 40,
+    borderRadius: 10,
+    border: '1px solid var(--brand-border-soft)',
+    background: '#fff',
+    cursor: 'pointer',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    fontSize: 13,
+    fontWeight: 500,
+    padding: 0,
+  } as const
+  const mobileFilterBar = (
+    <div style={{ marginBottom: 12 }}>
+      <div style={{ display: 'flex', gap: 8 }}>
+        <button type="button" aria-label="Kỳ trước" style={navBtnStyle} onClick={() => shiftPeriod(-1)}>
+          <LeftOutlined />
+        </button>
+        <Popover
+          open={periodOpen}
+          onOpenChange={setPeriodOpen}
+          trigger="click"
+          placement="bottom"
+          content={
+            <RangePicker
+              allowClear={false}
+              value={range}
+              onChange={(v) => {
+                if (!v) return
+                setRange(v as [Dayjs, Dayjs])
+                setPeriodOpen(false)
+              }}
+            />
+          }
+        >
+          <button type="button" style={{ ...pillBtnStyle, flex: 1, minWidth: 0, color: 'var(--brand-primary)' }}>
+            <CalendarOutlined />
+            {range[0].format('DD/MM')} → {range[1].format('DD/MM')}
+          </button>
+        </Popover>
+        <button type="button" aria-label="Kỳ sau" style={navBtnStyle} onClick={() => shiftPeriod(1)}>
+          <RightOutlined />
+        </button>
+        <Popover open={filterOpen} onOpenChange={setFilterOpen} trigger="click" placement="bottomRight" rootClassName="pinned-popover" content={filterForm}>
+          <button
+            type="button"
+            aria-label="Bộ lọc"
+            style={{
+              ...navBtnStyle,
+              position: 'relative',
+              ...(activeFilterCount > 0
+                ? { background: 'var(--brand-primary)', borderColor: 'var(--brand-primary)', color: '#fff' }
+                : {}),
+            }}
+          >
+            <FilterOutlined />
+            {activeFilterCount > 0 && (
+              <span
+                style={{
+                  position: 'absolute',
+                  top: -5,
+                  right: -5,
+                  minWidth: 16,
+                  height: 16,
+                  borderRadius: 8,
+                  background: '#fff',
+                  border: '1px solid var(--brand-primary)',
+                  color: 'var(--brand-primary)',
+                  fontSize: 10,
+                  fontWeight: 600,
+                  lineHeight: '14px',
+                  textAlign: 'center' as const,
+                }}
+              >
+                {activeFilterCount}
+              </span>
+            )}
+          </button>
+        </Popover>
+      </div>
+      {chips.some((c) => c.key !== 'period') && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
+          {chips.filter((c) => c.key !== 'period').map((c) => (
+            <Tag
+              key={c.key}
+              closable={!!c.onClose}
+              onClose={c.onClose}
+              style={{ marginInlineEnd: 0, fontSize: 13, padding: '2px 8px' }}
+            >
+              {c.label}
+            </Tag>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+
+  const kpiRow = (
+    <>
+      <div className="desktop-only">
+        <StatCards items={statItems} />
+      </div>
+      <MobileStatCards items={statItems} loading={loading} />
+    </>
+  )
 
   const moneySection = (
     <>
@@ -390,7 +534,7 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke={brand.border} vertical={false} />
-                    <XAxis dataKey="period" tick={{ fontSize: 11, fill: '#6F7071' }} axisLine={false} tickLine={false} />
+                    <XAxis dataKey="period" tick={{ fontSize: 11, fill: '#6F7071' }} axisLine={false} tickLine={false} interval={isMobile ? 'preserveStartEnd' : undefined} />
                     <YAxis tick={{ fontSize: 11, fill: '#6F7071' }} tickFormatter={(v) => fmtCompactMoney(Number(v) * 1_000_000)} axisLine={false} tickLine={false} />
                     <Tooltip contentStyle={tooltipStyle} formatter={(v: any) => fmtCompactMoney(Number(v) * 1_000_000)} />
                     <Area type="monotone" dataKey="revenue" name="Doanh thu" stroke={brand.primary} strokeWidth={2.5} fill="url(#rptRevGrad)" />
@@ -415,15 +559,36 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
                 { header: 'Trạng thái', value: (r: any) => PAYMENT_STATUS_LABEL[r.payment_status] ?? r.payment_status },
               ]} />}
             >
-              <Table
-                rowKey={(r: any) => r.customer_treatment_id}
-                dataSource={paginateRows(debts, debtsPage, 5)}
-                pagination={false}
-                columns={[
-                  { title: 'Khách hàng', dataIndex: 'full_name', ellipsis: true },
-                  { title: 'Còn nợ', dataIndex: 'debt_amount', width: 110, align: 'right', render: (v: any) => fmtMoney(v) },
-                  { title: 'Trạng thái', dataIndex: 'payment_status', width: 140, render: (v: string) => PAYMENT_STATUS_LABEL[v] ?? v },
-                ]}
+              <div className="desktop-only">
+                <Table
+                  rowKey={(r: any) => r.customer_treatment_id}
+                  dataSource={paginateRows(debts, debtsPage, 5)}
+                  pagination={false}
+                  columns={[
+                    { title: 'Khách hàng', dataIndex: 'full_name', ellipsis: true },
+                    { title: 'Còn nợ', dataIndex: 'debt_amount', width: 110, align: 'right', render: (v: any) => fmtMoney(v) },
+                    { title: 'Trạng thái', dataIndex: 'payment_status', width: 140, render: (v: string) => PAYMENT_STATUS_LABEL[v] ?? v },
+                  ]}
+                />
+              </div>
+              <MobileCards
+                rows={paginateRows(debts, debtsPage, 5)}
+                rowKey={(r: any) => String(r.customer_treatment_id)}
+                emptyText="Không có công nợ trong kỳ"
+                renderCard={(r: any) => (
+                  <>
+                    <div className="mobile-card-head">
+                      <div>
+                        <div className="mobile-card-title">{r.full_name ?? '—'}</div>
+                        <div className="mobile-card-sub">{[r.customer_code, r.package_name].filter(Boolean).join(' · ')}</div>
+                      </div>
+                      <Tag>{PAYMENT_STATUS_LABEL[r.payment_status] ?? r.payment_status}</Tag>
+                    </div>
+                    <div className="mobile-card-rows">
+                      <MobileCardRow label="Còn nợ" value={fmtMoney(r.debt_amount)} />
+                    </div>
+                  </>
+                )}
               />
               <ListPagination page={debtsPage} limit={5} total={debts.length} onChange={setDebtsPage} noun="khách hàng còn nợ" />
             </Card>
@@ -454,7 +619,7 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
                 <ResponsiveContainer width="100%" height={260}>
                   <BarChart data={newCustPeriod}>
                     <CartesianGrid strokeDasharray="3 3" stroke={brand.border} vertical={false} />
-                    <XAxis dataKey="period" tick={{ fontSize: 11, fill: '#6F7071' }} axisLine={false} tickLine={false} />
+                    <XAxis dataKey="period" tick={{ fontSize: 11, fill: '#6F7071' }} axisLine={false} tickLine={false} interval={isMobile ? 'preserveStartEnd' : undefined} />
                     <YAxis tick={{ fontSize: 11, fill: '#6F7071' }} axisLine={false} tickLine={false} allowDecimals={false} />
                     <Tooltip contentStyle={tooltipStyle} />
                     <Legend wrapperStyle={{ fontSize: 12 }} />
@@ -463,15 +628,27 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
                   </BarChart>
                 </ResponsiveContainer>
               )}
-              <Table
-                style={{ marginTop: 12 }}
-                rowKey={(r: any) => r.source}
-                dataSource={newCustomers.by_source ?? []}
-                pagination={false}
-                columns={[
-                  { title: 'Nguồn', dataIndex: 'source', render: (v: string) => SOURCE_LABEL[v] ?? v },
-                  { title: 'Số khách', dataIndex: 'count', width: 100, align: 'right' },
-                ]}
+              <div className="desktop-only">
+                <Table
+                  style={{ marginTop: 12 }}
+                  rowKey={(r: any) => r.source}
+                  dataSource={newCustomers.by_source ?? []}
+                  pagination={false}
+                  columns={[
+                    { title: 'Nguồn', dataIndex: 'source', render: (v: string) => SOURCE_LABEL[v] ?? v },
+                    { title: 'Số khách', dataIndex: 'count', width: 100, align: 'right' },
+                  ]}
+                />
+              </div>
+              <MobileCards
+                rows={newCustomers.by_source ?? []}
+                rowKey={(r: any) => String(r.source)}
+                emptyText="Chưa có dữ liệu nguồn khách"
+                renderCard={(r: any) => (
+                  <div className="mobile-card-rows">
+                    <MobileCardRow label={SOURCE_LABEL[r.source] ?? r.source} value={r.count} />
+                  </div>
+                )}
               />
             </Card>
           </Col>
@@ -502,16 +679,34 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
                   </PieChart>
                 </ResponsiveContainer>
               )}
-              <Table
-                style={{ marginTop: 12 }}
-                rowKey={(_, i) => String(i)}
-                dataSource={ranks.upgrades ?? []}
-                pagination={false}
-                columns={[
-                  { title: 'Kỳ', dataIndex: 'period' },
-                  { title: 'Hạng đạt', dataIndex: 'rank_name' },
-                  { title: 'Số khách nâng hạng', dataIndex: 'upgraded_count', width: 170, align: 'right' },
-                ]}
+              <div className="desktop-only">
+                <Table
+                  style={{ marginTop: 12 }}
+                  rowKey={(_, i) => String(i)}
+                  dataSource={ranks.upgrades ?? []}
+                  pagination={false}
+                  columns={[
+                    { title: 'Kỳ', dataIndex: 'period' },
+                    { title: 'Hạng đạt', dataIndex: 'rank_name' },
+                    { title: 'Số khách nâng hạng', dataIndex: 'upgraded_count', width: 170, align: 'right' },
+                  ]}
+                />
+              </div>
+              <MobileCards
+                rows={ranks.upgrades ?? []}
+                rowKey={(_r, i) => String(i)}
+                emptyText="Chưa có khách nâng hạng trong kỳ"
+                renderCard={(r: any) => (
+                  <>
+                    <div className="mobile-card-head">
+                      <div className="mobile-card-title">{r.rank_name ?? '—'}</div>
+                    </div>
+                    <div className="mobile-card-rows">
+                      <MobileCardRow label="Kỳ" value={r.period} />
+                      <MobileCardRow label="Số khách nâng hạng" value={r.upgraded_count} />
+                    </div>
+                  </>
+                )}
               />
             </Card>
           </Col>
@@ -554,17 +749,37 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
                 { header: 'Không đến', value: (r: any) => r.no_show },
               ]} />}
             >
-              <Table
-                rowKey={(r: any) => r.staff_id ?? 'none'}
-                dataSource={appointments.by_staff ?? []}
-                pagination={false}
-                columns={[
-                  { title: 'KTV', dataIndex: 'staff_name', render: (v: any) => v || '(không tên)' },
-                  { title: 'Tổng lịch', dataIndex: 'total', width: 95, align: 'right' },
-                  { title: 'Hoàn tất', dataIndex: 'completed', width: 90, align: 'right' },
-                  { title: 'Đã hủy', dataIndex: 'cancelled', width: 90, align: 'right' },
-                  { title: 'Không đến', dataIndex: 'no_show', width: 100, align: 'right' },
-                ]}
+              <div className="desktop-only">
+                <Table
+                  rowKey={(r: any) => r.staff_id ?? 'none'}
+                  dataSource={appointments.by_staff ?? []}
+                  pagination={false}
+                  columns={[
+                    { title: 'KTV', dataIndex: 'staff_name', render: (v: any) => v || '(không tên)' },
+                    { title: 'Tổng lịch', dataIndex: 'total', width: 95, align: 'right' },
+                    { title: 'Hoàn tất', dataIndex: 'completed', width: 90, align: 'right' },
+                    { title: 'Đã hủy', dataIndex: 'cancelled', width: 90, align: 'right' },
+                    { title: 'Không đến', dataIndex: 'no_show', width: 100, align: 'right' },
+                  ]}
+                />
+              </div>
+              <MobileCards
+                rows={appointments.by_staff ?? []}
+                rowKey={(r: any) => String(r.staff_id ?? 'none')}
+                emptyText="Không có dữ liệu hiệu suất KTV"
+                renderCard={(r: any) => (
+                  <>
+                    <div className="mobile-card-head">
+                      <div className="mobile-card-title">{r.staff_name || '(không tên)'}</div>
+                    </div>
+                    <div className="mobile-card-rows">
+                      <MobileCardRow label="Tổng lịch" value={r.total} />
+                      <MobileCardRow label="Hoàn tất" value={r.completed} />
+                      <MobileCardRow label="Đã hủy" value={r.cancelled} />
+                      <MobileCardRow label="Không đến" value={r.no_show} />
+                    </div>
+                  </>
+                )}
               />
             </Card>
           </Col>
@@ -582,7 +797,7 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
                 <ResponsiveContainer width="100%" height={240}>
                   <BarChart data={sessionsPeriod}>
                     <CartesianGrid strokeDasharray="3 3" stroke={brand.border} vertical={false} />
-                    <XAxis dataKey="period" tick={{ fontSize: 11, fill: '#6F7071' }} axisLine={false} tickLine={false} />
+                    <XAxis dataKey="period" tick={{ fontSize: 11, fill: '#6F7071' }} axisLine={false} tickLine={false} interval={isMobile ? 'preserveStartEnd' : undefined} />
                     <YAxis tick={{ fontSize: 11, fill: '#6F7071' }} axisLine={false} tickLine={false} allowDecimals={false} />
                     <Tooltip contentStyle={tooltipStyle} />
                     <Bar dataKey="sessions_used" name="Buổi hoàn tất" fill="#16A34A" radius={[6, 6, 0, 0]} />
@@ -604,15 +819,35 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
                 { header: 'Còn lại', value: (r: any) => r.sessions_remaining },
               ]} />}
             >
-              <Table
-                rowKey={(_, i) => String(i)}
-                dataSource={paginateRows(sessions.remaining ?? [], remainingPage, 8)}
-                pagination={false}
-                columns={[
-                  { title: 'Khách hàng', dataIndex: 'full_name' },
-                  { title: 'Gói', dataIndex: 'package_name' },
-                  { title: 'Còn lại', dataIndex: 'sessions_remaining', width: 90, align: 'right' },
-                ]}
+              <div className="desktop-only">
+                <Table
+                  rowKey={(_, i) => String(i)}
+                  dataSource={paginateRows(sessions.remaining ?? [], remainingPage, 8)}
+                  pagination={false}
+                  columns={[
+                    { title: 'Khách hàng', dataIndex: 'full_name' },
+                    { title: 'Gói', dataIndex: 'package_name' },
+                    { title: 'Còn lại', dataIndex: 'sessions_remaining', width: 90, align: 'right' },
+                  ]}
+                />
+              </div>
+              <MobileCards
+                rows={paginateRows(sessions.remaining ?? [], remainingPage, 8)}
+                rowKey={(_r, i) => String(i)}
+                emptyText="Không có gói còn buổi"
+                renderCard={(r: any) => (
+                  <>
+                    <div className="mobile-card-head">
+                      <div>
+                        <div className="mobile-card-title">{r.full_name ?? '—'}</div>
+                        <div className="mobile-card-sub">{r.package_name}</div>
+                      </div>
+                    </div>
+                    <div className="mobile-card-rows">
+                      <MobileCardRow label="Còn lại" value={r.sessions_remaining} />
+                    </div>
+                  </>
+                )}
               />
               <ListPagination page={remainingPage} limit={8} total={(sessions.remaining ?? []).length} onChange={setRemainingPage} noun="gói còn lại" />
             </Card>
@@ -628,7 +863,7 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
         .rpt-section .ant-row .ant-col { display: flex; flex-direction: column; }
         .rpt-section .ant-row .ant-col > .ant-card { flex: 1; width: 100%; }
       `}</style>
-      {filterBar}
+      {isMobile ? mobileFilterBar : filterBar}
       {kpiRow}
       {section === 'money' && moneySection}
       {section === 'customers' && customerSection}

@@ -2,6 +2,7 @@ import { Table, Tag } from 'antd'
 import type { TableColumnsType } from 'antd'
 import dayjs from 'dayjs'
 import type { ReactNode } from 'react'
+import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import type { AppointmentStatus } from '@/api/models/appointmentStatus'
 import { STATUS_META } from './constants'
 import type { AppointmentRow } from './constants'
@@ -70,17 +71,47 @@ export default function AppointmentsTable({ rows, loading, branchName, staffName
   ] satisfies TableColumnsType<AppointmentRow>)
 
   return (
-    <Table<AppointmentRow>
-      rowKey="id"
-      loading={loading}
-      dataSource={rows}
-      scroll={{ x: 1168 }}
-      pagination={false}
-      onRow={(row) => ({
-        onClick: () => onRowClick(row),
-        style: { cursor: 'pointer' },
-      })}
-      columns={columns}
-    />
+    <>
+      <Table<AppointmentRow>
+        className="desktop-only"
+        rowKey="id"
+        loading={loading}
+        dataSource={rows}
+        scroll={{ x: 1168 }}
+        pagination={false}
+        onRow={(row) => ({
+          onClick: () => onRowClick(row),
+          style: { cursor: 'pointer' },
+        })}
+        columns={columns}
+      />
+      {/* Mobile: card theo Figma "Vista Admin / Thẻ lịch hẹn" — tên + tag trạng thái, các hàng label/value */}
+      <MobileCards
+        rows={rows}
+        rowKey={(row) => row.id}
+        loading={loading}
+        emptyText="Chưa có lịch hẹn nào"
+        onCardClick={onRowClick}
+        renderCard={(row) => (
+          <>
+            <div className="mobile-card-head">
+              <div className="mobile-card-title">{row.customer_profile?.full_name || '—'}</div>
+              <Tag color={STATUS_META[row.status as AppointmentStatus]?.color} style={{ marginInlineEnd: 0 }}>
+                {STATUS_META[row.status as AppointmentStatus]?.label ?? row.status}
+              </Tag>
+            </div>
+            <div className="mobile-card-rows">
+              <MobileCardRow label="Thời gian" value={`${dayjs(row.appt_date).format('DD/MM/YYYY')} ${row.start_time?.slice(0, 5) ?? ''}`} />
+              <MobileCardRow label="Số điện thoại" value={row.customer_profile?.phone || '—'} />
+              <MobileCardRow label="Cơ sở" value={branchName(row.branch_id)} />
+              <MobileCardRow label="KTV phụ trách" value={staffName(row)} />
+            </div>
+            <div className="mobile-card-actions" onClick={(event) => event.stopPropagation()}>
+              {renderActions(row)}
+            </div>
+          </>
+        )}
+      />
+    </>
   )
 }

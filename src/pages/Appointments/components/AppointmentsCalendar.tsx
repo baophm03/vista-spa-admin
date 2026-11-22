@@ -339,8 +339,26 @@ export default function AppointmentsCalendar({
         />
       </div>
 
-      {/* Thanh chú giải: Phân loại & 7 Trạng thái */}
-      <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 border-t border-[var(--brand-border-soft)] bg-neutral-50 px-3 py-2 text-xs text-neutral-600">
+      {/* Mobile: chú giải thu vào <details> bấm mới xổ ra — đỡ chiếm 3 dòng cố định */}
+      <details className="md:hidden border-t border-[var(--brand-border-soft)] bg-neutral-50 px-3 py-2 text-xs text-neutral-600">
+        <summary className="cursor-pointer font-semibold text-neutral-500 select-none">Chú giải màu</summary>
+        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+          <span className="inline-flex items-center gap-1.5 font-medium text-neutral-700">
+            <span className="h-2.5 w-2.5 rounded-sm" style={{ background: CATEGORY_COLORS.consultation.color }} /> Tư vấn
+          </span>
+          <span className="inline-flex items-center gap-1.5 font-medium text-neutral-700">
+            <span className="h-2.5 w-2.5 rounded-sm" style={{ background: CATEGORY_COLORS.treatment.color }} /> Liệu trình
+          </span>
+          {(Object.keys(STATUS_COLORS) as AppointmentStatus[]).map((st) => (
+            <span key={st} className="inline-flex items-center gap-1.5 font-medium text-neutral-700">
+              <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: STATUS_COLORS[st].accent }} />
+              {STATUS_META[st]?.label ?? st}
+            </span>
+          ))}
+        </div>
+      </details>
+      {/* Desktop: thanh chú giải đầy đủ như cũ */}
+      <div className="hidden md:flex flex-wrap items-center justify-between gap-x-6 gap-y-2 border-t border-[var(--brand-border-soft)] bg-neutral-50 px-3 py-2 text-xs text-neutral-600">
         {/* Nhóm Phân loại: 2 loại chuẩn là Tư vấn & Liệu trình */}
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
           <span className="font-semibold text-neutral-500">Phân loại:</span>

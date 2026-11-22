@@ -45,6 +45,13 @@ function rowTime(row: SessionRow): string | null {
   return row.scheduled_at || null
 }
 
+function formatSessionTime(row: SessionRow) {
+  const time = rowTime(row)
+  if (!time) return 'Chưa xếp lịch'
+  const hasTime = time.includes('T') && !time.endsWith('T00:00')
+  return dayjs(time).format(hasTime ? 'DD/MM/YYYY HH:mm' : 'DD/MM/YYYY')
+}
+
 export default function MySessions() {
   const [page, setPage] = useState(1)
   const [status, setStatus] = useState('')
@@ -53,15 +60,14 @@ export default function MySessions() {
   const queryClient = useQueryClient()
   const startMutation = usePutSessionsIdStartAdmin()
   const doneMutation = usePutSessionsIdDoneAdmin()
-const branchesQuery = useGetBranchesAdmin()
-const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as Branch[], [branchesQuery.data])
-
+  const branchesQuery = useGetBranchesAdmin()
+  const branches = useMemo(() => pickData<Branch[]>(branchesQuery.data) ?? [], [branchesQuery.data])
 
   const sessionsQuery = useQuery({
     queryKey: ['my-sessions'],
     queryFn: () => getSessionsAdmin({ page: 1, limit: 200 } as GetSessionsAdminParams),
   })
-  const sessionRows = (pickData<SessionRow[]>(sessionsQuery.data) ?? []) as SessionRow[]
+  const sessionRows = useMemo(() => pickData<SessionRow[]>(sessionsQuery.data) ?? [], [sessionsQuery.data])
 
   const rows = useMemo(() => sessionRows
     .filter((row) => !status || row.status === status)
@@ -77,7 +83,8 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
   const isLoading = sessionsQuery.isLoading
   const listError = sessionsQuery.isError ? sessionsQuery.error : null
   const total = rows.length
-  const pageRows = rows.slice((page - 1) * 10, page * 10)
+  const currentPage = Math.min(page, Math.max(1, Math.ceil(total / 10)))
+  const pageRows = rows.slice((currentPage - 1) * 10, currentPage * 10)
 
   const refresh = async () => {
     await queryClient.invalidateQueries({ queryKey: ['my-sessions'] })
@@ -108,7 +115,9 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
       setFinishingId(null)
     }
   }
-    const branchName = (id?: string) => branches.find((branch) => branch.id === id)?.name ?? '—'
+  const branchName = (id?: string) => branches.find((branch) => branch.id === id)?.name ?? '—'
+  const hasNoMatches = Boolean(status && sessionRows.length)
+  const emptyText = hasNoMatches ? 'Không có kết quả' : 'Chưa có buổi nào được giao cho bạn'
 
   const actionCell = (row: SessionRow) => {
     return row.status === 'scheduled'
@@ -149,14 +158,9 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
     {
       title: 'Lịch hẹn',
       key: 'scheduled_at',
-      render: (_value, row) => {
-        const time = rowTime(row)
-        if (!time) return 'Chưa xếp lịch'
-        const hasTime = time.includes('T') && !time.endsWith('T00:00')
-        return dayjs(time).format(hasTime ? 'DD/MM/YYYY HH:mm' : 'DD/MM/YYYY')
-      },
+      render: (_value, row) => formatSessionTime(row),
     },
-     { key: 'branch', title: 'Cơ sở', dataIndex: 'branch_id', width: 120, render: (value?: string) => branchName(value) },
+    { key: 'branch', title: 'Cơ sở', dataIndex: 'branch_id', width: 120, render: (value?: string) => branchName(value) },
     {
       title: 'Trạng thái',
       key: 'status',
@@ -176,16 +180,16 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
 
   return <>
     <PageTitle
+      className="max-md:mb-3"
       subtitle="Danh sách buổi điều trị được giao cho tài khoản KTV"
       left={
-        <>
-          <Select
-            value={status}
-            className="min-w-[180px]"
-            options={STATUS_OPTIONS}
-            onChange={(value) => { setStatus(value); setPage(1) }}
-          />
-        </>
+        <Select
+          aria-label="Lọc theo trạng thái"
+          value={status}
+          className="w-full md:w-[180px]"
+          options={STATUS_OPTIONS}
+          onChange={(value) => { setStatus(value); setPage(1) }}
+        />
       }
     >
       Buổi của tôi
@@ -194,11 +198,17 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
       style={{ marginBottom: 16 }}
       type="error"
       showIcon
-      message="Không tải được danh sách buổi"
-      description={errorMessage(listError)}
-      action={<Button size="small" onClick={() => { void sessionsQuery.refetch() }}>Thử lại</Button>}
+      title="Không tải được danh sách buổi"
+      description={
+        <>
+          <div className="wrap-anywhere">{errorMessage(listError)}</div>
+          <div className="mt-2 flex justify-end">
+            <Button size="small" loading={sessionsQuery.isFetching} onClick={() => { void sessionsQuery.refetch() }}>Thử lại</Button>
+          </div>
+        </>
+      }
     />}
-    <Table<SessionRow>
+    {!listError && <Table<SessionRow>
       className="desktop-only"
       rowKey="id"
       loading={isLoading}
@@ -206,40 +216,40 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
       dataSource={pageRows}
       scroll={{ x: 950 }}
       pagination={false}
-      locale={{ emptyText: 'Chưa có buổi nào được giao cho bạn' }}
-    />
-    <MobileCards
+      locale={{ emptyText }}
+    />}
+    {!listError && <MobileCards
       rows={pageRows}
       rowKey={(row) => row.id}
       loading={isLoading}
-      emptyText="Chưa có buổi nào được giao cho bạn"
+      emptyText={emptyText}
+      emptyDescription={hasNoMatches ? 'Thử đổi trạng thái hoặc bỏ lọc' : undefined}
       renderCard={(row) => {
         const statusInfo = STATUS_META[row.status || ''] ?? { label: row.status || '—', color: 'default' }
-        const time = rowTime(row)
+        const canAct = row.status === 'scheduled' || row.status === 'in_progress'
         return (
           <>
             <div className="mobile-card-head">
-              <div>
-                <div className="mobile-card-title">{row.is_warranty ? 'Bảo hành' : `Buổi ${row.session_no}`}</div>
-                <div className="mobile-card-sub">{row.customer_treatment?.customer_profile?.full_name || 'Khách hàng'} · {row.customer_treatment?.package?.name || '—'}</div>
+              <div className="mobile-card-title min-w-0">
+                {row.customer_treatment?.customer_profile?.full_name || 'Khách hàng'}
               </div>
-              <Tag color={statusInfo.color}>{statusInfo.label}</Tag>
+              <Tag className="me-0! shrink-0" color={statusInfo.color}>{statusInfo.label}</Tag>
             </div>
             <div className="mobile-card-rows">
-              <MobileCardRow label="Lịch hẹn" value={
-                time
-                  ? dayjs(time).format(time.includes('T') && !time.endsWith('T00:00') ? 'DD/MM/YYYY HH:mm' : 'DD/MM/YYYY')
-                  : 'Chưa xếp lịch'
-              } />
+              <MobileCardRow label="Buổi" value={row.is_warranty ? 'Bảo hành' : `Buổi ${String(row.session_no).padStart(2, '0')}`} />
+              <MobileCardRow label="Nội dung" value={row.customer_treatment?.package?.name || '—'} />
               <MobileCardRow label="KTV" value={row.staff?.zalo_name || 'Chưa gán'} />
+              <MobileCardRow label="Lịch hẹn" value={formatSessionTime(row)} />
+              <MobileCardRow label="Cơ sở" value={branchName(row.branch_id)} />
             </div>
-            <div className="mobile-card-actions">
+            {canAct && <div className="mobile-card-actions items-center justify-between!">
+              <Typography.Text type="secondary" className="text-xs!">Thao tác</Typography.Text>
               {actionCell(row)}
-            </div>
+            </div>}
           </>
         )
       }}
-    />
-    <ListPagination page={page} limit={10} total={total} onChange={setPage} noun="việc được giao" />
+    />}
+    {!listError && <ListPagination page={currentPage} limit={10} total={total} onChange={setPage} noun="buổi được giao" hideOnSinglePage />}
   </>
 }

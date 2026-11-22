@@ -47,7 +47,7 @@ export default function AdminHeader({
   const roleLabel = isAdminRole ? 'Quản trị viên' : 'Nhân viên'
 
   const notificationPanel = (
-    <div style={{ width: 340 }}>
+    <div className="notification-panel" style={{ width: 340, maxWidth: '100%' }}>
       <div className="flex items-center justify-between border-b border-[var(--brand-border-soft)] px-3 py-2">
         <Typography.Text strong>Thông báo</Typography.Text>
         {unreadCount > 0 && (
@@ -136,7 +136,16 @@ export default function AdminHeader({
       </div>
 
       <Space size={20}>
-        <Popover content={notificationPanel} trigger="click" placement="bottomRight" arrow={false}>
+        <Popover
+          content={notificationPanel}
+          trigger="click"
+          placement="bottomRight"
+          arrow={false}
+          styles={{ content: { padding: 8 } }}
+          // Mobile: rootClassName để CSS ghim popover vào mép phải viewport (antd
+          // canh theo chuông nên hay bị đẩy tràn mép trái màn hình hẹp)
+          rootClassName="notification-popover"
+        >
           <Badge count={unreadCount} size="small" overflowCount={99}>
             <button
               type="button"
@@ -150,7 +159,39 @@ export default function AdminHeader({
         <div className="h-6 w-px bg-[var(--brand-border-soft)]" />
         <Dropdown
           menu={{
-            items: [{ key: 'logout', icon: <LogoutOutlined />, label: 'Đăng xuất', onClick: onLogout }],
+            items: [
+              {
+                key: 'account',
+                disabled: true,
+                style: { cursor: 'default', paddingTop: 8, paddingBottom: 8 },
+                label: (
+                  // Khối thông tin tài khoản — cần thiết trên mobile vì header chỉ hiện avatar
+                  <div style={{ lineHeight: 1.35 }}>
+                    <div style={{ fontSize: 13.5, fontWeight: 600, color: '#282335' }}>{displayName}</div>
+                    {typeof profile?.email === 'string' && profile.email && (
+                      <div style={{ fontSize: 12, color: '#655E71', overflowWrap: 'anywhere' }}>{profile.email}</div>
+                    )}
+                    <div style={{ marginTop: 4 }}>
+                      <span
+                        style={{
+                          display: 'inline-block',
+                          padding: '1px 8px',
+                          borderRadius: 7,
+                          background: '#f2e5f4',
+                          color: 'var(--brand-primary)',
+                          fontSize: 11,
+                          fontWeight: 500,
+                        }}
+                      >
+                        {roleLabel}
+                      </span>
+                    </div>
+                  </div>
+                ),
+              },
+              { type: 'divider' },
+              { key: 'logout', icon: <LogoutOutlined />, label: 'Đăng xuất', onClick: onLogout },
+            ],
           }}
         >
           <Space className="cursor-pointer">

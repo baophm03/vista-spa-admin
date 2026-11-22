@@ -260,7 +260,6 @@ export * from './customerTreatmentDiscountName';
 export * from './customerTreatmentExpiresAt';
 export * from './customerTreatmentFinishedAt';
 export * from './customerTreatmentNote';
-export * from './customerTreatmentPackageId';
 export * from './customerTreatmentPackageSnapshot';
 export * from './customerTreatmentPackageTypeId';
 export * from './customerTreatmentParentTreatmentId';

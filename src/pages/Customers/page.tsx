@@ -1,6 +1,6 @@
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
 import { Button, Form, Grid, Input, InputNumber, Modal, Col, Row, Select, Space, Table, Tag, Typography, message } from 'antd'
-import { DeleteOutlined, DownloadOutlined, EditOutlined, PlusOutlined, QrcodeOutlined } from '@ant-design/icons'
+import { DeleteOutlined, DownloadOutlined, EditOutlined, FilterOutlined, PlusOutlined, QrcodeOutlined, SearchOutlined } from '@ant-design/icons'
 import { useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import type { Dayjs } from 'dayjs'
@@ -366,79 +366,103 @@ export default function Customers() {
   const rowRankName = (row: CustomerProfileRow) => row.user?.membership?.card_rank?.name
   const activeFilterCount = Object.values(filters).filter((value) => value !== undefined && value !== '').length + (keyword ? 1 : 0)
 
+  // Nút pill mobile theo Figma "Mobile / Danh sách khách": trắng, viền hairline, radius 12, icon tím
+  const mobilePillStyle = {
+    flex: 1,
+    height: 44,
+    borderRadius: 10,
+    border: '1px solid var(--brand-border-soft)',
+    background: '#fff',
+    cursor: 'pointer',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    fontSize: 13,
+    fontWeight: 500,
+    color: 'var(--brand-primary)',
+    padding: 0,
+  } as const
+
+  const renderFilterPopover = (trigger?: React.ReactNode) => (
+    <ListFilterPopover
+      iconOnly={isMobile}
+      trigger={trigger}
+      open={filterOpen}
+      onOpenChange={openFilters}
+      activeFilterCount={activeFilterCount}
+      form={filterForm}
+      onApply={applyFilters}
+      onClear={clearFilters}
+      columnOptions={CUSTOMER_COLUMN_OPTIONS}
+      draftVisibleColumns={draftVisibleColumns}
+      onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as CustomerColumnKey[])}
+      filterItems={(
+        <>
+          <Row gutter={8}>
+            <Col span={12}>
+              <Form.Item name="birth_month" label="Tháng sinh" className="mb-2.5!">
+                <Select allowClear placeholder="Tất cả" options={Array.from({ length: 12 }, (_, index) => ({ value: index + 1, label: `Tháng ${index + 1}` }))} />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item name="rank_id" label="Hạng thành viên" className="mb-2.5!">
+                <Select allowClear placeholder="Tất cả" options={ranks.map((rank) => ({ value: rank.id, label: rank.name }))} />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={8}>
+            <Col span={12}>
+              <Form.Item name="min_spent" label="Chi tiêu từ" className="mb-2.5!">
+                <InputNumber min={0} step={100000} suffix={currencySymbol} placeholder="Tối thiểu" className="w-full!" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item name="max_spent" label="Chi tiêu đến" className="mb-2.5!">
+                <InputNumber min={0} step={100000} suffix={currencySymbol} placeholder="Tối đa" className="w-full!" />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Form.Item name="has_debt" label="Công nợ" className="mb-0!">
+            <Select allowClear placeholder="Tất cả" options={[{ value: 'true', label: 'Có nợ' }, { value: 'false', label: 'Không nợ' }]} />
+          </Form.Item>
+        </>
+      )}
+    />
+  )
+
   return (
     <>
       <PageTitle
         subtitle="Quản lý cơ sở dữ liệu và phân hạng thành viên"
         left={
-          <>
-            <Input.Search
-              allowClear
-              placeholder="Tìm tên, SĐT, email, mã KH..."
-              className="w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]"
-              value={searchText}
-              onChange={(event) => setSearchText(event.target.value)}
-              aria-label="Tìm khách hàng"
-              onSearch={(value) => { setKeyword(value.trim()); setPage(1) }}
-            />
-            {profileAccess.canRead && (
-              <Button icon={<QrcodeOutlined />} loading={qrLookupLoading} onClick={() => setScannerOpen(true)} aria-label="Quét QR" title="Quét QR">
-                {/* Desktop: hiện chữ dễ nhận biết; mobile giữ icon gọn thanh công cụ */}
-                {!isMobile ? 'Quét QR' : undefined}
-              </Button>
-            )}
-            <ListFilterPopover
-              iconOnly={isMobile}
-              open={filterOpen}
-              onOpenChange={openFilters}
-              activeFilterCount={activeFilterCount}
-              form={filterForm}
-              onApply={applyFilters}
-              onClear={clearFilters}
-              columnOptions={CUSTOMER_COLUMN_OPTIONS}
-              draftVisibleColumns={draftVisibleColumns}
-              onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as CustomerColumnKey[])}
-              filterItems={(
-                <>
-                  <Row gutter={8}>
-                    <Col span={12}>
-                      <Form.Item name="birth_month" label="Tháng sinh" className="mb-2.5!">
-                        <Select allowClear placeholder="Tất cả" options={Array.from({ length: 12 }, (_, index) => ({ value: index + 1, label: `Tháng ${index + 1}` }))} />
-                      </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                      <Form.Item name="rank_id" label="Hạng thành viên" className="mb-2.5!">
-                        <Select allowClear placeholder="Tất cả" options={ranks.map((rank) => ({ value: rank.id, label: rank.name }))} />
-                      </Form.Item>
-                    </Col>
-                  </Row>
-                  <Row gutter={8}>
-                    <Col span={12}>
-                      <Form.Item name="min_spent" label="Chi tiêu từ" className="mb-2.5!">
-                        <InputNumber min={0} step={100000} suffix={currencySymbol} placeholder="Tối thiểu" className="w-full!" />
-                      </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                      <Form.Item name="max_spent" label="Chi tiêu đến" className="mb-2.5!">
-                        <InputNumber min={0} step={100000} suffix={currencySymbol} placeholder="Tối đa" className="w-full!" />
-                      </Form.Item>
-                    </Col>
-                  </Row>
-                  <Form.Item name="has_debt" label="Công nợ" className="mb-0!">
-                    <Select allowClear placeholder="Tất cả" options={[{ value: 'true', label: 'Có nợ' }, { value: 'false', label: 'Không nợ' }]} />
-                  </Form.Item>
-                </>
+          !isMobile ? (
+            <>
+              <Input.Search
+                allowClear
+                placeholder="Tìm tên, SĐT, email, mã KH..."
+                className="w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]"
+                value={searchText}
+                onChange={(event) => setSearchText(event.target.value)}
+                aria-label="Tìm khách hàng"
+                onSearch={(value) => { setKeyword(value.trim()); setPage(1) }}
+              />
+              {profileAccess.canRead && (
+                <Button icon={<QrcodeOutlined />} loading={qrLookupLoading} onClick={() => setScannerOpen(true)} aria-label="Quét QR" title="Quét QR">
+                  Quét QR
+                </Button>
               )}
-            />
-            {profileAccess.canExport && (
-              <Button icon={<DownloadOutlined />} loading={exporting} onClick={() => void downloadCsv()} aria-label="Xuất CSV" title="Xuất CSV">
-                {!isMobile ? 'Xuất CSV' : undefined}
-              </Button>
-            )}
-          </>
+              {renderFilterPopover()}
+              {profileAccess.canExport && (
+                <Button icon={<DownloadOutlined />} loading={exporting} onClick={() => void downloadCsv()} aria-label="Xuất CSV" title="Xuất CSV">
+                  Xuất CSV
+                </Button>
+              )}
+            </>
+          ) : undefined
         }
         right={
-          profileAccess.canManage ? (
+          profileAccess.canManage && !isMobile ? (
             <Button type="primary" icon={<PlusOutlined />} onClick={() => void openModal()}>
               Thêm khách hàng
             </Button>
@@ -447,6 +471,50 @@ export default function Customers() {
       >
         Khách hàng
       </PageTitle>
+      {/* Toolbar mobile theo Figma: search full-width + hàng nút Quét QR / Bộ lọc / Xuất CSV */}
+      {isMobile && (
+        <div style={{ display: 'grid', gap: 12, marginBottom: 14 }}>
+          <Input
+            allowClear
+            prefix={<SearchOutlined style={{ color: '#655E71' }} />}
+            placeholder="Tìm tên, SĐT, email, mã KH"
+            value={searchText}
+            onChange={(event) => setSearchText(event.target.value)}
+            aria-label="Tìm khách hàng"
+            style={{ height: 46, borderRadius: 12 }}
+          />
+          <div style={{ display: 'flex', gap: 12 }}>
+            {profileAccess.canRead && (
+              <button type="button" style={mobilePillStyle} onClick={() => setScannerOpen(true)}>
+                <QrcodeOutlined style={{ color: 'var(--brand-primary)', fontSize: 15 }} />
+                Quét QR
+              </button>
+            )}
+            {renderFilterPopover(
+              <button type="button" style={mobilePillStyle}>
+                <FilterOutlined style={{ color: 'var(--brand-primary)', fontSize: 15 }} />
+                Bộ lọc{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
+              </button>,
+            )}
+            {profileAccess.canExport && (
+              <button type="button" aria-label="Xuất CSV" style={{ ...mobilePillStyle, flex: '0 0 46px' }} onClick={() => void downloadCsv()}>
+                <DownloadOutlined style={{ color: 'var(--brand-primary)', fontSize: 15 }} />
+              </button>
+            )}
+            {/* Nút thêm chuyển từ header xuống cùng hàng công cụ trên mobile */}
+            {profileAccess.canManage && (
+              <button
+                type="button"
+                aria-label="Thêm khách hàng"
+                style={{ ...mobilePillStyle, flex: '0 0 46px', background: 'var(--brand-primary)', borderColor: 'var(--brand-primary)', color: '#fff' }}
+                onClick={() => void openModal()}
+              >
+                <PlusOutlined style={{ fontSize: 15 }} />
+              </button>
+            )}
+          </div>
+        </div>
+      )}
       <Table<CustomerProfileRow>
         className="desktop-only"
         rowKey="id"
@@ -528,17 +596,30 @@ export default function Customers() {
         renderCard={(row) => (
           <>
             <div className="mobile-card-head">
-              <div>
-                <div className="mobile-card-title">{row.full_name}</div>
-                <div className="mobile-card-sub"><Typography.Text code style={{ fontSize: 12 }}>{row.customer_code}</Typography.Text></div>
-              </div>
-              {row.user_id
-                ? <Tag color="purple">{rowRankName(row) ?? 'Đã liên kết'}</Tag>
-                : <Tag>Chưa liên kết</Tag>}
+              <div className="mobile-card-title">{row.full_name}</div>
+              {/* Chip mã KH bên phải tiêu đề — theo Figma "Mobile / Danh sách khách" */}
+              <span
+                style={{
+                  flexShrink: 0,
+                  padding: '4px 7px',
+                  borderRadius: 7,
+                  background: '#f2e5f4',
+                  color: 'var(--brand-primary)',
+                  fontSize: 11,
+                  fontWeight: 500,
+                  lineHeight: 'normal',
+                }}
+              >
+                {row.customer_code}
+              </span>
             </div>
             <div className="mobile-card-rows">
               <MobileCardRow label="Số điện thoại" value={row.phone || '—'} />
               <MobileCardRow label="Email" value={row.email || row.user?.email || '—'} />
+              <MobileCardRow
+                label="Hạng / Tài khoản"
+                value={`${rowRankName(row) ?? '—'} / ${row.user_id ? 'Đã liên kết' : 'Chưa liên kết'}`}
+              />
             </div>
             {(profileAccess.canManage || profileAccess.canDelete) && (
               <div className="mobile-card-actions">
