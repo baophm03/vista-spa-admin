@@ -10,6 +10,7 @@ import {
   Row,
   Select,
   Space,
+  Switch,
   Typography,
   Upload,
   message,
@@ -25,6 +26,8 @@ interface ProductFormModalProps {
   onCancel: () => void
   onSubmit: () => void
   saving: boolean
+  deleting: boolean
+  onDelete: () => void
   form: FormInstance
   categories: ProductCategoryRow[]
   currencySymbol: string
@@ -42,6 +45,8 @@ export default function ProductFormModal({
   onCancel,
   onSubmit,
   saving,
+  deleting,
+  onDelete,
   form,
   categories,
   currencySymbol,
@@ -62,6 +67,17 @@ export default function ProductFormModal({
       okText="Lưu"
       cancelText="Hủy"
       width={680}
+      footer={
+        editing
+          ? [
+              <Button key="delete" danger icon={<DeleteOutlined />} loading={deleting} onClick={onDelete} style={{ marginRight: 'auto' }}>
+                Xóa sản phẩm
+              </Button>,
+              <Button key="cancel" onClick={onCancel}>Hủy</Button>,
+              <Button key="ok" type="primary" loading={saving} onClick={onSubmit}>Lưu</Button>,
+            ]
+          : undefined
+      }
     >
       <Form form={form} layout="vertical" style={{ marginTop: 12 }}>
         <Row gutter={12}>
@@ -116,6 +132,11 @@ export default function ProductFormModal({
             </Form.Item>
           </Col>
         </Row>
+        {editing && (
+          <Form.Item name="is_active" label="Trạng thái" valuePropName="checked" extra="Tắt để ẩn sản phẩm khỏi app; sản phẩm vẫn còn trong danh sách quản trị.">
+            <Switch checkedChildren="Đang bán" unCheckedChildren="Đã ẩn" />
+          </Form.Item>
+        )}
         <Form.Item name="short_description" label="Mô tả ngắn" extra="Dòng hiển thị dưới tên sản phẩm trên app.">
           <Input.TextArea rows={2} maxLength={300} placeholder="VD: Sữa rửa mặt dưỡng ẩm cho da thường đến khô" />
         </Form.Item>

@@ -97,8 +97,18 @@ export default function Roles() {
   const openPermissions = (role: RoleRow) => {
     const cached = queryClient.getQueryData<{ module?: string; action?: string }[]>(getGetRolesIdPermissionsAdminQueryKey(role.id))
     const pairs = (pickData<{ module?: string; action?: string }[]>(cached as unknown as unknown[]) ?? []) as { module?: string; action?: string }[]
+    // Chỉ giữ permission còn tồn tại trong catalog hiện tại — bỏ quyền ghost
+    // (còn sót trong DB nhưng đã bị xoá khỏi registry) để không gửi lại khi lưu.
+    const validKeys = new Set(perms.map((p) => p.key))
     setPermRole(role)
-    setGranted(new Set((Array.isArray(pairs) ? pairs : []).filter((p) => p.module && p.action).map((p) => permKey(p.module!, p.action!))))
+    setGranted(
+      new Set(
+        (Array.isArray(pairs) ? pairs : [])
+          .filter((p) => p.module && p.action)
+          .map((p) => permKey(p.module!, p.action!))
+          .filter((key) => validKeys.has(key)),
+      ),
+    )
     setPermOpen(true)
   }
 
