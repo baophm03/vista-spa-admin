@@ -1,11 +1,10 @@
 import { Alert, Button, Form, Input, Modal, Select, Space, Upload } from 'antd'
+import { displayName } from '@/utils/displayName'
 import { FileTextOutlined, UploadOutlined } from '@ant-design/icons'
 import type { CustomerTreatment } from '@/api/models/customerTreatment'
 import { snapshotField, labelStyle } from './constants'
 import { useBrandDateTime } from '@/themeRuntime'
 import type { Branch } from '@/api/models'
-
-
 
 interface WarrantyClaimCreateModalProps {
   form: ReturnType<typeof import('antd').Form.useForm>[0]
@@ -62,7 +61,7 @@ export default function WarrantyClaimCreateModal({
               const snap = snapshotField(t)
               const treatment = t as CustomerTreatment & { customer_profile?: { full_name?: string; phone?: string } }
               const pkg = snap.name
-              const customerName = treatment.customer_profile?.full_name ?? 'Khách'
+              const customerName = displayName(treatment.customer_profile, 'Khách')
               const customer = treatment.customer_profile?.phone ? `${customerName} — ${treatment.customer_profile.phone}` : customerName
               return {
                 value: t.id,
@@ -79,15 +78,15 @@ export default function WarrantyClaimCreateModal({
         </Form.Item>
         <Form.Item name="contract_file_id" hidden><Input /></Form.Item>
         <Form.Item name="branch_id" label={<span style={labelStyle}>Cơ sở</span>}>
-  <Select
-    allowClear
-    showSearch
-    optionFilterProp="label"
-    placeholder="Chọn cơ sở"
-    notFoundContent="Chưa có cơ sở"
-    options={branches.map((branch) => ({ value: branch.id, label: branch.name }))}
-  />
-</Form.Item>
+          <Select
+            allowClear
+            showSearch
+            optionFilterProp="label"
+            placeholder="Chọn cơ sở"
+            notFoundContent="Chưa có cơ sở"
+            options={branches.map((branch) => ({ value: branch.id, label: branch.name }))}
+          />
+        </Form.Item>
         <Form.Item
           label="Giấy cam kết bảo hành đã ký (nếu có)"
           extra="Tải ảnh hoặc PDF giấy khách đã ký để lưu cùng yêu cầu. Không có giấy thì để trống."

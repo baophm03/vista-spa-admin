@@ -34,10 +34,13 @@ import type {
   ForbiddenResponse,
   GetWarrantyClaimsAdmin200,
   GetWarrantyClaimsAdminParams,
+  GetWarrantyClaimsApp200,
   GetWarrantyClaimsIdAdmin200,
   InternalErrorResponse,
   NotFoundResponse,
   PostWarrantyClaimsAdmin200,
+  PostWarrantyClaimsApp200,
+  PostWarrantyClaimsAppBody,
   PutWarrantyClaimsIdApproveAdmin200,
   PutWarrantyClaimsIdApproveAdminBody,
   PutWarrantyClaimsIdRejectAdmin200,
@@ -378,7 +381,266 @@ export const usePutWarrantyClaimsIdApproveAdmin = <TError = UnauthorizedResponse
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **WC-01** — GET /warranty-claims/admin. Cần đăng nhập + `warranty_claim.view_all` hoặc `warranty_claim.view_own` — khi đó trả về các yêu cầu bảo hành trên hồ sơ khách liên kết với tài khoản (shape miniapp của GET /app/me/warranty-claims cũ, kèm `customer_treatment` + `package` + `session` + `contract_file`). Query parameters: `page`, `limit`, `status`, `customer_treatment_id`, `branch_id`.
+ * **WC-01A** — GET /warranty-claims/app. Yêu cầu bảo hành CỦA CHÍNH tài khoản. Chỉ cần đăng nhập (API miniapp — không áp phân quyền, dữ liệu luôn của chính tài khoản).
+ * @summary My warranty claims (miniapp)
+ */
+export const getWarrantyClaimsApp = (
+    
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetWarrantyClaimsApp200>(
+      {url: `/warranty-claims/app`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetWarrantyClaimsAppInfiniteQueryKey = () => {
+    return [
+    'infinite', `/warranty-claims/app`
+    ] as const;
+    }
+
+export const getGetWarrantyClaimsAppQueryKey = () => {
+    return [
+    `/warranty-claims/app`
+    ] as const;
+    }
+
+    
+export const getGetWarrantyClaimsAppInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getWarrantyClaimsApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getWarrantyClaimsApp>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetWarrantyClaimsAppInfiniteQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getWarrantyClaimsApp>>> = ({ signal }) => getWarrantyClaimsApp(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getWarrantyClaimsApp>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetWarrantyClaimsAppInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getWarrantyClaimsApp>>>
+export type GetWarrantyClaimsAppInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+
+
+export function useGetWarrantyClaimsAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getWarrantyClaimsApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getWarrantyClaimsApp>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getWarrantyClaimsApp>>,
+          TError,
+          Awaited<ReturnType<typeof getWarrantyClaimsApp>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetWarrantyClaimsAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getWarrantyClaimsApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getWarrantyClaimsApp>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getWarrantyClaimsApp>>,
+          TError,
+          Awaited<ReturnType<typeof getWarrantyClaimsApp>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetWarrantyClaimsAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getWarrantyClaimsApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getWarrantyClaimsApp>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary My warranty claims (miniapp)
+ */
+
+export function useGetWarrantyClaimsAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getWarrantyClaimsApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getWarrantyClaimsApp>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetWarrantyClaimsAppInfiniteQueryOptions(options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary My warranty claims (miniapp)
+ */
+export const prefetchGetWarrantyClaimsAppInfiniteQuery = async <TData = Awaited<ReturnType<typeof getWarrantyClaimsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getWarrantyClaimsApp>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetWarrantyClaimsAppInfiniteQueryOptions(options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetWarrantyClaimsAppQueryOptions = <TData = Awaited<ReturnType<typeof getWarrantyClaimsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getWarrantyClaimsApp>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetWarrantyClaimsAppQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getWarrantyClaimsApp>>> = ({ signal }) => getWarrantyClaimsApp(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getWarrantyClaimsApp>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetWarrantyClaimsAppQueryResult = NonNullable<Awaited<ReturnType<typeof getWarrantyClaimsApp>>>
+export type GetWarrantyClaimsAppQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+
+
+export function useGetWarrantyClaimsApp<TData = Awaited<ReturnType<typeof getWarrantyClaimsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getWarrantyClaimsApp>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getWarrantyClaimsApp>>,
+          TError,
+          Awaited<ReturnType<typeof getWarrantyClaimsApp>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetWarrantyClaimsApp<TData = Awaited<ReturnType<typeof getWarrantyClaimsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getWarrantyClaimsApp>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getWarrantyClaimsApp>>,
+          TError,
+          Awaited<ReturnType<typeof getWarrantyClaimsApp>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetWarrantyClaimsApp<TData = Awaited<ReturnType<typeof getWarrantyClaimsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getWarrantyClaimsApp>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary My warranty claims (miniapp)
+ */
+
+export function useGetWarrantyClaimsApp<TData = Awaited<ReturnType<typeof getWarrantyClaimsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getWarrantyClaimsApp>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetWarrantyClaimsAppQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary My warranty claims (miniapp)
+ */
+export const prefetchGetWarrantyClaimsAppQuery = async <TData = Awaited<ReturnType<typeof getWarrantyClaimsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getWarrantyClaimsApp>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetWarrantyClaimsAppQueryOptions(options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * **WC-02A** — POST /warranty-claims/app. Tạo yêu cầu bảo hành từ tài khoản khách (hồ sơ suy ra từ tài khoản). Chỉ cần đăng nhập (API miniapp — không áp phân quyền, dữ liệu luôn của chính tài khoản).
+ * @summary Create a warranty claim for self (miniapp)
+ */
+export const postWarrantyClaimsApp = (
+    postWarrantyClaimsAppBody: PostWarrantyClaimsAppBody,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<PostWarrantyClaimsApp200>(
+      {url: `/warranty-claims/app`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: postWarrantyClaimsAppBody, signal
+    },
+      );
+    }
+  
+
+
+export const getPostWarrantyClaimsAppMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postWarrantyClaimsApp>>, TError,{data: PostWarrantyClaimsAppBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postWarrantyClaimsApp>>, TError,{data: PostWarrantyClaimsAppBody}, TContext> => {
+
+const mutationKey = ['postWarrantyClaimsApp'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postWarrantyClaimsApp>>, {data: PostWarrantyClaimsAppBody}> = (props) => {
+          const {data} = props ?? {};
+
+          return  postWarrantyClaimsApp(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostWarrantyClaimsAppMutationResult = NonNullable<Awaited<ReturnType<typeof postWarrantyClaimsApp>>>
+    export type PostWarrantyClaimsAppMutationBody = PostWarrantyClaimsAppBody
+    export type PostWarrantyClaimsAppMutationError = UnauthorizedResponse | ForbiddenResponse | UnprocessableEntityResponse | InternalErrorResponse
+
+    /**
+ * @summary Create a warranty claim for self (miniapp)
+ */
+export const usePostWarrantyClaimsApp = <TError = UnauthorizedResponse | ForbiddenResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postWarrantyClaimsApp>>, TError,{data: PostWarrantyClaimsAppBody}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postWarrantyClaimsApp>>,
+        TError,
+        {data: PostWarrantyClaimsAppBody},
+        TContext
+      > => {
+
+      const mutationOptions = getPostWarrantyClaimsAppMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * **WC-01** — GET /warranty-claims/admin. Cần đăng nhập + `warranty_claim.read_all` (branch scope áp dụng). Query parameters: `page`, `limit`, `status`, `customer_treatment_id`, `branch_id`. Yêu cầu của chính tài khoản (miniapp): GET /warranty-claims/app.
  * @summary List warranty claims
  */
 export const getWarrantyClaimsAdmin = (
@@ -573,7 +835,7 @@ export const prefetchGetWarrantyClaimsAdminQuery = async <TData = Awaited<Return
 
 
 /**
- * **WC-03** — POST /warranty-claims/admin. Cần đăng nhập + `warranty_claim.create`. Nhánh quản trị (ADM/REC): chỉ nhận gói FINISHED với package_type.has_warranty=true. Nhánh `view_own` (khách tự tạo, gộp từ POST /app/me/warranty-claims cũ): `customer_treatment_id` phải thuộc hồ sơ của khách; body fields `customer_treatment_id`, `reason`, `contract_file_id`.
+ * **WC-03** — POST /warranty-claims/admin. Cần đăng nhập + `warranty_claim.create` (ADM/REC): chỉ nhận gói FINISHED với package_type.has_warranty=true. Khách tự tạo (miniapp): POST /warranty-claims/app.
  * @summary Create a new warranty claim
  */
 export const postWarrantyClaimsAdmin = (

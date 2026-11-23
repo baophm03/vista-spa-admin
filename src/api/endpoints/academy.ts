@@ -41,6 +41,7 @@ import type {
   GetAcademyCoursesIdAdmin200,
   GetAcademyRegistrationsAdmin200,
   GetAcademyRegistrationsAdminParams,
+  GetAcademyRegistrationsApp200,
   GetAcademyRegistrationsFindStudentAdmin200,
   GetAcademyRegistrationsFindStudentAdminParams,
   GetAcademyRegistrationsIdAdmin200,
@@ -50,6 +51,8 @@ import type {
   PostAcademyCoursesAdminBody,
   PostAcademyRegistrationsAdmin200,
   PostAcademyRegistrationsAdminBody,
+  PostAcademyRegistrationsApp200,
+  PostAcademyRegistrationsAppBody,
   PutAcademyCoursesIdAdmin200,
   PutAcademyRegistrationsIdAdmin200,
   PutAcademyRegistrationsIdStatusAdminBody,
@@ -645,7 +648,266 @@ export const prefetchGetAcademyRegistrationsFindStudentAdminQuery = async <TData
 
 
 /**
- * **AR-01** — GET /academy/registrations/admin. Cần đăng nhập + `academy_registration.view_all` (quản trị; branch scope: user gắn 1 cơ sở chỉ thấy dữ liệu cơ sở đó; query `branch_id`, `course_id`, `status`, `phone`) hoặc `academy_registration.view_own` (khách: danh sách khóa học của bản thân).
+ * **AC-01A** — GET /academy/registrations/app. Đăng ký khóa học CỦA CHÍNH tài khoản. Chỉ cần đăng nhập (API miniapp — không áp phân quyền, dữ liệu luôn của chính tài khoản).
+ * @summary My academy registrations (miniapp)
+ */
+export const getAcademyRegistrationsApp = (
+    
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetAcademyRegistrationsApp200>(
+      {url: `/academy/registrations/app`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetAcademyRegistrationsAppInfiniteQueryKey = () => {
+    return [
+    'infinite', `/academy/registrations/app`
+    ] as const;
+    }
+
+export const getGetAcademyRegistrationsAppQueryKey = () => {
+    return [
+    `/academy/registrations/app`
+    ] as const;
+    }
+
+    
+export const getGetAcademyRegistrationsAppInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAcademyRegistrationsApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsApp>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAcademyRegistrationsAppInfiniteQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAcademyRegistrationsApp>>> = ({ signal }) => getAcademyRegistrationsApp(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsApp>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAcademyRegistrationsAppInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAcademyRegistrationsApp>>>
+export type GetAcademyRegistrationsAppInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+
+
+export function useGetAcademyRegistrationsAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyRegistrationsApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsApp>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAcademyRegistrationsApp>>,
+          TError,
+          Awaited<ReturnType<typeof getAcademyRegistrationsApp>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAcademyRegistrationsAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyRegistrationsApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsApp>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAcademyRegistrationsApp>>,
+          TError,
+          Awaited<ReturnType<typeof getAcademyRegistrationsApp>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAcademyRegistrationsAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyRegistrationsApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsApp>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary My academy registrations (miniapp)
+ */
+
+export function useGetAcademyRegistrationsAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAcademyRegistrationsApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsApp>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAcademyRegistrationsAppInfiniteQueryOptions(options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary My academy registrations (miniapp)
+ */
+export const prefetchGetAcademyRegistrationsAppInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAcademyRegistrationsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsApp>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetAcademyRegistrationsAppInfiniteQueryOptions(options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetAcademyRegistrationsAppQueryOptions = <TData = Awaited<ReturnType<typeof getAcademyRegistrationsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsApp>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAcademyRegistrationsAppQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAcademyRegistrationsApp>>> = ({ signal }) => getAcademyRegistrationsApp(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsApp>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAcademyRegistrationsAppQueryResult = NonNullable<Awaited<ReturnType<typeof getAcademyRegistrationsApp>>>
+export type GetAcademyRegistrationsAppQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+
+
+export function useGetAcademyRegistrationsApp<TData = Awaited<ReturnType<typeof getAcademyRegistrationsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsApp>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAcademyRegistrationsApp>>,
+          TError,
+          Awaited<ReturnType<typeof getAcademyRegistrationsApp>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAcademyRegistrationsApp<TData = Awaited<ReturnType<typeof getAcademyRegistrationsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsApp>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAcademyRegistrationsApp>>,
+          TError,
+          Awaited<ReturnType<typeof getAcademyRegistrationsApp>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAcademyRegistrationsApp<TData = Awaited<ReturnType<typeof getAcademyRegistrationsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsApp>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary My academy registrations (miniapp)
+ */
+
+export function useGetAcademyRegistrationsApp<TData = Awaited<ReturnType<typeof getAcademyRegistrationsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsApp>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAcademyRegistrationsAppQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary My academy registrations (miniapp)
+ */
+export const prefetchGetAcademyRegistrationsAppQuery = async <TData = Awaited<ReturnType<typeof getAcademyRegistrationsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAcademyRegistrationsApp>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetAcademyRegistrationsAppQueryOptions(options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * **AC-02A** — POST /academy/registrations/app. Đăng ký khóa học cho chính tài khoản (hồ sơ học viên suy ra từ tài khoản). Chỉ cần đăng nhập (API miniapp — không áp phân quyền, dữ liệu luôn của chính tài khoản).
+ * @summary Register a course for self (miniapp)
+ */
+export const postAcademyRegistrationsApp = (
+    postAcademyRegistrationsAppBody: PostAcademyRegistrationsAppBody,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<PostAcademyRegistrationsApp200>(
+      {url: `/academy/registrations/app`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: postAcademyRegistrationsAppBody, signal
+    },
+      );
+    }
+  
+
+
+export const getPostAcademyRegistrationsAppMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAcademyRegistrationsApp>>, TError,{data: PostAcademyRegistrationsAppBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postAcademyRegistrationsApp>>, TError,{data: PostAcademyRegistrationsAppBody}, TContext> => {
+
+const mutationKey = ['postAcademyRegistrationsApp'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAcademyRegistrationsApp>>, {data: PostAcademyRegistrationsAppBody}> = (props) => {
+          const {data} = props ?? {};
+
+          return  postAcademyRegistrationsApp(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostAcademyRegistrationsAppMutationResult = NonNullable<Awaited<ReturnType<typeof postAcademyRegistrationsApp>>>
+    export type PostAcademyRegistrationsAppMutationBody = PostAcademyRegistrationsAppBody
+    export type PostAcademyRegistrationsAppMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+
+    /**
+ * @summary Register a course for self (miniapp)
+ */
+export const usePostAcademyRegistrationsApp = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAcademyRegistrationsApp>>, TError,{data: PostAcademyRegistrationsAppBody}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postAcademyRegistrationsApp>>,
+        TError,
+        {data: PostAcademyRegistrationsAppBody},
+        TContext
+      > => {
+
+      const mutationOptions = getPostAcademyRegistrationsAppMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * **AR-01** — GET /academy/registrations/admin. Cần đăng nhập + `academy_registration.read_all` (branch scope: user gắn 1 cơ sở chỉ thấy dữ liệu cơ sở đó). Query: `branch_id`, `course_id`, `status`, `phone`. Đăng ký của chính tài khoản (miniapp): GET /academy/registrations/app.
  * @summary List course registrations
  */
 export const getAcademyRegistrationsAdmin = (

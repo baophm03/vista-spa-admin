@@ -1,4 +1,5 @@
 import { Form, type FormInstance, Input, InputNumber, Modal } from 'antd'
+import { displayName } from '@/utils/displayName'
 import type { MemberRow } from './constants'
 
 interface AdjustPointsModalProps {
@@ -18,7 +19,7 @@ export default function AdjustPointsModal({
 }: AdjustPointsModalProps) {
   return (
     <Modal
-      title={`Điều chỉnh điểm — ${adjusting?.full_name || adjusting?.phone || ''}`}
+      title={`Điều chỉnh điểm — ${displayName(adjusting, adjusting?.phone || '')}`}
       open={!!adjusting}
       confirmLoading={confirmLoading}
       okButtonProps={{ disabled: confirmLoading }}

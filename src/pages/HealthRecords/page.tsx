@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { displayName } from '@/utils/displayName'
 import {
   Form,
   Input,
@@ -262,7 +263,7 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
             width: 210,
             render: (_, row) => (
               <div>
-                <div style={{ fontWeight: 600 }}>{row.full_name}</div>
+                <div style={{ fontWeight: 600 }}>{displayName(row)}</div>
                 <Typography.Text type="secondary" style={{ fontSize: 12 }}>{row.phone}</Typography.Text>
               </div>
             ),

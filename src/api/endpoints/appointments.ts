@@ -34,6 +34,7 @@ import type {
   ForbiddenResponse,
   GetAppointmentsAdmin200,
   GetAppointmentsAdminParams,
+  GetAppointmentsApp200,
   GetAppointmentsAvailableSlots200,
   GetAppointmentsAvailableSlotsParams,
   GetAppointmentsIdAdmin200,
@@ -41,15 +42,20 @@ import type {
   NotFoundResponse,
   PostAppointmentsAdmin200,
   PostAppointmentsAdminBody,
+  PostAppointmentsApp200,
+  PostAppointmentsAppBody,
   PostAppointmentsIdStartAdmin200,
   PostAppointmentsIdStartAdminBody,
   PutAppointmentsIdAdmin200,
   PutAppointmentsIdAdminBody,
   PutAppointmentsIdApproveAdmin200,
   PutAppointmentsIdCancelAdmin200,
+  PutAppointmentsIdCancelApp200,
   PutAppointmentsIdNoShowAdmin200,
   PutAppointmentsIdRejectAdmin200,
   PutAppointmentsIdRejectAdminBody,
+  PutAppointmentsIdRescheduleApp200,
+  PutAppointmentsIdRescheduleAppBody,
   UnauthorizedResponse,
   UnprocessableEntityResponse
 } from '../models';
@@ -61,7 +67,7 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * **AP-02** — GET /appointments/{id}/admin. Cần đăng nhập + `appointment.view_all` (branch scope áp dụng) hoặc `appointment.view_own` — chỉ xem được lịch hẹn của chính mình.
+ * **AP-02** — GET /appointments/{id}/admin. Cần đăng nhập + `appointment.read_all` (branch scope áp dụng; KTV chỉ xem lịch được gán).
  * @summary View appointment details
  */
 export const getAppointmentsIdAdmin = (
@@ -255,7 +261,7 @@ export const prefetchGetAppointmentsIdAdminQuery = async <TData = Awaited<Return
 
 
 /**
- * **AP-04** — PUT /appointments/{id}/admin (đổi ngày/giờ, gán/đổi KTV qua `staff_id` — validate slot còn trống cho KTV đó, loại trừ chính lịch này; dùng cho luồng admin đổi KTV trước khi duyệt đơn xin nghỉ). Cần đăng nhập + `appointment.update_all` (branch scope áp dụng) hoặc `appointment.update_own` — khách tự dời lịch hẹn pending/approved của mình sang slot trống, trước lead time tối thiểu; approved quay lại `pending` chờ duyệt lại (gộp từ PUT /app/appointments/{id}/reschedule). Body: `appt_date`, `start_time`, `staff_id` (UUID — gán/đổi KTV; null = bỏ gán), `note`, `custom_fields`.
+ * **AP-04** — PUT /appointments/{id}/admin (đổi ngày/giờ, gán/đổi KTV qua `staff_id` — validate slot còn trống cho KTV đó, loại trừ chính lịch này; dùng cho luồng admin đổi KTV trước khi duyệt đơn xin nghỉ). Cần đăng nhập + `appointment.update_all` (branch scope áp dụng). Body: `appt_date`, `start_time`, `staff_id` (UUID — gán/đổi KTV; null = bỏ gán), `note`, `custom_fields`. Khách tự dời lịch (miniapp): PUT /appointments/{id}/reschedule/app.
  * @summary Update / reschedule appointment
  */
 export const putAppointmentsIdAdmin = (
@@ -382,6 +388,71 @@ export const usePostAppointmentsIdStartAdmin = <TError = UnauthorizedResponse | 
       > => {
 
       const mutationOptions = getPostAppointmentsIdStartAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * **AP-04A** — PUT /appointments/{id}/reschedule/app. Tự dời lịch hẹn của mình qua miniapp (đa role: khách hàng hoặc nhân viên/KTV). Chỉ cần đăng nhập (API miniapp — không áp phân quyền, dữ liệu luôn của chính tài khoản). Chỉ dời được lịch hẹn thuộc hồ sơ khách liên kết với tài khoản, trạng thái pending/approved, sang slot trống, trước lead time tối thiểu; approved quay lại `pending` chờ duyệt lại.
+ * @summary Reschedule my appointment (miniapp)
+ */
+export const putAppointmentsIdRescheduleApp = (
+    id: string,
+    putAppointmentsIdRescheduleAppBody: PutAppointmentsIdRescheduleAppBody,
+ ) => {
+      
+      
+      return customInstance<PutAppointmentsIdRescheduleApp200>(
+      {url: `/appointments/${id}/reschedule/app`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: putAppointmentsIdRescheduleAppBody
+    },
+      );
+    }
+  
+
+
+export const getPutAppointmentsIdRescheduleAppMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAppointmentsIdRescheduleApp>>, TError,{id: string;data: PutAppointmentsIdRescheduleAppBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putAppointmentsIdRescheduleApp>>, TError,{id: string;data: PutAppointmentsIdRescheduleAppBody}, TContext> => {
+
+const mutationKey = ['putAppointmentsIdRescheduleApp'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putAppointmentsIdRescheduleApp>>, {id: string;data: PutAppointmentsIdRescheduleAppBody}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  putAppointmentsIdRescheduleApp(id,data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PutAppointmentsIdRescheduleAppMutationResult = NonNullable<Awaited<ReturnType<typeof putAppointmentsIdRescheduleApp>>>
+    export type PutAppointmentsIdRescheduleAppMutationBody = PutAppointmentsIdRescheduleAppBody
+    export type PutAppointmentsIdRescheduleAppMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+
+    /**
+ * @summary Reschedule my appointment (miniapp)
+ */
+export const usePutAppointmentsIdRescheduleApp = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAppointmentsIdRescheduleApp>>, TError,{id: string;data: PutAppointmentsIdRescheduleAppBody}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof putAppointmentsIdRescheduleApp>>,
+        TError,
+        {id: string;data: PutAppointmentsIdRescheduleAppBody},
+        TContext
+      > => {
+
+      const mutationOptions = getPutAppointmentsIdRescheduleAppMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -513,7 +584,69 @@ export const usePutAppointmentsIdNoShowAdmin = <TError = UnauthorizedResponse | 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **AP-07** — PUT /appointments/{id}/cancel/admin. Cần đăng nhập + `appointment.update_all` (ADM/REC: hủy lịch pending/approved) hoặc `appointment.update_own` — khách hủy lịch hẹn của chính mình trước lead time tối thiểu (gộp từ PUT /app/appointments/{id}/cancel).
+ * **AP-07A** — PUT /appointments/{id}/cancel/app. Hủy lịch hẹn của chính mình qua miniapp (đa role: khách hàng hoặc nhân viên/KTV). Chỉ cần đăng nhập (API miniapp — không áp phân quyền, dữ liệu luôn của chính tài khoản). Chỉ hủy được lịch hẹn thuộc hồ sơ khách liên kết với tài khoản, trước lead time tối thiểu.
+ * @summary Cancel my appointment (miniapp)
+ */
+export const putAppointmentsIdCancelApp = (
+    id: string,
+ ) => {
+      
+      
+      return customInstance<PutAppointmentsIdCancelApp200>(
+      {url: `/appointments/${id}/cancel/app`, method: 'PUT'
+    },
+      );
+    }
+  
+
+
+export const getPutAppointmentsIdCancelAppMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAppointmentsIdCancelApp>>, TError,{id: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putAppointmentsIdCancelApp>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['putAppointmentsIdCancelApp'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putAppointmentsIdCancelApp>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  putAppointmentsIdCancelApp(id,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PutAppointmentsIdCancelAppMutationResult = NonNullable<Awaited<ReturnType<typeof putAppointmentsIdCancelApp>>>
+    
+    export type PutAppointmentsIdCancelAppMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+
+    /**
+ * @summary Cancel my appointment (miniapp)
+ */
+export const usePutAppointmentsIdCancelApp = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAppointmentsIdCancelApp>>, TError,{id: string}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof putAppointmentsIdCancelApp>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+
+      const mutationOptions = getPutAppointmentsIdCancelAppMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * **AP-07** — PUT /appointments/{id}/cancel/admin. Cần đăng nhập + `appointment.update_all` (ADM/REC hủy lịch pending/approved; branch scope áp dụng). Khách tự hủy (miniapp): PUT /appointments/{id}/cancel/app.
  * @summary Cancel appointment
  */
 export const putAppointmentsIdCancelAdmin = (
@@ -832,7 +965,266 @@ export const prefetchGetAppointmentsAvailableSlotsQuery = async <TData = Awaited
 
 
 /**
- * **AP-01** — GET /appointments/admin. Cần đăng nhập + `appointment.view_all` (danh sách quản trị; KTV chỉ thấy lịch được gán; branch scope áp dụng) hoặc `appointment.view_own` — khi đó trả về các lịch hẹn của hồ sơ khách liên kết với tài khoản (shape miniapp của GET /app/appointments cũ, kèm dịch vụ và KTV, sắp xếp giảm dần theo thời gian). Query parameters: `page`, `limit`, `branch_id`, `date`, `from_date`, `to_date`, `status`, `staff_id`, `customer_profile_id`.
+ * **AP-01A** — GET /appointments/app. Danh sách lịch hẹn CỦA CHÍNH tài khoản qua miniapp (đa role: khách hàng hoặc nhân viên/KTV). Chỉ cần đăng nhập (API miniapp — không áp phân quyền, dữ liệu luôn của chính tài khoản). Trả mọi trạng thái (pending/approved/in_progress/completed/cancelled), không phân trang, kèm KTV và cơ sở. FE tự chia tab Sắp tới/Lịch sử và sort.
+ * @summary List my appointments (miniapp)
+ */
+export const getAppointmentsApp = (
+    
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetAppointmentsApp200>(
+      {url: `/appointments/app`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetAppointmentsAppInfiniteQueryKey = () => {
+    return [
+    'infinite', `/appointments/app`
+    ] as const;
+    }
+
+export const getGetAppointmentsAppQueryKey = () => {
+    return [
+    `/appointments/app`
+    ] as const;
+    }
+
+    
+export const getGetAppointmentsAppInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getAppointmentsApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppointmentsApp>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAppointmentsAppInfiniteQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAppointmentsApp>>> = ({ signal }) => getAppointmentsApp(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppointmentsApp>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAppointmentsAppInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAppointmentsApp>>>
+export type GetAppointmentsAppInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+
+
+export function useGetAppointmentsAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppointmentsApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppointmentsApp>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppointmentsApp>>,
+          TError,
+          Awaited<ReturnType<typeof getAppointmentsApp>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppointmentsAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppointmentsApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppointmentsApp>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppointmentsApp>>,
+          TError,
+          Awaited<ReturnType<typeof getAppointmentsApp>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppointmentsAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppointmentsApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppointmentsApp>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List my appointments (miniapp)
+ */
+
+export function useGetAppointmentsAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getAppointmentsApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppointmentsApp>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAppointmentsAppInfiniteQueryOptions(options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary List my appointments (miniapp)
+ */
+export const prefetchGetAppointmentsAppInfiniteQuery = async <TData = Awaited<ReturnType<typeof getAppointmentsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAppointmentsApp>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetAppointmentsAppInfiniteQueryOptions(options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetAppointmentsAppQueryOptions = <TData = Awaited<ReturnType<typeof getAppointmentsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointmentsApp>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAppointmentsAppQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAppointmentsApp>>> = ({ signal }) => getAppointmentsApp(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAppointmentsApp>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAppointmentsAppQueryResult = NonNullable<Awaited<ReturnType<typeof getAppointmentsApp>>>
+export type GetAppointmentsAppQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+
+
+export function useGetAppointmentsApp<TData = Awaited<ReturnType<typeof getAppointmentsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointmentsApp>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppointmentsApp>>,
+          TError,
+          Awaited<ReturnType<typeof getAppointmentsApp>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppointmentsApp<TData = Awaited<ReturnType<typeof getAppointmentsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointmentsApp>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAppointmentsApp>>,
+          TError,
+          Awaited<ReturnType<typeof getAppointmentsApp>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAppointmentsApp<TData = Awaited<ReturnType<typeof getAppointmentsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointmentsApp>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List my appointments (miniapp)
+ */
+
+export function useGetAppointmentsApp<TData = Awaited<ReturnType<typeof getAppointmentsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointmentsApp>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAppointmentsAppQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary List my appointments (miniapp)
+ */
+export const prefetchGetAppointmentsAppQuery = async <TData = Awaited<ReturnType<typeof getAppointmentsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAppointmentsApp>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetAppointmentsAppQueryOptions(options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * **AP-03A** — POST /appointments/app. Đặt lịch tự mình qua miniapp (đa role: khách hàng hoặc nhân viên/KTV cũng là khách). Chỉ cần đăng nhập (API miniapp — không áp phân quyền, dữ liệu luôn của chính tài khoản). Hồ sơ khách suy ra từ tài khoản — nếu tài khoản chưa có hồ sơ khách thì tự cấp (giống luồng đăng ký zalo). `customer_profile_id` truyền từ client bị bỏ qua. Trạng thái `pending`, giới hạn đặt trước `booking.customer_horizon_days` (mặc định 7 ngày), slot kín trả 409 `SLOT_UNAVAILABLE`.
+ * @summary Create an appointment for self (miniapp)
+ */
+export const postAppointmentsApp = (
+    postAppointmentsAppBody: PostAppointmentsAppBody,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<PostAppointmentsApp200>(
+      {url: `/appointments/app`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: postAppointmentsAppBody, signal
+    },
+      );
+    }
+  
+
+
+export const getPostAppointmentsAppMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAppointmentsApp>>, TError,{data: PostAppointmentsAppBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postAppointmentsApp>>, TError,{data: PostAppointmentsAppBody}, TContext> => {
+
+const mutationKey = ['postAppointmentsApp'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAppointmentsApp>>, {data: PostAppointmentsAppBody}> = (props) => {
+          const {data} = props ?? {};
+
+          return  postAppointmentsApp(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostAppointmentsAppMutationResult = NonNullable<Awaited<ReturnType<typeof postAppointmentsApp>>>
+    export type PostAppointmentsAppMutationBody = PostAppointmentsAppBody
+    export type PostAppointmentsAppMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+
+    /**
+ * @summary Create an appointment for self (miniapp)
+ */
+export const usePostAppointmentsApp = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAppointmentsApp>>, TError,{data: PostAppointmentsAppBody}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postAppointmentsApp>>,
+        TError,
+        {data: PostAppointmentsAppBody},
+        TContext
+      > => {
+
+      const mutationOptions = getPostAppointmentsAppMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * **AP-01** — GET /appointments/admin. Danh sách lịch hẹn quản trị. Cần đăng nhập + `appointment.read_all` (KTV chỉ thấy lịch được gán; branch scope áp dụng). Lịch hẹn của chính tài khoản (miniapp): GET /appointments/app. Query parameters: `page`, `limit`, `branch_id`, `date`, `from_date`, `to_date`, `status`, `staff_id`, `customer_profile_id`.
  * @summary List appointments (management / my bookings)
  */
 export const getAppointmentsAdmin = (
@@ -1027,7 +1419,7 @@ export const prefetchGetAppointmentsAdminQuery = async <TData = Awaited<ReturnTy
 
 
 /**
- * **AP-03** — POST /appointments/admin. Cần đăng nhập + `appointment.create`. Nhánh `appointment.view_own` (khách tự đặt từ miniapp, gộp từ POST /app/appointments): hồ sơ khách suy ra từ tài khoản, trạng thái `pending`, giới hạn đặt trước `booking.customer_horizon_days` (mặc định 7 ngày), slot kín trả 409 `SLOT_UNAVAILABLE`. Nhánh quản trị: đặt hộ khách, cùng rule kiểm tra slot; branch scope áp dụng. Body passed as-is to the business layer.
+ * **AP-03** — POST /appointments/admin. Nhân sự (admin/lễ tân) đặt lịch hộ khách — bắt buộc `customer_profile_id`. Cần đăng nhập + `appointment.create`; KTV không được thao tác. Giới hạn đặt trước `booking.customer_horizon_days` (mặc định 7 ngày), slot kín trả 409 `SLOT_UNAVAILABLE`; branch scope áp dụng. Khách tự đặt (miniapp): POST /appointments/app.
  * @summary Create an appointment (staff on behalf / customer for self)
  */
 export const postAppointmentsAdmin = (

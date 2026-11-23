@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { displayName } from '@/utils/displayName'
 import { Card, Col, Row, Table, Tabs, Tag } from 'antd'
 import {
   CalendarOutlined,
@@ -239,7 +240,7 @@ function Overview({
           columns={[
             {
               title: 'Khách hàng',
-              render: (_, row: AppointmentRow) => row.customer_profile?.full_name ?? '—',
+              render: (_, row: AppointmentRow) => displayName(row.customer_profile),
             },
             { title: 'Dịch vụ', render: (_, row: AppointmentRow) => row.service?.title ?? '—' },
             {

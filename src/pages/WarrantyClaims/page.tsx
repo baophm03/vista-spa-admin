@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { displayName } from '@/utils/displayName'
 import { useNavigate } from 'react-router-dom'
 import { Alert, Button, Form, Select, Table, Tag, Typography, message } from 'antd'
 import type { TableColumnsType } from 'antd'
@@ -63,7 +64,7 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
   const customerLabel = (claim: ClaimRow) => {
     const profile = claim.customer_treatment?.customer_profile
     if (!profile) return claim.customer_treatment_id ?? '—'
-    const name = profile.full_name ?? 'Khách hàng'
+    const name = displayName(profile, 'Khách hàng')
     return profile.phone ? `${name} — ${profile.phone}` : name
   }
   const packageLabel = (claim: ClaimRow) => {

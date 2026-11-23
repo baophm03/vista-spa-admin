@@ -38,11 +38,14 @@ import type {
   GetPaymentsAdminParams,
   GetTreatmentCustomersAdmin200,
   GetTreatmentCustomersAdminParams,
+  GetTreatmentCustomersApp200,
   GetTreatmentCustomersIdAdjustmentsAdmin200,
   GetTreatmentCustomersIdAdmin200,
+  GetTreatmentCustomersIdApp200,
   GetTreatmentCustomersIdAvailableSlotsAdmin200,
   GetTreatmentCustomersIdAvailableSlotsAdminParams,
   GetTreatmentCustomersIdPaymentsAdmin200,
+  GetTreatmentCustomersIdSessionsApp200,
   InternalErrorResponse,
   NotFoundResponse,
   PaymentLog,
@@ -71,7 +74,201 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * **CT-02** — GET /treatment-customers/{id}/admin. Cần đăng nhập + `treatment.view_all` (KTV chỉ xem gói có buổi được phân công; ADM/REC branch-scoped) hoặc `treatment.view_own` — chỉ xem gói liệu trình của chính mình (shape miniapp của GET /app/me/treatments/{id} cũ).
+ * **CT-02A** — GET /treatment-customers/{id}/app. Chi tiết gói liệu trình của chính tài khoản (ownership kiểm tra trong service). Chỉ cần đăng nhập (API miniapp — không áp phân quyền, dữ liệu luôn của chính tài khoản).
+ * @summary My treatment package detail (miniapp)
+ */
+export const getTreatmentCustomersIdApp = (
+    id: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetTreatmentCustomersIdApp200>(
+      {url: `/treatment-customers/${id}/app`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetTreatmentCustomersIdAppInfiniteQueryKey = (id?: string,) => {
+    return [
+    'infinite', `/treatment-customers/${id}/app`
+    ] as const;
+    }
+
+export const getGetTreatmentCustomersIdAppQueryKey = (id?: string,) => {
+    return [
+    `/treatment-customers/${id}/app`
+    ] as const;
+    }
+
+    
+export const getGetTreatmentCustomersIdAppInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentCustomersIdApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentCustomersIdApp>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetTreatmentCustomersIdAppInfiniteQueryKey(id);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTreatmentCustomersIdApp>>> = ({ signal }) => getTreatmentCustomersIdApp(id, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentCustomersIdApp>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetTreatmentCustomersIdAppInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getTreatmentCustomersIdApp>>>
+export type GetTreatmentCustomersIdAppInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+
+
+export function useGetTreatmentCustomersIdAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentCustomersIdApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentCustomersIdApp>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTreatmentCustomersIdApp>>,
+          TError,
+          Awaited<ReturnType<typeof getTreatmentCustomersIdApp>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetTreatmentCustomersIdAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentCustomersIdApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentCustomersIdApp>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTreatmentCustomersIdApp>>,
+          TError,
+          Awaited<ReturnType<typeof getTreatmentCustomersIdApp>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetTreatmentCustomersIdAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentCustomersIdApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentCustomersIdApp>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary My treatment package detail (miniapp)
+ */
+
+export function useGetTreatmentCustomersIdAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentCustomersIdApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentCustomersIdApp>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetTreatmentCustomersIdAppInfiniteQueryOptions(id,options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary My treatment package detail (miniapp)
+ */
+export const prefetchGetTreatmentCustomersIdAppInfiniteQuery = async <TData = Awaited<ReturnType<typeof getTreatmentCustomersIdApp>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentCustomersIdApp>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetTreatmentCustomersIdAppInfiniteQueryOptions(id,options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetTreatmentCustomersIdAppQueryOptions = <TData = Awaited<ReturnType<typeof getTreatmentCustomersIdApp>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentCustomersIdApp>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetTreatmentCustomersIdAppQueryKey(id);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTreatmentCustomersIdApp>>> = ({ signal }) => getTreatmentCustomersIdApp(id, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTreatmentCustomersIdApp>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetTreatmentCustomersIdAppQueryResult = NonNullable<Awaited<ReturnType<typeof getTreatmentCustomersIdApp>>>
+export type GetTreatmentCustomersIdAppQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+
+
+export function useGetTreatmentCustomersIdApp<TData = Awaited<ReturnType<typeof getTreatmentCustomersIdApp>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentCustomersIdApp>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTreatmentCustomersIdApp>>,
+          TError,
+          Awaited<ReturnType<typeof getTreatmentCustomersIdApp>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetTreatmentCustomersIdApp<TData = Awaited<ReturnType<typeof getTreatmentCustomersIdApp>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentCustomersIdApp>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTreatmentCustomersIdApp>>,
+          TError,
+          Awaited<ReturnType<typeof getTreatmentCustomersIdApp>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetTreatmentCustomersIdApp<TData = Awaited<ReturnType<typeof getTreatmentCustomersIdApp>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentCustomersIdApp>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary My treatment package detail (miniapp)
+ */
+
+export function useGetTreatmentCustomersIdApp<TData = Awaited<ReturnType<typeof getTreatmentCustomersIdApp>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentCustomersIdApp>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetTreatmentCustomersIdAppQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary My treatment package detail (miniapp)
+ */
+export const prefetchGetTreatmentCustomersIdAppQuery = async <TData = Awaited<ReturnType<typeof getTreatmentCustomersIdApp>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentCustomersIdApp>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetTreatmentCustomersIdAppQueryOptions(id,options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * **CT-02** — GET /treatment-customers/{id}/admin. Cần đăng nhập + `treatment.read_all` (KTV chỉ xem gói có buổi được phân công; ADM/REC branch-scoped).
  * @summary View customer treatment package detail
  */
 export const getTreatmentCustomersIdAdmin = (
@@ -330,6 +527,200 @@ export const usePutTreatmentCustomersIdAdmin = <TError = UnauthorizedResponse | 
       return useMutation(mutationOptions, queryClient);
     }
     /**
+ * **CT-05A** — GET /treatment-customers/{id}/sessions/app. Lịch sử buổi điều trị của gói thuộc chính tài khoản (ownership kiểm tra trong service). Chỉ cần đăng nhập (API miniapp — không áp phân quyền, dữ liệu luôn của chính tài khoản).
+ * @summary My treatment sessions (miniapp)
+ */
+export const getTreatmentCustomersIdSessionsApp = (
+    id: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetTreatmentCustomersIdSessionsApp200>(
+      {url: `/treatment-customers/${id}/sessions/app`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetTreatmentCustomersIdSessionsAppInfiniteQueryKey = (id?: string,) => {
+    return [
+    'infinite', `/treatment-customers/${id}/sessions/app`
+    ] as const;
+    }
+
+export const getGetTreatmentCustomersIdSessionsAppQueryKey = (id?: string,) => {
+    return [
+    `/treatment-customers/${id}/sessions/app`
+    ] as const;
+    }
+
+    
+export const getGetTreatmentCustomersIdSessionsAppInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentCustomersIdSessionsApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentCustomersIdSessionsApp>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetTreatmentCustomersIdSessionsAppInfiniteQueryKey(id);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTreatmentCustomersIdSessionsApp>>> = ({ signal }) => getTreatmentCustomersIdSessionsApp(id, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentCustomersIdSessionsApp>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetTreatmentCustomersIdSessionsAppInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getTreatmentCustomersIdSessionsApp>>>
+export type GetTreatmentCustomersIdSessionsAppInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+
+
+export function useGetTreatmentCustomersIdSessionsAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentCustomersIdSessionsApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentCustomersIdSessionsApp>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTreatmentCustomersIdSessionsApp>>,
+          TError,
+          Awaited<ReturnType<typeof getTreatmentCustomersIdSessionsApp>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetTreatmentCustomersIdSessionsAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentCustomersIdSessionsApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentCustomersIdSessionsApp>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTreatmentCustomersIdSessionsApp>>,
+          TError,
+          Awaited<ReturnType<typeof getTreatmentCustomersIdSessionsApp>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetTreatmentCustomersIdSessionsAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentCustomersIdSessionsApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentCustomersIdSessionsApp>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary My treatment sessions (miniapp)
+ */
+
+export function useGetTreatmentCustomersIdSessionsAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentCustomersIdSessionsApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentCustomersIdSessionsApp>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetTreatmentCustomersIdSessionsAppInfiniteQueryOptions(id,options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary My treatment sessions (miniapp)
+ */
+export const prefetchGetTreatmentCustomersIdSessionsAppInfiniteQuery = async <TData = Awaited<ReturnType<typeof getTreatmentCustomersIdSessionsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentCustomersIdSessionsApp>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetTreatmentCustomersIdSessionsAppInfiniteQueryOptions(id,options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetTreatmentCustomersIdSessionsAppQueryOptions = <TData = Awaited<ReturnType<typeof getTreatmentCustomersIdSessionsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentCustomersIdSessionsApp>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetTreatmentCustomersIdSessionsAppQueryKey(id);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTreatmentCustomersIdSessionsApp>>> = ({ signal }) => getTreatmentCustomersIdSessionsApp(id, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTreatmentCustomersIdSessionsApp>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetTreatmentCustomersIdSessionsAppQueryResult = NonNullable<Awaited<ReturnType<typeof getTreatmentCustomersIdSessionsApp>>>
+export type GetTreatmentCustomersIdSessionsAppQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+
+
+export function useGetTreatmentCustomersIdSessionsApp<TData = Awaited<ReturnType<typeof getTreatmentCustomersIdSessionsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentCustomersIdSessionsApp>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTreatmentCustomersIdSessionsApp>>,
+          TError,
+          Awaited<ReturnType<typeof getTreatmentCustomersIdSessionsApp>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetTreatmentCustomersIdSessionsApp<TData = Awaited<ReturnType<typeof getTreatmentCustomersIdSessionsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentCustomersIdSessionsApp>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTreatmentCustomersIdSessionsApp>>,
+          TError,
+          Awaited<ReturnType<typeof getTreatmentCustomersIdSessionsApp>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetTreatmentCustomersIdSessionsApp<TData = Awaited<ReturnType<typeof getTreatmentCustomersIdSessionsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentCustomersIdSessionsApp>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary My treatment sessions (miniapp)
+ */
+
+export function useGetTreatmentCustomersIdSessionsApp<TData = Awaited<ReturnType<typeof getTreatmentCustomersIdSessionsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentCustomersIdSessionsApp>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetTreatmentCustomersIdSessionsAppQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary My treatment sessions (miniapp)
+ */
+export const prefetchGetTreatmentCustomersIdSessionsAppQuery = async <TData = Awaited<ReturnType<typeof getTreatmentCustomersIdSessionsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentCustomersIdSessionsApp>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetTreatmentCustomersIdSessionsAppQueryOptions(id,options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
  * **LY-02** — POST /treatment-customers/{id}/redeem-points/admin (BR-16). Cần đăng nhập + `membership.points_adjust`. Branch scope: users limited to one branch only see that branch's data. Body: `points` (positive integer). Minimum/maximum redemption percentages use the discounted invoice value before points and payments; the amount cannot exceed the remaining payable amount or the customer's points balance limit.
  * @summary Redeem points to reduce the debt on a treatment package
  */
@@ -1315,7 +1706,201 @@ export const usePutTreatmentCustomersIdAdjustmentsAdmin = <TError = Unauthorized
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **CT-01** — GET /treatment-customers/admin. Cần đăng nhập + `treatment.view_all` (KTV chỉ thấy gói có buổi được phân công; ADM/REC branch-scoped) hoặc `treatment.view_own` — khi đó trả về các gói liệu trình của hồ sơ khách liên kết (shape miniapp của GET /app/me/treatments cũ). Query parameters: `page`, `limit`, `branch_id`, `customer_profile_id`, `status`, `payment_status`, `has_debt`.
+ * **CT-01A** — GET /treatment-customers/app. Gói liệu trình CỦA CHÍNH tài khoản (đã ACTIVE + FINISHED, kèm công nợ/bảo hành). Chỉ cần đăng nhập (API miniapp — không áp phân quyền, dữ liệu luôn của chính tài khoản).
+ * @summary My treatment packages (miniapp)
+ */
+export const getTreatmentCustomersApp = (
+    
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetTreatmentCustomersApp200>(
+      {url: `/treatment-customers/app`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetTreatmentCustomersAppInfiniteQueryKey = () => {
+    return [
+    'infinite', `/treatment-customers/app`
+    ] as const;
+    }
+
+export const getGetTreatmentCustomersAppQueryKey = () => {
+    return [
+    `/treatment-customers/app`
+    ] as const;
+    }
+
+    
+export const getGetTreatmentCustomersAppInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentCustomersApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentCustomersApp>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetTreatmentCustomersAppInfiniteQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTreatmentCustomersApp>>> = ({ signal }) => getTreatmentCustomersApp(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentCustomersApp>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetTreatmentCustomersAppInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getTreatmentCustomersApp>>>
+export type GetTreatmentCustomersAppInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+
+
+export function useGetTreatmentCustomersAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentCustomersApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentCustomersApp>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTreatmentCustomersApp>>,
+          TError,
+          Awaited<ReturnType<typeof getTreatmentCustomersApp>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetTreatmentCustomersAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentCustomersApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentCustomersApp>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTreatmentCustomersApp>>,
+          TError,
+          Awaited<ReturnType<typeof getTreatmentCustomersApp>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetTreatmentCustomersAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentCustomersApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentCustomersApp>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary My treatment packages (miniapp)
+ */
+
+export function useGetTreatmentCustomersAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentCustomersApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentCustomersApp>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetTreatmentCustomersAppInfiniteQueryOptions(options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary My treatment packages (miniapp)
+ */
+export const prefetchGetTreatmentCustomersAppInfiniteQuery = async <TData = Awaited<ReturnType<typeof getTreatmentCustomersApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentCustomersApp>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetTreatmentCustomersAppInfiniteQueryOptions(options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetTreatmentCustomersAppQueryOptions = <TData = Awaited<ReturnType<typeof getTreatmentCustomersApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentCustomersApp>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetTreatmentCustomersAppQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTreatmentCustomersApp>>> = ({ signal }) => getTreatmentCustomersApp(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTreatmentCustomersApp>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetTreatmentCustomersAppQueryResult = NonNullable<Awaited<ReturnType<typeof getTreatmentCustomersApp>>>
+export type GetTreatmentCustomersAppQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+
+
+export function useGetTreatmentCustomersApp<TData = Awaited<ReturnType<typeof getTreatmentCustomersApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentCustomersApp>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTreatmentCustomersApp>>,
+          TError,
+          Awaited<ReturnType<typeof getTreatmentCustomersApp>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetTreatmentCustomersApp<TData = Awaited<ReturnType<typeof getTreatmentCustomersApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentCustomersApp>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTreatmentCustomersApp>>,
+          TError,
+          Awaited<ReturnType<typeof getTreatmentCustomersApp>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetTreatmentCustomersApp<TData = Awaited<ReturnType<typeof getTreatmentCustomersApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentCustomersApp>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary My treatment packages (miniapp)
+ */
+
+export function useGetTreatmentCustomersApp<TData = Awaited<ReturnType<typeof getTreatmentCustomersApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentCustomersApp>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetTreatmentCustomersAppQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary My treatment packages (miniapp)
+ */
+export const prefetchGetTreatmentCustomersAppQuery = async <TData = Awaited<ReturnType<typeof getTreatmentCustomersApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentCustomersApp>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetTreatmentCustomersAppQueryOptions(options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * **CT-01** — GET /treatment-customers/admin. Cần đăng nhập + `treatment.read_all` (KTV chỉ thấy gói có buổi được phân công; ADM/REC branch-scoped). Query parameters: `page`, `limit`, `branch_id`, `customer_profile_id`, `status`, `payment_status`, `has_debt`. Gói của chính tài khoản (miniapp): GET /treatment-customers/app.
  * @summary List customer treatment packages
  */
 export const getTreatmentCustomersAdmin = (

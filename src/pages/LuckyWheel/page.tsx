@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { displayName } from '@/utils/displayName'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Alert, Button, Card, Form, Input, Modal, Select, Space, Switch, Table, Tabs, Tag, Tooltip, Typography, message } from 'antd'
 import dayjs from 'dayjs'
@@ -237,8 +238,8 @@ export default function LuckyWheel() {
         body: values.body.trim(),
       })
       message.success(values.channel === 'email'
-        ? `Đã gửi email cho ${customerNotificationTarget.full_name ?? 'khách hàng'}`
-        : `Đã gửi thông báo cho ${customerNotificationTarget.full_name ?? 'khách hàng'}`)
+        ? `Đã gửi email cho ${displayName(customerNotificationTarget, 'khách hàng')}`
+        : `Đã gửi thông báo cho ${displayName(customerNotificationTarget, 'khách hàng')}`)
       setCustomerNotificationOpen(false)
       customerNotificationForm.resetFields()
       setCustomerNotificationTarget(null)
@@ -756,7 +757,7 @@ export default function LuckyWheel() {
                   />
                   {chosenCustomer && (
                     <Typography.Text>
-                      Khách được chọn: <Typography.Text strong>{chosenCustomer.full_name}</Typography.Text> ({chosenCustomer.phone})
+                      Khách được chọn: <Typography.Text strong>{displayName(chosenCustomer)}</Typography.Text> ({chosenCustomer.phone})
                     </Typography.Text>
                   )}
                 </Space>
@@ -781,9 +782,9 @@ export default function LuckyWheel() {
                   onRow={(row) => ({ onClick: () => setChosenCustomer(row), style: { cursor: 'pointer' } })}
                   columns={[
                     {
-                      title: 'Khách hàng', dataIndex: 'full_name', render: (v, row) => (
+                      title: 'Khách hàng', dataIndex: 'full_name', render: (_, row) => (
                         <Typography.Text strong style={chosenCustomer?.customer_profile_id === row.customer_profile_id ? { color: 'var(--brand-primary)' } : undefined}>
-                          {v} {row.customer_code ? `(${row.customer_code})` : ''}
+                          {displayName(row)} {row.customer_code ? `(${row.customer_code})` : ''}
                         </Typography.Text>
                       ),
                     },
@@ -802,7 +803,7 @@ export default function LuckyWheel() {
                             checked={isCustomerWheelEnabled(row.customer_profile_id)}
                             disabled={!row.customer_profile_id || !canEditCustomerAccess || customerSettingsQuery.isLoading || customerSettingsQuery.isError || customerWheelAccessMutation.isPending}
                             loading={customerWheelAccessMutation.isPending}
-                            aria-label={`Bật hoặc tắt vòng quay cho ${row.full_name ?? 'khách hàng'}`}
+                            aria-label={`Bật hoặc tắt vòng quay cho ${displayName(row, 'khách hàng')}`}
                             onChange={(enabled) => {
                               if (row.customer_profile_id) {
                                 customerWheelAccessMutation.mutate({ customerProfileId: row.customer_profile_id, enabled })
@@ -832,7 +833,7 @@ export default function LuckyWheel() {
                               ? 'Khách đang tắt quyền quay'
                               : 'Khách chưa có tài khoản ứng dụng hoặc email'
                         return (
-                          <Tooltip title={canSend ? `Gửi thông báo cho ${row.full_name ?? 'khách hàng'}` : disabledReason}>
+                          <Tooltip title={canSend ? `Gửi thông báo cho ${displayName(row, 'khách hàng')}` : disabledReason}>
                             <span onClick={(event) => event.stopPropagation()}>
                               <Button
                                 size="small"
@@ -886,7 +887,7 @@ export default function LuckyWheel() {
               size="small"
               columns={[
                 { title: 'Thời gian', dataIndex: 'spun_at', render: (v) => formatDateTime(v) },
-                { title: 'Khách hàng', key: 'customer', render: (_, row) => row.customer_profile?.full_name || row.user_id || '—' },
+                { title: 'Khách hàng', key: 'customer', render: (_, row) => displayName(row.customer_profile, row.user_id || '—') },
                 { title: 'Trúng', dataIndex: 'is_win', render: (v) => (v ? <Tag color="green">Trúng thưởng</Tag> : <Tag>Không trúng</Tag>) },
                 { title: 'Giải', dataIndex: ['prize', 'name'], render: (v) => v || '—' },
                 {
@@ -938,7 +939,7 @@ export default function LuckyWheel() {
         prizes={prizes}
         prizeId={manualPrizeId}
         onPrizeIdChange={setManualPrizeId}
-        customerName={chosenCustomer?.full_name}
+        customerName={chosenCustomer ? displayName(chosenCustomer) : undefined}
         loading={spinForCustomerMutation.isPending}
         onCancel={() => setManualPrizeOpen(false)}
         onSubmit={() => spinForCustomer(false)}
@@ -948,7 +949,7 @@ export default function LuckyWheel() {
         open={spinModalOpen}
         prizes={spinPrizes}
         wheelName={selected?.name}
-        customerName={spinPreviewMode ? undefined : chosenCustomer?.full_name}
+        customerName={spinPreviewMode ? undefined : chosenCustomer ? displayName(chosenCustomer) : undefined}
         spinsLeft={spinPreviewMode ? undefined : chosenCustomer?.spins_left}
         waiting={spinStarted && !spinResult && !spinError}
         result={spinResult}
@@ -979,7 +980,7 @@ export default function LuckyWheel() {
           <Alert
             type="info"
             showIcon
-            message={`Người nhận: ${customerNotificationTarget?.full_name ?? 'khách hàng'}`}
+            message={`Người nhận: ${displayName(customerNotificationTarget, 'khách hàng')}`}
             description={customerNotificationTarget?.email
               ? `Email nhận: ${customerNotificationTarget.email}`
               : 'Có thể gửi trong ứng dụng hoặc qua email tài khoản khách hàng.'}

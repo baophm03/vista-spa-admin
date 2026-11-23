@@ -45,6 +45,79 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
+ * **FI-02A** — POST /files/app. Upload file từ miniapp (VD: ảnh yêu cầu bảo hành), file được ghi nhận `created_by` = tài khoản đang đăng nhập. Chỉ cần đăng nhập (API miniapp — không áp phân quyền). Upload bằng `multipart/form-data`.
+ * @summary Upload a file (miniapp)
+ */
+export const postFilesApp = (
+    fileUpload: FileUpload,
+ signal?: AbortSignal
+) => {
+      
+      const formData = new FormData();
+formData.append(`file`, fileUpload.file)
+if(fileUpload.extendName !== undefined) {
+ formData.append(`extendName`, fileUpload.extendName)
+ }
+if(fileUpload.created_by !== undefined && fileUpload.created_by !== null) {
+ formData.append(`created_by`, fileUpload.created_by)
+ }
+
+      return customInstance<Response>(
+      {url: `/files/app`, method: 'POST',
+      headers: {'Content-Type': 'multipart/form-data', },
+       data: formData, signal
+    },
+      );
+    }
+  
+
+
+export const getPostFilesAppMutationOptions = <TError = LegacyBadRequestResponse | UnauthorizedResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postFilesApp>>, TError,{data: FileUpload}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postFilesApp>>, TError,{data: FileUpload}, TContext> => {
+
+const mutationKey = ['postFilesApp'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postFilesApp>>, {data: FileUpload}> = (props) => {
+          const {data} = props ?? {};
+
+          return  postFilesApp(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostFilesAppMutationResult = NonNullable<Awaited<ReturnType<typeof postFilesApp>>>
+    export type PostFilesAppMutationBody = FileUpload
+    export type PostFilesAppMutationError = LegacyBadRequestResponse | UnauthorizedResponse
+
+    /**
+ * @summary Upload a file (miniapp)
+ */
+export const usePostFilesApp = <TError = LegacyBadRequestResponse | UnauthorizedResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postFilesApp>>, TError,{data: FileUpload}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postFilesApp>>,
+        TError,
+        {data: FileUpload},
+        TContext
+      > => {
+
+      const mutationOptions = getPostFilesAppMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
  * GET `/files/admin` — files. Cần đăng nhập + `file.view_all`. Handled by `minioStorage.listObjects`.
  * @summary List files
  */

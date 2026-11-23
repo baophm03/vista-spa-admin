@@ -8,7 +8,7 @@
 
 export type GetMembershipsAdminParams = {
 /**
- * Bắt buộc khi có quyền `membership.view_all`
+ * Xem hạng/điểm của hồ sơ khách chỉ định (chỉ dành cho scope ALL)
  */
 customer_profile_id?: string;
 };

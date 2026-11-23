@@ -34,12 +34,15 @@ import type {
   ForbiddenResponse,
   GetNotificationsAdmin200,
   GetNotificationsAdminParams,
+  GetNotificationsApp200,
+  GetNotificationsAppParams,
   GetNotificationsIdAdmin200,
   InternalErrorResponse,
   NotFoundResponse,
   Notification,
   PostNotificationsAdmin200,
   PostNotificationsIdReadAdmin200,
+  PostNotificationsIdReadApp200,
   UnauthorizedResponse,
   UnprocessableEntityResponse
 } from '../models';
@@ -245,7 +248,70 @@ export const prefetchGetNotificationsIdAdminQuery = async <TData = Awaited<Retur
 
 
 /**
- * **NT-05** — POST /notifications/{id}/read/admin (đánh dấu đã đọc). Cần đăng nhập + `notification.update_own` — khách chỉ đánh dấu được thông báo của chính mình (kiểm tra ownership trong business layer); platform admin được đánh dấu hộ bất kỳ thông báo nào.
+ * **NT-03A** — POST /notifications/{id}/read/app. Đánh dấu đã đọc một thông báo CỦA CHÍNH tài khoản (ownership kiểm tra trong service). Chỉ cần đăng nhập (API miniapp — không áp phân quyền, dữ liệu luôn của chính tài khoản).
+ * @summary Mark my notification as read (miniapp)
+ */
+export const postNotificationsIdReadApp = (
+    id: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<PostNotificationsIdReadApp200>(
+      {url: `/notifications/${id}/read/app`, method: 'POST', signal
+    },
+      );
+    }
+  
+
+
+export const getPostNotificationsIdReadAppMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postNotificationsIdReadApp>>, TError,{id: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postNotificationsIdReadApp>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['postNotificationsIdReadApp'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postNotificationsIdReadApp>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  postNotificationsIdReadApp(id,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostNotificationsIdReadAppMutationResult = NonNullable<Awaited<ReturnType<typeof postNotificationsIdReadApp>>>
+    
+    export type PostNotificationsIdReadAppMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+
+    /**
+ * @summary Mark my notification as read (miniapp)
+ */
+export const usePostNotificationsIdReadApp = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postNotificationsIdReadApp>>, TError,{id: string}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postNotificationsIdReadApp>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+
+      const mutationOptions = getPostNotificationsIdReadAppMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * **NT-05** — POST /notifications/{id}/read/admin (đánh dấu đã đọc bất kỳ thông báo nào). Cần đăng nhập + `notification.update_all`. Khách đánh dấu thông báo của mình (miniapp): POST /notifications/{id}/read/app.
  * @summary Mark a notification as read
  */
 export const postNotificationsIdReadAdmin = (
@@ -308,7 +374,202 @@ export const usePostNotificationsIdReadAdmin = <TError = UnauthorizedResponse | 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **NT-01** — GET /notifications/admin. Cần đăng nhập + `notification.view_all` (quản trị: toàn bộ thông tin/broadcast; query `user_id`, `event_key`) hoặc `notification.view_own` (khách: hộp thư của bản thân). Query parameters: `page`, `limit`.
+ * **NT-01A** — GET /notifications/app. Thông báo CỦA CHÍNH tài khoản, phân trang `page`/`limit` (mặc định 1/20). Chỉ cần đăng nhập (API miniapp — không áp phân quyền, dữ liệu luôn của chính tài khoản).
+ * @summary My notifications (miniapp)
+ */
+export const getNotificationsApp = (
+    params?: GetNotificationsAppParams,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetNotificationsApp200>(
+      {url: `/notifications/app`, method: 'GET',
+        params, signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetNotificationsAppInfiniteQueryKey = (params?: GetNotificationsAppParams,) => {
+    return [
+    'infinite', `/notifications/app`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+export const getGetNotificationsAppQueryKey = (params?: GetNotificationsAppParams,) => {
+    return [
+    `/notifications/app`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getGetNotificationsAppInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getNotificationsApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetNotificationsAppParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getNotificationsApp>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetNotificationsAppInfiniteQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getNotificationsApp>>> = ({ signal }) => getNotificationsApp(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getNotificationsApp>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetNotificationsAppInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getNotificationsApp>>>
+export type GetNotificationsAppInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+
+
+export function useGetNotificationsAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getNotificationsApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetNotificationsAppParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getNotificationsApp>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getNotificationsApp>>,
+          TError,
+          Awaited<ReturnType<typeof getNotificationsApp>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetNotificationsAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getNotificationsApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetNotificationsAppParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getNotificationsApp>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getNotificationsApp>>,
+          TError,
+          Awaited<ReturnType<typeof getNotificationsApp>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetNotificationsAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getNotificationsApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetNotificationsAppParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getNotificationsApp>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary My notifications (miniapp)
+ */
+
+export function useGetNotificationsAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getNotificationsApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetNotificationsAppParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getNotificationsApp>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetNotificationsAppInfiniteQueryOptions(params,options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary My notifications (miniapp)
+ */
+export const prefetchGetNotificationsAppInfiniteQuery = async <TData = Awaited<ReturnType<typeof getNotificationsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetNotificationsAppParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getNotificationsApp>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetNotificationsAppInfiniteQueryOptions(params,options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetNotificationsAppQueryOptions = <TData = Awaited<ReturnType<typeof getNotificationsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetNotificationsAppParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getNotificationsApp>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetNotificationsAppQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getNotificationsApp>>> = ({ signal }) => getNotificationsApp(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getNotificationsApp>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetNotificationsAppQueryResult = NonNullable<Awaited<ReturnType<typeof getNotificationsApp>>>
+export type GetNotificationsAppQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+
+
+export function useGetNotificationsApp<TData = Awaited<ReturnType<typeof getNotificationsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetNotificationsAppParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getNotificationsApp>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getNotificationsApp>>,
+          TError,
+          Awaited<ReturnType<typeof getNotificationsApp>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetNotificationsApp<TData = Awaited<ReturnType<typeof getNotificationsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetNotificationsAppParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getNotificationsApp>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getNotificationsApp>>,
+          TError,
+          Awaited<ReturnType<typeof getNotificationsApp>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetNotificationsApp<TData = Awaited<ReturnType<typeof getNotificationsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetNotificationsAppParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getNotificationsApp>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary My notifications (miniapp)
+ */
+
+export function useGetNotificationsApp<TData = Awaited<ReturnType<typeof getNotificationsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetNotificationsAppParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getNotificationsApp>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetNotificationsAppQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary My notifications (miniapp)
+ */
+export const prefetchGetNotificationsAppQuery = async <TData = Awaited<ReturnType<typeof getNotificationsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetNotificationsAppParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getNotificationsApp>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetNotificationsAppQueryOptions(params,options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * **NT-01** — GET /notifications/admin. Cần đăng nhập + `notification.read_all` (toàn bộ thông báo/broadcast; query `user_id`, `event_key`). Query parameters: `page`, `limit`. Hộp thư của chính tài khoản (miniapp): GET /notifications/app.
  * @summary List notifications
  */
 export const getNotificationsAdmin = (

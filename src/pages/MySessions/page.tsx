@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { displayName } from '@/utils/displayName'
 import { Alert, Button, Select, Space, Table, Tag, Typography, message } from 'antd'
 import type { TableColumnsType } from 'antd'
 import { CheckOutlined, PlayCircleOutlined } from '@ant-design/icons'
@@ -131,7 +132,7 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
       render: (_value, row) => {
         const customer = row.customer_treatment?.customer_profile
         return <Space direction="vertical" size={0}>
-          <span>{customer?.full_name || 'Khách hàng'}</span>
+          <span>{displayName(customer, 'Khách hàng')}</span>
           <Typography.Text type="secondary" style={{ fontSize: 12 }}>{customer?.customer_code || customer?.phone || '—'}</Typography.Text>
         </Space>
       },
@@ -221,7 +222,7 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
             <div className="mobile-card-head">
               <div>
                 <div className="mobile-card-title">{row.is_warranty ? 'Bảo hành' : `Buổi ${row.session_no}`}</div>
-                <div className="mobile-card-sub">{row.customer_treatment?.customer_profile?.full_name || 'Khách hàng'} · {row.customer_treatment?.package?.name || '—'}</div>
+                <div className="mobile-card-sub">{displayName(row.customer_treatment?.customer_profile, 'Khách hàng')} · {row.customer_treatment?.package?.name || '—'}</div>
               </div>
               <Tag color={statusInfo.color}>{statusInfo.label}</Tag>
             </div>

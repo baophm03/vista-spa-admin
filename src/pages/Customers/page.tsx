@@ -1,4 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
+import { displayName } from '@/utils/displayName'
 import { Button, Form, Grid, Input, InputNumber, Modal, Col, Row, Select, Space, Table, Tag, Typography, message } from 'antd'
 import { DeleteOutlined, DownloadOutlined, EditOutlined, PlusOutlined, QrcodeOutlined } from '@ant-design/icons'
 import { useQueryClient } from '@tanstack/react-query'
@@ -355,7 +356,7 @@ export default function Customers() {
       message.error('Trình duyệt đang chặn cửa sổ in. Hãy cho phép cửa sổ bật lên rồi thử lại.')
       return
     }
-    const customerName = escapeHtml(selected.full_name)
+    const customerName = escapeHtml(displayName(selected))
     const customerCode = escapeHtml(selected.customer_code)
     printWindow.document.write(`<!doctype html><html lang="vi"><head><meta charset="utf-8"><title>QR ${customerCode}</title><style>
       *{box-sizing:border-box}body{font-family:Arial,sans-serif;margin:0;padding:24px;color:#26352d}.card{width:320px;margin:0 auto;border:1px solid #dce8df;border-radius:16px;padding:22px;text-align:center}.brand{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#5b7868}.name{font-size:20px;font-weight:700;margin:10px 0 6px}.code{font-family:monospace;font-size:16px;font-weight:700}img{width:210px;height:210px;image-rendering:pixelated;margin-top:16px}@media print{body{padding:0}.card{border:0}}
@@ -471,10 +472,10 @@ export default function Customers() {
             title: 'Khách hàng',
             dataIndex: 'full_name',
             width: 180,
-            render: (value: string, row: CustomerProfileRow) => (
+            render: (_: string, row: CustomerProfileRow) => (
               <Space>
                 <CustomerAvatar profile={row} />
-                <span style={{ fontWeight: 500 }}>{value}</span>
+                <span style={{ fontWeight: 500 }}>{displayName(row)}</span>
               </Space>
             ),
           },
@@ -529,7 +530,7 @@ export default function Customers() {
           <>
             <div className="mobile-card-head">
               <div>
-                <div className="mobile-card-title">{row.full_name}</div>
+                <div className="mobile-card-title">{displayName(row)}</div>
                 <div className="mobile-card-sub"><Typography.Text code style={{ fontSize: 12 }}>{row.customer_code}</Typography.Text></div>
               </div>
               {row.user_id

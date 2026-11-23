@@ -1,4 +1,5 @@
 import { Col, DatePicker, Form, Input, Modal, Row, Select, Space, Switch, Typography } from 'antd'
+import { displayName } from '@/utils/displayName'
 import type { FormInstance } from 'antd'
 import type { Dayjs } from 'dayjs'
 import CustomFieldFormItems from '@/components/CustomFieldFormItems'
@@ -71,7 +72,7 @@ export default function AppointmentFormModal({
           label={(<Space size={4}><span>Khách hàng</span></Space>)}
           rules={[{ required: true, message: 'Chọn khách' }]}
         >
-          <Select showSearch filterOption={false} onSearch={onCustomerSearch} onChange={(id) => onSelectProfile(profileOptions.find((profile) => profile.id === id) ?? null)} loading={profilesLoading} placeholder="Chọn khách hàng" options={profileOptions.map((p) => ({ value: p.id, label: `${p.full_name} — ${p.phone}` }))} notFoundContent={profilesLoading ? 'Đang tìm khách hàng…' : 'Không tìm thấy khách'} />
+          <Select showSearch filterOption={false} onSearch={onCustomerSearch} onChange={(id) => onSelectProfile(profileOptions.find((profile) => profile.id === id) ?? null)} loading={profilesLoading} placeholder="Chọn khách hàng" options={profileOptions.map((p) => ({ value: p.id, label: `${displayName(p)} — ${p.phone}` }))} notFoundContent={profilesLoading ? 'Đang tìm khách hàng…' : 'Không tìm thấy khách'} />
         </Form.Item>
         <div className="flex items-center justify-between mb-3">
           <Typography.Text strong style={{ fontSize: 13 }}>Chọn KTV</Typography.Text>

@@ -30,14 +30,14 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  DeleteFavoritesProductIdAdmin200,
+  DeleteFavoritesProductIdApp200,
   ForbiddenResponse,
   GetFavoritesAdmin200,
   GetFavoritesAdminParams,
+  GetFavoritesApp200,
   InternalErrorResponse,
-  NotFoundResponse,
-  PostFavoritesAdmin200,
-  PostFavoritesAdminBody,
+  PostFavoritesApp200,
+  PostFavoritesAppBody,
   UnauthorizedResponse,
   UnprocessableEntityResponse
 } from '../models';
@@ -49,27 +49,27 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * **DELETE /favorites/{productId}/admin** — bỏ sản phẩm khỏi yêu thích: xoá mọi favorite row của product đó trên các hồ sơ của user đang login, trả `{ removed: n }`. Cần đăng nhập + `favorite.delete_own` (platform admin có `favorite.delete_all`).
- * @summary Remove a product from favorites
+ * **FAV-03A** — DELETE /favorites/{productId}/app. Bỏ sản phẩm khỏi yêu thích của chính tài khoản, trả `{ removed: n }`. Chỉ cần đăng nhập (API miniapp — không áp phân quyền, dữ liệu luôn của chính tài khoản).
+ * @summary Remove a product from my favorites (miniapp)
  */
-export const deleteFavoritesProductIdAdmin = (
+export const deleteFavoritesProductIdApp = (
     productId: string,
  ) => {
       
       
-      return customInstance<DeleteFavoritesProductIdAdmin200>(
-      {url: `/favorites/${productId}/admin`, method: 'DELETE'
+      return customInstance<DeleteFavoritesProductIdApp200>(
+      {url: `/favorites/${productId}/app`, method: 'DELETE'
     },
       );
     }
   
 
 
-export const getDeleteFavoritesProductIdAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteFavoritesProductIdAdmin>>, TError,{productId: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof deleteFavoritesProductIdAdmin>>, TError,{productId: string}, TContext> => {
+export const getDeleteFavoritesProductIdAppMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteFavoritesProductIdApp>>, TError,{productId: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteFavoritesProductIdApp>>, TError,{productId: string}, TContext> => {
 
-const mutationKey = ['deleteFavoritesProductIdAdmin'];
+const mutationKey = ['deleteFavoritesProductIdApp'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -79,10 +79,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteFavoritesProductIdAdmin>>, {productId: string}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteFavoritesProductIdApp>>, {productId: string}> = (props) => {
           const {productId} = props ?? {};
 
-          return  deleteFavoritesProductIdAdmin(productId,)
+          return  deleteFavoritesProductIdApp(productId,)
         }
 
         
@@ -90,32 +90,291 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type DeleteFavoritesProductIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof deleteFavoritesProductIdAdmin>>>
+    export type DeleteFavoritesProductIdAppMutationResult = NonNullable<Awaited<ReturnType<typeof deleteFavoritesProductIdApp>>>
     
-    export type DeleteFavoritesProductIdAdminMutationError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+    export type DeleteFavoritesProductIdAppMutationError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
 
     /**
- * @summary Remove a product from favorites
+ * @summary Remove a product from my favorites (miniapp)
  */
-export const useDeleteFavoritesProductIdAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteFavoritesProductIdAdmin>>, TError,{productId: string}, TContext>, }
+export const useDeleteFavoritesProductIdApp = <TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteFavoritesProductIdApp>>, TError,{productId: string}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteFavoritesProductIdAdmin>>,
+        Awaited<ReturnType<typeof deleteFavoritesProductIdApp>>,
         TError,
         {productId: string},
         TContext
       > => {
 
-      const mutationOptions = getDeleteFavoritesProductIdAdminMutationOptions(options);
+      const mutationOptions = getDeleteFavoritesProductIdAppMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **GET /favorites/admin** — danh sách sản phẩm yêu thích. Cần đăng nhập + `favorite.view_own` (mặc định: favorites gộp của mọi `customer_profile` thuộc user đang login, đa cơ sở — trả `rows` gồm `product_id`, `created_at`) hoặc `favorite.view_all` (kèm query `user_id` để xem của khách khác).
+ * **FAV-01A** — GET /favorites/app. Sản phẩm yêu thích của chính tài khoản (gộp mọi hồ sơ của user). Chỉ cần đăng nhập (API miniapp — không áp phân quyền, dữ liệu luôn của chính tài khoản).
+ * @summary My favorite products (miniapp)
+ */
+export const getFavoritesApp = (
+    
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetFavoritesApp200>(
+      {url: `/favorites/app`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetFavoritesAppInfiniteQueryKey = () => {
+    return [
+    'infinite', `/favorites/app`
+    ] as const;
+    }
+
+export const getGetFavoritesAppQueryKey = () => {
+    return [
+    `/favorites/app`
+    ] as const;
+    }
+
+    
+export const getGetFavoritesAppInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getFavoritesApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getFavoritesApp>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetFavoritesAppInfiniteQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getFavoritesApp>>> = ({ signal }) => getFavoritesApp(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getFavoritesApp>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetFavoritesAppInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getFavoritesApp>>>
+export type GetFavoritesAppInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+
+
+export function useGetFavoritesAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getFavoritesApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getFavoritesApp>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getFavoritesApp>>,
+          TError,
+          Awaited<ReturnType<typeof getFavoritesApp>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetFavoritesAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getFavoritesApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getFavoritesApp>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getFavoritesApp>>,
+          TError,
+          Awaited<ReturnType<typeof getFavoritesApp>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetFavoritesAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getFavoritesApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getFavoritesApp>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary My favorite products (miniapp)
+ */
+
+export function useGetFavoritesAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getFavoritesApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getFavoritesApp>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetFavoritesAppInfiniteQueryOptions(options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary My favorite products (miniapp)
+ */
+export const prefetchGetFavoritesAppInfiniteQuery = async <TData = Awaited<ReturnType<typeof getFavoritesApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getFavoritesApp>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetFavoritesAppInfiniteQueryOptions(options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetFavoritesAppQueryOptions = <TData = Awaited<ReturnType<typeof getFavoritesApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getFavoritesApp>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetFavoritesAppQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getFavoritesApp>>> = ({ signal }) => getFavoritesApp(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getFavoritesApp>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetFavoritesAppQueryResult = NonNullable<Awaited<ReturnType<typeof getFavoritesApp>>>
+export type GetFavoritesAppQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+
+
+export function useGetFavoritesApp<TData = Awaited<ReturnType<typeof getFavoritesApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getFavoritesApp>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getFavoritesApp>>,
+          TError,
+          Awaited<ReturnType<typeof getFavoritesApp>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetFavoritesApp<TData = Awaited<ReturnType<typeof getFavoritesApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getFavoritesApp>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getFavoritesApp>>,
+          TError,
+          Awaited<ReturnType<typeof getFavoritesApp>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetFavoritesApp<TData = Awaited<ReturnType<typeof getFavoritesApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getFavoritesApp>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary My favorite products (miniapp)
+ */
+
+export function useGetFavoritesApp<TData = Awaited<ReturnType<typeof getFavoritesApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getFavoritesApp>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetFavoritesAppQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary My favorite products (miniapp)
+ */
+export const prefetchGetFavoritesAppQuery = async <TData = Awaited<ReturnType<typeof getFavoritesApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getFavoritesApp>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetFavoritesAppQueryOptions(options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * **FAV-02A** — POST /favorites/app. Thêm sản phẩm vào yêu thích của chính tài khoản (idempotent). Chỉ cần đăng nhập (API miniapp — không áp phân quyền, dữ liệu luôn của chính tài khoản). Body: `product_id`.
+ * @summary Add a product to my favorites (miniapp)
+ */
+export const postFavoritesApp = (
+    postFavoritesAppBody: PostFavoritesAppBody,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<PostFavoritesApp200>(
+      {url: `/favorites/app`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: postFavoritesAppBody, signal
+    },
+      );
+    }
+  
+
+
+export const getPostFavoritesAppMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postFavoritesApp>>, TError,{data: PostFavoritesAppBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postFavoritesApp>>, TError,{data: PostFavoritesAppBody}, TContext> => {
+
+const mutationKey = ['postFavoritesApp'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postFavoritesApp>>, {data: PostFavoritesAppBody}> = (props) => {
+          const {data} = props ?? {};
+
+          return  postFavoritesApp(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostFavoritesAppMutationResult = NonNullable<Awaited<ReturnType<typeof postFavoritesApp>>>
+    export type PostFavoritesAppMutationBody = PostFavoritesAppBody
+    export type PostFavoritesAppMutationError = UnauthorizedResponse | ForbiddenResponse | UnprocessableEntityResponse | InternalErrorResponse
+
+    /**
+ * @summary Add a product to my favorites (miniapp)
+ */
+export const usePostFavoritesApp = <TError = UnauthorizedResponse | ForbiddenResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postFavoritesApp>>, TError,{data: PostFavoritesAppBody}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postFavoritesApp>>,
+        TError,
+        {data: PostFavoritesAppBody},
+        TContext
+      > => {
+
+      const mutationOptions = getPostFavoritesAppMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * **GET /favorites/admin** — sản phẩm yêu thích của một khách (quản trị). Cần đăng nhập + `favorite.read_all`; bắt buộc query `user_id`. Yêu thích của chính tài khoản (miniapp): GET /favorites/app.
  * @summary List favorite products
  */
 export const getFavoritesAdmin = (
-    params?: GetFavoritesAdminParams,
+    params: GetFavoritesAdminParams,
  signal?: AbortSignal
 ) => {
       
@@ -143,7 +402,7 @@ export const getGetFavoritesAdminQueryKey = (params?: GetFavoritesAdminParams,) 
     }
 
     
-export const getGetFavoritesAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getFavoritesAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetFavoritesAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getFavoritesAdmin>>, TError, TData>>, }
+export const getGetFavoritesAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getFavoritesAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params: GetFavoritesAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getFavoritesAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
@@ -166,7 +425,7 @@ export type GetFavoritesAdminInfiniteQueryError = UnauthorizedResponse | Forbidd
 
 
 export function useGetFavoritesAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getFavoritesAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params: undefined |  GetFavoritesAdminParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getFavoritesAdmin>>, TError, TData>> & Pick<
+ params: GetFavoritesAdminParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getFavoritesAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getFavoritesAdmin>>,
           TError,
@@ -176,7 +435,7 @@ export function useGetFavoritesAdminInfinite<TData = InfiniteData<Awaited<Return
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetFavoritesAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getFavoritesAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetFavoritesAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getFavoritesAdmin>>, TError, TData>> & Pick<
+ params: GetFavoritesAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getFavoritesAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getFavoritesAdmin>>,
           TError,
@@ -186,7 +445,7 @@ export function useGetFavoritesAdminInfinite<TData = InfiniteData<Awaited<Return
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetFavoritesAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getFavoritesAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetFavoritesAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getFavoritesAdmin>>, TError, TData>>, }
+ params: GetFavoritesAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getFavoritesAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
@@ -194,7 +453,7 @@ export function useGetFavoritesAdminInfinite<TData = InfiniteData<Awaited<Return
  */
 
 export function useGetFavoritesAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getFavoritesAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetFavoritesAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getFavoritesAdmin>>, TError, TData>>, }
+ params: GetFavoritesAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getFavoritesAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
@@ -211,7 +470,7 @@ export function useGetFavoritesAdminInfinite<TData = InfiniteData<Awaited<Return
  * @summary List favorite products
  */
 export const prefetchGetFavoritesAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getFavoritesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient, params?: GetFavoritesAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getFavoritesAdmin>>, TError, TData>>, }
+ queryClient: QueryClient, params: GetFavoritesAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getFavoritesAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
@@ -224,7 +483,7 @@ export const prefetchGetFavoritesAdminInfiniteQuery = async <TData = Awaited<Ret
 
 
 
-export const getGetFavoritesAdminQueryOptions = <TData = Awaited<ReturnType<typeof getFavoritesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetFavoritesAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getFavoritesAdmin>>, TError, TData>>, }
+export const getGetFavoritesAdminQueryOptions = <TData = Awaited<ReturnType<typeof getFavoritesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params: GetFavoritesAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getFavoritesAdmin>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
@@ -247,7 +506,7 @@ export type GetFavoritesAdminQueryError = UnauthorizedResponse | ForbiddenRespon
 
 
 export function useGetFavoritesAdmin<TData = Awaited<ReturnType<typeof getFavoritesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params: undefined |  GetFavoritesAdminParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getFavoritesAdmin>>, TError, TData>> & Pick<
+ params: GetFavoritesAdminParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getFavoritesAdmin>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getFavoritesAdmin>>,
           TError,
@@ -257,7 +516,7 @@ export function useGetFavoritesAdmin<TData = Awaited<ReturnType<typeof getFavori
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetFavoritesAdmin<TData = Awaited<ReturnType<typeof getFavoritesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetFavoritesAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getFavoritesAdmin>>, TError, TData>> & Pick<
+ params: GetFavoritesAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getFavoritesAdmin>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getFavoritesAdmin>>,
           TError,
@@ -267,7 +526,7 @@ export function useGetFavoritesAdmin<TData = Awaited<ReturnType<typeof getFavori
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetFavoritesAdmin<TData = Awaited<ReturnType<typeof getFavoritesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetFavoritesAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getFavoritesAdmin>>, TError, TData>>, }
+ params: GetFavoritesAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getFavoritesAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
@@ -275,7 +534,7 @@ export function useGetFavoritesAdmin<TData = Awaited<ReturnType<typeof getFavori
  */
 
 export function useGetFavoritesAdmin<TData = Awaited<ReturnType<typeof getFavoritesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- params?: GetFavoritesAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getFavoritesAdmin>>, TError, TData>>, }
+ params: GetFavoritesAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getFavoritesAdmin>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
@@ -292,7 +551,7 @@ export function useGetFavoritesAdmin<TData = Awaited<ReturnType<typeof getFavori
  * @summary List favorite products
  */
 export const prefetchGetFavoritesAdminQuery = async <TData = Awaited<ReturnType<typeof getFavoritesAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient, params?: GetFavoritesAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getFavoritesAdmin>>, TError, TData>>, }
+ queryClient: QueryClient, params: GetFavoritesAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getFavoritesAdmin>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
@@ -305,69 +564,3 @@ export const prefetchGetFavoritesAdminQuery = async <TData = Awaited<ReturnType<
 
 
 
-/**
- * **POST /favorites/admin** — thêm sản phẩm vào yêu thích (idempotent: đã favorite rồi thì trả row cũ; gắn vào hồ sơ đầu tiên của user). Cần đăng nhập + `favorite.create`. Body: `product_id`.
- * @summary Add a product to favorites
- */
-export const postFavoritesAdmin = (
-    postFavoritesAdminBody: PostFavoritesAdminBody,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<PostFavoritesAdmin200>(
-      {url: `/favorites/admin`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: postFavoritesAdminBody, signal
-    },
-      );
-    }
-  
-
-
-export const getPostFavoritesAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postFavoritesAdmin>>, TError,{data: PostFavoritesAdminBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postFavoritesAdmin>>, TError,{data: PostFavoritesAdminBody}, TContext> => {
-
-const mutationKey = ['postFavoritesAdmin'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postFavoritesAdmin>>, {data: PostFavoritesAdminBody}> = (props) => {
-          const {data} = props ?? {};
-
-          return  postFavoritesAdmin(data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostFavoritesAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postFavoritesAdmin>>>
-    export type PostFavoritesAdminMutationBody = PostFavoritesAdminBody
-    export type PostFavoritesAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | UnprocessableEntityResponse | InternalErrorResponse
-
-    /**
- * @summary Add a product to favorites
- */
-export const usePostFavoritesAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postFavoritesAdmin>>, TError,{data: PostFavoritesAdminBody}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postFavoritesAdmin>>,
-        TError,
-        {data: PostFavoritesAdminBody},
-        TContext
-      > => {
-
-      const mutationOptions = getPostFavoritesAdminMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    

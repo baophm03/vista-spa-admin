@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { displayName } from '@/utils/displayName'
 import { Alert, Button, Checkbox, Form, Table, Tag, Tooltip, message } from 'antd'
 import { BellOutlined, CheckOutlined, MailOutlined, SendOutlined } from '@ant-design/icons'
 import PageTitle from '@/components/base/PageTitle'
@@ -118,10 +119,11 @@ export default function Notifications() {
     }
   }
 
-  const recipientName = (userId?: string | null) =>
-    profiles.find((p) => p.user_id === userId)?.full_name ??
-    users.find((u) => u.id === userId)?.zalo_name ??
-    'Một khách hàng'
+  const recipientName = (userId?: string | null) => {
+    const profile = profiles.find((p) => p.user_id === userId)
+
+    return displayName(profile, users.find((u) => u.id === userId)?.zalo_name || 'Một khách hàng')
+  }
 
   const audience = (group: NotificationGroup<NotificationRow>) => {
     if (group.userIds.every((id) => !id)) return 'Tất cả khách (broadcast)'
