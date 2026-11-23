@@ -798,6 +798,8 @@ export * from './postAppointmentsIdStartAdminBodySessionCustomFields';
 export * from './postAuthLoginBody';
 export * from './postAuthRefreshTokenBody';
 export * from './postAuthZaloBody';
+export * from './postAuthZaloLoginBody';
+export * from './postAuthZaloRegisterBody';
 export * from './postBranchDateNotesAdmin200';
 export * from './postBranchDateNotesAdmin200AllOf';
 export * from './postBranchDateNotesAdminBody';

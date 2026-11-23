@@ -19,6 +19,8 @@ import type {
   LegacyBadRequestResponse,
   PostAuthLoginBody,
   PostAuthRefreshTokenBody,
+  PostAuthZaloLoginBody,
+  PostAuthZaloRegisterBody,
   Response
 } from '../models';
 
@@ -29,6 +31,136 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
+ * POST `/auth/zalo-register` — **Public, no authentication required.** BE verifies `access_token` with `graph.zalo.me/v2.0/me` and exchanges `phone_token` via `graph.zalo.me/v2.0/me/info` (headers `secret_key` from `ZMP_SECRET_KEY`) to get the real phone number. If a user already has that `phone_number`, the verified zalo fields are linked to that account; otherwise a new customer account is created. Either way a session is issued.
+ * @summary Zalo Mini App register/link — resolve the real phone number from Zalo then match, link or create the user
+ */
+export const postAuthZaloRegister = (
+    postAuthZaloRegisterBody: PostAuthZaloRegisterBody,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<Response>(
+      {url: `/auth/zalo-register`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: postAuthZaloRegisterBody, signal
+    },
+      );
+    }
+  
+
+
+export const getPostAuthZaloRegisterMutationOptions = <TError = LegacyBadRequestResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAuthZaloRegister>>, TError,{data: PostAuthZaloRegisterBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postAuthZaloRegister>>, TError,{data: PostAuthZaloRegisterBody}, TContext> => {
+
+const mutationKey = ['postAuthZaloRegister'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAuthZaloRegister>>, {data: PostAuthZaloRegisterBody}> = (props) => {
+          const {data} = props ?? {};
+
+          return  postAuthZaloRegister(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostAuthZaloRegisterMutationResult = NonNullable<Awaited<ReturnType<typeof postAuthZaloRegister>>>
+    export type PostAuthZaloRegisterMutationBody = PostAuthZaloRegisterBody
+    export type PostAuthZaloRegisterMutationError = LegacyBadRequestResponse
+
+    /**
+ * @summary Zalo Mini App register/link — resolve the real phone number from Zalo then match, link or create the user
+ */
+export const usePostAuthZaloRegister = <TError = LegacyBadRequestResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAuthZaloRegister>>, TError,{data: PostAuthZaloRegisterBody}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postAuthZaloRegister>>,
+        TError,
+        {data: PostAuthZaloRegisterBody},
+        TContext
+      > => {
+
+      const mutationOptions = getPostAuthZaloRegisterMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * POST `/auth/zalo-login` — **Public, no authentication required.** BE verifies `access_token` with `graph.zalo.me/v2.0/me` (header `secret_key` from `ZMP_SECRET_KEY`), matches a user by the verified `zalo_id` and issues a session. When no user is linked yet, returns error code `ZALO_NOT_LINKED` — the FE should then call `/auth/zalo-register` with the phone token.
+ * @summary Zalo Mini App login — verify access_token with Zalo, then match user by zalo_id
+ */
+export const postAuthZaloLogin = (
+    postAuthZaloLoginBody: PostAuthZaloLoginBody,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<Response>(
+      {url: `/auth/zalo-login`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: postAuthZaloLoginBody, signal
+    },
+      );
+    }
+  
+
+
+export const getPostAuthZaloLoginMutationOptions = <TError = void | LegacyBadRequestResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAuthZaloLogin>>, TError,{data: PostAuthZaloLoginBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postAuthZaloLogin>>, TError,{data: PostAuthZaloLoginBody}, TContext> => {
+
+const mutationKey = ['postAuthZaloLogin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAuthZaloLogin>>, {data: PostAuthZaloLoginBody}> = (props) => {
+          const {data} = props ?? {};
+
+          return  postAuthZaloLogin(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostAuthZaloLoginMutationResult = NonNullable<Awaited<ReturnType<typeof postAuthZaloLogin>>>
+    export type PostAuthZaloLoginMutationBody = PostAuthZaloLoginBody
+    export type PostAuthZaloLoginMutationError = void | LegacyBadRequestResponse
+
+    /**
+ * @summary Zalo Mini App login — verify access_token with Zalo, then match user by zalo_id
+ */
+export const usePostAuthZaloLogin = <TError = void | LegacyBadRequestResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAuthZaloLogin>>, TError,{data: PostAuthZaloLoginBody}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postAuthZaloLogin>>,
+        TError,
+        {data: PostAuthZaloLoginBody},
+        TContext
+      > => {
+
+      const mutationOptions = getPostAuthZaloLoginMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
  * POST `/auth/refresh-token` — login session. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Body fields: `refreshToken`. Handled by `userProvider.validateSession`.
  * @summary Issue a new access token from a refresh token
  */
