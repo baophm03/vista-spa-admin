@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { displayName } from '@/utils/displayName'
 import { Alert, Button, Select, Space, Table, Tag, Typography, message } from 'antd'
 import type { TableColumnsType } from 'antd'
 import { CheckOutlined, PlayCircleOutlined } from '@ant-design/icons'
@@ -140,7 +141,7 @@ export default function MySessions() {
       render: (_value, row) => {
         const customer = row.customer_treatment?.customer_profile
         return <Space direction="vertical" size={0}>
-          <span>{customer?.full_name || 'Khách hàng'}</span>
+          <span>{displayName(customer, 'Khách hàng')}</span>
           <Typography.Text type="secondary" style={{ fontSize: 12 }}>{customer?.customer_code || customer?.phone || '—'}</Typography.Text>
         </Space>
       },
@@ -231,7 +232,7 @@ export default function MySessions() {
           <>
             <div className="mobile-card-head">
               <div className="mobile-card-title min-w-0">
-                {row.customer_treatment?.customer_profile?.full_name || 'Khách hàng'}
+                {displayName(row.customer_treatment?.customer_profile, 'Khách hàng')}
               </div>
               <Tag className="me-0! shrink-0" color={statusInfo.color}>{statusInfo.label}</Tag>
             </div>

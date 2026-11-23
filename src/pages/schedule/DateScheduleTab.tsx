@@ -1,4 +1,5 @@
 import { useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { displayName } from '@/utils/displayName'
 import { createPortal } from 'react-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import dayjs, { type Dayjs } from 'dayjs'
@@ -25,7 +26,7 @@ import { shiftStyle } from './calendar/shiftStyles'
 import QuickCreatePopover from './calendar/QuickCreatePopover'
 
 interface Props extends SchedulePageData { loadingShared: boolean }
-interface ConflictAppointment { id: string; appt_date: string; start_time: string; customer_profile?: { full_name?: string }; service?: { title?: string } }
+interface ConflictAppointment { id: string; appt_date: string; start_time: string; customer_profile?: { full_name?: string; zalo_name?: string }; service?: { title?: string } }
 type StaffScheduleDateWithStaff = StaffScheduleDateRow & { shift_template?: ShiftTemplateRow | null; onLeave?: boolean }
 type ShiftTemplateWithDeletion = ShiftTemplateRow & { is_deleted?: boolean; deleted_at?: string | null }
 interface DateCellShift {
@@ -394,7 +395,7 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
               columns={[
                 { title: 'Ngày', dataIndex: 'appt_date', render: (v: string) => new Date(`${v}T00:00:00`).toLocaleDateString('vi-VN') },
                 { title: 'Giờ', dataIndex: 'start_time', render: (v: string) => v?.slice(0, 5) },
-                { title: 'Khách', dataIndex: ['customer_profile', 'full_name'], render: (v) => v || '—' },
+                { title: 'Khách', dataIndex: ['customer_profile', 'full_name'], render: (_: unknown, row: ConflictAppointment) => displayName(row.customer_profile) },
                 { title: 'Dịch vụ', dataIndex: ['service', 'title'], render: (v) => v || '—' },
               ]}
             />
@@ -445,7 +446,7 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
             columns={[
               { title: 'Ngày', dataIndex: 'appt_date', render: (v: string) => new Date(`${v}T00:00:00`).toLocaleDateString('vi-VN') },
               { title: 'Giờ', dataIndex: 'start_time', render: (v: string) => v?.slice(0, 5) },
-              { title: 'Khách', dataIndex: ['customer_profile', 'full_name'], render: (v) => v || '—' },
+              { title: 'Khách', dataIndex: ['customer_profile', 'full_name'], render: (_: unknown, row: ConflictAppointment) => displayName(row.customer_profile) },
               { title: 'Dịch vụ', dataIndex: ['service', 'title'], render: (v) => v || '—' },
             ]}
           />

@@ -57,7 +57,7 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * **GET /user-profiles** — Public, không cần đăng nhập. Danh sách hồ sơ chuyên viên/KTV có cờ `show_in_app` kèm ảnh, chi nhánh và dịch vụ phụ trách, dùng cho màn hình đặt lịch. Query parameters: `branch_id`. Quản trị đầy đủ xem `GET /user-profiles/admin`.
+ * **GET /user-profiles** — Public, không cần đăng nhập. Danh sách hồ sơ kỹ thuật viên (role `staff`, cũ `ktv`) có cờ `show_in_app` và `is_active`, kèm ảnh, chi nhánh và dịch vụ phụ trách, dùng cho màn hình đặt lịch. Query parameters: `branch_id`. Quản trị đầy đủ xem `GET /user-profiles/admin`.
  * @summary List technicians shown in the app (public)
  */
 export const getUserProfiles = (

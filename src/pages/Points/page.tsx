@@ -1,3 +1,5 @@
+import { getRankCardArt } from '@/utils/rankCardArt'
+import { displayName } from '@/utils/displayName'
 import { useRef, useState } from 'react'
 import { Alert, Button, Col, Form, Input, Modal, Row, Select, Skeleton, Space, Table, Tabs, Tag, Typography, message } from 'antd'
 import { ArrowDownOutlined, ArrowUpOutlined, CrownOutlined, DeleteOutlined, DownOutlined, EditOutlined, PlusOutlined, SyncOutlined } from '@ant-design/icons'
@@ -367,6 +369,7 @@ export default function Points() {
             </Col>
           ))}
           {ranks.map((r, index) => {
+            const front = getRankCardArt(r.name)
             const fallback = RANK_THEMES[index % RANK_THEMES.length]
             const theme = r.color ? rankThemeFromColor(r.color, fallback) : fallback
             const RankIcon = theme.icon
@@ -417,6 +420,14 @@ export default function Points() {
                       </Space>
                     )}
                   </div>
+                  {front && (
+                    <img
+                      src={import.meta.env.BASE_URL + 'rank-cards/' + front + '.png'}
+                      alt={'Mặt trước thẻ ' + r.name}
+                      loading="lazy"
+                      className="mb-2 block h-auto w-full object-contain"
+                    />
+                  )}
                   {r.benefits && <p className="mobile-card-sub mt-0 mb-2 md:hidden">{r.benefits}</p>}
                   <div className="mobile-card-rows">
                     <div className="md:hidden"><MobileCardRow label="Mã hạng" value={r.code || '—'} /></div>
@@ -631,7 +642,7 @@ export default function Points() {
             optionFilterProp="label"
             value={historyProfileId ?? undefined}
             onChange={(v) => { setHistoryProfileId(v ?? null); setHistoryPage(1) }}
-            options={profilesData.map((profile) => ({ value: profile.id, label: profile.full_name || profile.phone || profile.id }))}
+            options={profilesData.map((profile) => ({ value: profile.id, label: profile.full_name || profile.zalo_name || profile.phone || profile.id }))}
           />
       </div>
       <Table<HistoryRow>
@@ -650,7 +661,7 @@ export default function Points() {
               if (!customer) return '—'
               return (
                 <div>
-                  <div style={{ fontWeight: 500 }}>{customer.full_name || '—'}</div>
+                  <div style={{ fontWeight: 500 }}>{displayName(customer)}</div>
                   <div style={{ fontSize: 12, color: '#6F7071' }}>{customer.customer_code || customer.phone || ''}</div>
                 </div>
               )
@@ -721,7 +732,7 @@ export default function Points() {
               <>
                 <div className="mobile-card-head flex-wrap">
                   <div className="min-w-0">
-                    <div className="mobile-card-title">{customer?.full_name || '—'}</div>
+                    <div className="mobile-card-title">{displayName(customer)}</div>
                     <div className="mobile-card-sub">{customer?.customer_code || customer?.phone}</div>
                   </div>
                   <Tag className="me-0! max-w-full whitespace-normal! wrap-anywhere" color={delta >= 0 ? 'green' : 'red'}>

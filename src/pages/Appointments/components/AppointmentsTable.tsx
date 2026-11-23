@@ -4,6 +4,7 @@ import dayjs from 'dayjs'
 import type { ReactNode } from 'react'
 import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import type { AppointmentStatus } from '@/api/models/appointmentStatus'
+import { displayName } from '@/utils/displayName'
 import { STATUS_META } from './constants'
 import type { AppointmentRow } from './constants'
 
@@ -25,7 +26,7 @@ export default function AppointmentsTable({ rows, loading, branchName, staffName
       dataIndex: ['customer_profile', 'full_name'],
       width: 232,
       ellipsis: true,
-      render: (name) => <span className="font-medium">{name || '—'}</span>,
+      render: (_: unknown, row: AppointmentRow) => <span className="font-medium">{displayName(row.customer_profile)}</span>,
     },
     {
       title: <span className="whitespace-nowrap">Số điện thoại</span>,

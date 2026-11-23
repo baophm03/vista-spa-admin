@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { displayName } from '@/utils/displayName'
 import { DatePicker, Form, InputNumber, Modal, Select } from 'antd'
 import type { FormInstance } from 'antd'
 import CustomFieldFormItems from '@/components/CustomFieldFormItems'
@@ -100,7 +101,7 @@ export default function TreatmentCreateModal({
             filterOption={false}
             placeholder="Gõ tên hoặc SĐT để tìm khách"
             onSearch={onSearch}
-            options={customerOptions.map((c) => ({ value: c.id, label: `${c.full_name} — ${c.phone}` }))}
+            options={customerOptions.map((c) => ({ value: c.id, label: `${displayName(c)} — ${c.phone}` }))}
           />
         </Form.Item>
         <Form.Item name="package_id" label="Liệu trình" rules={[{ required: true, message: 'Chọn liệu trình' }]}>

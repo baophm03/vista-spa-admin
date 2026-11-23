@@ -178,7 +178,7 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
     void getCustomerProfilesAdmin({ page: 1, limit: 200 })
       .then((body) =>
         setCustomerOptions(
-          ((pickData<any[]>(body) ?? []) as any[]).map((c) => ({ value: c.id, label: `${c.full_name}${c.phone ? ' — ' + c.phone : ''}` })),
+          ((pickData<any[]>(body) ?? []) as any[]).map((c) => ({ value: c.id, label: `${c.full_name || c.zalo_name}${c.phone ? ' — ' + c.phone : ''}` })),
         ),
       )
       .catch(() => undefined)

@@ -1,4 +1,5 @@
 import { Button, Drawer, Popconfirm, Space, Typography } from 'antd'
+import { displayName } from '@/utils/displayName'
 import { DownloadOutlined, HistoryOutlined, LinkOutlined, PrinterOutlined } from '@ant-design/icons'
 import CustomerProfileDetailsTabs from './CustomerProfileDetailsTabs'
 import type { CustomerProfileRow, CustomerProfileSummary } from './CustomerProfileOverviewTab'
@@ -46,7 +47,7 @@ export default function CustomerDetailDrawer({
 }: CustomerDetailDrawerProps) {
   return (
     <Drawer
-      title={selected ? `${selected.full_name} — ${selected.customer_code}` : ''}
+      title={selected ? `${displayName(selected)} — ${selected.customer_code}` : ''}
       width="min(980px, calc(100vw - 24px))"
       open={!!selected}
       onClose={onClose}
@@ -56,7 +57,7 @@ export default function CustomerDetailDrawer({
           <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 18 }}>
             <CustomerAvatar profile={selected} size={60} />
             <div style={{ minWidth: 0 }}>
-              <Typography.Title level={5} style={{ margin: 0 }}>{selected.full_name}</Typography.Title>
+              <Typography.Title level={5} style={{ margin: 0 }}>{displayName(selected)}</Typography.Title>
               <Typography.Text type="secondary">{selected.user?.zalo_name || selected.phone}</Typography.Text>
             </div>
           </div>

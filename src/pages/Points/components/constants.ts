@@ -40,6 +40,7 @@ export interface ProfileLite {
   id: string
   user_id?: string | null
   full_name?: string
+  zalo_name?: string | null
   phone?: string
 }
 

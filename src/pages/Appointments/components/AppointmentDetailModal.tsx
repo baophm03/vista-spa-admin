@@ -1,4 +1,5 @@
 import { Can } from '@casl/react'
+import { displayName } from '@/utils/displayName'
 import { Button, Modal, Tag } from 'antd'
 import dayjs from 'dayjs'
 import { STATUS_META, type AppointmentRow } from './constants'
@@ -53,7 +54,7 @@ export default function AppointmentDetailModal({
   const isTreatment = Boolean(row.customer_treatment_id || row.treatment_package_id || row.customer_treatment)
   const categoryLabel = isTreatment ? 'Liệu trình' : row.service_id || row.service?.title ? 'Dịch vụ' : 'Tư vấn'
 
-  const name = row.customer_profile?.full_name || 'Khách vãng lai'
+  const name = displayName(row.customer_profile, 'Khách vãng lai')
   const phone = row.customer_profile?.phone
   const dateFormatted = row.appt_date ? dayjs(row.appt_date).format('DD/MM/YYYY') : '—'
   const startMinute = timeInMinutes(row.start_time)

@@ -1,12 +1,11 @@
 import { Alert, Button, Form, Input, Modal, Select, Space, Upload } from 'antd'
+import { displayName } from '@/utils/displayName'
 import { FileTextOutlined, UploadOutlined } from '@ant-design/icons'
 import type { CustomerTreatment } from '@/api/models/customerTreatment'
 import { snapshotField, labelStyle } from './constants'
 import { useBrandDateTime } from '@/themeRuntime'
 import { resolveFileSrc, useFileUrlMap } from '@/hooks/useFileUrl'
 import type { Branch } from '@/api/models'
-
-
 
 interface WarrantyClaimCreateModalProps {
   form: ReturnType<typeof import('antd').Form.useForm>[0]
@@ -66,7 +65,7 @@ export default function WarrantyClaimCreateModal({
               const snap = snapshotField(t)
               const treatment = t as CustomerTreatment & { customer_profile?: { full_name?: string; phone?: string } }
               const pkg = snap.name
-              const customerName = treatment.customer_profile?.full_name ?? 'Khách'
+              const customerName = displayName(treatment.customer_profile, 'Khách')
               const customer = treatment.customer_profile?.phone ? `${customerName} — ${treatment.customer_profile.phone}` : customerName
               return {
                 value: t.id,

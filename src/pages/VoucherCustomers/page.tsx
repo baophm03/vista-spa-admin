@@ -1,6 +1,7 @@
 import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import { useState } from 'react'
 import { Alert, Button, Form, Grid, Input, Modal, Popconfirm, Popover, Select, Table, Tabs, Tag, Typography, message } from 'antd'
+import { displayName } from '@/utils/displayName'
 import type { TableColumnsType } from 'antd'
 import { DeleteOutlined, FilterOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -107,7 +108,7 @@ function VoucherCustomerTab({ category, branches, isMobile }: { category: Vouche
   const customerRows = customersQuery.data?.pages.flatMap((pageResult) => pickData<CustomerProfile[]>(pageResult) ?? []) ?? []
   const customerOptions = customerRows.map((customer) => ({
     value: customer.id,
-    label: [customer.full_name || '—', customer.phone, customer.customer_code].filter(Boolean).join(' · '),
+    label: [displayName(customer), customer.phone, customer.customer_code].filter(Boolean).join(' · '),
   }))
 
   const assignMutation = useMutation({

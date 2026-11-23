@@ -1,4 +1,5 @@
 import { Form, type FormInstance, Input, Modal, Select } from 'antd'
+import { displayName } from '@/utils/displayName'
 import type { MemberRow, RankRow } from './constants'
 
 interface RankOverrideModalProps {
@@ -20,7 +21,7 @@ export default function RankOverrideModal({
 }: RankOverrideModalProps) {
   return (
     <Modal
-      title={`Gán hạng — ${overrideTarget?.row.full_name || overrideTarget?.row.phone || ''}`}
+      title={`Gán hạng — ${displayName(overrideTarget?.row, overrideTarget?.row?.phone || '')}`}
       open={!!overrideTarget}
       confirmLoading={confirmLoading}
       onCancel={onCancel}

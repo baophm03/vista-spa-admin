@@ -1,4 +1,5 @@
 import { Button, Collapse, DatePicker, Divider, Form, type FormInstance, Input, Modal, Select, Typography } from 'antd'
+import { displayName } from '@/utils/displayName'
 import type { CustomerHealthRecord } from '@/api/models/customerHealthRecord'
 import {
   labelStyle,
@@ -52,7 +53,7 @@ export default function HealthRecordModal({
       {recordCustomer && (
         <>
           <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 18 }}>
-            {recordCustomer.full_name} · {recordCustomer.phone} · {recordCustomer.customer_code}
+            {displayName(recordCustomer)} · {recordCustomer.phone} · {recordCustomer.customer_code}
           </Typography.Text>
           <Form form={form} layout="vertical" requiredMark={false}>
             <Divider orientation="horizontal" titlePlacement="start" plain style={{ marginTop: 0, color: '#52635A', fontSize: 13 }}>Thông tin khám</Divider>

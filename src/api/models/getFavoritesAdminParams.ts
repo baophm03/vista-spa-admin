@@ -8,7 +8,7 @@
 
 export type GetFavoritesAdminParams = {
 /**
- * Chỉ dùng khi có `favorite.view_all`
+ * ID tài khoản khách cần xem
  */
-user_id?: string;
+user_id: string;
 };

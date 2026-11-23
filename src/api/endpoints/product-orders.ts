@@ -34,11 +34,14 @@ import type {
   ForbiddenResponse,
   GetProductOrdersAdmin200,
   GetProductOrdersAdminParams,
+  GetProductOrdersApp200,
   GetProductOrdersIdAdmin200,
   InternalErrorResponse,
   NotFoundResponse,
   PostProductOrdersAdmin200,
   PostProductOrdersAdminBody,
+  PostProductOrdersApp200,
+  PostProductOrdersAppBody,
   PutProductOrdersIdAdmin200,
   PutProductOrdersIdAdminBody,
   UnauthorizedResponse,
@@ -311,7 +314,266 @@ export const usePutProductOrdersIdAdmin = <TError = UnauthorizedResponse | Forbi
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/product-orders/admin` — orders. Cần đăng nhập + `product_order.view_all` hoặc `product_order.view_own`. Scope `view_own` (khách): chỉ trả các đơn của chính tài khoản đó, shape miniapp (gồm `items`). Scope `view_all` (quản trị): danh sách đầy đủ có phân trang. Query parameters: `page`, `limit`, `status`, `q`.
+ * **PO-01A** — GET /product-orders/app. Đơn hàng CỦA CHÍNH tài khoản. Chỉ cần đăng nhập (API miniapp — không áp phân quyền, dữ liệu luôn của chính tài khoản).
+ * @summary My product orders (miniapp)
+ */
+export const getProductOrdersApp = (
+    
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetProductOrdersApp200>(
+      {url: `/product-orders/app`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetProductOrdersAppInfiniteQueryKey = () => {
+    return [
+    'infinite', `/product-orders/app`
+    ] as const;
+    }
+
+export const getGetProductOrdersAppQueryKey = () => {
+    return [
+    `/product-orders/app`
+    ] as const;
+    }
+
+    
+export const getGetProductOrdersAppInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getProductOrdersApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductOrdersApp>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetProductOrdersAppInfiniteQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getProductOrdersApp>>> = ({ signal }) => getProductOrdersApp(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductOrdersApp>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetProductOrdersAppInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getProductOrdersApp>>>
+export type GetProductOrdersAppInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+
+
+export function useGetProductOrdersAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProductOrdersApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductOrdersApp>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getProductOrdersApp>>,
+          TError,
+          Awaited<ReturnType<typeof getProductOrdersApp>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetProductOrdersAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProductOrdersApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductOrdersApp>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getProductOrdersApp>>,
+          TError,
+          Awaited<ReturnType<typeof getProductOrdersApp>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetProductOrdersAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProductOrdersApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductOrdersApp>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary My product orders (miniapp)
+ */
+
+export function useGetProductOrdersAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getProductOrdersApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductOrdersApp>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetProductOrdersAppInfiniteQueryOptions(options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary My product orders (miniapp)
+ */
+export const prefetchGetProductOrdersAppInfiniteQuery = async <TData = Awaited<ReturnType<typeof getProductOrdersApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProductOrdersApp>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetProductOrdersAppInfiniteQueryOptions(options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetProductOrdersAppQueryOptions = <TData = Awaited<ReturnType<typeof getProductOrdersApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductOrdersApp>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetProductOrdersAppQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getProductOrdersApp>>> = ({ signal }) => getProductOrdersApp(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getProductOrdersApp>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetProductOrdersAppQueryResult = NonNullable<Awaited<ReturnType<typeof getProductOrdersApp>>>
+export type GetProductOrdersAppQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+
+
+export function useGetProductOrdersApp<TData = Awaited<ReturnType<typeof getProductOrdersApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductOrdersApp>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getProductOrdersApp>>,
+          TError,
+          Awaited<ReturnType<typeof getProductOrdersApp>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetProductOrdersApp<TData = Awaited<ReturnType<typeof getProductOrdersApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductOrdersApp>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getProductOrdersApp>>,
+          TError,
+          Awaited<ReturnType<typeof getProductOrdersApp>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetProductOrdersApp<TData = Awaited<ReturnType<typeof getProductOrdersApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductOrdersApp>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary My product orders (miniapp)
+ */
+
+export function useGetProductOrdersApp<TData = Awaited<ReturnType<typeof getProductOrdersApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductOrdersApp>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetProductOrdersAppQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary My product orders (miniapp)
+ */
+export const prefetchGetProductOrdersAppQuery = async <TData = Awaited<ReturnType<typeof getProductOrdersApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductOrdersApp>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetProductOrdersAppQueryOptions(options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * **PO-03A** — POST /product-orders/app. Đặt đơn cho chính mình (đơn gắn với tài khoản đang đăng nhập, áp dụng voucher sản phẩm của khách nếu có). Chỉ cần đăng nhập (API miniapp — không áp phân quyền, dữ liệu luôn của chính tài khoản). Body: `items`, `branch_id`, `customer_name`, `phone`, `address`, `note`, `user_voucher_id`.
+ * @summary Place a product order for self (miniapp)
+ */
+export const postProductOrdersApp = (
+    postProductOrdersAppBody: PostProductOrdersAppBody,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<PostProductOrdersApp200>(
+      {url: `/product-orders/app`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: postProductOrdersAppBody, signal
+    },
+      );
+    }
+  
+
+
+export const getPostProductOrdersAppMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postProductOrdersApp>>, TError,{data: PostProductOrdersAppBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postProductOrdersApp>>, TError,{data: PostProductOrdersAppBody}, TContext> => {
+
+const mutationKey = ['postProductOrdersApp'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postProductOrdersApp>>, {data: PostProductOrdersAppBody}> = (props) => {
+          const {data} = props ?? {};
+
+          return  postProductOrdersApp(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostProductOrdersAppMutationResult = NonNullable<Awaited<ReturnType<typeof postProductOrdersApp>>>
+    export type PostProductOrdersAppMutationBody = PostProductOrdersAppBody
+    export type PostProductOrdersAppMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+
+    /**
+ * @summary Place a product order for self (miniapp)
+ */
+export const usePostProductOrdersApp = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postProductOrdersApp>>, TError,{data: PostProductOrdersAppBody}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postProductOrdersApp>>,
+        TError,
+        {data: PostProductOrdersAppBody},
+        TContext
+      > => {
+
+      const mutationOptions = getPostProductOrdersAppMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * GET `/product-orders/admin` — orders. Cần đăng nhập + `product_order.read_all`: danh sách đầy đủ có phân trang. Query parameters: `page`, `limit`, `status`, `q`. Đơn của chính tài khoản (miniapp): GET /product-orders/app.
  * @summary Get order list (management / own scope)
  */
 export const getProductOrdersAdmin = (
@@ -506,7 +768,7 @@ export const prefetchGetProductOrdersAdminQuery = async <TData = Awaited<ReturnT
 
 
 /**
- * POST `/product-orders/admin` — orders. Cần đăng nhập + `product_order.create`. Khách (scope own) đặt đơn cho chính mình: đơn được gắn với tài khoản đang đăng nhập, áp dụng voucher sản phẩm của khách nếu có. Body fields: `items`, `branch_id`, `customer_name`, `phone`, `address`, `note`, `user_voucher_id`.
+ * POST `/product-orders/admin` — orders. Cần đăng nhập + `product_order.create`: đơn được gắn với tài khoản đang đăng nhập. Body fields: `items`, `branch_id`, `customer_name`, `phone`, `address`, `note`, `user_voucher_id`. Khách đặt đơn (miniapp): POST /product-orders/app.
  * @summary Place a product order
  */
 export const postProductOrdersAdmin = (

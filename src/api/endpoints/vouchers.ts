@@ -34,15 +34,15 @@ import type {
   DeleteVouchersBulkAdminBody,
   ForbiddenResponse,
   GetVouchersAdminParams,
+  GetVouchersApp200,
+  GetVouchersAppParams,
   GetVouchersRedeemedAdminParams,
   GetVouchersSearchAdminParams,
   GetVouchersStatisticsAdminParams,
   InternalErrorResponse,
   LegacyBadRequestResponse,
   LegacyUnauthorizedResponse,
-  NotFoundResponse,
-  PostVouchersIdRedeemAdmin200,
-  PostVouchersIdRedeemAdminBody,
+  PostVouchersIdRedeemApp200,
   PostVouchersMarkUsedAdminBody,
   PostVouchersRevokeAdminBody,
   PutVouchersBulkAdminBody,
@@ -381,31 +381,28 @@ export const useDeleteVouchersIdAdmin = <TError = LegacyBadRequestResponse | Leg
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **POST /vouchers/{id}/redeem/admin** — đổi voucher. Cần đăng nhập + `voucher.redeem`: khách tự đổi voucher cho bản thân (nếu `required_points > 0` sẽ trừ điểm membership và ghi membership transaction; tạo `user_voucher` trạng thái `redeemed`; ownership được kiểm tra trong business layer). Platform admin: gửi `user_id` để đổi giúp khách. Khách đổi voucher sản phẩm bằng điểm: gửi `product_voucher_id`.
- * @summary Redeem a voucher
+ * **VO-04A** — POST /vouchers/{id}/redeem/app. Đổi voucher cho chính tài khoản (nếu `required_points > 0` sẽ trừ điểm membership; tạo `user_voucher` trạng thái `redeemed`). Gửi body `product_voucher_id` để đổi voucher sản phẩm bằng điểm. Chỉ cần đăng nhập (API miniapp — không áp phân quyền, dữ liệu luôn của chính tài khoản).
+ * @summary Redeem a voucher for self (miniapp)
  */
-export const postVouchersIdRedeemAdmin = (
+export const postVouchersIdRedeemApp = (
     id: string,
-    postVouchersIdRedeemAdminBody?: PostVouchersIdRedeemAdminBody,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<PostVouchersIdRedeemAdmin200>(
-      {url: `/vouchers/${id}/redeem/admin`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: postVouchersIdRedeemAdminBody, signal
+      return customInstance<PostVouchersIdRedeemApp200>(
+      {url: `/vouchers/${id}/redeem/app`, method: 'POST', signal
     },
       );
     }
   
 
 
-export const getPostVouchersIdRedeemAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postVouchersIdRedeemAdmin>>, TError,{id: string;data: PostVouchersIdRedeemAdminBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postVouchersIdRedeemAdmin>>, TError,{id: string;data: PostVouchersIdRedeemAdminBody}, TContext> => {
+export const getPostVouchersIdRedeemAppMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postVouchersIdRedeemApp>>, TError,{id: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postVouchersIdRedeemApp>>, TError,{id: string}, TContext> => {
 
-const mutationKey = ['postVouchersIdRedeemAdmin'];
+const mutationKey = ['postVouchersIdRedeemApp'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -415,10 +412,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postVouchersIdRedeemAdmin>>, {id: string;data: PostVouchersIdRedeemAdminBody}> = (props) => {
-          const {id,data} = props ?? {};
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postVouchersIdRedeemApp>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
 
-          return  postVouchersIdRedeemAdmin(id,data,)
+          return  postVouchersIdRedeemApp(id,)
         }
 
         
@@ -426,23 +423,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PostVouchersIdRedeemAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postVouchersIdRedeemAdmin>>>
-    export type PostVouchersIdRedeemAdminMutationBody = PostVouchersIdRedeemAdminBody
-    export type PostVouchersIdRedeemAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+    export type PostVouchersIdRedeemAppMutationResult = NonNullable<Awaited<ReturnType<typeof postVouchersIdRedeemApp>>>
+    
+    export type PostVouchersIdRedeemAppMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Redeem a voucher
+ * @summary Redeem a voucher for self (miniapp)
  */
-export const usePostVouchersIdRedeemAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postVouchersIdRedeemAdmin>>, TError,{id: string;data: PostVouchersIdRedeemAdminBody}, TContext>, }
+export const usePostVouchersIdRedeemApp = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postVouchersIdRedeemApp>>, TError,{id: string}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postVouchersIdRedeemAdmin>>,
+        Awaited<ReturnType<typeof postVouchersIdRedeemApp>>,
         TError,
-        {id: string;data: PostVouchersIdRedeemAdminBody},
+        {id: string},
         TContext
       > => {
 
-      const mutationOptions = getPostVouchersIdRedeemAdminMutationOptions(options);
+      const mutationOptions = getPostVouchersIdRedeemAppMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -1290,7 +1287,202 @@ export const useDeleteVouchersBulkAdmin = <TError = LegacyBadRequestResponse | L
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/vouchers/admin` — voucher. Cần đăng nhập + `voucher.view_all`; với `voucher.view_own` (khách) trả catalog voucher đang hoạt động kèm `mine`/`my_status`. Query parameters: `currentPage`, `pageSize`, `filters`, `sortField`, `sortOrder`. Handled by `voucherProvider.getAllWithOptions`.
+ * **VO-01A** — GET /vouchers/app. Catalog voucher đang hoạt động + ví voucher sản phẩm của tài khoản (`product_vouchers`, có `items`/`branch_id` để lọc voucher dùng được cho giỏ hàng) + voucher đổi được bằng điểm (`redeemable_product_vouchers`). Chỉ cần đăng nhập (API miniapp — không áp phân quyền, dữ liệu luôn của chính tài khoản).
+ * @summary Voucher catalog + my wallet (miniapp)
+ */
+export const getVouchersApp = (
+    params?: GetVouchersAppParams,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetVouchersApp200>(
+      {url: `/vouchers/app`, method: 'GET',
+        params, signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetVouchersAppInfiniteQueryKey = (params?: GetVouchersAppParams,) => {
+    return [
+    'infinite', `/vouchers/app`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+export const getGetVouchersAppQueryKey = (params?: GetVouchersAppParams,) => {
+    return [
+    `/vouchers/app`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getGetVouchersAppInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getVouchersApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetVouchersAppParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersApp>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetVouchersAppInfiniteQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getVouchersApp>>> = ({ signal }) => getVouchersApp(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersApp>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetVouchersAppInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getVouchersApp>>>
+export type GetVouchersAppInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+
+
+export function useGetVouchersAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getVouchersApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetVouchersAppParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersApp>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getVouchersApp>>,
+          TError,
+          Awaited<ReturnType<typeof getVouchersApp>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetVouchersAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getVouchersApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetVouchersAppParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersApp>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getVouchersApp>>,
+          TError,
+          Awaited<ReturnType<typeof getVouchersApp>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetVouchersAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getVouchersApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetVouchersAppParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersApp>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Voucher catalog + my wallet (miniapp)
+ */
+
+export function useGetVouchersAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getVouchersApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetVouchersAppParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersApp>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetVouchersAppInfiniteQueryOptions(params,options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Voucher catalog + my wallet (miniapp)
+ */
+export const prefetchGetVouchersAppInfiniteQuery = async <TData = Awaited<ReturnType<typeof getVouchersApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetVouchersAppParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getVouchersApp>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetVouchersAppInfiniteQueryOptions(params,options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetVouchersAppQueryOptions = <TData = Awaited<ReturnType<typeof getVouchersApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetVouchersAppParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersApp>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetVouchersAppQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getVouchersApp>>> = ({ signal }) => getVouchersApp(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getVouchersApp>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetVouchersAppQueryResult = NonNullable<Awaited<ReturnType<typeof getVouchersApp>>>
+export type GetVouchersAppQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+
+
+export function useGetVouchersApp<TData = Awaited<ReturnType<typeof getVouchersApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetVouchersAppParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersApp>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getVouchersApp>>,
+          TError,
+          Awaited<ReturnType<typeof getVouchersApp>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetVouchersApp<TData = Awaited<ReturnType<typeof getVouchersApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetVouchersAppParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersApp>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getVouchersApp>>,
+          TError,
+          Awaited<ReturnType<typeof getVouchersApp>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetVouchersApp<TData = Awaited<ReturnType<typeof getVouchersApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetVouchersAppParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersApp>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Voucher catalog + my wallet (miniapp)
+ */
+
+export function useGetVouchersApp<TData = Awaited<ReturnType<typeof getVouchersApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetVouchersAppParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersApp>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetVouchersAppQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Voucher catalog + my wallet (miniapp)
+ */
+export const prefetchGetVouchersAppQuery = async <TData = Awaited<ReturnType<typeof getVouchersApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetVouchersAppParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getVouchersApp>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetVouchersAppQueryOptions(params,options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * GET `/vouchers/admin` — voucher. Cần đăng nhập + `voucher.read_all`. Query parameters: `currentPage`, `pageSize`, `filters`, `sortField`, `sortOrder`. Handled by `voucherProvider.getAllWithOptions`. Catalog + ví voucher của khách (miniapp): GET /vouchers/app.
  * @summary List vouchers
  */
 export const getVouchersAdmin = (

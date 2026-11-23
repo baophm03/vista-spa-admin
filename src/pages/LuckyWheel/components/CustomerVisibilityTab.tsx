@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { displayName } from '@/utils/displayName'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Alert, Button, Card, Form, Grid, Input, Modal, Popover, Select, Space, Spin, Switch, Tag, Tooltip, Typography, message } from 'antd'
 import { BellOutlined, FilterOutlined } from '@ant-design/icons'
@@ -415,7 +416,7 @@ export default function CustomerVisibilityTab({ canEdit, wheels, wheelsLoading =
                       key: 'customer',
                       render: (_, customer) => (
                         <div>
-                          <Typography.Text strong>{customer.full_name}</Typography.Text>
+                          <Typography.Text strong>{displayName(customer)}</Typography.Text>
                           <Typography.Text type="secondary" className="block md:ml-2 md:inline">
                             {customer.customer_code || customer.phone || '—'}
                             {customer.customer_code && customer.phone ? ` · ${customer.phone}` : ''}
@@ -444,7 +445,7 @@ export default function CustomerVisibilityTab({ canEdit, wheels, wheelsLoading =
                             checked={enabled}
                             disabled={!canEdit || updateMutation.isPending || customerLoading}
                             loading={updateMutation.isPending}
-                            aria-label={`Bật hoặc tắt vòng quay cho ${customer.full_name}`}
+                            aria-label={`Bật hoặc tắt vòng quay cho ${displayName(customer)}`}
                             onChange={(nextEnabled) => changeCustomerAccess(customer.id, nextEnabled)}
                           />
                         )
@@ -467,7 +468,7 @@ export default function CustomerVisibilityTab({ canEdit, wheels, wheelsLoading =
                             ? 'Mô-đun vòng quay đang tắt'
                             : 'Khách chưa có tài khoản ứng dụng hoặc email'
                         return (
-                          <Tooltip title={canNotifyCustomer ? `Gửi thông báo cho ${customer.full_name}` : disabledReason}>
+                          <Tooltip title={canNotifyCustomer ? `Gửi thông báo cho ${displayName(customer)}` : disabledReason}>
                             <span>
                               <Button
                                 type="link"
@@ -480,7 +481,7 @@ export default function CustomerVisibilityTab({ canEdit, wheels, wheelsLoading =
                                   customerProfileId: customer.id,
                                   userId: customer.user_id,
                                   email: customer.email,
-                                  customerName: customer.full_name,
+                                  customerName: displayName(customer),
                                 })}
                               >
                                 Gửi thông báo

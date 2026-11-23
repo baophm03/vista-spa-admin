@@ -8,6 +8,7 @@ import {
 } from '@ant-design/icons'
 import { Can } from '@casl/react'
 import type { CustomerHealthRecord } from '@/api/models/customerHealthRecord'
+import { displayName } from '@/utils/displayName'
 import type { CustomerTreatment } from '@/api/models/customerTreatment'
 import {
   currentHealth,
@@ -48,7 +49,7 @@ export default function HealthRecordDrawer({
 }: HealthRecordDrawerProps) {
   return (
     <Drawer
-      title={detail ? <span className="wrap-anywhere">{detail.full_name} — {detail.customer_code}</span> : 'Hồ sơ sức khỏe'}
+      title={detail ? <span className="wrap-anywhere">{displayName(detail)} — {detail.customer_code}</span> : 'Hồ sơ sức khỏe'}
       size="min(560px, 100vw)"
       open={!!detail}
       onClose={onClose}

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Card, Col, Grid, Row, Table, Tabs, Tag } from 'antd'
+import { displayName } from '@/utils/displayName'
 import {
   CalendarOutlined,
   DollarOutlined,
@@ -264,7 +265,7 @@ function Overview({
             columns={[
               {
                 title: 'Khách hàng',
-                render: (_, row: AppointmentRow) => row.customer_profile?.full_name ?? '—',
+                render: (_, row: AppointmentRow) => displayName(row.customer_profile),
               },
               { title: 'Dịch vụ', render: (_, row: AppointmentRow) => row.service?.title ?? '—' },
               {
@@ -291,7 +292,7 @@ function Overview({
             <>
               <div className="mobile-card-head">
                 <div>
-                  <div className="mobile-card-title">{row.customer_profile?.full_name ?? '—'}</div>
+                  <div className="mobile-card-title">{displayName(row.customer_profile)}</div>
                   <div className="mobile-card-sub">
                     {dayjs(row.appt_date).format('DD/MM/YYYY')} {row.start_time?.slice(0, 5)}
                   </div>

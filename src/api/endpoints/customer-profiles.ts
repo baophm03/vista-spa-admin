@@ -77,7 +77,7 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * GET `/health-records/admin` — danh sách hồ sơ sức khỏe mới nhất theo khách. Cần đăng nhập + `health_record.view_all` (branch scope áp dụng) hoặc `health_record.view_own` — khi đó trả về dữ liệu sức khỏe của chính khách đăng nhập (shape miniapp của GET /app/me/health-record cũ: `metrics` + `journal`). Query parameters: `branch_id`.
+ * GET `/health-records/admin` — danh sách hồ sơ sức khỏe mới nhất theo khách. Cần đăng nhập + `health_record.read_all` (branch scope áp dụng). Query parameters: `branch_id`. Hồ sơ của chính tài khoản (miniapp): GET /health-records/app.
  * @summary View latest health records
  */
 export const getHealthRecordsAdmin = (
@@ -2943,7 +2943,7 @@ export const prefetchGetCustomerProfilesByQrAdminQuery = async <TData = Awaited<
 
 
 /**
- * **CP-01** — GET /customer-profiles/admin. Cần đăng nhập + `customer_profile.view_all` (danh sách quản trị, phân trang `page`, `limit`, tìm kiếm `q`), hoặc `customer_profile.view_own` — khi đó trả về hồ sơ của chính khách đăng nhập (shape miniapp của GET /app/me cũ). Scoped theo customerProfileScope (KTV chỉ xem khách có buổi được phân công).
+ * **CP-01** — GET /customer-profiles/admin. Cần đăng nhập + `customer_profile.read_all` (danh sách quản trị, phân trang `page`, `limit`, tìm kiếm `q`). Scoped theo customerProfileScope (KTV chỉ xem khách có buổi được phân công).
  * @summary List customer profiles (management / own profile)
  */
 export const getCustomerProfilesAdmin = (

@@ -5,6 +5,7 @@ import dayjs, { type Dayjs } from 'dayjs'
 import { Alert, Image, Badge, Button, Checkbox, DatePicker, Divider, Form, Modal, Popconfirm, Popover, Select, Space, Table, Tag, Typography, message } from 'antd'
 import { CalendarOutlined, CheckOutlined, ClearOutlined, CloseOutlined, FilterOutlined, PlusOutlined, ReloadOutlined, UndoOutlined } from '@ant-design/icons'
 import { errorMessage, pickData } from '@/api/helpers'
+import { displayName } from '@/utils/displayName'
 import { fileSrc, resolveFileSrc, useFileUrlMap } from '@/hooks/useFileUrl'
 import ListPagination from '@/components/base/ListPagination'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
@@ -20,11 +21,11 @@ import DayOffFormModal from './components/DayOffFormModal'
 import DayOffRejectModal from './components/DayOffRejectModal'
 
 interface Props extends SchedulePageData { loadingShared: boolean }
-interface ConflictAppointment { id: string; appt_date: string; start_time: string; status?: string; customer_profile?: { full_name?: string }; service?: { title?: string } }
+interface ConflictAppointment { id: string; appt_date: string; start_time: string; status?: string; customer_profile?: { full_name?: string; zalo_name?: string }; service?: { title?: string } }
 
 const conflictColumns = [
   { title: 'Giờ', dataIndex: 'start_time', render: (value: string) => value?.slice(0, 5) },
-  { title: 'Khách', dataIndex: ['customer_profile', 'full_name'], render: (value: string) => value || '—' },
+  { title: 'Khách', dataIndex: ['customer_profile', 'full_name'], render: (_: unknown, row: ConflictAppointment) => displayName(row.customer_profile) },
   { title: 'Dịch vụ', dataIndex: ['service', 'title'], render: (value: string) => value || '—' },
   { title: 'Trạng thái', dataIndex: 'status', render: (value: string) => value === 'approved' ? 'Đã duyệt' : 'Chờ duyệt' },
 ]

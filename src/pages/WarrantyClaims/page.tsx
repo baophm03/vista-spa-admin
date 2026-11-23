@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { Alert, Button, Form, Select, Table, Tag, message } from 'antd'
+import { displayName } from '@/utils/displayName'
 import type { TableColumnsType } from 'antd'
 import { useQueryClient } from '@tanstack/react-query'
 import PageTitle from '@/components/base/PageTitle'
@@ -61,7 +62,7 @@ export default function WarrantyClaims() {
   const customerLabel = (claim: ClaimRow) => {
     const profile = claim.customer_treatment?.customer_profile
     if (!profile) return claim.customer_treatment_id ?? '—'
-    const name = profile.full_name ?? 'Khách hàng'
+    const name = displayName(profile, 'Khách hàng')
     return profile.phone ? `${name} — ${profile.phone}` : name
   }
   const packageLabel = (claim: ClaimRow) => {
@@ -213,7 +214,7 @@ export default function WarrantyClaims() {
             <>
               <div className="mobile-card-head flex-wrap">
                 <div className="min-w-0">
-                  <div className="mobile-card-title">{row.customer_treatment?.customer_profile?.full_name || 'Khách hàng'}</div>
+                  <div className="mobile-card-title">{displayName(row.customer_treatment?.customer_profile, 'Khách hàng')}</div>
                   {row.customer_treatment?.customer_profile?.phone && (
                     <div className="mobile-card-sub">{row.customer_treatment.customer_profile.phone}</div>
                   )}
