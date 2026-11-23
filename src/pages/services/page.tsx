@@ -25,7 +25,7 @@ import ServiceModal from './components/ServiceModal'
 import ServiceDetailModal from './components/ServiceDetailModal'
 import ServiceListState from './components/ServiceListState'
 import { errorMessage, pickData } from '@/api/helpers'
-import { deleteServiceIdAdmin, getGetServiceAdminQueryKey, getServiceAdmin, getServiceCategoriesAdmin, postServiceAdmin, putServiceIdAdmin } from '@/api/endpoints/services'
+import { deleteServiceIdAdmin, getServiceAdmin, getServiceCategoriesAdmin, postServiceAdmin, putServiceIdAdmin, useGetServiceAdmin } from '@/api/endpoints/services'
 import type { Service } from '@/api/models/service'
 import type { ServiceCreate } from '@/api/models/serviceCreate'
 import useCustomFieldDefinitions from '@/hooks/useCustomFieldDefinitions'
@@ -92,12 +92,10 @@ export default function Services() {
   const branchesQuery = useGetBranchesAdmin()
   const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as Branch[], [branchesQuery.data])
 
-  const listQuery = useQuery({
-    queryKey: getGetServiceAdminQueryKey({ ...filters, page, limit }),
-    queryFn: async () => pickData<{ services?: ServiceRow[]; total?: number }>(await getServiceAdmin({ ...filters, page, limit })),
-  })
-  const rows = listQuery.data?.services ?? []
-  useEffect(() => setTotal(listQuery.data?.total ?? 0), [listQuery.data])
+  const listQuery = useGetServiceAdmin({ ...filters, page, limit })
+  const listData = pickData<{ services?: ServiceRow[]; total?: number }>(listQuery.data)
+  const rows = listData?.services ?? []
+  useEffect(() => setTotal(listData?.total ?? 0), [listData])
 
   // Thống kê đầu trang — đếm server-side (total) nên đúng cả khi đang tìm kiếm/phân trang
   const queryClient = useQueryClient()

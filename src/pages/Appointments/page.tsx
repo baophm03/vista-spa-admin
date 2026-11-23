@@ -44,7 +44,7 @@ import { useBrandDateTime } from '@/themeRuntime'
 import type { Appointment } from '@/api/models/appointment'
 import type { Branch } from '@/api/models/branch'
 import type { GetAppointmentsAdminParams } from '@/api/models/getAppointmentsAdminParams'
-import { getAppointmentsAdmin, getAppointmentsAvailableSlots, getGetAppointmentsAdminQueryKey, usePostAppointmentsAdmin, usePostAppointmentsIdStartAdmin, usePutAppointmentsIdAdmin, usePutAppointmentsIdApproveAdmin, usePutAppointmentsIdCancelAdmin, usePutAppointmentsIdNoShowAdmin, usePutAppointmentsIdRejectAdmin, getAppointmentsIdAdmin } from '@/api/endpoints/appointments'
+import { getAppointmentsAvailableSlots, getGetAppointmentsAdminQueryKey, useGetAppointmentsAdmin, usePostAppointmentsAdmin, usePostAppointmentsIdStartAdmin, usePutAppointmentsIdAdmin, usePutAppointmentsIdApproveAdmin, usePutAppointmentsIdCancelAdmin, usePutAppointmentsIdNoShowAdmin, usePutAppointmentsIdRejectAdmin, getAppointmentsIdAdmin } from '@/api/endpoints/appointments'
 import { getGetCustomerProfilesAdminQueryKey, postCustomerProfilesAdmin, useGetCustomerProfilesAdmin } from '@/api/endpoints/customer-profiles'
 import { useGetUsersAdmin } from '@/api/endpoints/users'
 import { useGetBranchesAdmin } from '@/api/endpoints/branches'
@@ -163,11 +163,7 @@ export default function Appointments() {
     status: filter === 'all' ? undefined : filter,
     branch_id: branchFilter,
   }
-  const listQuery = useQuery({
-    queryKey: [...getGetAppointmentsAdminQueryKey(), 'list', listParams],
-    queryFn: () => getAppointmentsAdmin(listParams),
-    enabled: displayMode === 'list',
-  })
+  const listQuery = useGetAppointmentsAdmin(listParams, { query: { enabled: displayMode === 'list' } })
   const listTotal = pickMeta(listQuery.data)?.total ?? 0
   const listPage = page
   const listRows = (pickData<AppointmentRow[] | undefined>(listQuery.data) ?? EMPTY_ROWS) as AppointmentRow[]

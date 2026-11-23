@@ -1,6 +1,6 @@
 import ResponsiveTable from '@/components/base/ResponsiveTable'
 import { useEffect, useMemo, useState } from 'react'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import { Alert, Badge, Button, Form, Input, Popover, Select, Space, Tag, Typography, message } from 'antd'
 import { FilterOutlined, PlusOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
@@ -8,7 +8,7 @@ import PageTitle from '@/components/base/PageTitle'
 import ListPagination from '@/components/base/ListPagination'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { AcademyCourse } from '@/api/models/academyCourse'
-import { getAcademyCourseVouchersAdmin } from '@/api/endpoints/academy-course-vouchers'
+import { useGetAcademyCourseVouchersAdmin } from '@/api/endpoints/academy-course-vouchers'
 import type { VoucherCategoryRow } from '@/pages/Vouchers/components/constants'
 import { getGetAcademyRegistrationsAdminQueryKey, postAcademyRegistrationsAdmin, usePutAcademyRegistrationsIdStatusAdmin } from '@/api/endpoints/academy'
 import { useGetAcademyCoursesAdmin } from '@/api/endpoints/academy'
@@ -50,7 +50,7 @@ export default function AcademyRegistrations() {
   }
 
   const coursesQuery = useGetAcademyCoursesAdmin({ page: 1, limit: 200 } as never)
-  const courseVouchersQuery = useQuery({ queryKey: ['voucher-category', 'academy-course'], queryFn: () => getAcademyCourseVouchersAdmin() })
+  const courseVouchersQuery = useGetAcademyCourseVouchersAdmin()
   const registrationsQuery = useGetRegistrationsSafe(filter, page, limit)
   const usersQuery = useGetUsersAdmin({ currentPage: 1, pageSize: 200, has_role: true })
   const courses = (pickData<AcademyCourse[]>(coursesQuery.data) ?? []) as AcademyCourse[]

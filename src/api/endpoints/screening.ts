@@ -90,7 +90,7 @@ const {query: queryOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getScreeningBranches>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getScreeningBranches>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetScreeningBranchesInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getScreeningBranches>>>
@@ -171,7 +171,7 @@ const {query: queryOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getScreeningBranches>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getScreeningBranches>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetScreeningBranchesQueryResult = NonNullable<Awaited<ReturnType<typeof getScreeningBranches>>>
@@ -284,7 +284,7 @@ const {query: queryOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, enabled: !!(branchSlug),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getScreeningBranchesBranchSlug>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(branchSlug), ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getScreeningBranchesBranchSlug>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetScreeningBranchesBranchSlugInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getScreeningBranchesBranchSlug>>>
@@ -365,7 +365,7 @@ const {query: queryOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, enabled: !!(branchSlug),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getScreeningBranchesBranchSlug>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(branchSlug), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getScreeningBranchesBranchSlug>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetScreeningBranchesBranchSlugQueryResult = NonNullable<Awaited<ReturnType<typeof getScreeningBranchesBranchSlug>>>
@@ -609,7 +609,7 @@ const {query: queryOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, enabled: !!(branchSlug && packageSlug),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getScreeningBranchesBranchSlugPackagesPackageSlug>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(branchSlug && packageSlug), ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getScreeningBranchesBranchSlugPackagesPackageSlug>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetScreeningBranchesBranchSlugPackagesPackageSlugInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getScreeningBranchesBranchSlugPackagesPackageSlug>>>
@@ -696,7 +696,7 @@ const {query: queryOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, enabled: !!(branchSlug && packageSlug),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getScreeningBranchesBranchSlugPackagesPackageSlug>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(branchSlug && packageSlug), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getScreeningBranchesBranchSlugPackagesPackageSlug>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetScreeningBranchesBranchSlugPackagesPackageSlugQueryResult = NonNullable<Awaited<ReturnType<typeof getScreeningBranchesBranchSlugPackagesPackageSlug>>>
@@ -814,7 +814,7 @@ const {query: queryOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, enabled: !!(branchSlug),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getScreeningBranchesBranchSlugPackages>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(branchSlug), ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getScreeningBranchesBranchSlugPackages>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetScreeningBranchesBranchSlugPackagesInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getScreeningBranchesBranchSlugPackages>>>
@@ -895,7 +895,7 @@ const {query: queryOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, enabled: !!(branchSlug),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getScreeningBranchesBranchSlugPackages>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(branchSlug), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getScreeningBranchesBranchSlugPackages>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetScreeningBranchesBranchSlugPackagesQueryResult = NonNullable<Awaited<ReturnType<typeof getScreeningBranchesBranchSlugPackages>>>
@@ -1145,7 +1145,7 @@ const {query: queryOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, enabled: !!(branchSlug && packageSlug && id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getScreeningBranchesBranchSlugPackagesPackageSlugItemsId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(branchSlug && packageSlug && id), ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getScreeningBranchesBranchSlugPackagesPackageSlugItemsId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetScreeningBranchesBranchSlugPackagesPackageSlugItemsIdInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getScreeningBranchesBranchSlugPackagesPackageSlugItemsId>>>
@@ -1238,7 +1238,7 @@ const {query: queryOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, enabled: !!(branchSlug && packageSlug && id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getScreeningBranchesBranchSlugPackagesPackageSlugItemsId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(branchSlug && packageSlug && id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getScreeningBranchesBranchSlugPackagesPackageSlugItemsId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetScreeningBranchesBranchSlugPackagesPackageSlugItemsIdQueryResult = NonNullable<Awaited<ReturnType<typeof getScreeningBranchesBranchSlugPackagesPackageSlugItemsId>>>
@@ -1365,7 +1365,7 @@ const {query: queryOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, enabled: !!(branchSlug && packageSlug),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getScreeningBranchesBranchSlugPackagesPackageSlugItems>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(branchSlug && packageSlug), ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getScreeningBranchesBranchSlugPackagesPackageSlugItems>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetScreeningBranchesBranchSlugPackagesPackageSlugItemsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getScreeningBranchesBranchSlugPackagesPackageSlugItems>>>
@@ -1452,7 +1452,7 @@ const {query: queryOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, enabled: !!(branchSlug && packageSlug),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getScreeningBranchesBranchSlugPackagesPackageSlugItems>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(branchSlug && packageSlug), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getScreeningBranchesBranchSlugPackagesPackageSlugItems>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetScreeningBranchesBranchSlugPackagesPackageSlugItemsQueryResult = NonNullable<Awaited<ReturnType<typeof getScreeningBranchesBranchSlugPackagesPackageSlugItems>>>

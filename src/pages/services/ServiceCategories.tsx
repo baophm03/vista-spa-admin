@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Button, Form, Input, Modal, Table, Tag, message } from 'antd'
 import type { TableColumnsType } from 'antd'
 import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, PlusOutlined } from '@ant-design/icons'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Can, useAbility } from '@casl/react'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ServiceCategoryModal from './components/ServiceCategoryModal'
@@ -10,7 +10,7 @@ import ServiceListState from './components/ServiceListState'
 import ListPagination from '@/components/base/ListPagination'
 import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import { errorMessage } from '@/api/helpers'
-import { deleteServiceCategoriesIdAdmin, getGetServiceCategoriesAdminQueryKey, getServiceCategoriesAdmin, postServiceCategoriesAdmin, putServiceCategoriesIdAdmin } from '@/api/endpoints/services'
+import { deleteServiceCategoriesIdAdmin, getGetServiceCategoriesAdminQueryKey, postServiceCategoriesAdmin, putServiceCategoriesIdAdmin, useGetServiceCategoriesAdmin } from '@/api/endpoints/services'
 import type { ServiceCategory } from '@/api/models/serviceCategory'
 import type { ServiceCategoryCreate } from '@/api/models/serviceCategoryCreate'
 
@@ -29,16 +29,10 @@ export default function ServiceCategories() {
   const [search, setSearch] = useState('')
   const [form] = Form.useForm()
 
-  const categoriesQuery = useQuery({
-    queryKey: [...getGetServiceCategoriesAdminQueryKey(), { page, q: search.trim() }],
-    queryFn: async () =>
-      (await getServiceCategoriesAdmin({ page, limit: 10, ...(search.trim() ? { q: search.trim() } : {}) } as never)) as unknown as {
-        responseData?: ServiceCategoryRow[]
-        meta?: { total?: number }
-      },
-  })
-  const rows = (categoriesQuery.data?.responseData ?? []) as ServiceCategoryRow[]
-  const total = categoriesQuery.data?.meta?.total ?? rows.length
+  const categoriesQuery = useGetServiceCategoriesAdmin({ page, limit: 10, ...(search.trim() ? { q: search.trim() } : {}) } as never)
+  const categoriesPayload = categoriesQuery.data as unknown as { responseData?: ServiceCategoryRow[]; meta?: { total?: number } } | undefined
+  const rows = (categoriesPayload?.responseData ?? []) as ServiceCategoryRow[]
+  const total = categoriesPayload?.meta?.total ?? rows.length
   const applySearch = (value: string) => {
     setSearch(value)
     setPage(1)

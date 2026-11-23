@@ -7,10 +7,10 @@ import { useAbility } from '@casl/react'
 import ListPagination from '@/components/base/ListPagination'
 import ResponsiveTable from '@/components/base/ResponsiveTable'
 import { getGetConfigQueryKey } from '@/api/endpoints/config'
-import { getCustomerProfilesAdmin, getGetCustomerProfilesAdminQueryKey } from '@/api/endpoints/customer-profiles'
+import { getCustomerProfilesAdmin, useGetCustomerProfilesAdmin } from '@/api/endpoints/customer-profiles'
 import { postNotificationsAdmin } from '@/api/endpoints/notifications'
-import { getGetLuckyWheelsIdEligibleCustomersAdminQueryKey, getLuckyWheelsIdEligibleCustomersAdmin } from '@/api/endpoints/lucky-wheels'
-import { getGetSettingsAdminQueryKey, getSettingsAdmin, putSettingsAdmin } from '@/api/endpoints/settings'
+import { useGetLuckyWheelsIdEligibleCustomersAdmin } from '@/api/endpoints/lucky-wheels'
+import { getGetSettingsAdminQueryKey, putSettingsAdmin, useGetSettingsAdmin } from '@/api/endpoints/settings'
 import { errorMessage, pickData, pickMeta } from '@/api/helpers'
 import type { CustomerProfile } from '@/api/models/customerProfile'
 import type { GetCustomerProfilesAdminParams } from '@/api/models/getCustomerProfilesAdminParams'
@@ -86,11 +86,8 @@ export default function CustomerVisibilityTab({ canEdit, wheels, wheelsLoading =
   const [notificationTarget, setNotificationTarget] = useState<WheelNotificationTarget>({ type: 'all' })
   const [notificationForm] = Form.useForm<WheelNotificationFormValues>()
   const notificationChannel = Form.useWatch('channel', notificationForm) ?? 'app'
-  const settingsQuery = useQuery({
-    queryKey: getGetSettingsAdminQueryKey(),
-    queryFn: async () => pickData<SystemSetting[]>(await getSettingsAdmin()) ?? [],
-  })
-  const settingRows = settingsQuery.data ?? []
+  const settingsQuery = useGetSettingsAdmin()
+  const settingRows = (pickData<SystemSetting[]>(settingsQuery.data) ?? []) as SystemSetting[]
   const defaultSetting = settingRows.find((item) => item.key === CUSTOMER_DEFAULT_SETTING)
   const overrideSetting = settingRows.find((item) => item.key === CUSTOMER_OVERRIDES_SETTING)
   const featureModule = settingRows.find((item) => item.key === 'module.lucky_wheel')
@@ -110,16 +107,13 @@ export default function CustomerVisibilityTab({ canEdit, wheels, wheelsLoading =
     limit: CUSTOMER_PAGE_SIZE,
     ...(appliedSearch ? { q: appliedSearch } : {}),
   }
-  const customerQuery = useQuery({
-    queryKey: getGetCustomerProfilesAdminQueryKey(customerParams),
-    queryFn: async () => getCustomerProfilesAdmin(customerParams),
-  })
+  const customerQuery = useGetCustomerProfilesAdmin(customerParams)
   const eligibleCustomerParams = { search: appliedSearch || undefined, limit: 200 }
-  const eligibleCustomerQuery = useQuery({
-    queryKey: getGetLuckyWheelsIdEligibleCustomersAdminQueryKey(selectedWheelId, eligibleCustomerParams),
-    queryFn: async () => getLuckyWheelsIdEligibleCustomersAdmin(selectedWheelId!, eligibleCustomerParams),
-    enabled: Boolean(selectedWheelId),
-  })
+  const eligibleCustomerQuery = useGetLuckyWheelsIdEligibleCustomersAdmin(
+    selectedWheelId ?? '',
+    eligibleCustomerParams as never,
+    { query: { enabled: Boolean(selectedWheelId) } },
+  )
   const profileRows = pickData<CustomerProfile[]>(customerQuery.data) ?? []
   const eligibleWheelRows = (eligibleCustomerQuery.data?.responseData ?? []) as WheelEligibleCustomer[]
   const eligibleCustomerRows: CustomerRow[] = eligibleWheelRows

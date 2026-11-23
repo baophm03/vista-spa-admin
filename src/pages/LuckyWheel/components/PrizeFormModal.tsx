@@ -1,8 +1,7 @@
 import { Form, Input, InputNumber, Modal, Select, Space } from 'antd'
 import type { FormInstance } from 'antd'
-import { useQuery } from '@tanstack/react-query'
-import { getVouchersAdmin } from '@/api/endpoints/vouchers'
-import { getService } from '@/api/endpoints/services'
+import { useGetVouchersAdmin } from '@/api/endpoints/vouchers'
+import { useGetService } from '@/api/endpoints/services'
 import { pickData } from '../../../api/helpers'
 import type { Voucher, Service } from '../../../api/models'
 import { PRIZE_TYPE_META } from './constants'
@@ -14,20 +13,14 @@ export default function PrizeFormModal({ open, form, editingPrize, onCancel, onS
   onCancel: () => void
   onSubmit: () => void
 }) {
-  const vouchersQuery = useQuery({
-    queryKey: ['lucky-wheel-voucher-options'],
-    enabled: open,
-    queryFn: async () => pickData<{ rows?: Voucher[] }>(await getVouchersAdmin({ pageSize: 200 }))?.rows ?? [],
-  })
-  const servicesQuery = useQuery({
-    queryKey: ['lucky-wheel-service-options'],
-    enabled: open,
-    queryFn: async () => pickData<Service[]>(await getService()) ?? [],
-  })
-  const voucherOptions = (vouchersQuery.data ?? [])
+  const vouchersQuery = useGetVouchersAdmin({ pageSize: 200 } as never, { query: { enabled: open } })
+  const servicesQuery = useGetService({ query: { enabled: open } })
+  const vouchers = (pickData<{ rows?: Voucher[] }>(vouchersQuery.data)?.rows ?? []) as Voucher[]
+  const services = (pickData<Service[]>(servicesQuery.data) ?? []) as Service[]
+  const voucherOptions = vouchers
     .filter((item) => item.is_active !== false)
     .map((item) => ({ value: item.id, label: item.title }))
-  const serviceOptions = (servicesQuery.data ?? [])
+  const serviceOptions = services
     .map((item) => ({ value: item.id, label: item.title }))
 
   return (

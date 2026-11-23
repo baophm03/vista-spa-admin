@@ -3,12 +3,12 @@ import { displayName } from '@/utils/displayName'
 import { Alert, Button, Select, Space, Table, Tag, Typography, message } from 'antd'
 import type { TableColumnsType } from 'antd'
 import { CheckOutlined, PlayCircleOutlined } from '@ant-design/icons'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
 import { errorMessage, pickData } from '@/api/helpers'
 
-import { getSessionsAdmin, usePutSessionsIdDoneAdmin, usePutSessionsIdStartAdmin } from '@/api/endpoints/treatment-sessions'
+import { useGetSessionsAdmin, usePutSessionsIdDoneAdmin, usePutSessionsIdStartAdmin } from '@/api/endpoints/treatment-sessions'
 import type { GetSessionsAdminParams } from '@/api/models/getSessionsAdminParams'
 import type { TreatmentSession } from '@/api/models/treatmentSession'
 import ListPagination from '@/components/base/ListPagination'
@@ -64,10 +64,7 @@ export default function MySessions() {
   const branchesQuery = useGetBranchesAdmin()
   const branches = useMemo(() => pickData<Branch[]>(branchesQuery.data) ?? [], [branchesQuery.data])
 
-  const sessionsQuery = useQuery({
-    queryKey: ['my-sessions'],
-    queryFn: () => getSessionsAdmin({ page: 1, limit: 200 } as GetSessionsAdminParams),
-  })
+  const sessionsQuery = useGetSessionsAdmin({ page: 1, limit: 200 } as GetSessionsAdminParams)
   const sessionRows = useMemo(() => pickData<SessionRow[]>(sessionsQuery.data) ?? [], [sessionsQuery.data])
 
   const rows = useMemo(() => sessionRows

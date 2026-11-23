@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Alert, Button, Card, Col, Form, Input, InputNumber, Row, Select, Space, Spin, Switch, Tag, Typography, message } from 'antd'
 import { CheckCircleOutlined, LinkOutlined, SaveOutlined } from '@ant-design/icons'
 import PageTitle from '@/components/base/PageTitle'
@@ -7,7 +7,7 @@ import { errorMessage, pickData } from '@/api/helpers'
 import type { IntegrationUpdate } from '@/api/models/integrationUpdate'
 import type { IntegrationStatus } from '@/api/models/integrationStatus'
 import type { IntegrationStatusProvider } from '@/api/models/integrationStatusProvider'
-import { getIntegrationsAdmin, getGetIntegrationsAdminQueryKey, postIntegrationsProviderTestAdmin, putIntegrationsProviderAdmin } from '@/api/endpoints/integrations'
+import { getGetIntegrationsAdminQueryKey, postIntegrationsProviderTestAdmin, putIntegrationsProviderAdmin, useGetIntegrationsAdmin } from '@/api/endpoints/integrations'
 import { Can } from '@casl/react'
 
 interface SmtpConfig {
@@ -181,21 +181,19 @@ function statusTag(row?: IntegrationStatus) {
 export default function IntegrationSettings() {
   const [form] = Form.useForm<SmtpConfig>()
   const queryClient = useQueryClient()
-  const query = useQuery({
-    queryKey: getGetIntegrationsAdminQueryKey(),
-    queryFn: async () => (pickData<IntegrationStatus[]>(await getIntegrationsAdmin()) ?? []) as IntegrationStatus[],
-  })
+  const query = useGetIntegrationsAdmin()
+  const rows = useMemo(() => (pickData<IntegrationStatus[]>(query.data) ?? []) as IntegrationStatus[], [query.data])
   const [password, setPassword] = useState('')
   const [clearSecret, setClearSecret] = useState(false)
   const [enabled, setEnabled] = useState(false)
   const [testResult, setTestResult] = useState<{ ok: boolean; message: string } | null>(null)
 
-  const smtp = useMemo(() => query.data?.find((row) => row.provider === 'EMAIL_SMTP'), [query.data])
-  const zaloOa = useMemo(() => query.data?.find((row) => row.provider === 'ZALO_OA'), [query.data])
-  const zaloZbs = useMemo(() => query.data?.find((row) => row.provider === 'ZALO_ZBS'), [query.data])
+  const smtp = useMemo(() => rows.find((row) => row.provider === 'EMAIL_SMTP'), [rows])
+  const zaloOa = useMemo(() => rows.find((row) => row.provider === 'ZALO_OA'), [rows])
+  const zaloZbs = useMemo(() => rows.find((row) => row.provider === 'ZALO_ZBS'), [rows])
 
   useEffect(() => {
-    if (!query.data) return
+    if (!rows.length) return
     const savedConfig = (smtp?.config_public ?? {}) as Partial<SmtpConfig>
     form.setFieldsValue({
       ...emptySmtp,
@@ -206,7 +204,7 @@ export default function IntegrationSettings() {
     setEnabled(smtp.enabled)
     setPassword('')
     setClearSecret(false)
-  }, [form, query.data, smtp])
+  }, [form, rows, smtp])
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: getGetIntegrationsAdminQueryKey() })
   const testMutation = useMutation({

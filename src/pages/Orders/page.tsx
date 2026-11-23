@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { Input, Modal, Select, Table, Tag, Typography, message } from 'antd'
 import type { TableColumnsType } from 'antd'
 import { CheckOutlined, EyeOutlined, ShoppingOutlined, StopOutlined, UserOutlined } from '@ant-design/icons'
-import { useQuery } from '@tanstack/react-query'
 import PageTitle from '@/components/base/PageTitle'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
@@ -10,7 +9,7 @@ import MobileCards from '@/components/base/MobileCards'
 import { errorMessage, pickData, pickMeta } from '@/api/helpers'
 import { formatCurrency, formatDateTime, useBrandCurrency } from '@/themeRuntime'
 import { useCustomerProfileAccess } from '@/utils/customerProfileAccess'
-import { getProductOrdersAdmin, getGetProductOrdersAdminQueryKey, putProductOrdersIdAdmin } from '@/api/endpoints/product-orders'
+import { useGetProductOrdersAdmin, putProductOrdersIdAdmin } from '@/api/endpoints/product-orders'
 import OrderDetailModal from './components/OrderDetailModal'
 import {
   NEXT_ACTIONS,
@@ -31,20 +30,11 @@ export default function Orders() {
   const [statusFilter, setStatusFilter] = useState<ProductOrderStatus | undefined>()
   const [detail, setDetail] = useState<ProductOrderRow | null>(null)
 
-  const ordersQuery = useQuery({
-    queryKey: getGetProductOrdersAdminQueryKey({
-      page,
-      limit,
-      ...(search.trim() ? { q: search.trim() } : {}),
-      ...(statusFilter ? { status: statusFilter } : {}),
-    }),
-    queryFn: async () =>
-      await getProductOrdersAdmin({
-        page,
-        limit,
-        ...(search.trim() ? { q: search.trim() } : {}),
-        ...(statusFilter ? { status: statusFilter } : {}),
-      }),
+  const ordersQuery = useGetProductOrdersAdmin({
+    page,
+    limit,
+    ...(search.trim() ? { q: search.trim() } : {}),
+    ...(statusFilter ? { status: statusFilter } : {}),
   })
   const rows = (pickData<ProductOrderRow[]>(ordersQuery.data) ?? []) as ProductOrderRow[]
   const total = pickMeta(ordersQuery.data)?.total ?? rows.length
