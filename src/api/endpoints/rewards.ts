@@ -35,10 +35,13 @@ import type {
   ForbiddenResponse,
   GetRewardsAdmin200,
   GetRewardsAdminParams,
+  GetRewardsApp200,
+  GetRewardsAppParams,
   GetRewardsIdAdmin200,
   InternalErrorResponse,
   NotFoundResponse,
   PostRewardsAdmin200,
+  PostRewardsIdRedeemApp200,
   PostTreatmentCustomersIdApplyRewardAdminBody,
   PutRewardsIdAdmin200,
   Reward,
@@ -440,6 +443,264 @@ export const useDeleteRewardsIdAdmin = <TError = UnauthorizedResponse | Forbidde
       return useMutation(mutationOptions, queryClient);
     }
     /**
+ * **RW-07A** — POST /rewards/{id}/redeem/app. Khách tự đổi quà bằng điểm trên miniapp — mirror flow đổi quà hộ của admin: trừ điểm membership, cấp voucher nếu quà loại VOUCHER, tạo lượt đổi ISSUED. Chỉ cần đăng nhập (API miniapp — dữ liệu luôn của chính tài khoản).
+ * @summary Redeem a reward for self (miniapp)
+ */
+export const postRewardsIdRedeemApp = (
+    id: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<PostRewardsIdRedeemApp200>(
+      {url: `/rewards/${id}/redeem/app`, method: 'POST', signal
+    },
+      );
+    }
+  
+
+
+export const getPostRewardsIdRedeemAppMutationOptions = <TError = UnauthorizedResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postRewardsIdRedeemApp>>, TError,{id: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postRewardsIdRedeemApp>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['postRewardsIdRedeemApp'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postRewardsIdRedeemApp>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  postRewardsIdRedeemApp(id,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostRewardsIdRedeemAppMutationResult = NonNullable<Awaited<ReturnType<typeof postRewardsIdRedeemApp>>>
+    
+    export type PostRewardsIdRedeemAppMutationError = UnauthorizedResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+
+    /**
+ * @summary Redeem a reward for self (miniapp)
+ */
+export const usePostRewardsIdRedeemApp = <TError = UnauthorizedResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postRewardsIdRedeemApp>>, TError,{id: string}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postRewardsIdRedeemApp>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+
+      const mutationOptions = getPostRewardsIdRedeemAppMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * **RW-01A** — GET /rewards/app. Catalog quà đổi điểm cho miniapp: chỉ quà đang hoạt động, trong thời hạn đổi và còn số lượng (`available_only`). Chỉ cần đăng nhập (API miniapp — không áp phân quyền).
+ * @summary Reward catalog for miniapp
+ */
+export const getRewardsApp = (
+    params?: GetRewardsAppParams,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetRewardsApp200>(
+      {url: `/rewards/app`, method: 'GET',
+        params, signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetRewardsAppInfiniteQueryKey = (params?: GetRewardsAppParams,) => {
+    return [
+    'infinite', `/rewards/app`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+export const getGetRewardsAppQueryKey = (params?: GetRewardsAppParams,) => {
+    return [
+    `/rewards/app`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getGetRewardsAppInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getRewardsApp>>>, TError = UnauthorizedResponse | InternalErrorResponse>(params?: GetRewardsAppParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRewardsApp>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetRewardsAppInfiniteQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRewardsApp>>> = ({ signal }) => getRewardsApp(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRewardsApp>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetRewardsAppInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getRewardsApp>>>
+export type GetRewardsAppInfiniteQueryError = UnauthorizedResponse | InternalErrorResponse
+
+
+export function useGetRewardsAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRewardsApp>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+ params: undefined |  GetRewardsAppParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRewardsApp>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getRewardsApp>>,
+          TError,
+          Awaited<ReturnType<typeof getRewardsApp>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetRewardsAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRewardsApp>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+ params?: GetRewardsAppParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRewardsApp>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getRewardsApp>>,
+          TError,
+          Awaited<ReturnType<typeof getRewardsApp>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetRewardsAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRewardsApp>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+ params?: GetRewardsAppParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRewardsApp>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Reward catalog for miniapp
+ */
+
+export function useGetRewardsAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getRewardsApp>>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+ params?: GetRewardsAppParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRewardsApp>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetRewardsAppInfiniteQueryOptions(params,options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Reward catalog for miniapp
+ */
+export const prefetchGetRewardsAppInfiniteQuery = async <TData = Awaited<ReturnType<typeof getRewardsApp>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetRewardsAppParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getRewardsApp>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetRewardsAppInfiniteQueryOptions(params,options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetRewardsAppQueryOptions = <TData = Awaited<ReturnType<typeof getRewardsApp>>, TError = UnauthorizedResponse | InternalErrorResponse>(params?: GetRewardsAppParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRewardsApp>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetRewardsAppQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRewardsApp>>> = ({ signal }) => getRewardsApp(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getRewardsApp>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetRewardsAppQueryResult = NonNullable<Awaited<ReturnType<typeof getRewardsApp>>>
+export type GetRewardsAppQueryError = UnauthorizedResponse | InternalErrorResponse
+
+
+export function useGetRewardsApp<TData = Awaited<ReturnType<typeof getRewardsApp>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+ params: undefined |  GetRewardsAppParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRewardsApp>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getRewardsApp>>,
+          TError,
+          Awaited<ReturnType<typeof getRewardsApp>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetRewardsApp<TData = Awaited<ReturnType<typeof getRewardsApp>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+ params?: GetRewardsAppParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRewardsApp>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getRewardsApp>>,
+          TError,
+          Awaited<ReturnType<typeof getRewardsApp>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetRewardsApp<TData = Awaited<ReturnType<typeof getRewardsApp>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+ params?: GetRewardsAppParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRewardsApp>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Reward catalog for miniapp
+ */
+
+export function useGetRewardsApp<TData = Awaited<ReturnType<typeof getRewardsApp>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+ params?: GetRewardsAppParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRewardsApp>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetRewardsAppQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Reward catalog for miniapp
+ */
+export const prefetchGetRewardsAppQuery = async <TData = Awaited<ReturnType<typeof getRewardsApp>>, TError = UnauthorizedResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetRewardsAppParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRewardsApp>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetRewardsAppQueryOptions(params,options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
  * **RW-01** — GET /rewards/admin. Requires `reward.view_all` permission. Query parameters: `is_active`, `available`.
  * @summary Get reward list
  */
