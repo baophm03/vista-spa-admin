@@ -1,6 +1,6 @@
 import ResponsiveTable from '@/components/base/ResponsiveTable'
 import { useCallback, useEffect, useState } from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Alert, Button, Card, Form, Modal, Spin, Tabs, Tag, Typography, message } from 'antd'
 import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, PlusOutlined } from '@ant-design/icons'
 import { Can, useAbility } from '@casl/react'
@@ -19,7 +19,7 @@ import type { PostCustomFieldDefsAdminBody } from '@/api/models/postCustomFieldD
 import type { PutCustomFieldDefsIdAdminBody } from '@/api/models/putCustomFieldDefsIdAdminBody'
 import { deleteCustomFieldDefsIdAdmin, getCustomFieldDefsAdmin, postCustomFieldDefsAdmin, putCustomFieldDefsIdAdmin } from '@/api/endpoints/custom-field-defs'
 import { getLookupListsAdmin } from '@/api/endpoints/lookup-lists'
-import { getGetSettingsAdminQueryKey, getSettingsAdmin, putSettingsAdmin } from '@/api/endpoints/settings'
+import { getGetSettingsAdminQueryKey, putSettingsAdmin, useGetSettingsAdmin } from '@/api/endpoints/settings'
 import type { PutSettingsAdminBody } from '@/api/models/putSettingsAdminBody'
 import type { SystemSetting } from '@/components/settings/systemSettings'
 import SystemSettingField from '@/components/settings/SystemSettingField'
@@ -45,11 +45,9 @@ function SessionRequiredFieldsSetting() {
   const queryClient = useQueryClient()
   const canEdit = useAbility().can('UPDATE', 'SETTING')
   const [draft, setDraft] = useState<string[] | null>(null)
-  const settingsQuery = useQuery({
-    queryKey: getGetSettingsAdminQueryKey(),
-    queryFn: async () => pickData<SystemSetting[]>(await getSettingsAdmin()) ?? [],
-  })
-  const setting = settingsQuery.data?.find((item) => item.key === 'session.required_fields')
+  const settingsQuery = useGetSettingsAdmin()
+  const settings = (pickData<SystemSetting[]>(settingsQuery.data) ?? []) as SystemSetting[]
+  const setting = settings.find((item) => item.key === 'session.required_fields')
   const savedValue = Array.isArray(setting?.value) ? setting.value.map(String) : []
   const value = draft ?? savedValue
   const hasChanges = JSON.stringify(value) !== JSON.stringify(savedValue)

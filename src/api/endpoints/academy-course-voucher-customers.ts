@@ -213,7 +213,7 @@ const {query: queryOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVoucherCustomersAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVoucherCustomersAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetAcademyCourseVoucherCustomersAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getAcademyCourseVoucherCustomersAdmin>>>
@@ -294,7 +294,7 @@ const {query: queryOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVoucherCustomersAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAcademyCourseVoucherCustomersAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetAcademyCourseVoucherCustomersAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getAcademyCourseVoucherCustomersAdmin>>>

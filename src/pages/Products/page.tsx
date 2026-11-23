@@ -26,7 +26,7 @@ import {
   PlusOutlined,
   ShoppingOutlined,
 } from '@ant-design/icons'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import PageTitle from '@/components/base/PageTitle'
 import StatCards, { type StatItem } from '@/components/base/StatCards'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
@@ -35,8 +35,8 @@ import ListFilterPopover from '@/components/base/ListFilterPopover'
 import MobileCards from '@/components/base/MobileCards'
 import TableEmpty from '@/components/base/TableEmpty'
 import { errorMessage, pickData } from '@/api/helpers'
-import { deleteProductCategoriesIdAdmin, getGetProductCategoriesAdminQueryKey, getProductCategoriesAdmin, postProductCategoriesAdmin, putProductCategoriesIdAdmin } from '@/api/endpoints/product-categories'
-import { deleteProductsIdAdmin, getGetProductsAdminQueryKey, getProductsAdmin, postProductsAdmin, putProductsIdAdmin } from '@/api/endpoints/products'
+import { deleteProductCategoriesIdAdmin, getGetProductCategoriesAdminQueryKey, postProductCategoriesAdmin, putProductCategoriesIdAdmin, useGetProductCategoriesAdmin } from '@/api/endpoints/product-categories'
+import { deleteProductsIdAdmin, getGetProductsAdminQueryKey, postProductsAdmin, putProductsIdAdmin, useGetProductsAdmin } from '@/api/endpoints/products'
 import { usePostFilesAdmin } from '@/api/endpoints/files'
 import { fileSrc, registerUploadedFile, resolveFileSrc, useFileUrlMap } from '@/hooks/useFileUrl'
 import type { ProductCreate } from '@/api/models/productCreate'
@@ -88,11 +88,8 @@ export default function Products() {
   const [categoryPage, setCategoryPage] = useState(1)
   const [limit] = useState(10)
 
-  const allCategoriesQuery = useQuery({
-    queryKey: getGetProductCategoriesAdminQueryKey(),
-    queryFn: async ({ signal }) => pickData<ProductCategoryRow[]>(await getProductCategoriesAdmin(signal)) ?? [],
-  })
-  const categories = allCategoriesQuery.data ?? []
+  const allCategoriesQuery = useGetProductCategoriesAdmin()
+  const categories = (pickData<ProductCategoryRow[]>(allCategoriesQuery.data) ?? []) as ProductCategoryRow[]
   const matchingCategories = categories.filter((category) =>
     category.name.toLocaleLowerCase('vi-VN').includes(categorySearch.toLocaleLowerCase('vi-VN')),
   )
@@ -100,22 +97,13 @@ export default function Products() {
   const currentCategoryPage = Math.min(categoryPage, Math.max(1, Math.ceil(categoryTotal / limit)))
   const categoryRows = paginateRows(matchingCategories, currentCategoryPage, limit)
 
-  const productsQuery = useQuery({
-    queryKey: getGetProductsAdminQueryKey({
-      page,
-      limit,
-      ...(search ? { q: search } : {}),
-      ...(categoryFilter ? { category_id: categoryFilter } : {}),
-      ...(statusFilter !== undefined ? { is_active: statusFilter } : {}),
-    } as never),
-    queryFn: async () => getProductsAdmin({
-      page,
-      limit,
-      ...(search ? { q: search } : {}),
-      ...(categoryFilter ? { category_id: categoryFilter } : {}),
-      ...(statusFilter !== undefined ? { is_active: statusFilter } : {}),
-    } as never),
-  })
+  const productsQuery = useGetProductsAdmin({
+    page,
+    limit,
+    ...(search ? { q: search } : {}),
+    ...(categoryFilter ? { category_id: categoryFilter } : {}),
+    ...(statusFilter !== undefined ? { is_active: statusFilter } : {}),
+  } as never)
   const rows = (pickData<ProductRow[] | undefined>(productsQuery.data) ?? []) as ProductRow[]
   const total = (productsQuery.data as unknown as { meta?: { total?: number } })?.meta?.total ?? rows.length
   const statsMeta = (productsQuery.data as unknown as { meta?: { stats?: { total: number; selling: number; hidden: number } } })?.meta?.stats

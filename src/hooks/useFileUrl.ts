@@ -1,5 +1,5 @@
-import { useQuery } from '@tanstack/react-query'
-import { getFilesAdmin } from '@/api/endpoints/files'
+import { useMemo } from 'react'
+import { useGetFilesAdmin } from '@/api/endpoints/files'
 import links from '@/configs/links'
 
 export interface FileRow {
@@ -44,24 +44,20 @@ export function resolveFileSrc(map: Map<string, string> | undefined, value?: str
 
 /** Nạp toàn bộ file đã upload (GET /files) và trả map file_id → URL hiển thị. */
 export function useFileUrlMap(): Map<string, string> {
-  const { data } = useQuery({
-    queryKey: ['files', 'urlMap'],
-    queryFn: async () => {
-      const body = (await getFilesAdmin()) as unknown as { responseData?: FileRow[] } | FileRow[]
-      const rows = (body as { responseData?: FileRow[] }).responseData ?? (body as FileRow[])
-      const map = new Map<string, string>()
-      for (const row of Array.isArray(rows) ? rows : []) {
-        if (!row?.id) continue
-        const src = toSrc(row.path)
-        if (src) map.set(row.id, src)
-      }
-      for (const [id, filePath] of uploadedPaths) {
-        const src = toSrc(filePath)
-        if (src) map.set(id, src)
-      }
-      return map
-    },
-    staleTime: 30_000,
-  })
-  return data ?? new Map()
+  const query = useGetFilesAdmin()
+  return useMemo(() => {
+    const body = query.data as unknown as { responseData?: FileRow[] } | FileRow[] | undefined
+    const rows = (body as { responseData?: FileRow[] })?.responseData ?? (body as FileRow[])
+    const map = new Map<string, string>()
+    for (const row of Array.isArray(rows) ? rows : []) {
+      if (!row?.id) continue
+      const src = toSrc(row.path)
+      if (src) map.set(row.id, src)
+    }
+    for (const [id, filePath] of uploadedPaths) {
+      const src = toSrc(filePath)
+      if (src) map.set(id, src)
+    }
+    return map
+  }, [query.data])
 }

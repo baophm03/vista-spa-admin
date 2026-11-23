@@ -85,7 +85,7 @@ const {query: queryOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getHealthRecordsApp>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getHealthRecordsApp>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetHealthRecordsAppInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getHealthRecordsApp>>>
@@ -166,7 +166,7 @@ const {query: queryOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getHealthRecordsApp>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getHealthRecordsApp>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetHealthRecordsAppQueryResult = NonNullable<Awaited<ReturnType<typeof getHealthRecordsApp>>>

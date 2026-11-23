@@ -287,7 +287,7 @@ const {query: queryOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetCustomerProfilesIdAvailableDiscountsAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>>
@@ -368,7 +368,7 @@ const {query: queryOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetCustomerProfilesIdAvailableDiscountsAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>>

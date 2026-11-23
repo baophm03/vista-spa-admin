@@ -89,7 +89,7 @@ const {query: queryOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, enabled: !!(customerTreatmentId),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrintAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(customerTreatmentId), ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrintAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetInvoicesCustomerTreatmentIdPrintAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrintAdmin>>>
@@ -176,7 +176,7 @@ const {query: queryOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, enabled: !!(customerTreatmentId),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrintAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(customerTreatmentId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrintAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetInvoicesCustomerTreatmentIdPrintAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getInvoicesCustomerTreatmentIdPrintAdmin>>>

@@ -2,7 +2,7 @@ import ResponsiveTable from '@/components/base/ResponsiveTable'
 import MobileCards from '@/components/base/MobileCards'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { displayName } from '@/utils/displayName'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Alert, Button, Card, Form, Grid, Input, Modal, Select, Space, Switch, Table, Tabs, Tag, Tooltip, Typography, message } from 'antd'
 import dayjs from 'dayjs'
 import { useBrandCurrency, useBrandDateTime } from '@/themeRuntime'
@@ -15,7 +15,7 @@ import ListPagination from '../../components/base/ListPagination'
 import { useGetBranchesAdmin } from '@/api/endpoints/branches'
 import { getGetConfigQueryKey } from '@/api/endpoints/config'
 import { postNotificationsAdmin } from '@/api/endpoints/notifications'
-import { getGetSettingsAdminQueryKey, getSettingsAdmin, putSettingsAdmin } from '@/api/endpoints/settings'
+import { getGetSettingsAdminQueryKey, putSettingsAdmin, useGetSettingsAdmin } from '@/api/endpoints/settings'
 import { useDeleteLuckyWheelsIdAdmin, useDeleteLuckyWheelsIdPrizesPrizeIdAdmin, useGetLuckyWheelsIdEligibleCustomersAdmin, useGetLuckyWheelsAdmin, useGetLuckyWheelsIdPrizesAdmin, useGetLuckyWheelsIdSpinsAdmin, usePostLuckyWheelsAdmin, usePostLuckyWheelsIdPrizesAdmin, usePostLuckyWheelsIdSpinsAdmin, usePutLuckyWheelsIdAdmin, usePutLuckyWheelsIdPrizesPrizeIdAdmin, usePutLuckyWheelsIdSpinsSpinIdClaimAdmin } from '@/api/endpoints/lucky-wheels'
 import type {
   GetLuckyWheelsIdEligibleCustomersAdmin200AllOfResponseDataItem as EligibleCustomer,
@@ -105,10 +105,8 @@ export default function LuckyWheel() {
   const [prizeForm] = Form.useForm()
   const [customerNotificationForm] = Form.useForm<CustomerNotificationFormValues>()
 
-  const customerSettingsQuery = useQuery({
-    queryKey: getGetSettingsAdminQueryKey(),
-    queryFn: async () => pickData<SystemSetting[]>(await getSettingsAdmin()) ?? [],
-  })
+  const customerSettingsQuery = useGetSettingsAdmin()
+  const customerSettings = (pickData<SystemSetting[]>(customerSettingsQuery.data) ?? []) as SystemSetting[]
   const wheelsQuery = useGetLuckyWheelsAdmin({ page: wheelPage, limit: TABLE_PAGE_SIZE } as never)
   const branchesQuery = useGetBranchesAdmin()
   const prizesQuery = useGetLuckyWheelsIdPrizesAdmin(selected?.id ?? '', { page: prizePage, limit: TABLE_PAGE_SIZE } as never)
@@ -138,7 +136,6 @@ export default function LuckyWheel() {
   const spinsTotal = (spinsQuery.data as unknown as { meta?: { total?: number } })?.meta?.total ?? 0
   const eligibleCustomers = eligibleQuery.data?.responseData ?? []
   const eligibleTotal = (eligibleQuery.data as unknown as { meta?: { total?: number } })?.meta?.total ?? 0
-  const customerSettings = customerSettingsQuery.data ?? []
   const customerDefaultSetting = customerSettings.find((setting) => setting.key === CUSTOMER_DEFAULT_SETTING)
   const customerOverridesSetting = customerSettings.find((setting) => setting.key === CUSTOMER_OVERRIDES_SETTING)
   const wheelModuleSetting = customerSettings.find((setting) => setting.key === 'module.lucky_wheel')

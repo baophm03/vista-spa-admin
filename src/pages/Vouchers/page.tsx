@@ -16,7 +16,7 @@ import ListPagination from '../../components/base/ListPagination'
 import { errorMessage, pickData } from '@/api/helpers'
 import { getTreatmentPackagesAdmin } from '@/api/endpoints/treatment-packages'
 import { getAcademyCoursesAdmin } from '@/api/endpoints/academy'
-import { getProductCategoriesAdmin } from '@/api/endpoints/product-categories'
+import { useGetProductCategoriesAdmin } from '@/api/endpoints/product-categories'
 import { getProductsAdmin } from '@/api/endpoints/products'
 import {
   deleteTreatmentPackageVouchersIdAdmin,
@@ -124,20 +124,15 @@ function VoucherCategoryTab({ category, isMobile }: { category: VoucherCategory;
   })
   const branchesQuery = useGetBranchesAdmin({ status: 'active' })
   const targetsQuery = useQuery({ queryKey: ['voucher-category-targets', category], queryFn: () => loadTargets(category) })
-  const productCategoriesQuery = useQuery({
-    queryKey: ['voucher-product-categories'],
-    enabled: category === 'product',
-    queryFn: async () => {
-      const categories = pickData<ProductCategory[]>(await getProductCategoriesAdmin()) ?? []
-      return categories.filter((item) => item.is_active !== false).map((item) => ({ value: item.id, label: item.name }))
-    },
-  })
+  const productCategoriesQuery = useGetProductCategoriesAdmin({ query: { enabled: category === 'product' } })
   const ranksQuery = useGetCardRanksAdmin({ is_active: true })
   const rows = toRows(vouchersQuery.data)
   const total = (vouchersQuery.data as unknown as { meta?: { total?: number } })?.meta?.total ?? rows.length
   const statsMeta = (vouchersQuery.data as unknown as { meta?: { stats?: { total?: number; active?: number; expired?: number } } })?.meta?.stats
   const targets = targetsQuery.data ?? []
-  const productCategories = productCategoriesQuery.data ?? []
+  const productCategories = ((pickData<ProductCategory[]>(productCategoriesQuery.data) ?? []) as ProductCategory[])
+    .filter((item) => item.is_active !== false)
+    .map((item) => ({ value: item.id, label: item.name }))
   const branches = ((pickData<Branch[]>(branchesQuery.data) ?? []) as Branch[])
     .filter((branch) => branch.is_active !== false)
     .map((branch) => ({ value: branch.id, label: branch.name }))

@@ -1,9 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
 import { Button, Image, Input, Modal, Space, Upload, message } from 'antd'
 import { DeleteOutlined, FolderOpenOutlined, UploadOutlined } from '@ant-design/icons'
-import { usePostFilesAdmin } from '@/api/endpoints/files'
-import { getFilesAdmin } from '@/api/endpoints/files'
+import { useGetFilesAdmin, usePostFilesAdmin } from '@/api/endpoints/files'
 import { errorMessage, pickData } from '@/api/helpers'
 import { registerUploadedFile, resolveFileSrc, useFileUrlMap, objectKeySrc } from '@/hooks/useFileUrl'
 
@@ -44,17 +42,11 @@ export default function ServiceImageField({ value, onChange, multiple = false }:
   const [pickerOpen, setPickerOpen] = useState(false)
   const [pickerSearch, setPickerSearch] = useState('')
   const [pickedIds, setPickedIds] = useState<string[]>([])
-  const galleryQuery = useQuery({
-    queryKey: ['files-gallery'],
-    queryFn: async () => {
-      const res = await getFilesAdmin()
-      return (pickData<GalleryFile[]>(res as never) ?? (res as unknown as GalleryFile[])) as GalleryFile[]
-    },
-    enabled: pickerOpen,
-  })
+  const galleryQuery = useGetFilesAdmin({ query: { enabled: pickerOpen } })
+  const galleryFiles = (pickData<GalleryFile[]>(galleryQuery.data as never) ?? (galleryQuery.data as unknown as GalleryFile[])) as GalleryFile[]
   const imageFiles = useMemo(
-    () => (galleryQuery.data ?? []).filter((file) => file.content_type?.startsWith('image/')),
-    [galleryQuery.data],
+    () => galleryFiles.filter((file) => file.content_type?.startsWith('image/')),
+    [galleryFiles],
   )
   const visibleImages = useMemo(() => {
     const keyword = pickerSearch.trim().toLowerCase()

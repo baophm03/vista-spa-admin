@@ -1,6 +1,6 @@
 import ResponsiveTable from '@/components/base/ResponsiveTable'
 import { useMemo, useState } from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Alert, Button, Form, Space, Switch, Tag, Tooltip, Typography, message } from 'antd'
 import { EditOutlined } from '@ant-design/icons'
 import PageTitle from '@/components/base/PageTitle'
@@ -11,7 +11,10 @@ import {
   type NotificationTemplate,
   type NotificationTemplateUpdate,
 } from '@/api/notificationTemplates'
-import { getNotificationTemplatesAdmin } from '@/api/endpoints/notification-templates'
+import {
+  getGetNotificationTemplatesAdminQueryKey,
+  useGetNotificationTemplatesAdmin,
+} from '@/api/endpoints/notification-templates'
 import { useProfileStore } from '@/stores/profile-store'
 import NotificationTemplateModal from './components/NotificationTemplateModal'
 import {
@@ -20,8 +23,6 @@ import {
   previewTemplate,
 } from './components/constants'
 
-const queryKey = ['notification-templates']
-
 export default function NotificationTemplates() {
   const queryClient = useQueryClient()
   const [form] = Form.useForm<NotificationTemplateUpdate>()
@@ -29,28 +30,25 @@ export default function NotificationTemplates() {
   const isAdmin = Boolean(profile?.is_admin || profile?.roles?.some((role) => role.trim().toLowerCase() === 'admin'))
   const [editing, setEditing] = useState<NotificationTemplate | null>(null)
 
-  const templatesQuery = useQuery({
-    queryKey,
-    queryFn: async () => {
-      const response = await getNotificationTemplatesAdmin()
-      const payload = pickData<unknown>(response)
-      if (Array.isArray(payload)) return payload as NotificationTemplate[]
-      if (payload && typeof payload === 'object') {
-        const data = (payload as { data?: unknown; rows?: unknown }).data
-        const rows = (payload as { rows?: unknown }).rows
-        if (Array.isArray(data)) return data as NotificationTemplate[]
-        if (Array.isArray(rows)) return rows as NotificationTemplate[]
-      }
-      return []
-    },
-  })
+  const templatesQuery = useGetNotificationTemplatesAdmin()
+  const rows = useMemo(() => {
+    const payload = pickData<unknown>(templatesQuery.data)
+    if (Array.isArray(payload)) return payload as NotificationTemplate[]
+    if (payload && typeof payload === 'object') {
+      const data = (payload as { data?: unknown; rows?: unknown }).data
+      const rows = (payload as { rows?: unknown }).rows
+      if (Array.isArray(data)) return data as NotificationTemplate[]
+      if (Array.isArray(rows)) return rows as NotificationTemplate[]
+    }
+    return []
+  }, [templatesQuery.data])
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: NotificationTemplateUpdate }) => putNotificationTemplate(id, data),
     onSuccess: async () => {
       message.success('Đã cập nhật mẫu thông báo')
       setEditing(null)
-      await queryClient.invalidateQueries({ queryKey })
+      await queryClient.invalidateQueries({ queryKey: getGetNotificationTemplatesAdminQueryKey() })
     },
     onError: (error) => message.error(errorMessage(error, 'Không thể cập nhật mẫu thông báo')),
   })
@@ -66,7 +64,6 @@ export default function NotificationTemplates() {
     updateMutation.mutate({ id: editing.id, data: values })
   }
 
-  const rows = templatesQuery.data ?? []
   const grouped = useMemo(() => {
     const byEvent = new Map(rows.map((template) => [`${template.event_key}:${template.channel}`, template]))
     return EVENTS.map((event) => ({

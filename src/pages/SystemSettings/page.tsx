@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Alert, Button, Card, Select, Spin, Tabs, Tag, Typography, message } from 'antd'
 import { SaveOutlined } from '@ant-design/icons'
 import { Can } from '@casl/react'
@@ -7,7 +7,7 @@ import PageTitle from '@/components/base/PageTitle'
 import SystemSettingField from '@/components/settings/SystemSettingField'
 import { sameSettingValue, settingSections } from '@/components/settings/systemSettings'
 import type { SystemSetting, SystemSettingUpdate } from '@/components/settings/systemSettings'
-import { getGetSettingsAdminQueryKey, getSettingsAdmin, putSettingsAdmin } from '@/api/endpoints/settings'
+import { getGetSettingsAdminQueryKey, putSettingsAdmin, useGetSettingsAdmin } from '@/api/endpoints/settings'
 import { getGetConfigQueryKey } from '@/api/endpoints/config'
 import { useGetBranchesAdmin } from '@/api/endpoints/branches'
 import type { Branch } from '@/api/models/branch'
@@ -15,7 +15,6 @@ import type { PutSettingsAdminBody } from '@/api/models/putSettingsAdminBody'
 import { errorMessage, pickData } from '@/api/helpers'
 import { ability } from '@/configs/casl/ability'
 
-const EMPTY_SETTINGS: SystemSetting[] = []
 const POINTS_SETTING_ORDER: Record<string, number> = {
   'points.enabled': 0,
   'points.auto_earn': 1,
@@ -74,11 +73,8 @@ function SettingsEditor({ canEdit }: { canEdit: boolean }) {
   const canSelectBranch = ability.can('READ', 'BRANCH')
   const branchesQuery = useGetBranchesAdmin(undefined, { query: { enabled: canSelectBranch } })
   const params = branchId ? { branch_id: branchId } : undefined
-  const settingsQuery = useQuery({
-    queryKey: getGetSettingsAdminQueryKey(params),
-    queryFn: async () => pickData<SystemSetting[]>(await getSettingsAdmin(params)) ?? [],
-  })
-  const settings = settingsQuery.data ?? EMPTY_SETTINGS
+  const settingsQuery = useGetSettingsAdmin(params)
+  const settings = useMemo(() => (pickData<SystemSetting[]>(settingsQuery.data) ?? []) as SystemSetting[], [settingsQuery.data])
   const branches = pickData<Branch[]>(branchesQuery.data) ?? []
   const scope = branchId || 'GLOBAL'
   const serverValues = useMemo(() => Object.fromEntries(settings.map((setting) => [setting.key, setting.value])), [settings])

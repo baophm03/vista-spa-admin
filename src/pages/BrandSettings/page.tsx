@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Alert, Avatar, Button, Card, ColorPicker, Col, Descriptions, Form, Input, Modal, Row, Select, Space, Spin, Tag, Typography, Upload, message } from 'antd'
 import { SaveOutlined, UndoOutlined, UploadOutlined } from '@ant-design/icons'
 import PageTitle from '@/components/base/PageTitle'
@@ -7,7 +7,7 @@ import { errorMessage, pickData } from '@/api/helpers'
 import type { BrandSettings } from '@/api/models/brandSettings'
 import type { BrandSettingsUpdate } from '@/api/models/brandSettingsUpdate'
 import type { FileUpload } from '@/api/models/fileUpload'
-import { getGetSettingsBrandAdminQueryKey, getSettingsBrandAdmin, putSettingsBrandAdmin } from '@/api/endpoints/settings'
+import { getGetSettingsBrandAdminQueryKey, putSettingsBrandAdmin, useGetSettingsBrandAdmin } from '@/api/endpoints/settings'
 import { postFilesAdmin } from '@/api/endpoints/files'
 import { Can } from '@casl/react'
 import links from '@/configs/links'
@@ -116,14 +116,11 @@ export default function BrandSettings() {
   const [form] = Form.useForm<BrandFormValues>()
   const queryClient = useQueryClient()
   const runtime = useBrandRuntime()
-  const normalizeSettings = (payload: unknown): BrandSettings => {
-    const body = payload as { responseData?: unknown }
-    return pickData<BrandSettings>(body.responseData ?? body)
-  }
-  const settingsQuery = useQuery({
-    queryKey: getGetSettingsBrandAdminQueryKey(),
-    queryFn: async () => normalizeSettings(await getSettingsBrandAdmin()),
-  })
+  const settingsQuery = useGetSettingsBrandAdmin()
+  const settings = useMemo(() => {
+    const body = settingsQuery.data as { responseData?: unknown } | undefined
+    return pickData<BrandSettings>(body?.responseData ?? body)
+  }, [settingsQuery.data])
   const [primaryColor, setPrimaryColor] = useState(runtime.primaryColor)
   const [tertiaryColor, setTertiaryColor] = useState(runtime.tertiaryColor || '#FFD700')
   const [secondaryColor, setSecondaryColor] = useState(runtime.secondaryColor || '#D01A7E')
@@ -136,7 +133,7 @@ export default function BrandSettings() {
   const currencyOptions = useMemo(() => supportedValues('currency', ['VND', 'USD', 'SGD', 'THB', 'JPY', 'KRW', 'EUR']), [])
 
   useEffect(() => {
-    const data = settingsQuery.data
+    const data = settings
     if (!data?.brand || !data?.locale) return
     form.setFieldsValue({
       brand: { name: data.brand.name, logo_file_id: (data.brand as any).logo_file?.id ?? '' },
@@ -151,7 +148,7 @@ export default function BrandSettings() {
     const storedLogo = (data.brand as any).logo_file?.path || ''
     setLogoPreview(storedLogo ? `${links.imageEndpoint}${storedLogo}` : null)
     applyBrandSettings(data)
-  }, [form, settingsQuery.data])
+  }, [form, settings])
 
   const saveMutation = useMutation({
     mutationFn: async (values: BrandFormValues) =>
@@ -258,7 +255,7 @@ export default function BrandSettings() {
           {!canEdit && <Alert className="mb-4" type="info" showIcon message="Bạn có quyền xem cấu hình thương hiệu; chỉ ADM được chỉnh sửa." />}
           {settingsQuery.isError && <Alert className="mb-4" type="error" showIcon message="Không tải được cấu hình thương hiệu" description={errorMessage(settingsQuery.error)} action={<Button size="small" onClick={() => void settingsQuery.refetch()}>Thử lại</Button>} />}
           <Spin spinning={settingsQuery.isLoading}>
-            {!canEdit ? <ReadOnlyBrandSettings settings={settingsQuery.data} runtime={runtime} /> : (
+            {!canEdit ? <ReadOnlyBrandSettings settings={settings} runtime={runtime} /> : (
               <Form form={form} layout="vertical" onFinish={save} disabled={!canEdit}>
                 <Row gutter={[20, 20]}>
                   <Col xs={24} lg={14}>
@@ -321,9 +318,9 @@ export default function BrandSettings() {
                       </Form.Item>
                       <Typography.Text type="secondary">Admin hiện hỗ trợ giao diện tiếng Việt. Múi giờ và tiền tệ được áp dụng lên các màn hình sau khi lưu.</Typography.Text>
                     </Card>
-                    {!!settingsQuery.data?.modules?.length && (
+                    {!!settings?.modules?.length && (
                       <Card style={{ marginTop: 16 }} title="Mô-đun đang bật">
-                        <Space wrap size={24}>{settingsQuery.data.modules.filter((module) => module.enabled).map((module) => <Tag key={module.key} color="blue">{MODULE_LABELS[module.key] ?? module.key.replace(/^module\./, '').replaceAll('_', ' ')}</Tag>)}</Space>
+                        <Space wrap size={24}>{settings.modules.filter((module) => module.enabled).map((module) => <Tag key={module.key} color="blue">{MODULE_LABELS[module.key] ?? module.key.replace(/^module\./, '').replaceAll('_', ' ')}</Tag>)}</Space>
                       </Card>
                     )}
                   </Col>
