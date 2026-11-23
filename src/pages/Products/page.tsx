@@ -32,7 +32,7 @@ import ListPagination from '@/components/base/ListPagination'
 import TableEmpty from '@/components/base/TableEmpty'
 import { errorMessage, pickData } from '@/api/helpers'
 import { deleteProductCategoriesIdAdmin, getGetProductCategoriesAdminQueryKey, getProductCategoriesAdmin, postProductCategoriesAdmin, putProductCategoriesIdAdmin } from '@/api/endpoints/product-categories'
-import { getGetProductsAdminQueryKey, getProductsAdmin, postProductsAdmin, putProductsIdAdmin } from '@/api/endpoints/products'
+import { deleteProductsIdAdmin, getGetProductsAdminQueryKey, getProductsAdmin, postProductsAdmin, putProductsIdAdmin } from '@/api/endpoints/products'
 import { usePostFilesAdmin } from '@/api/endpoints/files'
 import { fileSrc, registerUploadedFile, resolveFileSrc, useFileUrlMap } from '@/hooks/useFileUrl'
 import type { ProductCreate } from '@/api/models/productCreate'
@@ -75,24 +75,18 @@ export default function Products() {
   const [categoryPage, setCategoryPage] = useState(1)
   const [limit] = useState(10)
 
-  // Danh sách đầy đủ cho bộ lọc / modal tạo sản phẩm
+  // Danh sách đầy đủ (BE trả toàn bộ, không phân trang) — dùng cho bộ lọc,
+  // modal tạo sản phẩm và bảng tab "Danh mục" (lọc + phân trang client-side)
   const allCategoriesQuery = useQuery({
     queryKey: getGetProductCategoriesAdminQueryKey(),
-    queryFn: async () => (pickData<ProductCategoryRow[]>(await getProductCategoriesAdmin({ page: 1, limit: 200 } as never)) ?? []) as ProductCategoryRow[],
+    queryFn: async () => (pickData<ProductCategoryRow[]>(await getProductCategoriesAdmin()) ?? []) as ProductCategoryRow[],
   })
   const categories = allCategoriesQuery.data ?? []
-
-  // Bảng danh mục (tab "Danh mục") — tìm kiếm + phân trang phía server
-  const categoriesTableQuery = useQuery({
-    queryKey: [...getGetProductCategoriesAdminQueryKey(), 'table', categoryPage, limit, categorySearch] as const,
-    queryFn: async () => getProductCategoriesAdmin({
-      page: categoryPage,
-      limit,
-      ...(categorySearch ? { q: categorySearch } : {}),
-    } as never),
-  })
-  const categoryRows = (pickData<ProductCategoryRow[] | undefined>(categoriesTableQuery.data) ?? []) as ProductCategoryRow[]
-  const categoryTotal = (categoriesTableQuery.data as unknown as { meta?: { total?: number } })?.meta?.total ?? categoryRows.length
+  const filteredCategoryRows = categorySearch
+    ? categories.filter((c) => c.name?.toLowerCase().includes(categorySearch.toLowerCase()))
+    : categories
+  const categoryRows = filteredCategoryRows.slice((categoryPage - 1) * limit, categoryPage * limit)
+  const categoryTotal = filteredCategoryRows.length
 
   const productsQuery = useQuery({
     queryKey: getGetProductsAdminQueryKey({
@@ -133,6 +127,7 @@ export default function Products() {
   const updateMutation = useMutation({
     mutationFn: async ({ id, dto }: { id: string; dto: ProductUpdate }) => putProductsIdAdmin(id, dto),
   })
+  const deleteProductMutation = useMutation({ mutationFn: async (id: string) => deleteProductsIdAdmin(id) })
   const createCategoryMutation = useMutation({ mutationFn: async (dto: PostProductCategoriesAdminBody) => postProductCategoriesAdmin(dto) })
   const updateCategoryMutation = useMutation({
     mutationFn: async ({ id, dto }: { id: string; dto: PutProductCategoriesIdAdminBody }) => putProductCategoriesIdAdmin(id, dto),
@@ -164,6 +159,7 @@ export default function Products() {
             tags: p.tags ?? [],
             cover_file_id: p.cover_file?.id ?? p.cover_file_id ?? undefined,
             gallery_file_ids: (p.product_galleries ?? []).map((gallery) => gallery.file?.id ?? gallery.file_id),
+            is_active: p.is_active !== false,
           }
         : {
             name: '',
@@ -179,6 +175,7 @@ export default function Products() {
             tags: [],
             cover_file_id: undefined,
             gallery_file_ids: [],
+            is_active: true,
           },
     )
     setOpen(true)
@@ -204,6 +201,7 @@ export default function Products() {
         tags: values.tags ?? [],
         cover_file_id: values.cover_file_id || undefined,
         gallery_file_ids: values.gallery_file_ids ?? [],
+        is_active: values.is_active !== false,
       } as unknown as ProductCreate
       if (editing) {
         await updateMutation.mutateAsync({ id: editing.id, dto })
@@ -280,6 +278,27 @@ export default function Products() {
     } catch (err) {
       message.error(errorMessage(err))
     }
+  }
+
+  const removeProduct = (row: ProductRow) => {
+    Modal.confirm({
+      title: 'Xóa sản phẩm này?',
+      content: 'Sản phẩm sẽ bị xóa vĩnh viễn khỏi hệ thống.',
+      okText: 'Xóa',
+      okButtonProps: { danger: true },
+      cancelText: 'Hủy',
+      onOk: async () => {
+        try {
+          await deleteProductMutation.mutateAsync(row.id)
+          message.success('Đã xóa sản phẩm')
+          setOpen(false)
+          setViewing(null)
+          await invalidateAll()
+        } catch (err) {
+          message.error(errorMessage(err))
+        }
+      },
+    })
   }
 
   const productsContent = (
@@ -460,7 +479,7 @@ export default function Products() {
       </div>
       <Table<ProductCategoryRow>
         rowKey="id"
-        loading={categoriesTableQuery.isFetching}
+        loading={allCategoriesQuery.isFetching}
         dataSource={categoryRows}
         pagination={false}
         locale={{ emptyText: <TableEmpty description="Chưa có danh mục nào" /> }}
@@ -572,6 +591,8 @@ export default function Products() {
         onCancel={() => setOpen(false)}
         onSubmit={() => void submit()}
         saving={saving}
+        deleting={deleteProductMutation.isPending}
+        onDelete={() => editing && removeProduct(editing)}
         form={form}
         categories={categories}
         currencySymbol={currencySymbol}
