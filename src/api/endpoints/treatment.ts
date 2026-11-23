@@ -89,7 +89,7 @@ const {query: queryOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentSpecialties>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentSpecialties>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetTreatmentSpecialtiesInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getTreatmentSpecialties>>>
@@ -170,7 +170,7 @@ const {query: queryOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTreatmentSpecialties>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTreatmentSpecialties>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetTreatmentSpecialtiesQueryResult = NonNullable<Awaited<ReturnType<typeof getTreatmentSpecialties>>>
@@ -283,7 +283,7 @@ const {query: queryOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, enabled: !!(specialtySlug), ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentSpecialtiesSpecialtySlug>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(specialtySlug),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentSpecialtiesSpecialtySlug>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetTreatmentSpecialtiesSpecialtySlugInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getTreatmentSpecialtiesSpecialtySlug>>>
@@ -364,7 +364,7 @@ const {query: queryOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, enabled: !!(specialtySlug), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTreatmentSpecialtiesSpecialtySlug>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(specialtySlug),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTreatmentSpecialtiesSpecialtySlug>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetTreatmentSpecialtiesSpecialtySlugQueryResult = NonNullable<Awaited<ReturnType<typeof getTreatmentSpecialtiesSpecialtySlug>>>
@@ -608,7 +608,7 @@ const {query: queryOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, enabled: !!(specialtySlug && topicSlug), ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentSpecialtiesSpecialtySlugTopicsTopicSlug>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(specialtySlug && topicSlug),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentSpecialtiesSpecialtySlugTopicsTopicSlug>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetTreatmentSpecialtiesSpecialtySlugTopicsTopicSlugInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getTreatmentSpecialtiesSpecialtySlugTopicsTopicSlug>>>
@@ -695,7 +695,7 @@ const {query: queryOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, enabled: !!(specialtySlug && topicSlug), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTreatmentSpecialtiesSpecialtySlugTopicsTopicSlug>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(specialtySlug && topicSlug),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTreatmentSpecialtiesSpecialtySlugTopicsTopicSlug>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetTreatmentSpecialtiesSpecialtySlugTopicsTopicSlugQueryResult = NonNullable<Awaited<ReturnType<typeof getTreatmentSpecialtiesSpecialtySlugTopicsTopicSlug>>>
@@ -813,7 +813,7 @@ const {query: queryOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, enabled: !!(specialtySlug), ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentSpecialtiesSpecialtySlugTopics>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(specialtySlug),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentSpecialtiesSpecialtySlugTopics>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetTreatmentSpecialtiesSpecialtySlugTopicsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getTreatmentSpecialtiesSpecialtySlugTopics>>>
@@ -894,7 +894,7 @@ const {query: queryOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, enabled: !!(specialtySlug), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTreatmentSpecialtiesSpecialtySlugTopics>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(specialtySlug),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTreatmentSpecialtiesSpecialtySlugTopics>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetTreatmentSpecialtiesSpecialtySlugTopicsQueryResult = NonNullable<Awaited<ReturnType<typeof getTreatmentSpecialtiesSpecialtySlugTopics>>>

@@ -87,7 +87,7 @@ const {query: queryOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchersIdAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchersIdAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetTreatmentPackageVouchersIdAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getTreatmentPackageVouchersIdAdmin>>>
@@ -168,7 +168,7 @@ const {query: queryOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchersIdAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchersIdAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetTreatmentPackageVouchersIdAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getTreatmentPackageVouchersIdAdmin>>>
@@ -406,7 +406,7 @@ const {query: queryOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchersAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchersAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetTreatmentPackageVouchersAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getTreatmentPackageVouchersAdmin>>>
@@ -487,7 +487,7 @@ const {query: queryOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchersAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVouchersAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetTreatmentPackageVouchersAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getTreatmentPackageVouchersAdmin>>>

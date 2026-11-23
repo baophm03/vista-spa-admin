@@ -213,7 +213,7 @@ const {query: queryOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomersAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomersAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetTreatmentPackageVoucherCustomersAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomersAdmin>>>
@@ -294,7 +294,7 @@ const {query: queryOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomersAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomersAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetTreatmentPackageVoucherCustomersAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getTreatmentPackageVoucherCustomersAdmin>>>
