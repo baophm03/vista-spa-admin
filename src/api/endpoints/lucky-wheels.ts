@@ -44,15 +44,15 @@ import type {
   GetLuckyWheelsIdPrizesAdmin200,
   GetLuckyWheelsIdSpinsAdmin200,
   GetLuckyWheelsParams,
-  GetLuckyWheelsSpinsAdmin200,
+  GetLuckyWheelsSpinsApp200,
   InternalErrorResponse,
   NotFoundResponse,
   PostLuckyWheelsAdmin200,
   PostLuckyWheelsAdminBody,
   PostLuckyWheelsIdPrizesAdmin200,
   PostLuckyWheelsIdPrizesAdminBody,
-  PostLuckyWheelsIdSpinAdmin200,
-  PostLuckyWheelsIdSpinAdminBody,
+  PostLuckyWheelsIdSpinApp200,
+  PostLuckyWheelsIdSpinAppBody,
   PostLuckyWheelsIdSpinsAdmin200,
   PostLuckyWheelsIdSpinsAdminBody,
   PutLuckyWheelsIdAdmin200,
@@ -1104,31 +1104,31 @@ export const usePutLuckyWheelsIdSpinsSpinIdClaimAdmin = <TError = UnauthorizedRe
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **POST /lucky-wheels/{id}/spin/admin** — khách quay vòng quay cho chính mình (quy theo trọng số, lọc theo doanh thu năm). Cần đăng nhập + `wheel.spin`; platform admin được quay hộ. Body: `request_key` (optional, chống double-submit). Kết quả quay và trao giải do business layer xử lý.
- * @summary Spin the wheel (customer self-spin)
+ * **LW-03A** — POST /lucky-wheels/{id}/spin/app. Quay vòng quay cho tài khoản đang đăng nhập. Chỉ cần đăng nhập (API miniapp — không áp phân quyền, dữ liệu luôn của chính tài khoản). Body: `request_key` (idempotency, tùy chọn).
+ * @summary Spin a wheel for self (miniapp)
  */
-export const postLuckyWheelsIdSpinAdmin = (
+export const postLuckyWheelsIdSpinApp = (
     id: string,
-    postLuckyWheelsIdSpinAdminBody?: PostLuckyWheelsIdSpinAdminBody,
+    postLuckyWheelsIdSpinAppBody?: PostLuckyWheelsIdSpinAppBody,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<PostLuckyWheelsIdSpinAdmin200>(
-      {url: `/lucky-wheels/${id}/spin/admin`, method: 'POST',
+      return customInstance<PostLuckyWheelsIdSpinApp200>(
+      {url: `/lucky-wheels/${id}/spin/app`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: postLuckyWheelsIdSpinAdminBody, signal
+      data: postLuckyWheelsIdSpinAppBody, signal
     },
       );
     }
   
 
 
-export const getPostLuckyWheelsIdSpinAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postLuckyWheelsIdSpinAdmin>>, TError,{id: string;data: PostLuckyWheelsIdSpinAdminBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postLuckyWheelsIdSpinAdmin>>, TError,{id: string;data: PostLuckyWheelsIdSpinAdminBody}, TContext> => {
+export const getPostLuckyWheelsIdSpinAppMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postLuckyWheelsIdSpinApp>>, TError,{id: string;data: PostLuckyWheelsIdSpinAppBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postLuckyWheelsIdSpinApp>>, TError,{id: string;data: PostLuckyWheelsIdSpinAppBody}, TContext> => {
 
-const mutationKey = ['postLuckyWheelsIdSpinAdmin'];
+const mutationKey = ['postLuckyWheelsIdSpinApp'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -1138,10 +1138,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postLuckyWheelsIdSpinAdmin>>, {id: string;data: PostLuckyWheelsIdSpinAdminBody}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postLuckyWheelsIdSpinApp>>, {id: string;data: PostLuckyWheelsIdSpinAppBody}> = (props) => {
           const {id,data} = props ?? {};
 
-          return  postLuckyWheelsIdSpinAdmin(id,data,)
+          return  postLuckyWheelsIdSpinApp(id,data,)
         }
 
         
@@ -1149,23 +1149,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PostLuckyWheelsIdSpinAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postLuckyWheelsIdSpinAdmin>>>
-    export type PostLuckyWheelsIdSpinAdminMutationBody = PostLuckyWheelsIdSpinAdminBody
-    export type PostLuckyWheelsIdSpinAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+    export type PostLuckyWheelsIdSpinAppMutationResult = NonNullable<Awaited<ReturnType<typeof postLuckyWheelsIdSpinApp>>>
+    export type PostLuckyWheelsIdSpinAppMutationBody = PostLuckyWheelsIdSpinAppBody
+    export type PostLuckyWheelsIdSpinAppMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Spin the wheel (customer self-spin)
+ * @summary Spin a wheel for self (miniapp)
  */
-export const usePostLuckyWheelsIdSpinAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postLuckyWheelsIdSpinAdmin>>, TError,{id: string;data: PostLuckyWheelsIdSpinAdminBody}, TContext>, }
+export const usePostLuckyWheelsIdSpinApp = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postLuckyWheelsIdSpinApp>>, TError,{id: string;data: PostLuckyWheelsIdSpinAppBody}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postLuckyWheelsIdSpinAdmin>>,
+        Awaited<ReturnType<typeof postLuckyWheelsIdSpinApp>>,
         TError,
-        {id: string;data: PostLuckyWheelsIdSpinAdminBody},
+        {id: string;data: PostLuckyWheelsIdSpinAppBody},
         TContext
       > => {
 
-      const mutationOptions = getPostLuckyWheelsIdSpinAdminMutationOptions(options);
+      const mutationOptions = getPostLuckyWheelsIdSpinAppMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -1769,17 +1769,17 @@ export const prefetchGetLuckyWheelsIdEligibleCustomersAdminQuery = async <TData 
 
 
 /**
- * **GET /lucky-wheels/spins/admin** — lịch sử quay của khách đang đăng nhập (mới nhất trước, tối đa 30 lượt). Cần đăng nhập + `wheel.view_own`. Quản trị xem lượt quay theo vòng quay tại `GET /lucky-wheels/{id}/spins/admin` (`wheel.view_all`).
- * @summary My spin history
+ * **LW-04A** — GET /lucky-wheels/spins/app. Lịch sử quay CỦA CHÍNH tài khoản (mới nhất trước, tối đa 30 lượt). Chỉ cần đăng nhập (API miniapp — không áp phân quyền, dữ liệu luôn của chính tài khoản).
+ * @summary My spin history (miniapp)
  */
-export const getLuckyWheelsSpinsAdmin = (
+export const getLuckyWheelsSpinsApp = (
     
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<GetLuckyWheelsSpinsAdmin200>(
-      {url: `/lucky-wheels/spins/admin`, method: 'GET', signal
+      return customInstance<GetLuckyWheelsSpinsApp200>(
+      {url: `/lucky-wheels/spins/app`, method: 'GET', signal
     },
       );
     }
@@ -1787,75 +1787,75 @@ export const getLuckyWheelsSpinsAdmin = (
 
 
 
-export const getGetLuckyWheelsSpinsAdminInfiniteQueryKey = () => {
+export const getGetLuckyWheelsSpinsAppInfiniteQueryKey = () => {
     return [
-    'infinite', `/lucky-wheels/spins/admin`
+    'infinite', `/lucky-wheels/spins/app`
     ] as const;
     }
 
-export const getGetLuckyWheelsSpinsAdminQueryKey = () => {
+export const getGetLuckyWheelsSpinsAppQueryKey = () => {
     return [
-    `/lucky-wheels/spins/admin`
+    `/lucky-wheels/spins/app`
     ] as const;
     }
 
     
-export const getGetLuckyWheelsSpinsAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getLuckyWheelsSpinsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLuckyWheelsSpinsAdmin>>, TError, TData>>, }
+export const getGetLuckyWheelsSpinsAppInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getLuckyWheelsSpinsApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLuckyWheelsSpinsApp>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetLuckyWheelsSpinsAdminInfiniteQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getGetLuckyWheelsSpinsAppInfiniteQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLuckyWheelsSpinsAdmin>>> = ({ signal }) => getLuckyWheelsSpinsAdmin(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLuckyWheelsSpinsApp>>> = ({ signal }) => getLuckyWheelsSpinsApp(signal);
 
       
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLuckyWheelsSpinsAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLuckyWheelsSpinsApp>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetLuckyWheelsSpinsAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getLuckyWheelsSpinsAdmin>>>
-export type GetLuckyWheelsSpinsAdminInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+export type GetLuckyWheelsSpinsAppInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getLuckyWheelsSpinsApp>>>
+export type GetLuckyWheelsSpinsAppInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
 
 
-export function useGetLuckyWheelsSpinsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getLuckyWheelsSpinsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLuckyWheelsSpinsAdmin>>, TError, TData>> & Pick<
+export function useGetLuckyWheelsSpinsAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getLuckyWheelsSpinsApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLuckyWheelsSpinsApp>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getLuckyWheelsSpinsAdmin>>,
+          Awaited<ReturnType<typeof getLuckyWheelsSpinsApp>>,
           TError,
-          Awaited<ReturnType<typeof getLuckyWheelsSpinsAdmin>>
+          Awaited<ReturnType<typeof getLuckyWheelsSpinsApp>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetLuckyWheelsSpinsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getLuckyWheelsSpinsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLuckyWheelsSpinsAdmin>>, TError, TData>> & Pick<
+export function useGetLuckyWheelsSpinsAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getLuckyWheelsSpinsApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLuckyWheelsSpinsApp>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getLuckyWheelsSpinsAdmin>>,
+          Awaited<ReturnType<typeof getLuckyWheelsSpinsApp>>,
           TError,
-          Awaited<ReturnType<typeof getLuckyWheelsSpinsAdmin>>
+          Awaited<ReturnType<typeof getLuckyWheelsSpinsApp>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetLuckyWheelsSpinsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getLuckyWheelsSpinsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLuckyWheelsSpinsAdmin>>, TError, TData>>, }
+export function useGetLuckyWheelsSpinsAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getLuckyWheelsSpinsApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLuckyWheelsSpinsApp>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary My spin history
+ * @summary My spin history (miniapp)
  */
 
-export function useGetLuckyWheelsSpinsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getLuckyWheelsSpinsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLuckyWheelsSpinsAdmin>>, TError, TData>>, }
+export function useGetLuckyWheelsSpinsAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getLuckyWheelsSpinsApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLuckyWheelsSpinsApp>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetLuckyWheelsSpinsAdminInfiniteQueryOptions(options)
+  const queryOptions = getGetLuckyWheelsSpinsAppInfiniteQueryOptions(options)
 
   const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -1865,14 +1865,14 @@ export function useGetLuckyWheelsSpinsAdminInfinite<TData = InfiniteData<Awaited
 }
 
 /**
- * @summary My spin history
+ * @summary My spin history (miniapp)
  */
-export const prefetchGetLuckyWheelsSpinsAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getLuckyWheelsSpinsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLuckyWheelsSpinsAdmin>>, TError, TData>>, }
+export const prefetchGetLuckyWheelsSpinsAppInfiniteQuery = async <TData = Awaited<ReturnType<typeof getLuckyWheelsSpinsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getLuckyWheelsSpinsApp>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetLuckyWheelsSpinsAdminInfiniteQueryOptions(options)
+  const queryOptions = getGetLuckyWheelsSpinsAppInfiniteQueryOptions(options)
 
   await queryClient.prefetchInfiniteQuery(queryOptions);
 
@@ -1881,62 +1881,62 @@ export const prefetchGetLuckyWheelsSpinsAdminInfiniteQuery = async <TData = Awai
 
 
 
-export const getGetLuckyWheelsSpinsAdminQueryOptions = <TData = Awaited<ReturnType<typeof getLuckyWheelsSpinsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLuckyWheelsSpinsAdmin>>, TError, TData>>, }
+export const getGetLuckyWheelsSpinsAppQueryOptions = <TData = Awaited<ReturnType<typeof getLuckyWheelsSpinsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLuckyWheelsSpinsApp>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetLuckyWheelsSpinsAdminQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getGetLuckyWheelsSpinsAppQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLuckyWheelsSpinsAdmin>>> = ({ signal }) => getLuckyWheelsSpinsAdmin(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLuckyWheelsSpinsApp>>> = ({ signal }) => getLuckyWheelsSpinsApp(signal);
 
       
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getLuckyWheelsSpinsAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getLuckyWheelsSpinsApp>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetLuckyWheelsSpinsAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getLuckyWheelsSpinsAdmin>>>
-export type GetLuckyWheelsSpinsAdminQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+export type GetLuckyWheelsSpinsAppQueryResult = NonNullable<Awaited<ReturnType<typeof getLuckyWheelsSpinsApp>>>
+export type GetLuckyWheelsSpinsAppQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
 
 
-export function useGetLuckyWheelsSpinsAdmin<TData = Awaited<ReturnType<typeof getLuckyWheelsSpinsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLuckyWheelsSpinsAdmin>>, TError, TData>> & Pick<
+export function useGetLuckyWheelsSpinsApp<TData = Awaited<ReturnType<typeof getLuckyWheelsSpinsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLuckyWheelsSpinsApp>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getLuckyWheelsSpinsAdmin>>,
+          Awaited<ReturnType<typeof getLuckyWheelsSpinsApp>>,
           TError,
-          Awaited<ReturnType<typeof getLuckyWheelsSpinsAdmin>>
+          Awaited<ReturnType<typeof getLuckyWheelsSpinsApp>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetLuckyWheelsSpinsAdmin<TData = Awaited<ReturnType<typeof getLuckyWheelsSpinsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLuckyWheelsSpinsAdmin>>, TError, TData>> & Pick<
+export function useGetLuckyWheelsSpinsApp<TData = Awaited<ReturnType<typeof getLuckyWheelsSpinsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLuckyWheelsSpinsApp>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getLuckyWheelsSpinsAdmin>>,
+          Awaited<ReturnType<typeof getLuckyWheelsSpinsApp>>,
           TError,
-          Awaited<ReturnType<typeof getLuckyWheelsSpinsAdmin>>
+          Awaited<ReturnType<typeof getLuckyWheelsSpinsApp>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetLuckyWheelsSpinsAdmin<TData = Awaited<ReturnType<typeof getLuckyWheelsSpinsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLuckyWheelsSpinsAdmin>>, TError, TData>>, }
+export function useGetLuckyWheelsSpinsApp<TData = Awaited<ReturnType<typeof getLuckyWheelsSpinsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLuckyWheelsSpinsApp>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary My spin history
+ * @summary My spin history (miniapp)
  */
 
-export function useGetLuckyWheelsSpinsAdmin<TData = Awaited<ReturnType<typeof getLuckyWheelsSpinsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLuckyWheelsSpinsAdmin>>, TError, TData>>, }
+export function useGetLuckyWheelsSpinsApp<TData = Awaited<ReturnType<typeof getLuckyWheelsSpinsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLuckyWheelsSpinsApp>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetLuckyWheelsSpinsAdminQueryOptions(options)
+  const queryOptions = getGetLuckyWheelsSpinsAppQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -1946,14 +1946,14 @@ export function useGetLuckyWheelsSpinsAdmin<TData = Awaited<ReturnType<typeof ge
 }
 
 /**
- * @summary My spin history
+ * @summary My spin history (miniapp)
  */
-export const prefetchGetLuckyWheelsSpinsAdminQuery = async <TData = Awaited<ReturnType<typeof getLuckyWheelsSpinsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLuckyWheelsSpinsAdmin>>, TError, TData>>, }
+export const prefetchGetLuckyWheelsSpinsAppQuery = async <TData = Awaited<ReturnType<typeof getLuckyWheelsSpinsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLuckyWheelsSpinsApp>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetLuckyWheelsSpinsAdminQueryOptions(options)
+  const queryOptions = getGetLuckyWheelsSpinsAppQueryOptions(options)
 
   await queryClient.prefetchQuery(queryOptions);
 

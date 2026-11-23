@@ -1,4 +1,5 @@
 import { getRankCardArt } from '@/utils/rankCardArt'
+import { displayName } from '@/utils/displayName'
 import { useRef, useState } from 'react'
 import { Button, Col, Form, Input, Modal, Row, Select, Space, Table, Tabs, Tag, Typography, message } from 'antd'
 import { ArrowDownOutlined, ArrowUpOutlined, ClockCircleOutlined, CrownOutlined, DeleteOutlined, EditOutlined, PlusOutlined, SyncOutlined } from '@ant-design/icons'
@@ -580,7 +581,7 @@ export default function Points() {
             optionFilterProp="label"
             value={historyProfileId ?? undefined}
             onChange={(v) => { setHistoryProfileId(v ?? null); setHistoryPage(1) }}
-            options={profilesData.map((profile) => ({ value: profile.id, label: profile.full_name || profile.phone || profile.id }))}
+            options={profilesData.map((profile) => ({ value: profile.id, label: profile.full_name || profile.zalo_name || profile.phone || profile.id }))}
           />
         </Space>
       </div>
@@ -599,7 +600,7 @@ export default function Points() {
               if (!customer) return '—'
               return (
                 <div>
-                  <div style={{ fontWeight: 500 }}>{customer.full_name || '—'}</div>
+                  <div style={{ fontWeight: 500 }}>{displayName(customer)}</div>
                   <div style={{ fontSize: 12, color: '#6F7071' }}>{customer.customer_code || customer.phone || ''}</div>
                 </div>
               )

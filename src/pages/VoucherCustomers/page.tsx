@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { displayName } from '@/utils/displayName'
 import { Alert, Button, Form, Input, Modal, Popconfirm, Select, Table, Tabs, Tag, Typography, message } from 'antd'
 import type { TableColumnsType } from 'antd'
 import { DeleteOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
@@ -104,7 +105,7 @@ function VoucherCustomerTab({ category, branches }: { category: VoucherCategory;
   const customerRows = customersQuery.data?.pages.flatMap((pageResult) => pickData<CustomerProfile[]>(pageResult) ?? []) ?? []
   const customerOptions = customerRows.map((customer) => ({
     value: customer.id,
-    label: [customer.full_name || '—', customer.phone, customer.customer_code].filter(Boolean).join(' · '),
+    label: [displayName(customer), customer.phone, customer.customer_code].filter(Boolean).join(' · '),
   }))
 
   const assignMutation = useMutation({

@@ -33,6 +33,7 @@ import { useGetLookupListsAdmin } from '@/api/endpoints/lookup-lists'
 import { useGetUsersAdmin } from '@/api/endpoints/users'
 import { useBrandCurrency } from '@/themeRuntime'
 import { useCustomerProfileAccess } from '@/utils/customerProfileAccess'
+import { displayName } from '@/utils/displayName'
 import useCustomFieldDefinitions from '@/hooks/useCustomFieldDefinitions'
 import { Can, useAbility } from '@casl/react'
 import TreatmentCreateModal from './components/TreatmentCreateModal'
@@ -239,9 +240,11 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
 
   const profileOf = (id: string) => profiles.find((p) => p.id === id)
   const profileName = (row: CustomerTreatment) =>
-    (row as CustomerTreatment & { customer_profile?: { full_name?: string } }).customer_profile?.full_name
-    ?? profileOf(row.customer_profile_id)?.full_name
-    ?? 'Khách hàng'
+    displayName(
+      (row as CustomerTreatment & { customer_profile?: { full_name?: string; zalo_name?: string } }).customer_profile
+      ?? profileOf(row.customer_profile_id),
+      'Khách hàng',
+    )
   const profilePhone = (row: CustomerTreatment) =>
     (row as CustomerTreatment & { customer_profile?: { phone?: string } }).customer_profile?.phone ?? profileOf(row.customer_profile_id)?.phone
   const treatmentCode = (row: CustomerTreatment) => row.id.replace(/-/g, '').slice(0, 8).toUpperCase()

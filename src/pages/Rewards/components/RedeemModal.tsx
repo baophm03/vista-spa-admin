@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { displayName } from '@/utils/displayName'
 import { Alert, Descriptions, Form, type FormInstance, Modal, Select, Typography } from 'antd'
 import { useGetCustomerProfilesAdmin, useGetCustomerProfilesIdPointsAdmin } from '@/api/endpoints/customer-profiles'
 import { pickData } from '@/api/helpers'
@@ -58,7 +59,7 @@ export default function RedeemModal({
   const customerList: CustomerProfile[] = Array.isArray(customersPayload) ? customersPayload : customersPayload?.items ?? []
   const customerOptions = (selectedCustomer ? [selectedCustomer, ...customerList] : customerList)
     .filter((item, index, all) => all.findIndex((candidate) => candidate.id === item.id) === index)
-    .map((item) => ({ value: item.id, label: `${item.full_name} — ${item.phone}` }))
+    .map((item) => ({ value: item.id, label: `${displayName(item)} — ${item.phone}` }))
 
   const pointsQuery = useGetCustomerProfilesIdPointsAdmin(customerId ?? '', {
     query: { enabled: Boolean(customerId) },

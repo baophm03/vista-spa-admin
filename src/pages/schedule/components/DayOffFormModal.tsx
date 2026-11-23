@@ -6,6 +6,7 @@ import type { ShiftTemplate, ScheduleStaff } from '../types'
 import { staffLabel } from '../types'
 import { useGetStaffDaysOffConflictsAdmin } from '@/api/endpoints/staff'
 import { pickData } from '@/api/helpers'
+import { displayName } from '@/utils/displayName'
 
 interface ConflictAppointment {
   id: string
@@ -83,7 +84,7 @@ export default function DayOffFormModal({ open, form, staff, scheduledTemplates,
                   rowKey="id" size="small" pagination={false} scroll={{ y: 200 }} dataSource={conflicts}
                   columns={[
                     { title: 'Giờ', dataIndex: 'start_time', render: (v: string) => v?.slice(0, 5) },
-                    { title: 'Khách', dataIndex: ['customer_profile', 'full_name'], render: (v) => v || '—' },
+                    { title: 'Khách', dataIndex: ['customer_profile', 'full_name'], render: (_: unknown, row: ConflictAppointment) => displayName(row.customer_profile) },
                     { title: 'Dịch vụ', dataIndex: ['service', 'title'], render: (v) => v || '—' },
                     { title: 'Trạng thái', dataIndex: 'status', render: (v) => v === 'approved' ? 'Đã duyệt' : 'Chờ duyệt' },
                   ]}

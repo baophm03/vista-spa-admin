@@ -30,9 +30,15 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  ForbiddenResponse,
+  InternalErrorResponse,
   LegacyBadRequestResponse,
+  PostSupportQuestionsApp200,
+  PostSupportQuestionsAppBody,
   Response,
-  SupportChannelCreate
+  SupportChannelCreate,
+  UnauthorizedResponse,
+  UnprocessableEntityResponse
 } from '../models';
 
 import { customInstance } from '../mutator/custom-instance';
@@ -42,6 +48,71 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
+ * **SQ-02A** — POST /support-questions/app. Gửi câu hỏi hỗ trợ từ tài khoản đang đăng nhập. Chỉ cần đăng nhập (API miniapp — không áp phân quyền, dữ liệu luôn của chính tài khoản).
+ * @summary Submit a support question for self (miniapp)
+ */
+export const postSupportQuestionsApp = (
+    postSupportQuestionsAppBody: PostSupportQuestionsAppBody,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<PostSupportQuestionsApp200>(
+      {url: `/support-questions/app`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: postSupportQuestionsAppBody, signal
+    },
+      );
+    }
+  
+
+
+export const getPostSupportQuestionsAppMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postSupportQuestionsApp>>, TError,{data: PostSupportQuestionsAppBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postSupportQuestionsApp>>, TError,{data: PostSupportQuestionsAppBody}, TContext> => {
+
+const mutationKey = ['postSupportQuestionsApp'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postSupportQuestionsApp>>, {data: PostSupportQuestionsAppBody}> = (props) => {
+          const {data} = props ?? {};
+
+          return  postSupportQuestionsApp(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostSupportQuestionsAppMutationResult = NonNullable<Awaited<ReturnType<typeof postSupportQuestionsApp>>>
+    export type PostSupportQuestionsAppMutationBody = PostSupportQuestionsAppBody
+    export type PostSupportQuestionsAppMutationError = UnauthorizedResponse | ForbiddenResponse | UnprocessableEntityResponse | InternalErrorResponse
+
+    /**
+ * @summary Submit a support question for self (miniapp)
+ */
+export const usePostSupportQuestionsApp = <TError = UnauthorizedResponse | ForbiddenResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postSupportQuestionsApp>>, TError,{data: PostSupportQuestionsAppBody}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postSupportQuestionsApp>>,
+        TError,
+        {data: PostSupportQuestionsAppBody},
+        TContext
+      > => {
+
+      const mutationOptions = getPostSupportQuestionsAppMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
  * GET `/support/schedules` — support content. Public, no authentication required. Handled by `supportScheduleProvider.getAll`.
  * @summary List support schedules
  */

@@ -36,6 +36,7 @@ import type {
   GetMembershipTransactionsAdminParams,
   GetMembershipsAdmin200,
   GetMembershipsAdminParams,
+  GetMembershipsApp200,
   InternalErrorResponse,
   NotFoundResponse,
   PostMembershipsCustomerProfileIdPointsAdjustAdmin200,
@@ -249,7 +250,201 @@ export const usePostMembershipsCustomerProfileIdPointsAdjustAdmin = <TError = Un
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **MB-00** — GET /memberships/admin. Cần đăng nhập + `membership.view_all` (xem hạng/điểm của một hồ sơ khách — bắt buộc query `customer_profile_id`) hoặc `membership.view_own` — khi đó trả về hạng + điểm của chính khách đăng nhập (shape miniapp của GET /app/me/membership cũ: số dư điểm + `points_history` 100 giao dịch gần nhất).
+ * **MB-01A** — GET /memberships/app. Hạng + điểm + lịch sử điểm CỦA CHÍNH tài khoản (shape miniapp: số dư điểm + `points_history` 100 giao dịch gần nhất). Chỉ cần đăng nhập (API miniapp — không áp phân quyền, dữ liệu luôn của chính tài khoản).
+ * @summary My membership (miniapp)
+ */
+export const getMembershipsApp = (
+    
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetMembershipsApp200>(
+      {url: `/memberships/app`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetMembershipsAppInfiniteQueryKey = () => {
+    return [
+    'infinite', `/memberships/app`
+    ] as const;
+    }
+
+export const getGetMembershipsAppQueryKey = () => {
+    return [
+    `/memberships/app`
+    ] as const;
+    }
+
+    
+export const getGetMembershipsAppInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getMembershipsApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getMembershipsApp>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetMembershipsAppInfiniteQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMembershipsApp>>> = ({ signal }) => getMembershipsApp(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getMembershipsApp>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetMembershipsAppInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getMembershipsApp>>>
+export type GetMembershipsAppInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+
+
+export function useGetMembershipsAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getMembershipsApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getMembershipsApp>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getMembershipsApp>>,
+          TError,
+          Awaited<ReturnType<typeof getMembershipsApp>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetMembershipsAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getMembershipsApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getMembershipsApp>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getMembershipsApp>>,
+          TError,
+          Awaited<ReturnType<typeof getMembershipsApp>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetMembershipsAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getMembershipsApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getMembershipsApp>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary My membership (miniapp)
+ */
+
+export function useGetMembershipsAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getMembershipsApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getMembershipsApp>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetMembershipsAppInfiniteQueryOptions(options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary My membership (miniapp)
+ */
+export const prefetchGetMembershipsAppInfiniteQuery = async <TData = Awaited<ReturnType<typeof getMembershipsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getMembershipsApp>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetMembershipsAppInfiniteQueryOptions(options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetMembershipsAppQueryOptions = <TData = Awaited<ReturnType<typeof getMembershipsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMembershipsApp>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetMembershipsAppQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMembershipsApp>>> = ({ signal }) => getMembershipsApp(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getMembershipsApp>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetMembershipsAppQueryResult = NonNullable<Awaited<ReturnType<typeof getMembershipsApp>>>
+export type GetMembershipsAppQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+
+
+export function useGetMembershipsApp<TData = Awaited<ReturnType<typeof getMembershipsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMembershipsApp>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getMembershipsApp>>,
+          TError,
+          Awaited<ReturnType<typeof getMembershipsApp>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetMembershipsApp<TData = Awaited<ReturnType<typeof getMembershipsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMembershipsApp>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getMembershipsApp>>,
+          TError,
+          Awaited<ReturnType<typeof getMembershipsApp>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetMembershipsApp<TData = Awaited<ReturnType<typeof getMembershipsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMembershipsApp>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary My membership (miniapp)
+ */
+
+export function useGetMembershipsApp<TData = Awaited<ReturnType<typeof getMembershipsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMembershipsApp>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetMembershipsAppQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary My membership (miniapp)
+ */
+export const prefetchGetMembershipsAppQuery = async <TData = Awaited<ReturnType<typeof getMembershipsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMembershipsApp>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetMembershipsAppQueryOptions(options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * **MB-00** — GET /memberships/admin. Cần đăng nhập + `membership.read_all`; bắt buộc query `customer_profile_id` (branch scope kiểm tra bên trong). Hạng/điểm của chính tài khoản (miniapp): GET /memberships/app.
  * @summary View membership info (management / my membership)
  */
 export const getMembershipsAdmin = (
@@ -444,7 +639,7 @@ export const prefetchGetMembershipsAdminQuery = async <TData = Awaited<ReturnTyp
 
 
 /**
- * **LY-03** — GET /membership-transactions/admin. Cần đăng nhập + `membership_transaction.view_all` (branch scope áp dụng) hoặc `membership_transaction.view_own` — chỉ xem giao dịch điểm của hồ sơ khách liên kết. Query: `page`, `limit`, `customer_profile_id?`, `ref_type?`, `direction?` (`plus` | `minus`).
+ * **LY-03** — GET /membership-transactions/admin. Cần đăng nhập + `membership_transaction.read_all` (branch scope áp dụng). Query: `page`, `limit`, `customer_profile_id?`, `ref_type?`, `direction?` (`plus` | `minus`).
  * @summary List all membership point transactions (global log)
  */
 export const getMembershipTransactionsAdmin = (

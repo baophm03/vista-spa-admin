@@ -7,6 +7,7 @@ import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
 import TableEmpty from '@/components/base/TableEmpty'
 import { errorMessage, pickData } from '@/api/helpers'
+import { displayName } from '@/utils/displayName'
 import type { Branch } from '@/api/models/branch'
 import { getGetPaymentsAdminQueryKey, useGetPaymentsAdmin, usePostPaymentsIdVoidAdmin } from '@/api/endpoints/treatment-customers'
 import { useGetBranchesAdmin } from '@/api/endpoints/branches'
@@ -98,7 +99,7 @@ export default function Payments() {
         if (!customer) return '—'
         return (
           <Space direction="vertical" size={0}>
-            <span style={{ fontWeight: 600 }}>{customer.full_name}</span>
+            <span style={{ fontWeight: 600 }}>{displayName(customer)}</span>
             <Typography.Text type="secondary" style={{ fontSize: 12 }}>
               {customer.phone}
             </Typography.Text>

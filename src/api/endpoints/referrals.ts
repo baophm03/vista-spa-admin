@@ -34,10 +34,10 @@ import type {
   ForbiddenResponse,
   GetReferralsAdmin200,
   GetReferralsAdminParams,
+  GetReferralsApp200,
   InternalErrorResponse,
-  NotFoundResponse,
-  PostReferralsApplyAdmin200,
-  PostReferralsApplyAdminBody,
+  PostReferralsApplyApp200,
+  PostReferralsApplyAppBody,
   UnauthorizedResponse,
   UnprocessableEntityResponse
 } from '../models';
@@ -49,30 +49,30 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * **APP-23** — POST /referrals/apply/admin (gộp từ POST /app/me/referrals/apply). Luôn self-scope theo tài khoản đăng nhập — cần đăng nhập + `referral.create`. Body field: `code`. Resolve mã giới thiệu `CTV-XXXXXX` (users.ref_code) hoặc `customer_code` của khách khác, rồi tạo referral + tự gắn quy tắc ưu đãi NEW_BY_REFERRAL đang bật. Chặn: mã của chính mình, đã được giới thiệu, hoặc đã có gói liệu trình.
- * @summary Khách tự nhập mã giới thiệu
+ * **REF-03A** — POST /referrals/apply/app. Áp mã giới thiệu cho tài khoản đang đăng nhập. Chỉ cần đăng nhập (API miniapp — không áp phân quyền, dữ liệu luôn của chính tài khoản). Body: `code`.
+ * @summary Apply a referral code for self (miniapp)
  */
-export const postReferralsApplyAdmin = (
-    postReferralsApplyAdminBody: PostReferralsApplyAdminBody,
+export const postReferralsApplyApp = (
+    postReferralsApplyAppBody: PostReferralsApplyAppBody,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<PostReferralsApplyAdmin200>(
-      {url: `/referrals/apply/admin`, method: 'POST',
+      return customInstance<PostReferralsApplyApp200>(
+      {url: `/referrals/apply/app`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: postReferralsApplyAdminBody, signal
+      data: postReferralsApplyAppBody, signal
     },
       );
     }
   
 
 
-export const getPostReferralsApplyAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postReferralsApplyAdmin>>, TError,{data: PostReferralsApplyAdminBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postReferralsApplyAdmin>>, TError,{data: PostReferralsApplyAdminBody}, TContext> => {
+export const getPostReferralsApplyAppMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postReferralsApplyApp>>, TError,{data: PostReferralsApplyAppBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postReferralsApplyApp>>, TError,{data: PostReferralsApplyAppBody}, TContext> => {
 
-const mutationKey = ['postReferralsApplyAdmin'];
+const mutationKey = ['postReferralsApplyApp'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -82,10 +82,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postReferralsApplyAdmin>>, {data: PostReferralsApplyAdminBody}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postReferralsApplyApp>>, {data: PostReferralsApplyAppBody}> = (props) => {
           const {data} = props ?? {};
 
-          return  postReferralsApplyAdmin(data,)
+          return  postReferralsApplyApp(data,)
         }
 
         
@@ -93,28 +93,222 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PostReferralsApplyAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postReferralsApplyAdmin>>>
-    export type PostReferralsApplyAdminMutationBody = PostReferralsApplyAdminBody
-    export type PostReferralsApplyAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse
+    export type PostReferralsApplyAppMutationResult = NonNullable<Awaited<ReturnType<typeof postReferralsApplyApp>>>
+    export type PostReferralsApplyAppMutationBody = PostReferralsApplyAppBody
+    export type PostReferralsApplyAppMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Khách tự nhập mã giới thiệu
+ * @summary Apply a referral code for self (miniapp)
  */
-export const usePostReferralsApplyAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postReferralsApplyAdmin>>, TError,{data: PostReferralsApplyAdminBody}, TContext>, }
+export const usePostReferralsApplyApp = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postReferralsApplyApp>>, TError,{data: PostReferralsApplyAppBody}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postReferralsApplyAdmin>>,
+        Awaited<ReturnType<typeof postReferralsApplyApp>>,
         TError,
-        {data: PostReferralsApplyAdminBody},
+        {data: PostReferralsApplyAppBody},
         TContext
       > => {
 
-      const mutationOptions = getPostReferralsApplyAdminMutationOptions(options);
+      const mutationOptions = getPostReferralsApplyAppMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **CO-06** — GET /referrals/admin. Cần đăng nhập + `referral.view_all` hoặc `referral.view_own` — khi đó trả về thông tin giới thiệu của chính khách đăng nhập (shape miniapp của GET /app/me/referrals cũ: `code`, `friend_reward`, `referrals` kèm trạng thái + hoa hồng). Query parameters: `status`, `referrer_type`.
+ * **REF-01A** — GET /referrals/app. Mã giới thiệu + danh sách người đã giới thiệu CỦA CHÍNH tài khoản (referrer_type=CUSTOMER). Chỉ cần đăng nhập (API miniapp — không áp phân quyền, dữ liệu luôn của chính tài khoản).
+ * @summary My referrals (miniapp)
+ */
+export const getReferralsApp = (
+    
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetReferralsApp200>(
+      {url: `/referrals/app`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetReferralsAppInfiniteQueryKey = () => {
+    return [
+    'infinite', `/referrals/app`
+    ] as const;
+    }
+
+export const getGetReferralsAppQueryKey = () => {
+    return [
+    `/referrals/app`
+    ] as const;
+    }
+
+    
+export const getGetReferralsAppInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getReferralsApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReferralsApp>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetReferralsAppInfiniteQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getReferralsApp>>> = ({ signal }) => getReferralsApp(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReferralsApp>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetReferralsAppInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getReferralsApp>>>
+export type GetReferralsAppInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+
+
+export function useGetReferralsAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReferralsApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReferralsApp>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getReferralsApp>>,
+          TError,
+          Awaited<ReturnType<typeof getReferralsApp>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetReferralsAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReferralsApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReferralsApp>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getReferralsApp>>,
+          TError,
+          Awaited<ReturnType<typeof getReferralsApp>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetReferralsAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReferralsApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReferralsApp>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary My referrals (miniapp)
+ */
+
+export function useGetReferralsAppInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getReferralsApp>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReferralsApp>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetReferralsAppInfiniteQueryOptions(options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary My referrals (miniapp)
+ */
+export const prefetchGetReferralsAppInfiniteQuery = async <TData = Awaited<ReturnType<typeof getReferralsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getReferralsApp>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetReferralsAppInfiniteQueryOptions(options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetReferralsAppQueryOptions = <TData = Awaited<ReturnType<typeof getReferralsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReferralsApp>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetReferralsAppQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getReferralsApp>>> = ({ signal }) => getReferralsApp(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getReferralsApp>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetReferralsAppQueryResult = NonNullable<Awaited<ReturnType<typeof getReferralsApp>>>
+export type GetReferralsAppQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+
+
+export function useGetReferralsApp<TData = Awaited<ReturnType<typeof getReferralsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReferralsApp>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getReferralsApp>>,
+          TError,
+          Awaited<ReturnType<typeof getReferralsApp>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetReferralsApp<TData = Awaited<ReturnType<typeof getReferralsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReferralsApp>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getReferralsApp>>,
+          TError,
+          Awaited<ReturnType<typeof getReferralsApp>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetReferralsApp<TData = Awaited<ReturnType<typeof getReferralsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReferralsApp>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary My referrals (miniapp)
+ */
+
+export function useGetReferralsApp<TData = Awaited<ReturnType<typeof getReferralsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReferralsApp>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetReferralsAppQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary My referrals (miniapp)
+ */
+export const prefetchGetReferralsAppQuery = async <TData = Awaited<ReturnType<typeof getReferralsApp>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReferralsApp>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetReferralsAppQueryOptions(options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * **CO-06** — GET /referrals/admin. Cần đăng nhập + `referral.read_all`. Query parameters: `status`, `referrer_type`. Giới thiệu của chính tài khoản (miniapp): GET /referrals/app.
  * @summary Get referral list (management / my referrals)
  */
 export const getReferralsAdmin = (

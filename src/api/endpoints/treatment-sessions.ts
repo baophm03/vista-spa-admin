@@ -59,7 +59,7 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * **SS-01** — GET /treatment-customers/{id}/sessions/admin (writes a treatment-history data-access audit event). Cần đăng nhập + `treatment.view_all` (KTV chỉ thấy buổi được phân công) hoặc `treatment.view_own` — khách xem nhật ký buổi của gói liệu trình của chính mình, mới nhất trước (gộp từ GET /app/me/treatments/{id}/sessions cũ).
+ * **SS-01** — GET /treatment-customers/{id}/sessions/admin (ghi audit event truy cập lịch sử điều trị). Cần đăng nhập + `treatment.read_all` (KTV chỉ thấy buổi được phân công).
  * @summary View treatment sessions
  */
 export const getTreatmentCustomersIdSessionsAdmin = (

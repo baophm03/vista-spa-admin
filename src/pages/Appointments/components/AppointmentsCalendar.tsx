@@ -1,4 +1,5 @@
 import { useMemo, type MouseEvent } from 'react'
+import { displayName } from '@/utils/displayName'
 import { Button, Tooltip } from 'antd'
 import {
   ClockCircleOutlined,
@@ -151,7 +152,7 @@ export default function AppointmentsCalendar({
             const cat = getCategory(row)
             const categoryLabel = CATEGORY_COLORS[cat].label
 
-            const name = row.customer_profile?.full_name || 'Khách hàng'
+            const name = displayName(row.customer_profile, 'Khách hàng')
             const phone = row.customer_profile?.phone
             const time = startMinute === null ? '' : row.start_time.slice(0, 5)
             const knownEnd = timeInMinutes(row.end_time)

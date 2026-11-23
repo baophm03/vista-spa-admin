@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { displayName } from '@/utils/displayName'
 import {
   Alert,
   Button,
@@ -84,7 +85,7 @@ export default function RedemptionsTab() {
     {
       key: 'customer', title: 'Khách hàng', width: 220, render: (_v, row) => (
         <div>
-          <div>{row.customer_profile?.full_name ?? 'Khách hàng không xác định'}</div>
+          <div>{displayName(row.customer_profile, 'Khách hàng không xác định')}</div>
           <Typography.Text type="secondary" style={{ fontSize: 12 }}>
             {[row.customer_profile?.customer_code, row.customer_profile?.phone].filter(Boolean).join(' · ') || row.customer_profile_id}
           </Typography.Text>
