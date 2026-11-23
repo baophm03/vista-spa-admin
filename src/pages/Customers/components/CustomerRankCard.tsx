@@ -3,18 +3,27 @@ import { ExpandOutlined, MinusOutlined, PlusOutlined, ReloadOutlined, SwapOutlin
 import { Button, Modal } from 'antd'
 import dayjs from 'dayjs'
 import { getRankCardArt } from '@/utils/rankCardArt'
+import { fileSrc } from '@/hooks/useFileUrl'
 
 const initialPose = { x: 0, y: 0 }
 
-export default function CustomerRankCard({ rankName, achievedAt, expiresAt }: { rankName?: string; achievedAt?: string | null; expiresAt?: string | null }) {
+export default function CustomerRankCard({ rankName, imageFile, achievedAt, expiresAt }: {
+  rankName?: string
+  /** Ảnh thẻ admin upload (card_rank.image_file) — ưu tiên hiển thị trước art hardcode. */
+  imageFile?: { path?: string | null } | null
+  achievedAt?: string | null
+  expiresAt?: string | null
+}) {
   const [open, setOpen] = useState(false)
   const [pose, setPose] = useState(initialPose)
   const [zoom, setZoom] = useState(100)
   const [dragging, setDragging] = useState(false)
   const drag = useRef<{ id: number; x: number; y: number } | null>(null)
+  const uploadedSrc = fileSrc(imageFile)
   const art = getRankCardArt(rankName)
-  if (!art) return null
+  if (!uploadedSrc && !art) return null
 
+  const hasBack = !!art
   const imageBase = import.meta.env.BASE_URL + 'rank-cards/' + art
   const faceWidth = (back: boolean) => (art === 'gold' || (art === 'diamond' && back)) ? '133.5%' : '124.6%'
   const positions = art === 'gold' ? [44.1, 50.1, 63.4, 69.3] : [41, 46.5, 59, 64.3]
@@ -22,7 +31,7 @@ export default function CustomerRankCard({ rankName, achievedAt, expiresAt }: { 
     const date = value ? dayjs(value) : null
     return date?.isValid() ? [date.format('MM'), date.format('YY')] : ['', '']
   })
-  const dates = (art === 'gold' || art === 'diamond') && dateParts.map((value, index) => value && (
+  const dates = uploadedSrc ? null : (art === 'gold' || art === 'diamond') && dateParts.map((value, index) => value && (
     <span key={index}
       className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 text-[2.65cqw] font-bold leading-none tabular-nums text-slate-950"
       style={{ left: positions[index] + '%', top: '84.3%' }}
@@ -32,6 +41,9 @@ export default function CustomerRankCard({ rankName, achievedAt, expiresAt }: { 
   ))
   const reset = () => { setPose(initialPose); setZoom(100) }
 
+  const frontSrc = uploadedSrc ?? imageBase + '.png'
+  const backSrc = art ? imageBase + '-back.png' : undefined
+
   return (
     <>
       <button
@@ -40,9 +52,9 @@ export default function CustomerRankCard({ rankName, achievedAt, expiresAt }: { 
         onClick={() => { reset(); setOpen(true) }}
         className="group relative isolate block [container-type:inline-size] aspect-[5/3] w-full max-w-64 cursor-zoom-in overflow-hidden rounded-md border-0 bg-transparent p-0 focus-visible:outline-2 focus-visible:outline-offset-4"
       >
-        <img src={imageBase + '.png'} alt={'Mặt trước thẻ ' + rankName}
+        <img src={frontSrc} alt={'Thẻ ' + rankName}
           className="absolute left-1/2 top-1/2 h-[127.5%] max-w-none -translate-x-1/2 -translate-y-1/2"
-          style={{ width: faceWidth(false) }} />
+          style={{ width: uploadedSrc ? '100%' : faceWidth(false) }} />
         {dates}
         <span aria-hidden className="absolute bottom-2 right-2 grid size-7 place-items-center rounded-full bg-black/55 text-xs text-white group-hover:bg-black/75">
           <ExpandOutlined />
@@ -99,10 +111,10 @@ export default function CustomerRankCard({ rankName, achievedAt, expiresAt }: { 
                   className="absolute inset-0 overflow-hidden [container-type:inline-size] [clip-path:inset(0_round_clamp(5px,1vw,14px))] [backface-visibility:hidden]"
                   style={{ transform: back ? 'rotateY(180deg)' : undefined }}
                 >
-                  <img draggable={false} src={imageBase + (back ? '-back.png' : '.png')}
+                  <img draggable={false} src={back ? backSrc : frontSrc}
                     alt={back ? 'Mặt sau' : 'Mặt trước'}
                     className="absolute left-1/2 top-1/2 h-[127.5%] max-w-none -translate-x-1/2 -translate-y-1/2"
-                    style={{ width: faceWidth(back) }}
+                    style={{ width: uploadedSrc ? '100%' : faceWidth(back) }}
                   />
                   {!back && dates}
                 </div>
@@ -112,7 +124,8 @@ export default function CustomerRankCard({ rankName, achievedAt, expiresAt }: { 
           <div role="group" aria-label="Điều khiển thẻ"
             className="absolute bottom-[max(2rem,env(safe-area-inset-bottom))] left-1/2 flex w-max max-w-[calc(100vw-1.5rem)] -translate-x-1/2 items-center gap-1 rounded-[24px] border border-white/15 bg-[#19191d]/95 p-[5px] text-white shadow-xl backdrop-blur-md"
           >
-            <Button type="text" title="Lật thẻ" aria-label="Lật thẻ" className="size-9! shrink-0 rounded-[18px]! text-white! hover:bg-white/10!"
+            <Button type="text" title="Lật thẻ" aria-label="Lật thẻ" disabled={!hasBack}
+              className="size-9! shrink-0 rounded-[18px]! text-white! hover:bg-white/10!"
               icon={<SwapOutlined />} onClick={() => setPose((value) => ({ x: 0, y: (Math.round(value.y / 180) + 1) * 180 }))} />
             <span aria-hidden className="mx-0.5 h-4 border-l border-white/15" />
             <Button type="text" title="Thu nhỏ" aria-label="Thu nhỏ" disabled={zoom <= 60}

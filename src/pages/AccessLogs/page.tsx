@@ -1,5 +1,6 @@
+import ResponsiveTable from '@/components/base/ResponsiveTable'
 import { useEffect, useMemo, useState } from 'react'
-import { Alert, Button, DatePicker, Descriptions, Form, Input, Modal, Select, Space, Spin, Table, Tabs, Tag, Typography, message } from 'antd'
+import { Alert, Button, DatePicker, Descriptions, Form, Input, Modal, Select, Space, Spin, Tabs, Tag, Typography, message } from 'antd'
 import { ReloadOutlined, SearchOutlined } from '@ant-design/icons'
 import type { Dayjs } from 'dayjs'
 import dayjs from 'dayjs'
@@ -434,12 +435,13 @@ export default function AccessLogs() {
         />
       )}
 
-      <Table<AuditEvent>
+      <ResponsiveTable<AuditEvent>
         rowKey="id"
         loading={loading}
         dataSource={result.data}
         pagination={false}
         scroll={{ x: 1050 }}
+        onMobileCardClick={(row) => void openDetails(row)}
         onRow={(row) => ({ onClick: () => void openDetails(row), className: 'cursor-pointer' })}
         locale={{ emptyText: loadError ? null : <TableEmpty description="Chưa có sự kiện trong khoảng đã chọn" /> }}
         columns={[

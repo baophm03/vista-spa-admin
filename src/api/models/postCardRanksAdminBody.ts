@@ -23,4 +23,9 @@ export type PostCardRanksAdminBody = {
    * @pattern ^#[0-9A-Fa-f]{6}$
    */
   color?: string | null;
+  /**
+   * Ảnh thiết kế thẻ hạng (upload qua POST /files/admin); NULL = render card màu.
+   * @nullable
+   */
+  image_file_id?: string | null;
 };

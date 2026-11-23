@@ -1,5 +1,6 @@
 import { Card, Descriptions, Empty, Image, Table, Tag, Typography } from 'antd'
 import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
+import ResponsiveTable from '@/components/base/ResponsiveTable'
 import type { CustomerTreatment } from '@/api/models/customerTreatment'
 import type { PaymentLog } from '@/api/models/paymentLog'
 import type { SessionPhoto } from '@/api/models/sessionPhoto'
@@ -121,7 +122,7 @@ export default function CustomerTreatmentDetailCard({ treatment, sessions, payme
 
       {canReadPayments && <>
         <Typography.Title level={5} className="mt-[18px]">Thanh toán</Typography.Title>
-        {payments.length ? <Table<PaymentLog> rowKey="id" size="small" pagination={false} dataSource={payments} columns={[
+        {payments.length ? <ResponsiveTable<PaymentLog> rowKey="id" size="small" pagination={false} dataSource={payments} columns={[
           { title: 'Thời gian', dataIndex: 'paid_at', render: (value: string | null) => formatDateTime(value) },
           { title: 'Số tiền', dataIndex: 'amount', render: (value: number) => money(value) },
           { title: 'Phương thức', dataIndex: 'method', render: (value: string) => localizedLabel(value, PAYMENT_METHOD) },

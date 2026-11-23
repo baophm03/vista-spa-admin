@@ -1,6 +1,7 @@
+import ResponsiveTable from '@/components/base/ResponsiveTable'
 import { useEffect, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { Alert, Button, Card, Checkbox, Form, Modal, Progress, Select, Space, Steps, Table, Tag, Typography, Upload, message } from 'antd'
+import { Alert, Button, Card, Checkbox, Form, Modal, Progress, Select, Space, Steps, Tag, Typography, Upload, message } from 'antd'
 import { InboxOutlined, PlayCircleOutlined, SafetyOutlined, ThunderboltOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
@@ -663,7 +664,7 @@ export default function Imports() {
           {(report.error_rows ?? 0) > 0 && (
             <>
               <Typography.Title level={5}>Chi tiết lỗi từng dòng</Typography.Title>
-              <Table rowKey={(r) => String(r.row)} size="small" columns={errorColumns} dataSource={report.errors ?? []} pagination={{ pageSize: 5 }} />
+              <ResponsiveTable rowKey={(r) => String(r.row)} size="small" columns={errorColumns} dataSource={report.errors ?? []} pagination={{ pageSize: 5 }} />
             </>
           )}
           {(report.warnings?.length ?? 0) > 0 && (
@@ -675,13 +676,13 @@ export default function Imports() {
                 message="Dòng trùng trong file bị chặn (chỉ dòng đầu tiên được nhập). Khách/gói đã có sẵn trong hệ thống không bị tạo trùng — được cập nhật theo SĐT."
                 style={{ marginBottom: 8 }}
               />
-              <Table rowKey={(r) => `w-${r.row}-${r.message}`} size="small" columns={errorColumns} dataSource={report.warnings ?? []} pagination={{ pageSize: 5 }} />
+              <ResponsiveTable rowKey={(r) => `w-${r.row}-${r.message}`} size="small" columns={errorColumns} dataSource={report.warnings ?? []} pagination={{ pageSize: 5 }} />
             </>
           )}
           {(report.preview?.length ?? 0) > 0 && (
             <>
               <Typography.Title level={5}>Xem trước dữ liệu hợp lệ (10 dòng đầu)</Typography.Title>
-              <Table
+              <ResponsiveTable
                 rowKey={(_, i) => String(i)}
                 size="small"
                 columns={Object.keys(report.preview![0]).map((key) => ({ title: fieldLabels[key] ?? key, dataIndex: key, key, ellipsis: true }))}
@@ -695,7 +696,7 @@ export default function Imports() {
 
       <Card title="Lịch sử nhập gần đây">
         <Button size="small" style={{ marginBottom: 8 }} onClick={() => void reloadHistory()}>Làm mới</Button>
-        <Table rowKey="id" size="small" columns={historyColumns} dataSource={history} pagination={{ pageSize: 5 }} />
+        <ResponsiveTable rowKey="id" size="small" columns={historyColumns} dataSource={history} pagination={{ pageSize: 5 }} />
       </Card>
 
       {report && !report.dry_run && <Alert style={{ marginTop: 12 }} type="success" showIcon message="Nhập hoàn tất" description="Chạy lại cùng file sẽ cập nhật theo SĐT thay vì tạo trùng (idempotent upsert)." />}

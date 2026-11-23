@@ -1,7 +1,8 @@
 import { Button, Divider, Grid, message, Modal, Popconfirm, Progress, Select, Table, Tabs, Tag, Typography } from 'antd'
 import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import TableEmpty from '@/components/base/TableEmpty'
-import { openHtmlPrint, errorMessage } from '@/api/helpers'
+import { openHtmlPrint, errorMessage, pickData } from '@/api/helpers'
+import { useGetConfig } from '@/api/endpoints/config'
 import type { CustomerTreatment } from '@/api/models/customerTreatment'
 import type { CustomFieldDefWithOptions } from '@/components/CustomFieldFormItems'
 import { useBrandDateTime } from '@/themeRuntime'
@@ -13,6 +14,9 @@ import PointsHistoryPanel from './PointsHistoryPanel'
 interface TreatmentDetailModalProps {
   detail: CustomerTreatment | null
   payOpen: boolean
+  /** Mobile: chọn hiển thị 1 phần — 'summary' = panel tóm tắt+nút, 'tabs' = Buổi/TT/Điểm.
+   *  Desktop bỏ qua, luôn hiện cả 2 cột. */
+  mobileSection?: 'summary' | 'tabs'
   detailTab: 'sessions' | 'payments' | 'points'
   onTabChange: (tab: 'sessions' | 'payments' | 'points') => void
   profileName: (row: CustomerTreatment) => string
@@ -46,6 +50,7 @@ interface TreatmentDetailModalProps {
 export default function TreatmentDetailModal({
   detail,
   payOpen,
+  mobileSection,
   detailTab,
   onTabChange,
   profileName,
@@ -77,6 +82,9 @@ export default function TreatmentDetailModal({
 }: TreatmentDetailModalProps) {
   const { formatDateTime } = useBrandDateTime()
   const isMobile = !Grid.useBreakpoint().md
+  // Module hóa đơn tắt thì BE trả 404 "Module đang tắt" — ẩn nút In phiếu thay vì cho bấm lỗi
+  const configQuery = useGetConfig(undefined, { query: { staleTime: 5 * 60 * 1000 } })
+  const invoiceEnabled = pickData<{ settings?: Record<string, unknown> }>(configQuery.data)?.settings?.['module.invoice'] === true
   return (
     <Modal
       open={!!detail && !payOpen}
@@ -90,21 +98,23 @@ export default function TreatmentDetailModal({
         <div className="flex flex-wrap items-start gap-5">
           {/* Rail trái: tóm tắt + hành động — card nền brand-bg như modal lần làm dịch vụ */}
           {/* Cố định rail trái: scroll cột phải thì aside đứng yên (trừ mobile xếp chồng) */}
+          {/* Mobile mobileSection='tabs' → ẩn rail này, chỉ hiện phần tab cho gọn */}
+          {(!isMobile || mobileSection !== 'tabs') && (
           <aside
-            className="max-w-[330px] flex-[1_1_260px] rounded-[14px] border border-[var(--brand-border)] bg-[var(--brand-bg)] p-[18px]"
+            className={`flex-[1_1_260px] rounded-[14px] border border-[var(--brand-border)] bg-[var(--brand-bg)] ${isMobile ? 'p-3' : 'max-w-[330px] p-[18px]'}`}
             style={isMobile ? undefined : { position: 'sticky', top: 0, maxHeight: 'calc(100vh - 140px)', overflowY: 'auto' }}
           >
-            <Typography.Text type="secondary" className="text-xs font-extrabold tracking-[1.2px]">
+            <Typography.Text type="secondary" className={isMobile ? 'text-[11px] font-extrabold tracking-[1.2px]' : 'text-xs font-extrabold tracking-[1.2px]'}>
               {detail.quota_type === 'UNLIMITED' ? 'LIỆU TRÌNH TRỌN ĐỜI' : 'TIẾN ĐỘ LIỆU TRÌNH'}
             </Typography.Text>
-            <Typography.Title level={4} className="mt-[5px]! mb-0!">{packageName(detail)}</Typography.Title>
-            <Typography.Text type="secondary" className="block text-[13px]">
+            <Typography.Title level={4} className={`mb-0! ${isMobile ? 'mt-1! text-lg!' : 'mt-[5px]!'}`}>{packageName(detail)}</Typography.Title>
+            <Typography.Text type="secondary" className="block text-[12.5px]">
               {QUOTA_LABEL[detail.quota_type ?? ''] ?? detail.quota_type}
             </Typography.Text>
             {detail.quota_type !== 'UNLIMITED' ? (
               <>
-                <Progress percent={treatmentProgress(detail) ?? 0} size="small" showInfo={false} strokeColor="var(--brand-primary)" className="mt-2.5" />
-                <div className="flex justify-between gap-2.5 text-[13px]">
+                <Progress percent={treatmentProgress(detail) ?? 0} size="small" showInfo={false} strokeColor="var(--brand-primary)" className={isMobile ? 'mt-1.5' : 'mt-2.5'} />
+                <div className={`flex justify-between gap-2.5 ${isMobile ? 'text-[12.5px]' : 'text-[13px]'}`}>
                   <span>Đã dùng</span>
                   <strong>
                     {detail.quota_type === 'SESSIONS'
@@ -116,8 +126,8 @@ export default function TreatmentDetailModal({
             ) : (
               <Typography.Text type="secondary" className="mt-1 block">Không giới hạn số buổi</Typography.Text>
             )}
-            <Divider className="my-3!" />
-            <div className="grid gap-[9px] text-[13.5px]">
+            <Divider className={isMobile ? 'my-2!' : 'my-3!'} />
+            <div className={`grid ${isMobile ? 'gap-1.5 text-[13px]' : 'gap-[9px] text-[13.5px]'}`}>
               {canReadPayments && (
                 <div className="flex justify-between gap-2.5">
                   <span>Đã trả</span><strong>{formatMoney(detail.paid_amount)}</strong>
@@ -173,17 +183,17 @@ export default function TreatmentDetailModal({
               </div>
             </div>
             {supplementalInfo.length > 0 && (
-              <div className="mt-3 border-t border-[var(--brand-border-soft)] pt-3">
-                <Typography.Text strong>Thông tin bổ sung</Typography.Text>
+              <div className={`border-t border-[var(--brand-border-soft)] ${isMobile ? 'mt-2 pt-2' : 'mt-3 pt-3'}`}>
+                <Typography.Text strong style={isMobile ? { fontSize: 13 } : undefined}>Thông tin bổ sung</Typography.Text>
                 {supplementalInfo.map(({ key, label, value }) => (
-                  <div key={key} className="mt-1.5 flex justify-between gap-3 text-[13px]">
+                  <div key={key} className={`flex justify-between gap-3 ${isMobile ? 'mt-1 text-[12.5px]' : 'mt-1.5 text-[13px]'}`}>
                     <span className="text-[#6F7071]">{label}</span>
                     <span className="text-right wrap-anywhere">{value ?? '—'}</span>
                   </div>
                 ))}
               </div>
             )}
-            <div className="mt-4 flex flex-col gap-2">
+            <div className={`flex flex-col ${isMobile ? 'mt-2.5 gap-1.5' : 'mt-4 gap-2'}`}>
               {canCreateSessions && detail.status === 'ACTIVE' && (
                 <Button block disabled={addingSessionId !== null} loading={addingSessionId === detail.id} onClick={() => onAddSession(detail)}>
                   +1 buổi
@@ -211,7 +221,7 @@ export default function TreatmentDetailModal({
                 </Button>
               )}
               {/* INV-01 — In phiếu hóa đơn gói liệu trình (mở hộp thoại In của trình duyệt) */}
-              {canReadPayments && <Button
+              {canReadPayments && invoiceEnabled && <Button
                 block
                 onClick={() =>
                   void openHtmlPrint(`/invoices/${detail.id}/print/admin`).catch((err) => message.error(errorMessage(err, 'Không mở được phiếu in. Vui lòng kiểm tra cấu hình hóa đơn.')))
@@ -229,9 +239,12 @@ export default function TreatmentDetailModal({
               )}
             </div>
           </aside>
+          )}
 
           {/* Vùng chính: desktop dùng thanh Tabs, mobile dùng Select — nội dung render DUY NHẤT
                 ở khối phía dưới; trước đây Tabs lẫn khối dưới cùng cùng render nội dung gây double render */}
+          {/* Mobile mobileSection='summary' → ẩn phần tab, popup chỉ còn panel tóm tắt gọn */}
+          {(!isMobile || mobileSection !== 'summary') && (
           <div className="min-w-0 flex-[3_1_560px]">
             <Tabs
               className="max-md:hidden!"
@@ -329,6 +342,7 @@ export default function TreatmentDetailModal({
             )}
             {detailTab === 'points' && <PointsHistoryPanel profileId={detail.customer_profile_id} />}
           </div>
+          )}
         </div>
       )}
     </Modal>

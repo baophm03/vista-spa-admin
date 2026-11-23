@@ -167,7 +167,10 @@ export default function CustomerProfileHealthMetricsTab({ profileId }: { profile
       .map((row) => ({ date: formatDateTime(row.measured_at), value: Number(row.value_num), unit: row.unit || '' }))
     : []
 
-  if (loading) return <div className="py-9 text-center"><Spin tip="Đang tải dữ liệu sức khỏe…" /></div>
+  if (loading) return <>
+    <div className="desktop-only py-9 text-center"><Spin tip="Đang tải dữ liệu sức khỏe…" /></div>
+    <MobileCards rows={[]} rowKey={() => ''} renderCard={() => null} loading />
+  </>
   if (error) return <Alert type="error" showIcon message="Không tải được dữ liệu sức khỏe" description={error} action={<Button size="small" icon={<ReloadOutlined />} onClick={() => setRefresh((value) => value + 1)}>Thử lại</Button>} />
 
   return (

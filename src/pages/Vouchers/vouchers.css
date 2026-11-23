@@ -1,0 +1,119 @@
+.voucher-toolbar,
+.voucher-toolbar-search {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.voucher-toolbar {
+  justify-content: space-between;
+  margin-block: 16px;
+}
+
+.voucher-toolbar-search .voucher-search {
+  width: 260px;
+  max-width: min(260px, 46vw);
+  min-width: 140px;
+}
+
+.voucher-branch-select {
+  width: 220px;
+}
+
+@media (max-width: 767px) {
+  .voucher-tabs > .ant-tabs-nav {
+    margin-bottom: 12px;
+  }
+
+  .voucher-tabs > .ant-tabs-nav .ant-tabs-nav-list {
+    width: 100%;
+  }
+
+  .voucher-tabs > .ant-tabs-nav .ant-tabs-tab {
+    flex: 1 1 0;
+    justify-content: center;
+    min-width: 0;
+    margin-inline-start: 0;
+    padding: 10px 2px;
+    font-size: 12px;
+  }
+
+  .voucher-toolbar,
+  .voucher-toolbar-search {
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+
+  .voucher-toolbar {
+    margin-block: 0 12px;
+  }
+
+  .voucher-toolbar-search {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .voucher-toolbar-search .voucher-search {
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+  }
+
+  .voucher-toolbar .voucher-toolbar-button.ant-btn {
+    flex: 0 0 44px;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+  }
+
+  .voucher-toolbar-search .voucher-search :is(.ant-input-affix-wrapper, .ant-input-search-btn) {
+    height: 44px;
+  }
+
+  .voucher-mobile-card {
+    display: grid;
+    min-width: 0;
+    gap: 10px;
+  }
+
+  .voucher-card-header,
+  .voucher-card-footer {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .voucher-card-header .ant-tag {
+    flex-shrink: 0;
+    margin-inline-end: 0;
+  }
+
+  .voucher-card-benefit {
+    min-width: 0;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: var(--brand-bg);
+    color: var(--brand-primary);
+    overflow-wrap: anywhere;
+  }
+
+  .voucher-mobile-card .mobile-card-row .mobile-card-label {
+    flex-basis: 76px;
+  }
+
+  .voucher-card-footer {
+    align-items: center;
+    padding-top: 8px;
+    border-top: 1px solid var(--brand-border-soft);
+  }
+
+  .voucher-card-footer .mobile-card-actions {
+    flex-shrink: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+}

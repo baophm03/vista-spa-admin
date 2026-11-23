@@ -1,0 +1,83 @@
+.payments-page {
+  min-width: 0;
+}
+
+.payment-filters {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.payment-filters .payment-filter-search {
+  width: 260px;
+}
+
+.payment-filters .payment-filter-branch {
+  width: 170px;
+}
+
+.payment-filters .payment-filter-staff {
+  width: 160px;
+}
+
+.payment-filter-options {
+  display: contents;
+}
+
+.payment-filter-popup {
+  display: none;
+}
+
+.payment-card-amount {
+  max-width: 50%;
+  color: var(--brand-primary);
+  font-size: 15px;
+  line-height: 1.35;
+  text-align: end;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 767px) {
+  .payment-filters {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .payment-filter-options {
+    display: none;
+  }
+
+  .payment-filters .payment-filter-search {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .payment-filter-popup {
+    display: inline-flex;
+  }
+
+  .payment-filter-popup .ant-btn {
+    min-height: 44px;
+    padding-inline: 10px;
+  }
+
+  .payment-filters .ant-input-search .ant-btn,
+  .payments-page .payment-void-button {
+    min-height: 44px;
+  }
+
+  .payment-card-head {
+    align-items: flex-start;
+  }
+
+  .payments-page .mobile-card-row .mobile-card-label {
+    flex-basis: 36%;
+  }
+
+  .payment-list-error {
+    flex-wrap: wrap;
+  }
+}

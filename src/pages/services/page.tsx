@@ -2,10 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import {
   Button,
   Form,
-  Grid,
   Input,
   Modal,
-  Select,
   Space,
   Table,
   Tabs,
@@ -25,6 +23,7 @@ import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import { normalizeCustomFieldValues } from '@/components/CustomFieldFormItems'
 import ServiceModal from './components/ServiceModal'
 import ServiceDetailModal from './components/ServiceDetailModal'
+import ServiceListState from './components/ServiceListState'
 import { errorMessage, pickData } from '@/api/helpers'
 import { deleteServiceIdAdmin, getGetServiceAdminQueryKey, getServiceAdmin, getServiceCategoriesAdmin, postServiceAdmin, putServiceIdAdmin } from '@/api/endpoints/services'
 import type { Service } from '@/api/models/service'
@@ -36,9 +35,11 @@ import { formatCurrency, useBrandCurrency } from '@/themeRuntime'
 import { fileSrc, resolveFileSrc, useFileUrlMap } from '@/hooks/useFileUrl'
 import type { Branch } from '@/api/models'
 import { useGetBranchesAdmin } from '@/api/endpoints/branches'
+import './services.css'
 
 /** BE list include kèm `service_category`, ảnh bìa `image_file` và bộ ảnh `service_galleries[].file`. */
 type ServiceRow = Service & {
+  branch_id?: string | null
   service_category?: { id?: string; name?: string }
   image_file?: { id?: string; path?: string } | null
   service_galleries?: Array<{ file_id?: string; sort_order?: number; file?: { id?: string; path?: string } | null }>
@@ -87,11 +88,9 @@ export default function Services() {
   const [filters, setFilters] = useState<{ q?: string; category_id?: string; is_active?: boolean }>({})
   const [visibleColumns] = useState<string[]>(DEFAULT_COLUMNS)
   const [form] = Form.useForm()
-  // Mobile (dưới breakpoint md): chuyển vùng nội dung bằng Select thay vì Tabs
-  const isMobile = !Grid.useBreakpoint().md
   const [activeTab, setActiveTab] = useState<'services' | 'categories'>('services')
-const branchesQuery = useGetBranchesAdmin()
-const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as Branch[], [branchesQuery.data])
+  const branchesQuery = useGetBranchesAdmin()
+  const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as Branch[], [branchesQuery.data])
 
   const listQuery = useQuery({
     queryKey: getGetServiceAdminQueryKey({ ...filters, page, limit }),
@@ -228,31 +227,75 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
     }
   }
 
-  const columns = useMemo<TableColumnsType<ServiceRow>>(() => {
+  const renderActions = (row: ServiceRow, dropdownOnly = false) => (
+    <RowActionsMenu
+      dropdownOnly={dropdownOnly}
+      items={[
+        ...(canUpdate ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []),
+        ...(canUpdate && row.is_active === false ? [{ key: 'restore', icon: <EyeOutlined />, label: 'Bật lại' }] : []),
+        ...(canUpdate && row.is_active !== false ? [{ key: 'hide', icon: <EyeInvisibleOutlined />, label: 'Ẩn' }] : []),
+        ...(canDelete ? [{ key: 'delete', icon: <DeleteOutlined />, danger: true, label: 'Xóa' }] : []),
+      ]}
+      onSelect={(key) => {
+        if (key === 'edit') void openEditor(row)
+        else if (key === 'restore') void restoreService(row)
+        else if (key === 'hide') {
+          Modal.confirm({
+            title: 'Ẩn dịch vụ này?',
+            content: 'Dịch vụ sẽ bị ẩn khỏi app nhưng vẫn còn trong danh sách quản trị.',
+            okText: 'Ẩn',
+            cancelText: 'Hủy',
+            onOk: () => hideService(row),
+          })
+        } else if (key === 'delete') {
+          Modal.confirm({
+            title: 'Xóa dịch vụ này?',
+            content: 'Xóa mềm: chỉ thực hiện được khi dịch vụ không còn lịch sử/hóa đơn tham chiếu.',
+            okText: 'Xóa',
+            okButtonProps: { danger: true },
+            cancelText: 'Hủy',
+            onOk: () => deleteService(row),
+          })
+        }
+      }}
+    />
+  )
+
+  const branchName = (id?: string | null) =>
+    id ? branches.find((branch) => branch.id === id)?.name ?? '—' : 'Tất cả cơ sở'
+  const priceLabel = (row: ServiceRow) =>
+    row.price_max != null && Number(row.price_max) !== Number(row.price)
+      ? `${formatPrice(row.price, currency)} – ${formatPrice(row.price_max, currency)}`
+      : formatPrice(row.price, currency)
+  const coverSrc = (row: ServiceRow) => fileSrc(row.image_file) ?? resolveFileSrc(urlMap, row.image_file_id)
+
+  const columns = ((): TableColumnsType<ServiceRow> => {
     const dataColumns: Record<string, NonNullable<TableColumnsType<ServiceRow>[number]>> = {
       service: {
         key: 'service',
         title: 'Dịch vụ',
         dataIndex: 'title',
-        render: (value: string, row) => (
-          <Space align="start">
-            {fileSrc((row as any).image_file) ?? resolveFileSrc(urlMap, row.image_file_id) ? <img src={(fileSrc((row as any).image_file) ?? resolveFileSrc(urlMap, row.image_file_id)) ?? undefined} alt="" width={44} height={44} style={{ objectFit: 'cover', borderRadius: 6 }} /> : null}
-            <div>
-              <div style={{ fontWeight: 500 }}>{value}</div>
-              <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                {row.description}
-              </Typography.Text>
-            </div>
-          </Space>
-        ),
+        render: (value: string, row) => {
+          const image = coverSrc(row)
+          return (
+            <Space align="start">
+              {image && <img src={image} alt="" width={44} height={44} style={{ objectFit: 'cover', borderRadius: 6 }} />}
+              <div>
+                <div style={{ fontWeight: 500 }}>{value}</div>
+                <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                  {row.description}
+                </Typography.Text>
+              </div>
+            </Space>
+          )
+        },
       },
       category: { key: 'category', title: 'Danh mục', render: (_value, row) => row.service_category?.name || '—' },
-      branch: { key: 'branch', title: 'Cơ sở', dataIndex: 'branch_id', width: 140, render: (id) => id ? branches.find((branch) => branch.id === id)?.name ?? '—' : 'Tất cả cơ sở' },
+      branch: { key: 'branch', title: 'Cơ sở', dataIndex: 'branch_id', width: 140, render: branchName },
       price: {
         key: 'price',
         title: 'Giá niêm yết',
-        render: (_value, row) =>
-          row.price_max != null && Number(row.price_max) !== Number(row.price) ? `${formatPrice(row.price, currency)} – ${formatPrice(row.price_max, currency)}` : formatPrice(row.price, currency),
+        render: (_value, row) => priceLabel(row),
       },
       duration: { key: 'duration', title: 'Thời lượng', dataIndex: 'duration_minutes', render: (value?: number | null) => (value ? `${value} phút` : 'Theo cấu hình') },
       points: { key: 'points', title: 'Điểm đổi', dataIndex: 'required_points', render: (value?: number | null) => (value ? Number(value).toLocaleString('vi-VN') : '—') },
@@ -270,128 +313,107 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
         title: 'Thao tác', align: 'center' as const,
         width: 90,
         fixed: 'right',
-        render: (_value, row) => (
-          <RowActionsMenu
-            items={[
-              ...(canUpdate ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []),
-              ...(canUpdate && row.is_active === false ? [{ key: 'restore', icon: <EyeOutlined />, label: 'Bật lại' }] : []),
-              ...(canUpdate && row.is_active !== false ? [{ key: 'hide', icon: <EyeInvisibleOutlined />, label: 'Ẩn' }] : []),
-              ...(canDelete ? [{ key: 'delete', icon: <DeleteOutlined />, danger: true, label: 'Xóa' }] : []),
-            ]}
-            onSelect={(key) => {
-              if (key === 'edit') void openEditor(row)
-              else if (key === 'restore') void restoreService(row)
-              else if (key === 'hide') {
-                Modal.confirm({
-                  title: 'Ẩn dịch vụ này?',
-                  content: 'Dịch vụ sẽ bị ẩn khỏi app nhưng vẫn còn trong danh sách quản trị.',
-                  okText: 'Ẩn',
-                  cancelText: 'Hủy',
-                  onOk: () => hideService(row),
-                })
-              } else if (key === 'delete') {
-                Modal.confirm({
-                  title: 'Xóa dịch vụ này?',
-                  content: 'Xóa mềm: chỉ thực hiện được khi dịch vụ không còn lịch sử/hóa đơn tham chiếu.',
-                  okText: 'Xóa',
-                  okButtonProps: { danger: true },
-                  cancelText: 'Hủy',
-                  onOk: () => deleteService(row),
-                })
-              }
-            }}
-          />
-        ),
+        render: (_value, row) => renderActions(row),
       },
     ]
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visibleColumns, canUpdate, canDelete, urlMap])
+  })()
+
+  const hasServices = !listQuery.isLoading && !listQuery.isError && rows.length > 0
 
   const servicesContent = (
     <>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', minWidth: 0 }}>
-          <Input.Search
-            allowClear
-            placeholder="Tìm tên hoặc mô tả dịch vụ"
-            className="w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]"
-            value={searchText}
-            onChange={(event) => { setSearchText(event.target.value); if (!event.target.value) applySearch('') }}
-            onSearch={(v) => applySearch(v)}
-          />
-        </div>
+      <div className="service-list-toolbar">
+        <Input.Search
+          allowClear
+          aria-label="Tìm tên hoặc mô tả dịch vụ"
+          placeholder="Tìm tên hoặc mô tả dịch vụ"
+          className="service-list-search"
+          value={searchText}
+          onChange={(event) => { setSearchText(event.target.value); if (!event.target.value) applySearch('') }}
+          onSearch={(v) => applySearch(v)}
+        />
         <Can I="CREATE" a="SERVICE">
           <Button type="primary" icon={<PlusOutlined />} onClick={() => void openEditor()}>
             Thêm dịch vụ
           </Button>
         </Can>
       </div>
-      <Table<ServiceRow>
-        className="desktop-only"
-        rowKey="id"
-        loading={listQuery.isLoading}
-        dataSource={rows}
-        columns={columns}
-        scroll={{ x: 1000 }}
-        pagination={false}
-        onRow={(row) => ({
-          onClick: () => setDetailService(row),
-          style: { cursor: 'pointer' },
-        })}
-      />
-      <MobileCards
-        rows={rows}
-        rowKey={(row) => row.id}
-        loading={listQuery.isLoading}
-        emptyText="Chưa có dịch vụ nào"
-        onCardClick={(row) => setDetailService(row)}
-        renderCard={(row) => (
-          <>
-            <div className="mobile-card-head">
-              <div className="mobile-card-title">{row.title || 'Dịch vụ'}</div>
-              {row.is_active === false ? <Tag>Đã ẩn</Tag> : <Tag color="green">Đang dùng</Tag>}
-            </div>
-            <div className="mobile-card-rows">
-              <MobileCardRow label="Thời lượng" value={row.duration_minutes ? `${row.duration_minutes} phút` : '—'} />
-              <MobileCardRow label="Giá" value={row.price_max != null && Number(row.price_max) !== Number(row.price) ? `${formatPrice(row.price, currency)} – ${formatPrice(row.price_max, currency)}` : formatPrice(row.price, currency)} />
-            </div>
-          </>
-        )}
-      />
-      <ListPagination page={page} limit={limit} total={total} onChange={setPage} noun="dịch vụ" />
+      {listQuery.isError ? (
+        <ServiceListState message="Không tải được danh sách dịch vụ" onRetry={() => void listQuery.refetch()} />
+      ) : (
+        <>
+          <Table<ServiceRow>
+            className="desktop-only"
+            rowKey="id"
+            loading={listQuery.isLoading}
+            dataSource={rows}
+            columns={columns}
+            scroll={{ x: 1000 }}
+            pagination={false}
+            locale={{ emptyText: filters.q ? 'Không có kết quả' : 'Chưa có dữ liệu' }}
+            onRow={(row) => ({
+              onClick: () => setDetailService(row),
+              style: { cursor: 'pointer' },
+            })}
+          />
+          <MobileCards
+            rows={rows}
+            rowKey={(row) => row.id}
+            loading={listQuery.isLoading}
+            emptyText={filters.q ? 'Không có kết quả' : 'Chưa có dữ liệu'}
+            emptyDescription={filters.q ? 'Thử đổi từ khóa hoặc xóa bộ lọc' : undefined}
+            onCardClick={setDetailService}
+            renderCard={(row) => {
+              const galleryImage = row.service_galleries?.[0]
+              const image = coverSrc(row) ?? fileSrc(galleryImage?.file) ?? resolveFileSrc(urlMap, galleryImage?.file_id)
+              return (
+                <>
+                  <div className="mobile-card-head">
+                    <button type="button" className="mobile-card-title service-card-link" onClick={(event) => {
+                      event.stopPropagation()
+                      setDetailService(row)
+                    }}>
+                      {image
+                        ? <img className="service-card-image" src={image} alt="" loading="lazy" />
+                        : <AppstoreOutlined aria-hidden />}
+                      <span className="min-w-0">{row.title || 'Dịch vụ'}</span>
+                    </button>
+                    {row.is_active === false ? <Tag>Đã ẩn</Tag> : <Tag color="green">Đang dùng</Tag>}
+                    {renderActions(row, true)}
+                  </div>
+                  <div className="mobile-card-rows">
+                    <MobileCardRow label="Danh mục" value={row.service_category?.name || '—'} />
+                    <MobileCardRow label="Cơ sở" value={branchName(row.branch_id)} />
+                    <MobileCardRow label="Giá niêm yết" value={priceLabel(row)} />
+                    <MobileCardRow label="Thời lượng" value={row.duration_minutes ? `${row.duration_minutes} phút` : 'Theo cấu hình'} />
+                    <MobileCardRow label="Điểm đổi" value={row.required_points ? Number(row.required_points).toLocaleString('vi-VN') : '—'} />
+                  </div>
+                </>
+              )
+            }}
+          />
+        </>
+      )}
+      {hasServices && <ListPagination page={page} limit={limit} total={total} onChange={setPage} noun="dịch vụ" />}
     </>
   )
 
   return (
-    <>
+    <div className="services-page">
       <PageTitle subtitle="Danh mục dịch vụ và nhóm dịch vụ">
         Dịch vụ
       </PageTitle>
       <StatCards items={statItems} />
 
-      {isMobile && (
-        <Select
-          style={{ width: '100%', marginBottom: 12 }}
-          value={activeTab}
-          onChange={(value) => setActiveTab(value as 'services' | 'categories')}
-          options={[
-            { value: 'services', label: 'Danh sách dịch vụ' },
-            { value: 'categories', label: 'Danh mục dịch vụ' },
-          ]}
-        />
-      )}
-      {!isMobile ? (
-        <Tabs
-          activeKey={activeTab}
-          onChange={(key) => setActiveTab(key as 'services' | 'categories')}
-          items={[
-            { key: 'services', label: 'Danh sách dịch vụ', children: servicesContent },
-            { key: 'categories', label: 'Danh mục dịch vụ', children: <ServiceCategories /> },
-          ]}
-        />
-      ) : (
-        activeTab === 'services' ? servicesContent : <ServiceCategories />
-      )}
+      <Tabs
+        className="services-tabs"
+        activeKey={activeTab}
+        onChange={(key) => setActiveTab(key as 'services' | 'categories')}
+        items={[
+          { key: 'services', label: 'Danh sách dịch vụ', children: servicesContent },
+          { key: 'categories', label: 'Danh mục dịch vụ', children: <ServiceCategories /> },
+        ]}
+      />
       <ServiceModal
         open={open}
         editing={editing}
@@ -414,6 +436,6 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
         currency={currency}
         formatCurrency={formatCurrency}
       />
-    </>
+    </div>
   )
 }

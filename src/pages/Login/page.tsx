@@ -72,7 +72,7 @@ export default function Login() {
   const errorClass = 'mt-1.5 text-xs text-[#d4385f]'
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-cover bg-center font-sans">
+    <div className="relative min-h-screen overflow-hidden bg-cover bg-center font-sans max-[720px]:flex max-[720px]:min-h-[100dvh] max-[720px]:items-center max-[720px]:justify-center max-[720px]:overflow-y-auto max-[720px]:p-4">
       <div
         className="absolute inset-0 -z-10 bg-cover bg-center"
         style={{ backgroundImage: "url('/login.png')" }}
@@ -92,8 +92,10 @@ export default function Login() {
       </div>
 
       {/* Panel form bên phải */}
-      <aside className="fixed top-1/2 right-12 z-[2] w-[min(420px,calc(100vw-48px))] -translate-y-1/2 rounded-xl bg-white p-11 pb-8 shadow-[0_32px_80px_rgba(var(--brand-dark-rgb),0.28),0_4px_16px_rgba(var(--brand-dark-rgb),0.12)] max-[720px]:right-1/2 max-[720px]:translate-x-1/2 max-[720px]:px-7 max-[720px]:py-10">
-        <div className="mb-9 text-center">
+      {/* Mobile (<720px): bỏ fixed-center (màn thấp bị cắt, không cuộn được) →
+          panel nằm trong flow, flex cha canh giữa, dư thì cuộn tự nhiên */}
+      <aside className="fixed top-1/2 right-12 z-[2] w-[min(420px,calc(100vw-48px))] -translate-y-1/2 rounded-xl bg-white p-11 pb-8 shadow-[0_32px_80px_rgba(var(--brand-dark-rgb),0.28),0_4px_16px_rgba(var(--brand-dark-rgb),0.12)] max-[720px]:static max-[720px]:my-6 max-[720px]:w-full max-[720px]:max-w-[420px]! max-[720px]:translate-y-0 max-[720px]:rounded-2xl max-[720px]:px-6 max-[720px]:py-8">
+        <div className="mb-9 text-center max-[720px]:mb-6">
           {brand.logoUrl && (
             <img
               src={`${links.imageEndpoint}${brand.logoUrl}`}

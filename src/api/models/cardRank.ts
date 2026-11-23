@@ -10,6 +10,7 @@ import type { CardRankValidity } from './cardRankValidity';
 import type { CardRankBenefits } from './cardRankBenefits';
 import type { CardRankDiscountPercent } from './cardRankDiscountPercent';
 import type { CardRankColor } from './cardRankColor';
+import type { CardRankImageFileId } from './cardRankImageFileId';
 
 /**
  * Membership card rank
@@ -34,6 +35,7 @@ export interface CardRank {
   discount_percent?: CardRankDiscountPercent;
   /** @pattern ^#[0-9A-Fa-f]{6}$ */
   color?: CardRankColor;
+  image_file_id?: CardRankImageFileId;
   /** @minimum 0 */
   customer_count?: number;
   created_at?: string;

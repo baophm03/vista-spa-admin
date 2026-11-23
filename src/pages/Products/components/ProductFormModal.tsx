@@ -148,14 +148,14 @@ export default function ProductFormModal({
             {(fields, { add, remove }) => (
               <div style={{ display: 'grid', gap: 8 }}>
                 {fields.map((field) => (
-                  <Space key={field.key} align="baseline" style={{ display: 'flex' }}>
+                  <Space key={field.key} align="baseline" className="product-attribute-row" style={{ display: 'flex' }}>
                     <Form.Item name={[field.name, 'label']} noStyle>
                       <Input placeholder="Tên (VD: Loại da)" style={{ width: 180 }} maxLength={100} />
                     </Form.Item>
                     <Form.Item name={[field.name, 'value']} noStyle>
                       <Input placeholder="Giá trị (VD: Da thường đến khô)" style={{ flex: 1, minWidth: 200 }} maxLength={500} />
                     </Form.Item>
-                    <Button size="small" type="text" danger icon={<DeleteOutlined />} onClick={() => remove(field.name)} />
+                    <Button size="small" type="text" danger icon={<DeleteOutlined />} aria-label="Xóa thuộc tính" onClick={() => remove(field.name)} />
                   </Space>
                 ))}
                 <Button size="small" type="dashed" icon={<PlusOutlined />} onClick={() => add()} style={{ width: 160 }}>

@@ -1,7 +1,8 @@
+import ResponsiveTable from '@/components/base/ResponsiveTable'
 import { useCallback, useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Alert, Button, Card, Form, Modal, Spin, Table, Tabs, Tag, Typography, message } from 'antd'
-import { EditOutlined, PlusOutlined } from '@ant-design/icons'
+import { Alert, Button, Card, Form, Modal, Spin, Tabs, Tag, Typography, message } from 'antd'
+import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, PlusOutlined } from '@ant-design/icons'
 import { Can, useAbility } from '@casl/react'
 import PageTitle from '@/components/base/PageTitle'
 import ListPagination from '@/components/base/ListPagination'
@@ -225,8 +226,13 @@ function CustomerFieldsConfig({ entity, sectionTitle }: {
         <RowActionsMenu
           items={[
             ...(canUpdate ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []),
-            ...(canToggleRow(row) ? [{ key: 'toggle', danger: row.is_active !== false, label: row.is_active === false ? 'Bật lại' : 'Ẩn' }] : []),
-            ...(ability.can('DELETE', 'CUSTOM_FIELD') ? [{ key: 'delete', danger: true, label: 'Xóa' }] : []),
+            ...(canToggleRow(row) ? [{
+              key: 'toggle',
+              icon: row.is_active === false ? <EyeOutlined /> : <EyeInvisibleOutlined />,
+              danger: row.is_active !== false,
+              label: row.is_active === false ? 'Bật lại' : 'Ẩn',
+            }] : []),
+            ...(ability.can('DELETE', 'CUSTOM_FIELD') ? [{ key: 'delete', icon: <DeleteOutlined />, danger: true, label: 'Xóa' }] : []),
           ]}
           onSelect={(key) => {
             if (key === 'edit') openEditor(row)
@@ -250,7 +256,7 @@ function CustomerFieldsConfig({ entity, sectionTitle }: {
   const canCreate = ability.can('CREATE', 'CUSTOM_FIELD')
 
   const customFieldsTable = (
-    <Table<CustomFieldDef>
+    <ResponsiveTable<CustomFieldDef>
       rowKey="id"
       loading={loading}
       dataSource={rows}
@@ -274,7 +280,7 @@ function CustomerFieldsConfig({ entity, sectionTitle }: {
           <PageTitle subtitle="Các trường cơ bản đã được cấu hình sẵn — chỉnh sửa chi tiết tại mục Dịch vụ.">
             Các trường dịch vụ có sẵn
           </PageTitle>
-          <Table
+          <ResponsiveTable
             rowKey="key"
             dataSource={SERVICE_BASE_FIELDS}
             pagination={false}

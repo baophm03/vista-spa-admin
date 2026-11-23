@@ -1,0 +1,100 @@
+.academy-registration-summary-head {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding: 9px 12px;
+  border: 1px solid var(--brand-border-soft, #eee5f0);
+  border-radius: 10px;
+  background: #fbf8fc;
+}
+
+.academy-registration-summary-head .ant-typography {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.academy-registration-summary {
+  margin-bottom: 16px;
+}
+
+@media (max-width: 767px) {
+  .academy-registration-update-modal .ant-modal-container {
+    padding: 16px;
+  }
+
+  .academy-registration-update-modal .ant-modal-body {
+    overscroll-behavior: contain;
+    padding: 0 0 4px;
+  }
+
+  .academy-registration-update-modal .ant-modal-footer {
+    border-top: 1px solid var(--brand-border-soft);
+    margin-top: 0;
+    padding-top: 12px;
+  }
+
+  .academy-registration-summary-details .ant-descriptions-item-container {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 8fr);
+    align-items: baseline;
+    column-gap: 8px;
+  }
+
+  .academy-registration-summary-details .ant-descriptions-item-label,
+  .academy-registration-summary-details .ant-descriptions-item-content {
+    overflow-wrap: anywhere;
+    min-width: 0;
+    font-size: 12px;
+  }
+
+  .academy-registration-extra-details {
+    border-block: 1px solid var(--brand-border-soft);
+  }
+
+  .academy-registration-extra-details > summary {
+    padding-block: 10px;
+    color: var(--brand-primary);
+    font-size: 13px;
+    cursor: pointer;
+  }
+
+  .academy-registration-update-form .ant-form-item {
+    min-width: 0;
+    margin-bottom: 12px;
+  }
+
+  .academy-registration-update-modal .academy-registration-update-form .ant-form-item-row {
+    display: block !important;
+    margin-inline: 0 !important;
+  }
+
+  .academy-registration-update-modal .academy-registration-update-form .ant-form-item-row > :is(.ant-form-item-label, .ant-form-item-control) {
+    flex: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-inline: 0 !important;
+  }
+
+  .academy-registration-update-form .ant-form-item-label {
+    padding: 0 0 4px !important;
+    text-align: left;
+  }
+
+  .academy-registration-update-form .ant-form-item-control {
+    margin-inline-start: 0 !important;
+  }
+
+  .academy-registration-update-form .ant-form-item-control-input-content,
+  .academy-registration-update-form .ant-select,
+  .academy-registration-update-form .ant-input {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .academy-registration-update-form .ant-form-item-control-input {
+    min-width: 0;
+  }
+}

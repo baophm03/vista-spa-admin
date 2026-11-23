@@ -1,0 +1,76 @@
+.treatments-page {
+  min-width: 0;
+}
+
+.treatment-list-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.treatment-list-toolbar .treatment-list-search {
+  width: 260px;
+  min-width: 0;
+}
+
+.treatment-card-link {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  min-height: 44px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  text-align: start;
+  cursor: pointer;
+}
+
+.treatment-card-image {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  overflow: hidden;
+  border-radius: 8px;
+  background: var(--brand-tint);
+  color: var(--brand-dark);
+}
+
+.treatment-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+@media (max-width: 767px) {
+  .treatment-list-toolbar {
+    gap: 8px;
+  }
+
+  .treatment-list-toolbar .treatment-list-search {
+    flex: 1 1 0;
+  }
+
+  .treatment-list-toolbar .ant-btn {
+    flex-shrink: 0;
+    min-height: 44px;
+  }
+
+  .treatments-page .mobile-card-head .ant-tag {
+    flex-shrink: 0;
+    margin-inline-end: 0;
+  }
+
+  .treatments-page .mobile-card-row .mobile-card-label {
+    flex-basis: 34%;
+  }
+
+  .treatment-list-error {
+    flex-wrap: wrap;
+  }
+}

@@ -128,7 +128,7 @@ export default function TreatmentPackageModal({
                 <>
                   {fields.map((field) => (
                     <Row key={field.key} gutter={8} align="middle">
-                      <Col span={15}>
+                      <Col xs={13} md={15}>
                         <Form.Item
                           name={[field.name, 'service_id']}
                           rules={[{ required: true, message: 'Chọn dịch vụ' }]}
@@ -142,7 +142,7 @@ export default function TreatmentPackageModal({
                           />
                         </Form.Item>
                       </Col>
-                      <Col span={5}>
+                      <Col xs={7} md={5}>
                         <Form.Item
                           name={[field.name, 'qty']}
                           rules={[{ required: true, message: 'Nhập số buổi' }]}
@@ -194,10 +194,10 @@ export default function TreatmentPackageModal({
             />
           )}
         </Form.Item>
-        <Row gutter={16}>
-          <Col span={8}>
+        <Row gutter={{ xs: 12, md: 16 }}>
+          <Col xs={12} md={8}>
             {isCombo && (
-              <Form.Item label="Tổng số buổi" extra="Bằng tổng số buổi của từng dịch vụ — hệ thống tự tính.">
+              <Form.Item label="Tổng số buổi" extra="Tự cộng từ các dịch vụ.">
                 <Input value={`${comboTotal} buổi`} disabled style={{ width: '100%' }} />
               </Form.Item>
             )}
@@ -219,15 +219,15 @@ export default function TreatmentPackageModal({
               </Form.Item>
             )}
           </Col>
-          <Col span={8}>
+          <Col xs={12} md={8}>
             <Form.Item
               name="bonus_sessions_default"
-              label="Buổi tặng mặc định"
+              label="Buổi tặng"
             >
               <InputNumber min={0} precision={0} style={{ width: '100%' }} />
             </Form.Item>
           </Col>
-          <Col span={8}>
+          <Col xs={24} md={8}>
             <Form.Item name="branch_id" label="Cơ sở">
               <Select allowClear placeholder="Tất cả cơ sở" options={branches.map((branch) => ({ value: branch.id, label: branch.name }))} />
             </Form.Item>
@@ -244,16 +244,16 @@ export default function TreatmentPackageModal({
             style={{ marginBottom: 16 }}
           />
         )}
-        <Row gutter={16}>
-          <Col span={8}>
+        <Row gutter={{ xs: 12, md: 16 }}>
+          <Col xs={12} md={8}>
             <Form.Item name="list_price" label="Giá từ" rules={[{ required: true, message: 'Nhập giá niêm yết' }]}>
               <InputNumber min={0} precision={0} step={100000} suffix={currencySymbol} style={{ width: '100%' }} />
             </Form.Item>
           </Col>
-          <Col span={8}>
+          <Col xs={12} md={8}>
             <Form.Item
               name="list_price_max"
-              label="Giá đến (tùy chọn)"
+              label="Giá đến"
               dependencies={['list_price']}
               rules={[({ getFieldValue }) => ({
                 validator: (_rule, value) => value == null || Number(value) >= Number(getFieldValue('list_price') ?? 0)
@@ -276,11 +276,11 @@ export default function TreatmentPackageModal({
                 <Form.Item name="description" label="Mô tả">
                   <Input.TextArea rows={2} />
                 </Form.Item>
-                <Row gutter={16}>
-                  <Col span={8}>
+                <Row gutter={{ xs: 12, md: 16 }}>
+                  <Col xs={12} md={8}>
                     <Form.Item
                       name="validity_value"
-                      label="Thời hạn (tùy chọn)"
+                      label="Thời hạn"
                       dependencies={['validity_unit']}
                       rules={[({ getFieldValue }) => ({
                         validator: (_rule, value) => (value == null) === (getFieldValue('validity_unit') == null)
@@ -291,7 +291,7 @@ export default function TreatmentPackageModal({
                       <InputNumber min={1} precision={0} style={{ width: '100%' }} />
                     </Form.Item>
                   </Col>
-                  <Col span={8}>
+                  <Col xs={12} md={8}>
                     <Form.Item name="validity_unit" label="Đơn vị">
                       <Select allowClear options={[
                         { value: 'DAY', label: 'Ngày' },

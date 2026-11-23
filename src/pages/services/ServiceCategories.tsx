@@ -1,11 +1,12 @@
-import { useMemo, useState } from 'react'
-import { Button, Form, Input, Modal, Popconfirm, Space, Table, Tag, message } from 'antd'
+import { useState } from 'react'
+import { Button, Form, Input, Modal, Table, Tag, message } from 'antd'
 import type { TableColumnsType } from 'antd'
 import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, PlusOutlined } from '@ant-design/icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Can, useAbility } from '@casl/react'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ServiceCategoryModal from './components/ServiceCategoryModal'
+import ServiceListState from './components/ServiceListState'
 import ListPagination from '@/components/base/ListPagination'
 import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import { errorMessage } from '@/api/helpers'
@@ -29,7 +30,7 @@ export default function ServiceCategories() {
   const [form] = Form.useForm()
 
   const categoriesQuery = useQuery({
-    queryKey: [getGetServiceCategoriesAdminQueryKey(), page, search],
+    queryKey: [...getGetServiceCategoriesAdminQueryKey(), { page, q: search.trim() }],
     queryFn: async () =>
       (await getServiceCategoriesAdmin({ page, limit: 10, ...(search.trim() ? { q: search.trim() } : {}) } as never)) as unknown as {
         responseData?: ServiceCategoryRow[]
@@ -38,6 +39,10 @@ export default function ServiceCategories() {
   })
   const rows = (categoriesQuery.data?.responseData ?? []) as ServiceCategoryRow[]
   const total = categoriesQuery.data?.meta?.total ?? rows.length
+  const applySearch = (value: string) => {
+    setSearch(value)
+    setPage(1)
+  }
 
   const createMutation = useMutation({
     mutationFn: async (dto: ServiceCategoryCreate) => postServiceCategoriesAdmin(dto),
@@ -105,127 +110,102 @@ export default function ServiceCategories() {
     }
   }
 
-  const columns = useMemo<TableColumnsType<ServiceCategoryRow>>(
-    () => [
-      { title: 'Tên danh mục', dataIndex: 'name' },
-      { title: 'Danh mục cha', render: (_value, row) => row.parent?.name || '—' },
-      { title: 'Thứ tự', dataIndex: 'sort_order', width: 100 },
-      {
-        title: 'Trạng thái',
-        dataIndex: 'is_active',
-        width: 140,
-        render: (active?: boolean) => <Tag color={active === false ? 'default' : 'green'}>{active === false ? 'Đã ẩn' : 'Đang dùng'}</Tag>,
-      },
-      {
-        title: 'Thao tác',
-        key: 'actions',
-        align: 'center' as const,
-        width: 90,
-        render: (_value, row) => (
-          <RowActionsMenu
-            items={[
-              ...(canUpdate ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []),
-              ...(canUpdate
-                ? [row.is_active === false
-                  ? { key: 'restore', icon: <EyeOutlined />, label: 'Bật lại' }
-                  : { key: 'hide', icon: <EyeInvisibleOutlined />, label: 'Ẩn' }]
-                : []),
-              ...(canDelete ? [{ key: 'delete', icon: <DeleteOutlined />, danger: true, label: 'Xóa' }] : []),
-            ]}
-            onSelect={(key) => {
-              if (key === 'edit') openEditor(row)
-              else if (key === 'restore') void restore(row)
-              else if (key === 'hide') Modal.confirm({
-                title: 'Ẩn danh mục này?',
-                content: 'Danh mục bị ẩn khỏi app nhưng vẫn còn trong danh sách quản trị.',
-                okText: 'Ẩn',
-                onOk: () => void hide(row),
-              })
-              else if (key === 'delete') Modal.confirm({
-                title: 'Xóa danh mục này?',
-                content: 'Chỉ xóa được khi không còn dịch vụ hoặc danh mục con tham chiếu.',
-                okButtonProps: { danger: true },
-                okText: 'Xóa',
-                onOk: () => void remove(row),
-              })
-            }}
-          />
-        ),
-      },
-    ],
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
+  const renderActions = (row: ServiceCategoryRow, dropdownOnly = false) => (
+    <RowActionsMenu
+      dropdownOnly={dropdownOnly}
+      items={[
+        ...(canUpdate ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []),
+        ...(canUpdate
+          ? [row.is_active === false
+            ? { key: 'restore', icon: <EyeOutlined />, label: 'Bật lại' }
+            : { key: 'hide', icon: <EyeInvisibleOutlined />, label: 'Ẩn' }]
+          : []),
+        ...(canDelete ? [{ key: 'delete', icon: <DeleteOutlined />, danger: true, label: 'Xóa' }] : []),
+      ]}
+      onSelect={(key) => {
+        if (key === 'edit') openEditor(row)
+        else if (key === 'restore') void restore(row)
+        else if (key === 'hide') Modal.confirm({
+          title: 'Ẩn danh mục này?',
+          content: 'Danh mục bị ẩn khỏi app nhưng vẫn còn trong danh sách quản trị.',
+          okText: 'Ẩn',
+          onOk: () => void hide(row),
+        })
+        else if (key === 'delete') Modal.confirm({
+          title: 'Xóa danh mục này?',
+          content: 'Chỉ xóa được khi không còn dịch vụ hoặc danh mục con tham chiếu.',
+          okButtonProps: { danger: true },
+          okText: 'Xóa',
+          onOk: () => void remove(row),
+        })
+      }}
+    />
   )
+
+  const columns: TableColumnsType<ServiceCategoryRow> = [
+    { title: 'Tên danh mục', dataIndex: 'name' },
+    { title: 'Danh mục cha', render: (_value, row) => row.parent?.name || '—' },
+    { title: 'Thứ tự', dataIndex: 'sort_order', width: 100 },
+    {
+      title: 'Trạng thái',
+      dataIndex: 'is_active',
+      width: 140,
+      render: (active?: boolean) => <Tag color={active === false ? 'default' : 'green'}>{active === false ? 'Đã ẩn' : 'Đang dùng'}</Tag>,
+    },
+    {
+      title: 'Thao tác',
+      key: 'actions',
+      align: 'center' as const,
+      width: 90,
+      render: (_value, row) => renderActions(row),
+    },
+  ]
 
   return (
     <>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
+      <div className="service-list-toolbar">
         <Input.Search
           allowClear
+          aria-label="Tìm tên danh mục"
           placeholder="Tìm tên danh mục"
-          className="w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]"
+          className="service-list-search"
           value={search}
-          onChange={(event) => { setSearch(event.target.value); if (!event.target.value) setPage(1) }}
-          onSearch={(value) => { setSearch(value); setPage(1) }}
+          onChange={(event) => applySearch(event.target.value)}
+          onSearch={applySearch}
         />
-        <Space>
-          <Can I="CREATE" a="SERVICE">
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor()}>
-              Thêm danh mục
-            </Button>
-          </Can>
-        </Space>
+        <Can I="CREATE" a="SERVICE">
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor()}>
+            Thêm danh mục
+          </Button>
+        </Can>
       </div>
-      <Table<ServiceCategoryRow> className="desktop-only" rowKey="id" loading={categoriesQuery.isLoading} dataSource={rows} columns={columns} pagination={false} />
-      <MobileCards
-        rows={rows}
-        rowKey={(row) => row.id}
-        loading={categoriesQuery.isLoading}
-        emptyText="Chưa có danh mục nào"
-        renderCard={(row) => (
-          <>
-            <div className="mobile-card-head">
-              <div className="mobile-card-title">{row.name}</div>
-              <Tag color={row.is_active === false ? 'default' : 'green'}>{row.is_active === false ? 'Đã ẩn' : 'Đang dùng'}</Tag>
-            </div>
-            <div className="mobile-card-rows">
-              <MobileCardRow label="Danh mục cha" value={row.parent?.name || '—'} />
-              <MobileCardRow label="Thứ tự" value={row.sort_order ?? '—'} />
-            </div>
-            <div className="mobile-card-actions">
-              <Can I="UPDATE" a="SERVICE">
-                <Button size="small" onClick={() => openEditor(row)}>Sửa</Button>
-              </Can>
-              {row.is_active === false ? (
-                <Can I="UPDATE" a="SERVICE">
-                  <Button size="small" onClick={() => void restore(row)}>Bật lại</Button>
-                </Can>
-              ) : (
-                <Can I="UPDATE" a="SERVICE">
-                  <Popconfirm
-                    title="Ẩn danh mục này?"
-                    description="Danh mục bị ẩn khỏi app nhưng vẫn còn trong danh sách quản trị."
-                    onConfirm={() => void hide(row)}
-                  >
-                    <Button size="small">Ẩn</Button>
-                  </Popconfirm>
-                </Can>
-              )}
-              <Can I="DELETE" a="SERVICE">
-                <Popconfirm
-                  title="Xóa danh mục này?"
-                  description="Chỉ xóa được khi không còn dịch vụ hoặc danh mục con tham chiếu."
-                  okButtonProps={{ danger: true }}
-                  okText="Xóa"
-                  onConfirm={() => void remove(row)}
-                >
-                  <Button size="small" danger icon={<DeleteOutlined />} aria-label="Xóa danh mục" />
-                </Popconfirm>
-              </Can>
-            </div>
-          </>
-        )}
-      />
+      {categoriesQuery.isError ? (
+        <ServiceListState message="Không tải được danh mục dịch vụ" onRetry={() => void categoriesQuery.refetch()} />
+      ) : (
+        <>
+          <Table<ServiceCategoryRow> className="desktop-only" rowKey="id" loading={categoriesQuery.isLoading} dataSource={rows} columns={columns} pagination={false} locale={{ emptyText: search.trim() ? 'Không có kết quả' : 'Chưa có dữ liệu' }} />
+          <MobileCards
+            rows={rows}
+            rowKey={(row) => row.id}
+            loading={categoriesQuery.isLoading}
+            emptyText={search.trim() ? 'Không có kết quả' : 'Chưa có dữ liệu'}
+            emptyDescription={search.trim() ? 'Thử đổi từ khóa hoặc xóa bộ lọc' : undefined}
+            renderCard={(row) => (
+              <>
+                <div className="mobile-card-head">
+                  <div className="mobile-card-title min-w-0 flex-1">{row.name}</div>
+                  <Tag color={row.is_active === false ? 'default' : 'green'}>{row.is_active === false ? 'Đã ẩn' : 'Đang dùng'}</Tag>
+                  {renderActions(row, true)}
+                </div>
+                <div className="mobile-card-rows">
+                  <MobileCardRow label="Danh mục cha" value={row.parent?.name || '—'} />
+                  <MobileCardRow label="Thứ tự" value={row.sort_order ?? '—'} />
+                </div>
+              </>
+            )}
+          />
+        </>
+      )}
       <ListPagination page={page} limit={10} total={total} onChange={setPage} noun="danh mục dịch vụ" />
       <ServiceCategoryModal
         open={open}

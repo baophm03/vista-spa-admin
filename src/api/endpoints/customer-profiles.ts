@@ -63,6 +63,8 @@ import type {
   PostCustomerProfilesIdRedeemRewardAdminBody,
   PostCustomerProfilesLinkAdmin200,
   PostCustomerProfilesLinkAdminBody,
+  PutCustomerProfilesApp200,
+  PutCustomerProfilesAppBody,
   PutCustomerProfilesIdAdmin200,
   PutCustomerProfilesIdHealthMetricsMetricIdAdmin200,
   PutCustomerProfilesIdHealthRecordsRecordIdAdmin200,
@@ -2943,6 +2945,70 @@ export const prefetchGetCustomerProfilesByQrAdminQuery = async <TData = Awaited<
 
 
 /**
+ * **CP-02A** — PUT /customer-profiles/app. Khách tự cập nhật hồ sơ của chính mình trên miniapp: `full_name`, `phone`, `birthday`, `address`, `email`. Chỉ cần đăng nhập — BE tự tìm hồ sơ gắn với tài khoản và chỉ cho sửa hồ sơ đó (validate SĐT không trùng).
+ * @summary Update my customer profile (miniapp)
+ */
+export const putCustomerProfilesApp = (
+    putCustomerProfilesAppBody: PutCustomerProfilesAppBody,
+ ) => {
+      
+      
+      return customInstance<PutCustomerProfilesApp200>(
+      {url: `/customer-profiles/app`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: putCustomerProfilesAppBody
+    },
+      );
+    }
+  
+
+
+export const getPutCustomerProfilesAppMutationOptions = <TError = UnauthorizedResponse | NotFoundResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putCustomerProfilesApp>>, TError,{data: PutCustomerProfilesAppBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putCustomerProfilesApp>>, TError,{data: PutCustomerProfilesAppBody}, TContext> => {
+
+const mutationKey = ['putCustomerProfilesApp'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putCustomerProfilesApp>>, {data: PutCustomerProfilesAppBody}> = (props) => {
+          const {data} = props ?? {};
+
+          return  putCustomerProfilesApp(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PutCustomerProfilesAppMutationResult = NonNullable<Awaited<ReturnType<typeof putCustomerProfilesApp>>>
+    export type PutCustomerProfilesAppMutationBody = PutCustomerProfilesAppBody
+    export type PutCustomerProfilesAppMutationError = UnauthorizedResponse | NotFoundResponse | UnprocessableEntityResponse | InternalErrorResponse
+
+    /**
+ * @summary Update my customer profile (miniapp)
+ */
+export const usePutCustomerProfilesApp = <TError = UnauthorizedResponse | NotFoundResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putCustomerProfilesApp>>, TError,{data: PutCustomerProfilesAppBody}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof putCustomerProfilesApp>>,
+        TError,
+        {data: PutCustomerProfilesAppBody},
+        TContext
+      > => {
+
+      const mutationOptions = getPutCustomerProfilesAppMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
  * **CP-01** — GET /customer-profiles/admin. Cần đăng nhập + `customer_profile.read_all` (danh sách quản trị, phân trang `page`, `limit`, tìm kiếm `q`). Scoped theo customerProfileScope (KTV chỉ xem khách có buổi được phân công).
  * @summary List customer profiles (management / own profile)
  */

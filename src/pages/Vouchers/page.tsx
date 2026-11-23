@@ -1,7 +1,8 @@
+import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import { useState } from 'react'
-import { Alert, Button, Form, Input, Modal, Select, Table, Tabs, Tag, Typography, message } from 'antd'
+import { Alert, Button, Form, Grid, Input, Modal, Popover, Select, Table, Tabs, Tag, Typography, message } from 'antd'
 import type { TableColumnsType } from 'antd'
-import { CheckCircleOutlined, ClockCircleOutlined, DeleteOutlined, EditOutlined, GiftOutlined, PlusOutlined } from '@ant-design/icons'
+import { CheckCircleOutlined, ClockCircleOutlined, DeleteOutlined, EditOutlined, FilterOutlined, GiftOutlined, PlusOutlined } from '@ant-design/icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { Can, useAbility } from '@casl/react'
@@ -37,8 +38,9 @@ import {
 } from '@/api/endpoints/product-vouchers'
 import type { ProductCategory } from '@/api/models/productCategory'
 import VoucherModal from './components/VoucherModal'
-import { CATEGORY_META, type VoucherCategory, type VoucherCategoryRow, type VoucherCategoryWrite } from './components/constants'
+import { CATEGORY_META, MOBILE_TAB_LABELS, type VoucherCategory, type VoucherCategoryRow, type VoucherCategoryWrite } from './components/constants'
 import { useBrandCurrency } from '@/themeRuntime'
+import './vouchers.css'
 
 const PAGE_SIZE = 10
 const CATEGORIES: VoucherCategory[] = ['treatment-package', 'academy-course', 'product']
@@ -89,7 +91,7 @@ async function loadTargets(category: VoucherCategory) {
   return toTargets(await getProductsAdmin({ is_active: true }), ['rows', 'items', 'products'])
 }
 
-function VoucherCategoryTab({ category }: { category: VoucherCategory }) {
+function VoucherCategoryTab({ category, isMobile }: { category: VoucherCategory; isMobile: boolean }) {
   const ability = useAbility()
   const { format: formatMoney } = useBrandCurrency()
   const canUpdate = ability.can('UPDATE', 'VOUCHER')
@@ -241,38 +243,45 @@ function VoucherCategoryTab({ category }: { category: VoucherCategory }) {
     }
   }
 
+  const benefitFor = (row: VoucherCategoryRow) => {
+    if (row.discount_type === 'GIFT') return 'Ưu đãi cũ cần cập nhật'
+    if (row.discount_type === 'AMOUNT') return `Giảm ${formatMoney(row.discount_value)}`
+    return `Giảm ${Number(row.discount_value ?? 0).toLocaleString('vi-VN')}%`
+  }
+  const conditionFor = (row: VoucherCategoryRow) => {
+    if (category === 'academy-course') {
+      return [
+        Number(row.minimum_tuition ?? 0) > 0 && `Học phí từ ${formatMoney(row.minimum_tuition)}`,
+        `Tối đa ${row.max_uses_per_student ?? 1} lần/học viên`,
+      ].filter(Boolean).join(' · ')
+    }
+    if (category === 'product') {
+      return [
+        Number(row.minimum_order_amount ?? 0) > 0 && `Sản phẩm áp dụng từ ${formatMoney(row.minimum_order_amount)}`,
+        row.discount_type === 'PERCENT' && row.maximum_discount_amount != null && `Giảm tối đa ${formatMoney(row.maximum_discount_amount)}`,
+      ].filter(Boolean).join(' · ')
+    }
+    return ''
+  }
+  const statusFor = (row: VoucherCategoryRow) => {
+    if (row.end_date && dayjs(row.end_date).isBefore(dayjs(), 'day')) return <Tag>Hết hạn</Tag>
+    return row.is_active ? <Tag color="green">Hoạt động</Tag> : <Tag>Tắt</Tag>
+  }
+  const renderActions = (row: VoucherCategoryRow, mobile = false) => (
+    <RowActionsMenu
+      dropdownOnly={mobile}
+      items={[
+        { key: 'edit', icon: <EditOutlined />, label: 'Sửa' },
+        { key: 'delete', icon: <DeleteOutlined />, label: 'Xóa', danger: true },
+      ]}
+      onSelect={(key) => {
+        if (key === 'edit') openModal(row)
+        if (key === 'delete') Modal.confirm({ title: 'Xóa voucher này?', content: 'Xóa mềm (is_deleted). Không xóa được voucher đã phát hành cho khách hoặc đang cấu hình ở quà/vòng quay.', okText: 'Xóa', okButtonProps: { danger: true }, cancelText: 'Hủy', onOk: () => remove(row) })
+      }}
+    />
+  )
+
   const columns: TableColumnsType<VoucherCategoryRow> = [
-    {
-      title: 'Voucher',
-      key: 'mobile-summary',
-      width: 210,
-      responsive: ['xs'],
-      render: (_value: unknown, row: VoucherCategoryRow) => {
-        const target = targetLabelFor(row)
-        const benefit = row.discount_type === 'GIFT'
-          ? 'Ưu đãi cũ cần cập nhật'
-          : row.discount_type === 'AMOUNT'
-            ? `Giảm ${formatMoney(row.discount_value)}`
-            : `Giảm ${Number(row.discount_value ?? 0).toLocaleString('vi-VN')}%`
-        const expired = Boolean(row.end_date && dayjs(row.end_date).isBefore(dayjs(), 'day'))
-        const status = expired ? 'Hết hạn' : row.is_active ? 'Hoạt động' : 'Tắt'
-        const period = row.start_date || row.end_date
-          ? `${row.start_date ? dayjs(row.start_date).format('DD/MM/YYYY') : '—'} → ${row.end_date ? dayjs(row.end_date).format('DD/MM/YYYY') : '—'}`
-          : 'Không giới hạn'
-        const issue = row.issue_mode === 'FIXED'
-          ? 'Gán thủ công'
-          : `Tự động${category !== 'academy-course' ? ` · ${row.card_rank_name || 'Mọi hạng'}` : ''}`
-        const details = [row.branch_name || 'Tất cả cơ sở', issue, row.points_cost == null ? 'Miễn phí' : `${Number(row.points_cost).toLocaleString('vi-VN')} điểm`, status, period].join(' · ')
-        return (
-          <div>
-            <Typography.Text strong ellipsis={{ tooltip: row.title }}>{row.title}</Typography.Text>
-            <Typography.Text style={{ display: 'block' }} ellipsis={{ tooltip: benefit }}>{benefit}</Typography.Text>
-            <Typography.Text type="secondary" style={{ display: 'block', fontSize: 12 }} ellipsis={{ tooltip: target }}>{target}</Typography.Text>
-            <Typography.Text type="secondary" style={{ display: 'block', fontSize: 12 }} ellipsis={{ tooltip: details }}>{details}</Typography.Text>
-          </div>
-        )
-      },
-    },
     {
       title: 'Voucher', dataIndex: 'title', width: 165,
       responsive: ['sm'],
@@ -290,22 +299,8 @@ function VoucherCategoryTab({ category }: { category: VoucherCategory }) {
       title: 'Ưu đãi', key: 'benefit', width: 195,
       responsive: ['sm'],
       render: (_value: unknown, row: VoucherCategoryRow) => {
-        const benefit = row.discount_type === 'GIFT'
-          ? 'Ưu đãi cũ cần cập nhật'
-          : row.discount_type === 'AMOUNT'
-            ? `Giảm ${formatMoney(row.discount_value)}`
-            : `Giảm ${Number(row.discount_value ?? 0).toLocaleString('vi-VN')}%`
-        const condition = category === 'academy-course'
-          ? [
-              Number(row.minimum_tuition ?? 0) > 0 ? `Học phí từ ${formatMoney(row.minimum_tuition)}` : null,
-              `Tối đa ${row.max_uses_per_student ?? 1} lần/học viên`,
-            ].filter(Boolean).join(' · ')
-          : category === 'product'
-            ? [
-                Number(row.minimum_order_amount ?? 0) > 0 ? `Sản phẩm áp dụng từ ${formatMoney(row.minimum_order_amount)}` : null,
-                row.discount_type === 'PERCENT' && row.maximum_discount_amount != null ? `Giảm tối đa ${formatMoney(row.maximum_discount_amount)}` : null,
-              ].filter(Boolean).join(' · ')
-            : ''
+        const benefit = benefitFor(row)
+        const condition = conditionFor(row)
         return (
           <div>
             <Typography.Text ellipsis={{ tooltip: benefit }}>{benefit}</Typography.Text>
@@ -368,58 +363,102 @@ function VoucherCategoryTab({ category }: { category: VoucherCategory }) {
         return <Typography.Text ellipsis={{ tooltip: period }}>{period}</Typography.Text>
       },
     },
-    { title: 'Trạng thái', dataIndex: 'is_active', width: 85, responsive: ['sm'], render: (value: boolean, row) => row.end_date && dayjs(row.end_date).isBefore(dayjs(), 'day') ? <Tag>Hết hạn</Tag> : value ? <Tag color="green">Hoạt động</Tag> : <Tag>Tắt</Tag> },
+    { title: 'Trạng thái', dataIndex: 'is_active', width: 85, responsive: ['sm'], render: (_value: boolean, row) => statusFor(row) },
     ...(canUpdate ? [{
       title: 'Thao tác', key: 'actions', align: 'center' as const, width: 88,
-      render: (_value: unknown, row: VoucherCategoryRow) => (
-        <RowActionsMenu
-          items={[
-            { key: 'edit', icon: <EditOutlined />, label: 'Sửa' },
-            { key: 'delete', icon: <DeleteOutlined />, label: 'Xóa', danger: true },
-          ]}
-          onSelect={(key) => {
-            if (key === 'edit') openModal(row)
-            if (key === 'delete') Modal.confirm({ title: 'Xóa voucher này?', content: 'Xóa mềm (is_deleted). Không xóa được voucher đã phát hành cho khách hoặc đang cấu hình ở quà/vòng quay.', okText: 'Xóa', okButtonProps: { danger: true }, cancelText: 'Hủy', onOk: () => remove(row) })
-          }}
-        />
-      ),
+      render: (_value: unknown, row: VoucherCategoryRow) => renderActions(row),
     }] : []),
   ]
+
+  const branchSelect = (
+    <Select
+      aria-label="Lọc theo cơ sở"
+      value={branchFilter ?? 'ALL'}
+      className="voucher-branch-select"
+      options={[{ value: 'ALL', label: 'Tất cả cơ sở' }, ...branches]}
+      onChange={(value) => { setBranchFilter(value === 'ALL' ? undefined : value); setPage(1) }}
+    />
+  )
 
   return (
     <>
       <StatCards items={statItems} />
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '16px 0', gap: 12, flexWrap: 'wrap' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+      <div className="voucher-toolbar">
+        <div className="voucher-toolbar-search">
           <Input.Search
             allowClear
-            placeholder="Tìm theo tên voucher"
-            className="w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]"
+            placeholder={isMobile ? 'Tìm voucher' : 'Tìm theo tên voucher'}
+            aria-label="Tìm theo tên voucher"
+            className="voucher-search"
             value={searchInput}
             onChange={(event) => { setSearchInput(event.target.value); if (!event.target.value) applySearch('') }}
             onSearch={(v) => applySearch(v)}
           />
-          <Select
-            value={branchFilter ?? 'ALL'}
-            style={{ width: 220 }}
-            options={[{ value: 'ALL', label: 'Tất cả cơ sở' }, ...branches]}
-            onChange={(value) => { setBranchFilter(value === 'ALL' ? undefined : value); setPage(1) }}
-          />
+          {isMobile ? (
+            <Popover trigger="click" placement="bottomRight" title="Lọc theo cơ sở" content={branchSelect}>
+              <Button className="voucher-toolbar-button" type={branchFilter ? 'primary' : 'default'} icon={<FilterOutlined />} aria-label="Bộ lọc cơ sở" />
+            </Popover>
+          ) : branchSelect}
         </div>
         <Can I="UPDATE" a="VOUCHER">
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>Thêm voucher</Button>
+          <Button type="primary" className="voucher-toolbar-button" icon={<PlusOutlined />} aria-label="Thêm voucher" onClick={() => openModal()}>
+            {isMobile ? null : 'Thêm voucher'}
+          </Button>
         </Can>
       </div>
       {vouchersQuery.isError && <Alert type="error" showIcon style={{ marginBottom: 16 }} message="Không tải được danh sách voucher" description={errorMessage(vouchersQuery.error)} action={<Button size="small" onClick={() => void vouchersQuery.refetch()}>Thử lại</Button>} />}
       {targetsQuery.isError && <Alert type="warning" showIcon style={{ marginBottom: 16 }} message={`Không tải được danh sách ${meta.label.replace('Voucher ', '').toLowerCase()}`} description={errorMessage(targetsQuery.error)} />}
       <Table<VoucherCategoryRow>
-        className="[&_.ant-table-thead_th]:whitespace-nowrap"
+        className="desktop-only [&_.ant-table-thead_th]:whitespace-nowrap"
         rowKey="id"
         loading={vouchersQuery.isLoading}
         dataSource={rows}
         pagination={false}
         columns={columns}
         tableLayout="fixed"
+      />
+      <MobileCards
+        rows={rows}
+        rowKey={(row) => row.id}
+        loading={vouchersQuery.isLoading}
+        emptyText={search || branchFilter ? 'Không tìm thấy voucher' : 'Chưa có voucher'}
+        renderCard={(row) => {
+          const condition = conditionFor(row)
+          const issue = row.issue_mode === 'FIXED' ? 'Gán thủ công' : 'Tự động'
+          const rank = row.issue_mode !== 'FIXED' && category !== 'academy-course' ? row.card_rank_name || 'Mọi hạng' : null
+          const points = row.points_cost == null ? 'Miễn phí' : `${Number(row.points_cost).toLocaleString('vi-VN')} điểm`
+          const quantity = row.quantity_total == null ? 'Không giới hạn' : `Còn ${Math.max(Number(row.quantity_total) - Number(row.quantity_given ?? 0), 0)}/${row.quantity_total}`
+          const start = row.start_date && dayjs(row.start_date).format('DD/MM/YYYY')
+          const end = row.end_date && dayjs(row.end_date).format('DD/MM/YYYY')
+          const period = start && end ? `${start} – ${end}` : start ? `Từ ${start}` : end ? `Đến ${end}` : 'Không giới hạn'
+          return (
+            <div className="voucher-mobile-card">
+              <div className="voucher-card-header">
+                <div className="min-w-0">
+                  <div className="mobile-card-title">{row.title}</div>
+                  <div className="mobile-card-sub">{targetLabelFor(row)}</div>
+                </div>
+                {statusFor(row)}
+              </div>
+              <div className="voucher-card-benefit">
+                <strong>{benefitFor(row)}</strong>
+                {condition && <div className="mobile-card-sub">{condition}</div>}
+              </div>
+              <div className="mobile-card-rows">
+                <MobileCardRow label="Cơ sở" value={row.branch_name || 'Tất cả cơ sở'} />
+                <MobileCardRow label="Phát hành" value={[issue, rank, points].filter(Boolean).join(' · ')} />
+                <MobileCardRow label="Số lượng" value={quantity} />
+              </div>
+              <div className="voucher-card-footer">
+                <div className="min-w-0">
+                  <div className="mobile-card-sub">Thời hạn</div>
+                  <div className="text-xs font-medium">{period}</div>
+                </div>
+                {canUpdate && <div className="mobile-card-actions">{renderActions(row, true)}</div>}
+              </div>
+            </div>
+          )
+        }}
       />
       <ListPagination page={page} limit={PAGE_SIZE} total={total} onChange={setPage} noun="voucher" />
       <VoucherModal
@@ -442,16 +481,18 @@ function VoucherCategoryTab({ category }: { category: VoucherCategory }) {
 
 export default function Vouchers() {
   const [activeTab, setActiveTab] = useState<VoucherCategory>('treatment-package')
+  const isMobile = !Grid.useBreakpoint().md
   return (
     <>
       <PageTitle subtitle="Mỗi loại voucher được quản lý riêng theo gói liệu trình, khóa học hoặc sản phẩm">Voucher</PageTitle>
       <Tabs
+        className="voucher-tabs"
         activeKey={activeTab}
         onChange={(key) => { setActiveTab(key as VoucherCategory) }}
         items={CATEGORIES.map((category) => ({
           key: category,
-          label: CATEGORY_META[category].label,
-          children: <VoucherCategoryTab category={category} />,
+          label: isMobile ? MOBILE_TAB_LABELS[category] : CATEGORY_META[category].label,
+          children: <VoucherCategoryTab category={category} isMobile={isMobile} />,
         }))}
       />
     </>

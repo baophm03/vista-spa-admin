@@ -252,6 +252,7 @@ export default function WheelSpinModal({
     prize && (result?.spin?.is_win ?? prize.prize_type?.toUpperCase() !== 'NONE'),
   )
   const canSpinAgain = spinsLeft === undefined || spinsLeft > 0
+  const isSpinning = waiting || Boolean(result && !revealed)
 
   const handleSpin = () => {
     if (waiting || !canSpinAgain) return
@@ -373,27 +374,23 @@ export default function WheelSpinModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="lucky-wheel-title"
-      className="fixed inset-0 z-[1400] flex min-h-[100dvh] flex-col overflow-y-auto bg-[#FAF1FC] text-center font-sans text-[#3A1448] selection:bg-[#E2B7F4]"
+      className="fixed inset-0 z-[1400] flex items-end justify-center bg-[#2A1533]/45 text-center font-sans backdrop-blur-[2px] selection:bg-[#E2B7F4] sm:items-center sm:p-3"
+      onClick={onClose}
     >
-      {/* Nút đóng tối giản ở góc trên cùng bên phải */}
-      <button
-        type="button"
-        aria-label="Đóng màn hình quay"
-        onClick={onClose}
-        className="fixed right-4 top-4 z-50 grid size-9 place-items-center rounded-full bg-white/60 text-sm text-[#72218E]/75 backdrop-blur-md transition-all hover:bg-white hover:text-[#421453] hover:shadow-md"
+      {/* Màn hình quay phủ viewport trên mobile và căn giữa trên desktop. */}
+      <div
+        className="relative flex h-dvh w-full flex-col overflow-y-auto overflow-x-hidden overscroll-contain bg-[#FAF1FC] text-[#3A1448] sm:h-auto sm:max-h-[96dvh] sm:max-w-[430px] sm:rounded-[22px] sm:shadow-[0_24px_80px_rgba(30,10,40,0.35)]"
+        onClick={(event) => event.stopPropagation()}
       >
-        <CloseOutlined />
-      </button>
-
       {/* Background lavender silk spa y hệt ảnh thiết kế */}
       <div
         aria-hidden="true"
-        className="pointer-events-none fixed inset-0 bg-cover bg-center bg-no-repeat"
+        className="pointer-events-none absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: "url('/lucky-wheel-lavender-bg.png')" }}
       />
 
       {/* Header bar: Logo to đẹp rõ nét bên trái, Nút Thể lệ đúng chuẩn bên phải */}
-      <header className="relative z-10 mx-auto flex w-full max-w-[1550px] items-start justify-between gap-4 px-6 pt-5 sm:px-10 sm:pt-6 lg:px-14">
+      <header className="relative z-10 mx-auto flex w-full max-w-[1550px] shrink-0 items-center justify-between gap-3 px-4 pb-2 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-6 sm:pt-4">
         {/* Dùng ảnh logo đầy đủ nội dung thương hiệu */}
         <div className="flex items-center">
           <img
@@ -403,23 +400,30 @@ export default function WheelSpinModal({
           />
         </div>
 
-        {/* Nút Thể lệ góc phải chuẩn 100% hình thiết kế (nền trắng tròn, chữ tím, icon quà) */}
-        <div>
+        <div className="flex shrink-0 items-center gap-2">
           <button
             type="button"
             onClick={() => setTermsOpen(true)}
-            className="inline-flex h-11 items-center gap-2.5 rounded-full border border-white/90 bg-white px-5 sm:px-6 text-sm sm:text-base font-semibold text-[#7E259B] shadow-[0_4px_18px_rgba(110,38,132,0.14)] backdrop-blur-md transition-all hover:bg-white hover:shadow-[0_6px_22px_rgba(110,38,132,0.22)] active:scale-98"
+            className="inline-flex h-10 items-center gap-2 rounded-full border border-white/90 bg-white px-3.5 text-sm font-semibold text-[#7E259B] shadow-[0_4px_18px_rgba(110,38,132,0.14)] transition-shadow hover:shadow-[0_6px_22px_rgba(110,38,132,0.22)]"
           >
             <GiftOutlined className="text-base text-[#8C28AC]" />
             <span>Thể lệ</span>
+          </button>
+          <button
+            type="button"
+            aria-label="Đóng màn hình quay"
+            onClick={onClose}
+            className="grid size-10 place-items-center rounded-full border border-white/90 bg-white/65 text-sm text-[#72218E]/75 transition-colors hover:bg-white hover:text-[#421453]"
+          >
+            <CloseOutlined />
           </button>
         </div>
       </header>
 
       {/* Main Container */}
-      <main className="relative z-10 mx-auto flex w-full max-w-[1400px] flex-1 flex-col items-center px-4 pb-4 pt-1 sm:px-8">
+      <main className="relative z-10 mx-auto flex w-full max-w-[1400px] flex-1 flex-col items-center px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-1 sm:px-8 sm:pb-4">
         {/* Huy hiệu VÒNG QUAY MAY MẮN kết hợp tên chương trình sang trọng */}
-        <div className="inline-flex h-12 items-center gap-3 rounded-full border border-[#E8D9D0] bg-white/85 px-4 shadow-[0_5px_18px_rgba(97,55,102,0.10)] backdrop-blur-sm">
+        <div className="inline-flex h-12 max-w-full shrink-0 items-center gap-2 rounded-full border border-[#E8D9D0] bg-white/85 px-3 shadow-[0_5px_18px_rgba(97,55,102,0.10)] backdrop-blur-sm sm:gap-3 sm:px-4">
           <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[#F5EAF6] text-sm text-[#8D42A0]">
             <GiftOutlined />
           </span>
@@ -430,7 +434,8 @@ export default function WheelSpinModal({
             <>
               <span aria-hidden="true" className="h-5 w-px shrink-0 bg-[#E5D7DF]" />
               <span
-                className="whitespace-nowrap text-sm font-semibold text-[#5C4563] sm:text-base"
+                className="min-w-0 truncate text-sm font-semibold text-[#5C4563] sm:text-base"
+                title={wheelName}
                 style={{ fontFamily: "'Playfair Display', 'Be Vietnam Pro', serif" }}
               >
                 {wheelName}
@@ -692,8 +697,8 @@ export default function WheelSpinModal({
           {/* NÚT GIỮA: Chuẩn 100% hình thiết kế với viền vàng Champagne, mặt ngọc trai trắng đào và chữ QUAY NGAY ▶ */}
           <button
             type="button"
-            aria-label={waiting ? 'Vòng quay đang quay' : 'Nhấn để quay ngay'}
-            disabled={waiting || (Boolean(result) && !revealed) || !canSpinAgain || prizes.length === 0}
+            aria-label={isSpinning ? 'Vòng quay đang quay' : 'Nhấn để quay ngay'}
+            disabled={isSpinning || !canSpinAgain || prizes.length === 0}
             onClick={handleSpin}
             className="absolute left-1/2 top-1/2 z-20 grid size-[26%] -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full p-[1cqw] shadow-[0_8px_25px_rgba(70,15,85,0.26),0_0_14px_rgba(245,210,120,0.3)] transition-all hover:scale-[1.04] active:scale-[0.98] disabled:cursor-default"
             style={{
@@ -795,9 +800,9 @@ export default function WheelSpinModal({
         <Button
           type="primary"
           size="large"
-          icon={waiting ? <SyncOutlined spin /> : <SyncOutlined />}
-          loading={waiting}
-          disabled={waiting || (Boolean(result) && !revealed) || (!result && (!canSpinAgain || prizes.length === 0))}
+          icon={<SyncOutlined />}
+          loading={isSpinning}
+          disabled={isSpinning || (!result && (!canSpinAgain || prizes.length === 0))}
           onClick={result && revealed && !canSpinAgain ? onClose : handleSpin}
           className="!mt-3 !h-11 !min-w-[16rem] !rounded-full !border !border-[#F0A6F6]/70 !px-8 !text-sm !font-bold !tracking-wider !text-white !shadow-[0_10px_30px_rgba(142,35,165,0.42)] transition-transform hover:scale-[1.02] active:scale-[0.98] sm:!h-12 sm:!min-w-[18rem] sm:!text-base"
           style={{
@@ -805,14 +810,10 @@ export default function WheelSpinModal({
           }}
         >
           <span>
-            {waiting
+            {isSpinning
               ? 'ĐANG QUAY...'
               : result
-                ? revealed
-                  ? canSpinAgain
-                    ? 'QUAY TIẾP'
-                    : 'HOÀN TẤT'
-                  : 'ĐANG DỪNG'
+                ? canSpinAgain ? 'QUAY TIẾP' : 'HOÀN TẤT'
                 : !canSpinAgain
                   ? 'HẾT LƯỢT'
                   : error
@@ -890,6 +891,7 @@ export default function WheelSpinModal({
           </section>
         </div>
       )}
+      </div>
     </div>
   )
 }

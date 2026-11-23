@@ -442,7 +442,7 @@ export const prefetchGetCardRanksIdAdminQuery = async <TData = Awaited<ReturnTyp
 
 
 /**
- * **CR-04** — PUT /card-ranks/{id}/admin (does not automatically recalculate existing customers' ranks). Cần đăng nhập + `card_rank.update_all`. Body fields: `name`, `sort_order`, `min_spent`, `max_spent`, `discount_percent`, `validity`, `auto_assign`, `benefits`, `is_active`, `color`.
+ * **CR-04** — PUT /card-ranks/{id}/admin (does not automatically recalculate existing customers' ranks). Cần đăng nhập + `card_rank.update_all`. Body fields: `name`, `sort_order`, `min_spent`, `max_spent`, `discount_percent`, `validity`, `auto_assign`, `benefits`, `is_active`, `color`, `image_file_id`.
  * @summary Update a card rank
  */
 export const putCardRanksIdAdmin = (
@@ -764,7 +764,7 @@ export const prefetchGetCardRanksAdminQuery = async <TData = Awaited<ReturnType<
 
 
 /**
- * **CR-03** — POST /card-ranks/admin. Cần đăng nhập + `card_rank.create`. Body fields: `code`, `name`, `sort_order`, `min_spent`, `max_spent`, `discount_percent`, `validity`, `auto_assign`, `benefits`, `color`.
+ * **CR-03** — POST /card-ranks/admin. Cần đăng nhập + `card_rank.create`. Body fields: `code`, `name`, `sort_order`, `min_spent`, `max_spent`, `discount_percent`, `validity`, `auto_assign`, `benefits`, `color`, `image_file_id`.
  * @summary Create a new card rank
  */
 export const postCardRanksAdmin = (

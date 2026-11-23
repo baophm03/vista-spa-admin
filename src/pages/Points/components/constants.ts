@@ -18,6 +18,7 @@ export interface RankRow {
   validity?: string
   benefits?: string
   color?: string | null
+  image_file_id?: string | null
   is_active?: boolean
 }
 

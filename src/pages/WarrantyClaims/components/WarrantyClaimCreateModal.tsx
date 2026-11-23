@@ -4,6 +4,7 @@ import { FileTextOutlined, UploadOutlined } from '@ant-design/icons'
 import type { CustomerTreatment } from '@/api/models/customerTreatment'
 import { snapshotField, labelStyle } from './constants'
 import { useBrandDateTime } from '@/themeRuntime'
+import { resolveFileSrc, useFileUrlMap } from '@/hooks/useFileUrl'
 import type { Branch } from '@/api/models'
 
 interface WarrantyClaimCreateModalProps {
@@ -36,10 +37,12 @@ export default function WarrantyClaimCreateModal({
   branches,
 }: WarrantyClaimCreateModalProps) {
   const { formatDateTime } = useBrandDateTime()
+  const contractSrc = resolveFileSrc(useFileUrlMap(), contractFileId)
 
   return (
     <Modal
       title="Tiếp nhận bảo hành"
+      width="min(560px, calc(100vw - 24px))"
       open={open}
       onCancel={onCancel}
       onOk={onOk}
@@ -57,6 +60,7 @@ export default function WarrantyClaimCreateModal({
             showSearch optionFilterProp="label" loading={treatmentsLoading}
             placeholder="Chỉ hiện gói đã hoàn tất"
             notFoundContent={treatmentsLoading ? 'Đang tải...' : 'Không có liệu trình nào đã hoàn tất và có bảo hành'}
+            optionRender={(option) => <div className="whitespace-normal wrap-anywhere">{option.label}</div>}
             options={eligibleTreatments.map((t) => {
               const snap = snapshotField(t)
               const treatment = t as CustomerTreatment & { customer_profile?: { full_name?: string; phone?: string } }
@@ -99,7 +103,7 @@ export default function WarrantyClaimCreateModal({
             >
               <Button icon={<UploadOutlined />} loading={uploading} disabled={uploading}>Tải giấy cam kết</Button>
             </Upload>
-            {contractFileId && <a href={contractFileId} target="_blank" rel="noreferrer"><FileTextOutlined /> Xem tệp đã tải</a>}
+            {contractSrc && <a href={contractSrc} target="_blank" rel="noreferrer"><FileTextOutlined /> Xem tệp đã tải</a>}
             {contractFileId && <Button type="link" danger onClick={onRemoveFile}>Gỡ tệp</Button>}
           </Space>
         </Form.Item>

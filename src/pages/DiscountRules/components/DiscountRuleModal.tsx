@@ -2,6 +2,7 @@ import { Col, DatePicker, Form, Input, InputNumber, Modal, Row, Select, Space, S
 import type { FormInstance } from 'antd'
 import type { DiscountRule } from '@/api/models'
 import { APPLIES_TO_OPTIONS, AUDIENCE_META } from './constants'
+import './discount-rule-modal.css'
 
 export default function DiscountRuleModal({ open, editing, form, saving, ranks, services, servicesLoading, onCancel, onSubmit }: {
   open: boolean
@@ -17,6 +18,7 @@ export default function DiscountRuleModal({ open, editing, form, saving, ranks, 
   return (
     <Modal
       title={editing ? `Sửa quy tắc: ${editing.name}` : 'Thêm quy tắc giảm giá'}
+      className="discount-rule-modal"
       open={open}
       onCancel={onCancel}
       onOk={onSubmit}
@@ -24,7 +26,7 @@ export default function DiscountRuleModal({ open, editing, form, saving, ranks, 
       okText="Lưu" cancelText="Hủy"
       width={600}
     >
-      <Form form={form} layout="vertical" style={{ marginTop: 12 }}>
+      <Form form={form} layout="vertical" className="discount-rule-form">
         <Form.Item name="code" label="Mã" rules={[{ required: true, message: 'Nhập mã' }]}>
           <Input maxLength={50} placeholder="VD: RANK-VIP-10" disabled={!!editing} />
         </Form.Item>
@@ -36,7 +38,7 @@ export default function DiscountRuleModal({ open, editing, form, saving, ranks, 
             const isRank = getFieldValue('audience') === 'RANK'
             const span = isRank ? 8 : 12
             return (
-              <Row gutter={12}>
+              <Row gutter={12} className="discount-rule-targets">
                 <Col span={span}>
                   <Form.Item name="audience" label="Đối tượng" rules={[{ required: true }]}>
                     <Select options={Object.entries(AUDIENCE_META).map(([value, meta]) => ({ value, label: meta.label }))} />
@@ -62,7 +64,7 @@ export default function DiscountRuleModal({ open, editing, form, saving, ranks, 
             )
           }}
         </Form.Item>
-        <Space style={{ display: 'flex' }} align="start">
+        <Space className="discount-rule-percentages" align="start">
           <Form.Item name="percent_min" label="% tối thiểu" rules={[{ required: true, message: 'Nhập % tối thiểu' }]} style={{ flex: 1 }}>
             <InputNumber min={0} max={100} precision={0} style={{ width: '100%' }} />
           </Form.Item>
@@ -90,7 +92,7 @@ export default function DiscountRuleModal({ open, editing, form, saving, ranks, 
             ) : null
           }
         </Form.Item>
-        <Space style={{ display: 'flex' }} align="start">
+        <Space className="discount-rule-switches" align="start">
           <Form.Item name="stackable" label="Xếp chồng được" valuePropName="checked" style={{ flex: 1 }}>
             <Switch />
           </Form.Item>

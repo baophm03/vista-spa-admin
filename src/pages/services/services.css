@@ -1,0 +1,138 @@
+.services-page {
+  min-width: 0;
+}
+
+.service-list-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.service-list-toolbar .service-list-search {
+  width: 260px;
+  max-width: 100%;
+}
+
+.service-card-link {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  min-height: 44px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  text-align: start;
+  cursor: pointer;
+}
+
+.service-card-link .anticon {
+  flex-shrink: 0;
+  padding: 8px;
+  border-radius: 8px;
+  color: var(--brand-primary);
+  background: var(--brand-tint);
+}
+
+.service-card-image {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+@media (max-width: 767px) {
+  .services-page .stat-cards {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    margin-bottom: 12px !important;
+  }
+
+  .services-page .stat-card {
+    padding: 8px;
+    border-radius: 12px;
+    box-shadow: none;
+  }
+
+  .services-page .stat-card-disc,
+  .services-page .stat-card-circle {
+    display: none;
+  }
+
+  .services-page .stat-card-label {
+    font-size: 11px;
+    white-space: normal;
+  }
+
+  .services-page .stat-card-value {
+    font-size: 20px;
+    overflow-wrap: anywhere;
+  }
+
+  .services-tabs > .ant-tabs-nav :is(.ant-tabs-nav-wrap, .ant-tabs-nav-list) {
+    width: 100%;
+  }
+
+  .services-tabs > .ant-tabs-nav .ant-tabs-tab {
+    flex: 1;
+    justify-content: center;
+    min-width: 0;
+    min-height: 44px;
+    margin-inline: 0 !important;
+    text-align: center;
+  }
+
+  .services-tabs > .ant-tabs-nav .ant-tabs-tab-btn {
+    white-space: normal;
+    font-size: 13px;
+  }
+
+  .service-list-toolbar {
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+
+  .service-list-toolbar .service-list-search {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .service-list-toolbar .ant-btn {
+    min-height: 44px;
+  }
+
+  .service-list-toolbar > .ant-btn {
+    flex-shrink: 0;
+  }
+
+  .services-page .mobile-card-head .ant-tag {
+    flex-shrink: 0;
+    margin-inline-end: 0;
+  }
+
+  .services-page .row-actions-touch-target {
+    min-width: 44px;
+    min-height: 44px;
+    padding-inline: 8px;
+    gap: 4px;
+    font-size: 12px;
+  }
+
+  .services-page .mobile-card-actions {
+    flex-wrap: wrap;
+  }
+
+  .services-page .mobile-card-row .mobile-card-label {
+    flex-basis: 40%;
+  }
+
+  .services-page .service-list-error {
+    flex-wrap: wrap;
+  }
+}

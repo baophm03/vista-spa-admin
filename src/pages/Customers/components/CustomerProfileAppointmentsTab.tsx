@@ -44,7 +44,10 @@ export default function CustomerProfileAppointmentsTab({ profileId }: { profileI
     return () => { active = false }
   }, [profileId, refresh])
 
-  if (loading) return <div className="py-9 text-center"><Spin tip="Đang tải lịch hẹn…" /></div>
+  if (loading) return <>
+    <div className="desktop-only py-9 text-center"><Spin tip="Đang tải lịch hẹn…" /></div>
+    <MobileCards rows={[]} rowKey={() => ''} renderCard={() => null} loading />
+  </>
   if (error) return <Alert type="error" showIcon message="Không tải được lịch hẹn" description={error} action={<Button size="small" icon={<ReloadOutlined />} onClick={() => { setPage(1); setRefresh((value) => value + 1) }}>Thử lại</Button>} />
   if (!rows.length) return <Empty description="Khách chưa có lịch hẹn" />
 

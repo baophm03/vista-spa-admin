@@ -12,6 +12,7 @@ import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ToolbarRow from '@/components/base/ToolbarRow'
 import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import TableEmpty from '@/components/base/TableEmpty'
+import ResponsiveTable from '@/components/base/ResponsiveTable'
 import { deleteStaffDaysOffIdAdmin, getGetStaffDaysOffAdminQueryKey, getStaffDaysOffConflictsAdmin, postStaffDaysOffAdmin, putStaffDaysOffIdApproveAdmin, putStaffDaysOffIdRejectAdmin, useGetShiftTemplatesAdmin, useGetStaffDaysOffAdmin, useGetStaffScheduleDatesAdmin } from '@/api/endpoints/staff'
 import type { StaffDayOff, StaffScheduleDate, ShiftTemplate } from './types'
 import type { SchedulePageData } from './types'
@@ -40,7 +41,7 @@ function showBlockedByAppointmentsModal(appointments: ConflictAppointment[], nav
           Tuyệt đối <b>không hủy lịch của khách</b>: gọi điện xin lỗi khách và xin phép đổi sang nhân viên khác,
           sau đó mở từng lịch hẹn bên dưới để đổi nhân viên. Xử lý xong hết thì quay lại bấm "Duyệt".
         </p>
-        <Table<ConflictAppointment>
+        <ResponsiveTable<ConflictAppointment>
           rowKey="id" size="small" pagination={false} scroll={{ y: 260 }} dataSource={appointments}
           columns={[
             { title: 'Ngày', dataIndex: 'appt_date', render: (value: string) => dayjs(value).format('DD/MM/YYYY') },
@@ -75,7 +76,7 @@ async function showConflictsPreview(row: StaffDayOff) {
         : 'Không có lịch hẹn nào trùng ca nghỉ này',
       width: 700,
       content: rows.length ? (
-        <Table<ConflictAppointment>
+        <ResponsiveTable<ConflictAppointment>
           rowKey="id" size="small" pagination={false} scroll={{ y: 240 }} dataSource={rows}
           columns={[
             { title: 'Ngày', dataIndex: 'appt_date', render: (value: string) => dayjs(value).format('DD/MM/YYYY') },

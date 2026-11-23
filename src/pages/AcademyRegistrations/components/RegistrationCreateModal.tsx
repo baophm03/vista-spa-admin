@@ -3,6 +3,7 @@ import { Alert, Form, Input, Modal, Select } from 'antd'
 import type { FormInstance } from 'antd'
 import type { AcademyCourse } from '@/api/models/academyCourse'
 import type { VoucherCategoryRow } from '@/pages/Vouchers/components/constants'
+import './registration-create-modal.css'
 
 export default function RegistrationCreateModal({ open, form, courses, vouchers, creating, onCancel, onSubmit }: {
   open: boolean
@@ -33,6 +34,7 @@ export default function RegistrationCreateModal({ open, form, courses, vouchers,
   return (
     <Modal
       title="Thêm đăng ký học viên"
+      className="academy-registration-create-modal"
       open={open}
       onOk={onSubmit}
       onCancel={onCancel}
@@ -40,7 +42,7 @@ export default function RegistrationCreateModal({ open, form, courses, vouchers,
       okText="Thêm đăng ký"
       cancelText="Hủy"
     >
-      <Form form={form} layout="vertical">
+      <Form form={form} layout="vertical" className="academy-registration-create-form">
         <Form.Item name="full_name" label="Họ và tên" rules={[{ required: true, message: 'Nhập họ tên học viên' }]}>
           <Input placeholder="Tên học viên" />
         </Form.Item>

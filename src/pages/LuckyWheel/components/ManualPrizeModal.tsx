@@ -13,6 +13,7 @@ export default function ManualPrizeModal({ open, prizes, prizeId, onPrizeIdChang
 }) {
   return (
     <Modal
+      className="lucky-wheel-form-modal"
       title="Ghi kết quả tay"
       open={open}
       onCancel={onCancel}

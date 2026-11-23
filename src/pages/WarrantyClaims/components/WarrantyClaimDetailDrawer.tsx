@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { Alert, Button, Descriptions, Drawer, Form, Modal, Space, Tag, Typography, message } from 'antd'
+import { Alert, Button, Descriptions, Drawer, Form, Grid, Modal, Skeleton, Tag, message } from 'antd'
 import { FileTextOutlined } from '@ant-design/icons'
+import InfoBanner from '@/components/base/InfoBanner'
 import { errorMessage } from '@/api/helpers'
 import { Can } from '@casl/react'
 import { useGetWarrantyClaimsIdAdmin, usePutWarrantyClaimsIdApproveAdmin } from '@/api/endpoints/warranty-claims'
@@ -26,6 +27,7 @@ interface WarrantyClaimDetailDrawerProps {
 export default function WarrantyClaimDetailDrawer(props: WarrantyClaimDetailDrawerProps) {
   const { claimId, fallback, onClose } = props
   const { formatDateTime } = useBrandDateTime()
+  const isMobile = !Grid.useBreakpoint().md
   const urlMap = useFileUrlMap()
   const approveMutation = usePutWarrantyClaimsIdApproveAdmin()
   const [approveForm] = Form.useForm()
@@ -55,14 +57,22 @@ export default function WarrantyClaimDetailDrawer(props: WarrantyClaimDetailDraw
 
   return (
     <Drawer
-      title="Chi tiết yêu cầu bảo hành" open={!!claimId} onClose={onClose} width={480}
+      title="Chi tiết yêu cầu bảo hành"
+      open={!!claimId}
+      onClose={() => { setApproveOpen(false); onClose() }}
+      size="min(480px, 100vw)"
+      classNames={{ body: 'max-md:p-4!' }}
       styles={{ body: { display: 'flex', flexDirection: 'column' } }}
     >
       {!claim ? (
-        <Typography.Text type="secondary">Đang tải...</Typography.Text>
+        detailQuery.isError
+          ? <Alert type="error" title="Không tải được chi tiết bảo hành" description={
+              <Button size="small" onClick={() => void detailQuery.refetch()}>Thử lại</Button>
+            } />
+          : <Skeleton active paragraph={{ rows: 5 }} />
       ) : (
         <>
-          <Descriptions column={1} size="small" bordered>
+          <Descriptions column={1} size="small" bordered={!isMobile} layout={isMobile ? 'vertical' : 'horizontal'} className="wrap-anywhere">
             <Descriptions.Item label="Khách hàng">{props.customerLabel(claim)}</Descriptions.Item>
             <Descriptions.Item label="Gói liệu trình">{props.packageLabel(claim)}</Descriptions.Item>
             {claim.customer_treatment?.finished_at ? <Descriptions.Item label="Ngày hoàn tất liệu trình">{formatDateTime(claim.customer_treatment.finished_at)}</Descriptions.Item> : null}
@@ -72,7 +82,7 @@ export default function WarrantyClaimDetailDrawer(props: WarrantyClaimDetailDraw
             <Descriptions.Item label="Lý do bảo hành">{claim.reason || '—'}</Descriptions.Item>
             {contractSrc ? (
               <Descriptions.Item label="Hợp đồng cam kết">
-                <a href={contractSrc} target="_blank" rel="noreferrer">
+                <a className="inline-flex min-h-8 items-center gap-1" href={contractSrc} target="_blank" rel="noreferrer">
                   <FileTextOutlined /> Xem hợp đồng
                 </a>
               </Descriptions.Item>
@@ -81,9 +91,9 @@ export default function WarrantyClaimDetailDrawer(props: WarrantyClaimDetailDraw
             <Descriptions.Item label="Cập nhật">{claim.updated_at ? formatDateTime(claim.updated_at) : '—'}</Descriptions.Item>
           </Descriptions>
           {claim.status === 'PENDING' && (
-            <Alert
-              type="info" showIcon style={{ marginTop: 16 }}
-              message="Đang chờ Admin duyệt"
+            <InfoBanner
+              className="mt-3"
+              title="Đang chờ Admin duyệt"
               description="Khi được duyệt, hệ thống tự tạo một buổi điều trị bảo hành miễn phí — không trừ số buổi và không tính công kỹ thuật của gói. Bảo hành có hiệu lực trọn đời kể từ ngày hoàn tất liệu trình."
             />
           )}
@@ -95,18 +105,19 @@ export default function WarrantyClaimDetailDrawer(props: WarrantyClaimDetailDraw
             />
           )}
           {claim.status === 'REJECTED' && claim.reject_reason && (
-            <Alert type="warning" showIcon style={{ marginTop: 16 }} message="Yêu cầu đã bị từ chối" description={claim.reject_reason} />
+            <Alert type="warning" showIcon className="mt-4 wrap-anywhere" message="Yêu cầu đã bị từ chối" description={claim.reject_reason} />
           )}
-          {claim.status === 'PENDING' && (
+          {claim.status === 'PENDING' && props.isAdmin && (
             <Can I="UPDATE" a="WARRANTY_CLAIM">
-              <Space style={{ marginTop: 'auto', paddingTop: 16 }}>
-                {props.isAdmin && <Button type="primary" loading={approveMutation.isPending} onClick={() => { approveForm.resetFields(); setApproveOpen(true) }}>Duyệt</Button>}
-                {props.isAdmin && <Button danger loading={props.rejecting} onClick={() => props.onReject(claim)}>Từ chối</Button>}
-              </Space>
+              <div className="mt-auto flex flex-wrap gap-2 pt-4">
+                <Button className="max-md:flex-1" type="primary" loading={approveMutation.isPending} onClick={() => { approveForm.resetFields(); setApproveOpen(true) }}>Duyệt</Button>
+                <Button className="max-md:flex-1" danger loading={props.rejecting} onClick={() => props.onReject(claim)}>Từ chối</Button>
+              </div>
             </Can>
           )}
           <Modal
             title="Duyệt yêu cầu bảo hành"
+            width="min(520px, calc(100vw - 24px))"
             open={approveOpen}
             onCancel={() => setApproveOpen(false)}
             onOk={() => void doApprove()}

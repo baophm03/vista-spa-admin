@@ -8,6 +8,7 @@ import type { MenuProps } from 'antd'
 import { CalendarOutlined, DeleteOutlined, DownOutlined, EditOutlined, FileTextOutlined, PlusOutlined } from '@ant-design/icons'
 import { errorMessage, pickData } from '@/api/helpers'
 import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
+import ResponsiveTable from '@/components/base/ResponsiveTable'
 import type { StaffDayOff, StaffScheduleDate as StaffScheduleDateRow, ShiftTemplate as ShiftTemplateRow } from './types'
 import { getGetBranchDateNotesAdminQueryKey, getGetShiftTemplatesAdminQueryKey, getGetStaffScheduleDatesAdminQueryKey, postBranchDateNotesAdmin, postStaffScheduleDatesAdmin, putStaffScheduleDatesIdAdmin, useGetBranchDateNotesAdmin, useGetStaffDaysOffAdmin, useGetShiftTemplatesAdmin, useGetStaffScheduleDatesAdmin } from '@/api/endpoints/staff'
 import { customInstance } from '@/api/mutator/custom-instance'
@@ -389,7 +390,7 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
           width: 680,
           content: <div>
             <p>Xóa lịch ngày cụ thể chỉ ngừng sinh ca cho ngày này. Các lịch hẹn bên dưới vẫn được giữ nguyên để Admin xử lý riêng.</p>
-            <Table<ConflictAppointment>
+            <ResponsiveTable<ConflictAppointment>
               rowKey="id" size="small" pagination={false} scroll={{ y: 240 }} dataSource={affected}
               columns={[
                 { title: 'Ngày', dataIndex: 'appt_date', render: (v: string) => new Date(`${v}T00:00:00`).toLocaleDateString('vi-VN') },
@@ -440,7 +441,7 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
         width: 680,
         content: <div>
           <p>Xóa ca chỉ ngừng sinh ca cho ngày này. Các lịch hẹn bên dưới vẫn được giữ nguyên để Admin xử lý riêng.</p>
-          <Table<ConflictAppointment>
+          <ResponsiveTable<ConflictAppointment>
             rowKey="id" size="small" pagination={false} scroll={{ y: 240 }} dataSource={affected}
             columns={[
               { title: 'Ngày', dataIndex: 'appt_date', render: (v: string) => new Date(`${v}T00:00:00`).toLocaleDateString('vi-VN') },

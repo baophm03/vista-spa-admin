@@ -2,7 +2,7 @@ import { Button, Dropdown } from 'antd'
 import type { MenuProps } from 'antd'
 import { isValidElement } from 'react'
 import type { ReactNode } from 'react'
-import { EyeOutlined, MoreOutlined } from '@ant-design/icons'
+import { DownOutlined, EyeOutlined, MoreOutlined } from '@ant-design/icons'
 
 export interface RowActionItem {
   key: string
@@ -17,6 +17,7 @@ export interface RowActionItem {
 interface RowActionsMenuProps {
   items: RowActionItem[]
   onSelect: (key: string) => void
+  dropdownOnly?: boolean
 }
 
 function isEyeIcon(icon: ReactNode): boolean {
@@ -33,10 +34,10 @@ function isViewAction(item: RowActionItem): boolean {
  *  - Mọi hành động còn lại gom vào nút chấm chấm (dropdown) để cột
  *    Hành động luôn gọn (~64px), không bị tràn khi bảng nhiều cột.
  *  Tự chặn click lan lên dòng (onRow). */
-export default function RowActionsMenu({ items, onSelect }: RowActionsMenuProps) {
+export default function RowActionsMenu({ items, onSelect, dropdownOnly = false }: RowActionsMenuProps) {
   if (items.length === 0) return null
-  const viewItems = items.filter(isViewAction)
-  const rest = items.filter((item) => !isViewAction(item))
+  const viewItems = dropdownOnly ? [] : items.filter(isViewAction)
+  const rest = dropdownOnly ? items : items.filter((item) => !isViewAction(item))
   const plain = rest.filter((item) => typeof item.key === 'string')
   if (viewItems.length === 0 && rest.length === 0) return null
 
@@ -67,7 +68,15 @@ export default function RowActionsMenu({ items, onSelect }: RowActionsMenuProps)
             },
           }}
         >
-          <Button size="small" icon={<MoreOutlined />} aria-label="Thao tác khác" />
+          <Button
+            size={dropdownOnly ? 'large' : 'small'}
+            className={dropdownOnly ? 'row-actions-touch-target' : undefined}
+            icon={dropdownOnly ? <DownOutlined /> : <MoreOutlined />}
+            iconPlacement={dropdownOnly ? 'end' : undefined}
+            aria-label={dropdownOnly ? undefined : 'Thao tác khác'}
+          >
+            {dropdownOnly ? 'Thao tác' : null}
+          </Button>
         </Dropdown>
       )}
     </span>

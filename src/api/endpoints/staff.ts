@@ -39,6 +39,7 @@ import type {
   ForbiddenResponse,
   GetBranchDateNotesAdmin200,
   GetBranchDateNotesAdminParams,
+  GetShiftTemplates200,
   GetShiftTemplatesAdmin200,
   GetShiftTemplatesAdminParams,
   GetShiftTemplatesIdAdmin200,
@@ -1307,6 +1308,200 @@ export const usePostStaffDaysOffAdmin = <TError = UnauthorizedResponse | Forbidd
       return useMutation(mutationOptions, queryClient);
     }
     /**
+ * **GET /shift-templates** — Public, không cần đăng nhập. Trả về các ca làm việc đang hoạt động (`is_active=true`) của mọi cơ sở để miniapp hiển thị giờ mở cửa. Quản trị đầy đủ xem `GET /shift-templates/admin`.
+ * @summary List active shift templates (public)
+ */
+export const getShiftTemplates = (
+    
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetShiftTemplates200>(
+      {url: `/shift-templates`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetShiftTemplatesInfiniteQueryKey = () => {
+    return [
+    'infinite', `/shift-templates`
+    ] as const;
+    }
+
+export const getGetShiftTemplatesQueryKey = () => {
+    return [
+    `/shift-templates`
+    ] as const;
+    }
+
+    
+export const getGetShiftTemplatesInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getShiftTemplates>>>, TError = InternalErrorResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getShiftTemplates>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetShiftTemplatesInfiniteQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getShiftTemplates>>> = ({ signal }) => getShiftTemplates(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getShiftTemplates>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetShiftTemplatesInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getShiftTemplates>>>
+export type GetShiftTemplatesInfiniteQueryError = InternalErrorResponse
+
+
+export function useGetShiftTemplatesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getShiftTemplates>>>, TError = InternalErrorResponse>(
+  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getShiftTemplates>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getShiftTemplates>>,
+          TError,
+          Awaited<ReturnType<typeof getShiftTemplates>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetShiftTemplatesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getShiftTemplates>>>, TError = InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getShiftTemplates>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getShiftTemplates>>,
+          TError,
+          Awaited<ReturnType<typeof getShiftTemplates>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetShiftTemplatesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getShiftTemplates>>>, TError = InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getShiftTemplates>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List active shift templates (public)
+ */
+
+export function useGetShiftTemplatesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getShiftTemplates>>>, TError = InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getShiftTemplates>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetShiftTemplatesInfiniteQueryOptions(options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary List active shift templates (public)
+ */
+export const prefetchGetShiftTemplatesInfiniteQuery = async <TData = Awaited<ReturnType<typeof getShiftTemplates>>, TError = InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getShiftTemplates>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetShiftTemplatesInfiniteQueryOptions(options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetShiftTemplatesQueryOptions = <TData = Awaited<ReturnType<typeof getShiftTemplates>>, TError = InternalErrorResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getShiftTemplates>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetShiftTemplatesQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getShiftTemplates>>> = ({ signal }) => getShiftTemplates(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getShiftTemplates>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetShiftTemplatesQueryResult = NonNullable<Awaited<ReturnType<typeof getShiftTemplates>>>
+export type GetShiftTemplatesQueryError = InternalErrorResponse
+
+
+export function useGetShiftTemplates<TData = Awaited<ReturnType<typeof getShiftTemplates>>, TError = InternalErrorResponse>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getShiftTemplates>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getShiftTemplates>>,
+          TError,
+          Awaited<ReturnType<typeof getShiftTemplates>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetShiftTemplates<TData = Awaited<ReturnType<typeof getShiftTemplates>>, TError = InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getShiftTemplates>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getShiftTemplates>>,
+          TError,
+          Awaited<ReturnType<typeof getShiftTemplates>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetShiftTemplates<TData = Awaited<ReturnType<typeof getShiftTemplates>>, TError = InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getShiftTemplates>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List active shift templates (public)
+ */
+
+export function useGetShiftTemplates<TData = Awaited<ReturnType<typeof getShiftTemplates>>, TError = InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getShiftTemplates>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetShiftTemplatesQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary List active shift templates (public)
+ */
+export const prefetchGetShiftTemplatesQuery = async <TData = Awaited<ReturnType<typeof getShiftTemplates>>, TError = InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getShiftTemplates>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetShiftTemplatesQueryOptions(options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
  * GET `/shift-templates/{id}/admin` — shift templates. Requires `shift_template.view_all` permission. Branch scope: users restricted to a single branch only see that branch's data.
  * @summary View shift template details
  */

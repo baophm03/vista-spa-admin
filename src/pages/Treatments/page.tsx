@@ -38,6 +38,7 @@ import {
   type QuotaType,
   type TreatmentPackageRow,
 } from './components/constants'
+import './treatments.css'
 
 export default function Treatments() {
   const { format: formatMoney, symbol: currencySymbol } = useBrandCurrency()
@@ -271,13 +272,51 @@ export default function Treatments() {
     }
   }
 
+  const branchLabel = (id?: string | null) =>
+    id ? branches.find((branch) => branch.id === id)?.name ?? '—' : 'Tất cả cơ sở'
+  const servicesLabel = (row: TreatmentPackageRow) => {
+    if (row.services?.length) {
+      return row.services.map(({ service_id, qty = 1 }) => {
+        const title = (service_id && serviceById.get(service_id)) || 'Dịch vụ'
+        return qty > 1 ? `${title} (${qty} buổi)` : title
+      }).join(', ')
+    }
+    const ids = row.service_ids?.length ? row.service_ids : row.service_id ? [row.service_id] : []
+    return ids.length ? ids.map((id) => serviceById.get(id) ?? 'Dịch vụ').join(', ') : '—'
+  }
+  const validityLabel = (row: TreatmentPackageRow) => row.validity_value && row.validity_unit
+    ? `${row.validity_value} ${VALIDITY_LABEL[row.validity_unit] ?? row.validity_unit}`
+    : 'Không thời hạn'
+  const packageImage = (row: TreatmentPackageRow) =>
+    fileSrc(row.image_file) ?? resolveFileSrc(urlMap, row.image_file_id)
+  const renderActions = (row: TreatmentPackageRow, dropdownOnly = false) => (
+    <RowActionsMenu
+      dropdownOnly={dropdownOnly}
+      items={[
+        { key: 'edit', icon: <EditOutlined />, label: 'Sửa', disabled: catalogLoading },
+        { key: 'delete', icon: <DeleteOutlined />, danger: true, label: 'Xóa' },
+      ]}
+      onSelect={(key) => {
+        if (key === 'edit') openPackageModal(row)
+        else if (key === 'delete') Modal.confirm({
+          title: 'Xóa gói dịch vụ này?',
+          content: 'Gói đã được sử dụng không thể xóa.',
+          okText: 'Xóa',
+          okButtonProps: { danger: true },
+          cancelText: 'Hủy',
+          onOk: () => deletePackage(row),
+        })
+      }}
+    />
+  )
+
   const packageColumns: TableColumnsType<TreatmentPackageRow> = [
     {
       title: 'Ảnh',
       key: 'image',
       width: 54,
       render: (_, row) => {
-        const src = fileSrc((row as any).image_file) ?? resolveFileSrc(urlMap, row.image_file_id)
+        const src = packageImage(row)
         return src
           ? <Image src={src} width={36} height={36} style={{ objectFit: 'cover', borderRadius: 8 }} />
           : <div style={{ width: 36, height: 36, borderRadius: 8, background: 'var(--brand-bg)', display: 'grid', placeItems: 'center', color: '#B9BDC2' }}><PictureOutlined /></div>
@@ -295,7 +334,7 @@ export default function Treatments() {
         </div>
       ),
     },
-    { title: 'Cơ sở', key: 'branch', dataIndex: 'branch_id', width: '8%', render: (id) => id ? branches.find((branch) => branch.id === id)?.name ?? '—' : 'Tất cả cơ sở' },
+    { title: 'Cơ sở', key: 'branch', dataIndex: 'branch_id', width: '8%', render: branchLabel },
     {
       title: 'Loại gói',
       key: 'package_kind',
@@ -320,107 +359,117 @@ export default function Treatments() {
       title: 'Dịch vụ',
       key: 'services',
       // không set width — cột tự động chiếm phần còn lại của bảng (các width khác phải tổng < 100%)
-      render: (_value, row) => {
-        const ids = row.service_ids?.length ? row.service_ids : row.service_id ? [row.service_id] : []
-        return ids.length ? ids.map((id) => serviceById.get(id) ?? 'Dịch vụ').join(', ') : '—'
-      },
+      render: (_value, row) => servicesLabel(row),
     },
     { title: 'Giá niêm yết', key: 'price', width: '12%', render: (_value, row) => priceLabel(row, formatMoney) },
     {
       title: 'Thời hạn',
       key: 'validity',
       width: '9%',
-      render: (_value, row) => row.validity_value && row.validity_unit
-        ? String(row.validity_value) + ' ' + (VALIDITY_LABEL[row.validity_unit] ?? row.validity_unit)
-        : 'Không thời hạn',
+      render: (_value, row) => validityLabel(row),
     },
     { title: 'Trạng thái', key: 'status', dataIndex: 'is_active', width: '10%', render: (active) => active ? <Tag color="green">Đang sử dụng</Tag> : <Tag>Ngưng sử dụng</Tag> },
   ]
 
   const packagesContent = (
     <>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', minWidth: 0 }}>
-            <Input.Search
-              allowClear
-              placeholder="Tìm theo tên hoặc mô tả gói"
-              className="w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]"
-              value={packageSearchInput}
-              onChange={(event) => { setPackageSearchInput(event.target.value); if (!event.target.value) applyPackageSearch('') }}
-              onSearch={(v) => applyPackageSearch(v)}
-            />
-        </div>
+      <div className="treatment-list-toolbar">
+        <Input.Search
+          allowClear
+          aria-label="Tìm theo tên hoặc mô tả gói"
+          placeholder="Tìm theo tên hoặc mô tả gói"
+          className="treatment-list-search"
+          value={packageSearchInput}
+          onChange={(event) => { setPackageSearchInput(event.target.value); if (!event.target.value) applyPackageSearch('') }}
+          onSearch={applyPackageSearch}
+        />
         {canManage && (
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => openPackageModal()}>
+          <Button type="primary" icon={<PlusOutlined />} disabled={catalogLoading} onClick={() => openPackageModal()}>
             Thêm gói
           </Button>
         )}
       </div>
-      {packagesQuery.isError && <Alert type="error" showIcon message="Không tải được danh mục gói" description={errorMessage(packagesQuery.error)} style={{ margin: '12px 0' }} />}
-      <Table<TreatmentPackageRow>
-        className="desktop-only [&_.ant-table-cell]:px-2! [&_.ant-table-tbody_.ant-table-cell]:[overflow-wrap:anywhere] [&_.ant-table-thead_th]:whitespace-nowrap! [&_.ant-tag]:whitespace-normal [&_.ant-tag]:me-0!"
-        rowKey="id"
-        loading={packagesQuery.isLoading}
-        dataSource={rows}
-        tableLayout="fixed"
-        pagination={false}
-        onRow={(row) => ({
-          onClick: () => setDetailRow(row),
-          style: { cursor: 'pointer' },
-        })}
-        columns={[
-          ...packageColumns,
-          ...(canManage ? [{
-            title: 'Thao tác', align: 'center' as const,
-            key: 'actions',
-            width: 88,
-            render: (_value: unknown, row: TreatmentPackageRow) => (
-              <div onClick={(e) => e.stopPropagation()}>
-                <RowActionsMenu
-                  items={[
-                    { key: 'edit', icon: <EditOutlined />, label: 'Sửa' },
-                    { key: 'delete', icon: <DeleteOutlined />, danger: true, label: 'Xóa' },
-                  ]}
-                  onSelect={(key) => {
-                    if (key === 'edit') openPackageModal(row)
-                    else if (key === 'delete') Modal.confirm({ title: 'Xóa gói dịch vụ này?', content: 'Gói đã được sử dụng không thể xóa.', okText: 'Xóa', okButtonProps: { danger: true }, cancelText: 'Hủy', onOk: () => deletePackage(row) })
-                  }}
-                />
-              </div>
-            ),
-          }] : []),
-        ]}
-      />
-      <MobileCards
-        rows={rows}
-        rowKey={(row) => row.id}
-        loading={packagesQuery.isLoading}
-        emptyText="Chưa có gói dịch vụ nào"
-        onCardClick={(row) => setDetailRow(row)}
-        renderCard={(row) => (
-          <>
-            <div className="mobile-card-head">
-              <div className="mobile-card-title">{row.name}</div>
-              {row.is_active ? <Tag color="green">Đang sử dụng</Tag> : <Tag>Ngưng sử dụng</Tag>}
-            </div>
-            <div className="mobile-card-rows">
-              <MobileCardRow label="Giá niêm yết" value={priceLabel(row, formatMoney)} />
-            </div>
-            {canManage && (
-              <div className="mobile-card-actions" onClick={(e) => e.stopPropagation()}>
-                <Button size="small" icon={<EditOutlined />} onClick={() => openPackageModal(row)}>Sửa</Button>
-                <Button size="small" danger icon={<DeleteOutlined />} aria-label="Xóa gói" title="Xóa gói" onClick={() => Modal.confirm({ title: 'Xóa gói dịch vụ này?', content: 'Gói đã được sử dụng không thể xóa.', okText: 'Xóa', okButtonProps: { danger: true }, cancelText: 'Hủy', onOk: () => deletePackage(row) })} />
-              </div>
-            )}
-          </>
-        )}
-      />
-      <ListPagination page={packagePage} limit={packageLimit} total={total} onChange={setPackagePage} noun="gói dịch vụ" />
+      {packagesQuery.isError ? (
+        <Alert
+          className="treatment-list-error"
+          type="error"
+          showIcon
+          title="Không tải được danh sách gói liệu trình"
+          description={errorMessage(packagesQuery.error)}
+          action={<Button onClick={() => void packagesQuery.refetch()} loading={packagesQuery.isFetching}>Thử lại</Button>}
+        />
+      ) : (
+        <>
+          <Table<TreatmentPackageRow>
+            className="desktop-only [&_.ant-table-cell]:px-2! [&_.ant-table-tbody_.ant-table-cell]:[overflow-wrap:anywhere] [&_.ant-table-thead_th]:whitespace-nowrap! [&_.ant-tag]:whitespace-normal [&_.ant-tag]:me-0!"
+            rowKey="id"
+            loading={packagesQuery.isLoading}
+            dataSource={rows}
+            tableLayout="fixed"
+            pagination={false}
+            locale={{ emptyText: packageSearch ? 'Không có kết quả' : 'Chưa có dữ liệu' }}
+            onRow={(row) => ({
+              onClick: () => setDetailRow(row),
+              style: { cursor: 'pointer' },
+            })}
+            columns={[
+              ...packageColumns,
+              ...(canManage ? [{
+                title: 'Thao tác', align: 'center' as const,
+                key: 'actions',
+                width: 88,
+                render: (_value: unknown, row: TreatmentPackageRow) => renderActions(row),
+              }] : []),
+            ]}
+          />
+          <MobileCards
+            rows={rows}
+            rowKey={(row) => row.id}
+            loading={packagesQuery.isLoading}
+            emptyText={packageSearch ? 'Không có kết quả' : 'Chưa có dữ liệu'}
+            emptyDescription={packageSearch ? 'Thử đổi từ khóa hoặc xóa bộ lọc' : undefined}
+            onCardClick={setDetailRow}
+            renderCard={(row) => {
+              const image = packageImage(row)
+              return (
+                <>
+                  <div className="mobile-card-head">
+                    <button type="button" className="treatment-card-link" onClick={(event) => {
+                      event.stopPropagation()
+                      setDetailRow(row)
+                    }}>
+                      <span className="treatment-card-image" aria-hidden>
+                        {image ? <img src={image} alt="" loading="lazy" /> : <PictureOutlined />}
+                      </span>
+                      <span className="min-w-0">
+                        <span className="mobile-card-title block">{row.name}</span>
+                        {row.description && <span className="mobile-card-sub block">{row.description}</span>}
+                      </span>
+                    </button>
+                    {row.is_active ? <Tag color="green">Đang sử dụng</Tag> : <Tag>Ngưng sử dụng</Tag>}
+                  </div>
+                  <div className="mobile-card-rows">
+                    <MobileCardRow label="Cơ sở" value={branchLabel(row.branch_id)} />
+                    <MobileCardRow label="Loại gói" value={calcLabel(row, packageTypeById)} />
+                    <MobileCardRow label="Dịch vụ" value={servicesLabel(row)} />
+                    <MobileCardRow label="Giá niêm yết" value={priceLabel(row, formatMoney)} />
+                    <MobileCardRow label="Thời hạn" value={validityLabel(row)} />
+                  </div>
+                  {canManage && (
+                    <div className="mobile-card-actions">{renderActions(row, true)}</div>
+                  )}
+                </>
+              )
+            }}
+          />
+          <ListPagination page={packagePage} limit={packageLimit} total={total} onChange={setPackagePage} noun="gói liệu trình" />
+        </>
+      )}
     </>
   )
 
   return (
-    <>
+    <div className="treatments-page">
       <PageTitle subtitle="Danh sách các gói liệu trình đang có trong hệ thống.">
         Liệu trình
       </PageTitle>
@@ -450,6 +499,6 @@ export default function Treatments() {
         onClose={() => setDetailRow(null)}
         onEdit={(row) => { setDetailRow(null); openPackageModal(row) }}
       />
-    </>
+    </div>
   )
 }

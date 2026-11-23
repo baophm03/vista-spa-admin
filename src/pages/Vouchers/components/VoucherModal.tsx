@@ -44,6 +44,7 @@ export default function VoucherModal({ form, open, category, targets, productCat
 
   return (
     <Modal
+      className="voucher-editor-modal"
       title={editing ? `Sửa ${CATEGORY_META[category].label.toLowerCase()}` : `Thêm ${CATEGORY_META[category].label.toLowerCase()}`}
       open={open}
       onCancel={onCancel}

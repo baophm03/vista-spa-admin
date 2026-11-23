@@ -14,6 +14,7 @@ export default function WarrantyClaimRejectModal({ form, target, submitting, onC
   return (
     <Modal
       title="Từ chối bảo hành"
+      width="min(480px, calc(100vw - 24px))"
       open={!!target}
       onCancel={onCancel}
       onOk={onOk}

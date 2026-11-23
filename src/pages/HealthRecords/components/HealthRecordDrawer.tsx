@@ -49,8 +49,8 @@ export default function HealthRecordDrawer({
 }: HealthRecordDrawerProps) {
   return (
     <Drawer
-      title={detail ? `${displayName(detail)} — ${detail.customer_code}` : 'Hồ sơ sức khỏe'}
-      width={560}
+      title={detail ? <span className="wrap-anywhere">{displayName(detail)} — {detail.customer_code}</span> : 'Hồ sơ sức khỏe'}
+      size="min(560px, 100vw)"
       open={!!detail}
       onClose={onClose}
       extra={detail && <Can I="UPDATE" a="CUSTOMER_PROFILE"><Button type="primary" icon={<PlusOutlined />} onClick={() => onOpenRecordForm(detail)}>Tạo phiếu khám</Button></Can>}

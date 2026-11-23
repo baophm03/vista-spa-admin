@@ -9,7 +9,7 @@ import type { ReactNode } from 'react'
  */
 export default function PageTitle({ children, subtitle, left, right, className }: { children: ReactNode; subtitle?: ReactNode; left?: ReactNode; right?: ReactNode; className?: string }) {
   return (
-    <div className={`mb-5 flex min-w-0 flex-col gap-3 ${className ?? ''}`}>
+    <div className={`page-title mb-5 flex min-w-0 flex-col gap-3 ${className ?? ''}`}>
       <div className="min-w-0">
         <Typography.Title level={4} className="m-0! min-w-0 break-words text-xl! sm:text-2xl!">
           {children}
@@ -21,7 +21,7 @@ export default function PageTitle({ children, subtitle, left, right, className }
         )}
       </div>
       {(left || right) && (
-        <div className="flex flex-wrap items-center justify-end gap-2 [&_.ant-space]:max-w-full! [&_.ant-space]:flex-wrap! max-md:[&_.ant-btn>span:not(.ant-btn-icon):not(.anticon):not(:only-child)]:hidden!">
+        <div className="page-title-controls flex flex-wrap items-center justify-end gap-2 [&_.ant-space]:max-w-full! [&_.ant-space]:flex-wrap! max-md:[&_.ant-btn:not(.keep-label)>span:not(.ant-btn-icon):not(.anticon):not(:only-child)]:hidden!">
           {left}
           {right}
         </div>

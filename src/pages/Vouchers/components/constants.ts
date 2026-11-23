@@ -4,6 +4,12 @@
 
 export type VoucherCategory = 'treatment-package' | 'academy-course' | 'product'
 
+export const MOBILE_TAB_LABELS: Record<VoucherCategory, string> = {
+  'treatment-package': 'Gói liệu trình',
+  'academy-course': 'Khóa học',
+  product: 'Sản phẩm',
+}
+
 export interface VoucherCategoryRow {
   id: string
   title: string

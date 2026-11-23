@@ -16,7 +16,7 @@ interface StatCardsProps {
   items: StatItem[]
 }
 
-const TONE_STYLES: Record<StatTone, { disc: string; discInk: string; circle: string; ink: string }> = {
+export const TONE_STYLES: Record<StatTone, { disc: string; discInk: string; circle: string; ink: string }> = {
   // Nền đĩa/circle pha 7-9% màu gốc vào trắng (nhạt hơn --brand-tint 14%);
   // icon primary luôn dùng --brand-dark (giữ hue, luôn đọc được trên nền nhạt bất kể primary sáng/tối)
   primary: {

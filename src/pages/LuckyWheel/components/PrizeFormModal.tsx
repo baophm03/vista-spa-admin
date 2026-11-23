@@ -1,5 +1,10 @@
 import { Form, Input, InputNumber, Modal, Select, Space } from 'antd'
 import type { FormInstance } from 'antd'
+import { useQuery } from '@tanstack/react-query'
+import { getVouchersAdmin } from '@/api/endpoints/vouchers'
+import { getService } from '@/api/endpoints/services'
+import { pickData } from '../../../api/helpers'
+import type { Voucher, Service } from '../../../api/models'
 import { PRIZE_TYPE_META } from './constants'
 
 export default function PrizeFormModal({ open, form, editingPrize, onCancel, onSubmit }: {
@@ -9,8 +14,24 @@ export default function PrizeFormModal({ open, form, editingPrize, onCancel, onS
   onCancel: () => void
   onSubmit: () => void
 }) {
+  const vouchersQuery = useQuery({
+    queryKey: ['lucky-wheel-voucher-options'],
+    enabled: open,
+    queryFn: async () => pickData<{ rows?: Voucher[] }>(await getVouchersAdmin({ pageSize: 200 }))?.rows ?? [],
+  })
+  const servicesQuery = useQuery({
+    queryKey: ['lucky-wheel-service-options'],
+    enabled: open,
+    queryFn: async () => pickData<Service[]>(await getService()) ?? [],
+  })
+  const voucherOptions = (vouchersQuery.data ?? [])
+    .filter((item) => item.is_active !== false)
+    .map((item) => ({ value: item.id, label: item.title }))
+  const serviceOptions = (servicesQuery.data ?? [])
+    .map((item) => ({ value: item.id, label: item.title }))
+
   return (
-    <Modal title={editingPrize ? 'Sửa giải thưởng' : 'Thêm giải thưởng'} open={open} onCancel={onCancel} onOk={onSubmit} okText="Lưu" cancelText="Hủy">
+    <Modal className="lucky-wheel-form-modal" title={editingPrize ? 'Sửa giải thưởng' : 'Thêm giải thưởng'} open={open} onCancel={onCancel} onOk={onSubmit} okText="Lưu" cancelText="Hủy">
       <Form form={form} layout="vertical" style={{ marginTop: 12 }}>
         <Form.Item name="name" label="Tên giải" rules={[{ required: true, message: 'Nhập tên giải' }]}>
           <Input placeholder="VD: Voucher giảm 100k" />
@@ -32,13 +53,27 @@ export default function PrizeFormModal({ open, form, editingPrize, onCancel, onS
                 </Form.Item>
               ) : null}
               {getFieldValue('prize_type') === 'VOUCHER' ? (
-                <Form.Item name="voucher_id" label="Voucher ID (UUID)" rules={[{ required: true, message: 'Nhập voucher ID' }]}>
-                  <Input placeholder="UUID voucher cấp khi trúng" />
+                <Form.Item name="voucher_id" label="Voucher cấp khi trúng" rules={[{ required: true, message: 'Chọn voucher' }]}>
+                  <Select
+                    showSearch
+                    optionFilterProp="label"
+                    placeholder="Chọn voucher từ danh sách"
+                    loading={vouchersQuery.isLoading}
+                    options={voucherOptions}
+                    notFoundContent={vouchersQuery.isError ? 'Không tải được danh sách voucher' : undefined}
+                  />
                 </Form.Item>
               ) : null}
               {getFieldValue('prize_type') === 'SERVICE' ? (
-                <Form.Item name="service_id" label="Dịch vụ ID (UUID)" rules={[{ required: true, message: 'Nhập dịch vụ ID' }]}>
-                  <Input placeholder="UUID dịch vụ tặng khi trúng" />
+                <Form.Item name="service_id" label="Dịch vụ tặng khi trúng" rules={[{ required: true, message: 'Chọn dịch vụ' }]}>
+                  <Select
+                    showSearch
+                    optionFilterProp="label"
+                    placeholder="Chọn dịch vụ từ danh sách"
+                    loading={servicesQuery.isLoading}
+                    options={serviceOptions}
+                    notFoundContent={servicesQuery.isError ? 'Không tải được danh sách dịch vụ' : undefined}
+                  />
                 </Form.Item>
               ) : null}
             </>

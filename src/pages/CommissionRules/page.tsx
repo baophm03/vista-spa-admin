@@ -1,15 +1,7 @@
+import ResponsiveTable from '@/components/base/ResponsiveTable'
 import { useEffect, useMemo, useState } from 'react'
 import {
-  Alert,
-  Button,
-  Form,
-  Modal,
-  Select,
-  Space,
-  Table,
-  Tag,
-  message,
-} from 'antd'
+  Alert, Button, Form, Modal, Select, Space, Tag, message } from 'antd'
 import type { TableColumnsType } from 'antd'
 import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons'
 import { useQueryClient } from '@tanstack/react-query'
@@ -241,7 +233,7 @@ export default function CommissionRulesPanel() {
                 action={<Button size="small" onClick={() => void rulesQuery.refetch()}>Thử lại</Button>}
               />
             )}
-            <Table<CommissionRule>
+            <ResponsiveTable<CommissionRule>
               rowKey="id" loading={rulesQuery.isLoading} dataSource={paginateRows(rules, page, 10)} columns={columns}
               scroll={{ x: 800 }}
               pagination={false}
