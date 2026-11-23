@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Alert, Button, ColorPicker, Form, Input, InputNumber, Modal, Space, Table, Tag, Typography, message } from 'antd'
+import { Alert, Button, ColorPicker, Form, Input, InputNumber, Modal, Space, Tag, Typography, message } from 'antd'
 import { ArrowDownOutlined, ArrowUpOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons'
 import { errorMessage, pickData } from '@/api/helpers'
 import ListPagination from '@/components/base/ListPagination'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import TableEmpty from '@/components/base/TableEmpty'
+import ResponsiveTable from '@/components/base/ResponsiveTable'
 import { paginateRows } from '@/utils/listTable'
 import type { LookupItem } from '@/api/models/lookupItem'
 import type { LookupList } from '@/api/models/lookupList'
@@ -137,10 +138,11 @@ export default function LookupItemsManager({ listId }: { listId: string }) {
         </Space>
       </Space>
       {error && <Alert className="mb-4" type="error" showIcon message="Không tải được mục trong danh mục" description={error} action={<Button size="small" onClick={() => void load()}>Thử lại</Button>} />}
-      <Table<LookupItemWithColor>
+      <ResponsiveTable<LookupItemWithColor>
         rowKey="id"
         size="small"
         loading={loading}
+        mobileTitleKey="label"
         dataSource={paginateRows(items, itemsPage, 10)}
         pagination={false}
         locale={{ emptyText: <TableEmpty description="Danh mục chưa có mục chọn nào" /> }}

@@ -27,6 +27,7 @@ export default function WheelFormModal({ open, form, branches, editing, canManag
 
   return (
     <Modal
+      className="lucky-wheel-form-modal"
       title={editing ? 'Sửa vòng quay' : 'Thêm vòng quay'}
       open={open}
       onCancel={onCancel}

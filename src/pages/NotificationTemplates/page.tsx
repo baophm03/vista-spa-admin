@@ -1,6 +1,7 @@
+import ResponsiveTable from '@/components/base/ResponsiveTable'
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Alert, Button, Form, Space, Switch, Table, Tag, Tooltip, Typography, message } from 'antd'
+import { Alert, Button, Form, Space, Switch, Tag, Tooltip, Typography, message } from 'antd'
 import { EditOutlined } from '@ant-design/icons'
 import PageTitle from '@/components/base/PageTitle'
 import TableEmpty from '@/components/base/TableEmpty'
@@ -138,7 +139,7 @@ export default function NotificationTemplates() {
         />
       )}
 
-      <Table
+      <ResponsiveTable
         rowKey="key"
         loading={templatesQuery.isLoading}
         dataSource={grouped}

@@ -5,7 +5,6 @@ import {
   Form,
   Input,
   Select,
-  Space,
   Table,
   Tag,
   Typography,
@@ -17,6 +16,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useBrandDateTime } from '@/themeRuntime'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
+import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import { errorMessage, pickData, pickMeta } from '@/api/helpers'
 import { getGetRewardRedemptionsAdminQueryKey, useGetRewardRedemptionsAdmin, usePutRewardRedemptionsIdCancelAdmin, usePutRewardRedemptionsIdUseAdmin } from '@/api/endpoints/reward-redemptions'
 import { getGetRewardsAdminQueryKey } from '@/api/endpoints/rewards'
@@ -39,11 +39,11 @@ export default function RedemptionsTab() {
   }
 
   const redemptionParams = { page, limit: 10, ...(statusFilter ? { status: statusFilter } : {}), ...(customerSearch ? { q: customerSearch } : {}) }
-  const redemptionsQuery = useGetRewardRedemptionsAdmin(redemptionParams)
+  const redemptionsQuery = useGetRewardRedemptionsAdmin(redemptionParams, { query: { placeholderData: (previous) => previous } })
   // responseData: RewardRedemptionRow[] + meta.total
   const rows = (pickData<RewardRedemptionRow[]>(redemptionsQuery.data) ?? []) as RewardRedemptionRow[]
   const total = pickMeta(redemptionsQuery.data)?.total ?? rows.length
-  const loading = redemptionsQuery.isLoading
+  const loading = redemptionsQuery.isLoading || redemptionsQuery.isPlaceholderData
 
   const invalidate = async () => {
     await Promise.all([
@@ -80,6 +80,19 @@ export default function RedemptionsTab() {
     }
   }
 
+  const actions = (row: RewardRedemptionRow) => row.status === 'ISSUED' ? [
+    ...(Number(row.reward?.benefit_amount ?? 0) > 0 ? [] : [{ key: 'used', icon: <CheckOutlined />, label: 'Đã dùng' }]),
+    { key: 'cancel', icon: <StopOutlined />, label: 'Hủy lượt đổi', danger: true },
+  ] : []
+
+  const runAction = (row: RewardRedemptionRow, key: string) => {
+    if (key === 'used') void markUsed(row)
+    if (key === 'cancel') {
+      setCancelTarget(row)
+      cancelForm.resetFields()
+    }
+  }
+
   const columns: TableColumnsType<RewardRedemptionRow> = [
     {
       key: 'customer', title: 'Khách hàng', width: 220, render: (_v, row) => (
@@ -110,56 +123,78 @@ export default function RedemptionsTab() {
     {
       key: 'actions', title: 'Thao tác', align: 'center' as const, width: 90, fixed: 'right' as const,
       render: (_v, row) => (
-        <RowActionsMenu
-          items={row.status === 'ISSUED'
-            ? [
-              ...(Number(row.reward?.benefit_amount ?? 0) > 0 ? [] : [{ key: 'used', icon: <CheckOutlined />, label: 'Đã dùng' }]),
-              { key: 'cancel', icon: <StopOutlined />, label: 'Hủy lượt đổi', danger: true },
-            ]
-            : []}
-          onSelect={(key) => {
-            if (key === 'used') void markUsed(row)
-            else if (key === 'cancel') {
-              setCancelTarget(row)
-              cancelForm.resetFields()
-            }
-          }}
-        />
+        <RowActionsMenu items={actions(row)} onSelect={(key) => runAction(row, key)} />
       ),
     },
   ]
 
   return (
     <>
-      <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 16 }} wrap>
-        <Space wrap>
+      <div className="mb-3 grid grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] gap-2 md:flex md:flex-wrap">
           <Input.Search
             allowClear
             value={customerSearchInput}
             onChange={(event) => { setCustomerSearchInput(event.target.value); if (!event.target.value) applySearch('') }}
             onSearch={applySearch}
-            placeholder="Tìm theo tên khách hàng"
-            className="w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]"
+            aria-label="Tìm theo tên khách hàng"
+            placeholder="Tìm khách hàng"
+            className="w-full! min-w-0 md:w-[260px]!"
           />
           <Select
             allowClear
             value={statusFilter}
             onChange={(value) => { setStatusFilter(value); setPage(1) }}
-            placeholder="Lọc theo trạng thái"
+            aria-label="Lọc theo trạng thái"
+            placeholder="Trạng thái"
             options={Object.entries(REDEMPTION_META).map(([value, meta]) => ({ value, label: meta.label }))}
-            style={{ width: 200 }}
+            className="w-full min-w-0 md:w-[200px]"
           />
-        </Space>
-      </Space>
+      </div>
       {redemptionsQuery.isError && (
         <Alert className="mb-4" type="error" showIcon message="Không tải được lượt đổi quà" description={errorMessage(redemptionsQuery.error)} action={<Button size="small" onClick={() => void redemptionsQuery.refetch()}>Thử lại</Button>} />
       )}
       <Table<RewardRedemptionRow>
-        rowKey="id" loading={loading} dataSource={rows}
+        className="desktop-only"
+        rowKey="id" loading={loading} dataSource={redemptionsQuery.isPlaceholderData ? [] : rows}
         columns={columns}
         scroll={{ x: 1050 }}
         pagination={false}
       />
+      {(!redemptionsQuery.isError || rows.length > 0) && (
+        <MobileCards
+          rows={rows}
+          rowKey={(row) => row.id}
+          loading={loading}
+          emptyText={customerSearch || statusFilter ? 'Không có kết quả' : 'Chưa có lượt đổi quà'}
+          renderCard={(row) => {
+            const options = actions(row).map(({ key, label }) => ({ value: key, label }))
+            const status = REDEMPTION_META[row.status ?? '']
+            return (
+              <>
+                <div className="mobile-card-head items-start!">
+                  <div className="min-w-0">
+                    <div className="mobile-card-title">{row.customer_profile?.full_name ?? 'Khách hàng không xác định'}</div>
+                    <div className="mobile-card-sub">{[row.customer_profile?.customer_code, row.customer_profile?.phone].filter(Boolean).join(' · ') || row.customer_profile_id}</div>
+                  </div>
+                  <Tag className="me-0!" color={status?.color}>{status?.label ?? row.status ?? '—'}</Tag>
+                </div>
+                <div className="mobile-card-rows">
+                  <MobileCardRow label="Quà" value={row.reward?.name ?? row.reward_id} />
+                  <MobileCardRow label="Điểm đã trừ" value={<strong className="text-(--brand-primary) tabular-nums">{Number(row.points_spent).toLocaleString('vi-VN')}</strong>} />
+                  <MobileCardRow label="Ngày đổi" value={formatDateTime(row.created_at)} />
+                  {row.customer_treatment_id && <MobileCardRow label="Gói liệu trình" value={`#${row.customer_treatment_id.slice(0, 8).toUpperCase()} · giảm ${Number(row.applied_discount_amount ?? 0).toLocaleString('vi-VN')}đ`} />}
+                  {row.cancel_reason && <MobileCardRow label="Lý do hủy" value={row.cancel_reason} />}
+                </div>
+                {options.length > 0 && <div className="mobile-card-actions">
+                  <Select<string | null> aria-label="Thao tác lượt đổi" className="w-32" placeholder="Thao tác" value={null} showSearch={false} disabled={markUsedMutation.isPending}
+                    styles={{ placeholder: { color: 'var(--brand-primary)' } }}
+                    options={options} popupMatchSelectWidth={false} onSelect={(key) => { if (key) runAction(row, key) }} />
+                </div>}
+              </>
+            )
+          }}
+        />
+      )}
       <ListPagination page={page} limit={10} total={total} onChange={setPage} noun="lượt đổi quà" />
 
       <CancelRedemptionModal

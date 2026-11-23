@@ -1,5 +1,6 @@
+import ResponsiveTable from '@/components/base/ResponsiveTable'
 import { useCallback, useEffect, useState } from 'react'
-import { Alert, Button, Form, Input, Modal, Space, Table, Tag, Typography, message } from 'antd'
+import { Alert, Button, Form, Input, Modal, Space, Tag, Typography, message } from 'antd'
 import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons'
 import PageTitle from '@/components/base/PageTitle'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
@@ -154,12 +155,13 @@ export default function LookupLists() {
             {!canRead && !loading && <Alert className="mb-4" type="error" showIcon message="Tài khoản chưa có quyền xem danh mục" />}
             {error && <Alert className="mb-4" type="error" showIcon message="Không tải được danh mục" description={error} action={<Button size="small" onClick={() => void load(query)}>Thử lại</Button>} />}
 
-            <Table<LookupList>
+            <ResponsiveTable<LookupList>
               rowKey="id"
               loading={loading}
               dataSource={lists}
               pagination={false}
               locale={{ emptyText: <TableEmpty description={query ? 'Không tìm thấy danh mục' : 'Chưa có danh mục'} /> }}
+              onMobileCardClick={setViewingList}
               onRow={(row) => ({
                 onClick: () => setViewingList(row),
                 style: { cursor: 'pointer' },

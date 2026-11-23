@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import {
+  Alert,
   Button,
   Form,
   Image,
@@ -19,6 +20,7 @@ import {
   EditOutlined,
   EyeInvisibleOutlined,
   EyeOutlined,
+  FolderOutlined,
   LinkOutlined,
   PictureOutlined,
   PlusOutlined,
@@ -29,6 +31,8 @@ import PageTitle from '@/components/base/PageTitle'
 import StatCards, { type StatItem } from '@/components/base/StatCards'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
+import ListFilterPopover from '@/components/base/ListFilterPopover'
+import MobileCards from '@/components/base/MobileCards'
 import TableEmpty from '@/components/base/TableEmpty'
 import { errorMessage, pickData } from '@/api/helpers'
 import { deleteProductCategoriesIdAdmin, getGetProductCategoriesAdminQueryKey, getProductCategoriesAdmin, postProductCategoriesAdmin, putProductCategoriesIdAdmin } from '@/api/endpoints/product-categories'
@@ -41,6 +45,7 @@ import type { PostProductCategoriesAdminBody } from '@/api/models/postProductCat
 import type { PutProductCategoriesIdAdminBody } from '@/api/models/putProductCategoriesIdAdminBody'
 import { useBrandCurrency } from '@/themeRuntime'
 import { useCustomerProfileAccess } from '@/utils/customerProfileAccess'
+import { paginateRows } from '@/utils/listTable'
 import ProductDetailModal from './components/ProductDetailModal'
 import ProductFormModal from './components/ProductFormModal'
 import {
@@ -48,6 +53,12 @@ import {
   type ProductCategoryRow,
   type ProductRow,
 } from './components/constants'
+import './products.css'
+
+const statusOptions = [
+  { value: 'true', label: 'Đang bán' },
+  { value: 'false', label: 'Đã ẩn' },
+]
 
 export default function Products() {
   const { currency, symbol: currencySymbol } = useBrandCurrency()
@@ -59,6 +70,8 @@ export default function Products() {
   const [activeTab, setActiveTab] = useState<'products' | 'categories'>('products')
   const [categoryFilter, setCategoryFilter] = useState<string>()
   const [statusFilter, setStatusFilter] = useState<boolean>()
+  const [filtersOpen, setFiltersOpen] = useState(false)
+  const [filterForm] = Form.useForm<{ category?: string; status?: string }>()
   const [form] = Form.useForm()
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<ProductRow | null>(null)
@@ -75,24 +88,17 @@ export default function Products() {
   const [categoryPage, setCategoryPage] = useState(1)
   const [limit] = useState(10)
 
-  // Danh sách đầy đủ cho bộ lọc / modal tạo sản phẩm
   const allCategoriesQuery = useQuery({
     queryKey: getGetProductCategoriesAdminQueryKey(),
-    queryFn: async () => (pickData<ProductCategoryRow[]>(await getProductCategoriesAdmin({ page: 1, limit: 200 } as never)) ?? []) as ProductCategoryRow[],
+    queryFn: async ({ signal }) => pickData<ProductCategoryRow[]>(await getProductCategoriesAdmin(signal)) ?? [],
   })
   const categories = allCategoriesQuery.data ?? []
-
-  // Bảng danh mục (tab "Danh mục") — tìm kiếm + phân trang phía server
-  const categoriesTableQuery = useQuery({
-    queryKey: [...getGetProductCategoriesAdminQueryKey(), 'table', categoryPage, limit, categorySearch] as const,
-    queryFn: async () => getProductCategoriesAdmin({
-      page: categoryPage,
-      limit,
-      ...(categorySearch ? { q: categorySearch } : {}),
-    } as never),
-  })
-  const categoryRows = (pickData<ProductCategoryRow[] | undefined>(categoriesTableQuery.data) ?? []) as ProductCategoryRow[]
-  const categoryTotal = (categoriesTableQuery.data as unknown as { meta?: { total?: number } })?.meta?.total ?? categoryRows.length
+  const matchingCategories = categories.filter((category) =>
+    category.name.toLocaleLowerCase('vi-VN').includes(categorySearch.toLocaleLowerCase('vi-VN')),
+  )
+  const categoryTotal = matchingCategories.length
+  const currentCategoryPage = Math.min(categoryPage, Math.max(1, Math.ceil(categoryTotal / limit)))
+  const categoryRows = paginateRows(matchingCategories, currentCategoryPage, limit)
 
   const productsQuery = useQuery({
     queryKey: getGetProductsAdminQueryKey({
@@ -282,244 +288,374 @@ export default function Products() {
     }
   }
 
+  const categoryOptions = categories.map((category) => ({ value: category.id, label: category.name }))
+  const activeFilterCount = Number(Boolean(categoryFilter)) + Number(statusFilter !== undefined)
+  const applyProductFilters = ({ category, status }: { category?: string; status?: string }) => {
+    setCategoryFilter(category)
+    setStatusFilter(status === undefined ? undefined : status === 'true')
+    setPage(1)
+    setFiltersOpen(false)
+  }
+  const coverSrc = (product: ProductRow) => fileSrc(product.cover_file) ?? resolveFileSrc(urlMap, product.cover_file_id)
+
   const productsContent = (
     <>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+      <div className="product-toolbar">
+        <div className="product-toolbar-filters">
           <Input.Search
             allowClear
+            aria-label="Tìm theo tên hoặc mã SKU"
             placeholder="Tìm theo tên hoặc mã SKU"
-            className="w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]"
+            className="product-search"
             value={searchInput}
             onChange={(event) => { setSearchInput(event.target.value); if (!event.target.value) applySearch('') }}
             onSearch={applySearch}
           />
           <Select
+            className="desktop-only"
             allowClear
             placeholder="Tất cả danh mục"
             style={{ width: 180 }}
             value={categoryFilter}
             onChange={(value) => { setCategoryFilter(value); setPage(1) }}
-            options={categories.map((c) => ({ value: c.id, label: c.name }))}
+            options={categoryOptions}
           />
           <Select
+            className="desktop-only"
             allowClear
             placeholder="Tất cả trạng thái"
             style={{ width: 170 }}
             value={statusFilter === undefined ? undefined : String(statusFilter)}
             onChange={(value) => { setStatusFilter(value === undefined ? undefined : value === 'true'); setPage(1) }}
-            options={[
-              { value: 'true', label: 'Đang bán' },
-              { value: 'false', label: 'Đã ẩn' },
-            ]}
+            options={statusOptions}
           />
+          <div className="mobile-only">
+            <ListFilterPopover
+              iconOnly
+              open={filtersOpen}
+              onOpenChange={(next) => {
+                if (next) filterForm.setFieldsValue({
+                  category: categoryFilter,
+                  status: statusFilter === undefined ? undefined : String(statusFilter),
+                })
+                setFiltersOpen(next)
+              }}
+              activeFilterCount={activeFilterCount}
+              form={filterForm}
+              onApply={applyProductFilters}
+              onClear={() => applyProductFilters({})}
+              filterItems={(
+                <>
+                  <Form.Item name="category" label="Danh mục" className="mb-3!">
+                    <Select allowClear placeholder="Tất cả danh mục" options={categoryOptions} />
+                  </Form.Item>
+                  <Form.Item name="status" label="Trạng thái" className="mb-0!">
+                    <Select allowClear placeholder="Tất cả trạng thái" options={statusOptions} />
+                  </Form.Item>
+                </>
+              )}
+            />
+          </div>
         </div>
         {isAdmin && (
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
-            Thêm sản phẩm
+          <Button type="primary" icon={<PlusOutlined />} aria-label="Thêm sản phẩm" onClick={() => openModal()}>
+            <span className="desktop-only">Thêm sản phẩm</span>
+            <span className="mobile-only">Thêm</span>
           </Button>
         )}
       </div>
-      <Table<ProductRow>
-        rowKey="id"
-        loading={productsQuery.isFetching}
-        dataSource={rows}
-        locale={{ emptyText: <TableEmpty description="Chưa có sản phẩm nào khớp điều kiện" /> }}
-        pagination={false}
-        onRow={(row) => ({ onClick: () => setViewing(row), style: { cursor: 'pointer' } })}
-        columns={([
-          {
-            title: 'Ảnh',
-            key: 'cover',
-            width: 76,
-            render: (_, p) => {
-              const src = fileSrc((p as any).cover_file) ?? resolveFileSrc(urlMap, p.cover_file_id)
-              return src ? (
-                <Image src={src} width={48} height={48} style={{ objectFit: 'cover', borderRadius: 8 }} />
-              ) : (
-                <div style={{ width: 48, height: 48, borderRadius: 8, background: 'var(--brand-bg)', display: 'grid', placeItems: 'center', color: '#B9BDC2' }}>
-                  <PictureOutlined />
-                </div>
-              )
-            },
-          },
-          {
-            title: 'Sản phẩm',
-            key: 'name',
-            dataIndex: 'name',
-            render: (_, p) => (
-              <div>
-                <div style={{ fontWeight: 600 }}>{p.name}</div>
-                {(p.brand || p.sku) && (
-                  <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                    {p.brand ?? ''}{p.brand && p.sku ? ' · ' : ''}{p.sku ? `SKU: ${p.sku}` : ''}
-                  </Typography.Text>
-                )}
-                {(p.tags?.length ?? 0) > 0 && (
-                  <div style={{ marginTop: 4, display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                    {p.tags!.map((tag) => (
-                      <Tag key={tag} style={{ marginInlineEnd: 0, fontSize: 11, lineHeight: '18px', padding: '0 6px' }}>{tag}</Tag>
-                    ))}
+      {productsQuery.isError ? (
+        <Alert type="error" showIcon title="Không tải được danh sách sản phẩm"
+          action={<Button loading={productsQuery.isFetching} onClick={() => void productsQuery.refetch()}>Thử lại</Button>}
+        />
+      ) : (
+        <>
+          <Table<ProductRow>
+            className="desktop-only"
+            rowKey="id"
+            loading={productsQuery.isFetching}
+            dataSource={rows}
+            locale={{ emptyText: <TableEmpty description="Chưa có sản phẩm nào khớp điều kiện" /> }}
+            pagination={false}
+            onRow={(row) => ({ onClick: () => setViewing(row), style: { cursor: 'pointer' } })}
+            columns={([
+              {
+                title: 'Ảnh',
+                key: 'cover',
+                width: 76,
+                render: (_, p) => {
+                  const src = coverSrc(p)
+                  return src ? (
+                    <Image src={src} width={48} height={48} style={{ objectFit: 'cover', borderRadius: 8 }} />
+                  ) : (
+                    <div style={{ width: 48, height: 48, borderRadius: 8, background: 'var(--brand-bg)', display: 'grid', placeItems: 'center', color: '#B9BDC2' }}>
+                      <PictureOutlined />
+                    </div>
+                  )
+                },
+              },
+              {
+                title: 'Sản phẩm',
+                key: 'name',
+                dataIndex: 'name',
+                render: (_, p) => (
+                  <div>
+                    <div style={{ fontWeight: 600 }}>{p.name}</div>
+                    {(p.brand || p.sku) && (
+                      <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                        {p.brand ?? ''}{p.brand && p.sku ? ' · ' : ''}{p.sku ? `SKU: ${p.sku}` : ''}
+                      </Typography.Text>
+                    )}
+                    {(p.tags?.length ?? 0) > 0 && (
+                      <div style={{ marginTop: 4, display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                        {p.tags!.map((tag) => (
+                          <Tag key={tag} style={{ marginInlineEnd: 0, fontSize: 11, lineHeight: '18px', padding: '0 6px' }}>{tag}</Tag>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            ),
-          },
-          {
-            title: 'Mô tả',
-            key: 'description',
-            dataIndex: 'description',
-            ellipsis: { showTitle: false },
-            render: (v?: string | null) =>
-              v ? (
-                <Typography.Paragraph
-                  type="secondary"
-                  style={{ margin: 0, whiteSpace: 'pre-wrap' }}
-                  ellipsis={{ rows: 2, expandable: false, tooltip: v }}
-                >
-                  {v}
-                </Typography.Paragraph>
-              ) : (
-                '—'
-              ),
-          },
-          {
-            title: 'Danh mục',
-            key: 'category',
-            dataIndex: 'category_id',
-            width: 150,
-            render: (_, p) => p.category?.name || '—',
-          },
-          {
-            title: 'Giá hiển thị',
-            key: 'price',
-            dataIndex: 'price',
-            width: 150,
-            render: (v?: number | null, p?: ProductRow) => (
-              <div>
-                <div>{formatPrice(v, currency)}</div>
-                {p?.original_price
-                  ? <Typography.Text delete type="secondary" style={{ fontSize: 12 }}>{formatPrice(p.original_price, currency)}</Typography.Text>
-                  : null}
-              </div>
-            ),
-          },
-          {
-            title: 'Liên kết',
-            key: 'link',
-            dataIndex: 'buy_url',
-            width: 90,
-            render: (v?: string | null) =>
-              v ? <a href={v} target="_blank" rel="noreferrer"><LinkOutlined /> Mở</a> : '—',
-          },
-          {
-            title: 'Trạng thái',
-            key: 'status',
-            dataIndex: 'is_active',
-            width: 110,
-            render: (v?: boolean) => (v === false ? <Tag>Đã ẩn</Tag> : <Tag color="green">Đang bán</Tag>),
-          },
-          {
-            title: 'Thao tác', align: 'center' as const,
-            key: 'actions',
-            width: 90,
-            fixed: 'right' as const,
-            render: (_, p) => (
-              <RowActionsMenu
-                items={[
-                  ...(isAdmin ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []),
-                ]}
-                onSelect={(key) => {
-                  if (key === 'edit') openModal(p)
-                }}
-              />
-            ),
-          },
-        ] satisfies TableColumnsType<ProductRow>)}
-      />
-      <ListPagination page={page} limit={limit} total={total} onChange={setPage} noun="sản phẩm" hideOnSinglePage />
+                ),
+              },
+              {
+                title: 'Mô tả',
+                key: 'description',
+                dataIndex: 'description',
+                ellipsis: { showTitle: false },
+                render: (v?: string | null) =>
+                  v ? (
+                    <Typography.Paragraph
+                      type="secondary"
+                      style={{ margin: 0, whiteSpace: 'pre-wrap' }}
+                      ellipsis={{ rows: 2, expandable: false, tooltip: v }}
+                    >
+                      {v}
+                    </Typography.Paragraph>
+                  ) : (
+                    '—'
+                  ),
+              },
+              {
+                title: 'Danh mục',
+                key: 'category',
+                dataIndex: 'category_id',
+                width: 150,
+                render: (_, p) => p.category?.name || '—',
+              },
+              {
+                title: 'Giá hiển thị',
+                key: 'price',
+                dataIndex: 'price',
+                width: 150,
+                render: (v?: number | null, p?: ProductRow) => (
+                  <div>
+                    <div>{formatPrice(v, currency)}</div>
+                    {p?.original_price
+                      ? <Typography.Text delete type="secondary" style={{ fontSize: 12 }}>{formatPrice(p.original_price, currency)}</Typography.Text>
+                      : null}
+                  </div>
+                ),
+              },
+              {
+                title: 'Liên kết',
+                key: 'link',
+                dataIndex: 'buy_url',
+                width: 90,
+                render: (v?: string | null) =>
+                  v ? <a href={v} target="_blank" rel="noreferrer"><LinkOutlined /> Mở</a> : '—',
+              },
+              {
+                title: 'Trạng thái',
+                key: 'status',
+                dataIndex: 'is_active',
+                width: 110,
+                render: (v?: boolean) => (v === false ? <Tag>Đã ẩn</Tag> : <Tag color="green">Đang bán</Tag>),
+              },
+              {
+                title: 'Thao tác', align: 'center' as const,
+                key: 'actions',
+                width: 90,
+                fixed: 'right' as const,
+                render: (_, p) => (
+                  <RowActionsMenu
+                    items={[
+                      ...(isAdmin ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []),
+                    ]}
+                    onSelect={(key) => {
+                      if (key === 'edit') openModal(p)
+                    }}
+                  />
+                ),
+              },
+            ] satisfies TableColumnsType<ProductRow>)}
+          />
+          <div className="product-catalog-list">
+            <MobileCards
+              rows={rows}
+              rowKey={(row) => row.id}
+              loading={productsQuery.isLoading}
+              emptyText={search || activeFilterCount ? 'Không có kết quả' : 'Chưa có sản phẩm'}
+              emptyDescription={search || activeFilterCount ? 'Thử đổi từ khóa hoặc bộ lọc' : undefined}
+              onCardClick={setViewing}
+              renderCard={(product) => {
+                const gallery = product.product_galleries?.[0]
+                const image = coverSrc(product) ?? fileSrc(gallery?.file) ?? resolveFileSrc(urlMap, gallery?.file_id)
+                const metadata = [product.brand, product.category?.name, product.sku && `SKU ${product.sku}`].filter(Boolean).join(' · ')
+                return (
+                  <div className="product-card">
+                    <button type="button" className="product-card-link" onClick={(event) => {
+                      event.stopPropagation()
+                      setViewing(product)
+                    }}>
+                      <span className="product-card-image">
+                        {image ? <img src={image} alt="" loading="lazy" /> : <PictureOutlined aria-hidden />}
+                        <span className="product-card-status" data-active={product.is_active !== false}>
+                          {product.is_active === false ? 'Đã ẩn' : 'Đang bán'}
+                        </span>
+                      </span>
+                      <span className="product-card-info">
+                        <span className="mobile-card-title">{product.name}</span>
+                        {metadata && <span className="mobile-card-sub">{metadata}</span>}
+                        <span className="product-card-summary">
+                          <strong>{product.price == null ? 'Chưa có giá' : formatPrice(product.price, currency)}</strong>
+                          {product.original_price != null && <del>{formatPrice(product.original_price, currency)}</del>}
+                        </span>
+                      </span>
+                    </button>
+                    {isAdmin && (
+                      <Button type="text" icon={<EditOutlined />} aria-label={`Sửa ${product.name}`} title="Sửa sản phẩm" className="product-card-edit" onClick={(event) => {
+                        event.stopPropagation()
+                        openModal(product)
+                      }} />
+                    )}
+                  </div>
+                )
+              }}
+            />
+          </div>
+          <ListPagination page={page} limit={limit} total={total} onChange={setPage} noun="sản phẩm" hideOnSinglePage />
+        </>
+      )}
     </>
+  )
+
+  const renderCategoryActions = (c: ProductCategoryRow, dropdownOnly = false) => (
+    <RowActionsMenu
+      dropdownOnly={dropdownOnly}
+      items={[
+        { key: 'edit', icon: <EditOutlined />, label: 'Sửa' },
+        c.is_active === false
+          ? { key: 'show', icon: <EyeOutlined />, label: 'Hiện lại' }
+          : { key: 'hide', icon: <EyeInvisibleOutlined />, label: 'Ẩn', danger: true },
+        { key: 'delete', icon: <DeleteOutlined />, danger: true, label: 'Xóa' },
+      ]}
+      onSelect={(key) => {
+        if (key === 'edit') {
+          setEditingCategory(c)
+          catForm.setFieldsValue({ name: c.name, sort_order: c.sort_order ?? 0 })
+          setCategoryModalOpen(true)
+        } else if (key === 'show' || key === 'hide') {
+          Modal.confirm({
+            title: c.is_active === false ? 'Hiện lại danh mục này?' : 'Ẩn danh mục này?',
+            content: c.is_active === false ? 'Danh mục sẽ hiển thị lại trên app.' : 'Danh mục bị ẩn khỏi app nhưng vẫn còn trong danh sách quản trị.',
+            okText: c.is_active === false ? 'Hiện' : 'Ẩn',
+            okButtonProps: key === 'hide' ? { danger: true } : undefined,
+            cancelText: 'Hủy',
+            onOk: () => void toggleCategoryVisibility(c),
+          })
+        } else if (key === 'delete') {
+          Modal.confirm({
+            title: 'Xóa danh mục này?',
+            content: 'Chỉ xóa được khi không còn sản phẩm tham chiếu.',
+            okText: 'Xóa',
+            okButtonProps: { danger: true },
+            cancelText: 'Hủy',
+            onOk: () => void removeCategory(c),
+          })
+        }
+      }}
+    />
   )
 
   const categoriesContent = (
     <>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
+      <div className="product-toolbar">
         <Input.Search
           allowClear
+          aria-label="Tìm tên danh mục"
           placeholder="Tìm tên danh mục"
-          className="w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]"
+          className="product-search"
           value={categorySearchInput}
           onChange={(event) => { setCategorySearchInput(event.target.value); if (!event.target.value) { setCategorySearch(''); setCategoryPage(1) } }}
           onSearch={(value) => { setCategorySearch(value.trim()); setCategoryPage(1) }}
         />
         {isAdmin && (
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => { setEditingCategory(null); catForm.resetFields(); setCategoryModalOpen(true) }}>
-            Tạo danh mục
+          <Button type="primary" icon={<PlusOutlined />} aria-label="Tạo danh mục" onClick={() => { setEditingCategory(null); catForm.resetFields(); setCategoryModalOpen(true) }}>
+            <span className="desktop-only">Tạo danh mục</span>
+            <span className="mobile-only">Tạo</span>
           </Button>
         )}
       </div>
-      <Table<ProductCategoryRow>
-        rowKey="id"
-        loading={categoriesTableQuery.isFetching}
-        dataSource={categoryRows}
-        pagination={false}
-        locale={{ emptyText: <TableEmpty description="Chưa có danh mục nào" /> }}
-        columns={[
-          { title: 'Tên', dataIndex: 'name', render: (v: string) => <strong>{v}</strong> },
-          { title: 'Thứ tự', dataIndex: 'sort_order', width: 70 },
-          { title: 'SP đang bán', dataIndex: 'active_product_count', width: 100, render: (v?: number) => v ?? 0 },
-          {
-            title: 'Trạng thái',
-            dataIndex: 'is_active',
-            width: 90,
-            render: (v?: boolean) => (v === false ? <Tag>Đã ẩn</Tag> : <Tag color="green">Đang dùng</Tag>),
-          },
-          {
-            title: 'Thao tác',
-            key: 'actions',
-            width: 90,
-            align: 'center' as const,
-            fixed: 'right',
-            render: (_, c) => (
-              <RowActionsMenu
-                items={[
-                  { key: 'edit', icon: <EditOutlined />, label: 'Sửa' },
-                  c.is_active === false
-                    ? { key: 'show', icon: <EyeOutlined />, label: 'Hiện lại' }
-                    : { key: 'hide', icon: <EyeInvisibleOutlined />, label: 'Ẩn', danger: true },
-                  { key: 'delete', icon: <DeleteOutlined />, danger: true, label: 'Xóa' },
-                ]}
-                onSelect={(key) => {
-                  if (key === 'edit') {
-                    setEditingCategory(c)
-                    catForm.setFieldsValue({ name: c.name, sort_order: c.sort_order ?? 0 })
-                    setCategoryModalOpen(true)
-                  } else if (key === 'show' || key === 'hide') {
-                    Modal.confirm({
-                      title: c.is_active === false ? 'Hiện lại danh mục này?' : 'Ẩn danh mục này?',
-                      content: c.is_active === false ? 'Danh mục sẽ hiển thị lại trên app.' : 'Danh mục bị ẩn khỏi app nhưng vẫn còn trong danh sách quản trị.',
-                      okText: c.is_active === false ? 'Hiện' : 'Ẩn',
-                      okButtonProps: key === 'hide' ? { danger: true } : undefined,
-                      cancelText: 'Hủy',
-                      onOk: () => void toggleCategoryVisibility(c),
-                    })
-                  } else if (key === 'delete') {
-                    Modal.confirm({
-                      title: 'Xóa danh mục này?',
-                      content: 'Chỉ xóa được khi không còn sản phẩm tham chiếu.',
-                      okText: 'Xóa',
-                      okButtonProps: { danger: true },
-                      cancelText: 'Hủy',
-                      onOk: () => void removeCategory(c),
-                    })
-                  }
-                }}
-              />
-            ),
-          },
-        ]}
-      />
-      <ListPagination page={categoryPage} limit={limit} total={categoryTotal} onChange={setCategoryPage} noun="danh mục" />
+      {allCategoriesQuery.isError ? (
+        <Alert type="error" showIcon title="Không tải được danh mục sản phẩm"
+          action={<Button loading={allCategoriesQuery.isFetching} onClick={() => void allCategoriesQuery.refetch()}>Thử lại</Button>}
+        />
+      ) : (
+        <>
+          <Table<ProductCategoryRow>
+            className="desktop-only"
+            rowKey="id"
+            loading={allCategoriesQuery.isFetching}
+            dataSource={categoryRows}
+            pagination={false}
+            locale={{ emptyText: <TableEmpty description="Chưa có danh mục nào" /> }}
+            columns={[
+              { title: 'Tên', dataIndex: 'name', render: (v: string) => <strong>{v}</strong> },
+              { title: 'Thứ tự', dataIndex: 'sort_order', width: 70 },
+              { title: 'SP đang bán', dataIndex: 'active_product_count', width: 100, render: (v?: number) => v ?? 0 },
+              {
+                title: 'Trạng thái',
+                dataIndex: 'is_active',
+                width: 90,
+                render: (v?: boolean) => (v === false ? <Tag>Đã ẩn</Tag> : <Tag color="green">Đang dùng</Tag>),
+              },
+              {
+                title: 'Thao tác',
+                key: 'actions',
+                width: 90,
+                align: 'center' as const,
+                fixed: 'right',
+                render: (_, c) => renderCategoryActions(c),
+              },
+            ]}
+          />
+          <MobileCards
+            rows={categoryRows}
+            rowKey={(row) => row.id}
+            loading={allCategoriesQuery.isLoading}
+            emptyText={categorySearch ? 'Không có kết quả' : 'Chưa có danh mục'}
+            emptyDescription={categorySearch ? 'Thử đổi từ khóa tìm kiếm' : undefined}
+            renderCard={(row) => (
+              <div className="product-category-card">
+                <span className="product-category-icon" aria-hidden><FolderOutlined /></span>
+                <div className="product-category-info">
+                  <div className="product-category-heading">
+                    <span className="mobile-card-title" title={row.name}>{row.name}</span>
+                    <span className="product-category-status" data-active={row.is_active !== false}>
+                      {row.is_active === false ? 'Đã ẩn' : 'Đang dùng'}
+                    </span>
+                  </div>
+                  <div className="product-category-meta">
+                    <span>{row.active_product_count ?? 0} SP đang bán</span>
+                    <span>Thứ tự {row.sort_order ?? '—'}</span>
+                  </div>
+                </div>
+                {isAdmin && <div className="product-category-actions">{renderCategoryActions(row, true)}</div>}
+              </div>
+            )}
+          />
+          <ListPagination page={currentCategoryPage} limit={limit} total={categoryTotal} onChange={setCategoryPage} noun="danh mục" />
+        </>
+      )}
       <Modal
         title={editingCategory ? 'Sửa danh mục' : 'Tạo danh mục'}
         open={isAdmin && categoryModalOpen}
@@ -543,7 +679,7 @@ export default function Products() {
   )
 
   return (
-    <>
+    <div className="products-page">
       <StatCards items={activeTab === 'products' ? statItems : []} />
       <PageTitle
         subtitle="Danh mục sản phẩm hiển thị trên ứng dụng"
@@ -551,6 +687,7 @@ export default function Products() {
         Sản phẩm
       </PageTitle>
       <Tabs
+        className="products-tabs"
         activeKey={activeTab}
         onChange={(key) => setActiveTab(key as 'products' | 'categories')}
         items={[
@@ -581,6 +718,6 @@ export default function Products() {
         setUploadingGallery={setUploadingGallery}
         uploadImage={uploadImage}
       />
-    </>
+    </div>
   )
 }

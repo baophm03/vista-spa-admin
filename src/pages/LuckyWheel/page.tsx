@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react'
+import ResponsiveTable from '@/components/base/ResponsiveTable'
+import MobileCards from '@/components/base/MobileCards'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Alert, Button, Card, Form, Input, Modal, Select, Space, Switch, Table, Tabs, Tag, Tooltip, Typography, message } from 'antd'
+import { Alert, Button, Card, Form, Grid, Input, Modal, Select, Space, Switch, Table, Tabs, Tag, Tooltip, Typography, message } from 'antd'
 import dayjs from 'dayjs'
 import { useBrandCurrency, useBrandDateTime } from '@/themeRuntime'
-import { BellOutlined, CloseOutlined, DeleteOutlined, EditOutlined, GiftOutlined, PauseCircleOutlined, PlayCircleOutlined, PlusOutlined } from '@ant-design/icons'
+import { BellOutlined, CloseOutlined, DeleteOutlined, EditOutlined, GiftOutlined, HistoryOutlined, PauseCircleOutlined, PlayCircleOutlined, PlusOutlined, TeamOutlined } from '@ant-design/icons'
 import PageTitle from '../../components/base/PageTitle'
 import RowActionsMenu from '../../components/base/RowActionsMenu'
 import TableEmpty from '../../components/base/TableEmpty'
@@ -32,12 +34,19 @@ import WheelFormModal, { type WheelFormValues } from './components/WheelFormModa
 import WheelSpinModal, { type WheelSpinResult } from './components/WheelSpinModal'
 import CustomerVisibilityTab from './components/CustomerVisibilityTab'
 import { PRIZE_TYPE_META as TYPE_META } from './components/constants'
+import './lucky-wheel.css'
 
 const TABLE_PAGE_SIZE = 10
 const CUSTOMER_DEFAULT_SETTING = 'lucky_wheel.customer_default_enabled'
 const CUSTOMER_OVERRIDES_SETTING = 'lucky_wheel.customer_overrides'
 
 type EligibleWheelCustomer = EligibleCustomer & { user_id?: string | null; email?: string | null }
+type MobileWheelPanel = 'prizes' | 'customers' | 'history'
+const MOBILE_WHEEL_PANEL_TITLES: Record<MobileWheelPanel, string> = {
+  prizes: 'Cấu hình giải',
+  customers: 'Danh sách khách',
+  history: 'Lịch sử quay',
+}
 
 interface WheelCustomerOverride {
   customer_profile_id: string
@@ -61,6 +70,7 @@ interface CustomerNotificationInput extends CustomerNotificationFormValues {
 }
 
 export default function LuckyWheel() {
+  const isMobile = !Grid.useBreakpoint().md
   const { format: formatMoney } = useBrandCurrency()
   const { formatDateTime } = useBrandDateTime()
   const ability = useAbility()
@@ -71,6 +81,8 @@ export default function LuckyWheel() {
   const [wheelOpen, setWheelOpen] = useState(false)
   const [prizeOpen, setPrizeOpen] = useState(false)
   const [prizeConfigurationOpen, setPrizeConfigurationOpen] = useState(false)
+  const [mobileWheelPanel, setMobileWheelPanel] = useState<MobileWheelPanel | null>(null)
+  const mobilePanelEntry = useRef<HTMLDivElement>(null)
   const [editingPrize, setEditingPrize] = useState<WheelPrize | null>(null)
   const [customerSearch, setCustomerSearch] = useState('')
   const [customerSearchInput, setCustomerSearchInput] = useState('')
@@ -133,10 +145,10 @@ export default function LuckyWheel() {
   const wheelModuleEnabled = wheelModuleSetting?.value !== false
   const customerOverrides: WheelCustomerOverride[] = Array.isArray(customerOverridesSetting?.value)
     ? customerOverridesSetting.value.filter((item): item is WheelCustomerOverride =>
-        Boolean(item && typeof item === 'object'
-          && typeof (item as WheelCustomerOverride).customer_profile_id === 'string'
-          && typeof (item as WheelCustomerOverride).enabled === 'boolean'),
-      )
+      Boolean(item && typeof item === 'object'
+        && typeof (item as WheelCustomerOverride).customer_profile_id === 'string'
+        && typeof (item as WheelCustomerOverride).enabled === 'boolean'),
+    )
     : []
   const canEditCustomerAccess = ability.can('UPDATE' as never, 'SETTING')
   const canNotifyCustomer = ability.can('CREATE' as never, 'NOTIFICATION')
@@ -183,6 +195,10 @@ export default function LuckyWheel() {
     setCustomerPage(1)
     setSpinPage(1)
   }
+
+  useEffect(() => {
+    if (isMobile && mobileWheelPanel) mobilePanelEntry.current?.scrollIntoView({ block: 'start' })
+  }, [activeTab, isMobile, mobileWheelPanel])
 
   // Nội dung mời quay — điền sẵn cho khách được chọn
   const applyCustomerNotificationPreset = (customer: EligibleWheelCustomer | null) => {
@@ -561,6 +577,137 @@ export default function LuckyWheel() {
 
   const branchName = (id?: string) => (id ? branches.find((b) => b.id === id)?.name ?? '—' : 'Tất cả cơ sở')
 
+  const canSpinForCustomers = ability.can('SPIN_ADMIN' as never, 'WHEEL')
+  const openMobileWheelPanel = (row: LuckyWheelRecord, panel: MobileWheelPanel) => {
+    selectWheel(row)
+    setMobileWheelPanel(panel)
+    setCustomerSearch('')
+    setCustomerSearchInput('')
+  }
+
+  const wheelStatus = (active: boolean) => active ? <Tag color="green">Đang mở</Tag> : <Tag>Tắt</Tag>
+  const renderWheelActions = (row: LuckyWheelRecord, mobile = false) => (
+    <RowActionsMenu
+      dropdownOnly={mobile}
+      items={[
+        { key: 'prizes', icon: <GiftOutlined />, label: 'Cấu hình giải' },
+        ...(mobile && canSpinForCustomers ? [{ key: 'customers', icon: <TeamOutlined />, label: 'Khách trong vòng quay' }] : []),
+        ...(mobile ? [{ key: 'history', icon: <HistoryOutlined />, label: 'Lịch sử quay' }] : []),
+        ...(ability.can('UPDATE' as never, 'WHEEL')
+          ? [
+            { key: 'edit', icon: <EditOutlined />, label: 'Sửa' },
+            { key: 'toggle', icon: row.is_active ? <PauseCircleOutlined /> : <PlayCircleOutlined />, label: row.is_active ? 'Tắt' : 'Bật' },
+          ]
+          : []),
+        ...(ability.can('DELETE' as never, 'WHEEL') && row.is_active !== false
+          ? [{ key: 'delete', icon: <DeleteOutlined />, label: 'Xóa', danger: true }]
+          : []),
+      ]}
+      onSelect={(key) => {
+        if (key === 'prizes') {
+          if (mobile) openMobileWheelPanel(row, 'prizes')
+          else openPrizeConfiguration(row)
+        }
+        else if (key === 'customers' || key === 'history') openMobileWheelPanel(row, key)
+        else if (key === 'edit') openEditWheel(row)
+        else if (key === 'toggle') toggleWheel(row)
+        else if (key === 'delete') {
+          Modal.confirm({
+            title: 'Xóa vòng quay này?',
+            content: 'Xóa mềm (is_deleted). Không xóa được vòng quay đã phát sinh lượt quay hoặc còn giải thưởng đang cấu hình; ngừng quay hãy dùng "Tắt".',
+            okText: 'Xóa',
+            okButtonProps: { danger: true },
+            cancelText: 'Hủy',
+            onOk: () => removeWheel(row),
+          })
+        }
+      }}
+    />
+  )
+  const renderCustomerAccessSwitch = (row: EligibleWheelCustomer) => (
+    <span onClick={(event) => event.stopPropagation()}>
+      <Switch
+        size="small"
+        checked={isCustomerWheelEnabled(row.customer_profile_id)}
+        disabled={!row.customer_profile_id || !canEditCustomerAccess || customerSettingsQuery.isLoading || customerSettingsQuery.isError || customerWheelAccessMutation.isPending}
+        loading={customerWheelAccessMutation.isPending}
+        aria-label={`Bật hoặc tắt vòng quay cho ${row.full_name ?? 'khách hàng'}`}
+        onChange={(enabled) => {
+          if (row.customer_profile_id) {
+            customerWheelAccessMutation.mutate({ customerProfileId: row.customer_profile_id, enabled })
+          }
+        }}
+      />
+    </span>
+  )
+
+  const renderCustomerNotifyButton = (row: EligibleWheelCustomer, compact = false) => {
+    const enabled = isCustomerWheelEnabled(row.customer_profile_id)
+    const hasRecipient = Boolean(row.customer_profile_id && (row.user_id || row.email))
+    const settingsReady = !customerSettingsQuery.isLoading && !customerSettingsQuery.isError
+    const canSend = settingsReady && canNotifyCustomer && wheelModuleEnabled && enabled && hasRecipient
+    const disabledReason = !settingsReady
+      ? 'Không tải được cài đặt vòng quay'
+      : !canNotifyCustomer
+        ? 'Bạn không có quyền gửi thông báo'
+        : !wheelModuleEnabled
+          ? 'Mô-đun vòng quay đang tắt'
+          : !enabled
+            ? 'Khách đang tắt quyền quay'
+            : 'Khách chưa có tài khoản ứng dụng hoặc email'
+    return (
+      <Tooltip title={canSend ? `Gửi thông báo cho ${row.full_name ?? 'khách hàng'}` : disabledReason}>
+        <span onClick={(event) => event.stopPropagation()}>
+          <Button
+            size="small"
+            icon={<BellOutlined />}
+            disabled={!canSend || customerSettingsQuery.isLoading || customerSettingsQuery.isError || customerNotificationMutation.isPending}
+            onClick={() => openCustomerNotification(row)}
+          >
+            {compact ? undefined : 'Thông báo'}
+          </Button>
+        </span>
+      </Tooltip>
+    )
+  }
+
+  const renderCustomerSpinActions = () => (
+    <Space wrap>
+      <Button
+        type="primary"
+        disabled={!chosenCustomer || (chosenCustomer.spins_left ?? 0) <= 0 || spinForCustomerMutation.isPending}
+        onClick={openCustomerSpin}
+      >
+        {isMobile ? 'Cho khách quay' : 'Mở màn hình cho khách quay'}
+      </Button>
+      <Button
+        disabled={!chosenCustomer || (chosenCustomer.spins_left ?? 0) <= 0 || !prizes.length}
+        onClick={openManualPrize}
+      >
+        Ghi kết quả tay
+      </Button>
+    </Space>
+  )
+
+  const wrapPanel = (panel: MobileWheelPanel, children: ReactNode) =>
+    isMobile ? (
+      <Modal
+        open
+        centered
+        title={MOBILE_WHEEL_PANEL_TITLES[panel]}
+        footer={null}
+        onCancel={() => setMobileWheelPanel(null)}
+        width="min(460px, calc(100vw - 16px))"
+        className="lucky-wheel-panel-modal"
+        zIndex={990}
+        destroyOnHidden
+      >
+        {children}
+      </Modal>
+    ) : (
+      children
+    )
+
   return (
     <>
       <PageTitle
@@ -570,11 +717,12 @@ export default function LuckyWheel() {
       </PageTitle>
 
       <Tabs
+        className="lucky-wheel-tabs"
         activeKey={activeTab}
         onChange={setActiveTab}
         items={[
-          { key: 'campaigns', label: 'Chương trình quay' },
-          { key: 'customer-visibility', label: 'Quản lý khách hàng' },
+          { key: 'campaigns', label: isMobile ? 'Chương trình' : 'Chương trình quay' },
+          { key: 'customer-visibility', label: isMobile ? 'Khách hàng' : 'Quản lý khách hàng' },
         ]}
       />
 
@@ -589,127 +737,139 @@ export default function LuckyWheel() {
           <Alert type="warning" showIcon message="Bạn chưa có quyền xem cài đặt khách hàng." />
         )
       ) : (
-      <Space direction="vertical" style={{ width: '100%' }} size={16}>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: -8 }}>
-          <Can I="CREATE" a="WHEEL">
-            <Button type="primary" icon={<PlusOutlined />} onClick={openCreateWheel}>
-              Thêm vòng quay
-            </Button>
-          </Can>
-        </div>
-        <Table
-          rowKey="id"
-          dataSource={wheels}
-          pagination={false}
-          onRow={(row) => ({ onClick: () => selectWheel(row), style: { cursor: 'pointer' } })}
-          columns={[
-            {
-              title: 'Tên vòng quay', dataIndex: 'name', render: (v, row) => (
-                <Typography.Text strong style={selected?.id === row.id ? { color: 'var(--brand-primary)' } : undefined}>{v}</Typography.Text>
-              )
-            },
-            { title: 'Cơ sở', dataIndex: 'branch_id', render: (v) => branchName(v) },
-            { title: 'Doanh số tối thiểu', dataIndex: 'min_year_spent', render: (v) => `${formatMoney(v)}/năm` },
-            { title: 'Lượt/user', dataIndex: 'spins_per_user', width: 90 },
-            { title: 'Trạng thái', dataIndex: 'is_active', width: 100, render: (v) => (v ? <Tag color="green">Đang mở</Tag> : <Tag>Tắt</Tag>) },
-            {
-              title: 'Thao tác',
-              key: 'actions',
-              align: 'center' as const,
-              width: 90,
-              render: (_, row) => (
-                <RowActionsMenu
-                  items={[
-                    { key: 'prizes', icon: <GiftOutlined />, label: 'Cấu hình giải' },
-                    ...(ability.can('UPDATE' as never, 'WHEEL')
-                      ? [
-                          { key: 'edit', icon: <EditOutlined />, label: 'Sửa' },
-                          { key: 'toggle', icon: row.is_active ? <PauseCircleOutlined /> : <PlayCircleOutlined />, label: row.is_active ? 'Tắt' : 'Bật' },
-                        ]
-                      : []),
-                    ...(ability.can('DELETE' as never, 'WHEEL') && row.is_active !== false
-                      ? [{ key: 'delete', icon: <DeleteOutlined />, label: 'Xóa', danger: true }]
-                      : []),
-                  ]}
-                  onSelect={(key) => {
-                    if (key === 'prizes') openPrizeConfiguration(row)
-                    else if (key === 'edit') openEditWheel(row)
-                    else if (key === 'toggle') toggleWheel(row)
-                    else if (key === 'delete') {
-                      Modal.confirm({
-                        title: 'Xóa vòng quay này?',
-                        content: 'Xóa mềm (is_deleted). Không xóa được vòng quay đã phát sinh lượt quay hoặc còn giải thưởng đang cấu hình; ngừng quay hãy dùng "Tắt".',
-                        okText: 'Xóa',
-                        okButtonProps: { danger: true },
-                        cancelText: 'Hủy',
-                        onOk: () => removeWheel(row),
-                      })
-                    }
-                  }}
-                />
-              ),
-            },
-          ]}
-        />
-        <ListPagination
-          page={wheelPage}
-          limit={TABLE_PAGE_SIZE}
-          total={wheelsTotal}
-          onChange={setWheelPage}
-          noun="vòng quay"
-          hideOnSinglePage
-        />
-
-        {selected && prizeConfigurationOpen && (
-          <Card
-            title={`Giải thưởng — ${selected.name}`}
-            extra={
-              <div className="flex flex-wrap items-center gap-3">
-                <Button size="small" icon={<CloseOutlined />} onClick={() => setPrizeConfigurationOpen(false)}>
-                  Đóng cấu hình
+        <Space direction="vertical" className="lucky-wheel-campaigns" style={{ width: '100%' }} size={16}>
+          <>
+            <div className="lucky-wheel-create">
+              <Can I="CREATE" a="WHEEL">
+                <Button type="primary" className="lucky-wheel-add-button" icon={<PlusOutlined />} onClick={openCreateWheel}>
+                  Thêm vòng quay
                 </Button>
-                <Button size="small" icon={<PlayCircleOutlined />} onClick={openPreviewSpin}>
-                  Xem thử vòng quay
-                </Button>
-                <Can I="CREATE" a="WHEEL">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <Button size="small" onClick={loadDefaultDesignPrizes}>
-                      Tải 5 giải mẫu chuẩn ảnh
-                    </Button>
-                    <Button size="small" icon={<PlusOutlined />} onClick={openCreatePrize}>
-                      Thêm giải
-                    </Button>
-                  </div>
-                </Can>
-              </div>
-            }
-          >
-            <Table
+              </Can>
+            </div>
+            {wheelsQuery.isError && <Alert type="error" showIcon message="Không tải được vòng quay" action={<Button size="small" onClick={() => void wheelsQuery.refetch()}>Thử lại</Button>} />}
+            <Table<LuckyWheelRecord>
+              className="desktop-only"
               rowKey="id"
-              dataSource={prizes}
+              dataSource={wheels}
+              loading={wheelsQuery.isLoading}
               pagination={false}
-              size="small"
+              onRow={(row) => ({ onClick: () => selectWheel(row), style: { cursor: 'pointer' } })}
               columns={[
-                { title: 'Tên giải', dataIndex: 'name' },
-                { title: 'Loại', dataIndex: 'prize_type', render: (v: string) => <Tag color={TYPE_META[v]?.color}>{TYPE_META[v]?.label ?? v}</Tag> },
-                { title: 'Trọng số', dataIndex: 'weight', width: 90 },
-                { title: 'Số lượng', key: 'qty', width: 120, render: (_, row) => (row.quantity_total != null ? `${row.quantity_given}/${row.quantity_total}` : '∞') },
+                {
+                  title: 'Tên vòng quay', dataIndex: 'name', render: (v, row) => (
+                    <Typography.Text strong style={selected?.id === row.id ? { color: 'var(--brand-primary)' } : undefined}>{v}</Typography.Text>
+                  )
+                },
+                { title: 'Cơ sở', dataIndex: 'branch_id', render: (v) => branchName(v) },
+                { title: 'Doanh số tối thiểu', dataIndex: 'min_year_spent', render: (v) => `${formatMoney(v)}/năm` },
+                { title: 'Lượt/user', dataIndex: 'spins_per_user', width: 90 },
+                { title: 'Trạng thái', dataIndex: 'is_active', width: 100, render: wheelStatus },
                 {
                   title: 'Thao tác',
                   key: 'actions',
                   align: 'center' as const,
                   width: 90,
-                  render: (_, row: WheelPrize) => (
-                    <RowActionsMenu
-                      items={[
+                  render: (_, row) => renderWheelActions(row),
+                },
+              ]}
+            />
+            <div className="lucky-wheel-mobile-list">
+            <MobileCards
+              rows={wheels}
+              rowKey={(row) => row.id}
+              loading={wheelsQuery.isLoading}
+              emptyText="Chưa có vòng quay"
+              onCardClick={(row) => openMobileWheelPanel(row, canSpinForCustomers ? 'customers' : 'prizes')}
+              renderCard={(row) => (
+                <div className="lucky-wheel-card">
+                  <div className="lucky-wheel-card-heading">
+                    <div className="min-w-0">
+                      <button type="button" className="mobile-card-title lucky-wheel-card-title" onClick={() => openMobileWheelPanel(row, canSpinForCustomers ? 'customers' : 'prizes')}>{row.name}</button>
+                      <div className="lucky-wheel-card-meta">
+                        <span className="mobile-card-sub">{branchName(row.branch_id ?? undefined)}</span>
+                        {wheelStatus(row.is_active)}
+                      </div>
+                    </div>
+                    <div className="mobile-card-actions lucky-wheel-card-menu">{renderWheelActions(row, true)}</div>
+                  </div>
+                  <dl className="lucky-wheel-card-stats">
+                    <div>
+                      <dt>Doanh số tối thiểu</dt>
+                      <dd>{row.min_year_spent > 0 ? `${formatMoney(row.min_year_spent)}/năm` : 'Không yêu cầu'}</dd>
+                    </div>
+                    <div>
+                      <dt>Lượt mỗi khách</dt>
+                      <dd>{row.spins_per_user} lượt</dd>
+                    </div>
+                  </dl>
+                </div>
+              )}
+            />
+            </div>
+            <ListPagination
+              page={wheelPage}
+              limit={TABLE_PAGE_SIZE}
+              total={wheelsTotal}
+              onChange={setWheelPage}
+              noun="vòng quay"
+              hideOnSinglePage
+            />
+          </>
+
+          {selected && (isMobile ? mobileWheelPanel === 'prizes' : prizeConfigurationOpen) && wrapPanel('prizes', (
+            <Card
+              className="lucky-wheel-panel lucky-wheel-prize-panel"
+              title={isMobile ? undefined : `Giải thưởng — ${selected.name}`}
+              extra={
+                <div className="lucky-wheel-prize-tools flex flex-wrap items-center gap-3">
+                  {!isMobile && <Button size="small" icon={<CloseOutlined />} onClick={() => setPrizeConfigurationOpen(false)}>
+                    Đóng cấu hình
+                  </Button>}
+                  <Button size="small" icon={<PlayCircleOutlined />} onClick={openPreviewSpin}>
+                    {isMobile ? 'Quay thử' : 'Xem thử vòng quay'}
+                  </Button>
+                  <Can I="CREATE" a="WHEEL">
+                    <div className="lucky-wheel-prize-create-tools flex flex-wrap items-center gap-3">
+                      <Button size="small" onClick={loadDefaultDesignPrizes}>
+                        {isMobile ? 'Tải giải mẫu' : 'Tải 5 giải mẫu chuẩn ảnh'}
+                      </Button>
+                      <Button size="small" icon={<PlusOutlined />} onClick={openCreatePrize}>
+                        Thêm giải
+                      </Button>
+                    </div>
+                  </Can>
+                </div>
+              }
+            >
+              <ResponsiveTable
+                rowKey="id"
+                dataSource={prizes}
+                loading={prizesQuery.isLoading}
+                pagination={false}
+                size="small"
+                mobileTitleKey="name"
+                mobileStatusKey="prize_type"
+                emptyText="Chưa có giải thưởng"
+                columns={[
+                  { title: 'Tên giải', dataIndex: 'name' },
+                  { title: 'Loại', key: 'prize_type', dataIndex: 'prize_type', render: (v: string) => <Tag color={TYPE_META[v]?.color}>{TYPE_META[v]?.label ?? v}</Tag> },
+                  { title: 'Trọng số', dataIndex: 'weight', width: 90 },
+                  { title: 'Số lượng', key: 'qty', width: 120, render: (_, row) => (row.quantity_total != null ? `${row.quantity_given}/${row.quantity_total}` : '∞') },
+                  {
+                    title: 'Thao tác',
+                    key: 'actions',
+                    align: 'center' as const,
+                    width: 90,
+                    render: (_, row: WheelPrize) => {
+                      const items = [
                         ...(ability.can('UPDATE' as never, 'WHEEL')
                           ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }]
                           : []),
                         ...(ability.can('DELETE' as never, 'WHEEL')
                           ? [{ key: 'delete', icon: <DeleteOutlined />, label: 'Xóa', danger: true }]
                           : []),
-                      ]}
-                      onSelect={(key) => {
+                      ]
+                      const onSelect = (key: string) => {
                         if (key === 'edit') openEditPrize(row)
                         else if (key === 'delete') {
                           Modal.confirm({
@@ -721,198 +881,186 @@ export default function LuckyWheel() {
                             onOk: () => removePrize(row),
                           })
                         }
-                      }}
-                    />
-                  ),
-                },
-              ]}
-            />
-            <ListPagination
-              page={prizePage}
-              limit={TABLE_PAGE_SIZE}
-              total={prizesTotal}
-              onChange={setPrizePage}
-              noun="giải thưởng"
-              hideOnSinglePage
-            />
-          </Card>
-        )}
+                      }
 
-        {selected && (
-          <Can I="SPIN_ADMIN" a="WHEEL">
-            <Card title={`Màn hình quay cho khách — ${selected.name}`}>
-              <Space direction="vertical" style={{ width: '100%' }} size={12}>
-                <Space wrap>
-                  <Input.Search
-                    allowClear
-                    placeholder="Tìm theo tên / SĐT"
-                    className="w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]"
-                    value={customerSearchInput}
-                    onChange={(event) => {
-                      setCustomerSearchInput(event.target.value)
-                      if (!event.target.value) { setCustomerSearch(''); setCustomerPage(1) }
-                    }}
-                    onSearch={(value) => { setCustomerSearch(value.trim()); setCustomerPage(1) }}
-                  />
-                  {chosenCustomer && (
-                    <Typography.Text>
-                      Khách được chọn: <Typography.Text strong>{chosenCustomer.full_name}</Typography.Text> ({chosenCustomer.phone})
-                    </Typography.Text>
-                  )}
-                </Space>
-                <Typography.Text type="secondary">
-                  Bật/tắt quyền quay áp dụng cho khách này trên tất cả vòng quay.
-                </Typography.Text>
-                {customerSettingsQuery.isError && (
-                  <Alert
-                    type="error"
-                    showIcon
-                    message="Không tải được quyền tham gia vòng quay"
-                    description={errorMessage(customerSettingsQuery.error)}
-                  />
-                )}
-                <Table<EligibleWheelCustomer>
-                  rowKey="customer_profile_id"
-                  dataSource={eligibleCustomers as EligibleWheelCustomer[]}
-                  loading={eligibleQuery.isLoading}
-                  pagination={false}
-                  size="small"
-                  locale={{ emptyText: <TableEmpty description="Không có khách đủ điều kiện" /> }}
-                  onRow={(row) => ({ onClick: () => setChosenCustomer(row), style: { cursor: 'pointer' } })}
-                  columns={[
-                    {
-                      title: 'Khách hàng', dataIndex: 'full_name', render: (v, row) => (
-                        <Typography.Text strong style={chosenCustomer?.customer_profile_id === row.customer_profile_id ? { color: 'var(--brand-primary)' } : undefined}>
-                          {v} {row.customer_code ? `(${row.customer_code})` : ''}
-                        </Typography.Text>
-                      ),
+                      if (!items.length) return null
+                      if (!isMobile) return <RowActionsMenu items={items} onSelect={onSelect} />
+                      return (
+                        <div className="flex flex-wrap gap-2">
+                          {items.map((item) => (
+                            <Button key={item.key} size="small" type="text" className="lucky-wheel-prize-action" icon={item.icon} danger={item.key === 'delete'} onClick={() => onSelect(item.key)}>
+                              {item.label}
+                            </Button>
+                          ))}
+                        </div>
+                      )
                     },
-                    { title: 'SĐT', dataIndex: 'phone', width: 130 },
-                    { title: 'Chi tiêu', dataIndex: 'spend', width: 130, render: (v) => `${Number(v).toLocaleString('vi-VN')}đ` },
-                    { title: 'Lượt còn lại', dataIndex: 'spins_left', width: 110, render: (v, row) => `${v}/${row.spins_max}` },
-                    {
-                      title: 'Bật/tắt',
-                      key: 'customer-wheel-access',
-                      width: 100,
-                      align: 'center' as const,
-                      render: (_, row) => (
-                        <span onClick={(event) => event.stopPropagation()}>
-                          <Switch
-                            size="small"
-                            checked={isCustomerWheelEnabled(row.customer_profile_id)}
-                            disabled={!row.customer_profile_id || !canEditCustomerAccess || customerSettingsQuery.isLoading || customerSettingsQuery.isError || customerWheelAccessMutation.isPending}
-                            loading={customerWheelAccessMutation.isPending}
-                            aria-label={`Bật hoặc tắt vòng quay cho ${row.full_name ?? 'khách hàng'}`}
-                            onChange={(enabled) => {
-                              if (row.customer_profile_id) {
-                                customerWheelAccessMutation.mutate({ customerProfileId: row.customer_profile_id, enabled })
-                              }
-                            }}
-                          />
-                        </span>
-                      ),
-                    },
-                    {
-                      title: 'Thông báo',
-                      key: 'customer-wheel-notification',
-                      width: 140,
-                      align: 'center' as const,
-                      render: (_, row) => {
-                        const enabled = isCustomerWheelEnabled(row.customer_profile_id)
-                        const hasRecipient = Boolean(row.customer_profile_id && (row.user_id || row.email))
-                        const settingsReady = !customerSettingsQuery.isLoading && !customerSettingsQuery.isError
-                        const canSend = settingsReady && canNotifyCustomer && wheelModuleEnabled && enabled && hasRecipient
-                        const disabledReason = !settingsReady
-                          ? 'Không tải được cài đặt vòng quay'
-                          : !canNotifyCustomer
-                          ? 'Bạn không có quyền gửi thông báo'
-                          : !wheelModuleEnabled
-                            ? 'Mô-đun vòng quay đang tắt'
-                            : !enabled
-                              ? 'Khách đang tắt quyền quay'
-                              : 'Khách chưa có tài khoản ứng dụng hoặc email'
-                        return (
-                          <Tooltip title={canSend ? `Gửi thông báo cho ${row.full_name ?? 'khách hàng'}` : disabledReason}>
-                            <span onClick={(event) => event.stopPropagation()}>
-                              <Button
-                                size="small"
-                                icon={<BellOutlined />}
-                                disabled={!canSend || customerSettingsQuery.isLoading || customerSettingsQuery.isError || customerNotificationMutation.isPending}
-                                onClick={() => openCustomerNotification(row)}
-                              >
-                                Thông báo
-                              </Button>
-                            </span>
-                          </Tooltip>
-                        )
-                      },
-                    },
-                  ]}
-                />
-                <ListPagination
-                  page={customerPage}
-                  limit={TABLE_PAGE_SIZE}
-                  total={eligibleTotal}
-                  onChange={setCustomerPage}
-                  noun="khách hàng"
-                  hideOnSinglePage
-                />
-                <Space wrap>
-                  <Button
-                    type="primary"
-                    disabled={!chosenCustomer || (chosenCustomer.spins_left ?? 0) <= 0 || spinForCustomerMutation.isPending}
-                    onClick={openCustomerSpin}
-                  >
-                    Mở màn hình cho khách quay
-                  </Button>
-                  <Button
-                    disabled={!chosenCustomer || (chosenCustomer.spins_left ?? 0) <= 0 || !prizes.length}
-                    onClick={openManualPrize}
-                  >
-                    Ghi kết quả tay
-                  </Button>
-                </Space>
-              </Space>
+                  },
+                ]}
+              />
+              <ListPagination
+                page={prizePage}
+                limit={TABLE_PAGE_SIZE}
+                total={prizesTotal}
+                onChange={setPrizePage}
+                noun="giải thưởng"
+                hideOnSinglePage
+              />
             </Card>
-          </Can>
-        )}
+          ))}
 
-        {selected && (
-          <Card title="Lịch sử quay">
-            <Table<WheelSpin>
-              rowKey="id"
-              dataSource={spins}
-              pagination={false}
-              size="small"
-              columns={[
-                { title: 'Thời gian', dataIndex: 'spun_at', render: (v) => formatDateTime(v) },
-                { title: 'Khách hàng', key: 'customer', render: (_, row) => row.customer_profile?.full_name || row.user_id || '—' },
-                { title: 'Trúng', dataIndex: 'is_win', render: (v) => (v ? <Tag color="green">Trúng thưởng</Tag> : <Tag>Không trúng</Tag>) },
-                { title: 'Giải', dataIndex: ['prize', 'name'], render: (v) => v || '—' },
-                {
-                  title: 'Trạng thái',
-                  dataIndex: 'status',
-                  width: 110,
-                  render: (v) => (v === 'CLAIMED' ? <Tag color="blue">Đã nhận quà</Tag> : <Tag>Chờ nhận quà</Tag>),
-                },
-                {
-                  title: '',
-                  width: 170,
-                  render: (_, row) =>
-                    row.status === 'ISSUED' && row.is_win ? (
-                      <Can I="SPIN_ADMIN" a="WHEEL">
-                        <Button size="small" type="primary" ghost loading={claimMutation.isPending} onClick={() => claimSpin(row.id)}>
-                          Xác nhận đã nhận quà
-                        </Button>
-                      </Can>
-                    ) : null,
-                },
-              ]}
-            />
-            <ListPagination page={spinPage} limit={TABLE_PAGE_SIZE} total={spinsTotal} onChange={setSpinPage} noun="lượt quay" hideOnSinglePage />
-          </Card>
-        )}
-      </Space>
+          {selected && (!isMobile || mobileWheelPanel === 'customers') && wrapPanel('customers', (
+            <Can I="SPIN_ADMIN" a="WHEEL">
+              <Card className="lucky-wheel-panel lucky-wheel-eligible-panel" title={isMobile ? undefined : `Màn hình quay cho khách — ${selected.name}`}>
+                <Space direction="vertical" style={{ width: '100%' }} size={12}>
+                  <div className="lucky-wheel-customer-intro">
+                    {isMobile && (
+                      <div className="lucky-wheel-customer-intro-heading">
+                        <h2 className="lucky-wheel-detail-title">Danh sách khách</h2>
+                        <p className="lucky-wheel-detail-name" title={selected.name}>{selected.name}</p>
+                      </div>
+                    )}
+                    <Space wrap className="lucky-wheel-campaign-search-group">
+                      <Input.Search
+                        allowClear
+                        placeholder="Tìm theo tên / SĐT"
+                        className="lucky-wheel-panel-search"
+                        value={customerSearchInput}
+                        onChange={(event) => {
+                          setCustomerSearchInput(event.target.value)
+                          if (!event.target.value) { setCustomerSearch(''); setCustomerPage(1) }
+                        }}
+                        onSearch={(value) => { setCustomerSearch(value.trim()); setCustomerPage(1) }}
+                      />
+                      {!isMobile && chosenCustomer && (
+                        <Typography.Text>
+                          Khách được chọn: <Typography.Text strong>{chosenCustomer.full_name}</Typography.Text> ({chosenCustomer.phone})
+                        </Typography.Text>
+                      )}
+                    </Space>
+                    <Typography.Text type="secondary" className="lucky-wheel-access-hint">
+                      {isMobile ? 'Bật/tắt quyền quay áp dụng cho mọi vòng quay.' : 'Bật/tắt quyền quay áp dụng cho khách này trên tất cả vòng quay.'}
+                    </Typography.Text>
+                  </div>
+                  {customerSettingsQuery.isError && (
+                    <Alert
+                      type="error"
+                      showIcon
+                      message="Không tải được quyền tham gia vòng quay"
+                      description={errorMessage(customerSettingsQuery.error)}
+                    />
+                  )}
+                  <ResponsiveTable<EligibleWheelCustomer>
+                    rowKey="customer_profile_id"
+                    dataSource={eligibleCustomers as EligibleWheelCustomer[]}
+                    loading={eligibleQuery.isLoading}
+                    pagination={false}
+                    size="small"
+                    mobileTitleKey="full_name"
+                    mobileHiddenKeys={isMobile ? ['customer-wheel-access', 'customer-wheel-notification'] : undefined}
+                    locale={{ emptyText: <TableEmpty description="Không có khách đủ điều kiện" /> }}
+                    emptyText="Không có khách đủ điều kiện"
+                    onMobileCardClick={setChosenCustomer}
+                    onRow={(row) => ({ onClick: () => setChosenCustomer(row), style: { cursor: 'pointer' } })}
+                    columns={[
+                      {
+                        title: 'Khách hàng', dataIndex: 'full_name', render: (v, row) => (
+                          <Typography.Text strong style={chosenCustomer?.customer_profile_id === row.customer_profile_id ? { color: 'var(--brand-primary)' } : undefined}>
+                            {v} {row.customer_code ? `(${row.customer_code})` : ''}
+                          </Typography.Text>
+                        ),
+                      },
+                      { title: 'SĐT', dataIndex: 'phone', width: 130 },
+                      { title: 'Chi tiêu', dataIndex: 'spend', width: 130, render: (v) => `${Number(v).toLocaleString('vi-VN')}đ` },
+                      { title: 'Lượt còn lại', dataIndex: 'spins_left', width: 110, render: (v, row) => `${v}/${row.spins_max}` },
+                      {
+                        title: 'Bật/tắt',
+                        key: 'customer-wheel-access',
+                        width: 100,
+                        align: 'center' as const,
+                        render: (_, row) => renderCustomerAccessSwitch(row),
+                      },
+                      {
+                        title: 'Thông báo',
+                        key: 'customer-wheel-notification',
+                        width: 140,
+                        align: 'center' as const,
+                        render: (_, row) => renderCustomerNotifyButton(row),
+                      },
+                      ...(isMobile ? [{
+                        title: 'Thao tác',
+                        key: 'actions',
+                        render: (_: unknown, row: EligibleWheelCustomer) => (
+                          <div className="lucky-wheel-customer-card-actions">
+                            <div className="lucky-wheel-customer-card-tools">
+                              <span className="lucky-wheel-customer-access-group">
+                                {renderCustomerAccessSwitch(row)}
+                                <Typography.Text type="secondary" className="lucky-wheel-customer-access-label">Quyền quay</Typography.Text>
+                              </span>
+                              {renderCustomerNotifyButton(row)}
+                            </div>
+                            {chosenCustomer && chosenCustomer.customer_profile_id === row.customer_profile_id
+                              ? renderCustomerSpinActions()
+                              : null}
+                          </div>
+                        ),
+                      }] : []),
+                    ]}
+                  />
+                  <ListPagination
+                    page={customerPage}
+                    limit={TABLE_PAGE_SIZE}
+                    total={eligibleTotal}
+                    onChange={setCustomerPage}
+                    noun="khách hàng"
+                    hideOnSinglePage
+                  />
+                  {!isMobile && renderCustomerSpinActions()}
+                </Space>
+              </Card>
+            </Can>
+          ))}
+
+          {selected && (!isMobile || mobileWheelPanel === 'history') && wrapPanel('history', (
+            <Card className="lucky-wheel-panel" title={isMobile ? undefined : 'Lịch sử quay'}>
+              <ResponsiveTable<WheelSpin>
+                rowKey="id"
+                dataSource={spins}
+                loading={spinsQuery.isLoading}
+                pagination={false}
+                size="small"
+                mobileTitleKey="customer"
+                mobileStatusKey="win"
+                emptyText="Chưa có lượt quay"
+                columns={[
+                  { title: 'Thời gian', dataIndex: 'spun_at', render: (v) => formatDateTime(v) },
+                  { title: 'Khách hàng', key: 'customer', render: (_, row) => row.customer_profile?.full_name || row.user_id || '—' },
+                  { title: 'Trúng', key: 'win', dataIndex: 'is_win', render: (v) => (v ? <Tag color="green">Trúng thưởng</Tag> : <Tag>Không trúng</Tag>) },
+                  { title: 'Giải', dataIndex: ['prize', 'name'], render: (v) => v || '—' },
+                  {
+                    title: 'Trạng thái',
+                    dataIndex: 'status',
+                    width: 110,
+                    render: (v) => (v === 'CLAIMED' ? <Tag color="blue">Đã nhận quà</Tag> : <Tag>Chờ nhận quà</Tag>),
+                  },
+                  {
+                    title: '',
+                    width: 170,
+                    render: (_, row) =>
+                      row.status === 'ISSUED' && row.is_win ? (
+                        <Can I="SPIN_ADMIN" a="WHEEL">
+                          <Button size="small" type="primary" ghost loading={claimMutation.isPending} onClick={() => claimSpin(row.id)}>
+                            Xác nhận đã nhận quà
+                          </Button>
+                        </Can>
+                      ) : null,
+                  },
+                ]}
+              />
+              <ListPagination page={spinPage} limit={TABLE_PAGE_SIZE} total={spinsTotal} onChange={setSpinPage} noun="lượt quay" hideOnSinglePage />
+            </Card>
+          ))}
+        </Space>
       )}
 
       <WheelFormModal
@@ -958,6 +1106,7 @@ export default function LuckyWheel() {
       />
 
       <Modal
+        className="lucky-wheel-form-modal"
         title="Gửi thông báo về vòng quay"
         open={customerNotificationOpen}
         onCancel={() => {

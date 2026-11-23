@@ -1,6 +1,7 @@
+import ResponsiveTable from '@/components/base/ResponsiveTable'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { Avatar, Button, Form, Input, Modal, Select, Space, Switch, Table, Tag, Tooltip, Typography, message } from 'antd'
+import { Avatar, Button, Form, Input, Modal, Select, Space, Switch, Tag, Tooltip, Typography, message } from 'antd'
 import { useAbility } from '@casl/react'
 import {
   AppstoreOutlined,
@@ -374,13 +375,14 @@ export default function Users() {
           <Typography.Text type="danger">Không tải được danh sách nhân viên: {errorMessage(usersQuery.error)}</Typography.Text>
         </div>
       )}
-      <Table<UserRow>
+      <ResponsiveTable<UserRow>
         rowKey="id"
         loading={loading}
         dataSource={rows}
         locale={{ emptyText: <TableEmpty description="Chưa có nhân viên nào khớp điều kiện." /> }}
         scroll={{ x: 1160 }}
         pagination={false}
+        onMobileCardClick={openProfile}
         onRow={(s) => ({ onClick: () => openProfile(s), style: { cursor: 'pointer' } })}
         columns={[
           {

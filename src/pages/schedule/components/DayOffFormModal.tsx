@@ -1,4 +1,4 @@
-import { Alert, DatePicker, Form, Input, Modal, Select, Space, Table, Typography } from 'antd'
+import { Alert, DatePicker, Form, Input, Modal, Select, Space, Typography } from 'antd'
 import type { FormInstance } from 'antd'
 import dayjs from 'dayjs'
 import ServiceImageField from '@/components/ServiceImageField'
@@ -6,6 +6,7 @@ import type { ShiftTemplate, ScheduleStaff } from '../types'
 import { staffLabel } from '../types'
 import { useGetStaffDaysOffConflictsAdmin } from '@/api/endpoints/staff'
 import { pickData } from '@/api/helpers'
+import ResponsiveTable from '@/components/base/ResponsiveTable'
 
 interface ConflictAppointment {
   id: string
@@ -79,7 +80,7 @@ export default function DayOffFormModal({ open, form, staff, scheduledTemplates,
                 <Typography.Text type="secondary" style={{ fontSize: 12 }}>
                   Bạn vẫn có thể gửi đơn — Admin sẽ gọi xin khách đổi sang nhân viên khác trước khi duyệt. Nếu khách không đồng ý đổi người, theo nghiệp vụ nhân viên vẫn phải đi làm (trừ bất khả kháng).
                 </Typography.Text>
-                <Table<ConflictAppointment>
+                <ResponsiveTable<ConflictAppointment>
                   rowKey="id" size="small" pagination={false} scroll={{ y: 200 }} dataSource={conflicts}
                   columns={[
                     { title: 'Giờ', dataIndex: 'start_time', render: (v: string) => v?.slice(0, 5) },

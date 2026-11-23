@@ -1,5 +1,6 @@
 import { Button, Descriptions, Modal, Popconfirm, Space, Table, Tag, Typography } from 'antd'
 import type { TableColumnsType } from 'antd'
+import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import type { ProductOrderItem } from '@/api/models/productOrderItem'
 import { formatDateTime } from '@/themeRuntime'
 import {
@@ -39,11 +40,11 @@ export default function OrderDetailModal({
       open={!!detail}
       footer={null}
       onCancel={onClose}
-      width={640}
+      width="min(640px, calc(100vw - 24px))"
     >
       {detail && (
         <>
-          <Descriptions size="small" column={2} style={{ marginTop: 12 }}>
+          <Descriptions size="small" column={{ xs: 1, sm: 2 }} style={{ marginTop: 12 }}>
             <Descriptions.Item label="Trạng thái">
               <Tag color={STATUS_META[detailStatus]?.color}>{STATUS_META[detailStatus]?.label}</Tag>
             </Descriptions.Item>
@@ -56,6 +57,7 @@ export default function OrderDetailModal({
           </Descriptions>
           <Typography.Title level={5} style={{ marginTop: 16 }}>Sản phẩm</Typography.Title>
           <Table<ProductOrderItem>
+            className="desktop-only"
             rowKey="id"
             size="small"
             pagination={false}
@@ -86,7 +88,34 @@ export default function OrderDetailModal({
               )
             }}
           />
-          <Space style={{ marginTop: 16 }}>
+          <MobileCards
+            rows={detail.items ?? []}
+            rowKey={(item) => String(item.id)}
+            emptyText="Đơn hàng chưa có sản phẩm"
+            renderCard={(item) => (
+              <>
+                <div className="mobile-card-head">
+                  <div className="mobile-card-title">{item.product_name || 'Sản phẩm'}</div>
+                  <Tag color="purple">× {item.qty}</Tag>
+                </div>
+                <div className="mobile-card-rows">
+                  <MobileCardRow label="Đơn giá" value={formatMoney(item.price)} />
+                  <MobileCardRow label="Thành tiền" value={formatMoney(item.subtotal)} />
+                </div>
+              </>
+            )}
+          />
+          <div className="mobile-only mobile-card" style={{ marginTop: 10, display: 'grid', gap: 8 }}>
+            <MobileCardRow
+              label="Tạm tính"
+              value={formatMoney(detail.subtotal_amount ?? (detail.items ?? []).reduce((sum, item) => sum + Number(item.subtotal ?? 0), 0))}
+            />
+            {Number(detail.discount_amount ?? 0) > 0 && (
+              <MobileCardRow label="Giảm từ voucher" value={`−${formatMoney(detail.discount_amount)}`} />
+            )}
+            <MobileCardRow label="Khách cần trả" value={<strong>{formatMoney(detail.total_amount)}</strong>} />
+          </div>
+          <Space wrap style={{ marginTop: 16 }}>
             {(isAdmin ? NEXT_ACTIONS[detailStatus] ?? [] : []).map((action) => (
               <Popconfirm
                 key={action.status}

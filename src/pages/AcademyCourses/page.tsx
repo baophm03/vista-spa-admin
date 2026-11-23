@@ -1,6 +1,7 @@
+import ResponsiveTable from '@/components/base/ResponsiveTable'
 import { useQueryClient } from '@tanstack/react-query'
-import { Alert, Button, Form, Input, Modal, Table, Tag, message } from 'antd'
-import { BookOutlined, CheckCircleOutlined, DeleteOutlined, EditOutlined, EyeInvisibleOutlined, PlusOutlined } from '@ant-design/icons'
+import { Alert, Button, Form, Input, Modal, Tag, message } from 'antd'
+import { BookOutlined, CheckCircleOutlined, DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, PlusOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
 import StatCards, { type StatItem } from '@/components/base/StatCards'
@@ -21,6 +22,7 @@ import { useCustomerProfileAccess } from '@/utils/customerProfileAccess'
 import AcademyCourseDetailModal from './components/AcademyCourseDetailModal'
 import AcademyCourseFormModal from './components/AcademyCourseFormModal'
 import { CATEGORY_OPTIONS, LEVEL_OPTIONS, type CourseFormValues } from './components/constants'
+import './academy-courses.css'
 
 
 export default function AcademyCourses() {
@@ -134,16 +136,57 @@ export default function AcademyCourses() {
     }
   }
 
+  const renderCourseActions = (row: AcademyCourse, dropdownOnly = false) => (
+    <RowActionsMenu
+      dropdownOnly={dropdownOnly}
+      items={[
+        ...(canUpdate ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []),
+        ...(canUpdate ? [{
+          key: 'toggle',
+          icon: row.is_active ? <EyeInvisibleOutlined /> : <EyeOutlined />,
+          danger: row.is_active,
+          label: row.is_active ? 'Ẩn' : 'Mở lại',
+        }] : []),
+        ...(canDelete ? [{ key: 'delete', icon: <DeleteOutlined />, danger: true, label: 'Xóa' }] : []),
+      ]}
+      onSelect={(key) => {
+        if (key === 'edit') openEditor(row)
+        else if (key === 'toggle') {
+          Modal.confirm({
+            title: row.is_active ? 'Ẩn khóa học này?' : 'Mở lại khóa học này?',
+            content: row.is_active ? 'Khóa học bị ẩn khỏi app nhưng vẫn còn trong danh sách quản trị.' : undefined,
+            okText: row.is_active ? 'Ẩn' : 'Mở',
+            okButtonProps: row.is_active ? { danger: true } : undefined,
+            cancelText: 'Hủy',
+            onOk: () => void toggleActive(row),
+          })
+        } else if (key === 'delete') {
+          Modal.confirm({
+            title: 'Xóa khóa học này?',
+            content: 'Xóa mềm (is_deleted). Không xóa được khóa học đã có học viên đăng ký.',
+            okText: 'Xóa',
+            okButtonProps: { danger: true },
+            cancelText: 'Hủy',
+            onOk: () => void remove(row),
+          })
+        }
+      }}
+    />
+  )
+
   return (
     <>
-      <StatCards items={statItems} />
+      <div className="academy-course-stats">
+        <StatCards items={statItems} />
+      </div>
       <PageTitle
+        className="academy-courses-page-title"
         subtitle="Khóa học đào tạo spa của trung tâm"
         left={
           <Input.Search
             allowClear
             placeholder="Tìm tên khóa học"
-            className="w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]"
+            className="academy-course-search"
             value={searchText}
             onChange={(e) => { setSearchText(e.target.value); if (!e.target.value) applySearch('') }}
             onSearch={(v) => applySearch(v)}
@@ -152,7 +195,14 @@ export default function AcademyCourses() {
         right={
           isAdmin ? (
             <Can I="CREATE" a="ACADEMY_COURSE">
-              <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor()}>Thêm khóa học</Button>
+              <Button
+                type="primary"
+                className="academy-course-create-button"
+                icon={<PlusOutlined />}
+                aria-label="Thêm khóa học"
+                title="Thêm khóa học"
+                onClick={() => openEditor()}
+              >Thêm khóa học</Button>
             </Can>
           ) : undefined
         }
@@ -160,25 +210,28 @@ export default function AcademyCourses() {
         Khóa học đào tạo
       </PageTitle>
       {coursesQuery.isError && <Alert type="error" showIcon message="Không tải được danh sách khóa học" description={errorMessage(coursesQuery.error)} style={{ marginBottom: 16 }} />}
-      <Table<AcademyCourse>
-        rowKey="id"
-        loading={coursesQuery.isLoading}
-        dataSource={rows}
-        scroll={{ x: 900 }}
-        pagination={false}
-        onRow={(row) => ({
-          onClick: () => setDetail(row),
-          style: { cursor: 'pointer' },
-        })}
-        columns={[
+      <div className="academy-course-list">
+        <ResponsiveTable<AcademyCourse>
+          rowKey="id"
+          loading={coursesQuery.isLoading}
+          dataSource={rows}
+          scroll={{ x: 900 }}
+          pagination={false}
+          mobileTitleKey="name"
+          onMobileCardClick={setDetail}
+          onRow={(row) => ({
+            onClick: () => setDetail(row),
+            style: { cursor: 'pointer' },
+          })}
+          columns={[
           { key: 'code', title: 'Mã khóa', dataIndex: 'code' },
           {
             key: 'name', title: 'Tên khóa học', dataIndex: 'name', render: (value: string, row: AcademyCourse) => {
               const src = fileSrc((row as { cover_file?: { path?: string } }).cover_file)
               return (
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-                  {src ? <img src={src} alt="" width={44} height={44} style={{ objectFit: 'cover', borderRadius: 6 }} /> : null}
-                  <span>{value}</span>
+                <span className="academy-course-name">
+                  {src ? <img src={src} alt="" width={44} height={44} className="academy-course-cover" /> : null}
+                  <span className="academy-course-name-text">{value}</span>
                 </span>
               )
             }
@@ -200,45 +253,18 @@ export default function AcademyCourses() {
             title: 'Thao tác', align: 'center' as const,
             width: 90,
             fixed: 'right' as const,
-            render: (_: unknown, row: AcademyCourse) => {
-              const canToggle = canUpdate
-              return (
-                <RowActionsMenu
-                  items={[
-                    ...(canUpdate ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []),
-                    ...(canToggle ? [{ key: 'toggle', danger: row.is_active, label: row.is_active ? 'Ẩn' : 'Mở lại' }] : []),
-                    ...(canDelete ? [{ key: 'delete', icon: <DeleteOutlined />, danger: true, label: 'Xóa' }] : []),
-                  ]}
-                  onSelect={(key) => {
-                    if (key === 'edit') openEditor(row)
-                    else if (key === 'toggle') {
-                      Modal.confirm({
-                        title: row.is_active ? 'Ẩn khóa học này?' : 'Mở lại khóa học này?',
-                        content: row.is_active ? 'Khóa học bị ẩn khỏi app nhưng vẫn còn trong danh sách quản trị.' : undefined,
-                        okText: row.is_active ? 'Ẩn' : 'Mở',
-                        okButtonProps: row.is_active ? { danger: true } : undefined,
-                        cancelText: 'Hủy',
-                        onOk: () => void toggleActive(row),
-                      })
-                    } else if (key === 'delete') {
-                      Modal.confirm({
-                        title: 'Xóa khóa học này?',
-                        content: 'Xóa mềm (is_deleted). Không xóa được khóa học đã có học viên đăng ký.',
-                        okText: 'Xóa',
-                        okButtonProps: { danger: true },
-                        cancelText: 'Hủy',
-                        onOk: () => void remove(row),
-                      })
-                    }
-                  }}
-                />
-              )
-            },
+            render: (_: unknown, row: AcademyCourse) => (
+              <>
+                <span className="desktop-only">{renderCourseActions(row)}</span>
+                <span className="mobile-only academy-course-mobile-actions">{renderCourseActions(row, true)}</span>
+              </>
+            ),
           },
-        ].filter((column) =>
-          column.key !== 'actions' || canUpdate || canDelete,
-        )}
-      />
+          ].filter((column) =>
+            column.key !== 'actions' || canUpdate || canDelete,
+          )}
+        />
+      </div>
       <ListPagination page={page} limit={limit} total={total} onChange={setPage} noun="khóa học" />
       <AcademyCourseDetailModal
         detail={detail}

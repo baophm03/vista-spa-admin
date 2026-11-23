@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
+  Button,
   Form,
   Input,
   Table,
@@ -15,6 +16,7 @@ import type { Dayjs } from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
+import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import type { CustomerHealthRecord } from '@/api/models/customerHealthRecord'
 import type { CustomerTreatment } from '@/api/models/customerTreatment'
 import { getCustomerProfilesIdHealthRecordsAdmin, getHealthRecordsAdmin, postCustomerProfilesIdHealthRecordsAdmin, putCustomerProfilesIdHealthRecordsRecordIdAdmin } from '@/api/endpoints/customer-profiles'
@@ -234,12 +236,14 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
   return (
     <>
       <PageTitle
+        className="max-md:mb-3"
         subtitle="Hồ sơ sức khỏe và chỉ số của khách hàng"
         left={
           <Input.Search
+            aria-label="Tìm hồ sơ sức khỏe"
             allowClear
             placeholder="Tìm khách, SĐT, tình trạng da..."
-            className="w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]"
+            className="w-full! min-w-0 md:w-[260px]!"
             value={searchText}
             onChange={(e) => { setSearchText(e.target.value); if (!e.target.value) applySearch('') }}
             onSearch={(v) => applySearch(v)}
@@ -250,6 +254,7 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
       </PageTitle>
 
       <Table<HealthRow>
+        className="desktop-only"
         rowKey="id"
         loading={loading}
         dataSource={rows}
@@ -313,6 +318,39 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
             ),
           },
         ]}
+      />
+      <MobileCards
+        rows={rows}
+        rowKey={(row) => row.id}
+        loading={loading}
+        emptyText={keyword ? 'Không có kết quả' : 'Chưa có hồ sơ sức khỏe'}
+        emptyDescription={keyword ? 'Thử tìm theo tên khách hoặc số điện thoại' : undefined}
+        renderCard={(row) => {
+          const health = currentHealth(row, skinTypes)
+          return (
+            <>
+              <div className="mobile-card-head flex-wrap">
+                <div className="min-w-0">
+                  <div className="mobile-card-title">{row.full_name || 'Khách hàng'}</div>
+                  {row.phone && <div className="mobile-card-sub">{row.phone}</div>}
+                </div>
+                {health.skin_type && (
+                  <Tag className="me-0! max-w-full whitespace-normal! wrap-anywhere" color="purple">{health.skin_type}</Tag>
+                )}
+              </div>
+              <div className="mobile-card-rows">
+                <MobileCardRow label="Tình trạng da" value={health.condition || '—'} />
+                <MobileCardRow label="Dị ứng" value={health.allergies || '—'} />
+                <MobileCardRow label="Khám bởi" value={health.checked_by || '—'} />
+                <MobileCardRow label="Ngày khám" value={displayDate(health.checked_date)} />
+              </div>
+              <div className="mobile-card-actions flex-wrap">
+                <Button onClick={() => setDetail(row)}>Xem chi tiết</Button>
+                <Button type="primary" icon={<FileAddOutlined />} onClick={() => openRecordForm(row)}>Ghi nhận khám</Button>
+              </div>
+            </>
+          )
+        }}
       />
       <ListPagination page={page} limit={10} total={total} onChange={setPage} noun="hồ sơ sức khỏe" />
 

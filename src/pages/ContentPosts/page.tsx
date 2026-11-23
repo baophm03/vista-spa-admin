@@ -1,6 +1,7 @@
+import ResponsiveTable from '@/components/base/ResponsiveTable'
 import { useEffect, useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { Alert, Button, Form, Image, Input, Modal, Select, Space, Table, Tabs, Tag, Typography, message } from 'antd'
+import { Alert, Button, Form, Image, Input, Modal, Select, Space, Tabs, Tag, Typography, message } from 'antd'
 import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, PictureOutlined, PlusOutlined, SearchOutlined, SendOutlined, UndoOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
@@ -383,7 +384,7 @@ export default function ContentPosts() {
                     <Button type="primary" icon={<PlusOutlined />} onClick={() => openPostEditor()}>Tạo bài viết</Button>
                   </Can>
                 </ToolbarRow>
-                <Table
+                <ResponsiveTable
                   className="[&_.ant-table-thead_th]:whitespace-nowrap"
                   rowKey="id"
                   loading={postsQuery.isLoading}
@@ -405,7 +406,7 @@ export default function ContentPosts() {
                     <Button type="primary" icon={<PlusOutlined />} onClick={() => { setEditingCategory(null); categoryForm.resetFields(); categoryForm.setFieldsValue({ display_type: 'NEWS', sort_order: 0, is_active: true }); setCategoryModal(true) }}>Tạo chuyên mục</Button>
                   </Can>
                 </ToolbarRow>
-                <Table
+                <ResponsiveTable
                   className="[&_.ant-table-thead_th]:whitespace-nowrap"
                   rowKey="id"
                   loading={categoriesQuery.isLoading}

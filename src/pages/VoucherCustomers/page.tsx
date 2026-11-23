@@ -1,7 +1,8 @@
+import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import { useState } from 'react'
-import { Alert, Button, Form, Input, Modal, Popconfirm, Select, Table, Tabs, Tag, Typography, message } from 'antd'
+import { Alert, Button, Form, Grid, Input, Modal, Popconfirm, Popover, Select, Table, Tabs, Tag, Typography, message } from 'antd'
 import type { TableColumnsType } from 'antd'
-import { DeleteOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
+import { DeleteOutlined, FilterOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { useAbility } from '@casl/react'
@@ -17,7 +18,9 @@ import { getTreatmentPackageVoucherCustomersAdmin, postTreatmentPackageVoucherCu
 import { getTreatmentPackageVouchersAdmin } from '@/api/endpoints/treatment-package-vouchers'
 import { getProductVoucherCustomersAdmin, postProductVoucherCustomersAdmin, deleteProductVoucherCustomersIdAdmin } from '@/api/endpoints/product-voucher-customers'
 import { getProductVouchersAdmin } from '@/api/endpoints/product-vouchers'
-import { CATEGORY_META, type VoucherCategory, type VoucherCustomerAssignment, type VoucherCustomerRow } from '../Vouchers/components/constants'
+import { CATEGORY_META, MOBILE_TAB_LABELS, type VoucherCategory, type VoucherCustomerAssignment, type VoucherCustomerRow } from '../Vouchers/components/constants'
+import '../Vouchers/vouchers.css'
+import '../Vouchers/components/VoucherModal.css'
 
 // Dispatch theo danh mục — generated client tách 3 module *-voucher-customers (URL /admin).
 function listVoucherCategory(category: VoucherCategory, params: Record<string, unknown> = {}) {
@@ -60,7 +63,7 @@ function benefitLabel(row: VoucherCustomerRow): string {
   return '—'
 }
 
-function VoucherCustomerTab({ category, branches }: { category: VoucherCategory; branches: Array<{ value: string; label: string }> }) {
+function VoucherCustomerTab({ category, branches, isMobile }: { category: VoucherCategory; branches: Array<{ value: string; label: string }>; isMobile: boolean }) {
   const ability = useAbility()
   const canUpdate = ability.can('UPDATE', 'VOUCHER')
   const queryClient = useQueryClient()
@@ -141,32 +144,27 @@ function VoucherCustomerTab({ category, branches }: { category: VoucherCategory;
     }
   }
 
+  const statusTag = (status: VoucherCustomerRow['status']) =>
+    status === 'ACTIVE' ? <Tag color="green">Hoạt động</Tag> : status === 'USED' ? <Tag color="purple">Đã dùng</Tag> : <Tag>Đã gỡ</Tag>
+  const renderRevoke = (row: VoucherCustomerRow, mobile = false) => {
+    if (!canUpdate || row.source !== 'FIXED' || !row.assignment_id || row.status !== 'ACTIVE') return null
+    return (
+      <Popconfirm
+        title="Gỡ voucher này khỏi khách hàng?"
+        description="Khách sẽ không còn voucher này trên app."
+        okText="Gỡ"
+        okButtonProps={{ danger: true }}
+        cancelText="Hủy"
+        onConfirm={() => void revoke(row)}
+      >
+        <Button size="small" danger icon={<DeleteOutlined />} aria-label="Gỡ voucher" title="Gỡ voucher">
+          {mobile ? 'Gỡ voucher' : null}
+        </Button>
+      </Popconfirm>
+    )
+  }
+
   const columns: TableColumnsType<VoucherCustomerRow> = [
-    {
-      title: 'Khách hàng / Voucher',
-      key: 'mobile-summary',
-      width: 210,
-      responsive: ['xs'],
-      render: (_value: unknown, row: VoucherCustomerRow) => {
-        const customer = [row.user_phone, row.rank_name].filter(Boolean).join(' · ')
-        const status = row.status === 'ACTIVE' ? 'Hoạt động' : row.status === 'USED' ? 'Đã dùng' : 'Đã gỡ'
-        const period = row.start_date || row.end_date
-          ? `${row.start_date ? dayjs(row.start_date).format('DD/MM/YYYY') : '—'} → ${row.end_date ? dayjs(row.end_date).format('DD/MM/YYYY') : '—'}`
-          : 'Không giới hạn'
-        const details = [row.source === 'AUTO' ? 'Tự động' : 'Gán thủ công', row.points_cost == null ? 'Miễn phí' : `${Number(row.points_cost).toLocaleString('vi-VN')} điểm`, status, period]
-          .filter(Boolean)
-          .join(' · ')
-        return (
-          <div>
-            <Typography.Text strong ellipsis={{ tooltip: row.user_name || '—' }}>{row.user_name || '—'}</Typography.Text>
-            {customer && <Typography.Text type="secondary" style={{ display: 'block', fontSize: 12 }} ellipsis={{ tooltip: customer }}>{customer}</Typography.Text>}
-            <Typography.Text strong style={{ display: 'block' }} ellipsis={{ tooltip: row.voucher_title }}>{row.voucher_title}</Typography.Text>
-            <Typography.Text type="secondary" style={{ display: 'block', fontSize: 12 }} ellipsis={{ tooltip: benefitLabel(row) }}>{benefitLabel(row)}</Typography.Text>
-            <Typography.Text type="secondary" style={{ display: 'block', fontSize: 12 }} ellipsis={{ tooltip: details }}>{details}</Typography.Text>
-          </div>
-        )
-      },
-    },
     {
       title: 'Khách hàng',
       dataIndex: 'user_name',
@@ -220,7 +218,7 @@ function VoucherCustomerTab({ category, branches }: { category: VoucherCategory;
       dataIndex: 'status',
       width: 85,
       responsive: ['sm'],
-      render: (value: string) => value === 'ACTIVE' ? <Tag color="green">Hoạt động</Tag> : value === 'USED' ? <Tag color="purple">Đã dùng</Tag> : <Tag>Đã gỡ</Tag>,
+      render: statusTag,
     },
     {
       title: 'Thời hạn',
@@ -240,52 +238,75 @@ function VoucherCustomerTab({ category, branches }: { category: VoucherCategory;
       key: 'actions',
       align: 'center' as const,
       width: 88,
-      render: (_value: unknown, row: VoucherCustomerRow) => row.source === 'FIXED' && row.assignment_id && row.status === 'ACTIVE' ? (
-        <Popconfirm
-          title="Gỡ voucher này khỏi khách hàng?"
-          description="Khách sẽ không còn voucher này trên app."
-          okText="Gỡ"
-          okButtonProps={{ danger: true }}
-          cancelText="Hủy"
-          onConfirm={() => void revoke(row)}
-        >
-          <Button size="small" danger icon={<DeleteOutlined />} title="Gỡ voucher" />
-        </Popconfirm>
-      ) : (
-        <Typography.Text type="secondary">—</Typography.Text>
-      ),
+      render: (_value: unknown, row: VoucherCustomerRow) => renderRevoke(row) ?? <Typography.Text type="secondary">—</Typography.Text>,
     }] : []),
   ]
 
+  const pageRows = paginateRows(rows, page, PAGE_SIZE)
+  const rowKey = (row: VoucherCustomerRow) => `${row.source}-${row.assignment_id ?? row.voucher_id}-${row.customer_profile_id ?? row.user_id ?? 'customer'}`
+  const branchSelect = (
+    <Select
+      aria-label="Lọc theo cơ sở"
+      value={branchFilter ?? 'ALL'}
+      className="voucher-branch-select"
+      options={[{ value: 'ALL', label: 'Tất cả cơ sở' }, ...branches]}
+      onChange={(value) => { setBranchFilter(value === 'ALL' ? undefined : value); setPage(1) }}
+    />
+  )
+  const applySearch = (value: string) => {
+    const keyword = value.trim()
+    if (keyword === search) return
+    setSearch(keyword)
+    setPage(1)
+  }
+  const changeSearchInput = (value: string) => {
+    setSearchInput(value)
+    if (!value) applySearch('')
+  }
+
   return (
     <>
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', margin: '16px 0' }}>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <Input
-            allowClear
-            prefix={<SearchOutlined />}
-            placeholder="Tìm theo tên, SĐT hoặc tên voucher"
-            style={{ maxWidth: 300 }}
-            value={searchInput}
-            onChange={(event) => { setSearchInput(event.target.value); setPage(1) }}
-            onPressEnter={() => setSearch(searchInput.trim())}
-            onBlur={() => setSearch(searchInput.trim())}
-          />
-          <Select
-            value={branchFilter ?? 'ALL'}
-            style={{ width: 220 }}
-            options={[{ value: 'ALL', label: 'Tất cả cơ sở' }, ...branches]}
-            onChange={(value) => { setBranchFilter(value === 'ALL' ? undefined : value); setPage(1) }}
-          />
+      <div className="voucher-toolbar" style={isMobile ? undefined : { gap: 16 }}>
+        <div className="voucher-toolbar-search" style={isMobile ? undefined : { gap: 8 }}>
+          {isMobile ? (
+            <>
+              <Input.Search
+                allowClear
+                className="voucher-search"
+                placeholder="Tên, SĐT, voucher"
+                aria-label="Tìm theo tên, SĐT hoặc tên voucher"
+                value={searchInput}
+                onChange={(event) => changeSearchInput(event.target.value)}
+                onSearch={applySearch}
+              />
+              <Popover trigger="click" placement="bottomRight" title="Lọc theo cơ sở" content={branchSelect}>
+                <Button className="voucher-toolbar-button" type={branchFilter ? 'primary' : 'default'} icon={<FilterOutlined />} aria-label="Bộ lọc cơ sở" />
+              </Popover>
+            </>
+          ) : (
+            <>
+              <Input
+                allowClear
+                prefix={<SearchOutlined />}
+                placeholder="Tìm theo tên, SĐT hoặc tên voucher"
+                style={{ maxWidth: 300 }}
+                value={searchInput}
+                onChange={(event) => changeSearchInput(event.target.value)}
+                onPressEnter={() => applySearch(searchInput)}
+                onBlur={() => applySearch(searchInput)}
+              />
+              {branchSelect}
+            </>
+          )}
         </div>
         {canUpdate && (
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => {
+          <Button type="primary" className="voucher-toolbar-button" icon={<PlusOutlined />} aria-label="Đổi voucher" onClick={() => {
             form.resetFields()
             setCustomerSearch('')
             setAssignmentBranchId(branchFilter ?? (branches.length === 1 ? branches[0].value : undefined))
             setAssignOpen(true)
           }}>
-            Đổi voucher
+            {isMobile ? null : 'Đổi voucher'}
           </Button>
         )}
       </div>
@@ -293,18 +314,60 @@ function VoucherCustomerTab({ category, branches }: { category: VoucherCategory;
         <Alert type="error" showIcon style={{ marginBottom: 16 }} message="Không tải được danh sách voucher khách hàng" description={errorMessage(viewQuery.error)} action={<Button size="small" onClick={() => void viewQuery.refetch()}>Thử lại</Button>} />
       )}
       <Table<VoucherCustomerRow>
-        className="[&_.ant-table-thead_th]:whitespace-nowrap"
-        rowKey={(row) => `${row.source}-${row.assignment_id ?? row.voucher_id}-${row.customer_profile_id ?? row.user_id ?? 'customer'}`}
+        className="desktop-only [&_.ant-table-thead_th]:whitespace-nowrap"
+        rowKey={rowKey}
         loading={viewQuery.isLoading}
-        dataSource={paginateRows(rows, page, PAGE_SIZE)}
+        dataSource={pageRows}
         pagination={false}
         columns={columns}
         tableLayout="fixed"
         locale={{ emptyText: 'Chưa có khách hàng nào được ghi nhận' }}
       />
+      <MobileCards
+        rows={pageRows}
+        rowKey={rowKey}
+        loading={viewQuery.isLoading}
+        emptyText={search || branchFilter ? 'Không tìm thấy voucher khách hàng' : 'Chưa có khách hàng nào được ghi nhận'}
+        renderCard={(row) => {
+          const contact = [row.user_phone, row.rank_name].filter(Boolean).join(' · ')
+          const benefit = benefitLabel(row)
+          const source = row.source === 'AUTO' ? 'Tự động' : 'Gán thủ công'
+          const points = row.points_cost == null ? 'Miễn phí' : `${Number(row.points_cost).toLocaleString('vi-VN')} điểm`
+          const start = row.start_date && dayjs(row.start_date).format('DD/MM/YYYY')
+          const end = row.end_date && dayjs(row.end_date).format('DD/MM/YYYY')
+          const period = start && end ? `${start} – ${end}` : start ? `Từ ${start}` : end ? `Đến ${end}` : 'Không giới hạn'
+          return (
+            <div className="voucher-mobile-card">
+              <div className="voucher-card-header">
+                <div className="min-w-0">
+                  <div className="mobile-card-title">{row.user_name || '—'}</div>
+                  {contact && <div className="mobile-card-sub">{contact}</div>}
+                </div>
+                {statusTag(row.status)}
+              </div>
+              <div className="voucher-card-benefit">
+                <div className="mobile-card-title">{row.voucher_title}</div>
+                {benefit !== '—' && <strong>{benefit}</strong>}
+              </div>
+              <div className="mobile-card-rows">
+                <MobileCardRow label="Cơ sở" value={row.branch_name || '—'} />
+                <MobileCardRow label="Phát hành" value={`${source} · ${points}`} />
+              </div>
+              <div className="voucher-card-footer">
+                <div className="min-w-0">
+                  <div className="mobile-card-sub">Thời hạn</div>
+                  <div className="text-xs font-medium">{period}</div>
+                </div>
+                {renderRevoke(row, true)}
+              </div>
+            </div>
+          )
+        }}
+      />
       <ListPagination page={page} limit={PAGE_SIZE} total={rows.length} onChange={setPage} noun="bản ghi" hideOnSinglePage />
 
       <Modal
+        className="voucher-editor-modal"
         title={`Đổi ${CATEGORY_META[category].label.toLowerCase()} cho khách hàng`}
         open={assignOpen}
         onCancel={() => setAssignOpen(false)}
@@ -315,7 +378,7 @@ function VoucherCustomerTab({ category, branches }: { category: VoucherCategory;
         width={560}
         destroyOnClose
       >
-        <Form form={form} layout="vertical" style={{ marginTop: 12 }}>
+        <Form form={form} layout="vertical" className={isMobile ? 'voucher-form' : undefined} style={{ marginTop: 12 }}>
           <Form.Item label="Cơ sở" required>
             <Select
               allowClear
@@ -376,6 +439,7 @@ function VoucherCustomerTab({ category, branches }: { category: VoucherCategory;
 
 export default function VoucherCustomers() {
   const [activeTab, setActiveTab] = useState<VoucherCategory>('treatment-package')
+  const isMobile = !Grid.useBreakpoint().md
   const branchesQuery = useGetBranchesAdmin({ status: 'active' })
   const branches = ((pickData<Branch[]>(branchesQuery.data) ?? []) as Branch[])
     .filter((branch) => branch.is_active !== false)
@@ -386,12 +450,13 @@ export default function VoucherCustomers() {
         Voucher khách hàng
       </PageTitle>
       <Tabs
+        className="voucher-tabs"
         activeKey={activeTab}
         onChange={(key) => setActiveTab(key as VoucherCategory)}
         items={CATEGORIES.map((category) => ({
           key: category,
-          label: CATEGORY_META[category].label,
-          children: <VoucherCustomerTab category={category} branches={branches} />,
+          label: isMobile ? MOBILE_TAB_LABELS[category] : CATEGORY_META[category].label,
+          children: <VoucherCustomerTab category={category} branches={branches} isMobile={isMobile} />,
         }))}
       />
     </>

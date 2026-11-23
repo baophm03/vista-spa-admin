@@ -198,6 +198,108 @@ h4.ant-typography {
 
 /* Bảng nhiều cột: cho phép vuốt ngang trên mobile thay vì cắt cột */
 @media (max-width: 767px) {
+  .page-title {
+    gap: 10px !important;
+    margin-bottom: 14px !important;
+  }
+
+  .page-title-controls {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch !important;
+    justify-content: stretch !important;
+    width: 100%;
+    gap: 8px !important;
+  }
+
+  .page-title-controls > * {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .page-title-controls :is(.ant-input-search, .ant-picker-range, .ant-space) {
+    grid-column: 1 / -1;
+  }
+
+  .page-title-controls :is(.ant-input, .ant-select, .ant-picker, .ant-btn) {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .ant-modal .ant-row,
+  .ant-drawer .ant-row {
+    margin-inline: -6px !important;
+  }
+
+  .ant-modal .ant-row > .ant-col,
+  .ant-drawer .ant-row > .ant-col {
+    flex: 0 0 50% !important;
+    max-width: 50% !important;
+    min-width: 0;
+    padding-inline: 6px !important;
+  }
+
+  .ant-modal .ant-row > :is(.ant-col-24, .ant-col-xs-24),
+  .ant-drawer .ant-row > :is(.ant-col-24, .ant-col-xs-24) {
+    flex-basis: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .ant-modal :is(.ant-input, .ant-input-number, .ant-select, .ant-picker),
+  .ant-drawer :is(.ant-input, .ant-input-number, .ant-select, .ant-picker) {
+    max-width: 100%;
+  }
+
+  .responsive-table-mobile {
+    min-width: 0;
+  }
+
+  .responsive-table-mobile .mobile-card-list {
+    gap: 10px;
+  }
+
+  .responsive-table-mobile .mobile-card {
+    padding: 12px;
+  }
+
+  .responsive-table-head {
+    align-items: flex-start;
+  }
+
+  .responsive-table-title-group {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: 9px;
+    min-width: 0;
+  }
+
+  .responsive-table-media {
+    display: grid;
+    flex: 0 0 40px;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    overflow: hidden;
+    border-radius: 9px;
+    background: var(--brand-bg);
+  }
+
+  .responsive-table-media :is(img, .ant-image, .ant-avatar) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .responsive-table-actions {
+    justify-content: flex-end;
+  }
+
+  .responsive-table-actions .ant-btn {
+    min-height: 40px;
+  }
+
   .ant-table-wrapper {
     overflow-x: auto;
   }
@@ -478,6 +580,21 @@ h4.ant-typography {
   margin-top: 10px;
   padding-top: 10px;
   border-top: 1px dashed var(--brand-border-soft);
+}
+
+@media (max-width: 767px) {
+  .mobile-card-actions .row-actions-touch-target,
+  .responsive-table-actions .row-actions-touch-target,
+  .product-category-actions .row-actions-touch-target,
+  .order-mobile-card-footer .row-actions-touch-target {
+    width: auto;
+    min-width: 88px;
+    height: 34px !important;
+    min-height: 34px !important;
+    padding: 0 8px !important;
+    gap: 4px;
+    font-size: 12px;
+  }
 }
 
 /* ===== Card — viền hairline + shadow mềm cùng tông ===== */

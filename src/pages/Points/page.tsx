@@ -1,7 +1,6 @@
-import { getRankCardArt } from '@/utils/rankCardArt'
 import { useRef, useState } from 'react'
-import { Button, Col, Form, Input, Modal, Row, Select, Space, Table, Tabs, Tag, Typography, message } from 'antd'
-import { ArrowDownOutlined, ArrowUpOutlined, ClockCircleOutlined, CrownOutlined, DeleteOutlined, EditOutlined, PlusOutlined, SyncOutlined } from '@ant-design/icons'
+import { Alert, Button, Col, Form, Input, Modal, Row, Select, Skeleton, Space, Table, Tabs, Tag, Typography, message } from 'antd'
+import { ArrowDownOutlined, ArrowUpOutlined, CrownOutlined, DeleteOutlined, DownOutlined, EditOutlined, PlusOutlined, SyncOutlined } from '@ant-design/icons'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Can, useAbility } from '@casl/react'
 import { useBrandCurrency } from '@/themeRuntime'
@@ -9,6 +8,7 @@ import { useBrandCurrency } from '@/themeRuntime'
 import PageTitle from '../../components/base/PageTitle'
 import RowActionsMenu from '../../components/base/RowActionsMenu'
 import ListPagination from '../../components/base/ListPagination'
+import MobileCards, { MobileCardRow } from '../../components/base/MobileCards'
 import TableEmpty from '../../components/base/TableEmpty'
 import CustomerCodeHistoryModal from '../../components/CustomerCodeHistoryModal'
 import { errorMessage } from '../../api/helpers'
@@ -89,6 +89,7 @@ export default function Points() {
   const [overrideForm] = Form.useForm()
   // Tabs chính: bảng thành viên / lịch sử điểm (khu card hạng nằm ngoài, hiện chung cho cả 2 tab)
   const [activeTab, setActiveTab] = useState('members')
+  const [ranksExpanded, setRanksExpanded] = useState(false)
   const adjustSubmitLock = useRef(false)
   const memberProfilesQuery = useGetCustomerProfilesAdmin({ page, limit, ...filters } as Parameters<typeof useGetCustomerProfilesAdmin>[0])
   const ranksQuery = useGetCardRanksAdmin()
@@ -286,21 +287,69 @@ export default function Points() {
     }
   }
 
+  const memberRank = (row: MemberRow, fallback = '—') => {
+    const label = row.membership?.card_rank?.name ?? rankName(row.membership?.card_rank_id)
+    const rank = ranks.find((item) => item.id === row.membership?.card_rank_id)
+      ?? ranks.find((item) => item.name === label)
+    return <RankBadge rank={rank} label={label === '—' ? fallback : label} />
+  }
+
+  const memberActions = [
+    ...(canAdjust ? [{ key: 'adjust', icon: <EditOutlined />, label: 'Điều chỉnh điểm' }] : []),
+    ...(canOverride ? [{ key: 'override', icon: <CrownOutlined />, label: 'Gán hạng' }] : []),
+    ...(canRecalc ? [{ key: 'recalc', icon: <SyncOutlined />, label: 'Tính lại hạng' }] : []),
+  ]
+  const mobileMemberActions = [
+    ...(canViewHistory ? [{ value: 'view', label: 'Xem lịch sử' }] : []),
+    ...memberActions.map(({ key, label }) => ({ value: key, label })),
+  ]
+
+  const runMemberAction = (row: MemberRow, key: string) => {
+    if (key === 'view') {
+      setHistoryTarget(row)
+    } else if (key === 'adjust') {
+      setAdjusting(row)
+      form.resetFields()
+      form.setFieldsValue({ reason: '' })
+    } else if (key === 'override') {
+      doOverride(row)
+    } else if (key === 'recalc') {
+      Modal.confirm({
+        title: 'Tính lại hạng theo chi tiêu?',
+        okText: 'Tính lại',
+        cancelText: 'Hủy',
+        onOk: () => doRecalc(row),
+      })
+    }
+  }
+
   return (
     <>
       <PageTitle
+        className="max-md:mb-3"
         subtitle="Tích điểm, xét hạng và điều chỉnh điểm cho hội viên"
       >
         Điểm & Hạng thành viên
       </PageTitle>
 
-      <div style={{ background: 'var(--brand-bg-card, #FFFFFF)', border: '1px solid var(--brand-border-soft, #ECEFEA)', borderRadius: 20, padding: '24px 24px 28px', marginTop: 8 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+      <div className="rounded-xl p-3 md:rounded-[20px] md:px-6 md:pt-6 md:pb-7" style={{ background: 'var(--brand-bg-card, #FFFFFF)', border: '1px solid var(--brand-border-soft, #ECEFEA)', marginTop: 8 }}>
+        <button
+          type="button"
+          aria-expanded={ranksExpanded}
+          aria-controls="points-rank-settings"
+          className="flex w-full items-center justify-between gap-3 rounded-lg border-0 bg-transparent p-1 text-left text-sm font-semibold text-(--brand-primary) md:hidden"
+          onClick={() => setRanksExpanded((expanded) => !expanded)}
+        >
+          <span className="inline-flex items-center gap-2"><CrownOutlined /> Hạng thành viên</span>
+          <DownOutlined aria-hidden rotate={ranksExpanded ? 180 : 0} />
+        </button>
+        <div id="points-rank-settings" className={ranksExpanded ? 'max-md:mt-3' : 'max-md:hidden'}>
+        <div className="flex flex-wrap items-center justify-between gap-3 md:items-start">
           <div style={{ minWidth: 0 }}>
             <span style={{ display: 'inline-block', background: 'var(--brand-tertiary-tint)', color: 'var(--brand-tertiary-ink)', border: '1px solid var(--brand-tertiary-border)', fontSize: 12, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '4px 12px', borderRadius: 999 }}>
               New Sky Vista Club
             </span>
-            <Typography.Text type="secondary" style={{ display: 'block', marginTop: 10 }}>
+            <Typography.Text type="secondary" className="max-md:hidden!" style={{ display: 'block', marginTop: 10 }}>
               Cấu hình tiêu chí nâng hạng và chính sách đặc quyền thưởng lưu danh cho hội viên
             </Typography.Text>
           </div>
@@ -311,148 +360,124 @@ export default function Points() {
           </Can>
         </div>
 
-        <Row gutter={[20, 20]} style={{ marginTop: 22 }}>
+        <Row gutter={[16, 16]} className="mt-3 md:mt-5">
+          {ranksQuery.isLoading && [0, 1, 2].map((index) => (
+            <Col xs={24} md={12} xl={8} key={index}>
+              <div className="mobile-card"><Skeleton active paragraph={{ rows: 2 }} /></div>
+            </Col>
+          ))}
           {ranks.map((r, index) => {
-            const front = getRankCardArt(r.name)
             const fallback = RANK_THEMES[index % RANK_THEMES.length]
             const theme = r.color ? rankThemeFromColor(r.color, fallback) : fallback
             const RankIcon = theme.icon
+            const permanent = r.validity === 'PERMANENT'
+            const rankActions = [
+              ...(canUpdateRank ? [
+                { value: 'edit', label: 'Sửa hạng' },
+                { value: 'up', label: 'Đưa lên', disabled: rankReordering || index === 0 },
+                { value: 'down', label: 'Đưa xuống', disabled: rankReordering || index === ranks.length - 1 },
+              ] : []),
+              ...(canDeleteRank ? [{ value: 'delete', label: 'Xóa hạng' }] : []),
+            ]
             return (
-              <Col xs={24} md={8} key={r.id} style={{ display: 'flex' }}>
-                <div
-                  style={front ? { width: '100%' } : {
-                    position: 'relative',
-                    overflow: 'hidden',
-                    width: '100%',
-                    borderRadius: 16,
-                    border: `1px solid ${theme.cardBorder}`,
-                    background: theme.cardBg,
-                    padding: 20,
-                    boxShadow: '0 1px 2px rgba(38, 53, 45, 0.04)',
-                  }}
-                >
-                  {!front && <div aria-hidden style={{ position: 'absolute', top: -30, right: -30, width: 110, height: 110, borderRadius: '50%', background: theme.circle }} />}
-                  <div style={{ position: 'relative', display: 'flex', justifyContent: front ? 'flex-end' : 'space-between', alignItems: 'flex-start', gap: 8 }}>
-                    {!front && (
-                    <span
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 6,
-                        background: theme.pillBg,
-                        border: `1px solid ${theme.pillBorder}`,
-                        color: theme.pillColor,
-                        borderRadius: 999,
-                        padding: '3px 12px',
-                        fontSize: 13,
-                        fontWeight: 600,
-                        maxWidth: '70%',
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                      }}
-                    >
-                      <RankIcon style={{ fontSize: 13, flexShrink: 0 }} />
-                      {r.name}
-                    </span>)}
-                    <Space size={0} style={{ flexShrink: 0 }}>
-                      {(canUpdateRank || canDeleteRank) && (
-                        <>
-                          {canUpdateRank && (
-                            <>
-                              <Button type="text" size="small" title="Đưa lên" disabled={rankReordering || index === 0}
-                                icon={<ArrowUpOutlined style={{ color: '#8A8D93' }} />}
-                                onClick={() => void moveRankBy(r, -1)} />
-                              <Button type="text" size="small" title="Đưa xuống" disabled={rankReordering || index === ranks.length - 1}
-                                icon={<ArrowDownOutlined style={{ color: '#8A8D93' }} />}
-                                onClick={() => void moveRankBy(r, 1)} />
-                              <Button type="text" size="small" title="Sửa hạng" icon={<EditOutlined style={{ color: theme.ink }} />}
-                                onClick={() => openRankEditor(r)} />
-                            </>
-                          )}
-                          {canDeleteRank && (
-                            <Button type="text" size="small" title="Xóa hạng" danger icon={<DeleteOutlined />}
-                              onClick={() => removeRank(r)} />
-                          )}
-                        </>
-                      )}
-                      {!front && !canUpdateRank && !canDeleteRank && (
-                        <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                          Điều kiện
-                        </Typography.Text>
-                      )}
-                    </Space>
-                  </div>
-                  {front && (
-                    <img
-                      src={import.meta.env.BASE_URL + 'rank-cards/' + front + '.png'}
-                      alt={'Mặt trước thẻ ' + r.name}
-                      loading="lazy"
-                      className="block h-auto w-full object-contain"
-                    />
-                  )}
-                  {!front && <>
-                  <div style={{ position: 'relative', textAlign: 'right', marginTop: 4, fontSize: 22, fontWeight: 700, color: 'var(--brand-dark, #26352D)' }}>
-                    {r.min_spent ? `Từ ${formatMoney(r.min_spent)}` : 'Không ngưỡng'}
-                  </div>
-                  <div style={{ position: 'relative', marginTop: 14, display: 'flex', alignItems: 'center', gap: 8, fontSize: 13 }}>
-                    <ClockCircleOutlined style={{ color: '#8A8D93' }} />
-                    <span style={{ color: '#6F7071' }}>Hiệu lực:</span>
-                    {r.validity === 'PERMANENT' ? (
-                      <Tag color="green" style={{ borderRadius: 999, marginInlineEnd: 0 }}>Vĩnh viễn</Tag>
-                    ) : (
-                      <span style={{ fontWeight: 600, color: 'var(--brand-dark, #26352D)' }}>1 năm</span>
+              <Col xs={24} md={12} xl={8} key={r.id} className="flex min-w-0">
+                <article className="mobile-card min-w-0 flex-1">
+                  <div className="mobile-card-head flex-wrap">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <span
+                        className="hidden size-7 shrink-0 items-center justify-center rounded-lg md:inline-flex"
+                        style={{ background: theme.pillBg, color: theme.pillColor }}
+                        aria-hidden
+                      >
+                        <RankIcon />
+                      </span>
+                      <span className="mobile-card-title min-w-0">{r.name}</span>
+                    </div>
+                    <Tag className="me-0! md:hidden!" color={permanent ? 'green' : 'default'}>
+                      {permanent ? 'Vĩnh viễn' : '1 năm'}
+                    </Tag>
+                    {(canUpdateRank || canDeleteRank) && (
+                      <Space size={0} className="max-md:hidden!">
+                        {canUpdateRank && (
+                          <>
+                            <Button type="text" size="small" aria-label="Đưa lên" title="Đưa lên"
+                              disabled={rankReordering || index === 0} icon={<ArrowUpOutlined />}
+                              onClick={() => void moveRankBy(r, -1)} />
+                            <Button type="text" size="small" aria-label="Đưa xuống" title="Đưa xuống"
+                              disabled={rankReordering || index === ranks.length - 1} icon={<ArrowDownOutlined />}
+                              onClick={() => void moveRankBy(r, 1)} />
+                            <Button type="text" size="small" aria-label="Sửa hạng" title="Sửa hạng"
+                              icon={<EditOutlined />} onClick={() => openRankEditor(r)} />
+                          </>
+                        )}
+                        {canDeleteRank && (
+                          <Button type="text" size="small" aria-label="Xóa hạng" title="Xóa hạng" danger
+                            icon={<DeleteOutlined />} onClick={() => removeRank(r)} />
+                        )}
+                      </Space>
                     )}
                   </div>
-                  <div
-                    style={{
-                      position: 'relative',
-                      marginTop: 14,
-                      border: '1px dashed',
-                      borderColor: theme.pillBorder,
-                      borderRadius: 12,
-                      padding: '11px 14px',
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      gap: 10,
-                      background: 'rgba(255, 255, 255, 0.6)',
-                    }}
-                  >
-                    <Typography.Text type="secondary" style={{ fontSize: 13, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {r.benefits || 'Chưa mô tả quyền lợi'}
-                    </Typography.Text>
+                  {r.benefits && <p className="mobile-card-sub mt-0 mb-2 md:hidden">{r.benefits}</p>}
+                  <div className="mobile-card-rows">
+                    <div className="md:hidden"><MobileCardRow label="Mã hạng" value={r.code || '—'} /></div>
+                    <MobileCardRow label="Chi tiêu tối thiểu" value={r.min_spent ? formatMoney(r.min_spent) : 'Không ngưỡng'} />
+                    {r.discount_percent != null && <div className="md:hidden"><MobileCardRow label="Mức giảm" value={`${r.discount_percent}%`} /></div>}
+                    <div className="hidden md:contents">
+                      <MobileCardRow label="Hiệu lực" value={permanent ? <Tag color="green">Vĩnh viễn</Tag> : '1 năm'} />
+                      <MobileCardRow label="Quyền lợi" value={r.benefits || 'Chưa mô tả quyền lợi'} />
+                    </div>
                   </div>
-                  </>}
-                </div>
+                  {rankActions.length > 0 && (
+                    <div className="mobile-card-actions md:hidden!">
+                      <Select<string | null>
+                        aria-label={`Thao tác cho hạng ${r.name}`}
+                        placeholder="Thao tác"
+                        className="w-32"
+                        value={null}
+                        popupMatchSelectWidth={false}
+                        options={rankActions}
+                        onSelect={(key) => {
+                          if (key === 'edit') openRankEditor(r)
+                          if (key === 'up') void moveRankBy(r, -1)
+                          if (key === 'down') void moveRankBy(r, 1)
+                          if (key === 'delete') removeRank(r)
+                        }}
+                      />
+                    </div>
+                  )}
+                </article>
               </Col>
             )
           })}
         </Row>
-        {ranks.length === 0 && (
+        {ranksQuery.isError && ranks.length === 0 && <Alert type="error" showIcon title="Không tải được hạng thẻ" />}
+        {!ranksQuery.isLoading && !ranksQuery.isError && ranks.length === 0 && (
           <Typography.Text type="secondary" style={{ display: 'block', textAlign: 'center', padding: '16px 0 0' }}>
             Chưa có hạng thẻ nào
           </Typography.Text>
         )}
+        </div>
       </div>
 
       <Tabs
+        className="max-md:[&_.ant-tabs-nav-list]:w-full max-md:[&_.ant-tabs-tab]:flex-1 max-md:[&_.ant-tabs-tab]:justify-center max-md:[&_.ant-tabs-tab]:px-1 max-md:[&_.ant-tabs-tab]:text-xs max-md:[&_.ant-tabs-tab+.ant-tabs-tab]:ms-0!"
         activeKey={activeTab}
         onChange={setActiveTab}
+        tabBarGutter={12}
         style={{ marginTop: 16 }}
         items={[
           {
             key: 'members',
-            label: 'Thành viên & điểm hiện có',
+            label: <><span className="md:hidden">Thành viên</span><span className="max-md:hidden">Thành viên &amp; điểm hiện có</span></>,
             children: (
               <>
                 {/* Tìm kiếm + bộ lọc chỉ áp dụng cho bảng thành viên — đặt trong tab, không để trên card hạng */}
-                <div style={{ marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 12, flexWrap: 'wrap' }}>
-                  <Space wrap>
+                <div className="mb-3 grid grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)] gap-2 md:flex md:flex-wrap md:justify-end">
                     <Input.Search
                       allowClear
                       placeholder="Tìm tên, SĐT, mã khách..."
-                      className="w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]"
+                      aria-label="Tìm thành viên"
+                      className="w-full! min-w-0 md:w-[260px]!"
                       value={searchText}
                       onChange={(e) => { setSearchText(e.target.value); if (!e.target.value) applySearch('') }}
                       onSearch={(v) => applySearch(v)}
@@ -460,14 +485,15 @@ export default function Points() {
                     <Select
                       allowClear
                       placeholder="Tất cả hạng"
-                      style={{ width: 170 }}
+                      aria-label="Lọc theo hạng"
+                      className="w-full min-w-0 md:w-[170px]"
                       value={filters.rank_id}
                       onChange={(value) => { setFilters((current) => ({ ...current, rank_id: value ?? undefined })); setPage(1) }}
                       options={ranks.map((rank) => ({ value: rank.id, label: rank.name }))}
                     />
-                  </Space>
                 </div>
                 <Table
+                  className="desktop-only"
                   rowKey="id"
                   loading={loading}
         dataSource={rows}
@@ -492,12 +518,7 @@ export default function Points() {
             key: 'rank',
             title: 'Hạng',
             width: 150,
-            render: (_value: unknown, row: MemberRow) => {
-              const label = row.membership?.card_rank?.name ?? rankName(row.membership?.card_rank_id)
-              const rank = ranks.find((item) => item.id === row.membership?.card_rank_id)
-                ?? ranks.find((item) => item.name === label)
-              return <RankBadge rank={rank} label={label} />
-            },
+            render: (_value: unknown, row: MemberRow) => memberRank(row),
           },
           {
             key: 'points',
@@ -521,35 +542,64 @@ export default function Points() {
             width: 90,
             fixed: 'right' as const,
             render: (_value: unknown, row: MemberRow) => (
-              <RowActionsMenu
-                items={[
-                  ...(canAdjust ? [{ key: 'adjust', icon: <EditOutlined />, label: 'Điều chỉnh điểm' }] : []),
-                  ...(canOverride ? [{ key: 'override', icon: <CrownOutlined />, label: 'Gán hạng' }] : []),
-                  ...(canRecalc ? [{ key: 'recalc', icon: <SyncOutlined />, label: 'Tính lại hạng' }] : []),
-                ]}
-                onSelect={(key) => {
-                  if (key === 'adjust') {
-                    setAdjusting(row)
-                    form.resetFields()
-                    form.setFieldsValue({ reason: '' })
-                  } else if (key === 'override') {
-                    doOverride(row)
-                  } else if (key === 'recalc') {
-                    Modal.confirm({
-                      title: 'Tính lại hạng theo chi tiêu?',
-                      okText: 'Tính lại',
-                      cancelText: 'Hủy',
-                      onOk: () => doRecalc(row),
-                    })
-                  }
-                }}
-              />
+              <RowActionsMenu items={memberActions} onSelect={(key) => runMemberAction(row, key)} />
             ),
           },
         ].filter((column) =>
           (column.key !== 'actions' || canAdjust || canOverride || canRecalc || canViewHistory),
         )}
       />
+      {memberProfilesQuery.isError && !rows.length ? (
+        <Alert type="error" title="Không tải được danh sách thành viên" action={<Button size="small" onClick={() => void memberProfilesQuery.refetch()}>Thử lại</Button>} />
+      ) : (
+        <MobileCards
+          rows={rows}
+          rowKey={(row) => row.id}
+          loading={loading}
+          emptyText={filters.q || filters.rank_id ? 'Không có kết quả' : 'Chưa có thành viên'}
+          renderCard={(row) => (
+            <>
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="mobile-card-title">{row.full_name || row.user?.zalo_name || '—'}</div>
+                  <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
+                    {(row.phone || row.user?.phone_number) && <div className="mobile-card-sub">{row.phone || row.user?.phone_number}</div>}
+                    {memberRank(row, 'Chưa xếp hạng')}
+                  </div>
+                </div>
+                {mobileMemberActions.length > 0 && (
+                  <Select<string | null>
+                    aria-label={`Thao tác cho ${row.full_name || row.user?.zalo_name || 'thành viên'}`}
+                    placeholder="Thao tác"
+                    size="middle"
+                    className="w-32 shrink-0"
+                    styles={{ placeholder: { color: 'var(--brand-primary)' } }}
+                    popupMatchSelectWidth={false}
+                    showSearch={false}
+                    value={null}
+                    options={mobileMemberActions}
+                    onSelect={(key) => { if (key) runMemberAction(row, key) }}
+                  />
+                )}
+              </div>
+              <div className="mt-3 grid grid-cols-2 rounded-lg bg-(--brand-bg) py-2.5">
+                <div className="min-w-0 px-3">
+                  <Typography.Text type="secondary" className="block text-xs!">Điểm hiện có</Typography.Text>
+                  <div className="mt-1 wrap-anywhere text-lg leading-tight font-semibold text-(--brand-primary) tabular-nums">
+                    {Number(row.membership?.lifetime_points ?? 0).toLocaleString('vi-VN')}
+                  </div>
+                </div>
+                <div className="min-w-0 border-0 border-s border-solid border-(--brand-border-soft) px-3">
+                  <Typography.Text type="secondary" className="block text-xs!">Chi tiêu năm</Typography.Text>
+                  <div className="mt-1 wrap-anywhere text-lg leading-tight font-semibold tabular-nums">
+                    {formatMoney(row.membership?.year_spent)}
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+        />
+      )}
       <ListPagination page={page} limit={limit} total={total} onChange={setPage} noun="thành viên" />
               </>
             ),
@@ -559,11 +609,11 @@ export default function Points() {
             label: 'Lịch sử điểm',
             children: (
               <>
-      <div style={{ marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 12, flexWrap: 'wrap' }}>
-        <Space wrap>
+      <div className="mb-3 flex flex-col gap-2 md:flex-row md:flex-wrap md:justify-end">
           <Select
             placeholder="Tất cả biến động"
-            style={{ width: 170 }}
+            aria-label="Lọc theo loại biến động"
+            className="w-full md:w-[170px]"
             allowClear
             value={historyDirection || undefined}
             onChange={(v) => { setHistoryDirection((v as 'plus' | 'minus' | undefined) ?? ''); setHistoryPage(1) }}
@@ -574,7 +624,8 @@ export default function Points() {
           />
           <Select
             placeholder="Tất cả khách hàng"
-            style={{ width: 260 }}
+            aria-label="Lọc theo khách hàng"
+            className="w-full md:w-[260px]"
             allowClear
             showSearch
             optionFilterProp="label"
@@ -582,9 +633,9 @@ export default function Points() {
             onChange={(v) => { setHistoryProfileId(v ?? null); setHistoryPage(1) }}
             options={profilesData.map((profile) => ({ value: profile.id, label: profile.full_name || profile.phone || profile.id }))}
           />
-        </Space>
       </div>
       <Table<HistoryRow>
+        className="desktop-only"
         rowKey="id"
         loading={historyQuery.isLoading}
         dataSource={historyRows}
@@ -655,6 +706,40 @@ export default function Points() {
           },
         ]}
       />
+      {historyQuery.isError && !historyRows.length ? (
+        <Alert type="error" title="Không tải được lịch sử điểm" action={<Button size="small" onClick={() => void historyQuery.refetch()}>Thử lại</Button>} />
+      ) : (
+        <MobileCards
+          rows={historyRows}
+          rowKey={(row) => row.id}
+          loading={historyQuery.isLoading}
+          emptyText={historyProfileId || historyDirection ? 'Không có kết quả' : 'Chưa có giao dịch điểm nào'}
+          renderCard={(row) => {
+            const customer = row.membership?.customer_profile
+            const delta = Number(row.points_earned ?? 0)
+            return (
+              <>
+                <div className="mobile-card-head flex-wrap">
+                  <div className="min-w-0">
+                    <div className="mobile-card-title">{customer?.full_name || '—'}</div>
+                    <div className="mobile-card-sub">{customer?.customer_code || customer?.phone}</div>
+                  </div>
+                  <Tag className="me-0! max-w-full whitespace-normal! wrap-anywhere" color={delta >= 0 ? 'green' : 'red'}>
+                    {REF_TYPE_LABELS[row.ref_type ?? ''] ?? row.ref_type ?? '—'}
+                  </Tag>
+                </div>
+                <div className="mobile-card-rows">
+                  <MobileCardRow label="Điểm" value={<strong style={{ color: delta >= 0 ? '#389e0d' : '#cf1322' }}>{delta >= 0 ? '+' : ''}{delta}</strong>} />
+                  <MobileCardRow label="Thời gian" value={row.created_at ? new Date(row.created_at).toLocaleString('vi-VN') : '—'} />
+                  <MobileCardRow label="Số tiền" value={row.amount ? formatMoney(row.amount) : '—'} />
+                  <MobileCardRow label="Mã giao dịch" value={row.trans_code || '—'} />
+                  <MobileCardRow label="Lý do" value={row.reason || '—'} />
+                </div>
+              </>
+            )
+          }}
+        />
+      )}
       <ListPagination page={historyPage} limit={10} total={historyTotal} onChange={setHistoryPage} noun="giao dịch điểm" />
               </>
             ),

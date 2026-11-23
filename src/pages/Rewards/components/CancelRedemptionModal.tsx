@@ -18,6 +18,7 @@ export default function CancelRedemptionModal({
 }: CancelRedemptionModalProps) {
   return (
     <Modal
+      width="min(480px, calc(100vw - 24px))"
       title={`Hủy lượt đổi: ${cancelTarget?.reward?.name ?? ''}`}
       open={!!cancelTarget}
       onCancel={onCancel}

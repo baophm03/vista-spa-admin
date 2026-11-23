@@ -1,0 +1,88 @@
+.academy-registration-desktop-filters {
+  display: flex;
+  gap: 8px;
+}
+
+.academy-registration-mobile-filter-button.ant-btn {
+  display: none;
+}
+
+.academy-registration-filter-popover {
+  display: grid;
+  width: 260px;
+  max-width: calc(100vw - 56px);
+  gap: 12px;
+}
+
+.academy-registration-filter-popover .ant-select {
+  width: 100% !important;
+}
+
+@media (max-width: 767px) {
+  .academy-registrations-page-title .page-title-controls {
+    grid-template-columns: minmax(0, 1fr) 44px 44px;
+    align-items: stretch;
+  }
+
+  .academy-registrations-page-title .academy-registration-search.ant-input-search {
+    grid-column: 1;
+    grid-row: 1;
+    width: 100% !important;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .academy-registration-desktop-filters {
+    display: none;
+  }
+
+  .academy-registrations-page-title .academy-registration-mobile-filter-button.ant-btn {
+    grid-column: 2;
+    grid-row: 1;
+    display: inline-flex;
+    width: 44px;
+    height: 44px;
+    min-height: 44px;
+    padding: 0;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .academy-registrations-page-title .academy-registration-create-button.ant-btn {
+    grid-column: 3;
+    grid-row: 1;
+    justify-self: end;
+    display: inline-flex;
+    width: 44px;
+    height: 44px;
+    min-height: 44px;
+    padding: 0;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .academy-registration-search.ant-input-search,
+  .academy-registration-search .ant-input-group,
+  .academy-registration-search .ant-input-affix-wrapper,
+  .academy-registration-search .ant-input-group-addon,
+  .academy-registration-search .ant-input-search-btn {
+    height: 44px !important;
+    min-height: 44px !important;
+    box-sizing: border-box;
+  }
+
+  .academy-registration-search .ant-input-affix-wrapper {
+    align-items: center;
+  }
+
+  .academy-registration-search .ant-input-search-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding-block: 0;
+  }
+
+  .academy-registration-filter-popover .ant-select {
+    min-width: 0;
+  }
+}

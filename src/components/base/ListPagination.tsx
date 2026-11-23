@@ -22,8 +22,6 @@ export default function ListPagination({ page, limit, total, onChange, noun, hid
   const current = Math.min(Math.max(page, 1), pageCount)
   const from = (current - 1) * limit + 1
   const to = Math.min(current * limit, total)
-  // Mobile (<768px): pager compact theo thiết kế Figma — dòng đếm bên trái,
-  // cụm [<] [trang hiện tại] [>] bên phải thay vì hàng số trang đầy đủ.
   if (isMobile) {
     // Theo Figma "Phân trang": nút 32×32 nền #F0EBF2 không viền, radius 7,
     // icon tím; số trang hiện tại 28×28 nền tím chữ trắng 11px.
@@ -43,12 +41,13 @@ export default function ListPagination({ page, limit, total, onChange, noun, hid
       justifyContent: 'center',
       fontSize: 13,
     } as const)
-    // Dãy số trang rút gọn: 1 … (current-1) current (current+1) … cuối
-    const pages: (number | '…')[] = []
-    for (let p = 1; p <= pageCount; p++) {
-      if (p === 1 || p === pageCount || Math.abs(p - current) <= 1) pages.push(p)
-      else if (pages[pages.length - 1] !== '…') pages.push('…')
-    }
+    const pages: (number | '…')[] = pageCount <= 5
+      ? Array.from({ length: pageCount }, (_, index) => index + 1)
+      : current <= 2
+        ? [1, 2, 3, '…', pageCount]
+        : current >= pageCount - 1
+          ? [1, '…', pageCount - 2, pageCount - 1, pageCount]
+          : [1, ...(current > 3 ? ['…' as const] : []), current - 1, current, current + 1, ...(current < pageCount - 2 ? ['…' as const] : []), pageCount]
     const pageBtnStyle = (active: boolean) => ({
       minWidth: 28,
       height: 28,
@@ -65,9 +64,9 @@ export default function ListPagination({ page, limit, total, onChange, noun, hid
       justifyContent: 'center',
     } as const)
     return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 16 }}>
-        <span style={{ flex: 1, minWidth: 0, fontSize: 12, color: '#655E71' }}>Hiển thị {from} – {to} trong {total} {noun}</span>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginTop: 16 }}>
+        <span style={{ flex: '1 1 110px', minWidth: 0, fontSize: 12, color: '#655E71' }}>Hiển thị {from} – {to} trong {total} {noun}</span>
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 4, maxWidth: '100%', marginInlineStart: 'auto' }}>
           <button type="button" aria-label="Trang trước" disabled={current <= 1} style={arrowStyle(current <= 1)} onClick={() => onChange(current - 1)}>
             <LeftOutlined />
           </button>
@@ -75,7 +74,7 @@ export default function ListPagination({ page, limit, total, onChange, noun, hid
             p === '…' ? (
               <span key={`e${i}`} style={{ minWidth: 20, textAlign: 'center', color: '#655E71', fontSize: 11 }}>…</span>
             ) : (
-              <button key={p} type="button" aria-label={`Trang ${p}`} style={pageBtnStyle(p === current)} onClick={() => p !== current && onChange(p)}>
+              <button key={p} type="button" aria-label={`Trang ${p}`} aria-current={p === current ? 'page' : undefined} style={pageBtnStyle(p === current)} onClick={() => p !== current && onChange(p)}>
                 {p}
               </button>
             ),

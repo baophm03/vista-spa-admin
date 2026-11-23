@@ -1,0 +1,217 @@
+/* Course editor form layout */
+.academy-course-form {
+  margin-top: 12px;
+}
+
+.academy-course-select-grid,
+.academy-course-pricing-grid,
+.academy-course-dates-grid {
+  display: grid;
+  min-width: 0;
+  column-gap: 16px;
+}
+
+.academy-course-select-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.academy-course-pricing-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.academy-course-dates-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.academy-course-form .ant-form-item {
+  min-width: 0;
+}
+
+.academy-course-list {
+  width: 100%;
+  min-width: 0;
+}
+
+.academy-course-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.academy-course-cover {
+  flex: 0 0 44px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.academy-course-name-text {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+@media (min-width: 768px) {
+  .academy-courses-page-title .academy-course-search {
+    width: 260px;
+    max-width: min(260px, 46vw);
+    min-width: 140px;
+  }
+}
+
+@media (max-width: 767px) {
+  .academy-course-stats .stat-cards {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 7px !important;
+    margin-bottom: 14px !important;
+  }
+
+  .academy-course-stats .stat-card {
+    min-width: 0;
+    min-height: 92px;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 5px;
+    padding: 9px 8px;
+    border-radius: 12px;
+  }
+
+  .academy-course-stats .stat-card-disc {
+    width: 27px;
+    height: 27px;
+    border-radius: 8px;
+    font-size: 14px;
+  }
+
+  .academy-course-stats .stat-card-body {
+    width: 100%;
+    gap: 1px;
+  }
+
+  .academy-course-stats .stat-card-label {
+    white-space: normal;
+    font-size: 9.5px;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+
+  .academy-course-stats .stat-card-value {
+    font-size: 20px;
+    line-height: 1.1;
+  }
+
+  .academy-course-list,
+  .academy-course-list .responsive-table-mobile,
+  .academy-course-list .mobile-card-list {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .academy-course-list .mobile-card {
+    max-width: 100%;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .academy-course-list .responsive-table-head,
+  .academy-course-list .responsive-table-title-group {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .academy-course-list .responsive-table-title-group .mobile-card-title {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  .academy-course-list .academy-course-name {
+    width: 100%;
+  }
+
+  .academy-course-list .academy-course-name-text {
+    flex: 1 1 auto;
+  }
+
+  .academy-course-list .mobile-card-row,
+  .academy-course-list .mobile-card-row .mobile-card-value {
+    min-width: 0;
+  }
+
+  .academy-course-form,
+  .academy-course-form .ant-form-item,
+  .academy-course-form .ant-form-item-row {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .academy-course-form .ant-form-item-row {
+    display: block !important;
+    margin-inline: 0 !important;
+  }
+
+  .ant-modal .ant-form.academy-course-form .ant-form-item-row > :is(.ant-col, .ant-form-item-label, .ant-form-item-control),
+  .academy-course-form .ant-form-item-label,
+  .academy-course-form .ant-form-item-control,
+  .academy-course-form .ant-form-item-control-input,
+  .academy-course-form .ant-form-item-control-input-content {
+    flex: 0 0 100% !important;
+    width: 100%;
+    max-width: 100% !important;
+  }
+
+  .academy-course-form .ant-form-item-control-input-content > :is(.ant-input, .ant-input-number, .ant-select, .ant-picker) {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .academy-course-select-grid,
+  .academy-course-pricing-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 12px;
+  }
+
+  .academy-course-select-grid .academy-course-branch-field,
+  .academy-course-pricing-grid .academy-course-tuition-field {
+    grid-column: 1 / -1;
+  }
+
+  .academy-course-dates-grid {
+    column-gap: 12px;
+  }
+
+  .academy-course-form .ant-form-item-label > label {
+    white-space: normal;
+  }
+
+  .academy-courses-page-title .page-title-controls {
+    grid-template-columns: minmax(0, 1fr) 44px;
+    gap: 8px !important;
+  }
+
+  .academy-courses-page-title .page-title-controls .academy-course-search.ant-input-search {
+    grid-column: auto;
+    width: 100% !important;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .academy-courses-page-title .page-title-controls .academy-course-create-button.ant-btn {
+    display: inline-flex;
+    width: 44px;
+    height: 40px;
+    min-height: 40px;
+    padding: 0;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .academy-course-mobile-actions.mobile-only {
+    display: flex !important;
+    align-items: center;
+    justify-content: flex-end;
+  }
+}

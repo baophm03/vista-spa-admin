@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Alert, Button, Card, Form, Input, Modal, Select, Space, Spin, Switch, Table, Tag, Tooltip, Typography, message } from 'antd'
+import { Alert, Button, Card, Form, Grid, Input, Modal, Popover, Select, Space, Spin, Switch, Tag, Tooltip, Typography, message } from 'antd'
 import { BellOutlined, FilterOutlined } from '@ant-design/icons'
 import { useAbility } from '@casl/react'
 import ListPagination from '@/components/base/ListPagination'
+import ResponsiveTable from '@/components/base/ResponsiveTable'
 import { getGetConfigQueryKey } from '@/api/endpoints/config'
 import { getCustomerProfilesAdmin, getGetCustomerProfilesAdminQueryKey } from '@/api/endpoints/customer-profiles'
 import { postNotificationsAdmin } from '@/api/endpoints/notifications'
@@ -73,6 +74,7 @@ type CustomerRow = Pick<CustomerProfile, 'id' | 'user_id' | 'full_name' | 'custo
 type WheelEligibleCustomer = GetLuckyWheelsIdEligibleCustomersAdmin200AllOfResponseDataItem & { user_id?: string | null; email?: string | null }
 
 export default function CustomerVisibilityTab({ canEdit, wheels, wheelsLoading = false }: Props) {
+  const isMobile = !Grid.useBreakpoint().md
   const canSendNotifications = useAbility().can('CREATE', 'NOTIFICATION')
   const queryClient = useQueryClient()
   const [searchText, setSearchText] = useState('')
@@ -299,6 +301,28 @@ export default function CustomerVisibilityTab({ canEdit, wheels, wheelsLoading =
     return <Alert type="error" showIcon message="Không tải được cài đặt vòng quay" description={errorMessage(settingsQuery.error)} />
   }
 
+  const wheelFilter = (
+    <Select
+      allowClear
+      showSearch
+      optionFilterProp="label"
+      className="lucky-wheel-filter-select"
+      prefix={isMobile ? undefined : <FilterOutlined />}
+      aria-label="Lọc theo vòng quay"
+      placeholder="Tất cả vòng quay"
+      loading={wheelsLoading}
+      value={selectedWheelId}
+      options={wheels.map((wheel) => ({
+        value: wheel.id,
+        label: wheel.is_active ? wheel.name : `${wheel.name} (Đã tắt)`,
+      }))}
+      onChange={(wheelId) => {
+        setSelectedWheelId(wheelId || undefined)
+        setCustomerPage(1)
+      }}
+    />
+  )
+
   return (
     <Spin spinning={settingsQuery.isLoading}>
       <Space direction="vertical" className="w-full" size={16}>
@@ -311,7 +335,7 @@ export default function CustomerVisibilityTab({ canEdit, wheels, wheelsLoading =
           />
         )}
 
-        <Card>
+        <Card className="lucky-wheel-panel">
           <Space direction="vertical" className="w-full" size={16}>
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="space-y-1">
@@ -320,7 +344,7 @@ export default function CustomerVisibilityTab({ canEdit, wheels, wheelsLoading =
                   Khách có cấu hình riêng bên dưới sẽ dùng trạng thái riêng. Đổi công tắc này áp dụng cho mọi khách và xóa các cấu hình riêng.
                 </Typography.Text>
               </div>
-              <div className="flex shrink-0 items-center gap-3">
+              <div className="flex shrink-0 flex-wrap items-center gap-2 sm:gap-3">
                 <Tag color={defaultEnabled ? 'green' : 'default'}>{defaultEnabled ? 'Đang bật' : 'Đang tắt'}</Tag>
                 {canSendNotifications && (
                   <Button
@@ -350,10 +374,11 @@ export default function CustomerVisibilityTab({ canEdit, wheels, wheelsLoading =
                 <Typography.Text type="secondary">
                   Bật hoặc tắt quyền quay cho từng khách. Công tắc áp dụng trên tất cả vòng quay; chọn vòng quay bên dưới để xem khách đủ điều kiện của chương trình đó.
                 </Typography.Text>
-                <div className="flex w-full flex-col gap-3 sm:flex-row">
+                <div className="lucky-wheel-customer-filter">
                   <Input.Search
                     allowClear
-                    className="w-full sm:max-w-2xl"
+                    className="lucky-wheel-customer-search"
+                    aria-label="Tìm khách hàng"
                     placeholder={selectedWheelId
                       ? 'Tìm theo tên hoặc số điện thoại'
                       : 'Tìm theo tên, mã hoặc số điện thoại'}
@@ -364,24 +389,11 @@ export default function CustomerVisibilityTab({ canEdit, wheels, wheelsLoading =
                     }}
                     onSearch={(value) => { setAppliedSearch(value.trim()); setCustomerPage(1) }}
                   />
-                  <Select
-                    allowClear
-                    showSearch
-                    optionFilterProp="label"
-                    className="w-full sm:w-80"
-                    prefix={<FilterOutlined />}
-                    placeholder="Tất cả vòng quay"
-                    loading={wheelsLoading}
-                    value={selectedWheelId}
-                    options={wheels.map((wheel) => ({
-                      value: wheel.id,
-                      label: wheel.is_active ? wheel.name : `${wheel.name} (Đã tắt)`,
-                    }))}
-                    onChange={(wheelId) => {
-                      setSelectedWheelId(wheelId || undefined)
-                      setCustomerPage(1)
-                    }}
-                  />
+                  {isMobile ? (
+                    <Popover trigger="click" placement="bottomRight" title="Lọc theo vòng quay" content={wheelFilter}>
+                      <Button className="lucky-wheel-filter-button" type={selectedWheelId ? 'primary' : 'default'} icon={<FilterOutlined />} aria-label="Lọc theo vòng quay" />
+                    </Popover>
+                  ) : wheelFilter}
                 </div>
                 {selectedWheelId && !customerLoading && !customerError && (
                   <Typography.Text type="secondary">
@@ -389,12 +401,14 @@ export default function CustomerVisibilityTab({ canEdit, wheels, wheelsLoading =
                   </Typography.Text>
                 )}
                 {customerError && <Typography.Text type="danger">{errorMessage(customerError)}</Typography.Text>}
-                <Table<CustomerRow>
+                <ResponsiveTable<CustomerRow>
                   rowKey="id"
                   size="small"
                   loading={customerLoading}
                   dataSource={customers}
                   pagination={false}
+                  mobileTitleKey="customer"
+                  mobileStatusKey="access"
                   columns={[
                     {
                       title: 'Khách hàng',
@@ -402,7 +416,7 @@ export default function CustomerVisibilityTab({ canEdit, wheels, wheelsLoading =
                       render: (_, customer) => (
                         <div>
                           <Typography.Text strong>{customer.full_name}</Typography.Text>
-                          <Typography.Text type="secondary" className="ml-2">
+                          <Typography.Text type="secondary" className="block md:ml-2 md:inline">
                             {customer.customer_code || customer.phone || '—'}
                             {customer.customer_code && customer.phone ? ` · ${customer.phone}` : ''}
                           </Typography.Text>
@@ -493,6 +507,7 @@ export default function CustomerVisibilityTab({ canEdit, wheels, wheelsLoading =
           </Space>
         </Card>
         <Modal
+          className="lucky-wheel-form-modal"
           title={notificationTarget.type === 'all' ? 'Thông báo chung' : 'Thông báo riêng'}
           open={notificationOpen}
           onCancel={() => setNotificationOpen(false)}

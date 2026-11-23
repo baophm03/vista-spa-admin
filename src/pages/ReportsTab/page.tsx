@@ -144,7 +144,7 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
   // Mobile (<768px): stat compact, table chuyển thành card
   const isMobile = !Grid.useBreakpoint().md
 
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
 
   const [branchOptions, setBranchOptions] = useState<Option[]>([])
   const [customerOptions, setCustomerOptions] = useState<Option[]>([])
@@ -574,6 +574,7 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
               <MobileCards
                 rows={paginateRows(debts, debtsPage, 5)}
                 rowKey={(r: any) => String(r.customer_treatment_id)}
+                loading={loading}
                 emptyText="Không có công nợ trong kỳ"
                 renderCard={(r: any) => (
                   <>
@@ -643,6 +644,7 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
               <MobileCards
                 rows={newCustomers.by_source ?? []}
                 rowKey={(r: any) => String(r.source)}
+                loading={loading}
                 emptyText="Chưa có dữ liệu nguồn khách"
                 renderCard={(r: any) => (
                   <div className="mobile-card-rows">
@@ -695,6 +697,7 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
               <MobileCards
                 rows={ranks.upgrades ?? []}
                 rowKey={(_r, i) => String(i)}
+                loading={loading}
                 emptyText="Chưa có khách nâng hạng trong kỳ"
                 renderCard={(r: any) => (
                   <>
@@ -766,6 +769,7 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
               <MobileCards
                 rows={appointments.by_staff ?? []}
                 rowKey={(r: any) => String(r.staff_id ?? 'none')}
+                loading={loading}
                 emptyText="Không có dữ liệu hiệu suất KTV"
                 renderCard={(r: any) => (
                   <>
@@ -834,6 +838,7 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
               <MobileCards
                 rows={paginateRows(sessions.remaining ?? [], remainingPage, 8)}
                 rowKey={(_r, i) => String(i)}
+                loading={loading}
                 emptyText="Không có gói còn buổi"
                 renderCard={(r: any) => (
                   <>

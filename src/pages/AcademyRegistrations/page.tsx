@@ -1,7 +1,8 @@
+import ResponsiveTable from '@/components/base/ResponsiveTable'
 import { useEffect, useMemo, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Alert, Button, Form, Input, Select, Space, Table, Tag, Typography, message } from 'antd'
-import { PlusOutlined, SearchOutlined } from '@ant-design/icons'
+import { Alert, Badge, Button, Form, Input, Popover, Select, Space, Tag, Typography, message } from 'antd'
+import { FilterOutlined, PlusOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
 import ListPagination from '@/components/base/ListPagination'
@@ -9,7 +10,7 @@ import { errorMessage, pickData } from '@/api/helpers'
 import type { AcademyCourse } from '@/api/models/academyCourse'
 import { getAcademyCourseVouchersAdmin } from '@/api/endpoints/academy-course-vouchers'
 import type { VoucherCategoryRow } from '@/pages/Vouchers/components/constants'
-import { getGetAcademyRegistrationsAdminQueryKey, postAcademyRegistrationsAdmin, useGetAcademyRegistrationsFindStudentAdmin, usePutAcademyRegistrationsIdStatusAdmin } from '@/api/endpoints/academy'
+import { getGetAcademyRegistrationsAdminQueryKey, postAcademyRegistrationsAdmin, usePutAcademyRegistrationsIdStatusAdmin } from '@/api/endpoints/academy'
 import { useGetAcademyCoursesAdmin } from '@/api/endpoints/academy'
 import { useGetUsersAdmin } from '@/api/endpoints/users'
 import { apiClient } from '@/api/mutator/custom-instance'
@@ -17,9 +18,9 @@ import { useBrandCurrency } from '@/themeRuntime'
 import { Can } from '@casl/react'
 import RegistrationCreateModal from './components/RegistrationCreateModal'
 import RegistrationUpdateModal from './components/RegistrationUpdateModal'
-import StudentLookupModal from './components/StudentLookupModal'
 import { NEXT_STATUS, PAYMENT_STATUS_META, STATUS_META } from './components/constants'
 import type { RegistrationRow } from './components/constants'
+import './academy-registrations.css'
 
 interface UpdateFormValues {
   status?: string
@@ -35,13 +36,11 @@ export default function AcademyRegistrations() {
   const [searchInput, setSearchInput] = useState('')
   const [page, setPage] = useState(1)
   const [limit] = useState(10)
-  const [lookupValue, setLookupValue] = useState('')
   const [updateTarget, setUpdateTarget] = useState<RegistrationRow | null>(null)
   const [saving, setSaving] = useState(false)
   const [form] = Form.useForm<UpdateFormValues>()
   const [createOpen, setCreateOpen] = useState(false)
   const [creating, setCreating] = useState(false)
-  const [lookupOpen, setLookupOpen] = useState(false)
   const [createForm] = Form.useForm()
 
   const applySearch = (value: string) => {
@@ -54,20 +53,12 @@ export default function AcademyRegistrations() {
   const courseVouchersQuery = useQuery({ queryKey: ['voucher-category', 'academy-course'], queryFn: () => getAcademyCourseVouchersAdmin() })
   const registrationsQuery = useGetRegistrationsSafe(filter, page, limit)
   const usersQuery = useGetUsersAdmin({ currentPage: 1, pageSize: 200, has_role: true })
-  const lookupPhone = /^0\d{9}$/.test(lookupValue.trim()) ? lookupValue.trim() : undefined
-  const lookupEmail = lookupValue.includes('@') ? lookupValue.trim() : undefined
-  const lookupQuery = useGetAcademyRegistrationsFindStudentAdmin(
-    lookupPhone || lookupEmail ? { phone: lookupPhone, email: lookupEmail } : undefined,
-    { query: { enabled: !!(lookupPhone || lookupEmail), retry: false } },
-  )
-
   const courses = (pickData<AcademyCourse[]>(coursesQuery.data) ?? []) as AcademyCourse[]
   const courseVouchersPayload = pickData<any>(courseVouchersQuery.data)
   const courseVouchers = (Array.isArray(courseVouchersPayload) ? courseVouchersPayload : courseVouchersPayload?.rows ?? []) as VoucherCategoryRow[]
   const registrations = (pickData<RegistrationRow[]>(registrationsQuery.data) ?? []) as RegistrationRow[]
   const total = (registrationsQuery.data as unknown as { meta?: { total?: number } } | null)?.meta?.total ?? registrations.length
   const staffs = (pickData<{ rows?: Array<{ id: string; zalo_name?: string }> } | undefined>(usersQuery.data)?.rows ?? []) as Array<{ id: string; zalo_name?: string }>
-  const lookupRows = (pickData<RegistrationRow[]>(lookupQuery.data) ?? []) as RegistrationRow[]
   const courseById = useMemo(() => new Map(courses.map((c) => [c.id, c])), [courses])
 
   const statusMutation = usePutAcademyRegistrationsIdStatusAdmin()
@@ -99,22 +90,6 @@ export default function AcademyRegistrations() {
       message.error(errorMessage(err))
     } finally {
       setSaving(false)
-    }
-  }
-
-  const createFromLookup = async (row: RegistrationRow) => {
-    try {
-      await postAcademyRegistrationsAdmin({
-        course_id: row.course_id,
-        full_name: row.full_name,
-        phone: row.phone,
-        email: row.email ?? undefined,
-        note: 'Nhận diện học viên cũ qua tra cứu (AC-10)',
-      })
-      message.success('Đã nhận đăng ký — hệ thống tự động đối soát học viên cũ')
-      await reload()
-    } catch (err) {
-      message.error(errorMessage(err))
     }
   }
 
@@ -185,39 +160,78 @@ export default function AcademyRegistrations() {
   return (
     <div>
       <PageTitle
+        className="academy-registrations-page-title"
         left={
           <>
-            {/* Icon viết dạng children (không qua prop icon) để chữ không bị ẩn trên mobile — giữ nguyên như desktop */}
-            <Button onClick={() => setLookupOpen(true)}><SearchOutlined /> Tra cứu học viên</Button>
             <Input.Search
               allowClear
               placeholder="Tìm tên / SĐT / email"
-              className="w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]"
+              className="academy-registration-search w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]"
               value={searchInput}
               onChange={(event) => { setSearchInput(event.target.value); if (!event.target.value) applySearch('') }}
               onSearch={applySearch}
             />
-            <Select
-              allowClear
-              placeholder="Khóa học"
-              className="w-[220px]"
-              options={courses.map((c) => ({ value: c.id, label: c.name }))}
-              value={filter.course_id}
-              onChange={(v) => { setFilter((f) => ({ ...f, course_id: v })); setPage(1) }}
-            />
-            <Select
-              allowClear
-              placeholder="Trạng thái"
-              className="w-[160px]"
-              options={Object.entries(STATUS_META).map(([value, m]) => ({ value, label: m.label }))}
-              value={filter.status}
-              onChange={(v) => { setFilter((f) => ({ ...f, status: v })); setPage(1) }}
-            />
+            <Popover
+              trigger="click"
+              placement="bottomRight"
+              content={(
+                <div className="academy-registration-filter-popover">
+                  <Select
+                    allowClear
+                    placeholder="Khóa học"
+                    className="mobile-filter-select"
+                    options={courses.map((c) => ({ value: c.id, label: c.name }))}
+                    value={filter.course_id}
+                    onChange={(v) => { setFilter((f) => ({ ...f, course_id: v })); setPage(1) }}
+                  />
+                  <Select
+                    allowClear
+                    placeholder="Trạng thái"
+                    className="mobile-filter-select"
+                    options={Object.entries(STATUS_META).map(([value, m]) => ({ value, label: m.label }))}
+                    value={filter.status}
+                    onChange={(v) => { setFilter((f) => ({ ...f, status: v })); setPage(1) }}
+                  />
+                </div>
+              )}
+            >
+              <Button
+                className="academy-registration-mobile-filter-button"
+                icon={<Badge dot={!!(filter.course_id || filter.status)}><FilterOutlined /></Badge>}
+                aria-label="Lọc khóa học và trạng thái"
+                title="Lọc khóa học và trạng thái"
+              />
+            </Popover>
+            <div className="academy-registration-desktop-filters">
+              <Select
+                allowClear
+                placeholder="Khóa học"
+                className="w-[220px]"
+                options={courses.map((c) => ({ value: c.id, label: c.name }))}
+                value={filter.course_id}
+                onChange={(v) => { setFilter((f) => ({ ...f, course_id: v })); setPage(1) }}
+              />
+              <Select
+                allowClear
+                placeholder="Trạng thái"
+                className="w-[160px]"
+                options={Object.entries(STATUS_META).map(([value, m]) => ({ value, label: m.label }))}
+                value={filter.status}
+                onChange={(v) => { setFilter((f) => ({ ...f, status: v })); setPage(1) }}
+              />
+            </div>
           </>
         }
         right={
           <Can I="CREATE" a="ACADEMY_REGISTRATION">
-            <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>Thêm đăng ký</Button>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              className="academy-registration-create-button"
+              aria-label="Thêm đăng ký"
+              title="Thêm đăng ký"
+              onClick={openCreate}
+            >Thêm đăng ký</Button>
           </Can>
         }
       >
@@ -225,30 +239,20 @@ export default function AcademyRegistrations() {
       </PageTitle>
       {registrationsQuery.isError && <Alert type="error" showIcon message="Không tải được danh sách đăng ký" description={errorMessage(registrationsQuery.error)} style={{ marginBottom: 12 }} />}
 
-      <Table
+      <ResponsiveTable
         rowKey="id"
         loading={registrationsQuery.isLoading}
         columns={columns}
         dataSource={registrations}
         scroll={{ x: 1100 }}
         pagination={false}
+        onMobileCardClick={openUpdate}
         onRow={(row) => ({
           onClick: () => openUpdate(row),
           style: { cursor: 'pointer' },
         })}
       />
       <ListPagination page={page} limit={limit} total={total} onChange={setPage} noun="đăng ký" />
-
-      <StudentLookupModal
-        open={lookupOpen}
-        lookupValue={lookupValue}
-        onLookupValueChange={setLookupValue}
-        hasQuery={!!(lookupPhone || lookupEmail)}
-        loading={lookupQuery.isLoading}
-        rows={lookupRows}
-        onClose={() => setLookupOpen(false)}
-        onCreateFromLookup={(row) => void createFromLookup(row)}
-      />
 
       <RegistrationUpdateModal
         target={updateTarget}

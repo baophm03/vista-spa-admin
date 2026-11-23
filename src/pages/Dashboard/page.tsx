@@ -285,6 +285,7 @@ function Overview({
         <MobileCards
           rows={recent}
           rowKey={(row) => String(row.id)}
+          loading={statsLoading}
           emptyText="Chưa có lịch hẹn nào"
           renderCard={(row) => (
             <>

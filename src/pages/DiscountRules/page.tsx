@@ -1,23 +1,17 @@
 import { useMemo, useState } from 'react'
+import dayjs from 'dayjs'
 import {
-  Alert,
-  Button,
-  Form,
-  Modal,
-  Space,
-  Table,
-  Tag,
-  Typography,
-  message,
-} from 'antd'
+  Alert, Button, Form, Modal, Space, Table, Tag, Typography, message } from 'antd'
 import type { TableColumnsType } from 'antd'
-import { CheckCircleOutlined, DeleteOutlined, EditOutlined, PlusOutlined, TagsOutlined } from '@ant-design/icons'
+import { CheckCircleOutlined, DeleteOutlined, EditOutlined, FilterOutlined, PlusOutlined, TagsOutlined } from '@ant-design/icons'
 import { useQueryClient } from '@tanstack/react-query'
 import { Can, useAbility } from '@casl/react'
 import PageTitle from '@/components/base/PageTitle'
 import StatCards, { type StatItem } from '@/components/base/StatCards'
 import ListFilterPopover from '@/components/base/ListFilterPopover'
+import InfoBanner from '@/components/base/InfoBanner'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
+import MobileCards from '@/components/base/MobileCards'
 import ListPagination from '@/components/base/ListPagination'
 import { errorMessage } from '@/api/helpers'
 import { getGetDiscountRulesAdminQueryKey, useDeleteDiscountRulesIdAdmin, useGetDiscountRulesAdmin, usePostDiscountRulesAdmin, usePutDiscountRulesIdAdmin } from '@/api/endpoints/discount-rules'
@@ -170,6 +164,94 @@ export default function DiscountRules() {
     }
   }
 
+  const renderActions = (row: DiscountRule, mobile = false) => (
+    <RowActionsMenu
+      dropdownOnly={mobile}
+      items={[
+        ...(canUpdate ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []),
+        ...(canDelete ? [{ key: 'delete', icon: <DeleteOutlined />, danger: true, label: 'Xóa' }] : []),
+      ]}
+      onSelect={(key) => {
+        if (key === 'edit') openEditor(row)
+        else if (key === 'delete') {
+          Modal.confirm({
+            title: 'Xóa quy tắc này?',
+            content: 'Xóa mềm (is_deleted). Chỉ xóa được quy tắc chưa gắn dịch vụ áp dụng; ngừng áp dụng hãy dùng "Sửa" và tắt "Đang dùng".',
+            okText: 'Xóa',
+            okButtonProps: { danger: true },
+            cancelText: 'Hủy',
+            onOk: () => remove(row),
+          })
+        }
+      }}
+    />
+  )
+
+  const show = (key: DiscountColumnKey) => visibleColumns.includes(key)
+  const renderMobileCard = (row: DiscountRule) => {
+    const audience = row.audience && AUDIENCE_META[row.audience]?.label
+    const rank = row.audience === 'RANK' ? row.requires_rank?.name : undefined
+    const minPercent = row.percent_min ?? 0
+    const maxPercent = row.percent_max ?? 0
+    const discount = minPercent === maxPercent ? `${maxPercent}%` : `${minPercent}–${maxPercent}%`
+    const start = row.start_date && dayjs(row.start_date).format('DD/MM/YYYY')
+    const end = row.end_date && dayjs(row.end_date).format('DD/MM/YYYY')
+    const validity = start && end ? `${start} – ${end}` : start ? `Từ ${start}` : end ? `Đến ${end}` : 'Không giới hạn'
+    const conditions = [
+      show('stack') && (row.stackable === false ? 'Không cộng dồn' : 'Được cộng dồn'),
+      show('stack') && row.once_per_customer && '1 lần/khách',
+      show('show_in_app') && (row.show_in_app === false ? 'Ẩn trên app' : 'Hiện trên app'),
+    ].filter(Boolean).join(' · ')
+
+    return (
+      <div className="grid min-w-0 gap-2.5">
+        <div className="flex min-w-0 items-start justify-between gap-2">
+          <div className="grid min-w-0 gap-0.5">
+            <button type="button" className="mobile-card-title cursor-pointer border-0 bg-transparent p-0 text-left" onClick={() => setDetailRuleId(row.id)}>
+              {show('name') ? row.name : 'Xem quy tắc'}
+            </button>
+            {show('name') && row.code && <span className="mobile-card-sub">{row.code}</span>}
+          </div>
+          {show('is_active') && <Tag className="m-0! shrink-0" color={row.is_active !== false ? 'green' : undefined}>{row.is_active !== false ? 'Đang dùng' : 'Đã ngừng'}</Tag>}
+        </div>
+        {(show('percent') || show('max_total_percent')) && (
+          <dl className="m-0 grid auto-cols-fr grid-flow-col gap-3 rounded-lg bg-[var(--brand-bg)] px-3 py-2">
+            {show('percent') && (
+              <div className="grid gap-0.5">
+                <dt className="mobile-card-sub">Mức giảm</dt>
+                <dd className="m-0 text-base leading-tight font-semibold text-[var(--brand-primary)]">{discount}</dd>
+              </div>
+            )}
+            {show('max_total_percent') && (
+              <div className="grid gap-0.5">
+                <dt className="mobile-card-sub">Trần giảm tổng</dt>
+                <dd className="m-0 text-sm font-medium">{row.max_total_percent == null ? 'Mặc định 50%' : `${row.max_total_percent}%`}</dd>
+              </div>
+            )}
+          </dl>
+        )}
+        {(show('audience') || show('validity')) && (
+          <dl className="m-0 grid grid-cols-[5.5rem_minmax(0,1fr)] gap-x-2 gap-y-1 text-xs">
+            {show('audience') && <>
+              <dt className="mobile-card-sub">Đối tượng</dt>
+              <dd className="m-0 self-center font-medium wrap-anywhere">{rank ? `Hạng ${rank}` : (audience ?? '—')}</dd>
+            </>}
+            {show('validity') && <>
+              <dt className="mobile-card-sub">Thời hạn</dt>
+              <dd className="m-0 self-center font-medium">{validity}</dd>
+            </>}
+          </dl>
+        )}
+        {(conditions || canUpdate || canDelete) && (
+          <div className="flex items-center gap-2 border-t border-[var(--brand-border-soft)] pt-2">
+            {conditions && <span className="mobile-card-sub min-w-0">{conditions}</span>}
+            {(canUpdate || canDelete) && <div className="mobile-card-actions ml-auto! mt-0! shrink-0 border-0! p-0!">{renderActions(row, true)}</div>}
+          </div>
+        )}
+      </div>
+    )
+  }
+
   const columns: TableColumnsType<DiscountRule> = ([
     {
       key: 'name',
@@ -225,27 +307,7 @@ export default function DiscountRules() {
     {
       key: 'actions',
       title: 'Thao tác', align: 'center' as const, width: 120, fixed: 'right',
-      render: (_v, row) => (
-        <RowActionsMenu
-          items={[
-            ...(canUpdate ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []),
-            ...(canDelete ? [{ key: 'delete', icon: <DeleteOutlined />, danger: true, label: 'Xóa' }] : []),
-          ]}
-          onSelect={(key) => {
-            if (key === 'edit') openEditor(row)
-            else if (key === 'delete') {
-              Modal.confirm({
-                title: 'Xóa quy tắc này?',
-                content: 'Xóa mềm (is_deleted). Chỉ xóa được quy tắc chưa gắn dịch vụ áp dụng; ngừng áp dụng hãy dùng "Sửa" và tắt "Đang dùng".',
-                okText: 'Xóa',
-                okButtonProps: { danger: true },
-                cancelText: 'Hủy',
-                onOk: () => remove(row),
-              })
-            }
-          }}
-        />
-      ),
+      render: (_v, row) => renderActions(row),
     },
   ] as TableColumnsType<DiscountRule>).filter((column) =>
     column.key === 'actions' || visibleColumns.includes(column.key as DiscountColumnKey),
@@ -262,6 +324,7 @@ export default function DiscountRules() {
               left={
                 <>
                   <ListFilterPopover
+                    trigger={<Button icon={<FilterOutlined />} className="keep-label">Bộ lọc</Button>}
                     open={filterOpen}
                     onOpenChange={setFilterOpen}
                     activeFilterCount={0}
@@ -285,7 +348,7 @@ export default function DiscountRules() {
               }
               right={
                 <Can I="CREATE" a="DISCOUNT">
-                  <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor()}>Thêm quy tắc</Button>
+                  <Button type="primary" icon={<PlusOutlined />} className="keep-label" onClick={() => openEditor()}>Thêm quy tắc</Button>
                 </Can>
               }
             >
@@ -299,11 +362,12 @@ export default function DiscountRules() {
                 action={<Button size="small" onClick={() => void rulesQuery.refetch()}>Thử lại</Button>}
               />
             )}
-            <Alert
-              type="info" showIcon style={{ marginBottom: 16 }}
+            <InfoBanner
+              className="mb-4"
               title="Nhân viên chỉ được chọn mức giảm trong khoảng của quy tắc. Nếu cần áp dụng ngoài khoảng này, hãy liên hệ quản trị viên để được cấp quyền duyệt ngoại lệ. Khi kết hợp nhiều ưu đãi, gồm ưu đãi theo hạng thẻ, tổng mức giảm không được vượt giới hạn của quy tắc."
             />
             <Table<DiscountRule>
+              className="desktop-only"
               rowKey="id" loading={rulesQuery.isLoading} dataSource={rules} columns={columns}
               scroll={{ x: 1150 }}
               pagination={false}
@@ -311,6 +375,13 @@ export default function DiscountRules() {
                 onClick: () => setDetailRuleId(row.id),
                 style: { cursor: 'pointer' },
               })}
+            />
+            <MobileCards
+              rows={rules}
+              rowKey={(row) => row.id}
+              loading={rulesQuery.isLoading}
+              onCardClick={(row) => setDetailRuleId(row.id)}
+              renderCard={renderMobileCard}
             />
             <ListPagination page={page} limit={10} total={(rulesQuery.data as unknown as { meta?: { total?: number } })?.meta?.total ?? rules.length} onChange={setPage} noun="quyết định giảm giá" />
             <DiscountDetailModal

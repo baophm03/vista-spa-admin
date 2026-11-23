@@ -71,7 +71,8 @@ export default function RedeemModal({
 
   return (
     <Modal
-      title={`Đổi hộ khách: ${redeemTarget?.name ?? ''}`}
+      title={<span className="wrap-anywhere">Đổi hộ khách: {redeemTarget?.name ?? ''}</span>}
+      width="min(520px, calc(100vw - 24px))"
       open={open}
       onCancel={onCancel}
       onOk={onSubmit}
@@ -105,6 +106,7 @@ export default function RedeemModal({
         size="small"
         column={1}
         bordered
+        className="wrap-anywhere"
         style={{ marginBottom: 16 }}
         items={[
           { key: 'cost', label: 'Điểm cần đổi', children: <strong>{formatPoints(cost)} điểm</strong> },

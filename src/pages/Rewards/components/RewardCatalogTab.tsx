@@ -6,7 +6,6 @@ import {
   Input,
   Modal,
   Select,
-  Space,
   Table,
   Tag,
   Typography,
@@ -17,6 +16,7 @@ import { DeleteOutlined, GiftOutlined, PlusOutlined } from '@ant-design/icons'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import ListPagination from '@/components/base/ListPagination'
+import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { Reward } from '@/api/models/reward'
@@ -65,10 +65,11 @@ export default function RewardCatalogTab() {
     q: search || undefined,
     type: typeFilter,
     ...(canUpdate ? {} : { is_active: true }),
-  } as never)
+  } as never, { query: { placeholderData: (previous) => previous } })
   const rawRewards = (pickData<RewardRow[] | undefined>(rewardsQuery.data) ?? []) as RewardRow[]
   const rewards = rawRewards.filter((r) => r.is_active !== false || canUpdate)
   const total = (rewardsQuery.data as unknown as { meta?: { total?: number } })?.meta?.total ?? rewards.length
+  const loading = rewardsQuery.isLoading || rewardsQuery.isPlaceholderData
 
   const vouchersQuery = useQuery({
     queryKey: ['voucher-categories', 'reward-picker'],
@@ -212,6 +213,29 @@ export default function RewardCatalogTab() {
     }
   }
 
+  const validity = (row: RewardRow) => [row.valid_from, row.valid_to]
+    .map((date) => date ? dayjs(String(date)).format('DD/MM/YYYY') : '—').join(' → ')
+  const statusTag = (active?: boolean) => <Tag className="me-0!" color={active ? 'green' : 'default'}>{active ? 'Đang đổi' : 'Đã ẩn'}</Tag>
+  const actions = (row: RewardRow) => [
+    ...(canRedeem && row.is_active ? [{ key: 'redeem', icon: <GiftOutlined />, label: 'Đổi hộ khách' }] : []),
+    ...(canDelete ? [{ key: 'delete', icon: <DeleteOutlined />, danger: true, label: 'Xóa' }] : []),
+  ]
+  const runAction = (row: RewardRow, key: string) => {
+    if (key === 'edit') openEditor(row)
+    if (key === 'redeem') void openRedeem(row)
+    if (key === 'delete') {
+      Modal.confirm({
+        title: 'Xóa quà này?',
+        content: 'Không xóa được quà đã phát sinh lịch sử đổi thưởng.',
+        width: 'min(416px, calc(100vw - 24px))',
+        okText: 'Xóa',
+        okButtonProps: { danger: true },
+        cancelText: 'Hủy',
+        onOk: () => remove(row),
+      })
+    }
+  }
+
   const columns: TableColumnsType<RewardRow> = [
     {
       key: 'name',
@@ -236,64 +260,49 @@ export default function RewardCatalogTab() {
     },
     { key: 'points_cost', title: <span className="whitespace-nowrap">Điểm quy đổi</span>, dataIndex: 'points_cost', width: 130, align: 'right', render: (v: number) => v.toLocaleString('vi-VN') },
     { key: 'remaining', title: 'Còn lại', width: 140, render: (_v, row) => remainingLabel(row) },
-    { key: 'validity', title: 'Thời hạn', width: 200, render: (_v, row) => `${row.valid_from ? dayjs(String(row.valid_from)).format('DD/MM/YYYY') : '—'} → ${row.valid_to ? dayjs(String(row.valid_to)).format('DD/MM/YYYY') : '—'}` },
-    { key: 'is_active', title: 'Trạng thái', dataIndex: 'is_active', width: 100, render: (v: boolean) => (v ? <Tag color="green">Đang đổi</Tag> : <Tag>Đã ẩn</Tag>) },
+    { key: 'validity', title: 'Thời hạn', width: 200, render: (_v, row) => validity(row) },
+    { key: 'is_active', title: 'Trạng thái', dataIndex: 'is_active', width: 100, render: (v: boolean) => statusTag(v) },
     {
       key: 'actions', title: 'Thao tác', align: 'center' as const, width: 110, fixed: 'right' as const,
       render: (_v, row) => (
-        <RowActionsMenu
-          items={[
-            ...(canRedeem && row.is_active ? [{ key: 'redeem', icon: <GiftOutlined />, label: 'Đổi hộ khách' }] : []),
-            ...(canDelete ? [{ key: 'delete', icon: <DeleteOutlined />, danger: true, label: 'Xóa' }] : []),
-          ]}
-          onSelect={(key) => {
-            if (key === 'redeem') void openRedeem(row)
-            else if (key === 'delete') {
-              Modal.confirm({
-                title: 'Xóa quà này?',
-                content: 'Xóa mềm (is_deleted). Không xóa được quà đã phát sinh lịch sử đổi thưởng.',
-                okText: 'Xóa',
-                okButtonProps: { danger: true },
-                cancelText: 'Hủy',
-                onOk: () => remove(row),
-              })
-            }
-          }}
-        />
+        <RowActionsMenu items={actions(row)} onSelect={(key) => runAction(row, key)} />
       ),
     },
   ]
 
   return (
     <>
-      <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 16 }} wrap>
-        <Space wrap>
+      <div className="mb-3 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 md:flex md:flex-wrap md:justify-between">
+        <div className="contents md:flex md:gap-2">
         <Input.Search
           allowClear
           value={searchInput}
           onChange={(event) => { setSearchInput(event.target.value); if (!event.target.value) applySearch('') }}
           onSearch={applySearch}
           placeholder="Tìm theo tên quà"
-          className="w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]"
+          aria-label="Tìm theo tên quà"
+          className="col-span-2 w-full! min-w-0 md:w-[260px]!"
         />
         <Select<RewardType>
           allowClear
           value={typeFilter}
           onChange={(value) => { setTypeFilter(value); setPage(1) }}
-          placeholder="Lọc theo loại quà"
+          aria-label="Lọc theo loại quà"
+          placeholder="Loại quà"
           options={Object.entries(TYPE_META).map(([value, meta]) => ({ value: value as RewardType, label: meta.label }))}
-          style={{ width: 200 }}
+          className="w-full min-w-0 md:w-[200px]"
         />
-        </Space>
+        </div>
         <Can I="CREATE" a="REWARD">
           <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor()}>Thêm quà</Button>
         </Can>
-      </Space>
+      </div>
       {rewardsQuery.isError && (
         <Alert className="mb-4" type="error" showIcon message="Không tải được quà tặng" description={errorMessage(rewardsQuery.error)} action={<Button size="small" onClick={() => void rewardsQuery.refetch()}>Thử lại</Button>} />
       )}
       <Table<RewardRow>
-        rowKey="id" loading={rewardsQuery.isLoading} dataSource={rewards}
+        className="desktop-only"
+        rowKey="id" loading={loading} dataSource={rewardsQuery.isPlaceholderData ? [] : rewards}
         onRow={(row) => ({
           onClick: (event) => {
             if (canUpdate && !(event.target as HTMLElement).closest('button, a, input, .ant-dropdown, .ant-switch')) {
@@ -302,10 +311,45 @@ export default function RewardCatalogTab() {
           },
           style: canUpdate ? { cursor: 'pointer' } : undefined,
         })}
-        columns={columns.filter((column) => column.key !== 'actions' || canRedeem || canUpdate)}
+        columns={columns.filter((column) => column.key !== 'actions' || canRedeem || canDelete)}
         scroll={{ x: 950 }}
         pagination={false}
       />
+      {(!rewardsQuery.isError || rewards.length > 0) && (
+        <MobileCards
+          rows={rewards}
+          rowKey={(row) => row.id}
+          loading={loading}
+          emptyText={search || typeFilter ? 'Không có kết quả' : 'Chưa có quà tặng'}
+          renderCard={(row) => {
+            const options = [
+              ...(canUpdate ? [{ value: 'edit', label: 'Sửa quà' }] : []),
+              ...actions(row).map(({ key, label }) => ({ value: key, label })),
+            ]
+            return (
+              <>
+                <div className="mobile-card-head items-start!">
+                  <div className="mobile-card-title min-w-0">{row.name}</div>
+                  {statusTag(row.is_active)}
+                </div>
+                {row.description && <p className="mobile-card-sub mt-0 mb-2">{row.description}</p>}
+                <div className="mobile-card-rows">
+                  <MobileCardRow label="Loại quà" value={row.type === 'BENEFIT' ? 'Quyền lợi' : TYPE_META[row.type as RewardType]?.label ?? row.type ?? '—'} />
+                  {row.type === 'VOUCHER' && row.voucher && <MobileCardRow label="Voucher" value={row.voucher.title} />}
+                  <MobileCardRow label="Điểm quy đổi" value={<strong className="text-(--brand-primary) tabular-nums">{row.points_cost.toLocaleString('vi-VN')}</strong>} />
+                  <MobileCardRow label="Còn lại" value={remainingLabel(row)} />
+                  <MobileCardRow label="Thời hạn" value={row.valid_from || row.valid_to ? validity(row) : '—'} />
+                </div>
+                {options.length > 0 && <div className="mobile-card-actions">
+                  <Select<string | null> aria-label={`Thao tác cho ${row.name}`} className="w-32" placeholder="Thao tác" value={null} showSearch={false}
+                    styles={{ placeholder: { color: 'var(--brand-primary)' } }}
+                    options={options} popupMatchSelectWidth={false} onSelect={(key) => { if (key) runAction(row, key) }} />
+                </div>}
+              </>
+            )
+          }}
+        />
+      )}
       <ListPagination page={page} limit={limit} total={total} onChange={setPage} noun="quà" />
 
       <RewardModal

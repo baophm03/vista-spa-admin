@@ -6,8 +6,6 @@ import CustomFieldFormItems from '@/components/CustomFieldFormItems'
 import ServiceImageField from '@/components/ServiceImageField'
 import type { Branch } from '@/api/models'
 
-const labelStyle = { fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#8A8D93', fontWeight: 600 }
-
 type ServiceRow = Service & { service_category?: { id?: string; name?: string } }
 type ServiceCategoryRow = ServiceCategory & { parent?: { id?: string; name?: string } }
 
@@ -54,41 +52,41 @@ export default function ServiceModal({
         <Form.Item name="title" label="Tên dịch vụ" rules={[{ required: true, message: 'Nhập tên dịch vụ' }]}>
           <Input maxLength={255} placeholder="VD: Chăm sóc da cơ bản" />
         </Form.Item>
-        <Row gutter={16}>
-          <Col span={8}>
+        <Row gutter={{ xs: 12, md: 16 }}>
+          <Col xs={24} md={8}>
             <Form.Item name="category_id" label="Danh mục">
               <Select allowClear placeholder="Chọn danh mục" options={categoryOptions(categories, null, 0, undefined, editing?.category_id ?? undefined)} />
             </Form.Item>
           </Col>
-          <Col span={8}>
-            <Form.Item name="duration_minutes" label="Thời lượng (phút)" rules={[{ type: 'number', min: 1, message: 'Thời lượng phải lớn hơn 0' }]}>
-              <InputNumber min={1} style={{ width: '100%' }} placeholder="Để trống dùng mặc định 60 phút" />
+          <Col xs={12} md={8}>
+            <Form.Item name="duration_minutes" label="Thời lượng" rules={[{ type: 'number', min: 1, message: 'Thời lượng phải lớn hơn 0' }]}>
+              <InputNumber min={1} suffix="phút" style={{ width: '100%' }} placeholder="60" />
             </Form.Item>
           </Col>
-          <Col span={8}>
-            <Form.Item name="required_points" label="Điểm đổi dịch vụ" rules={[{ type: 'number', min: 0, message: 'Điểm đổi không được âm' }]}>
+          <Col xs={12} md={8}>
+            <Form.Item name="required_points" label="Điểm đổi" rules={[{ type: 'number', min: 0, message: 'Điểm đổi không được âm' }]}>
               <InputNumber min={0} style={{ width: '100%' }} />
             </Form.Item>
           </Col>
         </Row>
-        <Row gutter={16}>
-          <Col span={8}>
+        <Row gutter={{ xs: 12, md: 16 }}>
+          <Col xs={12} md={8}>
             <Form.Item name="price" label="Giá niêm yết" rules={[{ type: 'number', min: 0, message: 'Giá không được âm' }]}>
               <InputNumber min={0} step={1000} suffix={currencySymbol} style={{ width: '100%' }} />
             </Form.Item>
           </Col>
-          <Col span={8}>
+          <Col xs={12} md={8}>
             <Form.Item name="price_max" label="Giá tối đa" rules={[{ type: 'number', min: 0, message: 'Giá không được âm' }]}>
               <InputNumber min={0} step={1000} suffix={currencySymbol} style={{ width: '100%' }} />
             </Form.Item>
           </Col>
-          <Col span={8}>
+          <Col xs={24} md={8}>
             <Form.Item name="price_unit" label="Đơn vị giá">
               <Select allowClear options={[{ value: 'SESSION', label: 'Theo buổi' }, { value: 'PER_LESION', label: 'Theo nốt' }]} />
             </Form.Item>
           </Col>
         </Row>
-         <Form.Item name="branch_id" label={<span style={labelStyle}>Cơ sở</span>}>
+        <Form.Item name="branch_id" label="Cơ sở">
           <Select
             allowClear
             showSearch

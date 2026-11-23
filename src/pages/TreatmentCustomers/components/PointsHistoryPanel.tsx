@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import dayjs from 'dayjs'
-import { Empty, Statistic, Table, Typography } from 'antd'
+import { Empty, Statistic, Typography } from 'antd'
+import ResponsiveTable from '@/components/base/ResponsiveTable'
 import ListPagination from '@/components/base/ListPagination'
 import { paginateRows } from '@/utils/listTable'
 import { pickData } from '@/api/helpers'
@@ -29,7 +30,7 @@ export default function PointsHistoryPanel({ profileId }: { profileId: string })
         <Empty description="Chưa có biến động điểm nào" />
       ) : (
         <>
-          <Table
+          <ResponsiveTable
             rowKey={(r) => String(r.id ?? r.trans_code ?? r.trans_date)}
             size="small"
             dataSource={paginateRows(rows, pointPage, 8)}

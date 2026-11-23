@@ -48,7 +48,7 @@ export default function RewardModal({
   return (
     <Modal
       title={editing ? 'Sửa quà' : 'Thêm quà'}
-      width={800}
+      width="min(800px, calc(100vw - 24px))"
       open={open}
       onCancel={onCancel}
       onOk={onSubmit}
@@ -60,13 +60,13 @@ export default function RewardModal({
         <Form.Item name="name" label="Tên quà" rules={[{ required: true, message: 'Nhập tên quà' }]}>
           <Input maxLength={255} placeholder="VD: Nước tẩy trang Kahanna" />
         </Form.Item>
-        <div style={{ display: 'flex', gap: 16, width: '100%' }}>
-          <Form.Item name="type" label="Loại" rules={[{ required: true }]} style={{ width: 180, flex: '0 0 180px' }}>
+        <div className="grid grid-cols-1 gap-x-4 md:grid-cols-[minmax(0,180px)_minmax(0,200px)_minmax(0,1fr)]">
+          <Form.Item name="type" label="Loại" rules={[{ required: true }]}>
             <Select options={Object.entries(TYPE_META).map(([value, meta]) => ({ value, label: meta.label }))} />
           </Form.Item>
           {selectedType === 'VOUCHER' && (
             <>
-              <Form.Item name="voucher_kind" label="Nhóm voucher" rules={[{ required: true, message: 'Chọn nhóm voucher' }]} style={{ width: 200, flex: '0 0 200px' }}>
+              <Form.Item name="voucher_kind" label="Nhóm voucher" rules={[{ required: true, message: 'Chọn nhóm voucher' }]}>
                 <Select
                   placeholder="Chọn nhóm"
                   options={voucherKinds}
@@ -77,7 +77,6 @@ export default function RewardModal({
                 name="voucher_reference"
                 label="Loại Voucher"
                 rules={[{ required: true, message: 'Chọn voucher sẽ cấp' }]}
-                style={{ flex: '1 1 0', minWidth: 0 }}
                 extra="Chỉ chọn được voucher đang trong thời gian hiệu lực."
               >
                 <Select
@@ -86,12 +85,13 @@ export default function RewardModal({
                   placeholder={selectedVoucherKind ? 'Chọn voucher' : 'Trước tiên chọn nhóm voucher'}
                   disabled={!selectedVoucherKind}
                   options={selectedVouchers}
+                  optionRender={(option) => <div className="whitespace-normal wrap-anywhere">{option.label}</div>}
                 />
               </Form.Item>
             </>
           )}
         </div>
-        <div style={{ display: 'flex', gap: 16, width: '100%' }}>
+        <div className="grid grid-cols-2 gap-x-3 md:grid-cols-4 md:gap-x-4">
           <Form.Item name="points_cost" label="Điểm quy đổi" rules={[{ required: true }, { type: 'number', min: 1, message: 'Tối thiểu 1 điểm' }]} style={{ flex: 1, minWidth: 0 }}>
             <InputNumber min={1} precision={0} style={{ width: '100%' }} />
           </Form.Item>

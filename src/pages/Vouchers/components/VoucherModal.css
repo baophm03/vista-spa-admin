@@ -34,3 +34,39 @@
   align-items: center;
   min-height: 32px;
 }
+
+@media (max-width: 767px) {
+  .voucher-editor-modal .ant-modal-container {
+    padding: 16px;
+  }
+
+  .voucher-editor-modal .ant-modal-body {
+    overscroll-behavior: contain;
+  }
+
+  .voucher-editor-modal .ant-modal-footer {
+    margin-top: 0;
+    padding-top: 12px;
+    border-top: 1px solid var(--brand-border-soft);
+  }
+
+  .voucher-editor-modal .voucher-form .ant-row {
+    display: block;
+    margin-inline: 0 !important;
+  }
+
+  .voucher-editor-modal .voucher-form .ant-row > .ant-col {
+    width: 100%;
+    max-width: 100% !important;
+    padding-inline: 0 !important;
+  }
+
+  .voucher-editor-modal .voucher-form .ant-form-item-label {
+    padding-block-end: 4px;
+  }
+
+  .voucher-editor-modal .voucher-form .ant-form-item-label > label {
+    height: auto;
+    white-space: normal;
+  }
+}

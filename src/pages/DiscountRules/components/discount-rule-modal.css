@@ -1,0 +1,64 @@
+.discount-rule-form {
+  margin-top: 12px;
+}
+
+.discount-rule-form .ant-space {
+  display: flex;
+}
+
+@media (max-width: 767px) {
+  .discount-rule-modal .ant-modal-container {
+    padding: 16px;
+  }
+
+  .discount-rule-modal .ant-modal-body {
+    overscroll-behavior: contain;
+  }
+
+  .discount-rule-modal .ant-modal-footer {
+    margin-top: 0;
+    padding-top: 12px;
+    border-top: 1px solid var(--brand-border-soft);
+  }
+
+  .discount-rule-modal .discount-rule-form .ant-form-item-row,
+  .discount-rule-modal .discount-rule-form .discount-rule-targets {
+    display: block;
+    margin-inline: 0 !important;
+  }
+
+  .discount-rule-modal .discount-rule-form :is(.ant-form-item-row, .discount-rule-targets) > .ant-col {
+    width: 100%;
+    max-width: 100% !important;
+    padding-inline: 0 !important;
+  }
+
+  .discount-rule-form .ant-form-item {
+    min-width: 0;
+    margin-bottom: 12px;
+  }
+
+  .discount-rule-form .ant-form-item-label {
+    padding-block-end: 4px;
+  }
+
+  .discount-rule-form .ant-form-item-label > label {
+    white-space: normal;
+    height: auto;
+  }
+
+  .discount-rule-form .ant-select {
+    width: 100%;
+  }
+
+  .discount-rule-form :is(.discount-rule-percentages, .discount-rule-switches) {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 12px;
+    row-gap: 0;
+  }
+
+  .discount-rule-form .discount-rule-percentages > .ant-space-item:last-child {
+    grid-column: 1 / -1;
+  }
+}

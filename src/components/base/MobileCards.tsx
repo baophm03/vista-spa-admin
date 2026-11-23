@@ -90,7 +90,11 @@ export default function MobileCards<T>({
           className="mobile-card"
           key={rowKey(row, index)}
           style={onCardClick ? { cursor: 'pointer' } : undefined}
-          onClick={onCardClick ? () => onCardClick(row) : undefined}
+          onClick={onCardClick ? (event) => {
+            const target = event.target as HTMLElement
+            if (target.closest('button, a, input, textarea, select, [role="button"], [role="combobox"], .ant-select, .ant-switch, .ant-dropdown')) return
+            onCardClick(row)
+          } : undefined}
         >
           {renderCard(row, index)}
         </div>

@@ -1,6 +1,7 @@
+import ResponsiveTable from '@/components/base/ResponsiveTable'
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Alert, Button, Form, Input, Modal, Select, Space, Table, Tag, Typography, message } from 'antd'
+import { Alert, Button, Form, Input, Modal, Select, Space, Tag, Typography, message } from 'antd'
 import type { TableColumnsType } from 'antd'
 import dayjs from 'dayjs'
 import { CheckOutlined, CloseOutlined, DeleteOutlined, EditOutlined, PlusOutlined, StopOutlined } from '@ant-design/icons'
@@ -378,7 +379,7 @@ export default function CommissionEntriesPanel() {
         <Alert className="mb-4" type="warning" showIcon message={`Có ${pendingCount} bản ghi hoa hồng chờ duyệt (tổng ${formatVnd(pendingSum)}).`} />
       )}
 
-      <Table<EntryRow>
+      <ResponsiveTable<EntryRow>
         rowKey="id" loading={entriesQuery.isLoading} dataSource={rows} columns={columns}
         scroll={{ x: 1300 }}
         pagination={false}
