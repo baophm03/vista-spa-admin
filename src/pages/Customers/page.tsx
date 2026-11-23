@@ -10,7 +10,6 @@ import ListFilterPopover from '@/components/base/ListFilterPopover'
 import ListPagination from '@/components/base/ListPagination'
 import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
-import CustomerCodeHistoryModal from '@/components/CustomerCodeHistoryModal'
 import LinkCustomerAccountModal from './components/LinkCustomerAccountModal'
 import { normalizeCustomerCustomFields, type CustomFieldDefWithOptions } from './components/CustomerProfileCustomFields'
 import type { CustomerProfileRow, CustomerProfileSummary } from './components/CustomerProfileOverviewTab'
@@ -83,7 +82,6 @@ export default function Customers() {
   const [qrLookupLoading, setQrLookupLoading] = useState(false)
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<CustomerProfileRow | null>(null)
-  const [historyOpen, setHistoryOpen] = useState(false)
   const [linkOpen, setLinkOpen] = useState(false)
   const [ranks, setRanks] = useState<CardRank[]>([])
   const [profileFieldDefs, setProfileFieldDefs] = useState<CustomFieldDefWithOptions[]>([])
@@ -658,7 +656,6 @@ export default function Customers() {
         onPrintQr={printQr}
         onResetQr={() => void resetQr()}
         onLink={() => setLinkOpen(true)}
-        onHistory={() => setHistoryOpen(true)}
         onMembershipUpdated={refreshSelected}
       />
 
@@ -684,11 +681,6 @@ export default function Customers() {
         profile={selected}
         onCancel={() => setLinkOpen(false)}
         onLinked={refreshSelected}
-      />
-      <CustomerCodeHistoryModal
-        open={historyOpen}
-        profileId={selected?.id}
-        onClose={() => setHistoryOpen(false)}
       />
     </>
   )

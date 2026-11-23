@@ -123,7 +123,12 @@ export default function CustomerProfileOverviewTab({ profile, summary, fieldDefi
         loading={!summary}
       >
         <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
-          <CustomerRankCard rankName={rankName} achievedAt={membership?.rank_achieved_at} expiresAt={membership?.rank_expires_at} />
+          <CustomerRankCard
+            rankName={rankName}
+            imageFile={(rankRows.find((rank) => rank.id === membership?.card_rank_id) as any)?.image_file ?? null}
+            achievedAt={membership?.rank_achieved_at}
+            expiresAt={membership?.rank_expires_at}
+          />
           <div className="min-w-[min(100%,18rem)] flex-1">
             <Descriptions size="small" layout="vertical" colon={false} column={{ xs: 1, sm: 2, lg: 2 }}>
               <Descriptions.Item label="Chi tiêu trong năm">{money(membership?.year_spent ?? 0)}</Descriptions.Item>

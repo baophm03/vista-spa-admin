@@ -42,7 +42,9 @@ import type {
   InternalErrorResponse,
   LegacyBadRequestResponse,
   LegacyUnauthorizedResponse,
+  PostVouchersIdClaimApp200,
   PostVouchersIdRedeemApp200,
+  PostVouchersIdRedeemAppBody,
   PostVouchersMarkUsedAdminBody,
   PostVouchersRevokeAdminBody,
   PutVouchersBulkAdminBody,
@@ -386,12 +388,15 @@ export const useDeleteVouchersIdAdmin = <TError = LegacyBadRequestResponse | Leg
  */
 export const postVouchersIdRedeemApp = (
     id: string,
+    postVouchersIdRedeemAppBody?: PostVouchersIdRedeemAppBody,
  signal?: AbortSignal
 ) => {
       
       
       return customInstance<PostVouchersIdRedeemApp200>(
-      {url: `/vouchers/${id}/redeem/app`, method: 'POST', signal
+      {url: `/vouchers/${id}/redeem/app`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: postVouchersIdRedeemAppBody, signal
     },
       );
     }
@@ -399,8 +404,8 @@ export const postVouchersIdRedeemApp = (
 
 
 export const getPostVouchersIdRedeemAppMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postVouchersIdRedeemApp>>, TError,{id: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postVouchersIdRedeemApp>>, TError,{id: string}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postVouchersIdRedeemApp>>, TError,{id: string;data: PostVouchersIdRedeemAppBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postVouchersIdRedeemApp>>, TError,{id: string;data: PostVouchersIdRedeemAppBody}, TContext> => {
 
 const mutationKey = ['postVouchersIdRedeemApp'];
 const {mutation: mutationOptions} = options ?
@@ -412,10 +417,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postVouchersIdRedeemApp>>, {id: string}> = (props) => {
-          const {id} = props ?? {};
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postVouchersIdRedeemApp>>, {id: string;data: PostVouchersIdRedeemAppBody}> = (props) => {
+          const {id,data} = props ?? {};
 
-          return  postVouchersIdRedeemApp(id,)
+          return  postVouchersIdRedeemApp(id,data,)
         }
 
         
@@ -424,22 +429,85 @@ const {mutation: mutationOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type PostVouchersIdRedeemAppMutationResult = NonNullable<Awaited<ReturnType<typeof postVouchersIdRedeemApp>>>
-    
+    export type PostVouchersIdRedeemAppMutationBody = PostVouchersIdRedeemAppBody
     export type PostVouchersIdRedeemAppMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
  * @summary Redeem a voucher for self (miniapp)
  */
 export const usePostVouchersIdRedeemApp = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postVouchersIdRedeemApp>>, TError,{id: string}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postVouchersIdRedeemApp>>, TError,{id: string;data: PostVouchersIdRedeemAppBody}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof postVouchersIdRedeemApp>>,
+        TError,
+        {id: string;data: PostVouchersIdRedeemAppBody},
+        TContext
+      > => {
+
+      const mutationOptions = getPostVouchersIdRedeemAppMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * **VO-05A** — POST /vouchers/{id}/claim/app. Khách tự đổi/nhận voucher từ catalog miniapp cho chính tài khoản — mirror flow gán voucher của admin: voucher có `points_cost > 0` sẽ trừ điểm thưởng, tạo bản ghi ACTIVE trong bảng `*_voucher_customer`. Chỉ cần đăng nhập (API miniapp — dữ liệu luôn của chính tài khoản).
+ * @summary Claim a voucher for self (miniapp)
+ */
+export const postVouchersIdClaimApp = (
+    id: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<PostVouchersIdClaimApp200>(
+      {url: `/vouchers/${id}/claim/app`, method: 'POST', signal
+    },
+      );
+    }
+  
+
+
+export const getPostVouchersIdClaimAppMutationOptions = <TError = UnauthorizedResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postVouchersIdClaimApp>>, TError,{id: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postVouchersIdClaimApp>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['postVouchersIdClaimApp'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postVouchersIdClaimApp>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  postVouchersIdClaimApp(id,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostVouchersIdClaimAppMutationResult = NonNullable<Awaited<ReturnType<typeof postVouchersIdClaimApp>>>
+    
+    export type PostVouchersIdClaimAppMutationError = UnauthorizedResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+
+    /**
+ * @summary Claim a voucher for self (miniapp)
+ */
+export const usePostVouchersIdClaimApp = <TError = UnauthorizedResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postVouchersIdClaimApp>>, TError,{id: string}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postVouchersIdClaimApp>>,
         TError,
         {id: string},
         TContext
       > => {
 
-      const mutationOptions = getPostVouchersIdRedeemAppMutationOptions(options);
+      const mutationOptions = getPostVouchersIdClaimAppMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

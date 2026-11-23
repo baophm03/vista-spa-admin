@@ -1,4 +1,4 @@
-import { getRankCardArt } from '@/utils/rankCardArt'
+import { fileSrc } from '@/hooks/useFileUrl'
 import { displayName } from '@/utils/displayName'
 import { useRef, useState } from 'react'
 import { Alert, Button, Col, Form, Input, Modal, Row, Select, Skeleton, Space, Table, Tabs, Tag, Typography, message } from 'antd'
@@ -127,6 +127,7 @@ export default function Points() {
           code: row.code,
           name: row.name,
           color: row.color ?? undefined,
+          image_file_id: row.image_file_id ?? undefined,
           sort_order: row.sort_order ?? 0,
           min_spent: row.min_spent ?? 0,
           max_spent: row.max_spent ?? undefined,
@@ -135,7 +136,7 @@ export default function Points() {
           auto_assign: row.auto_assign ?? false,
           benefits: row.benefits ?? '',
         }
-        : { code: '', name: '', color: undefined, sort_order: (ranks.length ? Math.max(...ranks.map((r) => r.sort_order ?? 0)) : 0) + 1, min_spent: 0, max_spent: undefined, discount_percent: undefined, validity: 'PERMANENT', auto_assign: false, benefits: '' },
+        : { code: '', name: '', color: undefined, image_file_id: undefined, sort_order: (ranks.length ? Math.max(...ranks.map((r) => r.sort_order ?? 0)) : 0) + 1, min_spent: 0, max_spent: undefined, discount_percent: undefined, validity: 'PERMANENT', auto_assign: false, benefits: '' },
     )
     setRankModalOpen(true)
   }
@@ -146,6 +147,7 @@ export default function Points() {
       const dto = {
         name: values.name,
         color: values.color || null,
+        image_file_id: values.image_file_id || null,
         sort_order: values.sort_order ?? 0,
         min_spent: values.min_spent ?? 0,
         max_spent: values.max_spent ?? undefined,
@@ -369,7 +371,8 @@ export default function Points() {
             </Col>
           ))}
           {ranks.map((r, index) => {
-            const front = getRankCardArt(r.name)
+            // Ảnh thẻ admin upload (card_rank.image_file); không có ảnh → card màu theo theme
+            const front = fileSrc((r as any).image_file)
             const fallback = RANK_THEMES[index % RANK_THEMES.length]
             const theme = r.color ? rankThemeFromColor(r.color, fallback) : fallback
             const RankIcon = theme.icon
@@ -422,8 +425,8 @@ export default function Points() {
                   </div>
                   {front && (
                     <img
-                      src={import.meta.env.BASE_URL + 'rank-cards/' + front + '.png'}
-                      alt={'Mặt trước thẻ ' + r.name}
+                      src={front}
+                      alt={'Ảnh thẻ ' + r.name}
                       loading="lazy"
                       className="mb-2 block h-auto w-full object-contain"
                     />
