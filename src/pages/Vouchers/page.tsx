@@ -75,10 +75,12 @@ function toRows(payload: unknown): VoucherCategoryRow[] {
 function toTargets(payload: unknown, collectionKeys: string[]) {
   const data = pickData<any>(payload)
   const list = Array.isArray(data) ? data : collectionKeys.map((key) => data?.[key]).find(Array.isArray) ?? []
-  return (list as any[]).map((item) => ({
-    value: String(item.id),
-    label: String(item.name ?? item.title ?? item.package_name ?? item.course_name ?? 'Chưa có tên'),
-  }))
+  return (list as any[]).map((item) => {
+    const name = String(item.name ?? item.title ?? item.package_name ?? item.course_name ?? 'Chưa có tên')
+    // Voucher liệu trình dùng chung cho dịch vụ lẻ — đánh dấu để phân biệt khi chọn gói áp dụng
+    const isSingle = String(item.package_type?.code ?? '').toUpperCase() === 'SINGLE_SESSION'
+    return { value: String(item.id), label: isSingle ? `${name} (Dịch vụ lẻ)` : name }
+  })
 }
 
 async function loadTargets(category: VoucherCategory) {
@@ -479,7 +481,7 @@ export default function Vouchers() {
   const isMobile = !Grid.useBreakpoint().md
   return (
     <>
-      <PageTitle subtitle="Mỗi loại voucher được quản lý riêng theo gói liệu trình, khóa học hoặc sản phẩm">Voucher</PageTitle>
+      <PageTitle subtitle="Mỗi loại voucher được quản lý riêng theo liệu trình & dịch vụ lẻ, khóa học hoặc sản phẩm">Voucher</PageTitle>
       <Tabs
         className="voucher-tabs"
         activeKey={activeTab}

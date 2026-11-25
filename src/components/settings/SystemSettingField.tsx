@@ -6,6 +6,7 @@ import type { LookupItem } from '@/api/models/lookupItem'
 import type { LookupList } from '@/api/models/lookupList'
 import { pickData } from '@/api/helpers'
 import { useBrandCurrency } from '@/themeRuntime'
+import CustomerCodeFormatField from './CustomerCodeFormatField'
 
 interface Props {
   setting: SystemSetting
@@ -29,7 +30,7 @@ const DEFAULT_STATUS_COLORS: Record<string, string> = {
   completed: '#52C41A',
 }
 const fieldHelp: Record<string, string> = {
-  'customer_code.format': 'Tiền tố tùy chọn và số thứ tự tự tăng trên toàn hệ thống.',
+  'customer_code.format': 'Định dạng dynamic: tiền tố + token {seq:N}, {yy}, {rank}; số thứ tự tự tăng toàn hệ thống.',
   'customer_code.regen_on_rank_up': 'Tự đổi mã khách khi khách lên hạng.',
   'customer.shared_across_branches': 'Bật để các cơ sở cùng dùng một hồ sơ khách.',
   'rank.metric': 'Tính hạng theo tiền đã trả, giá trị gói hoặc lấy mức cao hơn.',
@@ -107,67 +108,6 @@ const arrayOptions: Record<string, Array<{ value: string; label: string }>> = {
 function enumLabel(settingKey: string, value: unknown) {
   const code = String(value)
   return enumLabels[settingKey]?.[code] ?? code
-}
-
-function CustomerCodeFormatField({ value, disabled, onChange }: {
-  value: unknown
-  disabled?: boolean
-  onChange: (value: unknown) => void
-}) {
-  const rawFormat = typeof value === 'string' ? value : 'KH-{seq:6}'
-  const format = rawFormat
-    .replace(/\{branch\}/g, '')
-    .replace(/[-_:]{2,}/g, '-')
-    .replace(/^[-_:]+/, '')
-  const match = /^(.*?)\{seq(?::(\d+))?\}(.*?)$/.exec(format)
-
-  if (!match) {
-    return (
-      <div className="space-y-2">
-        <Typography.Text type="warning" className="block text-xs!">Mẫu hiện tại có tùy chỉnh nâng cao.</Typography.Text>
-        <Input value={format} disabled={disabled} onChange={(event) => onChange(event.target.value)} />
-      </div>
-    )
-  }
-
-  const [, prefix, rawDigitCount, suffix] = match
-  const digitCount = Math.min(99, Math.max(1, Number(rawDigitCount) || 1))
-  const updateFormat = (nextDigitCount: number) => onChange(`${prefix}{seq:${nextDigitCount}}${suffix}`)
-  const preview = `${prefix}${'1'.padStart(digitCount, '0')}${suffix}`
-
-  return (
-    <div className="space-y-3">
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_6rem]">
-        <label className="min-w-0">
-          <Typography.Text type="secondary" className="mb-1 block text-xs!">Tiền tố mã khách</Typography.Text>
-          <Input
-            value={prefix}
-            disabled={disabled}
-            onChange={(event) => onChange(`${event.target.value}{seq:${digitCount}}${suffix}`)}
-          />
-        </label>
-        <label className="min-w-0">
-          <Typography.Text type="secondary" className="mb-1 block text-xs!">Số chữ số</Typography.Text>
-          <InputNumber
-            className="w-full"
-            style={{ width: '100%', minWidth: '6rem' }}
-            min={1}
-            max={99}
-            precision={0}
-            value={digitCount}
-            disabled={disabled}
-            onChange={(nextDigitCount) => {
-              if (typeof nextDigitCount === 'number') updateFormat(nextDigitCount)
-            }}
-          />
-        </label>
-      </div>
-      <div className="flex flex-wrap items-center gap-2 rounded-lg bg-[var(--brand-bg)] px-3 py-2">
-        <Typography.Text type="secondary">Ví dụ mã khách:</Typography.Text>
-        <Typography.Text code strong>{preview}</Typography.Text>
-      </div>
-    </div>
-  )
 }
 
 function PrimitiveField({ schema, value, disabled, onChange, settingKey }: {
