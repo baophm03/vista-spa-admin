@@ -60,7 +60,9 @@ import {
 import type { Branch } from '@/api/models'
 import { useGetBranchesAdmin } from '@/api/endpoints/branches'
 
-export default function TreatmentCustomers() {
+/** kind=PACKAGE: trang Liệu trình KH (3 loại gói) · kind=SINGLE: trang Dịch vụ lẻ KH (/standalone-service-customers) */
+export default function TreatmentCustomers({ kind = 'PACKAGE' }: { kind?: 'SINGLE' | 'PACKAGE' }) {
+  const isSingle = kind === 'SINGLE'
   const { format: formatMoney, symbol: currencySymbol } = useBrandCurrency()
   const queryClient = useQueryClient()
   const { isAdmin, isReceptionist } = useCustomerProfileAccess()
@@ -116,12 +118,13 @@ export default function TreatmentCustomers() {
   const [promoRow, setPromoRow] = useState<CustomerTreatment | null>(null)
   const [redeemForm] = Form.useForm()
   const [paymentLookupError, setPaymentLookupError] = useState('')
-const branchesQuery = useGetBranchesAdmin()
-const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as Branch[], [branchesQuery.data])
+  const branchesQuery = useGetBranchesAdmin()
+  const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as Branch[], [branchesQuery.data])
 
   const treatmentsQuery = useGetTreatmentCustomersAdmin({
     page,
     limit,
+    kind,
     ...(filter !== 'all' ? { status: filter } : {}),
     ...(pkgFilter ? { package_id: pkgFilter } : {}),
     ...(branchFilter ? { branch_id: branchFilter } : {}),
@@ -133,7 +136,7 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
 
   const profilesQuery = useGetUsersCustomersAdmin({ page: 1, limit: 200 })
   const profiles = (pickData<ProfileRow[] | undefined>(profilesQuery.data) ?? []) as ProfileRow[]
-  const packagesQuery = useGetTreatmentPackagesAdmin({ page: 1, limit: 200, is_active: true })
+  const packagesQuery = useGetTreatmentPackagesAdmin({ page: 1, limit: 200, is_active: true, kind })
   const packages = (pickData<TreatmentPackage[] | undefined>(packagesQuery.data) ?? []) as TreatmentPackage[]
   const selectedSalePackageId = Form.useWatch('package_id', createForm)
   const selectedSalePackage = packages.find((pkg) => pkg.id === selectedSalePackageId)
@@ -324,12 +327,13 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
       const values = await createForm.validateFields()
       const dto = {
         ...values,
-        sessions_bonus: values.sessions_bonus != null ? Number(values.sessions_bonus) : undefined,
+        kind,
+        sessions_bonus: !isSingle && values.sessions_bonus != null ? Number(values.sessions_bonus) : undefined,
         expires_at: values.expires_at ? (values.expires_at as Dayjs).format('YYYY-MM-DD') : undefined,
         custom_fields: normalizeCustomFieldValues(customerTreatmentCustomFields, values.custom_fields ?? {}),
       }
       await createMutation.mutateAsync({ data: dto as never })
-      message.success('Đã thêm khách vào liệu trình')
+      message.success(isSingle ? 'Đã thêm khách dịch vụ lẻ' : 'Đã thêm khách vào liệu trình')
       setCreateOpen(false)
       refresh()
     } catch (err) {
@@ -751,7 +755,7 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
       onClear={clearFilters}
       filterItems={(
         <>
-          <Form.Item name="package_id" label="Gói liệu trình" className="mb-2.5!">
+          <Form.Item name="package_id" label={isSingle ? 'Dịch vụ lẻ' : 'Gói liệu trình'} className="mb-2.5!">
             <Select
               allowClear
               showSearch
@@ -805,59 +809,59 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
       <MobileStatCards items={statItems} loading={treatmentsQuery.isLoading} />
 
       <PageTitle
-        subtitle="Khách hàng đang thực hiện liệu trình"
+        subtitle={isSingle ? 'Khách hàng đăng ký dịch vụ lẻ' : 'Khách hàng đang thực hiện dịch vụ'}
         left={
           !isMobile ? (
-          <>
-            <Input.Search
-              allowClear
-              placeholder="Tìm tên hoặc SĐT khách hàng"
-              className="w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]"
-              value={searchInput}
-              onChange={(event) => { setSearchInput(event.target.value); if (!event.target.value) applySearch('') }}
-              onSearch={(v) => applySearch(v)}
-            />
-            <Select
-              allowClear
-              showSearch
-              optionFilterProp="label"
-              placeholder="Tất cả liệu trình"
-              style={{ minWidth: 160 }}
-              value={pkgFilter}
-              onChange={(value) => { setPkgFilter(value); setPage(1) }}
-              options={packages.map((pkg) => ({ value: pkg.id, label: pkg.name }))}
-            />
-            <Select
-              placeholder="Trạng thái"
-              style={{ width: 150 }}
-              value={filter}
-              onChange={(value) => { setFilter(value); setPage(1) }}
-              options={FILTERS}
-            />
-            <Select
-              allowClear
-              showSearch
-              optionFilterProp="label"
-              placeholder="Tất cả cơ sở"
-              style={{ width: 160 }}
-              value={branchFilter}
-              onChange={(value) => { setBranchFilter(value); setPage(1) }}
-              options={branches.map((branch) => ({ value: branch.id, label: branch.name }))}
-            />
-          </>
+            <>
+              <Input.Search
+                allowClear
+                placeholder="Tìm tên hoặc SĐT khách hàng"
+                className="w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]"
+                value={searchInput}
+                onChange={(event) => { setSearchInput(event.target.value); if (!event.target.value) applySearch('') }}
+                onSearch={(v) => applySearch(v)}
+              />
+              <Select
+                allowClear
+                showSearch
+                optionFilterProp="label"
+                placeholder={isSingle ? 'Tất cả dịch vụ lẻ' : 'Tất cả liệu trình'}
+                style={{ minWidth: 160 }}
+                value={pkgFilter}
+                onChange={(value) => { setPkgFilter(value); setPage(1) }}
+                options={packages.map((pkg) => ({ value: pkg.id, label: pkg.name }))}
+              />
+              <Select
+                placeholder="Trạng thái"
+                style={{ width: 150 }}
+                value={filter}
+                onChange={(value) => { setFilter(value); setPage(1) }}
+                options={FILTERS}
+              />
+              <Select
+                allowClear
+                showSearch
+                optionFilterProp="label"
+                placeholder="Tất cả cơ sở"
+                style={{ width: 160 }}
+                value={branchFilter}
+                onChange={(value) => { setBranchFilter(value); setPage(1) }}
+                options={branches.map((branch) => ({ value: branch.id, label: branch.name }))}
+              />
+            </>
           ) : undefined
         }
         right={
           !isMobile ? (
-          <Can I="UPDATE" a="CUSTOMER">
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => openCreateModal()}>
-              Thêm khách vào liệu trình
-            </Button>
-          </Can>
+            <Can I="UPDATE" a="CUSTOMER">
+              <Button type="primary" icon={<PlusOutlined />} onClick={() => openCreateModal()}>
+                {isSingle ? 'Thêm khách dịch vụ lẻ' : 'Thêm khách vào liệu trình'}
+              </Button>
+            </Can>
           ) : undefined
         }
       >
-        Liệu trình khách hàng
+        {isSingle ? 'Dịch vụ lẻ khách hàng' : 'Liệu trình khách hàng'}
       </PageTitle>
       {/* Toolbar mobile gộp 1 hàng: search co giãn + nút lọc icon + nút thêm */}
       {isMobile && (
@@ -906,7 +910,7 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
           <Can I="UPDATE" a="CUSTOMER">
             <button
               type="button"
-              aria-label="Thêm khách vào liệu trình"
+              aria-label={isSingle ? 'Thêm khách dịch vụ lẻ' : 'Thêm khách vào liệu trình'}
               style={{ ...mobilePillStyle, flex: '0 0 44px', background: 'var(--brand-primary)', borderColor: 'var(--brand-primary)', color: '#fff' }}
               onClick={() => openCreateModal()}
             >
@@ -925,7 +929,7 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
         onRow={(row) => ({ onClick: () => openDetail(row), style: { cursor: 'pointer' } })}
         columns={[
           {
-            title: 'Mã gói',
+            title: isSingle ? 'Mã' : 'Mã gói',
             key: 'package_code',
             width: 200,
             render: (_: unknown, row: CustomerTreatment) => (
@@ -995,13 +999,13 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
               </div>
             ),
           },
-          {
+          ...(isSingle ? [] : [{
             title: 'Hạn sử dụng',
             key: 'expiry',
             width: 120,
             render: (_: unknown, row: CustomerTreatment) =>
               row.expires_at ? dayjs(row.expires_at).format('DD/MM/YYYY') : 'Không hạn',
-          },
+          }]),
           {
             title: 'Trạng thái',
             key: 'status',
@@ -1016,7 +1020,7 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
         rowKey={(row) => row.id}
         onCardClick={(row) => openDetail(row)}
         loading={treatmentsQuery.isLoading}
-        emptyText="Chưa có khách nào trong liệu trình"
+        emptyText={isSingle ? 'Chưa có khách dịch vụ lẻ' : 'Chưa có khách nào trong liệu trình'}
         renderCard={(row) => {
           const usage = row.quota_type === 'SESSIONS' ? sessionUsage(row) : null
           return (
@@ -1076,6 +1080,7 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
         onPackageChange={onCreatePackageChange}
         onCancel={() => setCreateOpen(false)}
         onOk={() => void submitCreate()}
+        isSingle={isSingle}
       />
 
       <TreatmentAddSessionModal

@@ -59,8 +59,8 @@ export const menuItems: MenuItem[] = [
     children: [
       { key: '/customers', icon: createElement(TeamOutlined), label: 'Danh sách khách', permission: { action: 'READ', subject: 'CUSTOMER' } },
       { key: '/appointments', icon: createElement(CalendarOutlined), label: 'Lịch hẹn', permission: { action: 'READ', subject: 'APPOINTMENT' } },
+      { key: '/standalone-service-customers', icon: createElement(SolutionOutlined), label: 'Dịch vụ lẻ KH', permission: { action: 'READ', subject: 'TREATMENT_PACKAGE' } },
       { key: '/treatment-customers', icon: createElement(SolutionOutlined), label: 'Liệu trình KH', permission: { action: 'READ', subject: 'TREATMENT_PACKAGE' } },
-      { key: '/service-customers', icon: createElement(ShoppingOutlined), label: 'Dịch vụ KH', permission: { action: 'READ', subject: 'SERVICE_CUSTOMER' } },
       { key: '/my-sessions', icon: createElement(ExperimentOutlined), label: 'Buổi của tôi', permission: { action: 'READ', subject: 'TREATMENT_SESSION' }, ktvOnly: true },
       { key: '/health-records', icon: createElement(FileTextOutlined), label: 'Sổ sức khỏe', permission: { action: 'READ', subject: 'HEALTH_RECORD' }, hideForKtv: true },
       {
@@ -80,7 +80,8 @@ export const menuItems: MenuItem[] = [
     label: 'Kinh doanh',
     icon: null,
     children: [
-      { key: '/services', icon: createElement(ShoppingOutlined), label: 'Dịch vụ lẻ', permission: { action: 'READ', subject: 'SERVICE' } },
+      { key: '/services', icon: createElement(ShoppingOutlined), label: 'Dịch vụ', permission: { action: 'READ', subject: 'SERVICE' } },
+      { key: '/standalone-services', icon: createElement(ShoppingOutlined), label: 'Dịch vụ lẻ', permission: { action: 'READ', subject: 'TREATMENT_PACKAGE' } },
       { key: '/treatments', icon: createElement(ExperimentOutlined), label: 'Gói liệu trình', permission: { action: 'READ', subject: 'TREATMENT_PACKAGE' } },
       { key: '/payments', icon: createElement(AccountBookOutlined), label: 'Lịch sử thanh toán', permission: { action: 'READ', subject: 'PAYMENT' } },
       { key: '/products', icon: createElement(ShoppingOutlined), label: 'Sản phẩm', hideForKtv: true },
@@ -178,7 +179,7 @@ export function hasPagePermission(
   return perms.some((p) => ability.can(p.action as never, p.subject))
 }
 
-function findPageEntry(pathname: string): MenuLeaf | undefined {
+function findExactPageEntry(pathname: string): MenuLeaf | undefined {
   for (const entry of menuItems) {
     if ('children' in entry) {
       const child = (entry.children ?? []).find((item) => item.key === pathname)
@@ -188,6 +189,21 @@ function findPageEntry(pathname: string): MenuLeaf | undefined {
     }
   }
   return undefined
+}
+
+/** Key menu ứng với pathname: khớp chính xác, hoặc trang con (vd /services/categories/:id → /services). */
+export function resolveMenuKey(pathname: string): string {
+  if (findExactPageEntry(pathname)) return pathname
+  const segments = pathname.split('/').filter(Boolean)
+  for (let length = segments.length - 1; length > 0; length -= 1) {
+    const candidate = `/${segments.slice(0, length).join('/')}`
+    if (findExactPageEntry(candidate)) return candidate
+  }
+  return pathname
+}
+
+function findPageEntry(pathname: string): MenuLeaf | undefined {
+  return findExactPageEntry(resolveMenuKey(pathname))
 }
 
 export function getPagePermission(pathname: string): PagePermission[] | null {
@@ -201,8 +217,9 @@ export function canAccessPage(pathname: string, roles: string[] = [], isAdmin = 
 }
 
 export function getPageTitle(pathname: string) {
+  const menuKey = resolveMenuKey(pathname)
   const item = menuItems
     .flatMap((entry) => ('children' in entry ? (entry.children ?? []) : []))
-    .find((entry) => entry.key === pathname)
+    .find((entry) => entry.key === menuKey)
   return item?.label ?? 'Dashboard'
 }

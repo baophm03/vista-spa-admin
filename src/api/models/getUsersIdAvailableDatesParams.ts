@@ -10,4 +10,8 @@ export type GetUsersIdAvailableDatesParams = {
 branch_id: string;
 from: string;
 to: string;
+/**
+ * @minimum 1
+ */
+duration_minutes?: number;
 };

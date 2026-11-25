@@ -26,6 +26,8 @@ interface TreatmentCreateModalProps {
   onPackageChange: (id: string) => void
   onCancel: () => void
   onOk: () => void
+  /** SINGLE = bán Dịch vụ lẻ (1 buổi, không buổi tặng / hạn) */
+  isSingle?: boolean
 }
 
 export default function TreatmentCreateModal({
@@ -43,7 +45,9 @@ export default function TreatmentCreateModal({
   onPackageChange,
   onCancel,
   onOk,
+  isSingle = false,
 }: TreatmentCreateModalProps) {
+  const itemLabel = isSingle ? 'Dịch vụ lẻ' : 'Liệu trình'
   // Người giới thiệu — nhận hoa hồng "Khi phát sinh thanh toán". Search server-side
   // theo tên / SĐT / email / mã giới thiệu (debounce 300ms).
   const [referrerQuery, setReferrerQuery] = useState('')
@@ -86,7 +90,7 @@ export default function TreatmentCreateModal({
 
   return (
     <Modal
-      title="Thêm khách vào liệu trình"
+      title={isSingle ? 'Thêm khách dịch vụ lẻ' : 'Thêm khách vào liệu trình'}
       open={open}
       onCancel={onCancel}
       onOk={onOk}
@@ -104,17 +108,20 @@ export default function TreatmentCreateModal({
             options={customerOptions.map((c) => ({ value: c.id, label: `${displayName(c)} — ${c.phone}` }))}
           />
         </Form.Item>
-        <Form.Item name="package_id" label="Liệu trình" rules={[{ required: true, message: 'Chọn liệu trình' }]}>
+        <Form.Item name="package_id" label={itemLabel} rules={[{ required: true, message: `Chọn ${itemLabel.toLowerCase()}` }]}>
           <Select
             showSearch
             optionFilterProp="label"
-            placeholder="Chọn liệu trình"
+            placeholder={`Chọn ${itemLabel.toLowerCase()}`}
             loading={packagesLoading}
+            notFoundContent={isSingle ? 'Chưa có dịch vụ lẻ — tạo ở trang “Dịch vụ lẻ” (Kinh doanh)' : undefined}
             onChange={onPackageChange}
             options={packages.filter((p) => p.is_active).map((p) => ({
               value: p.id,
-              // (Loại gói · Gói dịch vụ) — loại gói suy từ quota_type (Gói lẻ = theo tiền, Gói buổi, Trọn đời)
-              label: `${p.name} (${QUOTA_LABEL[p.quota_type ?? ''] ?? p.quota_type}${p.package_service?.title ? ` · ${p.package_service.title}` : ''})`,
+              // (Loại gói · Dịch vụ) — loại gói suy từ quota_type (Gói lẻ = theo tiền, Gói buổi, Trọn đời)
+              label: isSingle
+                ? `${p.name}${p.service?.title ? ` · ${p.service.title}` : ''}`
+                : `${p.name} (${QUOTA_LABEL[p.quota_type ?? ''] ?? p.quota_type}${p.service?.title ? ` · ${p.service.title}` : ''})`,
             }))}
           />
         </Form.Item>
@@ -150,7 +157,7 @@ export default function TreatmentCreateModal({
             const listMin = Number(selectedSalePackage?.list_price ?? 0)
             const listMax = Math.max(listMin, Number(selectedSalePackage?.list_price_max ?? listMin))
             const listNote = !selectedSalePackage
-              ? 'Chọn liệu trình để xem giá niêm yết gói.'
+              ? `Chọn ${itemLabel.toLowerCase()} để xem giá niêm yết.`
               : listMin > 0
                 ? `Giá niêm yết gói: ${listMin.toLocaleString('vi-VN')}${listMax > listMin ? `–${listMax.toLocaleString('vi-VN')}` : ''} ₫`
                 : 'Gói này chưa có giá niêm yết — nhập số tiền bán.'
@@ -161,12 +168,19 @@ export default function TreatmentCreateModal({
         >
           <InputNumber min={0} step={100000} suffix={currencySymbol} className="w-full!" />
         </Form.Item>
-        <Form.Item name="sessions_bonus" label="Buổi tặng" extra="Bỏ trống để sử dụng cấu hình mặc định">
-          <InputNumber min={0} precision={0} className="w-full!" />
-        </Form.Item>
-        <Form.Item name="expires_at" label="Hạn sử dụng" extra="Để trống nếu gói không giới hạn thời gian">
-          <DatePicker className="w-full!" />
-        </Form.Item>
+        {!isSingle && (
+          <>
+            {/* Buổi tặng chỉ áp dụng cho Gói buổi (SESSIONS) */}
+            {selectedSalePackage?.quota_type === 'SESSIONS' && (
+              <Form.Item name="sessions_bonus" label="Buổi tặng" extra="Bỏ trống để sử dụng cấu hình mặc định">
+                <InputNumber min={0} precision={0} className="w-full!" />
+              </Form.Item>
+            )}
+            <Form.Item name="expires_at" label="Hạn sử dụng" extra="Để trống nếu gói không giới hạn thời gian">
+              <DatePicker className="w-full!" />
+            </Form.Item>
+          </>
+        )}
         <CustomFieldFormItems definitions={customFieldDefs} />
       </Form>
     </Modal>

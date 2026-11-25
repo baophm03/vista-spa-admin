@@ -74,7 +74,8 @@ export default function TreatmentAddSessionModal({
                 disabled={!scheduledDate || slotsLoading}
                 loading={slotsLoading}
                 placeholder={scheduledDate ? 'Chọn giờ còn trống' : 'Chọn ngày trước'}
-                options={slots.map((slot) => ({ value: slot.start_time.slice(0, 5), label: slot.start_time.slice(0, 5) }))}
+                // end_time = giờ bắt đầu + thời lượng dịch vụ của gói (BE tính)
+                options={slots.map((slot) => ({ value: slot.start_time.slice(0, 5), label: slot.end_time ? `${slot.start_time.slice(0, 5)} – ${slot.end_time.slice(0, 5)}` : slot.start_time.slice(0, 5) }))}
                 onChange={() => form.setFieldsValue({ staff_id: undefined })}
                 allowClear
               />

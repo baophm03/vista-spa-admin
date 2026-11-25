@@ -19,7 +19,7 @@ import type { CustomerTreatmentReferrerId } from './customerTreatmentReferrerId'
 import type { CustomerTreatmentReferrer } from './customerTreatmentReferrer';
 import type { CustomerTreatmentNote } from './customerTreatmentNote';
 import type { CustomerTreatmentCustomFields } from './customerTreatmentCustomFields';
-import type { CustomerTreatmentPackageService } from './customerTreatmentPackageService';
+import type { CustomerTreatmentService } from './customerTreatmentService';
 
 /**
  * Purchased treatment package for a customer
@@ -69,8 +69,15 @@ export interface CustomerTreatment {
   referrer?: CustomerTreatmentReferrer;
   note?: CustomerTreatmentNote;
   custom_fields?: CustomerTreatmentCustomFields;
-  /** Gói dịch vụ của liệu trình (từ package_snapshot) */
-  package_service?: CustomerTreatmentPackageService;
+  /** Dịch vụ của liệu trình (từ package_snapshot.service) */
+  service?: CustomerTreatmentService;
+  /**
+   * Chi tiết: số buổi chưa hoàn tất (scheduled / in_progress / done)
+   * @minimum 0
+   */
+  pending_sessions?: number;
+  /** Chi tiết: còn tạo thêm buổi được không (đã tính cả buổi chưa hoàn tất; Dịch vụ lẻ chỉ 1 buổi) */
+  can_add_session?: boolean;
   created_at?: string;
   updated_at?: string;
 }

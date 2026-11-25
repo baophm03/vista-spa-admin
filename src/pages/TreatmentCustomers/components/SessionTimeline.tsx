@@ -551,7 +551,7 @@ export default function SessionTimeline({
                   disabled={!!editOpen?.appointment_id || editOpen?.status !== 'scheduled' || !selectedSessionDate || sessionSlotsLoading}
                   loading={sessionSlotsLoading}
                   placeholder={selectedSessionDate ? 'Chọn giờ còn trống' : 'Chọn ngày trước'}
-                  options={sessionSlots.map((slot) => ({ value: slot.start_time.slice(0, 5), label: slot.start_time.slice(0, 5) }))}
+                  options={sessionSlots.map((slot) => ({ value: slot.start_time.slice(0, 5), label: slot.end_time ? `${slot.start_time.slice(0, 5)} – ${slot.end_time.slice(0, 5)}` : slot.start_time.slice(0, 5) }))}
                   onChange={(time) => {
                     scheduleEditTouchedRef.current = true
                     const slot = sessionSlots.find((candidate) => candidate.start_time.slice(0, 5) === time)

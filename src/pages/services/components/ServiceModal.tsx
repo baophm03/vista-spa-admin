@@ -1,13 +1,12 @@
 import { Col, Form, Input, InputNumber, Modal, Row, Select, Space } from 'antd'
 import type { FormInstance } from 'antd'
 import type { Service } from '@/api/models/service'
-import type { ServiceCategory } from '@/api/models/serviceCategory'
 import CustomFieldFormItems from '@/components/CustomFieldFormItems'
 import ServiceImageField from '@/components/ServiceImageField'
 import type { Branch } from '@/api/models'
+import { categoryOptions, type ServiceCategoryRow } from './serviceTypes'
 
 type ServiceRow = Service & { service_category?: { id?: string; name?: string } }
-type ServiceCategoryRow = ServiceCategory & { parent?: { id?: string; name?: string } }
 
 interface ServiceModalProps {
   open: boolean
@@ -18,7 +17,6 @@ interface ServiceModalProps {
   currencySymbol: string
   saving: boolean
   branches: Branch[]
-  categoryOptions: (categories: ServiceCategoryRow[], parentId?: string | null, depth?: number, skipId?: string, includeInactiveId?: string) => { value: string; label: string }[]
   onCancel: () => void
   onSubmit: () => void
 }
@@ -32,13 +30,12 @@ export default function ServiceModal({
   currencySymbol,
   saving,
   branches,
-  categoryOptions,
   onCancel,
   onSubmit,
 }: ServiceModalProps) {
   return (
     <Modal
-      title={editing ? 'Sửa dịch vụ lẻ' : 'Thêm dịch vụ lẻ'}
+      title={editing ? 'Sửa dịch vụ' : 'Thêm dịch vụ'}
       open={open}
       onCancel={onCancel}
       onOk={onSubmit}
@@ -55,7 +52,7 @@ export default function ServiceModal({
         <Row gutter={{ xs: 12, md: 16 }}>
           <Col xs={24} md={8}>
             <Form.Item name="category_id" label="Danh mục">
-              <Select allowClear placeholder="Chọn danh mục" options={categoryOptions(categories, null, 0, undefined, editing?.category_id ?? undefined)} />
+              <Select allowClear placeholder="Chọn danh mục" options={categoryOptions(categories, editing?.category_id ?? undefined)} />
             </Form.Item>
           </Col>
           <Col xs={12} md={8}>

@@ -147,10 +147,10 @@ export default function TreatmentDetailModal({
                   <strong>{bonusRemaining(detail)} buổi</strong>
                 </div>
               )}
-              {detail.package_service?.title && (
+              {detail.service?.title && (
                 <div className="flex justify-between gap-2.5">
-                  <span>Gói dịch vụ</span>
-                  <strong className="text-right">{detail.package_service.title}</strong>
+                  <span>Dịch vụ</span>
+                  <strong className="text-right">{detail.service.title}</strong>
                 </div>
               )}
               {detail.referrer && (
@@ -178,7 +178,8 @@ export default function TreatmentDetailModal({
               </div>
             )}
             <div className={`flex flex-col ${isMobile ? 'mt-2.5 gap-1.5' : 'mt-4 gap-2'}`}>
-              {canCreateSessions && detail.status === 'ACTIVE' && (
+              {/* Hết hạn mức (tính cả buổi chưa hoàn tất) thì không cho tạo thêm — huỷ/xoá buổi chưa làm mới tạo lại được */}
+              {canCreateSessions && detail.status === 'ACTIVE' && detail.can_add_session !== false && (
                 <Button block disabled={addingSessionId !== null} loading={addingSessionId === detail.id} onClick={() => onAddSession(detail)}>
                   +1 buổi
                 </Button>

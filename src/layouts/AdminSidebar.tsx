@@ -1,5 +1,5 @@
 import { Drawer, Layout, Menu, type MenuProps } from 'antd'
-import { getProfileRoleNames, hasPagePermission, menuItems, type MenuItem } from './sidebarMenu'
+import { getProfileRoleNames, hasPagePermission, menuItems, resolveMenuKey, type MenuItem } from './sidebarMenu'
 import { useProfileStore } from '../stores/profile-store'
 import { useBrandRuntime } from '../themeRuntime'
 import links from '@/configs/links'
@@ -83,7 +83,7 @@ function SidebarContent({
           className={`${menuClassName} ${collapsed ? '[&_.ant-menu-item-group-title]:hidden!' : expandedMenuAlign}`}
           items={filteredMenuItems as MenuProps['items']}
           mode="inline"
-          selectedKeys={[pathname]}
+          selectedKeys={[resolveMenuKey(pathname)]}
           onClick={({ key }) => onNavigate(key)}
         />
       </div>

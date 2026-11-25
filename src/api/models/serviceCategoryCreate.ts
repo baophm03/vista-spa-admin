@@ -11,7 +11,6 @@
  */
 export interface ServiceCategoryCreate {
   name: string;
-  parent_id?: string;
   sort_order?: number;
   image_file_id?: string;
   is_active?: boolean;

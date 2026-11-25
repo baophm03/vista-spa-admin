@@ -8,5 +8,8 @@
 
 export type GetServiceCategoriesAdminParams = {
 is_active?: boolean;
-parent_id?: string;
+q?: string;
+page?: number;
+limit?: number;
+with_summary?: boolean;
 };

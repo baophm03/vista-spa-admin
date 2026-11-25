@@ -1,9 +1,9 @@
-import { Col, Modal, Row, Tag, Typography } from 'antd'
+import { Col, Modal, Row, Typography } from 'antd'
 import type { Branch } from '@/api/models'
 import type { ServiceCategory } from '@/api/models/serviceCategory'
 import { fileSrc, resolveFileSrc } from '@/hooks/useFileUrl'
 
-const labelStyle = { fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#8A8D93', fontWeight: 600 } as const
+const labelStyle = { fontSize: 13, color: '#8A8D93' } as const
 
 /** ServiceRow khớp với kiểu ở page (Service + include của BE) */
 export interface ServiceDetailRow {
@@ -47,7 +47,7 @@ export default function ServiceDetailModal({ service, onClose, categories, branc
 
   return (
     <Modal
-      title={service.title || 'Chi tiết dịch vụ lẻ'}
+      title={service.title || 'Chi tiết dịch vụ'}
       open
       onCancel={onClose}
       footer={null}
@@ -67,16 +67,13 @@ export default function ServiceDetailModal({ service, onClose, categories, branc
           )}
         </Col>
         <Col xs={24} sm={15}>
-          <div style={{ marginBottom: 8 }}>
-            {service.is_active === false ? <Tag>Đã ẩn</Tag> : <Tag color="green">Đang hiển thị</Tag>}
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '90px 1fr', rowGap: 10, fontSize: 13 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '90px 1fr', alignItems: 'center', rowGap: 10, fontSize: 13 }}>
             <span style={labelStyle}>Danh mục</span>
             <span>{categoryName}</span>
             <span style={labelStyle}>Cơ sở</span>
             <span>{branchName}</span>
             <span style={labelStyle}>Giá</span>
-            <span style={{ fontWeight: 600 }}>{priceRange}</span>
+            <span>{priceRange}</span>
             <span style={labelStyle}>Thời lượng</span>
             <span>{service.duration_minutes ? `${service.duration_minutes} phút` : 'Theo cấu hình'}</span>
             <span style={labelStyle}>Điểm đổi</span>

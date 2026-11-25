@@ -12,8 +12,9 @@ import type { TreatmentPackageTerms } from './treatmentPackageTerms';
 import type { TreatmentPackageQuotaType } from './treatmentPackageQuotaType';
 import type { TreatmentPackageListPriceMax } from './treatmentPackageListPriceMax';
 import type { TreatmentPackageValidityUnit } from './treatmentPackageValidityUnit';
-import type { TreatmentPackagePackageServiceId } from './treatmentPackagePackageServiceId';
-import type { TreatmentPackagePackageService } from './treatmentPackagePackageService';
+import type { TreatmentPackageServiceId } from './treatmentPackageServiceId';
+import type { TreatmentPackageService } from './treatmentPackageService';
+import type { TreatmentPackagePackageType } from './treatmentPackagePackageType';
 import type { TreatmentPackageCustomFields } from './treatmentPackageCustomFields';
 
 /**
@@ -41,9 +42,10 @@ export interface TreatmentPackage {
   validity_unit?: TreatmentPackageValidityUnit;
   /** @minimum 0 */
   bonus_sessions_default?: number;
-  /** Gói dịch vụ áp dụng (bắt buộc khi tạo gói) */
-  package_service_id?: TreatmentPackagePackageServiceId;
-  package_service?: TreatmentPackagePackageService;
+  /** Dịch vụ áp dụng (bắt buộc khi tạo gói) */
+  service_id?: TreatmentPackageServiceId;
+  service?: TreatmentPackageService;
+  package_type?: TreatmentPackagePackageType;
   is_active?: boolean;
   custom_fields?: TreatmentPackageCustomFields;
   created_at?: string;

@@ -20,29 +20,47 @@ export interface TreatmentPackageRow extends TreatmentPackage {
 }
 
 /**
- * 3 loại gói cố định — loại gói quyết định cách tính (BE tự suy ra quota_type, client không gửi):
- * - VALUE_QUOTA       "Gói lẻ"   → theo số tiền (định mức = giá bán, mỗi buổi trừ giá trị buổi)
- * - FIXED_PACKAGE     "Gói buổi" → theo số buổi (nhập số buổi >= 1)
- * - UNLIMITED_PACKAGE "Trọn đời" → theo số buổi, không giới hạn
+ * 4 loại gói cố định — loại gói quyết định cách tính (BE tự suy ra quota_type, client không gửi):
+ * - VALUE_QUOTA       "Gói lẻ"     → theo số tiền (định mức = giá bán, mỗi buổi trừ giá trị buổi)
+ * - FIXED_PACKAGE     "Gói buổi"   → theo số buổi (nhập số buổi >= 1)
+ * - UNLIMITED_PACKAGE "Trọn đời"   → theo số buổi, không giới hạn
+ * - SINGLE_SESSION    "Dịch vụ lẻ" → cố định 1 buổi; chỉ quản lý / bán ở trang Dịch vụ lẻ (kind=SINGLE)
  */
 export const VALUE_QUOTA_TYPE_CODE = 'VALUE_QUOTA'
 export const FIXED_PACKAGE_TYPE_CODE = 'FIXED_PACKAGE'
 export const UNLIMITED_PACKAGE_TYPE_CODE = 'UNLIMITED_PACKAGE'
+export const SINGLE_SESSION_TYPE_CODE = 'SINGLE_SESSION'
 export const PACKAGE_TYPE_CODES = [VALUE_QUOTA_TYPE_CODE, FIXED_PACKAGE_TYPE_CODE, UNLIMITED_PACKAGE_TYPE_CODE]
 export const PACKAGE_TYPE_LABEL: Record<string, string> = {
   [VALUE_QUOTA_TYPE_CODE]: 'Gói lẻ',
   [FIXED_PACKAGE_TYPE_CODE]: 'Gói buổi',
   [UNLIMITED_PACKAGE_TYPE_CODE]: 'Trọn đời',
+  [SINGLE_SESSION_TYPE_CODE]: 'Dịch vụ lẻ',
 }
 export const PACKAGE_TYPE_QUOTA: Record<string, QuotaType> = {
   [VALUE_QUOTA_TYPE_CODE]: 'VALUE',
   [FIXED_PACKAGE_TYPE_CODE]: 'SESSIONS',
   [UNLIMITED_PACKAGE_TYPE_CODE]: 'UNLIMITED',
+  [SINGLE_SESSION_TYPE_CODE]: 'SESSIONS',
 }
 export const PACKAGE_TYPE_HINT: Record<string, string> = {
   [VALUE_QUOTA_TYPE_CODE]: 'Theo số tiền',
   [FIXED_PACKAGE_TYPE_CODE]: 'Theo số buổi',
   [UNLIMITED_PACKAGE_TYPE_CODE]: 'Không giới hạn buổi',
+  [SINGLE_SESSION_TYPE_CODE]: '1 buổi',
+}
+
+/** SINGLE = gói Dịch vụ lẻ (tạo ở /standalone-services, bán ở /standalone-service-customers) · PACKAGE = 3 loại gói liệu trình */
+export type PackageKind = 'SINGLE' | 'PACKAGE'
+
+export interface ServiceOption {
+  id: string
+  title: string
+  price?: number | null
+  branch_id?: string | null
+  is_active?: boolean
+  category_id?: string | null
+  service_category?: { id?: string; name?: string; sort_order?: number } | null
 }
 
 /** Nhãn loại gói của 1 gói: ưu tiên tên loại từ API, fallback nhãn cố định theo code / quota_type (dữ liệu cũ). */

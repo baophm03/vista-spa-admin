@@ -88,7 +88,7 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * **GET /users/{id}/available-dates** — Public, không cần đăng nhập. Dùng cho luồng đặt lịch của khách ('chọn KTV trước'): trả về các ngày (YYYY-MM-DD) trong [from, to] mà KTV có ca làm việc hoạt động tại chi nhánh, trừ ngày nghỉ cả ngày đã duyệt. Khoảng thời gian được kẹp trong [hôm nay, hôm nay + booking.customer_horizon_days]. Query parameters: `branch_id` (required), `from`, `to` (YYYY-MM-DD, required).
+ * **GET /users/{id}/available-dates** — Public, không cần đăng nhập. Dùng cho luồng đặt lịch của khách ('chọn KTV trước'): trả về các ngày (YYYY-MM-DD) trong [from, to] mà KTV có ca làm việc hoạt động tại chi nhánh, trừ ngày nghỉ cả ngày đã duyệt. Khoảng thời gian được kẹp trong [hôm nay, hôm nay + booking.customer_horizon_days]. Query parameters: `branch_id` (required), `from`, `to` (YYYY-MM-DD, required), `duration_minutes` (tuỳ chọn — chỉ giữ ngày KTV còn khoảng trống đủ dài, đã trừ lịch hẹn / buổi điều trị).
  * @summary Dates a technician is scheduled to work (public)
  */
 export const getUsersIdAvailableDates = (

@@ -573,7 +573,7 @@ export const useDeleteServiceCategoriesIdAdmin = <TError = UnauthorizedResponse 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/service-categories/admin` — service categories. Cần đăng nhập + `service.view_all`. Query parameters: `is_active`, `parent_id`.
+ * GET `/service-categories/admin` — service categories. Cần đăng nhập + `service.view_all`. Query parameters: `is_active`, `q`, `page`, `limit`, `with_summary`. Danh mục chỉ 1 cấp. `with_summary=true`: mỗi danh mục kèm `summary` (số dịch vụ, khoảng giá, 4 dịch vụ mới nhất) và `meta.uncategorized` = summary của dịch vụ chưa có danh mục.
  * @summary Get list of service categories (management)
  */
 export const getServiceCategoriesAdmin = (

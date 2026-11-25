@@ -5,10 +5,12 @@ import Dashboard from './pages/Dashboard/page'
 import Vouchers from './pages/Vouchers/page'
 import VoucherCustomers from './pages/VoucherCustomers/page'
 import Services from './pages/services/page'
+import ServiceCategoryDetail from './pages/services/CategoryDetail'
 import Appointments from './pages/Appointments/page'
 import Treatments from './pages/Treatments/page'
 import TreatmentCustomers from './pages/TreatmentCustomers/page'
-import ServiceCustomers from './pages/ServiceCustomers/page'
+import StandaloneServices from './pages/StandaloneServices/page'
+import StandaloneServiceCustomers from './pages/StandaloneServiceCustomers/page'
 import MySessions from './pages/MySessions/page'
 import Payments from './pages/Payments/page'
 import Users from './pages/Users/page'
@@ -50,12 +52,14 @@ export default function App() {
           <Route path="/vouchers" element={<Vouchers />} />
           <Route path="/voucher-customers" element={<VoucherCustomers />} />
           <Route path="/services" element={<Services />} />
+          <Route path="/services/categories/:id" element={<ServiceCategoryDetail />} />
           <Route path="/appointments" element={<Appointments />} />
           <Route path="/treatments" element={<Treatments />} />
           <Route path="/academy/courses" element={<AcademyCourses />} />
           <Route path="/academy/registrations" element={<AcademyRegistrations />} />
           <Route path="/treatment-customers" element={<TreatmentCustomers />} />
-          <Route path="/service-customers" element={<ServiceCustomers />} />
+          <Route path="/standalone-service-customers" element={<StandaloneServiceCustomers />} />
+          <Route path="/standalone-services" element={<StandaloneServices />} />
           <Route path="/my-sessions" element={<MySessions />} />
           <Route path="/payments" element={<Payments />} />
           <Route path="/users" element={<Users />} />

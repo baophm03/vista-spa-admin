@@ -1832,7 +1832,7 @@ export const prefetchGetTreatmentCustomersAppQuery = async <TData = Awaited<Retu
 
 
 /**
- * **CT-01** — GET /treatment-customers/admin. Cần đăng nhập + `treatment.read_all` (KTV chỉ thấy gói có buổi được phân công; ADM/REC branch-scoped). Query parameters: `page`, `limit`, `branch_id`, `user_id`, `status`, `payment_status`, `has_debt`. Gói của chính tài khoản (miniapp): GET /treatment-customers/app.
+ * **CT-01** — GET /treatment-customers/admin. Cần đăng nhập + `treatment.read_all` (KTV chỉ thấy gói có buổi được phân công; ADM/REC branch-scoped). Query parameters: `page`, `limit`, `branch_id`, `user_id`, `status`, `payment_status`, `has_debt`, `q`, `package_id`, `service_id`, `kind` (SINGLE = Dịch vụ lẻ, PACKAGE = gói liệu trình). Gói của chính tài khoản (miniapp): GET /treatment-customers/app.
  * @summary List customer treatment packages
  */
 export const getTreatmentCustomersAdmin = (
@@ -2027,7 +2027,7 @@ export const prefetchGetTreatmentCustomersAdminQuery = async <TData = Awaited<Re
 
 
 /**
- * **CT-03** — POST /treatment-customers/admin (sell package, +initial_payment). Cần đăng nhập + `treatment.create`. Branch scope: users limited to a single branch only see that branch's data. The request body is passed as-is to the business layer.
+ * **CT-03** — POST /treatment-customers/admin (sell package, +initial_payment). Cần đăng nhập + `treatment.create`. Branch scope: users limited to a single branch only see that branch's data. Body: `user_id`, `package_id`, `branch_id`, `total_amount`, `sessions_bonus`, `expires_at`, `initial_payment`, `kind` (SINGLE|PACKAGE — nếu gửi, gói phải đúng loại). Gói Dịch vụ lẻ: luôn 1 buổi, không buổi tặng/thời hạn.
  * @summary Create a new customer treatment package
  */
 export const postTreatmentCustomersAdmin = (

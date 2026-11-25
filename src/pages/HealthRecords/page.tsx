@@ -155,7 +155,7 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
         setHistory(pickData<CustomerHealthRecord[]>(recordsResult) ?? [])
         setDetailTreatments(pickData<CustomerTreatment[]>(treatmentsResult) ?? [])
         setDetailAppointments((pickData<ServiceHistoryAppointment[]>(appointmentsResult) ?? []).filter((appointment) =>
-          !appointment.customer_treatment_id && ['in_progress', 'completed'].includes(String(appointment.status)),
+          ['in_progress', 'completed'].includes(String(appointment.status)),
         ))
       })
       .catch(() => {
