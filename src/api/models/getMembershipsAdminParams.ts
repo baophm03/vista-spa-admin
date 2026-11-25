@@ -10,5 +10,5 @@ export type GetMembershipsAdminParams = {
 /**
  * Xem hạng/điểm của hồ sơ khách chỉ định (chỉ dành cho scope ALL)
  */
-customer_profile_id?: string;
+user_id?: string;
 };

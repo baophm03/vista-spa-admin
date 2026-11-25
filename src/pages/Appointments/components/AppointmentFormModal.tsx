@@ -68,7 +68,7 @@ export default function AppointmentFormModal({
           />
         </Form.Item>
         <Form.Item
-          name="customer_profile_id"
+          name="user_id"
           label={(<Space size={4}><span>Khách hàng</span></Space>)}
           rules={[{ required: true, message: 'Chọn khách' }]}
         >

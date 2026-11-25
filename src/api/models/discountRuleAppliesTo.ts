@@ -12,6 +12,5 @@ export type DiscountRuleAppliesTo = typeof DiscountRuleAppliesTo[keyof typeof Di
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const DiscountRuleAppliesTo = {
   PACKAGE: 'PACKAGE',
-  SERVICE: 'SERVICE',
   ALL: 'ALL',
 } as const;

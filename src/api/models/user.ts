@@ -5,7 +5,7 @@
  * Vista Spa backend API. Uses the NEWSKY+ business error envelope for permission-aware endpoints and the legacy response envelope for existing admin endpoints.
  * OpenAPI spec version: 1.0.0
  */
-import type { UserPhoneNumber } from './userPhoneNumber';
+import type { UserPhone } from './userPhone';
 import type { UserZaloName } from './userZaloName';
 import type { UserZaloId } from './userZaloId';
 import type { UserZaloAvatar } from './userZaloAvatar';
@@ -27,7 +27,7 @@ import type { Role } from './role';
  */
 export interface User {
   id: string;
-  phone_number?: UserPhoneNumber;
+  phone?: UserPhone;
   zalo_name?: UserZaloName;
   zalo_id?: UserZaloId;
   zalo_avatar?: UserZaloAvatar;

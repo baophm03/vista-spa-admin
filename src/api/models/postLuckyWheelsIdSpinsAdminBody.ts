@@ -7,7 +7,7 @@
  */
 
 export type PostLuckyWheelsIdSpinsAdminBody = {
-  customer_profile_id: string;
+  user_id: string;
   /** @maxLength 100 */
   request_key?: string;
   prize_id?: string;

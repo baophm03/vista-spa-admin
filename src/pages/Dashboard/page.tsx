@@ -31,14 +31,14 @@ import { fillPeriodBuckets } from '@/utils/chartPeriods'
 import { Can } from '@casl/react'
 import { useBrandColors, useBrandCurrency } from '@/themeRuntime'
 import { getReportsAppointmentsAdmin, getReportsDebtsAdmin, getReportsRanksAdmin, getReportsRevenueAdmin } from '@/api/endpoints/reports'
-import { getCustomerProfilesAdmin } from '@/api/endpoints/customer-profiles'
+import { getUsersCustomersAdmin } from '@/api/endpoints/customers'
 import { getAppointmentsAdmin } from '@/api/endpoints/appointments'
 import type { Appointment } from '@/api/models/appointment'
 import ReportsTab from '../ReportsTab/page'
 
-/** BE list include kèm `customer_profile` / `service`. */
+/** BE list include kèm `user` / `service`. */
 type AppointmentRow = Appointment & {
-  customer_profile?: { full_name?: string }
+  user?: { full_name?: string }
   service?: { title?: string }
 }
 
@@ -92,7 +92,7 @@ function Overview({
     const tasks: Promise<unknown>[] = []
     if (canSeeAllReports) {
       tasks.push(
-        getCustomerProfilesAdmin({ page: 1, limit: 1 })
+        getUsersCustomersAdmin({ page: 1, limit: 1 })
           .then((body) => setTotalCustomers(pickMeta(body)?.total ?? 0))
           .catch(() => undefined),
       )
@@ -265,7 +265,7 @@ function Overview({
             columns={[
               {
                 title: 'Khách hàng',
-                render: (_, row: AppointmentRow) => displayName(row.customer_profile),
+                render: (_, row: AppointmentRow) => displayName(row.user),
               },
               { title: 'Dịch vụ', render: (_, row: AppointmentRow) => row.service?.title ?? '—' },
               {
@@ -292,7 +292,7 @@ function Overview({
             <>
               <div className="mobile-card-head">
                 <div>
-                  <div className="mobile-card-title">{displayName(row.customer_profile)}</div>
+                  <div className="mobile-card-title">{displayName(row.user)}</div>
                   <div className="mobile-card-sub">
                     {dayjs(row.appt_date).format('DD/MM/YYYY')} {row.start_time?.slice(0, 5)}
                   </div>

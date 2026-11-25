@@ -51,7 +51,7 @@ import { useAbility } from '@casl/react'
 import { useBrandColors, useBrandCurrency } from '@/themeRuntime'
 import { toCsv, downloadCsv, type CsvColumn } from '@/utils/csv'
 import { getBranchesAdmin } from '@/api/endpoints/branches'
-import { getCustomerProfilesAdmin } from '@/api/endpoints/customer-profiles'
+import { getUsersCustomersAdmin } from '@/api/endpoints/customers'
 import { getUsersAdmin } from '@/api/endpoints/users'
 import { getReportsAppointmentsAdmin, getReportsDebtsAdmin, getReportsNewCustomersAdmin, getReportsRanksAdmin, getReportsRevenueAdmin, getReportsSessionsUsedAdmin } from '@/api/endpoints/reports'
 import type { GetReportsAppointmentsAdminParams } from '@/api/models/getReportsAppointmentsAdminParams'
@@ -165,7 +165,7 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
       to_date: range[1].format('YYYY-MM-DD'),
       group_by: groupBy,
       branch_id: branchId,
-      customer_profile_id: customerProfileId,
+      user_id: customerProfileId,
       staff_id: staffId,
     }),
     [range, groupBy, branchId, customerProfileId, staffId],
@@ -175,7 +175,7 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
     void getBranchesAdmin()
       .then((body) => setBranchOptions(((pickData<any[]>(body) ?? []) as any[]).map((b) => ({ value: b.id, label: b.name }))))
       .catch(() => undefined)
-    void getCustomerProfilesAdmin({ page: 1, limit: 200 })
+    void getUsersCustomersAdmin({ page: 1, limit: 200 })
       .then((body) =>
         setCustomerOptions(
           ((pickData<any[]>(body) ?? []) as any[]).map((c) => ({ value: c.id, label: `${c.full_name || c.zalo_name}${c.phone ? ' — ' + c.phone : ''}` })),
@@ -194,7 +194,7 @@ export default function ReportsTab({ section }: { section: ReportSection }) {
     const settled = (p: Promise<unknown>) => p.catch(() => undefined)
     await Promise.all([
       canReport('report.revenue.read') ? settled(getReportsRevenueAdmin(params as GetReportsRevenueAdminParams).then((body) => setRevenue((pickData<any[]>(body) ?? []) as any[]))) : Promise.resolve(),
-      canReport('report.debt.read') ? settled(getReportsDebtsAdmin({ branch_id: branchId, customer_profile_id: customerProfileId } as GetReportsDebtsAdminParams).then((body) => setDebts((pickData<any[]>(body) ?? []) as any[]))) : Promise.resolve(),
+      canReport('report.debt.read') ? settled(getReportsDebtsAdmin({ branch_id: branchId, user_id: customerProfileId } as GetReportsDebtsAdminParams).then((body) => setDebts((pickData<any[]>(body) ?? []) as any[]))) : Promise.resolve(),
       canReport('report.rank.read') ? settled(getReportsRanksAdmin(params as GetReportsRanksAdminParams).then((body) => setRanks((pickData<any>(body) ?? {}) as { ranks?: any[]; upgrades?: any[] }))) : Promise.resolve(),
       canReport('report.appointment.read') ? settled(getReportsAppointmentsAdmin(params as GetReportsAppointmentsAdminParams).then((body) => setAppointments((pickData<any>(body) ?? {}) as { by_status?: any[]; by_staff?: any[] }))) : Promise.resolve(),
       canReport('report.customer.read') ? settled(getReportsNewCustomersAdmin(params as GetReportsNewCustomersAdminParams).then((body) => setNewCustomers((pickData<any>(body) ?? {}) as { by_period?: any[]; by_source?: any[] }))) : Promise.resolve(),

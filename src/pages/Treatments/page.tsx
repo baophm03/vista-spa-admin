@@ -1,6 +1,6 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { Alert, Button, Image, Form, Input, Modal, Table, Tag, Typography, message } from 'antd'
+import { Alert, Button, Image, Form, Input, Modal, Table, Tabs, Tag, Typography, message } from 'antd'
 import type { TableColumnsType } from 'antd'
 import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, PictureOutlined, PlusOutlined, ShoppingOutlined } from '@ant-design/icons'
 import PageTitle from '@/components/base/PageTitle'
@@ -14,28 +14,22 @@ import useCustomFieldDefinitions from '@/hooks/useCustomFieldDefinitions'
 import { errorMessage, pickData } from '@/api/helpers'
 import { fileSrc, resolveFileSrc, useFileUrlMap } from '@/hooks/useFileUrl'
 import type { Branch } from '@/api/models/branch'
-import type { Service } from '@/api/models/service'
+import type { PackageService } from '@/api/models/packageService'
 import { getGetTreatmentPackagesAdminQueryKey, useDeleteTreatmentPackagesIdAdmin, useGetTreatmentPackagesAdmin, usePostTreatmentPackagesAdmin, usePutTreatmentPackagesIdAdmin } from '@/api/endpoints/treatment-packages'
 import { useGetPackageTypesAdmin } from '@/api/endpoints/package-types'
-import { useGetServiceAdmin } from '@/api/endpoints/services'
+import { useGetPackageServicesAdmin } from '@/api/endpoints/package-services'
 import { useGetBranchesAdmin } from '@/api/endpoints/branches'
 import { useBrandCurrency } from '@/themeRuntime'
 
 import TreatmentPackageModal from './components/TreatmentPackageModal'
 import TreatmentPackageDetailModal from './components/TreatmentPackageDetailModal'
+import PackageServices from './PackageServices'
 import {
-  FIXED_PACKAGE_TYPE_CODES,
-  SINGLE_SESSION_TYPE_CODE,
-  COMBO_TYPE_CODE,
-  FIXED_PACKAGE_TYPE_CODE,
-  VALUE_QUOTA_TYPE_CODE,
-  UNLIMITED_PACKAGE_TYPE_CODE,
+  PACKAGE_TYPE_CODES,
   VALIDITY_LABEL,
-
-  calcLabel,
+  packageTypeLabel,
   priceLabel,
   type PackageTypeRow,
-  type QuotaType,
   type TreatmentPackageRow,
 } from './components/constants'
 import './treatments.css'
@@ -65,7 +59,7 @@ export default function Treatments() {
     ...(packageSearch.trim() ? { q: packageSearch.trim() } : {}),
   } as never)
   const packageTypesQuery = useGetPackageTypesAdmin({ limit: 200 })
-  const servicesQuery = useGetServiceAdmin({ page: 1, limit: 200 })
+  const packageServicesQuery = useGetPackageServicesAdmin({ page: 1, limit: 500 })
   const branchesQuery = useGetBranchesAdmin()
 
   const rows = (pickData<TreatmentPackageRow[]>(packagesQuery.data) ?? []) as TreatmentPackageRow[]
@@ -88,13 +82,14 @@ export default function Treatments() {
     ]
   const packageTypeData = pickData<PackageTypeRow[] | { rows?: PackageTypeRow[] }>(packageTypesQuery.data)
   const packageTypes = (Array.isArray(packageTypeData) ? packageTypeData : packageTypeData?.rows ?? []) as PackageTypeRow[]
-  const packageTypeByCode = new Map(packageTypes.map((type) => [String(type.code).toUpperCase(), type]))
   const packageTypeById = new Map(packageTypes.map((type) => [String(type.id), type]))
-  // GET /service trả { services, total, ... } trong responseData
-  const services = (pickData<{ services?: Service[] }>(servicesQuery.data)?.services ?? []) as Service[]
+  // Loại gói cố định: Gói lẻ / Gói buổi / Trọn đời (SINGLE_SESSION, COMBO đã ngưng)
+  const selectablePackageTypes = packageTypes
+    .filter((type) => PACKAGE_TYPE_CODES.includes(String(type.code).toUpperCase()) && type.is_active !== false)
+    .sort((a, b) => Number(a.sort_order ?? 0) - Number(b.sort_order ?? 0))
+  const packageServices = (pickData<PackageService[]>(packageServicesQuery.data) ?? []) as PackageService[]
   const branches = (pickData<Branch[]>(branchesQuery.data) ?? []) as Branch[]
-  const catalogLoading = packageTypesQuery.isLoading || servicesQuery.isLoading || branchesQuery.isLoading
-  const serviceById = useMemo(() => new Map(services.map((service) => [service.id, service.title])), [services])
+  const catalogLoading = packageTypesQuery.isLoading || packageServicesQuery.isLoading || branchesQuery.isLoading
   const urlMap = useFileUrlMap()
 
   const createPackageMutation = usePostTreatmentPackagesAdmin()
@@ -109,29 +104,22 @@ export default function Treatments() {
     if (catalogLoading) return
     setEditingPackage(row ?? null)
     packageForm.resetFields()
-    const packageTypeId = row?.package_type_id ?? row?.package_type?.id
-    const type = packageTypeId ? packageTypeById.get(String(packageTypeId)) : undefined
-    const typeCode = String(type?.code ?? '').toUpperCase()
-    const isComboRow = typeCode === COMBO_TYPE_CODE
+    const defaultTypeId = selectablePackageTypes.find((type) => String(type.code).toUpperCase() === 'FIXED_PACKAGE')?.id
     packageForm.setFieldsValue(row ? {
       ...row,
-      package_kind: isComboRow ? 'COMBO' : 'LE',
-      combo_services: isComboRow ? (row.services ?? []) : undefined,
-      quota_type: row.quota_type ?? (type && String(type.code).toUpperCase() === UNLIMITED_PACKAGE_TYPE_CODE ? 'UNLIMITED' : 'SESSIONS'),
+      package_type_id: row.package_type_id ?? row.package_type?.id,
+      package_service_id: row.package_service_id ?? undefined,
       has_warranty: !!row.warranty_text,
       list_price: row.list_price ?? 0,
-      service_id: row.service_id ?? undefined,
       custom_fields: row.custom_fields ?? {},
     } : {
       name: '',
-      package_kind: 'LE',
-      quota_type: 'SESSIONS',
+      package_type_id: defaultTypeId,
+      package_service_id: undefined,
       total_sessions: 5,
       has_warranty: false,
       list_price: 0,
       bonus_sessions_default: 0,
-      service_id: undefined,
-      combo_services: [],
       custom_fields: {},
       is_active: true,
     })
@@ -143,99 +131,17 @@ export default function Treatments() {
     setPackageSaving(true)
     try {
       const warrantyText = values.warranty_text?.trim() || null
-      const isCombo = values.package_kind === 'COMBO'
-      // package_type_id: combo → loại COMBO; gói lẻ suy ra từ "Cách tính" + số buổi (4 loại cố định trong DB):
-      // SESSIONS + 1 buổi → SINGLE_SESSION (dịch vụ lẻ); SESSIONS + >= 2 → FIXED_PACKAGE; VALUE → VALUE_QUOTA; UNLIMITED → UNLIMITED_PACKAGE
-      const derivePackageTypeId = (quota: QuotaType, sessions?: number | null) => {
-        const code = quota === 'SESSIONS'
-          ? (Number(sessions) === 1 ? SINGLE_SESSION_TYPE_CODE : FIXED_PACKAGE_TYPE_CODE)
-          : quota === 'VALUE' ? VALUE_QUOTA_TYPE_CODE : UNLIMITED_PACKAGE_TYPE_CODE
-        return packageTypeByCode.get(code)?.id
-      }
-      const editingTypeId = editingPackage ? String(editingPackage.package_type_id ?? editingPackage.package_type?.id ?? '') : ''
-      const editingTypeCode = (editingTypeId ? packageTypeById.get(editingTypeId)?.code : '')?.toUpperCase() ?? ''
-      const packageTypeId = isCombo
-        ? packageTypeByCode.get(COMBO_TYPE_CODE)?.id
-        : editingTypeId && !FIXED_PACKAGE_TYPE_CODES.includes(editingTypeCode) && editingTypeCode !== COMBO_TYPE_CODE
-          ? editingTypeId // gói dữ liệu cũ thuộc loại khác 4 loại cố định — giữ nguyên loại của nó
-          : derivePackageTypeId(values.quota_type as QuotaType, values.total_sessions)
-
-      if (isCombo) {
-        const entries: { service_id: string; qty: number }[] = (values.combo_services ?? [])
-          .filter((entry: { service_id?: string; qty?: number }) => entry?.service_id)
-          .map((entry: { service_id?: string; qty?: number }) => ({ service_id: String(entry.service_id), qty: Number(entry.qty ?? 1) }))
-        if (entries.length < 2) {
-          message.error('Gói combo phải gồm từ 2 dịch vụ trở lên')
-          setPackageSaving(false)
-          return
-        }
-        const ids = new Set(entries.map((entry) => entry.service_id))
-        if (ids.size !== entries.length) {
-          message.error('Gói combo không được trùng dịch vụ')
-          setPackageSaving(false)
-          return
-        }
-        if (entries.some((entry) => !Number.isInteger(entry.qty) || entry.qty <= 0)) {
-          message.error('Số buổi (qty) của mỗi dịch vụ phải là số nguyên dương')
-          setPackageSaving(false)
-          return
-        }
-        const dto = {
-          ...values,
-          name: String(values.name).trim(),
-          is_active: values.is_active !== false,
-          branch_id: values.branch_id || null,
-          package_type_id: packageTypeId,
-          quota_type: 'SESSIONS',
-          services: entries,
-          service_id: null,
-          service_ids: undefined,
-          total_sessions: undefined,
-          total_value: null,
-          has_warranty: undefined,
-          warranty_text: values.has_warranty ? warrantyText : null,
-          convertible_note: values.convertible_note?.trim() || null,
-          terms: values.terms?.trim() || null,
-          description: values.description?.trim() || null,
-          validity_value: values.validity_value ? Number(values.validity_value) : null,
-          validity_unit: values.validity_value ? values.validity_unit : null,
-          bonus_sessions_default: values.bonus_sessions_default != null ? Number(values.bonus_sessions_default) : null,
-          list_price: Number(values.list_price ?? 0),
-          list_price_max: values.list_price_max == null ? null : Number(values.list_price_max),
-          custom_fields: normalizeCustomFieldValues(packageCustomFields, values.custom_fields ?? {}, editingPackage?.custom_fields ?? {}),
-          package_kind: undefined,
-          combo_services: undefined,
-        }
-        if (editingPackage) {
-          await updatePackageMutation.mutateAsync({ id: editingPackage.id, data: dto as never })
-          message.success('Đã cập nhật gói dịch vụ')
-        } else {
-          await createPackageMutation.mutateAsync({ data: dto as never })
-          message.success('Đã tạo gói dịch vụ')
-        }
-        setPackageOpen(false)
-        await reloadPackages()
-        return
-      }
-
-      const quotaType = values.quota_type as QuotaType
+      // quota_type do BE suy ra từ loại gói — FE chỉ gửi package_type_id (+ total_sessions với Gói buổi)
       const dto = {
         ...values,
         name: String(values.name).trim(),
         is_active: values.is_active !== false,
         branch_id: values.branch_id || null,
-        package_type_id: packageTypeId,
-        quota_type: quotaType,
-        total_sessions: quotaType === 'SESSIONS' ? Number(values.total_sessions) : null,
-        total_value: quotaType === 'VALUE' ? Number(values.list_price) : null,
-        service_id: values.service_id || null,
-        service_ids: [],
-        services: undefined,
-        combo_services: undefined,
-        package_kind: undefined,
+        package_type_id: values.package_type_id,
+        package_service_id: values.package_service_id,
+        total_sessions: values.total_sessions != null ? Number(values.total_sessions) : null,
         has_warranty: undefined,
         warranty_text: values.has_warranty ? warrantyText : null,
-        convertible_note: values.convertible_note?.trim() || null,
         terms: values.terms?.trim() || null,
         description: values.description?.trim() || null,
         validity_value: values.validity_value ? Number(values.validity_value) : null,
@@ -247,10 +153,10 @@ export default function Treatments() {
       }
       if (editingPackage) {
         await updatePackageMutation.mutateAsync({ id: editingPackage.id, data: dto as never })
-        message.success('Đã cập nhật gói dịch vụ')
+        message.success('Đã cập nhật gói liệu trình')
       } else {
         await createPackageMutation.mutateAsync({ data: dto as never })
-        message.success('Đã tạo gói dịch vụ')
+        message.success('Đã tạo gói liệu trình')
       }
       setPackageOpen(false)
       await reloadPackages()
@@ -265,7 +171,7 @@ export default function Treatments() {
   const deletePackage = async (row: TreatmentPackageRow) => {
     try {
       await deletePackageMutation.mutateAsync({ id: row.id })
-      message.success('Đã xóa gói dịch vụ')
+      message.success('Đã xóa gói liệu trình')
       await reloadPackages()
     } catch (err) {
       message.error(errorMessage(err))
@@ -274,16 +180,8 @@ export default function Treatments() {
 
   const branchLabel = (id?: string | null) =>
     id ? branches.find((branch) => branch.id === id)?.name ?? '—' : 'Tất cả cơ sở'
-  const servicesLabel = (row: TreatmentPackageRow) => {
-    if (row.services?.length) {
-      return row.services.map(({ service_id, qty = 1 }) => {
-        const title = (service_id && serviceById.get(service_id)) || 'Dịch vụ'
-        return qty > 1 ? `${title} (${qty} buổi)` : title
-      }).join(', ')
-    }
-    const ids = row.service_ids?.length ? row.service_ids : row.service_id ? [row.service_id] : []
-    return ids.length ? ids.map((id) => serviceById.get(id) ?? 'Dịch vụ').join(', ') : '—'
-  }
+  const serviceLabel = (row: TreatmentPackageRow) =>
+    row.package_service?.title ?? <Tag color="orange">Chưa chọn</Tag>
   const validityLabel = (row: TreatmentPackageRow) => row.validity_value && row.validity_unit
     ? `${row.validity_value} ${VALIDITY_LABEL[row.validity_unit] ?? row.validity_unit}`
     : 'Không thời hạn'
@@ -299,7 +197,7 @@ export default function Treatments() {
       onSelect={(key) => {
         if (key === 'edit') openPackageModal(row)
         else if (key === 'delete') Modal.confirm({
-          title: 'Xóa gói dịch vụ này?',
+          title: 'Xóa gói liệu trình này?',
           content: 'Gói đã được sử dụng không thể xóa.',
           okText: 'Xóa',
           okButtonProps: { danger: true },
@@ -337,29 +235,16 @@ export default function Treatments() {
     { title: 'Cơ sở', key: 'branch', dataIndex: 'branch_id', width: '8%', render: branchLabel },
     {
       title: 'Loại gói',
-      key: 'package_kind',
-      dataIndex: 'package_type_id',
-      width: '8%',
-      render: (_value, row) => {
-        // Loại gói theo cấu trúc: COMBO = Gói Combo, còn lại (4 loại cố định + dữ liệu cũ) đều là Gói lẻ
-        const type = row.package_type && typeof row.package_type === 'object'
-          ? row.package_type
-          : packageTypeById.get(String(row.package_type_id))
-        return <Tag color="geekblue">{String(type?.code ?? '').toUpperCase() === 'COMBO' ? 'Gói Combo' : 'Gói lẻ'}</Tag>
-      },
-    },
-    {
-      title: 'Cách tính',
       key: 'type',
       dataIndex: 'package_type_id',
-      width: '11%',
-      render: (_value, row) => <Tag color="purple">{calcLabel(row, packageTypeById)}</Tag>,
+      width: '10%',
+      render: (_value, row) => <Tag color="purple">{packageTypeLabel(row, packageTypeById)}</Tag>,
     },
     {
-      title: 'Dịch vụ',
+      title: 'Dịch vụ áp dụng',
       key: 'services',
       // không set width — cột tự động chiếm phần còn lại của bảng (các width khác phải tổng < 100%)
-      render: (_value, row) => servicesLabel(row),
+      render: (_value, row) => serviceLabel(row),
     },
     { title: 'Giá niêm yết', key: 'price', width: '12%', render: (_value, row) => priceLabel(row, formatMoney) },
     {
@@ -450,8 +335,8 @@ export default function Treatments() {
                   </div>
                   <div className="mobile-card-rows">
                     <MobileCardRow label="Cơ sở" value={branchLabel(row.branch_id)} />
-                    <MobileCardRow label="Loại gói" value={calcLabel(row, packageTypeById)} />
-                    <MobileCardRow label="Dịch vụ" value={servicesLabel(row)} />
+                    <MobileCardRow label="Loại gói" value={packageTypeLabel(row, packageTypeById)} />
+                    <MobileCardRow label="Dịch vụ áp dụng" value={serviceLabel(row)} />
                     <MobileCardRow label="Giá niêm yết" value={priceLabel(row, formatMoney)} />
                     <MobileCardRow label="Thời hạn" value={validityLabel(row)} />
                   </div>
@@ -470,17 +355,23 @@ export default function Treatments() {
 
   return (
     <div className="treatments-page">
-      <PageTitle subtitle="Danh sách các gói liệu trình đang có trong hệ thống.">
-        Liệu trình
+      <PageTitle subtitle="Gói liệu trình và danh mục gói dịch vụ áp dụng cho gói.">
+        Gói liệu trình
       </PageTitle>
       <StatCards items={statItems} />
-      {packagesContent}
+      <Tabs
+        items={[
+          { key: 'packages', label: 'Gói liệu trình', children: packagesContent },
+          { key: 'package-services', label: 'Gói dịch vụ', children: <PackageServices branches={branches} canManage={canManage} /> },
+        ]}
+      />
 
       <TreatmentPackageModal
         form={packageForm}
         open={packageOpen}
         editing={editingPackage}
-        services={services}
+        packageServices={packageServices}
+        packageTypes={selectablePackageTypes}
         branches={branches}
         packageCustomFields={packageCustomFields}
         currencySymbol={currencySymbol}
@@ -492,7 +383,6 @@ export default function Treatments() {
       <TreatmentPackageDetailModal
         row={detailRow}
         branches={branches}
-        services={services}
         packageTypeById={packageTypeById}
         packageFields={packageCustomFields}
         formatMoney={formatMoney}

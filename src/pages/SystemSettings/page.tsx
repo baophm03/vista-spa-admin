@@ -45,7 +45,7 @@ const POINTS_SETTING_ROWS = [
 const BOOKING_SETTING_ROWS = [
   ['booking.auto_approve', 'booking.horizon_days'],
   ['booking.min_cancel_hours', 'booking.pending_expire_hours'],
-  ['booking.require_staff_service', 'booking.slot_minutes'],
+  ['booking.slot_minutes', null],
   ['reminder.next_session_days', 'reminder.offsets_days'],
   ['reminder.send_time', 'job.birthday_time'],
 ] as const
@@ -178,7 +178,7 @@ function SettingsEditor({ canEdit }: { canEdit: boolean }) {
         {fieldsByKey.get(leftKey)}
       </div>,
       <div key={`${leftKey}-right`} className="h-full border-b border-[var(--brand-border)]">
-        {fieldsByKey.get(rightKey)}
+        {rightKey ? fieldsByKey.get(rightKey) : null}
       </div>,
     ])
     const memberColumnsContent = MEMBER_SETTING_COLUMNS.map((column) => {

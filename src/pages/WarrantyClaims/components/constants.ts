@@ -7,11 +7,11 @@ export type ClaimRow = Omit<WarrantyClaim, 'customer_treatment' | 'session'> & {
   customer_treatment?: {
     id: string
     branch_id?: string
-    customer_profile_id?: string
+    user_id?: string
     package_id?: string
     package_snapshot?: Record<string, unknown>
     finished_at?: string | null
-    customer_profile?: { id?: string; customer_code?: string; full_name?: string; phone?: string }
+    user?: { id?: string; customer_code?: string; full_name?: string; phone?: string }
     package?: { id?: string; name?: string }
     package_type?: { has_warranty?: boolean }
   }

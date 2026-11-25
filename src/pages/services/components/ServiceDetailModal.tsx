@@ -47,7 +47,7 @@ export default function ServiceDetailModal({ service, onClose, categories, branc
 
   return (
     <Modal
-      title={service.title || 'Chi tiết dịch vụ'}
+      title={service.title || 'Chi tiết dịch vụ lẻ'}
       open
       onCancel={onClose}
       footer={null}
@@ -81,6 +81,10 @@ export default function ServiceDetailModal({ service, onClose, categories, branc
             <span>{service.duration_minutes ? `${service.duration_minutes} phút` : 'Theo cấu hình'}</span>
             <span style={labelStyle}>Điểm đổi</span>
             <span>{service.required_points ? Number(service.required_points).toLocaleString('vi-VN') : '—'}</span>
+            {/* Số buổi của dịch vụ lẻ — tạm ẩn theo yêu cầu
+            <span style={labelStyle}>Số buổi</span>
+            <span>{service.session_count ?? 1} buổi</span>
+            */}
           </div>
           {service.description && (
             <>

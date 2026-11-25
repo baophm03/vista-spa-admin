@@ -38,7 +38,7 @@ export default function ServiceModal({
 }: ServiceModalProps) {
   return (
     <Modal
-      title={editing ? 'Sửa dịch vụ' : 'Thêm dịch vụ'}
+      title={editing ? 'Sửa dịch vụ lẻ' : 'Thêm dịch vụ lẻ'}
       open={open}
       onCancel={onCancel}
       onOk={onSubmit}
@@ -86,6 +86,11 @@ export default function ServiceModal({
             </Form.Item>
           </Col>
         </Row>
+        {/* Số buổi của dịch vụ lẻ (BE: service.session_count, mặc định 1) — tạm ẩn theo yêu cầu
+        <Form.Item name="session_count" label="Số buổi" initialValue={1} rules={[{ type: 'number', min: 1, message: 'Số buổi phải lớn hơn 0' }]}>
+          <InputNumber min={1} precision={0} suffix="buổi" style={{ width: '100%' }} />
+        </Form.Item>
+        */}
         <Form.Item name="branch_id" label="Cơ sở">
           <Select
             allowClear

@@ -19,7 +19,7 @@ import type { CustomerHealthRecordNote } from './customerHealthRecordNote';
  */
 export interface CustomerHealthRecord {
   id: string;
-  customer_profile_id: string;
+  user_id: string;
   checked_date: string;
   checked_by?: CustomerHealthRecordCheckedBy;
   medical_history?: CustomerHealthRecordMedicalHistory;

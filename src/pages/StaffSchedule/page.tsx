@@ -7,9 +7,9 @@ import PageTitle from '@/components/base/PageTitle'
 import { ToolbarSlotContext } from '../schedule/ToolbarSlotContext'
 import { useGetBranchesAdmin } from '@/api/endpoints/branches'
 import { useGetUsersAdmin } from '@/api/endpoints/users'
-import { useGetUserProfilesAdmin } from '@/api/endpoints/user-profiles'
+import { useGetUsersStaffAdmin } from '@/api/endpoints/staff'
 import type { Branch } from '@/api/models/branch'
-import type { UserProfileRow } from '@/api/models/userProfileRow'
+import type { StaffProfile } from '@/api/models/staffProfile'
 import { useCustomerProfileAccess } from '@/utils/customerProfileAccess'
 import { isReceptionistUser, isTechnicianUser } from '@/utils/userRoles'
 import { useProfileStore } from '@/stores/profile-store'
@@ -27,7 +27,7 @@ export default function StaffSchedule() {
   const toolbarSlotRef = useRef<HTMLDivElement | null>(null)
 
   const isOwnScheduleOnly = isTechnician && !isAdmin
-  const canReadStaffProfiles = !!profile?.is_admin || isAdmin || ability.can('READ', 'USER_PROFILE')
+  const canReadStaffProfiles = !!profile?.is_admin || isAdmin || ability.can('READ', 'STAFF')
   // KTV được xem cơ sở của mình; dữ liệu này cũng giúp hiển thị phạm vi áp dụng của mẫu ca.
   const branchesQuery = useGetBranchesAdmin(undefined)
   const branches = (pickData<Branch[] | undefined>(branchesQuery.data) ?? []) as Branch[]
@@ -37,7 +37,7 @@ export default function StaffSchedule() {
     { query: { enabled: !isOwnScheduleOnly, refetchOnMount: 'always', refetchOnWindowFocus: 'always' } },
   )
   const allUsers = (pickData<{ rows?: ScheduleStaff[] } | undefined>(staffsQuery.data)?.rows ?? []) as ScheduleStaff[]
-  const staffProfilesQuery = useGetUserProfilesAdmin(undefined, {
+  const staffProfilesQuery = useGetUsersStaffAdmin(undefined, {
     query: {
       enabled: !isOwnScheduleOnly && canReadStaffProfiles,
       refetchOnMount: 'always',
@@ -45,7 +45,7 @@ export default function StaffSchedule() {
     },
   })
   const inactiveStaffProfileIds = useMemo(() => {
-    const rows = (pickData<UserProfileRow[] | undefined>(staffProfilesQuery.data) ?? []) as UserProfileRow[]
+    const rows = (pickData<StaffProfile[] | undefined>(staffProfilesQuery.data) ?? []) as StaffProfile[]
     return new Set(rows.filter((row) => row.is_active === false).map((row) => row.user_id))
   }, [staffProfilesQuery.data])
   const ownStaff: ScheduleStaff | null = profile?.id ? {

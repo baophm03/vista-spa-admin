@@ -52,7 +52,6 @@ export type VoucherCustomerStatus = 'ACTIVE' | 'USED' | 'REVOKED'
 /** Một voucher khách hàng đang có: tự động theo hạng hoặc được gán tay. */
 export interface VoucherCustomerRow {
   assignment_id?: string | null
-  customer_profile_id?: string | null
   user_id?: string | null
   user_name?: string | null
   user_phone?: string | null
@@ -74,7 +73,6 @@ export interface VoucherCustomerRow {
 
 export interface VoucherCustomerAssignment {
   voucher_id: string
-  customer_profile_id?: string
   user_id?: string
   /** Cơ sở admin chọn khi gán — hiển thị ở cột "Cơ sở". */
   branch_id?: string

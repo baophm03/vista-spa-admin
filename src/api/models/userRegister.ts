@@ -9,13 +9,13 @@
 export type UserRegister = (unknown & {
   zalo_name: string;
   email?: string;
-  phone_number?: string;
+  phone?: string;
   /** @minLength 8 */
   password: string;
 }) | (unknown & {
   zalo_name: string;
   email?: string;
-  phone_number?: string;
+  phone?: string;
   /** @minLength 8 */
   password: string;
 });

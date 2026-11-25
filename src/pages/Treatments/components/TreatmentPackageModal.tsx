@@ -1,18 +1,24 @@
-import { Alert, Button, Col, Collapse, Form, Input, InputNumber, Modal, Row, Segmented, Select, Switch } from 'antd'
-import { DeleteOutlined, PlusOutlined } from '@ant-design/icons'
+import { Alert, Col, Collapse, Form, Input, InputNumber, Modal, Row, Select, Switch } from 'antd'
 import type { FormInstance } from 'antd'
 import CustomFieldFormItems from '@/components/CustomFieldFormItems'
 import ServiceImageField from '@/components/ServiceImageField'
 import type { Branch } from '@/api/models/branch'
-import type { Service } from '@/api/models/service'
+import type { PackageService } from '@/api/models/packageService'
 import type { CustomFieldDefWithOptions } from '@/components/CustomFieldFormItems'
-import { CALC_OPTIONS, type QuotaType, type TreatmentPackageRow } from './constants'
+import {
+  PACKAGE_TYPE_HINT,
+  PACKAGE_TYPE_LABEL,
+  PACKAGE_TYPE_QUOTA,
+  type PackageTypeRow,
+  type TreatmentPackageRow,
+} from './constants'
 
 interface TreatmentPackageModalProps {
   form: FormInstance
   open: boolean
   editing: TreatmentPackageRow | null
-  services: Service[]
+  packageServices: PackageService[]
+  packageTypes: PackageTypeRow[]
   branches: Branch[]
   packageCustomFields: CustomFieldDefWithOptions[]
   currencySymbol: string
@@ -25,7 +31,8 @@ export default function TreatmentPackageModal({
   form,
   open,
   editing,
-  services,
+  packageServices,
+  packageTypes,
   branches,
   packageCustomFields,
   currencySymbol,
@@ -33,41 +40,17 @@ export default function TreatmentPackageModal({
   onCancel,
   onOk,
 }: TreatmentPackageModalProps) {
-  const quotaTypeWatch = Form.useWatch('quota_type', form) as QuotaType | undefined
   const hasWarrantyWatch = Form.useWatch('has_warranty', form)
-  const kindWatch = Form.useWatch('package_kind', form)
-  const comboServicesWatch = Form.useWatch('combo_services', form) as { service_id?: string; qty?: number }[] | undefined
-  const isCombo = kindWatch === 'COMBO'
-  const isSessions = quotaTypeWatch === 'SESSIONS'
-  const isValueQuota = quotaTypeWatch === 'VALUE'
-  const isLifetime = quotaTypeWatch === 'UNLIMITED'
-  const comboTotal = (comboServicesWatch ?? []).reduce((sum, entry) => sum + (Number(entry?.qty) || 0), 0)
+  const packageTypeIdWatch = Form.useWatch('package_type_id', form) as string | undefined
+  const branchIdWatch = Form.useWatch('branch_id', form) as string | undefined
+  const typeCode = String(packageTypes.find((type) => type.id === packageTypeIdWatch)?.code ?? '').toUpperCase()
+  const quotaType = PACKAGE_TYPE_QUOTA[typeCode]
 
-  const handleCalcChange = () => {
-    form.setFieldsValue({
-      total_sessions: undefined,
-      total_value: undefined,
-      convertible_note: undefined,
-    })
-  }
-
-  const handleKindChange = (next: string | number) => {
-    if (next === 'COMBO') {
-      form.setFieldsValue({
-        quota_type: 'SESSIONS',
-        service_id: undefined,
-        total_sessions: undefined,
-        combo_services: (form.getFieldValue('combo_services') ?? []).length ? form.getFieldValue('combo_services') : [{}, {}],
-      })
-    } else {
-      form.setFieldsValue({
-        quota_type: 'SESSIONS',
-        service_id: undefined,
-        total_sessions: undefined,
-        combo_services: [],
-      })
-    }
-  }
+  // Gói dịch vụ đang chọn phải luôn hiển thị (kể cả đã ẩn / khác cơ sở) để không mất giá trị khi sửa
+  const currentServiceId = editing?.package_service_id ?? undefined
+  const packageServiceOptions = packageServices
+    .filter((item) => item.id === currentServiceId || (item.is_active !== false && (!branchIdWatch || !item.branch_id || item.branch_id === branchIdWatch)))
+    .map((item) => ({ value: item.id, label: `${item.title}${item.is_active === false ? ' (đã ẩn)' : ''}` }))
 
   return (
     <Modal
@@ -87,160 +70,60 @@ export default function TreatmentPackageModal({
         <Form.Item name="image_file_id" label="Ảnh bìa">
           <ServiceImageField />
         </Form.Item>
-        {/* Loại gói: Gói lẻ (1 dịch vụ) | Gói Combo (>= 2 dịch vụ, quota riêng theo qty) */}
-        <Form.Item name="package_kind" label="Loại gói" required initialValue="LE">
-          <Segmented
-            options={[
-              { label: 'Gói lẻ', value: 'LE' },
-              { label: 'Gói Combo', value: 'COMBO' },
-            ]}
-            onChange={handleKindChange}
-          />
-        </Form.Item>
-        {!isCombo && (
-          <Form.Item
-            name="service_id"
-            label="Dịch vụ áp dụng"
-            rules={[{ required: true, message: 'Gói liệu trình phải có dịch vụ' }]}
-          >
-            <Select
-              showSearch
-              optionFilterProp="label"
-              placeholder="Chọn dịch vụ"
-              options={services.map((service) => ({ value: service.id, label: service.title }))}
-            />
-          </Form.Item>
-        )}
-        {isCombo && (
-          <>
-            <Form.Item label="Dịch vụ & số buổi" required style={{ marginBottom: 4 }} extra="Mỗi dịch vụ có quota riêng theo số buổi nhập ở đây; tổng số buổi gói = tổng của từng dịch vụ." />
-            <Form.List
-              name="combo_services"
-              rules={[{
-                validator: async (_rule, rows) => {
-                  if (!rows || rows.length < 2) throw new Error('Gói combo phải gồm từ 2 dịch vụ trở lên')
-                  const ids = rows.map((row: { service_id?: string }) => row?.service_id).filter(Boolean)
-                  if (new Set(ids).size !== ids.length) throw new Error('Gói combo không được trùng dịch vụ')
-                },
-              }]}
-            >
-              {(fields, { add, remove }, { errors }) => (
-                <>
-                  {fields.map((field) => (
-                    <Row key={field.key} gutter={8} align="middle">
-                      <Col xs={13} md={15}>
-                        <Form.Item
-                          name={[field.name, 'service_id']}
-                          rules={[{ required: true, message: 'Chọn dịch vụ' }]}
-                          className="mb-2!"
-                        >
-                          <Select
-                            showSearch
-                            optionFilterProp="label"
-                            placeholder="Chọn dịch vụ"
-                            options={services.map((service) => ({ value: service.id, label: service.title }))}
-                          />
-                        </Form.Item>
-                      </Col>
-                      <Col xs={7} md={5}>
-                        <Form.Item
-                          name={[field.name, 'qty']}
-                          rules={[{ required: true, message: 'Nhập số buổi' }]}
-                          className="mb-2!"
-                        >
-                          <InputNumber min={1} precision={0} placeholder="Số buổi" style={{ width: '100%' }} />
-                        </Form.Item>
-                      </Col>
-                      <Col span={4} className="mb-2!">
-                        <Button
-                          type="text"
-                          danger
-                          icon={<DeleteOutlined />}
-                          aria-label="Xóa dịch vụ"
-                          title="Xóa dịch vụ"
-                          disabled={fields.length <= 2}
-                          onClick={() => remove(field.name)}
-                        />
-                      </Col>
-                    </Row>
-                  ))}
-                  <Form.Item className="mb-1!">
-                    <Button type="dashed" block icon={<PlusOutlined />} onClick={() => add({ qty: 1 })}>
-                      Thêm dịch vụ
-                    </Button>
-                  </Form.Item>
-                  <Form.ErrorList errors={errors} />
-                </>
-              )}
-            </Form.List>
-            <div style={{ height: 8 }} />
-          </>
-        )}
-        <Form.Item
-          name="quota_type"
-          label="Cách tính"
-          rules={[{ required: true, message: 'Chọn cách tính' }]}
-          extra={isCombo
-            ? 'Gói combo chỉ hỗ trợ cách tính theo số buổi — mỗi dịch vụ có quota riêng theo số buổi đã nhập.'
-            : undefined}
-        >
-          {isCombo ? (
-            <Select disabled options={[{ value: 'SESSIONS', label: 'Theo số buổi' }]} />
-          ) : (
-            <Select
-              placeholder="Chọn cách tính"
-              options={CALC_OPTIONS}
-              onChange={handleCalcChange}
-            />
-          )}
-        </Form.Item>
         <Row gutter={{ xs: 12, md: 16 }}>
-          <Col xs={12} md={8}>
-            {isCombo && (
-              <Form.Item label="Tổng số buổi" extra="Tự cộng từ các dịch vụ.">
-                <Input value={`${comboTotal} buổi`} disabled style={{ width: '100%' }} />
-              </Form.Item>
-            )}
-            {!isCombo && isSessions && (
-              <Form.Item
-                name="total_sessions"
-                label="Số buổi"
-                rules={[{ required: true, message: 'Nhập số buổi' }]}
-              >
-                <InputNumber min={1} precision={0} style={{ width: '100%' }} />
-              </Form.Item>
-            )}
-            {!isCombo && (isValueQuota || isLifetime) && (
-              <Form.Item
-                label="Số buổi"
-                extra={isLifetime ? 'Gói trọn đời không giới hạn số buổi.' : 'Không giới hạn số buổi — mỗi buổi trừ vào định mức tiền.'}
-              >
-                <Input value="Không giới hạn" disabled style={{ width: '100%' }} />
-              </Form.Item>
-            )}
-          </Col>
-          <Col xs={12} md={8}>
-            <Form.Item
-              name="bonus_sessions_default"
-              label="Buổi tặng"
-            >
-              <InputNumber min={0} precision={0} style={{ width: '100%' }} />
+          <Col xs={24} md={12}>
+            {/* Loại gói quyết định cách tính: Gói lẻ = theo số tiền, Gói buổi = theo số buổi, Trọn đời = không giới hạn buổi */}
+            <Form.Item name="package_type_id" label="Loại gói" rules={[{ required: true, message: 'Chọn loại gói' }]}>
+              <Select
+                placeholder="Chọn loại gói"
+                options={packageTypes.map((type) => {
+                  const code = String(type.code).toUpperCase()
+                  return { value: type.id, label: `${PACKAGE_TYPE_LABEL[code] ?? type.name} — ${PACKAGE_TYPE_HINT[code] ?? ''}` }
+                })}
+                onChange={() => form.setFieldsValue({ total_sessions: undefined })}
+              />
             </Form.Item>
           </Col>
-          <Col xs={24} md={8}>
+          <Col xs={24} md={12}>
             <Form.Item name="branch_id" label="Cơ sở">
               <Select allowClear placeholder="Tất cả cơ sở" options={branches.map((branch) => ({ value: branch.id, label: branch.name }))} />
             </Form.Item>
           </Col>
         </Row>
-        {!isCombo && isLifetime && (
+        <Form.Item
+          name="package_service_id"
+          label="Dịch vụ áp dụng"
+          rules={[{ required: true, message: 'Chọn gói dịch vụ áp dụng' }]}
+          extra="Danh mục ở tab “Gói dịch vụ” (tách riêng khỏi dịch vụ lẻ)."
+        >
+          <Select showSearch optionFilterProp="label" placeholder="Chọn gói dịch vụ" options={packageServiceOptions} />
+        </Form.Item>
+        <Row gutter={{ xs: 12, md: 16 }}>
+          <Col xs={12} md={8}>
+            {quotaType === 'SESSIONS' ? (
+              <Form.Item name="total_sessions" label="Số buổi" rules={[{ required: true, message: 'Nhập số buổi' }]}>
+                <InputNumber min={1} precision={0} style={{ width: '100%' }} />
+              </Form.Item>
+            ) : (
+              <Form.Item label="Số buổi">
+                <Input value={quotaType ? 'Không giới hạn' : '—'} disabled style={{ width: '100%' }} />
+              </Form.Item>
+            )}
+          </Col>
+          <Col xs={12} md={8}>
+            <Form.Item name="bonus_sessions_default" label="Buổi tặng">
+              <InputNumber min={0} precision={0} style={{ width: '100%' }} />
+            </Form.Item>
+          </Col>
+        </Row>
+        {quotaType === 'UNLIMITED' && (
           <Alert type="info" showIcon message="Gói trọn đời không giới hạn số buổi." style={{ marginBottom: 16 }} />
         )}
-        {!isCombo && isValueQuota && (
+        {quotaType === 'VALUE' && (
           <Alert
             type="info"
             showIcon
-            message="Gói theo mức tiền: không giới hạn số buổi. Mỗi buổi khách tham gia sẽ trừ số tiền của buổi đó vào định mức (= giá bán), trừ hết định mức thì gói kết thúc."
+            message="Gói lẻ tính theo số tiền: không giới hạn số buổi. Mỗi buổi khách tham gia sẽ trừ số tiền của buổi đó vào định mức (= giá bán), trừ hết định mức thì gói kết thúc."
             style={{ marginBottom: 16 }}
           />
         )}
@@ -301,9 +184,6 @@ export default function TreatmentPackageModal({
                     </Form.Item>
                   </Col>
                 </Row>
-                <Form.Item name="convertible_note" label="Điều kiện đổi buổi tặng">
-                  <Input.TextArea rows={2} />
-                </Form.Item>
                 <Form.Item name="has_warranty" label="Có bảo hành" valuePropName="checked">
                   <Switch />
                 </Form.Item>

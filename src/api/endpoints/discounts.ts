@@ -31,7 +31,7 @@ import type {
 
 import type {
   DeleteTreatmentCustomersIdDiscountsDiscountIdAdmin200,
-  GetCustomerProfilesIdAvailableDiscountsAdmin200,
+  GetUsersCustomersIdAvailableDiscountsAdmin200,
   NotFoundResponse,
   PostTreatmentCustomersIdApplyDiscountAdmin200,
   PostTreatmentCustomersIdApplyDiscountAdminBody,
@@ -42,6 +42,200 @@ import type {
 import { customInstance } from '../mutator/custom-instance';
 
 
+
+
+
+/**
+ * **DC-06** — GET /users/customers/{id}/available-discounts/admin. Cần đăng nhập + `discount.view_all`. Filters rules by membership tier / returning customer / referral / upsell.
+ * @summary Discounts the customer is eligible for
+ */
+export const getUsersCustomersIdAvailableDiscountsAdmin = (
+    id: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetUsersCustomersIdAvailableDiscountsAdmin200>(
+      {url: `/users/customers/${id}/available-discounts/admin`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetUsersCustomersIdAvailableDiscountsAdminInfiniteQueryKey = (id?: string,) => {
+    return [
+    'infinite', `/users/customers/${id}/available-discounts/admin`
+    ] as const;
+    }
+
+export const getGetUsersCustomersIdAvailableDiscountsAdminQueryKey = (id?: string,) => {
+    return [
+    `/users/customers/${id}/available-discounts/admin`
+    ] as const;
+    }
+
+    
+export const getGetUsersCustomersIdAvailableDiscountsAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersIdAvailableDiscountsAdmin>>>, TError = NotFoundResponse>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdAvailableDiscountsAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetUsersCustomersIdAvailableDiscountsAdminInfiniteQueryKey(id);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersCustomersIdAvailableDiscountsAdmin>>> = ({ signal }) => getUsersCustomersIdAvailableDiscountsAdmin(id, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdAvailableDiscountsAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetUsersCustomersIdAvailableDiscountsAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersCustomersIdAvailableDiscountsAdmin>>>
+export type GetUsersCustomersIdAvailableDiscountsAdminInfiniteQueryError = NotFoundResponse
+
+
+export function useGetUsersCustomersIdAvailableDiscountsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersIdAvailableDiscountsAdmin>>>, TError = NotFoundResponse>(
+ id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdAvailableDiscountsAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUsersCustomersIdAvailableDiscountsAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getUsersCustomersIdAvailableDiscountsAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersCustomersIdAvailableDiscountsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersIdAvailableDiscountsAdmin>>>, TError = NotFoundResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdAvailableDiscountsAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUsersCustomersIdAvailableDiscountsAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getUsersCustomersIdAvailableDiscountsAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersCustomersIdAvailableDiscountsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersIdAvailableDiscountsAdmin>>>, TError = NotFoundResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdAvailableDiscountsAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Discounts the customer is eligible for
+ */
+
+export function useGetUsersCustomersIdAvailableDiscountsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersIdAvailableDiscountsAdmin>>>, TError = NotFoundResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdAvailableDiscountsAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetUsersCustomersIdAvailableDiscountsAdminInfiniteQueryOptions(id,options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Discounts the customer is eligible for
+ */
+export const prefetchGetUsersCustomersIdAvailableDiscountsAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getUsersCustomersIdAvailableDiscountsAdmin>>, TError = NotFoundResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdAvailableDiscountsAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetUsersCustomersIdAvailableDiscountsAdminInfiniteQueryOptions(id,options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetUsersCustomersIdAvailableDiscountsAdminQueryOptions = <TData = Awaited<ReturnType<typeof getUsersCustomersIdAvailableDiscountsAdmin>>, TError = NotFoundResponse>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdAvailableDiscountsAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetUsersCustomersIdAvailableDiscountsAdminQueryKey(id);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersCustomersIdAvailableDiscountsAdmin>>> = ({ signal }) => getUsersCustomersIdAvailableDiscountsAdmin(id, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdAvailableDiscountsAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetUsersCustomersIdAvailableDiscountsAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersCustomersIdAvailableDiscountsAdmin>>>
+export type GetUsersCustomersIdAvailableDiscountsAdminQueryError = NotFoundResponse
+
+
+export function useGetUsersCustomersIdAvailableDiscountsAdmin<TData = Awaited<ReturnType<typeof getUsersCustomersIdAvailableDiscountsAdmin>>, TError = NotFoundResponse>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdAvailableDiscountsAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUsersCustomersIdAvailableDiscountsAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getUsersCustomersIdAvailableDiscountsAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersCustomersIdAvailableDiscountsAdmin<TData = Awaited<ReturnType<typeof getUsersCustomersIdAvailableDiscountsAdmin>>, TError = NotFoundResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdAvailableDiscountsAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUsersCustomersIdAvailableDiscountsAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getUsersCustomersIdAvailableDiscountsAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersCustomersIdAvailableDiscountsAdmin<TData = Awaited<ReturnType<typeof getUsersCustomersIdAvailableDiscountsAdmin>>, TError = NotFoundResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdAvailableDiscountsAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Discounts the customer is eligible for
+ */
+
+export function useGetUsersCustomersIdAvailableDiscountsAdmin<TData = Awaited<ReturnType<typeof getUsersCustomersIdAvailableDiscountsAdmin>>, TError = NotFoundResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdAvailableDiscountsAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetUsersCustomersIdAvailableDiscountsAdminQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Discounts the customer is eligible for
+ */
+export const prefetchGetUsersCustomersIdAvailableDiscountsAdminQuery = async <TData = Awaited<ReturnType<typeof getUsersCustomersIdAvailableDiscountsAdmin>>, TError = NotFoundResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdAvailableDiscountsAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetUsersCustomersIdAvailableDiscountsAdminQueryOptions(id,options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
 
 
 
@@ -240,197 +434,4 @@ export const usePostTreatmentCustomersIdApplyDiscountAdmin = <TError = void,
 
       return useMutation(mutationOptions, queryClient);
     }
-    /**
- * **DC-06** — GET /customer-profiles/{id}/available-discounts/admin. Cần đăng nhập + `discount.view_all`. Filters rules by membership tier / returning customer / referral / upsell.
- * @summary Discounts the customer is eligible for
- */
-export const getCustomerProfilesIdAvailableDiscountsAdmin = (
-    id: string,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<GetCustomerProfilesIdAvailableDiscountsAdmin200>(
-      {url: `/customer-profiles/${id}/available-discounts/admin`, method: 'GET', signal
-    },
-      );
-    }
-  
-
-
-
-export const getGetCustomerProfilesIdAvailableDiscountsAdminInfiniteQueryKey = (id?: string,) => {
-    return [
-    'infinite', `/customer-profiles/${id}/available-discounts/admin`
-    ] as const;
-    }
-
-export const getGetCustomerProfilesIdAvailableDiscountsAdminQueryKey = (id?: string,) => {
-    return [
-    `/customer-profiles/${id}/available-discounts/admin`
-    ] as const;
-    }
-
     
-export const getGetCustomerProfilesIdAvailableDiscountsAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>>, TError = NotFoundResponse>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetCustomerProfilesIdAvailableDiscountsAdminInfiniteQueryKey(id);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>> = ({ signal }) => getCustomerProfilesIdAvailableDiscountsAdmin(id, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetCustomerProfilesIdAvailableDiscountsAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>>
-export type GetCustomerProfilesIdAvailableDiscountsAdminInfiniteQueryError = NotFoundResponse
-
-
-export function useGetCustomerProfilesIdAvailableDiscountsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>>, TError = NotFoundResponse>(
- id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>,
-          TError,
-          Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetCustomerProfilesIdAvailableDiscountsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>>, TError = NotFoundResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>,
-          TError,
-          Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetCustomerProfilesIdAvailableDiscountsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>>, TError = NotFoundResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Discounts the customer is eligible for
- */
-
-export function useGetCustomerProfilesIdAvailableDiscountsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>>, TError = NotFoundResponse>(
- id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetCustomerProfilesIdAvailableDiscountsAdminInfiniteQueryOptions(id,options)
-
-  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary Discounts the customer is eligible for
- */
-export const prefetchGetCustomerProfilesIdAvailableDiscountsAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>, TError = NotFoundResponse>(
- queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetCustomerProfilesIdAvailableDiscountsAdminInfiniteQueryOptions(id,options)
-
-  await queryClient.prefetchInfiniteQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-export const getGetCustomerProfilesIdAvailableDiscountsAdminQueryOptions = <TData = Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>, TError = NotFoundResponse>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetCustomerProfilesIdAvailableDiscountsAdminQueryKey(id);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>> = ({ signal }) => getCustomerProfilesIdAvailableDiscountsAdmin(id, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetCustomerProfilesIdAvailableDiscountsAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>>
-export type GetCustomerProfilesIdAvailableDiscountsAdminQueryError = NotFoundResponse
-
-
-export function useGetCustomerProfilesIdAvailableDiscountsAdmin<TData = Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>, TError = NotFoundResponse>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>,
-          TError,
-          Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetCustomerProfilesIdAvailableDiscountsAdmin<TData = Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>, TError = NotFoundResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>,
-          TError,
-          Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetCustomerProfilesIdAvailableDiscountsAdmin<TData = Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>, TError = NotFoundResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Discounts the customer is eligible for
- */
-
-export function useGetCustomerProfilesIdAvailableDiscountsAdmin<TData = Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>, TError = NotFoundResponse>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetCustomerProfilesIdAvailableDiscountsAdminQueryOptions(id,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary Discounts the customer is eligible for
- */
-export const prefetchGetCustomerProfilesIdAvailableDiscountsAdminQuery = async <TData = Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>, TError = NotFoundResponse>(
- queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomerProfilesIdAvailableDiscountsAdmin>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetCustomerProfilesIdAvailableDiscountsAdminQueryOptions(id,options)
-
-  await queryClient.prefetchQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-

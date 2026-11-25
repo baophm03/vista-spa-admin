@@ -30,11 +30,42 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  GetCustomersAdminParams,
-  LegacyBadRequestResponse,
-  LegacyUnauthorizedResponse,
-  PostCustomersAdminBody,
-  Response
+  ConflictResponse,
+  CustomerCreate,
+  DeleteUsersCustomersIdAdmin200,
+  DeleteUsersCustomersIdHealthMetricsMetricIdAdmin200,
+  ForbiddenResponse,
+  GetHealthRecordsAdmin200,
+  GetHealthRecordsAdminParams,
+  GetUsersCustomersAdmin200,
+  GetUsersCustomersAdminParams,
+  GetUsersCustomersByQrAdmin200,
+  GetUsersCustomersByQrAdminParams,
+  GetUsersCustomersExportAdmin200,
+  GetUsersCustomersIdAdmin200,
+  GetUsersCustomersIdCodeHistoryAdmin200,
+  GetUsersCustomersIdHealthMetricsAdmin200,
+  GetUsersCustomersIdHealthRecordsAdmin200,
+  GetUsersCustomersIdPointsAdmin200,
+  GetUsersCustomersIdQrAdmin200,
+  GetUsersCustomersIdQrAdminParams,
+  GetUsersCustomersIdSummaryAdmin200,
+  InternalErrorResponse,
+  NotFoundResponse,
+  PostUsersCustomersAdmin200,
+  PostUsersCustomersAdminBody,
+  PostUsersCustomersIdHealthMetricsAdmin200,
+  PostUsersCustomersIdHealthRecordsAdmin200,
+  PostUsersCustomersIdQrResetAdmin200,
+  PostUsersCustomersIdRedeemRewardAdmin200,
+  PostUsersCustomersIdRedeemRewardAdminBody,
+  PutUsersCustomersIdAdmin200,
+  PutUsersCustomersIdHealthMetricsMetricIdAdmin200,
+  PutUsersCustomersIdHealthRecordsRecordIdAdmin200,
+  PutUsersMeApp200,
+  PutUsersMeAppBody,
+  UnauthorizedResponse,
+  UnprocessableEntityResponse
 } from '../models';
 
 import { customInstance } from '../mutator/custom-instance';
@@ -44,225 +75,29 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * GET `/customers/admin` — danh sách tài khoản khách hàng (role 'customer'), BE tự filter scope mặc định. Hỗ trợ search theo tên/email/SĐT (`q`), `status` (active/inactive), phân trang `currentPage`/`pageSize`. Cần đăng nhập + `user.read_all`.
- * @summary List customer accounts
+ * **CP-02A** — PUT /users/me/app. Khách tự cập nhật hồ sơ của chính mình trên miniapp: `full_name`, `phone`, `birthday`, `address`, `email`. Chỉ cần đăng nhập — BE tự tìm hồ sơ gắn với tài khoản và chỉ cho sửa hồ sơ đó (validate SĐT không trùng).
+ * @summary Update my customer profile (miniapp)
  */
-export const getCustomersAdmin = (
-    params?: GetCustomersAdminParams,
- signal?: AbortSignal
-) => {
+export const putUsersMeApp = (
+    putUsersMeAppBody: PutUsersMeAppBody,
+ ) => {
       
       
-      return customInstance<Response>(
-      {url: `/customers/admin`, method: 'GET',
-        params, signal
-    },
-      );
-    }
-  
-
-
-
-export const getGetCustomersAdminInfiniteQueryKey = (params?: GetCustomersAdminParams,) => {
-    return [
-    'infinite', `/customers/admin`, ...(params ? [params]: [])
-    ] as const;
-    }
-
-export const getGetCustomersAdminQueryKey = (params?: GetCustomersAdminParams,) => {
-    return [
-    `/customers/admin`, ...(params ? [params]: [])
-    ] as const;
-    }
-
-    
-export const getGetCustomersAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getCustomersAdmin>>>, TError = LegacyUnauthorizedResponse>(params?: GetCustomersAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomersAdmin>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetCustomersAdminInfiniteQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCustomersAdmin>>> = ({ signal }) => getCustomersAdmin(params, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomersAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetCustomersAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getCustomersAdmin>>>
-export type GetCustomersAdminInfiniteQueryError = LegacyUnauthorizedResponse
-
-
-export function useGetCustomersAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCustomersAdmin>>>, TError = LegacyUnauthorizedResponse>(
- params: undefined |  GetCustomersAdminParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomersAdmin>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getCustomersAdmin>>,
-          TError,
-          Awaited<ReturnType<typeof getCustomersAdmin>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetCustomersAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCustomersAdmin>>>, TError = LegacyUnauthorizedResponse>(
- params?: GetCustomersAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomersAdmin>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getCustomersAdmin>>,
-          TError,
-          Awaited<ReturnType<typeof getCustomersAdmin>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetCustomersAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCustomersAdmin>>>, TError = LegacyUnauthorizedResponse>(
- params?: GetCustomersAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomersAdmin>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary List customer accounts
- */
-
-export function useGetCustomersAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getCustomersAdmin>>>, TError = LegacyUnauthorizedResponse>(
- params?: GetCustomersAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomersAdmin>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetCustomersAdminInfiniteQueryOptions(params,options)
-
-  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary List customer accounts
- */
-export const prefetchGetCustomersAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getCustomersAdmin>>, TError = LegacyUnauthorizedResponse>(
- queryClient: QueryClient, params?: GetCustomersAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCustomersAdmin>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetCustomersAdminInfiniteQueryOptions(params,options)
-
-  await queryClient.prefetchInfiniteQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-export const getGetCustomersAdminQueryOptions = <TData = Awaited<ReturnType<typeof getCustomersAdmin>>, TError = LegacyUnauthorizedResponse>(params?: GetCustomersAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomersAdmin>>, TError, TData>>, }
-) => {
-
-const {query: queryOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetCustomersAdminQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCustomersAdmin>>> = ({ signal }) => getCustomersAdmin(params, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCustomersAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetCustomersAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getCustomersAdmin>>>
-export type GetCustomersAdminQueryError = LegacyUnauthorizedResponse
-
-
-export function useGetCustomersAdmin<TData = Awaited<ReturnType<typeof getCustomersAdmin>>, TError = LegacyUnauthorizedResponse>(
- params: undefined |  GetCustomersAdminParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomersAdmin>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getCustomersAdmin>>,
-          TError,
-          Awaited<ReturnType<typeof getCustomersAdmin>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetCustomersAdmin<TData = Awaited<ReturnType<typeof getCustomersAdmin>>, TError = LegacyUnauthorizedResponse>(
- params?: GetCustomersAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomersAdmin>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getCustomersAdmin>>,
-          TError,
-          Awaited<ReturnType<typeof getCustomersAdmin>>
-        > , 'initialData'
-      >, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetCustomersAdmin<TData = Awaited<ReturnType<typeof getCustomersAdmin>>, TError = LegacyUnauthorizedResponse>(
- params?: GetCustomersAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomersAdmin>>, TError, TData>>, }
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary List customer accounts
- */
-
-export function useGetCustomersAdmin<TData = Awaited<ReturnType<typeof getCustomersAdmin>>, TError = LegacyUnauthorizedResponse>(
- params?: GetCustomersAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomersAdmin>>, TError, TData>>, }
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetCustomersAdminQueryOptions(params,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-/**
- * @summary List customer accounts
- */
-export const prefetchGetCustomersAdminQuery = async <TData = Awaited<ReturnType<typeof getCustomersAdmin>>, TError = LegacyUnauthorizedResponse>(
- queryClient: QueryClient, params?: GetCustomersAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCustomersAdmin>>, TError, TData>>, }
-
-  ): Promise<QueryClient> => {
-
-  const queryOptions = getGetCustomersAdminQueryOptions(params,options)
-
-  await queryClient.prefetchQuery(queryOptions);
-
-  return queryClient;
-}
-
-
-
-/**
- * POST `/customers/admin` — tạo tài khoản khách hàng, BE tự gán role 'customer' (không nhận role_id từ client). Body: `phone_number` (bắt buộc), `email?`, `full_name?`, `password?` (để trống thì khách đăng nhập qua zalo). Cần đăng nhập + `user.create`.
- * @summary Create a customer account
- */
-export const postCustomersAdmin = (
-    postCustomersAdminBody: PostCustomersAdminBody,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<Response>(
-      {url: `/customers/admin`, method: 'POST',
+      return customInstance<PutUsersMeApp200>(
+      {url: `/users/me/app`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
-      data: postCustomersAdminBody, signal
+      data: putUsersMeAppBody
     },
       );
     }
   
 
 
-export const getPostCustomersAdminMutationOptions = <TError = LegacyBadRequestResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postCustomersAdmin>>, TError,{data: PostCustomersAdminBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postCustomersAdmin>>, TError,{data: PostCustomersAdminBody}, TContext> => {
+export const getPutUsersMeAppMutationOptions = <TError = UnauthorizedResponse | NotFoundResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putUsersMeApp>>, TError,{data: PutUsersMeAppBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putUsersMeApp>>, TError,{data: PutUsersMeAppBody}, TContext> => {
 
-const mutationKey = ['postCustomersAdmin'];
+const mutationKey = ['putUsersMeApp'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -272,10 +107,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postCustomersAdmin>>, {data: PostCustomersAdminBody}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putUsersMeApp>>, {data: PutUsersMeAppBody}> = (props) => {
           const {data} = props ?? {};
 
-          return  postCustomersAdmin(data,)
+          return  putUsersMeApp(data,)
         }
 
         
@@ -283,24 +118,2824 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PostCustomersAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postCustomersAdmin>>>
-    export type PostCustomersAdminMutationBody = PostCustomersAdminBody
-    export type PostCustomersAdminMutationError = LegacyBadRequestResponse
+    export type PutUsersMeAppMutationResult = NonNullable<Awaited<ReturnType<typeof putUsersMeApp>>>
+    export type PutUsersMeAppMutationBody = PutUsersMeAppBody
+    export type PutUsersMeAppMutationError = UnauthorizedResponse | NotFoundResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
- * @summary Create a customer account
+ * @summary Update my customer profile (miniapp)
  */
-export const usePostCustomersAdmin = <TError = LegacyBadRequestResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postCustomersAdmin>>, TError,{data: PostCustomersAdminBody}, TContext>, }
+export const usePutUsersMeApp = <TError = UnauthorizedResponse | NotFoundResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putUsersMeApp>>, TError,{data: PutUsersMeAppBody}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postCustomersAdmin>>,
+        Awaited<ReturnType<typeof putUsersMeApp>>,
         TError,
-        {data: PostCustomersAdminBody},
+        {data: PutUsersMeAppBody},
         TContext
       > => {
 
-      const mutationOptions = getPostCustomersAdminMutationOptions(options);
+      const mutationOptions = getPutUsersMeAppMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
+    /**
+ * **CP-02** — GET /users/customers/{id}/admin (writes a customer-profile data-access audit event). Cần đăng nhập + `CUSTOMER:view_all`. Scoped theo customerProfileScope (KTV chỉ xem khách có buổi được phân công).
+ * @summary View customer profile detail
+ */
+export const getUsersCustomersIdAdmin = (
+    id: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetUsersCustomersIdAdmin200>(
+      {url: `/users/customers/${id}/admin`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetUsersCustomersIdAdminInfiniteQueryKey = (id?: string,) => {
+    return [
+    'infinite', `/users/customers/${id}/admin`
+    ] as const;
+    }
+
+export const getGetUsersCustomersIdAdminQueryKey = (id?: string,) => {
+    return [
+    `/users/customers/${id}/admin`
+    ] as const;
+    }
+
     
+export const getGetUsersCustomersIdAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetUsersCustomersIdAdminInfiniteQueryKey(id);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersCustomersIdAdmin>>> = ({ signal }) => getUsersCustomersIdAdmin(id, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetUsersCustomersIdAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersCustomersIdAdmin>>>
+export type GetUsersCustomersIdAdminInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+
+
+export function useGetUsersCustomersIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUsersCustomersIdAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getUsersCustomersIdAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersCustomersIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUsersCustomersIdAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getUsersCustomersIdAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersCustomersIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary View customer profile detail
+ */
+
+export function useGetUsersCustomersIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersIdAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetUsersCustomersIdAdminInfiniteQueryOptions(id,options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary View customer profile detail
+ */
+export const prefetchGetUsersCustomersIdAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getUsersCustomersIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetUsersCustomersIdAdminInfiniteQueryOptions(id,options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetUsersCustomersIdAdminQueryOptions = <TData = Awaited<ReturnType<typeof getUsersCustomersIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetUsersCustomersIdAdminQueryKey(id);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersCustomersIdAdmin>>> = ({ signal }) => getUsersCustomersIdAdmin(id, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetUsersCustomersIdAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersCustomersIdAdmin>>>
+export type GetUsersCustomersIdAdminQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+
+
+export function useGetUsersCustomersIdAdmin<TData = Awaited<ReturnType<typeof getUsersCustomersIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUsersCustomersIdAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getUsersCustomersIdAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersCustomersIdAdmin<TData = Awaited<ReturnType<typeof getUsersCustomersIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUsersCustomersIdAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getUsersCustomersIdAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersCustomersIdAdmin<TData = Awaited<ReturnType<typeof getUsersCustomersIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary View customer profile detail
+ */
+
+export function useGetUsersCustomersIdAdmin<TData = Awaited<ReturnType<typeof getUsersCustomersIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetUsersCustomersIdAdminQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary View customer profile detail
+ */
+export const prefetchGetUsersCustomersIdAdminQuery = async <TData = Awaited<ReturnType<typeof getUsersCustomersIdAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetUsersCustomersIdAdminQueryOptions(id,options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * **CP-04** — PUT /users/customers/{id}/admin. Cần đăng nhập + `CUSTOMER:update_all`. Scoped theo customerProfileScope.
+ * @summary Update customer profile
+ */
+export const putUsersCustomersIdAdmin = (
+    id: string,
+    customerCreate: CustomerCreate,
+ ) => {
+      
+      
+      return customInstance<PutUsersCustomersIdAdmin200>(
+      {url: `/users/customers/${id}/admin`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: customerCreate
+    },
+      );
+    }
+  
+
+
+export const getPutUsersCustomersIdAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putUsersCustomersIdAdmin>>, TError,{id: string;data: CustomerCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putUsersCustomersIdAdmin>>, TError,{id: string;data: CustomerCreate}, TContext> => {
+
+const mutationKey = ['putUsersCustomersIdAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putUsersCustomersIdAdmin>>, {id: string;data: CustomerCreate}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  putUsersCustomersIdAdmin(id,data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PutUsersCustomersIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof putUsersCustomersIdAdmin>>>
+    export type PutUsersCustomersIdAdminMutationBody = CustomerCreate
+    export type PutUsersCustomersIdAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+
+    /**
+ * @summary Update customer profile
+ */
+export const usePutUsersCustomersIdAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putUsersCustomersIdAdmin>>, TError,{id: string;data: CustomerCreate}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof putUsersCustomersIdAdmin>>,
+        TError,
+        {id: string;data: CustomerCreate},
+        TContext
+      > => {
+
+      const mutationOptions = getPutUsersCustomersIdAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * **CP-05** — DELETE /users/customers/{id}/admin (soft delete, ADM). Cần đăng nhập + `CUSTOMER:delete_all`. Scoped theo customerProfileScope.
+ * @summary Delete customer profile
+ */
+export const deleteUsersCustomersIdAdmin = (
+    id: string,
+ ) => {
+      
+      
+      return customInstance<DeleteUsersCustomersIdAdmin200>(
+      {url: `/users/customers/${id}/admin`, method: 'DELETE'
+    },
+      );
+    }
+  
+
+
+export const getDeleteUsersCustomersIdAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteUsersCustomersIdAdmin>>, TError,{id: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteUsersCustomersIdAdmin>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['deleteUsersCustomersIdAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteUsersCustomersIdAdmin>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteUsersCustomersIdAdmin(id,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteUsersCustomersIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof deleteUsersCustomersIdAdmin>>>
+    
+    export type DeleteUsersCustomersIdAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+
+    /**
+ * @summary Delete customer profile
+ */
+export const useDeleteUsersCustomersIdAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteUsersCustomersIdAdmin>>, TError,{id: string}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof deleteUsersCustomersIdAdmin>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+
+      const mutationOptions = getDeleteUsersCustomersIdAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * **CP-06** — GET /users/customers/{id}/summary/admin (writes a customer-profile data-access audit event). Cần đăng nhập + `CUSTOMER:view_all`.
+ * @summary View profile summary
+ */
+export const getUsersCustomersIdSummaryAdmin = (
+    id: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetUsersCustomersIdSummaryAdmin200>(
+      {url: `/users/customers/${id}/summary/admin`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetUsersCustomersIdSummaryAdminInfiniteQueryKey = (id?: string,) => {
+    return [
+    'infinite', `/users/customers/${id}/summary/admin`
+    ] as const;
+    }
+
+export const getGetUsersCustomersIdSummaryAdminQueryKey = (id?: string,) => {
+    return [
+    `/users/customers/${id}/summary/admin`
+    ] as const;
+    }
+
+    
+export const getGetUsersCustomersIdSummaryAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersIdSummaryAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdSummaryAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetUsersCustomersIdSummaryAdminInfiniteQueryKey(id);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersCustomersIdSummaryAdmin>>> = ({ signal }) => getUsersCustomersIdSummaryAdmin(id, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdSummaryAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetUsersCustomersIdSummaryAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersCustomersIdSummaryAdmin>>>
+export type GetUsersCustomersIdSummaryAdminInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+
+
+export function useGetUsersCustomersIdSummaryAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersIdSummaryAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdSummaryAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUsersCustomersIdSummaryAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getUsersCustomersIdSummaryAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersCustomersIdSummaryAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersIdSummaryAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdSummaryAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUsersCustomersIdSummaryAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getUsersCustomersIdSummaryAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersCustomersIdSummaryAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersIdSummaryAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdSummaryAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary View profile summary
+ */
+
+export function useGetUsersCustomersIdSummaryAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersIdSummaryAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdSummaryAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetUsersCustomersIdSummaryAdminInfiniteQueryOptions(id,options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary View profile summary
+ */
+export const prefetchGetUsersCustomersIdSummaryAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getUsersCustomersIdSummaryAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdSummaryAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetUsersCustomersIdSummaryAdminInfiniteQueryOptions(id,options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetUsersCustomersIdSummaryAdminQueryOptions = <TData = Awaited<ReturnType<typeof getUsersCustomersIdSummaryAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdSummaryAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetUsersCustomersIdSummaryAdminQueryKey(id);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersCustomersIdSummaryAdmin>>> = ({ signal }) => getUsersCustomersIdSummaryAdmin(id, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdSummaryAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetUsersCustomersIdSummaryAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersCustomersIdSummaryAdmin>>>
+export type GetUsersCustomersIdSummaryAdminQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+
+
+export function useGetUsersCustomersIdSummaryAdmin<TData = Awaited<ReturnType<typeof getUsersCustomersIdSummaryAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdSummaryAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUsersCustomersIdSummaryAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getUsersCustomersIdSummaryAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersCustomersIdSummaryAdmin<TData = Awaited<ReturnType<typeof getUsersCustomersIdSummaryAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdSummaryAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUsersCustomersIdSummaryAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getUsersCustomersIdSummaryAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersCustomersIdSummaryAdmin<TData = Awaited<ReturnType<typeof getUsersCustomersIdSummaryAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdSummaryAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary View profile summary
+ */
+
+export function useGetUsersCustomersIdSummaryAdmin<TData = Awaited<ReturnType<typeof getUsersCustomersIdSummaryAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdSummaryAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetUsersCustomersIdSummaryAdminQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary View profile summary
+ */
+export const prefetchGetUsersCustomersIdSummaryAdminQuery = async <TData = Awaited<ReturnType<typeof getUsersCustomersIdSummaryAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdSummaryAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetUsersCustomersIdSummaryAdminQueryOptions(id,options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * **RW-07** — POST /users/customers/{id}/redeem-reward/admin: đổi quà hộ khách từ điểm (BR-26). Cần đăng nhập + `CUSTOMER:redeem_reward`. Body field: `reward_id`.
+ * @summary Redeem a reward on behalf of the customer
+ */
+export const postUsersCustomersIdRedeemRewardAdmin = (
+    id: string,
+    postUsersCustomersIdRedeemRewardAdminBody: PostUsersCustomersIdRedeemRewardAdminBody,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<PostUsersCustomersIdRedeemRewardAdmin200>(
+      {url: `/users/customers/${id}/redeem-reward/admin`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: postUsersCustomersIdRedeemRewardAdminBody, signal
+    },
+      );
+    }
+  
+
+
+export const getPostUsersCustomersIdRedeemRewardAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postUsersCustomersIdRedeemRewardAdmin>>, TError,{id: string;data: PostUsersCustomersIdRedeemRewardAdminBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postUsersCustomersIdRedeemRewardAdmin>>, TError,{id: string;data: PostUsersCustomersIdRedeemRewardAdminBody}, TContext> => {
+
+const mutationKey = ['postUsersCustomersIdRedeemRewardAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postUsersCustomersIdRedeemRewardAdmin>>, {id: string;data: PostUsersCustomersIdRedeemRewardAdminBody}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  postUsersCustomersIdRedeemRewardAdmin(id,data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostUsersCustomersIdRedeemRewardAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postUsersCustomersIdRedeemRewardAdmin>>>
+    export type PostUsersCustomersIdRedeemRewardAdminMutationBody = PostUsersCustomersIdRedeemRewardAdminBody
+    export type PostUsersCustomersIdRedeemRewardAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+
+    /**
+ * @summary Redeem a reward on behalf of the customer
+ */
+export const usePostUsersCustomersIdRedeemRewardAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postUsersCustomersIdRedeemRewardAdmin>>, TError,{id: string;data: PostUsersCustomersIdRedeemRewardAdminBody}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postUsersCustomersIdRedeemRewardAdmin>>,
+        TError,
+        {id: string;data: PostUsersCustomersIdRedeemRewardAdminBody},
+        TContext
+      > => {
+
+      const mutationOptions = getPostUsersCustomersIdRedeemRewardAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * GET `/users/customers/{id}/qr/admin` — trả về mã QR của hồ sơ khách. Cần đăng nhập + `CUSTOMER:qr`. Query parameters: `format` (`png`|`svg`). Handled by `QRCode.toString`.
+ * @summary Get the customer profile QR code
+ */
+export const getUsersCustomersIdQrAdmin = (
+    id: string,
+    params?: GetUsersCustomersIdQrAdminParams,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetUsersCustomersIdQrAdmin200>(
+      {url: `/users/customers/${id}/qr/admin`, method: 'GET',
+        params, signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetUsersCustomersIdQrAdminInfiniteQueryKey = (id?: string,
+    params?: GetUsersCustomersIdQrAdminParams,) => {
+    return [
+    'infinite', `/users/customers/${id}/qr/admin`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+export const getGetUsersCustomersIdQrAdminQueryKey = (id?: string,
+    params?: GetUsersCustomersIdQrAdminParams,) => {
+    return [
+    `/users/customers/${id}/qr/admin`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getGetUsersCustomersIdQrAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersIdQrAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string,
+    params?: GetUsersCustomersIdQrAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdQrAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetUsersCustomersIdQrAdminInfiniteQueryKey(id,params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersCustomersIdQrAdmin>>> = ({ signal }) => getUsersCustomersIdQrAdmin(id,params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdQrAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetUsersCustomersIdQrAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersCustomersIdQrAdmin>>>
+export type GetUsersCustomersIdQrAdminInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+
+
+export function useGetUsersCustomersIdQrAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersIdQrAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string,
+    params: undefined |  GetUsersCustomersIdQrAdminParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdQrAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUsersCustomersIdQrAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getUsersCustomersIdQrAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersCustomersIdQrAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersIdQrAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string,
+    params?: GetUsersCustomersIdQrAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdQrAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUsersCustomersIdQrAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getUsersCustomersIdQrAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersCustomersIdQrAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersIdQrAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string,
+    params?: GetUsersCustomersIdQrAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdQrAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get the customer profile QR code
+ */
+
+export function useGetUsersCustomersIdQrAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersIdQrAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string,
+    params?: GetUsersCustomersIdQrAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdQrAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetUsersCustomersIdQrAdminInfiniteQueryOptions(id,params,options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Get the customer profile QR code
+ */
+export const prefetchGetUsersCustomersIdQrAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getUsersCustomersIdQrAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ queryClient: QueryClient, id: string,
+    params?: GetUsersCustomersIdQrAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdQrAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetUsersCustomersIdQrAdminInfiniteQueryOptions(id,params,options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetUsersCustomersIdQrAdminQueryOptions = <TData = Awaited<ReturnType<typeof getUsersCustomersIdQrAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string,
+    params?: GetUsersCustomersIdQrAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdQrAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetUsersCustomersIdQrAdminQueryKey(id,params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersCustomersIdQrAdmin>>> = ({ signal }) => getUsersCustomersIdQrAdmin(id,params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdQrAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetUsersCustomersIdQrAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersCustomersIdQrAdmin>>>
+export type GetUsersCustomersIdQrAdminQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+
+
+export function useGetUsersCustomersIdQrAdmin<TData = Awaited<ReturnType<typeof getUsersCustomersIdQrAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string,
+    params: undefined |  GetUsersCustomersIdQrAdminParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdQrAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUsersCustomersIdQrAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getUsersCustomersIdQrAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersCustomersIdQrAdmin<TData = Awaited<ReturnType<typeof getUsersCustomersIdQrAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string,
+    params?: GetUsersCustomersIdQrAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdQrAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUsersCustomersIdQrAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getUsersCustomersIdQrAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersCustomersIdQrAdmin<TData = Awaited<ReturnType<typeof getUsersCustomersIdQrAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string,
+    params?: GetUsersCustomersIdQrAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdQrAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get the customer profile QR code
+ */
+
+export function useGetUsersCustomersIdQrAdmin<TData = Awaited<ReturnType<typeof getUsersCustomersIdQrAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string,
+    params?: GetUsersCustomersIdQrAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdQrAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetUsersCustomersIdQrAdminQueryOptions(id,params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Get the customer profile QR code
+ */
+export const prefetchGetUsersCustomersIdQrAdminQuery = async <TData = Awaited<ReturnType<typeof getUsersCustomersIdQrAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ queryClient: QueryClient, id: string,
+    params?: GetUsersCustomersIdQrAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdQrAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetUsersCustomersIdQrAdminQueryOptions(id,params,options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * POST `/users/customers/{id}/qr/reset/admin` — reset mã QR của hồ sơ khách. Cần đăng nhập + `CUSTOMER:qr`.
+ * @summary Reset QR token
+ */
+export const postUsersCustomersIdQrResetAdmin = (
+    id: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<PostUsersCustomersIdQrResetAdmin200>(
+      {url: `/users/customers/${id}/qr/reset/admin`, method: 'POST', signal
+    },
+      );
+    }
+  
+
+
+export const getPostUsersCustomersIdQrResetAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postUsersCustomersIdQrResetAdmin>>, TError,{id: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postUsersCustomersIdQrResetAdmin>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['postUsersCustomersIdQrResetAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postUsersCustomersIdQrResetAdmin>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  postUsersCustomersIdQrResetAdmin(id,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostUsersCustomersIdQrResetAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postUsersCustomersIdQrResetAdmin>>>
+    
+    export type PostUsersCustomersIdQrResetAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+
+    /**
+ * @summary Reset QR token
+ */
+export const usePostUsersCustomersIdQrResetAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postUsersCustomersIdQrResetAdmin>>, TError,{id: string}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postUsersCustomersIdQrResetAdmin>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+
+      const mutationOptions = getPostUsersCustomersIdQrResetAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * **LY-01** — GET /users/customers/{id}/points/admin. Cần đăng nhập + `CUSTOMER:view_all`. Permission `membership.points_adjust` chỉ dùng cho cộng/trừ điểm thủ công. Returns `{ points, history, redemption }`; history is limited to the last 100 transactions.
+ * @summary View points balance and points transaction history for a customer profile
+ */
+export const getUsersCustomersIdPointsAdmin = (
+    id: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetUsersCustomersIdPointsAdmin200>(
+      {url: `/users/customers/${id}/points/admin`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetUsersCustomersIdPointsAdminInfiniteQueryKey = (id?: string,) => {
+    return [
+    'infinite', `/users/customers/${id}/points/admin`
+    ] as const;
+    }
+
+export const getGetUsersCustomersIdPointsAdminQueryKey = (id?: string,) => {
+    return [
+    `/users/customers/${id}/points/admin`
+    ] as const;
+    }
+
+    
+export const getGetUsersCustomersIdPointsAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersIdPointsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdPointsAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetUsersCustomersIdPointsAdminInfiniteQueryKey(id);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersCustomersIdPointsAdmin>>> = ({ signal }) => getUsersCustomersIdPointsAdmin(id, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdPointsAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetUsersCustomersIdPointsAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersCustomersIdPointsAdmin>>>
+export type GetUsersCustomersIdPointsAdminInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+
+
+export function useGetUsersCustomersIdPointsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersIdPointsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdPointsAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUsersCustomersIdPointsAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getUsersCustomersIdPointsAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersCustomersIdPointsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersIdPointsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdPointsAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUsersCustomersIdPointsAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getUsersCustomersIdPointsAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersCustomersIdPointsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersIdPointsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdPointsAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary View points balance and points transaction history for a customer profile
+ */
+
+export function useGetUsersCustomersIdPointsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersIdPointsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdPointsAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetUsersCustomersIdPointsAdminInfiniteQueryOptions(id,options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary View points balance and points transaction history for a customer profile
+ */
+export const prefetchGetUsersCustomersIdPointsAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getUsersCustomersIdPointsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdPointsAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetUsersCustomersIdPointsAdminInfiniteQueryOptions(id,options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetUsersCustomersIdPointsAdminQueryOptions = <TData = Awaited<ReturnType<typeof getUsersCustomersIdPointsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdPointsAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetUsersCustomersIdPointsAdminQueryKey(id);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersCustomersIdPointsAdmin>>> = ({ signal }) => getUsersCustomersIdPointsAdmin(id, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdPointsAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetUsersCustomersIdPointsAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersCustomersIdPointsAdmin>>>
+export type GetUsersCustomersIdPointsAdminQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+
+
+export function useGetUsersCustomersIdPointsAdmin<TData = Awaited<ReturnType<typeof getUsersCustomersIdPointsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdPointsAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUsersCustomersIdPointsAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getUsersCustomersIdPointsAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersCustomersIdPointsAdmin<TData = Awaited<ReturnType<typeof getUsersCustomersIdPointsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdPointsAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUsersCustomersIdPointsAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getUsersCustomersIdPointsAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersCustomersIdPointsAdmin<TData = Awaited<ReturnType<typeof getUsersCustomersIdPointsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdPointsAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary View points balance and points transaction history for a customer profile
+ */
+
+export function useGetUsersCustomersIdPointsAdmin<TData = Awaited<ReturnType<typeof getUsersCustomersIdPointsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdPointsAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetUsersCustomersIdPointsAdminQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary View points balance and points transaction history for a customer profile
+ */
+export const prefetchGetUsersCustomersIdPointsAdminQuery = async <TData = Awaited<ReturnType<typeof getUsersCustomersIdPointsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdPointsAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetUsersCustomersIdPointsAdminQueryOptions(id,options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * GET `/users/customers/{id}/health-records/admin` — danh sách hồ sơ sức khỏe của khách. Cần đăng nhập + `CUSTOMER:view_all`.
+ * @summary List health records for a customer
+ */
+export const getUsersCustomersIdHealthRecordsAdmin = (
+    id: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetUsersCustomersIdHealthRecordsAdmin200>(
+      {url: `/users/customers/${id}/health-records/admin`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetUsersCustomersIdHealthRecordsAdminInfiniteQueryKey = (id?: string,) => {
+    return [
+    'infinite', `/users/customers/${id}/health-records/admin`
+    ] as const;
+    }
+
+export const getGetUsersCustomersIdHealthRecordsAdminQueryKey = (id?: string,) => {
+    return [
+    `/users/customers/${id}/health-records/admin`
+    ] as const;
+    }
+
+    
+export const getGetUsersCustomersIdHealthRecordsAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersIdHealthRecordsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdHealthRecordsAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetUsersCustomersIdHealthRecordsAdminInfiniteQueryKey(id);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersCustomersIdHealthRecordsAdmin>>> = ({ signal }) => getUsersCustomersIdHealthRecordsAdmin(id, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdHealthRecordsAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetUsersCustomersIdHealthRecordsAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersCustomersIdHealthRecordsAdmin>>>
+export type GetUsersCustomersIdHealthRecordsAdminInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+
+
+export function useGetUsersCustomersIdHealthRecordsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersIdHealthRecordsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdHealthRecordsAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUsersCustomersIdHealthRecordsAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getUsersCustomersIdHealthRecordsAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersCustomersIdHealthRecordsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersIdHealthRecordsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdHealthRecordsAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUsersCustomersIdHealthRecordsAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getUsersCustomersIdHealthRecordsAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersCustomersIdHealthRecordsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersIdHealthRecordsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdHealthRecordsAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List health records for a customer
+ */
+
+export function useGetUsersCustomersIdHealthRecordsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersIdHealthRecordsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdHealthRecordsAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetUsersCustomersIdHealthRecordsAdminInfiniteQueryOptions(id,options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary List health records for a customer
+ */
+export const prefetchGetUsersCustomersIdHealthRecordsAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getUsersCustomersIdHealthRecordsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdHealthRecordsAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetUsersCustomersIdHealthRecordsAdminInfiniteQueryOptions(id,options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetUsersCustomersIdHealthRecordsAdminQueryOptions = <TData = Awaited<ReturnType<typeof getUsersCustomersIdHealthRecordsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdHealthRecordsAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetUsersCustomersIdHealthRecordsAdminQueryKey(id);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersCustomersIdHealthRecordsAdmin>>> = ({ signal }) => getUsersCustomersIdHealthRecordsAdmin(id, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdHealthRecordsAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetUsersCustomersIdHealthRecordsAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersCustomersIdHealthRecordsAdmin>>>
+export type GetUsersCustomersIdHealthRecordsAdminQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+
+
+export function useGetUsersCustomersIdHealthRecordsAdmin<TData = Awaited<ReturnType<typeof getUsersCustomersIdHealthRecordsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdHealthRecordsAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUsersCustomersIdHealthRecordsAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getUsersCustomersIdHealthRecordsAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersCustomersIdHealthRecordsAdmin<TData = Awaited<ReturnType<typeof getUsersCustomersIdHealthRecordsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdHealthRecordsAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUsersCustomersIdHealthRecordsAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getUsersCustomersIdHealthRecordsAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersCustomersIdHealthRecordsAdmin<TData = Awaited<ReturnType<typeof getUsersCustomersIdHealthRecordsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdHealthRecordsAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List health records for a customer
+ */
+
+export function useGetUsersCustomersIdHealthRecordsAdmin<TData = Awaited<ReturnType<typeof getUsersCustomersIdHealthRecordsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdHealthRecordsAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetUsersCustomersIdHealthRecordsAdminQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary List health records for a customer
+ */
+export const prefetchGetUsersCustomersIdHealthRecordsAdminQuery = async <TData = Awaited<ReturnType<typeof getUsersCustomersIdHealthRecordsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdHealthRecordsAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetUsersCustomersIdHealthRecordsAdminQueryOptions(id,options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * POST `/users/customers/{id}/health-records/admin` — thêm hồ sơ sức khỏe. Cần đăng nhập + `CUSTOMER:update_all`.
+ * @summary Add a health record for the customer
+ */
+export const postUsersCustomersIdHealthRecordsAdmin = (
+    id: string,
+    customerCreate: CustomerCreate,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<PostUsersCustomersIdHealthRecordsAdmin200>(
+      {url: `/users/customers/${id}/health-records/admin`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: customerCreate, signal
+    },
+      );
+    }
+  
+
+
+export const getPostUsersCustomersIdHealthRecordsAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postUsersCustomersIdHealthRecordsAdmin>>, TError,{id: string;data: CustomerCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postUsersCustomersIdHealthRecordsAdmin>>, TError,{id: string;data: CustomerCreate}, TContext> => {
+
+const mutationKey = ['postUsersCustomersIdHealthRecordsAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postUsersCustomersIdHealthRecordsAdmin>>, {id: string;data: CustomerCreate}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  postUsersCustomersIdHealthRecordsAdmin(id,data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostUsersCustomersIdHealthRecordsAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postUsersCustomersIdHealthRecordsAdmin>>>
+    export type PostUsersCustomersIdHealthRecordsAdminMutationBody = CustomerCreate
+    export type PostUsersCustomersIdHealthRecordsAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+
+    /**
+ * @summary Add a health record for the customer
+ */
+export const usePostUsersCustomersIdHealthRecordsAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postUsersCustomersIdHealthRecordsAdmin>>, TError,{id: string;data: CustomerCreate}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postUsersCustomersIdHealthRecordsAdmin>>,
+        TError,
+        {id: string;data: CustomerCreate},
+        TContext
+      > => {
+
+      const mutationOptions = getPostUsersCustomersIdHealthRecordsAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * PUT `/users/customers/{id}/health-records/{recordId}/admin` — cập nhật hồ sơ sức khỏe. Cần đăng nhập + `CUSTOMER:update_all`.
+ * @summary Update a health record
+ */
+export const putUsersCustomersIdHealthRecordsRecordIdAdmin = (
+    id: string,
+    recordId: string,
+    customerCreate: CustomerCreate,
+ ) => {
+      
+      
+      return customInstance<PutUsersCustomersIdHealthRecordsRecordIdAdmin200>(
+      {url: `/users/customers/${id}/health-records/${recordId}/admin`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: customerCreate
+    },
+      );
+    }
+  
+
+
+export const getPutUsersCustomersIdHealthRecordsRecordIdAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putUsersCustomersIdHealthRecordsRecordIdAdmin>>, TError,{id: string;recordId: string;data: CustomerCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putUsersCustomersIdHealthRecordsRecordIdAdmin>>, TError,{id: string;recordId: string;data: CustomerCreate}, TContext> => {
+
+const mutationKey = ['putUsersCustomersIdHealthRecordsRecordIdAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putUsersCustomersIdHealthRecordsRecordIdAdmin>>, {id: string;recordId: string;data: CustomerCreate}> = (props) => {
+          const {id,recordId,data} = props ?? {};
+
+          return  putUsersCustomersIdHealthRecordsRecordIdAdmin(id,recordId,data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PutUsersCustomersIdHealthRecordsRecordIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof putUsersCustomersIdHealthRecordsRecordIdAdmin>>>
+    export type PutUsersCustomersIdHealthRecordsRecordIdAdminMutationBody = CustomerCreate
+    export type PutUsersCustomersIdHealthRecordsRecordIdAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+
+    /**
+ * @summary Update a health record
+ */
+export const usePutUsersCustomersIdHealthRecordsRecordIdAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putUsersCustomersIdHealthRecordsRecordIdAdmin>>, TError,{id: string;recordId: string;data: CustomerCreate}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof putUsersCustomersIdHealthRecordsRecordIdAdmin>>,
+        TError,
+        {id: string;recordId: string;data: CustomerCreate},
+        TContext
+      > => {
+
+      const mutationOptions = getPutUsersCustomersIdHealthRecordsRecordIdAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * GET `/users/customers/{id}/health-metrics/admin` — danh sách chỉ số sức khỏe/da của khách. Cần đăng nhập + `CUSTOMER:view_all`.
+ * @summary List health metrics for a customer
+ */
+export const getUsersCustomersIdHealthMetricsAdmin = (
+    id: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetUsersCustomersIdHealthMetricsAdmin200>(
+      {url: `/users/customers/${id}/health-metrics/admin`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetUsersCustomersIdHealthMetricsAdminInfiniteQueryKey = (id?: string,) => {
+    return [
+    'infinite', `/users/customers/${id}/health-metrics/admin`
+    ] as const;
+    }
+
+export const getGetUsersCustomersIdHealthMetricsAdminQueryKey = (id?: string,) => {
+    return [
+    `/users/customers/${id}/health-metrics/admin`
+    ] as const;
+    }
+
+    
+export const getGetUsersCustomersIdHealthMetricsAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersIdHealthMetricsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdHealthMetricsAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetUsersCustomersIdHealthMetricsAdminInfiniteQueryKey(id);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersCustomersIdHealthMetricsAdmin>>> = ({ signal }) => getUsersCustomersIdHealthMetricsAdmin(id, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdHealthMetricsAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetUsersCustomersIdHealthMetricsAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersCustomersIdHealthMetricsAdmin>>>
+export type GetUsersCustomersIdHealthMetricsAdminInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+
+
+export function useGetUsersCustomersIdHealthMetricsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersIdHealthMetricsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdHealthMetricsAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUsersCustomersIdHealthMetricsAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getUsersCustomersIdHealthMetricsAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersCustomersIdHealthMetricsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersIdHealthMetricsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdHealthMetricsAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUsersCustomersIdHealthMetricsAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getUsersCustomersIdHealthMetricsAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersCustomersIdHealthMetricsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersIdHealthMetricsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdHealthMetricsAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List health metrics for a customer
+ */
+
+export function useGetUsersCustomersIdHealthMetricsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersIdHealthMetricsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdHealthMetricsAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetUsersCustomersIdHealthMetricsAdminInfiniteQueryOptions(id,options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary List health metrics for a customer
+ */
+export const prefetchGetUsersCustomersIdHealthMetricsAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getUsersCustomersIdHealthMetricsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdHealthMetricsAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetUsersCustomersIdHealthMetricsAdminInfiniteQueryOptions(id,options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetUsersCustomersIdHealthMetricsAdminQueryOptions = <TData = Awaited<ReturnType<typeof getUsersCustomersIdHealthMetricsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdHealthMetricsAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetUsersCustomersIdHealthMetricsAdminQueryKey(id);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersCustomersIdHealthMetricsAdmin>>> = ({ signal }) => getUsersCustomersIdHealthMetricsAdmin(id, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdHealthMetricsAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetUsersCustomersIdHealthMetricsAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersCustomersIdHealthMetricsAdmin>>>
+export type GetUsersCustomersIdHealthMetricsAdminQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+
+
+export function useGetUsersCustomersIdHealthMetricsAdmin<TData = Awaited<ReturnType<typeof getUsersCustomersIdHealthMetricsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdHealthMetricsAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUsersCustomersIdHealthMetricsAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getUsersCustomersIdHealthMetricsAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersCustomersIdHealthMetricsAdmin<TData = Awaited<ReturnType<typeof getUsersCustomersIdHealthMetricsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdHealthMetricsAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUsersCustomersIdHealthMetricsAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getUsersCustomersIdHealthMetricsAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersCustomersIdHealthMetricsAdmin<TData = Awaited<ReturnType<typeof getUsersCustomersIdHealthMetricsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdHealthMetricsAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List health metrics for a customer
+ */
+
+export function useGetUsersCustomersIdHealthMetricsAdmin<TData = Awaited<ReturnType<typeof getUsersCustomersIdHealthMetricsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdHealthMetricsAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetUsersCustomersIdHealthMetricsAdminQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary List health metrics for a customer
+ */
+export const prefetchGetUsersCustomersIdHealthMetricsAdminQuery = async <TData = Awaited<ReturnType<typeof getUsersCustomersIdHealthMetricsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdHealthMetricsAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetUsersCustomersIdHealthMetricsAdminQueryOptions(id,options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * POST `/users/customers/{id}/health-metrics/admin` — thêm chỉ số sức khỏe/da. Cần đăng nhập + `health_metric.create`.
+ * @summary Add a health metric for the customer
+ */
+export const postUsersCustomersIdHealthMetricsAdmin = (
+    id: string,
+    customerCreate: CustomerCreate,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<PostUsersCustomersIdHealthMetricsAdmin200>(
+      {url: `/users/customers/${id}/health-metrics/admin`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: customerCreate, signal
+    },
+      );
+    }
+  
+
+
+export const getPostUsersCustomersIdHealthMetricsAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postUsersCustomersIdHealthMetricsAdmin>>, TError,{id: string;data: CustomerCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postUsersCustomersIdHealthMetricsAdmin>>, TError,{id: string;data: CustomerCreate}, TContext> => {
+
+const mutationKey = ['postUsersCustomersIdHealthMetricsAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postUsersCustomersIdHealthMetricsAdmin>>, {id: string;data: CustomerCreate}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  postUsersCustomersIdHealthMetricsAdmin(id,data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostUsersCustomersIdHealthMetricsAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postUsersCustomersIdHealthMetricsAdmin>>>
+    export type PostUsersCustomersIdHealthMetricsAdminMutationBody = CustomerCreate
+    export type PostUsersCustomersIdHealthMetricsAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+
+    /**
+ * @summary Add a health metric for the customer
+ */
+export const usePostUsersCustomersIdHealthMetricsAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postUsersCustomersIdHealthMetricsAdmin>>, TError,{id: string;data: CustomerCreate}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postUsersCustomersIdHealthMetricsAdmin>>,
+        TError,
+        {id: string;data: CustomerCreate},
+        TContext
+      > => {
+
+      const mutationOptions = getPostUsersCustomersIdHealthMetricsAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * PUT `/users/customers/{id}/health-metrics/{metricId}/admin` — cập nhật chỉ số sức khỏe/da. Cần đăng nhập + `health_metric.update_all` hoặc `health_metric.update_own`.
+ * @summary Update a health metric
+ */
+export const putUsersCustomersIdHealthMetricsMetricIdAdmin = (
+    id: string,
+    metricId: string,
+    customerCreate: CustomerCreate,
+ ) => {
+      
+      
+      return customInstance<PutUsersCustomersIdHealthMetricsMetricIdAdmin200>(
+      {url: `/users/customers/${id}/health-metrics/${metricId}/admin`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: customerCreate
+    },
+      );
+    }
+  
+
+
+export const getPutUsersCustomersIdHealthMetricsMetricIdAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putUsersCustomersIdHealthMetricsMetricIdAdmin>>, TError,{id: string;metricId: string;data: CustomerCreate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putUsersCustomersIdHealthMetricsMetricIdAdmin>>, TError,{id: string;metricId: string;data: CustomerCreate}, TContext> => {
+
+const mutationKey = ['putUsersCustomersIdHealthMetricsMetricIdAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putUsersCustomersIdHealthMetricsMetricIdAdmin>>, {id: string;metricId: string;data: CustomerCreate}> = (props) => {
+          const {id,metricId,data} = props ?? {};
+
+          return  putUsersCustomersIdHealthMetricsMetricIdAdmin(id,metricId,data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PutUsersCustomersIdHealthMetricsMetricIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof putUsersCustomersIdHealthMetricsMetricIdAdmin>>>
+    export type PutUsersCustomersIdHealthMetricsMetricIdAdminMutationBody = CustomerCreate
+    export type PutUsersCustomersIdHealthMetricsMetricIdAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+
+    /**
+ * @summary Update a health metric
+ */
+export const usePutUsersCustomersIdHealthMetricsMetricIdAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putUsersCustomersIdHealthMetricsMetricIdAdmin>>, TError,{id: string;metricId: string;data: CustomerCreate}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof putUsersCustomersIdHealthMetricsMetricIdAdmin>>,
+        TError,
+        {id: string;metricId: string;data: CustomerCreate},
+        TContext
+      > => {
+
+      const mutationOptions = getPutUsersCustomersIdHealthMetricsMetricIdAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * DELETE `/users/customers/{id}/health-metrics/{metricId}/admin` — chỉ platform admin (ADM) được gọi.
+ * @summary Delete a health metric
+ */
+export const deleteUsersCustomersIdHealthMetricsMetricIdAdmin = (
+    id: string,
+    metricId: string,
+ ) => {
+      
+      
+      return customInstance<DeleteUsersCustomersIdHealthMetricsMetricIdAdmin200>(
+      {url: `/users/customers/${id}/health-metrics/${metricId}/admin`, method: 'DELETE'
+    },
+      );
+    }
+  
+
+
+export const getDeleteUsersCustomersIdHealthMetricsMetricIdAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteUsersCustomersIdHealthMetricsMetricIdAdmin>>, TError,{id: string;metricId: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof deleteUsersCustomersIdHealthMetricsMetricIdAdmin>>, TError,{id: string;metricId: string}, TContext> => {
+
+const mutationKey = ['deleteUsersCustomersIdHealthMetricsMetricIdAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteUsersCustomersIdHealthMetricsMetricIdAdmin>>, {id: string;metricId: string}> = (props) => {
+          const {id,metricId} = props ?? {};
+
+          return  deleteUsersCustomersIdHealthMetricsMetricIdAdmin(id,metricId,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteUsersCustomersIdHealthMetricsMetricIdAdminMutationResult = NonNullable<Awaited<ReturnType<typeof deleteUsersCustomersIdHealthMetricsMetricIdAdmin>>>
+    
+    export type DeleteUsersCustomersIdHealthMetricsMetricIdAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+
+    /**
+ * @summary Delete a health metric
+ */
+export const useDeleteUsersCustomersIdHealthMetricsMetricIdAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteUsersCustomersIdHealthMetricsMetricIdAdmin>>, TError,{id: string;metricId: string}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof deleteUsersCustomersIdHealthMetricsMetricIdAdmin>>,
+        TError,
+        {id: string;metricId: string},
+        TContext
+      > => {
+
+      const mutationOptions = getDeleteUsersCustomersIdHealthMetricsMetricIdAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * **CP-07** — GET /users/customers/{id}/code-history/admin. Cần đăng nhập + `CUSTOMER:view_all`.
+ * @summary View customer code history
+ */
+export const getUsersCustomersIdCodeHistoryAdmin = (
+    id: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetUsersCustomersIdCodeHistoryAdmin200>(
+      {url: `/users/customers/${id}/code-history/admin`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetUsersCustomersIdCodeHistoryAdminInfiniteQueryKey = (id?: string,) => {
+    return [
+    'infinite', `/users/customers/${id}/code-history/admin`
+    ] as const;
+    }
+
+export const getGetUsersCustomersIdCodeHistoryAdminQueryKey = (id?: string,) => {
+    return [
+    `/users/customers/${id}/code-history/admin`
+    ] as const;
+    }
+
+    
+export const getGetUsersCustomersIdCodeHistoryAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersIdCodeHistoryAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdCodeHistoryAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetUsersCustomersIdCodeHistoryAdminInfiniteQueryKey(id);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersCustomersIdCodeHistoryAdmin>>> = ({ signal }) => getUsersCustomersIdCodeHistoryAdmin(id, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdCodeHistoryAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetUsersCustomersIdCodeHistoryAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersCustomersIdCodeHistoryAdmin>>>
+export type GetUsersCustomersIdCodeHistoryAdminInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+
+
+export function useGetUsersCustomersIdCodeHistoryAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersIdCodeHistoryAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdCodeHistoryAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUsersCustomersIdCodeHistoryAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getUsersCustomersIdCodeHistoryAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersCustomersIdCodeHistoryAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersIdCodeHistoryAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdCodeHistoryAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUsersCustomersIdCodeHistoryAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getUsersCustomersIdCodeHistoryAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersCustomersIdCodeHistoryAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersIdCodeHistoryAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdCodeHistoryAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary View customer code history
+ */
+
+export function useGetUsersCustomersIdCodeHistoryAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersIdCodeHistoryAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdCodeHistoryAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetUsersCustomersIdCodeHistoryAdminInfiniteQueryOptions(id,options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary View customer code history
+ */
+export const prefetchGetUsersCustomersIdCodeHistoryAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getUsersCustomersIdCodeHistoryAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdCodeHistoryAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetUsersCustomersIdCodeHistoryAdminInfiniteQueryOptions(id,options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetUsersCustomersIdCodeHistoryAdminQueryOptions = <TData = Awaited<ReturnType<typeof getUsersCustomersIdCodeHistoryAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdCodeHistoryAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetUsersCustomersIdCodeHistoryAdminQueryKey(id);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersCustomersIdCodeHistoryAdmin>>> = ({ signal }) => getUsersCustomersIdCodeHistoryAdmin(id, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdCodeHistoryAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetUsersCustomersIdCodeHistoryAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersCustomersIdCodeHistoryAdmin>>>
+export type GetUsersCustomersIdCodeHistoryAdminQueryError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse
+
+
+export function useGetUsersCustomersIdCodeHistoryAdmin<TData = Awaited<ReturnType<typeof getUsersCustomersIdCodeHistoryAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdCodeHistoryAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUsersCustomersIdCodeHistoryAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getUsersCustomersIdCodeHistoryAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersCustomersIdCodeHistoryAdmin<TData = Awaited<ReturnType<typeof getUsersCustomersIdCodeHistoryAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdCodeHistoryAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUsersCustomersIdCodeHistoryAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getUsersCustomersIdCodeHistoryAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersCustomersIdCodeHistoryAdmin<TData = Awaited<ReturnType<typeof getUsersCustomersIdCodeHistoryAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdCodeHistoryAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary View customer code history
+ */
+
+export function useGetUsersCustomersIdCodeHistoryAdmin<TData = Awaited<ReturnType<typeof getUsersCustomersIdCodeHistoryAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdCodeHistoryAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetUsersCustomersIdCodeHistoryAdminQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary View customer code history
+ */
+export const prefetchGetUsersCustomersIdCodeHistoryAdminQuery = async <TData = Awaited<ReturnType<typeof getUsersCustomersIdCodeHistoryAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | InternalErrorResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersIdCodeHistoryAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetUsersCustomersIdCodeHistoryAdminQueryOptions(id,options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * **CP-08** — GET /users/customers/export/admin (CSV, writes a customer-data export audit event). Cần đăng nhập + `CUSTOMER:export`. Scoped theo customerProfileScope.
+ * @summary Export customer profiles (CSV)
+ */
+export const getUsersCustomersExportAdmin = (
+    
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetUsersCustomersExportAdmin200>(
+      {url: `/users/customers/export/admin`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetUsersCustomersExportAdminInfiniteQueryKey = () => {
+    return [
+    'infinite', `/users/customers/export/admin`
+    ] as const;
+    }
+
+export const getGetUsersCustomersExportAdminQueryKey = () => {
+    return [
+    `/users/customers/export/admin`
+    ] as const;
+    }
+
+    
+export const getGetUsersCustomersExportAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersExportAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersExportAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetUsersCustomersExportAdminInfiniteQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersCustomersExportAdmin>>> = ({ signal }) => getUsersCustomersExportAdmin(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersExportAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetUsersCustomersExportAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersCustomersExportAdmin>>>
+export type GetUsersCustomersExportAdminInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+
+
+export function useGetUsersCustomersExportAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersExportAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersExportAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUsersCustomersExportAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getUsersCustomersExportAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersCustomersExportAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersExportAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersExportAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUsersCustomersExportAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getUsersCustomersExportAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersCustomersExportAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersExportAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersExportAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Export customer profiles (CSV)
+ */
+
+export function useGetUsersCustomersExportAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersExportAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersExportAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetUsersCustomersExportAdminInfiniteQueryOptions(options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Export customer profiles (CSV)
+ */
+export const prefetchGetUsersCustomersExportAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getUsersCustomersExportAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersExportAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetUsersCustomersExportAdminInfiniteQueryOptions(options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetUsersCustomersExportAdminQueryOptions = <TData = Awaited<ReturnType<typeof getUsersCustomersExportAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersExportAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetUsersCustomersExportAdminQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersCustomersExportAdmin>>> = ({ signal }) => getUsersCustomersExportAdmin(signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersExportAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetUsersCustomersExportAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersCustomersExportAdmin>>>
+export type GetUsersCustomersExportAdminQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+
+
+export function useGetUsersCustomersExportAdmin<TData = Awaited<ReturnType<typeof getUsersCustomersExportAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersExportAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUsersCustomersExportAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getUsersCustomersExportAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersCustomersExportAdmin<TData = Awaited<ReturnType<typeof getUsersCustomersExportAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersExportAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUsersCustomersExportAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getUsersCustomersExportAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersCustomersExportAdmin<TData = Awaited<ReturnType<typeof getUsersCustomersExportAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersExportAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Export customer profiles (CSV)
+ */
+
+export function useGetUsersCustomersExportAdmin<TData = Awaited<ReturnType<typeof getUsersCustomersExportAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersExportAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetUsersCustomersExportAdminQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Export customer profiles (CSV)
+ */
+export const prefetchGetUsersCustomersExportAdminQuery = async <TData = Awaited<ReturnType<typeof getUsersCustomersExportAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersExportAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetUsersCustomersExportAdminQueryOptions(options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * GET `/users/customers/by-qr/admin` — tra cứu hồ sơ khách theo QR. Cần đăng nhập + `CUSTOMER:view_all`. Scoped theo customerProfileScope. Query parameters: `token`.
+ * @summary Look up by QR code
+ */
+export const getUsersCustomersByQrAdmin = (
+    params?: GetUsersCustomersByQrAdminParams,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetUsersCustomersByQrAdmin200>(
+      {url: `/users/customers/by-qr/admin`, method: 'GET',
+        params, signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetUsersCustomersByQrAdminInfiniteQueryKey = (params?: GetUsersCustomersByQrAdminParams,) => {
+    return [
+    'infinite', `/users/customers/by-qr/admin`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+export const getGetUsersCustomersByQrAdminQueryKey = (params?: GetUsersCustomersByQrAdminParams,) => {
+    return [
+    `/users/customers/by-qr/admin`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getGetUsersCustomersByQrAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersByQrAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetUsersCustomersByQrAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersByQrAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetUsersCustomersByQrAdminInfiniteQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersCustomersByQrAdmin>>> = ({ signal }) => getUsersCustomersByQrAdmin(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersByQrAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetUsersCustomersByQrAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersCustomersByQrAdmin>>>
+export type GetUsersCustomersByQrAdminInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+
+
+export function useGetUsersCustomersByQrAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersByQrAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetUsersCustomersByQrAdminParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersByQrAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUsersCustomersByQrAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getUsersCustomersByQrAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersCustomersByQrAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersByQrAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetUsersCustomersByQrAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersByQrAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUsersCustomersByQrAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getUsersCustomersByQrAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersCustomersByQrAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersByQrAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetUsersCustomersByQrAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersByQrAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Look up by QR code
+ */
+
+export function useGetUsersCustomersByQrAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersByQrAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetUsersCustomersByQrAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersByQrAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetUsersCustomersByQrAdminInfiniteQueryOptions(params,options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Look up by QR code
+ */
+export const prefetchGetUsersCustomersByQrAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getUsersCustomersByQrAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetUsersCustomersByQrAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersByQrAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetUsersCustomersByQrAdminInfiniteQueryOptions(params,options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetUsersCustomersByQrAdminQueryOptions = <TData = Awaited<ReturnType<typeof getUsersCustomersByQrAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetUsersCustomersByQrAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersByQrAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetUsersCustomersByQrAdminQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersCustomersByQrAdmin>>> = ({ signal }) => getUsersCustomersByQrAdmin(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersByQrAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetUsersCustomersByQrAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersCustomersByQrAdmin>>>
+export type GetUsersCustomersByQrAdminQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+
+
+export function useGetUsersCustomersByQrAdmin<TData = Awaited<ReturnType<typeof getUsersCustomersByQrAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetUsersCustomersByQrAdminParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersByQrAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUsersCustomersByQrAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getUsersCustomersByQrAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersCustomersByQrAdmin<TData = Awaited<ReturnType<typeof getUsersCustomersByQrAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetUsersCustomersByQrAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersByQrAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUsersCustomersByQrAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getUsersCustomersByQrAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersCustomersByQrAdmin<TData = Awaited<ReturnType<typeof getUsersCustomersByQrAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetUsersCustomersByQrAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersByQrAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Look up by QR code
+ */
+
+export function useGetUsersCustomersByQrAdmin<TData = Awaited<ReturnType<typeof getUsersCustomersByQrAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetUsersCustomersByQrAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersByQrAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetUsersCustomersByQrAdminQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Look up by QR code
+ */
+export const prefetchGetUsersCustomersByQrAdminQuery = async <TData = Awaited<ReturnType<typeof getUsersCustomersByQrAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetUsersCustomersByQrAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersByQrAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetUsersCustomersByQrAdminQueryOptions(params,options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * **CP-01** — GET /users/customers/admin. Cần đăng nhập + `CUSTOMER:read_all` (danh sách quản trị, phân trang `page`, `limit`, tìm kiếm `q`). Scoped theo customerProfileScope (KTV chỉ xem khách có buổi được phân công).
+ * @summary List customer profiles (management / own profile)
+ */
+export const getUsersCustomersAdmin = (
+    params?: GetUsersCustomersAdminParams,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetUsersCustomersAdmin200>(
+      {url: `/users/customers/admin`, method: 'GET',
+        params, signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetUsersCustomersAdminInfiniteQueryKey = (params?: GetUsersCustomersAdminParams,) => {
+    return [
+    'infinite', `/users/customers/admin`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+export const getGetUsersCustomersAdminQueryKey = (params?: GetUsersCustomersAdminParams,) => {
+    return [
+    `/users/customers/admin`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getGetUsersCustomersAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetUsersCustomersAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetUsersCustomersAdminInfiniteQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersCustomersAdmin>>> = ({ signal }) => getUsersCustomersAdmin(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetUsersCustomersAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersCustomersAdmin>>>
+export type GetUsersCustomersAdminInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+
+
+export function useGetUsersCustomersAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetUsersCustomersAdminParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUsersCustomersAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getUsersCustomersAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersCustomersAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetUsersCustomersAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUsersCustomersAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getUsersCustomersAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersCustomersAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetUsersCustomersAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List customer profiles (management / own profile)
+ */
+
+export function useGetUsersCustomersAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersCustomersAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetUsersCustomersAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetUsersCustomersAdminInfiniteQueryOptions(params,options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary List customer profiles (management / own profile)
+ */
+export const prefetchGetUsersCustomersAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getUsersCustomersAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetUsersCustomersAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersCustomersAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetUsersCustomersAdminInfiniteQueryOptions(params,options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetUsersCustomersAdminQueryOptions = <TData = Awaited<ReturnType<typeof getUsersCustomersAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetUsersCustomersAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetUsersCustomersAdminQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersCustomersAdmin>>> = ({ signal }) => getUsersCustomersAdmin(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetUsersCustomersAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersCustomersAdmin>>>
+export type GetUsersCustomersAdminQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+
+
+export function useGetUsersCustomersAdmin<TData = Awaited<ReturnType<typeof getUsersCustomersAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetUsersCustomersAdminParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUsersCustomersAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getUsersCustomersAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersCustomersAdmin<TData = Awaited<ReturnType<typeof getUsersCustomersAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetUsersCustomersAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUsersCustomersAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getUsersCustomersAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersCustomersAdmin<TData = Awaited<ReturnType<typeof getUsersCustomersAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetUsersCustomersAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List customer profiles (management / own profile)
+ */
+
+export function useGetUsersCustomersAdmin<TData = Awaited<ReturnType<typeof getUsersCustomersAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetUsersCustomersAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetUsersCustomersAdminQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary List customer profiles (management / own profile)
+ */
+export const prefetchGetUsersCustomersAdminQuery = async <TData = Awaited<ReturnType<typeof getUsersCustomersAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetUsersCustomersAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersCustomersAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetUsersCustomersAdminQueryOptions(params,options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * **CP-03** — POST /users/customers/admin. Cần đăng nhập + `CUSTOMER:create`. Customer profiles are global and do not have a branch. The request body is passed as-is to the business layer.
+ * @summary Create a new customer profile
+ */
+export const postUsersCustomersAdmin = (
+    postUsersCustomersAdminBody: PostUsersCustomersAdminBody,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<PostUsersCustomersAdmin200>(
+      {url: `/users/customers/admin`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: postUsersCustomersAdminBody, signal
+    },
+      );
+    }
+  
+
+
+export const getPostUsersCustomersAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postUsersCustomersAdmin>>, TError,{data: PostUsersCustomersAdminBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postUsersCustomersAdmin>>, TError,{data: PostUsersCustomersAdminBody}, TContext> => {
+
+const mutationKey = ['postUsersCustomersAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postUsersCustomersAdmin>>, {data: PostUsersCustomersAdminBody}> = (props) => {
+          const {data} = props ?? {};
+
+          return  postUsersCustomersAdmin(data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostUsersCustomersAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postUsersCustomersAdmin>>>
+    export type PostUsersCustomersAdminMutationBody = PostUsersCustomersAdminBody
+    export type PostUsersCustomersAdminMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+
+    /**
+ * @summary Create a new customer profile
+ */
+export const usePostUsersCustomersAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postUsersCustomersAdmin>>, TError,{data: PostUsersCustomersAdminBody}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postUsersCustomersAdmin>>,
+        TError,
+        {data: PostUsersCustomersAdminBody},
+        TContext
+      > => {
+
+      const mutationOptions = getPostUsersCustomersAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * GET `/health-records/admin` — danh sách hồ sơ sức khỏe mới nhất theo khách. Cần đăng nhập + `health_record.read_all` (branch scope áp dụng). Query parameters: `branch_id`. Hồ sơ của chính tài khoản (miniapp): GET /health-records/app.
+ * @summary View latest health records
+ */
+export const getHealthRecordsAdmin = (
+    params?: GetHealthRecordsAdminParams,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetHealthRecordsAdmin200>(
+      {url: `/health-records/admin`, method: 'GET',
+        params, signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetHealthRecordsAdminInfiniteQueryKey = (params?: GetHealthRecordsAdminParams,) => {
+    return [
+    'infinite', `/health-records/admin`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+export const getGetHealthRecordsAdminQueryKey = (params?: GetHealthRecordsAdminParams,) => {
+    return [
+    `/health-records/admin`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getGetHealthRecordsAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getHealthRecordsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetHealthRecordsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getHealthRecordsAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetHealthRecordsAdminInfiniteQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getHealthRecordsAdmin>>> = ({ signal }) => getHealthRecordsAdmin(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getHealthRecordsAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetHealthRecordsAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getHealthRecordsAdmin>>>
+export type GetHealthRecordsAdminInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+
+
+export function useGetHealthRecordsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getHealthRecordsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetHealthRecordsAdminParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getHealthRecordsAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getHealthRecordsAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getHealthRecordsAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetHealthRecordsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getHealthRecordsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetHealthRecordsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getHealthRecordsAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getHealthRecordsAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getHealthRecordsAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetHealthRecordsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getHealthRecordsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetHealthRecordsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getHealthRecordsAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary View latest health records
+ */
+
+export function useGetHealthRecordsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getHealthRecordsAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetHealthRecordsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getHealthRecordsAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetHealthRecordsAdminInfiniteQueryOptions(params,options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary View latest health records
+ */
+export const prefetchGetHealthRecordsAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getHealthRecordsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetHealthRecordsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getHealthRecordsAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetHealthRecordsAdminInfiniteQueryOptions(params,options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetHealthRecordsAdminQueryOptions = <TData = Awaited<ReturnType<typeof getHealthRecordsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(params?: GetHealthRecordsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getHealthRecordsAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetHealthRecordsAdminQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getHealthRecordsAdmin>>> = ({ signal }) => getHealthRecordsAdmin(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getHealthRecordsAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetHealthRecordsAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getHealthRecordsAdmin>>>
+export type GetHealthRecordsAdminQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+
+
+export function useGetHealthRecordsAdmin<TData = Awaited<ReturnType<typeof getHealthRecordsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params: undefined |  GetHealthRecordsAdminParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getHealthRecordsAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getHealthRecordsAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getHealthRecordsAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetHealthRecordsAdmin<TData = Awaited<ReturnType<typeof getHealthRecordsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetHealthRecordsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getHealthRecordsAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getHealthRecordsAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getHealthRecordsAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetHealthRecordsAdmin<TData = Awaited<ReturnType<typeof getHealthRecordsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetHealthRecordsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getHealthRecordsAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary View latest health records
+ */
+
+export function useGetHealthRecordsAdmin<TData = Awaited<ReturnType<typeof getHealthRecordsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ params?: GetHealthRecordsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getHealthRecordsAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetHealthRecordsAdminQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary View latest health records
+ */
+export const prefetchGetHealthRecordsAdminQuery = async <TData = Awaited<ReturnType<typeof getHealthRecordsAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient, params?: GetHealthRecordsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getHealthRecordsAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetHealthRecordsAdminQueryOptions(params,options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+

@@ -129,7 +129,6 @@ export function parsePermissionKey(key: string): Permission {
 // Alias subject: key mới của BE (realhub) đôi khi khác tên module mà FE pages
 // đang check (legacy). Emit thêm rule với alias để cả 2 phía đều pass.
 const SUBJECT_ALIASES: Record<string, string[]> = {
-  CUSTOMER_PROFILE: ["CUSTOMER"],
   ACADEMY_COURSE: ["ACADEMY"],
   ACADEMY_REGISTRATION: ["ACADEMY"],
   TREATMENT_SESSION: ["SESSION"],

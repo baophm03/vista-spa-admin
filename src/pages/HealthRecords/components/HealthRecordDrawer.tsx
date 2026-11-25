@@ -53,7 +53,7 @@ export default function HealthRecordDrawer({
       size="min(560px, 100vw)"
       open={!!detail}
       onClose={onClose}
-      extra={detail && <Can I="UPDATE" a="CUSTOMER_PROFILE"><Button type="primary" icon={<PlusOutlined />} onClick={() => onOpenRecordForm(detail)}>Tạo phiếu khám</Button></Can>}
+      extra={detail && <Can I="UPDATE" a="CUSTOMER"><Button type="primary" icon={<PlusOutlined />} onClick={() => onOpenRecordForm(detail)}>Tạo phiếu khám</Button></Can>}
     >
       {detail && (() => {
         const current = currentHealth(detail, skinTypes)

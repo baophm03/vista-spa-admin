@@ -374,7 +374,7 @@ export const prefetchGetRewardRedemptionsAppQuery = async <TData = Awaited<Retur
 
 
 /**
- * **RW-06** — GET /reward-redemptions/admin: filter by customer, reward, status, date range. Requires `reward.view_all` permission. Query parameters: `page`, `limit`, `status`, `reward_id`, `customer_profile_id`, `from`, `to`.
+ * **RW-06** — GET /reward-redemptions/admin: filter by customer, reward, status, date range. Requires `reward.view_all` permission. Query parameters: `page`, `limit`, `status`, `reward_id`, `user_id`, `from`, `to`.
  * @summary Get reward redemption list
  */
 export const getRewardRedemptionsAdmin = (

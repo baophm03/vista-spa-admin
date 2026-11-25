@@ -8,6 +8,7 @@
 import type { ServiceDescription } from './serviceDescription';
 import type { ServicePriceMax } from './servicePriceMax';
 import type { ServiceCategoryId } from './serviceCategoryId';
+import type { ServiceBranchId } from './serviceBranchId';
 import type { ServiceImageFileId } from './serviceImageFileId';
 import type { ServiceCustomFields } from './serviceCustomFields';
 
@@ -28,6 +29,13 @@ export interface Service {
   price_max?: ServicePriceMax;
   price_unit?: string;
   category_id?: ServiceCategoryId;
+  /**
+   * Số buổi của dịch vụ lẻ
+   * @minimum 1
+   */
+  session_count?: number;
+  /** Cơ sở áp dụng; null = tất cả cơ sở */
+  branch_id?: ServiceBranchId;
   image_file_id?: ServiceImageFileId;
   gallery_file_ids?: string[];
   is_active?: boolean;

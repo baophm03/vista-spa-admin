@@ -60,7 +60,7 @@ export default function WarrantyClaims() {
   }
 
   const customerLabel = (claim: ClaimRow) => {
-    const profile = claim.customer_treatment?.customer_profile
+    const profile = claim.customer_treatment?.user
     if (!profile) return claim.customer_treatment_id ?? '—'
     const name = displayName(profile, 'Khách hàng')
     return profile.phone ? `${name} — ${profile.phone}` : name
@@ -214,9 +214,9 @@ export default function WarrantyClaims() {
             <>
               <div className="mobile-card-head flex-wrap">
                 <div className="min-w-0">
-                  <div className="mobile-card-title">{displayName(row.customer_treatment?.customer_profile, 'Khách hàng')}</div>
-                  {row.customer_treatment?.customer_profile?.phone && (
-                    <div className="mobile-card-sub">{row.customer_treatment.customer_profile.phone}</div>
+                  <div className="mobile-card-title">{displayName(row.customer_treatment?.user, 'Khách hàng')}</div>
+                  {row.customer_treatment?.user?.phone && (
+                    <div className="mobile-card-sub">{row.customer_treatment.user.phone}</div>
                   )}
                 </div>
                 {statusTag(row.status)}

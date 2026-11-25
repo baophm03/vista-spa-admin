@@ -20,7 +20,6 @@ export type PutCommissionRulesIdAdminBody = {
    * @nullable
    */
   fixed_amount?: number | null;
-  service_id?: string;
   staff_id?: string;
   branch_id?: string;
   priority?: number;

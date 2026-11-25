@@ -8,7 +8,7 @@
 
 export type PutUsersIdAdminBody = {
   email?: string;
-  phone_number?: string;
+  phone?: string;
   password?: string;
   role_id?: string;
   zalo_name?: string;

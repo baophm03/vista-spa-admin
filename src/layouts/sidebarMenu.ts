@@ -57,9 +57,10 @@ export const menuItems: MenuItem[] = [
     label: 'Khách hàng',
     icon: null,
     children: [
-      { key: '/customers', icon: createElement(TeamOutlined), label: 'Danh sách khách', permission: { action: 'READ', subject: 'CUSTOMER_PROFILE' } },
+      { key: '/customers', icon: createElement(TeamOutlined), label: 'Danh sách khách', permission: { action: 'READ', subject: 'CUSTOMER' } },
       { key: '/appointments', icon: createElement(CalendarOutlined), label: 'Lịch hẹn', permission: { action: 'READ', subject: 'APPOINTMENT' } },
       { key: '/treatment-customers', icon: createElement(SolutionOutlined), label: 'Liệu trình KH', permission: { action: 'READ', subject: 'TREATMENT_PACKAGE' } },
+      { key: '/service-customers', icon: createElement(ShoppingOutlined), label: 'Dịch vụ KH', permission: { action: 'READ', subject: 'STANDALONE_SERVICE' } },
       { key: '/my-sessions', icon: createElement(ExperimentOutlined), label: 'Buổi của tôi', permission: { action: 'READ', subject: 'TREATMENT_SESSION' }, ktvOnly: true },
       { key: '/health-records', icon: createElement(FileTextOutlined), label: 'Sổ sức khỏe', permission: { action: 'READ', subject: 'HEALTH_RECORD' }, hideForKtv: true },
       {
@@ -79,7 +80,7 @@ export const menuItems: MenuItem[] = [
     label: 'Kinh doanh',
     icon: null,
     children: [
-      { key: '/services', icon: createElement(ShoppingOutlined), label: 'Dịch vụ', permission: { action: 'READ', subject: 'SERVICE' } },
+      { key: '/services', icon: createElement(ShoppingOutlined), label: 'Dịch vụ lẻ', permission: { action: 'READ', subject: 'SERVICE' } },
       { key: '/treatments', icon: createElement(ExperimentOutlined), label: 'Gói liệu trình', permission: { action: 'READ', subject: 'TREATMENT_PACKAGE' } },
       { key: '/payments', icon: createElement(AccountBookOutlined), label: 'Lịch sử thanh toán', permission: { action: 'READ', subject: 'PAYMENT' } },
       { key: '/products', icon: createElement(ShoppingOutlined), label: 'Sản phẩm', hideForKtv: true },
@@ -98,7 +99,7 @@ export const menuItems: MenuItem[] = [
     label: 'Nhân sự',
     icon: null,
     children: [
-      { key: '/users', icon: createElement(UserSwitchOutlined), label: 'Quản lý nhân sự', permission: { action: 'READ', subject: 'USER_PROFILE' } },
+      { key: '/users', icon: createElement(UserSwitchOutlined), label: 'Quản lý nhân sự', permission: { action: 'READ', subject: 'STAFF' } },
       { key: '/schedule', icon: createElement(ClockCircleOutlined), label: 'Lịch làm việc', permission: { action: 'READ', subject: 'SCHEDULE' } },
     ],
   },

@@ -20,7 +20,7 @@ import type { AppointmentCustomFields } from './appointmentCustomFields';
 export interface Appointment {
   id: string;
   branch_id: string;
-  customer_profile_id: string;
+  user_id: string;
   service_id?: AppointmentServiceId;
   staff_id?: AppointmentStaffId;
   customer_treatment_id?: string;

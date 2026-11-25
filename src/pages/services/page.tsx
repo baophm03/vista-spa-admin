@@ -110,7 +110,7 @@ export default function Services() {
     },
   })
   const statItems: StatItem[] = [
-    { key: 'total', label: 'Tổng dịch vụ', value: statsQuery.data?.total.toLocaleString('vi-VN') ?? '—', icon: <AppstoreOutlined />, tone: 'primary' },
+    { key: 'total', label: 'Tổng dịch vụ lẻ', value: statsQuery.data?.total.toLocaleString('vi-VN') ?? '—', icon: <AppstoreOutlined />, tone: 'primary' },
     { key: 'active', label: 'Đang hiển thị', value: statsQuery.data?.active.toLocaleString('vi-VN') ?? '—', icon: <EyeOutlined />, tone: 'secondary' },
     { key: 'hidden', label: 'Đã ẩn', value: statsQuery.data ? Math.max(statsQuery.data.total - statsQuery.data.active, 0).toLocaleString('vi-VN') : '—', icon: <EyeInvisibleOutlined />, tone: 'neutral' },
   ]
@@ -181,7 +181,7 @@ export default function Services() {
       if (editing) await updateMutation.mutateAsync({ id: editing.id, dto })
       else await createMutation.mutateAsync(dto)
       setOpen(false)
-      message.success(editing ? 'Đã cập nhật dịch vụ' : 'Đã thêm dịch vụ')
+      message.success(editing ? 'Đã cập nhật dịch vụ lẻ' : 'Đã thêm dịch vụ lẻ')
       await listQuery.refetch()
       void queryClient.invalidateQueries({ queryKey: ["service-stats"] })
     } catch (err) {
@@ -195,7 +195,7 @@ export default function Services() {
   const hideService = async (row: ServiceRow) => {
     try {
       await hideMutation.mutateAsync({ id: row.id, isActive: false })
-      message.success('Đã ẩn dịch vụ; lịch và gói cũ vẫn được giữ')
+      message.success('Đã ẩn dịch vụ lẻ; dữ liệu cũ vẫn được giữ')
       await listQuery.refetch()
       void queryClient.invalidateQueries({ queryKey: ["service-stats"] })
     } catch (err) {
@@ -206,7 +206,7 @@ export default function Services() {
   const deleteService = async (row: ServiceRow) => {
     try {
       await deleteMutation.mutateAsync(row.id)
-      message.success('Đã xóa dịch vụ')
+      message.success('Đã xóa dịch vụ lẻ')
       await listQuery.refetch()
       void queryClient.invalidateQueries({ queryKey: ["service-stats"] })
     } catch (err) {
@@ -217,7 +217,7 @@ export default function Services() {
   const restoreService = async (row: ServiceRow) => {
     try {
       await updateMutation.mutateAsync({ id: row.id, dto: { is_active: true } })
-      message.success('Đã bật lại dịch vụ')
+      message.success('Đã bật lại dịch vụ lẻ')
       await listQuery.refetch()
       void queryClient.invalidateQueries({ queryKey: ["service-stats"] })
     } catch (err) {
@@ -239,7 +239,7 @@ export default function Services() {
         else if (key === 'restore') void restoreService(row)
         else if (key === 'hide') {
           Modal.confirm({
-            title: 'Ẩn dịch vụ này?',
+            title: 'Ẩn dịch vụ lẻ này?',
             content: 'Dịch vụ sẽ bị ẩn khỏi app nhưng vẫn còn trong danh sách quản trị.',
             okText: 'Ẩn',
             cancelText: 'Hủy',
@@ -247,7 +247,7 @@ export default function Services() {
           })
         } else if (key === 'delete') {
           Modal.confirm({
-            title: 'Xóa dịch vụ này?',
+            title: 'Xóa dịch vụ lẻ này?',
             content: 'Xóa mềm: chỉ thực hiện được khi dịch vụ không còn lịch sử/hóa đơn tham chiếu.',
             okText: 'Xóa',
             okButtonProps: { danger: true },
@@ -271,7 +271,7 @@ export default function Services() {
     const dataColumns: Record<string, NonNullable<TableColumnsType<ServiceRow>[number]>> = {
       service: {
         key: 'service',
-        title: 'Dịch vụ',
+        title: 'Dịch vụ lẻ',
         dataIndex: 'title',
         render: (value: string, row) => {
           const image = coverSrc(row)
@@ -295,6 +295,8 @@ export default function Services() {
         title: 'Giá niêm yết',
         render: (_value, row) => priceLabel(row),
       },
+      // Số buổi của dịch vụ lẻ (BE: service.session_count, mặc định 1) — tạm ẩn theo yêu cầu, bật lại bằng cách bỏ comment + thêm 'sessions' vào DEFAULT_COLUMNS
+      // sessions: { key: 'sessions', title: 'Số buổi', dataIndex: 'session_count', width: 90, render: (value?: number | null) => `${value ?? 1} buổi` },
       duration: { key: 'duration', title: 'Thời lượng', dataIndex: 'duration_minutes', render: (value?: number | null) => (value ? `${value} phút` : 'Theo cấu hình') },
       points: { key: 'points', title: 'Điểm đổi', dataIndex: 'required_points', render: (value?: number | null) => (value ? Number(value).toLocaleString('vi-VN') : '—') },
       status: {
@@ -323,8 +325,8 @@ export default function Services() {
       <div className="service-list-toolbar">
         <Input.Search
           allowClear
-          aria-label="Tìm tên hoặc mô tả dịch vụ"
-          placeholder="Tìm tên hoặc mô tả dịch vụ"
+          aria-label="Tìm tên hoặc mô tả dịch vụ lẻ"
+          placeholder="Tìm tên hoặc mô tả dịch vụ lẻ"
           className="service-list-search"
           value={searchText}
           onChange={(event) => { setSearchText(event.target.value); if (!event.target.value) applySearch('') }}
@@ -332,7 +334,7 @@ export default function Services() {
         />
         <Can I="CREATE" a="SERVICE">
           <Button type="primary" icon={<PlusOutlined />} onClick={() => void openEditor()}>
-            Thêm dịch vụ
+            Thêm dịch vụ lẻ
           </Button>
         </Can>
       </div>
@@ -392,14 +394,14 @@ export default function Services() {
           />
         </>
       )}
-      {hasServices && <ListPagination page={page} limit={limit} total={total} onChange={setPage} noun="dịch vụ" />}
+      {hasServices && <ListPagination page={page} limit={limit} total={total} onChange={setPage} noun="dịch vụ lẻ" />}
     </>
   )
 
   return (
     <div className="services-page">
-      <PageTitle subtitle="Danh mục dịch vụ và nhóm dịch vụ">
-        Dịch vụ
+      <PageTitle subtitle="Danh mục dịch vụ lẻ và nhóm dịch vụ">
+        Dịch vụ lẻ
       </PageTitle>
       <StatCards items={statItems} />
 
@@ -408,7 +410,7 @@ export default function Services() {
         activeKey={activeTab}
         onChange={(key) => setActiveTab(key as 'services' | 'categories')}
         items={[
-          { key: 'services', label: 'Danh sách dịch vụ', children: servicesContent },
+          { key: 'services', label: 'Danh sách dịch vụ lẻ', children: servicesContent },
           { key: 'categories', label: 'Danh mục dịch vụ', children: <ServiceCategories /> },
         ]}
       />

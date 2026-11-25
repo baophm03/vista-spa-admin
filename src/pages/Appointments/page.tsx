@@ -45,7 +45,7 @@ import type { Appointment } from '@/api/models/appointment'
 import type { Branch } from '@/api/models/branch'
 import type { GetAppointmentsAdminParams } from '@/api/models/getAppointmentsAdminParams'
 import { getAppointmentsAvailableSlots, getGetAppointmentsAdminQueryKey, useGetAppointmentsAdmin, usePostAppointmentsAdmin, usePostAppointmentsIdStartAdmin, usePutAppointmentsIdAdmin, usePutAppointmentsIdApproveAdmin, usePutAppointmentsIdCancelAdmin, usePutAppointmentsIdNoShowAdmin, usePutAppointmentsIdRejectAdmin, getAppointmentsIdAdmin } from '@/api/endpoints/appointments'
-import { getGetCustomerProfilesAdminQueryKey, postCustomerProfilesAdmin, useGetCustomerProfilesAdmin } from '@/api/endpoints/customer-profiles'
+import { getGetUsersCustomersAdminQueryKey, postUsersCustomersAdmin, useGetUsersCustomersAdmin } from '@/api/endpoints/customers'
 import { useGetUsersAdmin } from '@/api/endpoints/users'
 import { useGetBranchesAdmin } from '@/api/endpoints/branches'
 import AppointmentDetailModal from './components/AppointmentDetailModal'
@@ -174,7 +174,7 @@ export default function Appointments() {
     return () => window.clearTimeout(timer)
   }, [customerSearchInput])
 
-  const profilesQuery = useGetCustomerProfilesAdmin({ page: 1, limit: 50, q: customerSearch || undefined })
+  const profilesQuery = useGetUsersCustomersAdmin({ page: 1, limit: 50, q: customerSearch || undefined })
 
   const profiles = useMemo(() => (pickData<ProfileRow[] | undefined>(profilesQuery.data) ?? []) as ProfileRow[], [profilesQuery.data])
   const profileOptions = useMemo(() => {
@@ -293,9 +293,9 @@ export default function Appointments() {
     form.resetFields()
     setCustomerSearchInput('')
     setCustomerSearch('')
-    const profileFromAppointment = (appointment as AppointmentRow | undefined)?.customer_profile
+    const profileFromAppointment = (appointment as AppointmentRow | undefined)?.user
     setSelectedProfile(appointment
-      ? profiles.find((profile) => profile.id === appointment.customer_profile_id)
+      ? profiles.find((profile) => profile.id === appointment.user_id)
       ?? (profileFromAppointment?.id ? {
         id: profileFromAppointment.id,
         full_name: profileFromAppointment.full_name,
@@ -305,7 +305,7 @@ export default function Appointments() {
     form.setFieldsValue(
       appointment
         ? {
-          customer_profile_id: appointment.customer_profile_id,
+          user_id: appointment.user_id,
           staff_id: appointment.staff_id ?? undefined,
           branch_id: appointment.branch_id ?? undefined,
           appt_date: editDateIsPast ? undefined : dayjs(editDate),
@@ -353,16 +353,16 @@ export default function Appointments() {
   const submitQuickCustomer = async () => {
     try {
       const values = await quickCustomerForm.validateFields()
-      const response = await postCustomerProfilesAdmin(values as never)
+      const response = await postUsersCustomersAdmin(values as never)
       const created = pickData<ProfileRow | undefined>(response)
       if (!created?.id) throw new Error('Không nhận được hồ sơ khách hàng vừa tạo')
       setSelectedProfile(created)
-      form.setFieldValue('customer_profile_id', created.id)
+      form.setFieldValue('user_id', created.id)
       setCustomerSearchInput('')
       setCustomerSearch('')
       setQuickCustomerOpen(false)
       message.success('Đã tạo khách hàng và chọn vào lịch hẹn')
-      void queryClient.invalidateQueries({ queryKey: getGetCustomerProfilesAdminQueryKey() })
+      void queryClient.invalidateQueries({ queryKey: getGetUsersCustomersAdminQueryKey() })
     } catch (err) {
       if ((err as { errorFields?: unknown })?.errorFields) return
       message.error(errorMessage(err))
@@ -377,7 +377,7 @@ export default function Appointments() {
       // Cơ sở lịch hẹn: ưu tiên lựa chọn trên form, fallback về bộ lọc/cơ sở đầu tiên
       const branchId = values.branch_id ?? branchFilter ?? branches[0]?.id
       const payload = {
-        customer_profile_id: values.customer_profile_id,
+        user_id: values.user_id,
         branch_id: branchId,
         // Gửi staff_id để BE gán/đổi KTV (nếu không gửi thì BE bỏ gán KTV)
         staff_id: values.staff_id || null,
@@ -839,7 +839,7 @@ export default function Appointments() {
                             onClick={() => setSelectedAppointment(row)}
                           >
                             <div className="mobile-card-head">
-                              <div className="mobile-card-title">{row.customer_profile?.full_name || '—'}</div>
+                              <div className="mobile-card-title">{row.user?.full_name || '—'}</div>
                               <Tag color={STATUS_META[row.status as keyof typeof STATUS_META]?.color} style={{ marginInlineEnd: 0, flexShrink: 0 }}>
                                 {STATUS_META[row.status as keyof typeof STATUS_META]?.label ?? row.status}
                               </Tag>

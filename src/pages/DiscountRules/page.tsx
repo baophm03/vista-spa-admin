@@ -16,7 +16,6 @@ import ListPagination from '@/components/base/ListPagination'
 import { errorMessage } from '@/api/helpers'
 import { getGetDiscountRulesAdminQueryKey, useDeleteDiscountRulesIdAdmin, useGetDiscountRulesAdmin, usePostDiscountRulesAdmin, usePutDiscountRulesIdAdmin } from '@/api/endpoints/discount-rules'
 import { useGetCardRanksAdmin } from '@/api/endpoints/card-ranks'
-import { useGetServiceAdmin } from '@/api/endpoints/services'
 import type {
   DiscountRule,
   DiscountRuleAppliesTo,
@@ -59,15 +58,9 @@ export default function DiscountRules() {
 
   const rulesQuery = useGetDiscountRulesAdmin({ page, limit: 10 } as never)
   const ranksQuery = useGetCardRanksAdmin(undefined, { query: { enabled: open } })
-  const servicesQuery = useGetServiceAdmin({ page: 1, limit: 200, is_active: true }, { query: { enabled: open || !!detailRuleId } })
   const rules = useMemo(() => rulesQuery.data?.responseData ?? [], [rulesQuery.data])
   const ranks = useMemo(() => ranksQuery.data?.responseData ?? [], [ranksQuery.data])
   const rulesStatsMeta = (rulesQuery.data as unknown as { meta?: { stats?: { total: number; active: number; hidden: number } } })?.meta?.stats
-  const services = useMemo(() => {
-    const data = servicesQuery.data?.responseData as unknown
-    if (Array.isArray(data)) return data as { id: string; title: string }[]
-    return ((data as { services?: { id: string; title: string }[] } | undefined)?.services ?? [])
-  }, [servicesQuery.data])
 
   const invalidate = async () => {
     await queryClient.invalidateQueries({ queryKey: getGetDiscountRulesAdminQueryKey() })
@@ -100,7 +93,6 @@ export default function DiscountRules() {
           once_per_customer: row.once_per_customer ?? false,
           show_in_app: row.show_in_app ?? true,
           valid_range: row.start_date && row.end_date ? [row.start_date, row.end_date] : undefined,
-          service_ids: row.service_ids ?? [],
           is_active: row.is_active ?? true,
         }
         : { audience: 'RANK', applies_to: 'ALL', percent_min: 10, percent_max: 30, stackable: true, once_per_customer: false, show_in_app: true, is_active: true },
@@ -121,7 +113,6 @@ export default function DiscountRules() {
         stackable: !!values.stackable,
         once_per_customer: !!values.once_per_customer,
         show_in_app: !!values.show_in_app,
-        service_ids: values.applies_to === 'SERVICE' ? (values.service_ids ?? []) : undefined,
       }
       if (editing) {
         await updateMutation.mutateAsync({
@@ -386,7 +377,6 @@ export default function DiscountRules() {
             <ListPagination page={page} limit={10} total={(rulesQuery.data as unknown as { meta?: { total?: number } })?.meta?.total ?? rules.length} onChange={setPage} noun="quyết định giảm giá" />
             <DiscountDetailModal
               ruleId={detailRuleId}
-              services={services}
               onClose={() => setDetailRuleId(undefined)}
             />
             <DiscountRuleModal
@@ -395,8 +385,6 @@ export default function DiscountRules() {
               form={form}
               saving={createMutation.isPending || updateMutation.isPending}
               ranks={ranks}
-              services={services}
-              servicesLoading={servicesQuery.isLoading}
               onCancel={() => setOpen(false)}
               onSubmit={() => void submit()}
             />

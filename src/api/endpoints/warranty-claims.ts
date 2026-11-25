@@ -251,7 +251,7 @@ export const prefetchGetWarrantyClaimsIdAdminQuery = async <TData = Awaited<Retu
 
 
 /**
- * **WC-05** — PUT /warranty-claims/{id}/reject/admin. ADM only, cần đăng nhập + `customer_profile.update_all`; a reason is required.
+ * **WC-05** — PUT /warranty-claims/{id}/reject/admin. ADM only, cần đăng nhập + `CUSTOMER:update_all`; a reason is required.
  * @summary Reject
  */
 export const putWarrantyClaimsIdRejectAdmin = (
@@ -316,7 +316,7 @@ export const usePutWarrantyClaimsIdRejectAdmin = <TError = UnauthorizedResponse 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **WC-04** — PUT /warranty-claims/{id}/approve/admin. ADM only, cần đăng nhập + `customer_profile.update_all`; creates at most one is_warranty session and does not deduct quota.
+ * **WC-04** — PUT /warranty-claims/{id}/approve/admin. ADM only, cần đăng nhập + `CUSTOMER:update_all`; creates at most one is_warranty session and does not deduct quota.
  * @summary Approve
  */
 export const putWarrantyClaimsIdApproveAdmin = (

@@ -50,7 +50,7 @@ const MOBILE_WHEEL_PANEL_TITLES: Record<MobileWheelPanel, string> = {
 }
 
 interface WheelCustomerOverride {
-  customer_profile_id: string
+  user_id: string
   enabled: boolean
 }
 
@@ -144,7 +144,7 @@ export default function LuckyWheel() {
   const customerOverrides: WheelCustomerOverride[] = Array.isArray(customerOverridesSetting?.value)
     ? customerOverridesSetting.value.filter((item): item is WheelCustomerOverride =>
       Boolean(item && typeof item === 'object'
-        && typeof (item as WheelCustomerOverride).customer_profile_id === 'string'
+        && typeof (item as WheelCustomerOverride).user_id === 'string'
         && typeof (item as WheelCustomerOverride).enabled === 'boolean'),
     )
     : []
@@ -152,8 +152,8 @@ export default function LuckyWheel() {
   const canNotifyCustomer = ability.can('CREATE' as never, 'NOTIFICATION')
   const customerWheelAccessMutation = useMutation({
     mutationFn: async ({ customerProfileId, enabled }: CustomerAccessChange) => {
-      const nextOverrides = customerOverrides.filter((item) => item.customer_profile_id !== customerProfileId)
-      if (enabled !== customerDefaultEnabled) nextOverrides.push({ customer_profile_id: customerProfileId, enabled })
+      const nextOverrides = customerOverrides.filter((item) => item.user_id !== customerProfileId)
+      if (enabled !== customerDefaultEnabled) nextOverrides.push({ user_id: customerProfileId, enabled })
       return putSettingsAdmin({ items: [{ key: CUSTOMER_OVERRIDES_SETTING, value: nextOverrides }] } as PutSettingsAdminBody)
     },
     onSuccess: async (_, variables) => {
@@ -172,12 +172,12 @@ export default function LuckyWheel() {
       title,
       body,
       user_id: userId ?? null,
-      ...(channel === 'email' ? { customer_profile_id: customerProfileId } : {}),
+      ...(channel === 'email' ? { user_id: customerProfileId } : {}),
     } as unknown as Notification),
   })
   const isCustomerWheelEnabled = (customerProfileId?: string) => {
     if (!customerProfileId) return false
-    return customerOverrides.find((item) => item.customer_profile_id === customerProfileId)?.enabled ?? customerDefaultEnabled
+    return customerOverrides.find((item) => item.user_id === customerProfileId)?.enabled ?? customerDefaultEnabled
   }
   const canManageAllBranches = ability.can('ALL' as never, 'BRANCH')
 
@@ -225,7 +225,7 @@ export default function LuckyWheel() {
     } catch {
       return
     }
-    if (!customerNotificationTarget?.customer_profile_id) {
+    if (!customerNotificationTarget?.user_id) {
       message.warning('Không tìm thấy hồ sơ khách hàng để gửi thông báo')
       return
     }
@@ -237,7 +237,7 @@ export default function LuckyWheel() {
       message.warning('Khách chưa có email để nhận thông báo')
       return
     }
-    if (!wheelModuleEnabled || !isCustomerWheelEnabled(customerNotificationTarget.customer_profile_id)) {
+    if (!wheelModuleEnabled || !isCustomerWheelEnabled(customerNotificationTarget.user_id)) {
       message.warning('Bật vòng quay cho khách trước khi gửi thông báo')
       return
     }
@@ -246,7 +246,7 @@ export default function LuckyWheel() {
       await customerNotificationMutation.mutateAsync({
         channel: values.channel,
         userId: customerNotificationTarget.user_id,
-        customerProfileId: customerNotificationTarget.customer_profile_id ?? '',
+        customerProfileId: customerNotificationTarget.user_id ?? '',
         title: values.title.trim(),
         body: values.body.trim(),
       })
@@ -433,7 +433,7 @@ export default function LuckyWheel() {
     }
 
     if (spinForCustomerMutation.isPending) return
-    const customerProfileId = chosenCustomer?.customer_profile_id
+    const customerProfileId = chosenCustomer?.user_id
     if (!customerProfileId || (chosenCustomer?.spins_left ?? 0) <= 0) {
       setSpinError(customerProfileId ? 'Khách hàng đã hết lượt quay.' : 'Không tìm thấy hồ sơ khách hàng. Vui lòng chọn lại khách.')
       return
@@ -445,17 +445,17 @@ export default function LuckyWheel() {
       const res = await spinForCustomerMutation.mutateAsync({
         id: selected.id,
         data: {
-          customer_profile_id: customerProfileId,
+          user_id: customerProfileId,
           request_key: `admin-${selected.id}-${customerProfileId}-${Date.now()}`,
         },
       })
-      setChosenCustomer((customer) => customer?.customer_profile_id === customerProfileId
+      setChosenCustomer((customer) => customer?.user_id === customerProfileId
         ? { ...customer, spins_left: Math.max(0, Number(customer.spins_left ?? 0) - 1) }
         : customer)
       void eligibleQuery.refetch().then(({ data }) => {
-        const refreshedCustomer = data?.responseData?.find((customer) => customer.customer_profile_id === customerProfileId)
+        const refreshedCustomer = data?.responseData?.find((customer) => customer.user_id === customerProfileId)
         if (refreshedCustomer) {
-          setChosenCustomer((customer) => customer?.customer_profile_id === customerProfileId ? refreshedCustomer : customer)
+          setChosenCustomer((customer) => customer?.user_id === customerProfileId ? refreshedCustomer : customer)
         }
       })
       // chờ tối thiểu 1 nhịp cho hiệu ứng quay liên tục thấy rõ trước khi dừng
@@ -514,7 +514,7 @@ export default function LuckyWheel() {
 
   const openCustomerSpin = () => {
     if (!chosenCustomer || (chosenCustomer.spins_left ?? 0) <= 0 || spinForCustomerMutation.isPending) return
-    if (!chosenCustomer.customer_profile_id) {
+    if (!chosenCustomer.user_id) {
       message.error('Không tìm thấy hồ sơ khách hàng để quay.')
       return
     }
@@ -536,13 +536,13 @@ export default function LuckyWheel() {
   }
 
   const spinForCustomer = async (random: boolean) => {
-    if (!selected || !chosenCustomer?.customer_profile_id) return
+    if (!selected || !chosenCustomer?.user_id) return
     try {
       const res = await spinForCustomerMutation.mutateAsync({
         id: selected.id,
         data: {
-          customer_profile_id: chosenCustomer.customer_profile_id ?? '',
-          request_key: `admin-${selected.id}-${chosenCustomer.customer_profile_id}-${Date.now()}`,
+          user_id: chosenCustomer.user_id ?? '',
+          request_key: `admin-${selected.id}-${chosenCustomer.user_id}-${Date.now()}`,
           ...(random ? {} : { prize_id: manualPrizeId! }),
         },
       })
@@ -626,13 +626,13 @@ export default function LuckyWheel() {
     <span onClick={(event) => event.stopPropagation()}>
       <Switch
         size="small"
-        checked={isCustomerWheelEnabled(row.customer_profile_id)}
-        disabled={!row.customer_profile_id || !canEditCustomerAccess || customerSettingsQuery.isLoading || customerSettingsQuery.isError || customerWheelAccessMutation.isPending}
+        checked={isCustomerWheelEnabled(row.user_id)}
+        disabled={!row.user_id || !canEditCustomerAccess || customerSettingsQuery.isLoading || customerSettingsQuery.isError || customerWheelAccessMutation.isPending}
         loading={customerWheelAccessMutation.isPending}
         aria-label={`Bật hoặc tắt vòng quay cho ${displayName(row, 'khách hàng')}`}
         onChange={(enabled) => {
-          if (row.customer_profile_id) {
-            customerWheelAccessMutation.mutate({ customerProfileId: row.customer_profile_id, enabled })
+          if (row.user_id) {
+            customerWheelAccessMutation.mutate({ customerProfileId: row.user_id, enabled })
           }
         }}
       />
@@ -640,8 +640,8 @@ export default function LuckyWheel() {
   )
 
   const renderCustomerNotifyButton = (row: EligibleWheelCustomer, compact = false) => {
-    const enabled = isCustomerWheelEnabled(row.customer_profile_id)
-    const hasRecipient = Boolean(row.customer_profile_id && (row.user_id || row.email))
+    const enabled = isCustomerWheelEnabled(row.user_id)
+    const hasRecipient = Boolean(row.user_id && (row.user_id || row.email))
     const settingsReady = !customerSettingsQuery.isLoading && !customerSettingsQuery.isError
     const canSend = settingsReady && canNotifyCustomer && wheelModuleEnabled && enabled && hasRecipient
     const disabledReason = !settingsReady
@@ -949,7 +949,7 @@ export default function LuckyWheel() {
                     />
                   )}
                   <ResponsiveTable<EligibleWheelCustomer>
-                    rowKey="customer_profile_id"
+                    rowKey="user_id"
                     dataSource={eligibleCustomers as EligibleWheelCustomer[]}
                     loading={eligibleQuery.isLoading}
                     pagination={false}
@@ -963,7 +963,7 @@ export default function LuckyWheel() {
                     columns={[
                       {
                         title: 'Khách hàng', dataIndex: 'full_name', render: (_, row) => (
-                          <Typography.Text strong style={chosenCustomer?.customer_profile_id === row.customer_profile_id ? { color: 'var(--brand-primary)' } : undefined}>
+                          <Typography.Text strong style={chosenCustomer?.user_id === row.user_id ? { color: 'var(--brand-primary)' } : undefined}>
                             {displayName(row)} {row.customer_code ? `(${row.customer_code})` : ''}
                           </Typography.Text>
                         ),
@@ -997,7 +997,7 @@ export default function LuckyWheel() {
                               </span>
                               {renderCustomerNotifyButton(row)}
                             </div>
-                            {chosenCustomer && chosenCustomer.customer_profile_id === row.customer_profile_id
+                            {chosenCustomer && chosenCustomer.user_id === row.user_id
                               ? renderCustomerSpinActions()
                               : null}
                           </div>
@@ -1032,7 +1032,7 @@ export default function LuckyWheel() {
                 emptyText="Chưa có lượt quay"
                 columns={[
                   { title: 'Thời gian', dataIndex: 'spun_at', render: (v) => formatDateTime(v) },
-                  { title: 'Khách hàng', key: 'customer', render: (_, row) => displayName(row.customer_profile, row.user_id || '—') },
+                  { title: 'Khách hàng', key: 'customer', render: (_, row) => displayName(row.user, row.user_id || '—') },
                   { title: 'Trúng', key: 'win', dataIndex: 'is_win', render: (v) => (v ? <Tag color="green">Trúng thưởng</Tag> : <Tag>Không trúng</Tag>) },
                   { title: 'Giải', dataIndex: ['prize', 'name'], render: (v) => v || '—' },
                   {

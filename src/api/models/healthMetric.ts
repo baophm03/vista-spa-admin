@@ -16,7 +16,7 @@ import type { HealthMetricNote } from './healthMetricNote';
  */
 export interface HealthMetric {
   id: string;
-  customer_profile_id: string;
+  user_id: string;
   session_id?: HealthMetricSessionId;
   metric_code: string;
   value_num?: HealthMetricValueNum;

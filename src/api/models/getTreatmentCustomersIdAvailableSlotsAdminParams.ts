@@ -8,10 +8,6 @@
 
 export type GetTreatmentCustomersIdAvailableSlotsAdminParams = {
 date?: string;
-/**
- * Dịch vụ tính slot — bắt buộc cho liệu trình combo, phải thuộc combo
- */
-service_id?: string;
 exclude_session_id?: string;
 staff_id?: string;
 };

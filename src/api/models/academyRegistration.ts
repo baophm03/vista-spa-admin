@@ -6,7 +6,6 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { AcademyRegistrationUserId } from './academyRegistrationUserId';
-import type { AcademyRegistrationCustomerProfileId } from './academyRegistrationCustomerProfileId';
 import type { AcademyRegistrationEmail } from './academyRegistrationEmail';
 import type { AcademyRegistrationAcademyCourseVoucherId } from './academyRegistrationAcademyCourseVoucherId';
 import type { AcademyRegistrationCourseVoucherTitle } from './academyRegistrationCourseVoucherTitle';
@@ -22,7 +21,6 @@ export interface AcademyRegistration {
   course_id: string;
   branch_id: string;
   user_id?: AcademyRegistrationUserId;
-  customer_profile_id?: AcademyRegistrationCustomerProfileId;
   full_name: string;
   phone: string;
   email?: AcademyRegistrationEmail;

@@ -7,7 +7,7 @@ import type { CustomerHealthRecord } from '@/api/models/customerHealthRecord'
 import type { HealthMetric } from '@/api/models/healthMetric'
 import type { LookupItem } from '@/api/models/lookupItem'
 import type { LookupList } from '@/api/models/lookupList'
-import { getCustomerProfilesIdHealthMetricsAdmin, getCustomerProfilesIdHealthRecordsAdmin } from '@/api/endpoints/customer-profiles'
+import { getUsersCustomersIdHealthMetricsAdmin, getUsersCustomersIdHealthRecordsAdmin } from '@/api/endpoints/customers'
 import { getSkinTypesAdmin } from '@/api/endpoints/skin-types'
 import { getLookupListsAdmin } from '@/api/endpoints/lookup-lists'
 import { errorMessage, pickData } from '@/api/helpers'
@@ -127,9 +127,9 @@ export default function CustomerProfileHealthMetricsTab({ profileId }: { profile
     setError('')
     // API trả toàn bộ dữ liệu của hồ sơ; lọc theo chỉ số/khoảng ngày tại client (endpoint không nhận query params trong spec).
     Promise.all([
-      getCustomerProfilesIdHealthMetricsAdmin(profileId),
+      getUsersCustomersIdHealthMetricsAdmin(profileId),
       getLookupListsAdmin({ key: 'health.metrics' }),
-      getCustomerProfilesIdHealthRecordsAdmin(profileId),
+      getUsersCustomersIdHealthRecordsAdmin(profileId),
       getSkinTypesAdmin(),
     ])
       .then(([metricsResult, catalogsResult, recordsResult, skinTypesResult]) => {

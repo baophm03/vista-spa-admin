@@ -54,8 +54,8 @@ export default function AppointmentDetailModal({
   const isTreatment = Boolean(row.customer_treatment_id || row.treatment_package_id || row.customer_treatment)
   const categoryLabel = isTreatment ? 'Liệu trình' : row.service_id || row.service?.title ? 'Dịch vụ' : 'Tư vấn'
 
-  const name = displayName(row.customer_profile, 'Khách vãng lai')
-  const phone = row.customer_profile?.phone
+  const name = displayName(row.user, 'Khách vãng lai')
+  const phone = row.user?.phone
   const dateFormatted = row.appt_date ? dayjs(row.appt_date).format('DD/MM/YYYY') : '—'
   const startMinute = timeInMinutes(row.start_time)
   const endMinute = timeInMinutes(row.end_time)

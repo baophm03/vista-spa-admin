@@ -22,5 +22,5 @@ from_date?: string;
 to_date?: string;
 status?: string;
 staff_id?: string;
-customer_profile_id?: string;
+user_id?: string;
 };

@@ -2,7 +2,7 @@ import { Button, Col, Form, Image, Input, InputNumber, Modal, Row, Switch, Typog
 import type { FormInstance } from 'antd'
 import ServiceImageField from '@/components/ServiceImageField'
 import { fileSrc } from '@/hooks/useFileUrl'
-import type { UserProfileRow } from '@/api/models/userProfileRow'
+import type { StaffProfile } from '@/api/models/staffProfile'
 import type { UserRow } from './constants'
 
 interface UserProfileModalProps {
@@ -10,7 +10,7 @@ interface UserProfileModalProps {
   open: boolean
   profileUser: UserRow | null
   canUpdate: boolean
-  profileDetails: UserProfileRow | undefined
+  profileDetails: StaffProfile | undefined
   saving: boolean
   onCancel: () => void
   onOk: () => void

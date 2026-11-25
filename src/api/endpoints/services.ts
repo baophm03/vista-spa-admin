@@ -43,7 +43,6 @@ import type {
   LegacyBadRequestResponse,
   NotFoundResponse,
   PostServiceCategoriesAdmin200,
-  PostServiceExchangePointsAdminBody,
   PutServiceCategoriesIdAdmin200,
   Response,
   ServiceCategoryCreate,
@@ -1345,71 +1344,6 @@ export const useDeleteServiceIdAdmin = <TError = LegacyBadRequestResponse | Unau
       > => {
 
       const mutationOptions = getDeleteServiceIdAdminMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
- * POST `/service/exchange-points/admin` — services. Cần đăng nhập + `membership.points_adjust`. Body fields: `user_id`, `service_id`, `reason`. Handled by `user.findByPk`.
- * @summary Exchange points for a customer
- */
-export const postServiceExchangePointsAdmin = (
-    postServiceExchangePointsAdminBody: PostServiceExchangePointsAdminBody,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<Response>(
-      {url: `/service/exchange-points/admin`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: postServiceExchangePointsAdminBody, signal
-    },
-      );
-    }
-  
-
-
-export const getPostServiceExchangePointsAdminMutationOptions = <TError = LegacyBadRequestResponse | UnauthorizedResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postServiceExchangePointsAdmin>>, TError,{data: PostServiceExchangePointsAdminBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postServiceExchangePointsAdmin>>, TError,{data: PostServiceExchangePointsAdminBody}, TContext> => {
-
-const mutationKey = ['postServiceExchangePointsAdmin'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postServiceExchangePointsAdmin>>, {data: PostServiceExchangePointsAdminBody}> = (props) => {
-          const {data} = props ?? {};
-
-          return  postServiceExchangePointsAdmin(data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostServiceExchangePointsAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postServiceExchangePointsAdmin>>>
-    export type PostServiceExchangePointsAdminMutationBody = PostServiceExchangePointsAdminBody
-    export type PostServiceExchangePointsAdminMutationError = LegacyBadRequestResponse | UnauthorizedResponse
-
-    /**
- * @summary Exchange points for a customer
- */
-export const usePostServiceExchangePointsAdmin = <TError = LegacyBadRequestResponse | UnauthorizedResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postServiceExchangePointsAdmin>>, TError,{data: PostServiceExchangePointsAdminBody}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postServiceExchangePointsAdmin>>,
-        TError,
-        {data: PostServiceExchangePointsAdminBody},
-        TContext
-      > => {
-
-      const mutationOptions = getPostServiceExchangePointsAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

@@ -6,4 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 
+/**
+ * For a one-to-one email, use the customer's profile email or linked account email.
+ */
 export type NotificationUserId = string | null;

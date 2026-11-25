@@ -152,8 +152,8 @@ export default function AppointmentsCalendar({
             const cat = getCategory(row)
             const categoryLabel = CATEGORY_COLORS[cat].label
 
-            const name = displayName(row.customer_profile, 'Khách hàng')
-            const phone = row.customer_profile?.phone
+            const name = displayName(row.user, 'Khách hàng')
+            const phone = row.user?.phone
             const time = startMinute === null ? '' : row.start_time.slice(0, 5)
             const knownEnd = timeInMinutes(row.end_time)
             const timeRange = time && knownEnd !== null && startMinute !== null && knownEnd > startMinute

@@ -4,14 +4,12 @@ import type { DiscountRule } from '@/api/models'
 import { APPLIES_TO_OPTIONS, AUDIENCE_META } from './constants'
 import './discount-rule-modal.css'
 
-export default function DiscountRuleModal({ open, editing, form, saving, ranks, services, servicesLoading, onCancel, onSubmit }: {
+export default function DiscountRuleModal({ open, editing, form, saving, ranks, onCancel, onSubmit }: {
   open: boolean
   editing: DiscountRule | null
   form: FormInstance
   saving?: boolean
   ranks: { id: string; name: string }[]
-  services: { id: string; title: string }[]
-  servicesLoading?: boolean
   onCancel: () => void
   onSubmit: () => void
 }) {
@@ -75,23 +73,6 @@ export default function DiscountRuleModal({ open, editing, form, saving, ranks, 
             <InputNumber min={0} max={100} precision={0} style={{ width: '100%' }} />
           </Form.Item>
         </Space>
-        <Form.Item noStyle shouldUpdate={(p, c) => p.applies_to !== c.applies_to}>
-          {({ getFieldValue }) =>
-            getFieldValue('applies_to') === 'SERVICE' ? (
-              <Form.Item
-                name="service_ids" label="Dịch vụ áp dụng"
-                rules={[{ required: true, type: 'array', min: 1, message: 'Chọn ít nhất một dịch vụ' }]}
-              >
-                <Select
-                  mode="multiple" showSearch optionFilterProp="label"
-                  loading={servicesLoading}
-                  placeholder="Chọn ít nhất một dịch vụ"
-                  options={services.map((service) => ({ value: service.id, label: service.title }))}
-                />
-              </Form.Item>
-            ) : null
-          }
-        </Form.Item>
         <Space className="discount-rule-switches" align="start">
           <Form.Item name="stackable" label="Xếp chồng được" valuePropName="checked" style={{ flex: 1 }}>
             <Switch />

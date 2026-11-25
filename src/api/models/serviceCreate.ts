@@ -5,6 +5,7 @@
  * Vista Spa backend API. Uses the NEWSKY+ business error envelope for permission-aware endpoints and the legacy response envelope for existing admin endpoints.
  * OpenAPI spec version: 1.0.0
  */
+import type { ServiceCreateBranchId } from './serviceCreateBranchId';
 import type { ServiceCreateCustomFields } from './serviceCreateCustomFields';
 
 /**
@@ -24,6 +25,9 @@ export interface ServiceCreate {
   price_max?: number;
   price_unit?: string;
   category_id?: string;
+  /** @minimum 1 */
+  session_count?: number;
+  branch_id?: ServiceCreateBranchId;
   image_file_id?: string;
   gallery_file_ids?: string[];
   is_active?: boolean;

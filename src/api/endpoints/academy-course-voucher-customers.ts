@@ -166,7 +166,7 @@ export const usePatchAcademyCourseVoucherCustomersIdAdmin = <TError = unknown,
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/academy-course-voucher-customers/admin` — combined view. Query parameters: `q`, `user_id`, `customer_profile_id`. Cần đăng nhập + `voucher.view_all`.
+ * GET `/academy-course-voucher-customers/admin` — combined view. Query parameters: `q`, `user_id`, `user_id`. Cần đăng nhập + `voucher.view_all`.
  * @summary List vouchers each customer currently holds (auto by rank + manual assignments)
  */
 export const getAcademyCourseVoucherCustomersAdmin = (
@@ -361,7 +361,7 @@ export const prefetchGetAcademyCourseVoucherCustomersAdminQuery = async <TData =
 
 
 /**
- * POST `/academy-course-voucher-customers/admin` — assigns an active voucher to a customer. Body fields: `voucher_id`, `customer_profile_id` (CRM profile, including profiles without an app account), or `user_id`, `note`. Cần đăng nhập + `voucher.create`.
+ * POST `/academy-course-voucher-customers/admin` — assigns an active voucher to a customer. Body fields: `voucher_id`, `user_id` (CRM profile, including profiles without an app account), or `user_id`, `note`. Cần đăng nhập + `voucher.create`.
  * @summary Assign a voucher to a customer (FIXED mode)
  */
 export const postAcademyCourseVoucherCustomersAdmin = (

@@ -47,7 +47,7 @@ export default function SessionTimeline({
   const { formatDateTime, getDateTimeParts } = useBrandDateTime()
   const ability = useAbility()
   const canEditSession = ability.can('UPDATE', 'TREATMENT_SESSION')
-  const canManageSessionSchedule = ability.can('UPDATE', 'CUSTOMER_PROFILE')
+  const canManageSessionSchedule = ability.can('UPDATE', 'CUSTOMER')
   const canStartSession = ability.can('START' as never, 'TREATMENT_SESSION')
   const canFinishSessionWork = ability.can('DONE' as never, 'TREATMENT_SESSION')
   const canCompleteSession = ability.can('COMPLETE' as never, 'TREATMENT_SESSION')

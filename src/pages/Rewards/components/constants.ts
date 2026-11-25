@@ -16,7 +16,7 @@ export type RewardRow = Reward & {
 /** GET /reward-redemptions trả kèm reward (model gen thiếu — mở rộng cục bộ). */
 export type RewardRedemptionRow = RewardRedemption & {
   reward?: RewardRow | null
-  customer_profile?: { id: string; customer_code?: string; full_name?: string; phone?: string } | null
+  user?: { id: string; customer_code?: string; full_name?: string; phone?: string } | null
 }
 export type RewardType = 'VOUCHER' | 'GIFT'
 

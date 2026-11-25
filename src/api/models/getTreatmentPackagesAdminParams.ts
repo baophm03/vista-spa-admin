@@ -19,5 +19,6 @@ limit?: number;
 is_active?: boolean;
 quota_type?: string;
 package_type_id?: string;
+package_service_id?: string;
 branch_id?: string;
 };

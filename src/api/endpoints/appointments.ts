@@ -1159,7 +1159,7 @@ export const prefetchGetAppointmentsAppQuery = async <TData = Awaited<ReturnType
 
 
 /**
- * **AP-03A** — POST /appointments/app. Đặt lịch tự mình qua miniapp (đa role: khách hàng hoặc nhân viên/KTV cũng là khách). Chỉ cần đăng nhập (API miniapp — không áp phân quyền, dữ liệu luôn của chính tài khoản). Hồ sơ khách suy ra từ tài khoản — nếu tài khoản chưa có hồ sơ khách thì tự cấp (giống luồng đăng ký zalo). `customer_profile_id` truyền từ client bị bỏ qua. Trạng thái `pending`, giới hạn đặt trước `booking.customer_horizon_days` (mặc định 7 ngày), slot kín trả 409 `SLOT_UNAVAILABLE`.
+ * **AP-03A** — POST /appointments/app. Đặt lịch tự mình qua miniapp (đa role: khách hàng hoặc nhân viên/KTV cũng là khách). Chỉ cần đăng nhập (API miniapp — không áp phân quyền, dữ liệu luôn của chính tài khoản). Hồ sơ khách suy ra từ tài khoản — nếu tài khoản chưa có hồ sơ khách thì tự cấp (giống luồng đăng ký zalo). `user_id` truyền từ client bị bỏ qua. Trạng thái `pending`, giới hạn đặt trước `booking.customer_horizon_days` (mặc định 7 ngày), slot kín trả 409 `SLOT_UNAVAILABLE`.
  * @summary Create an appointment for self (miniapp)
  */
 export const postAppointmentsApp = (
@@ -1224,7 +1224,7 @@ export const usePostAppointmentsApp = <TError = UnauthorizedResponse | Forbidden
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **AP-01** — GET /appointments/admin. Danh sách lịch hẹn quản trị. Cần đăng nhập + `appointment.read_all` (KTV chỉ thấy lịch được gán; branch scope áp dụng). Lịch hẹn của chính tài khoản (miniapp): GET /appointments/app. Query parameters: `page`, `limit`, `branch_id`, `date`, `from_date`, `to_date`, `status`, `staff_id`, `customer_profile_id`.
+ * **AP-01** — GET /appointments/admin. Danh sách lịch hẹn quản trị. Cần đăng nhập + `appointment.read_all` (KTV chỉ thấy lịch được gán; branch scope áp dụng). Lịch hẹn của chính tài khoản (miniapp): GET /appointments/app. Query parameters: `page`, `limit`, `branch_id`, `date`, `from_date`, `to_date`, `status`, `staff_id`, `user_id`.
  * @summary List appointments (management / my bookings)
  */
 export const getAppointmentsAdmin = (
@@ -1419,7 +1419,7 @@ export const prefetchGetAppointmentsAdminQuery = async <TData = Awaited<ReturnTy
 
 
 /**
- * **AP-03** — POST /appointments/admin. Nhân sự (admin/lễ tân) đặt lịch hộ khách — bắt buộc `customer_profile_id`. Cần đăng nhập + `appointment.create`; KTV không được thao tác. Giới hạn đặt trước `booking.customer_horizon_days` (mặc định 7 ngày), slot kín trả 409 `SLOT_UNAVAILABLE`; branch scope áp dụng. Khách tự đặt (miniapp): POST /appointments/app.
+ * **AP-03** — POST /appointments/admin. Nhân sự (admin/lễ tân) đặt lịch hộ khách — bắt buộc `user_id`. Cần đăng nhập + `appointment.create`; KTV không được thao tác. Giới hạn đặt trước `booking.customer_horizon_days` (mặc định 7 ngày), slot kín trả 409 `SLOT_UNAVAILABLE`; branch scope áp dụng. Khách tự đặt (miniapp): POST /appointments/app.
  * @summary Create an appointment (staff on behalf / customer for self)
  */
 export const postAppointmentsAdmin = (

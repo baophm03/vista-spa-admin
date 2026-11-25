@@ -71,7 +71,7 @@ export default function TreatmentCreateModal({
         value: user.id,
         label: [
           user.full_name || user.zalo_name || 'Khách',
-          user.phone_number || user.email || '',
+          user.phone || user.email || '',
           user.ref_code || '',
         ]
           .filter(Boolean)
@@ -95,7 +95,7 @@ export default function TreatmentCreateModal({
       confirmLoading={submitting}
     >
       <Form form={form} layout="vertical" className="mt-3">
-        <Form.Item name="customer_profile_id" label="Khách hàng" rules={[{ required: true, message: 'Chọn khách hàng' }]}>
+        <Form.Item name="user_id" label="Khách hàng" rules={[{ required: true, message: 'Chọn khách hàng' }]}>
           <Select
             showSearch
             filterOption={false}
@@ -113,8 +113,8 @@ export default function TreatmentCreateModal({
             onChange={onPackageChange}
             options={packages.filter((p) => p.is_active).map((p) => ({
               value: p.id,
-              // (Loại gói · Cách tính) — loại gói đọc từ package_type.code, mặc định Gói lẻ
-              label: `${p.name} (${String((p as TreatmentPackage & { package_type?: { code?: string } }).package_type?.code ?? '').toUpperCase() === 'COMBO' ? 'Gói Combo' : 'Gói lẻ'} · ${QUOTA_LABEL[p.quota_type ?? ''] ?? p.quota_type})`,
+              // (Loại gói · Gói dịch vụ) — loại gói suy từ quota_type (Gói lẻ = theo tiền, Gói buổi, Trọn đời)
+              label: `${p.name} (${QUOTA_LABEL[p.quota_type ?? ''] ?? p.quota_type}${p.package_service?.title ? ` · ${p.package_service.title}` : ''})`,
             }))}
           />
         </Form.Item>

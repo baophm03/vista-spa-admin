@@ -44,7 +44,6 @@ export interface DiscountRule {
   end_date?: DiscountRuleEndDate;
   is_active?: boolean;
   requires_rank?: DiscountRuleRequiresRank;
-  service_ids?: string[];
   created_at?: string;
   updated_at?: string;
 }

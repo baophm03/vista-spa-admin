@@ -7,6 +7,7 @@
  */
 import type { ServiceUpdateDescription } from './serviceUpdateDescription';
 import type { ServiceUpdateCategoryId } from './serviceUpdateCategoryId';
+import type { ServiceUpdateBranchId } from './serviceUpdateBranchId';
 import type { ServiceUpdateImageFileId } from './serviceUpdateImageFileId';
 import type { ServiceUpdateCustomFields } from './serviceUpdateCustomFields';
 
@@ -27,6 +28,9 @@ export interface ServiceUpdate {
   price_max?: number;
   price_unit?: string;
   category_id?: ServiceUpdateCategoryId;
+  /** @minimum 1 */
+  session_count?: number;
+  branch_id?: ServiceUpdateBranchId;
   image_file_id?: ServiceUpdateImageFileId;
   gallery_file_ids?: string[];
   is_active?: boolean;

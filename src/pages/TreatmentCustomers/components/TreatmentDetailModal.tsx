@@ -42,7 +42,6 @@ interface TreatmentDetailModalProps {
   refresh: () => void
   refreshSelectedDetail: () => Promise<void>
   onCancelTreatment: (row: CustomerTreatment) => Promise<void>
-  onConvert: (row: CustomerTreatment) => void
   onEdit: (row: CustomerTreatment) => void
   onClose: () => void
 }
@@ -76,7 +75,6 @@ export default function TreatmentDetailModal({
   refresh,
   refreshSelectedDetail,
   onCancelTreatment,
-  onConvert,
   onEdit,
   onClose,
 }: TreatmentDetailModalProps) {
@@ -149,25 +147,11 @@ export default function TreatmentDetailModal({
                   <strong>{bonusRemaining(detail)} buổi</strong>
                 </div>
               )}
-              {/* Combo: quota còn lại theo từng dịch vụ */}
-              {!!detail.services?.length && (
-                <>
-                  <Divider className="my-3!" />
-                  <Typography.Text type="secondary" className="text-xs font-extrabold tracking-[1.2px]">
-                    QUOTA THEO DỊCH VỤ
-                  </Typography.Text>
-                  <div className="mt-2 grid gap-[7px] text-[13px]">
-                    {detail.services.map((service) => (
-                      <div key={service.service_id} className="flex items-center justify-between gap-2.5">
-                        <span className="truncate">{service.service_name}</span>
-                        <strong className="whitespace-nowrap">
-                          {service.qty_remaining}/{service.qty_total} buổi
-                          {!!service.qty_reserved && <span className="font-medium text-[#777]"> · giữ {service.qty_reserved}</span>}
-                        </strong>
-                      </div>
-                    ))}
-                  </div>
-                </>
+              {detail.package_service?.title && (
+                <div className="flex justify-between gap-2.5">
+                  <span>Gói dịch vụ</span>
+                  <strong className="text-right">{detail.package_service.title}</strong>
+                </div>
               )}
               {detail.referrer && (
                 <div className="flex justify-between gap-2.5">
@@ -197,12 +181,6 @@ export default function TreatmentDetailModal({
               {canCreateSessions && detail.status === 'ACTIVE' && (
                 <Button block disabled={addingSessionId !== null} loading={addingSessionId === detail.id} onClick={() => onAddSession(detail)}>
                   +1 buổi
-                </Button>
-              )}
-              {/* TA-02 — Đổi buổi tặng: chỉ hiện khi còn buổi tặng khả dụng (quyền chi tiết do backend chốt: convertible_note hoặc treatment.convert) */}
-              {canUpdate && detail.status === 'ACTIVE' && detail.quota_type === 'SESSIONS' && bonusRemaining(detail) > 0 && (
-                <Button block onClick={() => onConvert(detail)}>
-                  Đổi buổi tặng
                 </Button>
               )}
               {/* CT-04 — Sửa số tiền (chưa thu tiền) / hạn sử dụng / ghi chú / custom fields */}
@@ -340,7 +318,7 @@ export default function TreatmentDetailModal({
                 />
               </>
             )}
-            {detailTab === 'points' && <PointsHistoryPanel profileId={detail.customer_profile_id} />}
+            {detailTab === 'points' && <PointsHistoryPanel profileId={detail.user_id} />}
           </div>
           )}
         </div>

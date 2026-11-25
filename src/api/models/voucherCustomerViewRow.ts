@@ -7,7 +7,6 @@
  */
 import type { VoucherCustomerViewRowAssignmentId } from './voucherCustomerViewRowAssignmentId';
 import type { VoucherCustomerViewRowUserId } from './voucherCustomerViewRowUserId';
-import type { VoucherCustomerViewRowCustomerProfileId } from './voucherCustomerViewRowCustomerProfileId';
 import type { VoucherCustomerViewRowUserName } from './voucherCustomerViewRowUserName';
 import type { VoucherCustomerViewRowUserPhone } from './voucherCustomerViewRowUserPhone';
 import type { VoucherCustomerViewRowBranchId } from './voucherCustomerViewRowBranchId';
@@ -28,7 +27,6 @@ import type { VoucherCustomerViewRowAssignedAt } from './voucherCustomerViewRowA
 export interface VoucherCustomerViewRow {
   assignment_id?: VoucherCustomerViewRowAssignmentId;
   user_id?: VoucherCustomerViewRowUserId;
-  customer_profile_id?: VoucherCustomerViewRowCustomerProfileId;
   user_name?: VoucherCustomerViewRowUserName;
   user_phone?: VoucherCustomerViewRowUserPhone;
   branch_id?: VoucherCustomerViewRowBranchId;

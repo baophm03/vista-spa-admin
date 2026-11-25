@@ -12,5 +12,5 @@ to_date?: string;
 branch_id?: string;
 group_by?: string;
 staff_id?: string;
-customer_profile_id?: string;
+user_id?: string;
 };

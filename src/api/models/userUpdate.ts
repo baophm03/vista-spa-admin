@@ -7,7 +7,7 @@
  */
 import type { UserUpdateZaloName } from './userUpdateZaloName';
 import type { UserUpdateEmail } from './userUpdateEmail';
-import type { UserUpdatePhoneNumber } from './userUpdatePhoneNumber';
+import type { UserUpdatePhone } from './userUpdatePhone';
 import type { UserUpdateAddress } from './userUpdateAddress';
 import type { UserUpdateBirthday } from './userUpdateBirthday';
 import type { UserUpdateBranchId } from './userUpdateBranchId';
@@ -18,7 +18,7 @@ import type { UserUpdateBranchId } from './userUpdateBranchId';
 export interface UserUpdate {
   zalo_name?: UserUpdateZaloName;
   email?: UserUpdateEmail;
-  phone_number?: UserUpdatePhoneNumber;
+  phone?: UserUpdatePhone;
   address?: UserUpdateAddress;
   birthday?: UserUpdateBirthday;
   branch_id?: UserUpdateBranchId;

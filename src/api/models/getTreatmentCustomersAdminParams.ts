@@ -17,7 +17,7 @@ page?: number;
  */
 limit?: number;
 branch_id?: string;
-customer_profile_id?: string;
+user_id?: string;
 status?: string;
 payment_status?: string;
 has_debt?: boolean;

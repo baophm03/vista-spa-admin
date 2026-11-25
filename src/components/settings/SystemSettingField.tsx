@@ -41,7 +41,6 @@ const fieldHelp: Record<string, string> = {
   'booking.horizon_days': 'Đặt lịch trước tối đa số ngày này.',
   'booking.min_cancel_hours': 'Khách phải hủy trước giờ hẹn ít nhất số giờ này.',
   'booking.pending_expire_hours': 'Tự hủy lịch chờ sau số giờ này.',
-  'booking.require_staff_service': 'Chỉ hiện nhân viên có thể làm dịch vụ đã chọn.',
   'booking.slot_minutes': 'Thời lượng mặc định nếu dịch vụ chưa có thời lượng riêng.',
   'payment.methods': 'Chọn các cách thanh toán được phép.',
   'payment.allow_overpay': 'Cho phép trả nhiều hơn số tiền còn phải thanh toán.',

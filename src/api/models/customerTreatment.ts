@@ -19,14 +19,14 @@ import type { CustomerTreatmentReferrerId } from './customerTreatmentReferrerId'
 import type { CustomerTreatmentReferrer } from './customerTreatmentReferrer';
 import type { CustomerTreatmentNote } from './customerTreatmentNote';
 import type { CustomerTreatmentCustomFields } from './customerTreatmentCustomFields';
-import type { CustomerTreatmentServicesItem } from './customerTreatmentServicesItem';
+import type { CustomerTreatmentPackageService } from './customerTreatmentPackageService';
 
 /**
  * Purchased treatment package for a customer
  */
 export interface CustomerTreatment {
   id: string;
-  customer_profile_id: string;
+  user_id: string;
   package_id: CustomerTreatmentPackageId;
   branch_id: string;
   package_snapshot?: CustomerTreatmentPackageSnapshot;
@@ -69,11 +69,8 @@ export interface CustomerTreatment {
   referrer?: CustomerTreatmentReferrer;
   note?: CustomerTreatmentNote;
   custom_fields?: CustomerTreatmentCustomFields;
-  /**
-   * Combo: quota từng dịch vụ — qty_total/qty_used/qty_reserved/qty_remaining (gói lẻ: không có)
-   * @nullable
-   */
-  services?: CustomerTreatmentServicesItem[] | null;
+  /** Gói dịch vụ của liệu trình (từ package_snapshot) */
+  package_service?: CustomerTreatmentPackageService;
   created_at?: string;
   updated_at?: string;
 }

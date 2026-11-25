@@ -7,13 +7,13 @@
  */
 import type { CustomerTreatmentReferrerAnyOfFullName } from './customerTreatmentReferrerAnyOfFullName';
 import type { CustomerTreatmentReferrerAnyOfZaloName } from './customerTreatmentReferrerAnyOfZaloName';
-import type { CustomerTreatmentReferrerAnyOfPhoneNumber } from './customerTreatmentReferrerAnyOfPhoneNumber';
+import type { CustomerTreatmentReferrerAnyOfPhone } from './customerTreatmentReferrerAnyOfPhone';
 import type { CustomerTreatmentReferrerAnyOfRefCode } from './customerTreatmentReferrerAnyOfRefCode';
 
 export type CustomerTreatmentReferrerAnyOf = {
   id?: string;
   full_name?: CustomerTreatmentReferrerAnyOfFullName;
   zalo_name?: CustomerTreatmentReferrerAnyOfZaloName;
-  phone_number?: CustomerTreatmentReferrerAnyOfPhoneNumber;
+  phone?: CustomerTreatmentReferrerAnyOfPhone;
   ref_code?: CustomerTreatmentReferrerAnyOfRefCode;
 };

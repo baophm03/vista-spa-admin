@@ -23,15 +23,15 @@ export default function AppointmentsTable({ rows, loading, branchName, staffName
     {
       title: 'Khách hàng',
       key: 'customer',
-      dataIndex: ['customer_profile', 'full_name'],
+      dataIndex: ['user', 'full_name'],
       width: 232,
       ellipsis: true,
-      render: (_: unknown, row: AppointmentRow) => <span className="font-medium">{displayName(row.customer_profile)}</span>,
+      render: (_: unknown, row: AppointmentRow) => <span className="font-medium">{displayName(row.user)}</span>,
     },
     {
       title: <span className="whitespace-nowrap">Số điện thoại</span>,
       key: 'phone',
-      dataIndex: ['customer_profile', 'phone'],
+      dataIndex: ['user', 'phone'],
       width: 128,
       render: (phone) => <span className="whitespace-nowrap tabular-nums">{phone || '—'}</span>,
     },
@@ -96,14 +96,14 @@ export default function AppointmentsTable({ rows, loading, branchName, staffName
         renderCard={(row) => (
           <>
             <div className="mobile-card-head">
-              <div className="mobile-card-title">{row.customer_profile?.full_name || '—'}</div>
+              <div className="mobile-card-title">{row.user?.full_name || '—'}</div>
               <Tag color={STATUS_META[row.status as AppointmentStatus]?.color} style={{ marginInlineEnd: 0 }}>
                 {STATUS_META[row.status as AppointmentStatus]?.label ?? row.status}
               </Tag>
             </div>
             <div className="mobile-card-rows">
               <MobileCardRow label="Thời gian" value={`${dayjs(row.appt_date).format('DD/MM/YYYY')} ${row.start_time?.slice(0, 5) ?? ''}`} />
-              <MobileCardRow label="Số điện thoại" value={row.customer_profile?.phone || '—'} />
+              <MobileCardRow label="Số điện thoại" value={row.user?.phone || '—'} />
               <MobileCardRow label="Cơ sở" value={branchName(row.branch_id)} />
               <MobileCardRow label="KTV phụ trách" value={staffName(row)} />
             </div>

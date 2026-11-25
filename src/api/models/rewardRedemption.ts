@@ -21,7 +21,7 @@ import type { RewardRedemptionCancelReason } from './rewardRedemptionCancelReaso
 export interface RewardRedemption {
   id: string;
   reward_id: string;
-  customer_profile_id: string;
+  user_id: string;
   user_voucher_id?: RewardRedemptionUserVoucherId;
   status?: string;
   /** @minimum 0 */

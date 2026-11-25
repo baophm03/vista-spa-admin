@@ -8,5 +8,5 @@
 
 export type GetReportsDebtsAdminParams = {
 branch_id?: string;
-customer_profile_id?: string;
+user_id?: string;
 };

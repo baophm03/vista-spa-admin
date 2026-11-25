@@ -16,11 +16,11 @@ import CustomerCodeHistoryModal from '../../components/CustomerCodeHistoryModal'
 import { errorMessage } from '../../api/helpers'
 import { getGetCardRanksAdminQueryKey, useDeleteCardRanksIdAdmin, useGetCardRanksAdmin, usePostCardRanksAdmin, usePutCardRanksIdAdmin } from '@/api/endpoints/card-ranks'
 import { useGetMembershipTransactionsAdmin } from '@/api/endpoints/memberships'
-import { usePostMembershipsCustomerProfileIdPointsAdjustAdmin, usePostMembershipsCustomerProfileIdRankOverrideAdmin, usePostMembershipsCustomerProfileIdRecalculateAdmin } from '@/api/endpoints/memberships'
+import { usePostMembershipsUserIdPointsAdjustAdmin, usePostMembershipsUserIdRankOverrideAdmin, usePostMembershipsUserIdRecalculateAdmin } from '@/api/endpoints/memberships'
 import type { MembershipTransaction } from '../../api/models'
 import type { PostCardRanksAdminBody } from '../../api/models/postCardRanksAdminBody'
 import type { PutCardRanksIdAdminBody } from '../../api/models/putCardRanksIdAdminBody'
-import { useGetCustomerProfilesAdmin } from '@/api/endpoints/customer-profiles'
+import { useGetUsersCustomersAdmin } from '@/api/endpoints/customers'
 
 import AdjustPointsModal from './components/AdjustPointsModal'
 import RankOverrideModal from './components/RankOverrideModal'
@@ -64,10 +64,10 @@ function RankBadge({ rank, label }: { rank?: RankRow; label: string }) {
   )
 }
 
-/** 1 dòng log điểm: transaction + membership khách (LY-03 trả về include membership.customer_profile) */
+/** 1 dòng log điểm: transaction + membership khách (LY-03 trả về include membership.user) */
 type HistoryRow = MembershipTransaction & {
   reason?: string
-  membership?: { lifetime_points?: number; customer_profile?: { id?: string; customer_code?: string; full_name?: string; phone?: string } | null } | null
+  membership?: { lifetime_points?: number; user?: { id?: string; customer_code?: string; full_name?: string; phone?: string } | null } | null
 }
 
 export default function Points() {
@@ -77,7 +77,7 @@ export default function Points() {
   const canAdjust = ability.can('POINTS_ADJUST', 'MEMBERSHIP')
   const canOverride = ability.can('RANK_OVERRIDE', 'MEMBERSHIP')
   const canRecalc = ability.can('RECALCULATE', 'MEMBERSHIP')
-  const canViewHistory = ability.can('READ', 'CUSTOMER_PROFILE') && canAdjust
+  const canViewHistory = ability.can('READ', 'CUSTOMER') && canAdjust
   const [page, setPage] = useState(1)
   const [limit] = useState(10)
   const [searchText, setSearchText] = useState('')
@@ -93,11 +93,11 @@ export default function Points() {
   const [activeTab, setActiveTab] = useState('members')
   const [ranksExpanded, setRanksExpanded] = useState(false)
   const adjustSubmitLock = useRef(false)
-  const memberProfilesQuery = useGetCustomerProfilesAdmin({ page, limit, ...filters } as Parameters<typeof useGetCustomerProfilesAdmin>[0])
+  const memberProfilesQuery = useGetUsersCustomersAdmin({ page, limit, ...filters } as Parameters<typeof useGetUsersCustomersAdmin>[0])
   const ranksQuery = useGetCardRanksAdmin()
-  const adjustMutation = usePostMembershipsCustomerProfileIdPointsAdjustAdmin()
-  const overrideMutation = usePostMembershipsCustomerProfileIdRankOverrideAdmin()
-  const recalcMutation = usePostMembershipsCustomerProfileIdRecalculateAdmin()
+  const adjustMutation = usePostMembershipsUserIdPointsAdjustAdmin()
+  const overrideMutation = usePostMembershipsUserIdRankOverrideAdmin()
+  const recalcMutation = usePostMembershipsUserIdRecalculateAdmin()
   const rows = (memberProfilesQuery.data?.responseData ?? (memberProfilesQuery.data as any)?.data ?? []) as MemberRow[]
   const total = memberProfilesQuery.data?.meta?.total ?? rows.length
   const ranksData = (ranksQuery.data?.responseData ?? (ranksQuery.data as any)?.data ?? []) as RankRow[]
@@ -223,10 +223,10 @@ export default function Points() {
 
   // Lịch sử điểm: log toàn bộ biến động điểm của mọi khách (LY-03) — có thể lọc theo khách / nhận-trừ
   const [historyDirection, setHistoryDirection] = useState<'' | 'plus' | 'minus'>('')
-  const profilesQuery = useGetCustomerProfilesAdmin({ page: 1, limit: 200 })
+  const profilesQuery = useGetUsersCustomersAdmin({ page: 1, limit: 200 })
   const profilesData = (profilesQuery.data?.responseData ?? (profilesQuery.data as any)?.data ?? []) as ProfileLite[]
   const historyParams: Record<string, unknown> = { page: historyPage, limit: 10 }
-  if (historyProfileId) historyParams.customer_profile_id = historyProfileId
+  if (historyProfileId) historyParams.user_id = historyProfileId
   if (historyDirection) historyParams.direction = historyDirection
   const historyQuery = useGetMembershipTransactionsAdmin(historyParams as never)
   const historyData = (historyQuery.data?.responseData ?? (historyQuery.data as any)?.data ?? null) as { rows?: HistoryRow[]; count?: number } | null
@@ -245,7 +245,7 @@ export default function Points() {
       } catch {
         return
       }
-      await adjustMutation.mutateAsync({ customerProfileId: adjusting!.id, data: { delta: values.delta, reason: values.reason } })
+      await adjustMutation.mutateAsync({ userId: adjusting!.id, data: { delta: values.delta, reason: values.reason } })
       message.success('Đã điều chỉnh điểm')
       await queryClient.invalidateQueries({ queryKey: ['membership-transactions'] })
       setAdjusting(null)
@@ -267,7 +267,7 @@ export default function Points() {
     try {
       const values = await overrideForm.validateFields()
       if (!overrideTarget || !values.rank_id) return
-      await overrideMutation.mutateAsync({ customerProfileId: overrideTarget.row.id, data: { rank_id: values.rank_id, reason: values.reason.trim() } })
+      await overrideMutation.mutateAsync({ userId: overrideTarget.row.id, data: { rank_id: values.rank_id, reason: values.reason.trim() } })
       message.success('Đã gán hạng mới')
       setOverrideTarget(null)
       overrideForm.resetFields()
@@ -280,7 +280,7 @@ export default function Points() {
 
   const doRecalc = async (row: MemberRow) => {
     try {
-      await recalcMutation.mutateAsync({ customerProfileId: row.id })
+      await recalcMutation.mutateAsync({ userId: row.id })
       message.success('Đã tính lại hạng')
       await memberProfilesQuery.refetch()
     } catch (err) {
@@ -521,7 +521,7 @@ export default function Points() {
             render: (_value: unknown, row: MemberRow) => (
               <div>
                 <div style={{ fontWeight: 500 }}>{row.full_name || row.user?.zalo_name || '—'}</div>
-                <div style={{ fontSize: 12, color: '#6F7071' }}>{row.phone || row.user?.phone_number}</div>
+                <div style={{ fontSize: 12, color: '#6F7071' }}>{row.phone || row.user?.phone}</div>
               </div>
             ),
           },
@@ -574,7 +574,7 @@ export default function Points() {
                 <div className="min-w-0">
                   <div className="mobile-card-title">{row.full_name || row.user?.zalo_name || '—'}</div>
                   <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
-                    {(row.phone || row.user?.phone_number) && <div className="mobile-card-sub">{row.phone || row.user?.phone_number}</div>}
+                    {(row.phone || row.user?.phone) && <div className="mobile-card-sub">{row.phone || row.user?.phone}</div>}
                     {memberRank(row, 'Chưa xếp hạng')}
                   </div>
                 </div>
@@ -657,7 +657,7 @@ export default function Points() {
             title: 'Khách hàng',
             key: 'customer',
             render: (_, row: HistoryRow) => {
-              const customer = row.membership?.customer_profile
+              const customer = row.membership?.user
               if (!customer) return '—'
               return (
                 <div>
@@ -726,7 +726,7 @@ export default function Points() {
           loading={historyQuery.isLoading}
           emptyText={historyProfileId || historyDirection ? 'Không có kết quả' : 'Chưa có giao dịch điểm nào'}
           renderCard={(row) => {
-            const customer = row.membership?.customer_profile
+            const customer = row.membership?.user
             const delta = Number(row.points_earned ?? 0)
             return (
               <>

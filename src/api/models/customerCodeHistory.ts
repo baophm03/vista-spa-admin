@@ -13,7 +13,7 @@ import type { CustomerCodeHistoryReason } from './customerCodeHistoryReason';
  */
 export interface CustomerCodeHistory {
   id: string;
-  customer_profile_id: string;
+  user_id: string;
   old_code: string;
   new_code: string;
   rank_id?: CustomerCodeHistoryRankId;

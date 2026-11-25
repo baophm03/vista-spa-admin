@@ -46,7 +46,7 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * PUT `/users/{id}/admin` — users. Only platform administrators (ADM) may call this. Body fields: `email`, `phone_number`, `password`, `role_id`, `zalo_name`, `branch_id`, `is_active`. Handled by `userProvider.getById`.
+ * PUT `/users/{id}/admin` — users. Only platform administrators (ADM) may call this. Body fields: `email`, `phone`, `password`, `role_id`, `zalo_name`, `branch_id`, `is_active`. Handled by `userProvider.getById`.
  * @summary Update an admin
  */
 export const putUsersIdAdmin = (
@@ -368,7 +368,7 @@ export const prefetchGetUsersAdminQuery = async <TData = Awaited<ReturnType<type
 
 
 /**
- * POST `/users/admin` — only the highest system administrator may create accounts. Cần đăng nhập + `user_profile.create`. Leaving `branch_id` blank creates the highest system administrator; selecting a branch creates a branch-scoped account and requires `role_id`.
+ * POST `/users/admin` — only the highest system administrator may create accounts. Cần đăng nhập + `STAFF:create`. Leaving `branch_id` blank creates the highest system administrator; selecting a branch creates a branch-scoped account and requires `role_id`.
  * @summary Manage admin accounts
  */
 export const postUsersAdmin = (
@@ -433,7 +433,7 @@ export const usePostUsersAdmin = <TError = LegacyBadRequestResponse | LegacyUnau
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * POST `/auth/zalo` — user. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Body fields: `phone_number`, `zalo_name`, `zalo_id`, `zalo_avatar`, `zalo_id_by_oa`. Handled by `userProvider.getOne`.
+ * POST `/auth/zalo` — user. **Public, no authentication required.** This route currently has no authentication or authorization middleware attached. Body fields: `phone`, `zalo_name`, `zalo_id`, `zalo_avatar`, `zalo_id_by_oa`. Handled by `userProvider.getOne`.
  * @summary Link a Zalo account to a user
  */
 export const postAuthZalo = (

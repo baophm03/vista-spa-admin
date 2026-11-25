@@ -80,8 +80,8 @@ export type RewardRedemptionRow = RewardRedemption & {
 }
 
 export const QUOTA_LABEL: Record<string, string> = {
-  SESSIONS: 'Theo số buổi',
-  VALUE: 'Theo mức tiền',
+  SESSIONS: 'Gói buổi',
+  VALUE: 'Gói lẻ (theo số tiền)',
   UNLIMITED: 'Trọn đời',
 }
 

@@ -98,9 +98,9 @@ export default function RedemptionsTab() {
     {
       key: 'customer', title: 'Khách hàng', width: 220, render: (_v, row) => (
         <div>
-          <div>{displayName(row.customer_profile, 'Khách hàng không xác định')}</div>
+          <div>{displayName(row.user, 'Khách hàng không xác định')}</div>
           <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-            {[row.customer_profile?.customer_code, row.customer_profile?.phone].filter(Boolean).join(' · ') || row.customer_profile_id}
+            {[row.user?.customer_code, row.user?.phone].filter(Boolean).join(' · ') || row.user_id}
           </Typography.Text>
         </div>
       ),
@@ -174,8 +174,8 @@ export default function RedemptionsTab() {
               <>
                 <div className="mobile-card-head items-start!">
                   <div className="min-w-0">
-                    <div className="mobile-card-title">{row.customer_profile?.full_name ?? 'Khách hàng không xác định'}</div>
-                    <div className="mobile-card-sub">{[row.customer_profile?.customer_code, row.customer_profile?.phone].filter(Boolean).join(' · ') || row.customer_profile_id}</div>
+                    <div className="mobile-card-title">{row.user?.full_name ?? 'Khách hàng không xác định'}</div>
+                    <div className="mobile-card-sub">{[row.user?.customer_code, row.user?.phone].filter(Boolean).join(' · ') || row.user_id}</div>
                   </div>
                   <Tag className="me-0!" color={status?.color}>{status?.label ?? row.status ?? '—'}</Tag>
                 </div>

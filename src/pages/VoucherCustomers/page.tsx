@@ -11,8 +11,8 @@ import PageTitle from '../../components/base/PageTitle'
 import ListPagination from '../../components/base/ListPagination'
 import { paginateRows } from '../../utils/listTable'
 import { errorMessage, pickData, pickMeta } from '@/api/helpers'
-import { getCustomerProfilesAdmin } from '@/api/endpoints/customer-profiles'
-import type { CustomerProfile } from '@/api/models/customerProfile'
+import { getUsersCustomersAdmin } from '@/api/endpoints/customers'
+import type { Customer } from '@/api/models/customer'
 import { getAcademyCourseVoucherCustomersAdmin, postAcademyCourseVoucherCustomersAdmin, deleteAcademyCourseVoucherCustomersIdAdmin } from '@/api/endpoints/academy-course-voucher-customers'
 import { getAcademyCourseVouchersAdmin } from '@/api/endpoints/academy-course-vouchers'
 import { getTreatmentPackageVoucherCustomersAdmin, postTreatmentPackageVoucherCustomersAdmin, deleteTreatmentPackageVoucherCustomersIdAdmin } from '@/api/endpoints/treatment-package-voucher-customers'
@@ -98,14 +98,14 @@ function VoucherCustomerTab({ category, branches, isMobile }: { category: Vouche
     queryKey: ['voucher-customer-select', customerSearch, assignmentBranchId],
     enabled: assignOpen && Boolean(assignmentBranchId),
     initialPageParam: 1,
-    queryFn: ({ pageParam }) => getCustomerProfilesAdmin({ page: pageParam, limit: 50, ...(customerSearch ? { q: customerSearch } : {}), ...(assignmentBranchId ? { branch_id: assignmentBranchId } : {}) }),
+    queryFn: ({ pageParam }) => getUsersCustomersAdmin({ page: pageParam, limit: 50, ...(customerSearch ? { q: customerSearch } : {}), ...(assignmentBranchId ? { branch_id: assignmentBranchId } : {}) }),
     getNextPageParam: (lastPage, allPages) => {
       const total = pickMeta(lastPage)?.total ?? 0
-      const loaded = allPages.reduce((count, pageResult) => count + (pickData<CustomerProfile[]>(pageResult) ?? []).length, 0)
+      const loaded = allPages.reduce((count, pageResult) => count + (pickData<Customer[]>(pageResult) ?? []).length, 0)
       return loaded < total ? allPages.length + 1 : undefined
     },
   })
-  const customerRows = customersQuery.data?.pages.flatMap((pageResult) => pickData<CustomerProfile[]>(pageResult) ?? []) ?? []
+  const customerRows = customersQuery.data?.pages.flatMap((pageResult) => pickData<Customer[]>(pageResult) ?? []) ?? []
   const customerOptions = customerRows.map((customer) => ({
     value: customer.id,
     label: [displayName(customer), customer.phone, customer.customer_code].filter(Boolean).join(' · '),
@@ -121,7 +121,7 @@ function VoucherCustomerTab({ category, branches, isMobile }: { category: Vouche
   const submitAssign = async () => {
     try {
       const values = await form.validateFields()
-      await assignMutation.mutateAsync({ voucher_id: values.voucher_id, customer_profile_id: values.customer_profile_id, branch_id: assignmentBranchId })
+      await assignMutation.mutateAsync({ voucher_id: values.voucher_id, user_id: values.user_id, branch_id: assignmentBranchId })
       message.success('Đã đổi voucher cho khách hàng')
       form.resetFields()
       setCustomerSearch('')
@@ -244,7 +244,7 @@ function VoucherCustomerTab({ category, branches, isMobile }: { category: Vouche
   ]
 
   const pageRows = paginateRows(rows, page, PAGE_SIZE)
-  const rowKey = (row: VoucherCustomerRow) => `${row.source}-${row.assignment_id ?? row.voucher_id}-${row.customer_profile_id ?? row.user_id ?? 'customer'}`
+  const rowKey = (row: VoucherCustomerRow) => `${row.source}-${row.assignment_id ?? row.voucher_id}-${row.user_id ?? row.user_id ?? 'customer'}`
   const branchSelect = (
     <Select
       aria-label="Lọc theo cơ sở"
@@ -391,12 +391,12 @@ function VoucherCustomerTab({ category, branches, isMobile }: { category: Vouche
               onChange={(value) => {
                 setAssignmentBranchId(value || undefined)
                 setCustomerSearch('')
-                form.setFieldsValue({ customer_profile_id: undefined, voucher_id: undefined })
+                form.setFieldsValue({ user_id: undefined, voucher_id: undefined })
               }}
             />
           </Form.Item>
           <Form.Item
-            name="customer_profile_id"
+            name="user_id"
             label="Khách hàng"
             rules={[{ required: true, message: 'Chọn khách hàng' }]}
           >

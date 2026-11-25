@@ -1,10 +1,9 @@
 import ResponsiveTable from '@/components/base/ResponsiveTable'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { Avatar, Button, Form, Input, Modal, Select, Space, Switch, Tag, Tooltip, Typography, message } from 'antd'
+import { Avatar, Button, Form, Input, Modal, Select, Space, Switch, Tag, Typography, message } from 'antd'
 import { useAbility } from '@casl/react'
 import {
-  AppstoreOutlined,
   EditOutlined,
   LockOutlined,
   PlusOutlined,
@@ -21,18 +20,16 @@ import { errorMessage, pickData } from '@/api/helpers'
 import type { Branch } from '@/api/models/branch'
 import type { UserCreate } from '@/api/models/userCreate'
 import type { PutUsersIdAdminBody } from '@/api/models/putUsersIdAdminBody'
-import type { UserProfileRow } from '@/api/models/userProfileRow'
+import type { StaffProfile } from '@/api/models/staffProfile'
 import { useProfileStore } from '@/stores/profile-store'
 import { getGetUsersAdminQueryKey, useDeleteUsersIdAdmin, usePostUsersAdmin, usePutUsersIdAdmin, useGetUsersAdmin } from '@/api/endpoints/users'
 import { useGetRolesAdmin } from '@/api/endpoints/roles'
 import { useGetBranchesAdmin } from '@/api/endpoints/branches'
-import { useGetServiceAdmin } from '@/api/endpoints/services'
 import { fileSrc, resolveFileSrc, useFileUrlMap } from '@/hooks/useFileUrl'
-import { useGetUserProfilesAdmin, useGetUserProfilesUserIdAdmin, useGetUserProfilesUserIdServicesAdmin, usePutUserProfilesUserIdAdmin, usePutUserProfilesUserIdServicesAdmin } from '@/api/endpoints/user-profiles'
+import { useGetUsersStaffAdmin, useGetUsersStaffIdAdmin, usePutUsersStaffIdAdmin } from '@/api/endpoints/staff'
 
 import UserModal from './components/UserModal'
 import UserProfileModal from './components/UserProfileModal'
-import UsersServicesModal from './components/UsersServicesModal'
 import {
   isAdminRole,
   isUserRole,
@@ -101,33 +98,21 @@ export default function Users() {
   const [profileOpen, setProfileOpen] = useState(false)
   const [profileUser, setProfileUser] = useState<UserRow | null>(null)
   const [profileForm] = Form.useForm()
-  const [servicesOpen, setServicesOpen] = useState(false)
-  const [servicesUser, setServicesUser] = useState<UserRow | null>(null)
-  const [checkedServiceIds, setCheckedServiceIds] = useState<string[]>([])
 
-  const UserProfilesQuery = useGetUserProfilesAdmin(branchFilter ? { branch_id: branchFilter } : undefined, {
+  const UserProfilesQuery = useGetUsersStaffAdmin(branchFilter ? { branch_id: branchFilter } : undefined, {
     query: { enabled: canReadUserProfile },
   })
-  const profileRows = (pickData<UserProfileRow[]>(UserProfilesQuery.data) ?? []) as UserProfileRow[]
+  const profileRows = (pickData<StaffProfile[]>(UserProfilesQuery.data) ?? []) as StaffProfile[]
   const profileByUser = useMemo(() => new Map(profileRows.map((row) => [row.user_id, row])), [profileRows])
-  const servicesQuery = useGetServiceAdmin({ is_active: true, limit: 200 })
-  const serviceRows = (pickData<{ services?: { id: string; title?: string }[] }>(servicesQuery.data)?.services ?? []) as {
-    id: string
-    title?: string
-  }[]
-  const profileDetailQuery = useGetUserProfilesUserIdAdmin(profileUser?.id ?? 'none', {
+  const profileDetailQuery = useGetUsersStaffIdAdmin(profileUser?.id ?? 'none', {
     query: { enabled: profileOpen && !!profileUser && canReadUserProfile },
   })
-  const UserservicesQuery = useGetUserProfilesUserIdServicesAdmin(servicesUser?.id ?? 'none', {
-    query: { enabled: servicesOpen && !!servicesUser && canUpdateUserProfile && canManageUserRow(servicesUser) },
-  })
-  const profileDetails = pickData<UserProfileRow>(profileDetailQuery.data)
-  const upsertProfileMutation = usePutUserProfilesUserIdAdmin()
-  const assignServicesMutation = usePutUserProfilesUserIdServicesAdmin()
+  const profileDetails = pickData<StaffProfile>(profileDetailQuery.data)
+  const upsertProfileMutation = usePutUsersStaffIdAdmin()
 
   useEffect(() => {
     if (!profileOpen) return
-    const profile = pickData<UserProfileRow>(profileDetailQuery.data)
+    const profile = pickData<StaffProfile>(profileDetailQuery.data)
     if (!profile) return
     profileForm.setFieldsValue({
       display_name: profile.display_name,
@@ -139,12 +124,6 @@ export default function Users() {
       show_in_app: profile.show_in_app !== false,
     })
   }, [profileOpen, profileDetailQuery.data, profileForm])
-
-  useEffect(() => {
-    if (!servicesOpen) return
-    const data = pickData<{ service_ids?: string[] }>(UserservicesQuery.data)
-    if (data) setCheckedServiceIds(data.service_ids ?? [])
-  }, [servicesOpen, UserservicesQuery.data])
 
   // Legacy envelope: responseData = { count, rows, totalPages, currentPage }
   const usersPage = pickData<{ count?: number; rows?: UserRow[] }>(usersQuery.data)
@@ -188,7 +167,7 @@ export default function Users() {
         ? {
           zalo_name: s.zalo_name,
           email: s.email,
-          phone_number: s.phone_number,
+          phone: s.phone,
           branch_id: s.branch_id ?? undefined,
           role_id: s.user_roles?.[0]?.role_id,
           password: '',
@@ -196,7 +175,7 @@ export default function Users() {
         : {
           zalo_name: '',
           email: '',
-          phone_number: '',
+          phone: '',
           password: '',
           role_id: undefined,
           branch_id: undefined,
@@ -214,7 +193,7 @@ export default function Users() {
         const payload: PutUsersIdAdminBody = {
           zalo_name: values.zalo_name,
           email: values.email,
-          phone_number: values.phone_number,
+          phone: values.phone,
           ...(isSuperAdmin && !editing.is_super_admin ? {
             branch_id: (values.branch_id || null) as PutUsersIdAdminBody['branch_id'],
             role_id: values.role_id,
@@ -226,7 +205,7 @@ export default function Users() {
       } else {
         const payload: UserCreate = {
           email: values.email,
-          phone_number: values.phone_number,
+          phone: values.phone,
           password: values.password,
           role_id: values.role_id,
           full_name: values.zalo_name,
@@ -282,7 +261,7 @@ export default function Users() {
     const values = await profileForm.validateFields()
     try {
       await upsertProfileMutation.mutateAsync({
-        userId: profileUser.id,
+        id: profileUser.id,
         data: {
           display_name: values.display_name,
           title: values.title,
@@ -304,27 +283,8 @@ export default function Users() {
   const toggleInApp = async (row: UserRow, showInApp: boolean) => {
     if (!canUpdateUserProfile || !canManageUserRow(row)) return
     try {
-      await upsertProfileMutation.mutateAsync({ userId: row.id, data: { show_in_app: showInApp } })
+      await upsertProfileMutation.mutateAsync({ id: row.id, data: { show_in_app: showInApp } })
       message.success(showInApp ? 'Đã hiện chuyên viên trên app' : 'Đã ẩn chuyên viên khỏi app')
-      await UserProfilesQuery.refetch()
-    } catch (err) {
-      message.error(errorMessage(err))
-    }
-  }
-
-  const openServices = (row: UserRow) => {
-    if (!canUpdateUserProfile || !canManageUserRow(row)) return
-    setServicesUser(row)
-    setCheckedServiceIds([])
-    setServicesOpen(true)
-  }
-
-  const submitServices = async () => {
-    if (!servicesUser || !canUpdateUserProfile || !canManageUserRow(servicesUser)) return
-    try {
-      await assignServicesMutation.mutateAsync({ userId: servicesUser.id, data: { service_ids: checkedServiceIds } })
-      message.success('Đã cập nhật dịch vụ phụ trách')
-      setServicesOpen(false)
       await UserProfilesQuery.refetch()
     } catch (err) {
       message.error(errorMessage(err))
@@ -423,33 +383,12 @@ export default function Users() {
             width: 110,
             render: (v: boolean | undefined) => (v === false ? <Tag>Đã nghỉ việc</Tag> : <Tag color="green">Đang làm</Tag>),
           },
-          { title: 'SĐT', key: 'phone', dataIndex: 'phone_number', width: 130, render: (v: string | undefined) => v || '—' },
+          { title: 'SĐT', key: 'phone', dataIndex: 'phone', width: 130, render: (v: string | undefined) => v || '—' },
           {
-            title: 'Chức danh & dịch vụ phụ trách',
+            title: 'Chức danh',
             key: 'profile',
-            width: 250,
-            render: (_: unknown, s: UserRow) => {
-              const profile = profileByUser.get(s.id)
-              const serviceTags = (profile?.service_ids ?? [])
-                .map((serviceId) => serviceRows.find((service) => service.id === serviceId)?.title || 'Dịch vụ đã ẩn')
-              return (
-                <Space direction="vertical" size={4}>
-                  <Typography.Text>{profile?.title || '—'}</Typography.Text>
-                  <Space size={4} wrap>
-                    {serviceTags.length === 0 && <Typography.Text type="secondary">Chưa gán dịch vụ</Typography.Text>}
-                    {serviceTags.length === 1 && <Tag color="blue">{serviceTags[0]}</Tag>}
-                    {serviceTags.length >= 2 && (
-                      <>
-                        <Tag color="blue">{serviceTags[0]}</Tag>
-                        <Tooltip title={serviceTags.join(', ')}>
-                          <Tag color="blue">+{serviceTags.length - 1} dịch vụ</Tag>
-                        </Tooltip>
-                      </>
-                    )}
-                  </Space>
-                </Space>
-              )
-            },
+            width: 180,
+            render: (_: unknown, s: UserRow) => <Typography.Text>{profileByUser.get(s.id)?.title || '—'}</Typography.Text>,
           },
           {
             title: <span className="whitespace-nowrap">Hiện trên app</span>,
@@ -486,7 +425,6 @@ export default function Users() {
               const actionItems = [
                 ...(canManageRow ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []),
                 ...(canReadUserProfile ? [{ key: 'profile', icon: <ProfileOutlined />, label: canUpdateUserProfile && canManageRow ? 'Hồ sơ' : 'Xem hồ sơ' }] : []),
-                ...(canUpdateUserProfile && canManageRow ? [{ key: 'services', icon: <AppstoreOutlined />, label: 'Dịch vụ' }] : []),
                 ...(canManageRow && !isHighestAdminRow(s)
                   ? s.is_active === false
                     ? [{ key: 'restore', icon: <UndoOutlined />, label: 'Khôi phục' }]
@@ -500,7 +438,6 @@ export default function Users() {
                   onSelect={(key) => {
                     if (key === 'edit') openModal(s)
                     else if (key === 'profile') openProfile(s)
-                    else if (key === 'services') openServices(s)
                     else if (key === 'restore') {
                       Modal.confirm({
                         title: 'Khôi phục tài khoản này?',
@@ -548,18 +485,6 @@ export default function Users() {
         saving={upsertProfileMutation.isPending}
         onCancel={() => setProfileOpen(false)}
         onOk={() => void submitProfile()}
-      />
-
-      <UsersServicesModal
-        open={servicesOpen}
-        servicesUser={servicesUser}
-        serviceRows={serviceRows}
-        checkedServiceIds={checkedServiceIds}
-        loading={UserservicesQuery.isLoading}
-        saving={assignServicesMutation.isPending}
-        onCheckedChange={setCheckedServiceIds}
-        onCancel={() => setServicesOpen(false)}
-        onOk={() => void submitServices()}
       />
     </>
   )

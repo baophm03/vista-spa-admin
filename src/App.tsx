@@ -8,6 +8,7 @@ import Services from './pages/services/page'
 import Appointments from './pages/Appointments/page'
 import Treatments from './pages/Treatments/page'
 import TreatmentCustomers from './pages/TreatmentCustomers/page'
+import ServiceCustomers from './pages/ServiceCustomers/page'
 import MySessions from './pages/MySessions/page'
 import Payments from './pages/Payments/page'
 import Users from './pages/Users/page'
@@ -54,6 +55,7 @@ export default function App() {
           <Route path="/academy/courses" element={<AcademyCourses />} />
           <Route path="/academy/registrations" element={<AcademyRegistrations />} />
           <Route path="/treatment-customers" element={<TreatmentCustomers />} />
+          <Route path="/service-customers" element={<ServiceCustomers />} />
           <Route path="/my-sessions" element={<MySessions />} />
           <Route path="/payments" element={<Payments />} />
           <Route path="/users" element={<Users />} />

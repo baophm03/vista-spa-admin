@@ -12,7 +12,7 @@ import type { AppointmentCreateCustomFields } from './appointmentCreateCustomFie
  */
 export interface AppointmentCreate {
   branch_id: string;
-  customer_profile_id: string;
+  user_id: string;
   service_id?: string;
   staff_id?: string;
   customer_treatment_id?: string;

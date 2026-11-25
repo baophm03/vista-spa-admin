@@ -764,7 +764,7 @@ export const useDeleteTreatmentPackagesIdAdmin = <TError = UnauthorizedResponse 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **TP-01** — GET /treatment-packages/admin. Cần đăng nhập + `treatment_package.view_all`. Branch scope: user gắn 1 cơ sở chỉ thấy dữ liệu cơ sở đó. Query parameters: `page`, `limit`, `is_active`, `quota_type`, `package_type_id`, `branch_id`.
+ * **TP-01** — GET /treatment-packages/admin. Cần đăng nhập + `treatment_package.view_all`. Branch scope: user gắn 1 cơ sở chỉ thấy dữ liệu cơ sở đó. Query parameters: `page`, `limit`, `is_active`, `quota_type`, `package_type_id`, `package_service_id`, `branch_id`.
  * @summary List treatment packages (management)
  */
 export const getTreatmentPackagesAdmin = (
@@ -959,7 +959,7 @@ export const prefetchGetTreatmentPackagesAdminQuery = async <TData = Awaited<Ret
 
 
 /**
- * **TP-03** — POST /treatment-packages/admin (BR-05). Cần đăng nhập + `treatment_package.create`.
+ * **TP-03** — POST /treatment-packages/admin (BR-05). Cần đăng nhập + `treatment_package.create`. Bắt buộc `package_service_id` (Gói dịch vụ); `quota_type` do BE suy ra từ loại gói (VALUE_QUOTA = Gói lẻ → VALUE, FIXED_PACKAGE = Gói buổi → SESSIONS + `total_sessions`, UNLIMITED_PACKAGE = Trọn đời → UNLIMITED). Gửi `service_id`/`service_ids`/`services` sẽ bị từ chối.
  * @summary Create a new treatment package
  */
 export const postTreatmentPackagesAdmin = (

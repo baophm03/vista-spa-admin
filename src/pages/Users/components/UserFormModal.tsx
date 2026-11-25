@@ -73,7 +73,7 @@ export default function UserFormModal({
         <Row gutter={12}>
           <Col xs={24} sm={12}>
             <Form.Item
-              name="phone_number"
+              name="phone"
               label="SĐT (đăng nhập)"
               rules={[{ required: true, message: 'Nhập SĐT' }]}
             >

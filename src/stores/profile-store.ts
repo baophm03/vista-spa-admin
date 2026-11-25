@@ -6,7 +6,7 @@ import type { Permission } from '@/lib/types/permissions'
 export interface AdminProfile {
   id?: string
   email?: string
-  phone_number?: string
+  phone?: string
   zalo_name?: string
   full_name?: string
   branch_id?: string | null

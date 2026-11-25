@@ -7,7 +7,7 @@ import dayjs from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
 import { errorMessage, pickData } from '@/api/helpers'
 import { getImportJobsAdmin, getImportJobsIdAdmin, postImportsKindAdmin } from '@/api/endpoints/imports'
-import { getGetCustomerProfilesAdminQueryKey } from '@/api/endpoints/customer-profiles'
+import { getGetUsersCustomersAdminQueryKey } from '@/api/endpoints/customers'
 import { getGetTreatmentCustomersAdminQueryKey } from '@/api/endpoints/treatment-customers'
 import { useGetBranchesAdmin } from '@/api/endpoints/branches'
 import { getCustomFieldDefsAdmin } from '@/api/endpoints/custom-field-defs'
@@ -87,7 +87,7 @@ const FIELD_LABELS: Record<string, string> = {
 }
 
 const KIND_LABELS: Record<string, string> = {
-  'customer-profiles': 'Hồ sơ khách hàng',
+  'customers': 'Hồ sơ khách hàng',
   'customer-treatments': 'Gói liệu trình dở dang',
 }
 
@@ -123,8 +123,8 @@ interface AutoMapField {
   aliases: string[]
 }
 
-function buildAutoMapFields(kind: 'customer-profiles' | 'customer-treatments', defs: CustomFieldDef[]): AutoMapField[] {
-  const baseKeys = kind === 'customer-profiles' ? PROFILE_FIELDS : TREATMENT_FIELDS
+function buildAutoMapFields(kind: 'customers' | 'customer-treatments', defs: CustomFieldDef[]): AutoMapField[] {
+  const baseKeys = kind === 'customers' ? PROFILE_FIELDS : TREATMENT_FIELDS
   const fields: AutoMapField[] = baseKeys.map((key) => ({
     key,
     aliases: [key, FIELD_LABELS[key] ?? key, ...(AUTO_MAP_ALIASES[key] ?? [])].map(normalizeHeaderText),
@@ -185,7 +185,7 @@ interface ImportField {
 
 /** Bản nháp phiên nhập — giữ ở cấp module để không mất khi chuyển sang menu khác rồi quay lại (tải lại trang thì làm mới). */
 interface ImportDraft {
-  kind: 'customer-profiles' | 'customer-treatments'
+  kind: 'customers' | 'customer-treatments'
   file: File | null
   mapping: Record<string, number>
   branchId?: string
@@ -197,7 +197,7 @@ let importDraft: ImportDraft | null = null
 
 export default function Imports() {
   const queryClient = useQueryClient()
-  const [kind, setKind] = useState<'customer-profiles' | 'customer-treatments'>('customer-profiles')
+  const [kind, setKind] = useState<'customers' | 'customer-treatments'>('customers')
   const [fileList, setFileList] = useState<UploadFile[]>([])
   const [mapping, setMapping] = useState<Record<string, number>>({})
   const [branchId, setBranchId] = useState<string | undefined>()
@@ -218,9 +218,9 @@ export default function Imports() {
 
   const branchesQuery = useGetBranchesAdmin()
   const branches = (pickData<Array<{ id: string; name: string }>>(branchesQuery.data) ?? []) as Array<{ id: string; name: string }>
-  const customFieldEntity = kind === 'customer-profiles' ? 'CUSTOMER_PROFILE' : 'CUSTOMER_TREATMENT'
-  const baseFields = kind === 'customer-profiles' ? PROFILE_FIELDS : TREATMENT_FIELDS
-  const requiredBaseFields: readonly string[] = kind === 'customer-profiles' ? ['full_name', 'phone'] : TREATMENT_FIELDS
+  const customFieldEntity = kind === 'customers' ? 'CUSTOMER' : 'CUSTOMER_TREATMENT'
+  const baseFields = kind === 'customers' ? PROFILE_FIELDS : TREATMENT_FIELDS
+  const requiredBaseFields: readonly string[] = kind === 'customers' ? ['full_name', 'phone'] : TREATMENT_FIELDS
   const fields: ImportField[] = [
     ...baseFields.map((key) => ({ key, label: FIELD_LABELS[key], required: requiredBaseFields.includes(key) })),
     ...customFieldDefs.map((definition) => ({
@@ -233,7 +233,7 @@ export default function Imports() {
   const requiredFields = fields.filter((field) => field.required)
   const requiredBaseImportFields = requiredFields.filter((field) => requiredBaseFields.includes(field.key))
   const requiredCustomFields = requiredFields.filter((field) => !requiredBaseFields.includes(field.key))
-  const mainOptionalBaseKeys = kind === 'customer-profiles' ? ['customer_code', 'email'] : []
+  const mainOptionalBaseKeys = kind === 'customers' ? ['customer_code', 'email'] : []
   const mainOptionalBaseFields = fields.filter((field) => mainOptionalBaseKeys.includes(field.key))
   const optionalFields = fields.filter((field) => !field.required && !mainOptionalBaseKeys.includes(field.key))
   const mappingFields = [
@@ -424,7 +424,7 @@ export default function Imports() {
           await reloadHistory()
           if (!job.dry_run) {
             message.success(`Đã nhập: tạo ${job.created_count ?? 0}, cập nhật ${job.updated_count ?? 0}`)
-            await queryClient.invalidateQueries({ queryKey: getGetCustomerProfilesAdminQueryKey() })
+            await queryClient.invalidateQueries({ queryKey: getGetUsersCustomersAdminQueryKey() })
             await queryClient.invalidateQueries({ queryKey: getGetTreatmentCustomersAdminQueryKey() })
           }
         } else if (job.status === 'FAILED') {
@@ -509,7 +509,7 @@ export default function Imports() {
       await reloadHistory()
       if (!dryRun) {
         message.success(`Đã nhập: tạo ${data?.created_count ?? 0}, cập nhật ${data?.updated_count ?? 0}`)
-        await queryClient.invalidateQueries({ queryKey: getGetCustomerProfilesAdminQueryKey() })
+        await queryClient.invalidateQueries({ queryKey: getGetUsersCustomersAdminQueryKey() })
         await queryClient.invalidateQueries({ queryKey: getGetTreatmentCustomersAdminQueryKey() })
       }
     } catch (err) {
@@ -611,7 +611,7 @@ export default function Imports() {
             </Button>
           </Space>
           <Typography.Paragraph type="secondary" style={{ marginBottom: 12 }}>
-            {kind === 'customer-profiles'
+            {kind === 'customers'
               ? 'Hồ sơ khách cần có họ tên và số điện thoại. Mã khách cũ, Email và các thông tin khác có thể ghép thêm.'
               : 'Gói liệu trình cần đủ thông tin số buổi và số tiền để tính số buổi còn lại, công nợ chính xác.'}
           </Typography.Paragraph>

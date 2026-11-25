@@ -20,5 +20,4 @@ export type PostDiscountRulesAdminBody = {
   stackable?: boolean;
   once_per_customer?: boolean;
   show_in_app?: boolean;
-  service_ids?: string[];
 };

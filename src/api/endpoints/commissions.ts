@@ -259,7 +259,7 @@ export const prefetchGetCommissionRulesIdAdminQuery = async <TData = Awaited<Ret
 
 
 /**
- * **CM-04** — PUT /commission-rules/{id}. Quy tắc là danh mục cố định: chỉ nhận `percent`/`fixed_amount` (giá trị), `service_id`/`staff_id`/`branch_id` (phạm vi) và `is_active`. Các trường `name`, `payee_type`, `base`, `priority`, `valid_from/valid_to` cố định theo kịch bản — bỏ qua nếu client gửi.
+ * **CM-04** — PUT /commission-rules/{id}. Quy tắc là danh mục cố định: chỉ nhận `percent`/`fixed_amount` (giá trị), `staff_id`/`branch_id` (phạm vi) và `is_active`. Các trường `name`, `payee_type`, `base`, `priority`, `valid_from/valid_to` cố định theo kịch bản — bỏ qua nếu client gửi.
  * @summary Update a commission rule (chỉ giá trị + phạm vi)
  */
 export const putCommissionRulesIdAdmin = (
@@ -581,7 +581,7 @@ export const prefetchGetCommissionRulesAdminQuery = async <TData = Awaited<Retur
 
 
 /**
- * **CM-03** — POST /commission-rules. Body: `name`, `type` (REFERRAL|SESSION — điều kiện kích hoạt cố định, payee_role được suy ra), `branch_id` (bắt buộc), `percent`/`fixed_amount` (loại trừ nhau), `service_id?`, `staff_id?`, `is_active?`. Mỗi điều kiện kích hoạt + người cụ thể chỉ có 1 quy tắc trong mỗi cơ sở (409 nếu trùng).
+ * **CM-03** — POST /commission-rules. Body: `name`, `type` (REFERRAL|SESSION — điều kiện kích hoạt cố định, payee_role được suy ra), `branch_id` (bắt buộc), `percent`/`fixed_amount` (loại trừ nhau), `staff_id?`, `is_active?`. Mỗi điều kiện kích hoạt + người cụ thể chỉ có 1 quy tắc trong mỗi cơ sở (409 nếu trùng).
  * @summary Create a commission rule
  */
 export const postCommissionRulesAdmin = (

@@ -112,7 +112,7 @@ export default function CommissionRuleModal({
                     options={users.map((user) => ({ value: user.id, label: user.zalo_name || user.email || user.id }))} />
                 ) : (
                   <Select allowClear showSearch optionFilterProp="label" loading={customersLoading} placeholder="Tất cả khách hàng cũ"
-                    options={customers.map((user) => ({ value: user.id, label: user.zalo_name || user.phone_number || user.email || user.id }))} />
+                    options={customers.map((user) => ({ value: user.id, label: user.zalo_name || user.phone || user.email || user.id }))} />
                 )}
               </Form.Item>
             ) : (

@@ -36,7 +36,7 @@ export default function CustomerProfileTreatmentsTab({ profileId }: { profileId:
     setLoading(true)
     setError('')
     const load = async () => {
-      const result = await getTreatmentCustomersAdmin({ customer_profile_id: profileId, page: 1, limit: 200 })
+      const result = await getTreatmentCustomersAdmin({ user_id: profileId, page: 1, limit: 200 })
       const treatments = rowsOf<CustomerTreatment>(pickData(result))
       const details = await Promise.all(treatments.map(async (treatment) => {
         const [sessionResult, paymentResult] = await Promise.all([
