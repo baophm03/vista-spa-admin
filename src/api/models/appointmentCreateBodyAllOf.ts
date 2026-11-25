@@ -7,11 +7,11 @@
  */
 
 /**
- * App customers may omit customer_profile_id; it is resolved from the signed-in customer's profiles
+ * App customers may omit user_id; it is resolved from the signed-in customer's profiles
  */
 export type AppointmentCreateBodyAllOf = {
   branch_id?: string;
-  customer_profile_id?: string;
+  user_id?: string;
   service_id?: string;
   staff_id?: string;
   customer_treatment_id?: string;

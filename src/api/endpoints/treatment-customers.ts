@@ -53,8 +53,6 @@ import type {
   PostPaymentsIdVoidAdminBody,
   PostTreatmentCustomersAdmin200,
   PostTreatmentCustomersAdminBody,
-  PostTreatmentCustomersIdConvertAdmin200,
-  PostTreatmentCustomersIdConvertAdminBody,
   PostTreatmentCustomersIdPaymentsAdmin200,
   PostTreatmentCustomersIdRedeemPointsAdmin200,
   PostTreatmentCustomersIdRedeemPointsAdminBody,
@@ -1109,72 +1107,6 @@ export const usePutTreatmentCustomersIdFinishAdmin = <TError = UnauthorizedRespo
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **TA-02** — POST /treatment-customers/{id}/convert/admin (BR-18). Only **remaining bonus sessions** are converted (bonus_remaining = sessions_bonus − max(0, sessions_used − sessions_total)); purchased sessions are not changed. Conditions: the package has `convertible_note` OR the user has permission `treatment.convert`. Creates a child package with `parent_treatment_id` and `total_amount = 0`, deducts bonus sessions from the source package, writes a CONVERT audit log. One-way.
- * @summary Convert bonus sessions to another service
- */
-export const postTreatmentCustomersIdConvertAdmin = (
-    id: string,
-    postTreatmentCustomersIdConvertAdminBody: PostTreatmentCustomersIdConvertAdminBody,
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<PostTreatmentCustomersIdConvertAdmin200>(
-      {url: `/treatment-customers/${id}/convert/admin`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: postTreatmentCustomersIdConvertAdminBody, signal
-    },
-      );
-    }
-  
-
-
-export const getPostTreatmentCustomersIdConvertAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postTreatmentCustomersIdConvertAdmin>>, TError,{id: string;data: PostTreatmentCustomersIdConvertAdminBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postTreatmentCustomersIdConvertAdmin>>, TError,{id: string;data: PostTreatmentCustomersIdConvertAdminBody}, TContext> => {
-
-const mutationKey = ['postTreatmentCustomersIdConvertAdmin'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postTreatmentCustomersIdConvertAdmin>>, {id: string;data: PostTreatmentCustomersIdConvertAdminBody}> = (props) => {
-          const {id,data} = props ?? {};
-
-          return  postTreatmentCustomersIdConvertAdmin(id,data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type PostTreatmentCustomersIdConvertAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postTreatmentCustomersIdConvertAdmin>>>
-    export type PostTreatmentCustomersIdConvertAdminMutationBody = PostTreatmentCustomersIdConvertAdminBody
-    export type PostTreatmentCustomersIdConvertAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | UnprocessableEntityResponse | InternalErrorResponse
-
-    /**
- * @summary Convert bonus sessions to another service
- */
-export const usePostTreatmentCustomersIdConvertAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postTreatmentCustomersIdConvertAdmin>>, TError,{id: string;data: PostTreatmentCustomersIdConvertAdminBody}, TContext>, }
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postTreatmentCustomersIdConvertAdmin>>,
-        TError,
-        {id: string;data: PostTreatmentCustomersIdConvertAdminBody},
-        TContext
-      > => {
-
-      const mutationOptions = getPostTreatmentCustomersIdConvertAdminMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
  * **CT-05** — PUT /treatment-customers/{id}/cancel/admin (ADM). Cần đăng nhập + `treatment.delete_all`.
  * @summary Cancel treatment package
  */
@@ -1237,7 +1169,7 @@ export const usePutTreatmentCustomersIdCancelAdmin = <TError = UnauthorizedRespo
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/treatmentCustomers/{id}/available-slots` — customer treatment package. Cần đăng nhập + `treatment.view_all`. Branch scope: users limited to a single branch only see that branch's data. Query parameters: `date`, `exclude_session_id`, `staff_id`, `service_id` (bắt buộc truyền cho liệu trình combo — slot tính theo dịch vụ chọn; gói lẻ bỏ qua, tự dùng dịch vụ của gói).
+ * GET `/treatmentCustomers/{id}/available-slots` — customer treatment package. Cần đăng nhập + `treatment.view_all`. Branch scope: users limited to a single branch only see that branch's data. Query parameters: `date`, `exclude_session_id`, `staff_id`. Slot tính theo `booking.slot_minutes` (không còn phụ thuộc dịch vụ).
  * @summary View available time slots
  */
 export const getTreatmentCustomersIdAvailableSlotsAdmin = (
@@ -1900,7 +1832,7 @@ export const prefetchGetTreatmentCustomersAppQuery = async <TData = Awaited<Retu
 
 
 /**
- * **CT-01** — GET /treatment-customers/admin. Cần đăng nhập + `treatment.read_all` (KTV chỉ thấy gói có buổi được phân công; ADM/REC branch-scoped). Query parameters: `page`, `limit`, `branch_id`, `customer_profile_id`, `status`, `payment_status`, `has_debt`. Gói của chính tài khoản (miniapp): GET /treatment-customers/app.
+ * **CT-01** — GET /treatment-customers/admin. Cần đăng nhập + `treatment.read_all` (KTV chỉ thấy gói có buổi được phân công; ADM/REC branch-scoped). Query parameters: `page`, `limit`, `branch_id`, `user_id`, `status`, `payment_status`, `has_debt`, `q`, `package_id`, `service_id`, `kind` (SINGLE = Dịch vụ lẻ, PACKAGE = gói liệu trình). Gói của chính tài khoản (miniapp): GET /treatment-customers/app.
  * @summary List customer treatment packages
  */
 export const getTreatmentCustomersAdmin = (
@@ -2095,7 +2027,7 @@ export const prefetchGetTreatmentCustomersAdminQuery = async <TData = Awaited<Re
 
 
 /**
- * **CT-03** — POST /treatment-customers/admin (sell package, +initial_payment). Cần đăng nhập + `treatment.create`. Branch scope: users limited to a single branch only see that branch's data. The request body is passed as-is to the business layer.
+ * **CT-03** — POST /treatment-customers/admin (sell package, +initial_payment). Cần đăng nhập + `treatment.create`. Branch scope: users limited to a single branch only see that branch's data. Body: `user_id`, `package_id`, `branch_id`, `total_amount`, `sessions_bonus`, `expires_at`, `initial_payment`, `kind` (SINGLE|PACKAGE — nếu gửi, gói phải đúng loại). Gói Dịch vụ lẻ: luôn 1 buổi, không buổi tặng/thời hạn.
  * @summary Create a new customer treatment package
  */
 export const postTreatmentCustomersAdmin = (

@@ -45,17 +45,19 @@ import type {
   PostAppointmentsApp200,
   PostAppointmentsAppBody,
   PostAppointmentsIdStartAdmin200,
-  PostAppointmentsIdStartAdminBody,
   PutAppointmentsIdAdmin200,
   PutAppointmentsIdAdminBody,
   PutAppointmentsIdApproveAdmin200,
   PutAppointmentsIdCancelAdmin200,
   PutAppointmentsIdCancelApp200,
+  PutAppointmentsIdCompleteAdmin200,
   PutAppointmentsIdNoShowAdmin200,
   PutAppointmentsIdRejectAdmin200,
   PutAppointmentsIdRejectAdminBody,
   PutAppointmentsIdRescheduleApp200,
   PutAppointmentsIdRescheduleAppBody,
+  PutAppointmentsIdStaffAdmin200,
+  PutAppointmentsIdStaffAdminBody,
   UnauthorizedResponse,
   UnprocessableEntityResponse
 } from '../models';
@@ -326,20 +328,17 @@ export const usePutAppointmentsIdAdmin = <TError = UnauthorizedResponse | Forbid
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **AP-09** — POST /appointments/{id}/start/admin (assigned technician, or ADM/REC: approved → in_progress). Lịch hẹn chỉ là hẹn tư vấn: start chỉ chuyển trạng thái, không tạo buổi điều trị (buổi được tạo từ gói đã bán ở treatment-customers/sessions). Cần đăng nhập + `appointment.start`.
+ * **AP-09** — POST /appointments/{id}/start/admin (assigned technician, or ADM/REC: approved → in_progress). Lịch hẹn chỉ là hẹn gặp tư vấn, không liên kết buổi điều trị: start chỉ chuyển trạng thái. Kết thúc bằng PUT /appointments/{id}/complete/admin. Cần đăng nhập + `appointment.start`.
  * @summary Start appointment
  */
 export const postAppointmentsIdStartAdmin = (
     id: string,
-    postAppointmentsIdStartAdminBody: PostAppointmentsIdStartAdminBody,
  signal?: AbortSignal
 ) => {
       
       
       return customInstance<PostAppointmentsIdStartAdmin200>(
-      {url: `/appointments/${id}/start/admin`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: postAppointmentsIdStartAdminBody, signal
+      {url: `/appointments/${id}/start/admin`, method: 'POST', signal
     },
       );
     }
@@ -347,8 +346,8 @@ export const postAppointmentsIdStartAdmin = (
 
 
 export const getPostAppointmentsIdStartAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAppointmentsIdStartAdmin>>, TError,{id: string;data: PostAppointmentsIdStartAdminBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postAppointmentsIdStartAdmin>>, TError,{id: string;data: PostAppointmentsIdStartAdminBody}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAppointmentsIdStartAdmin>>, TError,{id: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postAppointmentsIdStartAdmin>>, TError,{id: string}, TContext> => {
 
 const mutationKey = ['postAppointmentsIdStartAdmin'];
 const {mutation: mutationOptions} = options ?
@@ -360,10 +359,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAppointmentsIdStartAdmin>>, {id: string;data: PostAppointmentsIdStartAdminBody}> = (props) => {
-          const {id,data} = props ?? {};
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postAppointmentsIdStartAdmin>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
 
-          return  postAppointmentsIdStartAdmin(id,data,)
+          return  postAppointmentsIdStartAdmin(id,)
         }
 
         
@@ -372,22 +371,87 @@ const {mutation: mutationOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type PostAppointmentsIdStartAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postAppointmentsIdStartAdmin>>>
-    export type PostAppointmentsIdStartAdminMutationBody = PostAppointmentsIdStartAdminBody
+    
     export type PostAppointmentsIdStartAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
  * @summary Start appointment
  */
 export const usePostAppointmentsIdStartAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAppointmentsIdStartAdmin>>, TError,{id: string;data: PostAppointmentsIdStartAdminBody}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postAppointmentsIdStartAdmin>>, TError,{id: string}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof postAppointmentsIdStartAdmin>>,
         TError,
-        {id: string;data: PostAppointmentsIdStartAdminBody},
+        {id: string},
         TContext
       > => {
 
       const mutationOptions = getPostAppointmentsIdStartAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * PUT /appointments/{id}/staff/admin — gán / đổi / bỏ KTV ở MỌI trạng thái (không đổi ngày giờ, trạng thái). Body `staff_id` (UUID hoặc null = bỏ gán). Lịch còn hiệu lực (pending/approved/in_progress): KTV phải thuộc cơ sở, có ca phủ khung giờ, không trùng lịch hẹn / buổi điều trị khác (SLOT_UNAVAILABLE). Lịch đã kết thúc: chỉ kiểm tra KTV thuộc cơ sở. Cần đăng nhập + `appointment.update_all` (branch scope; KTV không gọi được).
+ * @summary Assign technician to appointment
+ */
+export const putAppointmentsIdStaffAdmin = (
+    id: string,
+    putAppointmentsIdStaffAdminBody: PutAppointmentsIdStaffAdminBody,
+ ) => {
+      
+      
+      return customInstance<PutAppointmentsIdStaffAdmin200>(
+      {url: `/appointments/${id}/staff/admin`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: putAppointmentsIdStaffAdminBody
+    },
+      );
+    }
+  
+
+
+export const getPutAppointmentsIdStaffAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAppointmentsIdStaffAdmin>>, TError,{id: string;data: PutAppointmentsIdStaffAdminBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putAppointmentsIdStaffAdmin>>, TError,{id: string;data: PutAppointmentsIdStaffAdminBody}, TContext> => {
+
+const mutationKey = ['putAppointmentsIdStaffAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putAppointmentsIdStaffAdmin>>, {id: string;data: PutAppointmentsIdStaffAdminBody}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  putAppointmentsIdStaffAdmin(id,data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PutAppointmentsIdStaffAdminMutationResult = NonNullable<Awaited<ReturnType<typeof putAppointmentsIdStaffAdmin>>>
+    export type PutAppointmentsIdStaffAdminMutationBody = PutAppointmentsIdStaffAdminBody
+    export type PutAppointmentsIdStaffAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+
+    /**
+ * @summary Assign technician to appointment
+ */
+export const usePutAppointmentsIdStaffAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAppointmentsIdStaffAdmin>>, TError,{id: string;data: PutAppointmentsIdStaffAdminBody}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof putAppointmentsIdStaffAdmin>>,
+        TError,
+        {id: string;data: PutAppointmentsIdStaffAdminBody},
+        TContext
+      > => {
+
+      const mutationOptions = getPutAppointmentsIdStaffAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -580,6 +644,68 @@ export const usePutAppointmentsIdNoShowAdmin = <TError = UnauthorizedResponse | 
       > => {
 
       const mutationOptions = getPutAppointmentsIdNoShowAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * PUT /appointments/{id}/complete/admin — hoàn tất buổi hẹn tư vấn: in_progress → completed. Cần đăng nhập + `appointment.start` (branch scope).
+ * @summary Complete appointment
+ */
+export const putAppointmentsIdCompleteAdmin = (
+    id: string,
+ ) => {
+      
+      
+      return customInstance<PutAppointmentsIdCompleteAdmin200>(
+      {url: `/appointments/${id}/complete/admin`, method: 'PUT'
+    },
+      );
+    }
+  
+
+
+export const getPutAppointmentsIdCompleteAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAppointmentsIdCompleteAdmin>>, TError,{id: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putAppointmentsIdCompleteAdmin>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['putAppointmentsIdCompleteAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putAppointmentsIdCompleteAdmin>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  putAppointmentsIdCompleteAdmin(id,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PutAppointmentsIdCompleteAdminMutationResult = NonNullable<Awaited<ReturnType<typeof putAppointmentsIdCompleteAdmin>>>
+    
+    export type PutAppointmentsIdCompleteAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+
+    /**
+ * @summary Complete appointment
+ */
+export const usePutAppointmentsIdCompleteAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAppointmentsIdCompleteAdmin>>, TError,{id: string}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof putAppointmentsIdCompleteAdmin>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+
+      const mutationOptions = getPutAppointmentsIdCompleteAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -1159,7 +1285,7 @@ export const prefetchGetAppointmentsAppQuery = async <TData = Awaited<ReturnType
 
 
 /**
- * **AP-03A** — POST /appointments/app. Đặt lịch tự mình qua miniapp (đa role: khách hàng hoặc nhân viên/KTV cũng là khách). Chỉ cần đăng nhập (API miniapp — không áp phân quyền, dữ liệu luôn của chính tài khoản). Hồ sơ khách suy ra từ tài khoản — nếu tài khoản chưa có hồ sơ khách thì tự cấp (giống luồng đăng ký zalo). `customer_profile_id` truyền từ client bị bỏ qua. Trạng thái `pending`, giới hạn đặt trước `booking.customer_horizon_days` (mặc định 7 ngày), slot kín trả 409 `SLOT_UNAVAILABLE`.
+ * **AP-03A** — POST /appointments/app. Đặt lịch tự mình qua miniapp (đa role: khách hàng hoặc nhân viên/KTV cũng là khách). Chỉ cần đăng nhập (API miniapp — không áp phân quyền, dữ liệu luôn của chính tài khoản). Hồ sơ khách suy ra từ tài khoản — nếu tài khoản chưa có hồ sơ khách thì tự cấp (giống luồng đăng ký zalo). `user_id` truyền từ client bị bỏ qua. Trạng thái `pending`, giới hạn đặt trước `booking.customer_horizon_days` (mặc định 7 ngày), slot kín trả 409 `SLOT_UNAVAILABLE`.
  * @summary Create an appointment for self (miniapp)
  */
 export const postAppointmentsApp = (
@@ -1224,7 +1350,7 @@ export const usePostAppointmentsApp = <TError = UnauthorizedResponse | Forbidden
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **AP-01** — GET /appointments/admin. Danh sách lịch hẹn quản trị. Cần đăng nhập + `appointment.read_all` (KTV chỉ thấy lịch được gán; branch scope áp dụng). Lịch hẹn của chính tài khoản (miniapp): GET /appointments/app. Query parameters: `page`, `limit`, `branch_id`, `date`, `from_date`, `to_date`, `status`, `staff_id`, `customer_profile_id`.
+ * **AP-01** — GET /appointments/admin. Danh sách lịch hẹn quản trị. Cần đăng nhập + `appointment.read_all` (KTV chỉ thấy lịch được gán; branch scope áp dụng). Lịch hẹn của chính tài khoản (miniapp): GET /appointments/app. Query parameters: `page`, `limit`, `branch_id`, `date`, `from_date`, `to_date`, `status`, `staff_id`, `user_id`.
  * @summary List appointments (management / my bookings)
  */
 export const getAppointmentsAdmin = (
@@ -1419,7 +1545,7 @@ export const prefetchGetAppointmentsAdminQuery = async <TData = Awaited<ReturnTy
 
 
 /**
- * **AP-03** — POST /appointments/admin. Nhân sự (admin/lễ tân) đặt lịch hộ khách — bắt buộc `customer_profile_id`. Cần đăng nhập + `appointment.create`; KTV không được thao tác. Giới hạn đặt trước `booking.customer_horizon_days` (mặc định 7 ngày), slot kín trả 409 `SLOT_UNAVAILABLE`; branch scope áp dụng. Khách tự đặt (miniapp): POST /appointments/app.
+ * **AP-03** — POST /appointments/admin. Nhân sự (admin/lễ tân) đặt lịch hộ khách — bắt buộc `user_id`. Cần đăng nhập + `appointment.create`; KTV không được thao tác. Giới hạn đặt trước `booking.customer_horizon_days` (mặc định 7 ngày), slot kín trả 409 `SLOT_UNAVAILABLE`; branch scope áp dụng. Khách tự đặt (miniapp): POST /appointments/app.
  * @summary Create an appointment (staff on behalf / customer for self)
  */
 export const postAppointmentsAdmin = (

@@ -176,7 +176,7 @@ export default function VoucherModal({ form, open, category, targets, productCat
             <Col xs={24} md={category === 'treatment-package' ? 12 : 8}>
               <Form.Item
                 name="discount_type"
-                label={category === 'academy-course' ? 'Ưu đãi khóa học' : category === 'treatment-package' ? 'Ưu đãi gói liệu trình' : 'Hình thức giảm giá'}
+                label={category === 'academy-course' ? 'Ưu đãi khóa học' : category === 'treatment-package' ? 'Ưu đãi liệu trình & dịch vụ lẻ' : 'Hình thức giảm giá'}
                 rules={[{ required: true, message: 'Chọn hình thức ưu đãi' }]}
               >
                 <Select placeholder="Chọn hình thức giảm giá" options={[

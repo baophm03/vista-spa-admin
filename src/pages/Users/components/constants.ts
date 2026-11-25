@@ -2,7 +2,7 @@ export interface UserRow {
   id: string
   zalo_name?: string
   email?: string
-  phone_number?: string
+  phone?: string
   branch_id?: string | null
   is_active?: boolean
   is_admin?: boolean

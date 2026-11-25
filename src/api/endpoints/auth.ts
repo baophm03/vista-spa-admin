@@ -31,7 +31,7 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * POST `/auth/zalo-register` — **Public, no authentication required.** BE verifies `access_token` with `graph.zalo.me/v2.0/me` and exchanges `phone_token` via `graph.zalo.me/v2.0/me/info` (headers `secret_key` from `ZMP_SECRET_KEY`) to get the real phone number. If a user already has that `phone_number`, the verified zalo fields are linked to that account; otherwise a new customer account is created. Either way a session is issued.
+ * POST `/auth/zalo-register` — **Public, no authentication required.** BE verifies `access_token` with `graph.zalo.me/v2.0/me` and exchanges `phone_token` via `graph.zalo.me/v2.0/me/info` (headers `secret_key` from `ZMP_SECRET_KEY`) to get the real phone number. If a user already has that `phone`, the verified zalo fields are linked to that account; otherwise a new customer account is created. Either way a session is issued.
  * @summary Zalo Mini App register/link — resolve the real phone number from Zalo then match, link or create the user
  */
 export const postAuthZaloRegister = (

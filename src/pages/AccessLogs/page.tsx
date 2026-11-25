@@ -42,7 +42,7 @@ interface AuditEvent {
   branch_name?: string | null
   target_type?: string | null
   target_id?: string | null
-  customer_profile_id?: string | null
+  customer_id?: string | null
   customer_name?: string | null
   customer_code?: string | null
   summary: string
@@ -102,7 +102,7 @@ const SOURCE_LABEL: Record<Source, string> = {
 const MODULE_LABEL: Record<string, string> = {
   ACCESS_CONTROL: 'Phân quyền', APPOINTMENT: 'Lịch hẹn', AUTH: 'Đăng nhập', ACADEMY_COURSE: 'Khóa học',
   ACADEMY_REGISTRATION: 'Đăng ký học viên', BRANCH: 'Cơ sở', CARD_RANK: 'Hạng thẻ',
-  COMMISSION: 'Hoa hồng', CONTENT: 'Nội dung App', CUSTOMER_PROFILE: 'Hồ sơ khách hàng',
+  COMMISSION: 'Hoa hồng', CONTENT: 'Nội dung App', CUSTOMER: 'Hồ sơ khách hàng', CUSTOMER_PROFILE: 'Hồ sơ khách hàng',
   CUSTOM_FIELD: 'Dữ liệu khách hàng', DISCOUNT: 'Ưu đãi', HEALTH_METRIC: 'Chỉ số sức khỏe',
   HEALTH_RECORD: 'Hồ sơ sức khỏe', IMPORT: 'Nhập dữ liệu', INVOICE: 'Hóa đơn', LOOKUP: 'Danh mục',
   IMPORT_JOB: 'Lượt nhập', SYSTEM_JOB: 'Tác vụ hệ thống',
@@ -122,13 +122,13 @@ const EVENT_OPTIONS = [
   { value: 'APPOINTMENT.REJECTED', label: 'Từ chối lịch hẹn' },
   { value: 'APPOINTMENT.CANCELLED', label: 'Hủy lịch hẹn' },
   { value: 'APPOINTMENT.COMPLETED', label: 'Hoàn tất lịch hẹn' },
-  { value: 'CUSTOMER_PROFILE.CREATED', label: 'Tạo hồ sơ khách hàng' },
-  { value: 'CUSTOMER_PROFILE.UPDATED', label: 'Cập nhật hồ sơ khách hàng' },
-  { value: 'CUSTOMER_PROFILE.DELETED', label: 'Xóa hồ sơ khách hàng' },
-  { value: 'CUSTOMER_PROFILE.VIEWED', label: 'Xem hồ sơ khách hàng' },
-  { value: 'CUSTOMER_PROFILE.EXPORTED', label: 'Xuất hồ sơ khách hàng' },
-  { value: 'CUSTOMER_PROFILE.QR_LOOKUP', label: 'Tra cứu khách bằng QR' },
-  { value: 'CUSTOMER_PROFILE.QR_REVEALED', label: 'Hiển thị mã QR khách hàng' },
+  { value: 'CUSTOMER.CREATED', label: 'Tạo hồ sơ khách hàng' },
+  { value: 'CUSTOMER.UPDATED', label: 'Cập nhật hồ sơ khách hàng' },
+  { value: 'CUSTOMER.DELETED', label: 'Xóa hồ sơ khách hàng' },
+  { value: 'CUSTOMER.VIEWED', label: 'Xem hồ sơ khách hàng' },
+  { value: 'CUSTOMER.EXPORTED', label: 'Xuất hồ sơ khách hàng' },
+  { value: 'CUSTOMER.QR_LOOKUP', label: 'Tra cứu khách bằng QR' },
+  { value: 'CUSTOMER.QR_REVEALED', label: 'Hiển thị mã QR khách hàng' },
   { value: 'HEALTH_RECORD.VIEWED', label: 'Xem hồ sơ sức khỏe' },
   { value: 'HEALTH_METRIC.VIEWED', label: 'Xem chỉ số sức khỏe' },
   { value: 'PAYMENT.CREATED', label: 'Ghi nhận thanh toán' },

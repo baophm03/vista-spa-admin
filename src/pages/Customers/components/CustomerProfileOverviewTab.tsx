@@ -2,23 +2,23 @@ import CustomerRankCard from './CustomerRankCard'
 import { useMemo, useState } from 'react'
 import { Button, Card, Descriptions, Form, Input, InputNumber, Modal, Select, Space, Tag, message } from 'antd'
 import dayjs from 'dayjs'
-import type { CustomerProfile } from '@/api/models/customerProfile'
+import type { Customer } from '@/api/models/customer'
 import type { CardRank } from '@/api/models/cardRank'
 import { Can } from '@casl/react'
 import { useGetCardRanksAdmin } from '@/api/endpoints/card-ranks'
-import { usePostMembershipsCustomerProfileIdPointsAdjustAdmin, usePostMembershipsCustomerProfileIdRankOverrideAdmin, usePostMembershipsCustomerProfileIdRecalculateAdmin } from '@/api/endpoints/memberships'
+import { usePostMembershipsUserIdPointsAdjustAdmin, usePostMembershipsUserIdRankOverrideAdmin, usePostMembershipsUserIdRecalculateAdmin } from '@/api/endpoints/memberships'
 import type { CustomFieldDefWithOptions } from './CustomerProfileCustomFields'
 import { useBrandCurrency } from '@/themeRuntime'
 import { errorMessage } from '@/api/helpers'
 
 /** Hồ sơ khách hàng kèm dữ liệu user được include từ backend. */
-export interface CustomerProfileRow extends CustomerProfile {
+export interface CustomerProfileRow extends Customer {
   user?: {
     id?: string
     email?: string | null
     zalo_name?: string | null
     zalo_avatar?: string | null
-    phone_number?: string | null
+    phone?: string | null
     membership?: { card_rank?: { name?: string } | null } | null
   } | null
 }
@@ -68,9 +68,9 @@ export default function CustomerProfileOverviewTab({ profile, summary, fieldDefi
   const [adjustForm] = Form.useForm()
   const [rankForm] = Form.useForm()
   const ranksQuery = useGetCardRanksAdmin()
-  const adjustMutation = usePostMembershipsCustomerProfileIdPointsAdjustAdmin()
-  const overrideMutation = usePostMembershipsCustomerProfileIdRankOverrideAdmin()
-  const recalculateMutation = usePostMembershipsCustomerProfileIdRecalculateAdmin()
+  const adjustMutation = usePostMembershipsUserIdPointsAdjustAdmin()
+  const overrideMutation = usePostMembershipsUserIdRankOverrideAdmin()
+  const recalculateMutation = usePostMembershipsUserIdRecalculateAdmin()
   const membership = summary?.membership
   const rankRows = (ranksQuery.data?.responseData ?? (ranksQuery.data as any)?.data ?? []) as CardRank[]
   const activeRanks = Array.isArray(rankRows) ? rankRows.filter((rank) => rank.is_active !== false).sort((a, b) => Number(a.sort_order ?? 0) - Number(b.sort_order ?? 0)) : []
@@ -78,7 +78,7 @@ export default function CustomerProfileOverviewTab({ profile, summary, fieldDefi
   const savePoints = async () => {
     try {
       const values = await adjustForm.validateFields()
-      await adjustMutation.mutateAsync({ customerProfileId: profile.id, data: { delta: values.delta, reason: values.reason.trim() } })
+      await adjustMutation.mutateAsync({ userId: profile.id, data: { delta: values.delta, reason: values.reason.trim() } })
       message.success('Đã điều chỉnh điểm')
       setAdjustOpen(false)
       adjustForm.resetFields()
@@ -92,7 +92,7 @@ export default function CustomerProfileOverviewTab({ profile, summary, fieldDefi
   const saveRank = async () => {
     try {
       const values = await rankForm.validateFields()
-      await overrideMutation.mutateAsync({ customerProfileId: profile.id, data: { rank_id: values.rank_id, reason: values.reason.trim() } })
+      await overrideMutation.mutateAsync({ userId: profile.id, data: { rank_id: values.rank_id, reason: values.reason.trim() } })
       message.success('Đã gán hạng mới')
       setRankOpen(false)
       rankForm.resetFields()
@@ -105,7 +105,7 @@ export default function CustomerProfileOverviewTab({ profile, summary, fieldDefi
 
   const recalculate = async () => {
     try {
-      await recalculateMutation.mutateAsync({ customerProfileId: profile.id })
+      await recalculateMutation.mutateAsync({ userId: profile.id })
       message.success('Đã tính lại hạng theo chi tiêu')
       await onMembershipUpdated?.()
     } catch (error) {
@@ -159,7 +159,7 @@ export default function CustomerProfileOverviewTab({ profile, summary, fieldDefi
         <Descriptions.Item label="Điện thoại">{profile.phone || '—'}</Descriptions.Item>
         <Descriptions.Item label="Email">{profile.email || profile.user?.email || '—'}</Descriptions.Item>
         <Descriptions.Item label="Ngày sinh">{profile.birthday ? dayjs(profile.birthday).format('DD/MM/YYYY') : '—'}</Descriptions.Item>
-        <Descriptions.Item label="Tài khoản">{profile.user?.zalo_name || profile.user?.phone_number || (profile.user_id ? 'Đã liên kết' : 'Chưa liên kết')}</Descriptions.Item>
+        <Descriptions.Item label="Tài khoản">{profile.user?.zalo_name || profile.user?.phone || (profile.user_id ? 'Đã liên kết' : 'Chưa liên kết')}</Descriptions.Item>
         <Descriptions.Item label="Địa chỉ">{profile.address || '—'}</Descriptions.Item>
         <Descriptions.Item label="Ghi chú">{profile.note || '—'}</Descriptions.Item>
         {Object.entries(profile.custom_fields ?? {}).map(([key, value]) => (

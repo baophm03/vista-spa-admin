@@ -6,7 +6,6 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { VoucherCustomerAssignmentUserId } from './voucherCustomerAssignmentUserId';
-import type { VoucherCustomerAssignmentCustomerProfileId } from './voucherCustomerAssignmentCustomerProfileId';
 import type { VoucherCustomerAssignmentNote } from './voucherCustomerAssignmentNote';
 
 /**
@@ -15,6 +14,5 @@ import type { VoucherCustomerAssignmentNote } from './voucherCustomerAssignmentN
 export interface VoucherCustomerAssignment {
   voucher_id: string;
   user_id?: VoucherCustomerAssignmentUserId;
-  customer_profile_id?: VoucherCustomerAssignmentCustomerProfileId;
   note?: VoucherCustomerAssignmentNote;
 }

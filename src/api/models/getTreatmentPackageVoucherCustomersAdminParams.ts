@@ -9,6 +9,5 @@
 export type GetTreatmentPackageVoucherCustomersAdminParams = {
 q?: string;
 user_id?: string;
-customer_profile_id?: string;
 branch_id?: string;
 };

@@ -1,13 +1,12 @@
 import { Col, Form, Input, InputNumber, Modal, Row, Select, Space } from 'antd'
 import type { FormInstance } from 'antd'
 import type { Service } from '@/api/models/service'
-import type { ServiceCategory } from '@/api/models/serviceCategory'
 import CustomFieldFormItems from '@/components/CustomFieldFormItems'
 import ServiceImageField from '@/components/ServiceImageField'
 import type { Branch } from '@/api/models'
+import { categoryOptions, type ServiceCategoryRow } from './serviceTypes'
 
 type ServiceRow = Service & { service_category?: { id?: string; name?: string } }
-type ServiceCategoryRow = ServiceCategory & { parent?: { id?: string; name?: string } }
 
 interface ServiceModalProps {
   open: boolean
@@ -18,7 +17,6 @@ interface ServiceModalProps {
   currencySymbol: string
   saving: boolean
   branches: Branch[]
-  categoryOptions: (categories: ServiceCategoryRow[], parentId?: string | null, depth?: number, skipId?: string, includeInactiveId?: string) => { value: string; label: string }[]
   onCancel: () => void
   onSubmit: () => void
 }
@@ -32,7 +30,6 @@ export default function ServiceModal({
   currencySymbol,
   saving,
   branches,
-  categoryOptions,
   onCancel,
   onSubmit,
 }: ServiceModalProps) {
@@ -55,7 +52,7 @@ export default function ServiceModal({
         <Row gutter={{ xs: 12, md: 16 }}>
           <Col xs={24} md={8}>
             <Form.Item name="category_id" label="Danh mục">
-              <Select allowClear placeholder="Chọn danh mục" options={categoryOptions(categories, null, 0, undefined, editing?.category_id ?? undefined)} />
+              <Select allowClear placeholder="Chọn danh mục" options={categoryOptions(categories, editing?.category_id ?? undefined)} />
             </Form.Item>
           </Col>
           <Col xs={12} md={8}>
@@ -86,6 +83,11 @@ export default function ServiceModal({
             </Form.Item>
           </Col>
         </Row>
+        {/* Số buổi của dịch vụ lẻ (BE: service.session_count, mặc định 1) — tạm ẩn theo yêu cầu
+        <Form.Item name="session_count" label="Số buổi" initialValue={1} rules={[{ type: 'number', min: 1, message: 'Số buổi phải lớn hơn 0' }]}>
+          <InputNumber min={1} precision={0} suffix="buổi" style={{ width: '100%' }} />
+        </Form.Item>
+        */}
         <Form.Item name="branch_id" label="Cơ sở">
           <Select
             allowClear

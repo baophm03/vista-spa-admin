@@ -5,11 +5,11 @@ import ResponsiveTable from '@/components/base/ResponsiveTable'
 import ListPagination from '@/components/base/ListPagination'
 import { paginateRows } from '@/utils/listTable'
 import { pickData } from '@/api/helpers'
-import { useGetCustomerProfilesIdPointsAdmin } from '@/api/endpoints/customer-profiles'
+import { useGetUsersCustomersIdPointsAdmin } from '@/api/endpoints/customers'
 import type { MembershipTransaction } from '@/api/models/membershipTransaction'
 /** LY-01 — Lịch sử biến động điểm của khách (trong drawer chi tiết). */
 export default function PointsHistoryPanel({ profileId }: { profileId: string }) {
-  const pointsQuery = useGetCustomerProfilesIdPointsAdmin(profileId)
+  const pointsQuery = useGetUsersCustomersIdPointsAdmin(profileId)
   const [pointPage, setPointPage] = useState(1)
   const data = pickData<{ points?: number; history?: MembershipTransaction[] }>(pointsQuery.data)
   const REF_LABEL: Record<string, string> = {

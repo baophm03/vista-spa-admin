@@ -10,15 +10,14 @@ import ListFilterPopover from '@/components/base/ListFilterPopover'
 import ListPagination from '@/components/base/ListPagination'
 import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
-import LinkCustomerAccountModal from './components/LinkCustomerAccountModal'
 import { normalizeCustomerCustomFields, type CustomFieldDefWithOptions } from './components/CustomerProfileCustomFields'
 import type { CustomerProfileRow, CustomerProfileSummary } from './components/CustomerProfileOverviewTab'
 import { useBrandCurrency } from '@/themeRuntime'
 import type { CardRank } from '@/api/models/cardRank'
-import type { CustomerProfile } from '@/api/models/customerProfile'
-import type { CustomerProfileCreate } from '@/api/models/customerProfileCreate'
-import type { GetCustomerProfilesAdminParams } from '@/api/models/getCustomerProfilesAdminParams'
-import { deleteCustomerProfilesIdAdmin, getCustomerProfilesByQrAdmin, getCustomerProfilesIdAdmin, getCustomerProfilesIdSummaryAdmin, getGetCustomerProfilesAdminQueryKey, postCustomerProfilesAdmin, postCustomerProfilesIdQrResetAdmin, putCustomerProfilesIdAdmin, useGetCustomerProfilesAdmin } from '@/api/endpoints/customer-profiles'
+import type { Customer } from '@/api/models/customer'
+import type { CustomerCreate } from '@/api/models/customerCreate'
+import type { GetUsersCustomersAdminParams } from '@/api/models/getUsersCustomersAdminParams'
+import { deleteUsersCustomersIdAdmin, getUsersCustomersByQrAdmin, getUsersCustomersIdAdmin, getUsersCustomersIdSummaryAdmin, getGetUsersCustomersAdminQueryKey, postUsersCustomersAdmin, postUsersCustomersIdQrResetAdmin, putUsersCustomersIdAdmin, useGetUsersCustomersAdmin } from '@/api/endpoints/customers'
 import { getCardRanksAdmin } from '@/api/endpoints/card-ranks'
 import { getCustomFieldDefsAdmin } from '@/api/endpoints/custom-field-defs'
 import { apiClient } from '@/api/mutator/custom-instance'
@@ -82,7 +81,6 @@ export default function Customers() {
   const [qrLookupLoading, setQrLookupLoading] = useState(false)
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<CustomerProfileRow | null>(null)
-  const [linkOpen, setLinkOpen] = useState(false)
   const [ranks, setRanks] = useState<CardRank[]>([])
   const [profileFieldDefs, setProfileFieldDefs] = useState<CustomFieldDefWithOptions[]>([])
   const [exporting, setExporting] = useState(false)
@@ -92,8 +90,8 @@ export default function Customers() {
   // Mobile (dưới breakpoint md): nút công cụ hiện chữ thay vì chỉ icon
   const isMobile = !Grid.useBreakpoint().md
 
-  const listParams = buildListParams(filters, keyword, page, limit) as GetCustomerProfilesAdminParams
-  const listQuery = useGetCustomerProfilesAdmin(listParams)
+  const listParams = buildListParams(filters, keyword, page, limit) as GetUsersCustomersAdminParams
+  const listQuery = useGetUsersCustomersAdmin(listParams)
   const listBody = listQuery.data
   const rows = (listBody?.responseData ?? []) as CustomerProfileRow[]
   const total = listBody?.meta?.total ?? rows.length
@@ -120,20 +118,20 @@ export default function Customers() {
         .filter((rank) => rank.is_active !== false)
         .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))))
       .catch(() => undefined)
-    getCustomFieldDefsAdmin({ entity: 'CUSTOMER_PROFILE', is_active: true })
+    getCustomFieldDefsAdmin({ entity: 'CUSTOMER', is_active: true })
       .then((body) => setProfileFieldDefs(pickData<CustomFieldDefWithOptions[]>(body) ?? []))
       .catch((err) => message.error('Không tải được cấu hình trường hồ sơ: ' + errorMessage(err)))
   }, [])
 
   const loadProfileDetails = async (profileId: string) => {
-    const fresh = pickData<CustomerProfileRow>(await getCustomerProfilesIdAdmin(profileId))
+    const fresh = pickData<CustomerProfileRow>(await getUsersCustomersIdAdmin(profileId))
     setSelected(fresh)
     setQrLoading(profileAccess.canViewQr)
     setQrError('')
     if (!profileAccess.canViewQr) setQrUrl('')
     const [summaryResult, qrResult] = await Promise.allSettled([
-      getCustomerProfilesIdSummaryAdmin(profileId),
-      profileAccess.canViewQr ? apiClient.get(`/customer-profiles/${profileId}/qr/admin`, { responseType: 'blob' }) : Promise.resolve(null),
+      getUsersCustomersIdSummaryAdmin(profileId),
+      profileAccess.canViewQr ? apiClient.get(`/users/customers/${profileId}/qr/admin`, { responseType: 'blob' }) : Promise.resolve(null),
     ])
     if (summaryResult.status === 'fulfilled') setSummary(pickData<CustomerProfileSummary>(summaryResult.value) ?? null)
     else {
@@ -154,7 +152,7 @@ export default function Customers() {
   }
 
   const refreshList = useCallback(() => {
-    void queryClient.invalidateQueries({ queryKey: getGetCustomerProfilesAdminQueryKey() })
+    void queryClient.invalidateQueries({ queryKey: getGetUsersCustomersAdminQueryKey() })
   }, [queryClient])
 
   const refreshSelected = async () => {
@@ -182,7 +180,7 @@ export default function Customers() {
     setScannerOpen(false)
     setQrLookupLoading(true)
     try {
-      const profile = pickData<CustomerProfile>(await getCustomerProfilesByQrAdmin({ token }))
+      const profile = pickData<Customer>(await getUsersCustomersByQrAdmin({ token }))
       if (profile) await openDetail(profile as CustomerProfileRow)
     } catch (err) {
       message.error('Không tìm thấy hồ sơ theo QR: ' + errorMessage(err))
@@ -244,7 +242,7 @@ export default function Customers() {
         if (value !== undefined && value !== null && value !== '') query.set(key, String(value))
       }
       const qs = query.toString()
-      await downloadBlob(`/customer-profiles/export/admin${qs ? `?${qs}` : ''}`, `customer-profiles-${dayjs().format('YYYYMMDD-HHmm')}.csv`)
+      await downloadBlob(`/users/customers/export/admin${qs ? `?${qs}` : ''}`, `customers-${dayjs().format('YYYYMMDD-HHmm')}.csv`)
       message.success('Đã xuất danh sách khách hàng')
     } catch (err) {
       message.error(errorMessage(err))
@@ -257,11 +255,11 @@ export default function Customers() {
     if (!selected) return
     setResettingQr(true)
     try {
-      await postCustomerProfilesIdQrResetAdmin(selected.id)
+      await postUsersCustomersIdQrResetAdmin(selected.id)
       setQrUrl('')
       setQrLoading(true)
       setQrError('')
-      const response = await apiClient.get(`/customer-profiles/${selected.id}/qr/admin`, { responseType: 'blob' })
+      const response = await apiClient.get(`/users/customers/${selected.id}/qr/admin`, { responseType: 'blob' })
       setQrUrl(URL.createObjectURL(response.data as Blob))
       message.success('Đã tạo lại mã QR; mã cũ không còn hiệu lực')
     } catch (err) {
@@ -285,7 +283,7 @@ export default function Customers() {
     }
 
     try {
-      const fresh = pickData<CustomerProfileRow>(await getCustomerProfilesIdAdmin(customer.id))
+      const fresh = pickData<CustomerProfileRow>(await getUsersCustomersIdAdmin(customer.id))
       setEditing(fresh)
       form.setFieldsValue({
         full_name: fresh.full_name,
@@ -311,13 +309,13 @@ export default function Customers() {
       ...(profileValues as Record<string, unknown>),
       custom_fields: normalizeCustomerCustomFields(profileFieldDefs, enteredCustomFields, editing?.custom_fields ?? {}) ?? undefined,
       birthday: values.birthday ? (values.birthday as Dayjs).format('YYYY-MM-DD') : undefined,
-    } as unknown as CustomerProfileCreate
+    } as unknown as CustomerCreate
     try {
       if (editing) {
-        await putCustomerProfilesIdAdmin(editing.id, payload)
+        await putUsersCustomersIdAdmin(editing.id, payload)
         message.success('Đã cập nhật khách hàng')
       } else {
-        await postCustomerProfilesAdmin(payload as unknown as { [key: string]: unknown })
+        await postUsersCustomersAdmin(payload as unknown as { [key: string]: unknown })
         message.success('Đã thêm khách hàng')
       }
       setOpen(false)
@@ -330,7 +328,7 @@ export default function Customers() {
 
   const remove = async (row: CustomerProfileRow) => {
     try {
-      await deleteCustomerProfilesIdAdmin(row.id)
+      await deleteUsersCustomersIdAdmin(row.id)
       message.success('Đã xóa khách hàng')
       if (selected?.id === row.id) setSelected(null)
       refreshList()
@@ -655,7 +653,6 @@ export default function Customers() {
         onDownloadQr={downloadQr}
         onPrintQr={printQr}
         onResetQr={() => void resetQr()}
-        onLink={() => setLinkOpen(true)}
         onMembershipUpdated={refreshSelected}
       />
 
@@ -675,13 +672,6 @@ export default function Customers() {
           <CustomerQrScannerModal open onClose={() => setScannerOpen(false)} onToken={(token) => void lookupQrToken(token)} />
         </Suspense>
       )}
-
-      <LinkCustomerAccountModal
-        open={linkOpen}
-        profile={selected}
-        onCancel={() => setLinkOpen(false)}
-        onLinked={refreshSelected}
-      />
     </>
   )
 }

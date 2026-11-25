@@ -38,7 +38,7 @@ type EntryRow = CommissionEntry & {
     customer_treatment?: {
       id?: string
       package_snapshot?: Record<string, unknown> | null
-      customer_profile?: { id?: string; full_name?: string | null; zalo_name?: string | null } | null
+      user?: { id?: string; full_name?: string | null; zalo_name?: string | null } | null
     } | null
   } | null
 }
@@ -99,7 +99,7 @@ export default function CommissionEntriesPanel() {
     const users = (pickData<{ rows?: User[] } | undefined>(staffsQuery.data)?.rows ?? []) as (User & UserWithRoleAssignments)[]
     return users.map((u) => ({
       value: u.id,
-      label: `${u.full_name || u.zalo_name || '—'} · ${u.phone_number || u.email || u.id.slice(0, 8)}`,
+      label: `${u.full_name || u.zalo_name || '—'} · ${u.phone || u.email || u.id.slice(0, 8)}`,
     }))
   }, [staffsQuery.data])
 
@@ -223,7 +223,7 @@ export default function CommissionEntriesPanel() {
   }
 
   const customerLabel = (row: EntryRow): string => {
-    const profile = row.session?.customer_treatment?.customer_profile
+    const profile = row.session?.customer_treatment?.user
     return profile?.full_name || profile?.zalo_name || 'Khách hàng'
   }
 

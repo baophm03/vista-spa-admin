@@ -39,11 +39,11 @@ import type {
   GetMembershipsApp200,
   InternalErrorResponse,
   NotFoundResponse,
-  PostMembershipsCustomerProfileIdPointsAdjustAdmin200,
-  PostMembershipsCustomerProfileIdPointsAdjustAdminBody,
-  PostMembershipsCustomerProfileIdRankOverrideAdmin200,
-  PostMembershipsCustomerProfileIdRankOverrideAdminBody,
-  PostMembershipsCustomerProfileIdRecalculateAdmin200,
+  PostMembershipsUserIdPointsAdjustAdmin200,
+  PostMembershipsUserIdPointsAdjustAdminBody,
+  PostMembershipsUserIdRankOverrideAdmin200,
+  PostMembershipsUserIdRankOverrideAdminBody,
+  PostMembershipsUserIdRecalculateAdmin200,
   UnauthorizedResponse,
   UnprocessableEntityResponse
 } from '../models';
@@ -55,28 +55,28 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * **MB-01** — POST /memberships/{customerProfileId}/recalculate/admin (BR-09). Requires the `membership.recalculate` permission.
+ * **MB-01** — POST /memberships/{userId}/recalculate/admin (BR-09). Requires the `membership.recalculate` permission.
  * @summary Recalculate the membership rank for a customer
  */
-export const postMembershipsCustomerProfileIdRecalculateAdmin = (
-    customerProfileId: string,
+export const postMembershipsUserIdRecalculateAdmin = (
+    userId: string,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<PostMembershipsCustomerProfileIdRecalculateAdmin200>(
-      {url: `/memberships/${customerProfileId}/recalculate/admin`, method: 'POST', signal
+      return customInstance<PostMembershipsUserIdRecalculateAdmin200>(
+      {url: `/memberships/${userId}/recalculate/admin`, method: 'POST', signal
     },
       );
     }
   
 
 
-export const getPostMembershipsCustomerProfileIdRecalculateAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postMembershipsCustomerProfileIdRecalculateAdmin>>, TError,{customerProfileId: string}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postMembershipsCustomerProfileIdRecalculateAdmin>>, TError,{customerProfileId: string}, TContext> => {
+export const getPostMembershipsUserIdRecalculateAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postMembershipsUserIdRecalculateAdmin>>, TError,{userId: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postMembershipsUserIdRecalculateAdmin>>, TError,{userId: string}, TContext> => {
 
-const mutationKey = ['postMembershipsCustomerProfileIdRecalculateAdmin'];
+const mutationKey = ['postMembershipsUserIdRecalculateAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -86,10 +86,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postMembershipsCustomerProfileIdRecalculateAdmin>>, {customerProfileId: string}> = (props) => {
-          const {customerProfileId} = props ?? {};
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postMembershipsUserIdRecalculateAdmin>>, {userId: string}> = (props) => {
+          const {userId} = props ?? {};
 
-          return  postMembershipsCustomerProfileIdRecalculateAdmin(customerProfileId,)
+          return  postMembershipsUserIdRecalculateAdmin(userId,)
         }
 
         
@@ -97,52 +97,52 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PostMembershipsCustomerProfileIdRecalculateAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postMembershipsCustomerProfileIdRecalculateAdmin>>>
+    export type PostMembershipsUserIdRecalculateAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postMembershipsUserIdRecalculateAdmin>>>
     
-    export type PostMembershipsCustomerProfileIdRecalculateAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+    export type PostMembershipsUserIdRecalculateAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
  * @summary Recalculate the membership rank for a customer
  */
-export const usePostMembershipsCustomerProfileIdRecalculateAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postMembershipsCustomerProfileIdRecalculateAdmin>>, TError,{customerProfileId: string}, TContext>, }
+export const usePostMembershipsUserIdRecalculateAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postMembershipsUserIdRecalculateAdmin>>, TError,{userId: string}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postMembershipsCustomerProfileIdRecalculateAdmin>>,
+        Awaited<ReturnType<typeof postMembershipsUserIdRecalculateAdmin>>,
         TError,
-        {customerProfileId: string},
+        {userId: string},
         TContext
       > => {
 
-      const mutationOptions = getPostMembershipsCustomerProfileIdRecalculateAdminMutationOptions(options);
+      const mutationOptions = getPostMembershipsUserIdRecalculateAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **MB-02** — POST /memberships/{customerProfileId}/rank-override/admin (manual rank assignment + BR-13). Requires the `membership.rank_override` permission. Body fields: `rank_id`, `reason`.
+ * **MB-02** — POST /memberships/{userId}/rank-override/admin (manual rank assignment + BR-13). Requires the `membership.rank_override` permission. Body fields: `rank_id`, `reason`.
  * @summary Manually assign a membership rank
  */
-export const postMembershipsCustomerProfileIdRankOverrideAdmin = (
-    customerProfileId: string,
-    postMembershipsCustomerProfileIdRankOverrideAdminBody: PostMembershipsCustomerProfileIdRankOverrideAdminBody,
+export const postMembershipsUserIdRankOverrideAdmin = (
+    userId: string,
+    postMembershipsUserIdRankOverrideAdminBody: PostMembershipsUserIdRankOverrideAdminBody,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<PostMembershipsCustomerProfileIdRankOverrideAdmin200>(
-      {url: `/memberships/${customerProfileId}/rank-override/admin`, method: 'POST',
+      return customInstance<PostMembershipsUserIdRankOverrideAdmin200>(
+      {url: `/memberships/${userId}/rank-override/admin`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: postMembershipsCustomerProfileIdRankOverrideAdminBody, signal
+      data: postMembershipsUserIdRankOverrideAdminBody, signal
     },
       );
     }
   
 
 
-export const getPostMembershipsCustomerProfileIdRankOverrideAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postMembershipsCustomerProfileIdRankOverrideAdmin>>, TError,{customerProfileId: string;data: PostMembershipsCustomerProfileIdRankOverrideAdminBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postMembershipsCustomerProfileIdRankOverrideAdmin>>, TError,{customerProfileId: string;data: PostMembershipsCustomerProfileIdRankOverrideAdminBody}, TContext> => {
+export const getPostMembershipsUserIdRankOverrideAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postMembershipsUserIdRankOverrideAdmin>>, TError,{userId: string;data: PostMembershipsUserIdRankOverrideAdminBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postMembershipsUserIdRankOverrideAdmin>>, TError,{userId: string;data: PostMembershipsUserIdRankOverrideAdminBody}, TContext> => {
 
-const mutationKey = ['postMembershipsCustomerProfileIdRankOverrideAdmin'];
+const mutationKey = ['postMembershipsUserIdRankOverrideAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -152,10 +152,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postMembershipsCustomerProfileIdRankOverrideAdmin>>, {customerProfileId: string;data: PostMembershipsCustomerProfileIdRankOverrideAdminBody}> = (props) => {
-          const {customerProfileId,data} = props ?? {};
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postMembershipsUserIdRankOverrideAdmin>>, {userId: string;data: PostMembershipsUserIdRankOverrideAdminBody}> = (props) => {
+          const {userId,data} = props ?? {};
 
-          return  postMembershipsCustomerProfileIdRankOverrideAdmin(customerProfileId,data,)
+          return  postMembershipsUserIdRankOverrideAdmin(userId,data,)
         }
 
         
@@ -163,52 +163,52 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PostMembershipsCustomerProfileIdRankOverrideAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postMembershipsCustomerProfileIdRankOverrideAdmin>>>
-    export type PostMembershipsCustomerProfileIdRankOverrideAdminMutationBody = PostMembershipsCustomerProfileIdRankOverrideAdminBody
-    export type PostMembershipsCustomerProfileIdRankOverrideAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+    export type PostMembershipsUserIdRankOverrideAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postMembershipsUserIdRankOverrideAdmin>>>
+    export type PostMembershipsUserIdRankOverrideAdminMutationBody = PostMembershipsUserIdRankOverrideAdminBody
+    export type PostMembershipsUserIdRankOverrideAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
  * @summary Manually assign a membership rank
  */
-export const usePostMembershipsCustomerProfileIdRankOverrideAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postMembershipsCustomerProfileIdRankOverrideAdmin>>, TError,{customerProfileId: string;data: PostMembershipsCustomerProfileIdRankOverrideAdminBody}, TContext>, }
+export const usePostMembershipsUserIdRankOverrideAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postMembershipsUserIdRankOverrideAdmin>>, TError,{userId: string;data: PostMembershipsUserIdRankOverrideAdminBody}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postMembershipsCustomerProfileIdRankOverrideAdmin>>,
+        Awaited<ReturnType<typeof postMembershipsUserIdRankOverrideAdmin>>,
         TError,
-        {customerProfileId: string;data: PostMembershipsCustomerProfileIdRankOverrideAdminBody},
+        {userId: string;data: PostMembershipsUserIdRankOverrideAdminBody},
         TContext
       > => {
 
-      const mutationOptions = getPostMembershipsCustomerProfileIdRankOverrideAdminMutationOptions(options);
+      const mutationOptions = getPostMembershipsUserIdRankOverrideAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * **MB-03** — POST /memberships/{customerProfileId}/points-adjust/admin (manual add/deduct points). Requires the `membership.points_adjust` permission. Body fields: `delta`, `reason`.
+ * **MB-03** — POST /memberships/{userId}/points-adjust/admin (manual add/deduct points). Requires the `membership.points_adjust` permission. Body fields: `delta`, `reason`.
  * @summary Adjust points
  */
-export const postMembershipsCustomerProfileIdPointsAdjustAdmin = (
-    customerProfileId: string,
-    postMembershipsCustomerProfileIdPointsAdjustAdminBody: PostMembershipsCustomerProfileIdPointsAdjustAdminBody,
+export const postMembershipsUserIdPointsAdjustAdmin = (
+    userId: string,
+    postMembershipsUserIdPointsAdjustAdminBody: PostMembershipsUserIdPointsAdjustAdminBody,
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<PostMembershipsCustomerProfileIdPointsAdjustAdmin200>(
-      {url: `/memberships/${customerProfileId}/points-adjust/admin`, method: 'POST',
+      return customInstance<PostMembershipsUserIdPointsAdjustAdmin200>(
+      {url: `/memberships/${userId}/points-adjust/admin`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: postMembershipsCustomerProfileIdPointsAdjustAdminBody, signal
+      data: postMembershipsUserIdPointsAdjustAdminBody, signal
     },
       );
     }
   
 
 
-export const getPostMembershipsCustomerProfileIdPointsAdjustAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postMembershipsCustomerProfileIdPointsAdjustAdmin>>, TError,{customerProfileId: string;data: PostMembershipsCustomerProfileIdPointsAdjustAdminBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postMembershipsCustomerProfileIdPointsAdjustAdmin>>, TError,{customerProfileId: string;data: PostMembershipsCustomerProfileIdPointsAdjustAdminBody}, TContext> => {
+export const getPostMembershipsUserIdPointsAdjustAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postMembershipsUserIdPointsAdjustAdmin>>, TError,{userId: string;data: PostMembershipsUserIdPointsAdjustAdminBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postMembershipsUserIdPointsAdjustAdmin>>, TError,{userId: string;data: PostMembershipsUserIdPointsAdjustAdminBody}, TContext> => {
 
-const mutationKey = ['postMembershipsCustomerProfileIdPointsAdjustAdmin'];
+const mutationKey = ['postMembershipsUserIdPointsAdjustAdmin'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -218,10 +218,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postMembershipsCustomerProfileIdPointsAdjustAdmin>>, {customerProfileId: string;data: PostMembershipsCustomerProfileIdPointsAdjustAdminBody}> = (props) => {
-          const {customerProfileId,data} = props ?? {};
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postMembershipsUserIdPointsAdjustAdmin>>, {userId: string;data: PostMembershipsUserIdPointsAdjustAdminBody}> = (props) => {
+          const {userId,data} = props ?? {};
 
-          return  postMembershipsCustomerProfileIdPointsAdjustAdmin(customerProfileId,data,)
+          return  postMembershipsUserIdPointsAdjustAdmin(userId,data,)
         }
 
         
@@ -229,23 +229,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PostMembershipsCustomerProfileIdPointsAdjustAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postMembershipsCustomerProfileIdPointsAdjustAdmin>>>
-    export type PostMembershipsCustomerProfileIdPointsAdjustAdminMutationBody = PostMembershipsCustomerProfileIdPointsAdjustAdminBody
-    export type PostMembershipsCustomerProfileIdPointsAdjustAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+    export type PostMembershipsUserIdPointsAdjustAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postMembershipsUserIdPointsAdjustAdmin>>>
+    export type PostMembershipsUserIdPointsAdjustAdminMutationBody = PostMembershipsUserIdPointsAdjustAdminBody
+    export type PostMembershipsUserIdPointsAdjustAdminMutationError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
  * @summary Adjust points
  */
-export const usePostMembershipsCustomerProfileIdPointsAdjustAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postMembershipsCustomerProfileIdPointsAdjustAdmin>>, TError,{customerProfileId: string;data: PostMembershipsCustomerProfileIdPointsAdjustAdminBody}, TContext>, }
+export const usePostMembershipsUserIdPointsAdjustAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | NotFoundResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postMembershipsUserIdPointsAdjustAdmin>>, TError,{userId: string;data: PostMembershipsUserIdPointsAdjustAdminBody}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof postMembershipsCustomerProfileIdPointsAdjustAdmin>>,
+        Awaited<ReturnType<typeof postMembershipsUserIdPointsAdjustAdmin>>,
         TError,
-        {customerProfileId: string;data: PostMembershipsCustomerProfileIdPointsAdjustAdminBody},
+        {userId: string;data: PostMembershipsUserIdPointsAdjustAdminBody},
         TContext
       > => {
 
-      const mutationOptions = getPostMembershipsCustomerProfileIdPointsAdjustAdminMutationOptions(options);
+      const mutationOptions = getPostMembershipsUserIdPointsAdjustAdminMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }
@@ -444,7 +444,7 @@ export const prefetchGetMembershipsAppQuery = async <TData = Awaited<ReturnType<
 
 
 /**
- * **MB-00** — GET /memberships/admin. Cần đăng nhập + `membership.read_all`; bắt buộc query `customer_profile_id` (branch scope kiểm tra bên trong). Hạng/điểm của chính tài khoản (miniapp): GET /memberships/app.
+ * **MB-00** — GET /memberships/admin. Cần đăng nhập + `membership.read_all`; bắt buộc query `user_id` (branch scope kiểm tra bên trong). Hạng/điểm của chính tài khoản (miniapp): GET /memberships/app.
  * @summary View membership info (management / my membership)
  */
 export const getMembershipsAdmin = (
@@ -639,7 +639,7 @@ export const prefetchGetMembershipsAdminQuery = async <TData = Awaited<ReturnTyp
 
 
 /**
- * **LY-03** — GET /membership-transactions/admin. Cần đăng nhập + `membership_transaction.read_all` (branch scope áp dụng). Query: `page`, `limit`, `customer_profile_id?`, `ref_type?`, `direction?` (`plus` | `minus`).
+ * **LY-03** — GET /membership-transactions/admin. Cần đăng nhập + `membership_transaction.read_all` (branch scope áp dụng). Query: `page`, `limit`, `user_id?`, `ref_type?`, `direction?` (`plus` | `minus`).
  * @summary List all membership point transactions (global log)
  */
 export const getMembershipTransactionsAdmin = (

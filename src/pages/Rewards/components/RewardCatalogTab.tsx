@@ -22,7 +22,7 @@ import { errorMessage, pickData } from '@/api/helpers'
 import type { Reward } from '@/api/models/reward'
 import { getGetRewardRedemptionsAdminQueryKey } from '@/api/endpoints/reward-redemptions'
 import { getGetRewardsAdminQueryKey, useDeleteRewardsIdAdmin, useGetRewardsAdmin, usePostRewardsAdmin, usePutRewardsIdAdmin } from '@/api/endpoints/rewards'
-import { usePostCustomerProfilesIdRedeemRewardAdmin } from '@/api/endpoints/customer-profiles'
+import { usePostUsersCustomersIdRedeemRewardAdmin } from '@/api/endpoints/customers'
 import { getAcademyCourseVouchersAdmin } from '@/api/endpoints/academy-course-vouchers'
 import { getProductVouchersAdmin } from '@/api/endpoints/product-vouchers'
 import { getTreatmentPackageVouchersAdmin } from '@/api/endpoints/treatment-package-vouchers'
@@ -108,7 +108,7 @@ export default function RewardCatalogTab() {
   const createMutation = usePostRewardsAdmin()
   const updateMutation = usePutRewardsIdAdmin()
   const deleteMutation = useDeleteRewardsIdAdmin()
-  const redeemMutation = usePostCustomerProfilesIdRedeemRewardAdmin()
+  const redeemMutation = usePostUsersCustomersIdRedeemRewardAdmin()
 
   const refresh = async () => {
     await Promise.all([
@@ -203,7 +203,7 @@ export default function RewardCatalogTab() {
     if (!redeemTarget) return
     try {
       const values = await redeemForm.validateFields()
-      await redeemMutation.mutateAsync({ id: values.customer_profile_id, data: { reward_id: redeemTarget.id } as never })
+      await redeemMutation.mutateAsync({ id: values.user_id, data: { reward_id: redeemTarget.id } as never })
       message.success(`Đã đổi "${redeemTarget.name}" hộ khách (trừ ${redeemTarget.points_cost.toLocaleString('vi-VN')} điểm)`)
       setRedeemTarget(null)
       await refresh()

@@ -11,7 +11,7 @@ export type CustomFieldDefEntity = typeof CustomFieldDefEntity[keyof typeof Cust
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const CustomFieldDefEntity = {
-  CUSTOMER_PROFILE: 'CUSTOMER_PROFILE',
+  CUSTOMER: 'CUSTOMER',
   SESSION: 'SESSION',
   SERVICE: 'SERVICE',
   PACKAGE: 'PACKAGE',

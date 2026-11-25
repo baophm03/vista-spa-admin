@@ -100,7 +100,7 @@ export default function CustomFieldEditorModal({
         </Form.Item>
         <Form.Item name="sort_order" label="Thứ tự hiển thị"><InputNumber min={0} style={{ width: '100%' }} /></Form.Item>
         <Form.Item name="required" valuePropName="checked"><Checkbox>Bắt buộc nhập</Checkbox></Form.Item>
-        {entity === 'CUSTOMER_PROFILE' && <Form.Item name="visible_to_customer" valuePropName="checked"><Checkbox>Hiển thị với khách hàng</Checkbox></Form.Item>}
+        {entity === 'CUSTOMER' && <Form.Item name="visible_to_customer" valuePropName="checked"><Checkbox>Hiển thị với khách hàng</Checkbox></Form.Item>}
         {editing && (
           <Form.Item
             name="is_active"

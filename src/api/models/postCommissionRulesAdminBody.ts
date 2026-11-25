@@ -13,7 +13,6 @@ export type PostCommissionRulesAdminBody = {
   branch_id: string;
   percent?: number;
   fixed_amount?: number;
-  service_id?: string;
   staff_id?: string;
   is_active?: boolean;
 };

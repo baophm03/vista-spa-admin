@@ -9,7 +9,7 @@ export interface ScheduleStaff {
   zalo_name?: string
   zalo_avatar?: string | null
   email?: string
-  phone_number?: string
+  phone?: string
   branch_id?: string
   user_roles?: { role?: { role_name?: string; code?: string; receptionist?: boolean } }[]
 }
@@ -36,9 +36,9 @@ export interface SchedulePageData {
 
 export type { StaffDayOff, StaffScheduleDate, ShiftTemplate }
 
-export function staffLabel(staff?: ScheduleStaff | { id: string; zalo_name?: string; email?: string; phone_number?: string }): string {
+export function staffLabel(staff?: ScheduleStaff | { id: string; zalo_name?: string; email?: string; phone?: string }): string {
   if (!staff) return 'Nhân viên';
-  return staff.zalo_name || staff.email || staff.phone_number || staff.id.slice(0, 8)
+  return staff.zalo_name || staff.email || staff.phone || staff.id.slice(0, 8)
 }
 
 export function normalizeRole(value: unknown): string {

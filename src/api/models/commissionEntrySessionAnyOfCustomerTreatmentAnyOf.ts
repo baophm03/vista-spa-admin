@@ -5,14 +5,14 @@
  * Vista Spa backend API. Uses the NEWSKY+ business error envelope for permission-aware endpoints and the legacy response envelope for existing admin endpoints.
  * OpenAPI spec version: 1.0.0
  */
-import type { CommissionEntrySessionAnyOfCustomerTreatmentAnyOfCustomerProfileId } from './commissionEntrySessionAnyOfCustomerTreatmentAnyOfCustomerProfileId';
+import type { CommissionEntrySessionAnyOfCustomerTreatmentAnyOfUserId } from './commissionEntrySessionAnyOfCustomerTreatmentAnyOfUserId';
 import type { CommissionEntrySessionAnyOfCustomerTreatmentAnyOfPackageSnapshot } from './commissionEntrySessionAnyOfCustomerTreatmentAnyOfPackageSnapshot';
-import type { CommissionEntrySessionAnyOfCustomerTreatmentAnyOfCustomerProfile } from './commissionEntrySessionAnyOfCustomerTreatmentAnyOfCustomerProfile';
+import type { CommissionEntrySessionAnyOfCustomerTreatmentAnyOfUser } from './commissionEntrySessionAnyOfCustomerTreatmentAnyOfUser';
 
 export type CommissionEntrySessionAnyOfCustomerTreatmentAnyOf = {
   id?: string;
-  customer_profile_id?: CommissionEntrySessionAnyOfCustomerTreatmentAnyOfCustomerProfileId;
+  user_id?: CommissionEntrySessionAnyOfCustomerTreatmentAnyOfUserId;
   /** Snapshot gói liệu trình (có name) */
   package_snapshot?: CommissionEntrySessionAnyOfCustomerTreatmentAnyOfPackageSnapshot;
-  customer_profile?: CommissionEntrySessionAnyOfCustomerTreatmentAnyOfCustomerProfile;
+  user?: CommissionEntrySessionAnyOfCustomerTreatmentAnyOfUser;
 };

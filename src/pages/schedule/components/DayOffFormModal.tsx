@@ -14,7 +14,7 @@ interface ConflictAppointment {
   appt_date: string
   start_time: string
   status?: string
-  customer_profile?: { full_name?: string }
+  user?: { full_name?: string }
   service?: { title?: string }
 }
 
@@ -85,7 +85,7 @@ export default function DayOffFormModal({ open, form, staff, scheduledTemplates,
                   rowKey="id" size="small" pagination={false} scroll={{ y: 200 }} dataSource={conflicts}
                   columns={[
                     { title: 'Giờ', dataIndex: 'start_time', render: (v: string) => v?.slice(0, 5) },
-                    { title: 'Khách', dataIndex: ['customer_profile', 'full_name'], render: (_: unknown, row: ConflictAppointment) => displayName(row.customer_profile) },
+                    { title: 'Khách', dataIndex: ['user', 'full_name'], render: (_: unknown, row: ConflictAppointment) => displayName(row.user) },
                     { title: 'Dịch vụ', dataIndex: ['service', 'title'], render: (v) => v || '—' },
                     { title: 'Trạng thái', dataIndex: 'status', render: (v) => v === 'approved' ? 'Đã duyệt' : 'Chờ duyệt' },
                   ]}

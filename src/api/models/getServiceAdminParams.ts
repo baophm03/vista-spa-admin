@@ -18,6 +18,9 @@ page?: number;
 limit?: number;
 q?: string;
 search?: string;
+/**
+ * uuid danh mục, hoặc `none` = dịch vụ chưa có danh mục
+ */
 category_id?: string;
 is_active?: boolean;
 };

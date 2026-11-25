@@ -34,7 +34,7 @@ export default function CustomerProfileAppointmentsTab({ profileId }: { profileI
     let active = true
     setLoading(true)
     setError('')
-    getAppointmentsAdmin({ customer_profile_id: profileId, page: 1, limit: 200 })
+    getAppointmentsAdmin({ user_id: profileId, page: 1, limit: 200 })
       .then((result) => { if (active) setRows(pickData<AppointmentRow[]>(result)) })
       .catch((err) => { if (active) setError(errorMessage(err)) })
       .finally(() => {

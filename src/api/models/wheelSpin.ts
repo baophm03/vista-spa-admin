@@ -7,12 +7,11 @@
  */
 import type { WheelSpinUserId } from './wheelSpinUserId';
 import type { WheelSpinPrizeId } from './wheelSpinPrizeId';
-import type { WheelSpinCustomerProfileId } from './wheelSpinCustomerProfileId';
 import type { WheelSpinSpunBy } from './wheelSpinSpunBy';
 import type { WheelSpinStatus } from './wheelSpinStatus';
 import type { WheelSpinClaimedAt } from './wheelSpinClaimedAt';
 import type { WheelSpinClaimedBy } from './wheelSpinClaimedBy';
-import type { WheelSpinCustomerProfile } from './wheelSpinCustomerProfile';
+import type { WheelSpinUser } from './wheelSpinUser';
 import type { WheelSpinPrize } from './wheelSpinPrize';
 
 /**
@@ -25,11 +24,10 @@ export interface WheelSpin {
   prize_id?: WheelSpinPrizeId;
   is_win: boolean;
   spun_at?: string;
-  customer_profile_id?: WheelSpinCustomerProfileId;
   spun_by?: WheelSpinSpunBy;
   status?: WheelSpinStatus;
   claimed_at?: WheelSpinClaimedAt;
   claimed_by?: WheelSpinClaimedBy;
-  customer_profile?: WheelSpinCustomerProfile;
+  user?: WheelSpinUser;
   prize?: WheelSpinPrize;
 }

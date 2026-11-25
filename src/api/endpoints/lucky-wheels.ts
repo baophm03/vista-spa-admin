@@ -975,7 +975,7 @@ export const prefetchGetLuckyWheelsIdSpinsAdminQuery = async <TData = Awaited<Re
 
 
 /**
- * **LW-12** — POST /lucky-wheels/{id}/spins. Requires the `wheel.spin_admin` permission. Body: `customer_profile_id` (required), `request_key` (idempotency — repeating it returns the previous result without decrementing the count), `prize_id` (optional — physical spin/manual result entry, skips weighted random but still checks the quantity). Returns `{ spin, prize }`.
+ * **LW-12** — POST /lucky-wheels/{id}/spins. Requires the `wheel.spin_admin` permission. Body: `user_id` (required), `request_key` (idempotency — repeating it returns the previous result without decrementing the count), `prize_id` (optional — physical spin/manual result entry, skips weighted random but still checks the quantity). Returns `{ spin, prize }`.
  * @summary Spin on behalf of a customer
  */
 export const postLuckyWheelsIdSpinsAdmin = (

@@ -6,4 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 
+/**
+ * Dịch vụ áp dụng (bắt buộc khi tạo gói)
+ */
 export type TreatmentPackageServiceId = string | null;

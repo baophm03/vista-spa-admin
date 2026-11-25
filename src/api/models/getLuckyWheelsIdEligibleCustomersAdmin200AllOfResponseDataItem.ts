@@ -6,15 +6,13 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { GetLuckyWheelsIdEligibleCustomersAdmin200AllOfResponseDataItemEmail } from './getLuckyWheelsIdEligibleCustomersAdmin200AllOfResponseDataItemEmail';
-import type { GetLuckyWheelsIdEligibleCustomersAdmin200AllOfResponseDataItemUserId } from './getLuckyWheelsIdEligibleCustomersAdmin200AllOfResponseDataItemUserId';
 
 export type GetLuckyWheelsIdEligibleCustomersAdmin200AllOfResponseDataItem = {
-  customer_profile_id?: string;
+  user_id?: string;
   customer_code?: string;
   full_name?: string;
   phone?: string;
   email?: GetLuckyWheelsIdEligibleCustomersAdmin200AllOfResponseDataItemEmail;
-  user_id?: GetLuckyWheelsIdEligibleCustomersAdmin200AllOfResponseDataItemUserId;
   spend?: number;
   spins_used?: number;
   spins_max?: number;

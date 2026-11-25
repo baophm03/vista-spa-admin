@@ -45,10 +45,10 @@ import { customInstance } from '../mutator/custom-instance';
 
 /**
  * **IMP-01** — POST /imports/{kind}/admin. Upload a CSV/XLSX file with column mapping. Map the optional `branch_id` column to use each row's branch (by branch name, code, or ID); otherwise the top-level `branch_id` is the default. Set `preview_headers=true` to read its first row as column headers without importing. `dry_run=true` (default) only validates and returns a per-row error report without writing to the DB. Files larger than 2MB (or `process_mode=async`) are queued for the background worker instead — the response then returns `{ job_id, async: true }`; poll GET /import-jobs/{job_id}/admin for progress and the final report. Cần đăng nhập + `import.run`.
- * @summary Import legacy customer data (customer-profiles / customer-treatments)
+ * @summary Import legacy customer data (customers / customer-treatments)
  */
 export const postImportsKindAdmin = (
-    kind: 'customer-profiles' | 'customer-treatments',
+    kind: 'customers' | 'customer-treatments',
     postImportsKindAdminBody: PostImportsKindAdminBody,
  signal?: AbortSignal
 ) => {
@@ -81,8 +81,8 @@ if(postImportsKindAdminBody.column_mapping !== undefined) {
 
 
 export const getPostImportsKindAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | UnprocessableEntityResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postImportsKindAdmin>>, TError,{kind: 'customer-profiles' | 'customer-treatments';data: PostImportsKindAdminBody}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof postImportsKindAdmin>>, TError,{kind: 'customer-profiles' | 'customer-treatments';data: PostImportsKindAdminBody}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postImportsKindAdmin>>, TError,{kind: 'customers' | 'customer-treatments';data: PostImportsKindAdminBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postImportsKindAdmin>>, TError,{kind: 'customers' | 'customer-treatments';data: PostImportsKindAdminBody}, TContext> => {
 
 const mutationKey = ['postImportsKindAdmin'];
 const {mutation: mutationOptions} = options ?
@@ -94,7 +94,7 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postImportsKindAdmin>>, {kind: 'customer-profiles' | 'customer-treatments';data: PostImportsKindAdminBody}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postImportsKindAdmin>>, {kind: 'customers' | 'customer-treatments';data: PostImportsKindAdminBody}> = (props) => {
           const {kind,data} = props ?? {};
 
           return  postImportsKindAdmin(kind,data,)
@@ -110,14 +110,14 @@ const {mutation: mutationOptions} = options ?
     export type PostImportsKindAdminMutationError = UnauthorizedResponse | ForbiddenResponse | UnprocessableEntityResponse
 
     /**
- * @summary Import legacy customer data (customer-profiles / customer-treatments)
+ * @summary Import legacy customer data (customers / customer-treatments)
  */
 export const usePostImportsKindAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | UnprocessableEntityResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postImportsKindAdmin>>, TError,{kind: 'customer-profiles' | 'customer-treatments';data: PostImportsKindAdminBody}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postImportsKindAdmin>>, TError,{kind: 'customers' | 'customer-treatments';data: PostImportsKindAdminBody}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof postImportsKindAdmin>>,
         TError,
-        {kind: 'customer-profiles' | 'customer-treatments';data: PostImportsKindAdminBody},
+        {kind: 'customers' | 'customer-treatments';data: PostImportsKindAdminBody},
         TContext
       > => {
 

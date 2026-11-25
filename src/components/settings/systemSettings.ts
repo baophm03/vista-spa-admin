@@ -58,7 +58,7 @@ const labels: Record<string, string> = {
   'customer.shared_across_branches': 'Dùng chung hồ sơ khách giữa các cơ sở',
   'booking.slot_minutes': 'Độ dài khung giờ (phút)', 'booking.horizon_days': 'Số ngày được đặt trước',
   'booking.min_cancel_hours': 'Số giờ tối thiểu để hủy lịch', 'booking.auto_approve': 'Tự động duyệt lịch hẹn',
-  'booking.pending_expire_hours': 'Thời hạn giữ lịch chờ (giờ)', 'booking.require_staff_service': 'Yêu cầu nhân viên có dịch vụ tương ứng',
+  'booking.pending_expire_hours': 'Thời hạn giữ lịch chờ (giờ)',
   'payment.methods': 'Phương thức thanh toán', 'payment.allow_overpay': 'Cho phép thanh toán dư',
   'reminder.offsets_days': 'Nhắc trước ngày hẹn (ngày)', 'reminder.send_time': 'Giờ gửi nhắc hẹn',
   'reminder.next_session_days': 'Số ngày nhắc buổi tiếp theo', 'points.enabled': 'Bật hệ thống điểm thưởng',

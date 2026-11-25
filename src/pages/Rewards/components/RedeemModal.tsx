@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 import { displayName } from '@/utils/displayName'
 import { Alert, Descriptions, Form, type FormInstance, Modal, Select, Typography } from 'antd'
-import { useGetCustomerProfilesAdmin, useGetCustomerProfilesIdPointsAdmin } from '@/api/endpoints/customer-profiles'
+import { useGetUsersCustomersAdmin, useGetUsersCustomersIdPointsAdmin } from '@/api/endpoints/customers'
 import { pickData } from '@/api/helpers'
-import type { CustomerProfile } from '@/api/models/customerProfile'
-import type { GetCustomerProfilesIdPointsAdmin200AllOfResponseData } from '@/api/models/getCustomerProfilesIdPointsAdmin200AllOfResponseData'
+import type { Customer } from '@/api/models/customer'
+import type { GetUsersCustomersIdPointsAdmin200AllOfResponseData } from '@/api/models/getUsersCustomersIdPointsAdmin200AllOfResponseData'
 import type { RewardRow } from './constants'
 
 interface RedeemModalProps {
@@ -34,7 +34,7 @@ export default function RedeemModal({
 
   // Ghi nhớ khách đã chọn kèm id quà: đổi mục tiêu quà thì lựa chọn cũ tự hết hiệu lực,
   // không cần effect reset state.
-  const [selection, setSelection] = useState<{ rewardId?: string; customer?: CustomerProfile }>({})
+  const [selection, setSelection] = useState<{ rewardId?: string; customer?: Customer }>({})
   const open = !!redeemTarget
 
   // Đóng modal thì xoá lựa chọn khách cũ (form cũng đã resetFields).
@@ -51,20 +51,20 @@ export default function RedeemModal({
   const selectedCustomer = selection.rewardId === redeemTarget?.id ? selection.customer : undefined
   const customerId = selectedCustomer?.id
 
-  const customersQuery = useGetCustomerProfilesAdmin(
+  const customersQuery = useGetUsersCustomersAdmin(
     { page: 1, limit: 50, q: customerSearch || undefined },
     { query: { enabled: open } },
   )
-  const customersPayload = pickData<CustomerProfile[] | { items?: CustomerProfile[] }>(customersQuery.data)
-  const customerList: CustomerProfile[] = Array.isArray(customersPayload) ? customersPayload : customersPayload?.items ?? []
+  const customersPayload = pickData<Customer[] | { items?: Customer[] }>(customersQuery.data)
+  const customerList: Customer[] = Array.isArray(customersPayload) ? customersPayload : customersPayload?.items ?? []
   const customerOptions = (selectedCustomer ? [selectedCustomer, ...customerList] : customerList)
     .filter((item, index, all) => all.findIndex((candidate) => candidate.id === item.id) === index)
     .map((item) => ({ value: item.id, label: `${displayName(item)} — ${item.phone}` }))
 
-  const pointsQuery = useGetCustomerProfilesIdPointsAdmin(customerId ?? '', {
+  const pointsQuery = useGetUsersCustomersIdPointsAdmin(customerId ?? '', {
     query: { enabled: Boolean(customerId) },
   })
-  const pointsData = pickData<GetCustomerProfilesIdPointsAdmin200AllOfResponseData>(pointsQuery.data)
+  const pointsData = pickData<GetUsersCustomersIdPointsAdmin200AllOfResponseData>(pointsQuery.data)
   const balance = customerId && typeof pointsData?.points === 'number' ? Math.max(0, pointsData.points) : undefined
   const cost = Number(redeemTarget?.points_cost ?? 0)
   const remaining = balance === undefined ? undefined : balance - cost
@@ -83,7 +83,7 @@ export default function RedeemModal({
       okButtonProps={{ disabled: insufficient }}
     >
       <Form form={form} layout="vertical" style={{ marginBottom: 16 }}>
-        <Form.Item name="customer_profile_id" label="Khách hàng" rules={[{ required: true, message: 'Chọn khách' }]}>
+        <Form.Item name="user_id" label="Khách hàng" rules={[{ required: true, message: 'Chọn khách' }]}>
           <Select
             showSearch
             filterOption={false}

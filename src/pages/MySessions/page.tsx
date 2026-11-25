@@ -20,7 +20,7 @@ type SessionRow = TreatmentSession & {
   appointment?: { appt_date?: string; start_time?: string } | null
   staff?: { id?: string; zalo_name?: string; email?: string } | null
   customer_treatment?: {
-    customer_profile?: { id?: string; customer_code?: string; full_name?: string; phone?: string } | null
+    user?: { id?: string; customer_code?: string; full_name?: string; phone?: string } | null
     package?: { id?: string; name?: string } | null
   } | null
 }
@@ -136,7 +136,7 @@ export default function MySessions() {
       title: 'Khách hàng',
       key: 'customer',
       render: (_value, row) => {
-        const customer = row.customer_treatment?.customer_profile
+        const customer = row.customer_treatment?.user
         return <Space direction="vertical" size={0}>
           <span>{displayName(customer, 'Khách hàng')}</span>
           <Typography.Text type="secondary" style={{ fontSize: 12 }}>{customer?.customer_code || customer?.phone || '—'}</Typography.Text>
@@ -229,7 +229,7 @@ export default function MySessions() {
           <>
             <div className="mobile-card-head">
               <div className="mobile-card-title min-w-0">
-                {displayName(row.customer_treatment?.customer_profile, 'Khách hàng')}
+                {displayName(row.customer_treatment?.user, 'Khách hàng')}
               </div>
               <Tag className="me-0! shrink-0" color={statusInfo.color}>{statusInfo.label}</Tag>
             </div>

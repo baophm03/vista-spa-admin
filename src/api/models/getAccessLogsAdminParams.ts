@@ -22,7 +22,7 @@ user_id?: string;
  * Filter by the customer profile's branch; logs without a profile use the branch of the staff member who performed the action
  */
 branch_id?: string;
-customer_profile_id?: string;
+customer_id?: string;
 action?: GetAccessLogsAdminAction;
 from?: string;
 to?: string;

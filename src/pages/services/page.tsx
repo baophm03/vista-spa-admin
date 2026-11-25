@@ -1,104 +1,43 @@
-import { useEffect, useMemo, useState } from 'react'
-import {
-  Button,
-  Form,
-  Input,
-  Modal,
-  Space,
-  Table,
-  Tabs,
-  Tag,
-  Typography,
-  message,
-} from 'antd'
-import type { TableColumnsType } from 'antd'
-import { AppstoreOutlined, DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, PlusOutlined } from '@ant-design/icons'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Button, Col, Dropdown, Empty, Form, Input, Modal, Row, Select, Skeleton, message } from 'antd'
+import { AppstoreOutlined, DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, FolderOutlined, MoreOutlined, PlusOutlined } from '@ant-design/icons'
+import { useQuery } from '@tanstack/react-query'
 import { Can, useAbility } from '@casl/react'
 import PageTitle from '@/components/base/PageTitle'
 import StatCards, { type StatItem } from '@/components/base/StatCards'
-import RowActionsMenu from '@/components/base/RowActionsMenu'
-import ListPagination from '@/components/base/ListPagination'
-import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
-import { normalizeCustomFieldValues } from '@/components/CustomFieldFormItems'
-import ServiceModal from './components/ServiceModal'
-import ServiceDetailModal from './components/ServiceDetailModal'
 import ServiceListState from './components/ServiceListState'
+import ServiceCategoryCard from './components/ServiceCategoryCard'
+import ServiceCategoryModal from './components/ServiceCategoryModal'
+import { UNCATEGORIZED_ID, type ServiceCategoryRow } from './components/serviceTypes'
+import useServiceCategories from './useServiceCategories'
 import { errorMessage, pickData } from '@/api/helpers'
-import { deleteServiceIdAdmin, getServiceAdmin, getServiceCategoriesAdmin, postServiceAdmin, putServiceIdAdmin, useGetServiceAdmin } from '@/api/endpoints/services'
-import type { Service } from '@/api/models/service'
-import type { ServiceCreate } from '@/api/models/serviceCreate'
-import useCustomFieldDefinitions from '@/hooks/useCustomFieldDefinitions'
-import type { ServiceCategory } from '@/api/models/serviceCategory'
-import ServiceCategories from './ServiceCategories'
-import { formatCurrency, useBrandCurrency } from '@/themeRuntime'
+import { deleteServiceCategoriesIdAdmin, getServiceAdmin, postServiceCategoriesAdmin, putServiceCategoriesIdAdmin } from '@/api/endpoints/services'
+import type { ServiceCategoryCreate } from '@/api/models/serviceCategoryCreate'
+import { useBrandCurrency } from '@/themeRuntime'
 import { fileSrc, resolveFileSrc, useFileUrlMap } from '@/hooks/useFileUrl'
-import type { Branch } from '@/api/models'
-import { useGetBranchesAdmin } from '@/api/endpoints/branches'
 import './services.css'
 
-/** BE list include kèm `service_category`, ảnh bìa `image_file` và bộ ảnh `service_galleries[].file`. */
-type ServiceRow = Service & {
-  branch_id?: string | null
-  service_category?: { id?: string; name?: string }
-  image_file?: { id?: string; path?: string } | null
-  service_galleries?: Array<{ file_id?: string; sort_order?: number; file?: { id?: string; path?: string } | null }>
-}
-type ServiceCategoryRow = ServiceCategory & { parent?: { id?: string; name?: string } }
+type StatusFilter = 'all' | 'active' | 'hidden'
 
-/** BE trả thêm resolved_options cho field có lookup_list_id. */
-const DEFAULT_COLUMNS = ['service', 'category', 'branch','price', 'duration', 'points', 'status']
-
-function formatPrice(value: number | string | null | undefined, currency: string) {
-  if (value === null || value === undefined || value === '') return '—'
-  return formatCurrency(value, currency)
-}
-
-function categoryOptions(
-  categories: ServiceCategoryRow[],
-  parentId: string | null = null,
-  depth = 0,
-  skipId?: string,
-  includeInactiveId?: string,
-): { value: string; label: string }[] {
-  return categories
-    .filter((category) => (category.parent_id ?? null) === parentId && category.id !== skipId && (category.is_active !== false || category.id === includeInactiveId))
-    .flatMap((category) => [
-      { value: category.id, label: `${'　'.repeat(depth)}${category.name}${category.is_active === false ? ' (đã ẩn)' : ''}` },
-      ...categoryOptions(categories, category.id, depth + 1, skipId, includeInactiveId),
-    ])
-}
-
+/** Trang Dịch vụ: lưới thẻ danh mục (1 cấp) — mỗi thẻ tóm tắt dịch vụ bên trong; bấm thẻ vào trang chi tiết. */
 export default function Services() {
-  const { currency, symbol: currencySymbol } = useBrandCurrency()
+  const navigate = useNavigate()
+  const { currency } = useBrandCurrency()
   const urlMap = useFileUrlMap()
   const ability = useAbility()
   const canUpdate = ability.can('UPDATE', 'SERVICE')
   const canDelete = ability.can('DELETE', 'SERVICE')
-  const [total, setTotal] = useState(0)
-  const [categories, setCategories] = useState<ServiceCategoryRow[]>([])
-  const customFields = useCustomFieldDefinitions('SERVICE')
-  const [saving, setSaving] = useState(false)
-  const [open, setOpen] = useState(false)
-  const [editing, setEditing] = useState<ServiceRow | null>(null)
-  const [detailService, setDetailService] = useState<ServiceRow | null>(null)
-  const [page, setPage] = useState(1)
-  const [limit] = useState(10)
+  const canCreate = ability.can('CREATE', 'SERVICE')
+  const { query, categories, uncategorized, refresh } = useServiceCategories()
   const [searchText, setSearchText] = useState('')
-  const [filters, setFilters] = useState<{ q?: string; category_id?: string; is_active?: boolean }>({})
-  const [visibleColumns] = useState<string[]>(DEFAULT_COLUMNS)
+  const [status, setStatus] = useState<StatusFilter>('all')
+  const [editing, setEditing] = useState<ServiceCategoryRow | null>(null)
+  const [open, setOpen] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [form] = Form.useForm()
-  const [activeTab, setActiveTab] = useState<'services' | 'categories'>('services')
-  const branchesQuery = useGetBranchesAdmin()
-  const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as Branch[], [branchesQuery.data])
 
-  const listQuery = useGetServiceAdmin({ ...filters, page, limit })
-  const listData = pickData<{ services?: ServiceRow[]; total?: number }>(listQuery.data)
-  const rows = listData?.services ?? []
-  useEffect(() => setTotal(listData?.total ?? 0), [listData])
-
-  // Thống kê đầu trang — đếm server-side (total) nên đúng cả khi đang tìm kiếm/phân trang
-  const queryClient = useQueryClient()
+  // Thống kê đầu trang — đếm server-side trên toàn bộ dịch vụ
   const statsQuery = useQuery({
     queryKey: ['service-stats'],
     queryFn: async () => {
@@ -113,77 +52,36 @@ export default function Services() {
     { key: 'total', label: 'Tổng dịch vụ', value: statsQuery.data?.total.toLocaleString('vi-VN') ?? '—', icon: <AppstoreOutlined />, tone: 'primary' },
     { key: 'active', label: 'Đang hiển thị', value: statsQuery.data?.active.toLocaleString('vi-VN') ?? '—', icon: <EyeOutlined />, tone: 'secondary' },
     { key: 'hidden', label: 'Đã ẩn', value: statsQuery.data ? Math.max(statsQuery.data.total - statsQuery.data.active, 0).toLocaleString('vi-VN') : '—', icon: <EyeInvisibleOutlined />, tone: 'neutral' },
+    { key: 'categories', label: 'Danh mục', value: query.isLoading ? '—' : categories.length.toLocaleString('vi-VN'), icon: <FolderOutlined />, tone: 'tertiary' },
   ]
 
-  const loadCategories = async () => {
-    try {
-      setCategories((pickData<ServiceCategoryRow[]>(await getServiceCategoriesAdmin()) ?? []) as ServiceCategoryRow[])
-    } catch (err) {
-      message.error(errorMessage(err))
-    }
-  }
-  useEffect(() => {
-    void loadCategories()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  const visibleCategories = useMemo(() => {
+    const keyword = searchText.trim().toLocaleLowerCase('vi')
+    return categories
+      .filter((category) => (status === 'all' ? true : status === 'active' ? category.is_active !== false : category.is_active === false))
+      .filter((category) => !keyword || category.name.toLocaleLowerCase('vi').includes(keyword))
+      .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0) || a.name.localeCompare(b.name, 'vi'))
+  }, [categories, searchText, status])
+  // Thẻ "Không có danh mục": luôn cuối, chỉ khi có dịch vụ chưa gắn danh mục và không đang lọc
+  const showUncategorized = (uncategorized?.service_count ?? 0) > 0 && !searchText.trim() && status === 'all'
 
-  const applySearch = (nextKeyword: string) => {
-    setSearchText(nextKeyword)
-    setPage(1)
-    setFilters((current) => ({ ...current, q: nextKeyword.trim() || undefined }))
-  }
-
-  const createMutation = useMutation({ mutationFn: async (dto: ServiceCreate) => postServiceAdmin(dto) })
-  const updateMutation = useMutation({
-    mutationFn: async ({ id, dto }: { id: string; dto: Partial<ServiceCreate> }) => putServiceIdAdmin(id, dto as ServiceCreate),
-  })
-  const hideMutation = useMutation({
-    mutationFn: async ({ id, isActive }: { id: string; isActive: boolean }) =>
-      putServiceIdAdmin(id, { is_active: isActive } as ServiceCreate),
-  })
-  const deleteMutation = useMutation({ mutationFn: async (id: string) => deleteServiceIdAdmin(id) })
-
-
-  const openEditor = async (row?: ServiceRow) => {
+  const openEditor = (row?: ServiceCategoryRow) => {
     setEditing(row ?? null)
     form.resetFields()
-    form.setFieldsValue(
-      row
-          ? {
-            ...row,
-            image_file_id: row.image_file?.id ?? row.image_file_id ?? undefined,
-            price: row.price == null ? null : Number(row.price),
-            price_max: row.price_max == null ? null : Number(row.price_max),
-            gallery_file_ids: (row.service_galleries ?? []).map((gallery) => gallery.file?.id ?? gallery.file_id),
-            custom_fields: row.custom_fields ?? {},
-            duration_minutes: row.duration_minutes ?? null,
-          }
-        : {
-            title: '',
-            required_points: 0,
-            price_unit: 'SESSION',
-            duration_minutes: null,
-            gallery_file_ids: [],
-            custom_fields: {},
-          },
-    )
+    form.setFieldsValue(row ?? { sort_order: categories.length, is_active: true, image_file_id: null })
     setOpen(true)
   }
 
-  const submit = async () => {
+  const save = async () => {
     try {
       const values = await form.validateFields()
       setSaving(true)
-      const dto = {
-        ...values,
-        custom_fields: normalizeCustomFieldValues(customFields, values.custom_fields ?? {}, editing?.custom_fields ?? {}),
-      }
-      if (editing) await updateMutation.mutateAsync({ id: editing.id, dto })
-      else await createMutation.mutateAsync(dto)
+      const dto: ServiceCategoryCreate = { ...values }
+      if (editing) await putServiceCategoriesIdAdmin(editing.id, dto)
+      else await postServiceCategoriesAdmin(dto)
       setOpen(false)
-      message.success(editing ? 'Đã cập nhật dịch vụ' : 'Đã thêm dịch vụ')
-      await listQuery.refetch()
-      void queryClient.invalidateQueries({ queryKey: ["service-stats"] })
+      message.success(editing ? 'Đã cập nhật danh mục' : 'Đã tạo danh mục')
+      refresh()
     } catch (err) {
       if ((err as { errorFields?: unknown })?.errorFields) return
       message.error(errorMessage(err))
@@ -192,247 +90,142 @@ export default function Services() {
     }
   }
 
-  const hideService = async (row: ServiceRow) => {
+  const runAction = async (action: () => Promise<unknown>, successText: string) => {
     try {
-      await hideMutation.mutateAsync({ id: row.id, isActive: false })
-      message.success('Đã ẩn dịch vụ; lịch và gói cũ vẫn được giữ')
-      await listQuery.refetch()
-      void queryClient.invalidateQueries({ queryKey: ["service-stats"] })
+      await action()
+      message.success(successText)
+      refresh()
     } catch (err) {
       message.error(errorMessage(err))
     }
   }
 
-  const deleteService = async (row: ServiceRow) => {
-    try {
-      await deleteMutation.mutateAsync(row.id)
-      message.success('Đã xóa dịch vụ')
-      await listQuery.refetch()
-      void queryClient.invalidateQueries({ queryKey: ["service-stats"] })
-    } catch (err) {
-      message.error(errorMessage(err))
-    }
-  }
-
-  const restoreService = async (row: ServiceRow) => {
-    try {
-      await updateMutation.mutateAsync({ id: row.id, dto: { is_active: true } })
-      message.success('Đã bật lại dịch vụ')
-      await listQuery.refetch()
-      void queryClient.invalidateQueries({ queryKey: ["service-stats"] })
-    } catch (err) {
-      message.error(errorMessage(err))
-    }
-  }
-
-  const renderActions = (row: ServiceRow, dropdownOnly = false) => (
-    <RowActionsMenu
-      dropdownOnly={dropdownOnly}
-      items={[
-        ...(canUpdate ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []),
-        ...(canUpdate && row.is_active === false ? [{ key: 'restore', icon: <EyeOutlined />, label: 'Bật lại' }] : []),
-        ...(canUpdate && row.is_active !== false ? [{ key: 'hide', icon: <EyeInvisibleOutlined />, label: 'Ẩn' }] : []),
-        ...(canDelete ? [{ key: 'delete', icon: <DeleteOutlined />, danger: true, label: 'Xóa' }] : []),
-      ]}
-      onSelect={(key) => {
-        if (key === 'edit') void openEditor(row)
-        else if (key === 'restore') void restoreService(row)
-        else if (key === 'hide') {
-          Modal.confirm({
-            title: 'Ẩn dịch vụ này?',
-            content: 'Dịch vụ sẽ bị ẩn khỏi app nhưng vẫn còn trong danh sách quản trị.',
+  // Nút 3 chấm gọn trên thẻ (thay cho nút "Thao tác" chiếm diện tích)
+  const renderActions = (row: ServiceCategoryRow) => (
+    <Dropdown
+      trigger={['click']}
+      menu={{
+        items: [
+          ...(canUpdate ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []),
+          ...(canUpdate
+            ? [row.is_active === false
+              ? { key: 'restore', icon: <EyeOutlined />, label: 'Bật lại' }
+              : { key: 'hide', icon: <EyeInvisibleOutlined />, label: 'Ẩn' }]
+            : []),
+          ...(canDelete ? [{ key: 'delete', icon: <DeleteOutlined />, danger: true, label: 'Xóa' }] : []),
+        ],
+        onClick: ({ key, domEvent }) => {
+          domEvent.stopPropagation()
+          if (key === 'edit') openEditor(row)
+          else if (key === 'restore') void runAction(() => putServiceCategoriesIdAdmin(row.id, { is_active: true } as ServiceCategoryCreate), 'Đã bật lại danh mục')
+          else if (key === 'hide') Modal.confirm({
+            title: 'Ẩn danh mục này?',
+            content: 'Chỉ ẩn được khi không còn dịch vụ đang hiển thị trong danh mục.',
             okText: 'Ẩn',
             cancelText: 'Hủy',
-            onOk: () => hideService(row),
+            onOk: () => runAction(() => putServiceCategoriesIdAdmin(row.id, { is_active: false } as ServiceCategoryCreate), 'Đã ẩn danh mục'),
           })
-        } else if (key === 'delete') {
-          Modal.confirm({
-            title: 'Xóa dịch vụ này?',
-            content: 'Xóa mềm: chỉ thực hiện được khi dịch vụ không còn lịch sử/hóa đơn tham chiếu.',
-            okText: 'Xóa',
+          else if (key === 'delete') Modal.confirm({
+            title: 'Xóa danh mục này?',
+            content: 'Chỉ xóa được khi không còn dịch vụ trong danh mục.',
             okButtonProps: { danger: true },
+            okText: 'Xóa',
             cancelText: 'Hủy',
-            onOk: () => deleteService(row),
+            onOk: () => runAction(() => deleteServiceCategoriesIdAdmin(row.id), 'Đã xóa danh mục'),
           })
-        }
-      }}
-    />
-  )
-
-  const branchName = (id?: string | null) =>
-    id ? branches.find((branch) => branch.id === id)?.name ?? '—' : 'Tất cả cơ sở'
-  const priceLabel = (row: ServiceRow) =>
-    row.price_max != null && Number(row.price_max) !== Number(row.price)
-      ? `${formatPrice(row.price, currency)} – ${formatPrice(row.price_max, currency)}`
-      : formatPrice(row.price, currency)
-  const coverSrc = (row: ServiceRow) => fileSrc(row.image_file) ?? resolveFileSrc(urlMap, row.image_file_id)
-
-  const columns = ((): TableColumnsType<ServiceRow> => {
-    const dataColumns: Record<string, NonNullable<TableColumnsType<ServiceRow>[number]>> = {
-      service: {
-        key: 'service',
-        title: 'Dịch vụ',
-        dataIndex: 'title',
-        render: (value: string, row) => {
-          const image = coverSrc(row)
-          return (
-            <Space align="start">
-              {image && <img src={image} alt="" width={44} height={44} style={{ objectFit: 'cover', borderRadius: 6 }} />}
-              <div>
-                <div style={{ fontWeight: 500 }}>{value}</div>
-                <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                  {row.description}
-                </Typography.Text>
-              </div>
-            </Space>
-          )
         },
-      },
-      category: { key: 'category', title: 'Danh mục', render: (_value, row) => row.service_category?.name || '—' },
-      branch: { key: 'branch', title: 'Cơ sở', dataIndex: 'branch_id', width: 140, render: branchName },
-      price: {
-        key: 'price',
-        title: 'Giá niêm yết',
-        render: (_value, row) => priceLabel(row),
-      },
-      duration: { key: 'duration', title: 'Thời lượng', dataIndex: 'duration_minutes', render: (value?: number | null) => (value ? `${value} phút` : 'Theo cấu hình') },
-      points: { key: 'points', title: 'Điểm đổi', dataIndex: 'required_points', render: (value?: number | null) => (value ? Number(value).toLocaleString('vi-VN') : '—') },
-      status: {
-        key: 'status',
-        title: 'Trạng thái',
-        dataIndex: 'is_active',
-        render: (value?: boolean) => <Tag color={value === false ? 'default' : 'green'}>{value === false ? 'Đã ẩn' : 'Đang hiển thị'}</Tag>,
-      },
-    }
-    return [
-      ...visibleColumns.map((key) => dataColumns[key]).filter(Boolean),
-      {
-        key: 'actions',
-        title: 'Thao tác', align: 'center' as const,
-        width: 90,
-        fixed: 'right',
-        render: (_value, row) => renderActions(row),
-      },
-    ]
-  })()
-
-  const hasServices = !listQuery.isLoading && !listQuery.isError && rows.length > 0
-
-  const servicesContent = (
-    <>
-      <div className="service-list-toolbar">
-        <Input.Search
-          allowClear
-          aria-label="Tìm tên hoặc mô tả dịch vụ"
-          placeholder="Tìm tên hoặc mô tả dịch vụ"
-          className="service-list-search"
-          value={searchText}
-          onChange={(event) => { setSearchText(event.target.value); if (!event.target.value) applySearch('') }}
-          onSearch={(v) => applySearch(v)}
-        />
-        <Can I="CREATE" a="SERVICE">
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => void openEditor()}>
-            Thêm dịch vụ
-          </Button>
-        </Can>
-      </div>
-      {listQuery.isError ? (
-        <ServiceListState message="Không tải được danh sách dịch vụ" onRetry={() => void listQuery.refetch()} />
-      ) : (
-        <>
-          <Table<ServiceRow>
-            className="desktop-only"
-            rowKey="id"
-            loading={listQuery.isLoading}
-            dataSource={rows}
-            columns={columns}
-            scroll={{ x: 1000 }}
-            pagination={false}
-            locale={{ emptyText: filters.q ? 'Không có kết quả' : 'Chưa có dữ liệu' }}
-            onRow={(row) => ({
-              onClick: () => setDetailService(row),
-              style: { cursor: 'pointer' },
-            })}
-          />
-          <MobileCards
-            rows={rows}
-            rowKey={(row) => row.id}
-            loading={listQuery.isLoading}
-            emptyText={filters.q ? 'Không có kết quả' : 'Chưa có dữ liệu'}
-            emptyDescription={filters.q ? 'Thử đổi từ khóa hoặc xóa bộ lọc' : undefined}
-            onCardClick={setDetailService}
-            renderCard={(row) => {
-              const galleryImage = row.service_galleries?.[0]
-              const image = coverSrc(row) ?? fileSrc(galleryImage?.file) ?? resolveFileSrc(urlMap, galleryImage?.file_id)
-              return (
-                <>
-                  <div className="mobile-card-head">
-                    <button type="button" className="mobile-card-title service-card-link" onClick={(event) => {
-                      event.stopPropagation()
-                      setDetailService(row)
-                    }}>
-                      {image
-                        ? <img className="service-card-image" src={image} alt="" loading="lazy" />
-                        : <AppstoreOutlined aria-hidden />}
-                      <span className="min-w-0">{row.title || 'Dịch vụ'}</span>
-                    </button>
-                    {row.is_active === false ? <Tag>Đã ẩn</Tag> : <Tag color="green">Đang dùng</Tag>}
-                    {renderActions(row, true)}
-                  </div>
-                  <div className="mobile-card-rows">
-                    <MobileCardRow label="Danh mục" value={row.service_category?.name || '—'} />
-                    <MobileCardRow label="Cơ sở" value={branchName(row.branch_id)} />
-                    <MobileCardRow label="Giá niêm yết" value={priceLabel(row)} />
-                    <MobileCardRow label="Thời lượng" value={row.duration_minutes ? `${row.duration_minutes} phút` : 'Theo cấu hình'} />
-                    <MobileCardRow label="Điểm đổi" value={row.required_points ? Number(row.required_points).toLocaleString('vi-VN') : '—'} />
-                  </div>
-                </>
-              )
-            }}
-          />
-        </>
-      )}
-      {hasServices && <ListPagination page={page} limit={limit} total={total} onChange={setPage} noun="dịch vụ" />}
-    </>
+      }}
+    >
+      <Button type="text" size="small" icon={<MoreOutlined />} aria-label="Thao tác danh mục" />
+    </Dropdown>
   )
+
+  const openCategory = (id: string) => navigate(`/services/categories/${id}`)
+  const hasFilter = !!searchText.trim() || status !== 'all'
 
   return (
     <div className="services-page">
-      <PageTitle subtitle="Danh mục dịch vụ và nhóm dịch vụ">
+      <PageTitle subtitle="Danh mục dịch vụ — bấm vào danh mục để xem và quản lý dịch vụ bên trong">
         Dịch vụ
       </PageTitle>
       <StatCards items={statItems} />
 
-      <Tabs
-        className="services-tabs"
-        activeKey={activeTab}
-        onChange={(key) => setActiveTab(key as 'services' | 'categories')}
-        items={[
-          { key: 'services', label: 'Danh sách dịch vụ', children: servicesContent },
-          { key: 'categories', label: 'Danh mục dịch vụ', children: <ServiceCategories /> },
-        ]}
-      />
-      <ServiceModal
+      <div className="service-list-toolbar">
+        <div className="service-category-filters">
+          <Input.Search
+            allowClear
+            aria-label="Tìm danh mục"
+            placeholder="Tìm danh mục"
+            className="service-list-search"
+            value={searchText}
+            onChange={(event) => setSearchText(event.target.value)}
+            onSearch={setSearchText}
+          />
+          <Select<StatusFilter>
+            value={status}
+            onChange={setStatus}
+            style={{ width: 150 }}
+            options={[
+              { value: 'all', label: 'Tất cả' },
+              { value: 'active', label: 'Đang dùng' },
+              { value: 'hidden', label: 'Đã ẩn' },
+            ]}
+          />
+        </div>
+        <Can I="CREATE" a="SERVICE">
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor()}>
+            Thêm danh mục
+          </Button>
+        </Can>
+      </div>
+
+      {query.isError ? (
+        <ServiceListState message="Không tải được danh mục dịch vụ" onRetry={() => void query.refetch()} />
+      ) : query.isLoading ? (
+        <Row gutter={[16, 16]}>
+          {[0, 1, 2].map((key) => (
+            <Col key={key} xs={24} md={12} xl={8} xxl={6}><div className="service-category-card"><Skeleton active /></div></Col>
+          ))}
+        </Row>
+      ) : visibleCategories.length === 0 && !showUncategorized ? (
+        <Empty description={hasFilter ? 'Không có danh mục phù hợp' : 'Chưa có danh mục dịch vụ'} />
+      ) : (
+        <Row gutter={[16, 16]}>
+          {visibleCategories.map((category) => (
+            <Col key={category.id} xs={24} md={12} xl={8} xxl={6}>
+              <ServiceCategoryCard
+                name={category.name}
+                imageSrc={fileSrc(category.image_file) ?? resolveFileSrc(urlMap, category.image_file_id)}
+                isActive={category.is_active !== false}
+                summary={category.summary}
+                currency={currency}
+                actions={(canUpdate || canDelete) ? renderActions(category) : undefined}
+                onOpen={() => openCategory(category.id)}
+                onAddService={canCreate ? () => navigate(`/services/categories/${category.id}?add=1`) : undefined}
+              />
+            </Col>
+          ))}
+          {showUncategorized && (
+            <Col xs={24} md={12} xl={8} xxl={6}>
+              <ServiceCategoryCard
+                name="Không có danh mục"
+                uncategorized
+                summary={uncategorized}
+                currency={currency}
+                onOpen={() => openCategory(UNCATEGORIZED_ID)}
+              />
+            </Col>
+          )}
+        </Row>
+      )}
+
+      <ServiceCategoryModal
         open={open}
         editing={editing}
         form={form}
-        categories={categories}
-        customFields={customFields}
-        currencySymbol={currencySymbol}
         saving={saving}
-        categoryOptions={categoryOptions}
         onCancel={() => setOpen(false)}
-        onSubmit={() => void submit()}
-        branches={branches}
-      />
-      <ServiceDetailModal
-        service={detailService}
-        onClose={() => setDetailService(null)}
-        categories={categories}
-        branches={branches}
-        urlMap={urlMap}
-        currency={currency}
-        formatCurrency={formatCurrency}
+        onOk={() => void save()}
       />
     </div>
   )

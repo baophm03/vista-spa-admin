@@ -63,10 +63,10 @@ export default function WarrantyClaimCreateModal({
             optionRender={(option) => <div className="whitespace-normal wrap-anywhere">{option.label}</div>}
             options={eligibleTreatments.map((t) => {
               const snap = snapshotField(t)
-              const treatment = t as CustomerTreatment & { customer_profile?: { full_name?: string; phone?: string } }
+              const treatment = t as CustomerTreatment & { user?: { full_name?: string; phone?: string } }
               const pkg = snap.name
-              const customerName = displayName(treatment.customer_profile, 'Khách')
-              const customer = treatment.customer_profile?.phone ? `${customerName} — ${treatment.customer_profile.phone}` : customerName
+              const customerName = displayName(treatment.user, 'Khách')
+              const customer = treatment.user?.phone ? `${customerName} — ${treatment.user.phone}` : customerName
               return {
                 value: t.id,
                 label: `${customer} — ${pkg ?? 'Gói'}${t.finished_at ? ` — ${formatDateTime(t.finished_at).split(' ')[0]}` : ''}`,

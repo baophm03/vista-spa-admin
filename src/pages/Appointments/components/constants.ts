@@ -21,15 +21,7 @@ export interface StaffRow {
 }
 
 export type AppointmentRow = Appointment & {
-  customer_profile?: { id?: string; full_name?: string; phone?: string } | null
-  service?: { title?: string; duration_minutes?: number; price?: number | string | null; price_max?: number | string | null } | null
-  customer_treatment?: {
-    package_snapshot?: { name?: string | null } | null
-    package?: {
-      name?: string | null
-      service?: { title?: string; duration_minutes?: number | null } | null
-    } | null
-  } | null
+  user?: { id?: string; full_name?: string; phone?: string } | null
   staff?: { zalo_name?: string } | null
   service_amount?: number | string | null
   visit_done_at?: string | null

@@ -20,6 +20,7 @@ import {
   CalendarOutlined,
   CheckOutlined,
   CloseOutlined,
+  UserSwitchOutlined,
   EditOutlined,
   FilterOutlined,
   LeftOutlined,
@@ -44,11 +45,12 @@ import { useBrandDateTime } from '@/themeRuntime'
 import type { Appointment } from '@/api/models/appointment'
 import type { Branch } from '@/api/models/branch'
 import type { GetAppointmentsAdminParams } from '@/api/models/getAppointmentsAdminParams'
-import { getAppointmentsAvailableSlots, getGetAppointmentsAdminQueryKey, useGetAppointmentsAdmin, usePostAppointmentsAdmin, usePostAppointmentsIdStartAdmin, usePutAppointmentsIdAdmin, usePutAppointmentsIdApproveAdmin, usePutAppointmentsIdCancelAdmin, usePutAppointmentsIdNoShowAdmin, usePutAppointmentsIdRejectAdmin, getAppointmentsIdAdmin } from '@/api/endpoints/appointments'
-import { getGetCustomerProfilesAdminQueryKey, postCustomerProfilesAdmin, useGetCustomerProfilesAdmin } from '@/api/endpoints/customer-profiles'
+import { getAppointmentsAvailableSlots, getGetAppointmentsAdminQueryKey, useGetAppointmentsAdmin, usePostAppointmentsAdmin, usePostAppointmentsIdStartAdmin, usePutAppointmentsIdAdmin, usePutAppointmentsIdCompleteAdmin, usePutAppointmentsIdApproveAdmin, usePutAppointmentsIdCancelAdmin, usePutAppointmentsIdNoShowAdmin, usePutAppointmentsIdRejectAdmin, getAppointmentsIdAdmin } from '@/api/endpoints/appointments'
+import { getGetUsersCustomersAdminQueryKey, postUsersCustomersAdmin, useGetUsersCustomersAdmin } from '@/api/endpoints/customers'
 import { useGetUsersAdmin } from '@/api/endpoints/users'
 import { useGetBranchesAdmin } from '@/api/endpoints/branches'
 import AppointmentDetailModal from './components/AppointmentDetailModal'
+import AppointmentStaffModal from './components/AppointmentStaffModal'
 import AppointmentFormModal from './components/AppointmentFormModal'
 import AppointmentsCalendar from './components/AppointmentsCalendar'
 import AppointmentsTable from './components/AppointmentsTable'
@@ -98,6 +100,8 @@ export default function Appointments() {
   const [branchFilter, setBranchFilter] = useState<string | undefined>()
   const [open, setOpen] = useState(false)
   const [selectedAppointment, setSelectedAppointment] = useState<AppointmentRow | null>(null)
+  // Gán / đổi KTV — mọi trạng thái
+  const [staffTarget, setStaffTarget] = useState<AppointmentRow | null>(null)
   const [customerSearchInput, setCustomerSearchInput] = useState('')
   const [customerSearch, setCustomerSearch] = useState('')
   const [selectedProfile, setSelectedProfile] = useState<ProfileRow | null>(null)
@@ -174,7 +178,7 @@ export default function Appointments() {
     return () => window.clearTimeout(timer)
   }, [customerSearchInput])
 
-  const profilesQuery = useGetCustomerProfilesAdmin({ page: 1, limit: 50, q: customerSearch || undefined })
+  const profilesQuery = useGetUsersCustomersAdmin({ page: 1, limit: 50, q: customerSearch || undefined })
 
   const profiles = useMemo(() => (pickData<ProfileRow[] | undefined>(profilesQuery.data) ?? []) as ProfileRow[], [profilesQuery.data])
   const profileOptions = useMemo(() => {
@@ -214,6 +218,7 @@ export default function Appointments() {
   const noShowMutation = usePutAppointmentsIdNoShowAdmin()
   const cancelMutation = usePutAppointmentsIdCancelAdmin()
   const startMutation = usePostAppointmentsIdStartAdmin()
+  const completeMutation = usePutAppointmentsIdCompleteAdmin()
 
   const isSavingAppointment = createMutation.isPending || rescheduleMutation.isPending
 
@@ -293,9 +298,9 @@ export default function Appointments() {
     form.resetFields()
     setCustomerSearchInput('')
     setCustomerSearch('')
-    const profileFromAppointment = (appointment as AppointmentRow | undefined)?.customer_profile
+    const profileFromAppointment = (appointment as AppointmentRow | undefined)?.user
     setSelectedProfile(appointment
-      ? profiles.find((profile) => profile.id === appointment.customer_profile_id)
+      ? profiles.find((profile) => profile.id === appointment.user_id)
       ?? (profileFromAppointment?.id ? {
         id: profileFromAppointment.id,
         full_name: profileFromAppointment.full_name,
@@ -305,7 +310,7 @@ export default function Appointments() {
     form.setFieldsValue(
       appointment
         ? {
-          customer_profile_id: appointment.customer_profile_id,
+          user_id: appointment.user_id,
           staff_id: appointment.staff_id ?? undefined,
           branch_id: appointment.branch_id ?? undefined,
           appt_date: editDateIsPast ? undefined : dayjs(editDate),
@@ -353,16 +358,16 @@ export default function Appointments() {
   const submitQuickCustomer = async () => {
     try {
       const values = await quickCustomerForm.validateFields()
-      const response = await postCustomerProfilesAdmin(values as never)
+      const response = await postUsersCustomersAdmin(values as never)
       const created = pickData<ProfileRow | undefined>(response)
       if (!created?.id) throw new Error('Không nhận được hồ sơ khách hàng vừa tạo')
       setSelectedProfile(created)
-      form.setFieldValue('customer_profile_id', created.id)
+      form.setFieldValue('user_id', created.id)
       setCustomerSearchInput('')
       setCustomerSearch('')
       setQuickCustomerOpen(false)
       message.success('Đã tạo khách hàng và chọn vào lịch hẹn')
-      void queryClient.invalidateQueries({ queryKey: getGetCustomerProfilesAdminQueryKey() })
+      void queryClient.invalidateQueries({ queryKey: getGetUsersCustomersAdminQueryKey() })
     } catch (err) {
       if ((err as { errorFields?: unknown })?.errorFields) return
       message.error(errorMessage(err))
@@ -377,7 +382,7 @@ export default function Appointments() {
       // Cơ sở lịch hẹn: ưu tiên lựa chọn trên form, fallback về bộ lọc/cơ sở đầu tiên
       const branchId = values.branch_id ?? branchFilter ?? branches[0]?.id
       const payload = {
-        customer_profile_id: values.customer_profile_id,
+        user_id: values.user_id,
         branch_id: branchId,
         // Gửi staff_id để BE gán/đổi KTV (nếu không gửi thì BE bỏ gán KTV)
         staff_id: values.staff_id || null,
@@ -427,7 +432,11 @@ export default function Appointments() {
       message.warning('Chỉ bắt đầu được trong ngày hẹn, sau giờ hẹn')
       return
     }
-    void doAction(() => startMutation.mutateAsync({ id: row.id, data: {} }), 'Đã bắt đầu')
+    void doAction(() => startMutation.mutateAsync({ id: row.id }), 'Đã bắt đầu')
+  }
+
+  const completeAppointment = (row: AppointmentRow) => {
+    void doAction(() => completeMutation.mutateAsync({ id: row.id }), 'Đã hoàn tất')
   }
 
   const approve = (row: AppointmentRow) => {
@@ -483,7 +492,9 @@ export default function Appointments() {
             label: canStartAppointmentToday(row) ? 'Bắt đầu' : 'Bắt đầu (chưa đến giờ hẹn)',
             disabled: !canStartAppointmentToday(row),
           }] : []),
+          ...(row.status === 'in_progress' && canStart ? [{ key: 'complete', icon: <CheckOutlined />, label: 'Hoàn tất' }] : []),
           ...(row.status === 'pending' && canApprove ? [{ key: 'reject', icon: <CloseOutlined />, danger: true, label: 'Từ chối' }] : []),
+          ...(canUpdate ? [{ key: 'staff', icon: <UserSwitchOutlined />, label: row.staff_id ? 'Đổi KTV' : 'Gán KTV' }] : []),
           ...(canUpdate && ['pending', 'approved'].includes(row.status ?? '') ? [{ key: 'reschedule', icon: <EditOutlined />, label: 'Đổi lịch' }] : []),
           ...(row.status === 'approved' && canApprove && isPastAppointment(row) ? [{ key: 'noshow', icon: <MinusCircleOutlined />, label: 'Đánh dấu không đến' }] : []),
           ...(['pending', 'approved'].includes(row.status ?? '') && canApprove ? [{ key: 'cancel', icon: <StopOutlined />, danger: true, label: 'Hủy lịch hẹn' }] : []),
@@ -491,6 +502,8 @@ export default function Appointments() {
         onSelect={(key) => {
           if (key === 'approve') void approve(row)
           else if (key === 'start') beginAppointment(row)
+          else if (key === 'complete') completeAppointment(row)
+          else if (key === 'staff') setStaffTarget(row)
           else if (key === 'reject') reject(row)
           else if (key === 'reschedule') openModal(row)
           else if (key === 'noshow') {
@@ -824,11 +837,9 @@ export default function Appointments() {
                     </div>
                     <div style={{ display: 'grid', gap: 8 }}>
                       {items.map((row) => {
-                        const isTreatment = Boolean(row.customer_treatment_id || row.treatment_package_id || row.customer_treatment)
-                        const serviceTitle = row.service?.title
-                          ?? row.customer_treatment?.package_snapshot?.name
-                          ?? row.customer_treatment?.package?.name
-                        const duration = row.service?.duration_minutes ?? row.customer_treatment?.package?.service?.duration_minutes
+                        const startMinute = timeInMinutes(row.start_time)
+                        const endMinute = timeInMinutes(row.end_time)
+                        const duration = startMinute !== null && endMinute !== null && endMinute > startMinute ? endMinute - startMinute : null
                         return (
                           // Theo Figma "Vista Admin / Thẻ lịch hẹn": tên đậm + tag góc phải,
                           // divider, các hàng label/value — cùng ngôn ngữ với thẻ khách hàng
@@ -839,7 +850,7 @@ export default function Appointments() {
                             onClick={() => setSelectedAppointment(row)}
                           >
                             <div className="mobile-card-head">
-                              <div className="mobile-card-title">{row.customer_profile?.full_name || '—'}</div>
+                              <div className="mobile-card-title">{row.user?.full_name || '—'}</div>
                               <Tag color={STATUS_META[row.status as keyof typeof STATUS_META]?.color} style={{ marginInlineEnd: 0, flexShrink: 0 }}>
                                 {STATUS_META[row.status as keyof typeof STATUS_META]?.label ?? row.status}
                               </Tag>
@@ -851,26 +862,6 @@ export default function Appointments() {
                                   <span style={{ color: 'var(--brand-primary)', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>
                                     {row.start_time?.slice(0, 5) ?? '—'}
                                     {duration ? <span style={{ fontWeight: 500, color: '#655E71' }}> ({duration} phút)</span> : null}
-                                  </span>
-                                }
-                              />
-                              <MobileCardRow
-                                label="Dịch vụ"
-                                value={
-                                  <span>
-                                    <span
-                                      aria-hidden
-                                      style={{
-                                        display: 'inline-block',
-                                        width: 8,
-                                        height: 8,
-                                        borderRadius: 2,
-                                        marginRight: 6,
-                                        verticalAlign: 'middle',
-                                        background: isTreatment ? 'var(--brand-primary)' : '#3B82B8',
-                                      }}
-                                    />
-                                    {isTreatment ? 'Liệu trình' : 'Tư vấn'}{serviceTitle ? ` · ${serviceTitle}` : ''}
                                   </span>
                                 }
                               />
@@ -954,6 +945,15 @@ export default function Appointments() {
         onNoShow={(row) => void doAction(() => noShowMutation.mutateAsync({ id: row.id }), 'Đã ghi nhận không đến')}
         onCancelAppointment={(row) => void doAction(() => cancelMutation.mutateAsync({ id: row.id }), 'Đã hủy')}
         onStart={beginAppointment}
+        onAssignStaff={setStaffTarget}
+        onComplete={completeAppointment}
+      />
+
+      <AppointmentStaffModal
+        appointment={staffTarget}
+        staffOptions={staffOptions.filter((staff) => !staffTarget?.branch_id || !staff.branchId || staff.branchId === staffTarget.branch_id)}
+        onClose={() => setStaffTarget(null)}
+        onSaved={refresh}
       />
 
       <AppointmentFormModal

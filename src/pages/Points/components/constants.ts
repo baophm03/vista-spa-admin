@@ -27,7 +27,7 @@ export interface MemberRow {
   full_name?: string
   phone?: string
   user_id?: string | null
-  user?: { zalo_name?: string | null; phone_number?: string | null } | null
+  user?: { zalo_name?: string | null; phone?: string | null } | null
   membership?: {
     id?: string
     lifetime_points?: number

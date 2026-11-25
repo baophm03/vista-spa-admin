@@ -11,6 +11,6 @@ from_date?: string;
 to_date?: string;
 branch_id?: string;
 group_by?: string;
-customer_profile_id?: string;
+user_id?: string;
 staff_id?: string;
 };

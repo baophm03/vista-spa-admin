@@ -21,11 +21,11 @@ import DayOffFormModal from './components/DayOffFormModal'
 import DayOffRejectModal from './components/DayOffRejectModal'
 
 interface Props extends SchedulePageData { loadingShared: boolean }
-interface ConflictAppointment { id: string; appt_date: string; start_time: string; status?: string; customer_profile?: { full_name?: string; zalo_name?: string }; service?: { title?: string } }
+interface ConflictAppointment { id: string; appt_date: string; start_time: string; status?: string; user?: { full_name?: string; zalo_name?: string }; service?: { title?: string } }
 
 const conflictColumns = [
   { title: 'Giờ', dataIndex: 'start_time', render: (value: string) => value?.slice(0, 5) },
-  { title: 'Khách', dataIndex: ['customer_profile', 'full_name'], render: (_: unknown, row: ConflictAppointment) => displayName(row.customer_profile) },
+  { title: 'Khách', dataIndex: ['user', 'full_name'], render: (_: unknown, row: ConflictAppointment) => displayName(row.user) },
   { title: 'Dịch vụ', dataIndex: ['service', 'title'], render: (value: string) => value || '—' },
   { title: 'Trạng thái', dataIndex: 'status', render: (value: string) => value === 'approved' ? 'Đã duyệt' : 'Chờ duyệt' },
 ]
@@ -243,7 +243,7 @@ export default function DayOffTab({ branches, staff, access, loadingShared }: Pr
   }
 
   const columns = [
-    { title: 'Nhân viên', dataIndex: 'staff_id', key: 'staff', render: (id: string, row: StaffDayOff) => staffLabel((row as StaffDayOff & { staff?: { id: string; zalo_name?: string; email?: string; phone_number?: string } }).staff ?? staff.find((person) => person.id === id)) },
+    { title: 'Nhân viên', dataIndex: 'staff_id', key: 'staff', render: (id: string, row: StaffDayOff) => staffLabel((row as StaffDayOff & { staff?: { id: string; zalo_name?: string; email?: string; phone?: string } }).staff ?? staff.find((person) => person.id === id)) },
     { title: 'Ngày nghỉ', dataIndex: 'off_date', key: 'date', render: (value: string) => dayjs(value).format('DD/MM/YYYY') },
     { title: 'Thời gian nghỉ', key: 'time', render: (_: unknown, row: StaffDayOff) => (row as StaffDayOff & { shift_template?: { name?: string } }).shift_template?.name || templates.find((template) => template.id === row.shift_template_id)?.name || 'Cả ngày' },
     {
@@ -352,7 +352,7 @@ export default function DayOffTab({ branches, staff, access, loadingShared }: Pr
       loading={loadingShared || daysOffQuery.isLoading || templatesQuery.isLoading}
       emptyText="Chưa có đăng ký nghỉ trong điều kiện đã chọn"
       renderCard={(row) => {
-        const staffInfo = (row as StaffDayOff & { staff?: { id: string; zalo_name?: string; email?: string; phone_number?: string } }).staff ?? staff.find((person) => person.id === row.staff_id)
+        const staffInfo = (row as StaffDayOff & { staff?: { id: string; zalo_name?: string; email?: string; phone?: string } }).staff ?? staff.find((person) => person.id === row.staff_id)
         return (
           <>
             <div className="mobile-card-head">

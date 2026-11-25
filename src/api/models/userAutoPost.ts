@@ -7,7 +7,7 @@
  */
 
 export interface UserAutoPost {
-  phone_number?: string;
+  phone?: string;
   zalo_name?: string;
   zalo_id: string;
   zalo_avatar?: string;

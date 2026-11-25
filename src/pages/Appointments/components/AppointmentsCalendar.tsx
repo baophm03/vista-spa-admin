@@ -44,10 +44,8 @@ export const CATEGORY_COLORS: Record<AppointmentCategory, { label: string; color
   treatment: { label: 'Liệu trình', color: '#9333EA' }, // Tím NewSky Vista tươi rực rỡ
 }
 
-function getCategory(row: AppointmentRow): AppointmentCategory {
-  if (row.customer_treatment_id || row.treatment_package_id || row.customer_treatment) {
-    return 'treatment'
-  }
+// Lịch hẹn chỉ là hẹn gặp tư vấn (không liên kết buổi điều trị)
+function getCategory(_row: AppointmentRow): AppointmentCategory {
   return 'consultation'
 }
 
@@ -152,25 +150,17 @@ export default function AppointmentsCalendar({
             const cat = getCategory(row)
             const categoryLabel = CATEGORY_COLORS[cat].label
 
-            const name = displayName(row.customer_profile, 'Khách hàng')
-            const phone = row.customer_profile?.phone
+            const name = displayName(row.user, 'Khách hàng')
+            const phone = row.user?.phone
             const time = startMinute === null ? '' : row.start_time.slice(0, 5)
             const knownEnd = timeInMinutes(row.end_time)
             const timeRange = time && knownEnd !== null && startMinute !== null && knownEnd > startMinute
               ? `${time} – ${row.end_time?.slice(0, 5)}`
               : time
 
-            const treatmentService = row.customer_treatment?.package?.service
-            const serviceTitle = row.service?.title || treatmentService?.title
-            const packageName = row.customer_treatment?.package?.name || row.customer_treatment?.package_snapshot?.name
-
-            const serviceName = packageName
-              ? (packageName.trim().toLowerCase().startsWith('gói') ? packageName.trim() : `Gói ${packageName.trim()}`)
-              : serviceTitle?.trim() || (cat === 'treatment' ? 'Buổi liệu trình' : 'Tư vấn thăm khám')
-
-            const durationMinutes = row.service?.duration_minutes
-              ?? treatmentService?.duration_minutes
-              ?? (knownEnd !== null && startMinute !== null && knownEnd > startMinute ? knownEnd - startMinute : null)
+            // Lịch hẹn chỉ là hẹn gặp tư vấn
+            const serviceName = 'Tư vấn thăm khám'
+            const durationMinutes = knownEnd !== null && startMinute !== null && knownEnd > startMinute ? knownEnd - startMinute : null
 
             const staff = staffName(row)
             const staffLabel = staff === 'Chưa phân công' ? 'Chưa gán KTV' : staff
@@ -310,7 +300,7 @@ export default function AppointmentsCalendar({
                         {timeRange || time}
                       </div>
                       <div className="w-full truncate text-[10.5px] opacity-85">
-                        {packageName ? `Gói: ${packageName}` : serviceTitle || categoryLabel}
+                        {serviceName}
                       </div>
                     </div>
                   ) : (
@@ -324,7 +314,7 @@ export default function AppointmentsCalendar({
                         {timeRange || time}
                       </div>
                       <div className="w-full truncate text-[11px] opacity-85">
-                        {packageName ? `Gói: ${packageName}` : serviceTitle || categoryLabel}
+                        {serviceName}
                       </div>
                       {staffLabel !== 'Chưa gán KTV' && (
                         <div className="w-full truncate text-[10.5px] opacity-75 mt-0.5">
@@ -347,9 +337,6 @@ export default function AppointmentsCalendar({
           <span className="inline-flex items-center gap-1.5 font-medium text-neutral-700">
             <span className="h-2.5 w-2.5 rounded-sm" style={{ background: CATEGORY_COLORS.consultation.color }} /> Tư vấn
           </span>
-          <span className="inline-flex items-center gap-1.5 font-medium text-neutral-700">
-            <span className="h-2.5 w-2.5 rounded-sm" style={{ background: CATEGORY_COLORS.treatment.color }} /> Liệu trình
-          </span>
           {(Object.keys(STATUS_COLORS) as AppointmentStatus[]).map((st) => (
             <span key={st} className="inline-flex items-center gap-1.5 font-medium text-neutral-700">
               <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: STATUS_COLORS[st].accent }} />
@@ -365,9 +352,6 @@ export default function AppointmentsCalendar({
           <span className="font-semibold text-neutral-500">Phân loại:</span>
           <span className="inline-flex items-center gap-1.5 font-medium text-neutral-700">
             <span className="h-2.5 w-2.5 rounded-sm" style={{ background: CATEGORY_COLORS.consultation.color }} /> Tư vấn
-          </span>
-          <span className="inline-flex items-center gap-1.5 font-medium text-neutral-700">
-            <span className="h-2.5 w-2.5 rounded-sm" style={{ background: CATEGORY_COLORS.treatment.color }} /> Liệu trình
           </span>
         </div>
 

@@ -25,14 +25,14 @@ export interface LedgerRow extends PaymentLog {
   cashier_name?: string | null
   branch_id?: string
   customer_treatment?: {
-    customer_profile?: { full_name?: string; phone?: string }
-    package_snapshot?: { name?: string }
+    user?: { full_name?: string; phone?: string }
+    package_snapshot?: { name?: string; package_type?: { code?: string } | null }
     branch_id?: string
   } | null
   appointment?: {
     branch_id?: string
     service?: { title?: string }
-    customer_profile?: { full_name?: string; phone?: string }
+    user?: { full_name?: string; phone?: string }
   } | null
 }
 

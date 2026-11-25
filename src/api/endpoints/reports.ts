@@ -50,7 +50,7 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * **RP-06** — GET /reports/sessions-used/admin. Cần đăng nhập + một trong các quyền: `report.view_all`, `report.session`. Branch scope: user gắn 1 cơ sở chỉ thấy dữ liệu cơ sở đó. Query parameters: `from_date`, `to_date`, `branch_id`, `group_by`, `staff_id`, `customer_profile_id`.
+ * **RP-06** — GET /reports/sessions-used/admin. Cần đăng nhập + một trong các quyền: `report.view_all`, `report.session`. Branch scope: user gắn 1 cơ sở chỉ thấy dữ liệu cơ sở đó. Query parameters: `from_date`, `to_date`, `branch_id`, `group_by`, `staff_id`, `user_id`.
  * @summary View sessions used report
  */
 export const getReportsSessionsUsedAdmin = (
@@ -245,7 +245,7 @@ export const prefetchGetReportsSessionsUsedAdminQuery = async <TData = Awaited<R
 
 
 /**
- * **RP-01** — GET /reports/revenue/admin?branch_id&from_date&to_date&group_by=day|month. Cần đăng nhập + một trong các quyền: `report.view_all`, `report.revenue`. Branch scope: user gắn 1 cơ sở chỉ thấy dữ liệu cơ sở đó. Query parameters: `from_date`, `to_date`, `branch_id`, `group_by`, `customer_profile_id`, `staff_id`.
+ * **RP-01** — GET /reports/revenue/admin?branch_id&from_date&to_date&group_by=day|month. Cần đăng nhập + một trong các quyền: `report.view_all`, `report.revenue`. Branch scope: user gắn 1 cơ sở chỉ thấy dữ liệu cơ sở đó. Query parameters: `from_date`, `to_date`, `branch_id`, `group_by`, `user_id`, `staff_id`.
  * @summary View revenue report
  */
 export const getReportsRevenueAdmin = (
@@ -830,7 +830,7 @@ export const prefetchGetReportsNewCustomersAdminQuery = async <TData = Awaited<R
 
 
 /**
- * **RP-02** — GET /reports/debts/admin?branch_id&customer_profile_id. Cần đăng nhập + một trong các quyền: `report.view_all`, `report.debt`. Branch scope: user gắn 1 cơ sở chỉ thấy dữ liệu cơ sở đó. Query parameters: `branch_id`, `customer_profile_id`.
+ * **RP-02** — GET /reports/debts/admin?branch_id&user_id. Cần đăng nhập + một trong các quyền: `report.view_all`, `report.debt`. Branch scope: user gắn 1 cơ sở chỉ thấy dữ liệu cơ sở đó. Query parameters: `branch_id`, `user_id`.
  * @summary View debt report
  */
 export const getReportsDebtsAdmin = (

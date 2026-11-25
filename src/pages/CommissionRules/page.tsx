@@ -14,7 +14,7 @@ import { errorMessage, pickData } from '@/api/helpers'
 import { getGetCommissionRulesAdminQueryKey, useDeleteCommissionRulesIdAdmin, useGetCommissionRulesAdmin, usePostCommissionRulesAdmin, usePutCommissionRulesIdAdmin } from '@/api/endpoints/commissions'
 import { useGetBranchesAdmin } from '@/api/endpoints/branches'
 import { useGetUsersAdmin } from '@/api/endpoints/users'
-import { useGetCustomersAdmin } from '@/api/endpoints/customers'
+import { useGetUsersCustomersAdmin } from '@/api/endpoints/customers'
 import type { Branch, CommissionRule, User } from '@/api/models'
 import CommissionRuleModal, { type RateType } from './components/CommissionRuleModal'
 import { PAYEE_META, ruleTypeMeta } from './components/constants'
@@ -47,14 +47,14 @@ export default function CommissionRulesPanel() {
     { query: { enabled: !!selectedBranchId } },
   )
   const usersQuery = useGetUsersAdmin({ currentPage: 1, pageSize: 200, has_role: true })
-  const customersQuery = useGetCustomersAdmin({ currentPage: 1, pageSize: 500 })
+  const customersQuery = useGetUsersCustomersAdmin({ page: 1, limit: 500 } as never)
   const rules = useMemo(() => {
     const raw = pickData<CommissionRule[]>(rulesQuery.data)
     return Array.isArray(raw) ? raw : []
   }, [rulesQuery.data])
   const users = (pickData<{ rows?: User[] } | undefined>(usersQuery.data)?.rows ?? []) as (User & UserWithRoleAssignments)[]
   const technicians = useMemo(() => users.filter(isTechnicianUser), [users])
-  const customers = (pickData<{ rows?: User[] } | undefined>(customersQuery.data)?.rows ?? []) as (User & UserWithRoleAssignments)[]
+  const customers = ((pickData<User[]>(customersQuery.data) ?? []) as User[]) as (User & UserWithRoleAssignments)[]
 
   const invalidate = async () => {
     await queryClient.invalidateQueries({ queryKey: getGetCommissionRulesAdminQueryKey() })
@@ -72,7 +72,6 @@ export default function CommissionRulesPanel() {
       rate_type: 'PERCENT' as RateType,
       percent: 10,
       fixed_amount: undefined,
-      service_id: undefined,
       staff_id: undefined,
       is_active: true,
     })
@@ -87,7 +86,6 @@ export default function CommissionRulesPanel() {
       rate_type: (row.fixed_amount != null ? 'AMOUNT' : 'PERCENT') as RateType,
       percent: row.fixed_amount != null ? undefined : row.percent ?? undefined,
       fixed_amount: row.fixed_amount ?? undefined,
-      service_id: row.service_id ?? undefined,
       staff_id: row.staff_id ?? undefined,
       is_active: row.is_active ?? true,
     })
@@ -104,7 +102,6 @@ export default function CommissionRulesPanel() {
           name: values.name.trim(),
           percent: rateType === 'PERCENT' ? values.percent ?? null : null,
           fixed_amount: rateType === 'AMOUNT' ? values.fixed_amount ?? null : null,
-          service_id: values.service_id || null,
           staff_id: values.staff_id || null,
           is_active: !!values.is_active,
         }
@@ -118,7 +115,6 @@ export default function CommissionRulesPanel() {
             branch_id: selectedBranchId!,
             percent: rateType === 'PERCENT' ? values.percent ?? null : null,
             fixed_amount: rateType === 'AMOUNT' ? values.fixed_amount ?? null : null,
-            service_id: values.service_id || null,
             staff_id: values.staff_id || null,
             is_active: !!values.is_active,
           } as never,

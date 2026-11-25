@@ -6,11 +6,10 @@ import { APPLIES_TO_OPTIONS, AUDIENCE_META } from './constants'
 
 interface DiscountDetailModalProps {
   ruleId?: string
-  services: { id: string; title: string }[]
   onClose: () => void
 }
 
-export default function DiscountDetailModal({ ruleId, services, onClose }: DiscountDetailModalProps) {
+export default function DiscountDetailModal({ ruleId, onClose }: DiscountDetailModalProps) {
   const detailQuery = useGetDiscountRulesIdAdmin(ruleId ?? '', {
     query: { enabled: !!ruleId, retry: false },
   })
@@ -51,13 +50,6 @@ export default function DiscountDetailModal({ ruleId, services, onClose }: Disco
           <Descriptions.Item label="Mức giảm">
             {(detailRule.percent_min ?? 0)}–{(detailRule.percent_max ?? 0)}%
           </Descriptions.Item>
-          {detailRule.applies_to === 'SERVICE' && (
-            <Descriptions.Item label="Dịch vụ áp dụng" span={2}>
-              {(detailRule.service_ids ?? []).length
-                ? (detailRule.service_ids ?? []).map((id) => services.find((service) => service.id === id)?.title ?? id).join(', ')
-                : 'Chưa gắn dịch vụ'}
-            </Descriptions.Item>
-          )}
           <Descriptions.Item label="Trần giảm tổng">
             {detailRule.max_total_percent != null ? `${detailRule.max_total_percent}%` : 'Mặc định 50%'}
           </Descriptions.Item>

@@ -39,7 +39,7 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * GET `/skin-types/admin` — skin types. Cần đăng nhập + `customer_profile.view_all`.
+ * GET `/skin-types/admin` — skin types. Cần đăng nhập + `CUSTOMER:view_all`.
  * @summary Get list of skin types (management)
  */
 export const getSkinTypesAdmin = (

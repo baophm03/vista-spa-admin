@@ -167,7 +167,7 @@ function CustomerFieldsConfig({ entity, sectionTitle }: {
       sort_order: values.sort_order ?? 0,
       required: values.required ?? false,
       ...(editing ? { is_active: values.is_active !== false } : {}),
-      ...(entity === 'CUSTOMER_PROFILE' ? { visible_to_customer: values.visible_to_customer ?? false } : {}),
+      ...(entity === 'CUSTOMER' ? { visible_to_customer: values.visible_to_customer ?? false } : {}),
     }
     setSaving(true)
     try {
@@ -204,7 +204,7 @@ function CustomerFieldsConfig({ entity, sectionTitle }: {
     }
   }
 
-  const helperText = entity === 'CUSTOMER_PROFILE'
+  const helperText = entity === 'CUSTOMER'
     ? 'Trường sẽ xuất hiện trong biểu mẫu hồ sơ khách. Trường bị ẩn không nhận dữ liệu mới; giá trị đã lưu vẫn được giữ.'
     : entity === 'SERVICE'
       ? 'Trường bổ sung sẽ xuất hiện trong biểu mẫu thêm/sửa dịch vụ. Các trường cơ bản đã được cấu hình sẵn ở mục Dịch vụ.'
@@ -216,7 +216,7 @@ function CustomerFieldsConfig({ entity, sectionTitle }: {
     { title: 'Kiểu dữ liệu', dataIndex: 'data_type' },
     { title: 'Nguồn lựa chọn', render: (_: unknown, row: CustomFieldDef) => row.lookup_list_id ? `Danh mục: ${lookupLists.find((list) => list.id === row.lookup_list_id)?.key ?? row.lookup_list_id}` : (row.data_type === 'select' || row.data_type === 'multiselect') ? 'Nhập tay' : '—' },
     { title: 'Bắt buộc', dataIndex: 'required', render: (value: boolean) => value ? <Tag color="blue">Có</Tag> : 'Không' },
-    ...(entity === 'CUSTOMER_PROFILE' ? [{ title: 'Hiển thị với khách', dataIndex: 'visible_to_customer', render: (value: boolean) => value ? 'Có' : 'Không' }] : []),
+    ...(entity === 'CUSTOMER' ? [{ title: 'Hiển thị với khách', dataIndex: 'visible_to_customer', render: (value: boolean) => value ? 'Có' : 'Không' }] : []),
     { title: 'Trạng thái', dataIndex: 'is_active', render: (value: boolean) => <Tag color={value === false ? 'default' : 'green'}>{value === false ? 'Đã ẩn' : 'Đang dùng'}</Tag> },
     {
       title: 'Thao tác', key: 'actions', align: 'center' as const, width: 90,
@@ -389,9 +389,9 @@ function HealthMetricsConfig() {
 }
 
 export default function CustomerDataConfig() {
-  const [selectedSection, setSelectedSection] = useState<CustomFieldDefEntity | 'HEALTH_METRICS'>('CUSTOMER_PROFILE')
+  const [selectedSection, setSelectedSection] = useState<CustomFieldDefEntity | 'HEALTH_METRICS'>('CUSTOMER')
   const sectionOptions = [
-    { value: 'CUSTOMER_PROFILE', label: 'Hồ sơ khách' },
+    { value: 'CUSTOMER', label: 'Hồ sơ khách' },
     { value: 'SESSION', label: 'Buổi điều trị' },
     { value: 'SERVICE', label: 'Dịch vụ' },
     { value: 'PACKAGE', label: 'Gói dịch vụ' },

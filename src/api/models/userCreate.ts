@@ -11,7 +11,7 @@
  */
 export interface UserCreate {
   email: string;
-  phone_number: string;
+  phone: string;
   /** @minLength 8 */
   password: string;
   full_name?: string;

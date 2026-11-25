@@ -6,9 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { TreatmentSessionCustomerTreatmentId } from './treatmentSessionCustomerTreatmentId';
-import type { TreatmentSessionAppointmentId } from './treatmentSessionAppointmentId';
 import type { TreatmentSessionStaffId } from './treatmentSessionStaffId';
-import type { TreatmentSessionServiceId } from './treatmentSessionServiceId';
 import type { TreatmentSessionStatus } from './treatmentSessionStatus';
 import type { TreatmentSessionScheduledAt } from './treatmentSessionScheduledAt';
 import type { TreatmentSessionStartedAt } from './treatmentSessionStartedAt';
@@ -27,10 +25,8 @@ import type { TreatmentSessionCustomFields } from './treatmentSessionCustomField
 export interface TreatmentSession {
   id: string;
   customer_treatment_id: TreatmentSessionCustomerTreatmentId;
-  appointment_id?: TreatmentSessionAppointmentId;
   branch_id: string;
   staff_id?: TreatmentSessionStaffId;
-  service_id?: TreatmentSessionServiceId;
   /** @minimum 1 */
   session_no: number;
   status?: TreatmentSessionStatus;

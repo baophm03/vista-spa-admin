@@ -7,7 +7,7 @@
  */
 import type { AccessLogBranchId } from './accessLogBranchId';
 import type { AccessLogUserName } from './accessLogUserName';
-import type { AccessLogCustomerProfileId } from './accessLogCustomerProfileId';
+import type { AccessLogCustomerId } from './accessLogCustomerId';
 import type { AccessLogCustomerName } from './accessLogCustomerName';
 import type { AccessLogCustomerCode } from './accessLogCustomerCode';
 import type { AccessLogAction } from './accessLogAction';
@@ -22,7 +22,7 @@ export interface AccessLog {
   /** Branch of the employee who performed the action */
   branch_id?: AccessLogBranchId;
   user_name?: AccessLogUserName;
-  customer_profile_id?: AccessLogCustomerProfileId;
+  customer_id?: AccessLogCustomerId;
   customer_name?: AccessLogCustomerName;
   customer_code?: AccessLogCustomerCode;
   action: AccessLogAction;

@@ -5,7 +5,7 @@
 export type VoucherCategory = 'treatment-package' | 'academy-course' | 'product'
 
 export const MOBILE_TAB_LABELS: Record<VoucherCategory, string> = {
-  'treatment-package': 'Gói liệu trình',
+  'treatment-package': 'Liệu trình & DV lẻ',
   'academy-course': 'Khóa học',
   product: 'Sản phẩm',
 }
@@ -52,7 +52,6 @@ export type VoucherCustomerStatus = 'ACTIVE' | 'USED' | 'REVOKED'
 /** Một voucher khách hàng đang có: tự động theo hạng hoặc được gán tay. */
 export interface VoucherCustomerRow {
   assignment_id?: string | null
-  customer_profile_id?: string | null
   user_id?: string | null
   user_name?: string | null
   user_phone?: string | null
@@ -74,7 +73,6 @@ export interface VoucherCustomerRow {
 
 export interface VoucherCustomerAssignment {
   voucher_id: string
-  customer_profile_id?: string
   user_id?: string
   /** Cơ sở admin chọn khi gán — hiển thị ở cột "Cơ sở". */
   branch_id?: string
@@ -82,7 +80,8 @@ export interface VoucherCustomerAssignment {
 }
 
 export const CATEGORY_META: Record<VoucherCategory, { label: string; targetField: keyof VoucherCategoryRow; targetLabel: string }> = {
-  'treatment-package': { label: 'Voucher gói liệu trình', targetField: 'treatment_package_id', targetLabel: 'Gói liệu trình áp dụng' },
+  // Dùng chung cho gói liệu trình và dịch vụ lẻ (gói SINGLE_SESSION) — cùng bảng treatment_package
+  'treatment-package': { label: 'Voucher liệu trình & dịch vụ lẻ', targetField: 'treatment_package_id', targetLabel: 'Gói liệu trình / dịch vụ lẻ áp dụng' },
   'academy-course': { label: 'Voucher khóa học', targetField: 'academy_course_id', targetLabel: 'Khóa học áp dụng' },
   product: { label: 'Voucher sản phẩm', targetField: 'product_id', targetLabel: 'Phạm vi sản phẩm' },
 }

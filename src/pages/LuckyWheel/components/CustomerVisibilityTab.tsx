@@ -7,13 +7,13 @@ import { useAbility } from '@casl/react'
 import ListPagination from '@/components/base/ListPagination'
 import ResponsiveTable from '@/components/base/ResponsiveTable'
 import { getGetConfigQueryKey } from '@/api/endpoints/config'
-import { getCustomerProfilesAdmin, useGetCustomerProfilesAdmin } from '@/api/endpoints/customer-profiles'
+import { getUsersCustomersAdmin, useGetUsersCustomersAdmin } from '@/api/endpoints/customers'
 import { postNotificationsAdmin } from '@/api/endpoints/notifications'
 import { useGetLuckyWheelsIdEligibleCustomersAdmin } from '@/api/endpoints/lucky-wheels'
 import { getGetSettingsAdminQueryKey, putSettingsAdmin, useGetSettingsAdmin } from '@/api/endpoints/settings'
 import { errorMessage, pickData, pickMeta } from '@/api/helpers'
-import type { CustomerProfile } from '@/api/models/customerProfile'
-import type { GetCustomerProfilesAdminParams } from '@/api/models/getCustomerProfilesAdminParams'
+import type { Customer } from '@/api/models/customer'
+import type { GetUsersCustomersAdminParams } from '@/api/models/getUsersCustomersAdminParams'
 import type { Notification } from '@/api/models/notification'
 import type { LuckyWheel } from '@/api/models/luckyWheel'
 import type { GetLuckyWheelsIdEligibleCustomersAdmin200AllOfResponseDataItem } from '@/api/models/getLuckyWheelsIdEligibleCustomersAdmin200AllOfResponseDataItem'
@@ -26,7 +26,7 @@ const CUSTOMER_PAGE_SIZE = 10
 const NOTIFICATION_RECIPIENTS_PAGE_SIZE = 200
 
 interface WheelCustomerOverride {
-  customer_profile_id: string
+  user_id: string
   enabled: boolean
 }
 
@@ -49,19 +49,19 @@ type WheelNotificationTarget =
   | { type: 'all' }
   | { type: 'customer'; customerProfileId: string; userId?: string | null; email?: string | null; customerName: string }
 
-async function getAllCustomerProfiles(): Promise<CustomerProfile[]> {
-  const firstPage = await getCustomerProfilesAdmin({ page: 1, limit: NOTIFICATION_RECIPIENTS_PAGE_SIZE })
-  const firstRows = pickData<CustomerProfile[]>(firstPage) ?? []
+async function getAllUsersCustomers(): Promise<Customer[]> {
+  const firstPage = await getUsersCustomersAdmin({ page: 1, limit: NOTIFICATION_RECIPIENTS_PAGE_SIZE })
+  const firstRows = pickData<Customer[]>(firstPage) ?? []
   const total = pickMeta(firstPage)?.total ?? firstRows.length
   const pageCount = Math.ceil(total / NOTIFICATION_RECIPIENTS_PAGE_SIZE)
   if (pageCount <= 1) return firstRows
 
   const remainingPages = await Promise.all(Array.from({ length: pageCount - 1 }, (_, index) =>
-    getCustomerProfilesAdmin({ page: index + 2, limit: NOTIFICATION_RECIPIENTS_PAGE_SIZE }),
+    getUsersCustomersAdmin({ page: index + 2, limit: NOTIFICATION_RECIPIENTS_PAGE_SIZE }),
   ))
   return [
     ...firstRows,
-    ...remainingPages.flatMap((page) => pickData<CustomerProfile[]>(page) ?? []),
+    ...remainingPages.flatMap((page) => pickData<Customer[]>(page) ?? []),
   ]
 }
 
@@ -71,7 +71,7 @@ interface Props {
   wheelsLoading?: boolean
 }
 
-type CustomerRow = Pick<CustomerProfile, 'id' | 'user_id' | 'full_name' | 'customer_code' | 'phone' | 'email'>
+type CustomerRow = Pick<Customer, 'id' | 'user_id' | 'full_name' | 'customer_code' | 'phone' | 'email'>
 type WheelEligibleCustomer = GetLuckyWheelsIdEligibleCustomersAdmin200AllOfResponseDataItem & { user_id?: string | null; email?: string | null }
 
 export default function CustomerVisibilityTab({ canEdit, wheels, wheelsLoading = false }: Props) {
@@ -97,29 +97,29 @@ export default function CustomerVisibilityTab({ canEdit, wheels, wheelsLoading =
   const overrides: WheelCustomerOverride[] = Array.isArray(overrideValue)
     ? overrideValue.filter((item): item is WheelCustomerOverride =>
         Boolean(item && typeof item === 'object'
-          && typeof (item as WheelCustomerOverride).customer_profile_id === 'string'
+          && typeof (item as WheelCustomerOverride).user_id === 'string'
           && typeof (item as WheelCustomerOverride).enabled === 'boolean'),
       )
     : []
 
-  const customerParams: GetCustomerProfilesAdminParams = {
+  const customerParams: GetUsersCustomersAdminParams = {
     page: customerPage,
     limit: CUSTOMER_PAGE_SIZE,
     ...(appliedSearch ? { q: appliedSearch } : {}),
   }
-  const customerQuery = useGetCustomerProfilesAdmin(customerParams)
+  const customerQuery = useGetUsersCustomersAdmin(customerParams)
   const eligibleCustomerParams = { search: appliedSearch || undefined, limit: 200 }
   const eligibleCustomerQuery = useGetLuckyWheelsIdEligibleCustomersAdmin(
     selectedWheelId ?? '',
     eligibleCustomerParams as never,
     { query: { enabled: Boolean(selectedWheelId) } },
   )
-  const profileRows = pickData<CustomerProfile[]>(customerQuery.data) ?? []
+  const profileRows = pickData<Customer[]>(customerQuery.data) ?? []
   const eligibleWheelRows = (eligibleCustomerQuery.data?.responseData ?? []) as WheelEligibleCustomer[]
   const eligibleCustomerRows: CustomerRow[] = eligibleWheelRows
-    .filter((customer) => Boolean(customer.customer_profile_id))
+    .filter((customer) => Boolean(customer.user_id))
     .map((customer) => ({
-      id: customer.customer_profile_id!,
+      id: customer.user_id!,
       user_id: customer.user_id ?? null,
       full_name: customer.full_name ?? '',
       customer_code: customer.customer_code ?? '',
@@ -138,14 +138,14 @@ export default function CustomerVisibilityTab({ canEdit, wheels, wheelsLoading =
   const customerError = selectedWheelId ? eligibleCustomerQuery.error : customerQuery.error
   const notificationCustomersQuery = useQuery({
     queryKey: ['lucky-wheel-notification-recipients'],
-    queryFn: getAllCustomerProfiles,
+    queryFn: getAllUsersCustomers,
     enabled: notificationOpen && notificationTarget.type === 'all',
   })
-  const notificationCustomers = pickData<CustomerProfile[]>(notificationCustomersQuery.data) ?? []
+  const notificationCustomers = pickData<Customer[]>(notificationCustomersQuery.data) ?? []
   const getNotificationRecipients = (channel: 'app' | 'email') => {
     if (!moduleEnabled) return []
     if (notificationTarget.type === 'customer') {
-      const override = overrides.find((item) => item.customer_profile_id === notificationTarget.customerProfileId)
+      const override = overrides.find((item) => item.user_id === notificationTarget.customerProfileId)
       const enabled = override?.enabled ?? defaultEnabled
       if (!enabled) return []
       if (channel === 'app') return notificationTarget.userId ? [{ userId: notificationTarget.userId }] : []
@@ -155,7 +155,7 @@ export default function CustomerVisibilityTab({ canEdit, wheels, wheelsLoading =
     }
 
     const activeCustomers = notificationCustomers.filter((customer) => {
-      const override = overrides.find((item) => item.customer_profile_id === customer.id)
+      const override = overrides.find((item) => item.user_id === customer.id)
       return override?.enabled ?? defaultEnabled
     })
     if (channel === 'app') {
@@ -192,7 +192,7 @@ export default function CustomerVisibilityTab({ canEdit, wheels, wheelsLoading =
           title,
           body,
           user_id: userId ?? null,
-          ...(channel === 'email' && customerProfileId ? { customer_profile_id: customerProfileId } : {}),
+          ...(channel === 'email' && customerProfileId ? { user_id: customerProfileId } : {}),
         } as unknown as Notification)))
         sent += results.filter((result) => result.status === 'fulfilled').length
         failed += results.filter((result) => result.status === 'rejected').length
@@ -209,8 +209,8 @@ export default function CustomerVisibilityTab({ canEdit, wheels, wheelsLoading =
   }
 
   const changeCustomerAccess = (customerId: string, enabled: boolean) => {
-    const nextOverrides = overrides.filter((item) => item.customer_profile_id !== customerId)
-    if (enabled !== defaultEnabled) nextOverrides.push({ customer_profile_id: customerId, enabled })
+    const nextOverrides = overrides.filter((item) => item.user_id !== customerId)
+    if (enabled !== defaultEnabled) nextOverrides.push({ user_id: customerId, enabled })
     saveOverrides(nextOverrides, enabled ? 'Đã bật vòng quay cho khách hàng' : 'Đã tắt vòng quay cho khách hàng')
   }
 
@@ -423,7 +423,7 @@ export default function CustomerVisibilityTab({ canEdit, wheels, wheelsLoading =
                       key: 'access',
                       width: 180,
                       render: (_, customer) => {
-                        const override = overrides.find((item) => item.customer_profile_id === customer.id)
+                        const override = overrides.find((item) => item.user_id === customer.id)
                         const enabled = override?.enabled ?? defaultEnabled
                         return <Tag color={enabled ? 'green' : 'default'}>{enabled ? 'Được phép' : 'Đã tắt'}</Tag>
                       },
@@ -433,7 +433,7 @@ export default function CustomerVisibilityTab({ canEdit, wheels, wheelsLoading =
                       key: 'toggle',
                       width: 130,
                       render: (_, customer) => {
-                        const enabled = overrides.find((item) => item.customer_profile_id === customer.id)?.enabled ?? defaultEnabled
+                        const enabled = overrides.find((item) => item.user_id === customer.id)?.enabled ?? defaultEnabled
                         return (
                           <Switch
                             checked={enabled}
@@ -451,7 +451,7 @@ export default function CustomerVisibilityTab({ canEdit, wheels, wheelsLoading =
                       width: 170,
                       align: 'center' as const,
                       render: (_, customer) => {
-                        const enabled = overrides.find((item) => item.customer_profile_id === customer.id)?.enabled ?? defaultEnabled
+                        const enabled = overrides.find((item) => item.user_id === customer.id)?.enabled ?? defaultEnabled
                         const hasRecipient = Boolean(customer.user_id || customer.email)
                         const canNotifyCustomer = moduleEnabled && enabled && hasRecipient && canSendNotifications
                         const disabledReason = !canSendNotifications
@@ -541,7 +541,7 @@ export default function CustomerVisibilityTab({ canEdit, wheels, wheelsLoading =
                       disabled: notificationTarget.type === 'customer'
                         ? !notificationTarget.userId
                         : !notificationCustomers.some((customer) => {
-                            const override = overrides.find((item) => item.customer_profile_id === customer.id)
+                            const override = overrides.find((item) => item.user_id === customer.id)
                             return Boolean(customer.user_id) && (override?.enabled ?? defaultEnabled)
                           }),
                     },
@@ -551,7 +551,7 @@ export default function CustomerVisibilityTab({ canEdit, wheels, wheelsLoading =
                       disabled: notificationTarget.type === 'customer'
                         ? !notificationTarget.email && !notificationTarget.userId
                         : !notificationCustomers.some((customer) => {
-                            const override = overrides.find((item) => item.customer_profile_id === customer.id)
+                            const override = overrides.find((item) => item.user_id === customer.id)
                             return Boolean(customer.email || customer.user_id) && (override?.enabled ?? defaultEnabled)
                           }),
                     },

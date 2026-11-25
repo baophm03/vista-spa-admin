@@ -14,7 +14,7 @@ import { normalizeCustomFieldValues } from '@/components/CustomFieldFormItems'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { CustomerTreatment } from '@/api/models/customerTreatment'
 import type { TreatmentPackage } from '@/api/models/treatmentPackage'
-import { getCustomerProfilesAdmin, useGetCustomerProfilesAdmin, useGetCustomerProfilesIdPointsAdmin } from '@/api/endpoints/customer-profiles'
+import { getUsersCustomersAdmin, useGetUsersCustomersAdmin, useGetUsersCustomersIdPointsAdmin } from '@/api/endpoints/customers'
 import { getTreatmentPackageVoucherCustomersAdmin } from '@/api/endpoints/treatment-package-voucher-customers'
 import { getTreatmentPackageVouchersAdmin } from '@/api/endpoints/treatment-package-vouchers'
 import { apiClient } from '@/api/mutator/custom-instance'
@@ -28,7 +28,7 @@ async function useVoucherCustomer(_category: 'treatment-package', assignmentId: 
 }
 import { usePostTreatmentCustomersIdManualDiscountAdmin } from '@/api/endpoints/discounts'
 import { usePostTreatmentCustomersIdRedeemPointsAdmin } from '@/api/endpoints/treatment-customers'
-import { getTreatmentCustomersIdAvailableSlotsAdmin, getTreatmentCustomersIdPaymentsAdmin, getTreatmentCustomersIdAdmin, getGetTreatmentCustomersAdminQueryKey, useGetTreatmentCustomersAdmin, usePostTreatmentCustomersAdmin, usePostTreatmentCustomersIdConvertAdmin, usePostTreatmentCustomersIdPaymentsAdmin, usePutTreatmentCustomersIdAdmin, usePutTreatmentCustomersIdCancelAdmin } from '@/api/endpoints/treatment-customers'
+import { getTreatmentCustomersIdAvailableSlotsAdmin, getTreatmentCustomersIdPaymentsAdmin, getTreatmentCustomersIdAdmin, getGetTreatmentCustomersAdminQueryKey, useGetTreatmentCustomersAdmin, usePostTreatmentCustomersAdmin, usePostTreatmentCustomersIdPaymentsAdmin, usePutTreatmentCustomersIdAdmin, usePutTreatmentCustomersIdCancelAdmin } from '@/api/endpoints/treatment-customers'
 import { postTreatmentCustomersIdSessionsAdmin } from '@/api/endpoints/treatment-sessions'
 import { useGetTreatmentPackagesAdmin } from '@/api/endpoints/treatment-packages'
 import { useGetLookupListsAdmin } from '@/api/endpoints/lookup-lists'
@@ -42,7 +42,6 @@ import TreatmentCreateModal from './components/TreatmentCreateModal'
 import TreatmentAddSessionModal from './components/TreatmentAddSessionModal'
 import TreatmentPaymentModal, { type PromoTab } from './components/TreatmentPaymentModal'
 import TreatmentDetailModal from './components/TreatmentDetailModal'
-import TreatmentConvertModal from './components/TreatmentConvertModal'
 import TreatmentEditModal from './components/TreatmentEditModal'
 import {
   FILTERS,
@@ -59,16 +58,16 @@ import {
   type Slot,
 } from './components/constants'
 import type { Branch } from '@/api/models'
-import type { Service } from '@/api/models/service'
 import { useGetBranchesAdmin } from '@/api/endpoints/branches'
-import { useGetServiceAdmin } from '@/api/endpoints/services'
 
-export default function TreatmentCustomers() {
+/** kind=PACKAGE: trang Liệu trình KH (3 loại gói) · kind=SINGLE: trang Dịch vụ lẻ KH (/standalone-service-customers) */
+export default function TreatmentCustomers({ kind = 'PACKAGE' }: { kind?: 'SINGLE' | 'PACKAGE' }) {
+  const isSingle = kind === 'SINGLE'
   const { format: formatMoney, symbol: currencySymbol } = useBrandCurrency()
   const queryClient = useQueryClient()
   const { isAdmin, isReceptionist } = useCustomerProfileAccess()
   const ability = useAbility()
-  const canUpdate = ability.can('UPDATE', 'CUSTOMER_PROFILE')
+  const canUpdate = ability.can('UPDATE', 'CUSTOMER')
   const canCreateSessions = ability.can('CREATE', 'TREATMENT_SESSION')
   const canReadPayments = ability.can('READ', 'PAYMENT')
   const canSeeDebtSummary = (!isReceptionist || isAdmin)
@@ -110,10 +109,6 @@ export default function TreatmentCustomers() {
   const [payTargetId, setPayTargetId] = useState<string | null>(null)
   const [payForm] = Form.useForm()
   // TA-02 — Đổi buổi tặng sang dịch vụ khác
-  const [convertOpen, setConvertOpen] = useState(false)
-  const [convertRow, setConvertRow] = useState<CustomerTreatment | null>(null)
-  const [convertForm] = Form.useForm()
-  const [convertSaving, setConvertSaving] = useState(false)
   // CT-04 — Sửa liệu trình khách (tiền/hạn/ghi chú/custom fields)
   const [editOpen, setEditOpen] = useState(false)
   const [editRow, setEditRow] = useState<CustomerTreatment | null>(null)
@@ -123,12 +118,13 @@ export default function TreatmentCustomers() {
   const [promoRow, setPromoRow] = useState<CustomerTreatment | null>(null)
   const [redeemForm] = Form.useForm()
   const [paymentLookupError, setPaymentLookupError] = useState('')
-const branchesQuery = useGetBranchesAdmin()
-const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as Branch[], [branchesQuery.data])
+  const branchesQuery = useGetBranchesAdmin()
+  const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as Branch[], [branchesQuery.data])
 
   const treatmentsQuery = useGetTreatmentCustomersAdmin({
     page,
     limit,
+    kind,
     ...(filter !== 'all' ? { status: filter } : {}),
     ...(pkgFilter ? { package_id: pkgFilter } : {}),
     ...(branchFilter ? { branch_id: branchFilter } : {}),
@@ -138,12 +134,10 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
   const total = (treatmentsQuery.data as unknown as { meta?: { total?: number } })?.meta?.total ?? rows.length
   const statsMeta = (treatmentsQuery.data as unknown as { meta?: { stats?: { total: number; ongoing: number; done: number; debt_sum: number } } })?.meta?.stats
 
-  const profilesQuery = useGetCustomerProfilesAdmin({ page: 1, limit: 200 })
+  const profilesQuery = useGetUsersCustomersAdmin({ page: 1, limit: 200 })
   const profiles = (pickData<ProfileRow[] | undefined>(profilesQuery.data) ?? []) as ProfileRow[]
-  const packagesQuery = useGetTreatmentPackagesAdmin({ page: 1, limit: 200, is_active: true })
+  const packagesQuery = useGetTreatmentPackagesAdmin({ page: 1, limit: 200, is_active: true, kind })
   const packages = (pickData<TreatmentPackage[] | undefined>(packagesQuery.data) ?? []) as TreatmentPackage[]
-  const servicesQuery = useGetServiceAdmin({ page: 1, limit: 200 })
-  const services = (pickData<{ services?: Service[] } | undefined>(servicesQuery.data)?.services ?? []) as Service[]
   const selectedSalePackageId = Form.useWatch('package_id', createForm)
   const selectedSalePackage = packages.find((pkg) => pkg.id === selectedSalePackageId)
   const staffsQuery = useGetUsersAdmin({ currentPage: 1, pageSize: 200, has_role: true })
@@ -176,42 +170,11 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
   const createInFlightRef = useRef(false)
   const createPaymentMutation = usePostTreatmentCustomersIdPaymentsAdmin()
   const cancelMutation = usePutTreatmentCustomersIdCancelAdmin()
-  const convertMutation = usePostTreatmentCustomersIdConvertAdmin()
   const editMutation = usePutTreatmentCustomersIdAdmin()
 
   const refresh = useCallback(() => {
     void queryClient.invalidateQueries({ queryKey: getGetTreatmentCustomersAdminQueryKey() })
   }, [queryClient])
-
-  // TA-02 — Đổi buổi tặng: gói mới cho khách có giá 0₫, buổi chuyển thành buổi MUA của gói mới (không qua modal create nên không dính bonus_sessions_default)
-  const openConvert = (row: CustomerTreatment) => {
-    setConvertRow(row)
-    convertForm.resetFields()
-    setConvertOpen(true)
-  }
-
-  const submitConvert = async () => {
-    if (!convertRow) return
-    const values = await convertForm.validateFields()
-    setConvertSaving(true)
-    try {
-      await convertMutation.mutateAsync({
-        id: convertRow.id,
-        data: {
-          service_id: String(values.service_id),
-          from_sessions: Number(values.from_sessions),
-          reason: String(values.reason).trim(),
-        },
-      })
-      message.success(`Đã chuyển ${Number(values.from_sessions)} buổi tặng sang dịch vụ mới`)
-      setConvertOpen(false)
-      refresh()
-    } catch (err) {
-      if (!(err as { errorFields?: unknown })?.errorFields) message.error(errorMessage(err))
-    } finally {
-      setConvertSaving(false)
-    }
-  }
 
   // CT-04 — Sửa liệu trình khách
   const openEdit = (row: CustomerTreatment) => {
@@ -248,12 +211,12 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
   const profileOf = (id: string) => profiles.find((p) => p.id === id)
   const profileName = (row: CustomerTreatment) =>
     displayName(
-      (row as CustomerTreatment & { customer_profile?: { full_name?: string; zalo_name?: string } }).customer_profile
-      ?? profileOf(row.customer_profile_id),
+      (row as CustomerTreatment & { user?: { full_name?: string; zalo_name?: string } }).user
+      ?? profileOf(row.user_id),
       'Khách hàng',
     )
   const profilePhone = (row: CustomerTreatment) =>
-    (row as CustomerTreatment & { customer_profile?: { phone?: string } }).customer_profile?.phone ?? profileOf(row.customer_profile_id)?.phone
+    (row as CustomerTreatment & { user?: { phone?: string } }).user?.phone ?? profileOf(row.user_id)?.phone
   const treatmentCode = (row: CustomerTreatment) => row.id.replace(/-/g, '').slice(0, 8).toUpperCase()
   const packageName = (row: CustomerTreatment) => {
     const snapshotName = (row.package_snapshot as Record<string, unknown> | undefined)?.name
@@ -290,7 +253,7 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
     setDetailMobileSection(mobileSection)
     setDetail(row)
     setDetailTab('sessions')
-    // Lấy chi tiết mới nhất — combo trả thêm services[] (quota còn lại theo từng dịch vụ)
+    // Lấy chi tiết mới nhất (kèm package_service từ snapshot)
     getTreatmentCustomersIdAdmin(row.id)
       .then((response) => {
         const fresh = pickData<CustomerTreatment>(response)
@@ -330,14 +293,14 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
   const fetchCustomerOptions = useCallback((q: string) => {
     if (custTimer.current) clearTimeout(custTimer.current)
     custTimer.current = setTimeout(() => {
-      getCustomerProfilesAdmin({ page: 1, limit: 50, ...(q ? { q } : {}) } as never)
+      getUsersCustomersAdmin({ page: 1, limit: 50, ...(q ? { q } : {}) } as never)
         .then((response) => setCustomerOptions((pickData<ProfileRow[] | undefined>(response) ?? []) as ProfileRow[]))
         .catch(() => undefined)
     }, 300)
   }, [])
 
   const openCreateModal = () => {
-    createForm.setFieldsValue({ customer_profile_id: undefined, package_id: undefined, total_amount: undefined, custom_fields: {} })
+    createForm.setFieldsValue({ user_id: undefined, package_id: undefined, total_amount: undefined, custom_fields: {} })
     setCreateOpen(true)
     fetchCustomerOptions('')
   }
@@ -364,12 +327,13 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
       const values = await createForm.validateFields()
       const dto = {
         ...values,
-        sessions_bonus: values.sessions_bonus != null ? Number(values.sessions_bonus) : undefined,
+        kind,
+        sessions_bonus: !isSingle && values.sessions_bonus != null ? Number(values.sessions_bonus) : undefined,
         expires_at: values.expires_at ? (values.expires_at as Dayjs).format('YYYY-MM-DD') : undefined,
         custom_fields: normalizeCustomFieldValues(customerTreatmentCustomFields, values.custom_fields ?? {}),
       }
       await createMutation.mutateAsync({ data: dto as never })
-      message.success('Đã thêm khách vào liệu trình')
+      message.success(isSingle ? 'Đã thêm khách dịch vụ lẻ' : 'Đã thêm khách vào liệu trình')
       setCreateOpen(false)
       refresh()
     } catch (err) {
@@ -379,9 +343,6 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
     }
   }
 
-  const [comboServices, setComboServices] = useState<CustomerTreatment['services']>()
-  const comboServiceSeq = useRef(0)
-
   const addSession = (row: CustomerTreatment) => {
     if (addingSessionId !== null) return
     addSessionForm.resetFields()
@@ -389,15 +350,6 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
     addSessionSlotSequence.current += 1
     setAddSessionSlots([])
     setAddSessionFor(row)
-    // Combo: lấy quota còn lại theo từng dịch vụ từ chi tiết liệu trình
-    const seq = ++comboServiceSeq.current
-    setComboServices(undefined)
-    getTreatmentCustomersIdAdmin(row.id)
-      .then((response) => {
-        const fresh = pickData<CustomerTreatment>(response)
-        if (seq === comboServiceSeq.current && fresh?.services?.length) setComboServices(fresh.services)
-      })
-      .catch(() => undefined)
   }
 
   const loadAddSessionSlots = useCallback(async (date: Dayjs) => {
@@ -447,7 +399,6 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
     setAddingSessionId(addSessionFor.id)
     try {
       await postTreatmentCustomersIdSessionsAdmin(addSessionFor.id, {
-        ...(values.service_id ? { service_id: String(values.service_id) } : {}),
         ...(scheduledDate && scheduledTime && staffId ? {
           scheduled_at: scheduledDate.hour(Number(scheduledTime.slice(0, 2))).minute(Number(scheduledTime.slice(3, 5))).second(0).millisecond(0).toISOString(),
           staff_id: staffId,
@@ -549,14 +500,14 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
 
   // ===== Ưu đãi & đổi điểm (DC-06/07/08, LY-02) — mở từ modal thanh toán =====
   const [promoTab, setPromoTab] = useState<PromoTab>('manual')
-  const promoCustomerProfileId = promoRow?.customer_profile_id
+  const promoCustomerProfileId = promoRow?.user_id
   // Voucher treatment-package khách đang giữ, khớp gói của lần thu này (nguồn: API của trang /voucher-customers)
   const [selectedVoucherId, setSelectedVoucherId] = useState<string | null>(null)
   const customerVouchersQuery = useQuery({
     queryKey: ['pay-customer-vouchers', promoCustomerProfileId, promoRow?.package_id],
     queryFn: async () => {
       const [view, defs] = await Promise.all([
-        getTreatmentPackageVoucherCustomersAdmin({ customer_profile_id: promoCustomerProfileId! } as never),
+        getTreatmentPackageVoucherCustomersAdmin({ user_id: promoCustomerProfileId! } as never),
         getTreatmentPackageVouchersAdmin(),
       ])
       const viewData = pickData<VoucherCustomerRow[] | { rows?: VoucherCustomerRow[] }>(view)
@@ -587,7 +538,7 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
   const customerVouchers = customerVouchersQuery.data ?? []
   const selectedVoucher = customerVouchers.find((voucher) => voucher.voucherId === selectedVoucherId) ?? null
   const redeemPointsMutation = usePostTreatmentCustomersIdRedeemPointsAdmin()
-  const promoPointsQuery = useGetCustomerProfilesIdPointsAdmin(promoCustomerProfileId ?? '', {
+  const promoPointsQuery = useGetUsersCustomersIdPointsAdmin(promoCustomerProfileId ?? '', {
     query: { enabled: payOpen && Boolean(promoCustomerProfileId) },
   })
   const promoPointsData = pickData<{
@@ -804,7 +755,7 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
       onClear={clearFilters}
       filterItems={(
         <>
-          <Form.Item name="package_id" label="Gói liệu trình" className="mb-2.5!">
+          <Form.Item name="package_id" label={isSingle ? 'Dịch vụ lẻ' : 'Gói liệu trình'} className="mb-2.5!">
             <Select
               allowClear
               showSearch
@@ -858,59 +809,59 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
       <MobileStatCards items={statItems} loading={treatmentsQuery.isLoading} />
 
       <PageTitle
-        subtitle="Khách hàng đang thực hiện liệu trình"
+        subtitle={isSingle ? 'Khách hàng đăng ký dịch vụ lẻ' : 'Khách hàng đang thực hiện dịch vụ'}
         left={
           !isMobile ? (
-          <>
-            <Input.Search
-              allowClear
-              placeholder="Tìm tên hoặc SĐT khách hàng"
-              className="w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]"
-              value={searchInput}
-              onChange={(event) => { setSearchInput(event.target.value); if (!event.target.value) applySearch('') }}
-              onSearch={(v) => applySearch(v)}
-            />
-            <Select
-              allowClear
-              showSearch
-              optionFilterProp="label"
-              placeholder="Tất cả liệu trình"
-              style={{ minWidth: 160 }}
-              value={pkgFilter}
-              onChange={(value) => { setPkgFilter(value); setPage(1) }}
-              options={packages.map((pkg) => ({ value: pkg.id, label: pkg.name }))}
-            />
-            <Select
-              placeholder="Trạng thái"
-              style={{ width: 150 }}
-              value={filter}
-              onChange={(value) => { setFilter(value); setPage(1) }}
-              options={FILTERS}
-            />
-            <Select
-              allowClear
-              showSearch
-              optionFilterProp="label"
-              placeholder="Tất cả cơ sở"
-              style={{ width: 160 }}
-              value={branchFilter}
-              onChange={(value) => { setBranchFilter(value); setPage(1) }}
-              options={branches.map((branch) => ({ value: branch.id, label: branch.name }))}
-            />
-          </>
+            <>
+              <Input.Search
+                allowClear
+                placeholder="Tìm tên hoặc SĐT khách hàng"
+                className="w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]"
+                value={searchInput}
+                onChange={(event) => { setSearchInput(event.target.value); if (!event.target.value) applySearch('') }}
+                onSearch={(v) => applySearch(v)}
+              />
+              <Select
+                allowClear
+                showSearch
+                optionFilterProp="label"
+                placeholder={isSingle ? 'Tất cả dịch vụ lẻ' : 'Tất cả liệu trình'}
+                style={{ minWidth: 160 }}
+                value={pkgFilter}
+                onChange={(value) => { setPkgFilter(value); setPage(1) }}
+                options={packages.map((pkg) => ({ value: pkg.id, label: pkg.name }))}
+              />
+              <Select
+                placeholder="Trạng thái"
+                style={{ width: 150 }}
+                value={filter}
+                onChange={(value) => { setFilter(value); setPage(1) }}
+                options={FILTERS}
+              />
+              <Select
+                allowClear
+                showSearch
+                optionFilterProp="label"
+                placeholder="Tất cả cơ sở"
+                style={{ width: 160 }}
+                value={branchFilter}
+                onChange={(value) => { setBranchFilter(value); setPage(1) }}
+                options={branches.map((branch) => ({ value: branch.id, label: branch.name }))}
+              />
+            </>
           ) : undefined
         }
         right={
           !isMobile ? (
-          <Can I="UPDATE" a="CUSTOMER_PROFILE">
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => openCreateModal()}>
-              Thêm khách vào liệu trình
-            </Button>
-          </Can>
+            <Can I="UPDATE" a="CUSTOMER">
+              <Button type="primary" icon={<PlusOutlined />} onClick={() => openCreateModal()}>
+                {isSingle ? 'Thêm khách dịch vụ lẻ' : 'Thêm khách vào liệu trình'}
+              </Button>
+            </Can>
           ) : undefined
         }
       >
-        Liệu trình khách hàng
+        {isSingle ? 'Dịch vụ lẻ khách hàng' : 'Liệu trình khách hàng'}
       </PageTitle>
       {/* Toolbar mobile gộp 1 hàng: search co giãn + nút lọc icon + nút thêm */}
       {isMobile && (
@@ -956,10 +907,10 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
             </button>,
           )}
           {/* Nút thêm chuyển từ header xuống cùng hàng công cụ trên mobile */}
-          <Can I="UPDATE" a="CUSTOMER_PROFILE">
+          <Can I="UPDATE" a="CUSTOMER">
             <button
               type="button"
-              aria-label="Thêm khách vào liệu trình"
+              aria-label={isSingle ? 'Thêm khách dịch vụ lẻ' : 'Thêm khách vào liệu trình'}
               style={{ ...mobilePillStyle, flex: '0 0 44px', background: 'var(--brand-primary)', borderColor: 'var(--brand-primary)', color: '#fff' }}
               onClick={() => openCreateModal()}
             >
@@ -978,7 +929,7 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
         onRow={(row) => ({ onClick: () => openDetail(row), style: { cursor: 'pointer' } })}
         columns={[
           {
-            title: 'Mã gói',
+            title: isSingle ? 'Mã' : 'Mã gói',
             key: 'package_code',
             width: 200,
             render: (_: unknown, row: CustomerTreatment) => (
@@ -1048,13 +999,13 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
               </div>
             ),
           },
-          {
+          ...(isSingle ? [] : [{
             title: 'Hạn sử dụng',
             key: 'expiry',
             width: 120,
             render: (_: unknown, row: CustomerTreatment) =>
               row.expires_at ? dayjs(row.expires_at).format('DD/MM/YYYY') : 'Không hạn',
-          },
+          }]),
           {
             title: 'Trạng thái',
             key: 'status',
@@ -1069,7 +1020,7 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
         rowKey={(row) => row.id}
         onCardClick={(row) => openDetail(row)}
         loading={treatmentsQuery.isLoading}
-        emptyText="Chưa có khách nào trong liệu trình"
+        emptyText={isSingle ? 'Chưa có khách dịch vụ lẻ' : 'Chưa có khách nào trong liệu trình'}
         renderCard={(row) => {
           const usage = row.quota_type === 'SESSIONS' ? sessionUsage(row) : null
           return (
@@ -1129,6 +1080,7 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
         onPackageChange={onCreatePackageChange}
         onCancel={() => setCreateOpen(false)}
         onOk={() => void submitCreate()}
+        isSingle={isSingle}
       />
 
       <TreatmentAddSessionModal
@@ -1144,7 +1096,6 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
         customFieldDefs={sessionCustomFields}
         quotaType={addSessionFor?.quota_type}
         remainingValue={addSessionFor ? Math.max(Number(addSessionFor.value_total || 0) - Number(addSessionFor.value_used || 0), 0) : undefined}
-        comboServices={comboServices ?? undefined}
         submitting={addingSessionId !== null}
         onCancel={() => setAddSessionFor(null)}
         onOk={() => void submitNewSession()}
@@ -1225,20 +1176,8 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
         refresh={refresh}
         refreshSelectedDetail={refreshSelectedDetail}
         onCancelTreatment={cancelTreatment}
-        onConvert={openConvert}
         onEdit={openEdit}
         onClose={() => setDetail(null)}
-      />
-
-      <TreatmentConvertModal
-        form={convertForm}
-        open={convertOpen}
-        row={convertRow}
-        services={services}
-        servicesLoading={servicesQuery.isLoading}
-        submitting={convertSaving}
-        onCancel={() => setConvertOpen(false)}
-        onOk={() => void submitConvert()}
       />
 
       <TreatmentEditModal

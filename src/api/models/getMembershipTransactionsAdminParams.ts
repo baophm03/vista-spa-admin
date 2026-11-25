@@ -10,7 +10,7 @@ import type { GetMembershipTransactionsAdminDirection } from './getMembershipTra
 export type GetMembershipTransactionsAdminParams = {
 page?: number;
 limit?: number;
-customer_profile_id?: string;
+user_id?: string;
 ref_type?: string;
 direction?: GetMembershipTransactionsAdminDirection;
 };

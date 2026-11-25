@@ -14,96 +14,72 @@ export interface PackageTypeRow {
 }
 
 export interface TreatmentPackageRow extends TreatmentPackage {
-  service_ids?: string[]
   package_type?: { id?: string; name?: string; code?: string } | null
   image_file_id?: string | null
   image_file?: { id?: string; path?: string; file_name?: string } | null
 }
 
-export type PackageColumnKey = 'name' | 'branch' | 'type' | 'quota' | 'services' | 'price' | 'validity' | 'bonus' | 'status'
-export type PackageFiltersForm = { package_type_id?: string; branch_id?: string; is_active?: 'true' | 'false' }
-
 /**
- * "Cách tính" — nhãn hiển thị theo quota_type (thuật ngữ mới, chỉ 3 giá trị):
- * - Theo số buổi: quota SESSIONS (1 buổi = dịch vụ lẻ, từ 2 buổi = gói theo buổi)
- * - Theo mức tiền: quota VALUE (mỗi buổi trừ vào định mức tiền)
- * - Trọn đời: quota UNLIMITED (vô hạn số buổi)
+ * 4 loại gói cố định — loại gói quyết định cách tính (BE tự suy ra quota_type, client không gửi):
+ * - VALUE_QUOTA       "Gói lẻ"     → theo số tiền (định mức = giá bán, mỗi buổi trừ giá trị buổi)
+ * - FIXED_PACKAGE     "Gói buổi"   → theo số buổi (nhập số buổi >= 1)
+ * - UNLIMITED_PACKAGE "Trọn đời"   → theo số buổi, không giới hạn
+ * - SINGLE_SESSION    "Dịch vụ lẻ" → cố định 1 buổi; chỉ quản lý / bán ở trang Dịch vụ lẻ (kind=SINGLE)
  */
-export const CALC_LABEL: Record<QuotaType, string> = {
-  SESSIONS: 'Theo số buổi',
-  VALUE: 'Theo mức tiền',
-  UNLIMITED: 'Trọn đời',
-}
-export const CALC_OPTIONS = Object.entries(CALC_LABEL).map(([value, label]) => ({ value, label }))
-
-/**
- * 4 loại gói cố định (migration 084/086) — không cho phép thêm loại mới trên UI:
- * - SINGLE_SESSION: dịch vụ lẻ, số buổi cố định 1
- * - FIXED_PACKAGE: theo số buổi, nhập số buổi mong muốn (>= 2)
- * - VALUE_QUOTA: theo định mức tiền, không giới hạn số buổi — mỗi buổi tham gia trừ giá trị buổi
- *   vào định mức, hết định mức gói kết thúc
- * - UNLIMITED_PACKAGE: trọn đời, không giới hạn số buổi
- */
-export const SINGLE_SESSION_TYPE_CODE = 'SINGLE_SESSION'
-export const COMBO_TYPE_CODE = 'COMBO'
-export const FIXED_PACKAGE_TYPE_CODE = 'FIXED_PACKAGE'
 export const VALUE_QUOTA_TYPE_CODE = 'VALUE_QUOTA'
+export const FIXED_PACKAGE_TYPE_CODE = 'FIXED_PACKAGE'
 export const UNLIMITED_PACKAGE_TYPE_CODE = 'UNLIMITED_PACKAGE'
-export const FIXED_PACKAGE_TYPE_CODES = [
-  SINGLE_SESSION_TYPE_CODE,
-  FIXED_PACKAGE_TYPE_CODE,
-  VALUE_QUOTA_TYPE_CODE,
-  UNLIMITED_PACKAGE_TYPE_CODE,
-]
-export const FIXED_PACKAGE_TYPE_LABEL: Record<string, string> = {
-  [SINGLE_SESSION_TYPE_CODE]: 'Dịch vụ lẻ',
-  [FIXED_PACKAGE_TYPE_CODE]: 'Theo số buổi',
-  [VALUE_QUOTA_TYPE_CODE]: 'Theo định mức tiền',
+export const SINGLE_SESSION_TYPE_CODE = 'SINGLE_SESSION'
+export const PACKAGE_TYPE_CODES = [VALUE_QUOTA_TYPE_CODE, FIXED_PACKAGE_TYPE_CODE, UNLIMITED_PACKAGE_TYPE_CODE]
+export const PACKAGE_TYPE_LABEL: Record<string, string> = {
+  [VALUE_QUOTA_TYPE_CODE]: 'Gói lẻ',
+  [FIXED_PACKAGE_TYPE_CODE]: 'Gói buổi',
   [UNLIMITED_PACKAGE_TYPE_CODE]: 'Trọn đời',
+  [SINGLE_SESSION_TYPE_CODE]: 'Dịch vụ lẻ',
+}
+export const PACKAGE_TYPE_QUOTA: Record<string, QuotaType> = {
+  [VALUE_QUOTA_TYPE_CODE]: 'VALUE',
+  [FIXED_PACKAGE_TYPE_CODE]: 'SESSIONS',
+  [UNLIMITED_PACKAGE_TYPE_CODE]: 'UNLIMITED',
+  [SINGLE_SESSION_TYPE_CODE]: 'SESSIONS',
+}
+export const PACKAGE_TYPE_HINT: Record<string, string> = {
+  [VALUE_QUOTA_TYPE_CODE]: 'Theo số tiền',
+  [FIXED_PACKAGE_TYPE_CODE]: 'Theo số buổi',
+  [UNLIMITED_PACKAGE_TYPE_CODE]: 'Không giới hạn buổi',
+  [SINGLE_SESSION_TYPE_CODE]: '1 buổi',
 }
 
-/**
- * 4 chế độ bán của gói liệu trình (nghiệp vụ mới):
- * - Dịch vụ lẻ: 1 gói = 1 dịch vụ, đúng 1 buổi (quota SESSIONS + total_sessions = 1)
- * - Theo buổi: 1 gói = 1 dịch vụ, nhiều buổi (quota SESSIONS + total_sessions >= 2)
- * - Theo giá tiền: mỗi buổi có giá, tổng giá các buổi không vượt định mức (quota VALUE)
- * - Unlimited: vô hạn số buổi (quota UNLIMITED)
- */
-export function saleModeLabel(row: Pick<TreatmentPackage, 'quota_type' | 'total_sessions'>): string {
-  if (row.quota_type === 'VALUE') return 'Theo mức tiền'
-  if (row.quota_type === 'UNLIMITED') return 'Trọn đời'
-  return Number(row.total_sessions) === 1 ? 'Dịch vụ lẻ' : 'Theo buổi'
+/** SINGLE = gói Dịch vụ lẻ (tạo ở /standalone-services, bán ở /standalone-service-customers) · PACKAGE = 3 loại gói liệu trình */
+export type PackageKind = 'SINGLE' | 'PACKAGE'
+
+export interface ServiceOption {
+  id: string
+  title: string
+  price?: number | null
+  branch_id?: string | null
+  is_active?: boolean
+  category_id?: string | null
+  service_category?: { id?: string; name?: string; sort_order?: number } | null
 }
 
-/** Nhãn "Cách tính" của gói: suy ra từ quota_type; gói dữ liệu cũ lạ loại thì fallback sang tên loại. */
-export function calcLabel(
+/** Nhãn loại gói của 1 gói: ưu tiên tên loại từ API, fallback nhãn cố định theo code / quota_type (dữ liệu cũ). */
+export function packageTypeLabel(
   row: Pick<TreatmentPackageRow, 'quota_type' | 'package_type_id'> & { package_type?: { name?: string; code?: string } | null },
   packageTypeById?: Map<string, PackageTypeRow>,
 ): string {
-  if (row.quota_type === 'SESSIONS' || row.quota_type === 'VALUE' || row.quota_type === 'UNLIMITED') {
-    return CALC_LABEL[row.quota_type]
-  }
   const type = row.package_type && typeof row.package_type === 'object'
     ? row.package_type
     : packageTypeById?.get(String(row.package_type_id))
-  return type?.name ?? type?.code ?? 'Chưa phân loại'
+  const code = String(type?.code ?? '').toUpperCase()
+  return PACKAGE_TYPE_LABEL[code] ?? type?.name ?? 'Chưa phân loại'
 }
+
 export const VALIDITY_LABEL: Record<ValidityUnit, string> = {
   DAY: 'ngày',
   WEEK: 'tuần',
   MONTH: 'tháng',
 }
-export const COLUMN_OPTIONS: { label: string; value: PackageColumnKey }[] = [
-  { label: 'Tên gói', value: 'name' },
-  { label: 'Cơ sở', value: 'branch' },
-  { label: 'Cách tính', value: 'type' },
-  { label: 'Dịch vụ', value: 'services' },
-  { label: 'Giá niêm yết', value: 'price' },
-  { label: 'Thời hạn', value: 'validity' },
-  { label: 'Buổi tặng', value: 'bonus' },
-  { label: 'Trạng thái', value: 'status' },
-]
-export const DEFAULT_COLUMNS: PackageColumnKey[] = ['name', 'branch', 'type', 'price', 'status']
 export const PACKAGE_STATUS_OPTIONS = [
   { value: 'true', label: 'Đang bán' },
   { value: 'false', label: 'Đã ẩn' },

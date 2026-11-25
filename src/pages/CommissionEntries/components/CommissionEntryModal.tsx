@@ -58,7 +58,7 @@ export default function CommissionEntryModal({
         value: user.id,
         label: [
           user.full_name || user.zalo_name || '—',
-          user.phone_number || user.email || '',
+          user.phone || user.email || '',
           user.ref_code || '',
         ]
           .filter(Boolean)
@@ -78,7 +78,7 @@ export default function CommissionEntryModal({
         (t) => {
           const snapshot = (t.package_snapshot ?? {}) as { name?: string }
           const name = typeof snapshot.name === 'string' && snapshot.name.trim() ? snapshot.name : t.id?.slice(0, 8)
-          const customer = t.customer_profile?.full_name || t.customer_profile?.zalo_name || ''
+          const customer = t.user?.full_name || t.user?.zalo_name || ''
           return { value: t.id, label: customer ? `${name} — ${customer}` : String(name) }
         },
       ),

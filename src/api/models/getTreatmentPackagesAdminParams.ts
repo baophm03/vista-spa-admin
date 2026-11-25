@@ -5,6 +5,7 @@
  * Vista Spa backend API. Uses the NEWSKY+ business error envelope for permission-aware endpoints and the legacy response envelope for existing admin endpoints.
  * OpenAPI spec version: 1.0.0
  */
+import type { GetTreatmentPackagesAdminKind } from './getTreatmentPackagesAdminKind';
 
 export type GetTreatmentPackagesAdminParams = {
 /**
@@ -19,5 +20,7 @@ limit?: number;
 is_active?: boolean;
 quota_type?: string;
 package_type_id?: string;
+service_id?: string;
+kind?: GetTreatmentPackagesAdminKind;
 branch_id?: string;
 };

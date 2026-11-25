@@ -1,55 +1,29 @@
 import { Button, Descriptions, Modal, Tag } from 'antd'
 import type { Branch } from '@/api/models/branch'
-import type { Service } from '@/api/models/service'
 import type { CustomFieldDefWithOptions } from '@/components/CustomFieldFormItems'
 import {
   VALIDITY_LABEL,
-  calcLabel,
+  packageTypeLabel,
   priceLabel,
   type PackageTypeRow,
   type TreatmentPackageRow,
 } from './constants'
 
-export default function TreatmentPackageDetailModal({ row, branches, services, packageTypeById, packageFields, formatMoney, onClose, onEdit }: {
+export default function TreatmentPackageDetailModal({ row, branches, packageTypeById, packageFields, formatMoney, onClose, onEdit }: {
   row: TreatmentPackageRow | null
   branches: Branch[]
-  services: Service[]
   packageTypeById: Map<string, PackageTypeRow>
   packageFields: CustomFieldDefWithOptions[]
   formatMoney: (v?: number | null) => string
   onClose: () => void
   onEdit: (row: TreatmentPackageRow) => void
 }) {
-  const typeLabel = row ? calcLabel(row, packageTypeById) : 'Chưa phân loại'
-  // Loại gói theo cấu trúc: COMBO = Gói Combo, còn lại (4 loại cố định + dữ liệu cũ) đều là Gói lẻ
-  const kindLabel = (() => {
-    const type = row
-      ? (row.package_type && typeof row.package_type === 'object'
-          ? row.package_type
-          : packageTypeById.get(String(row.package_type_id)))
-      : undefined
-    return String(type?.code ?? '').toUpperCase() === 'COMBO' ? 'Gói Combo' : 'Gói lẻ'
-  })()
-  const serviceNames = (() => {
-    // Combo: hiển thị kèm số buổi riêng của từng dịch vụ (services[] từ bảng link)
-    if (row?.services?.length) {
-      return row.services
-        .map((entry) => {
-          const title = services.find((service) => service.id === entry.service_id)?.title ?? 'Dịch vụ'
-          return Number(entry.qty) > 1 ? `${title} (${entry.qty} buổi)` : title
-        })
-        .join(', ')
-    }
-    return row?.service_ids?.length
-      ? row.service_ids.map((id) => services.find((service) => service.id === id)?.title ?? 'Dịch vụ').join(', ')
-      : row?.service_id
-        ? services.find((service) => service.id === row.service_id)?.title ?? '—'
-        : '—'
-  })()
+  const typeLabel = row ? packageTypeLabel(row, packageTypeById) : 'Chưa phân loại'
+  const isSingle = typeLabel === 'Dịch vụ lẻ'
 
   return (
     <Modal
-      title="Chi tiết gói liệu trình"
+      title={isSingle ? 'Chi tiết dịch vụ lẻ' : 'Chi tiết gói liệu trình'}
       open={!!row}
       onCancel={onClose}
       footer={[
@@ -62,31 +36,37 @@ export default function TreatmentPackageDetailModal({ row, branches, services, p
         <Descriptions bordered size="small" column={1} style={{ marginTop: 12 }}>
           <Descriptions.Item label="Tên gói">{row.name}</Descriptions.Item>
           <Descriptions.Item label="Cơ sở">{row.branch_id ? branches.find((branch) => branch.id === row.branch_id)?.name ?? '—' : 'Tất cả cơ sở'}</Descriptions.Item>
-          <Descriptions.Item label="Loại gói"><Tag color="geekblue">{kindLabel}</Tag></Descriptions.Item>
-          <Descriptions.Item label="Cách tính"><Tag color="purple">{typeLabel}</Tag></Descriptions.Item>
-          <Descriptions.Item label="Dịch vụ áp dụng">{serviceNames}</Descriptions.Item>
-          <Descriptions.Item label="Hạn mức">
-            {row.quota_type === 'SESSIONS'
-              ? `${row.total_sessions ?? '—'} buổi`
-              : row.quota_type === 'VALUE'
-                ? 'Không giới hạn buổi — mỗi buổi trừ vào định mức tiền'
-                : 'Không giới hạn'}
-          </Descriptions.Item>
-          <Descriptions.Item label="Định mức tiền">
-            {row.quota_type === 'VALUE' ? formatMoney(row.total_value) : '—'}
-          </Descriptions.Item>
+          <Descriptions.Item label="Loại gói"><Tag color="purple">{typeLabel}</Tag></Descriptions.Item>
+          <Descriptions.Item label="Dịch vụ áp dụng">{row.service?.title ?? <Tag color="orange">Chưa chọn dịch vụ</Tag>}</Descriptions.Item>
+          {!isSingle && (
+            <>
+              <Descriptions.Item label="Hạn mức">
+                {row.quota_type === 'SESSIONS'
+                  ? `${row.total_sessions ?? '—'} buổi`
+                  : row.quota_type === 'VALUE'
+                    ? 'Không giới hạn buổi — mỗi buổi trừ vào định mức tiền'
+                    : 'Không giới hạn'}
+              </Descriptions.Item>
+              <Descriptions.Item label="Định mức tiền">
+                {row.quota_type === 'VALUE' ? 'Bằng giá bán khi bán gói cho khách' : '—'}
+              </Descriptions.Item>
+            </>
+          )}
           <Descriptions.Item label="Giá niêm yết">{priceLabel(row, formatMoney)}</Descriptions.Item>
-          <Descriptions.Item label="Thời hạn">
-            {row.validity_value && row.validity_unit
-              ? `${row.validity_value} ${VALIDITY_LABEL[row.validity_unit] ?? row.validity_unit}`
-              : 'Không thời hạn'}
-          </Descriptions.Item>
-          <Descriptions.Item label="Buổi tặng mặc định">{Number(row.bonus_sessions_default ?? 0)}</Descriptions.Item>
-          <Descriptions.Item label="Bảo hành">
-            {row.warranty_text ? row.warranty_text : <Tag>Không bảo hành</Tag>}
-          </Descriptions.Item>
+          {!isSingle && (
+            <>
+              <Descriptions.Item label="Thời hạn">
+                {row.validity_value && row.validity_unit
+                  ? `${row.validity_value} ${VALIDITY_LABEL[row.validity_unit] ?? row.validity_unit}`
+                  : 'Không thời hạn'}
+              </Descriptions.Item>
+              <Descriptions.Item label="Buổi tặng mặc định">{Number(row.bonus_sessions_default ?? 0)}</Descriptions.Item>
+              <Descriptions.Item label="Bảo hành">
+                {row.warranty_text ? row.warranty_text : <Tag>Không bảo hành</Tag>}
+              </Descriptions.Item>
+            </>
+          )}
           <Descriptions.Item label="Mô tả">{row.description || '—'}</Descriptions.Item>
-          <Descriptions.Item label="Điều kiện đổi buổi tặng">{row.convertible_note || '—'}</Descriptions.Item>
           <Descriptions.Item label="Điều khoản">{row.terms || '—'}</Descriptions.Item>
           <Descriptions.Item label="Trạng thái">
             {row.is_active ? <Tag color="green">Đang sử dụng</Tag> : <Tag>Ngưng sử dụng</Tag>}

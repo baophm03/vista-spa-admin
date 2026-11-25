@@ -20,7 +20,7 @@ import ListPagination from '@/components/base/ListPagination'
 import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import type { CustomerHealthRecord } from '@/api/models/customerHealthRecord'
 import type { CustomerTreatment } from '@/api/models/customerTreatment'
-import { getCustomerProfilesIdHealthRecordsAdmin, getHealthRecordsAdmin, postCustomerProfilesIdHealthRecordsAdmin, putCustomerProfilesIdHealthRecordsRecordIdAdmin } from '@/api/endpoints/customer-profiles'
+import { getUsersCustomersIdHealthRecordsAdmin, getHealthRecordsAdmin, postUsersCustomersIdHealthRecordsAdmin, putUsersCustomersIdHealthRecordsRecordIdAdmin } from '@/api/endpoints/customers'
 import { getTreatmentCustomersAdmin } from '@/api/endpoints/treatment-customers'
 import { getAppointmentsAdmin } from '@/api/endpoints/appointments'
 import { getSkinTypesAdmin } from '@/api/endpoints/skin-types'
@@ -72,7 +72,7 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
   const load = useCallback(async (nextPage = page, search = keyword): Promise<HealthRow[] | null> => {
     setLoading(true)
     try {
-      // BE trả bản ghi phiếu khám mới nhất của từng khách kèm customer_profile + tìm q trên khách/nội dung phiếu
+      // BE trả bản ghi phiếu khám mới nhất của từng khách kèm user + tìm q trên khách/nội dung phiếu
       const latestRecords = await getHealthRecordsAdmin({
         page: nextPage,
         limit: 10,
@@ -80,8 +80,8 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
       } as never)
       const latestList = (pickData<CustomerHealthRecord[]>(latestRecords) ?? []) as CustomerHealthRecord[]
       const nextRows = latestList.map((record) => ({
-        ...((record as unknown as { customer_profile?: Record<string, unknown> }).customer_profile ?? {}),
-        id: record.customer_profile_id,
+        ...((record as unknown as { user?: Record<string, unknown> }).user ?? {}),
+        id: record.user_id,
         latestRecord: record,
       })) as unknown as HealthRow[]
       setTotal((latestRecords as unknown as { meta?: { total?: number } })?.meta?.total ?? nextRows.length)
@@ -146,16 +146,16 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
     setDetailTreatments([])
     setDetailAppointments([])
     Promise.all([
-      getCustomerProfilesIdHealthRecordsAdmin(detail.id),
-      getTreatmentCustomersAdmin({ customer_profile_id: detail.id, limit: 50 }),
-      getAppointmentsAdmin({ customer_profile_id: detail.id, page: 1, limit: 100 }).catch(() => null),
+      getUsersCustomersIdHealthRecordsAdmin(detail.id),
+      getTreatmentCustomersAdmin({ user_id: detail.id, limit: 50 }),
+      getAppointmentsAdmin({ user_id: detail.id, page: 1, limit: 100 }).catch(() => null),
     ])
       .then(([recordsResult, treatmentsResult, appointmentsResult]) => {
         if (cancelled) return
         setHistory(pickData<CustomerHealthRecord[]>(recordsResult) ?? [])
         setDetailTreatments(pickData<CustomerTreatment[]>(treatmentsResult) ?? [])
         setDetailAppointments((pickData<ServiceHistoryAppointment[]>(appointmentsResult) ?? []).filter((appointment) =>
-          !appointment.customer_treatment_id && ['in_progress', 'completed'].includes(String(appointment.status)),
+          ['in_progress', 'completed'].includes(String(appointment.status)),
         ))
       })
       .catch(() => {
@@ -214,10 +214,10 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
     setSaving(true)
     try {
       if (editingRecord) {
-        await putCustomerProfilesIdHealthRecordsRecordIdAdmin(recordCustomer.id, editingRecord.id, dto as never)
+        await putUsersCustomersIdHealthRecordsRecordIdAdmin(recordCustomer.id, editingRecord.id, dto as never)
         message.success('Đã cập nhật phiếu khám')
       } else {
-        await postCustomerProfilesIdHealthRecordsAdmin(recordCustomer.id, dto as never)
+        await postUsersCustomersIdHealthRecordsAdmin(recordCustomer.id, dto as never)
         message.success('Đã tạo phiếu khám')
       }
       setModalOpen(false)

@@ -10,7 +10,7 @@ import TableEmpty from '@/components/base/TableEmpty'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { Notification } from '@/api/models/notification'
-import { useGetCustomerProfilesAdmin } from '@/api/endpoints/customer-profiles'
+import { useGetUsersCustomersAdmin } from '@/api/endpoints/customers'
 import { useGetNotificationsAdmin, usePostNotificationsAdmin, usePostNotificationsIdReadAdmin } from '@/api/endpoints/notifications'
 import { useGetUsersAdmin } from '@/api/endpoints/users'
 import { groupNotifications, type NotificationGroup } from '@/utils/notificationGroups'
@@ -28,7 +28,7 @@ interface NotificationRow {
   is_read?: boolean
   sent_at?: string
 }
-interface CustomerProfile {
+interface Customer {
   id: string
   user_id?: string
   full_name: string
@@ -47,16 +47,16 @@ const EVENT_META: Record<string, { label: string; color: string }> = {
 export default function Notifications() {
   const { formatDateTime } = useBrandDateTime()
   const notificationsQuery = useGetNotificationsAdmin()
-  const profilesQuery = useGetCustomerProfilesAdmin()
+  const profilesQuery = useGetUsersCustomersAdmin()
   const usersQuery = useGetUsersAdmin({ currentPage: 1, pageSize: 500 })
   const sendMutation = usePostNotificationsAdmin()
   const markReadMutation = usePostNotificationsIdReadAdmin()
   // Envelope chuẩn: responseData: Notification[] + meta.total
   const payload = pickData<NotificationRow[] | { rows?: NotificationRow[] }>(notificationsQuery.data)
   const rows = (Array.isArray(payload) ? payload : payload?.rows ?? []) as NotificationRow[]
-  const profilePayload = pickData<CustomerProfile[] | { rows?: CustomerProfile[] }>(profilesQuery.data)
-  const profiles = (Array.isArray(profilePayload) ? profilePayload : profilePayload?.rows ?? []) as CustomerProfile[]
-  const usersPayload = pickData<{ id?: string; zalo_name?: string; phone_number?: string }[] | { rows?: { id?: string; zalo_name?: string; phone_number?: string }[] }>(usersQuery.data)
+  const profilePayload = pickData<Customer[] | { rows?: Customer[] }>(profilesQuery.data)
+  const profiles = (Array.isArray(profilePayload) ? profilePayload : profilePayload?.rows ?? []) as Customer[]
+  const usersPayload = pickData<{ id?: string; zalo_name?: string; phone?: string }[] | { rows?: { id?: string; zalo_name?: string; phone?: string }[] }>(usersQuery.data)
   const users = (Array.isArray(usersPayload) ? usersPayload : usersPayload?.rows ?? [])
   // 1 sự kiện gửi N người → N bản ghi; gộp thành 1 dòng hiển thị
   const groups = useMemo(() => groupNotifications(rows), [rows])

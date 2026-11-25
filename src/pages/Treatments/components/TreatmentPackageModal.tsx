@@ -1,18 +1,28 @@
-import { Alert, Button, Col, Collapse, Form, Input, InputNumber, Modal, Row, Segmented, Select, Switch } from 'antd'
-import { DeleteOutlined, PlusOutlined } from '@ant-design/icons'
+import { Alert, Cascader, Col, Collapse, Form, Input, InputNumber, Modal, Row, Select, Switch } from 'antd'
 import type { FormInstance } from 'antd'
 import CustomFieldFormItems from '@/components/CustomFieldFormItems'
 import ServiceImageField from '@/components/ServiceImageField'
 import type { Branch } from '@/api/models/branch'
-import type { Service } from '@/api/models/service'
 import type { CustomFieldDefWithOptions } from '@/components/CustomFieldFormItems'
-import { CALC_OPTIONS, type QuotaType, type TreatmentPackageRow } from './constants'
+import {
+  PACKAGE_TYPE_HINT,
+  PACKAGE_TYPE_LABEL,
+  PACKAGE_TYPE_QUOTA,
+  type PackageKind,
+  type PackageTypeRow,
+  type ServiceOption,
+  type TreatmentPackageRow,
+} from './constants'
+
+const UNCATEGORIZED_SERVICE_GROUP = '__none__'
 
 interface TreatmentPackageModalProps {
   form: FormInstance
   open: boolean
   editing: TreatmentPackageRow | null
-  services: Service[]
+  kind: PackageKind
+  services: ServiceOption[]
+  packageTypes: PackageTypeRow[]
   branches: Branch[]
   packageCustomFields: CustomFieldDefWithOptions[]
   currencySymbol: string
@@ -25,7 +35,9 @@ export default function TreatmentPackageModal({
   form,
   open,
   editing,
+  kind,
   services,
+  packageTypes,
   branches,
   packageCustomFields,
   currencySymbol,
@@ -33,45 +45,53 @@ export default function TreatmentPackageModal({
   onCancel,
   onOk,
 }: TreatmentPackageModalProps) {
-  const quotaTypeWatch = Form.useWatch('quota_type', form) as QuotaType | undefined
   const hasWarrantyWatch = Form.useWatch('has_warranty', form)
-  const kindWatch = Form.useWatch('package_kind', form)
-  const comboServicesWatch = Form.useWatch('combo_services', form) as { service_id?: string; qty?: number }[] | undefined
-  const isCombo = kindWatch === 'COMBO'
-  const isSessions = quotaTypeWatch === 'SESSIONS'
-  const isValueQuota = quotaTypeWatch === 'VALUE'
-  const isLifetime = quotaTypeWatch === 'UNLIMITED'
-  const comboTotal = (comboServicesWatch ?? []).reduce((sum, entry) => sum + (Number(entry?.qty) || 0), 0)
+  const packageTypeIdWatch = Form.useWatch('package_type_id', form) as string | undefined
+  const branchIdWatch = Form.useWatch('branch_id', form) as string | undefined
+  const typeCode = String(packageTypes.find((type) => type.id === packageTypeIdWatch)?.code ?? '').toUpperCase()
+  const quotaType = PACKAGE_TYPE_QUOTA[typeCode]
+  const isSingle = kind === 'SINGLE'
+  // Số buổi / Buổi tặng chỉ áp dụng cho Gói buổi; Gói lẻ, Trọn đời, Dịch vụ lẻ ẩn đi (buổi tặng = 0)
+  const showSessionFields = !isSingle && quotaType === 'SESSIONS'
+  const noun = isSingle ? 'dịch vụ lẻ' : 'gói liệu trình'
 
-  const handleCalcChange = () => {
-    form.setFieldsValue({
-      total_sessions: undefined,
-      total_value: undefined,
-      convertible_note: undefined,
-    })
-  }
-
-  const handleKindChange = (next: string | number) => {
-    if (next === 'COMBO') {
-      form.setFieldsValue({
-        quota_type: 'SESSIONS',
-        service_id: undefined,
-        total_sessions: undefined,
-        combo_services: (form.getFieldValue('combo_services') ?? []).length ? form.getFieldValue('combo_services') : [{}, {}],
-      })
-    } else {
-      form.setFieldsValue({
-        quota_type: 'SESSIONS',
-        service_id: undefined,
-        total_sessions: undefined,
-        combo_services: [],
-      })
+  // Dịch vụ đang chọn phải luôn hiển thị (kể cả đã ẩn / khác cơ sở) để không mất giá trị khi sửa
+  const currentServiceId = editing?.service_id ?? undefined
+  const selectableServices = services
+    .filter((item) => item.id === currentServiceId || (item.is_active !== false && (!branchIdWatch || !item.branch_id || item.branch_id === branchIdWatch)))
+  // Cascader 2 cột: danh mục → dịch vụ (hover danh mục mở dịch vụ bên phải); chưa có danh mục gom vào "Không có danh mục"
+  const serviceCascaderOptions = (() => {
+    const groups = new Map<string, { value: string; label: string; sort: number; children: { value: string; label: string }[] }>()
+    for (const item of selectableServices) {
+      const categoryId = item.service_category?.id ?? item.category_id ?? UNCATEGORIZED_SERVICE_GROUP
+      const group = groups.get(categoryId) ?? {
+        value: categoryId,
+        label: categoryId === UNCATEGORIZED_SERVICE_GROUP ? 'Không có danh mục' : item.service_category?.name ?? 'Danh mục',
+        sort: categoryId === UNCATEGORIZED_SERVICE_GROUP ? Number.MAX_SAFE_INTEGER : Number(item.service_category?.sort_order ?? 0),
+        children: [],
+      }
+      group.children.push({ value: item.id, label: `${item.title}${item.is_active === false ? ' (đã ẩn)' : ''}` })
+      groups.set(categoryId, group)
     }
+    return [...groups.values()]
+      .sort((a, b) => a.sort - b.sort || a.label.localeCompare(b.label, 'vi'))
+      .map(({ value, label, children }) => ({ value, label, children: children.sort((a, b) => a.label.localeCompare(b.label, 'vi')) }))
+  })()
+  const servicePath = (serviceId?: string) => {
+    if (!serviceId) return undefined
+    const group = serviceCascaderOptions.find((option) => option.children.some((child) => child.value === serviceId))
+    return group ? [group.value, serviceId] : undefined
+  }
+  const onServiceChange = (serviceId?: string) => {
+    // Dịch vụ lẻ: giá niêm yết mặc định = giá dịch vụ (chỉ khi tạo mới)
+    if (!isSingle || editing) return
+    const price = services.find((item) => item.id === serviceId)?.price
+    if (price != null) form.setFieldValue('list_price', Number(price))
   }
 
   return (
     <Modal
-      title={editing ? 'Sửa gói liệu trình' : 'Thêm gói liệu trình'}
+      title={editing ? `Sửa ${noun}` : `Thêm ${noun}`}
       open={open}
       onCancel={onCancel}
       onOk={onOk}
@@ -81,169 +101,88 @@ export default function TreatmentPackageModal({
       width="min(960px, calc(100vw - 24px))"
     >
       <Form form={form} layout="vertical" style={{ marginTop: 12 }}>
-        <Form.Item name="name" label="Tên gói" rules={[{ required: true, whitespace: true, message: 'Nhập tên gói' }]}>
-          <Input placeholder="VD: Peel Acne chuyên sâu" />
+        <Form.Item name="name" label={isSingle ? 'Tên dịch vụ lẻ' : 'Tên gói'} rules={[{ required: true, whitespace: true, message: isSingle ? 'Nhập tên dịch vụ lẻ' : 'Nhập tên gói' }]}>
+          <Input placeholder={isSingle ? 'VD: Trải nghiệm chăm sóc da (1 buổi)' : 'VD: Peel Acne chuyên sâu'} />
         </Form.Item>
         <Form.Item name="image_file_id" label="Ảnh bìa">
           <ServiceImageField />
         </Form.Item>
-        {/* Loại gói: Gói lẻ (1 dịch vụ) | Gói Combo (>= 2 dịch vụ, quota riêng theo qty) */}
-        <Form.Item name="package_kind" label="Loại gói" required initialValue="LE">
-          <Segmented
-            options={[
-              { label: 'Gói lẻ', value: 'LE' },
-              { label: 'Gói Combo', value: 'COMBO' },
-            ]}
-            onChange={handleKindChange}
-          />
-        </Form.Item>
-        {!isCombo && (
-          <Form.Item
-            name="service_id"
-            label="Dịch vụ áp dụng"
-            rules={[{ required: true, message: 'Gói liệu trình phải có dịch vụ' }]}
-          >
-            <Select
-              showSearch
-              optionFilterProp="label"
-              placeholder="Chọn dịch vụ"
-              options={services.map((service) => ({ value: service.id, label: service.title }))}
-            />
-          </Form.Item>
-        )}
-        {isCombo && (
-          <>
-            <Form.Item label="Dịch vụ & số buổi" required style={{ marginBottom: 4 }} extra="Mỗi dịch vụ có quota riêng theo số buổi nhập ở đây; tổng số buổi gói = tổng của từng dịch vụ." />
-            <Form.List
-              name="combo_services"
-              rules={[{
-                validator: async (_rule, rows) => {
-                  if (!rows || rows.length < 2) throw new Error('Gói combo phải gồm từ 2 dịch vụ trở lên')
-                  const ids = rows.map((row: { service_id?: string }) => row?.service_id).filter(Boolean)
-                  if (new Set(ids).size !== ids.length) throw new Error('Gói combo không được trùng dịch vụ')
-                },
-              }]}
-            >
-              {(fields, { add, remove }, { errors }) => (
-                <>
-                  {fields.map((field) => (
-                    <Row key={field.key} gutter={8} align="middle">
-                      <Col xs={13} md={15}>
-                        <Form.Item
-                          name={[field.name, 'service_id']}
-                          rules={[{ required: true, message: 'Chọn dịch vụ' }]}
-                          className="mb-2!"
-                        >
-                          <Select
-                            showSearch
-                            optionFilterProp="label"
-                            placeholder="Chọn dịch vụ"
-                            options={services.map((service) => ({ value: service.id, label: service.title }))}
-                          />
-                        </Form.Item>
-                      </Col>
-                      <Col xs={7} md={5}>
-                        <Form.Item
-                          name={[field.name, 'qty']}
-                          rules={[{ required: true, message: 'Nhập số buổi' }]}
-                          className="mb-2!"
-                        >
-                          <InputNumber min={1} precision={0} placeholder="Số buổi" style={{ width: '100%' }} />
-                        </Form.Item>
-                      </Col>
-                      <Col span={4} className="mb-2!">
-                        <Button
-                          type="text"
-                          danger
-                          icon={<DeleteOutlined />}
-                          aria-label="Xóa dịch vụ"
-                          title="Xóa dịch vụ"
-                          disabled={fields.length <= 2}
-                          onClick={() => remove(field.name)}
-                        />
-                      </Col>
-                    </Row>
-                  ))}
-                  <Form.Item className="mb-1!">
-                    <Button type="dashed" block icon={<PlusOutlined />} onClick={() => add({ qty: 1 })}>
-                      Thêm dịch vụ
-                    </Button>
-                  </Form.Item>
-                  <Form.ErrorList errors={errors} />
-                </>
-              )}
-            </Form.List>
-            <div style={{ height: 8 }} />
-          </>
-        )}
-        <Form.Item
-          name="quota_type"
-          label="Cách tính"
-          rules={[{ required: true, message: 'Chọn cách tính' }]}
-          extra={isCombo
-            ? 'Gói combo chỉ hỗ trợ cách tính theo số buổi — mỗi dịch vụ có quota riêng theo số buổi đã nhập.'
-            : undefined}
-        >
-          {isCombo ? (
-            <Select disabled options={[{ value: 'SESSIONS', label: 'Theo số buổi' }]} />
-          ) : (
-            <Select
-              placeholder="Chọn cách tính"
-              options={CALC_OPTIONS}
-              onChange={handleCalcChange}
-            />
-          )}
-        </Form.Item>
         <Row gutter={{ xs: 12, md: 16 }}>
-          <Col xs={12} md={8}>
-            {isCombo && (
-              <Form.Item label="Tổng số buổi" extra="Tự cộng từ các dịch vụ.">
-                <Input value={`${comboTotal} buổi`} disabled style={{ width: '100%' }} />
-              </Form.Item>
-            )}
-            {!isCombo && isSessions && (
-              <Form.Item
-                name="total_sessions"
-                label="Số buổi"
-                rules={[{ required: true, message: 'Nhập số buổi' }]}
-              >
-                <InputNumber min={1} precision={0} style={{ width: '100%' }} />
-              </Form.Item>
-            )}
-            {!isCombo && (isValueQuota || isLifetime) && (
-              <Form.Item
-                label="Số buổi"
-                extra={isLifetime ? 'Gói trọn đời không giới hạn số buổi.' : 'Không giới hạn số buổi — mỗi buổi trừ vào định mức tiền.'}
-              >
-                <Input value="Không giới hạn" disabled style={{ width: '100%' }} />
-              </Form.Item>
-            )}
-          </Col>
-          <Col xs={12} md={8}>
-            <Form.Item
-              name="bonus_sessions_default"
-              label="Buổi tặng"
-            >
-              <InputNumber min={0} precision={0} style={{ width: '100%' }} />
+          <Col xs={24} md={12} style={isSingle ? { display: 'none' } : undefined}>
+            {/* Loại gói quyết định cách tính: Gói lẻ = theo số tiền, Gói buổi = theo số buổi, Trọn đời = không giới hạn buổi */}
+            <Form.Item name="package_type_id" label="Loại gói" rules={[{ required: true, message: 'Chọn loại gói' }]}>
+              <Select
+                placeholder="Chọn loại gói"
+                options={packageTypes.map((type) => {
+                  const code = String(type.code).toUpperCase()
+                  return { value: type.id, label: `${PACKAGE_TYPE_LABEL[code] ?? type.name} — ${PACKAGE_TYPE_HINT[code] ?? ''}` }
+                })}
+                onChange={(typeId: string) => {
+                  const nextCode = String(packageTypes.find((type) => type.id === typeId)?.code ?? '').toUpperCase()
+                  form.setFieldsValue({
+                    total_sessions: undefined,
+                    ...(PACKAGE_TYPE_QUOTA[nextCode] === 'SESSIONS' ? {} : { bonus_sessions_default: 0 }),
+                  })
+                }}
+              />
             </Form.Item>
           </Col>
-          <Col xs={24} md={8}>
+          <Col xs={24} md={12}>
             <Form.Item name="branch_id" label="Cơ sở">
               <Select allowClear placeholder="Tất cả cơ sở" options={branches.map((branch) => ({ value: branch.id, label: branch.name }))} />
             </Form.Item>
           </Col>
         </Row>
-        {!isCombo && isLifetime && (
-          <Alert type="info" showIcon message="Gói trọn đời không giới hạn số buổi." style={{ marginBottom: 16 }} />
-        )}
-        {!isCombo && isValueQuota && (
+        <Row gutter={{ xs: 12, md: 16 }} style={showSessionFields ? undefined : { display: 'none' }}>
+          <Col xs={12} md={8}>
+            {showSessionFields && (
+              <Form.Item name="total_sessions" label="Số buổi" rules={[{ required: true, message: 'Nhập số buổi' }]}>
+                <InputNumber min={1} precision={0} style={{ width: '100%' }} />
+              </Form.Item>
+            )}
+          </Col>
+          <Col xs={12} md={8}>
+            <Form.Item name="bonus_sessions_default" label="Buổi tặng">
+              <InputNumber min={0} precision={0} style={{ width: '100%' }} />
+            </Form.Item>
+          </Col>
+        </Row>
+        {showSessionFields && (
           <Alert
             type="info"
             showIcon
-            message="Gói theo mức tiền: không giới hạn số buổi. Mỗi buổi khách tham gia sẽ trừ số tiền của buổi đó vào định mức (= giá bán), trừ hết định mức thì gói kết thúc."
+            message="Gói buổi tính theo số buổi: mỗi buổi khách hoàn thành sẽ trừ 1 buổi — trừ buổi mua trước, buổi tặng sau. Dùng hết số buổi (gồm cả buổi tặng) thì gói kết thúc."
             style={{ marginBottom: 16 }}
           />
         )}
+        {quotaType === 'UNLIMITED' && (
+          <Alert type="info" showIcon message="Gói trọn đời không giới hạn số buổi." style={{ marginBottom: 16 }} />
+        )}
+        {quotaType === 'VALUE' && (
+          <Alert
+            type="info"
+            showIcon
+            message="Gói lẻ tính theo số tiền: không giới hạn số buổi. Mỗi buổi khách tham gia sẽ trừ số tiền của buổi đó vào định mức (= giá bán), trừ hết định mức thì gói kết thúc."
+            style={{ marginBottom: 16 }}
+          />
+        )}
+        <Form.Item
+          name="service_id"
+          label="Dịch vụ áp dụng"
+          // Form giữ service_id; Cascader nhận/trả path [danh mục, dịch vụ]
+          getValueProps={(value?: string) => ({ value: servicePath(value) })}
+          normalize={(path?: string[]) => path?.[path.length - 1]}
+          rules={[{ required: true, message: 'Chọn dịch vụ áp dụng' }]}
+        >
+          <Cascader
+            placeholder="Chọn danh mục → dịch vụ"
+            options={serviceCascaderOptions}
+            expandTrigger="hover"
+            showSearch={{ filter: (input, path) => path.some((option) => String(option.label).toLowerCase().includes(input.toLowerCase())) }}
+            displayRender={(labels) => labels.join(' / ')}
+            onChange={(path) => onServiceChange(path?.[path.length - 1] as string | undefined)}
+          />
+        </Form.Item>
         <Row gutter={{ xs: 12, md: 16 }}>
           <Col xs={12} md={8}>
             <Form.Item name="list_price" label="Giá từ" rules={[{ required: true, message: 'Nhập giá niêm yết' }]}>
@@ -269,14 +208,14 @@ export default function TreatmentPackageModal({
           ghost
           items={[{
             key: 'advanced',
-            label: 'Tùy chọn nâng cao (mô tả, thời hạn, bảo hành, điều khoản)',
+            label: isSingle ? 'Tùy chọn nâng cao (mô tả, điều khoản)' : 'Tùy chọn nâng cao (mô tả, thời hạn, bảo hành, điều khoản)',
             forceRender: true,
             children: (
               <>
                 <Form.Item name="description" label="Mô tả">
                   <Input.TextArea rows={2} />
                 </Form.Item>
-                <Row gutter={{ xs: 12, md: 16 }}>
+                <Row gutter={{ xs: 12, md: 16 }} style={isSingle ? { display: 'none' } : undefined}>
                   <Col xs={12} md={8}>
                     <Form.Item
                       name="validity_value"
@@ -301,13 +240,10 @@ export default function TreatmentPackageModal({
                     </Form.Item>
                   </Col>
                 </Row>
-                <Form.Item name="convertible_note" label="Điều kiện đổi buổi tặng">
-                  <Input.TextArea rows={2} />
-                </Form.Item>
-                <Form.Item name="has_warranty" label="Có bảo hành" valuePropName="checked">
+                <Form.Item name="has_warranty" label="Có bảo hành" valuePropName="checked" hidden={isSingle}>
                   <Switch />
                 </Form.Item>
-                {hasWarrantyWatch && (
+                {hasWarrantyWatch && !isSingle && (
                   <Form.Item
                     name="warranty_text"
                     label="Nội dung bảo hành"

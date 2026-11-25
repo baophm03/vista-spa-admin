@@ -20,6 +20,8 @@ export interface AppointmentDetailModalProps {
   onNoShow: (row: AppointmentRow) => void
   onCancelAppointment: (row: AppointmentRow) => void
   onStart: (row: AppointmentRow) => void
+  onAssignStaff: (row: AppointmentRow) => void
+  onComplete: (row: AppointmentRow) => void
 }
 
 function formatPhone(p?: string | null): string {
@@ -44,6 +46,8 @@ export default function AppointmentDetailModal({
   onNoShow,
   onCancelAppointment,
   onStart,
+  onAssignStaff,
+  onComplete,
 }: AppointmentDetailModalProps) {
   if (!appointment) return null
 
@@ -51,11 +55,9 @@ export default function AppointmentDetailModal({
   const statusKey = row.status as AppointmentStatus | undefined
   const statusMeta = (statusKey && STATUS_META[statusKey]) || { label: row.status || 'Chưa rõ', color: 'default' }
 
-  const isTreatment = Boolean(row.customer_treatment_id || row.treatment_package_id || row.customer_treatment)
-  const categoryLabel = isTreatment ? 'Liệu trình' : row.service_id || row.service?.title ? 'Dịch vụ' : 'Tư vấn'
 
-  const name = displayName(row.customer_profile, 'Khách vãng lai')
-  const phone = row.customer_profile?.phone
+  const name = displayName(row.user, 'Khách vãng lai')
+  const phone = row.user?.phone
   const dateFormatted = row.appt_date ? dayjs(row.appt_date).format('DD/MM/YYYY') : '—'
   const startMinute = timeInMinutes(row.start_time)
   const endMinute = timeInMinutes(row.end_time)
@@ -64,17 +66,7 @@ export default function AppointmentDetailModal({
     ? `${time} – ${row.end_time?.slice(0, 5)}`
     : time
 
-  const treatmentService = row.customer_treatment?.package?.service
-  const serviceTitle = row.service?.title || treatmentService?.title
-  const packageName = row.customer_treatment?.package?.name || row.customer_treatment?.package_snapshot?.name
-
-  const serviceDisplay = packageName
-    ? (packageName.trim().toLowerCase().startsWith('gói') ? packageName.trim() : `Gói ${packageName.trim()}`)
-    : serviceTitle?.trim() || (isTreatment ? 'Buổi liệu trình' : 'Tư vấn thăm khám')
-
-  const duration = row.service?.duration_minutes
-    ?? treatmentService?.duration_minutes
-    ?? (endMinute !== null && startMinute !== null && endMinute > startMinute ? endMinute - startMinute : null)
+  const duration = endMinute !== null && startMinute !== null && endMinute > startMinute ? endMinute - startMinute : null
 
   const staff = staffName ? staffName(row) : (row.staff?.zalo_name || 'Chưa phân công')
   const staffDisplay = staff === 'Chưa phân công' ? 'Chưa gán KTV' : staff
@@ -91,10 +83,24 @@ export default function AppointmentDetailModal({
         <div className="flex flex-wrap items-center justify-end gap-2 border-t border-slate-100 pt-3">
           <Button onClick={onClose}>Đóng</Button>
 
+          <Can I="UPDATE" a="APPOINTMENT">
+            <Button onClick={() => { onClose(); onAssignStaff(row) }}>
+              {row.staff_id ? 'Đổi KTV' : 'Gán KTV'}
+            </Button>
+          </Can>
+
           {['pending', 'approved'].includes(row.status ?? '') && (
             <Can I="UPDATE" a="APPOINTMENT">
               <Button onClick={() => { onClose(); onEdit(row) }}>
                 Đổi lịch
+              </Button>
+            </Can>
+          )}
+
+          {row.status === 'in_progress' && (
+            <Can I="START" a="APPOINTMENT">
+              <Button type="primary" onClick={() => { onClose(); onComplete(row) }}>
+                Hoàn tất
               </Button>
             </Can>
           )}
@@ -148,8 +154,8 @@ export default function AppointmentDetailModal({
             <h3 className="m-0 break-words text-base font-semibold leading-snug text-slate-900">
               {name}
             </h3>
-            <Tag color={isTreatment ? 'purple' : 'blue'} className="rounded font-medium m-0">
-              {categoryLabel}
+            <Tag color="blue" className="rounded font-medium m-0">
+              Tư vấn
             </Tag>
           </div>
           <Tag color={statusMeta.color} className="font-medium m-0">
@@ -164,18 +170,6 @@ export default function AppointmentDetailModal({
             <span className="font-semibold text-slate-900 tabular-nums">
               {dateFormatted}{timeRange && (" · " + timeRange)}
               {duration ? <span className="font-normal text-slate-500 ml-1">({duration} phút)</span> : null}
-            </span>
-          </div>
-
-          <div className="flex min-w-0 flex-col gap-0.5 break-words">
-            <span className="text-xs text-slate-500">Dịch vụ</span>
-            <span className="font-medium text-slate-900">
-              {serviceDisplay}
-              {row.service?.price ? (
-                <span className="font-normal text-emerald-600 ml-2">
-                  ({Number(row.service.price).toLocaleString('vi-VN')} đ)
-                </span>
-              ) : null}
             </span>
           </div>
 
