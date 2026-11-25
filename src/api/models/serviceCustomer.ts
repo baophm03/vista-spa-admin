@@ -23,7 +23,7 @@ import type { ServiceCustomerService } from './serviceCustomerService';
 import type { ServiceCustomerStaff } from './serviceCustomerStaff';
 
 /**
- * Dịch vụ khách hàng — 1 lần khách dùng dịch vụ lẻ (bảng standalone_service)
+ * Dịch vụ khách hàng — 1 lần khách dùng dịch vụ lẻ (bảng service_customer)
  */
 export interface ServiceCustomer {
   id: string;

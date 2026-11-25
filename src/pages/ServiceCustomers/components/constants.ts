@@ -1,6 +1,6 @@
 import type { ServiceCustomer } from '@/api/models/serviceCustomer'
 
-/** Lượt dịch vụ lẻ của khách (BE: standalone_service) kèm quan hệ include từ API. */
+/** Lượt dịch vụ lẻ của khách (BE: service_customer) kèm quan hệ include từ API. */
 export type ServiceCustomerRow = ServiceCustomer & {
   user?: { id?: string; customer_code?: string | null; full_name?: string | null; zalo_name?: string | null; phone?: string | null } | null
   branch?: { id?: string; name?: string } | null

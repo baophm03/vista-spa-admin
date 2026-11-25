@@ -10,10 +10,12 @@ import {
   putServiceCustomersIdCancelAdmin,
   putServiceCustomersIdCompleteAdmin,
   putServiceCustomersIdStartAdmin,
+  putServiceCustomersIdApproveAdmin,
 } from '@/api/endpoints/service-customers'
 import type { LookupItem } from '@/api/models/lookupItem'
 import { displayName } from '@/utils/displayName'
 import { PAYMENT_STATUS_META, STATUS_META, serviceTitle, timeLabel, type ServiceCustomerRow } from './constants'
+import ServiceCustomerExtras from './ServiceCustomerExtras'
 
 interface PaymentRow {
   id: string
@@ -30,7 +32,7 @@ interface ServiceCustomerDetailModalProps {
   currencySymbol: string
   paymentMethods: LookupItem[]
   paymentMethodLabels: Record<string, string>
-  permissions: { update: boolean; start: boolean; complete: boolean; pay: boolean; readPayments: boolean }
+  permissions: { update: boolean; approve: boolean; start: boolean; complete: boolean; pay: boolean; readPayments: boolean; redeemPoints: boolean; applyReward: boolean }
   onChanged: () => void
   onClose: () => void
 }
@@ -126,6 +128,9 @@ export default function ServiceCustomerDetailModal({
               <Button danger loading={busy}>Huỷ lượt</Button>
             </Popconfirm>
           )}
+          {permissions.approve && status === 'pending' && (
+            <Button loading={busy} onClick={() => run(() => putServiceCustomersIdApproveAdmin(row.id), 'Đã duyệt lượt dịch vụ')}>Duyệt</Button>
+          )}
           {permissions.start && ['pending', 'approved'].includes(status) && (
             <Button loading={busy} onClick={() => run(() => putServiceCustomersIdStartAdmin(row.id), 'Đã bắt đầu thực hiện')}>Bắt đầu</Button>
           )}
@@ -206,6 +211,13 @@ export default function ServiceCustomerDetailModal({
               )}
             </>
           )}
+          <ServiceCustomerExtras
+            row={row}
+            canUpdate={permissions.update}
+            canRedeemPoints={permissions.redeemPoints}
+            canApplyReward={permissions.applyReward}
+            onChanged={() => { void load(row.id); onChanged() }}
+          />
         </>
       )}
     </Modal>

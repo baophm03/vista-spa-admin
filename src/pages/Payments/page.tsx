@@ -23,8 +23,8 @@ import {
 } from './components/constants'
 import './payments.css'
 
-const customerOf = (row: LedgerRow) => row.customer_treatment?.user || row.standalone_service?.user || row.appointment?.user
-const packageLabel = (row: LedgerRow) => row.customer_treatment?.package_snapshot?.name || (row.standalone_service ? `Dịch vụ lẻ: ${row.standalone_service.service_snapshot?.title ?? '—'}` : null) || row.appointment?.service?.title || '—'
+const customerOf = (row: LedgerRow) => row.customer_treatment?.user || row.service_customer?.user || row.appointment?.user
+const packageLabel = (row: LedgerRow) => row.customer_treatment?.package_snapshot?.name || (row.service_customer ? `Dịch vụ lẻ: ${row.service_customer.service_snapshot?.title ?? '—'}` : null) || row.appointment?.service?.title || '—'
 const paidAtLabel = (value?: LedgerRow['paid_at']) => value ? dayjs(value).format('DD/MM/YYYY HH:mm') : '—'
 const amountLabel = (value: number) => `${Number(value).toLocaleString('vi-VN')} ₫`
 const methodLabel = (value: string) => PAY_METHOD[value] || value || '—'

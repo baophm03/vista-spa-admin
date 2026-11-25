@@ -29,18 +29,21 @@ type CustomerOption = { id: string; full_name?: string | null; zalo_name?: strin
 type Filters = { q?: string; branch_id?: string; service_id?: string; status?: string; payment_status?: string; from?: string; to?: string }
 
 /**
- * Dịch vụ khách hàng — lượt khách dùng dịch vụ lẻ (BE: bảng standalone_service, API /service-customers).
+ * Dịch vụ khách hàng — lượt khách dùng dịch vụ lẻ (BE: bảng service_customer, API /service-customers).
  * Chọn khách hàng + cơ sở + dịch vụ lẻ; theo dõi trạng thái thực hiện, hồ sơ lần làm và thanh toán.
  */
 export default function ServiceCustomers() {
   const { format: formatMoney, symbol: currencySymbol } = useBrandCurrency()
   const queryClient = useQueryClient()
   const ability = useAbility()
-  const canCreate = ability.can('CREATE', 'STANDALONE_SERVICE')
+  const canCreate = ability.can('CREATE', 'SERVICE_CUSTOMER')
   const permissions = {
-    update: ability.can('UPDATE', 'STANDALONE_SERVICE'),
-    start: ability.can('START', 'STANDALONE_SERVICE'),
-    complete: ability.can('COMPLETE', 'STANDALONE_SERVICE'),
+    update: ability.can('UPDATE', 'SERVICE_CUSTOMER'),
+    approve: ability.can('APPROVE', 'SERVICE_CUSTOMER'),
+    redeemPoints: ability.can('POINTS_ADJUST', 'MEMBERSHIP'),
+    applyReward: ability.can('REDEEM_ADMIN', 'REWARD'),
+    start: ability.can('START', 'SERVICE_CUSTOMER'),
+    complete: ability.can('COMPLETE', 'SERVICE_CUSTOMER'),
     pay: ability.can('CREATE', 'PAYMENT'),
     readPayments: ability.can('READ', 'PAYMENT'),
   }

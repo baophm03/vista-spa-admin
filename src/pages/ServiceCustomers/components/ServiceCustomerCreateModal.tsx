@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { Col, DatePicker, Form, Input, InputNumber, Modal, Row, Select } from 'antd'
 import type { FormInstance } from 'antd'
 import dayjs from 'dayjs'
@@ -5,6 +6,8 @@ import type { Branch } from '@/api/models/branch'
 import type { Service } from '@/api/models/service'
 import { displayName } from '@/utils/displayName'
 import { TIME_OPTIONS } from './constants'
+import { pickData } from '@/api/helpers'
+import { getServiceCustomersAvailableSlotsAdmin } from '@/api/endpoints/service-customers'
 
 interface ServiceCustomerCreateModalProps {
   form: FormInstance
@@ -37,6 +40,27 @@ export default function ServiceCustomerCreateModal({
 }: ServiceCustomerCreateModalProps) {
   const branchId = Form.useWatch('branch_id', form) as string | undefined
   const serviceId = Form.useWatch('service_id', form) as string | undefined
+  const csDate = Form.useWatch('cs_date', form) as dayjs.Dayjs | undefined
+  const staffId = Form.useWatch('staff_id', form) as string | undefined
+  const [slotOptions, setSlotOptions] = useState<{ value: string; label: string }[] | null>(null)
+
+  // Khung giờ trống theo lịch KTV (khôi phục chọn slot của trang cũ); lỗi/chưa đủ điều kiện → danh sách giờ cố định
+  useEffect(() => {
+    if (!open || !branchId || !csDate) { setSlotOptions(null); return }
+    let cancelled = false
+    getServiceCustomersAvailableSlotsAdmin({ branch_id: branchId, date: csDate.format('YYYY-MM-DD'), ...(staffId ? { staff_id: staffId } : {}) })
+      .then((response) => {
+        if (cancelled) return
+        const slots = (pickData<Array<{ time?: string; start_time?: string; available?: boolean }>>(response) ?? [])
+          .filter((slot) => slot.available !== false)
+          .map((slot) => String(slot.time ?? slot.start_time ?? '').slice(0, 5))
+          .filter(Boolean)
+        setSlotOptions(slots.map((time) => ({ value: time, label: time })))
+      })
+      .catch(() => { if (!cancelled) setSlotOptions(null) })
+
+    return () => { cancelled = true }
+  }, [open, branchId, csDate, staffId])
   // Dịch vụ lẻ khả dụng: đang hiển thị + áp dụng cho cơ sở đã chọn (hoặc mọi cơ sở)
   const availableServices = services.filter((service) => service.is_active !== false && (!branchId || !service.branch_id || service.branch_id === branchId))
   const selectedService = services.find((service) => service.id === serviceId)
@@ -101,7 +125,7 @@ export default function ServiceCustomerCreateModal({
           </Col>
           <Col xs={12} md={8}>
             <Form.Item name="start_time" label="Giờ bắt đầu" rules={[{ required: true, message: 'Chọn giờ' }]}>
-              <Select showSearch options={TIME_OPTIONS} placeholder="HH:mm" />
+              <Select showSearch options={slotOptions ?? TIME_OPTIONS} placeholder={slotOptions && !slotOptions.length ? 'Không còn khung giờ trống' : 'HH:mm'} />
             </Form.Item>
           </Col>
           <Col xs={24} md={8}>

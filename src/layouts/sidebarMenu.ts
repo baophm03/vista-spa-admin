@@ -60,7 +60,7 @@ export const menuItems: MenuItem[] = [
       { key: '/customers', icon: createElement(TeamOutlined), label: 'Danh sách khách', permission: { action: 'READ', subject: 'CUSTOMER' } },
       { key: '/appointments', icon: createElement(CalendarOutlined), label: 'Lịch hẹn', permission: { action: 'READ', subject: 'APPOINTMENT' } },
       { key: '/treatment-customers', icon: createElement(SolutionOutlined), label: 'Liệu trình KH', permission: { action: 'READ', subject: 'TREATMENT_PACKAGE' } },
-      { key: '/service-customers', icon: createElement(ShoppingOutlined), label: 'Dịch vụ KH', permission: { action: 'READ', subject: 'STANDALONE_SERVICE' } },
+      { key: '/service-customers', icon: createElement(ShoppingOutlined), label: 'Dịch vụ KH', permission: { action: 'READ', subject: 'SERVICE_CUSTOMER' } },
       { key: '/my-sessions', icon: createElement(ExperimentOutlined), label: 'Buổi của tôi', permission: { action: 'READ', subject: 'TREATMENT_SESSION' }, ktvOnly: true },
       { key: '/health-records', icon: createElement(FileTextOutlined), label: 'Sổ sức khỏe', permission: { action: 'READ', subject: 'HEALTH_RECORD' }, hideForKtv: true },
       {

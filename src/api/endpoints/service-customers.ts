@@ -34,10 +34,14 @@ import type {
   ForbiddenResponse,
   GetServiceCustomersAdmin200,
   GetServiceCustomersAdminParams,
+  GetServiceCustomersAvailableSlotsAdminParams,
   GetServiceCustomersIdAdmin200,
+  GetServiceCustomersIdPrintAdminParams,
   NotFoundResponse,
   PostServiceCustomersAdmin200,
+  PostServiceCustomersIdApplyRewardAdminBody,
   PostServiceCustomersIdPaymentsAdminBody,
+  PostServiceCustomersIdRedeemPointsAdminBody,
   PutServiceCustomersIdAdmin200,
   PutServiceCustomersIdCancelAdmin200,
   PutServiceCustomersIdCompleteAdmin200,
@@ -55,8 +59,8 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * GET `/service-customers/{id}/admin`. Cần đăng nhập + `STANDALONE_SERVICE:READ_ALL`. Trả kèm `paid_amount`, `debt_amount`, `payment_status`.
- * @summary View a customer standalone service
+ * GET `/service-customers/{id}/admin`. Cần đăng nhập + `SERVICE_CUSTOMER:READ_ALL`. Trả kèm `paid_amount`, `debt_amount`, `payment_status`.
+ * @summary View a service customer
  */
 export const getServiceCustomersIdAdmin = (
     id: string,
@@ -133,7 +137,7 @@ export function useGetServiceCustomersIdAdminInfinite<TData = InfiniteData<Await
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary View a customer standalone service
+ * @summary View a service customer
  */
 
 export function useGetServiceCustomersIdAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getServiceCustomersIdAdmin>>>, TError = NotFoundResponse>(
@@ -151,7 +155,7 @@ export function useGetServiceCustomersIdAdminInfinite<TData = InfiniteData<Await
 }
 
 /**
- * @summary View a customer standalone service
+ * @summary View a service customer
  */
 export const prefetchGetServiceCustomersIdAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getServiceCustomersIdAdmin>>, TError = NotFoundResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getServiceCustomersIdAdmin>>, TError, TData>>, }
@@ -214,7 +218,7 @@ export function useGetServiceCustomersIdAdmin<TData = Awaited<ReturnType<typeof 
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary View a customer standalone service
+ * @summary View a service customer
  */
 
 export function useGetServiceCustomersIdAdmin<TData = Awaited<ReturnType<typeof getServiceCustomersIdAdmin>>, TError = NotFoundResponse>(
@@ -232,7 +236,7 @@ export function useGetServiceCustomersIdAdmin<TData = Awaited<ReturnType<typeof 
 }
 
 /**
- * @summary View a customer standalone service
+ * @summary View a service customer
  */
 export const prefetchGetServiceCustomersIdAdminQuery = async <TData = Awaited<ReturnType<typeof getServiceCustomersIdAdmin>>, TError = NotFoundResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getServiceCustomersIdAdmin>>, TError, TData>>, }
@@ -249,8 +253,8 @@ export const prefetchGetServiceCustomersIdAdminQuery = async <TData = Awaited<Re
 
 
 /**
- * PUT `/service-customers/{id}/admin` — sửa ngày giờ, KTV, thành tiền (khi chưa có thanh toán), ghi chú và hồ sơ lần làm. Cần đăng nhập + `STANDALONE_SERVICE:UPDATE_ALL`.
- * @summary Update a customer standalone service
+ * PUT `/service-customers/{id}/admin` — sửa ngày giờ, KTV, thành tiền (khi chưa có thanh toán), ghi chú và hồ sơ lần làm. Cần đăng nhập + `SERVICE_CUSTOMER:UPDATE_ALL`.
+ * @summary Update a service customer
  */
 export const putServiceCustomersIdAdmin = (
     id: string,
@@ -298,7 +302,7 @@ const {mutation: mutationOptions} = options ?
     export type PutServiceCustomersIdAdminMutationError = NotFoundResponse | UnprocessableEntityResponse
 
     /**
- * @summary Update a customer standalone service
+ * @summary Update a service customer
  */
 export const usePutServiceCustomersIdAdmin = <TError = NotFoundResponse | UnprocessableEntityResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putServiceCustomersIdAdmin>>, TError,{id: string;data: ServiceCustomerUpdate}, TContext>, }
@@ -314,8 +318,8 @@ export const usePutServiceCustomersIdAdmin = <TError = NotFoundResponse | Unproc
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * PUT `/service-customers/{id}/start/admin` — approved → in_progress. Cần đăng nhập + `STANDALONE_SERVICE:START`.
- * @summary Start a customer standalone service
+ * PUT `/service-customers/{id}/start/admin` — approved → in_progress. Cần đăng nhập + `SERVICE_CUSTOMER:START`.
+ * @summary Start a service customer
  */
 export const putServiceCustomersIdStartAdmin = (
     id: string,
@@ -360,7 +364,7 @@ const {mutation: mutationOptions} = options ?
     export type PutServiceCustomersIdStartAdminMutationError = NotFoundResponse | ConflictResponse
 
     /**
- * @summary Start a customer standalone service
+ * @summary Start a service customer
  */
 export const usePutServiceCustomersIdStartAdmin = <TError = NotFoundResponse | ConflictResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putServiceCustomersIdStartAdmin>>, TError,{id: string}, TContext>, }
@@ -376,8 +380,541 @@ export const usePutServiceCustomersIdStartAdmin = <TError = NotFoundResponse | C
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * POST `/service-customers/{id}/payments/admin` — thu tiền lượt dịch vụ lẻ (ghi payment_log.standalone_service_id), không vượt công nợ trừ khi bật `payment.allow_overpay`. Cần đăng nhập + `PAYMENT:CREATE`.
- * @summary Record a payment for a customer standalone service
+ * POST `/service-customers/{id}/redeem-points/admin` — trừ điểm thưởng giảm vào công nợ lượt dịch vụ (giới hạn theo points.redeem_min/max_percent). Cần đăng nhập + `MEMBERSHIP:POINTS_ADJUST`.
+ * @summary Redeem points for a service customer visit
+ */
+export const postServiceCustomersIdRedeemPointsAdmin = (
+    id: string,
+    postServiceCustomersIdRedeemPointsAdminBody: PostServiceCustomersIdRedeemPointsAdminBody,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<void>(
+      {url: `/service-customers/${id}/redeem-points/admin`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: postServiceCustomersIdRedeemPointsAdminBody, signal
+    },
+      );
+    }
+  
+
+
+export const getPostServiceCustomersIdRedeemPointsAdminMutationOptions = <TError = NotFoundResponse | UnprocessableEntityResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postServiceCustomersIdRedeemPointsAdmin>>, TError,{id: string;data: PostServiceCustomersIdRedeemPointsAdminBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postServiceCustomersIdRedeemPointsAdmin>>, TError,{id: string;data: PostServiceCustomersIdRedeemPointsAdminBody}, TContext> => {
+
+const mutationKey = ['postServiceCustomersIdRedeemPointsAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postServiceCustomersIdRedeemPointsAdmin>>, {id: string;data: PostServiceCustomersIdRedeemPointsAdminBody}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  postServiceCustomersIdRedeemPointsAdmin(id,data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostServiceCustomersIdRedeemPointsAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postServiceCustomersIdRedeemPointsAdmin>>>
+    export type PostServiceCustomersIdRedeemPointsAdminMutationBody = PostServiceCustomersIdRedeemPointsAdminBody
+    export type PostServiceCustomersIdRedeemPointsAdminMutationError = NotFoundResponse | UnprocessableEntityResponse
+
+    /**
+ * @summary Redeem points for a service customer visit
+ */
+export const usePostServiceCustomersIdRedeemPointsAdmin = <TError = NotFoundResponse | UnprocessableEntityResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postServiceCustomersIdRedeemPointsAdmin>>, TError,{id: string;data: PostServiceCustomersIdRedeemPointsAdminBody}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postServiceCustomersIdRedeemPointsAdmin>>,
+        TError,
+        {id: string;data: PostServiceCustomersIdRedeemPointsAdminBody},
+        TContext
+      > => {
+
+      const mutationOptions = getPostServiceCustomersIdRedeemPointsAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * GET `/service-customers/{id}/print/admin?paper=a5|k80` — phiếu thanh toán dạng HTML (tự mở hộp thoại in). Cần đăng nhập + `SERVICE_CUSTOMER:READ_ALL`.
+ * @summary Print receipt of a service customer visit
+ */
+export const getServiceCustomersIdPrintAdmin = (
+    id: string,
+    params?: GetServiceCustomersIdPrintAdminParams,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<void>(
+      {url: `/service-customers/${id}/print/admin`, method: 'GET',
+        params, signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetServiceCustomersIdPrintAdminInfiniteQueryKey = (id?: string,
+    params?: GetServiceCustomersIdPrintAdminParams,) => {
+    return [
+    'infinite', `/service-customers/${id}/print/admin`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+export const getGetServiceCustomersIdPrintAdminQueryKey = (id?: string,
+    params?: GetServiceCustomersIdPrintAdminParams,) => {
+    return [
+    `/service-customers/${id}/print/admin`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getGetServiceCustomersIdPrintAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getServiceCustomersIdPrintAdmin>>>, TError = NotFoundResponse>(id: string,
+    params?: GetServiceCustomersIdPrintAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getServiceCustomersIdPrintAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetServiceCustomersIdPrintAdminInfiniteQueryKey(id,params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getServiceCustomersIdPrintAdmin>>> = ({ signal }) => getServiceCustomersIdPrintAdmin(id,params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getServiceCustomersIdPrintAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetServiceCustomersIdPrintAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getServiceCustomersIdPrintAdmin>>>
+export type GetServiceCustomersIdPrintAdminInfiniteQueryError = NotFoundResponse
+
+
+export function useGetServiceCustomersIdPrintAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getServiceCustomersIdPrintAdmin>>>, TError = NotFoundResponse>(
+ id: string,
+    params: undefined |  GetServiceCustomersIdPrintAdminParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getServiceCustomersIdPrintAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getServiceCustomersIdPrintAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getServiceCustomersIdPrintAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetServiceCustomersIdPrintAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getServiceCustomersIdPrintAdmin>>>, TError = NotFoundResponse>(
+ id: string,
+    params?: GetServiceCustomersIdPrintAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getServiceCustomersIdPrintAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getServiceCustomersIdPrintAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getServiceCustomersIdPrintAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetServiceCustomersIdPrintAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getServiceCustomersIdPrintAdmin>>>, TError = NotFoundResponse>(
+ id: string,
+    params?: GetServiceCustomersIdPrintAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getServiceCustomersIdPrintAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Print receipt of a service customer visit
+ */
+
+export function useGetServiceCustomersIdPrintAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getServiceCustomersIdPrintAdmin>>>, TError = NotFoundResponse>(
+ id: string,
+    params?: GetServiceCustomersIdPrintAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getServiceCustomersIdPrintAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetServiceCustomersIdPrintAdminInfiniteQueryOptions(id,params,options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Print receipt of a service customer visit
+ */
+export const prefetchGetServiceCustomersIdPrintAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getServiceCustomersIdPrintAdmin>>, TError = NotFoundResponse>(
+ queryClient: QueryClient, id: string,
+    params?: GetServiceCustomersIdPrintAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getServiceCustomersIdPrintAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetServiceCustomersIdPrintAdminInfiniteQueryOptions(id,params,options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetServiceCustomersIdPrintAdminQueryOptions = <TData = Awaited<ReturnType<typeof getServiceCustomersIdPrintAdmin>>, TError = NotFoundResponse>(id: string,
+    params?: GetServiceCustomersIdPrintAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getServiceCustomersIdPrintAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetServiceCustomersIdPrintAdminQueryKey(id,params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getServiceCustomersIdPrintAdmin>>> = ({ signal }) => getServiceCustomersIdPrintAdmin(id,params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getServiceCustomersIdPrintAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetServiceCustomersIdPrintAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getServiceCustomersIdPrintAdmin>>>
+export type GetServiceCustomersIdPrintAdminQueryError = NotFoundResponse
+
+
+export function useGetServiceCustomersIdPrintAdmin<TData = Awaited<ReturnType<typeof getServiceCustomersIdPrintAdmin>>, TError = NotFoundResponse>(
+ id: string,
+    params: undefined |  GetServiceCustomersIdPrintAdminParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getServiceCustomersIdPrintAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getServiceCustomersIdPrintAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getServiceCustomersIdPrintAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetServiceCustomersIdPrintAdmin<TData = Awaited<ReturnType<typeof getServiceCustomersIdPrintAdmin>>, TError = NotFoundResponse>(
+ id: string,
+    params?: GetServiceCustomersIdPrintAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getServiceCustomersIdPrintAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getServiceCustomersIdPrintAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getServiceCustomersIdPrintAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetServiceCustomersIdPrintAdmin<TData = Awaited<ReturnType<typeof getServiceCustomersIdPrintAdmin>>, TError = NotFoundResponse>(
+ id: string,
+    params?: GetServiceCustomersIdPrintAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getServiceCustomersIdPrintAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Print receipt of a service customer visit
+ */
+
+export function useGetServiceCustomersIdPrintAdmin<TData = Awaited<ReturnType<typeof getServiceCustomersIdPrintAdmin>>, TError = NotFoundResponse>(
+ id: string,
+    params?: GetServiceCustomersIdPrintAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getServiceCustomersIdPrintAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetServiceCustomersIdPrintAdminQueryOptions(id,params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Print receipt of a service customer visit
+ */
+export const prefetchGetServiceCustomersIdPrintAdminQuery = async <TData = Awaited<ReturnType<typeof getServiceCustomersIdPrintAdmin>>, TError = NotFoundResponse>(
+ queryClient: QueryClient, id: string,
+    params?: GetServiceCustomersIdPrintAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getServiceCustomersIdPrintAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetServiceCustomersIdPrintAdminQueryOptions(id,params,options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * GET `/service-customers/{id}/photos/admin` — ảnh lần làm (before/process/after). Cần đăng nhập + `SERVICE_CUSTOMER:READ_ALL`.
+ * @summary List photos of a service customer visit
+ */
+export const getServiceCustomersIdPhotosAdmin = (
+    id: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<void>(
+      {url: `/service-customers/${id}/photos/admin`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetServiceCustomersIdPhotosAdminInfiniteQueryKey = (id?: string,) => {
+    return [
+    'infinite', `/service-customers/${id}/photos/admin`
+    ] as const;
+    }
+
+export const getGetServiceCustomersIdPhotosAdminQueryKey = (id?: string,) => {
+    return [
+    `/service-customers/${id}/photos/admin`
+    ] as const;
+    }
+
+    
+export const getGetServiceCustomersIdPhotosAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getServiceCustomersIdPhotosAdmin>>>, TError = NotFoundResponse>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getServiceCustomersIdPhotosAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetServiceCustomersIdPhotosAdminInfiniteQueryKey(id);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getServiceCustomersIdPhotosAdmin>>> = ({ signal }) => getServiceCustomersIdPhotosAdmin(id, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getServiceCustomersIdPhotosAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetServiceCustomersIdPhotosAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getServiceCustomersIdPhotosAdmin>>>
+export type GetServiceCustomersIdPhotosAdminInfiniteQueryError = NotFoundResponse
+
+
+export function useGetServiceCustomersIdPhotosAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getServiceCustomersIdPhotosAdmin>>>, TError = NotFoundResponse>(
+ id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getServiceCustomersIdPhotosAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getServiceCustomersIdPhotosAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getServiceCustomersIdPhotosAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetServiceCustomersIdPhotosAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getServiceCustomersIdPhotosAdmin>>>, TError = NotFoundResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getServiceCustomersIdPhotosAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getServiceCustomersIdPhotosAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getServiceCustomersIdPhotosAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetServiceCustomersIdPhotosAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getServiceCustomersIdPhotosAdmin>>>, TError = NotFoundResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getServiceCustomersIdPhotosAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List photos of a service customer visit
+ */
+
+export function useGetServiceCustomersIdPhotosAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getServiceCustomersIdPhotosAdmin>>>, TError = NotFoundResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getServiceCustomersIdPhotosAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetServiceCustomersIdPhotosAdminInfiniteQueryOptions(id,options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary List photos of a service customer visit
+ */
+export const prefetchGetServiceCustomersIdPhotosAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getServiceCustomersIdPhotosAdmin>>, TError = NotFoundResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getServiceCustomersIdPhotosAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetServiceCustomersIdPhotosAdminInfiniteQueryOptions(id,options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetServiceCustomersIdPhotosAdminQueryOptions = <TData = Awaited<ReturnType<typeof getServiceCustomersIdPhotosAdmin>>, TError = NotFoundResponse>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getServiceCustomersIdPhotosAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetServiceCustomersIdPhotosAdminQueryKey(id);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getServiceCustomersIdPhotosAdmin>>> = ({ signal }) => getServiceCustomersIdPhotosAdmin(id, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getServiceCustomersIdPhotosAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetServiceCustomersIdPhotosAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getServiceCustomersIdPhotosAdmin>>>
+export type GetServiceCustomersIdPhotosAdminQueryError = NotFoundResponse
+
+
+export function useGetServiceCustomersIdPhotosAdmin<TData = Awaited<ReturnType<typeof getServiceCustomersIdPhotosAdmin>>, TError = NotFoundResponse>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getServiceCustomersIdPhotosAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getServiceCustomersIdPhotosAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getServiceCustomersIdPhotosAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetServiceCustomersIdPhotosAdmin<TData = Awaited<ReturnType<typeof getServiceCustomersIdPhotosAdmin>>, TError = NotFoundResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getServiceCustomersIdPhotosAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getServiceCustomersIdPhotosAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getServiceCustomersIdPhotosAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetServiceCustomersIdPhotosAdmin<TData = Awaited<ReturnType<typeof getServiceCustomersIdPhotosAdmin>>, TError = NotFoundResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getServiceCustomersIdPhotosAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List photos of a service customer visit
+ */
+
+export function useGetServiceCustomersIdPhotosAdmin<TData = Awaited<ReturnType<typeof getServiceCustomersIdPhotosAdmin>>, TError = NotFoundResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getServiceCustomersIdPhotosAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetServiceCustomersIdPhotosAdminQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary List photos of a service customer visit
+ */
+export const prefetchGetServiceCustomersIdPhotosAdminQuery = async <TData = Awaited<ReturnType<typeof getServiceCustomersIdPhotosAdmin>>, TError = NotFoundResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getServiceCustomersIdPhotosAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetServiceCustomersIdPhotosAdminQueryOptions(id,options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * POST `/service-customers/{id}/photos/admin` — body `file_id`, `kind` (before|process|after), `caption`. Chỉ khi lượt đang thực hiện. Cần đăng nhập + `SERVICE_CUSTOMER:UPDATE_ALL`.
+ * @summary Add a photo to a service customer visit
+ */
+export const postServiceCustomersIdPhotosAdmin = (
+    id: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<void>(
+      {url: `/service-customers/${id}/photos/admin`, method: 'POST', signal
+    },
+      );
+    }
+  
+
+
+export const getPostServiceCustomersIdPhotosAdminMutationOptions = <TError = NotFoundResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postServiceCustomersIdPhotosAdmin>>, TError,{id: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postServiceCustomersIdPhotosAdmin>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['postServiceCustomersIdPhotosAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postServiceCustomersIdPhotosAdmin>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  postServiceCustomersIdPhotosAdmin(id,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostServiceCustomersIdPhotosAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postServiceCustomersIdPhotosAdmin>>>
+    
+    export type PostServiceCustomersIdPhotosAdminMutationError = NotFoundResponse
+
+    /**
+ * @summary Add a photo to a service customer visit
+ */
+export const usePostServiceCustomersIdPhotosAdmin = <TError = NotFoundResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postServiceCustomersIdPhotosAdmin>>, TError,{id: string}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postServiceCustomersIdPhotosAdmin>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+
+      const mutationOptions = getPostServiceCustomersIdPhotosAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * POST `/service-customers/{id}/payments/admin` — thu tiền lượt dịch vụ lẻ (ghi payment_log.service_customer_id), không vượt công nợ trừ khi bật `payment.allow_overpay`. Cần đăng nhập + `PAYMENT:CREATE`.
+ * @summary Record a payment for a service customer
  */
 export const postServiceCustomersIdPaymentsAdmin = (
     id: string,
@@ -426,7 +963,7 @@ const {mutation: mutationOptions} = options ?
     export type PostServiceCustomersIdPaymentsAdminMutationError = NotFoundResponse | UnprocessableEntityResponse
 
     /**
- * @summary Record a payment for a customer standalone service
+ * @summary Record a payment for a service customer
  */
 export const usePostServiceCustomersIdPaymentsAdmin = <TError = NotFoundResponse | UnprocessableEntityResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postServiceCustomersIdPaymentsAdmin>>, TError,{id: string;data: PostServiceCustomersIdPaymentsAdminBody}, TContext>, }
@@ -443,7 +980,7 @@ export const usePostServiceCustomersIdPaymentsAdmin = <TError = NotFoundResponse
     }
     /**
  * GET `/service-customers/{id}/payments/admin`. Cần đăng nhập + `PAYMENT:READ_ALL`.
- * @summary List payments of a customer standalone service
+ * @summary List payments of a service customer
  */
 export const getServiceCustomersIdPaymentsAdmin = (
     id: string,
@@ -520,7 +1057,7 @@ export function useGetServiceCustomersIdPaymentsAdminInfinite<TData = InfiniteDa
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary List payments of a customer standalone service
+ * @summary List payments of a service customer
  */
 
 export function useGetServiceCustomersIdPaymentsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getServiceCustomersIdPaymentsAdmin>>>, TError = NotFoundResponse>(
@@ -538,7 +1075,7 @@ export function useGetServiceCustomersIdPaymentsAdminInfinite<TData = InfiniteDa
 }
 
 /**
- * @summary List payments of a customer standalone service
+ * @summary List payments of a service customer
  */
 export const prefetchGetServiceCustomersIdPaymentsAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getServiceCustomersIdPaymentsAdmin>>, TError = NotFoundResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getServiceCustomersIdPaymentsAdmin>>, TError, TData>>, }
@@ -601,7 +1138,7 @@ export function useGetServiceCustomersIdPaymentsAdmin<TData = Awaited<ReturnType
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary List payments of a customer standalone service
+ * @summary List payments of a service customer
  */
 
 export function useGetServiceCustomersIdPaymentsAdmin<TData = Awaited<ReturnType<typeof getServiceCustomersIdPaymentsAdmin>>, TError = NotFoundResponse>(
@@ -619,7 +1156,7 @@ export function useGetServiceCustomersIdPaymentsAdmin<TData = Awaited<ReturnType
 }
 
 /**
- * @summary List payments of a customer standalone service
+ * @summary List payments of a service customer
  */
 export const prefetchGetServiceCustomersIdPaymentsAdminQuery = async <TData = Awaited<ReturnType<typeof getServiceCustomersIdPaymentsAdmin>>, TError = NotFoundResponse>(
  queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getServiceCustomersIdPaymentsAdmin>>, TError, TData>>, }
@@ -636,8 +1173,8 @@ export const prefetchGetServiceCustomersIdPaymentsAdminQuery = async <TData = Aw
 
 
 /**
- * PUT `/service-customers/{id}/complete/admin` — in_progress → completed (ghi `visit_done_at`). Cần đăng nhập + `STANDALONE_SERVICE:COMPLETE`.
- * @summary Complete a customer standalone service
+ * PUT `/service-customers/{id}/complete/admin` — in_progress → completed (ghi `visit_done_at`). Cần đăng nhập + `SERVICE_CUSTOMER:COMPLETE`.
+ * @summary Complete a service customer
  */
 export const putServiceCustomersIdCompleteAdmin = (
     id: string,
@@ -682,7 +1219,7 @@ const {mutation: mutationOptions} = options ?
     export type PutServiceCustomersIdCompleteAdminMutationError = NotFoundResponse | ConflictResponse
 
     /**
- * @summary Complete a customer standalone service
+ * @summary Complete a service customer
  */
 export const usePutServiceCustomersIdCompleteAdmin = <TError = NotFoundResponse | ConflictResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putServiceCustomersIdCompleteAdmin>>, TError,{id: string}, TContext>, }
@@ -698,8 +1235,8 @@ export const usePutServiceCustomersIdCompleteAdmin = <TError = NotFoundResponse 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * PUT `/service-customers/{id}/cancel/admin` — pending/approved → cancelled; chặn khi đã có thanh toán. Cần đăng nhập + `STANDALONE_SERVICE:UPDATE_ALL`.
- * @summary Cancel a customer standalone service
+ * PUT `/service-customers/{id}/cancel/admin` — pending/approved → cancelled; chặn khi đã có thanh toán. Cần đăng nhập + `SERVICE_CUSTOMER:UPDATE_ALL`.
+ * @summary Cancel a service customer
  */
 export const putServiceCustomersIdCancelAdmin = (
     id: string,
@@ -744,7 +1281,7 @@ const {mutation: mutationOptions} = options ?
     export type PutServiceCustomersIdCancelAdminMutationError = NotFoundResponse | ConflictResponse
 
     /**
- * @summary Cancel a customer standalone service
+ * @summary Cancel a service customer
  */
 export const usePutServiceCustomersIdCancelAdmin = <TError = NotFoundResponse | ConflictResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putServiceCustomersIdCancelAdmin>>, TError,{id: string}, TContext>, }
@@ -760,8 +1297,331 @@ export const usePutServiceCustomersIdCancelAdmin = <TError = NotFoundResponse | 
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/service-customers/admin` — danh sách lượt khách dùng dịch vụ lẻ (bảng standalone_service). Cần đăng nhập + `STANDALONE_SERVICE:READ_ALL`. Branch scope: user gắn 1 cơ sở chỉ thấy dữ liệu cơ sở đó. Query: `q` (tên/SĐT/mã KH, tên dịch vụ), `branch_id`, `user_id`, `service_id`, `status`, `payment_status`, `from`, `to` (YYYY-MM-DD), `page`, `limit`.
- * @summary List customer standalone services (Dịch vụ khách hàng)
+ * PUT `/service-customers/{id}/approve/admin` — pending → approved. Cần đăng nhập + `SERVICE_CUSTOMER:APPROVE`.
+ * @summary Approve a pending service customer visit
+ */
+export const putServiceCustomersIdApproveAdmin = (
+    id: string,
+ ) => {
+      
+      
+      return customInstance<void>(
+      {url: `/service-customers/${id}/approve/admin`, method: 'PUT'
+    },
+      );
+    }
+  
+
+
+export const getPutServiceCustomersIdApproveAdminMutationOptions = <TError = NotFoundResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putServiceCustomersIdApproveAdmin>>, TError,{id: string}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putServiceCustomersIdApproveAdmin>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['putServiceCustomersIdApproveAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putServiceCustomersIdApproveAdmin>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  putServiceCustomersIdApproveAdmin(id,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PutServiceCustomersIdApproveAdminMutationResult = NonNullable<Awaited<ReturnType<typeof putServiceCustomersIdApproveAdmin>>>
+    
+    export type PutServiceCustomersIdApproveAdminMutationError = NotFoundResponse
+
+    /**
+ * @summary Approve a pending service customer visit
+ */
+export const usePutServiceCustomersIdApproveAdmin = <TError = NotFoundResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putServiceCustomersIdApproveAdmin>>, TError,{id: string}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof putServiceCustomersIdApproveAdmin>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+
+      const mutationOptions = getPutServiceCustomersIdApproveAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * POST `/service-customers/{id}/apply-reward/admin` — áp quà quyền lợi (BENEFIT) khách đã đổi vào lượt dịch vụ. Cần đăng nhập + `REWARD:REDEEM_ADMIN`.
+ * @summary Apply a redeemed reward to a service customer visit
+ */
+export const postServiceCustomersIdApplyRewardAdmin = (
+    id: string,
+    postServiceCustomersIdApplyRewardAdminBody: PostServiceCustomersIdApplyRewardAdminBody,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<void>(
+      {url: `/service-customers/${id}/apply-reward/admin`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: postServiceCustomersIdApplyRewardAdminBody, signal
+    },
+      );
+    }
+  
+
+
+export const getPostServiceCustomersIdApplyRewardAdminMutationOptions = <TError = NotFoundResponse | UnprocessableEntityResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postServiceCustomersIdApplyRewardAdmin>>, TError,{id: string;data: PostServiceCustomersIdApplyRewardAdminBody}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof postServiceCustomersIdApplyRewardAdmin>>, TError,{id: string;data: PostServiceCustomersIdApplyRewardAdminBody}, TContext> => {
+
+const mutationKey = ['postServiceCustomersIdApplyRewardAdmin'];
+const {mutation: mutationOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postServiceCustomersIdApplyRewardAdmin>>, {id: string;data: PostServiceCustomersIdApplyRewardAdminBody}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  postServiceCustomersIdApplyRewardAdmin(id,data,)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostServiceCustomersIdApplyRewardAdminMutationResult = NonNullable<Awaited<ReturnType<typeof postServiceCustomersIdApplyRewardAdmin>>>
+    export type PostServiceCustomersIdApplyRewardAdminMutationBody = PostServiceCustomersIdApplyRewardAdminBody
+    export type PostServiceCustomersIdApplyRewardAdminMutationError = NotFoundResponse | UnprocessableEntityResponse
+
+    /**
+ * @summary Apply a redeemed reward to a service customer visit
+ */
+export const usePostServiceCustomersIdApplyRewardAdmin = <TError = NotFoundResponse | UnprocessableEntityResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postServiceCustomersIdApplyRewardAdmin>>, TError,{id: string;data: PostServiceCustomersIdApplyRewardAdminBody}, TContext>, }
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof postServiceCustomersIdApplyRewardAdmin>>,
+        TError,
+        {id: string;data: PostServiceCustomersIdApplyRewardAdminBody},
+        TContext
+      > => {
+
+      const mutationOptions = getPostServiceCustomersIdApplyRewardAdminMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
+ * GET `/service-customers/available-slots/admin?branch_id&date&staff_id?` — khung giờ trống theo lịch KTV (slot theo `booking.slot_minutes`). Cần đăng nhập + `SERVICE_CUSTOMER:READ_ALL`.
+ * @summary Available slots for a service customer visit
+ */
+export const getServiceCustomersAvailableSlotsAdmin = (
+    params: GetServiceCustomersAvailableSlotsAdminParams,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<void>(
+      {url: `/service-customers/available-slots/admin`, method: 'GET',
+        params, signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetServiceCustomersAvailableSlotsAdminInfiniteQueryKey = (params?: GetServiceCustomersAvailableSlotsAdminParams,) => {
+    return [
+    'infinite', `/service-customers/available-slots/admin`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+export const getGetServiceCustomersAvailableSlotsAdminQueryKey = (params?: GetServiceCustomersAvailableSlotsAdminParams,) => {
+    return [
+    `/service-customers/available-slots/admin`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getGetServiceCustomersAvailableSlotsAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getServiceCustomersAvailableSlotsAdmin>>>, TError = NotFoundResponse>(params: GetServiceCustomersAvailableSlotsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getServiceCustomersAvailableSlotsAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetServiceCustomersAvailableSlotsAdminInfiniteQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getServiceCustomersAvailableSlotsAdmin>>> = ({ signal }) => getServiceCustomersAvailableSlotsAdmin(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getServiceCustomersAvailableSlotsAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetServiceCustomersAvailableSlotsAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getServiceCustomersAvailableSlotsAdmin>>>
+export type GetServiceCustomersAvailableSlotsAdminInfiniteQueryError = NotFoundResponse
+
+
+export function useGetServiceCustomersAvailableSlotsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getServiceCustomersAvailableSlotsAdmin>>>, TError = NotFoundResponse>(
+ params: GetServiceCustomersAvailableSlotsAdminParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getServiceCustomersAvailableSlotsAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getServiceCustomersAvailableSlotsAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getServiceCustomersAvailableSlotsAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetServiceCustomersAvailableSlotsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getServiceCustomersAvailableSlotsAdmin>>>, TError = NotFoundResponse>(
+ params: GetServiceCustomersAvailableSlotsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getServiceCustomersAvailableSlotsAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getServiceCustomersAvailableSlotsAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getServiceCustomersAvailableSlotsAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetServiceCustomersAvailableSlotsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getServiceCustomersAvailableSlotsAdmin>>>, TError = NotFoundResponse>(
+ params: GetServiceCustomersAvailableSlotsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getServiceCustomersAvailableSlotsAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Available slots for a service customer visit
+ */
+
+export function useGetServiceCustomersAvailableSlotsAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getServiceCustomersAvailableSlotsAdmin>>>, TError = NotFoundResponse>(
+ params: GetServiceCustomersAvailableSlotsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getServiceCustomersAvailableSlotsAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetServiceCustomersAvailableSlotsAdminInfiniteQueryOptions(params,options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Available slots for a service customer visit
+ */
+export const prefetchGetServiceCustomersAvailableSlotsAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getServiceCustomersAvailableSlotsAdmin>>, TError = NotFoundResponse>(
+ queryClient: QueryClient, params: GetServiceCustomersAvailableSlotsAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getServiceCustomersAvailableSlotsAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetServiceCustomersAvailableSlotsAdminInfiniteQueryOptions(params,options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetServiceCustomersAvailableSlotsAdminQueryOptions = <TData = Awaited<ReturnType<typeof getServiceCustomersAvailableSlotsAdmin>>, TError = NotFoundResponse>(params: GetServiceCustomersAvailableSlotsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getServiceCustomersAvailableSlotsAdmin>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetServiceCustomersAvailableSlotsAdminQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getServiceCustomersAvailableSlotsAdmin>>> = ({ signal }) => getServiceCustomersAvailableSlotsAdmin(params, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getServiceCustomersAvailableSlotsAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetServiceCustomersAvailableSlotsAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getServiceCustomersAvailableSlotsAdmin>>>
+export type GetServiceCustomersAvailableSlotsAdminQueryError = NotFoundResponse
+
+
+export function useGetServiceCustomersAvailableSlotsAdmin<TData = Awaited<ReturnType<typeof getServiceCustomersAvailableSlotsAdmin>>, TError = NotFoundResponse>(
+ params: GetServiceCustomersAvailableSlotsAdminParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getServiceCustomersAvailableSlotsAdmin>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getServiceCustomersAvailableSlotsAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getServiceCustomersAvailableSlotsAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetServiceCustomersAvailableSlotsAdmin<TData = Awaited<ReturnType<typeof getServiceCustomersAvailableSlotsAdmin>>, TError = NotFoundResponse>(
+ params: GetServiceCustomersAvailableSlotsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getServiceCustomersAvailableSlotsAdmin>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getServiceCustomersAvailableSlotsAdmin>>,
+          TError,
+          Awaited<ReturnType<typeof getServiceCustomersAvailableSlotsAdmin>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetServiceCustomersAvailableSlotsAdmin<TData = Awaited<ReturnType<typeof getServiceCustomersAvailableSlotsAdmin>>, TError = NotFoundResponse>(
+ params: GetServiceCustomersAvailableSlotsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getServiceCustomersAvailableSlotsAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Available slots for a service customer visit
+ */
+
+export function useGetServiceCustomersAvailableSlotsAdmin<TData = Awaited<ReturnType<typeof getServiceCustomersAvailableSlotsAdmin>>, TError = NotFoundResponse>(
+ params: GetServiceCustomersAvailableSlotsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getServiceCustomersAvailableSlotsAdmin>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetServiceCustomersAvailableSlotsAdminQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Available slots for a service customer visit
+ */
+export const prefetchGetServiceCustomersAvailableSlotsAdminQuery = async <TData = Awaited<ReturnType<typeof getServiceCustomersAvailableSlotsAdmin>>, TError = NotFoundResponse>(
+ queryClient: QueryClient, params: GetServiceCustomersAvailableSlotsAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getServiceCustomersAvailableSlotsAdmin>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetServiceCustomersAvailableSlotsAdminQueryOptions(params,options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+/**
+ * GET `/service-customers/admin` — danh sách lượt khách dùng dịch vụ lẻ (bảng service_customer). Cần đăng nhập + `SERVICE_CUSTOMER:READ_ALL`. Branch scope: user gắn 1 cơ sở chỉ thấy dữ liệu cơ sở đó. Query: `q` (tên/SĐT/mã KH, tên dịch vụ), `branch_id`, `user_id`, `service_id`, `status`, `payment_status`, `from`, `to` (YYYY-MM-DD), `page`, `limit`.
+ * @summary List service customers (Dịch vụ khách hàng)
  */
 export const getServiceCustomersAdmin = (
     params?: GetServiceCustomersAdminParams,
@@ -839,7 +1699,7 @@ export function useGetServiceCustomersAdminInfinite<TData = InfiniteData<Awaited
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary List customer standalone services (Dịch vụ khách hàng)
+ * @summary List service customers (Dịch vụ khách hàng)
  */
 
 export function useGetServiceCustomersAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getServiceCustomersAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse>(
@@ -857,7 +1717,7 @@ export function useGetServiceCustomersAdminInfinite<TData = InfiniteData<Awaited
 }
 
 /**
- * @summary List customer standalone services (Dịch vụ khách hàng)
+ * @summary List service customers (Dịch vụ khách hàng)
  */
 export const prefetchGetServiceCustomersAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getServiceCustomersAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse>(
  queryClient: QueryClient, params?: GetServiceCustomersAdminParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getServiceCustomersAdmin>>, TError, TData>>, }
@@ -920,7 +1780,7 @@ export function useGetServiceCustomersAdmin<TData = Awaited<ReturnType<typeof ge
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary List customer standalone services (Dịch vụ khách hàng)
+ * @summary List service customers (Dịch vụ khách hàng)
  */
 
 export function useGetServiceCustomersAdmin<TData = Awaited<ReturnType<typeof getServiceCustomersAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse>(
@@ -938,7 +1798,7 @@ export function useGetServiceCustomersAdmin<TData = Awaited<ReturnType<typeof ge
 }
 
 /**
- * @summary List customer standalone services (Dịch vụ khách hàng)
+ * @summary List service customers (Dịch vụ khách hàng)
  */
 export const prefetchGetServiceCustomersAdminQuery = async <TData = Awaited<ReturnType<typeof getServiceCustomersAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse>(
  queryClient: QueryClient, params?: GetServiceCustomersAdminParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getServiceCustomersAdmin>>, TError, TData>>, }
@@ -955,8 +1815,8 @@ export const prefetchGetServiceCustomersAdminQuery = async <TData = Awaited<Retu
 
 
 /**
- * POST `/service-customers/admin` — tạo lượt khách dùng dịch vụ lẻ (trạng thái approved). Cần đăng nhập + `STANDALONE_SERVICE:CREATE`. Thành tiền mặc định = giá niêm yết của dịch vụ lẻ; dịch vụ có khoảng giá thì phải nằm trong khoảng.
- * @summary Create a customer standalone service
+ * POST `/service-customers/admin` — tạo lượt khách dùng dịch vụ lẻ (trạng thái approved). Cần đăng nhập + `SERVICE_CUSTOMER:CREATE`. Thành tiền mặc định = giá niêm yết của dịch vụ lẻ; dịch vụ có khoảng giá thì phải nằm trong khoảng.
+ * @summary Create a service customer
  */
 export const postServiceCustomersAdmin = (
     serviceCustomerCreate: ServiceCustomerCreate,
@@ -1004,7 +1864,7 @@ const {mutation: mutationOptions} = options ?
     export type PostServiceCustomersAdminMutationError = UnprocessableEntityResponse
 
     /**
- * @summary Create a customer standalone service
+ * @summary Create a service customer
  */
 export const usePostServiceCustomersAdmin = <TError = UnprocessableEntityResponse,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postServiceCustomersAdmin>>, TError,{data: ServiceCustomerCreate}, TContext>, }
