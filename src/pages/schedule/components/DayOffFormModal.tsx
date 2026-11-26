@@ -18,12 +18,16 @@ interface ConflictAppointment {
   service?: { title?: string }
 }
 
-export default function DayOffFormModal({ open, form, staff, scheduledTemplates, isTechnician, onCancel, onSubmit }: {
+export default function DayOffFormModal({ open, form, staff, scheduledTemplates, isTechnician, compact = false, submitting = false, submitError, onCancel, onSubmit }: {
   open: boolean
   form: FormInstance
   staff: ScheduleStaff[]
   scheduledTemplates: ShiftTemplate[]
   isTechnician: boolean
+  /** Layout mobile/tablet theo Figma: cảnh báo trùng rút gọn, lỗi gửi ngay trong form */
+  compact?: boolean
+  submitting?: boolean
+  submitError?: string | null
   onCancel: () => void
   onSubmit: () => void
 }) {
@@ -48,10 +52,14 @@ export default function DayOffFormModal({ open, form, staff, scheduledTemplates,
       open={open}
       onCancel={onCancel}
       onOk={onSubmit}
-      okText={conflicts.length ? `Tiếp tục đăng ký (${conflicts.length} lịch trùng)` : 'Gửi đăng ký'}
+      okText={compact
+        ? (submitting ? 'Đang gửi…' : 'Gửi đăng ký')
+        : conflicts.length ? `Tiếp tục đăng ký (${conflicts.length} lịch trùng)` : 'Gửi đăng ký'}
       cancelText="Hủy"
+      confirmLoading={submitting}
       destroyOnHidden
       width={720}
+      className={compact ? 'schedule-compact-modal' : undefined}
     >
       <Form form={form} layout="vertical" style={{ marginTop: 16 }} onValuesChange={(changed) => {
         if (changed.staff_id !== undefined || changed.off_date !== undefined) form.setFieldValue('shift_template_id', undefined)
@@ -59,7 +67,7 @@ export default function DayOffFormModal({ open, form, staff, scheduledTemplates,
         <Form.Item name="staff_id" label="Nhân viên" rules={[{ required: true, message: 'Chọn nhân viên' }]}>
           <Select disabled={isTechnician} showSearch optionFilterProp="label" options={staff.map((person) => ({ value: person.id, label: staffLabel(person) }))} />
         </Form.Item>
-        <Form.Item name="off_date" label="Ngày nghỉ" rules={[{ required: true, message: 'Chọn ngày nghỉ' }]}><DatePicker format="DD/MM/YYYY" style={{ width: '100%' }} /></Form.Item>
+        <Form.Item name="off_date" label="Ngày nghỉ" rules={[{ required: true, message: compact ? 'Vui lòng chọn ngày nghỉ.' : 'Chọn ngày nghỉ' }]}><DatePicker format="DD/MM/YYYY" style={{ width: '100%' }} /></Form.Item>
         <Form.Item name="shift_template_id" label="Ca nghỉ (không chọn nghĩa là nghỉ cả ngày)">
           <Select allowClear placeholder="Cả ngày" options={scheduledTemplates.map((template) => ({ value: template.id, label: `${template.name} (${template.start_time.slice(0, 5)}–${template.end_time.slice(0, 5)})` }))} />
         </Form.Item>
@@ -68,7 +76,14 @@ export default function DayOffFormModal({ open, form, staff, scheduledTemplates,
           <ServiceImageField />
         </Form.Item>
       </Form>
-      {!!selectedStaffId && !!selectedDate && (
+      {compact && !!selectedStaffId && !!selectedDate && (
+        conflictsQuery.isLoading ? (
+          <Typography.Text type="secondary">Đang kiểm tra lịch hẹn trùng…</Typography.Text>
+        ) : conflicts.length ? (
+          <Alert type="warning" showIcon message="Có lịch hẹn trùng" description="Vui lòng kiểm tra trước khi gửi đăng ký." />
+        ) : null
+      )}
+      {!compact && !!selectedStaffId && !!selectedDate && (
         conflictsQuery.isLoading ? (
           <Typography.Text type="secondary">Đang kiểm tra lịch hẹn trùng…</Typography.Text>
         ) : conflicts.length ? (
@@ -96,6 +111,9 @@ export default function DayOffFormModal({ open, form, staff, scheduledTemplates,
         ) : (
           <Alert type="success" showIcon message="Không có lịch hẹn nào trùng ca nghỉ này" />
         )
+      )}
+      {!!submitError && (
+        <Alert style={{ marginTop: 12 }} type="error" showIcon role="alert" message="Không gửi được đăng ký nghỉ" description={submitError || 'Vui lòng thử lại.'} />
       )}
     </Modal>
   )

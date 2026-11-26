@@ -5,9 +5,9 @@ import type { ReactNode } from 'react'
 /** Khối thông tin label:value trong card mobile */
 export function MobileCardRow({ label, value }: { label: string; value: ReactNode }) {
   return (
-    <div className="mobile-card-row">
-      <span className="mobile-card-label">{label}</span>
-      <span className="mobile-card-value">{value}</span>
+    <div className="flex w-full items-start gap-2">
+      <p className="m-0 w-[107px] shrink-0 text-xs text-[#655E71]">{label}</p>
+      <p className="m-0 min-w-0 flex-1 break-words text-[13px] font-medium text-[#282335]">{value}</p>
     </div>
   )
 }

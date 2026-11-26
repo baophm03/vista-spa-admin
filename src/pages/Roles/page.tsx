@@ -203,20 +203,20 @@ export default function Roles() {
       )}
 
       <Spin spinning={loading}>
-        <div className="grid gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {roles.map((role) => {
             return (
               <div
                 key={role.id}
-                className="flex flex-col justify-between gap-4 rounded-[20px] border border-[var(--brand-border-soft)] bg-white p-5 transition-all hover:border-[var(--brand-border-strong)] hover:shadow-md max-sm:flex-col sm:flex-row sm:items-start"
+                className="flex flex-col justify-between gap-4 rounded-[20px] border border-[var(--brand-border-soft)] bg-white p-5 transition-all hover:border-[var(--brand-border-strong)] hover:shadow-md max-sm:flex-col sm:flex-row sm:items-start md:flex-col md:items-stretch"
               >
-                <div className="flex items-start gap-4">
+                <div className="flex min-w-0 items-start gap-4">
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[rgba(var(--brand-rgb),0.1)]">
                     <SafetyOutlined className="text-xl text-[var(--brand-primary)]" />
                   </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <Typography.Text strong className="text-[15px] text-[var(--brand-dark)]">
+                  <div className='min-w-0'>
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                      <Typography.Text strong className="text-[15px] text-[var(--brand-dark)] break-words">
                         {role.role_name}
                       </Typography.Text>
                       {role.code && <Tag color="geekblue">{role.code}</Tag>}
@@ -233,7 +233,7 @@ export default function Roles() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1 max-sm:self-end">
+                <div className="flex items-center gap-1 max-sm:self-end md:self-end">
                   <Can I="MANAGE" a="PERMISSION">
                     <Button
                       type="text"

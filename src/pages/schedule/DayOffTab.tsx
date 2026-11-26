@@ -19,6 +19,9 @@ import type { SchedulePageData } from './types'
 import { staffLabel } from './types'
 import DayOffFormModal from './components/DayOffFormModal'
 import DayOffRejectModal from './components/DayOffRejectModal'
+import { MobileEmptyCard, MobileErrorCard, MobileLoadingCards } from './mobile/MobileStates'
+import { notifyCompactSuccess } from './mobile/feedback'
+import { useCompactLayout } from './useCompactLayout'
 
 interface Props extends SchedulePageData { loadingShared: boolean }
 interface ConflictAppointment { id: string; appt_date: string; start_time: string; status?: string; user?: { full_name?: string; zalo_name?: string }; service?: { title?: string } }
@@ -109,6 +112,9 @@ export default function DayOffTab({ branches, staff, access, loadingShared }: Pr
   const showColumns = Grid.useBreakpoint().md
   const queryClient = useQueryClient()
   const navigate = useNavigate()
+  const compact = useCompactLayout()
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
   const [staffFilter, setStaffFilter] = useState<string>()
   const [statusFilter, setStatusFilter] = useState<string>()
   const [branchFilter, setBranchFilter] = useState<string>()
@@ -191,6 +197,7 @@ export default function DayOffTab({ branches, staff, access, loadingShared }: Pr
   }, [selectedStaff, selectedDate, staffSchedules, templates])
 
   const openCreate = () => {
+    setSubmitError(null)
     form.resetFields()
     form.setFieldsValue({ staff_id: isTechnician ? access.currentUserId : staffFilter, off_date: dayjs() })
     setOpen(true)
@@ -198,6 +205,8 @@ export default function DayOffTab({ branches, staff, access, loadingShared }: Pr
 
   const submit = async () => {
     const values = await form.validateFields()
+    setSubmitting(true)
+    setSubmitError(null)
     try {
       await postStaffDaysOffAdmin({
         staff_id: values.staff_id,
@@ -205,10 +214,16 @@ export default function DayOffTab({ branches, staff, access, loadingShared }: Pr
         shift_template_id: values.shift_template_id || null,
         reason: values.reason?.trim() || undefined,
       } as never)
-      message.success('Đã gửi đăng ký ngày nghỉ')
+      if (compact) notifyCompactSuccess('Đã gửi đăng ký nghỉ', 'Đăng ký đã được gửi.')
+      else message.success('Đã gửi đăng ký ngày nghỉ')
       setOpen(false)
       void queryClient.invalidateQueries({ queryKey: getGetStaffDaysOffAdminQueryKey() })
-    } catch (err) { message.error(errorMessage(err)) }
+    } catch (err) {
+      if (compact) setSubmitError(errorMessage(err))
+      else message.error(errorMessage(err))
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   const approve = async (row: StaffDayOff) => {
@@ -292,16 +307,19 @@ export default function DayOffTab({ branches, staff, access, loadingShared }: Pr
     } },
   ]
 
-  return <div>
-    <ToolbarRow>
+  const loading = loadingShared || daysOffQuery.isLoading || templatesQuery.isLoading
+  const retry = () => { void daysOffQuery.refetch(); void templatesQuery.refetch() }
+  const showCompactState = compact && (!!error || loading || !rows.length)
+  const canCreate = access.isAdmin || access.isReceptionist || access.isTechnician
+  const toolbarItems = <>
       <Popover
-        trigger="click" placement="bottomLeft" open={filterOpen} onOpenChange={openFilters}
+        trigger="click" placement={compact ? 'bottom' : 'bottomLeft'} open={filterOpen} onOpenChange={openFilters}
         title="Bộ lọc"
-        content={<div style={{ width: 300, maxHeight: 'min(70vh, 580px)', display: 'flex', flexDirection: 'column' }}>
+        content={<div style={{ width: compact ? 'min(330px, calc(100vw - 60px))' : 300, maxHeight: 'min(70vh, 580px)', display: 'flex', flexDirection: 'column' }}>
           <div style={{ overflowY: 'auto', paddingRight: 4 }}>
             {showColumns && <>
             <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 10 }}>
-              <Typography.Text strong>Cột hiển thị</Typography.Text>
+              <Typography.Text strong>{compact ? 'Thông tin hiển thị' : 'Cột hiển thị'}</Typography.Text>
               <Tag style={{ marginInlineEnd: 0 }}>{draftVisibleColumns.length}/{DAY_OFF_COLUMN_OPTIONS.length} cột</Tag>
             </Space>
             <Checkbox.Group
@@ -335,24 +353,41 @@ export default function DayOffTab({ branches, staff, access, loadingShared }: Pr
           </div>
         </div>}
       >
-        <Badge count={activeFilterCount} size="small">
-          <Button icon={<FilterOutlined />}>Bộ lọc</Button>
-        </Badge>
+        {compact ? (
+          <Button block className="h-11! rounded-xl! font-semibold!">{activeFilterCount ? `Bộ lọc (${activeFilterCount})` : 'Bộ lọc'}</Button>
+        ) : (
+          <Badge count={activeFilterCount} size="small">
+            <Button icon={<FilterOutlined />}>Bộ lọc</Button>
+          </Badge>
+        )}
       </Popover>
-      {(access.isAdmin || access.isReceptionist || access.isTechnician) && <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>Đăng ký nghỉ</Button>}
-    </ToolbarRow>
-    {!!error && <Alert type="error" showIcon message="Không tải được danh sách ngày nghỉ" description={error} action={<Button size="small" icon={<ReloadOutlined />} onClick={() => void daysOffQuery.refetch()}>Thử lại</Button>} style={{ marginBottom: 16 }} />}
+      {canCreate && <Button type="primary" block={compact} className={compact ? 'h-11! rounded-xl! font-semibold! shadow-none!' : undefined} icon={compact ? undefined : <PlusOutlined />} onClick={openCreate}>Đăng ký nghỉ</Button>}
+  </>
+
+  return <div>
+    {compact
+      ? <div className={`mb-3 grid gap-2 ${canCreate ? 'grid-cols-2' : 'grid-cols-1'}`}>{toolbarItems}</div>
+      : <ToolbarRow>{toolbarItems}</ToolbarRow>}
+    {!!error && !compact && <Alert type="error" showIcon message="Không tải được danh sách ngày nghỉ" description={error} action={<Button size="small" icon={<ReloadOutlined />} onClick={() => void daysOffQuery.refetch()}>Thử lại</Button>} style={{ marginBottom: 16 }} />}
     <Table<StaffDayOff>
       className="desktop-only"
       rowKey="id" size="middle" pagination={false}
-      loading={loadingShared || daysOffQuery.isLoading || templatesQuery.isLoading} dataSource={rows}
+      loading={loading} dataSource={rows}
       columns={columns.filter((column) => column.key === 'actions' || visibleColumns.includes(column.key as DayOffColumnKey))}
       locale={{ emptyText: <TableEmpty description="Chưa có đăng ký nghỉ trong điều kiện đã chọn" /> }}
     />
-    <MobileCards
+    {/* Mobile/tablet: trạng thái tải / lỗi / trống / không có kết quả theo Figma */}
+    {showCompactState ? (
+      <div className="mb-3">
+        {error ? <MobileErrorCard title="Không tải được ngày nghỉ" onRetry={retry} />
+          : loading ? <MobileLoadingCards />
+            : activeFilterCount ? <MobileEmptyCard title="Không có kết quả" description="Thử đổi từ khóa hoặc bộ lọc" />
+              : <MobileEmptyCard title="Chưa có đăng ký nghỉ" />}
+      </div>
+    ) : <MobileCards
       rows={rows}
       rowKey={(row) => row.id}
-      loading={loadingShared || daysOffQuery.isLoading || templatesQuery.isLoading}
+      loading={loading}
       emptyText="Chưa có đăng ký nghỉ trong điều kiện đã chọn"
       renderCard={(row) => {
         const staffInfo = (row as StaffDayOff & { staff?: { id: string; zalo_name?: string; email?: string; phone?: string } }).staff ?? staff.find((person) => person.id === row.staff_id)
@@ -381,8 +416,8 @@ export default function DayOffTab({ branches, staff, access, loadingShared }: Pr
           </>
         )
       }}
-    />
-    <ListPagination page={page} limit={10} total={(daysOffQuery.data as unknown as { meta?: { total?: number } })?.meta?.total ?? rows.length} onChange={setPage} noun="đăng ký nghỉ" />
+    />}
+    {!showCompactState && <ListPagination page={page} limit={10} total={(daysOffQuery.data as unknown as { meta?: { total?: number } })?.meta?.total ?? rows.length} onChange={setPage} noun="đăng ký nghỉ" />}
 
     <DayOffFormModal
       open={open}
@@ -390,6 +425,9 @@ export default function DayOffTab({ branches, staff, access, loadingShared }: Pr
       staff={staff}
       scheduledTemplates={scheduledTemplates}
       isTechnician={isTechnician}
+      compact={compact}
+      submitting={submitting}
+      submitError={compact ? submitError : null}
       onCancel={() => setOpen(false)}
       onSubmit={() => void submit()}
     />

@@ -1,0 +1,89 @@
+/* Trang Lịch làm việc — layout mobile/tablet theo Figma (VISTA-REDESIGN, Page 2).
+   Chỉ áp dụng dưới 1024px (cùng mốc .mobile-only/.desktop-only); desktop giữ nguyên. */
+
+@media (max-width: 1023px) {
+  /* Tabs dạng segmented: nền tím nhạt, tab đang chọn là ô trắng */
+  .staff-schedule-tabs .ant-tabs-nav {
+    padding: 4px;
+    border: 1px solid #e9ddf0;
+    border-radius: 16px;
+    background: #f3eef6;
+  }
+  .staff-schedule-tabs .ant-tabs-nav::before {
+    display: none;
+  }
+  .staff-schedule-tabs .ant-tabs-nav-list {
+    width: 100%;
+  }
+  .staff-schedule-tabs .ant-tabs-ink-bar {
+    display: none;
+  }
+  .staff-schedule-tabs .ant-tabs-tab {
+    flex: 1 1 0;
+    justify-content: center;
+    height: 44px !important;
+    margin: 0 !important;
+    padding: 0 8px !important;
+    border-radius: 12px;
+    color: #6f7071;
+    font-size: 13px !important;
+  }
+  .staff-schedule-tabs .ant-tabs-tab + .ant-tabs-tab {
+    margin-inline-start: 0 !important;
+  }
+  .staff-schedule-tabs .ant-tabs-tab.ant-tabs-tab-active {
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(41, 35, 49, 0.12);
+  }
+  .staff-schedule-tabs .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
+    color: var(--brand-primary);
+    font-weight: 600;
+  }
+  .staff-schedule-tabs .ant-tabs-nav-operations {
+    display: none !important;
+  }
+
+  /* Hộp thông báo tím (KTV chỉ đăng ký tuần kế tiếp) */
+  .schedule-brand-alert.ant-alert {
+    border-color: #e4cdeb;
+    background: #f6eef9;
+  }
+  .schedule-brand-alert .ant-alert-icon,
+  .schedule-brand-alert .ant-alert-message,
+  .schedule-brand-alert .ant-alert-title {
+    color: var(--brand-primary);
+  }
+
+  /* Nút trong modal đăng ký: cao 44px, bo 12px như Figma */
+  .schedule-compact-modal .ant-modal-footer .ant-btn {
+    height: 44px;
+    border-radius: 12px;
+    padding-inline: 14px;
+    font-weight: 600;
+  }
+
+  /* Toast xanh ở đáy: "Đã lưu đăng ký ca", "Đã xóa ca"... */
+  .schedule-compact-toast.ant-notification-notice {
+    border: 1px solid #d4e8c8;
+    background: #f1f8ec;
+  }
+}
+
+/* Tablet (768–1023px): nội dung tab phải cuộn được — CSS desktop khóa overflow từ 768px */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .staff-schedule-tabs.ant-tabs .ant-tabs-content-holder,
+  .staff-schedule-tabs.ant-tabs .ant-tabs-tabpane {
+    overflow-y: auto !important;
+  }
+}
+
+/* Bảng chọn tuần (mobile/tablet): rộng bằng hàng điều hướng, tối đa 358px như Figma */
+.schedule-week-picker .ant-picker-panel-container,
+.schedule-week-picker .ant-picker-panel,
+.schedule-week-picker .ant-picker-date-panel,
+.schedule-week-picker .ant-picker-week-panel {
+  width: min(358px, calc(100vw - 32px));
+}
+.schedule-week-picker .ant-picker-content {
+  width: 100%;
+}
