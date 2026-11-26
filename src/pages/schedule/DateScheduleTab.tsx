@@ -52,6 +52,9 @@ function mondayOf(date: dayjs.Dayjs) {
 
 const WEEKDAY_LABELS = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7']
 
+const shiftLabel = (template?: ShiftTemplateRow | null) =>
+  `${template?.name ?? 'Ca'} ${template ? `${template.start_time.slice(0, 5)}–${template.end_time.slice(0, 5)}` : ''}`
+
 /** Modal liệt kê lịch hẹn bị ảnh hưởng khi xóa lịch (409 FUTURE_APPOINTMENTS_EXIST) — dùng cho luồng mobile. */
 function confirmAffectedAppointments(affected: ConflictAppointment[], onOk: () => Promise<void>) {
   Modal.confirm({

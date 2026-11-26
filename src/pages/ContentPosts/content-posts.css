@@ -1,0 +1,25 @@
+/* Card mobile của danh sách bài viết: mọi card cao bằng nhau.
+   - Tiêu đề luôn chiếm đúng 2 dòng (cắt bằng "…" nếu dài hơn, giữ chỗ nếu chỉ 1 dòng)
+   - Card trong cùng hàng kéo giãn bằng nhau, nút thao tác luôn nằm sát đáy */
+.content-post-list .responsive-table-mobile .mobile-card-list {
+  align-items: stretch;
+}
+
+.content-post-list .responsive-table-mobile .mobile-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.content-post-list .responsive-table-mobile .mobile-card-actions {
+  margin-top: auto;
+}
+
+.content-post-list .responsive-table-mobile .content-post-title {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  line-height: 20px;
+  min-height: 40px;
+}
