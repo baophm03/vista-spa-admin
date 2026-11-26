@@ -90,6 +90,7 @@ export default function TreatmentCreateModal({
 
   return (
     <Modal
+      className="treatment-form-modal"
       title={isSingle ? 'Thêm khách dịch vụ lẻ' : 'Thêm khách vào liệu trình'}
       open={open}
       onCancel={onCancel}

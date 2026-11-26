@@ -374,12 +374,11 @@ export default function WheelSpinModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="lucky-wheel-title"
-      className="fixed inset-0 z-[1400] flex items-end justify-center bg-[#2A1533]/45 text-center font-sans backdrop-blur-[2px] selection:bg-[#E2B7F4] sm:items-center sm:p-3"
+      className="fixed inset-0 z-[1400] flex items-end justify-center bg-[#2A1533]/45 text-center font-sans backdrop-blur-[2px] selection:bg-[#E2B7F4] sm:items-center sm:p-3 md:p-0"
       onClick={onClose}
     >
-      {/* Màn hình quay phủ viewport trên mobile và căn giữa trên desktop. */}
       <div
-        className="relative flex h-dvh w-full flex-col overflow-y-auto overflow-x-hidden overscroll-contain bg-[#FAF1FC] text-[#3A1448] sm:h-auto sm:max-h-[96dvh] sm:max-w-[430px] sm:rounded-[22px] sm:shadow-[0_24px_80px_rgba(30,10,40,0.35)]"
+        className="relative flex h-dvh w-full flex-col overflow-y-auto overflow-x-hidden overscroll-contain bg-[#FAF1FC] text-[#3A1448] sm:max-md:h-auto sm:max-md:max-h-[96dvh] sm:max-md:max-w-[430px] sm:max-md:rounded-[22px] sm:max-md:shadow-[0_24px_80px_rgba(30,10,40,0.35)]"
         onClick={(event) => event.stopPropagation()}
       >
       {/* Background lavender silk spa y hệt ảnh thiết kế */}
@@ -421,7 +420,7 @@ export default function WheelSpinModal({
       </header>
 
       {/* Main Container */}
-      <main className="relative z-10 mx-auto flex w-full max-w-[1400px] flex-1 flex-col items-center px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-1 sm:px-8 sm:pb-4">
+      <main className="relative z-10 mx-auto flex w-full max-w-[1400px] flex-1 flex-col items-center overflow-x-clip px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-1 sm:px-8 sm:pb-4 md:justify-center-safe">
         {/* Huy hiệu VÒNG QUAY MAY MẮN kết hợp tên chương trình sang trọng */}
         <div className="inline-flex h-12 max-w-full shrink-0 items-center gap-2 rounded-full border border-[#E8D9D0] bg-white/85 px-3 shadow-[0_5px_18px_rgba(97,55,102,0.10)] backdrop-blur-sm sm:gap-3 sm:px-4">
           <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[#F5EAF6] text-sm text-[#8D42A0]">
@@ -477,7 +476,7 @@ export default function WheelSpinModal({
 
         {/* Khung Vòng quay may mắn - Chuẩn xác 100% ánh kim loại Champagne Gold */}
         <div
-          className="relative mt-4 aspect-square shrink-0 select-none [container-type:inline-size]"
+          className="relative mt-4 aspect-square max-w-full shrink-0 select-none [container-type:inline-size]"
           style={{ width: 'min(84vw, 29rem, 46dvh)' }}
         >
           {/* LỚP 1: Vành kim loại ngoài Champagne Gold Metallic (conic-gradient tạo luồng sáng quét đa chiều) */}

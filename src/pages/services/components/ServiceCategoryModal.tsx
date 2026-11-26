@@ -24,6 +24,7 @@ export default function ServiceCategoryModal({
   return (
     <Modal
       title={editing ? 'Sửa danh mục dịch vụ' : 'Thêm danh mục dịch vụ'}
+      className="service-category-modal"
       open={open}
       onCancel={onCancel}
       onOk={onOk}

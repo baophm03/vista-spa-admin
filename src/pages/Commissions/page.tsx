@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import PageTitle from '@/components/base/PageTitle'
 import CommissionEntriesPanel from '@/pages/CommissionEntries/page'
 import CommissionRulesPanel from '@/pages/CommissionRules/page'
+import './commissions.css'
 
 export default function Commissions() {
   const [searchParams] = useSearchParams()
@@ -16,9 +17,9 @@ export default function Commissions() {
   const defaultTab = requestedTab && tabItems.some((tab) => tab.key === requestedTab) ? requestedTab : 'received'
 
   return (
-    <>
+    <div className="commissions-page">
       <PageTitle subtitle="Hoa hồng đã nhận và quy tắc tính tự động theo từng cơ sở">Hoa hồng</PageTitle>
       <Tabs defaultActiveKey={defaultTab} items={tabItems} />
-    </>
+    </div>
   )
 }

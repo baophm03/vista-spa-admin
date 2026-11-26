@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { Input, Modal, Select, Table, Tag, Typography, message } from 'antd'
 import type { TableColumnsType } from 'antd'
 import { CheckOutlined, EyeOutlined, ShoppingOutlined, StopOutlined, UserOutlined } from '@ant-design/icons'
@@ -6,10 +7,11 @@ import PageTitle from '@/components/base/PageTitle'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
 import MobileCards from '@/components/base/MobileCards'
+import StatCards from '@/components/base/StatCards'
 import { errorMessage, pickData, pickMeta } from '@/api/helpers'
 import { formatCurrency, formatDateTime, useBrandCurrency } from '@/themeRuntime'
 import { useCustomerProfileAccess } from '@/utils/customerProfileAccess'
-import { useGetProductOrdersAdmin, putProductOrdersIdAdmin } from '@/api/endpoints/product-orders'
+import { getGetProductOrdersAdminQueryKey, useGetProductOrdersAdmin, putProductOrdersIdAdmin } from '@/api/endpoints/product-orders'
 import OrderDetailModal from './components/OrderDetailModal'
 import {
   NEXT_ACTIONS,
@@ -20,6 +22,7 @@ import {
 import './orders.css'
 
 export default function Orders() {
+  const queryClient = useQueryClient()
   const { currency } = useBrandCurrency()
   const { isAdmin } = useCustomerProfileAccess()
   const formatMoney = (value?: number | string | null) => formatCurrency(value, currency)
@@ -38,6 +41,9 @@ export default function Orders() {
   })
   const rows = (pickData<ProductOrderRow[]>(ordersQuery.data) ?? []) as ProductOrderRow[]
   const total = pickMeta(ordersQuery.data)?.total ?? rows.length
+  const summaryQuery = useGetProductOrdersAdmin({ page: 1, limit: 1 })
+  const pendingQuery = useGetProductOrdersAdmin({ page: 1, limit: 1, status: 'PENDING' })
+  const completedQuery = useGetProductOrdersAdmin({ page: 1, limit: 1, status: 'COMPLETED' })
 
   const applySearch = (nextKeyword: string) => {
     setSearchText(nextKeyword)
@@ -51,7 +57,7 @@ export default function Orders() {
       await putProductOrdersIdAdmin(row.id, { status })
       message.success(`Đã chuyển đơn ${row.code} sang "${STATUS_META[status].label}"`)
       if (detail?.id === row.id) setDetail({ ...detail, status })
-      await ordersQuery.refetch()
+      await queryClient.invalidateQueries({ queryKey: getGetProductOrdersAdminQueryKey() })
     } catch (err) {
       message.error(errorMessage(err))
     }
@@ -134,6 +140,15 @@ export default function Orders() {
     <>
       <PageTitle
         className="orders-page-title"
+        summary={(
+          <div className="orders-stats">
+            <StatCards items={[
+              { key: 'total', label: 'Tổng đơn hàng', value: pickMeta(summaryQuery.data)?.total?.toLocaleString('vi-VN') ?? '—', icon: <ShoppingOutlined /> },
+              { key: 'pending', label: 'Chờ xử lý', value: pickMeta(pendingQuery.data)?.total?.toLocaleString('vi-VN') ?? '—', icon: <EyeOutlined />, tone: 'tertiary' },
+              { key: 'completed', label: 'Hoàn thành', value: pickMeta(completedQuery.data)?.total?.toLocaleString('vi-VN') ?? '—', icon: <CheckOutlined />, tone: 'secondary' },
+            ]} />
+          </div>
+        )}
         subtitle="Theo dõi và xử lý đơn hàng từ cửa hàng"
         left={
           <>
@@ -160,7 +175,7 @@ export default function Orders() {
       </PageTitle>
 
       <Table<ProductOrderRow>
-        className="desktop-only"
+        className="desktop-only orders-table"
         rowKey="id"
         loading={ordersQuery.isFetching}
         dataSource={rows}

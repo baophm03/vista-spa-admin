@@ -3,7 +3,7 @@ import { displayName } from '@/utils/displayName'
 import { createPortal } from 'react-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import dayjs, { type Dayjs } from 'dayjs'
-import { Alert, Button, Drawer, Dropdown, Form, Input, Modal, Popover, Select, Space, Table, Tag, message } from 'antd'
+import { Alert, Button, Drawer, Dropdown, Form, Input, Modal, Popover, Select, Skeleton, Space, Table, Tag, message } from 'antd'
 import type { MenuProps } from 'antd'
 import { CalendarOutlined, DeleteOutlined, DownOutlined, EditOutlined, FileTextOutlined, PlusOutlined } from '@ant-design/icons'
 import { errorMessage, pickData } from '@/api/helpers'
@@ -23,6 +23,7 @@ import StaffFilterPanel from './calendar/StaffFilterPanel'
 import ScheduleTimeGrid, { type ScheduleBlock } from './calendar/ScheduleTimeGrid'
 import { ShiftDetailContent } from './calendar/ShiftDetailPanel'
 import { shiftStyle } from './calendar/shiftStyles'
+import './schedule.css'
 import QuickCreatePopover from './calendar/QuickCreatePopover'
 
 interface Props extends SchedulePageData { loadingShared: boolean }
@@ -847,6 +848,89 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
           />
         </div>
       </div>
+    </div>
+
+    {/* Tablet: lưới giờ quá chật → chọn ngày trong tuần rồi liệt kê ca theo từng nhân viên */}
+    <div className="schedule-daylist">
+      <div className="schedule-daystrip" role="tablist" aria-label="Chọn ngày trong tuần">
+        {Array.from({ length: 7 }, (_, index) => weekStart.add(index, 'day')).map((date) => {
+          const isActive = date.isSame(anchor, 'day')
+          const hasShift = filterStaff.some((person) => shiftsForCell(person.id, date).length > 0)
+          return (
+            <button
+              key={date.format('YYYY-MM-DD')}
+              type="button"
+              role="tab"
+              aria-selected={isActive}
+              className={`schedule-daystrip-day${isActive ? ' is-active' : ''}${date.isSame(dayjs(), 'day') ? ' is-today' : ''}`}
+              onClick={() => { setAnchor(date); setSelectedBlockKey(null) }}
+            >
+              <span className="schedule-daystrip-weekday">{WEEKDAY_LABELS[date.day()]}</span>
+              <span className="schedule-daystrip-date">{date.format('DD')}</span>
+              <span className={`schedule-daystrip-dot${hasShift ? '' : ' is-empty'}`} aria-hidden="true" />
+            </button>
+          )
+        })}
+      </div>
+      {loading ? (
+        <div className="schedule-daylist-cards">
+          {[0, 1, 2].map((key) => <div className="schedule-daycard" key={key}><Skeleton active paragraph={{ rows: 2 }} /></div>)}
+        </div>
+      ) : (() => {
+        const dayRows = filterStaff
+          .map((person) => ({ person, shifts: shiftsForCell(person.id, anchor) }))
+          .filter((item) => item.shifts.length > 0)
+        if (!dayRows.length) {
+          return (
+            <div className="schedule-daylist-empty">
+              <CalendarOutlined aria-hidden="true" />
+              <p>Chưa có lịch ngày {WEEKDAY_LABELS[anchor.day()]} {anchor.format('DD/MM')}</p>
+              {showCreate && (
+                <Button type="primary" icon={<PlusOutlined />} disabled={createDisabled} onClick={() => openForm(undefined, { date: anchor })}>
+                  {createLabel}
+                </Button>
+              )}
+            </div>
+          )
+        }
+        return (
+          <div className="schedule-daylist-cards">
+            {dayRows.map(({ person, shifts }) => (
+              <section className="schedule-daycard" key={person.id}>
+                <header className="schedule-daycard-head">
+                  <span className="schedule-daycard-name">{staffLabel(person)}</span>
+                  <span className="schedule-daycard-date">{anchor.format('DD/MM')}</span>
+                </header>
+                <ul className="schedule-daycard-shifts">
+                  {shifts.map((shiftItem) => (
+                    <li key={shiftItem.key}>
+                      <span className="schedule-daycard-shift">
+                        {shiftLabel(shiftItem.template)}
+                        {shiftItem.row?.onLeave && <Tag style={{ marginInlineStart: 6, marginInlineEnd: 0 }}>Nghỉ phép</Tag>}
+                        {shiftItem.note && <span className="schedule-daycard-note">{shiftItem.note}</span>}
+                      </span>
+                      {shiftItem.row && canEditRow(shiftItem.row) && (
+                        <span className="schedule-daycard-actions">
+                          <Button size="small" type="text" aria-label="Sửa ca" title="Sửa ca" icon={<EditOutlined />} onClick={() => openForm(shiftItem.row!)} />
+                          <Button
+                            size="small"
+                            type="text"
+                            danger
+                            aria-label="Xóa ca"
+                            title="Xóa ca"
+                            icon={<DeleteOutlined />}
+                            onClick={() => confirmDeleteReason('Xóa ca này?', (reason) => remove(shiftItem.row!, reason))}
+                          />
+                        </span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ))}
+          </div>
+        )
+      })()}
     </div>
 
     {/* Mobile: giữ danh sách card, panel chi tiết chuyển thành Drawer */}

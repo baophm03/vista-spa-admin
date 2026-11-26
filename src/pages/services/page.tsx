@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Button, Col, Dropdown, Empty, Form, Input, Modal, Row, Select, Skeleton, message } from 'antd'
-import { AppstoreOutlined, DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, FolderOutlined, MoreOutlined, PlusOutlined } from '@ant-design/icons'
+import { Button, Col, Empty, Form, Input, Modal, Row, Select, Skeleton, message } from 'antd'
+import { AppstoreOutlined, DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, FolderOutlined, PlusOutlined } from '@ant-design/icons'
 import { useQuery } from '@tanstack/react-query'
 import { Can, useAbility } from '@casl/react'
 import PageTitle from '@/components/base/PageTitle'
+import RowActionsMenu from '@/components/base/RowActionsMenu'
 import StatCards, { type StatItem } from '@/components/base/StatCards'
 import ServiceListState from './components/ServiceListState'
 import ServiceCategoryCard from './components/ServiceCategoryCard'
@@ -100,57 +101,52 @@ export default function Services() {
     }
   }
 
-  // Nút 3 chấm gọn trên thẻ (thay cho nút "Thao tác" chiếm diện tích)
   const renderActions = (row: ServiceCategoryRow) => (
-    <Dropdown
-      trigger={['click']}
-      menu={{
-        items: [
-          ...(canUpdate ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []),
-          ...(canUpdate
-            ? [row.is_active === false
-              ? { key: 'restore', icon: <EyeOutlined />, label: 'Bật lại' }
-              : { key: 'hide', icon: <EyeInvisibleOutlined />, label: 'Ẩn' }]
-            : []),
-          ...(canDelete ? [{ key: 'delete', icon: <DeleteOutlined />, danger: true, label: 'Xóa' }] : []),
-        ],
-        onClick: ({ key, domEvent }) => {
-          domEvent.stopPropagation()
-          if (key === 'edit') openEditor(row)
-          else if (key === 'restore') void runAction(() => putServiceCategoriesIdAdmin(row.id, { is_active: true } as ServiceCategoryCreate), 'Đã bật lại danh mục')
-          else if (key === 'hide') Modal.confirm({
-            title: 'Ẩn danh mục này?',
-            content: 'Chỉ ẩn được khi không còn dịch vụ đang hiển thị trong danh mục.',
-            okText: 'Ẩn',
-            cancelText: 'Hủy',
-            onOk: () => runAction(() => putServiceCategoriesIdAdmin(row.id, { is_active: false } as ServiceCategoryCreate), 'Đã ẩn danh mục'),
-          })
-          else if (key === 'delete') Modal.confirm({
-            title: 'Xóa danh mục này?',
-            content: 'Chỉ xóa được khi không còn dịch vụ trong danh mục.',
-            okButtonProps: { danger: true },
-            okText: 'Xóa',
-            cancelText: 'Hủy',
-            onOk: () => runAction(() => deleteServiceCategoriesIdAdmin(row.id), 'Đã xóa danh mục'),
-          })
-        },
+    <RowActionsMenu
+      dropdownOnly
+      ariaLabel={`Thao tác cho danh mục ${row.name}`}
+      items={[
+        ...(canUpdate ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }] : []),
+        ...(canUpdate
+          ? [row.is_active === false
+            ? { key: 'restore', icon: <EyeOutlined />, label: 'Bật lại' }
+            : { key: 'hide', icon: <EyeInvisibleOutlined />, label: 'Ẩn' }]
+          : []),
+        ...(canDelete ? [{ key: 'delete', icon: <DeleteOutlined />, danger: true, label: 'Xóa' }] : []),
+      ]}
+      onSelect={(key) => {
+        if (key === 'edit') openEditor(row)
+        else if (key === 'restore') void runAction(() => putServiceCategoriesIdAdmin(row.id, { is_active: true } as ServiceCategoryCreate), 'Đã bật lại danh mục')
+        else if (key === 'hide') Modal.confirm({
+          title: 'Ẩn danh mục này?',
+          content: 'Chỉ ẩn được khi không còn dịch vụ đang hiển thị trong danh mục.',
+          okText: 'Ẩn',
+          cancelText: 'Hủy',
+          onOk: () => runAction(() => putServiceCategoriesIdAdmin(row.id, { is_active: false } as ServiceCategoryCreate), 'Đã ẩn danh mục'),
+        })
+        else if (key === 'delete') Modal.confirm({
+          title: 'Xóa danh mục này?',
+          content: 'Chỉ xóa được khi không còn dịch vụ trong danh mục.',
+          okButtonProps: { danger: true },
+          okText: 'Xóa',
+          cancelText: 'Hủy',
+          onOk: () => runAction(() => deleteServiceCategoriesIdAdmin(row.id), 'Đã xóa danh mục'),
+        })
       }}
-    >
-      <Button type="text" size="small" icon={<MoreOutlined />} aria-label="Thao tác danh mục" />
-    </Dropdown>
+    />
   )
 
   const openCategory = (id: string) => navigate(`/services/categories/${id}`)
   const hasFilter = !!searchText.trim() || status !== 'all'
 
   return (
-    <div className="services-page">
+    <div className="services-page service-categories-page">
       <PageTitle subtitle="Danh mục dịch vụ — bấm vào danh mục để xem và quản lý dịch vụ bên trong">
         Dịch vụ
       </PageTitle>
       <StatCards items={statItems} />
 
-      <div className="service-list-toolbar">
+      <div className="service-list-toolbar service-category-toolbar">
         <div className="service-category-filters">
           <Input.Search
             allowClear
@@ -164,7 +160,8 @@ export default function Services() {
           <Select<StatusFilter>
             value={status}
             onChange={setStatus}
-            style={{ width: 150 }}
+            className="service-category-status"
+            aria-label="Lọc theo trạng thái danh mục"
             options={[
               { value: 'all', label: 'Tất cả' },
               { value: 'active', label: 'Đang dùng' },

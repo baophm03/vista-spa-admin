@@ -56,7 +56,7 @@ export default function RewardModal({
       okText="Lưu"
       cancelText="Hủy"
     >
-      <Form form={form} layout="vertical" style={{ marginTop: 12 }}>
+      <Form form={form} layout="vertical" className="rewards-form mt-3">
         <Form.Item name="name" label="Tên quà" rules={[{ required: true, message: 'Nhập tên quà' }]}>
           <Input maxLength={255} placeholder="VD: Nước tẩy trang Kahanna" />
         </Form.Item>

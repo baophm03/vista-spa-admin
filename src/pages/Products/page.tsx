@@ -325,7 +325,7 @@ export default function Products() {
             onSearch={applySearch}
           />
           <Select
-            className="desktop-only"
+            className="desktop-only product-inline-filter"
             allowClear
             placeholder="Tất cả danh mục"
             style={{ width: 180 }}
@@ -334,7 +334,7 @@ export default function Products() {
             options={categoryOptions}
           />
           <Select
-            className="desktop-only"
+            className="desktop-only product-inline-filter"
             allowClear
             placeholder="Tất cả trạng thái"
             style={{ width: 170 }}
@@ -342,7 +342,7 @@ export default function Products() {
             onChange={(value) => { setStatusFilter(value === undefined ? undefined : value === 'true'); setPage(1) }}
             options={statusOptions}
           />
-          <div className="mobile-only">
+          <div className="mobile-only product-filter-popover">
             <ListFilterPopover
               iconOnly
               open={filtersOpen}
@@ -670,6 +670,7 @@ export default function Products() {
         </>
       )}
       <Modal
+        className="product-form-modal"
         title={editingCategory ? 'Sửa danh mục' : 'Tạo danh mục'}
         open={isAdmin && categoryModalOpen}
         onCancel={() => { setCategoryModalOpen(false); setEditingCategory(null); catForm.resetFields() }}
@@ -693,12 +694,12 @@ export default function Products() {
 
   return (
     <div className="products-page">
-      <StatCards items={activeTab === 'products' ? statItems : []} />
       <PageTitle
         subtitle="Danh mục sản phẩm hiển thị trên ứng dụng"
       >
         Sản phẩm
       </PageTitle>
+      <StatCards items={activeTab === 'products' ? statItems : []} />
       <Tabs
         className="products-tabs"
         activeKey={activeTab}

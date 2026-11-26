@@ -1,7 +1,7 @@
 import ResponsiveTable from '@/components/base/ResponsiveTable'
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Alert, Button, Form, Input, Modal, Select, Space, Tag, Typography, message } from 'antd'
+import { Alert, Button, Form, Input, Modal, Select, Tag, Typography, message } from 'antd'
 import type { TableColumnsType } from 'antd'
 import dayjs from 'dayjs'
 import { CheckOutlined, CloseOutlined, DeleteOutlined, EditOutlined, PlusOutlined, StopOutlined } from '@ant-design/icons'
@@ -287,42 +287,36 @@ export default function CommissionEntriesPanel() {
       },
     },
     {
-      key: 'actions', title: 'Thao tác', align: 'center', width: 200, fixed: 'right',
+      key: 'actions', title: 'Thao tác', align: 'center', width: 144, fixed: 'right',
       render: (_v, row) => {
         const canEdit = canUpdate && ['PENDING', 'APPROVED'].includes(row.status)
         const menuItems = [
+          ...(canUpdate && row.status === 'PENDING' ? [
+            { key: 'approve', icon: <CheckOutlined />, label: 'Duyệt' },
+            { key: 'reject', icon: <CloseOutlined />, danger: true, label: 'Từ chối' },
+          ] : []),
+          ...(canUpdate && row.status === 'APPROVED' ? [{ key: 'cancel', icon: <StopOutlined />, label: 'Hủy' }] : []),
           ...(canEdit ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa số tiền' }] : []),
           ...(canDelete ? [{ key: 'delete', icon: <DeleteOutlined />, danger: true, label: 'Xóa' }] : []),
         ]
         return (
-          <Space size={4} wrap>
-            {row.status === 'PENDING' && canUpdate && (
-              <>
-                <Button size="small" type="primary" onClick={() => askApprove(row)}>Duyệt</Button>
-                <Button size="small" danger icon={<CloseOutlined />} onClick={() => { setReasonTarget({ kind: 'reject', row }); reasonForm.resetFields() }}>
-                  Từ chối
-                </Button>
-              </>
-            )}
-            {row.status === 'APPROVED' && canUpdate && (
-              <Button size="small" icon={<StopOutlined />} onClick={() => { setReasonTarget({ kind: 'cancel', row }); reasonForm.resetFields() }}>
-                Hủy
-              </Button>
-            )}
-            {menuItems.length > 0 && (
-              <RowActionsMenu
-                items={menuItems}
-                onSelect={(key) => {
-                  if (key === 'edit') {
-                    setEditingEntry({ id: row.id, amount: row.amount, status: row.status })
-                    setEntryModalOpen(true)
-                  } else if (key === 'delete') {
-                    askDelete(row)
-                  }
-                }}
-              />
-            )}
-          </Space>
+          <RowActionsMenu
+            dropdownOnly
+            items={menuItems}
+            onSelect={(key) => {
+              if (key === 'approve') {
+                askApprove(row)
+              } else if (key === 'reject' || key === 'cancel') {
+                setReasonTarget({ kind: key, row })
+                reasonForm.resetFields()
+              } else if (key === 'edit') {
+                setEditingEntry({ id: row.id, amount: row.amount, status: row.status })
+                setEntryModalOpen(true)
+              } else if (key === 'delete') {
+                askDelete(row)
+              }
+            }}
+          />
         )
       },
     },
@@ -330,10 +324,11 @@ export default function CommissionEntriesPanel() {
 
   return (
     <>
-      <Space className="mb-4! w-full! justify-end" wrap>
+      <div className="commission-entries-filters mb-3 grid grid-cols-2 gap-2 md:mb-4 md:flex md:flex-wrap md:justify-end">
         <Select
           showSearch optionFilterProp="label" allowClear
-          className="w-[220px]!"
+          className="w-full min-w-0 md:w-[220px]"
+          aria-label="Lọc theo cơ sở"
           placeholder="Cơ sở"
           loading={branchesQuery.isLoading}
           value={branchFilter}
@@ -342,7 +337,8 @@ export default function CommissionEntriesPanel() {
         />
         <Select
           showSearch optionFilterProp="label" allowClear
-          className="w-[220px]!"
+          className="w-full min-w-0 md:w-[220px]"
+          aria-label="Lọc theo người nhận"
           placeholder="Người nhận"
           loading={staffsQuery.isLoading}
           value={staffFilter}
@@ -350,7 +346,8 @@ export default function CommissionEntriesPanel() {
           options={staffOptions}
         />
         <Select
-          allowClear className="w-[150px]!"
+          allowClear className="w-full min-w-0 md:w-[150px]"
+          aria-label="Lọc theo trạng thái"
           placeholder="Trạng thái"
           value={statusFilter}
           onChange={(v) => { setStatusFilter(v); setPage(1) }}
@@ -359,31 +356,49 @@ export default function CommissionEntriesPanel() {
         <Can I="CREATE" a="COMMISSION">
           <Button
             type="primary"
+            className="min-w-0 px-2! md:px-4!"
             icon={<PlusOutlined />}
             onClick={() => { setEditingEntry(null); entryForm.setFieldsValue({}); setEntryModalOpen(true) }}
           >
             Thêm thủ công
           </Button>
         </Can>
-      </Space>
+      </div>
 
       {entriesQuery.isError && (
-        <Alert
-          className="mb-4" type="error" showIcon
-          message="Không tải được sổ hoa hồng"
-          description={errorMessage(entriesQuery.error)}
-          action={<Button size="small" onClick={() => void entriesQuery.refetch()}>Thử lại</Button>}
-        />
+        <div className="mb-3 md:mb-4">
+          <Alert
+            type="error" showIcon
+            message="Không tải được sổ hoa hồng"
+            description={errorMessage(entriesQuery.error)}
+            action={<Button size="small" onClick={() => void entriesQuery.refetch()}>Thử lại</Button>}
+          />
+        </div>
       )}
       {pendingCount > 0 && statusFilter === undefined && (
-        <Alert className="mb-4" type="warning" showIcon message={`Có ${pendingCount} bản ghi hoa hồng chờ duyệt (tổng ${formatVnd(pendingSum)}).`} />
+        <div className="mb-3 md:mb-4">
+          <Alert
+            type="warning"
+            showIcon
+            className="items-start! rounded-xl! px-3! py-2.5!"
+            styles={{ icon: { marginTop: 3 } }}
+            message={
+              <span className="block text-sm leading-snug">
+                Có <strong>{pendingCount}</strong> bản ghi hoa hồng chờ duyệt.{' '}
+                <span className="inline-block">Tổng <strong>{formatVnd(pendingSum)}</strong></span>
+              </span>
+            }
+          />
+        </div>
       )}
 
-      <ResponsiveTable<EntryRow>
-        rowKey="id" loading={entriesQuery.isLoading} dataSource={rows} columns={columns}
-        scroll={{ x: 1300 }}
-        pagination={false}
-      />
+      <div className="commission-list">
+        <ResponsiveTable<EntryRow>
+          rowKey="id" loading={entriesQuery.isLoading} dataSource={rows} columns={columns}
+          scroll={{ x: 1300 }}
+          pagination={false}
+        />
+      </div>
       <ListPagination page={page} limit={10} total={total} onChange={setPage} noun="bản ghi hoa hồng" />
 
       <Modal

@@ -8,19 +8,8 @@ import CustomerAvatar from './CustomerAvatar'
 interface CustomerDetailDrawerProps {
   selected: CustomerProfileRow | null
   summary: CustomerProfileSummary | null
-  qrUrl: string
-  qrLoading: boolean
-  qrError: string
   profileFieldDefs: CustomFieldDefWithOptions[]
-  canViewQr: boolean
-  isAdmin: boolean
-  canManage: boolean
-  resettingQr: boolean
   onClose: () => void
-  onDownloadQr: () => void
-  onPrintQr: () => void
-  onResetQr: () => void
-  onHistory?: () => void
   onMembershipUpdated: () => Promise<void> | void
 }
 

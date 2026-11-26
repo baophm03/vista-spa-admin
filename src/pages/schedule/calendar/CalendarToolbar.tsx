@@ -12,6 +12,8 @@ const VIEW_OPTIONS: CalendarView[] = ['day', 'week', 'month']
 
 interface Props {
   compact?: boolean
+  labeledActions?: boolean
+  hidePeriodNavigation?: boolean
   roster?: { selected: boolean; onSelect: () => void }
   panelLabel?: string
   extra?: ReactNode
@@ -34,7 +36,7 @@ interface Props {
 /** Toolbar kiểu Google Calendar / Notion Calendar: "Hôm nay" + mũi tên + nhãn kỳ ở trái,
  *  chuyển Ngày/Tuần/Tháng dạng segmented + lọc ở phải. */
 export default function CalendarToolbar({
-  compact = false, roster, panelLabel, extra, activeFilterCount = 0, anchor, onAnchorChange, view, onViewChange, periodLabel,
+  compact = false, labeledActions = false, hidePeriodNavigation = false, roster, panelLabel, extra, activeFilterCount = 0, anchor, onAnchorChange, view, onViewChange, periodLabel,
   branches, branchFilter, onBranchChange, onRefresh, refreshing = false,
   leftPanelOpen, onToggleLeftPanel,
 }: Props) {
@@ -52,7 +54,7 @@ export default function CalendarToolbar({
   return (
     <div className={`flex w-full flex-wrap items-center justify-between gap-x-4 ${compact ? 'gap-y-2 py-1.5' : 'gap-y-2 px-3 py-2.5 sm:px-4'}`}>
       {/* Nhóm trái: Hôm nay · ◀ ▶ · nhãn kỳ */}
-      <div className={`flex min-w-0 items-center ${compact ? 'gap-1' : 'gap-0.5'}`}>
+      {!hidePeriodNavigation && <div className={`flex min-w-0 items-center ${compact ? 'gap-1' : 'gap-0.5'}`}>
         <Button
           type="text"
           onClick={() => onAnchorChange(dayjs())}
@@ -83,10 +85,10 @@ export default function CalendarToolbar({
         <span className={`min-w-0 text-neutral-800 ${compact ? 'ml-1 text-[13px] font-semibold leading-5 tabular-nums sm:ml-2' : 'ml-2 truncate text-[19px] font-medium tracking-tight sm:text-[21px]'}`}>
           {periodLabel ?? `Tháng ${anchor.format('M, YYYY')}`}
         </span>
-      </div>
+      </div>}
 
       {/* Nhóm phải: chuyển chế độ xem + bộ lọc + menu thêm */}
-      <div className={`flex items-center ${compact ? 'flex-wrap gap-1' : 'gap-1.5'}`}>
+      <div className={`flex items-center ${compact ? 'flex-wrap gap-1' : 'gap-1.5'} ${hidePeriodNavigation ? 'ml-auto' : ''}`}>
         {compact ? (
           <Dropdown
             trigger={['click']}
@@ -102,7 +104,7 @@ export default function CalendarToolbar({
               onClick: ({ key }) => key === 'roster' ? roster?.onSelect() : onViewChange(key as CalendarView),
             }}
           >
-            <Button type="text" aria-haspopup="menu" aria-label={'Chế độ xem: ' + (roster?.selected ? 'Bảng phân ca' : VIEW_LABEL[view])} className={`${compactTextButton} gap-1.5!`}>
+            <Button type={labeledActions ? 'default' : 'text'} aria-haspopup="menu" aria-label={'Chế độ xem: ' + (roster?.selected ? 'Bảng phân ca' : VIEW_LABEL[view])} className={labeledActions ? 'h-8! min-w-24 justify-between! rounded-lg! px-3! shadow-none!' : `${compactTextButton} gap-1.5!`}>
               {roster?.selected ? 'Bảng phân ca' : VIEW_LABEL[view]}
               <DownOutlined aria-hidden className="text-[9px]!" />
             </Button>
@@ -126,8 +128,9 @@ export default function CalendarToolbar({
               onClick={onToggleLeftPanel}
               className={activeFilterCount > 0
                 ? 'h-8! gap-1.5! bg-[var(--brand-tint)]! px-2! text-[var(--brand-dark)]!'
-                : `${iconSize} text-neutral-600!`}
+                : `${labeledActions ? 'h-8! px-2!' : iconSize} text-neutral-600!`}
             >
+              {labeledActions && 'Bộ lọc'}
               {activeFilterCount > 0 && (
                 <span aria-hidden className="grid h-4 min-w-4 place-items-center rounded-full bg-[var(--brand-primary)] px-1 text-[10px] font-semibold leading-none text-[var(--brand-on-primary)]">
                   {activeFilterCount}
@@ -173,12 +176,14 @@ export default function CalendarToolbar({
               <Button
                 aria-label="Làm mới dữ liệu"
                 type="text"
-                shape="circle"
+                shape={labeledActions ? 'default' : 'circle'}
                 icon={<ReloadOutlined />}
                 loading={refreshing}
                 onClick={onRefresh}
-                className={`${iconSize} shrink-0 text-neutral-600!`}
-              />
+                className={`${labeledActions ? 'h-8! px-2!' : iconSize} shrink-0 text-neutral-600!`}
+              >
+                {labeledActions && 'Tải lại'}
+              </Button>
             </Tooltip>
             <span role="status" className="text-xs text-neutral-600">
               {refreshing ? 'Đang cập nhật dữ liệu' : ''}

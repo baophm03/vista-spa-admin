@@ -65,11 +65,16 @@ export default function CustomerRankCard({ rankName, imageFile, achievedAt, expi
         open={open}
         onCancel={() => setOpen(false)}
         footer={null}
-        width="100vw"
-        className="top-0! m-0! max-w-none! pb-0! [&_.ant-modal-close]:text-white! [&_.ant-modal-close]:hover:bg-white/15!"
-        styles={{ mask: { background: 'rgba(0, 0, 0, 0.75)', backdropFilter: 'blur(4px)' }, container: { background: 'transparent', borderRadius: 0, padding: 0, boxShadow: 'none' } }}
+        width="100%"
+        className="top-0! m-0! h-full max-h-none! max-w-none! pb-0! [&_.ant-modal-close]:end-[max(1rem,env(safe-area-inset-right))]! [&_.ant-modal-close]:top-[max(1rem,env(safe-area-inset-top))]! [&_.ant-modal-close]:text-white! [&_.ant-modal-close]:hover:bg-white/15!"
+        styles={{
+          mask: { background: 'rgba(0, 0, 0, 0.75)', backdropFilter: 'blur(4px)' },
+          wrapper: { overflow: 'hidden' },
+          container: { height: '100%', maxHeight: 'none', background: 'transparent', borderRadius: 0, padding: 0, boxShadow: 'none' },
+          body: { overflow: 'hidden' },
+        }}
       >
-        <div className="relative grid h-dvh overflow-hidden">
+        <div className="relative grid h-full overflow-hidden">
           <div
             role="group"
             aria-label="Xoay thẻ bằng cách kéo hoặc dùng phím mũi tên"

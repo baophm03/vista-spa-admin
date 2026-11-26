@@ -22,6 +22,7 @@ export default function MobileCards<T>({
   emptyText = 'Chưa có dữ liệu',
   emptyDescription,
   loading = false,
+  className,
 }: {
   rows: T[]
   rowKey: (row: T, index: number) => string
@@ -30,11 +31,13 @@ export default function MobileCards<T>({
   emptyText?: string
   emptyDescription?: string
   loading?: boolean
+  className?: string
 }) {
+  const listClassName = ['mobile-only mobile-card-list', className].filter(Boolean).join(' ')
   if (loading) {
     // 3 card skeleton cùng khung .mobile-card để layout không nhảy khi data về
     return (
-      <div className="mobile-only mobile-card-list">
+      <div className={listClassName}>
         {[0, 1, 2].map((i) => (
           <div className="mobile-card" key={i}>
             <Skeleton active title={{ width: '55%' }} paragraph={{ rows: 2, width: ['100%', '85%'] }} />
@@ -47,9 +50,9 @@ export default function MobileCards<T>({
   // tím nhạt ở giữa + chữ đậm bên dưới
   if (!rows.length) {
     return (
-      <div className="mobile-only mobile-card-list">
+      <div className={listClassName}>
         <div
-          className="mobile-card"
+          className="mobile-card col-span-full"
           style={{
             display: 'flex',
             flexDirection: 'column',
@@ -84,7 +87,7 @@ export default function MobileCards<T>({
     )
   }
   return (
-    <div className="mobile-only mobile-card-list">
+    <div className={listClassName}>
       {rows.map((row, index) => (
         <div
           className="mobile-card"

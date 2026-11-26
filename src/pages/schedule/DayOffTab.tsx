@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import dayjs, { type Dayjs } from 'dayjs'
-import { Alert, Image, Badge, Button, Checkbox, DatePicker, Divider, Form, Modal, Popconfirm, Popover, Select, Space, Table, Tag, Typography, message } from 'antd'
+import { Alert, Image, Badge, Button, Checkbox, DatePicker, Divider, Form, Grid, Modal, Popconfirm, Popover, Select, Space, Table, Tag, Typography, message } from 'antd'
 import { CalendarOutlined, CheckOutlined, ClearOutlined, CloseOutlined, FilterOutlined, PlusOutlined, ReloadOutlined, UndoOutlined } from '@ant-design/icons'
 import { errorMessage, pickData } from '@/api/helpers'
 import { displayName } from '@/utils/displayName'
@@ -106,6 +106,7 @@ const STATUS: Record<string, { label: string; color: string }> = {
 }
 
 export default function DayOffTab({ branches, staff, access, loadingShared }: Props) {
+  const showColumns = Grid.useBreakpoint().md
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   const [staffFilter, setStaffFilter] = useState<string>()
@@ -298,6 +299,7 @@ export default function DayOffTab({ branches, staff, access, loadingShared }: Pr
         title="Bộ lọc"
         content={<div style={{ width: 300, maxHeight: 'min(70vh, 580px)', display: 'flex', flexDirection: 'column' }}>
           <div style={{ overflowY: 'auto', paddingRight: 4 }}>
+            {showColumns && <>
             <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 10 }}>
               <Typography.Text strong>Cột hiển thị</Typography.Text>
               <Tag style={{ marginInlineEnd: 0 }}>{draftVisibleColumns.length}/{DAY_OFF_COLUMN_OPTIONS.length} cột</Tag>
@@ -310,6 +312,7 @@ export default function DayOffTab({ branches, staff, access, loadingShared }: Pr
             />
 
             <Divider style={{ margin: '14px 0' }} />
+            </>}
             <Typography.Text strong>Điều kiện lọc</Typography.Text>
             <Form form={filterForm} layout="vertical" onFinish={applyFilters} style={{ marginTop: 10 }}>
               {access.isAdmin && <Form.Item name="branch_id" label="Cơ sở" style={{ marginBottom: 10 }}>

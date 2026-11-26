@@ -1,0 +1,198 @@
+/* Lịch làm việc — bố cục "danh sách lịch kiểu khác" cho tablet (Figma: Tablet / Lịch làm việc).
+   Lưới giờ kiểu Google chỉ đủ chỗ từ desktop; tablet chọn 1 ngày rồi liệt kê ca theo nhân viên. */
+.schedule-daylist {
+  display: none;
+}
+
+@media (768px <= width < 1200px) {
+  /* Lưới giờ (desktop-only) quá chật ở tablet → thay bằng danh sách theo ngày */
+  .schedule-daylist ~ .desktop-only,
+  .desktop-only:has(~ .schedule-daylist) {
+    display: none !important;
+  }
+
+  /* Tab panel bị overflow:hidden từ 768px → danh sách tự cuộn trong phần còn lại */
+  .schedule-daylist {
+    display: grid;
+    flex: 1 1 0;
+    align-content: start;
+    gap: 14px;
+    min-height: 0;
+    padding-bottom: 4px;
+    overflow: auto;
+  }
+
+  /* Dải chọn ngày: 7 ô chia đều, ngày đang chọn tô màu thương hiệu */
+  .schedule-daystrip {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 4px;
+    padding: 4px;
+    border: 1px solid var(--brand-border-soft);
+    border-radius: 12px;
+    background: #fff;
+  }
+
+  .schedule-daystrip-day {
+    display: grid;
+    justify-items: center;
+    gap: 2px;
+    padding: 7px 2px;
+    border: 0;
+    border-radius: 9px;
+    background: transparent;
+    color: #655e71;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .schedule-daystrip-day:hover {
+    background: var(--brand-bg);
+  }
+
+  .schedule-daystrip-day.is-active {
+    background: var(--brand-primary);
+    color: var(--brand-on-primary, #fff);
+  }
+
+  .schedule-daystrip-weekday {
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .schedule-daystrip-date {
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.2;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .schedule-daystrip-day.is-today:not(.is-active) .schedule-daystrip-date {
+    color: var(--brand-primary);
+  }
+
+  /* Dấu chấm báo ngày có ca — giữ chỗ cố định để các ô không lệch cao */
+  .schedule-daystrip-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--brand-primary);
+  }
+
+  .schedule-daystrip-day.is-active .schedule-daystrip-dot {
+    background: var(--brand-on-primary, #fff);
+  }
+
+  .schedule-daystrip-dot.is-empty {
+    background: transparent;
+  }
+
+  /* Thẻ theo nhân viên: tên + ngày ở đầu, danh sách ca bên dưới */
+  .schedule-daylist-cards {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-content: start;
+    gap: 12px;
+  }
+
+  .schedule-daycard {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 12px 14px;
+    border: 1px solid var(--brand-border-soft);
+    border-radius: 12px;
+    background: #fff;
+  }
+
+  .schedule-daycard-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding-bottom: 9px;
+    border-bottom: 1px solid var(--brand-border-soft);
+  }
+
+  .schedule-daycard-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #282335;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .schedule-daycard-date {
+    flex-shrink: 0;
+    padding: 2px 7px;
+    border-radius: 6px;
+    background: var(--brand-tint);
+    color: var(--brand-dark);
+    font-size: 11px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .schedule-daycard-shifts {
+    display: grid;
+    gap: 2px;
+    margin: 0;
+    padding: 6px 0 0;
+    list-style: none;
+  }
+
+  .schedule-daycard-shifts li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    min-height: 36px;
+    padding: 4px 0;
+    font-size: 13px;
+  }
+
+  .schedule-daycard-shifts li + li {
+    border-top: 1px dashed var(--brand-border-soft);
+  }
+
+  .schedule-daycard-shift {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .schedule-daycard-note {
+    display: block;
+    color: #655e71;
+    font-size: 11.5px;
+  }
+
+  .schedule-daycard-actions {
+    display: flex;
+    flex-shrink: 0;
+    gap: 2px;
+  }
+
+  /* Trạng thái rỗng: icon + lời nhắc + nút đăng ký ngay cho ngày đang chọn */
+  .schedule-daylist-empty {
+    display: grid;
+    justify-items: center;
+    gap: 10px;
+    padding: 40px 16px;
+    border: 1px solid var(--brand-border-soft);
+    border-radius: 12px;
+    background: #fff;
+    color: #655e71;
+  }
+
+  .schedule-daylist-empty .anticon {
+    color: var(--brand-primary);
+    font-size: 26px;
+  }
+
+  .schedule-daylist-empty p {
+    margin: 0;
+    font-size: 13px;
+  }
+}

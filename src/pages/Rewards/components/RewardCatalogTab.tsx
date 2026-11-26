@@ -17,6 +17,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import ListPagination from '@/components/base/ListPagination'
 import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
+import RewardCardActions from './RewardCardActions'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { Reward } from '@/api/models/reward'
@@ -273,7 +274,7 @@ export default function RewardCatalogTab() {
   return (
     <>
       <div className="mb-3 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 md:flex md:flex-wrap md:justify-between">
-        <div className="contents md:flex md:gap-2">
+        <div className="contents md:flex md:min-w-0 md:flex-1 md:gap-2 lg:flex-none">
         <Input.Search
           allowClear
           value={searchInput}
@@ -281,7 +282,7 @@ export default function RewardCatalogTab() {
           onSearch={applySearch}
           placeholder="Tìm theo tên quà"
           aria-label="Tìm theo tên quà"
-          className="col-span-2 w-full! min-w-0 md:w-[260px]!"
+          className="col-span-2 w-full! min-w-0 md:flex-1 lg:w-[260px]!"
         />
         <Select<RewardType>
           allowClear
@@ -290,19 +291,19 @@ export default function RewardCatalogTab() {
           aria-label="Lọc theo loại quà"
           placeholder="Loại quà"
           options={Object.entries(TYPE_META).map(([value, meta]) => ({ value: value as RewardType, label: meta.label }))}
-          className="w-full min-w-0 md:w-[200px]"
+          className="w-full min-w-0 md:w-[200px] md:shrink-0"
         />
         </div>
         <Can I="CREATE" a="REWARD">
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor()}>Thêm quà</Button>
+          <Button type="primary" className="shrink-0" icon={<PlusOutlined />} onClick={() => openEditor()}>Thêm quà</Button>
         </Can>
       </div>
       {rewardsQuery.isError && (
         <Alert className="mb-4" type="error" showIcon message="Không tải được quà tặng" description={errorMessage(rewardsQuery.error)} action={<Button size="small" onClick={() => void rewardsQuery.refetch()}>Thử lại</Button>} />
       )}
-      <Table<RewardRow>
-        className="desktop-only"
-        rowKey="id" loading={loading} dataSource={rewardsQuery.isPlaceholderData ? [] : rewards}
+      {!loading && (!rewardsQuery.isError || rewards.length > 0) && <Table<RewardRow>
+        className="desktop-only max-lg:hidden!"
+        rowKey="id" dataSource={rewards}
         onRow={(row) => ({
           onClick: (event) => {
             if (canUpdate && !(event.target as HTMLElement).closest('button, a, input, .ant-dropdown, .ant-switch')) {
@@ -314,17 +315,18 @@ export default function RewardCatalogTab() {
         columns={columns.filter((column) => column.key !== 'actions' || canRedeem || canDelete)}
         scroll={{ x: 950 }}
         pagination={false}
-      />
+      />}
       {(!rewardsQuery.isError || rewards.length > 0) && (
         <MobileCards
+          className={loading ? 'rewards-list-loading' : 'rewards-tablet-cards'}
           rows={rewards}
           rowKey={(row) => row.id}
           loading={loading}
           emptyText={search || typeFilter ? 'Không có kết quả' : 'Chưa có quà tặng'}
           renderCard={(row) => {
             const options = [
-              ...(canUpdate ? [{ value: 'edit', label: 'Sửa quà' }] : []),
-              ...actions(row).map(({ key, label }) => ({ value: key, label })),
+              ...(canUpdate ? [{ key: 'edit', label: 'Sửa quà' }] : []),
+              ...actions(row),
             ]
             return (
               <>
@@ -340,11 +342,7 @@ export default function RewardCatalogTab() {
                   <MobileCardRow label="Còn lại" value={remainingLabel(row)} />
                   <MobileCardRow label="Thời hạn" value={row.valid_from || row.valid_to ? validity(row) : '—'} />
                 </div>
-                {options.length > 0 && <div className="mobile-card-actions">
-                  <Select<string | null> aria-label={`Thao tác cho ${row.name}`} className="w-32" placeholder="Thao tác" value={null} showSearch={false}
-                    styles={{ placeholder: { color: 'var(--brand-primary)' } }}
-                    options={options} popupMatchSelectWidth={false} onSelect={(key) => { if (key) runAction(row, key) }} />
-                </div>}
+                <RewardCardActions ariaLabel={`Thao tác cho ${row.name}`} items={options} onSelect={(key) => runAction(row, key)} />
               </>
             )
           }}

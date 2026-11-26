@@ -1,12 +1,12 @@
 import ResponsiveTable from '@/components/base/ResponsiveTable'
 import MobileCards from '@/components/base/MobileCards'
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useState } from 'react'
 import { displayName } from '@/utils/displayName'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Alert, Button, Card, Form, Grid, Input, Modal, Select, Space, Switch, Table, Tabs, Tag, Tooltip, Typography, message } from 'antd'
 import dayjs from 'dayjs'
 import { useBrandCurrency, useBrandDateTime } from '@/themeRuntime'
-import { BellOutlined, CloseOutlined, DeleteOutlined, EditOutlined, GiftOutlined, HistoryOutlined, PauseCircleOutlined, PlayCircleOutlined, PlusOutlined, TeamOutlined } from '@ant-design/icons'
+import { ArrowLeftOutlined, ArrowRightOutlined, BellOutlined, DeleteOutlined, EditOutlined, GiftOutlined, PauseCircleOutlined, PlayCircleOutlined, PlusOutlined } from '@ant-design/icons'
 import PageTitle from '../../components/base/PageTitle'
 import RowActionsMenu from '../../components/base/RowActionsMenu'
 import TableEmpty from '../../components/base/TableEmpty'
@@ -34,7 +34,7 @@ import PrizeFormModal from './components/PrizeFormModal'
 import WheelFormModal, { type WheelFormValues } from './components/WheelFormModal'
 import WheelSpinModal, { type WheelSpinResult } from './components/WheelSpinModal'
 import CustomerVisibilityTab from './components/CustomerVisibilityTab'
-import { PRIZE_TYPE_META as TYPE_META } from './components/constants'
+import { PRIZE_TYPE_META as TYPE_META, formatChance, prizeChanceOf, totalPrizeWeight } from './components/constants'
 import './lucky-wheel.css'
 
 const TABLE_PAGE_SIZE = 10
@@ -42,12 +42,7 @@ const CUSTOMER_DEFAULT_SETTING = 'lucky_wheel.customer_default_enabled'
 const CUSTOMER_OVERRIDES_SETTING = 'lucky_wheel.customer_overrides'
 
 type EligibleWheelCustomer = EligibleCustomer & { user_id?: string | null; email?: string | null }
-type MobileWheelPanel = 'prizes' | 'customers' | 'history'
-const MOBILE_WHEEL_PANEL_TITLES: Record<MobileWheelPanel, string> = {
-  prizes: 'Cấu hình giải',
-  customers: 'Danh sách khách',
-  history: 'Lịch sử quay',
-}
+type WheelDetailTab = 'prizes' | 'customers' | 'history'
 
 interface WheelCustomerOverride {
   user_id: string
@@ -81,9 +76,7 @@ export default function LuckyWheel() {
   const [editingWheel, setEditingWheel] = useState<LuckyWheelRecord | null>(null)
   const [wheelOpen, setWheelOpen] = useState(false)
   const [prizeOpen, setPrizeOpen] = useState(false)
-  const [prizeConfigurationOpen, setPrizeConfigurationOpen] = useState(false)
-  const [mobileWheelPanel, setMobileWheelPanel] = useState<MobileWheelPanel | null>(null)
-  const mobilePanelEntry = useRef<HTMLDivElement>(null)
+  const [detailTab, setDetailTab] = useState<WheelDetailTab>('prizes')
   const [editingPrize, setEditingPrize] = useState<WheelPrize | null>(null)
   const [customerSearch, setCustomerSearch] = useState('')
   const [customerSearchInput, setCustomerSearchInput] = useState('')
@@ -132,6 +125,7 @@ export default function LuckyWheel() {
   const branches = branchesQuery.data?.responseData ?? []
   const prizes = prizesQuery.data?.responseData ?? []
   const prizesTotal = (prizesQuery.data as unknown as { meta?: { total?: number } })?.meta?.total ?? 0
+  const prizeWeightTotal = totalPrizeWeight(prizes)
   const spins = spinsQuery.data?.responseData ?? []
   const spinsTotal = (spinsQuery.data as unknown as { meta?: { total?: number } })?.meta?.total ?? 0
   const eligibleCustomers = eligibleQuery.data?.responseData ?? []
@@ -181,22 +175,17 @@ export default function LuckyWheel() {
   }
   const canManageAllBranches = ability.can('ALL' as never, 'BRANCH')
 
-  useEffect(() => {
-    if (!selected && wheels.length) setSelected(wheels[0])
-  }, [wheels, selected])
-
   const selectWheel = (w: LuckyWheelRecord) => {
     setSelected(w)
-    setPrizeConfigurationOpen(false)
+    setDetailTab('prizes')
     setChosenCustomer(null)
+    setCustomerSearch('')
+    setCustomerSearchInput('')
     setPrizePage(1)
     setCustomerPage(1)
     setSpinPage(1)
   }
 
-  useEffect(() => {
-    if (isMobile && mobileWheelPanel) mobilePanelEntry.current?.scrollIntoView({ block: 'start' })
-  }, [activeTab, isMobile, mobileWheelPanel])
 
   // Nội dung mời quay — điền sẵn cho khách được chọn
   const applyCustomerNotificationPreset = (customer: EligibleWheelCustomer | null) => {
@@ -261,11 +250,6 @@ export default function LuckyWheel() {
     }
   }
 
-  const openPrizeConfiguration = (w: LuckyWheelRecord) => {
-    selectWheel(w)
-    setPrizeConfigurationOpen(true)
-  }
-
   const openCreateWheel = () => {
     setEditingWheel(null)
     wheelForm.resetFields()
@@ -319,7 +303,7 @@ export default function LuckyWheel() {
       setWheelOpen(false)
       setEditingWheel(null)
       wheelForm.resetFields()
-      if (savedWheel) selectWheel(savedWheel)
+      if (savedWheel) setSelected((current) => current?.id === savedWheel.id ? savedWheel : current)
       await wheelsQuery.refetch()
     } catch (err) {
       message.error(errorMessage(err, 'Không thể lưu vòng quay'))
@@ -576,21 +560,12 @@ export default function LuckyWheel() {
   const branchName = (id?: string) => (id ? branches.find((b) => b.id === id)?.name ?? '—' : 'Tất cả cơ sở')
 
   const canSpinForCustomers = ability.can('SPIN_ADMIN' as never, 'WHEEL')
-  const openMobileWheelPanel = (row: LuckyWheelRecord, panel: MobileWheelPanel) => {
-    selectWheel(row)
-    setMobileWheelPanel(panel)
-    setCustomerSearch('')
-    setCustomerSearchInput('')
-  }
-
   const wheelStatus = (active: boolean) => active ? <Tag color="green">Đang mở</Tag> : <Tag>Tắt</Tag>
-  const renderWheelActions = (row: LuckyWheelRecord, mobile = false) => (
+  const renderWheelActions = (row: LuckyWheelRecord, onCard = false) => (
     <RowActionsMenu
-      dropdownOnly={mobile}
+      dropdownOnly={onCard}
       items={[
-        { key: 'prizes', icon: <GiftOutlined />, label: 'Cấu hình giải' },
-        ...(mobile && canSpinForCustomers ? [{ key: 'customers', icon: <TeamOutlined />, label: 'Khách trong vòng quay' }] : []),
-        ...(mobile ? [{ key: 'history', icon: <HistoryOutlined />, label: 'Lịch sử quay' }] : []),
+        ...(!onCard ? [{ key: 'manage', icon: <GiftOutlined />, label: 'Quản lý vòng quay' }] : []),
         ...(ability.can('UPDATE' as never, 'WHEEL')
           ? [
             { key: 'edit', icon: <EditOutlined />, label: 'Sửa' },
@@ -602,11 +577,7 @@ export default function LuckyWheel() {
           : []),
       ]}
       onSelect={(key) => {
-        if (key === 'prizes') {
-          if (mobile) openMobileWheelPanel(row, 'prizes')
-          else openPrizeConfiguration(row)
-        }
-        else if (key === 'customers' || key === 'history') openMobileWheelPanel(row, key)
+        if (key === 'manage') selectWheel(row)
         else if (key === 'edit') openEditWheel(row)
         else if (key === 'toggle') toggleWheel(row)
         else if (key === 'delete') {
@@ -687,28 +658,9 @@ export default function LuckyWheel() {
     </Space>
   )
 
-  const wrapPanel = (panel: MobileWheelPanel, children: ReactNode) =>
-    isMobile ? (
-      <Modal
-        open
-        centered
-        title={MOBILE_WHEEL_PANEL_TITLES[panel]}
-        footer={null}
-        onCancel={() => setMobileWheelPanel(null)}
-        width="min(460px, calc(100vw - 16px))"
-        className="lucky-wheel-panel-modal"
-        zIndex={990}
-        destroyOnHidden
-      >
-        {children}
-      </Modal>
-    ) : (
-      children
-    )
-
   return (
     <>
-      <PageTitle
+      {!selected && <><PageTitle
         subtitle="Cấu hình vòng quay may mắn và phần thưởng"
       >
         Quay số may mắn
@@ -724,6 +676,8 @@ export default function LuckyWheel() {
         ]}
       />
 
+      </>}
+
       {activeTab === 'customer-visibility' ? (
         ability.can('READ' as never, 'SETTING') ? (
           <CustomerVisibilityTab
@@ -735,7 +689,7 @@ export default function LuckyWheel() {
           <Alert type="warning" showIcon message="Bạn chưa có quyền xem cài đặt khách hàng." />
         )
       ) : (
-        <Space direction="vertical" className="lucky-wheel-campaigns" style={{ width: '100%' }} size={16}>
+        !selected ? <Space direction="vertical" className="lucky-wheel-campaigns" style={{ width: '100%' }} size={16}>
           <>
             <div className="lucky-wheel-create">
               <Can I="CREATE" a="WHEEL">
@@ -755,7 +709,7 @@ export default function LuckyWheel() {
               columns={[
                 {
                   title: 'Tên vòng quay', dataIndex: 'name', render: (v, row) => (
-                    <Typography.Text strong style={selected?.id === row.id ? { color: 'var(--brand-primary)' } : undefined}>{v}</Typography.Text>
+                    <button type="button" className="lucky-wheel-card-title" onClick={(event) => { event.stopPropagation(); selectWheel(row) }}><Typography.Text strong>{v}</Typography.Text></button>
                   )
                 },
                 { title: 'Cơ sở', dataIndex: 'branch_id', render: (v) => branchName(v) },
@@ -777,18 +731,19 @@ export default function LuckyWheel() {
               rowKey={(row) => row.id}
               loading={wheelsQuery.isLoading}
               emptyText="Chưa có vòng quay"
-              onCardClick={(row) => openMobileWheelPanel(row, canSpinForCustomers ? 'customers' : 'prizes')}
+              onCardClick={selectWheel}
               renderCard={(row) => (
                 <div className="lucky-wheel-card">
                   <div className="lucky-wheel-card-heading">
+                    <span className="lucky-wheel-card-icon" aria-hidden="true"><GiftOutlined /></span>
                     <div className="min-w-0">
-                      <button type="button" className="mobile-card-title lucky-wheel-card-title" onClick={() => openMobileWheelPanel(row, canSpinForCustomers ? 'customers' : 'prizes')}>{row.name}</button>
+                      <button type="button" className="mobile-card-title lucky-wheel-card-title" onClick={() => selectWheel(row)}>{row.name}</button>
                       <div className="lucky-wheel-card-meta">
                         <span className="mobile-card-sub">{branchName(row.branch_id ?? undefined)}</span>
                         {wheelStatus(row.is_active)}
                       </div>
                     </div>
-                    <div className="mobile-card-actions lucky-wheel-card-menu">{renderWheelActions(row, true)}</div>
+                    <div className="lucky-wheel-card-menu">{renderWheelActions(row, true)}</div>
                   </div>
                   <dl className="lucky-wheel-card-stats">
                     <div>
@@ -800,6 +755,9 @@ export default function LuckyWheel() {
                       <dd>{row.spins_per_user} lượt</dd>
                     </div>
                   </dl>
+                  <Button type="text" className="lucky-wheel-card-link" icon={<ArrowRightOutlined />} iconPlacement="end" onClick={() => selectWheel(row)}>
+                    Quản lý vòng quay
+                  </Button>
                 </div>
               )}
             />
@@ -814,15 +772,26 @@ export default function LuckyWheel() {
             />
           </>
 
-          {selected && (isMobile ? mobileWheelPanel === 'prizes' : prizeConfigurationOpen) && wrapPanel('prizes', (
+        </Space> : <div className="lucky-wheel-detail">
+          <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => setSelected(null)}>Về danh sách</Button>
+          <PageTitle subtitle={branchName(selected.branch_id ?? undefined)}>
+            <span className="lucky-wheel-detail-heading">{selected.name}{wheelStatus(selected.is_active)}</span>
+          </PageTitle>
+          <Tabs
+            className="lucky-wheel-detail-tabs"
+            activeKey={detailTab}
+            onChange={(key) => setDetailTab(key as WheelDetailTab)}
+            items={[
+              { key: 'prizes', label: 'Giải thưởng' },
+              ...(canSpinForCustomers ? [{ key: 'customers', label: 'Khách tham gia' }] : []),
+              { key: 'history', label: 'Lịch sử quay' },
+            ]}
+          />
+          {detailTab === 'prizes' && (
             <Card
               className="lucky-wheel-panel lucky-wheel-prize-panel"
-              title={isMobile ? undefined : `Giải thưởng — ${selected.name}`}
               extra={
                 <div className="lucky-wheel-prize-tools flex flex-wrap items-center gap-3">
-                  {!isMobile && <Button size="small" icon={<CloseOutlined />} onClick={() => setPrizeConfigurationOpen(false)}>
-                    Đóng cấu hình
-                  </Button>}
                   <Button size="small" icon={<PlayCircleOutlined />} onClick={openPreviewSpin}>
                     {isMobile ? 'Quay thử' : 'Xem thử vòng quay'}
                   </Button>
@@ -839,6 +808,16 @@ export default function LuckyWheel() {
                 </div>
               }
             >
+              {prizes.length > 0 && (
+                <Alert
+                  type="info"
+                  showIcon
+                  className="lucky-wheel-chance-hint"
+                  message={prizeWeightTotal > 0
+                    ? `Tỉ lệ trúng = trọng số ÷ tổng trọng số (${prizeWeightTotal.toLocaleString('vi-VN')}). Giải tắt hoặc hết lượt không được tính.`
+                    : 'Mọi giải đang có trọng số 0 nên chưa quay ra giải nào. Hãy nhập trọng số lớn hơn 0.'}
+                />
+              )}
               <ResponsiveTable
                 rowKey="id"
                 dataSource={prizes}
@@ -851,7 +830,24 @@ export default function LuckyWheel() {
                 columns={[
                   { title: 'Tên giải', dataIndex: 'name' },
                   { title: 'Loại', key: 'prize_type', dataIndex: 'prize_type', render: (v: string) => <Tag color={TYPE_META[v]?.color}>{TYPE_META[v]?.label ?? v}</Tag> },
-                  { title: 'Trọng số', dataIndex: 'weight', width: 90 },
+                  {
+                    title: 'Tỉ lệ trúng',
+                    key: 'chance',
+                    width: 140,
+                    render: (_, row: WheelPrize) => {
+                      const chance = prizeChanceOf(row, prizeWeightTotal)
+                      return (
+                        <Tooltip title={chance === 0 && Number(row.weight ?? 0) > 0
+                          ? 'Giải đang tắt hoặc đã hết số lượng nên không thể trúng'
+                          : `Trọng số ${Number(row.weight ?? 0).toLocaleString('vi-VN')} ÷ tổng ${prizeWeightTotal.toLocaleString('vi-VN')}`}>
+                          <span className="lucky-wheel-chance">
+                            <strong>{formatChance(chance)}</strong>
+                            <span className="lucky-wheel-chance-weight">trọng số {Number(row.weight ?? 0).toLocaleString('vi-VN')}</span>
+                          </span>
+                        </Tooltip>
+                      )
+                    },
+                  },
                   { title: 'Số lượng', key: 'qty', width: 120, render: (_, row) => (row.quantity_total != null ? `${row.quantity_given}/${row.quantity_total}` : '∞') },
                   {
                     title: 'Thao tác',
@@ -882,15 +878,15 @@ export default function LuckyWheel() {
                       }
 
                       if (!items.length) return null
-                      if (!isMobile) return <RowActionsMenu items={items} onSelect={onSelect} />
                       return (
-                        <div className="flex flex-wrap gap-2">
-                          {items.map((item) => (
-                            <Button key={item.key} size="small" type="text" className="lucky-wheel-prize-action" icon={item.icon} danger={item.key === 'delete'} onClick={() => onSelect(item.key)}>
-                              {item.label}
-                            </Button>
-                          ))}
-                        </div>
+                        <>
+                          <span className="lucky-wheel-prize-menu" data-action-count={items.length}><RowActionsMenu dropdownOnly={isMobile} items={items} onSelect={onSelect} /></span>
+                          <span className="lucky-wheel-prize-inline-actions" data-action-count={items.length}>
+                            {items.map((item) => (
+                              <Button key={item.key} size="small" icon={item.icon} danger={item.danger} onClick={() => onSelect(item.key)}>{item.label}</Button>
+                            ))}
+                          </span>
+                        </>
                       )
                     },
                   },
@@ -905,19 +901,13 @@ export default function LuckyWheel() {
                 hideOnSinglePage
               />
             </Card>
-          ))}
+          )}
 
-          {selected && (!isMobile || mobileWheelPanel === 'customers') && wrapPanel('customers', (
+          {detailTab === 'customers' && (
             <Can I="SPIN_ADMIN" a="WHEEL">
-              <Card className="lucky-wheel-panel lucky-wheel-eligible-panel" title={isMobile ? undefined : `Màn hình quay cho khách — ${selected.name}`}>
+              <Card className="lucky-wheel-panel lucky-wheel-eligible-panel">
                 <Space direction="vertical" style={{ width: '100%' }} size={12}>
                   <div className="lucky-wheel-customer-intro">
-                    {isMobile && (
-                      <div className="lucky-wheel-customer-intro-heading">
-                        <h2 className="lucky-wheel-detail-title">Danh sách khách</h2>
-                        <p className="lucky-wheel-detail-name" title={selected.name}>{selected.name}</p>
-                      </div>
-                    )}
                     <Space wrap className="lucky-wheel-campaign-search-group">
                       <Input.Search
                         allowClear
@@ -937,7 +927,7 @@ export default function LuckyWheel() {
                       )}
                     </Space>
                     <Typography.Text type="secondary" className="lucky-wheel-access-hint">
-                      {isMobile ? 'Bật/tắt quyền quay áp dụng cho mọi vòng quay.' : 'Bật/tắt quyền quay áp dụng cho khách này trên tất cả vòng quay.'}
+                      Quyền của từng khách áp dụng cho mọi vòng quay.
                     </Typography.Text>
                   </div>
                   {customerSettingsQuery.isError && (
@@ -1017,10 +1007,10 @@ export default function LuckyWheel() {
                 </Space>
               </Card>
             </Can>
-          ))}
+          )}
 
-          {selected && (!isMobile || mobileWheelPanel === 'history') && wrapPanel('history', (
-            <Card className="lucky-wheel-panel" title={isMobile ? undefined : 'Lịch sử quay'}>
+          {detailTab === 'history' && (
+            <Card className="lucky-wheel-panel">
               <ResponsiveTable<WheelSpin>
                 rowKey="id"
                 dataSource={spins}
@@ -1043,6 +1033,7 @@ export default function LuckyWheel() {
                   },
                   {
                     title: '',
+                    key: 'actions',
                     width: 170,
                     render: (_, row) =>
                       row.status === 'ISSUED' && row.is_win ? (
@@ -1057,8 +1048,8 @@ export default function LuckyWheel() {
               />
               <ListPagination page={spinPage} limit={TABLE_PAGE_SIZE} total={spinsTotal} onChange={setSpinPage} noun="lượt quay" hideOnSinglePage />
             </Card>
-          ))}
-        </Space>
+          )}
+        </div>
       )}
 
       <WheelFormModal
@@ -1075,6 +1066,7 @@ export default function LuckyWheel() {
         open={prizeOpen}
         form={prizeForm}
         editingPrize={editingPrize}
+        prizes={prizes}
         onCancel={() => setPrizeOpen(false)}
         onSubmit={submitPrize}
       />

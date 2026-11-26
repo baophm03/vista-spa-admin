@@ -1,0 +1,153 @@
+.points-list-loading.mobile-only {
+  display: grid;
+}
+
+/* Thẻ thành viên / lịch sử điểm: đầu thẻ · dải số liệu · các dòng chi tiết */
+.points-card-list > .mobile-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 14px;
+  border-radius: 12px;
+}
+
+.points-card-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.points-card-head > .min-w-0 {
+  flex: 1;
+}
+
+.points-card-avatar {
+  display: grid;
+  flex: 0 0 34px;
+  place-items: center;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--brand-tint);
+  color: var(--brand-dark);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.points-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 8px;
+  margin-top: 3px;
+}
+
+.points-card-meta .ant-tag {
+  margin-inline-end: 0;
+}
+
+.points-card-delta {
+  flex-shrink: 0;
+  color: #389e0d;
+  font-size: 17px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.points-card-delta.is-minus {
+  color: #cf1322;
+}
+
+.points-card-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 12px 0 0;
+  padding-block: 10px;
+  border-block: 1px solid var(--brand-border-soft);
+}
+
+.points-card-stats > div {
+  display: grid;
+  align-content: start;
+  gap: 3px;
+  min-width: 0;
+}
+
+.points-card-stats > div + div {
+  padding-inline-start: 12px;
+  border-inline-start: 1px solid var(--brand-border-soft);
+}
+
+.points-card-stats dt {
+  color: #655e71;
+  font-size: 11.5px;
+}
+
+.points-card-stats dd {
+  margin: 0;
+  color: #282335;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.3;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.points-card-stats dd.is-primary {
+  color: var(--brand-primary);
+}
+
+.points-card-list .mobile-card-rows {
+  margin-top: 10px;
+}
+
+/* Tablet: bảng thành viên/lịch sử điểm nhiều cột số → dùng thẻ 2 cột cho dễ đọc */
+@media (768px <= width < 1200px) {
+  .ant-table-wrapper.points-tablet-table {
+    display: none;
+  }
+
+  .mobile-only.points-card-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: 1fr;
+    gap: 12px;
+  }
+
+  .points-card-list .mobile-card-rows {
+    flex: 1;
+    align-content: start;
+  }
+
+  .points-card-list .mobile-card-row .mobile-card-label {
+    flex-basis: 40%;
+  }
+}
+
+@media (width < 1024px) {
+  .points-rank-form > .ant-space {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .points-rank-form > .points-rank-pricing {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 767px) {
+  .points-rank-form > .ant-space {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ant-modal .points-form .ant-form-item-row {
+    margin-inline: 0 !important;
+  }
+
+  .ant-modal .points-form .ant-form-item-row > .ant-col {
+    flex-basis: 100% !important;
+    max-width: 100% !important;
+    padding-inline: 0 !important;
+  }
+}

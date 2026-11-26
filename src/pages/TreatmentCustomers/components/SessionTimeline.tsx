@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Alert, Button, Col, DatePicker, Divider, Empty, Form, Input, InputNumber, Modal, Popconfirm, Row, Select, Space, Spin, Tooltip, Typography, message } from 'antd'
+import { Alert, Button, Col, DatePicker, Divider, Empty, Form, Input, InputNumber, Modal, Popconfirm, Row, Select, Space, Tooltip, Typography, message } from 'antd'
 import { DeleteOutlined, EditOutlined, RollbackOutlined } from '@ant-design/icons'
 import dayjs, { type Dayjs } from 'dayjs'
 import { errorMessage, pickData } from '@/api/helpers'
@@ -15,7 +15,7 @@ import { sessionScheduledTimestamp } from './constants'
 import { customFieldValueText } from './constants'
 import type { SessionPhoto } from '@/api/models/sessionPhoto'
 import SessionPhotos from './SessionPhotos'
-import { CellVal, SubHead, TRow } from './shared'
+import { CellVal, SubHead, TreatmentLoading, TRow } from './shared'
 /** Timeline các buổi điều trị của 1 lượt — hiển thị trong modal chi tiết */
 export default function SessionTimeline({
   ctId,
@@ -291,7 +291,7 @@ export default function SessionTimeline({
     }
   }
 
-  if (loading) return <Spin className="mx-auto my-8 block!" />
+  if (loading) return <TreatmentLoading label="Đang tải buổi điều trị" />
   if (!sessions.length) return <Empty description="Chưa có buổi nào — bấm +1 buổi ở ngoài bảng để tạo" className="py-6" />
 
   /** Admin toàn quyền; user thường chỉ bắt đầu buổi N khi mọi buổi thường < N đã hoàn tất (bảo hành ngoại lệ) */
@@ -512,6 +512,7 @@ export default function SessionTimeline({
       </div>
 
       <Modal
+        className="treatment-form-modal"
         title={`Sửa buổi #${editOpen?.session_no}`}
         open={!!editOpen}
         onCancel={() => setEditOpen(null)}

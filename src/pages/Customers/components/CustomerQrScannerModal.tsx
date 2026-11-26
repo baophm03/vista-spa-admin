@@ -73,7 +73,7 @@ export default function CustomerQrScannerModal({ open, onClose, onToken }: Props
         <div style={{ display: scanning ? 'block' : 'none', overflow: 'hidden', borderRadius: 12, background: '#121212' }}>
           <video ref={videoRef} muted playsInline style={{ display: 'block', width: '100%', maxHeight: 300, objectFit: 'cover' }} />
         </div>
-        <Space wrap>
+        <Space wrap className="md:max-lg:w-full md:max-lg:justify-end">
           <Button icon={<CameraOutlined />} type="primary" onClick={() => setScanning(true)} disabled={scanning}>
             {cameraError ? 'Thử bật camera lại' : 'Bật camera'}
           </Button>

@@ -1,0 +1,15 @@
+@media (max-width: 767px) {
+  .ant-modal .commission-rule-form .ant-row {
+    margin-inline: 0 !important;
+  }
+
+  .ant-modal .commission-rule-form .ant-row > .ant-col {
+    flex-basis: 100% !important;
+    max-width: 100% !important;
+    padding-inline: 0 !important;
+  }
+
+  .commission-rule-form .ant-form-item {
+    margin-bottom: 16px;
+  }
+}

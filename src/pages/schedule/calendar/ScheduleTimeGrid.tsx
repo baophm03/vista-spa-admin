@@ -630,7 +630,7 @@ export default function ScheduleTimeGrid<Block extends GridBlock>({
                     key={block.key}
                     data-block-key={block.key}
                     className={renderEvent
-                      ? 'hover:z-[20] focus-within:z-[20]'
+                      ? 'hover:inset-x-1! hover:w-auto! hover:z-[35]! has-[:focus-visible]:inset-x-1! has-[:focus-visible]:w-auto! has-[:focus-visible]:z-[34]!'
                       : 'hover:left-1! hover:w-[calc(100%_-_8px)]! hover:z-[25]! focus-visible:z-[20]'}
                     style={{
                       position: 'absolute',

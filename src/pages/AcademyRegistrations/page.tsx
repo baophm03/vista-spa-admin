@@ -1,12 +1,13 @@
 import ResponsiveTable from '@/components/base/ResponsiveTable'
-import { useEffect, useMemo, useState } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
+import { useMemo, useState } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Alert, Badge, Button, Form, Input, Popover, Select, Space, Tag, Typography, message } from 'antd'
-import { FilterOutlined, PlusOutlined } from '@ant-design/icons'
+import { CheckCircleOutlined, ClockCircleOutlined, FilterOutlined, PlusOutlined, TeamOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
 import ListPagination from '@/components/base/ListPagination'
-import { errorMessage, pickData } from '@/api/helpers'
+import StatCards from '@/components/base/StatCards'
+import { errorMessage, pickData, pickMeta } from '@/api/helpers'
 import type { AcademyCourse } from '@/api/models/academyCourse'
 import { useGetAcademyCourseVouchersAdmin } from '@/api/endpoints/academy-course-vouchers'
 import type { VoucherCategoryRow } from '@/pages/Vouchers/components/constants'
@@ -52,6 +53,9 @@ export default function AcademyRegistrations() {
   const coursesQuery = useGetAcademyCoursesAdmin({ page: 1, limit: 200 } as never)
   const courseVouchersQuery = useGetAcademyCourseVouchersAdmin()
   const registrationsQuery = useGetRegistrationsSafe(filter, page, limit)
+  const summaryQuery = useGetRegistrationsSafe({}, 1, 1)
+  const pendingQuery = useGetRegistrationsSafe({ status: 'PENDING' }, 1, 1)
+  const attendedQuery = useGetRegistrationsSafe({ status: 'ATTENDED' }, 1, 1)
   const usersQuery = useGetUsersAdmin({ currentPage: 1, pageSize: 200, has_role: true })
   const courses = (pickData<AcademyCourse[]>(coursesQuery.data) ?? []) as AcademyCourse[]
   const courseVouchersPayload = pickData<any>(courseVouchersQuery.data)
@@ -161,12 +165,21 @@ export default function AcademyRegistrations() {
     <div>
       <PageTitle
         className="academy-registrations-page-title"
+        summary={(
+          <div className="academy-registration-stats">
+            <StatCards items={[
+              { key: 'total', label: 'Tổng đăng ký', value: registrationCount(summaryQuery.data), icon: <TeamOutlined /> },
+              { key: 'pending', label: 'Mới đăng ký', value: registrationCount(pendingQuery.data), icon: <ClockCircleOutlined />, tone: 'tertiary' },
+              { key: 'attended', label: 'Đã nhập học', value: registrationCount(attendedQuery.data), icon: <CheckCircleOutlined />, tone: 'secondary' },
+            ]} />
+          </div>
+        )}
         left={
           <>
             <Input.Search
               allowClear
               placeholder="Tìm tên / SĐT / email"
-              className="academy-registration-search w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]"
+              className="academy-registration-search"
               value={searchInput}
               onChange={(event) => { setSearchInput(event.target.value); if (!event.target.value) applySearch('') }}
               onSearch={applySearch}
@@ -231,7 +244,7 @@ export default function AcademyRegistrations() {
               aria-label="Thêm đăng ký"
               title="Thêm đăng ký"
               onClick={openCreate}
-            >Thêm đăng ký</Button>
+            ><span className="academy-registration-create-label">Thêm đăng ký</span></Button>
           </Can>
         }
       >
@@ -239,19 +252,22 @@ export default function AcademyRegistrations() {
       </PageTitle>
       {registrationsQuery.isError && <Alert type="error" showIcon message="Không tải được danh sách đăng ký" description={errorMessage(registrationsQuery.error)} style={{ marginBottom: 12 }} />}
 
-      <ResponsiveTable
-        rowKey="id"
-        loading={registrationsQuery.isLoading}
-        columns={columns}
-        dataSource={registrations}
-        scroll={{ x: 1100 }}
-        pagination={false}
-        onMobileCardClick={openUpdate}
-        onRow={(row) => ({
-          onClick: () => openUpdate(row),
-          style: { cursor: 'pointer' },
-        })}
-      />
+      <div className="academy-registration-list">
+        <ResponsiveTable
+          rowKey="id"
+          loading={registrationsQuery.isLoading}
+          columns={columns}
+          dataSource={registrations}
+          scroll={{ x: 1100 }}
+          pagination={false}
+          mobileTitleKey="full_name"
+          onMobileCardClick={openUpdate}
+          onRow={(row) => ({
+            onClick: () => openUpdate(row),
+            style: { cursor: 'pointer' },
+          })}
+        />
+      </div>
       <ListPagination page={page} limit={limit} total={total} onChange={setPage} noun="đăng ký" />
 
       <RegistrationUpdateModal
@@ -281,24 +297,16 @@ export default function AcademyRegistrations() {
 /** Wrapper: BE hỗ trợ q + page/limit nhưng spec chưa khai báo (client sinh ra chỉ có
  * branch_id/course_id/status/phone) — giữ raw call với URL /admin mới. */
 function useGetRegistrationsSafe(filter: { status?: string; course_id?: string; q?: string }, page: number, limit: number) {
-  const [data, setData] = useState<unknown>(null)
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<unknown>(null)
-  useEffect(() => {
-    let alive = true
-    setIsLoading(true)
-    const params = new URLSearchParams()
-    params.set('page', String(page))
-    params.set('limit', String(limit))
-    if (filter.status) params.set('status', filter.status)
-    if (filter.course_id) params.set('course_id', filter.course_id)
-    if (filter.q) params.set('q', filter.q)
-    apiClient.get(`/academy/registrations/admin?${params.toString()}`)
-      .then((res) => { if (alive) { setData(res.data); setError(null) } })
-      .catch((err) => { if (alive) setError(err) })
-      .finally(() => { if (alive) setIsLoading(false) })
-    return () => { alive = false }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filter.status, filter.course_id, filter.q, page, limit])
-  return { data, isLoading, isError: !!error, error }
+  const params = new URLSearchParams({ page: String(page), limit: String(limit) })
+  if (filter.status) params.set('status', filter.status)
+  if (filter.course_id) params.set('course_id', filter.course_id)
+  if (filter.q) params.set('q', filter.q)
+  return useQuery({
+    queryKey: [...getGetAcademyRegistrationsAdminQueryKey(), params.toString()],
+    queryFn: async ({ signal }) => (await apiClient.get(`/academy/registrations/admin?${params.toString()}`, { signal })).data,
+  })
+}
+
+function registrationCount(data: unknown) {
+  return pickMeta(data)?.total?.toLocaleString('vi-VN') ?? '—'
 }

@@ -146,9 +146,9 @@ export default function Notifications() {
 
   return (
     <>
-      <StatCards items={statItems} />
 
       <PageTitle
+        summary={<StatCards items={statItems} />}
         subtitle="Thông báo hệ thống gửi tới khách hàng"
         left={
           selectedIds.length > 0 && (

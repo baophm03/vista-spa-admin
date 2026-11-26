@@ -1,3 +1,225 @@
+.lucky-wheel-visibility-toolbar {
+  display: grid;
+  gap: 8px;
+}
+
+.lucky-wheel-visibility-initial {
+  display: none;
+}
+
+@media (width < 1200px) {
+  .lucky-wheel-visibility-panel.ant-card {
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .lucky-wheel-visibility-panel.ant-card > .ant-card-body {
+    padding: 0;
+  }
+
+  .lucky-wheel-visibility-controls {
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--brand-border-soft);
+  }
+
+  .lucky-wheel-visibility-panel .responsive-table-head {
+    flex-wrap: nowrap;
+    align-items: center;
+    padding-bottom: 10px;
+    margin-bottom: 8px;
+  }
+
+  .lucky-wheel-visibility-panel .mobile-card {
+    padding: 12px;
+    border-radius: 12px;
+  }
+
+  .lucky-wheel-visibility-customer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .lucky-wheel-visibility-initial {
+    display: grid;
+    place-items: center;
+    flex: 0 0 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--brand-tint);
+    color: var(--brand-dark);
+    font-size: 13px;
+  }
+
+  .lucky-wheel-visibility-panel .lucky-wheel-visibility-contact {
+    display: block;
+    margin: 2px 0 0;
+    font-size: 11px;
+    font-weight: 400;
+    overflow-wrap: anywhere;
+  }
+
+  .lucky-wheel-visibility-panel .mobile-card-rows {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+  }
+
+  .lucky-wheel-visibility-panel .mobile-card-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+  }
+
+  .lucky-wheel-visibility-panel .mobile-card-row .mobile-card-label {
+    flex: 0 0 auto;
+  }
+
+  .lucky-wheel-visibility-panel .mobile-card-row:last-child .mobile-card-label {
+    display: none;
+  }
+}
+
+@media (width < 768px) {
+  .lucky-wheel-visibility-notify .lucky-wheel-visibility-notify-label {
+    display: none;
+  }
+
+  .lucky-wheel-visibility-notify.ant-btn {
+    width: 40px;
+    padding: 0;
+  }
+}
+
+@media (width >= 1200px) {
+  .lucky-wheel-visibility-toolbar {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 12px;
+  }
+
+  .lucky-wheel-visibility-list-heading {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .lucky-wheel-visibility-toolbar .lucky-wheel-customer-filter {
+    grid-column: 2;
+    grid-row: 2;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+
+  .lucky-wheel-visibility-toolbar .lucky-wheel-customer-search {
+    flex: 1 1 320px;
+    min-width: 0;
+    max-width: 420px;
+  }
+
+  .lucky-wheel-visibility-toolbar .lucky-wheel-filter-select {
+    flex: 0 0 220px;
+    width: 220px;
+  }
+
+  .lucky-wheel-visibility-controls {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--brand-border-soft);
+  }
+}
+.lucky-wheel-prize-inline-actions {
+  display: none;
+}
+
+@media (width < 768px) {
+  .lucky-wheel-prize-menu[data-action-count="2"] {
+    display: none;
+  }
+
+  .lucky-wheel-prize-inline-actions[data-action-count="2"] {
+    display: inline-flex;
+    gap: 6px;
+  }
+}
+
+@media (768px <= width < 1200px) {
+  .lucky-wheel-prize-menu {
+    display: none;
+  }
+
+  .lucky-wheel-prize-inline-actions {
+    display: inline-flex;
+    gap: 6px;
+  }
+}
+
+@media (width < 1200px) {
+  .lucky-wheel-detail .lucky-wheel-panel.ant-card {
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .lucky-wheel-detail .lucky-wheel-panel > :is(.ant-card-head, .ant-card-body) {
+    min-height: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .lucky-wheel-prize-panel .ant-card-extra {
+    padding-block: 0 12px;
+  }
+
+  .lucky-wheel-detail .lucky-wheel-panel .mobile-card {
+    display: flex;
+    flex-direction: column;
+    padding: 14px;
+    border-radius: 12px;
+  }
+
+  .lucky-wheel-detail .lucky-wheel-panel .mobile-card-head {
+    flex-wrap: nowrap;
+    align-items: center;
+    margin-bottom: 10px;
+    padding-bottom: 0;
+    border-bottom: 0;
+  }
+
+  .lucky-wheel-detail .lucky-wheel-panel .mobile-card-rows {
+    flex: 1;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-content: start;
+    row-gap: 8px;
+    padding-block: 9px;
+    border-block: 1px solid var(--brand-border-soft);
+  }
+
+  .lucky-wheel-detail .lucky-wheel-panel .mobile-card-row {
+    display: grid;
+    gap: 3px;
+    min-width: 0;
+    padding-inline: 10px;
+  }
+
+  .lucky-wheel-detail .lucky-wheel-panel .mobile-card-row:nth-child(even) {
+    border-inline-start: 1px solid var(--brand-border-soft);
+  }
+
+  .lucky-wheel-detail .lucky-wheel-panel .mobile-card-value {
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .lucky-wheel-detail .lucky-wheel-panel .mobile-card-actions {
+    justify-content: flex-end;
+    padding-top: 0;
+    border-top: 0;
+  }
+}
 /* LuckyWheel — style riêng của trang Quay số may mắn */
 
 .lucky-wheel-create {
@@ -140,10 +362,13 @@
     font-weight: 600;
   }
 
+}
+
+@media (width < 1200px) {
   .lucky-wheel-mobile-list .mobile-card {
-    padding: 14px;
-    border: 1px solid #e9e6ec;
-    border-radius: 14px;
+    padding: 14px 16px 8px;
+    border: 1px solid var(--brand-border-soft);
+    border-radius: 12px;
     background: #fff;
     box-shadow: 0 1px 4px rgba(40, 35, 53, 0.05);
     transition: border-color 160ms ease;
@@ -154,19 +379,36 @@
   }
 
   .lucky-wheel-card {
+    height: 100%;
+    grid-template-rows: minmax(40px, 1fr) auto auto;
     gap: 10px;
   }
 
   .lucky-wheel-card .lucky-wheel-card-heading {
-    align-items: flex-start;
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1fr) auto;
+    align-items: center;
     margin: 0;
     padding: 0;
     border: 0;
   }
 
+  .lucky-wheel-card-icon {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--brand-tint);
+    color: var(--brand-dark);
+    font-size: 17px;
+  }
+
   .lucky-wheel-card .lucky-wheel-card-title {
     font-size: 15.5px;
     letter-spacing: -0.15px;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
   }
 
   .lucky-wheel-card .lucky-wheel-card-menu {
@@ -174,6 +416,12 @@
     margin: 0;
     padding: 0;
     border: 0;
+  }
+
+  .lucky-wheel-card-menu .row-actions-trigger.ant-btn {
+    width: auto;
+    padding-inline: 8px;
+    font-size: 12px;
   }
 
 
@@ -193,15 +441,22 @@
 
   .lucky-wheel-card-stats {
     display: grid;
-    grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
-    gap: 0;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
     margin: 0;
-    padding-top: 10px;
-    border-top: 1px solid #efecf2;
+    padding-block: 10px;
+    border-block: 1px solid var(--brand-border-soft);
   }
 
   .lucky-wheel-card-stats > div {
-    padding: 0;
+    display: grid;
+    grid-template-rows: 1fr auto;
+    min-width: 0;
+  }
+
+  .lucky-wheel-card-stats > div + div {
+    padding-inline-start: 12px;
+    border-inline-start: 1px solid var(--brand-border-soft);
   }
 
   .lucky-wheel-card-stats dt {
@@ -215,10 +470,53 @@
     color: #282335;
     font-size: 13.5px;
     font-weight: 700;
+    font-variant-numeric: tabular-nums;
     letter-spacing: -0.15px;
     overflow-wrap: anywhere;
   }
 
+  .lucky-wheel-card-link.ant-btn {
+    justify-self: end;
+    min-height: 36px;
+    padding-inline: 4px;
+    color: var(--brand-dark);
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+}
+
+@media (768px <= width < 1200px) {
+  .lucky-wheel-campaigns > .ant-space-item:has(> .ant-table-wrapper.desktop-only),
+  .lucky-wheel-campaigns .ant-table-wrapper.desktop-only,
+  .lucky-wheel-panel .ant-table-wrapper.desktop-only {
+    display: none;
+  }
+
+  :is(.lucky-wheel-mobile-list, .lucky-wheel-panel) .mobile-only.mobile-card-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  :is(.lucky-wheel-mobile-list, .lucky-wheel-panel) .mobile-card {
+    min-width: 0;
+  }
+
+  .lucky-wheel-mobile-list .mobile-card-list {
+    grid-auto-rows: 1fr;
+  }
+
+  .lucky-wheel-panel .responsive-table-head {
+    flex-wrap: wrap;
+  }
+
+  .lucky-wheel-panel .mobile-card-row .mobile-card-label {
+    flex-basis: 38%;
+  }
+}
+
+@media (max-width: 767px) {
   .lucky-wheel-detail-entry {
     scroll-margin-block-start: 12px;
   }
@@ -365,11 +663,6 @@
     margin-top: 8px;
   }
 
-  .lucky-wheel-prize-panel .lucky-wheel-prize-action.ant-btn {
-    min-height: 34px;
-    padding-inline: 8px;
-    font-size: 12px;
-  }
 
   .lucky-wheel-campaign-search-group,
   .lucky-wheel-campaign-search-group > .ant-space-item {
@@ -468,43 +761,31 @@
   }
 }
 
-/* ===== Panel dạng popup trên mobile ===== */
+.lucky-wheel-detail {
+  min-width: 0;
+}
+
+.lucky-wheel-detail-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  overflow-wrap: anywhere;
+}
+
 @media (max-width: 767px) {
-  .lucky-wheel-panel-modal .ant-modal-content {
-    border-radius: 16px;
-    padding: 16px;
+  .lucky-wheel-detail-tabs .ant-tabs-nav-list {
+    width: 100%;
   }
 
-  .lucky-wheel-panel-modal .ant-modal-body {
-    max-height: calc(100vh - 150px);
-    overflow-y: auto;
-    overscroll-behavior: contain;
+  .lucky-wheel-detail-tabs .ant-tabs-tab {
+    flex: 1 1 0;
+    justify-content: center;
+    min-width: 0;
+    margin-inline: 0 !important;
+    font-size: 12px;
   }
 
-  .lucky-wheel-panel-modal .lucky-wheel-panel {
-    border: 0;
-    box-shadow: none;
-    background: transparent;
-  }
-
-  .lucky-wheel-panel-modal .lucky-wheel-panel > .ant-card-head {
-    min-height: 0;
-    padding: 0;
-    border-bottom: 0;
-  }
-
-  .lucky-wheel-panel-modal .lucky-wheel-panel > .ant-card-body {
-    padding: 0;
-  }
-}
-
-/* Heading trong card lặp với tiêu đề modal → ẩn khi ở popup */
-.lucky-wheel-panel-modal .lucky-wheel-customer-intro-heading .lucky-wheel-detail-title {
-  display: none;
-}
-
-.lucky-wheel-panel-modal .lucky-wheel-customer-intro-heading {
-  margin-bottom: 8px;
 }
 
 /* Card khách trong popup: switch + thông báo gộp 1 hàng cuối như card giải */
@@ -555,4 +836,99 @@
 
 .lucky-wheel-eligible-panel .lucky-wheel-customer-access-label {
   font-size: 12px;
+}
+
+/* Tỉ lệ trúng: số % là thông tin chính, trọng số là chú thích phụ bên dưới */
+.lucky-wheel-chance {
+  display: inline-grid;
+  gap: 1px;
+}
+
+.lucky-wheel-chance-weight {
+  color: #857a93;
+  font-size: 11px;
+}
+
+.ant-alert.lucky-wheel-chance-hint {
+  margin-bottom: 12px;
+}
+
+/* Xem trước tỉ lệ tất cả giải trong popup thêm/sửa giải */
+.lucky-wheel-chance-preview {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 20px;
+  padding: 12px;
+  border: 1px solid var(--brand-border-soft);
+  border-radius: 10px;
+  background: var(--brand-bg);
+}
+
+.lucky-wheel-chance-preview-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.lucky-wheel-chance-preview-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lucky-wheel-chance-preview-list li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 72px auto;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+}
+
+.lucky-wheel-chance-preview-list li.is-current {
+  color: var(--brand-dark);
+  font-weight: 600;
+}
+
+.lucky-wheel-chance-preview-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lucky-wheel-chance-preview-bar {
+  height: 6px;
+  border-radius: 999px;
+  background: #e9e6ec;
+  overflow: hidden;
+}
+
+.lucky-wheel-chance-preview-bar i {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--brand-primary);
+}
+
+.lucky-wheel-chance-preview-list li:not(.is-current) .lucky-wheel-chance-preview-bar i {
+  background: #c9bcd1;
+}
+
+.lucky-wheel-chance-preview-value {
+  font-variant-numeric: tabular-nums;
+}
+
+.lucky-wheel-chance-preview-note {
+  font-size: 11.5px;
+}
+
+@media (max-width: 767px) {
+  .lucky-wheel-chance-preview-list li {
+    grid-template-columns: minmax(0, 1fr) 48px auto;
+  }
 }

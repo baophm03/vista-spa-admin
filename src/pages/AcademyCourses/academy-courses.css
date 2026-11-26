@@ -59,47 +59,9 @@
   }
 }
 
-@media (max-width: 767px) {
+@media (max-width: 1199px) {
   .academy-course-stats .stat-cards {
-    display: grid !important;
     grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-    gap: 7px !important;
-    margin-bottom: 14px !important;
-  }
-
-  .academy-course-stats .stat-card {
-    min-width: 0;
-    min-height: 92px;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: center;
-    gap: 5px;
-    padding: 9px 8px;
-    border-radius: 12px;
-  }
-
-  .academy-course-stats .stat-card-disc {
-    width: 27px;
-    height: 27px;
-    border-radius: 8px;
-    font-size: 14px;
-  }
-
-  .academy-course-stats .stat-card-body {
-    width: 100%;
-    gap: 1px;
-  }
-
-  .academy-course-stats .stat-card-label {
-    white-space: normal;
-    font-size: 9.5px;
-    line-height: 1.2;
-    overflow-wrap: anywhere;
-  }
-
-  .academy-course-stats .stat-card-value {
-    font-size: 20px;
-    line-height: 1.1;
   }
 
   .academy-course-list,
@@ -139,6 +101,67 @@
   .academy-course-list .mobile-card-row,
   .academy-course-list .mobile-card-row .mobile-card-value {
     min-width: 0;
+  }
+
+  .academy-course-list .mobile-card {
+    border-radius: 14px;
+    padding: 14px;
+  }
+
+  .academy-course-list .mobile-card-label {
+    flex-basis: 38%;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1199px) {
+  .academy-course-list .desktop-only {
+    display: none;
+  }
+
+  .academy-course-list .mobile-only.mobile-card-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .academy-course-list .mobile-card {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .academy-course-list .mobile-card-rows {
+    flex: 1;
+  }
+
+  .academy-course-list .academy-course-mobile-actions.mobile-only {
+    display: flex;
+  }
+
+  .academy-courses-page-title .page-title-controls {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    width: 100%;
+  }
+
+  .academy-courses-page-title .page-title-controls .academy-course-search {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .academy-course-stats .stat-cards > .stat-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    padding: 8px;
+  }
+
+  .academy-course-stats .stat-card-disc {
+    width: 26px;
+    height: 26px;
+    font-size: 13px;
   }
 
   .academy-course-form,

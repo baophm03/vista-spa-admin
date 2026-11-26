@@ -1,0 +1,52 @@
+@media (768px <= width < 1024px) {
+  .treatment-customers-title .page-title-controls {
+    flex-wrap: nowrap;
+  }
+
+  .treatment-customers-title .page-title-controls > :is(.ant-input-search, .ant-select) {
+    flex: 1;
+    min-width: 0 !important;
+    width: 0 !important;
+  }
+
+  .treatment-customers-title .page-title-controls > .ant-input-search {
+    flex: 1.5;
+    max-width: none;
+  }
+
+  .treatment-customers-title .page-title-controls > button {
+    flex: 0 0 40px;
+    padding-inline: 0;
+  }
+
+  .treatment-customer-cards.mobile-only {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 767px) {
+  .ant-modal.treatment-form-modal .ant-form .ant-row {
+    margin-inline: 0 !important;
+  }
+
+  .ant-modal.treatment-form-modal .ant-form .ant-row > .ant-col {
+    flex-basis: 100% !important;
+    width: 100%;
+    max-width: 100% !important;
+    padding-inline: 0 !important;
+  }
+
+  .ant-modal.treatment-form-modal .ant-form-item-row {
+    display: block;
+  }
+
+  .treatment-form-modal .ant-form-item {
+    margin-bottom: 16px;
+  }
+
+  .treatment-form-modal .ant-form-item-control-input-content > :is(.ant-select, .ant-picker, .ant-input-number) {
+    width: 100%;
+    min-width: 0;
+  }
+}
+

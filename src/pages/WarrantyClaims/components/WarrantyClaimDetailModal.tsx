@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Alert, Button, Descriptions, Drawer, Form, Grid, Modal, Skeleton, Tag, message } from 'antd'
+import { Alert, Button, Descriptions, Form, Modal, Skeleton, Tag, message } from 'antd'
 import { FileTextOutlined } from '@ant-design/icons'
 import InfoBanner from '@/components/base/InfoBanner'
 import { errorMessage } from '@/api/helpers'
@@ -11,7 +11,7 @@ import { fileSrc, resolveFileSrc, useFileUrlMap } from '@/hooks/useFileUrl'
 import { useBrandDateTime } from '@/themeRuntime'
 import { STATUS_META, type ClaimRow } from './constants'
 
-interface WarrantyClaimDetailDrawerProps {
+interface WarrantyClaimDetailModalProps {
   claimId: string | null
   fallback: ClaimRow | null
   onClose: () => void
@@ -23,11 +23,9 @@ interface WarrantyClaimDetailDrawerProps {
   rejecting: boolean
 }
 
-/** Drawer chi tiết claim; ADM có thể duyệt hoặc từ chối yêu cầu đang chờ xử lý. */
-export default function WarrantyClaimDetailDrawer(props: WarrantyClaimDetailDrawerProps) {
+export default function WarrantyClaimDetailModal(props: WarrantyClaimDetailModalProps) {
   const { claimId, fallback, onClose } = props
   const { formatDateTime } = useBrandDateTime()
-  const isMobile = !Grid.useBreakpoint().md
   const urlMap = useFileUrlMap()
   const approveMutation = usePutWarrantyClaimsIdApproveAdmin()
   const [approveForm] = Form.useForm()
@@ -55,15 +53,19 @@ export default function WarrantyClaimDetailDrawer(props: WarrantyClaimDetailDraw
     }
   }
 
-  return (
-    <Drawer
-      title="Chi tiết yêu cầu bảo hành"
-      open={!!claimId}
-      onClose={() => { setApproveOpen(false); onClose() }}
-      size="min(480px, 100vw)"
-      classNames={{ body: 'max-md:p-4!' }}
-      styles={{ body: { display: 'flex', flexDirection: 'column' } }}
-    >
+  const title = 'Chi tiết yêu cầu bảo hành'
+  const closeDetail = () => { setApproveOpen(false); onClose() }
+  const actions = claim?.status === 'PENDING' && props.isAdmin && (
+    <Can I="UPDATE" a="WARRANTY_CLAIM">
+      <div className="flex flex-wrap justify-end gap-2">
+        <Button type="primary" loading={approveMutation.isPending} onClick={() => { approveForm.resetFields(); setApproveOpen(true) }}>Duyệt</Button>
+        <Button danger loading={props.rejecting} onClick={() => props.onReject(claim)}>Từ chối</Button>
+      </div>
+    </Can>
+  )
+
+  const content = (
+    <>
       {!claim ? (
         detailQuery.isError
           ? <Alert type="error" title="Không tải được chi tiết bảo hành" description={
@@ -72,7 +74,7 @@ export default function WarrantyClaimDetailDrawer(props: WarrantyClaimDetailDraw
           : <Skeleton active paragraph={{ rows: 5 }} />
       ) : (
         <>
-          <Descriptions column={1} size="small" bordered={!isMobile} layout={isMobile ? 'vertical' : 'horizontal'} className="wrap-anywhere">
+          <Descriptions column={1} size="small" bordered className="warranty-detail-fields wrap-anywhere">
             <Descriptions.Item label="Khách hàng">{props.customerLabel(claim)}</Descriptions.Item>
             <Descriptions.Item label="Gói liệu trình">{props.packageLabel(claim)}</Descriptions.Item>
             {claim.customer_treatment?.finished_at ? <Descriptions.Item label="Ngày hoàn tất liệu trình">{formatDateTime(claim.customer_treatment.finished_at)}</Descriptions.Item> : null}
@@ -92,29 +94,33 @@ export default function WarrantyClaimDetailDrawer(props: WarrantyClaimDetailDraw
           </Descriptions>
           {claim.status === 'PENDING' && (
             <InfoBanner
-              className="mt-3"
+              className="warranty-detail-notice"
               title="Đang chờ Admin duyệt"
-              description="Khi được duyệt, hệ thống tự tạo một buổi điều trị bảo hành miễn phí — không trừ số buổi và không tính công kỹ thuật của gói. Bảo hành có hiệu lực trọn đời kể từ ngày hoàn tất liệu trình."
+              description="Duyệt sẽ tạo buổi bảo hành miễn phí, không trừ số buổi hoặc tính công kỹ thuật. Bảo hành trọn đời tính từ ngày hoàn tất liệu trình."
             />
           )}
           {claim.status === 'APPROVED' && claim.session_id && (
             <Alert
-              type="success" showIcon style={{ marginTop: 16 }}
+              type="success" showIcon className="warranty-detail-notice"
               message="Đã duyệt — buổi bảo hành miễn phí đã được tạo"
               description={`Buổi điều trị: ${claim.session?.status ?? 'đã tạo'} · Không trừ số buổi của gói · Tiền sản phẩm phát sinh hiện tại: ${Number(claim.session?.product_amount ?? 0).toLocaleString('vi-VN')}đ`}
             />
           )}
           {claim.status === 'REJECTED' && claim.reject_reason && (
-            <Alert type="warning" showIcon className="mt-4 wrap-anywhere" message="Yêu cầu đã bị từ chối" description={claim.reject_reason} />
+            <Alert type="warning" showIcon className="warranty-detail-notice" message="Yêu cầu đã bị từ chối" description={claim.reject_reason} />
           )}
-          {claim.status === 'PENDING' && props.isAdmin && (
-            <Can I="UPDATE" a="WARRANTY_CLAIM">
-              <div className="mt-auto flex flex-wrap gap-2 pt-4">
-                <Button className="max-md:flex-1" type="primary" loading={approveMutation.isPending} onClick={() => { approveForm.resetFields(); setApproveOpen(true) }}>Duyệt</Button>
-                <Button className="max-md:flex-1" danger loading={props.rejecting} onClick={() => props.onReject(claim)}>Từ chối</Button>
-              </div>
-            </Can>
-          )}
+        </>
+      )}
+    </>
+  )
+
+  return (
+    <>
+      <Modal title={title} open={!!claimId} onCancel={closeDetail} width="min(560px, calc(100vw - 24px))"
+        footer={actions || null}>
+        {content}
+      </Modal>
+      {claim && (
           <Modal
             title="Duyệt yêu cầu bảo hành"
             width="min(520px, calc(100vw - 24px))"
@@ -126,12 +132,11 @@ export default function WarrantyClaimDetailDrawer(props: WarrantyClaimDetailDraw
             confirmLoading={approveMutation.isPending}
           >
             <Alert type="info" showIcon message="Buổi bảo hành không trừ quota và không tính tiền công kỹ thuật. Có thể ghi số tiền sản phẩm phát sinh sau khi tạo buổi." style={{ marginBottom: 16 }} />
-            <Form form={approveForm} layout="vertical">
+            <Form form={approveForm} layout="vertical" className="warranty-claim-form">
               <CustomFieldFormItems definitions={sessionCustomFields} />
             </Form>
           </Modal>
-        </>
       )}
-    </Drawer>
+    </>
   )
 }

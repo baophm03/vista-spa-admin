@@ -290,7 +290,7 @@ function VoucherCustomerTab({ category, branches, isMobile }: { category: Vouche
                 allowClear
                 prefix={<SearchOutlined />}
                 placeholder="Tìm theo tên, SĐT hoặc tên voucher"
-                style={{ maxWidth: 300 }}
+                className="voucher-customer-search"
                 value={searchInput}
                 onChange={(event) => changeSearchInput(event.target.value)}
                 onPressEnter={() => applySearch(searchInput)}
@@ -315,7 +315,7 @@ function VoucherCustomerTab({ category, branches, isMobile }: { category: Vouche
         <Alert type="error" showIcon style={{ marginBottom: 16 }} message="Không tải được danh sách voucher khách hàng" description={errorMessage(viewQuery.error)} action={<Button size="small" onClick={() => void viewQuery.refetch()}>Thử lại</Button>} />
       )}
       <Table<VoucherCustomerRow>
-        className="desktop-only [&_.ant-table-thead_th]:whitespace-nowrap"
+        className="desktop-only voucher-table [&_.ant-table-thead_th]:whitespace-nowrap"
         rowKey={rowKey}
         loading={viewQuery.isLoading}
         dataSource={pageRows}
@@ -325,6 +325,7 @@ function VoucherCustomerTab({ category, branches, isMobile }: { category: Vouche
         locale={{ emptyText: 'Chưa có khách hàng nào được ghi nhận' }}
       />
       <MobileCards
+        className="voucher-card-list"
         rows={pageRows}
         rowKey={rowKey}
         loading={viewQuery.isLoading}

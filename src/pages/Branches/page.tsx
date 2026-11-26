@@ -351,9 +351,9 @@ export default function Branches() {
 
   return (
     <>
-      <StatCards items={statItems} />
 
       <PageTitle
+        summary={<StatCards items={statItems} />}
         subtitle="Danh sách cơ sở spa trong hệ thống"
         left={
           <>

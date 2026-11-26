@@ -1,0 +1,15 @@
+@media (768px <= width < 1200px) {
+  .desktop-only.discount-rules-table {
+    display: none;
+  }
+
+  .mobile-only.discount-rules-cards {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .discount-rules-cards > .mobile-card {
+    min-width: 0;
+  }
+}

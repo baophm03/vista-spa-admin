@@ -15,7 +15,7 @@ interface AppointmentsTableProps {
   staffName: (row: AppointmentRow) => string
   onRowClick: (row: AppointmentRow) => void
   /** Menu hành động của từng dòng (duyệt/bắt đầu/đổi lịch/hủy...) — giữ logic nghiệp vụ ở page */
-  renderActions: (row: AppointmentRow) => ReactNode
+  renderActions: (row: AppointmentRow, inCard?: boolean) => ReactNode
 }
 
 export default function AppointmentsTable({ rows, loading, branchName, staffName, onRowClick, renderActions }: AppointmentsTableProps) {
@@ -74,7 +74,7 @@ export default function AppointmentsTable({ rows, loading, branchName, staffName
   return (
     <>
       <Table<AppointmentRow>
-        className="desktop-only"
+        className="desktop-only max-lg:hidden!"
         rowKey="id"
         loading={loading}
         dataSource={rows}
@@ -88,30 +88,36 @@ export default function AppointmentsTable({ rows, loading, branchName, staffName
       />
       {/* Mobile: card theo Figma "Vista Admin / Thẻ lịch hẹn" — tên + tag trạng thái, các hàng label/value */}
       <MobileCards
+        className="md:max-lg:grid! md:max-lg:grid-cols-2 md:max-lg:[&>.mobile-card]:min-w-0"
         rows={rows}
         rowKey={(row) => row.id}
         loading={loading}
         emptyText="Chưa có lịch hẹn nào"
         onCardClick={onRowClick}
-        renderCard={(row) => (
-          <>
-            <div className="mobile-card-head">
-              <div className="mobile-card-title">{row.user?.full_name || '—'}</div>
-              <Tag color={STATUS_META[row.status as AppointmentStatus]?.color} style={{ marginInlineEnd: 0 }}>
-                {STATUS_META[row.status as AppointmentStatus]?.label ?? row.status}
-              </Tag>
-            </div>
-            <div className="mobile-card-rows">
-              <MobileCardRow label="Thời gian" value={`${dayjs(row.appt_date).format('DD/MM/YYYY')} ${row.start_time?.slice(0, 5) ?? ''}`} />
-              <MobileCardRow label="Số điện thoại" value={row.user?.phone || '—'} />
-              <MobileCardRow label="Cơ sở" value={branchName(row.branch_id)} />
-              <MobileCardRow label="KTV phụ trách" value={staffName(row)} />
-            </div>
-            <div className="mobile-card-actions" onClick={(event) => event.stopPropagation()}>
-              {renderActions(row)}
-            </div>
-          </>
-        )}
+        renderCard={(row) => {
+          const actions = renderActions(row, true)
+          return (
+            <>
+              <div className="mobile-card-head">
+                <div className="mobile-card-title">{row.user?.full_name || '—'}</div>
+                <Tag color={STATUS_META[row.status as AppointmentStatus]?.color} style={{ marginInlineEnd: 0 }}>
+                  {STATUS_META[row.status as AppointmentStatus]?.label ?? row.status}
+                </Tag>
+              </div>
+              <div className="mobile-card-rows">
+                <MobileCardRow label="Thời gian" value={`${dayjs(row.appt_date).format('DD/MM/YYYY')} ${row.start_time?.slice(0, 5) ?? ''}`} />
+                <MobileCardRow label="Số điện thoại" value={row.user?.phone || '—'} />
+                <MobileCardRow label="Cơ sở" value={branchName(row.branch_id)} />
+                <MobileCardRow label="KTV phụ trách" value={staffName(row)} />
+              </div>
+              {actions && (
+                <div className="mobile-card-actions" onClick={(event) => event.stopPropagation()}>
+                  {actions}
+                </div>
+              )}
+            </>
+          )
+        }}
       />
     </>
   )

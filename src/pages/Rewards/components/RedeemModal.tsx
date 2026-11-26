@@ -82,7 +82,7 @@ export default function RedeemModal({
       cancelText="Đóng"
       okButtonProps={{ disabled: insufficient }}
     >
-      <Form form={form} layout="vertical" style={{ marginBottom: 16 }}>
+      <Form form={form} layout="vertical" className="rewards-form mb-4">
         <Form.Item name="user_id" label="Khách hàng" rules={[{ required: true, message: 'Chọn khách' }]}>
           <Select
             showSearch

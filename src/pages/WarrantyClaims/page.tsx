@@ -7,6 +7,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import PageTitle from '@/components/base/PageTitle'
 import ListPagination from '@/components/base/ListPagination'
 import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
+import TableEmpty from '@/components/base/TableEmpty'
 import { errorMessage, pickData } from '@/api/helpers'
 import { Can } from '@casl/react'
 import type { PutWarrantyClaimsIdRejectAdminBody } from '@/api/models/putWarrantyClaimsIdRejectAdminBody'
@@ -18,11 +19,12 @@ import { registerUploadedFile } from '@/hooks/useFileUrl'
 import { useCustomerProfileAccess } from '@/utils/customerProfileAccess'
 import { useBrandDateTime } from '@/themeRuntime'
 import WarrantyClaimCreateModal from './components/WarrantyClaimCreateModal'
-import WarrantyClaimDetailDrawer from './components/WarrantyClaimDetailDrawer'
+import WarrantyClaimDetailModal from './components/WarrantyClaimDetailModal'
 import WarrantyClaimRejectModal from './components/WarrantyClaimRejectModal'
 import { STATUS_FILTER_OPTIONS, snapshotField, type ClaimRow } from './components/constants'
 import { useGetBranchesAdmin } from '@/api/endpoints/branches'
 import type {Branch} from '@/api/models'
+import './warranty-claims.css'
 
 export default function WarrantyClaims() {
   const [page, setPage] = useState(1)
@@ -164,7 +166,7 @@ export default function WarrantyClaims() {
   return (
     <>
       <PageTitle
-        className="max-md:mb-3"
+        className="warranty-claims-title max-lg:mb-3"
         subtitle="Tiếp nhận và xử lý yêu cầu bảo hành"
         left={
           <>
@@ -195,17 +197,19 @@ export default function WarrantyClaims() {
           </>}
         />
       )}
-      <Table<ClaimRow>
-        className="desktop-only"
-        rowKey="id" loading={claimsQuery.isLoading} dataSource={rows} columns={columns}
+      {!claimsQuery.isLoading && (!claimsQuery.isError || rows.length > 0) && <Table<ClaimRow>
+        className="desktop-only max-lg:hidden!"
+        rowKey="id" dataSource={rows} columns={columns}
         pagination={false}
+        locale={{ emptyText: <TableEmpty description={statusFilter ? 'Không có kết quả' : 'Chưa có yêu cầu bảo hành'} /> }}
         onRow={(row) => ({
           onClick: () => setDetailId(row.id),
           style: { cursor: 'pointer' },
         })}
-      />
+      />}
       {(!claimsQuery.isError || rows.length > 0) && (
         <MobileCards
+          className={claimsQuery.isLoading ? 'warranty-claims-loading' : 'warranty-claim-cards'}
           rows={rows}
           rowKey={(row) => row.id}
           loading={claimsQuery.isLoading}
@@ -229,8 +233,8 @@ export default function WarrantyClaims() {
                 <MobileCardRow label="Ngày tạo" value={row.created_at ? formatDateTime(row.created_at) : '—'} />
                 <MobileCardRow label="Lý do" value={row.reason || '—'} />
               </div>
-              <div className="mobile-card-actions">
-                <Button className="w-full" onClick={() => setDetailId(row.id)}>Xem chi tiết</Button>
+              <div className="mobile-card-actions warranty-card-actions">
+                <Button className="max-md:w-full" onClick={() => setDetailId(row.id)}>Xem chi tiết</Button>
               </div>
             </>
           )}
@@ -238,7 +242,7 @@ export default function WarrantyClaims() {
       )}
       <ListPagination page={page} limit={10} total={total} onChange={setPage} noun="yêu cầu bảo hành" />
 
-      <WarrantyClaimDetailDrawer
+      <WarrantyClaimDetailModal
         claimId={detailId}
         fallback={rows.find((r) => r.id === detailId) ?? null}
         onClose={() => setDetailId(null)}

@@ -91,6 +91,7 @@ export default function TreatmentPackageModal({
 
   return (
     <Modal
+      className="treatment-package-editor-modal"
       title={editing ? `Sửa ${noun}` : `Thêm ${noun}`}
       open={open}
       onCancel={onCancel}
@@ -152,18 +153,18 @@ export default function TreatmentPackageModal({
             type="info"
             showIcon
             message="Gói buổi tính theo số buổi: mỗi buổi khách hoàn thành sẽ trừ 1 buổi — trừ buổi mua trước, buổi tặng sau. Dùng hết số buổi (gồm cả buổi tặng) thì gói kết thúc."
-            style={{ marginBottom: 16 }}
+            className="treatment-package-notice"
           />
         )}
         {quotaType === 'UNLIMITED' && (
-          <Alert type="info" showIcon message="Gói trọn đời không giới hạn số buổi." style={{ marginBottom: 16 }} />
+          <Alert type="info" showIcon message="Gói trọn đời không giới hạn số buổi." className="treatment-package-notice" />
         )}
         {quotaType === 'VALUE' && (
           <Alert
             type="info"
             showIcon
             message="Gói lẻ tính theo số tiền: không giới hạn số buổi. Mỗi buổi khách tham gia sẽ trừ số tiền của buổi đó vào định mức (= giá bán), trừ hết định mức thì gói kết thúc."
-            style={{ marginBottom: 16 }}
+            className="treatment-package-notice"
           />
         )}
         <Form.Item

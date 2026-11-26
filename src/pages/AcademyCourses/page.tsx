@@ -176,11 +176,9 @@ export default function AcademyCourses() {
 
   return (
     <>
-      <div className="academy-course-stats">
-        <StatCards items={statItems} />
-      </div>
       <PageTitle
         className="academy-courses-page-title"
+        summary={<div className="academy-course-stats"><StatCards items={statItems} /></div>}
         subtitle="Khóa học đào tạo spa của trung tâm"
         left={
           <Input.Search

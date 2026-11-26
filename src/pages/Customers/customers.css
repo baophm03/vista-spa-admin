@@ -1,0 +1,44 @@
+.customers-card-toolbar {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.customers-card-tools {
+  display: flex;
+  gap: 12px;
+}
+
+.customer-profile-form :is(.ant-input-outlined, .ant-picker-outlined):not(:hover, :focus-within, .ant-input-status-error, .ant-picker-status-error) {
+  border-color: color-mix(in srgb, var(--brand-dark) 22%, white);
+}
+
+@media (max-width: 767px) {
+  .ant-modal .customer-profile-form .ant-form-item-row {
+    margin-inline: 0 !important;
+  }
+
+  .ant-modal .customer-profile-form .ant-form-item-row > .ant-col {
+    flex-basis: 100% !important;
+    max-width: 100% !important;
+    padding-inline: 0 !important;
+  }
+}
+
+@media (768px <= width < 1024px) {
+  .customers-card-toolbar {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+  }
+
+  .customers-card-tools button {
+    min-width: 46px;
+    padding-inline: 12px !important;
+    white-space: nowrap;
+  }
+
+  .customers-card-list.mobile-only {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

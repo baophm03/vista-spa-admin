@@ -18,6 +18,7 @@ import {
 import { DeleteOutlined, PictureOutlined, PlusOutlined } from '@ant-design/icons'
 import { resolveFileSrc, useFileUrlMap } from '@/hooks/useFileUrl'
 import type { ProductCategoryRow, ProductRow } from './constants'
+import '../products.css'
 
 interface ProductFormModalProps {
   open: boolean
@@ -59,6 +60,7 @@ export default function ProductFormModal({
   const urlMap = useFileUrlMap()
   return (
     <Modal
+      className="product-form-modal"
       title={editing ? 'Sửa sản phẩm' : 'Thêm sản phẩm'}
       open={isAdmin && open}
       onCancel={onCancel}
@@ -148,12 +150,12 @@ export default function ProductFormModal({
             {(fields, { add, remove }) => (
               <div style={{ display: 'grid', gap: 8 }}>
                 {fields.map((field) => (
-                  <Space key={field.key} align="baseline" className="product-attribute-row" style={{ display: 'flex' }}>
+                  <Space key={field.key} align="baseline" className="product-attribute-row">
                     <Form.Item name={[field.name, 'label']} noStyle>
-                      <Input placeholder="Tên (VD: Loại da)" style={{ width: 180 }} maxLength={100} />
+                      <Input placeholder="Tên (VD: Loại da)" maxLength={100} />
                     </Form.Item>
                     <Form.Item name={[field.name, 'value']} noStyle>
-                      <Input placeholder="Giá trị (VD: Da thường đến khô)" style={{ flex: 1, minWidth: 200 }} maxLength={500} />
+                      <Input placeholder="Giá trị (VD: Da thường đến khô)" maxLength={500} />
                     </Form.Item>
                     <Button size="small" type="text" danger icon={<DeleteOutlined />} aria-label="Xóa thuộc tính" onClick={() => remove(field.name)} />
                   </Space>

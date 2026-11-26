@@ -6,15 +6,17 @@ import { useGetConfig } from '@/api/endpoints/config'
 import type { CustomerTreatment } from '@/api/models/customerTreatment'
 import type { CustomFieldDefWithOptions } from '@/components/CustomFieldFormItems'
 import { useBrandDateTime } from '@/themeRuntime'
+import useDesktopLayout from '@/hooks/useDesktopLayout'
 import { PAY_METHOD, QUOTA_LABEL, STATUS_META, bonusRemaining, sessionUsage, treatmentProgress, type PaymentRow } from './constants'
-import { SubHead } from './shared'
+import { SubHead, TreatmentLoading } from './shared'
 import SessionTimeline from './SessionTimeline'
 import PointsHistoryPanel from './PointsHistoryPanel'
 
 interface TreatmentDetailModalProps {
   detail: CustomerTreatment | null
+  detailLoading: boolean
   payOpen: boolean
-  /** Mobile: chọn hiển thị 1 phần — 'summary' = panel tóm tắt+nút, 'tabs' = Buổi/TT/Điểm.
+  /** Mobile và tablet: 'summary' hiện tóm tắt và thao tác, 'tabs' hiện lịch sử.
    *  Desktop bỏ qua, luôn hiện cả 2 cột. */
   mobileSection?: 'summary' | 'tabs'
   detailTab: 'sessions' | 'payments' | 'points'
@@ -48,6 +50,7 @@ interface TreatmentDetailModalProps {
 
 export default function TreatmentDetailModal({
   detail,
+  detailLoading,
   payOpen,
   mobileSection,
   detailTab,
@@ -80,6 +83,7 @@ export default function TreatmentDetailModal({
 }: TreatmentDetailModalProps) {
   const { formatDateTime } = useBrandDateTime()
   const isMobile = !Grid.useBreakpoint().md
+  const isDesktop = useDesktopLayout()
   // Module hóa đơn tắt thì BE trả 404 "Module đang tắt" — ẩn nút In phiếu thay vì cho bấm lỗi
   const configQuery = useGetConfig(undefined, { query: { staleTime: 5 * 60 * 1000 } })
   const invoiceEnabled = pickData<{ settings?: Record<string, unknown> }>(configQuery.data)?.settings?.['module.invoice'] === true
@@ -96,11 +100,14 @@ export default function TreatmentDetailModal({
         <div className="flex flex-wrap items-start gap-5">
           {/* Rail trái: tóm tắt + hành động — card nền brand-bg như modal lần làm dịch vụ */}
           {/* Cố định rail trái: scroll cột phải thì aside đứng yên (trừ mobile xếp chồng) */}
-          {/* Mobile mobileSection='tabs' → ẩn rail này, chỉ hiện phần tab cho gọn */}
-          {(!isMobile || mobileSection !== 'tabs') && (
+          {(isDesktop || mobileSection !== 'tabs') && (
+          detailLoading ? (
+            <aside className="min-w-0 flex-[1_1_260px] lg:max-w-[330px]">
+              <TreatmentLoading label="Đang tải tổng quan liệu trình" count={1} />
+            </aside>
+          ) : (
           <aside
-            className={`flex-[1_1_260px] rounded-[14px] border border-[var(--brand-border)] bg-[var(--brand-bg)] ${isMobile ? 'p-3' : 'max-w-[330px] p-[18px]'}`}
-            style={isMobile ? undefined : { position: 'sticky', top: 0, maxHeight: 'calc(100vh - 140px)', overflowY: 'auto' }}
+            className={`flex-[1_1_260px] rounded-[14px] border border-[var(--brand-border)] bg-[var(--brand-bg)] ${isMobile ? 'p-3' : 'p-[18px]'} lg:sticky lg:top-0 lg:max-h-[calc(100vh-140px)] lg:max-w-[330px] lg:overflow-y-auto`}
           >
             <Typography.Text type="secondary" className={isMobile ? 'text-[11px] font-extrabold tracking-[1.2px]' : 'text-xs font-extrabold tracking-[1.2px]'}>
               {detail.quota_type === 'UNLIMITED' ? 'LIỆU TRÌNH TRỌN ĐỜI' : 'TIẾN ĐỘ LIỆU TRÌNH'}
@@ -218,12 +225,12 @@ export default function TreatmentDetailModal({
               )}
             </div>
           </aside>
+          )
           )}
 
           {/* Vùng chính: desktop dùng thanh Tabs, mobile dùng Select — nội dung render DUY NHẤT
                 ở khối phía dưới; trước đây Tabs lẫn khối dưới cùng cùng render nội dung gây double render */}
-          {/* Mobile mobileSection='summary' → ẩn phần tab, popup chỉ còn panel tóm tắt gọn */}
-          {(!isMobile || mobileSection !== 'summary') && (
+          {(isDesktop || mobileSection !== 'summary') && (
           <div className="min-w-0 flex-[3_1_560px]">
             <Tabs
               className="max-md:hidden!"
@@ -261,7 +268,9 @@ export default function TreatmentDetailModal({
                 onFocusSessionHandled={onFocusSessionHandled}
               />
             )}
-            {detailTab === 'payments' && canReadPayments && (
+            {detailTab === 'payments' && canReadPayments && (payLoading ? (
+              <TreatmentLoading label="Đang tải lịch sử thanh toán" />
+            ) : (
               <>
                 {/* Desktop: bảng trong khung viền (giữ giao diện tab cũ); MobileCards tự ẩn trên desktop */}
                 <div className="hidden overflow-hidden rounded-xl border border-[var(--brand-border)] bg-white md:block">
@@ -269,7 +278,6 @@ export default function TreatmentDetailModal({
                   <Table<PaymentRow>
                     rowKey="id"
                     size="small"
-                    loading={payLoading}
                     dataSource={payments}
                     pagination={false}
                     locale={{ emptyText: <TableEmpty description="Chưa có lần thanh toán nào" /> }}
@@ -302,7 +310,6 @@ export default function TreatmentDetailModal({
                 <MobileCards
                   rows={payments}
                   rowKey={(p) => p.id}
-                  loading={payLoading}
                   emptyText="Chưa có lần thanh toán nào"
                   renderCard={(p) => (
                     <>
@@ -318,7 +325,7 @@ export default function TreatmentDetailModal({
                   )}
                 />
               </>
-            )}
+            ))}
             {detailTab === 'points' && <PointsHistoryPanel profileId={detail.user_id} />}
           </div>
           )}

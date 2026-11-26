@@ -12,6 +12,7 @@ import ListFilterPopover from '@/components/base/ListFilterPopover'
 import InfoBanner from '@/components/base/InfoBanner'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import MobileCards from '@/components/base/MobileCards'
+import './discount-rules.css'
 import ListPagination from '@/components/base/ListPagination'
 import { errorMessage } from '@/api/helpers'
 import { getGetDiscountRulesAdminQueryKey, useDeleteDiscountRulesIdAdmin, useGetDiscountRulesAdmin, usePostDiscountRulesAdmin, usePutDiscountRulesIdAdmin } from '@/api/endpoints/discount-rules'
@@ -309,8 +310,8 @@ export default function DiscountRules() {
       {(allowed) =>
         allowed ? (
           <>
-            <StatCards items={statItems} />
             <PageTitle
+              summary={<StatCards items={statItems} />}
               subtitle="Quyết định giảm giá và ưu đãi theo hạng thẻ"
               left={
                 <>
@@ -332,6 +333,7 @@ export default function DiscountRules() {
                       setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)
                     }}
                     columnOptions={DISCOUNT_COLUMN_OPTIONS}
+                    tableBreakpoint="xl"
                     draftVisibleColumns={draftVisibleColumns}
                     onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as DiscountColumnKey[])}
                   />
@@ -358,7 +360,7 @@ export default function DiscountRules() {
               title="Nhân viên chỉ được chọn mức giảm trong khoảng của quy tắc. Nếu cần áp dụng ngoài khoảng này, hãy liên hệ quản trị viên để được cấp quyền duyệt ngoại lệ. Khi kết hợp nhiều ưu đãi, gồm ưu đãi theo hạng thẻ, tổng mức giảm không được vượt giới hạn của quy tắc."
             />
             <Table<DiscountRule>
-              className="desktop-only"
+              className="desktop-only discount-rules-table"
               rowKey="id" loading={rulesQuery.isLoading} dataSource={rules} columns={columns}
               scroll={{ x: 1150 }}
               pagination={false}
@@ -368,6 +370,7 @@ export default function DiscountRules() {
               })}
             />
             <MobileCards
+              className="discount-rules-cards"
               rows={rules}
               rowKey={(row) => row.id}
               loading={rulesQuery.isLoading}

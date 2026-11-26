@@ -100,6 +100,17 @@ body {
 }
 
 /* ===== Stat card — thống kê đầu trang danh sách ===== */
+.stat-cards {
+  grid-template-columns: repeat(auto-fit, minmax(205px, 1fr));
+  grid-auto-rows: 1fr;
+}
+
+@media (768px <= width < 1200px) {
+  .stat-cards[data-stat-count='4'] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 .stat-card {
   position: relative;
   overflow: hidden;
@@ -172,6 +183,69 @@ body {
   font-weight: 800;
   line-height: 1.1;
   letter-spacing: -0.01em;
+}
+
+/* Inline notices share a layout but keep a distinct palette for each state. */
+.ant-alert.ant-alert-info {
+  --notice-bg: color-mix(in srgb, var(--brand-primary, #63336a) 7%, #fff);
+  --notice-ink: var(--brand-dark, #54316f);
+  --notice-icon: var(--brand-primary, #63336a);
+}
+
+.ant-alert.ant-alert-success {
+  --notice-bg: #f0f9f2;
+  --notice-ink: #214d34;
+  --notice-icon: #287a48;
+}
+
+.ant-alert.ant-alert-warning {
+  --notice-bg: #fff7e8;
+  --notice-ink: #66421a;
+  --notice-icon: #995911;
+}
+
+.ant-alert.ant-alert-error {
+  --notice-bg: #fef1f2;
+  --notice-ink: #762e3a;
+  --notice-icon: #b43649;
+}
+
+.ant-alert:not(.ant-alert-banner) {
+  min-width: 0;
+  align-items: flex-start;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--notice-icon) 15%, var(--notice-bg));
+  border-radius: 10px;
+  background: var(--notice-bg);
+  color: var(--notice-ink);
+  line-height: 1.5;
+}
+
+.ant-alert:not(.ant-alert-banner) > .ant-alert-section {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.ant-alert:not(.ant-alert-banner) :is(.ant-alert-title, .ant-alert-description) {
+  color: var(--notice-ink);
+}
+
+.ant-alert:not(.ant-alert-banner) > .ant-alert-icon {
+  flex-shrink: 0;
+  margin-top: 3px;
+  color: var(--notice-icon);
+}
+
+@media (max-width: 767px) {
+  .ant-alert:not(.ant-alert-banner):has(> .ant-alert-actions):not(:has(> .ant-alert-close-icon)) {
+    flex-wrap: wrap;
+  }
+
+  .ant-alert:not(.ant-alert-banner):not(:has(> .ant-alert-close-icon)) > .ant-alert-actions {
+    flex: 0 0 100%;
+    margin-inline-start: 0;
+    text-align: end;
+  }
 }
 
 /* ===== Tag "gold" — badge vàng đồng bộ với màu bổ trợ (accent) trong Brand Settings ===== */
@@ -463,9 +537,41 @@ h4.ant-typography {
     display: grid !important;
   }
 
-  /* Mobile (KTV dùng điện thoại): gọn màn hình, bỏ hàng stats */
   .stat-cards {
-    display: none !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    margin-bottom: 12px !important;
+  }
+
+  .stat-cards > .stat-card {
+    min-width: 0;
+    min-height: 76px;
+    gap: 8px;
+    padding: 10px;
+    border-radius: 12px;
+  }
+
+  .stat-cards .stat-card-disc {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    font-size: 15px;
+  }
+
+  .stat-cards .stat-card-circle {
+    width: 64px;
+    height: 64px;
+    inset: -24px -24px auto auto;
+  }
+
+  .stat-cards .stat-card-label {
+    font-size: 11px;
+    white-space: normal;
+  }
+
+  .stat-cards .stat-card-value {
+    font-size: 20px;
+    overflow-wrap: anywhere;
   }
 
   /* Dashboard tabs: mobile chia đều full-width (kiểu segmented) thay vì
@@ -582,19 +688,25 @@ h4.ant-typography {
   border-top: 1px dashed var(--brand-border-soft);
 }
 
-@media (max-width: 767px) {
-  .mobile-card-actions .row-actions-touch-target,
-  .responsive-table-actions .row-actions-touch-target,
-  .product-category-actions .row-actions-touch-target,
-  .order-mobile-card-footer .row-actions-touch-target {
-    width: auto;
-    min-width: 88px;
-    height: 34px !important;
-    min-height: 34px !important;
-    padding: 0 8px !important;
-    gap: 4px;
-    font-size: 12px;
-  }
+.ant-btn.row-actions-trigger {
+  width: 112px;
+  height: 36px;
+  min-height: 36px;
+  padding-inline: 10px;
+  justify-content: space-between;
+  border-radius: 12px;
+  box-shadow: none;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.ant-btn.row-actions-trigger:not(:disabled) {
+  color: var(--brand-primary);
+}
+
+.row-actions-trigger .anticon {
+  color: var(--ant-color-text-quaternary, #bfbfbf);
+  font-size: 10px;
 }
 
 /* ===== Card — viền hairline + shadow mềm cùng tông ===== */

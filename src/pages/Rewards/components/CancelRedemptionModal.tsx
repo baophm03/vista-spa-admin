@@ -31,7 +31,7 @@ export default function CancelRedemptionModal({
       <Typography.Paragraph type="secondary">
         Sẽ hoàn <strong>{Number(cancelTarget?.points_spent ?? 0).toLocaleString('vi-VN')} điểm</strong> và trả lại số lượng quà. Chỉ hủy được lượt chưa sử dụng.
       </Typography.Paragraph>
-      <Form form={form} layout="vertical">
+      <Form form={form} layout="vertical" className="rewards-form">
         <Form.Item name="reason" label="Lý do hủy" rules={[{ required: true, message: 'Nhập lý do hủy' }]}>
           <Input.TextArea rows={2} />
         </Form.Item>

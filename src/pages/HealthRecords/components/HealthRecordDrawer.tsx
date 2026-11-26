@@ -1,4 +1,4 @@
-import { Alert, Button, Card, Descriptions, Drawer, Empty, Space, Tag, Typography } from 'antd'
+import { Alert, Button, Card, Descriptions, Drawer, Empty, Skeleton, Space, Tag, Typography } from 'antd'
 import {
   CalendarOutlined,
   FileTextOutlined,
@@ -49,6 +49,7 @@ export default function HealthRecordDrawer({
 }: HealthRecordDrawerProps) {
   return (
     <Drawer
+      rootClassName="health-record-drawer"
       title={detail ? <span className="wrap-anywhere">{displayName(detail)} — {detail.customer_code}</span> : 'Hồ sơ sức khỏe'}
       size="min(560px, 100vw)"
       open={!!detail}
@@ -89,7 +90,7 @@ export default function HealthRecordDrawer({
               title={<Space><FileTextOutlined />Lịch sử phiếu khám</Space>}
             >
               {historyLoading ? (
-                <div style={{ padding: 24, textAlign: 'center' }}>Đang tải lịch sử khám...</div>
+                <div role="status" aria-label="Đang tải lịch sử khám"><Skeleton active /></div>
               ) : historyError ? (
                 <Alert
                   type="error"
@@ -129,12 +130,14 @@ export default function HealthRecordDrawer({
             </Card>
 
             <Card size="small" title={<Space><MedicineBoxOutlined />Liệu trình</Space>}>
-              {detailTreatments.length === 0 ? (
+              {historyLoading ? (
+                <div role="status" aria-label="Đang tải liệu trình"><Skeleton active title={false} paragraph={{ rows: 2 }} /></div>
+              ) : detailTreatments.length === 0 ? (
                 <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Khách chưa có liệu trình" />
               ) : (
                 <Space direction="vertical" size={8} style={{ width: '100%' }}>
                   {detailTreatments.map((treatment) => (
-                    <div key={treatment.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div key={treatment.id} className="flex flex-wrap items-center gap-2">
                       <Typography.Text style={{ flex: 1 }}>{(treatment.package_id && packageNames[treatment.package_id]) || (treatment.package_snapshot as { name?: string } | undefined)?.name || 'Gói liệu trình'}</Typography.Text>
                       <Typography.Text type="secondary">
                         {treatment.quota_type === 'SESSIONS'
@@ -152,7 +155,7 @@ export default function HealthRecordDrawer({
 
             <Card size="small" title={<Space><CalendarOutlined />Lịch sử dịch vụ lẻ</Space>}>
               {historyLoading ? (
-                <div style={{ padding: 16, textAlign: 'center' }}>Đang tải lịch sử dịch vụ…</div>
+                <div role="status" aria-label="Đang tải lịch sử dịch vụ"><Skeleton active /></div>
               ) : detailAppointments.length === 0 ? (
                 <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Khách chưa có lần làm dịch vụ lẻ" />
               ) : (

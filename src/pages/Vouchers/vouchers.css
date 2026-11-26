@@ -21,7 +21,83 @@
   width: 220px;
 }
 
+.voucher-customer-search {
+  max-width: 300px;
+}
+
+.voucher-tablet-actions {
+  display: none;
+}
+
+@media (768px <= width < 1200px) {
+  .voucher-card-action-menu {
+    display: none;
+  }
+
+  .voucher-tablet-actions {
+    display: flex;
+    gap: 6px;
+  }
+
+  .voucher-tabs .stat-cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .desktop-only.voucher-table {
+    display: none;
+  }
+
+  .mobile-only.voucher-card-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .voucher-card-list > .mobile-card {
+    min-width: 0;
+  }
+
+  .voucher-toolbar,
+  .voucher-toolbar-search {
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+
+  .voucher-toolbar-search,
+  .voucher-toolbar-search :is(.voucher-search, .voucher-customer-search) {
+    flex: 1;
+    min-width: 0;
+    max-width: none;
+  }
+
+  .voucher-toolbar .voucher-branch-select {
+    flex: 0 0 160px;
+    width: 160px;
+  }
+
+  .voucher-toolbar > .voucher-toolbar-button {
+    flex-shrink: 0;
+  }
+}
+
 @media (max-width: 767px) {
+  .voucher-tabs .stat-cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .voucher-tabs .stat-cards > .stat-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    padding: 8px;
+  }
+
+  .voucher-tabs .stat-cards .stat-card-disc {
+    width: 26px;
+    height: 26px;
+    font-size: 13px;
+  }
+
   .voucher-tabs > .ant-tabs-nav {
     margin-bottom: 12px;
   }
@@ -71,7 +147,9 @@
   .voucher-toolbar-search .voucher-search :is(.ant-input-affix-wrapper, .ant-input-search-btn) {
     height: 44px;
   }
+}
 
+@media (width < 1200px) {
   .voucher-mobile-card {
     display: grid;
     min-width: 0;

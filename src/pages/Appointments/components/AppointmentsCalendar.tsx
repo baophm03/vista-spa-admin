@@ -165,6 +165,7 @@ export default function AppointmentsCalendar({
             const staff = staffName(row)
             const staffLabel = staff === 'Chưa phân công' ? 'Chưa gán KTV' : staff
 
+            const monthCard = view === 'month'
             const singleLine = compact || height < 28
 
             const tooltipContent = (
@@ -256,11 +257,9 @@ export default function AppointmentsCalendar({
                 <button
                   type="button"
                   onClick={(event: MouseEvent<HTMLButtonElement>) => { event.stopPropagation(); select() }}
-                  className={`group relative flex w-full min-w-0 cursor-pointer appearance-none flex-col overflow-hidden text-left transition-all duration-100 focus-visible:outline-2 focus-visible:outline-white hover:brightness-95 hover:shadow-md active:brightness-90 ${
-                    isCancelled ? 'opacity-80' : ''
-                  }`}
+                  className="group relative flex w-full min-w-0 cursor-pointer appearance-none flex-col overflow-hidden text-left transition-all duration-100 focus-visible:outline-2 focus-visible:outline-white hover:brightness-95 hover:shadow-md active:brightness-90"
                   style={{
-                    height: compact ? 20 : Math.max(20, height),
+                    height: monthCard ? 44 : compact ? 24 : Math.max(24, height),
                     backgroundColor: bgColor,
                     borderRadius: 4,
                     border: '1px solid #ffffff',
@@ -269,8 +268,15 @@ export default function AppointmentsCalendar({
                     color: '#ffffff',
                   }}
                 >
-                  {/* Google Calendar: Micro / Single line mode (Month view hoặc ca < 28px) */}
-                  {singleLine ? (
+                  {monthCard ? (
+                    <div className="flex h-full w-full min-w-0 flex-col justify-center gap-0.5 px-1.5 text-white leading-tight">
+                      <span className={`truncate text-[11px] font-semibold ${isCancelled ? 'line-through opacity-75' : ''}`}>{name}</span>
+                      <div className="flex min-w-0 items-center gap-1 text-[10px]">
+                        {time && <span className="shrink-0 tabular-nums">{time}</span>}
+                        <span className="truncate rounded bg-white/25 px-1 text-[9px] font-semibold">{categoryLabel}</span>
+                      </div>
+                    </div>
+                  ) : singleLine ? (
                     <div className="flex h-full w-full min-w-0 items-center gap-1.5 px-2 py-0.5 text-white leading-none">
                       {time && <span className="shrink-0 font-semibold text-[10px] tabular-nums opacity-95">{time}</span>}
                       <span className="shrink-0 rounded bg-white/25 px-1 py-0.2 text-[9px] font-semibold leading-none">{categoryLabel}</span>

@@ -2,6 +2,7 @@ import { Tabs } from 'antd'
 import PageTitle from '@/components/base/PageTitle'
 import RedemptionsTab from './components/RedemptionsTab'
 import RewardCatalogTab from './components/RewardCatalogTab'
+import './rewards.css'
 
 export default function Rewards() {
   return (

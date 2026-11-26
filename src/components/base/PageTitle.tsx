@@ -7,7 +7,7 @@ import type { ReactNode } from 'react'
  * - right: hành động chính (thường là nút tạo mới)
  * Tất cả item cùng nằm 1 nhóm, căn phải (justify-end); mobile (<768px) nút có icon tự ẩn chữ chỉ còn icon.
  */
-export default function PageTitle({ children, subtitle, left, right, className }: { children: ReactNode; subtitle?: ReactNode; left?: ReactNode; right?: ReactNode; className?: string }) {
+export default function PageTitle({ children, subtitle, summary, left, right, className }: { children: ReactNode; subtitle?: ReactNode; summary?: ReactNode; left?: ReactNode; right?: ReactNode; className?: string }) {
   return (
     <div className={`page-title mb-5 flex min-w-0 flex-col gap-3 ${className ?? ''}`}>
       <div className="min-w-0">
@@ -20,6 +20,7 @@ export default function PageTitle({ children, subtitle, left, right, className }
           </Typography.Text>
         )}
       </div>
+      {summary}
       {(left || right) && (
         <div className="page-title-controls flex flex-wrap items-center justify-end gap-2 [&_.ant-space]:max-w-full! [&_.ant-space]:flex-wrap! max-md:[&_.ant-btn:not(.keep-label)>span:not(.ant-btn-icon):not(.anticon):not(:only-child)]:hidden!">
           {left}
