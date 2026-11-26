@@ -932,8 +932,9 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
       </div>
     </div>
 
-    {/* Tablet: lưới giờ quá chật → chọn ngày trong tuần rồi liệt kê ca theo từng nhân viên */}
-    <div className="schedule-daylist">
+    {/* Tablet: lưới giờ quá chật → chọn ngày trong tuần rồi liệt kê ca theo từng nhân viên.
+        Redesign: dưới 1024px đã có MobileWeekView nên không render danh sách này nữa. */}
+    {!compact && <div className="schedule-daylist">
       <div className="schedule-daystrip" role="tablist" aria-label="Chọn ngày trong tuần">
         {Array.from({ length: 7 }, (_, index) => weekStart.add(index, 'day')).map((date) => {
           const isActive = date.isSame(anchor, 'day')
@@ -1013,7 +1014,7 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
           </div>
         )
       })()}
-    </div>
+    </div>}
 
     {/* Mobile: giữ danh sách card, panel chi tiết chuyển thành Drawer */}
     {dateNotes.length > 0 && (
