@@ -4,7 +4,7 @@ import type { ReactNode } from 'react'
  *  mobile (<768px) nút có icon tự ẩn chữ chỉ còn icon — cùng quy ước với PageTitle toolbar. */
 export default function ToolbarRow({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
-    <div className={`mb-3 flex flex-wrap items-center justify-end gap-2 [&_.ant-space]:max-w-full! [&_.ant-space]:flex-wrap! max-md:[&_.ant-btn>span:not(.ant-btn-icon):not(.anticon):not(:only-child)]:hidden! ${className}`}>
+    <div className={`mb-3 flex flex-wrap items-center justify-end gap-2 [&_.ant-space]:max-w-full! [&_.ant-space]:flex-wrap! max-md:[&_.ant-btn:not(.keep-label)>span:not(.ant-btn-icon):not(.anticon):not(:only-child)]:hidden! ${className}`}>
       {children}
     </div>
   )

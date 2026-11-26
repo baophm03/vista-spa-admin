@@ -146,15 +146,20 @@ export async function downloadBlob(path: string, filename: string): Promise<void
   window.setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
 
-/** Mở trang HTML in (phiếu hóa đơn 5.39 INV) ở tab mới — trình duyệt tự bật hộp thoại In. */
+/** Cho mẫu phiếu tự mở hộp thoại in mà không rời trang Admin. */
 export async function openHtmlPrint(path: string): Promise<void> {
   const { apiClient } = await import('@/api/mutator/custom-instance')
   const response = await apiClient.get(path, {
     responseType: 'text',
     transformResponse: [(data: unknown) => data],
   } as never)
-  const blob = new Blob([String(response.data)], { type: 'text/html; charset=utf-8' })
-  const url = URL.createObjectURL(blob)
-  window.open(url, '_blank')
-  window.setTimeout(() => URL.revokeObjectURL(url), 60000)
+  const frame = document.createElement('iframe')
+  frame.title = 'Phiếu in'
+  frame.tabIndex = -1
+  frame.setAttribute('aria-hidden', 'true')
+  frame.setAttribute('sandbox', 'allow-scripts allow-modals')
+  frame.style.cssText = 'position:fixed;left:-10000px;top:0;width:800px;height:600px;border:0;pointer-events:none'
+  frame.srcdoc = String(response.data)
+  document.body.appendChild(frame)
+  window.setTimeout(() => frame.remove(), 5 * 60_000)
 }

@@ -37,6 +37,7 @@ import WarrantyClaims from './pages/WarrantyClaims/page'
 import Commissions from './pages/Commissions/page'
 import DiscountRules from './pages/DiscountRules/page'
 import ContentPosts from './pages/ContentPosts/page'
+import ContentVideos from './pages/ContentPosts/ContentVideos'
 import AcademyRegistrations from './pages/AcademyRegistrations/page'
 import Imports from './pages/Imports/page'
 import Customers from './pages/Customers/page'
@@ -68,6 +69,7 @@ export default function App() {
           <Route path="/access-logs" element={<AccessLogs />} />
           <Route path="/products" element={<Products />} />
           <Route path="/content-posts" element={<ContentPosts />} />
+          <Route path="/content-videos" element={<ContentVideos />} />
           <Route path="/points" element={<Points />} />
           <Route path="/orders" element={<Orders />} />
           <Route path="/schedule" element={<ScheduleErrorBoundary><StaffSchedule /></ScheduleErrorBoundary>} />

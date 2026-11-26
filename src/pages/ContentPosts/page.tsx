@@ -247,8 +247,9 @@ export default function ContentPosts() {
       title: 'Thao tác', key: 'actions', width: 90, align: 'center' as const,
       render: (_: unknown, row: ContentPostRow) => (
         <RowActionsMenu
+          dropdownOnly
           items={[
-            { key: 'view', icon: <EyeOutlined />, label: 'Xem chi tiết', view: true },
+            { key: 'view', icon: <EyeOutlined />, label: 'Xem chi tiết' },
             ...(ability.can('UPDATE' as never, 'CONTENT')
               ? [
                 ...(row.status !== 'PUBLISHED'
@@ -304,6 +305,7 @@ export default function ContentPosts() {
       title: 'Thao tác', key: 'actions', width: 90, align: 'center' as const,
       render: (_: unknown, row: ContentCategory) => (
         <RowActionsMenu
+          dropdownOnly
           items={[
             ...(ability.can('UPDATE' as never, 'CONTENT')
               ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }]
@@ -342,10 +344,11 @@ export default function ContentPosts() {
   return (
     <div>
       <PageTitle subtitle="Quản lý bài viết và chuyên mục hiển thị trên app">
-        Nội dung App
+        Bài viết App
       </PageTitle>
       {postsQuery.isError && <Alert type="error" showIcon message={errorMessage(postsQuery.error)} style={{ marginBottom: 12 }} />}
       <Tabs
+        className="app-content-tabs"
         activeKey={tab}
         onChange={setTab}
         items={[
@@ -355,11 +358,20 @@ export default function ContentPosts() {
             children: (
               <>
                 {/* Toolbar của tab — đặt dưới thanh tab */}
-                <ToolbarRow>
+                <ToolbarRow className="max-md:grid max-md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
+                  <Input
+                    allowClear
+                    aria-label="Tìm tiêu đề bài viết"
+                    prefix={<SearchOutlined className="text-[var(--brand-text-inactive,#A9ADB2)]" />}
+                    placeholder="Tìm tiêu đề"
+                    className="col-span-full w-full! md:w-[220px]!"
+                    value={postSearchInput}
+                    onChange={(event) => setPostSearchInput(event.target.value)}
+                  />
                   <Select
                     allowClear
                     placeholder="Chuyên mục"
-                    className="w-[200px]"
+                    className="w-full min-w-0 md:w-[200px]"
                     options={categories.map((c) => ({ value: c.id, label: c.name }))}
                     value={postFilter.category_id}
                     onChange={(v) => { setPostFilter((f) => ({ ...f, category_id: v })); setPostPage(1) }}
@@ -367,25 +379,18 @@ export default function ContentPosts() {
                   <Select
                     allowClear
                     placeholder="Trạng thái"
-                    className="w-[150px]"
+                    className="w-full min-w-0 md:w-[150px]"
                     options={Object.entries(STATUS_META).map(([value, m]) => ({ value, label: m.label }))}
                     value={postFilter.status}
                     onChange={(v) => { setPostFilter((f) => ({ ...f, status: v })); setPostPage(1) }}
                   />
-                  <Input
-                    allowClear
-                    prefix={<SearchOutlined className="text-[var(--brand-text-inactive,#A9ADB2)]" />}
-                    placeholder="Tìm tiêu đề"
-                    className="w-[220px]!"
-                    value={postSearchInput}
-                    onChange={(event) => setPostSearchInput(event.target.value)}
-                  />
                   <Can I="CREATE" a="CONTENT">
-                    <Button type="primary" icon={<PlusOutlined />} onClick={() => openPostEditor()}>Tạo bài viết</Button>
+                    <Button type="primary" icon={<PlusOutlined />} aria-label="Tạo bài viết" onClick={() => openPostEditor()}>Tạo bài viết</Button>
                   </Can>
                 </ToolbarRow>
                 <ResponsiveTable
                   className="[&_.ant-table-thead_th]:whitespace-nowrap"
+                  scroll={{ x: 760 }}
                   rowKey="id"
                   loading={postsQuery.isLoading}
                   columns={postColumns}

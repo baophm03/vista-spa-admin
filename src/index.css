@@ -427,6 +427,17 @@ h4.ant-typography {
   gap: 12px;
 }
 
+@media (768px <= width < 1200px) {
+  .app-content-tabs .ant-table-wrapper.desktop-only {
+    display: none;
+  }
+
+  .app-content-tabs .responsive-table-mobile > .mobile-only {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 /* Ẩn card trên desktop — đặt sau .mobile-card-list để thắng cùng độ ưu tiên */
 .mobile-only {
   display: none;
@@ -818,7 +829,7 @@ h4.ant-typography {
 
 .content-post-settings-row {
   display: grid;
-  grid-template-columns: minmax(0, 2.5fr) minmax(140px, 1.2fr) minmax(140px, 1.2fr) minmax(72px, 0.55fr) minmax(120px, 0.95fr);
+  grid-template-columns: minmax(140px, 1.2fr) minmax(140px, 1.2fr) minmax(72px, 0.55fr) minmax(120px, 0.95fr);
   gap: 0 12px;
   align-items: start;
 }
@@ -850,9 +861,6 @@ h4.ant-typography {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .content-post-settings-row>.ant-form-item:first-child {
-    grid-column: 1 / -1;
-  }
 }
 
 .content-rich-editor .ql-editor img {
