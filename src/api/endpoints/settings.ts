@@ -35,11 +35,11 @@ import type {
   ForbiddenResponse,
   GetSettingsAdmin200,
   GetSettingsAdminParams,
-  GetSettingsBrandAdmin200,
+  GetSettingsBrand200,
   InternalErrorResponse,
   PutSettingsAdmin200,
   PutSettingsAdminBody,
-  PutSettingsBrandAdmin200,
+  PutSettingsBrand200,
   UnauthorizedResponse,
   UnprocessableEntityResponse
 } from '../models';
@@ -51,17 +51,17 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * GET `/settings/brand/admin` — settings. Cần đăng nhập + quyền đọc brand settings (`brand.read`). Handled by `brandSettingsService.get`.
+ * GET `/settings/brand` — settings. Cần đăng nhập + quyền đọc brand settings (`brand.read`). Handled by `brandSettingsService.get`.
  * @summary View brand and region settings
  */
-export const getSettingsBrandAdmin = (
+export const getSettingsBrand = (
     
  signal?: AbortSignal
 ) => {
       
       
-      return customInstance<GetSettingsBrandAdmin200>(
-      {url: `/settings/brand/admin`, method: 'GET', signal
+      return customInstance<GetSettingsBrand200>(
+      {url: `/settings/brand`, method: 'GET', signal
     },
       );
     }
@@ -69,75 +69,75 @@ export const getSettingsBrandAdmin = (
 
 
 
-export const getGetSettingsBrandAdminInfiniteQueryKey = () => {
+export const getGetSettingsBrandInfiniteQueryKey = () => {
     return [
-    'infinite', `/settings/brand/admin`
+    'infinite', `/settings/brand`
     ] as const;
     }
 
-export const getGetSettingsBrandAdminQueryKey = () => {
+export const getGetSettingsBrandQueryKey = () => {
     return [
-    `/settings/brand/admin`
+    `/settings/brand`
     ] as const;
     }
 
     
-export const getGetSettingsBrandAdminInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getSettingsBrandAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSettingsBrandAdmin>>, TError, TData>>, }
+export const getGetSettingsBrandInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getSettingsBrand>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSettingsBrand>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetSettingsBrandAdminInfiniteQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getGetSettingsBrandInfiniteQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSettingsBrandAdmin>>> = ({ signal }) => getSettingsBrandAdmin(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSettingsBrand>>> = ({ signal }) => getSettingsBrand(signal);
 
       
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSettingsBrandAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSettingsBrand>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetSettingsBrandAdminInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getSettingsBrandAdmin>>>
-export type GetSettingsBrandAdminInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+export type GetSettingsBrandInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getSettingsBrand>>>
+export type GetSettingsBrandInfiniteQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
 
 
-export function useGetSettingsBrandAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getSettingsBrandAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSettingsBrandAdmin>>, TError, TData>> & Pick<
+export function useGetSettingsBrandInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getSettingsBrand>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSettingsBrand>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getSettingsBrandAdmin>>,
+          Awaited<ReturnType<typeof getSettingsBrand>>,
           TError,
-          Awaited<ReturnType<typeof getSettingsBrandAdmin>>
+          Awaited<ReturnType<typeof getSettingsBrand>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetSettingsBrandAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getSettingsBrandAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSettingsBrandAdmin>>, TError, TData>> & Pick<
+export function useGetSettingsBrandInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getSettingsBrand>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSettingsBrand>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getSettingsBrandAdmin>>,
+          Awaited<ReturnType<typeof getSettingsBrand>>,
           TError,
-          Awaited<ReturnType<typeof getSettingsBrandAdmin>>
+          Awaited<ReturnType<typeof getSettingsBrand>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetSettingsBrandAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getSettingsBrandAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSettingsBrandAdmin>>, TError, TData>>, }
+export function useGetSettingsBrandInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getSettingsBrand>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSettingsBrand>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary View brand and region settings
  */
 
-export function useGetSettingsBrandAdminInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getSettingsBrandAdmin>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSettingsBrandAdmin>>, TError, TData>>, }
+export function useGetSettingsBrandInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getSettingsBrand>>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSettingsBrand>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetSettingsBrandAdminInfiniteQueryOptions(options)
+  const queryOptions = getGetSettingsBrandInfiniteQueryOptions(options)
 
   const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -149,12 +149,12 @@ export function useGetSettingsBrandAdminInfinite<TData = InfiniteData<Awaited<Re
 /**
  * @summary View brand and region settings
  */
-export const prefetchGetSettingsBrandAdminInfiniteQuery = async <TData = Awaited<ReturnType<typeof getSettingsBrandAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSettingsBrandAdmin>>, TError, TData>>, }
+export const prefetchGetSettingsBrandInfiniteQuery = async <TData = Awaited<ReturnType<typeof getSettingsBrand>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getSettingsBrand>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetSettingsBrandAdminInfiniteQueryOptions(options)
+  const queryOptions = getGetSettingsBrandInfiniteQueryOptions(options)
 
   await queryClient.prefetchInfiniteQuery(queryOptions);
 
@@ -163,62 +163,62 @@ export const prefetchGetSettingsBrandAdminInfiniteQuery = async <TData = Awaited
 
 
 
-export const getGetSettingsBrandAdminQueryOptions = <TData = Awaited<ReturnType<typeof getSettingsBrandAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSettingsBrandAdmin>>, TError, TData>>, }
+export const getGetSettingsBrandQueryOptions = <TData = Awaited<ReturnType<typeof getSettingsBrand>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSettingsBrand>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetSettingsBrandAdminQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getGetSettingsBrandQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSettingsBrandAdmin>>> = ({ signal }) => getSettingsBrandAdmin(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSettingsBrand>>> = ({ signal }) => getSettingsBrand(signal);
 
       
 
       
 
-   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSettingsBrandAdmin>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn,   retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSettingsBrand>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type GetSettingsBrandAdminQueryResult = NonNullable<Awaited<ReturnType<typeof getSettingsBrandAdmin>>>
-export type GetSettingsBrandAdminQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
+export type GetSettingsBrandQueryResult = NonNullable<Awaited<ReturnType<typeof getSettingsBrand>>>
+export type GetSettingsBrandQueryError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse
 
 
-export function useGetSettingsBrandAdmin<TData = Awaited<ReturnType<typeof getSettingsBrandAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSettingsBrandAdmin>>, TError, TData>> & Pick<
+export function useGetSettingsBrand<TData = Awaited<ReturnType<typeof getSettingsBrand>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSettingsBrand>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getSettingsBrandAdmin>>,
+          Awaited<ReturnType<typeof getSettingsBrand>>,
           TError,
-          Awaited<ReturnType<typeof getSettingsBrandAdmin>>
+          Awaited<ReturnType<typeof getSettingsBrand>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetSettingsBrandAdmin<TData = Awaited<ReturnType<typeof getSettingsBrandAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSettingsBrandAdmin>>, TError, TData>> & Pick<
+export function useGetSettingsBrand<TData = Awaited<ReturnType<typeof getSettingsBrand>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSettingsBrand>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getSettingsBrandAdmin>>,
+          Awaited<ReturnType<typeof getSettingsBrand>>,
           TError,
-          Awaited<ReturnType<typeof getSettingsBrandAdmin>>
+          Awaited<ReturnType<typeof getSettingsBrand>>
         > , 'initialData'
       >, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetSettingsBrandAdmin<TData = Awaited<ReturnType<typeof getSettingsBrandAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSettingsBrandAdmin>>, TError, TData>>, }
+export function useGetSettingsBrand<TData = Awaited<ReturnType<typeof getSettingsBrand>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSettingsBrand>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary View brand and region settings
  */
 
-export function useGetSettingsBrandAdmin<TData = Awaited<ReturnType<typeof getSettingsBrandAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSettingsBrandAdmin>>, TError, TData>>, }
+export function useGetSettingsBrand<TData = Awaited<ReturnType<typeof getSettingsBrand>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSettingsBrand>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetSettingsBrandAdminQueryOptions(options)
+  const queryOptions = getGetSettingsBrandQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -230,12 +230,12 @@ export function useGetSettingsBrandAdmin<TData = Awaited<ReturnType<typeof getSe
 /**
  * @summary View brand and region settings
  */
-export const prefetchGetSettingsBrandAdminQuery = async <TData = Awaited<ReturnType<typeof getSettingsBrandAdmin>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
- queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSettingsBrandAdmin>>, TError, TData>>, }
+export const prefetchGetSettingsBrandQuery = async <TData = Awaited<ReturnType<typeof getSettingsBrand>>, TError = UnauthorizedResponse | ForbiddenResponse | InternalErrorResponse>(
+ queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSettingsBrand>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetSettingsBrandAdminQueryOptions(options)
+  const queryOptions = getGetSettingsBrandQueryOptions(options)
 
   await queryClient.prefetchQuery(queryOptions);
 
@@ -245,16 +245,16 @@ export const prefetchGetSettingsBrandAdminQuery = async <TData = Awaited<ReturnT
 
 
 /**
- * PUT `/settings/brand/admin` — settings. Cần đăng nhập + quyền quản trị brand settings (`brand.admin`). Handled by `brandSettingsService.update`.
+ * PUT `/settings/brand` — settings. Cần đăng nhập + quyền quản trị brand settings (`brand.admin`). Handled by `brandSettingsService.update`.
  * @summary Update brand and region settings
  */
-export const putSettingsBrandAdmin = (
+export const putSettingsBrand = (
     brandSettingsUpdate: BrandSettingsUpdate,
  ) => {
       
       
-      return customInstance<PutSettingsBrandAdmin200>(
-      {url: `/settings/brand/admin`, method: 'PUT',
+      return customInstance<PutSettingsBrand200>(
+      {url: `/settings/brand`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: brandSettingsUpdate
     },
@@ -263,11 +263,11 @@ export const putSettingsBrandAdmin = (
   
 
 
-export const getPutSettingsBrandAdminMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putSettingsBrandAdmin>>, TError,{data: BrandSettingsUpdate}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof putSettingsBrandAdmin>>, TError,{data: BrandSettingsUpdate}, TContext> => {
+export const getPutSettingsBrandMutationOptions = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putSettingsBrand>>, TError,{data: BrandSettingsUpdate}, TContext>, }
+): UseMutationOptions<Awaited<ReturnType<typeof putSettingsBrand>>, TError,{data: BrandSettingsUpdate}, TContext> => {
 
-const mutationKey = ['putSettingsBrandAdmin'];
+const mutationKey = ['putSettingsBrand'];
 const {mutation: mutationOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -277,10 +277,10 @@ const {mutation: mutationOptions} = options ?
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putSettingsBrandAdmin>>, {data: BrandSettingsUpdate}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putSettingsBrand>>, {data: BrandSettingsUpdate}> = (props) => {
           const {data} = props ?? {};
 
-          return  putSettingsBrandAdmin(data,)
+          return  putSettingsBrand(data,)
         }
 
         
@@ -288,23 +288,23 @@ const {mutation: mutationOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type PutSettingsBrandAdminMutationResult = NonNullable<Awaited<ReturnType<typeof putSettingsBrandAdmin>>>
-    export type PutSettingsBrandAdminMutationBody = BrandSettingsUpdate
-    export type PutSettingsBrandAdminMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
+    export type PutSettingsBrandMutationResult = NonNullable<Awaited<ReturnType<typeof putSettingsBrand>>>
+    export type PutSettingsBrandMutationBody = BrandSettingsUpdate
+    export type PutSettingsBrandMutationError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse
 
     /**
  * @summary Update brand and region settings
  */
-export const usePutSettingsBrandAdmin = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putSettingsBrandAdmin>>, TError,{data: BrandSettingsUpdate}, TContext>, }
+export const usePutSettingsBrand = <TError = UnauthorizedResponse | ForbiddenResponse | ConflictResponse | UnprocessableEntityResponse | InternalErrorResponse,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putSettingsBrand>>, TError,{data: BrandSettingsUpdate}, TContext>, }
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof putSettingsBrandAdmin>>,
+        Awaited<ReturnType<typeof putSettingsBrand>>,
         TError,
         {data: BrandSettingsUpdate},
         TContext
       > => {
 
-      const mutationOptions = getPutSettingsBrandAdminMutationOptions(options);
+      const mutationOptions = getPutSettingsBrandMutationOptions(options);
 
       return useMutation(mutationOptions, queryClient);
     }

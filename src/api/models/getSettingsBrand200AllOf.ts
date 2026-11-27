@@ -7,6 +7,6 @@
  */
 import type { BrandSettings } from './brandSettings';
 
-export type PutSettingsBrandAdmin200AllOf = {
+export type GetSettingsBrand200AllOf = {
   responseData?: BrandSettings;
 };

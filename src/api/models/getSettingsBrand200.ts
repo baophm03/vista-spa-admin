@@ -6,6 +6,6 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { Response } from './response';
-import type { GetSettingsBrandAdmin200AllOf } from './getSettingsBrandAdmin200AllOf';
+import type { GetSettingsBrand200AllOf } from './getSettingsBrand200AllOf';
 
-export type GetSettingsBrandAdmin200 = Response & GetSettingsBrandAdmin200AllOf;
+export type GetSettingsBrand200 = Response & GetSettingsBrand200AllOf;

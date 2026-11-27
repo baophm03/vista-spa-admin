@@ -8,7 +8,7 @@ import { errorMessage, pickData } from '@/api/helpers'
 import type { BrandSettings } from '@/api/models/brandSettings'
 import type { BrandSettingsUpdate } from '@/api/models/brandSettingsUpdate'
 import type { FileUpload } from '@/api/models/fileUpload'
-import { getGetSettingsBrandAdminQueryKey, putSettingsBrandAdmin, useGetSettingsBrandAdmin } from '@/api/endpoints/settings'
+import { getGetSettingsBrandQueryKey, putSettingsBrand, useGetSettingsBrand } from '@/api/endpoints/settings'
 import { postFilesAdmin } from '@/api/endpoints/files'
 import { Can } from '@casl/react'
 import links from '@/configs/links'
@@ -158,7 +158,7 @@ export default function BrandSettings() {
   const [form] = Form.useForm<BrandFormValues>()
   const queryClient = useQueryClient()
   const runtime = useBrandRuntime()
-  const settingsQuery = useGetSettingsBrandAdmin()
+  const settingsQuery = useGetSettingsBrand()
   const settings = useMemo(() => {
     const body = settingsQuery.data as { responseData?: unknown } | undefined
     return pickData<BrandSettings>(body?.responseData ?? body)
@@ -194,7 +194,7 @@ export default function BrandSettings() {
 
   const saveMutation = useMutation({
     mutationFn: async (values: BrandFormValues) =>
-      putSettingsBrandAdmin({
+      putSettingsBrand({
         brand: {
           name: values.brand.name,
           logo_file_id: logoFileId || null,
@@ -208,10 +208,10 @@ export default function BrandSettings() {
     onSuccess: async (result) => {
       const data = pickData<BrandSettings>(result)
       if (data?.brand && data?.locale) {
-        queryClient.setQueryData(getGetSettingsBrandAdminQueryKey(), data)
+        queryClient.setQueryData(getGetSettingsBrandQueryKey(), data)
         applyBrandSettings(data)
       } else {
-        await queryClient.invalidateQueries({ queryKey: getGetSettingsBrandAdminQueryKey() })
+        await queryClient.invalidateQueries({ queryKey: getGetSettingsBrandQueryKey() })
       }
       message.success('Đã lưu cấu hình thương hiệu')
     },

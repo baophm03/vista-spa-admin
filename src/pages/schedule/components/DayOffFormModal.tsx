@@ -1,5 +1,7 @@
-import { Alert, DatePicker, Form, Input, Modal, Select, Space, Typography } from 'antd'
+import { Alert, Button, DatePicker, Form, Input, Modal, Select, Space, Typography } from 'antd'
 import type { FormInstance } from 'antd'
+import { CalendarOutlined } from '@ant-design/icons'
+import { useNavigate } from 'react-router-dom'
 import dayjs from 'dayjs'
 import ServiceImageField from '@/components/ServiceImageField'
 import type { ShiftTemplate, ScheduleStaff } from '../types'
@@ -18,6 +20,12 @@ interface ConflictAppointment {
   service?: { title?: string }
 }
 
+/** Mở trang Lịch hẹn với modal Chi tiết lịch hẹn — từ đó bấm "Đổi KTV" để gán người phụ trách mới. */
+function useOpenAppointmentInAppointmentsPage() {
+  const navigate = useNavigate()
+  return (id: string) => navigate(`/appointments?appointment_id=${id}&detail=1`)
+}
+
 export default function DayOffFormModal({ open, form, staff, scheduledTemplates, isTechnician, compact = false, submitting = false, submitError, onCancel, onSubmit }: {
   open: boolean
   form: FormInstance
@@ -34,6 +42,7 @@ export default function DayOffFormModal({ open, form, staff, scheduledTemplates,
   const selectedStaffId = Form.useWatch('staff_id', form)
   const selectedDate = Form.useWatch('off_date', form)
   const selectedShiftId = Form.useWatch('shift_template_id', form)
+  const openAppointment = useOpenAppointmentInAppointmentsPage()
 
   // Lịch hẹn đích danh KTV trùng ngày/ca nghỉ dự kiến — khách thấy trước khi gửi đơn
   const conflictsQuery = useGetStaffDaysOffConflictsAdmin(
@@ -45,16 +54,16 @@ export default function DayOffFormModal({ open, form, staff, scheduledTemplates,
     { query: { enabled: !!selectedStaffId && !!selectedDate } },
   )
   const conflicts = (pickData<ConflictAppointment[] | undefined>(conflictsQuery.data) ?? [])
+  const blocked = conflicts.length > 0
 
   return (
     <Modal
       title="Đăng ký ngày nghỉ"
       open={open}
       onCancel={onCancel}
-      onOk={onSubmit}
-      okText={compact
-        ? (submitting ? 'Đang gửi…' : 'Gửi đăng ký')
-        : conflicts.length ? `Tiếp tục đăng ký (${conflicts.length} lịch trùng)` : 'Gửi đăng ký'}
+      onOk={() => { if (!blocked) onSubmit() }}
+      okText={blocked ? 'Không thể tiếp tục đăng ký' : compact ? (submitting ? 'Đang gửi…' : 'Gửi đăng ký') : 'Gửi đăng ký'}
+      okButtonProps={{ disabled: blocked }}
       cancelText="Hủy"
       confirmLoading={submitting}
       destroyOnHidden
@@ -79,30 +88,59 @@ export default function DayOffFormModal({ open, form, staff, scheduledTemplates,
       {compact && !!selectedStaffId && !!selectedDate && (
         conflictsQuery.isLoading ? (
           <Typography.Text type="secondary">Đang kiểm tra lịch hẹn trùng…</Typography.Text>
-        ) : conflicts.length ? (
-          <Alert type="warning" showIcon message="Có lịch hẹn trùng" description="Vui lòng kiểm tra trước khi gửi đăng ký." />
+        ) : blocked ? (
+          <Alert
+            type="warning"
+            showIcon
+            message={`Có ${conflicts.length} lịch hẹn trùng — không cho phép tiếp tục đăng ký`}
+            description={
+              <Space direction="vertical" size={4} style={{ display: 'flex' }}>
+                <Typography.Text style={{ fontSize: 12 }}>
+                  Bấm vào lịch hẹn bên dưới để mở trang Lịch hẹn và đổi sang KTV khác thay thế, xong hãy quay lại gửi đăng ký nghỉ.
+                </Typography.Text>
+                {conflicts.map((row) => (
+                  <Button
+                    key={row.id} size="small" type="link" icon={<CalendarOutlined />}
+                    style={{ padding: 0, height: 'auto', justifyContent: 'flex-start', display: 'inline-flex', textAlign: 'left' }}
+                    onClick={() => openAppointment(row.id)}
+                  >
+                    {dayjs(row.appt_date).format('DD/MM')} · {row.start_time?.slice(0, 5)} · {displayName(row.user)} · {row.service?.title || '—'}
+                  </Button>
+                ))}
+              </Space>
+            }
+          />
         ) : null
       )}
       {!compact && !!selectedStaffId && !!selectedDate && (
         conflictsQuery.isLoading ? (
           <Typography.Text type="secondary">Đang kiểm tra lịch hẹn trùng…</Typography.Text>
-        ) : conflicts.length ? (
+        ) : blocked ? (
           <Alert
             type="warning"
             showIcon
-            message={`Có ${conflicts.length} lịch hẹn đã đặt trước trùng ca nghỉ này`}
+            message={`Có ${conflicts.length} lịch hẹn đã đặt trước trùng ca nghỉ này — không cho phép tiếp tục đăng ký`}
             description={
               <Space direction="vertical" size={6} style={{ display: 'flex' }}>
                 <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                  Bạn vẫn có thể gửi đơn — Admin sẽ gọi xin khách đổi sang nhân viên khác trước khi duyệt. Nếu khách không đồng ý đổi người, theo nghiệp vụ nhân viên vẫn phải đi làm (trừ bất khả kháng).
+                  Vui lòng bấm vào lịch hẹn bên dưới để mở trang Lịch hẹn và đổi sang KTV khác thay thế. Xử lý xong hết các lịch trùng rồi quay lại gửi đăng ký nghỉ.
                 </Typography.Text>
                 <ResponsiveTable<ConflictAppointment>
                   rowKey="id" size="small" pagination={false} scroll={{ y: 200 }} dataSource={conflicts}
+                  onRow={(row) => ({ onClick: () => openAppointment(row.id), style: { cursor: 'pointer' } })}
                   columns={[
                     { title: 'Giờ', dataIndex: 'start_time', render: (v: string) => v?.slice(0, 5) },
                     { title: 'Khách', dataIndex: ['user', 'full_name'], render: (_: unknown, row: ConflictAppointment) => displayName(row.user) },
                     { title: 'Dịch vụ', dataIndex: ['service', 'title'], render: (v) => v || '—' },
                     { title: 'Trạng thái', dataIndex: 'status', render: (v) => v === 'approved' ? 'Đã duyệt' : 'Chờ duyệt' },
+                    {
+                      title: 'Thao tác', align: 'center' as const, width: 130,
+                      render: (_: unknown, row: ConflictAppointment) => (
+                        <Button size="small" type="primary" icon={<CalendarOutlined />} onClick={() => openAppointment(row.id)}>
+                          Đổi KTV
+                        </Button>
+                      ),
+                    },
                   ]}
                 />
               </Space>
