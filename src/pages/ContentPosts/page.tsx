@@ -18,6 +18,7 @@ import { objectKeySrc, registerUploadedFile, fileSrc, resolveFileSrc, useFileUrl
 import ContentPostDrawer from './components/ContentPostDrawer'
 import PostPreviewModal from './components/PostPreviewModal'
 import CategoryModal from './components/CategoryModal'
+import './content-posts.css'
 import PublishModal from './components/PublishModal'
 import { DISPLAY_TYPE_OPTIONS, makePostSlug } from './components/constants'
 import type { ContentPostRow, PostFormValues, CategoryFormValues } from './components/constants'
@@ -235,7 +236,7 @@ export default function ContentPosts() {
     {
       title: 'Tiêu đề', dataIndex: 'title', key: 'title', render: (v: string, row: ContentPostRow) => (
         <Space size={6}>
-          <Typography.Text strong={!!row.is_pinned}>{v}{row.is_pinned ? ' 📌' : ''}</Typography.Text>
+          <Typography.Text className="content-post-title" title={v} strong={!!row.is_pinned}>{v}{row.is_pinned ? ' 📌' : ''}</Typography.Text>
         </Space>
       )
     },
@@ -388,15 +389,17 @@ export default function ContentPosts() {
                     <Button type="primary" icon={<PlusOutlined />} aria-label="Tạo bài viết" onClick={() => openPostEditor()}>Tạo bài viết</Button>
                   </Can>
                 </ToolbarRow>
-                <ResponsiveTable
-                  className="[&_.ant-table-thead_th]:whitespace-nowrap"
-                  scroll={{ x: 760 }}
-                  rowKey="id"
-                  loading={postsQuery.isLoading}
-                  columns={postColumns}
-                  dataSource={posts}
-                  pagination={false}
-                />
+                <div className="content-post-list">
+                  <ResponsiveTable
+                    className="[&_.ant-table-thead_th]:whitespace-nowrap"
+                    scroll={{ x: 760 }}
+                    rowKey="id"
+                    loading={postsQuery.isLoading}
+                    columns={postColumns}
+                    dataSource={posts}
+                    pagination={false}
+                  />
+                </div>
                 <ListPagination page={postPage} limit={20} total={postTotal} onChange={setPostPage} noun="bài viết" />
               </>
             ),

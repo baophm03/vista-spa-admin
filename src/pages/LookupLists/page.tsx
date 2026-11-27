@@ -133,7 +133,7 @@ export default function LookupLists() {
             <PageTitle
               subtitle="Danh mục dùng chung cho các trường tùy chỉnh"
               left={(
-                <>
+                  <div className="flex w-full items-center gap-2"> 
                   <Input.Search
                     allowClear
                     placeholder="Tìm tên, mã danh mục hoặc mã mục"
@@ -145,11 +145,11 @@ export default function LookupLists() {
                     }}
                     onSearch={(value) => void load(value)}
                   />
-                </>
-              )}
-              right={canCreate ? (
-                <Button type="primary" icon={<PlusOutlined />} onClick={() => { form.resetFields(); setCreateOpen(true) }}>Tạo danh mục</Button>
+                  {canCreate ? (
+                <Button className='lg:ml-auto' type="primary" icon={<PlusOutlined />} onClick={() => { form.resetFields(); setCreateOpen(true) }}>Tạo danh mục</Button>
               ) : undefined}
+                </div>
+              )}
             >Danh mục chọn</PageTitle>
 
             {!canRead && !loading && <Alert className="mb-4" type="error" showIcon message="Tài khoản chưa có quyền xem danh mục" />}

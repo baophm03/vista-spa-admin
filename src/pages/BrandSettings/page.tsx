@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { Alert, Avatar, Button, Card, ColorPicker, Col, Descriptions, Form, Input, Modal, Row, Select, Space, Spin, Tag, Typography, Upload, message } from 'antd'
-import { SaveOutlined, UndoOutlined, UploadOutlined } from '@ant-design/icons'
+import { Alert, Avatar, Button, Card, ColorPicker, Col, Descriptions, Form, Input, Modal, Row, Select, Skeleton, Space, Spin, Tag, Typography, Upload, message } from 'antd'
+import { PictureOutlined, SaveOutlined, UndoOutlined, UploadOutlined } from '@ant-design/icons'
 import PageTitle from '@/components/base/PageTitle'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { BrandSettings } from '@/api/models/brandSettings'
@@ -41,10 +41,37 @@ const MODULE_LABELS: Record<string, string> = {
   'module.invoice': 'Hóa đơn',
 }
 
+/**
+ * Card gọn cho chế độ chỉ xem (mobile 390 / tablet 834):
+ * header cao 49px, tiêu đề 17px, body padding 14px, bo góc 12px.
+ */
+const READONLY_CARD =
+  'rounded-xl! [&_.ant-card-head]:min-h-[49px]! [&_.ant-card-head]:px-3.5! [&_.ant-card-head-title]:text-[17px]! [&_.ant-card-head-title]:font-bold! [&_.ant-card-body]:p-3.5!'
+
 function supportedValues(key: 'timeZone' | 'currency', fallback: string[]) {
   const intl = Intl as typeof Intl & { supportedValuesOf?: (value: string) => string[] }
   const supported = intl.supportedValuesOf?.(key) ?? fallback
   return Array.from(new Set([...fallback, ...supported])).sort((a, b) => a.localeCompare(b))
+}
+
+/** Trạng thái đang tải (chỉ xem): khung trắng với 3 dòng skeleton. */
+function ReadOnlyLoading() {
+  return (
+    <div className="rounded-xl bg-white p-[17px]">
+      <Skeleton active title={false} paragraph={{ rows: 3, width: 212 }} />
+    </div>
+  )
+}
+
+/** Trạng thái lỗi (chỉ xem): thẻ hồng, nút Thử lại căn phải, cao 44px cho thao tác chạm. */
+function ReadOnlyError({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div className="flex w-full flex-col items-end gap-2 rounded-xl border border-[#E9E1EC] bg-[#FFF1F2] p-[13px]">
+      <p className="m-0 w-full text-sm font-bold text-[#A03A3F]">Không tải được cấu hình thương hiệu</p>
+      <p className="m-0 w-full text-[13px] text-[#655E71]">Vui lòng thử lại sau.</p>
+      <Button className="h-11! rounded-[10px]! px-3!" onClick={onRetry}>Thử lại</Button>
+    </div>
+  )
 }
 
 function ReadOnlyBrandSettings({ settings, runtime }: { settings?: BrandSettings; runtime: ReturnType<typeof useBrandRuntime> }) {
@@ -55,26 +82,36 @@ function ReadOnlyBrandSettings({ settings, runtime }: { settings?: BrandSettings
   const secondaryColor = brand?.secondary_color || runtimeColors.secondary || runtime.secondaryColor
   const tertiaryColor = brand?.tertiary_color || runtimeColors.tertiary || runtime.tertiaryColor
   const backgroundColor = brand?.background_color || runtime.backgroundColor
+  const logoSrc = fileSrc((brand as any)?.logo_file)
 
   const colorValue = (color?: string | null, note?: string) => (
     color ? (
-      <Space size={8}>
-        <span aria-hidden style={{ width: 20, height: 20, borderRadius: 6, background: color, border: '1px solid var(--brand-border)', display: 'inline-block' }} />
-        <Typography.Text code>{color}</Typography.Text>
+      <Space size={7}>
+        <span aria-hidden style={{ width: 17, height: 17, borderRadius: 5, background: color, border: '1px solid var(--brand-border)', display: 'inline-block' }} />
+        <Typography.Text code className="text-[11px]!">{color}</Typography.Text>
       </Space>
-    ) : <Typography.Text type="secondary">{note ?? 'Tự động'}</Typography.Text>
+    ) : <Typography.Text>{note ?? 'Tự động'}</Typography.Text>
   )
 
+  const enabledModules = settings?.modules?.filter((module) => module.enabled) ?? []
+
+  // Mobile (<768): 1 cột, khoảng cách 12.
+  // Tablet (768–1023): 2 cột bằng nhau, khoảng cách 16.
+  // Desktop (>=1024): giữ tỉ lệ 14/10 và khoảng cách 20 như trước.
   return (
-    <Row gutter={[20, 20]}>
-      <Col xs={24} lg={14}>
-        <Card title="Nhận diện thương hiệu">
+    <Row gutter={[{ xs: 0, md: 16, lg: 20 }, { xs: 12, md: 16, lg: 20 }]}>
+      <Col xs={24} md={12} lg={14}>
+        <Card title="Nhận diện thương hiệu" className={READONLY_CARD}>
           <Descriptions column={1} size="small">
             <Descriptions.Item label="Tên thương hiệu">{brand?.name || '—'}</Descriptions.Item>
             <Descriptions.Item label="Logo">
-              {fileSrc((brand as any)?.logo_file) ? (
-                <Avatar shape="square" size={76} src={fileSrc((brand as any)?.logo_file) ?? undefined} />
-              ) : <Typography.Text type="secondary">Chưa cấu hình logo</Typography.Text>}
+              <Avatar
+                shape="square"
+                size={70}
+                src={logoSrc ?? undefined}
+                icon={!logoSrc ? <PictureOutlined /> : undefined}
+                className={logoSrc ? undefined : 'bg-[#F0EAF2]! text-[#655E71]!'}
+              />
             </Descriptions.Item>
             <Descriptions.Item label="Màu chủ đạo">{colorValue(primaryColor)}</Descriptions.Item>
             <Descriptions.Item label="Màu bổ trợ">{colorValue(secondaryColor)}</Descriptions.Item>
@@ -83,25 +120,29 @@ function ReadOnlyBrandSettings({ settings, runtime }: { settings?: BrandSettings
           </Descriptions>
         </Card>
       </Col>
-      <Col xs={24} lg={10}>
-        <Card title="Khu vực và định dạng">
-          <Descriptions column={1} size="small">
-            <Descriptions.Item label="Múi giờ">{locale?.timezone || '—'}</Descriptions.Item>
-            <Descriptions.Item label="Tiền tệ">{locale?.currency || '—'}</Descriptions.Item>
-            <Descriptions.Item label="Ngôn ngữ mặc định">
-              {locale?.language === 'vi' ? 'Tiếng Việt' : locale?.language || '—'}
-            </Descriptions.Item>
-          </Descriptions>
-        </Card>
-        {!!settings?.modules?.length && (
-          <Card style={{ marginTop: 16 }} title="Mô-đun đang bật">
-            <Space wrap size={12}>
-              {settings.modules.filter((module) => module.enabled).map((module) => (
-                <Tag key={module.key} color="blue">{MODULE_LABELS[module.key] ?? module.key.replace(/^module\./, '').replaceAll('_', ' ')}</Tag>
-              ))}
-            </Space>
+      <Col xs={24} md={12} lg={10}>
+        <div className="flex flex-col gap-3 md:gap-4 lg:gap-5">
+          <Card title="Khu vực và định dạng" className={READONLY_CARD}>
+            <Descriptions column={1} size="small">
+              <Descriptions.Item label="Múi giờ">{locale?.timezone || '—'}</Descriptions.Item>
+              <Descriptions.Item label="Tiền tệ">{locale?.currency || '—'}</Descriptions.Item>
+              <Descriptions.Item label="Ngôn ngữ mặc định">
+                {locale?.language === 'vi' ? 'Tiếng Việt' : locale?.language || '—'}
+              </Descriptions.Item>
+            </Descriptions>
           </Card>
-        )}
+          {enabledModules.length > 0 && (
+            <Card title="Mô-đun đang bật" className={READONLY_CARD}>
+              <Space wrap size={[7, 7]}>
+                {enabledModules.map((module) => (
+                  <Tag key={module.key} color="blue" className="m-0! rounded-[20px]! px-[7px]! py-1! text-[11px] font-medium">
+                    {MODULE_LABELS[module.key] ?? module.key.replace(/^module\./, '').replaceAll('_', ' ')}
+                  </Tag>
+                ))}
+              </Space>
+            </Card>
+          )}
+        </div>
       </Col>
     </Row>
   )
@@ -252,10 +293,17 @@ export default function BrandSettings() {
           >
             Thương hiệu và khu vực
           </PageTitle>
-          {!canEdit && <Alert className="mb-4" type="info" showIcon message="Bạn có quyền xem cấu hình thương hiệu; chỉ ADM được chỉnh sửa." />}
-          {settingsQuery.isError && <Alert className="mb-4" type="error" showIcon message="Không tải được cấu hình thương hiệu" description={errorMessage(settingsQuery.error)} action={<Button size="small" onClick={() => void settingsQuery.refetch()}>Thử lại</Button>} />}
-          <Spin spinning={settingsQuery.isLoading}>
-            {!canEdit ? <ReadOnlyBrandSettings settings={settings} runtime={runtime} /> : (
+          {!canEdit && <Alert className="mb-3 md:mb-4" type="info" showIcon message="Bạn có quyền xem cấu hình thương hiệu; chỉ ADM được chỉnh sửa." />}
+          {/* Chế độ chỉ xem: lỗi hiển thị riêng (đúng thiết kế); chế độ chỉnh sửa giữ Alert cũ */}
+          {canEdit && settingsQuery.isError && (
+            <Alert className="mb-4" type="error" showIcon message="Không tải được cấu hình thương hiệu" description={errorMessage(settingsQuery.error)} action={<Button size="small" onClick={() => void settingsQuery.refetch()}>Thử lại</Button>} />
+          )}
+          {!canEdit ? (
+            settingsQuery.isLoading ? <ReadOnlyLoading />
+              : settingsQuery.isError ? <ReadOnlyError onRetry={() => void settingsQuery.refetch()} />
+              : <ReadOnlyBrandSettings settings={settings} runtime={runtime} />
+          ) : (
+            <Spin spinning={settingsQuery.isLoading}>
               <Form form={form} layout="vertical" onFinish={save} disabled={!canEdit}>
                 <Row gutter={[20, 20]}>
                   <Col xs={24} lg={14}>
@@ -326,8 +374,8 @@ export default function BrandSettings() {
                   </Col>
                 </Row>
               </Form>
-            )}
-          </Spin>
+            </Spin>
+          )}
         </>
       )}
     </Can>

@@ -4,7 +4,9 @@
   display: none;
 }
 
-@media (768px <= width < 1200px) {
+/* Redesign: từ 1024px trở lên dùng lưới giờ (desktop); dưới 1024px dùng MobileWeekView.
+   Giới hạn danh sách theo ngày ở 768–1023px để không ẩn lưới giờ ở laptop 1024–1199px. */
+@media (768px <= width < 1024px) {
   /* Lưới giờ (desktop-only) quá chật ở tablet → thay bằng danh sách theo ngày */
   .schedule-daylist ~ .desktop-only,
   .desktop-only:has(~ .schedule-daylist) {

@@ -7,7 +7,6 @@ import { Alert, Button, Drawer, Dropdown, Form, Input, Modal, Popover, Select, S
 import type { MenuProps } from 'antd'
 import { CalendarOutlined, DeleteOutlined, DownOutlined, EditOutlined, FileTextOutlined, PlusOutlined } from '@ant-design/icons'
 import { errorMessage, pickData } from '@/api/helpers'
-import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import ResponsiveTable from '@/components/base/ResponsiveTable'
 import type { StaffDayOff, StaffScheduleDate as StaffScheduleDateRow, ShiftTemplate as ShiftTemplateRow } from './types'
 import { getGetBranchDateNotesAdminQueryKey, getGetShiftTemplatesAdminQueryKey, getGetStaffScheduleDatesAdminQueryKey, postBranchDateNotesAdmin, postStaffScheduleDatesAdmin, putStaffScheduleDatesIdAdmin, useGetBranchDateNotesAdmin, useGetStaffDaysOffAdmin, useGetShiftTemplatesAdmin, useGetStaffScheduleDatesAdmin } from '@/api/endpoints/staff'
@@ -25,6 +24,10 @@ import { ShiftDetailContent } from './calendar/ShiftDetailPanel'
 import { shiftStyle } from './calendar/shiftStyles'
 import './schedule.css'
 import QuickCreatePopover from './calendar/QuickCreatePopover'
+import MobileWeekView, { type MobileDeleteResult, type MobileStaffDay } from './mobile/MobileWeekView'
+import { todayInWeek } from './mobile/weekDates'
+import { notifyCompactSuccess } from './mobile/feedback'
+import { useCompactLayout } from './useCompactLayout'
 
 interface Props extends SchedulePageData { loadingShared: boolean }
 interface ConflictAppointment { id: string; appt_date: string; start_time: string; user?: { full_name?: string; zalo_name?: string }; service?: { title?: string } }
@@ -35,13 +38,6 @@ interface DateCellShift {
   row: StaffScheduleDateWithStaff
   template?: ShiftTemplateRow | null
   note?: string | null
-}
-/** 1 card mobile = lịch của 1 KTV trong 1 ngày cụ thể (hoặc dòng "Chưa có lịch" khi trống) */
-interface MobileDateRow {
-  key: string
-  person: ScheduleStaff
-  date: Dayjs | null
-  shifts: DateCellShift[]
 }
 /** Ngày đang sửa ghi chú (note theo ngày của cơ sở) */
 interface NoteEditTarget {
@@ -59,6 +55,28 @@ const WEEKDAY_LABELS = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7']
 const shiftLabel = (template?: ShiftTemplateRow | null) =>
   `${template?.name ?? 'Ca'} ${template ? `${template.start_time.slice(0, 5)}–${template.end_time.slice(0, 5)}` : ''}`
 
+/** Modal liệt kê lịch hẹn bị ảnh hưởng khi xóa lịch (409 FUTURE_APPOINTMENTS_EXIST) — dùng cho luồng mobile. */
+function confirmAffectedAppointments(affected: ConflictAppointment[], onOk: () => Promise<void>) {
+  Modal.confirm({
+    title: `Có ${affected.length} lịch hẹn bị ảnh hưởng`,
+    width: 680,
+    content: <div>
+      <p>Xóa lịch ngày cụ thể chỉ ngừng sinh ca cho ngày này. Các lịch hẹn bên dưới vẫn được giữ nguyên để Admin xử lý riêng.</p>
+      <Table<ConflictAppointment>
+        rowKey="id" size="small" pagination={false} scroll={{ y: 240, x: 480 }} dataSource={affected}
+        columns={[
+          { title: 'Ngày', dataIndex: 'appt_date', render: (v: string) => new Date(`${v}T00:00:00`).toLocaleDateString('vi-VN') },
+          { title: 'Giờ', dataIndex: 'start_time', render: (v: string) => v?.slice(0, 5) },
+          { title: 'Khách', dataIndex: ['customer_profile', 'full_name'], render: (v) => v || '—' },
+          { title: 'Dịch vụ', dataIndex: ['service', 'title'], render: (v) => v || '—' },
+        ]}
+      />
+    </div>,
+    okText: 'Xác nhận xóa lịch', cancelText: 'Quay lại',
+    onOk,
+  })
+}
+
 export default function DateScheduleTab({ branches, staff, access, loadingShared }: Props) {
   const queryClient = useQueryClient()
   const isTechSelf = access.isTechnician && !access.isAdmin
@@ -70,7 +88,10 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
   const deadlineText = registrationDeadline.format('HH:mm [ngày] DD/MM/YYYY')
 
   const canManage = access.isAdmin
-  const [view, setView] = useState<CalendarView>('week')
+  const compact = useCompactLayout()
+  const [desktopView, setView] = useState<CalendarView>('week')
+  // Mobile/tablet luôn xem theo tuần (chọn ngày bằng dãy T2–CN)
+  const view: CalendarView = compact ? 'week' : desktopView
   const [showRoster, setShowRoster] = useState(false)
   const [anchor, setAnchor] = useState<Dayjs>(() => (isTechSelf ? nextWeekStart : dayjs()))
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false)
@@ -81,6 +102,8 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
   const [open, setOpen] = useState(false)
   const [saving, setSaving] = useState(false)
   const [editing, setEditing] = useState<StaffScheduleDateWithStaff | null>(null)
+  const [saveError, setSaveError] = useState<string | null>(null)
+  const [mobileDay, setMobileDay] = useState<Dayjs | null>(null)
   const [form] = Form.useForm()
   const selectedBranch = Form.useWatch('branch_id', form)
   const ownBranchId = staff.find((person) => person.id === access.currentUserId)?.branch_id
@@ -247,6 +270,7 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
   ) => {
     if (row && !canEditRow(row)) return
     setEditing(row ?? null)
+    setSaveError(null)
     const rowStaff = row ? staff.find((person) => person.id === row.staff_id) : undefined
     const presetStaff = staff.find((person) => person.id === preset?.staffId)
     const branchId = isTechSelf
@@ -308,6 +332,7 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
         ? [dayjs(values.work_dates).format('YYYY-MM-DD')]
         : []
     setSaving(true)
+    setSaveError(null)
     try {
       if (editing) {
         await putStaffScheduleDatesIdAdmin(editing.id, {
@@ -315,7 +340,8 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
           shift_template_id: values.shift_template_id,
           note: values.note || undefined,
         } as never)
-        message.success('Đã cập nhật lịch theo ngày')
+        if (compact) notifyCompactSuccess('Đã lưu đăng ký ca', 'Ca đã đăng ký được hiển thị theo ngày.')
+        else message.success('Đã cập nhật lịch theo ngày')
       } else {
         const result = await postStaffScheduleDatesAdmin({
           staff_id: values.staff_id,
@@ -328,12 +354,14 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
         const created = counts?.created_count ?? 0
         const skipped = counts?.skipped_count ?? 0
         if (!created) message.info('Không có ca mới nào được đăng ký — các ca đã chọn đều có sẵn trong lịch')
+        else if (compact) notifyCompactSuccess('Đã lưu đăng ký ca', `Ca đã đăng ký được hiển thị theo ngày.${skipped ? ` Bỏ qua ${skipped} ca đã có sẵn.` : ''}`)
         else message.success(`Đã đăng ký ${created} ca theo ngày${skipped ? ` (bỏ qua ${skipped} ca đã có sẵn)` : ''}`)
       }
       setOpen(false)
       void queryClient.invalidateQueries({ queryKey: getGetStaffScheduleDatesAdminQueryKey() })
     } catch (err) {
-      message.error(errorMessage(err))
+      if (compact) setSaveError(errorMessage(err))
+      else message.error(errorMessage(err))
     } finally {
       setSaving(false)
     }
@@ -405,6 +433,31 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
           onOk: () => remove(row, reason, true),
         })
       } else message.error(errorMessage(err))
+    }
+  }
+
+  /** Xóa 1 ca từ popover mobile/tablet: trả kết quả để popover hiện trạng thái lỗi tại chỗ. */
+  const removeCompact = async (row: StaffScheduleDateWithStaff, reason: string): Promise<MobileDeleteResult> => {
+    const done = () => {
+      notifyCompactSuccess('Đã xóa ca', 'Các ca còn lại vẫn hiển thị trong ngày.')
+      void queryClient.invalidateQueries({ queryKey: getGetStaffScheduleDatesAdminQueryKey() })
+    }
+    try {
+      await deleteSchedule(row.id, reason)
+      done()
+      return 'deleted'
+    } catch (err: unknown) {
+      const response = (err as { response?: { data?: { code?: string; details?: Record<string, unknown> } } })?.response?.data
+      if (response?.code !== 'FUTURE_APPOINTMENTS_EXIST') return 'failed'
+      confirmAffectedAppointments((response.details?.affected_appointments ?? []) as ConflictAppointment[], async () => {
+        try {
+          await deleteSchedule(row.id, reason, true)
+          done()
+        } catch (confirmErr) {
+          message.error(errorMessage(confirmErr))
+        }
+      })
+      return 'conflict'
     }
   }
 
@@ -631,6 +684,35 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
     }
   })
 
+  // Mobile/tablet: ngày đang chọn trong tuần (mặc định hôm nay nếu thuộc tuần, không thì thứ 2)
+  const selectedMobileDay = mobileDay && !mobileDay.isBefore(weekStart) && !mobileDay.isAfter(weekStart.add(6, 'day'))
+    ? mobileDay
+    : todayInWeek(weekStart)
+  const mobileStaffDays: MobileStaffDay<StaffScheduleDateWithStaff>[] = compact
+    ? filterStaff
+      .filter((person) => !hiddenStaff.has(person.id))
+      .map((person) => ({
+        person,
+        shifts: shiftsForCell(person.id, selectedMobileDay)
+          .sort((a, b) => (a.template?.start_time ?? '').localeCompare(b.template?.start_time ?? ''))
+          .map(({ key, row, template, note }) => ({
+            key,
+            row,
+            name: template?.name ?? 'Ca làm việc',
+            time: template ? `${template.start_time.slice(0, 5)}–${template.end_time.slice(0, 5)}` : '',
+            note,
+            onLeave: row.onLeave,
+          })),
+      }))
+      .filter((item) => item.shifts.length > 0)
+    : []
+  const mobileWeekEmpty = filteredRows.length === 0
+  const ownStaff = isTechSelf ? staff.find((person) => person.id === access.currentUserId) ?? null : null
+  const scheduleLoadError = [
+    dateSchedulesQuery.isError ? errorMessage(dateSchedulesQuery.error) : '',
+    templatesQuery.isError ? errorMessage(templatesQuery.error) : '',
+  ].filter(Boolean).join(' · ')
+
   const showCreate = canManage || isTechSelf
   const createDisabled = isTechSelf && !registrationOpen
   const createLabel = 'Đăng ký ca'
@@ -643,7 +725,7 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
   ]
 
   return <div className="flex h-full min-h-0 flex-col">
-    {toolbarSlot && createPortal(
+    {toolbarSlot && !compact && createPortal(
       <CalendarToolbar
         compact
         roster={{ selected: showRoster, onSelect: () => { setShowRoster(true); setView('week'); setSelectedBlockKey(null) } }}
@@ -697,7 +779,7 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
         message="Bạn chỉ được tự đăng ký/sửa/xóa ca cho TUẦN KẾ TIẾP. Ca trong tuần đã bắt đầu muốn thay đổi: dùng tab Xin nghỉ hoặc liên hệ Admin."
       />
     )}
-    {!!error && <Alert type="error" showIcon message="Không tải được lịch theo ngày" description={error} action={<Button size="small" onClick={refreshShared}>Thử lại</Button>} style={{ marginBottom: 16 }} />}
+    {!!error && !compact && <Alert type="error" showIcon message="Không tải được lịch theo ngày" description={error} action={<Button size="small" onClick={refreshShared}>Thử lại</Button>} style={{ marginBottom: 16 }} />}
 
     <Drawer title="Ngày và bộ lọc" placement="right" size="min(344px, 100vw)" open={filterDrawerOpen} onClose={() => setFilterDrawerOpen(false)}>
       <div className="flex flex-col gap-4">
@@ -732,7 +814,7 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
       </div>
     </Drawer>
 
-    {showRoster && (
+    {showRoster && !compact && (
       <div className="min-h-0 flex-1 overflow-auto rounded-lg border border-[var(--brand-border-soft)] bg-white">
         <Table<ScheduleStaff>
           className="[&_.ant-table-thead_th]:bg-white! [&_.ant-table-thead_th]:text-[#49324e]! [&_.ant-table-thead_th]:border-[#ebdfee]!"
@@ -821,7 +903,7 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
       </div>
     )}
 
-    {!showRoster && <>
+    {(!showRoster || compact) && <>
     {/* Calendar kiểu Google — desktop trở lên. Lưới giờ, danh sách ca và KTV cuộn trong vùng riêng. */}
     <div
       ref={calendarViewportRef}
@@ -850,8 +932,9 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
       </div>
     </div>
 
-    {/* Tablet: lưới giờ quá chật → chọn ngày trong tuần rồi liệt kê ca theo từng nhân viên */}
-    <div className="schedule-daylist">
+    {/* Tablet: lưới giờ quá chật → chọn ngày trong tuần rồi liệt kê ca theo từng nhân viên.
+        Redesign: dưới 1024px đã có MobileWeekView nên không render danh sách này nữa. */}
+    {!compact && <div className="schedule-daylist">
       <div className="schedule-daystrip" role="tablist" aria-label="Chọn ngày trong tuần">
         {Array.from({ length: 7 }, (_, index) => weekStart.add(index, 'day')).map((date) => {
           const isActive = date.isSame(anchor, 'day')
@@ -931,7 +1014,7 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
           </div>
         )
       })()}
-    </div>
+    </div>}
 
     {/* Mobile: giữ danh sách card, panel chi tiết chuyển thành Drawer */}
     {dateNotes.length > 0 && (
@@ -949,46 +1032,26 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
         </div>}
       />
     )}
-    <div className="mobile-only">
-      <MobileCards<MobileDateRow>
-        rows={filterStaff.flatMap((person) => {
-          // Mobile luôn hiển thị tuần của anchor bất kể view (day/week/month)
-          const mobileDays = Array.from({ length: 7 }, (_, index) => weekStart.add(index, 'day'))
-          const dayRows: MobileDateRow[] = mobileDays.map((date) => ({
-            key: `${person.id}-${date.format('YYYY-MM-DD')}`,
-            person,
-            date,
-            shifts: shiftsForCell(person.id, date),
-          })).filter((item) => item.shifts.length > 0)
-          return dayRows.length ? dayRows : [{ key: `${person.id}-empty`, person, date: null, shifts: [] }]
-        })}
-        rowKey={(item) => item.key}
+    {compact && (
+      <MobileWeekView<StaffScheduleDateWithStaff>
+        weekStart={weekStart}
+        selectedDay={selectedMobileDay}
+        onSelectDay={setMobileDay}
+        onWeekChange={(monday) => { setAnchor(monday); setMobileDay(null) }}
+        showCreate={showCreate}
+        createDisabled={createDisabled}
+        onCreate={() => openForm(undefined, { date: selectedMobileDay.isBefore(dayjs(), 'day') ? undefined : selectedMobileDay })}
         loading={loading}
-        emptyText={staff.length ? 'Không có nhân viên trong bộ lọc này' : 'Chưa có danh sách nhân viên'}
-        renderCard={(item) => (
-          <>
-            <div className="mobile-card-head">
-              <div>
-                <div className="mobile-card-title">{staffLabel(filterStaff.find((entry) => entry.id === item.person.id))}</div>
-                <div className="mobile-card-sub">{item.date ? `Lịch ${WEEKDAY_LABELS[item.date.day()]} ${item.date.format('DD/MM')}` : 'Lịch tuần này'}</div>
-              </div>
-              {item.shifts.length
-                ? <Tag color="geekblue" style={{ marginInlineEnd: 0 }}>{item.shifts.length} ca</Tag>
-                : <Tag style={{ marginInlineEnd: 0 }}>Chưa có lịch</Tag>}
-            </div>
-            <div className="mobile-card-rows">
-              {item.shifts.map((shiftItem) => (
-                <MobileCardRow
-                  key={shiftItem.key}
-                  label="Ca"
-                  value={shiftLabel(shiftItem.template) + (shiftItem.row?.onLeave ? ' (P)' : '') + (shiftItem.note ? ` — ${shiftItem.note}` : '')}
-                />
-              ))}
-            </div>
-          </>
-        )}
+        error={scheduleLoadError || undefined}
+        onRetry={refreshShared}
+        staffDays={mobileStaffDays}
+        weekEmpty={mobileWeekEmpty}
+        ownStaff={ownStaff}
+        canEditRow={canEditRow}
+        onEditRow={(row) => openForm(row)}
+        onDeleteRow={removeCompact}
       />
-    </div>
+    )}
 
     </>}
 
@@ -1004,6 +1067,8 @@ export default function DateScheduleTab({ branches, staff, access, loadingShared
       templates={templates}
       lockStaffAndBranch={isTechSelf}
       saving={saving}
+      saveError={compact ? saveError : null}
+      compact={compact}
       onCancel={() => setOpen(false)}
       onSubmit={() => void submit()}
     />

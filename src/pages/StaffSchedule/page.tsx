@@ -17,6 +17,7 @@ import type { ScheduleAccess, ScheduleStaff } from '../schedule/types'
 import DateScheduleTab from '../schedule/DateScheduleTab'
 import ShiftCatalogTab from '../schedule/ShiftCatalogTab'
 import DayOffTab from '../schedule/DayOffTab'
+import '../schedule/schedule-mobile.css'
 
 export default function StaffSchedule() {
   const ability = useAbility()

@@ -1,5 +1,6 @@
-import { Alert, Form, Input, Modal, Select, DatePicker } from 'antd'
+import { Alert, Checkbox, Form, Input, Modal, Select, DatePicker } from 'antd'
 import type { FormInstance } from 'antd'
+import type { ReactNode } from 'react'
 import dayjs, { type Dayjs } from 'dayjs'
 import type { ShiftTemplate as ShiftTemplateRow, SchedulePageData, ScheduleStaff } from '../types'
 import { staffLabel } from '../types'
@@ -19,12 +20,16 @@ interface Props {
   /** KTV tự đăng ký: khóa KTV + cơ sở theo hồ sơ và nhắc rule tuần */
   lockStaffAndBranch?: boolean
   saving: boolean
+  /** Lỗi lưu hiển thị ngay trong form (mobile/tablet) */
+  saveError?: string | null
+  /** Layout mobile/tablet theo Figma: checkbox chọn ca, thông báo lỗi chi tiết */
+  compact?: boolean
   onCancel: () => void
   onSubmit: () => void
 }
 
 /** Modal đăng ký ca làm theo NGÀY CỤ THỂ (làm thêm ngoài lịch lặp theo thứ). */
-export default function DateScheduleFormModal({ open, form, editing, staff, branches, branchFilter, selectedBranch, staffForSelectedBranch, templates, lockStaffAndBranch, saving, onCancel, onSubmit }: Props) {
+export default function DateScheduleFormModal({ open, form, editing, staff, branches, branchFilter, selectedBranch, staffForSelectedBranch, templates, lockStaffAndBranch, saving, saveError, compact = false, onCancel, onSubmit }: Props) {
   const nextMonday = dayjs().subtract((dayjs().day() + 6) % 7, 'day').add(1, 'week')
   const workDates = Form.useWatch('work_dates', form) as Dayjs[] | Dayjs | undefined
   const dates = Array.isArray(workDates) ? workDates : workDates ? [workDates] : []
@@ -36,18 +41,20 @@ export default function DateScheduleFormModal({ open, form, editing, staff, bran
       open={open}
       onCancel={onCancel}
       onOk={onSubmit}
-      okText="Lưu"
+      okText={compact && saving ? 'Đang lưu…' : 'Lưu'}
       cancelText="Hủy"
       confirmLoading={saving}
       destroyOnHidden
+      className={compact ? 'schedule-compact-modal' : undefined}
     >
       {lockStaffAndBranch && (
         <Alert
           type="info"
           showIcon
+          className={compact ? 'schedule-brand-alert' : undefined}
           style={{ marginBottom: 12 }}
           message="Nhân viên chỉ được tự đăng ký ca cho tuần kế tiếp"
-          description={`Cần đăng ký trước 00h thứ 2 đầu tuần kế tiếp (tuần kế tiếp: ${nextMonday.format('DD/MM')} – ${nextMonday.add(6, 'day').format('DD/MM')}). Muốn thay đổi ca tuần hiện tại: dùng tab Xin nghỉ hoặc liên hệ Admin.`}
+          description={`Cần đăng ký trước 00h thứ 2 đầu tuần kế tiếp (tuần kế tiếp: ${nextMonday.format('DD/MM')} – ${nextMonday.add(6, 'day').format('DD/MM')}). Muốn thay đổi ca tuần hiện tại: dùng tab Ngày nghỉ hoặc liên hệ Admin.`}
         />
       )}
       <Form form={form} layout="vertical" style={{ marginTop: 16 }} onValuesChange={(changed) => {
@@ -90,7 +97,7 @@ export default function DateScheduleFormModal({ open, form, editing, staff, bran
             if (!editing && Array.isArray(value) && value.some((date) => isPastScheduleDate(date.format('YYYY-MM-DD')))) {
               return Promise.reject(new Error('Không thể đăng ký ngày đã qua'))
             }
-            return filled ? Promise.resolve() : Promise.reject(new Error('Chọn ngày làm'))
+            return filled ? Promise.resolve() : Promise.reject(new Error(compact ? 'Vui lòng chọn ít nhất một ngày làm.' : 'Chọn ngày làm'))
           },
         }]}>
           {editing ? (
@@ -107,12 +114,25 @@ export default function DateScheduleFormModal({ open, form, editing, staff, bran
             if (Array.isArray(selected) && templates.some((template) => ids.includes(template.id) && unavailable(template, selected))) {
               return Promise.reject(new Error('Có ca đã bắt đầu vào một trong các ngày đã chọn'))
             }
-            return filled ? Promise.resolve() : Promise.reject(new Error('Chọn ca'))
+            return filled ? Promise.resolve() : Promise.reject(new Error(compact ? 'Vui lòng chọn ít nhất một ca.' : 'Chọn ca'))
           },
         }]}>
           <Select
             mode={editing ? undefined : 'multiple'}
             placeholder={editing ? 'Chọn ca' : 'Chọn một hoặc nhiều ca'}
+            {...(compact && !editing ? {
+              maxTagCount: 'responsive' as const,
+              menuItemSelectedIcon: null,
+              optionRender: (option: { label?: ReactNode; value?: string | number | null }) => {
+                const selectedIds = (form.getFieldValue('shift_template_id') as string[] | undefined) ?? []
+                return (
+                  <span className="flex items-center gap-3 py-1">
+                    <Checkbox checked={selectedIds.includes(String(option.value))} tabIndex={-1} aria-hidden />
+                    <span>{option.label}</span>
+                  </span>
+                )
+              },
+            } : {})}
             options={templates.filter((template) => template.is_active !== false && (!template.branch_id || template.branch_id === selectedBranch)).map((template) => {
               const disabled = unavailable(template, dates)
               return { value: template.id, disabled, label: `${template.name} (${template.start_time.slice(0, 5)}–${template.end_time.slice(0, 5)})${disabled ? ' · Đã qua giờ' : ''}` }
@@ -123,6 +143,9 @@ export default function DateScheduleFormModal({ open, form, editing, staff, bran
           <Input.TextArea rows={2} placeholder="Ghi chú cho lịch ngày cụ thể" />
         </Form.Item>
       </Form>
+      {!!saveError && (
+        <Alert type="error" showIcon role="alert" message="Không lưu được đăng ký ca" description={saveError || 'Vui lòng thử lại.'} />
+      )}
     </Modal>
   )
 }
