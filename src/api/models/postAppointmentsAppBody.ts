@@ -7,6 +7,6 @@
  */
 
 /**
- * `branch_id`, `appt_date`, `start_time` (bắt buộc); `note`, `custom_fields` (tùy chọn)
+ * `branch_id`, `appt_date`, `start_time` (bắt buộc); `staff_id`, `note`, `custom_fields` (tùy chọn). Chủ đề (tùy chọn, tối đa 1): `service_id` (dịch vụ) hoặc `treatment_package_id` (gói liệu trình / dịch vụ lẻ); `need` = nhu cầu khách ghi — không chọn chủ đề và không ghi thì BE lưu `need` = "Cần liên hệ hoặc tư vấn".
  */
 export type PostAppointmentsAppBody = { [key: string]: unknown };

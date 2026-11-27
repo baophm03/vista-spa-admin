@@ -5,7 +5,7 @@ import type { ReactNode } from 'react'
 import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import type { AppointmentStatus } from '@/api/models/appointmentStatus'
 import { displayName } from '@/utils/displayName'
-import { STATUS_META } from './constants'
+import { STATUS_META, appointmentTopic } from './constants'
 import type { AppointmentRow } from './constants'
 
 interface AppointmentsTableProps {
@@ -27,6 +27,22 @@ export default function AppointmentsTable({ rows, loading, branchName, staffName
       width: 232,
       ellipsis: true,
       render: (_: unknown, row: AppointmentRow) => <span className="font-medium">{displayName(row.user)}</span>,
+    },
+    {
+      title: 'Chủ đề',
+      key: 'topic',
+      width: 220,
+      ellipsis: true,
+      render: (_: unknown, row: AppointmentRow) => {
+        const topic = appointmentTopic(row)
+        if (!topic) return <span className="text-slate-400">—</span>
+        return (
+          <span title={`${topic.kind}: ${topic.label}`}>
+            <span className="text-xs text-slate-500">{topic.kind}: </span>
+            {topic.label}
+          </span>
+        )
+      },
     },
     {
       title: <span className="whitespace-nowrap">Số điện thoại</span>,
@@ -105,6 +121,7 @@ export default function AppointmentsTable({ rows, loading, branchName, staffName
                 </Tag>
               </div>
               <div className="mobile-card-rows">
+                <MobileCardRow label="Chủ đề" value={appointmentTopic(row)?.label || '—'} />
                 <MobileCardRow label="Thời gian" value={`${dayjs(row.appt_date).format('DD/MM/YYYY')} ${row.start_time?.slice(0, 5) ?? ''}`} />
                 <MobileCardRow label="Số điện thoại" value={row.user?.phone || '—'} />
                 <MobileCardRow label="Cơ sở" value={branchName(row.branch_id)} />

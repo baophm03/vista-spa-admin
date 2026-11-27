@@ -154,10 +154,13 @@ export default function MySessions() {
 
   const columns: TableColumnsType<SessionRow> = [
     {
-      title: 'Buổi',
-      key: 'label',
-      width: 110,
-      render: (_value, row) => <strong>{row.is_warranty ? 'Bảo hành' : `Buổi ${row.session_no}`}</strong>,
+      title: 'Lịch hẹn',
+      key: 'scheduled_at',
+      width: 150,
+      render: (_value, row) => <Space direction="vertical" size={0}>
+        <strong>{row.is_warranty ? 'Bảo hành' : `Buổi ${row.session_no}`}</strong>
+        <Typography.Text type="secondary" style={{ fontSize: 12 }}>{formatSessionTime(row)}</Typography.Text>
+      </Space>,
     },
     {
       title: 'Khách hàng',
@@ -179,11 +182,6 @@ export default function MySessions() {
       title: 'KTV',
       key: 'staff',
       render: (_value, row) => row.staff?.zalo_name || 'Chưa gán',
-    },
-    {
-      title: 'Lịch hẹn',
-      key: 'scheduled_at',
-      render: (_value, row) => formatSessionTime(row),
     },
     { key: 'branch', title: 'Cơ sở', dataIndex: 'branch_id', width: 120, render: (value?: string) => branchName(value) },
     {

@@ -18,5 +18,8 @@ export interface AppointmentCreate {
   start_time: string;
   end_time?: string;
   note?: string;
+  service_id?: string;
+  treatment_package_id?: string;
+  need?: string;
   custom_fields?: AppointmentCreateCustomFields;
 }

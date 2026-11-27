@@ -53,6 +53,7 @@ import type {
   GetStaffScheduleDatesIdAdmin200,
   GetUsersIdAvailableDates200,
   GetUsersIdAvailableDatesParams,
+  GetUsersIdBookingBranches200,
   GetUsersSpecialists200,
   GetUsersSpecialistsParams,
   GetUsersStaffAdmin200,
@@ -84,6 +85,200 @@ import type {
 import { customInstance } from '../mutator/custom-instance';
 
 
+
+
+
+/**
+ * **GET /users/{id}/booking-branches** — Public, không cần đăng nhập. Dùng cho trang miniapp 'Đặt lịch cùng KTV': trả các cơ sở đang hoạt động mà KTV có ca làm trong khung đặt lịch của khách (hôm nay → `booking.customer_horizon_days` của từng cơ sở), kèm `dates` (YYYY-MM-DD) KTV đi làm ở cơ sở đó (đã trừ ngày nghỉ cả ngày đã duyệt). Chỉ trả cơ sở còn ít nhất 1 ngày. Mỗi phần tử: `id`, `name`, `address`, `phone`, `dates`.
+ * @summary Branches and work dates of a technician for booking (public)
+ */
+export const getUsersIdBookingBranches = (
+    id: string,
+ signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<GetUsersIdBookingBranches200>(
+      {url: `/users/${id}/booking-branches`, method: 'GET', signal
+    },
+      );
+    }
+  
+
+
+
+export const getGetUsersIdBookingBranchesInfiniteQueryKey = (id?: string,) => {
+    return [
+    'infinite', `/users/${id}/booking-branches`
+    ] as const;
+    }
+
+export const getGetUsersIdBookingBranchesQueryKey = (id?: string,) => {
+    return [
+    `/users/${id}/booking-branches`
+    ] as const;
+    }
+
+    
+export const getGetUsersIdBookingBranchesInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getUsersIdBookingBranches>>>, TError = void | InternalErrorResponse>(id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersIdBookingBranches>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetUsersIdBookingBranchesInfiniteQueryKey(id);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersIdBookingBranches>>> = ({ signal }) => getUsersIdBookingBranches(id, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersIdBookingBranches>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetUsersIdBookingBranchesInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersIdBookingBranches>>>
+export type GetUsersIdBookingBranchesInfiniteQueryError = void | InternalErrorResponse
+
+
+export function useGetUsersIdBookingBranchesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersIdBookingBranches>>>, TError = void | InternalErrorResponse>(
+ id: string, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersIdBookingBranches>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUsersIdBookingBranches>>,
+          TError,
+          Awaited<ReturnType<typeof getUsersIdBookingBranches>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersIdBookingBranchesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersIdBookingBranches>>>, TError = void | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersIdBookingBranches>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUsersIdBookingBranches>>,
+          TError,
+          Awaited<ReturnType<typeof getUsersIdBookingBranches>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersIdBookingBranchesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersIdBookingBranches>>>, TError = void | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersIdBookingBranches>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Branches and work dates of a technician for booking (public)
+ */
+
+export function useGetUsersIdBookingBranchesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getUsersIdBookingBranches>>>, TError = void | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersIdBookingBranches>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetUsersIdBookingBranchesInfiniteQueryOptions(id,options)
+
+  const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Branches and work dates of a technician for booking (public)
+ */
+export const prefetchGetUsersIdBookingBranchesInfiniteQuery = async <TData = Awaited<ReturnType<typeof getUsersIdBookingBranches>>, TError = void | InternalErrorResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsersIdBookingBranches>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetUsersIdBookingBranchesInfiniteQueryOptions(id,options)
+
+  await queryClient.prefetchInfiniteQuery(queryOptions);
+
+  return queryClient;
+}
+
+
+
+export const getGetUsersIdBookingBranchesQueryOptions = <TData = Awaited<ReturnType<typeof getUsersIdBookingBranches>>, TError = void | InternalErrorResponse>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersIdBookingBranches>>, TError, TData>>, }
+) => {
+
+const {query: queryOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetUsersIdBookingBranchesQueryKey(id);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsersIdBookingBranches>>> = ({ signal }) => getUsersIdBookingBranches(id, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id),  retry: 3, retryDelay: 1000,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getUsersIdBookingBranches>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetUsersIdBookingBranchesQueryResult = NonNullable<Awaited<ReturnType<typeof getUsersIdBookingBranches>>>
+export type GetUsersIdBookingBranchesQueryError = void | InternalErrorResponse
+
+
+export function useGetUsersIdBookingBranches<TData = Awaited<ReturnType<typeof getUsersIdBookingBranches>>, TError = void | InternalErrorResponse>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersIdBookingBranches>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUsersIdBookingBranches>>,
+          TError,
+          Awaited<ReturnType<typeof getUsersIdBookingBranches>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersIdBookingBranches<TData = Awaited<ReturnType<typeof getUsersIdBookingBranches>>, TError = void | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersIdBookingBranches>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUsersIdBookingBranches>>,
+          TError,
+          Awaited<ReturnType<typeof getUsersIdBookingBranches>>
+        > , 'initialData'
+      >, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetUsersIdBookingBranches<TData = Awaited<ReturnType<typeof getUsersIdBookingBranches>>, TError = void | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersIdBookingBranches>>, TError, TData>>, }
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Branches and work dates of a technician for booking (public)
+ */
+
+export function useGetUsersIdBookingBranches<TData = Awaited<ReturnType<typeof getUsersIdBookingBranches>>, TError = void | InternalErrorResponse>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersIdBookingBranches>>, TError, TData>>, }
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetUsersIdBookingBranchesQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+/**
+ * @summary Branches and work dates of a technician for booking (public)
+ */
+export const prefetchGetUsersIdBookingBranchesQuery = async <TData = Awaited<ReturnType<typeof getUsersIdBookingBranches>>, TError = void | InternalErrorResponse>(
+ queryClient: QueryClient, id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUsersIdBookingBranches>>, TError, TData>>, }
+
+  ): Promise<QueryClient> => {
+
+  const queryOptions = getGetUsersIdBookingBranchesQueryOptions(id,options)
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+}
 
 
 
