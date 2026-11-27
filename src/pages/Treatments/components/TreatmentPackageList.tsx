@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { Alert, Button, Image, Form, Input, Modal, Table, Tag, Typography, message } from 'antd'
+import { Alert, Button, Form, Input, Modal, Table, Tag, Typography, message } from 'antd'
 import type { TableColumnsType } from 'antd'
 import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, PictureOutlined, PlusOutlined, ShoppingOutlined } from '@ant-design/icons'
 import StatCards, { type StatItem } from '@/components/base/StatCards'
@@ -216,17 +216,6 @@ export default function TreatmentPackageList({ kind }: { kind: PackageKind }) {
 
   const packageColumns: TableColumnsType<TreatmentPackageRow> = [
     {
-      title: 'Ảnh',
-      key: 'image',
-      width: 54,
-      render: (_, row) => {
-        const src = packageImage(row)
-        return src
-          ? <Image src={src} width={36} height={36} style={{ objectFit: 'cover', borderRadius: 8 }} />
-          : <div style={{ width: 36, height: 36, borderRadius: 8, background: 'var(--brand-bg)', display: 'grid', placeItems: 'center', color: '#B9BDC2' }}><PictureOutlined /></div>
-      },
-    },
-    {
       title: isSingle ? 'Dịch vụ lẻ' : 'Gói liệu trình',
       key: 'name',
       dataIndex: 'name',
@@ -392,6 +381,7 @@ export default function TreatmentPackageList({ kind }: { kind: PackageKind }) {
 
       <TreatmentPackageDetailModal
         row={detailRow}
+        image={detailRow ? packageImage(detailRow) : undefined}
         branches={branches}
         packageTypeById={packageTypeById}
         packageFields={packageCustomFields}

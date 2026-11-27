@@ -1,4 +1,4 @@
-import { Button, Descriptions, Modal, Tag } from 'antd'
+import { Button, Descriptions, Image, Modal, Tag } from 'antd'
 import type { Branch } from '@/api/models/branch'
 import type { CustomFieldDefWithOptions } from '@/components/CustomFieldFormItems'
 import {
@@ -9,8 +9,9 @@ import {
   type TreatmentPackageRow,
 } from './constants'
 
-export default function TreatmentPackageDetailModal({ row, branches, packageTypeById, packageFields, formatMoney, onClose, onEdit }: {
+export default function TreatmentPackageDetailModal({ row, image, branches, packageTypeById, packageFields, formatMoney, onClose, onEdit }: {
   row: TreatmentPackageRow | null
+  image?: string | null
   branches: Branch[]
   packageTypeById: Map<string, PackageTypeRow>
   packageFields: CustomFieldDefWithOptions[]
@@ -33,7 +34,17 @@ export default function TreatmentPackageDetailModal({ row, branches, packageType
       width={720}
     >
       {row && (
-        <Descriptions bordered size="small" column={1} style={{ marginTop: 12 }}>
+        <>
+          {image && (
+            <Image
+              src={image}
+              alt={row.name}
+              width="100%"
+              style={{ maxHeight: 320, objectFit: 'contain', borderRadius: 8, background: 'var(--brand-bg)' }}
+              wrapperStyle={{ marginTop: 12 }}
+            />
+          )}
+          <Descriptions bordered size="small" column={1} style={{ marginTop: 12 }}>
           <Descriptions.Item label="Tên gói">{row.name}</Descriptions.Item>
           <Descriptions.Item label="Cơ sở">{row.branch_id ? branches.find((branch) => branch.id === row.branch_id)?.name ?? '—' : 'Tất cả cơ sở'}</Descriptions.Item>
           <Descriptions.Item label="Loại gói"><Tag color="purple">{typeLabel}</Tag></Descriptions.Item>
@@ -84,6 +95,7 @@ export default function TreatmentPackageDetailModal({ row, branches, packageType
             return <Descriptions.Item key={key} label={field?.label ?? key}>{text}</Descriptions.Item>
           })}
         </Descriptions>
+        </>
       )}
     </Modal>
   )
