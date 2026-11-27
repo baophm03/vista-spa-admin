@@ -13,7 +13,6 @@ import {
   Segmented,
   Select,
   Tabs,
-  Tag,
   message,
 } from 'antd'
 import {
@@ -35,7 +34,7 @@ import dayjs from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
 import RowActionsMenu, { type RowActionItem } from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
-import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
+import MobileCards from '@/components/base/MobileCards'
 import { normalizeCustomFieldValues } from '@/components/CustomFieldFormItems'
 import useCustomFieldDefinitions from '@/hooks/useCustomFieldDefinitions'
 import { errorMessage, pickData, pickMeta } from '@/api/helpers'
