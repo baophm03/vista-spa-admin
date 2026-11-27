@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Alert, Button, Form, Image, Input, Modal, Select, Table, Tag, Typography, message, Skeleton } from 'antd'
-import { CheckCircleOutlined, DeleteOutlined, EditOutlined, EnvironmentOutlined, PauseCircleOutlined, PictureOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
+import { CheckCircleOutlined, DeleteOutlined, EditOutlined, EnvironmentOutlined, PauseCircleOutlined, PictureOutlined, PlusOutlined, SearchOutlined, FilterOutlined } from '@ant-design/icons'
+import MobileUI from '@/components/base/MobileUI'
 import PageTitle from '@/components/base/PageTitle'
 import StatCards, { type StatItem } from '@/components/base/StatCards'
 import ListFilterPopover from '@/components/base/ListFilterPopover'
@@ -39,7 +40,7 @@ const DEFAULT_VISIBLE_COLUMNS = BRANCH_COLUMN_OPTIONS.map((column) => column.val
 
 function BranchMobileSkeleton() {
   return (
-    <div className="w-full rounded-xl border border-[#E9E1EC] bg-[var(--vista-neutral-0)] p-[17px]" aria-busy="true">
+    <div className="w-full rounded-lg border border-[#E9E1EC] bg-[var(--vista-neutral-0)] p-[17px]" aria-busy="true">
       <Skeleton active title={false} paragraph={{ rows: 3 }} />
     </div>
   )
@@ -47,7 +48,7 @@ function BranchMobileSkeleton() {
 
 function BranchMobileEmpty({ filtered }: { filtered: boolean }) {
   return (
-    <div className="flex h-[164px] w-full flex-col items-center justify-center gap-[9px] rounded-xl border border-[#E9E1EC] bg-[var(--vista-neutral-0)]">
+    <div className="flex h-[164px] w-full flex-col items-center justify-center gap-[9px] rounded-lg border border-[#E9E1EC] bg-[var(--vista-neutral-0)]">
       <div className="flex h-[62px] w-[62px] shrink-0 items-center justify-center rounded-[31px] bg-[#F2E5F4]">
         <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <path
@@ -66,13 +67,13 @@ function BranchMobileEmpty({ filtered }: { filtered: boolean }) {
 
 function BranchMobileError({ onRetry }: { onRetry: () => void }) {
   return (
-    <div role="alert" className="flex w-full flex-col items-end gap-2 rounded-xl border border-[#E9E1EC] bg-[#FFF1F2] p-[13px]">
+    <div role="alert" className="flex w-full flex-col items-end gap-2 rounded-lg border border-[#E9E1EC] bg-[#FFF1F2] p-[13px]">
       <p className="m-0 w-full text-sm font-bold text-[#A03A3F]">Không tải được danh sách cơ sở</p>
       <p className="m-0 w-full text-[13px] text-[#655E71]">Vui lòng thử lại sau.</p>
       <button
         type="button"
         onClick={onRetry}
-        className="flex h-11 w-fit cursor-pointer items-center justify-center gap-1.5 text-nowrap rounded-[10px] border border-[#E9E1EC] bg-[var(--vista-neutral-0)] px-3 text-[13px] font-medium text-[#282335]"
+        className="flex h-11 w-fit cursor-pointer items-center justify-center gap-1.5 text-nowrap rounded-lg border border-[#E9E1EC] bg-[var(--vista-neutral-0)] px-3 text-[13px] font-medium text-[#282335]"
       >
         Thử lại
       </button>
@@ -398,7 +399,7 @@ export default function Branches() {
   )
 
   return (
-    <>
+    <MobileUI>
 
       <PageTitle
         summary={<StatCards items={statItems} />}
@@ -409,7 +410,7 @@ export default function Branches() {
               allowClear
               prefix={<SearchOutlined className="text-[var(--brand-text-inactive,#A9ADB2)]" />}
               placeholder="Tìm theo mã hoặc tên cơ sở"
-              className="w-[260px]!"
+              className="w-full! max-md:col-span-full md:w-[260px]!"
               value={searchText}
               onChange={(event) => {
                 setSearchText(event.target.value)
@@ -417,10 +418,13 @@ export default function Branches() {
               }}
               onPressEnter={() => applySearch(searchText)}
             />
+            {/* Mobile: [Bộ lọc][+] cùng 1 hàng (docs 6.2.1); từ tablet tan vào hàng toolbar */}
+            <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 max-md:col-span-full md:contents">
             <ListFilterPopover
               open={filterOpen}
               onOpenChange={openFilters}
               activeFilterCount={activeFilterCount}
+              trigger={<Button className="keep-label" icon={<FilterOutlined />}>Bộ lọc{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}</Button>}
               form={filterForm}
               onApply={applyFilters}
               onClear={clearFilters}
@@ -440,14 +444,13 @@ export default function Branches() {
                 </Form.Item>
               )}
             />
+            <Can I="CREATE" a="BRANCH">
+              <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
+                Thêm cơ sở
+              </Button>
+            </Can>
+            </div>
           </>
-        }
-        right={
-          <Can I="CREATE" a="BRANCH">
-            <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
-              Thêm cơ sở
-            </Button>
-          </Can>
         }
       >
         Cơ sở
@@ -484,7 +487,7 @@ export default function Branches() {
         ) : visibleRows.length === 0 ? (
           <BranchMobileEmpty filtered={isFiltered} />
         ) : (
-          <div className="grid grid-cols-1 items-start gap-3 sm:grid-cols-2 sm:gap-4">
+          <div className="grid grid-cols-1 items-start gap-3 sm:grid-cols-2">
             {visibleRows.map((row) => (
               <BranchMobileCard key={row.id} row={row} visibleColumns={visibleColumns} />
             ))}
@@ -506,6 +509,6 @@ export default function Branches() {
         onCancel={closeModal}
         onSubmit={() => void submit()}
       />
-    </>
+    </MobileUI>
   )
 }

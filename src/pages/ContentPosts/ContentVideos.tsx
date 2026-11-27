@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import dayjs from 'dayjs'
 import type { TableColumnsType } from 'antd'
-import { AppstoreOutlined, BarsOutlined, DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, PlayCircleFilled, PlusOutlined, SearchOutlined, SendOutlined, StarFilled, StarOutlined, UndoOutlined, VideoCameraOutlined } from '@ant-design/icons'
+import { AppstoreOutlined, BarsOutlined, DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, FilterOutlined, PlayCircleFilled, PlusOutlined, SearchOutlined, SendOutlined, StarFilled, StarOutlined, UndoOutlined, VideoCameraOutlined } from '@ant-design/icons'
 import { useAbility } from '@casl/react'
 import { Alert, App, Avatar, Button, Empty, Form, Input, InputNumber, Modal, Popover, Segmented, Select, Spin, Switch, Tabs, Tag, Typography } from 'antd'
 import { useQueries, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -12,6 +12,7 @@ import { getProductsAdmin } from '@/api/endpoints/products'
 import { errorMessage, pickData } from '@/api/helpers'
 import { fileSrc, objectKeySrc, resolveFileSrc, useFileUrlMap } from '@/hooks/useFileUrl'
 import type { ProductRow } from '../Products/components/constants'
+import MobileUI from '@/components/base/MobileUI'
 import PageTitle from '@/components/base/PageTitle'
 import ResponsiveTable from '@/components/base/ResponsiveTable'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
@@ -433,7 +434,7 @@ export default function ContentVideos() {
   ]
 
   return (
-    <>
+    <MobileUI>
       <PageTitle subtitle="Quản lý video và danh mục hiển thị trong mục Video của ứng dụng">Video App</PageTitle>
       {(videosQuery.isError || categoriesQuery.isError) && <Alert type="error" showIcon title={errorMessage(videosQuery.error ?? categoriesQuery.error)} />}
       <Tabs
@@ -482,17 +483,17 @@ export default function ContentVideos() {
                     <Button onClick={() => { setStatus(undefined); setCategoryId(undefined); setSort('newest'); setPage(1) }}>Đặt lại</Button>
                     </div>
                   }>
-                    <Button>Bộ lọc{status || categoryId || sort !== 'newest' ? ' •' : ''}</Button>
+                    <Button className="keep-label" icon={<FilterOutlined />}>Bộ lọc{status || categoryId || sort !== 'newest' ? ' •' : ''}</Button>
                   </Popover>
                     <Segmented
                       aria-label="Kiểu hiển thị"
-                      className="justify-self-end"
+                      className="max-md:w-full max-md:[&_.ant-segmented-group]:w-full max-md:[&_.ant-segmented-item]:flex-1"
                       value={layout}
                       onChange={(value) => setLayout(value as 'grid' | 'list')}
                       options={[{ value: 'grid', icon: <AppstoreOutlined />, title: 'Dạng lưới' }, { value: 'list', icon: <BarsOutlined />, title: 'Dạng bảng' }]}
                     />
                     {ability.can('CREATE', 'CONTENT') && (
-                      <Button className="keep-label" type="primary" icon={<PlusOutlined />} aria-label="Thêm video" onClick={() => setEditor('new')}>Thêm video</Button>
+                      <Button type="primary" icon={<PlusOutlined />} aria-label="Thêm video" onClick={() => setEditor('new')}>Thêm video</Button>
                     )}
                 </ToolbarRow>
                 {videosQuery.isLoading ? <div className="py-12 text-center"><Spin /></div> : visibleVideos.length === 0 ? (
@@ -527,7 +528,7 @@ export default function ContentVideos() {
                 ) : (
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5 xl:gap-4">
                     {visibleVideos.map((video) => (
-                      <div key={video.id} className="flex min-w-0 flex-col overflow-hidden rounded-xl border border-(--brand-border-soft) bg-white shadow-sm">
+                      <div key={video.id} className="flex min-w-0 flex-col overflow-hidden rounded-xl max-lg:rounded-lg border border-(--brand-border-soft) bg-white shadow-sm">
                         <button
                           type="button"
                           aria-label={`Xem video ${video.title}`}
@@ -569,7 +570,7 @@ export default function ContentVideos() {
               <>
                 <ToolbarRow>
                   {ability.can('CREATE', 'CONTENT') && (
-                    <Button type="primary" icon={<PlusOutlined />} onClick={() => { setCategoryEditor('new'); categoryForm.resetFields(); categoryForm.setFieldsValue({ sortOrder: categories.length + 1, isActive: true }) }}>Tạo danh mục</Button>
+                    <Button type="primary" className="keep-label max-md:w-full" icon={<PlusOutlined />} onClick={() => { setCategoryEditor('new'); categoryForm.resetFields(); categoryForm.setFieldsValue({ sortOrder: categories.length + 1, isActive: true }) }}>Tạo danh mục</Button>
                   )}
                 </ToolbarRow>
                 <ResponsiveTable
@@ -763,6 +764,6 @@ export default function ContentVideos() {
           })}
         </div>
       </Modal>
-    </>
+    </MobileUI>
   )
 }

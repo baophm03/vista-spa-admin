@@ -2,47 +2,6 @@
    Chỉ áp dụng dưới 1024px (cùng mốc .mobile-only/.desktop-only); desktop giữ nguyên. */
 
 @media (max-width: 1023px) {
-  /* Tabs dạng segmented: nền tím nhạt, tab đang chọn là ô trắng */
-  .staff-schedule-tabs .ant-tabs-nav {
-    padding: 4px;
-    border: 1px solid #e9ddf0;
-    border-radius: 16px;
-    background: #f3eef6;
-  }
-  .staff-schedule-tabs .ant-tabs-nav::before {
-    display: none;
-  }
-  .staff-schedule-tabs .ant-tabs-nav-list {
-    width: 100%;
-  }
-  .staff-schedule-tabs .ant-tabs-ink-bar {
-    display: none;
-  }
-  .staff-schedule-tabs .ant-tabs-tab {
-    flex: 1 1 0;
-    justify-content: center;
-    height: 44px !important;
-    margin: 0 !important;
-    padding: 0 8px !important;
-    border-radius: 12px;
-    color: #6f7071;
-    font-size: 13px !important;
-  }
-  .staff-schedule-tabs .ant-tabs-tab + .ant-tabs-tab {
-    margin-inline-start: 0 !important;
-  }
-  .staff-schedule-tabs .ant-tabs-tab.ant-tabs-tab-active {
-    background: #fff;
-    box-shadow: 0 1px 3px rgba(41, 35, 49, 0.12);
-  }
-  .staff-schedule-tabs .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
-    color: var(--brand-primary);
-    font-weight: 600;
-  }
-  .staff-schedule-tabs .ant-tabs-nav-operations {
-    display: none !important;
-  }
-
   /* Hộp thông báo tím (KTV chỉ đăng ký tuần kế tiếp) */
   .schedule-brand-alert.ant-alert {
     border-color: #e4cdeb;

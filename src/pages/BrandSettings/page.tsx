@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Alert, Avatar, Button, Card, ColorPicker, Col, Descriptions, Form, Input, Modal, Row, Select, Skeleton, Space, Spin, Tag, Typography, Upload, message } from 'antd'
 import { PictureOutlined, SaveOutlined, UndoOutlined, UploadOutlined } from '@ant-design/icons'
+import MobileUI from '@/components/base/MobileUI'
 import PageTitle from '@/components/base/PageTitle'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { BrandSettings } from '@/api/models/brandSettings'
@@ -46,7 +47,7 @@ const MODULE_LABELS: Record<string, string> = {
  * header cao 49px, tiêu đề 17px, body padding 14px, bo góc 12px.
  */
 const READONLY_CARD =
-  'rounded-xl! [&_.ant-card-head]:min-h-[49px]! [&_.ant-card-head]:px-3.5! [&_.ant-card-head-title]:text-[17px]! [&_.ant-card-head-title]:font-bold! [&_.ant-card-body]:p-3.5!'
+  'rounded-xl! max-lg:rounded-lg! [&_.ant-card-head]:min-h-[49px]! [&_.ant-card-head]:px-3.5! [&_.ant-card-head-title]:text-[17px]! [&_.ant-card-head-title]:font-bold! [&_.ant-card-body]:p-3.5!'
 
 function supportedValues(key: 'timeZone' | 'currency', fallback: string[]) {
   const intl = Intl as typeof Intl & { supportedValuesOf?: (value: string) => string[] }
@@ -57,7 +58,7 @@ function supportedValues(key: 'timeZone' | 'currency', fallback: string[]) {
 /** Trạng thái đang tải (chỉ xem): khung trắng với 3 dòng skeleton. */
 function ReadOnlyLoading() {
   return (
-    <div className="rounded-xl bg-white p-[17px]">
+    <div className="rounded-xl max-lg:rounded-lg bg-white p-[17px]">
       <Skeleton active title={false} paragraph={{ rows: 3, width: 212 }} />
     </div>
   )
@@ -66,10 +67,10 @@ function ReadOnlyLoading() {
 /** Trạng thái lỗi (chỉ xem): thẻ hồng, nút Thử lại căn phải, cao 44px cho thao tác chạm. */
 function ReadOnlyError({ onRetry }: { onRetry: () => void }) {
   return (
-    <div className="flex w-full flex-col items-end gap-2 rounded-xl border border-[#E9E1EC] bg-[#FFF1F2] p-[13px]">
+    <div className="flex w-full flex-col items-end gap-2 rounded-xl max-lg:rounded-lg border border-[#E9E1EC] bg-[#FFF1F2] p-[13px]">
       <p className="m-0 w-full text-sm font-bold text-[#A03A3F]">Không tải được cấu hình thương hiệu</p>
       <p className="m-0 w-full text-[13px] text-[#655E71]">Vui lòng thử lại sau.</p>
-      <Button className="h-11! rounded-[10px]! px-3!" onClick={onRetry}>Thử lại</Button>
+      <Button className="h-11! rounded-[10px]! max-lg:rounded-lg! px-3!" onClick={onRetry}>Thử lại</Button>
     </div>
   )
 }
@@ -135,7 +136,7 @@ function ReadOnlyBrandSettings({ settings, runtime }: { settings?: BrandSettings
             <Card title="Mô-đun đang bật" className={READONLY_CARD}>
               <Space wrap size={[7, 7]}>
                 {enabledModules.map((module) => (
-                  <Tag key={module.key} color="blue" className="m-0! rounded-[20px]! px-[7px]! py-1! text-[11px] font-medium">
+                  <Tag key={module.key} color="blue" className="m-0! rounded-[20px]! max-lg:rounded-lg! px-[7px]! py-1! text-[11px] font-medium">
                     {MODULE_LABELS[module.key] ?? module.key.replace(/^module\./, '').replaceAll('_', ' ')}
                   </Tag>
                 ))}
@@ -281,14 +282,14 @@ export default function BrandSettings() {
   return (
     <Can I="UPDATE" a="SETTING" passThrough>
       {({ isAllowed: canEdit }) => (
-        <>
+        <MobileUI>
           <PageTitle
             subtitle="Thông tin thương hiệu, giao diện và khu vực"
             right={canEdit ? (
-              <Space>
-                <Button icon={<UndoOutlined />} onClick={confirmResetAll}>Khôi phục mặc định</Button>
-                <Button type="primary" icon={<SaveOutlined />} loading={saveMutation.isPending} onClick={() => form.submit()}>Lưu cấu hình</Button>
-              </Space>
+              <>
+                <Button className="keep-label" icon={<UndoOutlined />} onClick={confirmResetAll}>Khôi phục mặc định</Button>
+                <Button type="primary" className="keep-label" icon={<SaveOutlined />} loading={saveMutation.isPending} onClick={() => form.submit()}>Lưu cấu hình</Button>
+              </>
             ) : undefined}
           >
             Thương hiệu và khu vực
@@ -376,7 +377,7 @@ export default function BrandSettings() {
               </Form>
             </Spin>
           )}
-        </>
+        </MobileUI>
       )}
     </Can>
   )

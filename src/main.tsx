@@ -8,6 +8,7 @@ import { getPrimaryColor, subscribeTheme } from './themeRuntime'
 import TableEmpty from '@/components/base/TableEmpty'
 import App from './App'
 import './index.css'
+import './mobile-ui.css'
 
 const queryClient = new QueryClient()
 

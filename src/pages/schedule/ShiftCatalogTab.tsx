@@ -113,8 +113,8 @@ export default function ShiftCatalogTab({ branches, access, loadingShared }: Pro
   ]
 
   return <div>
-    <ToolbarRow>
-      {access.isAdmin && <Select allowClear placeholder="Tất cả cơ sở" style={{ width: 190 }} value={branchFilter} onChange={(value) => { setBranchFilter(value); setPage(1) }} options={branches.map((branch) => ({ value: branch.id, label: branch.name }))} />}
+    <ToolbarRow className="max-md:grid max-md:grid-cols-[minmax(0,1fr)_auto]">
+      {access.isAdmin && <Select allowClear placeholder="Tất cả cơ sở" className="w-full min-w-0 md:w-[190px]" value={branchFilter} onChange={(value) => { setBranchFilter(value); setPage(1) }} options={branches.map((branch) => ({ value: branch.id, label: branch.name }))} />}
       {access.isAdmin && <Button type="primary" icon={<PlusOutlined />} onClick={() => openForm()}>Thêm ca</Button>}
     </ToolbarRow>
     {!!error && !compact && <Alert type="error" showIcon message="Không tải được danh mục ca" description={error} action={<Button size="small" icon={<ReloadOutlined />} onClick={retry}>Thử lại</Button>} style={{ marginBottom: 16 }} />}

@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { Alert, Button, Form, Image, Input, Modal, Select, Space, Tabs, Tag, Typography, message } from 'antd'
 import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, PictureOutlined, PlusOutlined, SearchOutlined, SendOutlined, UndoOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
+import MobileUI from '@/components/base/MobileUI'
 import PageTitle from '@/components/base/PageTitle'
 import ToolbarRow from '@/components/base/ToolbarRow'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
@@ -343,7 +344,7 @@ export default function ContentPosts() {
   ]
 
   return (
-    <div>
+    <MobileUI>
       <PageTitle subtitle="Quản lý bài viết và chuyên mục hiển thị trên app">
         Bài viết App
       </PageTitle>
@@ -411,7 +412,7 @@ export default function ContentPosts() {
               <>
                 <ToolbarRow>
                   <Can I="CREATE" a="CONTENT">
-                    <Button type="primary" icon={<PlusOutlined />} onClick={() => { setEditingCategory(null); categoryForm.resetFields(); categoryForm.setFieldsValue({ display_type: 'NEWS', sort_order: 0, is_active: true }); setCategoryModal(true) }}>Tạo chuyên mục</Button>
+                    <Button type="primary" className="keep-label max-md:w-full" icon={<PlusOutlined />} onClick={() => { setEditingCategory(null); categoryForm.resetFields(); categoryForm.setFieldsValue({ display_type: 'NEWS', sort_order: 0, is_active: true }); setCategoryModal(true) }}>Tạo chuyên mục</Button>
                   </Can>
                 </ToolbarRow>
                 <ResponsiveTable
@@ -462,6 +463,6 @@ export default function ContentPosts() {
         onOk={() => void doPublish()}
         onCancel={() => setPublishTarget(null)}
       />
-    </div>
+    </MobileUI>
   )
 }

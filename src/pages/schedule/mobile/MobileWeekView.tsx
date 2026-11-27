@@ -61,19 +61,19 @@ export default function MobileWeekView<Row>({
   return (
     <div className="schedule-mobile-week mobile-only gap-4 pb-4">
       {/* Khoảng tuần + Đăng ký ca: mobile 2 hàng, tablet 1 hàng */}
-      <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_158px]">
+      <div className={`grid gap-2 md:gap-3 ${showCreate ? 'grid-cols-[minmax(0,1fr)_44px] md:grid-cols-[minmax(0,1fr)_158px]' : ''}`}>
         <div className="relative grid grid-cols-[44px_minmax(0,1fr)_44px] gap-2">
           <Button
             aria-label="Tuần trước"
             icon={<LeftOutlined />}
-            className="h-11! w-11! rounded-xl! border-[#E9DDF0]! text-[var(--brand-primary)]!"
+            className="h-11! w-11! rounded-lg! border-[#E9DDF0]! text-[var(--brand-primary)]!"
             onClick={() => onWeekChange(weekStart.subtract(1, 'week'))}
           />
           <div className="min-w-0">
             <Button
               aria-label={`Chọn tuần, đang xem ${weekStart.format('DD/MM')} đến ${weekEnd.format('DD/MM')}`}
               aria-expanded={pickerOpen}
-              className={`h-11! w-full! rounded-xl! font-medium! text-[var(--brand-primary)]! ${pickerOpen ? 'border-[var(--brand-primary)]!' : 'border-[#E9DDF0]!'}`}
+              className={`h-11! w-full! rounded-lg! font-medium! text-[var(--brand-primary)]! ${pickerOpen ? 'border-[var(--brand-primary)]!' : 'border-[#E9DDF0]!'}`}
               icon={<CalendarOutlined />}
               onClick={() => setPickerOpen((open) => !open)}
             >
@@ -83,7 +83,7 @@ export default function MobileWeekView<Row>({
           <Button
             aria-label="Tuần sau"
             icon={<RightOutlined />}
-            className="h-11! w-11! rounded-xl! border-[#E9DDF0]! text-[var(--brand-primary)]!"
+            className="h-11! w-11! rounded-lg! border-[#E9DDF0]! text-[var(--brand-primary)]!"
             onClick={() => onWeekChange(weekStart.add(1, 'week'))}
           />
           {/* Ô nhập ẩn phủ cả hàng điều hướng — chỉ để neo bảng chọn tuần ngay bên dưới */}
@@ -107,12 +107,13 @@ export default function MobileWeekView<Row>({
         {showCreate && (
           <Button
             type="primary"
+            aria-label="Đăng ký ca"
             icon={<PlusOutlined />}
             disabled={createDisabled}
-            className="h-11! w-full! rounded-xl! font-semibold! shadow-none!"
+            className="h-11! w-full! rounded-lg! shadow-none! max-md:w-11! max-md:px-0!"
             onClick={onCreate}
           >
-            Đăng ký ca
+            <span className="max-md:hidden">Đăng ký ca</span>
           </Button>
         )}
       </div>
@@ -129,12 +130,12 @@ export default function MobileWeekView<Row>({
               aria-selected={selected}
               aria-label={`${WEEKDAY_LABELS[date.day()]} ${date.format('DD/MM')}`}
               onClick={() => onSelectDay(date)}
-              className={`flex h-[58px] min-w-0 cursor-pointer flex-col items-center justify-center gap-0.5 rounded-xl border transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 ${selected
+              className={`flex h-[58px] min-w-0 cursor-pointer flex-col items-center justify-center gap-0.5 rounded-lg border transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 ${selected
                 ? 'border-[var(--brand-primary)] bg-[var(--brand-primary)] text-white'
                 : 'border-[#E9DDF0] bg-white text-[#292331] hover:border-[var(--brand-primary)]'}`}
             >
               <span className={`text-[11px] leading-none ${selected ? 'text-white/90' : 'text-[#6F7071]'}`}>{WEEKDAY_LABELS[date.day()]}</span>
-              <span className="text-[19px] leading-6 font-semibold tabular-nums">{date.format('D')}</span>
+              <span className="text-base leading-5 font-semibold tabular-nums">{date.format('D')}</span>
             </button>
           )
         })}
@@ -175,10 +176,10 @@ export default function MobileWeekView<Row>({
 
 function StaffDayCard({ title, date, emptyText, children }: { title: string; date: Dayjs; emptyText?: string; children?: ReactNode }) {
   return (
-    <section className="rounded-2xl border border-[#E9DDF0] bg-white px-3 pt-3 pb-3">
+    <section className="rounded-lg border border-[#E9DDF0] bg-white px-3 pt-3 pb-3">
       <header className="flex items-center justify-between gap-2 border-b border-[#E9DDF0] pb-2">
         <h3 className="m-0 min-w-0 truncate text-[15px] font-semibold text-[#292331]">{title}</h3>
-        <span className="shrink-0 rounded-md bg-[#F3E8F7] px-2 py-0.5 text-xs font-medium text-[var(--brand-primary)] tabular-nums">{date.format('DD/MM')}</span>
+        <span className="shrink-0 rounded-lg bg-[#F3E8F7] px-2 py-0.5 text-xs font-medium text-[var(--brand-primary)] tabular-nums">{date.format('DD/MM')}</span>
       </header>
       {emptyText ? (
         <p className="m-0 pt-3 text-[13px] text-[#6F7071]">{emptyText}</p>
@@ -210,12 +211,12 @@ function ShiftRow<Row>({ shift, editable, onEdit, onDelete }: {
             type="button"
             onClick={onEdit}
             aria-label={`Sửa ${label}`}
-            className="flex min-h-11 w-full cursor-pointer items-center gap-2 rounded-xl border-0 bg-[#EAF0FB] px-3 text-left text-[14px] text-[#25407A] focus-visible:outline-2 focus-visible:outline-offset-1"
+            className="flex min-h-11 w-full cursor-pointer items-center gap-2 rounded-lg border-0 bg-[#EAF0FB] px-3 text-left text-[14px] text-[#25407A] focus-visible:outline-2 focus-visible:outline-offset-1"
           >
             {content}
           </button>
         ) : (
-          <div className="flex min-h-11 items-center gap-2 rounded-xl bg-[#EAF0FB] px-3 text-[14px] text-[#25407A]">{content}</div>
+          <div className="flex min-h-11 items-center gap-2 rounded-lg bg-[#EAF0FB] px-3 text-[14px] text-[#25407A]">{content}</div>
         )}
         {!!shift.note?.trim() && <p className="m-0 px-1 text-xs break-words whitespace-pre-wrap text-[#6F7071]">{shift.note}</p>}
       </div>
@@ -272,10 +273,10 @@ function DeleteShiftButton({ label, onDelete }: { label: string; onDelete: (reas
             />
           </label>
           <div className="flex justify-end gap-2 pt-1">
-            <Button className="h-11! rounded-xl!" disabled={status === 'checking'} onClick={close}>Hủy</Button>
+            <Button className="h-11! rounded-lg!" disabled={status === 'checking'} onClick={close}>Hủy</Button>
             <Button
               type="primary"
-              className="h-11! rounded-xl! font-semibold!"
+              className="h-11! rounded-lg! font-semibold!"
               loading={status === 'checking'}
               disabled={!reason.trim()}
               onClick={() => void confirm()}
@@ -290,7 +291,7 @@ function DeleteShiftButton({ label, onDelete }: { label: string; onDelete: (reas
         danger
         aria-label={`Xóa ${label}`}
         icon={<DeleteOutlined />}
-        className="h-11! w-11! shrink-0 self-start rounded-xl! border-0! bg-[#FDECEC]!"
+        className="h-11! w-11! shrink-0 self-start rounded-lg! border-0! bg-[#FDECEC]!"
       />
     </Popover>
   )

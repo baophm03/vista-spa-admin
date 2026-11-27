@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { displayName } from '@/utils/displayName'
 import { Alert, Button, Checkbox, Form, Table, Tag, Tooltip, message } from 'antd'
 import { BellOutlined, CheckOutlined, MailOutlined, SendOutlined } from '@ant-design/icons'
+import MobileUI from '@/components/base/MobileUI'
 import PageTitle from '@/components/base/PageTitle'
 import StatCards, { type StatItem } from '@/components/base/StatCards'
 import ListPagination from '@/components/base/ListPagination'
@@ -145,14 +146,14 @@ export default function Notifications() {
   ]
 
   return (
-    <>
+    <MobileUI>
 
       <PageTitle
         summary={<StatCards items={statItems} />}
         subtitle="Thông báo hệ thống gửi tới khách hàng"
         left={
           selectedIds.length > 0 && (
-            <Button icon={<CheckOutlined />} onClick={() => void markSelectedRead()}>
+            <Button className="keep-label" icon={<CheckOutlined />} onClick={() => void markSelectedRead()}>
               Đánh dấu đã đọc ({selectedIds.length})
             </Button>
           )
@@ -161,6 +162,7 @@ export default function Notifications() {
           <Can I="CREATE" a="NOTIFICATION">
             <Button
               type="primary"
+              className="keep-label max-md:col-span-full"
               icon={<SendOutlined />}
               onClick={() => {
                 form.setFieldsValue({ event_key: 'SYSTEM', channel: 'app', title: '', body: '', user_id: undefined })
@@ -307,6 +309,6 @@ export default function Notifications() {
         onCancel={() => setOpen(false)}
         onSubmit={() => void submit()}
       />
-    </>
+    </MobileUI>
   )
 }

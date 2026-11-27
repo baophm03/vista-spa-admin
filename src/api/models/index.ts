@@ -1566,6 +1566,8 @@ export * from './userZaloAvatar';
 export * from './userZaloId';
 export * from './userZaloIdByOa';
 export * from './userZaloName';
+export * from './videoContentInput';
+export * from './videoContentInputStatus';
 export * from './voucher';
 export * from './voucherBulkDelete';
 export * from './voucherBulkUpdate';

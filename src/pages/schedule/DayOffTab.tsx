@@ -354,19 +354,19 @@ export default function DayOffTab({ branches, staff, access, loadingShared }: Pr
         </div>}
       >
         {compact ? (
-          <Button block className="h-11! rounded-xl! font-semibold!">{activeFilterCount ? `Bộ lọc (${activeFilterCount})` : 'Bộ lọc'}</Button>
+          <Button block className="keep-label" icon={<FilterOutlined />}>{activeFilterCount ? `Bộ lọc (${activeFilterCount})` : 'Bộ lọc'}</Button>
         ) : (
           <Badge count={activeFilterCount} size="small">
             <Button icon={<FilterOutlined />}>Bộ lọc</Button>
           </Badge>
         )}
       </Popover>
-      {canCreate && <Button type="primary" block={compact} className={compact ? 'h-11! rounded-xl! font-semibold! shadow-none!' : undefined} icon={compact ? undefined : <PlusOutlined />} onClick={openCreate}>Đăng ký nghỉ</Button>}
+      {canCreate && <Button type="primary" block={compact} aria-label="Đăng ký nghỉ" icon={<PlusOutlined />} onClick={openCreate}>Đăng ký nghỉ</Button>}
   </>
 
   return <div>
     {compact
-      ? <div className={`mb-3 grid gap-2 ${canCreate ? 'grid-cols-2' : 'grid-cols-1'}`}>{toolbarItems}</div>
+      ? <div className={`toolbar-row mb-3 grid gap-2 ${canCreate ? 'grid-cols-[minmax(0,1fr)_44px] md:grid-cols-2' : 'grid-cols-1'}`}>{toolbarItems}</div>
       : <ToolbarRow>{toolbarItems}</ToolbarRow>}
     {!!error && !compact && <Alert type="error" showIcon message="Không tải được danh sách ngày nghỉ" description={error} action={<Button size="small" icon={<ReloadOutlined />} onClick={() => void daysOffQuery.refetch()}>Thử lại</Button>} style={{ marginBottom: 16 }} />}
     <Table<StaffDayOff>
@@ -394,13 +394,12 @@ export default function DayOffTab({ branches, staff, access, loadingShared }: Pr
         return (
           <>
             <div className="mobile-card-head">
-              <div>
-                <div className="mobile-card-title">{staffLabel(staffInfo)}</div>
-                <div className="mobile-card-sub">{dayjs(row.off_date).format('DD/MM/YYYY')} · {(row as StaffDayOff & { shift_template?: { name?: string } }).shift_template?.name || templates.find((template) => template.id === row.shift_template_id)?.name || 'Cả ngày'}</div>
-              </div>
+              <div className="mobile-card-title">{staffLabel(staffInfo)}</div>
               <Tag color={STATUS[row.status ?? '']?.color}>{STATUS[row.status ?? '']?.label ?? row.status}</Tag>
             </div>
             <div className="mobile-card-rows">
+              <MobileCardRow label="Ngày nghỉ" value={dayjs(row.off_date).format('DD/MM/YYYY')} />
+              <MobileCardRow label="Thời gian nghỉ" value={(row as StaffDayOff & { shift_template?: { name?: string } }).shift_template?.name || templates.find((template) => template.id === row.shift_template_id)?.name || 'Cả ngày'} />
               <MobileCardRow label="Lý do" value={row.reason || '—'} />
               {row.reject_reason && <MobileCardRow label="Lý do từ chối" value={<span style={{ color: '#cf1322' }}>{row.reject_reason}</span>} />}
             </div>

@@ -92,14 +92,14 @@ export default function ListFilterPopover({
             {/* Figma: Xóa lọc trắng viền chữ tím / Xác nhận tím đặc, h44 r10 trên mobile */}
             <Button
               onClick={onClear}
-              style={isMobile ? { height: 44, borderRadius: 10, color: 'var(--brand-primary)', fontWeight: 500 } : undefined}
+              style={isMobile ? { height: 44, borderRadius: 8, color: 'var(--brand-primary)', fontWeight: 500 } : undefined}
             >
               Xóa lọc
             </Button>
             <Button
               type="primary"
               onClick={() => (filterItems && form ? form.submit() : onApply({}))}
-              style={isMobile ? { height: 44, borderRadius: 10, fontWeight: 500 } : undefined}
+              style={isMobile ? { height: 44, borderRadius: 8, fontWeight: 500 } : undefined}
             >
               Xác nhận
             </Button>

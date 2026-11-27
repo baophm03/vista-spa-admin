@@ -2,6 +2,7 @@ import ResponsiveTable from '@/components/base/ResponsiveTable'
 import { useCallback, useEffect, useState } from 'react'
 import { Alert, Button, Form, Input, Modal, Space, Tag, Typography, message } from 'antd'
 import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons'
+import MobileUI from '@/components/base/MobileUI'
 import PageTitle from '@/components/base/PageTitle'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
@@ -129,15 +130,15 @@ export default function LookupLists() {
         const canUpdate = ability.can('UPDATE' as never, 'LOOKUP')
         const canDelete = ability.can('DELETE' as never, 'LOOKUP')
         return (
-          <>
+          <MobileUI>
             <PageTitle
               subtitle="Danh mục dùng chung cho các trường tùy chỉnh"
               left={(
-                  <div className="flex w-full items-center gap-2"> 
+                  <div className="flex w-full items-center gap-2 max-md:col-span-full max-md:grid">
                   <Input.Search
                     allowClear
                     placeholder="Tìm tên, mã danh mục hoặc mã mục"
-                    className="w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]"
+                    className="w-[260px]! max-w-[min(260px,46vw)] min-w-[140px] max-lg:w-auto! max-lg:max-w-none max-lg:flex-1"
                     value={query}
                     onChange={(event) => {
                       setQuery(event.target.value)
@@ -146,7 +147,7 @@ export default function LookupLists() {
                     onSearch={(value) => void load(value)}
                   />
                   {canCreate ? (
-                <Button className='lg:ml-auto' type="primary" icon={<PlusOutlined />} onClick={() => { form.resetFields(); setCreateOpen(true) }}>Tạo danh mục</Button>
+                <Button className="keep-label lg:ml-auto" type="primary" icon={<PlusOutlined />} onClick={() => { form.resetFields(); setCreateOpen(true) }}>Tạo danh mục</Button>
               ) : undefined}
                 </div>
               )}
@@ -214,7 +215,7 @@ export default function LookupLists() {
               confirmLoading={saving}
               form={editForm}
             />
-          </>
+          </MobileUI>
         )
       }}
     </Can>
