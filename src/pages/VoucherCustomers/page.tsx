@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { Alert, Button, Form, Grid, Input, Modal, Popconfirm, Popover, Select, Table, Tabs, Tag, Typography, message } from 'antd'
 import { displayName } from '@/utils/displayName'
 import type { TableColumnsType } from 'antd'
-import { DeleteOutlined, FilterOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
+import { DeleteOutlined, FilterOutlined, PlusOutlined } from '@ant-design/icons'
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { useAbility } from '@casl/react'
@@ -19,7 +19,7 @@ import { getTreatmentPackageVoucherCustomersAdmin, postTreatmentPackageVoucherCu
 import { getTreatmentPackageVouchersAdmin } from '@/api/endpoints/treatment-package-vouchers'
 import { getProductVoucherCustomersAdmin, postProductVoucherCustomersAdmin, deleteProductVoucherCustomersIdAdmin } from '@/api/endpoints/product-voucher-customers'
 import { getProductVouchersAdmin } from '@/api/endpoints/product-vouchers'
-import { CATEGORY_META, MOBILE_TAB_LABELS, type VoucherCategory, type VoucherCustomerAssignment, type VoucherCustomerRow } from '../Vouchers/components/constants'
+import { CATEGORY_META, type VoucherCategory, type VoucherCustomerAssignment, type VoucherCustomerRow } from '../Vouchers/components/constants'
 import '../Vouchers/vouchers.css'
 import '../Vouchers/components/VoucherModal.css'
 
@@ -267,6 +267,7 @@ function VoucherCustomerTab({ category, branches, isMobile }: { category: Vouche
 
   return (
     <>
+      {/* docs 6.2.1: mobile → [Tìm] / [Bộ lọc][+] */}
       <div className="voucher-toolbar" style={isMobile ? undefined : { gap: 16 }}>
         <div className="voucher-toolbar-search" style={isMobile ? undefined : { gap: 8 }}>
           {isMobile ? (
@@ -281,19 +282,18 @@ function VoucherCustomerTab({ category, branches, isMobile }: { category: Vouche
                 onSearch={applySearch}
               />
               <Popover trigger="click" placement="bottomRight" title="Lọc theo cơ sở" content={branchSelect}>
-                <Button className="voucher-toolbar-button" type={branchFilter ? 'primary' : 'default'} icon={<FilterOutlined />} aria-label="Bộ lọc cơ sở" />
+                <Button className="voucher-filter-button" type={branchFilter ? 'primary' : 'default'} icon={<FilterOutlined />} aria-label="Bộ lọc cơ sở">Bộ lọc</Button>
               </Popover>
             </>
           ) : (
             <>
-              <Input
+              <Input.Search
                 allowClear
-                prefix={<SearchOutlined />}
                 placeholder="Tìm theo tên, SĐT hoặc tên voucher"
-                style={{ maxWidth: 300 }}
+                className="voucher-search voucher-customer-search"
                 value={searchInput}
                 onChange={(event) => changeSearchInput(event.target.value)}
-                onPressEnter={() => applySearch(searchInput)}
+                onSearch={() => applySearch(searchInput)}
                 onBlur={() => applySearch(searchInput)}
               />
               {branchSelect}
@@ -315,7 +315,7 @@ function VoucherCustomerTab({ category, branches, isMobile }: { category: Vouche
         <Alert type="error" showIcon style={{ marginBottom: 16 }} message="Không tải được danh sách voucher khách hàng" description={errorMessage(viewQuery.error)} action={<Button size="small" onClick={() => void viewQuery.refetch()}>Thử lại</Button>} />
       )}
       <Table<VoucherCustomerRow>
-        className="desktop-only [&_.ant-table-thead_th]:whitespace-nowrap"
+        className="desktop-only voucher-table [&_.ant-table-thead_th]:whitespace-nowrap"
         rowKey={rowKey}
         loading={viewQuery.isLoading}
         dataSource={pageRows}
@@ -325,6 +325,7 @@ function VoucherCustomerTab({ category, branches, isMobile }: { category: Vouche
         locale={{ emptyText: 'Chưa có khách hàng nào được ghi nhận' }}
       />
       <MobileCards
+        className="voucher-card-list"
         rows={pageRows}
         rowKey={rowKey}
         loading={viewQuery.isLoading}
@@ -456,7 +457,7 @@ export default function VoucherCustomers() {
         onChange={(key) => setActiveTab(key as VoucherCategory)}
         items={CATEGORIES.map((category) => ({
           key: category,
-          label: isMobile ? MOBILE_TAB_LABELS[category] : CATEGORY_META[category].label,
+          label: CATEGORY_META[category].label,
           children: <VoucherCustomerTab category={category} branches={branches} isMobile={isMobile} />,
         }))}
       />

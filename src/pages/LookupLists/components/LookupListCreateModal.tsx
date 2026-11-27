@@ -22,7 +22,7 @@ export default function LookupListCreateModal({
       onCancel={onCancel}
       onOk={onSubmit}
       confirmLoading={confirmLoading}
-      okText="Tạo danh mục"
+      okText="Lưu"
       cancelText="Hủy"
       destroyOnHidden
     >

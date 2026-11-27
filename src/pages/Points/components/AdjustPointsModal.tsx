@@ -28,7 +28,7 @@ export default function AdjustPointsModal({
       okText="Lưu"
       cancelText="Hủy"
     >
-      <Form form={form} layout="vertical" style={{ marginTop: 12 }}>
+      <Form form={form} layout="vertical" className="points-form mt-3">
         <Form.Item
           name="delta"
           label="Điểm thay đổi (+ cộng, − trừ)"

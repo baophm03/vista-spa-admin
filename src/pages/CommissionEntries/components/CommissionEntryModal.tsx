@@ -7,6 +7,7 @@ import { errorMessage, pickData } from '@/api/helpers'
 import { useGetUsersAdmin } from '@/api/endpoints/users'
 import { useGetTreatmentCustomersAdmin } from '@/api/endpoints/treatment-customers'
 import type { Branch, User } from '@/api/models'
+import './commission-entry-modal.css'
 
 interface Props {
   form: FormInstance
@@ -110,11 +111,11 @@ export default function CommissionEntryModal({
       open={open}
       onCancel={onCancel}
       onOk={onOk}
-      okText={isEdit ? 'Lưu' : 'Thêm'}
+      okText="Lưu"
       cancelText="Hủy"
       confirmLoading={submitting}
     >
-      <Form form={form} layout="vertical" className="mt-3">
+      <Form form={form} layout="vertical" className="commission-entry-form mt-3">
         {!isEdit && (
           <>
             <Form.Item
@@ -145,7 +146,7 @@ export default function CommissionEntryModal({
             <Form.Item
               name="customer_treatment_id"
               label="Liệu trình (tùy chọn)"
-              extra="Gắn entry vào một liệu trình để dễ tra cứu — bỏ trống nếu không liên quan"
+              extra="Chọn liệu trình để dễ tra cứu bản ghi hoa hồng."
             >
               <Select
                 allowClear

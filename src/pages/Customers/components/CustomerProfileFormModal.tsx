@@ -1,4 +1,4 @@
-import { Col, DatePicker, Form, Input, Modal, Row } from 'antd'
+import { DatePicker, Form, Input, Modal } from 'antd'
 import type { FormInstance } from 'antd'
 import dayjs from 'dayjs'
 import type { Dayjs } from 'dayjs'
@@ -26,42 +26,34 @@ export default function CustomerProfileFormModal({ form, open, editing, profileF
       cancelText="Hủy"
       destroyOnHidden
     >
-      <Form form={form} layout="vertical" style={{ marginTop: 12, maxHeight: '68vh', overflowY: 'auto', paddingInlineEnd: 8 }}>
-        <Form.Item name="full_name" label="Họ và tên" rules={[{ required: true, message: 'Nhập họ tên' }]}>
-          <Input placeholder="VD: Nguyễn Thu Hà" />
-        </Form.Item>
-        <Row gutter={12}>
-          <Col xs={24} sm={12}>
-            <Form.Item name="phone" label="Số điện thoại" rules={[{ required: true, message: 'Nhập SĐT' }]}>
-              <Input placeholder="0901234568" />
-            </Form.Item>
-          </Col>
-          <Col xs={24} sm={12}>
-            <Form.Item name="email" label="Email">
-              <Input placeholder="email@gmail.com" />
-            </Form.Item>
-          </Col>
-        </Row>
-        <Row gutter={12}>
-          <Col xs={24} sm={12}>
-            <Form.Item
-              name="birthday"
-              label="Ngày sinh"
-              rules={[{
-                validator: async (_, value: Dayjs | undefined) => {
-                  if (!value || value.isBefore(dayjs().startOf('day'), 'day')) return
-                  throw new Error('Ngày sinh phải trước ngày hiện tại')
-                },
-              }]}
-            >
-              <DatePicker
-                style={{ width: '100%' }}
-                format="DD/MM/YYYY"
-                disabledDate={(current) => !!current && !current.isBefore(dayjs().startOf('day'), 'day')}
-              />
-            </Form.Item>
-          </Col>
-        </Row>
+      <Form form={form} layout="vertical" className="customer-profile-form mt-3">
+        <div className="grid grid-cols-2 gap-x-3">
+          <Form.Item name="full_name" label="Họ và tên" rules={[{ required: true, message: 'Nhập họ tên' }]}>
+            <Input placeholder="VD: Nguyễn Thu Hà" />
+          </Form.Item>
+          <Form.Item name="phone" label="Số điện thoại" rules={[{ required: true, message: 'Nhập SĐT' }]}>
+            <Input placeholder="0901234568" inputMode="tel" />
+          </Form.Item>
+          <Form.Item name="email" label="Email">
+            <Input placeholder="email@gmail.com" inputMode="email" />
+          </Form.Item>
+          <Form.Item
+            name="birthday"
+            label="Ngày sinh"
+            rules={[{
+              validator: async (_, value: Dayjs | undefined) => {
+                if (!value || value.isBefore(dayjs().startOf('day'), 'day')) return
+                throw new Error('Ngày sinh phải trước ngày hiện tại')
+              },
+            }]}
+          >
+            <DatePicker
+              style={{ width: '100%' }}
+              format="DD/MM/YYYY"
+              disabledDate={(current) => !!current && !current.isBefore(dayjs().startOf('day'), 'day')}
+            />
+          </Form.Item>
+        </div>
         <CustomerProfileCustomFields definitions={profileFieldDefs} />
         <Form.Item name="address" label="Địa chỉ"><Input /></Form.Item>
         <Form.Item name="note" label="Ghi chú"><Input.TextArea rows={2} /></Form.Item>

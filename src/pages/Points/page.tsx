@@ -11,6 +11,7 @@ import PageTitle from '../../components/base/PageTitle'
 import RowActionsMenu from '../../components/base/RowActionsMenu'
 import ListPagination from '../../components/base/ListPagination'
 import MobileCards, { MobileCardRow } from '../../components/base/MobileCards'
+import './points.css'
 import TableEmpty from '../../components/base/TableEmpty'
 import CustomerCodeHistoryModal from '../../components/CustomerCodeHistoryModal'
 import { errorMessage } from '../../api/helpers'
@@ -301,8 +302,8 @@ export default function Points() {
     ...(canRecalc ? [{ key: 'recalc', icon: <SyncOutlined />, label: 'Tính lại hạng' }] : []),
   ]
   const mobileMemberActions = [
-    ...(canViewHistory ? [{ value: 'view', label: 'Xem lịch sử' }] : []),
-    ...memberActions.map(({ key, label }) => ({ value: key, label })),
+    ...(canViewHistory ? [{ key: 'view', label: 'Xem lịch sử' }] : []),
+    ...memberActions,
   ]
 
   const runMemberAction = (row: MemberRow, key: string) => {
@@ -333,7 +334,7 @@ export default function Points() {
         Điểm & Hạng thành viên
       </PageTitle>
 
-      <div className="rounded-xl p-3 md:rounded-[20px] md:px-6 md:pt-6 md:pb-7" style={{ background: 'var(--brand-bg-card, #FFFFFF)', border: '1px solid var(--brand-border-soft, #ECEFEA)', marginTop: 8 }}>
+      <div className="rounded-lg p-3 md:px-6 md:pt-6 md:pb-7 lg:mt-2 lg:rounded-lg" style={{ background: 'var(--brand-bg-card, #FFFFFF)', border: '1px solid var(--brand-border-soft, #ECEFEA)' }}>
         <button
           type="button"
           aria-expanded={ranksExpanded}
@@ -361,7 +362,7 @@ export default function Points() {
           </Can>
         </div>
 
-        <Row gutter={[16, 16]} className="mt-3 md:mt-5">
+        <Row gutter={[16, 16]} className="mt-3! md:mt-5!">
           {ranksQuery.isLoading && [0, 1, 2].map((index) => (
             <Col xs={24} md={12} xl={8} key={index}>
               <div className="mobile-card"><Skeleton active paragraph={{ rows: 2 }} /></div>
@@ -376,11 +377,11 @@ export default function Points() {
             const permanent = r.validity === 'PERMANENT'
             const rankActions = [
               ...(canUpdateRank ? [
-                { value: 'edit', label: 'Sửa hạng' },
-                { value: 'up', label: 'Đưa lên', disabled: rankReordering || index === 0 },
-                { value: 'down', label: 'Đưa xuống', disabled: rankReordering || index === ranks.length - 1 },
+                { key: 'edit', label: 'Sửa hạng' },
+                { key: 'up', label: 'Đưa lên', disabled: rankReordering || index === 0 },
+                { key: 'down', label: 'Đưa xuống', disabled: rankReordering || index === ranks.length - 1 },
               ] : []),
-              ...(canDeleteRank ? [{ value: 'delete', label: 'Xóa hạng' }] : []),
+              ...(canDeleteRank ? [{ key: 'delete', label: 'Xóa hạng' }] : []),
             ]
             return (
               <Col xs={24} md={12} xl={8} key={r.id} className="flex min-w-0">
@@ -440,13 +441,10 @@ export default function Points() {
                   </div>
                   {rankActions.length > 0 && (
                     <div className="mobile-card-actions md:hidden!">
-                      <Select<string | null>
-                        aria-label={`Thao tác cho hạng ${r.name}`}
-                        placeholder="Thao tác"
-                        className="w-32"
-                        value={null}
-                        popupMatchSelectWidth={false}
-                        options={rankActions}
+                      <RowActionsMenu
+                        dropdownOnly
+                        ariaLabel={`Thao tác cho hạng ${r.name}`}
+                        items={rankActions}
                         onSelect={(key) => {
                           if (key === 'edit') openRankEditor(r)
                           if (key === 'up') void moveRankBy(r, -1)
@@ -471,24 +469,23 @@ export default function Points() {
       </div>
 
       <Tabs
-        className="max-md:[&_.ant-tabs-nav-list]:w-full max-md:[&_.ant-tabs-tab]:flex-1 max-md:[&_.ant-tabs-tab]:justify-center max-md:[&_.ant-tabs-tab]:px-1 max-md:[&_.ant-tabs-tab]:text-xs max-md:[&_.ant-tabs-tab+.ant-tabs-tab]:ms-0!"
+        className="mt-3! lg:mt-4!"
         activeKey={activeTab}
         onChange={setActiveTab}
-        tabBarGutter={12}
-        style={{ marginTop: 16 }}
         items={[
           {
             key: 'members',
-            label: <><span className="md:hidden">Thành viên</span><span className="max-md:hidden">Thành viên &amp; điểm hiện có</span></>,
+            label: 'Thành viên & điểm hiện có',
             children: (
               <>
                 {/* Tìm kiếm + bộ lọc chỉ áp dụng cho bảng thành viên — đặt trong tab, không để trên card hạng */}
-                <div className="mb-3 grid grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)] gap-2 md:flex md:flex-wrap md:justify-end">
+                {/* docs 6.2.1: mobile → tìm kiếm 1 hàng, lọc hạng 1 hàng */}
+                <div className="toolbar-row mb-3 grid grid-cols-1 gap-2 md:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)] lg:flex lg:flex-wrap lg:justify-end">
                     <Input.Search
                       allowClear
                       placeholder="Tìm tên, SĐT, mã khách..."
                       aria-label="Tìm thành viên"
-                      className="w-full! min-w-0 md:w-[260px]!"
+                      className="w-full! min-w-0 lg:w-[260px]!"
                       value={searchText}
                       onChange={(e) => { setSearchText(e.target.value); if (!e.target.value) applySearch('') }}
                       onSearch={(v) => applySearch(v)}
@@ -497,18 +494,19 @@ export default function Points() {
                       allowClear
                       placeholder="Tất cả hạng"
                       aria-label="Lọc theo hạng"
-                      className="w-full min-w-0 md:w-[170px]"
+                      className="w-full min-w-0 lg:w-[170px]"
+                      loading={ranksQuery.isLoading}
                       value={filters.rank_id}
                       onChange={(value) => { setFilters((current) => ({ ...current, rank_id: value ?? undefined })); setPage(1) }}
                       options={ranks.map((rank) => ({ value: rank.id, label: rank.name }))}
                     />
                 </div>
-                <Table
-                  className="desktop-only"
+                {!loading && (!memberProfilesQuery.isError || rows.length > 0) && <Table
+                  className="desktop-only points-tablet-table"
                   rowKey="id"
-                  loading={loading}
         dataSource={rows}
         pagination={false}
+        locale={{ emptyText: <TableEmpty description={filters.q || filters.rank_id ? 'Không có kết quả' : 'Chưa có thành viên'} /> }}
         onRow={(row) => ({
           onClick: canViewHistory ? () => setHistoryTarget(row) : undefined,
           style: canViewHistory ? { cursor: 'pointer' } : undefined,
@@ -559,56 +557,53 @@ export default function Points() {
         ].filter((column) =>
           (column.key !== 'actions' || canAdjust || canOverride || canRecalc || canViewHistory),
         )}
-      />
+      />}
       {memberProfilesQuery.isError && !rows.length ? (
         <Alert type="error" title="Không tải được danh sách thành viên" action={<Button size="small" onClick={() => void memberProfilesQuery.refetch()}>Thử lại</Button>} />
       ) : (
         <MobileCards
+          className={`points-card-list${loading ? ' points-list-loading' : ''}`}
           rows={rows}
           rowKey={(row) => row.id}
           loading={loading}
           emptyText={filters.q || filters.rank_id ? 'Không có kết quả' : 'Chưa có thành viên'}
-          renderCard={(row) => (
-            <>
-              <div className="flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="mobile-card-title">{row.full_name || row.user?.zalo_name || '—'}</div>
-                  <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
-                    {(row.phone || row.user?.phone) && <div className="mobile-card-sub">{row.phone || row.user?.phone}</div>}
-                    {memberRank(row, 'Chưa xếp hạng')}
+          renderCard={(row) => {
+            const name = row.full_name || row.user?.zalo_name || '—'
+            return (
+              <>
+                <div className="points-card-head">
+                  <span className="points-card-avatar" aria-hidden="true">
+                    {name.trim().split(/\s+/).at(-1)?.slice(0, 1).toLocaleUpperCase('vi-VN')}
+                  </span>
+                  <div className="min-w-0">
+                    <div className="mobile-card-title">{name}</div>
+                    <div className="points-card-meta">
+                      {(row.phone || row.user?.phone) && <span className="mobile-card-sub">{row.phone || row.user?.phone}</span>}
+                      {memberRank(row, 'Chưa xếp hạng')}
+                    </div>
                   </div>
+                  {mobileMemberActions.length > 0 && (
+                    <RowActionsMenu
+                      dropdownOnly
+                      ariaLabel={`Thao tác cho ${name}`}
+                      items={mobileMemberActions}
+                      onSelect={(key) => runMemberAction(row, key)}
+                    />
+                  )}
                 </div>
-                {mobileMemberActions.length > 0 && (
-                  <Select<string | null>
-                    aria-label={`Thao tác cho ${row.full_name || row.user?.zalo_name || 'thành viên'}`}
-                    placeholder="Thao tác"
-                    size="middle"
-                    className="w-32 shrink-0"
-                    styles={{ placeholder: { color: 'var(--brand-primary)' } }}
-                    popupMatchSelectWidth={false}
-                    showSearch={false}
-                    value={null}
-                    options={mobileMemberActions}
-                    onSelect={(key) => { if (key) runMemberAction(row, key) }}
-                  />
-                )}
-              </div>
-              <div className="mt-3 grid grid-cols-2 rounded-lg bg-(--brand-bg) py-2.5">
-                <div className="min-w-0 px-3">
-                  <Typography.Text type="secondary" className="block text-xs!">Điểm hiện có</Typography.Text>
-                  <div className="mt-1 wrap-anywhere text-lg leading-tight font-semibold text-(--brand-primary) tabular-nums">
-                    {Number(row.membership?.lifetime_points ?? 0).toLocaleString('vi-VN')}
+                <dl className="points-card-stats">
+                  <div>
+                    <dt>Điểm hiện có</dt>
+                    <dd className="is-primary">{Number(row.membership?.lifetime_points ?? 0).toLocaleString('vi-VN')}</dd>
                   </div>
-                </div>
-                <div className="min-w-0 border-0 border-s border-solid border-(--brand-border-soft) px-3">
-                  <Typography.Text type="secondary" className="block text-xs!">Chi tiêu năm</Typography.Text>
-                  <div className="mt-1 wrap-anywhere text-lg leading-tight font-semibold tabular-nums">
-                    {formatMoney(row.membership?.year_spent)}
+                  <div>
+                    <dt>Chi tiêu năm</dt>
+                    <dd>{formatMoney(row.membership?.year_spent)}</dd>
                   </div>
-                </div>
-              </div>
-            </>
-          )}
+                </dl>
+              </>
+            )
+          }}
         />
       )}
       <ListPagination page={page} limit={limit} total={total} onChange={setPage} noun="thành viên" />
@@ -620,11 +615,11 @@ export default function Points() {
             label: 'Lịch sử điểm',
             children: (
               <>
-      <div className="mb-3 flex flex-col gap-2 md:flex-row md:flex-wrap md:justify-end">
+      <div className="toolbar-row mb-3 grid grid-cols-2 gap-2 lg:flex lg:flex-wrap lg:justify-end">
           <Select
             placeholder="Tất cả biến động"
             aria-label="Lọc theo loại biến động"
-            className="w-full md:w-[170px]"
+            className="w-full min-w-0 lg:w-[170px]"
             allowClear
             value={historyDirection || undefined}
             onChange={(v) => { setHistoryDirection((v as 'plus' | 'minus' | undefined) ?? ''); setHistoryPage(1) }}
@@ -636,7 +631,8 @@ export default function Points() {
           <Select
             placeholder="Tất cả khách hàng"
             aria-label="Lọc theo khách hàng"
-            className="w-full md:w-[260px]"
+            className="w-full min-w-0 lg:w-[260px]"
+            loading={profilesQuery.isLoading}
             allowClear
             showSearch
             optionFilterProp="label"
@@ -645,13 +641,12 @@ export default function Points() {
             options={profilesData.map((profile) => ({ value: profile.id, label: profile.full_name || profile.zalo_name || profile.phone || profile.id }))}
           />
       </div>
-      <Table<HistoryRow>
-        className="desktop-only"
+      {!historyQuery.isLoading && (!historyQuery.isError || historyRows.length > 0) && <Table<HistoryRow>
+        className="desktop-only points-tablet-table"
         rowKey="id"
-        loading={historyQuery.isLoading}
         dataSource={historyRows}
         pagination={false}
-        locale={{ emptyText: <TableEmpty description="Chưa có giao dịch điểm nào" /> }}
+        locale={{ emptyText: <TableEmpty description={historyProfileId || historyDirection ? 'Không có kết quả' : 'Chưa có giao dịch điểm nào'} /> }}
         columns={[
           {
             title: 'Khách hàng',
@@ -669,13 +664,13 @@ export default function Points() {
           },
           {
             title: 'Thời gian',
-            width: 170,
+            width: 'var(--points-history-time, 170px)',
             render: (_, row: MembershipTransaction) =>
               row.created_at ? new Date(row.created_at).toLocaleString('vi-VN') : '—',
           },
           {
             title: 'Loại',
-            width: 140,
+            width: 'var(--points-history-type, 140px)',
             render: (_, row: MembershipTransaction) => (
               <Tag color={Number(row.points_earned ?? 0) >= 0 ? 'green' : 'red'}>
                 {REF_TYPE_LABELS[row.ref_type ?? ''] ?? row.ref_type ?? '—'}
@@ -684,7 +679,7 @@ export default function Points() {
           },
           {
             title: 'Điểm',
-            width: 110,
+            width: 'var(--points-history-delta, 110px)',
             align: 'right',
             render: (_, row: MembershipTransaction) => {
               const delta = Number(row.points_earned ?? 0)
@@ -697,7 +692,7 @@ export default function Points() {
           },
           {
             title: 'Số tiền',
-            width: 140,
+            width: 'var(--points-history-amount, 140px)',
             align: 'right',
             render: (_, row: MembershipTransaction) =>
               row.amount ? `${Number(row.amount).toLocaleString('vi-VN')}đ` : '—',
@@ -716,11 +711,12 @@ export default function Points() {
             render: (reason?: string) => reason || '—',
           },
         ]}
-      />
+      />}
       {historyQuery.isError && !historyRows.length ? (
         <Alert type="error" title="Không tải được lịch sử điểm" action={<Button size="small" onClick={() => void historyQuery.refetch()}>Thử lại</Button>} />
       ) : (
         <MobileCards
+          className={`points-card-list${historyQuery.isLoading ? ' points-list-loading' : ''}`}
           rows={historyRows}
           rowKey={(row) => row.id}
           loading={historyQuery.isLoading}
@@ -730,19 +726,31 @@ export default function Points() {
             const delta = Number(row.points_earned ?? 0)
             return (
               <>
-                <div className="mobile-card-head flex-wrap">
+                <div className="points-card-head">
                   <div className="min-w-0">
                     <div className="mobile-card-title">{displayName(customer)}</div>
                     <div className="mobile-card-sub">{customer?.customer_code || customer?.phone}</div>
                   </div>
-                  <Tag className="me-0! max-w-full whitespace-normal! wrap-anywhere" color={delta >= 0 ? 'green' : 'red'}>
-                    {REF_TYPE_LABELS[row.ref_type ?? ''] ?? row.ref_type ?? '—'}
-                  </Tag>
+                  <span className={`points-card-delta${delta >= 0 ? '' : ' is-minus'}`}>
+                    {delta >= 0 ? '+' : ''}{delta.toLocaleString('vi-VN')}
+                  </span>
                 </div>
+                <dl className="points-card-stats">
+                  <div>
+                    <dt>Loại biến động</dt>
+                    <dd>
+                      <Tag className="me-0! max-w-full whitespace-normal! wrap-anywhere" color={delta >= 0 ? 'green' : 'red'}>
+                        {REF_TYPE_LABELS[row.ref_type ?? ''] ?? row.ref_type ?? '—'}
+                      </Tag>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Số tiền</dt>
+                    <dd>{row.amount ? formatMoney(row.amount) : '—'}</dd>
+                  </div>
+                </dl>
                 <div className="mobile-card-rows">
-                  <MobileCardRow label="Điểm" value={<strong style={{ color: delta >= 0 ? '#389e0d' : '#cf1322' }}>{delta >= 0 ? '+' : ''}{delta}</strong>} />
                   <MobileCardRow label="Thời gian" value={row.created_at ? new Date(row.created_at).toLocaleString('vi-VN') : '—'} />
-                  <MobileCardRow label="Số tiền" value={row.amount ? formatMoney(row.amount) : '—'} />
                   <MobileCardRow label="Mã giao dịch" value={row.trans_code || '—'} />
                   <MobileCardRow label="Lý do" value={row.reason || '—'} />
                 </div>

@@ -36,12 +36,18 @@ export const theme: ThemeConfig = {
     colorError: brandColors.danger,
     colorBorder: '#E2E8F0',
     colorBorderSecondary: '#E2E8F0',
-    borderRadius: 12,
-    borderRadiusSM: 12,
-    borderRadiusLG: 12,
+    borderRadius: 8,
+    borderRadiusSM: 8,
+    borderRadiusLG: 8,
     controlHeight: 40,
   },
   components: {
+    // Nút phẳng ở mọi bề rộng (docs/mobile-design-guide.md): bỏ bóng đổ của nút chính / mặc định / nguy hiểm
+    Button: {
+      primaryShadow: 'none',
+      defaultShadow: 'none',
+      dangerShadow: 'none',
+    },
     Layout: {
       headerHeight: 64,
       headerPadding: '0 24px',
@@ -55,12 +61,12 @@ export const theme: ThemeConfig = {
     Menu: {
       itemHeight: 44,
       itemMarginInline: 12,
-      itemBorderRadius: 12,
+      itemBorderRadius: 8,
       groupTitleFontSize: 11,
     },
     Card: {
       paddingLG: 24,
-      borderRadiusLG: 12,
+      borderRadiusLG: 8,
     },
     Table: {
       headerBg: 'var(--brand-tint)',
@@ -69,7 +75,7 @@ export const theme: ThemeConfig = {
       headerBorderRadius: 0,
       rowHoverBg: 'var(--brand-hover)',
       cellPaddingBlock: 13,
-      borderRadiusLG: 12,
+      borderRadiusLG: 8,
     },
   },
 }

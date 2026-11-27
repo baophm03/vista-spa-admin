@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { Alert, Button, Card, Checkbox, Form, Modal, Progress, Select, Space, Steps, Tag, Typography, Upload, message } from 'antd'
 import { InboxOutlined, PlayCircleOutlined, SafetyOutlined, ThunderboltOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
+import MobileUI from '@/components/base/MobileUI'
 import PageTitle from '@/components/base/PageTitle'
 import { errorMessage, pickData } from '@/api/helpers'
 import { getImportJobsAdmin, getImportJobsIdAdmin, postImportsKindAdmin } from '@/api/endpoints/imports'
@@ -534,16 +535,16 @@ export default function Imports() {
   ]
 
   return (
-    <div>
+    <MobileUI>
       <PageTitle>Nhập dữ liệu khách cũ</PageTitle>
       <Steps
         size="small"
         current={report && !report.dry_run ? 2 : report ? 1 : 0}
         items={[{ title: 'Tải file' }, { title: 'Kiểm tra dữ liệu' }, { title: 'Nhập vào hệ thống' }]}
-        style={{ marginBottom: 16 }}
+        className="mb-4! max-lg:mb-3!"
       />
 
-      <Card style={{ marginBottom: 16 }}>
+      <Card className="mb-4! max-lg:mb-3!">
         <Form form={form} layout="vertical">
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))', gap: 12, maxWidth: 760 }}>
             <Form.Item label="Đối tượng nhập" style={{ width: '100%', minWidth: 0, marginBottom: 8 }}>
@@ -620,11 +621,11 @@ export default function Imports() {
           {sourceColumns.length === 0 && fileList.length > 0 && !headersLoading && <Alert type="warning" showIcon message="Chưa đọc được tiêu đề cột trong file" style={{ marginBottom: 12 }} />}
           {customFieldDefs.some((definition) => definition.data_type === 'multiselect') && <Typography.Text type="secondary">Với trường chọn nhiều, ngăn cách các lựa chọn trong file bằng dấu chấm phẩy (;).</Typography.Text>}
           <div style={{ marginTop: 12 }}>{renderFieldMappings(mappingFields)}</div>
-          <Space style={{ marginTop: 16 }}>
-            <Button icon={<SafetyOutlined />} loading={running} onClick={() => void runImport(true)}>
+          <div className="mt-4 flex flex-wrap gap-2 max-md:grid max-md:grid-cols-2">
+            <Button loading={running} onClick={() => void runImport(true)}>
               1. Kiểm tra dữ liệu
             </Button>
-            <Button type="primary" danger icon={<PlayCircleOutlined />} disabled={!report || (report?.error_rows ?? 0) > (report?.total_rows ?? 1)} loading={running} onClick={() => {
+            <Button type="primary" danger disabled={!report || (report?.error_rows ?? 0) > (report?.total_rows ?? 1)} loading={running} onClick={() => {
               Modal.confirm({
                 title: 'Xác nhận nhập dữ liệu?',
                 content: `Sẽ nhập ${report?.valid_rows ?? 0} dòng hợp lệ. Khách được thêm mới hoặc cập nhật theo số điện thoại để tránh trùng.`,
@@ -634,12 +635,12 @@ export default function Imports() {
             }}>
               2. Nhập vào hệ thống
             </Button>
-          </Space>
+          </div>
         </Form>
       </Card>
 
       {activeJob && (
-        <Card title={`Đang xử lý nền — ${activeJob.filename}`} style={{ marginBottom: 16 }}>
+        <Card title={`Đang xử lý nền — ${activeJob.filename}`} className="mb-4! max-lg:mb-3!">
           <Progress
             percent={jobProgress?.total ? Math.round((jobProgress.processed / jobProgress.total) * 100) : 0}
             status={jobProgress?.status === 'FAILED' ? 'exception' : 'active'}
@@ -652,7 +653,7 @@ export default function Imports() {
       )}
 
       {report && (
-        <Card title={`Báo cáo — ${report.dry_run ? 'Kiểm tra dữ liệu' : 'Đã nhập vào hệ thống'}: ${report.filename ?? parsedFileName}`} style={{ marginBottom: 16 }}>
+        <Card title={`Báo cáo — ${report.dry_run ? 'Kiểm tra dữ liệu' : 'Đã nhập vào hệ thống'}: ${report.filename ?? parsedFileName}`} className="mb-4! max-lg:mb-3!">
           <Space wrap size={24} style={{ marginBottom: 12 }}>
             <Typography.Text>Tổng dòng: <b>{report.total_rows}</b></Typography.Text>
             <Typography.Text>Hợp lệ: <b style={{ color: '#389e0d' }}>{report.valid_rows}</b></Typography.Text>
@@ -700,6 +701,6 @@ export default function Imports() {
       </Card>
 
       {report && !report.dry_run && <Alert style={{ marginTop: 12 }} type="success" showIcon message="Nhập hoàn tất" description="Chạy lại cùng file sẽ cập nhật theo SĐT thay vì tạo trùng (idempotent upsert)." />}
-    </div>
+    </MobileUI>
   )
 }

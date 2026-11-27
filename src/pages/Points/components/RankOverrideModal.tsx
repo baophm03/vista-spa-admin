@@ -29,7 +29,7 @@ export default function RankOverrideModal({
       okText="Gán hạng"
       cancelText="Hủy"
     >
-      <Form form={form} layout="vertical" style={{ marginTop: 12 }}>
+      <Form form={form} layout="vertical" className="points-form mt-3">
         <Form.Item name="rank_id" label="Hạng mới" rules={[{ required: true, message: 'Chọn hạng mới' }]}>
           <Select placeholder="Chọn hạng" options={ranks.map((r) => ({ value: r.id, label: r.name }))} />
         </Form.Item>

@@ -12,6 +12,8 @@ const VIEW_OPTIONS: CalendarView[] = ['day', 'week', 'month']
 
 interface Props {
   compact?: boolean
+  labeledActions?: boolean
+  hidePeriodNavigation?: boolean
   roster?: { selected: boolean; onSelect: () => void }
   panelLabel?: string
   extra?: ReactNode
@@ -34,7 +36,7 @@ interface Props {
 /** Toolbar kiểu Google Calendar / Notion Calendar: "Hôm nay" + mũi tên + nhãn kỳ ở trái,
  *  chuyển Ngày/Tuần/Tháng dạng segmented + lọc ở phải. */
 export default function CalendarToolbar({
-  compact = false, roster, panelLabel, extra, activeFilterCount = 0, anchor, onAnchorChange, view, onViewChange, periodLabel,
+  compact = false, labeledActions = false, hidePeriodNavigation = false, roster, panelLabel, extra, activeFilterCount = 0, anchor, onAnchorChange, view, onViewChange, periodLabel,
   branches, branchFilter, onBranchChange, onRefresh, refreshing = false,
   leftPanelOpen, onToggleLeftPanel,
 }: Props) {
@@ -42,21 +44,21 @@ export default function CalendarToolbar({
     { key: 'refresh', icon: <ReloadOutlined />, label: 'Làm mới dữ liệu' },
     ...(!compact ? [{ key: 'panel', icon: <CalendarOutlined />, label: leftPanelOpen ? 'Ẩn bảng điều khiển trái' : 'Hiện bảng điều khiển trái' }] : []),
   ]
-  const iconSize = compact ? 'h-8! w-8!' : 'h-9! w-9!'
+  // Mọi control trên toolbar theo chiều cao chuẩn của theme (40px desktop, 44px <1024px) — không tự đặt height
   const shift = (amount: number) =>
     onAnchorChange(anchor.add(amount, view === 'day' ? 'day' : view === 'week' ? 'week' : 'month'))
   const branchName = branches.find((branch) => branch.id === branchFilter)?.name
   const viewOptions = VIEW_OPTIONS.map((option) => ({ value: option, label: VIEW_LABEL[option] }))
-  const compactTextButton = 'h-8! shrink-0 rounded-lg! px-2.5! text-[13px]! font-semibold! text-[var(--brand-primary)]! hover:bg-[var(--brand-tint)]!'
+  const compactTextButton = 'shrink-0 rounded-lg! px-2.5! text-[13px]! text-[var(--brand-primary)]! hover:bg-[var(--brand-tint)]!'
 
   return (
     <div className={`flex w-full flex-wrap items-center justify-between gap-x-4 ${compact ? 'gap-y-2 py-1.5' : 'gap-y-2 px-3 py-2.5 sm:px-4'}`}>
       {/* Nhóm trái: Hôm nay · ◀ ▶ · nhãn kỳ */}
-      <div className={`flex min-w-0 items-center ${compact ? 'gap-1' : 'gap-0.5'}`}>
+      {!hidePeriodNavigation && <div className={`flex min-w-0 items-center ${compact ? 'gap-1' : 'gap-0.5'}`}>
         <Button
           type="text"
           onClick={() => onAnchorChange(dayjs())}
-          className={compact ? compactTextButton : 'h-9! shrink-0 rounded-lg! px-3! font-semibold! text-[var(--brand-primary)]! hover:bg-[var(--brand-tint)]!'}
+          className={compact ? compactTextButton : 'shrink-0 rounded-lg! px-3! text-[var(--brand-primary)]! hover:bg-[var(--brand-tint)]!'}
         >
           Hôm nay
         </Button>
@@ -65,9 +67,9 @@ export default function CalendarToolbar({
             type="text"
             shape="circle"
             aria-label="Khoảng thời gian trước"
-            icon={<LeftOutlined style={{ fontSize: 13 }} />}
+            icon={<LeftOutlined />}
             onClick={() => shift(-1)}
-            className={`${iconSize} shrink-0 text-neutral-600!`}
+            className={`shrink-0 text-neutral-600!`}
           />
         </Tooltip>
         <Tooltip title="Kỳ sau">
@@ -75,18 +77,18 @@ export default function CalendarToolbar({
             type="text"
             shape="circle"
             aria-label="Khoảng thời gian sau"
-            icon={<RightOutlined style={{ fontSize: 13 }} />}
+            icon={<RightOutlined />}
             onClick={() => shift(1)}
-            className={`${iconSize} shrink-0 text-neutral-600!`}
+            className={`shrink-0 text-neutral-600!`}
           />
         </Tooltip>
         <span className={`min-w-0 text-neutral-800 ${compact ? 'ml-1 text-[13px] font-semibold leading-5 tabular-nums sm:ml-2' : 'ml-2 truncate text-[19px] font-medium tracking-tight sm:text-[21px]'}`}>
           {periodLabel ?? `Tháng ${anchor.format('M, YYYY')}`}
         </span>
-      </div>
+      </div>}
 
       {/* Nhóm phải: chuyển chế độ xem + bộ lọc + menu thêm */}
-      <div className={`flex items-center ${compact ? 'flex-wrap gap-1' : 'gap-1.5'}`}>
+      <div className={`flex items-center ${compact ? 'flex-wrap gap-1' : 'gap-1.5'} ${hidePeriodNavigation ? 'ml-auto' : ''}`}>
         {compact ? (
           <Dropdown
             trigger={['click']}
@@ -102,9 +104,9 @@ export default function CalendarToolbar({
               onClick: ({ key }) => key === 'roster' ? roster?.onSelect() : onViewChange(key as CalendarView),
             }}
           >
-            <Button type="text" aria-haspopup="menu" aria-label={'Chế độ xem: ' + (roster?.selected ? 'Bảng phân ca' : VIEW_LABEL[view])} className={`${compactTextButton} gap-1.5!`}>
+            <Button type={labeledActions ? 'default' : 'text'} aria-haspopup="menu" aria-label={'Chế độ xem: ' + (roster?.selected ? 'Bảng phân ca' : VIEW_LABEL[view])} className={labeledActions ? 'min-w-24 justify-between! rounded-lg! px-3! shadow-none!' : `${compactTextButton} gap-1.5!`}>
               {roster?.selected ? 'Bảng phân ca' : VIEW_LABEL[view]}
-              <DownOutlined aria-hidden className="text-[9px]!" />
+              <DownOutlined aria-hidden className="text-sm!" />
             </Button>
           </Dropdown>
         ) : (
@@ -125,9 +127,10 @@ export default function CalendarToolbar({
               aria-expanded={leftPanelOpen}
               onClick={onToggleLeftPanel}
               className={activeFilterCount > 0
-                ? 'h-8! gap-1.5! bg-[var(--brand-tint)]! px-2! text-[var(--brand-dark)]!'
-                : `${iconSize} text-neutral-600!`}
+                ? 'gap-1.5! bg-[var(--brand-tint)]! px-2! text-[var(--brand-dark)]!'
+                : `${labeledActions ? 'px-2!' : ''} text-neutral-600!`}
             >
+              {labeledActions && 'Bộ lọc'}
               {activeFilterCount > 0 && (
                 <span aria-hidden className="grid h-4 min-w-4 place-items-center rounded-full bg-[var(--brand-primary)] px-1 text-[10px] font-semibold leading-none text-[var(--brand-on-primary)]">
                   {activeFilterCount}
@@ -161,8 +164,8 @@ export default function CalendarToolbar({
                 aria-label="Lọc cơ sở"
                 type="text"
                 shape="circle"
-                icon={<FilterOutlined style={{ fontSize: compact ? 14 : 15 }} />}
-                className={`${iconSize} ${branchFilter ? 'bg-[var(--brand-tint)]! text-[var(--brand-primary)]!' : 'text-neutral-600!'}`}
+                icon={<FilterOutlined />}
+                className={`${branchFilter ? 'bg-[var(--brand-tint)]! text-[var(--brand-primary)]!' : 'text-neutral-600!'}`}
               />
             </Tooltip>
           </Popover>
@@ -173,12 +176,14 @@ export default function CalendarToolbar({
               <Button
                 aria-label="Làm mới dữ liệu"
                 type="text"
-                shape="circle"
+                shape={labeledActions ? 'default' : 'circle'}
                 icon={<ReloadOutlined />}
                 loading={refreshing}
                 onClick={onRefresh}
-                className={`${iconSize} shrink-0 text-neutral-600!`}
-              />
+                className={`${labeledActions ? 'px-2!' : ''} shrink-0 text-neutral-600!`}
+              >
+                {labeledActions && 'Tải lại'}
+              </Button>
             </Tooltip>
             <span role="status" className="text-xs text-neutral-600">
               {refreshing ? 'Đang cập nhật dữ liệu' : ''}
@@ -186,7 +191,7 @@ export default function CalendarToolbar({
           </div>
         ) : (
           <Dropdown menu={{ items: moreItems, onClick: ({ key }) => (key === 'refresh' ? onRefresh() : onToggleLeftPanel()) }} trigger={['click']}>
-            <Button aria-label="Thêm tùy chọn" type="text" shape="circle" icon={<MoreOutlined style={{ fontSize: 16 }} />} className={`${iconSize} shrink-0 text-neutral-600!`} />
+            <Button aria-label="Thêm tùy chọn" type="text" shape="circle" icon={<MoreOutlined />} className={`shrink-0 text-neutral-600!`} />
           </Dropdown>
         )}
         {extra && <div className="ml-2 shrink-0">{extra}</div>}

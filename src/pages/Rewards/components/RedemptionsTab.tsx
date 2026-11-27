@@ -18,6 +18,7 @@ import { useBrandDateTime } from '@/themeRuntime'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
 import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
+import RewardCardActions from './RewardCardActions'
 import { errorMessage, pickData, pickMeta } from '@/api/helpers'
 import { getGetRewardRedemptionsAdminQueryKey, useGetRewardRedemptionsAdmin, usePutRewardRedemptionsIdCancelAdmin, usePutRewardRedemptionsIdUseAdmin } from '@/api/endpoints/reward-redemptions'
 import { getGetRewardsAdminQueryKey } from '@/api/endpoints/rewards'
@@ -131,7 +132,8 @@ export default function RedemptionsTab() {
 
   return (
     <>
-      <div className="mb-3 grid grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] gap-2 md:flex md:flex-wrap">
+      {/* docs 6.2.1: mobile → tìm kiếm 1 hàng, trạng thái 1 hàng */}
+      <div className="toolbar-row mb-3 grid grid-cols-1 gap-2 md:grid-cols-[minmax(0,1fr)_200px] lg:flex lg:flex-wrap">
           <Input.Search
             allowClear
             value={customerSearchInput}
@@ -139,7 +141,7 @@ export default function RedemptionsTab() {
             onSearch={applySearch}
             aria-label="Tìm theo tên khách hàng"
             placeholder="Tìm khách hàng"
-            className="w-full! min-w-0 md:w-[260px]!"
+            className="w-full! min-w-0 lg:w-[260px]!"
           />
           <Select
             allowClear
@@ -152,23 +154,24 @@ export default function RedemptionsTab() {
           />
       </div>
       {redemptionsQuery.isError && (
-        <Alert className="mb-4" type="error" showIcon message="Không tải được lượt đổi quà" description={errorMessage(redemptionsQuery.error)} action={<Button size="small" onClick={() => void redemptionsQuery.refetch()}>Thử lại</Button>} />
+        <Alert className="mb-4! max-lg:mb-3!" type="error" showIcon message="Không tải được lượt đổi quà" description={errorMessage(redemptionsQuery.error)} action={<Button size="small" onClick={() => void redemptionsQuery.refetch()}>Thử lại</Button>} />
       )}
-      <Table<RewardRedemptionRow>
-        className="desktop-only"
-        rowKey="id" loading={loading} dataSource={redemptionsQuery.isPlaceholderData ? [] : rows}
+      {!loading && (!redemptionsQuery.isError || rows.length > 0) && <Table<RewardRedemptionRow>
+        className="desktop-only max-lg:hidden!"
+        rowKey="id" dataSource={rows}
         columns={columns}
         scroll={{ x: 1050 }}
         pagination={false}
-      />
+      />}
       {(!redemptionsQuery.isError || rows.length > 0) && (
         <MobileCards
+          className={loading ? 'rewards-list-loading' : 'rewards-tablet-cards'}
           rows={rows}
           rowKey={(row) => row.id}
           loading={loading}
           emptyText={customerSearch || statusFilter ? 'Không có kết quả' : 'Chưa có lượt đổi quà'}
           renderCard={(row) => {
-            const options = actions(row).map(({ key, label }) => ({ value: key, label }))
+            const options = actions(row)
             const status = REDEMPTION_META[row.status ?? '']
             return (
               <>
@@ -186,11 +189,8 @@ export default function RedemptionsTab() {
                   {row.customer_treatment_id && <MobileCardRow label="Gói liệu trình" value={`#${row.customer_treatment_id.slice(0, 8).toUpperCase()} · giảm ${Number(row.applied_discount_amount ?? 0).toLocaleString('vi-VN')}đ`} />}
                   {row.cancel_reason && <MobileCardRow label="Lý do hủy" value={row.cancel_reason} />}
                 </div>
-                {options.length > 0 && <div className="mobile-card-actions">
-                  <Select<string | null> aria-label="Thao tác lượt đổi" className="w-32" placeholder="Thao tác" value={null} showSearch={false} disabled={markUsedMutation.isPending}
-                    styles={{ placeholder: { color: 'var(--brand-primary)' } }}
-                    options={options} popupMatchSelectWidth={false} onSelect={(key) => { if (key) runAction(row, key) }} />
-                </div>}
+                <RewardCardActions ariaLabel="Thao tác lượt đổi" disabled={markUsedMutation.isPending}
+                  items={options} onSelect={(key) => runAction(row, key)} />
               </>
             )
           }}

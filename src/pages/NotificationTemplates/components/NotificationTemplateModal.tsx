@@ -50,7 +50,7 @@ export default function NotificationTemplateModal({
       open={Boolean(editing)}
       onCancel={onCancel}
       onOk={onSave}
-      okText="Lưu mẫu"
+      okText="Lưu"
       cancelText="Hủy"
       confirmLoading={confirmLoading}
       destroyOnHidden
@@ -62,15 +62,15 @@ export default function NotificationTemplateModal({
             <Typography.Text strong>{EVENTS.find((event) => event.key === editing.event_key)?.label ?? editing.event_key}</Typography.Text>
             <Typography.Text type="secondary"> · {CHANNELS.find((channel) => channel.key === editing.channel)?.label}</Typography.Text>
           </div>
-          <Typography.Text className="mb-2 block">Bấm vào biến để chèn tại vị trí con trỏ:</Typography.Text>
-          <Space size={[6, 6]} wrap className="mb-4">
+          <Typography.Text className="mb-2! block">Bấm vào biến để chèn tại vị trí con trỏ:</Typography.Text>
+          <Space size={[6, 6]} wrap className="mb-4! max-lg:mb-3!">
             {editing.allowed_variables.map((variable) => (
               <Button key={variable} size="small" onClick={() => insertVariable(variable)}>
                 {VARIABLE_LABELS[variable] ?? variable}
               </Button>
             ))}
           </Space>
-          <Typography.Paragraph type="secondary" className="-mt-3 mb-3 text-xs">
+          <Typography.Paragraph type="secondary" className="-mt-3! mb-3! text-xs">
             Khi gửi, hệ thống tự thay các mục này bằng thông tin thực tế. Khung xem trước bên dưới hiển thị ví dụ.
           </Typography.Paragraph>
           <Form form={form} layout="vertical">
@@ -97,8 +97,8 @@ export default function NotificationTemplateModal({
           </Form>
           <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
             <Typography.Text strong>Xem trước</Typography.Text>
-            <Typography.Title level={5} className="mb-2 mt-3">{previewTemplate(previewTitle ?? editing.title)}</Typography.Title>
-            <Typography.Paragraph className="mb-0 whitespace-pre-wrap">{previewTemplate(previewBody ?? editing.body)}</Typography.Paragraph>
+            <Typography.Title level={5} className="mb-2! mt-3!">{previewTemplate(previewTitle ?? editing.title)}</Typography.Title>
+            <Typography.Paragraph className="mb-0! whitespace-pre-wrap">{previewTemplate(previewBody ?? editing.body)}</Typography.Paragraph>
           </div>
         </>
       )}

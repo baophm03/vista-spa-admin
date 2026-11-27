@@ -1,4 +1,5 @@
-import { Alert, Button, Form, Input, Modal, Select, Space, Upload } from 'antd'
+import { Button, Form, Input, Modal, Select, Space, Upload } from 'antd'
+import InfoBanner from '@/components/base/InfoBanner'
 import { displayName } from '@/utils/displayName'
 import { FileTextOutlined, UploadOutlined } from '@ant-design/icons'
 import type { CustomerTreatment } from '@/api/models/customerTreatment'
@@ -50,11 +51,12 @@ export default function WarrantyClaimCreateModal({
       cancelText="Hủy"
       confirmLoading={submitting || uploading}
     >
-      <Alert
-        type="info" showIcon style={{ marginTop: 12 }}
-        message="Chỉ tiếp nhận bảo hành cho liệu trình đã hoàn tất và có chính sách bảo hành."
+      <InfoBanner
+        className="my-4"
+        title="Điều kiện tiếp nhận bảo hành"
+        description="Chỉ áp dụng cho liệu trình đã hoàn tất và có chính sách bảo hành."
       />
-      <Form form={form} layout="vertical" style={{ marginTop: 12 }}>
+      <Form form={form} layout="vertical" className="warranty-claim-form">
         <Form.Item name="customer_treatment_id" label="Gói liệu trình của khách" rules={[{ required: true, message: 'Chọn gói liệu trình' }]}>
           <Select
             showSearch optionFilterProp="label" loading={treatmentsLoading}

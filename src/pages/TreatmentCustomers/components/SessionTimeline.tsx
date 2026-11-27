@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Alert, Button, Col, DatePicker, Divider, Empty, Form, Input, InputNumber, Modal, Popconfirm, Row, Select, Space, Spin, Tooltip, Typography, message } from 'antd'
+import { Alert, Button, Col, DatePicker, Divider, Empty, Form, Input, InputNumber, Modal, Popconfirm, Row, Select, Space, Tooltip, Typography, message } from 'antd'
 import { DeleteOutlined, EditOutlined, RollbackOutlined } from '@ant-design/icons'
 import dayjs, { type Dayjs } from 'dayjs'
 import { errorMessage, pickData } from '@/api/helpers'
@@ -15,7 +15,7 @@ import { sessionScheduledTimestamp } from './constants'
 import { customFieldValueText } from './constants'
 import type { SessionPhoto } from '@/api/models/sessionPhoto'
 import SessionPhotos from './SessionPhotos'
-import { CellVal, SubHead, TRow } from './shared'
+import { CellVal, SubHead, TreatmentLoading, TRow } from './shared'
 /** Timeline các buổi điều trị của 1 lượt — hiển thị trong modal chi tiết */
 export default function SessionTimeline({
   ctId,
@@ -291,7 +291,7 @@ export default function SessionTimeline({
     }
   }
 
-  if (loading) return <Spin className="mx-auto my-8 block!" />
+  if (loading) return <TreatmentLoading label="Đang tải buổi điều trị" />
   if (!sessions.length) return <Empty description="Chưa có buổi nào — bấm +1 buổi ở ngoài bảng để tạo" className="py-6" />
 
   /** Admin toàn quyền; user thường chỉ bắt đầu buổi N khi mọi buổi thường < N đã hoàn tất (bảo hành ngoại lệ) */
@@ -324,7 +324,7 @@ export default function SessionTimeline({
           return (
             <div
               key={s.id}
-              className="overflow-hidden rounded-xl border border-[var(--brand-border)] bg-white"
+              className="overflow-hidden rounded-lg border border-[var(--brand-border)] bg-white"
             >
               {/* Header bảng buổi */}
               <div className="flex flex-wrap items-center gap-3 bg-[var(--brand-bg)] px-4 py-[13px]">
@@ -332,7 +332,7 @@ export default function SessionTimeline({
                   style={{
                     width: 40,
                     height: 40,
-                    borderRadius: 10,
+                    borderRadius: 8,
                     flexShrink: 0,
                     display: 'flex',
                     alignItems: 'center',
@@ -512,6 +512,7 @@ export default function SessionTimeline({
       </div>
 
       <Modal
+        className="treatment-form-modal"
         title={`Sửa buổi #${editOpen?.session_no}`}
         open={!!editOpen}
         onCancel={() => setEditOpen(null)}
@@ -522,7 +523,7 @@ export default function SessionTimeline({
       >
         <Form form={editForm} layout="vertical" className="mt-3">
           {editOpen?.appointment_id && (
-            <Typography.Text type="secondary" className="mb-3 block">
+            <Typography.Text type="secondary" className="mb-3! block">
               Buổi này đã gắn với lịch hẹn; KTV và giờ lấy theo lịch hẹn. Muốn đổi, hãy sửa ở tab Lịch hẹn.
             </Typography.Text>
           )}

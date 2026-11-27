@@ -1,7 +1,7 @@
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
 import { displayName } from '@/utils/displayName'
-import { Button, Form, Grid, Input, InputNumber, Modal, Col, Row, Select, Space, Table, Tag, Typography, message } from 'antd'
-import { DeleteOutlined, DownloadOutlined, EditOutlined, FilterOutlined, PlusOutlined, QrcodeOutlined, SearchOutlined } from '@ant-design/icons'
+import { Button, Form, Input, InputNumber, Modal, Col, Row, Select, Space, Table, Tag, Typography, message } from 'antd'
+import { DeleteOutlined, DownloadOutlined, EditOutlined, FilterOutlined, PlusOutlined, QrcodeOutlined } from '@ant-design/icons'
 import { useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import type { Dayjs } from 'dayjs'
@@ -17,21 +17,18 @@ import type { CardRank } from '@/api/models/cardRank'
 import type { Customer } from '@/api/models/customer'
 import type { CustomerCreate } from '@/api/models/customerCreate'
 import type { GetUsersCustomersAdminParams } from '@/api/models/getUsersCustomersAdminParams'
-import { deleteUsersCustomersIdAdmin, getUsersCustomersByQrAdmin, getUsersCustomersIdAdmin, getUsersCustomersIdSummaryAdmin, getGetUsersCustomersAdminQueryKey, postUsersCustomersAdmin, postUsersCustomersIdQrResetAdmin, putUsersCustomersIdAdmin, useGetUsersCustomersAdmin } from '@/api/endpoints/customers'
+import { deleteUsersCustomersIdAdmin, getUsersCustomersByQrAdmin, getUsersCustomersIdAdmin, getUsersCustomersIdSummaryAdmin, getGetUsersCustomersAdminQueryKey, postUsersCustomersAdmin, putUsersCustomersIdAdmin, useGetUsersCustomersAdmin } from '@/api/endpoints/customers'
 import { getCardRanksAdmin } from '@/api/endpoints/card-ranks'
 import { getCustomFieldDefsAdmin } from '@/api/endpoints/custom-field-defs'
-import { apiClient } from '@/api/mutator/custom-instance'
 import { downloadBlob, errorMessage, pickData } from '@/api/helpers'
 import { useCustomerProfileAccess } from '@/utils/customerProfileAccess'
+import useDesktopLayout from '@/hooks/useDesktopLayout'
 
 const CustomerQrScannerModal = lazy(() => import('./components/CustomerQrScannerModal'))
 import CustomerAvatar from './components/CustomerAvatar'
 import CustomerDetailDrawer from './components/CustomerDetailDrawer'
+import './customers.css'
 import CustomerProfileFormModal from './components/CustomerProfileFormModal'
-
-function escapeHtml(value: string) {
-  return value.replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char] ?? char)
-}
 
 type CustomerColumnKey = 'customer_code' | 'full_name' | 'phone' | 'email' | 'rank'
 
@@ -74,9 +71,6 @@ export default function Customers() {
   const [filters, setFilters] = useState<CustomerProfileListFilters>({})
   const [selected, setSelected] = useState<CustomerProfileRow | null>(null)
   const [summary, setSummary] = useState<CustomerProfileSummary | null>(null)
-  const [qrUrl, setQrUrl] = useState<string>('')
-  const [qrLoading, setQrLoading] = useState(false)
-  const [qrError, setQrError] = useState('')
   const [scannerOpen, setScannerOpen] = useState(false)
   const [qrLookupLoading, setQrLookupLoading] = useState(false)
   const [open, setOpen] = useState(false)
@@ -84,11 +78,10 @@ export default function Customers() {
   const [ranks, setRanks] = useState<CardRank[]>([])
   const [profileFieldDefs, setProfileFieldDefs] = useState<CustomFieldDefWithOptions[]>([])
   const [exporting, setExporting] = useState(false)
-  const [resettingQr, setResettingQr] = useState(false)
   const [form] = Form.useForm()
   const [filterForm] = Form.useForm()
   // Mobile (dưới breakpoint md): nút công cụ hiện chữ thay vì chỉ icon
-  const isMobile = !Grid.useBreakpoint().md
+  const useCardLayout = !useDesktopLayout()
 
   const listParams = buildListParams(filters, keyword, page, limit) as GetUsersCustomersAdminParams
   const listQuery = useGetUsersCustomersAdmin(listParams)
@@ -108,11 +101,6 @@ export default function Customers() {
   }, [searchText, keyword])
 
   useEffect(() => {
-    if (!qrUrl.startsWith('blob:')) return
-    return () => URL.revokeObjectURL(qrUrl)
-  }, [qrUrl])
-
-  useEffect(() => {
     getCardRanksAdmin()
       .then((body) => setRanks((pickData<CardRank[]>(body) ?? [])
         .filter((rank) => rank.is_active !== false)
@@ -126,29 +114,13 @@ export default function Customers() {
   const loadProfileDetails = async (profileId: string) => {
     const fresh = pickData<CustomerProfileRow>(await getUsersCustomersIdAdmin(profileId))
     setSelected(fresh)
-    setQrLoading(profileAccess.canViewQr)
-    setQrError('')
-    if (!profileAccess.canViewQr) setQrUrl('')
-    const [summaryResult, qrResult] = await Promise.allSettled([
-      getUsersCustomersIdSummaryAdmin(profileId),
-      profileAccess.canViewQr ? apiClient.get(`/users/customers/${profileId}/qr/admin`, { responseType: 'blob' }) : Promise.resolve(null),
-    ])
-    if (summaryResult.status === 'fulfilled') setSummary(pickData<CustomerProfileSummary>(summaryResult.value) ?? null)
-    else {
+    try {
+      const summary = await getUsersCustomersIdSummaryAdmin(profileId)
+      setSummary(pickData<CustomerProfileSummary>(summary) ?? null)
+    } catch (err) {
       setSummary(null)
-      message.error('Không tải được tổng hợp hồ sơ: ' + errorMessage(summaryResult.reason))
+      message.error('Kh?ng t?i ???c t?ng h?p h? s?: ' + errorMessage(err))
     }
-    if (!profileAccess.canViewQr) {
-      setQrUrl('')
-    } else if (qrResult.status === 'fulfilled' && qrResult.value) {
-      setQrUrl(URL.createObjectURL((qrResult.value as { data: Blob }).data))
-    } else {
-      setQrUrl('')
-      const error = errorMessage(qrResult.status === 'rejected' ? qrResult.reason : 'Không nhận được ảnh QR')
-      setQrError(error)
-      message.error(`Không tải được mã QR: ${error}`)
-    }
-    setQrLoading(false)
   }
 
   const refreshList = useCallback(() => {
@@ -168,7 +140,6 @@ export default function Customers() {
   const openDetail = async (row: CustomerProfileRow) => {
     setSelected(row)
     setSummary(null)
-    setQrUrl('')
     try {
       await loadProfileDetails(row.id)
     } catch (err) {
@@ -251,27 +222,6 @@ export default function Customers() {
     }
   }
 
-  const resetQr = async () => {
-    if (!selected) return
-    setResettingQr(true)
-    try {
-      await postUsersCustomersIdQrResetAdmin(selected.id)
-      setQrUrl('')
-      setQrLoading(true)
-      setQrError('')
-      const response = await apiClient.get(`/users/customers/${selected.id}/qr/admin`, { responseType: 'blob' })
-      setQrUrl(URL.createObjectURL(response.data as Blob))
-      message.success('Đã tạo lại mã QR; mã cũ không còn hiệu lực')
-    } catch (err) {
-      const error = errorMessage(err)
-      setQrError(error)
-      message.error(error)
-    } finally {
-      setQrLoading(false)
-      setResettingQr(false)
-    }
-  }
-
   const openModal = async (customer?: CustomerProfileRow) => {
     form.resetFields()
     setOpen(false)
@@ -337,53 +287,11 @@ export default function Customers() {
     }
   }
 
-  const downloadQr = () => {
-    if (!selected || !qrUrl) return
-    const anchor = document.createElement('a')
-    anchor.href = qrUrl
-    anchor.download = `${selected.customer_code}.png`
-    anchor.click()
-  }
-
-  const printQr = () => {
-    if (!selected || !qrUrl) return
-    const printWindow = window.open('', '_blank', 'popup,width=440,height=620')
-    if (!printWindow) {
-      message.error('Trình duyệt đang chặn cửa sổ in. Hãy cho phép cửa sổ bật lên rồi thử lại.')
-      return
-    }
-    const customerName = escapeHtml(displayName(selected))
-    const customerCode = escapeHtml(selected.customer_code)
-    printWindow.document.write(`<!doctype html><html lang="vi"><head><meta charset="utf-8"><title>QR ${customerCode}</title><style>
-      *{box-sizing:border-box}body{font-family:Arial,sans-serif;margin:0;padding:24px;color:#26352d}.card{width:320px;margin:0 auto;border:1px solid #dce8df;border-radius:16px;padding:22px;text-align:center}.brand{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#5b7868}.name{font-size:20px;font-weight:700;margin:10px 0 6px}.code{font-family:monospace;font-size:16px;font-weight:700}img{width:210px;height:210px;image-rendering:pixelated;margin-top:16px}@media print{body{padding:0}.card{border:0}}
-      </style></head><body><main class="card"><div class="brand">Vista</div><div class="name">${customerName}</div><div class="code">${customerCode}</div><img src="${qrUrl}" alt="QR ${customerCode}"></main><script>window.onload=()=>{setTimeout(()=>{window.focus();window.print();window.close()},150)}</script></body></html>`)
-    printWindow.document.close()
-  }
-
   const rowRankName = (row: CustomerProfileRow) => row.user?.membership?.card_rank?.name
   const activeFilterCount = Object.values(filters).filter((value) => value !== undefined && value !== '').length + (keyword ? 1 : 0)
 
-  // Nút pill mobile theo Figma "Mobile / Danh sách khách": trắng, viền hairline, radius 12, icon tím
-  const mobilePillStyle = {
-    flex: 1,
-    height: 44,
-    borderRadius: 10,
-    border: '1px solid var(--brand-border-soft)',
-    background: '#fff',
-    cursor: 'pointer',
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    fontSize: 13,
-    fontWeight: 500,
-    color: 'var(--brand-primary)',
-    padding: 0,
-  } as const
-
   const renderFilterPopover = (trigger?: React.ReactNode) => (
     <ListFilterPopover
-      iconOnly={isMobile}
       trigger={trigger}
       open={filterOpen}
       onOpenChange={openFilters}
@@ -392,6 +300,7 @@ export default function Customers() {
       onApply={applyFilters}
       onClear={clearFilters}
       columnOptions={CUSTOMER_COLUMN_OPTIONS}
+      tableBreakpoint="lg"
       draftVisibleColumns={draftVisibleColumns}
       onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as CustomerColumnKey[])}
       filterItems={(
@@ -433,7 +342,7 @@ export default function Customers() {
       <PageTitle
         subtitle="Quản lý cơ sở dữ liệu và phân hạng thành viên"
         left={
-          !isMobile ? (
+          !useCardLayout ? (
             <>
               <Input.Search
                 allowClear
@@ -459,7 +368,7 @@ export default function Customers() {
           ) : undefined
         }
         right={
-          profileAccess.canManage && !isMobile ? (
+          profileAccess.canManage && !useCardLayout ? (
             <Button type="primary" icon={<PlusOutlined />} onClick={() => void openModal()}>
               Thêm khách hàng
             </Button>
@@ -468,52 +377,51 @@ export default function Customers() {
       >
         Khách hàng
       </PageTitle>
-      {/* Toolbar mobile theo Figma: search full-width + hàng nút Quét QR / Bộ lọc / Xuất CSV */}
-      {isMobile && (
-        <div style={{ display: 'grid', gap: 12, marginBottom: 14 }}>
-          <Input
-            allowClear
-            prefix={<SearchOutlined style={{ color: '#655E71' }} />}
-            placeholder="Tìm tên, SĐT, email, mã KH"
-            value={searchText}
-            onChange={(event) => setSearchText(event.target.value)}
-            aria-label="Tìm khách hàng"
-            style={{ height: 46, borderRadius: 12 }}
-          />
-          <div style={{ display: 'flex', gap: 12 }}>
-            {profileAccess.canRead && (
-              <button type="button" style={mobilePillStyle} onClick={() => setScannerOpen(true)}>
-                <QrcodeOutlined style={{ color: 'var(--brand-primary)', fontSize: 15 }} />
-                Quét QR
-              </button>
-            )}
-            {renderFilterPopover(
-              <button type="button" style={mobilePillStyle}>
-                <FilterOutlined style={{ color: 'var(--brand-primary)', fontSize: 15 }} />
-                Bộ lọc{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
-              </button>,
-            )}
-            {profileAccess.canExport && (
-              <button type="button" aria-label="Xuất CSV" style={{ ...mobilePillStyle, flex: '0 0 46px' }} onClick={() => void downloadCsv()}>
-                <DownloadOutlined style={{ color: 'var(--brand-primary)', fontSize: 15 }} />
-              </button>
-            )}
-            {/* Nút thêm chuyển từ header xuống cùng hàng công cụ trên mobile */}
-            {profileAccess.canManage && (
-              <button
-                type="button"
-                aria-label="Thêm khách hàng"
-                style={{ ...mobilePillStyle, flex: '0 0 46px', background: 'var(--brand-primary)', borderColor: 'var(--brand-primary)', color: '#fff' }}
-                onClick={() => void openModal()}
-              >
-                <PlusOutlined style={{ fontSize: 15 }} />
-              </button>
-            )}
+      {useCardLayout && (() => {
+        // docs 6.2.1: tìm kiếm 1 hàng; N tool lẻ → Bộ lọc đứng riêng + nút tạo full width có tên,
+        // N chẵn → 2 tool 1 hàng, nút tạo thu nhỏ cuối hàng
+        const toolCount = 1 + Number(profileAccess.canRead) + Number(profileAccess.canExport)
+        const odd = toolCount % 2 === 1
+        const gridCols = !odd && profileAccess.canManage ? 'grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]' : 'grid-cols-2'
+        return (
+          <div className="customers-card-toolbar toolbar-row">
+            <Input.Search
+              allowClear
+              placeholder="Tìm tên, SĐT, email, mã KH"
+              value={searchText}
+              onChange={(event) => setSearchText(event.target.value)}
+              onSearch={() => { setKeyword(searchText.trim()); setPage(1) }}
+              aria-label="Tìm khách hàng"
+            />
+            <div className={`customers-card-tools grid gap-2 md:flex ${gridCols}`}>
+              {renderFilterPopover(
+                <Button className={`keep-label ${odd ? 'max-md:col-span-2' : ''}`} icon={<FilterOutlined />}>
+                  Bộ lọc{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
+                </Button>,
+              )}
+              {profileAccess.canRead && (
+                <Button className="keep-label" icon={<QrcodeOutlined />} loading={qrLookupLoading} onClick={() => setScannerOpen(true)}>Quét QR</Button>
+              )}
+              {profileAccess.canExport && (
+                <Button className="keep-label" icon={<DownloadOutlined />} loading={exporting} onClick={() => void downloadCsv()}>Xuất CSV</Button>
+              )}
+              {profileAccess.canManage && (
+                <Button
+                  type="primary"
+                  className={odd ? 'keep-label max-md:col-span-2' : undefined}
+                  icon={<PlusOutlined />}
+                  aria-label="Thêm khách hàng"
+                  onClick={() => void openModal()}
+                >
+                  Thêm khách hàng
+                </Button>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        )
+      })()}
       <Table<CustomerProfileRow>
-        className="desktop-only"
+        className="desktop-only max-lg:hidden!"
         rowKey="id"
         loading={loading}
         dataSource={rows}
@@ -585,17 +493,18 @@ export default function Customers() {
         )}
       />
       <MobileCards
+        className="customers-card-list"
         rows={rows}
         rowKey={(row) => row.id}
         onCardClick={profileAccess.canRead ? (row) => void openDetail(row) : undefined}
         loading={loading}
-        emptyText="Chưa có khách hàng nào"
+        emptyText="Chưa có dữ liệu"
         renderCard={(row) => (
           <>
             <div className="mobile-card-head">
-              <div className="mobile-card-title">{displayName(row)}</div>
+              {visibleColumns.includes('full_name') && <div className="mobile-card-title">{displayName(row)}</div>}
               {/* Chip mã KH bên phải tiêu đề — theo Figma "Mobile / Danh sách khách" */}
-              <span
+              {visibleColumns.includes('customer_code') && <span
                 style={{
                   flexShrink: 0,
                   padding: '4px 7px',
@@ -608,15 +517,15 @@ export default function Customers() {
                 }}
               >
                 {row.customer_code}
-              </span>
+              </span>}
             </div>
             <div className="mobile-card-rows">
-              <MobileCardRow label="Số điện thoại" value={row.phone || '—'} />
-              <MobileCardRow label="Email" value={row.email || row.user?.email || '—'} />
-              <MobileCardRow
+              {visibleColumns.includes('phone') && <MobileCardRow label="Số điện thoại" value={row.phone || '—'} />}
+              {visibleColumns.includes('email') && <MobileCardRow label="Email" value={row.email || row.user?.email || '—'} />}
+              {visibleColumns.includes('rank') && <MobileCardRow
                 label="Hạng / Tài khoản"
                 value={`${rowRankName(row) ?? '—'} / ${row.user_id ? 'Đã liên kết' : 'Chưa liên kết'}`}
-              />
+              />}
             </div>
             {(profileAccess.canManage || profileAccess.canDelete) && (
               <div className="mobile-card-actions">
@@ -641,18 +550,8 @@ export default function Customers() {
       <CustomerDetailDrawer
         selected={selected}
         summary={summary}
-        qrUrl={qrUrl}
-        qrLoading={qrLoading}
-        qrError={qrError}
         profileFieldDefs={profileFieldDefs}
-        canViewQr={profileAccess.canViewQr}
-        isAdmin={profileAccess.isAdmin}
-        canManage={profileAccess.canManage}
-        resettingQr={resettingQr}
         onClose={() => setSelected(null)}
-        onDownloadQr={downloadQr}
-        onPrintQr={printQr}
-        onResetQr={() => void resetQr()}
         onMembershipUpdated={refreshSelected}
       />
 

@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Button, Col, Form, Grid, Input, Progress, Row, Select, Table, Tag, Typography, message } from 'antd'
-import { CheckCircleOutlined, FilterOutlined, PlayCircleOutlined, PlusOutlined, SearchOutlined, TeamOutlined, WalletOutlined } from '@ant-design/icons'
+import { Alert, Button, Col, Form, Grid, Input, Progress, Row, Select, Skeleton, Table, Tag, Typography, message } from 'antd'
+import { CheckCircleOutlined, FilterOutlined, PlayCircleOutlined, PlusOutlined, TeamOutlined, WalletOutlined } from '@ant-design/icons'
 import dayjs, { type Dayjs } from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
 import StatCards, { type StatItem } from '@/components/base/StatCards'
 import MobileStatCards from '@/components/base/MobileStatCards'
 import ListPagination from '@/components/base/ListPagination'
+import TableEmpty from '@/components/base/TableEmpty'
 import ListFilterPopover from '@/components/base/ListFilterPopover'
 import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import { normalizeCustomFieldValues } from '@/components/CustomFieldFormItems'
@@ -43,6 +44,8 @@ import TreatmentAddSessionModal from './components/TreatmentAddSessionModal'
 import TreatmentPaymentModal, { type PromoTab } from './components/TreatmentPaymentModal'
 import TreatmentDetailModal from './components/TreatmentDetailModal'
 import TreatmentEditModal from './components/TreatmentEditModal'
+import { TreatmentLoading } from './components/shared'
+import './treatment-customers.css'
 import {
   FILTERS,
   HIDDEN_TREATMENT_SYSTEM_FIELDS,
@@ -89,6 +92,8 @@ export default function TreatmentCustomers({ kind = 'PACKAGE' }: { kind?: 'SINGL
   // Modal chi tiết
   const [detailTab, setDetailTab] = useState<'sessions' | 'payments' | 'points'>('sessions')
   const [detail, setDetail] = useState<CustomerTreatment | null>(null)
+  const [detailLoading, setDetailLoading] = useState(false)
+  const detailRequest = useRef(0)
   // Mobile tách popup chi tiết: 'summary' = panel tóm tắt+nút (nhẹ), 'tabs' = Buổi/TT/Điểm
   const [detailMobileSection, setDetailMobileSection] = useState<'summary' | 'tabs'>('summary')
   const [sessionsRefreshKey, setSessionsRefreshKey] = useState(0)
@@ -250,16 +255,19 @@ export default function TreatmentCustomers({ kind = 'PACKAGE' }: { kind?: 'SINGL
   }
 
   const openDetail = (row: CustomerTreatment, mobileSection: 'summary' | 'tabs' = 'summary') => {
+    const request = ++detailRequest.current
     setDetailMobileSection(mobileSection)
     setDetail(row)
+    setDetailLoading(true)
     setDetailTab('sessions')
     // Lấy chi tiết mới nhất (kèm package_service từ snapshot)
     getTreatmentCustomersIdAdmin(row.id)
       .then((response) => {
         const fresh = pickData<CustomerTreatment>(response)
-        if (fresh) setDetail((current) => (current?.id === row.id ? fresh : current))
+        if (fresh && request === detailRequest.current) setDetail((current) => (current?.id === row.id ? fresh : current))
       })
       .catch(() => undefined)
+      .finally(() => { if (request === detailRequest.current) setDetailLoading(false) })
     if (!canReadPayments) {
       setPayments([])
       setPayLoading(false)
@@ -267,9 +275,11 @@ export default function TreatmentCustomers({ kind = 'PACKAGE' }: { kind?: 'SINGL
     }
     setPayLoading(true)
     getTreatmentCustomersIdPaymentsAdmin(row.id)
-      .then((response) => setPayments((pickData<PaymentRow[] | undefined>(response) ?? []) as PaymentRow[]))
-      .catch(() => setPayments([]))
-      .finally(() => setPayLoading(false))
+      .then((response) => {
+        if (request === detailRequest.current) setPayments(pickData<PaymentRow[]>(response) ?? [])
+      })
+      .catch(() => { if (request === detailRequest.current) setPayments([]) })
+      .finally(() => { if (request === detailRequest.current) setPayLoading(false) })
   }
 
   const [searchParams, setSearchParams] = useSearchParams()
@@ -725,24 +735,6 @@ export default function TreatmentCustomers({ kind = 'PACKAGE' }: { kind?: 'SINGL
     filterForm.setFieldsValue({ status: filter, package_id: pkgFilter, branch_id: branchFilter })
   }
 
-  // Nút pill mobile theo Figma "Mobile / Danh sách khách": trắng, viền hairline, radius 10, icon tím
-  const mobilePillStyle = {
-    flex: 1,
-    height: 44,
-    borderRadius: 10,
-    border: '1px solid var(--brand-border-soft)',
-    background: '#fff',
-    cursor: 'pointer',
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    fontSize: 13,
-    fontWeight: 500,
-    color: 'var(--brand-primary)',
-    padding: 0,
-  } as const
-
   const renderFilterPopover = (trigger?: ReactNode) => (
     <ListFilterPopover
       iconOnly={isMobile}
@@ -803,12 +795,18 @@ export default function TreatmentCustomers({ kind = 'PACKAGE' }: { kind?: 'SINGL
 
   return (
     <>
-      {/* Thống kê đầu trang — cùng số liệu với rows đã tải (limit 500), thay hàng Card/Statistic cũ */}
-      <StatCards items={statItems} />
-      {/* Bản compact 2×2 cho mobile — component theo Figma "Vista Admin / Chỉ số liệu trình" */}
-      <MobileStatCards items={statItems} loading={treatmentsQuery.isLoading} />
-
       <PageTitle
+        className="treatment-customers-title"
+        summary={(
+          <>
+            <div className="desktop-only">
+              <StatCards items={treatmentsQuery.isLoading ? statItems.map((item) => ({
+                ...item, value: <Skeleton.Input active size="small" />,
+              })) : statItems} />
+            </div>
+            <MobileStatCards items={statItems} loading={treatmentsQuery.isLoading} />
+          </>
+        )}
         subtitle={isSingle ? 'Khách hàng đăng ký dịch vụ lẻ' : 'Khách hàng đang thực hiện dịch vụ'}
         left={
           !isMobile ? (
@@ -816,6 +814,7 @@ export default function TreatmentCustomers({ kind = 'PACKAGE' }: { kind?: 'SINGL
               <Input.Search
                 allowClear
                 placeholder="Tìm tên hoặc SĐT khách hàng"
+                aria-label="Tìm khách hàng"
                 className="w-[260px]! max-w-[min(260px,46vw)] min-w-[140px]"
                 value={searchInput}
                 onChange={(event) => { setSearchInput(event.target.value); if (!event.target.value) applySearch('') }}
@@ -826,6 +825,8 @@ export default function TreatmentCustomers({ kind = 'PACKAGE' }: { kind?: 'SINGL
                 showSearch
                 optionFilterProp="label"
                 placeholder={isSingle ? 'Tất cả dịch vụ lẻ' : 'Tất cả liệu trình'}
+                aria-label={isSingle ? 'Lọc theo dịch vụ lẻ' : 'Lọc theo liệu trình'}
+                loading={packagesQuery.isLoading}
                 style={{ minWidth: 160 }}
                 value={pkgFilter}
                 onChange={(value) => { setPkgFilter(value); setPage(1) }}
@@ -833,6 +834,7 @@ export default function TreatmentCustomers({ kind = 'PACKAGE' }: { kind?: 'SINGL
               />
               <Select
                 placeholder="Trạng thái"
+                aria-label="Lọc theo trạng thái"
                 style={{ width: 150 }}
                 value={filter}
                 onChange={(value) => { setFilter(value); setPage(1) }}
@@ -843,6 +845,8 @@ export default function TreatmentCustomers({ kind = 'PACKAGE' }: { kind?: 'SINGL
                 showSearch
                 optionFilterProp="label"
                 placeholder="Tất cả cơ sở"
+                aria-label="Lọc theo cơ sở"
+                loading={branchesQuery.isLoading}
                 style={{ width: 160 }}
                 value={branchFilter}
                 onChange={(value) => { setBranchFilter(value); setPage(1) }}
@@ -854,8 +858,8 @@ export default function TreatmentCustomers({ kind = 'PACKAGE' }: { kind?: 'SINGL
         right={
           !isMobile ? (
             <Can I="UPDATE" a="CUSTOMER">
-              <Button type="primary" icon={<PlusOutlined />} onClick={() => openCreateModal()}>
-                {isSingle ? 'Thêm khách dịch vụ lẻ' : 'Thêm khách vào liệu trình'}
+              <Button type="primary" icon={<PlusOutlined />} aria-label={isSingle ? 'Thêm khách dịch vụ lẻ' : 'Thêm khách vào liệu trình'} onClick={() => openCreateModal()}>
+                <span className="md:max-lg:hidden">{isSingle ? 'Thêm khách dịch vụ lẻ' : 'Thêm khách vào liệu trình'}</span>
               </Button>
             </Can>
           ) : undefined
@@ -863,69 +867,49 @@ export default function TreatmentCustomers({ kind = 'PACKAGE' }: { kind?: 'SINGL
       >
         {isSingle ? 'Dịch vụ lẻ khách hàng' : 'Liệu trình khách hàng'}
       </PageTitle>
-      {/* Toolbar mobile gộp 1 hàng: search co giãn + nút lọc icon + nút thêm */}
+      {/* docs 6.2.1: mobile → [Tìm] / [Bộ lọc][+] */}
       {isMobile && (
-        <div style={{ display: 'flex', gap: 10, marginBottom: 14 }}>
-          <Input
+        <div className="toolbar-row mb-3 grid grid-cols-[minmax(0,1fr)_auto] gap-2">
+          <Input.Search
             allowClear
-            prefix={<SearchOutlined style={{ color: '#655E71' }} />}
             placeholder="Tìm tên hoặc SĐT khách hàng"
             value={searchInput}
             onChange={(event) => setSearchInput(event.target.value)}
             aria-label="Tìm khách hàng"
-            style={{ flex: 1, minWidth: 0, height: 44, borderRadius: 12 }}
+            className="col-span-full"
           />
           {renderFilterPopover(
-            <button
-              type="button"
-              aria-label="Bộ lọc"
-              style={{ ...mobilePillStyle, flex: '0 0 44px', position: 'relative' }}
-            >
-              <FilterOutlined style={{ color: 'var(--brand-primary)', fontSize: 15 }} />
-              {activeFilterCount > 0 && (
-                <span
-                  aria-hidden
-                  style={{
-                    position: 'absolute',
-                    top: -5,
-                    right: -5,
-                    minWidth: 16,
-                    height: 16,
-                    borderRadius: 8,
-                    background: 'var(--brand-primary)',
-                    color: '#fff',
-                    fontSize: 10,
-                    fontWeight: 600,
-                    lineHeight: '16px',
-                    textAlign: 'center',
-                    padding: '0 4px',
-                  }}
-                >
-                  {activeFilterCount}
-                </span>
-              )}
-            </button>,
+            <Button className="keep-label" icon={<FilterOutlined />}>
+              Bộ lọc{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
+            </Button>,
           )}
-          {/* Nút thêm chuyển từ header xuống cùng hàng công cụ trên mobile */}
           <Can I="UPDATE" a="CUSTOMER">
-            <button
-              type="button"
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
               aria-label={isSingle ? 'Thêm khách dịch vụ lẻ' : 'Thêm khách vào liệu trình'}
-              style={{ ...mobilePillStyle, flex: '0 0 44px', background: 'var(--brand-primary)', borderColor: 'var(--brand-primary)', color: '#fff' }}
               onClick={() => openCreateModal()}
             >
-              <PlusOutlined style={{ fontSize: 15 }} />
-            </button>
+              {isSingle ? 'Thêm khách dịch vụ lẻ' : 'Thêm khách vào liệu trình'}
+            </Button>
           </Can>
         </div>
       )}
 
+      {treatmentsQuery.isLoading ? (
+        <TreatmentLoading label={isSingle ? 'Đang tải khách dịch vụ lẻ' : 'Đang tải liệu trình khách hàng'} />
+      ) : treatmentsQuery.isError && !treatmentsQuery.data ? (
+        <Alert type="error" showIcon message="Không tải được danh sách khách hàng"
+          description={errorMessage(treatmentsQuery.error)}
+          action={<Button size="small" onClick={() => void treatmentsQuery.refetch()}>Thử lại</Button>} />
+      ) : (
+      <>
       <Table<CustomerTreatment>
-        className="desktop-only"
+        className="desktop-only max-lg:hidden!"
         rowKey="id"
-        loading={treatmentsQuery.isLoading}
         dataSource={rows}
         pagination={false}
+        locale={{ emptyText: <TableEmpty description={activeFilterCount ? 'Không có kết quả' : 'Chưa có dữ liệu'} /> }}
         onRow={(row) => ({ onClick: () => openDetail(row), style: { cursor: 'pointer' } })}
         columns={[
           {
@@ -1016,11 +1000,12 @@ export default function TreatmentCustomers({ kind = 'PACKAGE' }: { kind?: 'SINGL
         ]}
       />
       <MobileCards
+        className="treatment-customer-cards"
         rows={rows}
         rowKey={(row) => row.id}
         onCardClick={(row) => openDetail(row)}
-        loading={treatmentsQuery.isLoading}
-        emptyText={isSingle ? 'Chưa có khách dịch vụ lẻ' : 'Chưa có khách nào trong liệu trình'}
+        emptyText={activeFilterCount ? 'Không có kết quả' : 'Chưa có dữ liệu'}
+        emptyDescription={activeFilterCount ? 'Thử đổi từ khóa hoặc bộ lọc.' : undefined}
         renderCard={(row) => {
           const usage = row.quota_type === 'SESSIONS' ? sessionUsage(row) : null
           return (
@@ -1064,6 +1049,8 @@ export default function TreatmentCustomers({ kind = 'PACKAGE' }: { kind?: 'SINGL
         }}
       />
       <ListPagination page={page} limit={limit} total={total} onChange={setPage} noun="khách điều trị" />
+      </>
+      )}
 
       <TreatmentCreateModal
         form={createForm}
@@ -1149,6 +1136,7 @@ export default function TreatmentCustomers({ kind = 'PACKAGE' }: { kind?: 'SINGL
 
       <TreatmentDetailModal
         detail={detail}
+        detailLoading={detailLoading}
         payOpen={payOpen}
         mobileSection={detailMobileSection}
         detailTab={detailTab}
@@ -1177,7 +1165,7 @@ export default function TreatmentCustomers({ kind = 'PACKAGE' }: { kind?: 'SINGL
         refreshSelectedDetail={refreshSelectedDetail}
         onCancelTreatment={cancelTreatment}
         onEdit={openEdit}
-        onClose={() => setDetail(null)}
+        onClose={() => { detailRequest.current += 1; setDetail(null) }}
       />
 
       <TreatmentEditModal

@@ -1,12 +1,13 @@
 import { useMemo, useState } from 'react'
-import { Alert, Button, Form, Image, Input, Modal, Select, Table, Tag, Typography, message } from 'antd'
-import { CheckCircleOutlined, DeleteOutlined, EditOutlined, EnvironmentOutlined, PauseCircleOutlined, PictureOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
+import { Alert, Button, Form, Image, Input, Modal, Select, Table, Tag, Typography, message, Skeleton } from 'antd'
+import { CheckCircleOutlined, DeleteOutlined, EditOutlined, EnvironmentOutlined, PauseCircleOutlined, PictureOutlined, PlusOutlined, FilterOutlined } from '@ant-design/icons'
+import MobileUI from '@/components/base/MobileUI'
 import PageTitle from '@/components/base/PageTitle'
 import StatCards, { type StatItem } from '@/components/base/StatCards'
 import ListFilterPopover from '@/components/base/ListFilterPopover'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
-import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
+import BranchMobileCard from './BranchMobileCard'
 import TableEmpty from '@/components/base/TableEmpty'
 import { useCustomerProfileAccess } from '@/utils/customerProfileAccess'
 import { errorMessage, pickData } from '@/api/helpers'
@@ -34,6 +35,51 @@ const BRANCH_COLUMN_OPTIONS: { label: string; value: BranchColumnKey }[] = [
 ]
 
 const DEFAULT_VISIBLE_COLUMNS = BRANCH_COLUMN_OPTIONS.map((column) => column.value)
+
+
+
+function BranchMobileSkeleton() {
+  return (
+    <div className="w-full rounded-lg border border-[#E9E1EC] bg-white p-[17px]" aria-busy="true">
+      <Skeleton active title={false} paragraph={{ rows: 3 }} />
+    </div>
+  )
+}
+
+function BranchMobileEmpty({ filtered }: { filtered: boolean }) {
+  return (
+    <div className="flex h-[164px] w-full flex-col items-center justify-center gap-[9px] rounded-lg border border-[#E9E1EC] bg-white">
+      <div className="flex h-[62px] w-[62px] shrink-0 items-center justify-center rounded-[31px] bg-[#F2E5F4]">
+        <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path
+            d="M7.58333 10.8333H15.1667M7.58333 15.1667H18.4167M5.41667 5.41666H20.5833C21.158 5.41666 21.7091 5.64493 22.1154 6.05126C22.5217 6.45759 22.75 7.00869 22.75 7.58332V18.4167C22.75 18.9913 22.5217 19.5424 22.1154 19.9487C21.7091 20.3551 21.158 20.5833 20.5833 20.5833H5.41667C4.84203 20.5833 4.29093 20.3551 3.8846 19.9487C3.47827 19.5424 3.25 18.9913 3.25 18.4167V7.58332C3.25 7.00869 3.47827 6.45759 3.8846 6.05126C4.29093 5.64493 4.84203 5.41666 5.41667 5.41666Z"
+            stroke="#702176"
+            strokeWidth="1.89583"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </div>
+      <p className="m-0 text-sm font-bold text-[#282335]">{filtered ? 'Không có kết quả' : 'Chưa có dữ liệu'}</p>
+    </div>
+  )
+}
+
+function BranchMobileError({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div role="alert" className="flex w-full flex-col items-end gap-2 rounded-lg border border-[#E9E1EC] bg-[#FFF1F2] p-[13px]">
+      <p className="m-0 w-full text-sm font-bold text-[#A03A3F]">Không tải được danh sách cơ sở</p>
+      <p className="m-0 w-full text-[13px] text-[#655E71]">Vui lòng thử lại sau.</p>
+      <button
+        type="button"
+        onClick={onRetry}
+        className="flex h-11 w-fit cursor-pointer items-center justify-center gap-1.5 text-nowrap rounded-lg border border-[#E9E1EC] bg-white px-3 text-[13px] font-medium text-[#282335]"
+      >
+        Thử lại
+      </button>
+    </div>
+  )
+}
 
 export default function Branches() {
   const [searchText, setSearchText] = useState('')
@@ -80,6 +126,9 @@ export default function Branches() {
   }
 
   const visibleRows = rows
+  const total = (branchesQuery.data as unknown as { meta?: { total?: number } })?.meta?.total ?? visibleRows.length
+  const isFiltered = keyword.trim() !== '' || statusFilter !== 'all'
+
 
   const applySearch = (nextKeyword: string) => {
     setSearchText(nextKeyword)
@@ -350,29 +399,31 @@ export default function Branches() {
   )
 
   return (
-    <>
-      <StatCards items={statItems} />
+    <MobileUI>
 
       <PageTitle
+        summary={<StatCards items={statItems} />}
         subtitle="Danh sách cơ sở spa trong hệ thống"
         left={
           <>
-            <Input
+            <Input.Search
               allowClear
-              prefix={<SearchOutlined className="text-[var(--brand-text-inactive,#A9ADB2)]" />}
               placeholder="Tìm theo mã hoặc tên cơ sở"
-              className="w-[260px]!"
+              className="w-full! max-md:col-span-full md:w-[260px]!"
               value={searchText}
               onChange={(event) => {
                 setSearchText(event.target.value)
                 if (!event.target.value) applySearch('')
               }}
-              onPressEnter={() => applySearch(searchText)}
+              onSearch={() => applySearch(searchText)}
             />
+            {/* Mobile: [Bộ lọc][+] cùng 1 hàng (docs 6.2.1); từ tablet tan vào hàng toolbar */}
+            <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 max-md:col-span-full md:contents">
             <ListFilterPopover
               open={filterOpen}
               onOpenChange={openFilters}
               activeFilterCount={activeFilterCount}
+              trigger={<Button className="keep-label" icon={<FilterOutlined />}>Bộ lọc{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}</Button>}
               form={filterForm}
               onApply={applyFilters}
               onClear={clearFilters}
@@ -392,14 +443,13 @@ export default function Branches() {
                 </Form.Item>
               )}
             />
+            <Can I="CREATE" a="BRANCH">
+              <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
+                Thêm cơ sở
+              </Button>
+            </Can>
+            </div>
           </>
-        }
-        right={
-          <Can I="CREATE" a="BRANCH">
-            <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
-              Thêm cơ sở
-            </Button>
-          </Can>
         }
       >
         Cơ sở
@@ -407,7 +457,7 @@ export default function Branches() {
 
       {branchesQuery.isError && (
         <Alert
-          className="mb-4"
+          className="desktop-only mb-4! max-lg:mb-3!"
           type="error"
           showIcon
           message="Không tải được danh sách cơ sở"
@@ -428,34 +478,24 @@ export default function Branches() {
           emptyText: <TableEmpty description={keyword.trim() || statusFilter !== 'all' ? 'Không tìm thấy cơ sở phù hợp' : 'Chưa có cơ sở nào'} />,
         }}
       />
-      <MobileCards
-        rows={visibleRows}
-        rowKey={(row) => row.id}
-        loading={branchesQuery.isLoading}
-        emptyText={keyword.trim() || statusFilter !== 'all' ? 'Không tìm thấy cơ sở phù hợp' : 'Chưa có cơ sở nào'}
-        renderCard={(row) => (
-          <>
-            <div className="mobile-card-head">
-              <div>
-                <div className="mobile-card-title">{row.name}</div>
-                <div className="mobile-card-sub"><Typography.Text code style={{ fontSize: 12 }}>{row.code}</Typography.Text></div>
-              </div>
-              <Tag color={row.is_active ? 'green' : 'default'}>{row.is_active ? 'Đang hoạt động' : 'Đã ngừng'}</Tag>
-            </div>
-            <div className="mobile-card-rows">
-              <MobileCardRow label="Địa chỉ" value={row.address?.trim() || '—'} />
-              <MobileCardRow label="Số điện thoại" value={row.phone?.trim() || '—'} />
-            </div>
-          </>
+   <div className="mobile-only">
+        {branchesQuery.isLoading ? (
+          <BranchMobileSkeleton />
+        ) : branchesQuery.isError ? (
+          <BranchMobileError onRetry={() => void branchesQuery.refetch()} />
+        ) : visibleRows.length === 0 ? (
+          <BranchMobileEmpty filtered={isFiltered} />
+        ) : (
+          <div className="grid grid-cols-1 items-start gap-3 sm:grid-cols-2">
+            {visibleRows.map((row) => (
+              <BranchMobileCard key={row.id} row={row} visibleColumns={visibleColumns} />
+            ))}
+          </div>
         )}
-      />
-      <ListPagination
-        page={page}
-        limit={10}
-        total={(branchesQuery.data as unknown as { meta?: { total?: number } })?.meta?.total ?? visibleRows.length}
-        onChange={setPage}
-        noun="cơ sở"
-      />
+      </div>
+  {total > 0 && (
+        <ListPagination page={page} limit={10} total={total} onChange={setPage} noun="cơ sở" />
+      )}
 
       <BranchModal
         open={open}
@@ -468,6 +508,6 @@ export default function Branches() {
         onCancel={closeModal}
         onSubmit={() => void submit()}
       />
-    </>
+    </MobileUI>
   )
 }

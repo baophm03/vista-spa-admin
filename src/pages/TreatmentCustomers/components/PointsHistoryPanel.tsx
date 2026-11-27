@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import dayjs from 'dayjs'
-import { Empty, Statistic, Typography } from 'antd'
+import { Alert, Button, Empty, Statistic, Typography } from 'antd'
 import ResponsiveTable from '@/components/base/ResponsiveTable'
 import ListPagination from '@/components/base/ListPagination'
 import { paginateRows } from '@/utils/listTable'
-import { pickData } from '@/api/helpers'
+import { errorMessage, pickData } from '@/api/helpers'
 import { useGetUsersCustomersIdPointsAdmin } from '@/api/endpoints/customers'
 import type { MembershipTransaction } from '@/api/models/membershipTransaction'
+import { TreatmentLoading } from './shared'
 /** LY-01 — Lịch sử biến động điểm của khách (trong drawer chi tiết). */
 export default function PointsHistoryPanel({ profileId }: { profileId: string }) {
   const pointsQuery = useGetUsersCustomersIdPointsAdmin(profileId)
@@ -21,12 +22,16 @@ export default function PointsHistoryPanel({ profileId }: { profileId: string })
     REDEEM: 'Đổi tiền gói',
   }
   const rows = data?.history ?? []
+  if (pointsQuery.isLoading) return <TreatmentLoading label="Đang tải lịch sử điểm thưởng" />
+  if (pointsQuery.isError && !data) {
+    return <Alert type="error" showIcon message="Không tải được lịch sử điểm thưởng"
+      description={errorMessage(pointsQuery.error)}
+      action={<Button size="small" onClick={() => void pointsQuery.refetch()}>Thử lại</Button>} />
+  }
   return (
     <div className="pt-2">
       <Statistic title="Điểm khả dụng" value={data?.points ?? 0} className="mb-4" />
-      {pointsQuery.isLoading ? (
-        <Typography.Text type="secondary">Đang tải…</Typography.Text>
-      ) : rows.length === 0 ? (
+      {rows.length === 0 ? (
         <Empty description="Chưa có biến động điểm nào" />
       ) : (
         <>

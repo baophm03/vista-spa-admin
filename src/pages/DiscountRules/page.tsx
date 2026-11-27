@@ -12,6 +12,7 @@ import ListFilterPopover from '@/components/base/ListFilterPopover'
 import InfoBanner from '@/components/base/InfoBanner'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import MobileCards from '@/components/base/MobileCards'
+import './discount-rules.css'
 import ListPagination from '@/components/base/ListPagination'
 import { errorMessage } from '@/api/helpers'
 import { getGetDiscountRulesAdminQueryKey, useDeleteDiscountRulesIdAdmin, useGetDiscountRulesAdmin, usePostDiscountRulesAdmin, usePutDiscountRulesIdAdmin } from '@/api/endpoints/discount-rules'
@@ -309,11 +310,12 @@ export default function DiscountRules() {
       {(allowed) =>
         allowed ? (
           <>
-            <StatCards items={statItems} />
             <PageTitle
+              summary={<StatCards items={statItems} />}
               subtitle="Quyết định giảm giá và ưu đãi theo hạng thẻ"
               left={
-                <>
+                // docs 6.2.1: N = 1 + nút tạo → [Bộ lọc][+]; từ tablet tan vào hàng toolbar
+                <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 max-md:col-span-full md:contents">
                   <ListFilterPopover
                     trigger={<Button icon={<FilterOutlined />} className="keep-label">Bộ lọc</Button>}
                     open={filterOpen}
@@ -332,22 +334,21 @@ export default function DiscountRules() {
                       setVisibleColumns(DEFAULT_VISIBLE_COLUMNS)
                     }}
                     columnOptions={DISCOUNT_COLUMN_OPTIONS}
+                    tableBreakpoint="xl"
                     draftVisibleColumns={draftVisibleColumns}
                     onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as DiscountColumnKey[])}
                   />
-                </>
-              }
-              right={
-                <Can I="CREATE" a="DISCOUNT">
-                  <Button type="primary" icon={<PlusOutlined />} className="keep-label" onClick={() => openEditor()}>Thêm quy tắc</Button>
-                </Can>
+                  <Can I="CREATE" a="DISCOUNT">
+                    <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor()}>Thêm quy tắc</Button>
+                  </Can>
+                </div>
               }
             >
               Giảm giá & Ưu đãi
             </PageTitle>
             {rulesQuery.isError && (
               <Alert
-                className="mb-4" type="error" showIcon
+                className="mb-4! max-lg:mb-3!" type="error" showIcon
                 title="Không tải được quy tắc giảm giá"
                 description={errorMessage(rulesQuery.error)}
                 action={<Button size="small" onClick={() => void rulesQuery.refetch()}>Thử lại</Button>}
@@ -358,7 +359,7 @@ export default function DiscountRules() {
               title="Nhân viên chỉ được chọn mức giảm trong khoảng của quy tắc. Nếu cần áp dụng ngoài khoảng này, hãy liên hệ quản trị viên để được cấp quyền duyệt ngoại lệ. Khi kết hợp nhiều ưu đãi, gồm ưu đãi theo hạng thẻ, tổng mức giảm không được vượt giới hạn của quy tắc."
             />
             <Table<DiscountRule>
-              className="desktop-only"
+              className="desktop-only discount-rules-table"
               rowKey="id" loading={rulesQuery.isLoading} dataSource={rules} columns={columns}
               scroll={{ x: 1150 }}
               pagination={false}
@@ -368,6 +369,7 @@ export default function DiscountRules() {
               })}
             />
             <MobileCards
+              className="discount-rules-cards"
               rows={rules}
               rowKey={(row) => row.id}
               loading={rulesQuery.isLoading}

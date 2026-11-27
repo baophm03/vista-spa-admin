@@ -1,9 +1,11 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { displayName } from '@/utils/displayName'
 import {
+  Alert,
   Button,
   Form,
   Input,
+  Select,
   Table,
   Tag,
   Typography,
@@ -18,7 +20,9 @@ import PageTitle from '@/components/base/PageTitle'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
 import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
+import TableEmpty from '@/components/base/TableEmpty'
 import type { CustomerHealthRecord } from '@/api/models/customerHealthRecord'
+import type { GetHealthRecordsAdminParams } from '@/api/models/getHealthRecordsAdminParams'
 import type { CustomerTreatment } from '@/api/models/customerTreatment'
 import { getUsersCustomersIdHealthRecordsAdmin, getHealthRecordsAdmin, postUsersCustomersIdHealthRecordsAdmin, putUsersCustomersIdHealthRecordsRecordIdAdmin } from '@/api/endpoints/customers'
 import { getTreatmentCustomersAdmin } from '@/api/endpoints/treatment-customers'
@@ -31,8 +35,10 @@ import HealthRecordDrawer from './components/HealthRecordDrawer'
 import HealthRecordModal from './components/HealthRecordModal'
 import {
   currentHealth,
+  DEFAULT_SKIN_TYPE_FILTER_OPTIONS,
   displayDate,
   skinTypeCode,
+  skinTypeLabel,
   type ExaminerOption,
   type HealthRow,
   type ServiceHistoryAppointment,
@@ -40,17 +46,21 @@ import {
 } from './components/constants'
 import type { Branch } from '@/api/models'
 import { useGetBranchesAdmin } from '@/api/endpoints/branches'
+import './health-records.css'
 
- export default function HealthRecords() {
+export default function HealthRecords() {
   const [rows, setRows] = useState<HealthRow[]>([])
   const [searchText, setSearchText] = useState('')
   const [keyword, setKeyword] = useState('')
+  const [skinFilter, setSkinFilter] = useState<string>()
   const [page, setPage] = useState(1)
   const [total, setTotal] = useState(0)
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [listError, setListError] = useState('')
+  const listRequest = useRef(0)
   const [detail, setDetail] = useState<HealthRow | null>(null)
   const [history, setHistory] = useState<CustomerHealthRecord[]>([])
-  const [historyLoading, setHistoryLoading] = useState(false)
+  const [historyLoading, setHistoryLoading] = useState(true)
   const [historyError, setHistoryError] = useState(false)
   const [detailRefresh, setDetailRefresh] = useState(0)
   const [detailTreatments, setDetailTreatments] = useState<CustomerTreatment[]>([])
@@ -64,20 +74,23 @@ import { useGetBranchesAdmin } from '@/api/endpoints/branches'
   const [editingRecord, setEditingRecord] = useState<CustomerHealthRecord | null>(null)
   const [saving, setSaving] = useState(false)
   const [form] = Form.useForm()
-const branchesQuery = useGetBranchesAdmin()
-const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as Branch[], [branchesQuery.data])
-  
-
+  const branchesQuery = useGetBranchesAdmin()
+  const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as Branch[], [branchesQuery.data])
 
   const load = useCallback(async (nextPage = page, search = keyword): Promise<HealthRow[] | null> => {
+    const request = ++listRequest.current
     setLoading(true)
+    setListError('')
     try {
       // BE trả bản ghi phiếu khám mới nhất của từng khách kèm user + tìm q trên khách/nội dung phiếu
-      const latestRecords = await getHealthRecordsAdmin({
+      const params: GetHealthRecordsAdminParams & { page: number; limit: number; q?: string; skin_type?: string } = {
         page: nextPage,
         limit: 10,
         ...(search.trim() ? { q: search.trim() } : {}),
-      } as never)
+        ...(skinFilter ? { skin_type: skinFilter } : {}),
+      }
+      const latestRecords = await getHealthRecordsAdmin(params)
+      if (request !== listRequest.current) return null
       const latestList = (pickData<CustomerHealthRecord[]>(latestRecords) ?? []) as CustomerHealthRecord[]
       const nextRows = latestList.map((record) => ({
         ...((record as unknown as { user?: Record<string, unknown> }).user ?? {}),
@@ -88,15 +101,18 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
       setRows(nextRows)
       return nextRows
     } catch (err) {
-      message.error(errorMessage(err))
+      if (request === listRequest.current) setListError(errorMessage(err) || 'Vui lòng thử lại.')
       return null
     } finally {
-      setLoading(false)
+      if (request === listRequest.current) setLoading(false)
     }
-  }, [page, keyword])
+  }, [page, keyword, skinFilter])
 
   useEffect(() => {
     void load()
+  }, [load])
+
+  useEffect(() => {
     const loadExaminerOptions = async () => {
       const result = await getUsersAdmin({ currentPage: 1, pageSize: 200, has_role: true }).catch(() => null)
       const userRows = (pickData<{ rows?: Array<{ id: string; zalo_name?: string; email?: string; user_roles?: Array<{ role?: { code?: string | null; role_name?: string | null } | null }> }> }>(result)?.rows ?? [])
@@ -135,7 +151,7 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
         setPackageNames(names)
       })
       .catch(() => undefined)
-  }, [load])
+  }, [])
 
   useEffect(() => {
     if (!detail) return
@@ -237,30 +253,48 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
   return (
     <>
       <PageTitle
-        className="max-md:mb-3"
+        className="mb-3!"
         subtitle="Hồ sơ sức khỏe và chỉ số của khách hàng"
-        left={
+      >
+        Sổ sức khỏe
+      </PageTitle>
+      {/* docs 6.2.1: mobile → tìm kiếm 1 hàng, bộ lọc loại da 1 hàng */}
+      <div className="health-record-toolbar toolbar-row mb-3 grid grid-cols-1 gap-2 md:grid-cols-[minmax(0,1fr)_170px] lg:grid-cols-[minmax(220px,320px)_170px] lg:justify-end">
           <Input.Search
             aria-label="Tìm hồ sơ sức khỏe"
             allowClear
-            placeholder="Tìm khách, SĐT, tình trạng da..."
-            className="w-full! min-w-0 md:w-[260px]!"
+            placeholder="Tìm khách, SĐT, mã khách hoặc tình trạng da"
+            className="min-w-0"
             value={searchText}
             onChange={(e) => { setSearchText(e.target.value); if (!e.target.value) applySearch('') }}
             onSearch={(v) => applySearch(v)}
           />
-        }
-      >
-        Sổ sức khỏe
-      </PageTitle>
+          <Select
+            allowClear
+            aria-label="Lọc theo loại da"
+            placeholder="Tất cả loại da"
+            loading={skinTypesLoading}
+            className="min-w-0"
+            value={skinFilter}
+            options={skinTypes.length
+              ? skinTypes.map(({ code }) => ({ value: code, label: skinTypeLabel(code, skinTypes) }))
+              : DEFAULT_SKIN_TYPE_FILTER_OPTIONS}
+            onChange={(value) => { setSkinFilter(value); setPage(1) }}
+          />
+      </div>
 
-      <Table<HealthRow>
-        className="desktop-only"
+      {listError && (
+        <Alert type="error" showIcon className="mb-4! rounded-lg! max-lg:mb-3! "
+          title="Không tải được hồ sơ sức khỏe" description={listError}
+          action={<Button size="small" onClick={() => void load()}>Thử lại</Button>} />
+      )}
+      {!loading && !listError && <Table<HealthRow>
+        className="desktop-only max-lg:hidden!"
         rowKey="id"
-        loading={loading}
         dataSource={rows}
         scroll={{ x: 900 }}
         pagination={false}
+        locale={{ emptyText: <TableEmpty description={keyword || skinFilter ? 'Không có kết quả' : 'Chưa có hồ sơ sức khỏe'} /> }}
         onRow={(row) => ({ onClick: () => setDetail(row), style: { cursor: 'pointer' } })}
         columns={[
           {
@@ -319,20 +353,21 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
             ),
           },
         ]}
-      />
-      <MobileCards
+      />}
+      {!listError && <MobileCards
+        className={loading ? 'health-records-loading' : 'health-record-cards'}
         rows={rows}
         rowKey={(row) => row.id}
         loading={loading}
-        emptyText={keyword ? 'Không có kết quả' : 'Chưa có hồ sơ sức khỏe'}
-        emptyDescription={keyword ? 'Thử tìm theo tên khách hoặc số điện thoại' : undefined}
+        emptyText={keyword || skinFilter ? 'Không có kết quả' : 'Chưa có hồ sơ sức khỏe'}
+        emptyDescription={keyword || skinFilter ? 'Thử đổi từ khóa hoặc bộ lọc.' : undefined}
         renderCard={(row) => {
           const health = currentHealth(row, skinTypes)
           return (
             <>
               <div className="mobile-card-head flex-wrap">
                 <div className="min-w-0">
-                  <div className="mobile-card-title">{row.full_name || 'Khách hàng'}</div>
+                  <div className="mobile-card-title">{displayName(row, 'Khách hàng')}</div>
                   {row.phone && <div className="mobile-card-sub">{row.phone}</div>}
                 </div>
                 {health.skin_type && (
@@ -352,8 +387,8 @@ const branches = useMemo(() => (pickData<Branch[]>(branchesQuery.data) ?? []) as
             </>
           )
         }}
-      />
-      <ListPagination page={page} limit={10} total={total} onChange={setPage} noun="hồ sơ sức khỏe" />
+      />}
+      {!loading && !listError && <ListPagination page={page} limit={10} total={total} onChange={setPage} noun="hồ sơ sức khỏe" />}
 
       <HealthRecordDrawer
         detail={detail}

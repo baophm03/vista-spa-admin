@@ -87,7 +87,7 @@ export default function CardRankModal({ open, editing, form, saving, onCancel, o
         type="info" showIcon style={{ marginTop: 12, marginBottom: 12 }}
         message={RANK_HINT}
       />
-      <Form form={form} layout="vertical">
+      <Form form={form} layout="vertical" className="points-form points-rank-form">
         <Space style={{ display: 'flex' }} align="start">
           <Form.Item
             name="code" label="Mã hạng" style={{ flex: 1 }}
@@ -137,7 +137,7 @@ export default function CardRankModal({ open, editing, form, saving, onCancel, o
         >
           Lấy màu từ ảnh thẻ
         </Button>
-        <Space style={{ display: 'flex' }} align="start">
+        <Space style={{ display: 'flex' }} align="start" className="points-rank-pricing">
           <Form.Item name="min_spent" label="Chi tiêu tối thiểu (₫)" rules={[{ required: true, message: 'Nhập ngưỡng tối thiểu' }]} style={{ flex: 1 }}>
             <InputNumber min={0} precision={0} style={{ width: '100%' }} placeholder="VD: 5000000" />
           </Form.Item>

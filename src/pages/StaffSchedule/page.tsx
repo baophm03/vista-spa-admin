@@ -3,6 +3,8 @@ import { useAbility } from '@casl/react'
 import { Alert, Tabs } from 'antd'
 import type { TabsProps } from 'antd'
 import { pickData } from '@/api/helpers'
+import MobileUI from '@/components/base/MobileUI'
+import useDesktopLayout from '@/hooks/useDesktopLayout'
 import PageTitle from '@/components/base/PageTitle'
 import { ToolbarSlotContext } from '../schedule/ToolbarSlotContext'
 import { useGetBranchesAdmin } from '@/api/endpoints/branches'
@@ -17,9 +19,12 @@ import type { ScheduleAccess, ScheduleStaff } from '../schedule/types'
 import DateScheduleTab from '../schedule/DateScheduleTab'
 import ShiftCatalogTab from '../schedule/ShiftCatalogTab'
 import DayOffTab from '../schedule/DayOffTab'
+import '../schedule/schedule-mobile.css'
 
 export default function StaffSchedule() {
   const ability = useAbility()
+  // Mobile/tablet: tab mặc định antd như /customer-data-config (vuốt ngang khi tràn)
+  const desktop = useDesktopLayout()
   const profile = useProfileStore((s) => s.profile)
   const { isAdmin, isReceptionist, isTechnician } = useCustomerProfileAccess()
   const [activeTab, setActiveTab] = useState('dates')
@@ -80,11 +85,13 @@ export default function StaffSchedule() {
   )
 
   const shared = useMemo(
-    () => ({ branches, staff, sharedError, retryShared: () => {
-      void branchesQuery.refetch()
-      if (!isOwnScheduleOnly) void staffsQuery.refetch()
-      if (!isOwnScheduleOnly && canReadStaffProfiles) void staffProfilesQuery.refetch()
-    }, access }),
+    () => ({
+      branches, staff, sharedError, retryShared: () => {
+        void branchesQuery.refetch()
+        if (!isOwnScheduleOnly) void staffsQuery.refetch()
+        if (!isOwnScheduleOnly && canReadStaffProfiles) void staffProfilesQuery.refetch()
+      }, access
+    }),
     [
       branches,
       staff,
@@ -105,34 +112,34 @@ export default function StaffSchedule() {
   ]
 
   const renderTabBar: NonNullable<TabsProps['renderTabBar']> = (props, TabNavBar) => (
-    <div className="mb-2 grid min-w-0 shrink-0! grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-1 [&_.ant-tabs-nav]:col-span-2 [&_.ant-tabs-nav]:col-start-1 [&_.ant-tabs-nav]:row-start-2 [&_.ant-tabs-nav]:mb-0! [&_.ant-tabs-nav]:min-w-0 [&_.ant-tabs-nav]:before:hidden sm:[&_.ant-tabs-nav]:col-span-1 sm:[&_.ant-tabs-nav]:col-start-2 sm:[&_.ant-tabs-nav]:row-start-1 [&_.ant-tabs-tab]:h-9 [&_.ant-tabs-tab]:px-1! [&_.ant-tabs-tab]:py-0! [&_.ant-tabs-tab]:text-[13px]!">
-      <PageTitle className="col-span-2 col-start-1 row-start-1 mb-0! sm:col-span-1" subtitle="Xếp lịch làm việc nhân viên theo từng ngày cụ thể">
+    <div className="mb-3 grid min-w-0 shrink-0! grid-cols-[minmax(0,1fr)_auto] items-center lg:mb-2 gap-x-4 gap-y-3 lg:gap-y-1 [&_.ant-tabs-nav]:col-span-2 [&_.ant-tabs-nav]:col-start-1 [&_.ant-tabs-nav]:row-start-2 [&_.ant-tabs-nav]:mb-0! [&_.ant-tabs-nav]:min-w-0 lg:[&_.ant-tabs-nav]:before:hidden lg:[&_.ant-tabs-nav]:col-span-1 lg:[&_.ant-tabs-nav]:col-start-2 lg:[&_.ant-tabs-nav]:row-start-1 lg:[&_.ant-tabs-tab]:h-9 lg:[&_.ant-tabs-tab]:px-1! lg:[&_.ant-tabs-tab]:py-0! lg:[&_.ant-tabs-tab]:text-[13px]!">
+      <PageTitle className="col-span-2 col-start-1 row-start-1 mb-0! lg:col-span-1" subtitle="Xếp lịch làm việc nhân viên theo từng ngày cụ thể">
         Lịch làm việc nhân viên
       </PageTitle>
       <TabNavBar {...props} />
-      <div ref={toolbarSlotRef} className="col-span-2 col-start-1 row-start-3 min-w-0 empty:hidden sm:row-start-2" />
+      <div ref={toolbarSlotRef} className="col-span-2 col-start-1 row-start-3 min-w-0 empty:hidden lg:row-start-2" />
     </div>
   )
   // Chiếm đúng phần còn lại của viewport (header 64px + padding Content 24/32/48px) —
   // trang không cuộn, chỉ lưới giờ cuộn trong khung (ScheduleTimeGrid tự lo overflow).
   return <>
     <ToolbarSlotContext.Provider value={toolbarSlotRef}>
-      <div className="flex h-[calc(100dvh-88px)] min-h-0 flex-col sm:h-[calc(100dvh-96px)] md:overflow-hidden lg:h-[calc(100dvh-112px)]">
-      <Tabs
-        className="staff-schedule-tabs flex! flex-1! flex-col!"
-        activeKey={activeTab}
-        onChange={(key: string) => setActiveTab(key)}
-        items={items}
-        size="small"
-        tabBarGutter={16}
-        renderTabBar={renderTabBar}
-      />
-      {!!sharedError && <Alert className="shrink-0!" style={{ marginTop: 12 }} type="warning" showIcon message="Một phần dữ liệu dùng chung chưa tải được" description={sharedError} action={<a onClick={() => {
-        void branchesQuery.refetch()
-        if (!isOwnScheduleOnly) void staffsQuery.refetch()
-        if (!isOwnScheduleOnly && canReadStaffProfiles) void staffProfilesQuery.refetch()
-      }}>Tải lại</a>} />}
-      </div>
+      <MobileUI className="flex h-[calc(100dvh-88px)] min-h-0 flex-col sm:h-[calc(100dvh-96px)] md:overflow-hidden lg:h-[calc(100dvh-112px)]">
+        <Tabs
+          className="staff-schedule-tabs flex! flex-1! flex-col!"
+          activeKey={activeTab}
+          onChange={(key: string) => setActiveTab(key)}
+          items={items}
+          size={desktop ? 'small' : 'middle'}
+          tabBarGutter={desktop ? 16 : undefined}
+          renderTabBar={renderTabBar}
+        />
+        {!!sharedError && <Alert className="shrink-0!" style={{ marginTop: 12 }} type="warning" showIcon message="Một phần dữ liệu dùng chung chưa tải được" description={sharedError} action={<a onClick={() => {
+          void branchesQuery.refetch()
+          if (!isOwnScheduleOnly) void staffsQuery.refetch()
+          if (!isOwnScheduleOnly && canReadStaffProfiles) void staffProfilesQuery.refetch()
+        }}>Tải lại</a>} />}
+      </MobileUI>
     </ToolbarSlotContext.Provider>
   </>
 }

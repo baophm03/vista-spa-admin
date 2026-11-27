@@ -35,6 +35,22 @@ export interface SkinTypeOption {
   sort_order?: number
 }
 
+const DEFAULT_SKIN_TYPE_LABELS: Record<string, string> = {
+  oily: 'Da dầu',
+  dry: 'Da khô',
+  combination: 'Da hỗn hợp',
+  sensitive: 'Da nhạy cảm',
+  normal: 'Da thường',
+  dau: 'Da dầu',
+  kho: 'Da khô',
+  hon_hop: 'Da hỗn hợp',
+}
+
+export const DEFAULT_SKIN_TYPE_FILTER_OPTIONS = ['OILY', 'DRY', 'COMBINATION', 'SENSITIVE', 'NORMAL'].map((code) => ({
+  value: code,
+  label: DEFAULT_SKIN_TYPE_LABELS[code.toLowerCase()],
+}))
+
 export type ExaminerOption = { id: string; zalo_name?: string | null; email?: string | null }
 
 export function readLegacyHealth(row: HealthRow): HealthFields {
@@ -67,6 +83,8 @@ export function skinTypeLabel(value: string | null | undefined, options: SkinTyp
     item.code.trim().toLocaleLowerCase('vi') === normalizedValue
     || item.label.trim().toLocaleLowerCase('vi') === normalizedValue,
   )
+  if (option?.label && option.label.trim().toLocaleLowerCase('vi') !== normalizedValue) return option.label
+  if (Object.hasOwn(DEFAULT_SKIN_TYPE_LABELS, normalizedValue)) return DEFAULT_SKIN_TYPE_LABELS[normalizedValue]
   return option?.label ?? value
 }
 

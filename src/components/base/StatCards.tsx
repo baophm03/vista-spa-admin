@@ -47,16 +47,15 @@ export const TONE_STYLES: Record<StatTone, { disc: string; discInk: string; circ
 
 /** Hàng card thống kê cho đầu trang danh sách — ngôn ngữ thiết kế chung với
  *  card hạng thẻ ở /points: nền trắng, đĩa icon tint theo tone, vòng tròn
- *  trang trí góc, hover nhấc nhẹ. Chỉ truyền số liệu đáng tin cậy.
- *  Layout là CSS grid auto-fit nên 4 hay 5 card cũng chia đều một hàng. */
+ *  trang trí góc, hover nhấc nhẹ. Chỉ truyền số liệu đáng tin cậy. */
 export default function StatCards({ items }: StatCardsProps) {
   if (items.length === 0) return null
   return (
     <div
       className="stat-cards"
+      data-stat-count={items.length}
       style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(205px, 1fr))',
         gap: 14,
         marginBottom: 18,
       }}

@@ -21,22 +21,43 @@
   width: 220px;
 }
 
-@media (max-width: 767px) {
-  .voucher-tabs > .ant-tabs-nav {
-    margin-bottom: 12px;
+@media (min-width: 1200px) {
+  .voucher-toolbar-search .voucher-search.voucher-customer-search {
+    width: 320px;
+    max-width: min(320px, 40vw);
+  }
+}
+
+.voucher-tablet-actions {
+  display: none;
+}
+
+@media (768px <= width < 1200px) {
+  .voucher-card-action-menu {
+    display: none;
   }
 
-  .voucher-tabs > .ant-tabs-nav .ant-tabs-nav-list {
-    width: 100%;
+  .voucher-tablet-actions {
+    display: flex;
+    gap: 6px;
   }
 
-  .voucher-tabs > .ant-tabs-nav .ant-tabs-tab {
-    flex: 1 1 0;
-    justify-content: center;
+  .voucher-tabs .stat-cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .desktop-only.voucher-table {
+    display: none;
+  }
+
+  .mobile-only.voucher-card-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .voucher-card-list > .mobile-card {
     min-width: 0;
-    margin-inline-start: 0;
-    padding: 10px 2px;
-    font-size: 12px;
   }
 
   .voucher-toolbar,
@@ -45,33 +66,75 @@
     gap: 8px;
   }
 
+  .voucher-toolbar-search,
+  .voucher-toolbar-search :is(.voucher-search, .voucher-customer-search) {
+    flex: 1;
+    min-width: 0;
+    max-width: none;
+  }
+
+  .voucher-toolbar .voucher-branch-select {
+    flex: 0 0 160px;
+    width: 160px;
+  }
+
+  .voucher-toolbar > .voucher-toolbar-button {
+    flex-shrink: 0;
+  }
+}
+
+@media (max-width: 767px) {
+  .voucher-tabs .stat-cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .voucher-tabs .stat-cards > .stat-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    padding: 8px;
+  }
+
+  .voucher-tabs .stat-cards .stat-card-disc {
+    width: 26px;
+    height: 26px;
+    font-size: 13px;
+  }
+
+  .voucher-tabs > .ant-tabs-nav {
+    margin-bottom: 12px;
+  }
+
+  /* docs 6.2.1: tìm kiếm 1 hàng; [Bộ lọc][+] */
   .voucher-toolbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
     margin-block: 0 12px;
   }
 
   .voucher-toolbar-search {
-    flex: 1;
-    min-width: 0;
+    display: contents;
   }
 
   .voucher-toolbar-search .voucher-search {
-    flex: 1;
+    grid-column: 1 / -1;
     width: 100%;
     min-width: 0;
     max-width: none;
   }
 
+  .voucher-toolbar .voucher-filter-button.ant-btn {
+    width: 100%;
+  }
+
   .voucher-toolbar .voucher-toolbar-button.ant-btn {
-    flex: 0 0 44px;
     width: 44px;
-    height: 44px;
     padding: 0;
   }
+}
 
-  .voucher-toolbar-search .voucher-search :is(.ant-input-affix-wrapper, .ant-input-search-btn) {
-    height: 44px;
-  }
-
+@media (width < 1200px) {
   .voucher-mobile-card {
     display: grid;
     min-width: 0;

@@ -10,7 +10,7 @@ export default function InfoBanner({ title, description, className }: { title: R
         display: 'flex',
         gap: 8,
         padding: '10px 12px',
-        borderRadius: 10,
+        borderRadius: 8,
         background: '#f2e5f4',
         border: '1px solid #E6DFEA',
       }}

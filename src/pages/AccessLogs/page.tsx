@@ -1,10 +1,11 @@
 import ResponsiveTable from '@/components/base/ResponsiveTable'
 import { useEffect, useMemo, useState } from 'react'
 import { Alert, Button, DatePicker, Descriptions, Form, Input, Modal, Select, Space, Spin, Tabs, Tag, Typography, message } from 'antd'
-import { ReloadOutlined, SearchOutlined } from '@ant-design/icons'
+import { FilterOutlined, ReloadOutlined } from '@ant-design/icons'
 import type { Dayjs } from 'dayjs'
 import dayjs from 'dayjs'
 
+import MobileUI from '@/components/base/MobileUI'
 import PageTitle from '@/components/base/PageTitle'
 import ListFilterPopover from '@/components/base/ListFilterPopover'
 import ListPagination from '@/components/base/ListPagination'
@@ -317,7 +318,7 @@ export default function AccessLogs() {
     : [{ label: 'Thay đổi nghiệp vụ', value: 'BUSINESS' }]
 
   return (
-    <>
+    <MobileUI>
       <PageTitle subtitle="Theo dõi thay đổi nghiệp vụ và truy cập dữ liệu nhạy cảm">
         Nhật ký
       </PageTitle>
@@ -327,17 +328,17 @@ export default function AccessLogs() {
         onChange={(key) => { setActiveCategory(key === 'ALL' ? undefined : key as Category); setPage(1) }}
         items={categoryOptions.map(({ label, value }) => ({ key: value || 'ALL', label }))}
         tabBarExtraContent={
-          <Button icon={<ReloadOutlined />} onClick={() => setRefreshKey((key) => key + 1)}>Làm mới</Button>
+          <Button aria-label="Làm mới" className="max-md:[&>span:not(.ant-btn-icon)]:hidden" icon={<ReloadOutlined />} onClick={() => setRefreshKey((key) => key + 1)}>Làm mới</Button>
         }
       />
 
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        <Input
+      <div className="toolbar-row mb-4 flex flex-wrap items-center gap-2 max-lg:mb-3 max-md:grid">
+        <Input.Search
           allowClear
-          prefix={<SearchOutlined />}
           placeholder="Tìm nhật ký..."
           value={search}
           onChange={(event) => { setSearch(event.target.value); setPage(1) }}
+          className="max-md:max-w-none!"
           style={{ flex: '1 1 170px', maxWidth: 280 }}
         />
         <ListFilterPopover
@@ -347,6 +348,7 @@ export default function AccessLogs() {
             setFiltersOpen(open)
           }}
           activeFilterCount={activeFilterCount}
+          trigger={<Button className="keep-label" icon={<FilterOutlined />}>Bộ lọc{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}</Button>}
           form={filterForm}
           onApply={(values) => {
             const dates = values.range as [Dayjs | null, Dayjs | null] | null | undefined
@@ -426,7 +428,7 @@ export default function AccessLogs() {
 
       {loadError && (
         <Alert
-          className="mb-4"
+          className="mb-4! max-lg:mb-3!"
           type="error"
           showIcon
           message="Không tải được nhật ký hệ thống"
@@ -545,6 +547,6 @@ export default function AccessLogs() {
           </Spin>
         )}
       </Modal>
-    </>
+    </MobileUI>
   )
 }

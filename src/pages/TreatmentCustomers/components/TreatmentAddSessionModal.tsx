@@ -45,12 +45,13 @@ export default function TreatmentAddSessionModal({
   const needsSessionValue = quotaType === 'VALUE'
   return (
     <Modal
+      className="treatment-form-modal"
       title="Thông tin buổi điều trị mới"
       open={open}
       onCancel={onCancel}
       onOk={onOk}
       confirmLoading={submitting}
-      okText="Tạo buổi"
+      okText="Lưu"
       cancelText="Hủy"
     >
       <Form form={form} layout="vertical" className="mt-3">

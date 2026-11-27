@@ -33,6 +33,7 @@ export default function TreatmentEditModal({
 
   return (
     <Modal
+      className="treatment-form-modal"
       title="Sửa liệu trình"
       open={open}
       onCancel={onCancel}

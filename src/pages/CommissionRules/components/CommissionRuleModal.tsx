@@ -2,6 +2,7 @@ import { Col, Form, Input, InputNumber, Modal, Row, Select, Switch, Tag, Typogra
 import type { FormInstance } from 'antd'
 import type { CommissionRule, User } from '@/api/models'
 import { PAYEE_META, RULE_TYPE_META, TYPE_ROLE_CODE, type RuleTaskType } from './constants'
+import './commission-rule-modal.css'
 
 /** Kiểu giá trị hoa hồng: % theo doanh thu hoặc số tiền cố định mỗi lần phát sinh. */
 export type RateType = 'PERCENT' | 'AMOUNT'
@@ -64,6 +65,7 @@ export default function CommissionRuleModal({
       <Form
         form={form}
         layout="vertical"
+        className="commission-rule-form"
         style={{ marginTop: 12 }}
         onValuesChange={(changed) => {
           // Hai kiểu giá trị loại trừ nhau — đổi kiểu thì xóa giá trị của kiểu kia.

@@ -23,15 +23,15 @@ export default function ListPagination({ page, limit, total, onChange, noun, hid
   const from = (current - 1) * limit + 1
   const to = Math.min(current * limit, total)
   if (isMobile) {
-    // Theo Figma "Phân trang": nút 32×32 nền #F0EBF2 không viền, radius 7,
-    // icon tím; số trang hiện tại 28×28 nền tím chữ trắng 11px.
+    // Mobile: chỉ cụm nút căn giữa (bỏ dòng "Hiển thị x – y trong n"), mọi nút cùng cỡ 36×36,
+    // cách nhau 8px, bo 8px (docs/mobile-design-guide.md); trang hiện tại nền tím chữ trắng.
     const arrowStyle = (disabled: boolean) => ({
-      width: 32,
-      height: 32,
+      width: 36,
+      height: 36,
       flexShrink: 0,
       padding: 0,
       border: 'none',
-      borderRadius: 7,
+      borderRadius: 8,
       background: '#f0ebf2',
       color: 'var(--brand-primary)',
       opacity: disabled ? 0.45 : 1,
@@ -49,14 +49,14 @@ export default function ListPagination({ page, limit, total, onChange, noun, hid
           ? [1, '…', pageCount - 2, pageCount - 1, pageCount]
           : [1, ...(current > 3 ? ['…' as const] : []), current - 1, current, current + 1, ...(current < pageCount - 2 ? ['…' as const] : []), pageCount]
     const pageBtnStyle = (active: boolean) => ({
-      minWidth: 28,
-      height: 28,
-      padding: '0 6px',
+      minWidth: 36,
+      height: 36,
+      padding: '0 8px',
       border: 'none',
-      borderRadius: 7,
+      borderRadius: 8,
       background: active ? 'var(--brand-primary)' : '#f0ebf2',
       color: active ? 'var(--brand-on-primary)' : '#282335',
-      fontSize: 11,
+      fontSize: 13,
       fontWeight: 500,
       cursor: active ? 'default' : 'pointer',
       display: 'inline-flex',
@@ -64,15 +64,14 @@ export default function ListPagination({ page, limit, total, onChange, noun, hid
       justifyContent: 'center',
     } as const)
     return (
-      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginTop: 16 }}>
-        <span style={{ flex: '1 1 110px', minWidth: 0, fontSize: 12, color: '#655E71' }}>Hiển thị {from} – {to} trong {total} {noun}</span>
-        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 4, maxWidth: '100%', marginInlineStart: 'auto' }}>
+      <nav aria-label={`Phân trang ${noun}`} style={{ display: 'flex', justifyContent: 'center', marginTop: 16 }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: 8, maxWidth: '100%' }}>
           <button type="button" aria-label="Trang trước" disabled={current <= 1} style={arrowStyle(current <= 1)} onClick={() => onChange(current - 1)}>
             <LeftOutlined />
           </button>
           {pages.map((p, i) =>
             p === '…' ? (
-              <span key={`e${i}`} style={{ minWidth: 20, textAlign: 'center', color: '#655E71', fontSize: 11 }}>…</span>
+              <span key={`e${i}`} style={{ minWidth: 20, textAlign: 'center', color: '#655E71', fontSize: 13 }}>…</span>
             ) : (
               <button key={p} type="button" aria-label={`Trang ${p}`} aria-current={p === current ? 'page' : undefined} style={pageBtnStyle(p === current)} onClick={() => p !== current && onChange(p)}>
                 {p}
@@ -83,7 +82,7 @@ export default function ListPagination({ page, limit, total, onChange, noun, hid
             <RightOutlined />
           </button>
         </div>
-      </div>
+      </nav>
     )
   }
   return (

@@ -1,4 +1,5 @@
-import { Alert, Card, Form, Grid, Input, InputNumber, Modal, Select, Space, Spin, Tabs, Typography } from 'antd'
+import { Alert, Card, Form, Grid, Input, InputNumber, Modal, Select, Space, Tabs, Typography } from 'antd'
+import { TreatmentLoading } from './shared'
 import type { FormInstance } from 'antd'
 import type { LookupItem } from '@/api/models/lookupItem'
 import type { CustomerTreatment } from '@/api/models/customerTreatment'
@@ -152,7 +153,7 @@ export default function TreatmentPaymentModal({
     ...(canReadDiscount ? [{
       key: 'discount' as const,
       label: 'Áp ưu đãi',
-      children: (
+      children: vouchersLoading ? <TreatmentLoading label="Đang tải voucher" count={1} /> : (
         <Form layout="vertical">
           <Form.Item label="Voucher khách đang có">
             <Select
@@ -165,8 +166,7 @@ export default function TreatmentPaymentModal({
                 value: voucher.voucherId,
                 label: `${voucher.title} — ${voucher.discountType === 'PERCENT' ? `Giảm ${Number(voucher.discountValue ?? 0)}%` : `Giảm ${formatMoney(voucher.discountValue)}`}`,
               }))}
-              loading={vouchersLoading}
-              notFoundContent={vouchersLoading ? 'Đang tải voucher...' : 'Khách chưa có voucher phù hợp với gói này'}
+              notFoundContent="Khách chưa có voucher phù hợp với gói này"
               onChange={(value) => onPickVoucher((value as string | undefined) ?? null)}
             />
           </Form.Item>
@@ -176,17 +176,16 @@ export default function TreatmentPaymentModal({
     ...(canRedeemPoints ? [{
       key: 'redeem' as const,
       label: 'Đổi điểm',
-      children: (
+      children: pointsLoading ? <TreatmentLoading label="Đang tải số dư điểm" count={1} /> : (
         <Form form={redeemForm} layout="vertical">
-          {pointsLoading ? <Spin size="small" /> : null}
           {pointsError ? (
-            <Alert type="error" showIcon className="mb-3" message="Không tải được số dư và cấu hình điểm" description={pointsErrorMessage} />
+            <Alert type="error" showIcon className="mb-3!" message="Không tải được số dư và cấu hình điểm" description={pointsErrorMessage} />
           ) : null}
           {pointsLoaded && !isPointsEnabled ? (
-            <Alert type="warning" showIcon className="mb-3" message="Tính năng đổi điểm đang tắt theo cấu hình hệ thống." />
+            <Alert type="warning" showIcon className="mb-3!" message="Tính năng đổi điểm đang tắt theo cấu hình hệ thống." />
           ) : null}
           {pointsLoaded && isPointsEnabled && !redemptionConfigReady ? (
-            <Alert type="error" showIcon className="mb-3" message="Cấu hình đổi điểm chưa hợp lệ. Kiểm tra giá trị điểm và các tỷ lệ giới hạn." />
+            <Alert type="error" showIcon className="mb-3!" message="Cấu hình đổi điểm chưa hợp lệ. Kiểm tra giá trị điểm và các tỷ lệ giới hạn." />
           ) : null}
           <Form.Item
             name="points"
@@ -202,7 +201,7 @@ export default function TreatmentPaymentModal({
             />
           </Form.Item>
           {pointsLoaded && isPointsEnabled && redemptionConfigReady ? (
-            <Card size="small" className="mb-3">
+            <Card size="small" className="mb-3!">
               <Space direction="vertical" size={4}>
                 <Typography.Text>Điểm hiện có: <Typography.Text strong>{redeemBalance.toLocaleString('vi-VN')}</Typography.Text></Typography.Text>
                 <Typography.Text>Tối đa lần này: <Typography.Text strong>{maxRedeemPoints?.toLocaleString('vi-VN') ?? 0} điểm</Typography.Text> ({balanceMaxRedeemPercent}% số dư và giới hạn hóa đơn)</Typography.Text>
@@ -217,7 +216,7 @@ export default function TreatmentPaymentModal({
             </Card>
           ) : null}
           {redeemValidationMessage && redeemPointsValue > 0 ? (
-            <Alert type="error" showIcon className="mb-3" message={redeemValidationMessage} />
+            <Alert type="error" showIcon className="mb-3!" message={redeemValidationMessage} />
           ) : null}
         </Form>
       ),
@@ -248,7 +247,7 @@ export default function TreatmentPaymentModal({
         boxSizing: isMobile ? 'border-box' : undefined,
         flexShrink: 0,
         background: 'var(--brand-bg, #fafafa)',
-        borderRadius: 10,
+        borderRadius: 8,
         padding: isMobile ? 12 : 16,
         alignSelf: 'flex-start',
       }}
@@ -273,6 +272,7 @@ export default function TreatmentPaymentModal({
 
   return (
     <Modal
+      className="treatment-form-modal"
       title="Ghi nhận thanh toán"
       open={open}
       onCancel={onCancel}
@@ -294,17 +294,20 @@ export default function TreatmentPaymentModal({
             />
           )}
           <Form form={form} layout="vertical">
-            {lookupError && <Alert type="error" showIcon message="Không thể ghi nhận thanh toán" description={lookupError} className="mb-4" />}
+            {lookupError && <Alert type="error" showIcon message="Không thể ghi nhận thanh toán" description={lookupError} className="mb-4! max-lg:mb-3!" />}
             <Form.Item name="amount" label="Số tiền" rules={[{ required: true, message: 'Nhập số tiền' }]}>
               <InputNumber min={1} step={50000} suffix={currencySymbol} className="w-full!" />
             </Form.Item>
-            <Form.Item name="method" label="Phương thức" rules={[{ required: true }]}>
-              <Select
-                loading={lookupLoading}
-                disabled={lookupLoading || !!lookupError || activePaymentMethods.length === 0}
-                options={activePaymentMethods.map((item) => ({ value: item.code, label: item.label }))}
-              />
-            </Form.Item>
+            {lookupLoading ? (
+              <TreatmentLoading label="Đang tải phương thức thanh toán" count={1} />
+            ) : (
+              <Form.Item name="method" label="Phương thức" rules={[{ required: true }]}>
+                <Select
+                  disabled={!!lookupError || activePaymentMethods.length === 0}
+                  options={activePaymentMethods.map((item) => ({ value: item.code, label: item.label }))}
+                />
+              </Form.Item>
+            )}
             <Form.Item name="note" label="Ghi chú">
               <Input.TextArea rows={2} />
             </Form.Item>

@@ -1,7 +1,7 @@
 import ResponsiveTable from '@/components/base/ResponsiveTable'
 import { useEffect, useMemo, useState } from 'react'
 import {
-  Alert, Button, Form, Modal, Select, Space, Tag, message } from 'antd'
+  Alert, Button, Form, Modal, Select, Tag, message } from 'antd'
 import type { TableColumnsType } from 'antd'
 import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons'
 import { useQueryClient } from '@tanstack/react-query'
@@ -185,9 +185,10 @@ export default function CommissionRulesPanel() {
     },
     {
       key: 'actions',
-      title: 'Thao tác', align: 'center' as const, width: 110, fixed: 'right',
+      title: 'Thao tác', align: 'center' as const, width: 144, fixed: 'right',
       render: (_v, row) => (
         <RowActionsMenu
+          dropdownOnly
           items={[
             { key: 'edit', icon: <EditOutlined />, label: 'Sửa' },
             { key: 'delete', icon: <DeleteOutlined />, danger: true, label: 'Xóa' },
@@ -207,10 +208,12 @@ export default function CommissionRulesPanel() {
       {(allowed) =>
         allowed ? (
           <>
-            <Space className="mb-4! w-full! justify-end" wrap>
+            {/* docs 6.2.1: N = 1 + nút tạo → [Cơ sở][+] */}
+            <div className="toolbar-row mb-4 flex items-center justify-end gap-2">
               <Select
                 showSearch optionFilterProp="label"
-                className="w-[240px]!"
+                className="min-w-0 flex-1 md:w-[240px] md:flex-none"
+                aria-label="Chọn cơ sở"
                 placeholder="Chọn cơ sở"
                 loading={branchesQuery.isLoading}
                 value={selectedBranchId}
@@ -218,22 +221,24 @@ export default function CommissionRulesPanel() {
                 options={branches.map((branch) => ({ value: branch.id, label: branch.name }))}
               />
               <Can I="RULE_MANAGE" a="COMMISSION">
-                <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>Thêm quy tắc</Button>
+                <Button type="primary" className="shrink-0" icon={<PlusOutlined />} onClick={openCreate}>Thêm quy tắc</Button>
               </Can>
-            </Space>
+            </div>
             {rulesQuery.isError && (
               <Alert
-                className="mb-4" type="error" showIcon
+                className="mb-4! max-lg:mb-3!" type="error" showIcon
                 message="Không tải được quy tắc hoa hồng"
                 description={errorMessage(rulesQuery.error)}
                 action={<Button size="small" onClick={() => void rulesQuery.refetch()}>Thử lại</Button>}
               />
             )}
-            <ResponsiveTable<CommissionRule>
-              rowKey="id" loading={rulesQuery.isLoading} dataSource={paginateRows(rules, page, 10)} columns={columns}
-              scroll={{ x: 800 }}
-              pagination={false}
-            />
+            <div className="commission-list">
+              <ResponsiveTable<CommissionRule>
+                rowKey="id" loading={rulesQuery.isLoading} dataSource={paginateRows(rules, page, 10)} columns={columns}
+                scroll={{ x: 800 }}
+                pagination={false}
+              />
+            </div>
             <ListPagination page={page} limit={10} total={rules.length} onChange={setPage} noun="quy tắc hoa hồng" />
             <CommissionRuleModal
               open={open}

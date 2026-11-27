@@ -28,7 +28,12 @@ export default function ServiceCategoryCard({ name, imageSrc, isActive, uncatego
       role="button"
       tabIndex={0}
       onClick={onOpen}
-      onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onOpen() } }}
+      onKeyDown={(event) => {
+        if (event.target === event.currentTarget && (event.key === 'Enter' || event.key === ' ')) {
+          event.preventDefault()
+          onOpen()
+        }
+      }}
     >
       <div className="service-category-card-head">
         <span className="service-category-card-image" aria-hidden>
@@ -37,10 +42,12 @@ export default function ServiceCategoryCard({ name, imageSrc, isActive, uncatego
         <div className="min-w-0 flex-1">
           <div className="service-category-card-title">
             <Typography.Text strong ellipsis={{ tooltip: name }}>{name}</Typography.Text>
-            {isActive !== undefined && (isActive ? <Tag color="green">Đang dùng</Tag> : <Tag>Đã ẩn</Tag>)}
-          </div>
-          <div className="service-category-card-meta">
-            {count} dịch vụ{hidden > 0 ? ` · ${hidden} đang ẩn` : ''}
+            <div className="service-category-card-status-row">
+              {isActive !== undefined && (isActive ? <Tag color="green">Đang dùng</Tag> : <Tag>Đã ẩn</Tag>)}
+              <span className="service-category-card-meta">
+                {count} dịch vụ{hidden > 0 ? ` · ${hidden} đang ẩn` : ''}
+              </span>
+            </div>
           </div>
         </div>
         {actions && <div onClick={(event) => event.stopPropagation()}>{actions}</div>}

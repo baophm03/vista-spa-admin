@@ -115,8 +115,8 @@ export default function Payments() {
     voidForm.resetFields()
   }
 
-  const renderVoidButton = (row: LedgerRow) => row.voided_at ? null : (
-    <Button danger icon={<StopOutlined />} className="payment-void-button" onClick={() => openVoidDialog(row)}>
+  const renderVoidButton = (row: LedgerRow, compact = false) => row.voided_at ? null : (
+    <Button type={compact ? 'text' : 'default'} danger icon={<StopOutlined />} className="payment-void-button" onClick={() => openVoidDialog(row)}>
       Hủy giao dịch
     </Button>
   )
@@ -250,37 +250,6 @@ export default function Payments() {
             )}
           />
         </div>
-        <div className="payment-filter-options">
-          <Select
-            allowClear
-            aria-label="Cơ sở"
-            showSearch
-            optionFilterProp="label"
-            placeholder="Tất cả cơ sở"
-            className="payment-filter-branch"
-            value={branchFilter}
-            onChange={(value) => { setBranchFilter(value); setPage(1) }}
-            options={branchOptions}
-          />
-          <Select
-            allowClear
-            aria-label="Thu ngân"
-            showSearch
-            optionFilterProp="label"
-            placeholder="Thu ngân"
-            className="payment-filter-staff"
-            value={staffFilter}
-            onChange={(value) => { setStaffFilter(value); setPage(1) }}
-            options={staffOptions}
-          />
-          <DatePicker.RangePicker
-            className="payment-filter-dates"
-            format="DD/MM/YYYY"
-            placeholder={['Từ ngày', 'Đến ngày']}
-            value={range ?? undefined}
-            onChange={(dates) => { setRange(dates ?? null); setPage(1) }}
-          />
-        </div>
       </div>
 
       {paymentsQuery.isError ? (
@@ -295,7 +264,7 @@ export default function Payments() {
       ) : (
         <>
           <Table<LedgerRow>
-            className="desktop-only"
+            className="desktop-only payment-history-table"
             rowKey="id"
             loading={paymentsQuery.isLoading}
             dataSource={rows}
@@ -305,6 +274,7 @@ export default function Payments() {
             locale={{ emptyText: <TableEmpty description="Chưa có giao dịch thanh toán nào khớp điều kiện" /> }}
           />
           <MobileCards
+            className="payment-history-cards"
             rows={rows}
             rowKey={(row) => row.id}
             loading={paymentsQuery.isLoading}
@@ -321,9 +291,12 @@ export default function Payments() {
                     </div>
                     <strong className="payment-card-amount">{amountLabel(row.amount)}</strong>
                   </div>
-                  <div className="mobile-card-rows">
+                  <div className="payment-card-service">
+                    <span>Gói / dịch vụ</span>
+                    <strong>{packageLabel(row)}</strong>
+                  </div>
+                  <div className="mobile-card-rows payment-card-details">
                     <MobileCardRow label="Thời gian" value={paidAtLabel(row.paid_at)} />
-                    <MobileCardRow label="Gói / dịch vụ" value={packageLabel(row)} />
                     <MobileCardRow label="Cơ sở" value={branchLabel(row)} />
                     <MobileCardRow label="Phương thức" value={methodLabel(row.method)} />
                     <MobileCardRow label="Thu ngân" value={cashierLabel(row)} />
@@ -332,7 +305,7 @@ export default function Payments() {
                   </div>
                   {canVoid && !row.voided_at && (
                     <div className="mobile-card-actions">
-                      {renderVoidButton(row)}
+                      {renderVoidButton(row, true)}
                     </div>
                   )}
                 </>

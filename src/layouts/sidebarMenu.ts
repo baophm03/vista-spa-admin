@@ -21,6 +21,7 @@ import {
   TeamOutlined,
   ThunderboltOutlined,
   UserSwitchOutlined,
+  VideoCameraOutlined,
 } from '@ant-design/icons'
 import { ability } from '@/configs/casl/ability'
 
@@ -109,7 +110,8 @@ export const menuItems: MenuItem[] = [
     label: 'Hệ thống',
     icon: null,
     children: [
-      { key: '/content-posts', icon: createElement(FileTextOutlined), label: 'Nội dung App', permission: { action: 'READ', subject: 'CONTENT' } },
+      { key: '/content-posts', icon: createElement(FileTextOutlined), label: 'Bài viết App', permission: { action: 'READ', subject: 'CONTENT' } },
+      { key: '/content-videos', icon: createElement(VideoCameraOutlined), label: 'Video App', permission: { action: 'READ', subject: 'CONTENT' } },
       { key: '/branches', icon: createElement(AppstoreOutlined), label: 'Cơ sở', permission: { action: 'READ', subject: 'BRANCH' } },
       { key: '/imports', icon: createElement(ProfileOutlined), label: 'Nhập dữ liệu khách cũ', permission: { action: 'RUN', subject: 'IMPORT' } },
       { key: '/customer-data-config', icon: createElement(ProfileOutlined), label: 'Dữ liệu khách hàng', permission: { action: 'READ', subject: 'CUSTOM_FIELD' }, hideForKtv: true, hideForReceptionist: true },

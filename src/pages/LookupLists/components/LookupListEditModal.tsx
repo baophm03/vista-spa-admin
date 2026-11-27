@@ -23,7 +23,7 @@ export default function LookupListEditModal({
       onCancel={onCancel}
       onOk={onSubmit}
       confirmLoading={confirmLoading}
-      okText="Lưu thay đổi"
+      okText="Lưu"
       cancelText="Hủy"
       destroyOnHidden
     >

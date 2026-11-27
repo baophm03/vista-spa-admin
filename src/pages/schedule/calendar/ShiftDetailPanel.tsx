@@ -78,7 +78,7 @@ export function ShiftDetailContent({
                 key={row.id}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 8,
-                  border: '1px solid var(--brand-border-soft)', borderRadius: 10, padding: '6px 8px', background: '#fff',
+                  border: '1px solid var(--brand-border-soft)', borderRadius: 8, padding: '6px 8px', background: '#fff',
                 }}
               >
                 <Avatar

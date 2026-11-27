@@ -61,12 +61,12 @@ export default function RolePermissionModal({
       }
       footer={
         <div className="flex items-center justify-end gap-2">
-          <Button className="rounded-xl" onClick={onCancel}>
+          <Button className="rounded-lg" onClick={onCancel}>
             Hủy
           </Button>
           <Button
             type="primary"
-            className="rounded-xl"
+            className="rounded-lg"
             icon={<CheckOutlined />}
             loading={savingPerm}
             disabled={permsEmpty || loading}
@@ -93,7 +93,7 @@ export default function RolePermissionModal({
         </div>
       </div>
 
-      <div className="space-y-4 rounded-2xl border border-[var(--brand-border-soft)] bg-[var(--brand-bg)] p-4">
+      <div className="space-y-4 rounded-lg border border-[var(--brand-border-soft)] bg-[var(--brand-bg)] p-4">
         {loading && (
           <div className="flex items-center justify-center py-6 text-[var(--brand-primary)]">
             <LoadingOutlined className="text-xl" />
@@ -107,7 +107,7 @@ export default function RolePermissionModal({
           const groupAll = group.rows.length > 0 && checkedCount === group.rows.length
           const groupSome = checkedCount > 0 && !groupAll
           return (
-            <div key={group.module} className="rounded-xl border border-[var(--brand-border-soft)] bg-white p-4">
+            <div key={group.module} className="rounded-lg border border-[var(--brand-border-soft)] bg-white p-4">
               <div className="flex items-center justify-between gap-4 border-b border-[var(--brand-border-soft)] pb-3">
                 <label className="flex cursor-pointer items-center gap-2.5">
                   <Checkbox

@@ -20,6 +20,7 @@ interface ListFilterPopoverProps {
   onClear: () => void
   /** Nếu truyền thì hiển thị phần chọn "Cột hiển thị" phía trên điều kiện lọc. */
   columnOptions?: ListColumnOption[]
+  tableBreakpoint?: 'md' | 'lg' | 'xl'
   draftVisibleColumns?: string[]
   onDraftVisibleColumnsChange?: (values: string[]) => void
   /** Chỉ hiện nút icon, số lọc đang bật thành badge — dùng cho thanh công cụ 1 hàng */
@@ -37,13 +38,18 @@ export default function ListFilterPopover({
   onApply,
   onClear,
   columnOptions,
+  tableBreakpoint = 'md',
   draftVisibleColumns,
   onDraftVisibleColumnsChange,
   iconOnly,
   trigger,
 }: ListFilterPopoverProps) {
   // Mobile: popover full-width theo Figma "Danh sách khách · Bộ lọc" (358px/390px)
-  const isMobile = !Grid.useBreakpoint().md
+  const screens = Grid.useBreakpoint()
+  const isMobile = !screens.md
+  const showColumns = Boolean(screens[tableBreakpoint] && columnOptions && draftVisibleColumns && onDraftVisibleColumnsChange)
+  const hasFilters = Boolean(filterItems && form)
+  if (!showColumns && !hasFilters) return null
   return (
     <Popover
       trigger="click"
@@ -55,7 +61,7 @@ export default function ListFilterPopover({
       content={(
         <div style={{ width: isMobile ? 'calc(100vw - 60px)' : 300, maxHeight: 'min(70vh, 580px)', display: 'flex', flexDirection: 'column' }}>
           <div style={{ overflowY: 'auto', paddingRight: 4 }}>
-            {columnOptions && draftVisibleColumns && onDraftVisibleColumnsChange && (
+            {showColumns && columnOptions && draftVisibleColumns && onDraftVisibleColumnsChange && (
               <>
                 <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 10 }}>
                   <Typography.Text strong style={{ fontSize: 14 }}>Cột hiển thị</Typography.Text>
@@ -70,7 +76,7 @@ export default function ListFilterPopover({
                   style={{ display: 'grid', gap: 10 }}
                   options={columnOptions}
                 />
-                <Divider style={{ margin: '14px 0' }} />
+                {hasFilters && <Divider style={{ margin: '14px 0' }} />}
               </>
             )}
             {filterItems && form && (
@@ -86,14 +92,14 @@ export default function ListFilterPopover({
             {/* Figma: Xóa lọc trắng viền chữ tím / Xác nhận tím đặc, h44 r10 trên mobile */}
             <Button
               onClick={onClear}
-              style={isMobile ? { height: 44, borderRadius: 10, color: 'var(--brand-primary)', fontWeight: 500 } : undefined}
+              style={isMobile ? { height: 44, borderRadius: 8, color: 'var(--brand-primary)', fontWeight: 500 } : undefined}
             >
               Xóa lọc
             </Button>
             <Button
               type="primary"
               onClick={() => (filterItems && form ? form.submit() : onApply({}))}
-              style={isMobile ? { height: 44, borderRadius: 10, fontWeight: 500 } : undefined}
+              style={isMobile ? { height: 44, borderRadius: 8, fontWeight: 500 } : undefined}
             >
               Xác nhận
             </Button>

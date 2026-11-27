@@ -23,7 +23,7 @@ export default function WarrantyClaimRejectModal({ form, target, submitting, onC
       cancelText="Đóng"
       confirmLoading={submitting}
     >
-      <Form form={form} layout="vertical" style={{ marginTop: 12 }}>
+      <Form form={form} layout="vertical" className="warranty-claim-form mt-3">
         <Form.Item name="reason" label="Lý do từ chối" rules={[{ required: true, message: 'Bắt buộc nhập lý do từ chối' }]}>
           <Input.TextArea rows={3} maxLength={1000} placeholder="Nhập lý do từ chối cụ thể" />
         </Form.Item>

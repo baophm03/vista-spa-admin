@@ -54,13 +54,17 @@
   min-width: 0;
 }
 
+.service-category-status {
+  width: 150px;
+}
+
 .service-category-card {
   display: flex;
   flex-direction: column;
   height: 100%;
   padding: 16px;
   border: 1px solid #ECEBEF;
-  border-radius: 14px;
+  border-radius: 8px;
   background: #fff;
   cursor: pointer;
   transition: border-color 0.15s, box-shadow 0.15s;
@@ -96,7 +100,7 @@
   width: 48px;
   height: 48px;
   overflow: hidden;
-  border-radius: 10px;
+  border-radius: 8px;
   color: var(--brand-primary);
   background: var(--brand-tint);
   font-size: 20px;
@@ -110,8 +114,16 @@
 
 .service-category-card-title {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  gap: 2px 8px;
+  min-width: 0;
+}
+
+.service-category-card-status-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   min-width: 0;
 }
 
@@ -190,51 +202,95 @@
   margin-bottom: 12px;
 }
 
-@media (max-width: 767px) {
-  .services-page .stat-cards {
-    display: grid !important;
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-    gap: 8px !important;
-    margin-bottom: 12px !important;
-  }
-
-  .services-page .stat-card {
-    padding: 8px;
-    border-radius: 12px;
-    box-shadow: none;
-  }
-
-  .services-page .stat-card-disc,
-  .services-page .stat-card-circle {
+@media (min-width: 768px) and (max-width: 1199px) {
+  .desktop-only.service-detail-table {
     display: none;
   }
 
+  .mobile-only.service-detail-cards {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .service-detail-toolbar .service-list-search {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+.service-detail-cards .mobile-card-head > .ant-tag {
+  flex-shrink: 0;
+  margin-inline-end: 0;
+}
+
+/* Tablet: 4 thẻ thống kê xếp đều một hàng (tránh lệch 3+1), toolbar giãn đều */
+@media (min-width: 768px) and (max-width: 1199px) {
+  .service-categories-page .stat-cards {
+    gap: 10px !important;
+  }
+
+  .services-page .stat-card {
+    gap: 10px;
+    padding: 14px 12px;
+    border-radius: 8px;
+  }
+
   .services-page .stat-card-label {
-    font-size: 11px;
-    white-space: normal;
+    font-size: 12px;
   }
 
   .services-page .stat-card-value {
     font-size: 20px;
-    overflow-wrap: anywhere;
   }
 
-  .services-tabs > .ant-tabs-nav :is(.ant-tabs-nav-wrap, .ant-tabs-nav-list) {
-    width: 100%;
-  }
-
-  .services-tabs > .ant-tabs-nav .ant-tabs-tab {
+  .service-category-toolbar .service-category-filters {
     flex: 1;
-    justify-content: center;
     min-width: 0;
-    min-height: 44px;
-    margin-inline: 0 !important;
-    text-align: center;
   }
 
-  .services-tabs > .ant-tabs-nav .ant-tabs-tab-btn {
-    white-space: normal;
-    font-size: 13px;
+  .service-list-toolbar.service-category-toolbar .service-list-search {
+    flex: 1;
+    width: auto;
+    min-width: 0;
+    max-width: none;
+  }
+
+  .service-category-toolbar .service-category-status {
+    flex-shrink: 0;
+    width: 130px;
+  }
+}
+
+@media (max-width: 767px) {
+  .service-category-card-head {
+    align-items: center;
+  }
+
+  .service-category-card-title .ant-typography {
+    flex-basis: 100%;
+  }
+
+  .service-category-card {
+    padding: 12px;
+  }
+
+  .service-category-card-head {
+    gap: 8px;
+  }
+
+  .service-category-card-head .service-category-card-image {
+    width: 40px;
+    height: 40px;
+  }
+
+  .service-category-card-empty,
+  .service-category-card-foot {
+    flex-wrap: wrap;
+  }
+
+  .service-category-card-link {
+    margin-inline-start: auto;
   }
 
   .service-list-toolbar {
@@ -247,17 +303,46 @@
     min-width: 0;
   }
 
-  .service-category-filters {
-    flex: 1 1 0;
-    flex-wrap: nowrap;
+  .service-list-toolbar.service-category-toolbar {
+    flex-wrap: wrap;
   }
 
-  .service-list-toolbar .ant-btn {
-    min-height: 44px;
+  .service-category-toolbar .service-category-filters {
+    display: contents;
+  }
+
+  .service-list-toolbar.service-category-toolbar .service-list-search {
+    flex: 0 0 100%;
+  }
+
+  .service-category-toolbar .service-category-status {
+    flex: 1;
+    min-width: 0;
   }
 
   .service-list-toolbar > .ant-btn {
     flex-shrink: 0;
+  }
+
+  /* docs 6.2.1: danh mục → [Tìm] / [Trạng thái][+]; dịch vụ (N = 0) → [Tìm] / [+ Thêm dịch vụ] full width */
+  .service-list-toolbar {
+    margin-bottom: 12px;
+  }
+
+  .service-list-toolbar.service-detail-toolbar {
+    flex-wrap: wrap;
+  }
+
+  .service-list-toolbar.service-detail-toolbar .service-list-search {
+    flex: 0 0 100%;
+  }
+
+  .service-list-toolbar.service-detail-toolbar > .ant-btn {
+    flex: 1 1 100%;
+  }
+
+  .service-category-card {
+    border-radius: 8px;
   }
 
   .services-page .mobile-card-head .ant-tag {
@@ -265,13 +350,6 @@
     margin-inline-end: 0;
   }
 
-  .services-page .row-actions-touch-target {
-    min-width: 44px;
-    min-height: 44px;
-    padding-inline: 8px;
-    gap: 4px;
-    font-size: 12px;
-  }
 
   .services-page .mobile-card-actions {
     flex-wrap: wrap;
@@ -283,5 +361,55 @@
 
   .services-page .service-list-error {
     flex-wrap: wrap;
+  }
+}
+
+/* Modal danh mục trên mobile: gần full-width, input/nút đủ lớn để chạm,
+   font-size 16px tránh iOS tự zoom khi focus. Chỉ áp dụng ≤767px. */
+@media (max-width: 767px) {
+  .service-category-modal {
+    top: 16px;
+    width: calc(100vw - 24px) !important;
+    max-width: calc(100vw - 24px);
+  }
+
+  .service-category-modal .ant-modal-content {
+    padding: 16px;
+  }
+
+  :is(.service-category-modal, .service-editor-modal) .ant-form .ant-form-item-row {
+    display: block;
+    margin-inline: 0 !important;
+  }
+
+  /* Override the shared mobile modal's two-column layout. */
+  :is(.service-category-modal, .service-editor-modal) .ant-form .ant-form-item-row > :is(.ant-form-item-label, .ant-form-item-control) {
+    width: 100%;
+    max-width: 100% !important;
+    padding-inline: 0 !important;
+  }
+
+  :is(.service-category-modal, .service-editor-modal) .ant-form-item-control-input-content > :is(.ant-input, .ant-input-number, .ant-input-number-affix-wrapper, .ant-select) {
+    width: 100%;
+  }
+
+  .service-category-modal .ant-input,
+  .service-category-modal .ant-input-number,
+  .service-category-modal .ant-input-number-input {
+    min-height: 40px;
+    font-size: 16px;
+  }
+
+  .service-category-modal .ant-input-number {
+    display: flex;
+    align-items: center;
+  }
+
+  .service-category-modal .ant-modal-body .ant-btn {
+    min-height: 40px;
+  }
+
+  .service-editor-modal .ant-form-item-label > label {
+    white-space: normal;
   }
 }

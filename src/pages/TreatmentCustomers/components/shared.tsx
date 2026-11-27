@@ -1,4 +1,17 @@
 import type { ReactNode } from 'react'
+import { Skeleton } from 'antd'
+
+export function TreatmentLoading({ label, count = 3 }: { label: string; count?: number }) {
+  return (
+    <div role="status" aria-busy="true" aria-label={label} className="grid gap-2">
+      {Array.from({ length: count }, (_, index) => (
+        <div key={index} aria-hidden="true" className="mobile-card">
+          <Skeleton active title={{ width: '40%' }} paragraph={{ rows: 2, width: ['65%', '35%'] }} />
+        </div>
+      ))}
+    </div>
+  )
+}
 /** Giá trị ô bảng — trống thì gạch mờ */
 export const CellVal = ({ v }: { v?: string | null }) =>
   v ? <>{v}</> : <span className="text-[#C4C6C9]">—</span>

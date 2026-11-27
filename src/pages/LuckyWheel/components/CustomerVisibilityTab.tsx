@@ -330,26 +330,12 @@ export default function CustomerVisibilityTab({ canEdit, wheels, wheelsLoading =
           />
         )}
 
-        <Card className="lucky-wheel-panel">
-          <Space direction="vertical" className="w-full" size={16}>
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="space-y-1">
-                <Typography.Title level={5} className="mb-0!">Bật vòng quay cho tất cả khách</Typography.Title>
-                <Typography.Text type="secondary">
-                  Khách có cấu hình riêng bên dưới sẽ dùng trạng thái riêng. Đổi công tắc này áp dụng cho mọi khách và xóa các cấu hình riêng.
-                </Typography.Text>
-              </div>
-              <div className="flex shrink-0 flex-wrap items-center gap-2 sm:gap-3">
-                <Tag color={defaultEnabled ? 'green' : 'default'}>{defaultEnabled ? 'Đang bật' : 'Đang tắt'}</Tag>
-                {canSendNotifications && (
-                  <Button
-                    icon={<BellOutlined />}
-                    disabled={!moduleEnabled || (!defaultEnabled && !overrides.some((item) => item.enabled)) || sendNotificationMutation.isPending}
-                    onClick={() => openNotificationModal({ type: 'all' })}
-                  >
-                    Thông báo chung
-                  </Button>
-                )}
+        <Card className="lucky-wheel-panel lucky-wheel-visibility-panel">
+          <Space direction="vertical" className="w-full" size={12}>
+            <div className="lucky-wheel-visibility-toolbar">
+            <div className="lucky-wheel-visibility-controls flex flex-wrap items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <Typography.Title level={5} className="m-0!">Quyền quay toàn hệ thống</Typography.Title>
                 <Switch
                   checked={defaultEnabled}
                   disabled={!canEdit || settingsQuery.isLoading || updateMutation.isPending}
@@ -358,17 +344,24 @@ export default function CustomerVisibilityTab({ canEdit, wheels, wheelsLoading =
                   onChange={applyToAllCustomers}
                 />
               </div>
+                {canSendNotifications && (
+                  <Button
+                    className="lucky-wheel-visibility-notify"
+                    aria-label="Thông báo chung"
+                    title="Thông báo chung"
+                    icon={<BellOutlined />}
+                    disabled={!moduleEnabled || (!defaultEnabled && !overrides.some((item) => item.enabled)) || sendNotificationMutation.isPending}
+                    onClick={() => openNotificationModal({ type: 'all' })}
+                  >
+                    <span className="lucky-wheel-visibility-notify-label">Thông báo chung</span>
+                  </Button>
+                )}
             </div>
 
-            <div className="border-t border-[var(--brand-border)] pt-4">
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <Typography.Title level={5} className="mb-0!">Danh sách khách hàng</Typography.Title>
-                <Tag>{customerTotal.toLocaleString('vi-VN')} khách</Tag>
+            <div className="lucky-wheel-visibility-list-heading flex flex-wrap items-center gap-2">
+                <Typography.Title level={5} className="m-0!">Danh sách khách hàng</Typography.Title>
+                <Tag className="m-0!">{customerTotal.toLocaleString('vi-VN')} khách</Tag>
               </div>
-              <Space direction="vertical" className="w-full" size={12}>
-                <Typography.Text type="secondary">
-                  Bật hoặc tắt quyền quay cho từng khách. Công tắc áp dụng trên tất cả vòng quay; chọn vòng quay bên dưới để xem khách đủ điều kiện của chương trình đó.
-                </Typography.Text>
                 <div className="lucky-wheel-customer-filter">
                   <Input.Search
                     allowClear
@@ -390,6 +383,9 @@ export default function CustomerVisibilityTab({ canEdit, wheels, wheelsLoading =
                     </Popover>
                   ) : wheelFilter}
                 </div>
+            </div>
+            <div>
+              <Space direction="vertical" className="w-full" size={8}>
                 {selectedWheelId && !customerLoading && !customerError && (
                   <Typography.Text type="secondary">
                     Danh sách chỉ gồm khách đủ điều kiện tham gia vòng quay đã chọn.
@@ -409,12 +405,17 @@ export default function CustomerVisibilityTab({ canEdit, wheels, wheelsLoading =
                       title: 'Khách hàng',
                       key: 'customer',
                       render: (_, customer) => (
-                        <div>
+                        <div className="lucky-wheel-visibility-customer">
+                          <span className="lucky-wheel-visibility-initial" aria-hidden="true">
+                            {displayName(customer).trim().split(/\s+/).at(-1)?.slice(0, 1).toLocaleUpperCase('vi-VN')}
+                          </span>
+                          <div className="min-w-0">
                           <Typography.Text strong>{displayName(customer)}</Typography.Text>
-                          <Typography.Text type="secondary" className="block md:ml-2 md:inline">
+                          <Typography.Text type="secondary" className="lucky-wheel-visibility-contact block md:ml-2 md:inline">
                             {customer.customer_code || customer.phone || '—'}
                             {customer.customer_code && customer.phone ? ` · ${customer.phone}` : ''}
                           </Typography.Text>
+                          </div>
                         </div>
                       ),
                     },

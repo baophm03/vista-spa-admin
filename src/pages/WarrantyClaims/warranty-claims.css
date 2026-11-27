@@ -1,0 +1,75 @@
+.warranty-claims-loading.mobile-only {
+  display: grid;
+}
+
+.warranty-detail-notice {
+  width: 100%;
+  margin-top: 12px !important;
+  border-radius: 8px !important;
+  align-items: flex-start !important;
+  overflow-wrap: anywhere;
+}
+
+.warranty-detail-notice.ant-alert {
+  padding: 12px !important;
+}
+
+.warranty-detail-notice .ant-alert-description {
+  white-space: pre-wrap;
+}
+
+@media (768px <= width < 1024px) {
+  .warranty-claims-title .page-title-controls {
+    flex-wrap: nowrap;
+  }
+
+  .warranty-claims-title .page-title-controls > .ant-select {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .warranty-claims-title .page-title-controls > button {
+    flex-shrink: 0;
+  }
+
+  .warranty-claim-cards.mobile-only {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .warranty-claim-cards .mobile-card:has(> .warranty-card-actions) {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .warranty-claim-cards .mobile-card-rows {
+    margin-bottom: 10px;
+  }
+
+  .warranty-claim-cards .warranty-card-actions {
+    margin-top: auto;
+  }
+}
+
+@media (max-width: 767px) {
+  .warranty-detail-fields .ant-descriptions-item-label {
+    width: 36%;
+  }
+
+  .warranty-detail-fields .ant-descriptions-view :is(.ant-descriptions-item-label, .ant-descriptions-item-content) {
+    padding: 6px 8px;
+    font-size: 13px;
+    line-height: 1.35;
+    vertical-align: top;
+  }
+
+  .ant-modal .warranty-claim-form .ant-form-item-row {
+    margin-inline: 0 !important;
+  }
+
+  .ant-modal .warranty-claim-form .ant-form-item-row > .ant-col {
+    flex-basis: 100% !important;
+    max-width: 100% !important;
+    padding-inline: 0 !important;
+  }
+}

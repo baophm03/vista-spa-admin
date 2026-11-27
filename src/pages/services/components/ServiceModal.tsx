@@ -35,6 +35,7 @@ export default function ServiceModal({
 }: ServiceModalProps) {
   return (
     <Modal
+      className="service-editor-modal"
       title={editing ? 'Sửa dịch vụ' : 'Thêm dịch vụ'}
       open={open}
       onCancel={onCancel}

@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Alert, Button, Card, Select, Spin, Tabs, Tag, Typography, message } from 'antd'
 import { SaveOutlined } from '@ant-design/icons'
 import { Can } from '@casl/react'
+import MobileUI from '@/components/base/MobileUI'
 import PageTitle from '@/components/base/PageTitle'
 import SystemSettingField from '@/components/settings/SystemSettingField'
 import { sameSettingValue, settingSections } from '@/components/settings/systemSettings'
@@ -270,15 +271,15 @@ function SettingsEditor({ canEdit }: { canEdit: boolean }) {
   })
 
   return (
-    <>
+    <MobileUI>
       <PageTitle
         subtitle="Thiết lập vận hành của hệ thống"
-        right={canEdit ? <Button type="primary" icon={<SaveOutlined />} loading={saveMutation.isPending} disabled={!changedSettings.length || settingsQuery.isLoading} onClick={save}>Lưu cấu hình</Button> : undefined}
+        right={canEdit ? <Button type="primary" className="keep-label max-md:col-span-full" icon={<SaveOutlined />} loading={saveMutation.isPending} disabled={!changedSettings.length || settingsQuery.isLoading} onClick={save}>Lưu cấu hình</Button> : undefined}
       >
         Cài đặt hệ thống
       </PageTitle>
-      {!canEdit && <Alert className="mb-4" type="info" showIcon message="Bạn có quyền xem cấu hình; cần quyền cập nhật để chỉnh sửa." />}
-      <Card className="mb-4">
+      {!canEdit && <Alert className="mb-4! max-lg:mb-3!" type="info" showIcon message="Bạn có quyền xem cấu hình; cần quyền cập nhật để chỉnh sửa." />}
+      <Card className="mb-4! max-lg:mb-3!">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <Typography.Text strong>Phạm vi cấu hình</Typography.Text>
@@ -299,12 +300,12 @@ function SettingsEditor({ canEdit }: { canEdit: boolean }) {
           )}
         </div>
       </Card>
-      {settingsQuery.isError && <Alert className="mb-2! mt-2!" type="error" showIcon message="Không tải được cấu hình hệ thống" description={errorMessage(settingsQuery.error)} action={<Button size="small" onClick={() => void settingsQuery.refetch()}>Thử lại</Button>} />}
-      {branchId && <Alert className="mb-2! mt-2!" type="info" showIcon message="Cấu hình cơ sở" description="Các khóa được phép sẽ lưu thành giá trị riêng của cơ sở. Khóa còn lại chỉ xem theo cấu hình đang có hiệu lực." />}
+      {settingsQuery.isError && <Alert className="mb-2! mt-2! max-lg:mb-3! max-lg:mt-0!" type="error" showIcon message="Không tải được cấu hình hệ thống" description={errorMessage(settingsQuery.error)} action={<Button size="small" onClick={() => void settingsQuery.refetch()}>Thử lại</Button>} />}
+      {branchId && <Alert className="mb-2! mt-2! max-lg:mb-3! max-lg:mt-0!" type="info" showIcon message="Cấu hình cơ sở" description="Các khóa được phép sẽ lưu thành giá trị riêng của cơ sở. Khóa còn lại chỉ xem theo cấu hình đang có hiệu lực." />}
       <Spin spinning={settingsQuery.isLoading || branchesQuery.isLoading}>
         <Tabs items={tabs} destroyInactiveTabPane={false} />
       </Spin>
-    </>
+    </MobileUI>
   )
 }
 

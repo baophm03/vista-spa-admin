@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Alert, Button, Card, Form, Modal, Spin, Tabs, Tag, Typography, message } from 'antd'
 import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, PlusOutlined } from '@ant-design/icons'
 import { Can, useAbility } from '@casl/react'
+import MobileUI from '@/components/base/MobileUI'
 import PageTitle from '@/components/base/PageTitle'
 import ListPagination from '@/components/base/ListPagination'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
@@ -65,7 +66,7 @@ function SessionRequiredFieldsSetting() {
   })
 
   return (
-    <Card className="mb-4!" title="Nhật ký buổi điều trị">
+    <Card className="mb-4! max-lg:mb-3!" title="Nhật ký buổi điều trị">
       {settingsQuery.isError ? (
         <Alert type="error" showIcon message="Không tải được cấu hình trường bắt buộc" description={errorMessage(settingsQuery.error)} />
       ) : (
@@ -294,7 +295,7 @@ function CustomerFieldsConfig({ entity, sectionTitle }: {
             subtitle={helperText}
             right={canCreate ? (
               <Can I="CREATE" a="CUSTOM_FIELD">
-                <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor()}>Thêm trường</Button>
+                <Button type="primary" className="keep-label max-md:col-span-full" icon={<PlusOutlined />} onClick={() => openEditor()}>Thêm trường</Button>
               </Can>
             ) : undefined}
           >
@@ -308,7 +309,7 @@ function CustomerFieldsConfig({ entity, sectionTitle }: {
             subtitle={helperText}
             right={canCreate ? (
               <Can I="CREATE" a="CUSTOM_FIELD">
-                <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor()}>Thêm trường</Button>
+                <Button type="primary" className="keep-label max-md:col-span-full" icon={<PlusOutlined />} onClick={() => openEditor()}>Thêm trường</Button>
               </Can>
             ) : undefined}
           >
@@ -402,7 +403,7 @@ export default function CustomerDataConfig() {
   ]
 
   return (
-    <>
+    <MobileUI>
       <PageTitle subtitle="Cấu hình trường dữ liệu khách hàng">Cấu hình dữ liệu khách hàng</PageTitle>
       <Tabs
         activeKey={selectedSection}
@@ -416,6 +417,6 @@ export default function CustomerDataConfig() {
             : <CustomerFieldsConfig entity={option.value} sectionTitle={option.label} />,
         }))}
       />
-    </>
+    </MobileUI>
   )
 }

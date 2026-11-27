@@ -2,8 +2,9 @@ import ResponsiveTable from '@/components/base/ResponsiveTable'
 import { useEffect, useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { Alert, Button, Form, Image, Input, Modal, Select, Space, Tabs, Tag, Typography, message } from 'antd'
-import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, PictureOutlined, PlusOutlined, SearchOutlined, SendOutlined, UndoOutlined } from '@ant-design/icons'
+import { DeleteOutlined, EditOutlined, EyeInvisibleOutlined, EyeOutlined, PictureOutlined, PlusOutlined, SendOutlined, UndoOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
+import MobileUI from '@/components/base/MobileUI'
 import PageTitle from '@/components/base/PageTitle'
 import ToolbarRow from '@/components/base/ToolbarRow'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
@@ -18,6 +19,7 @@ import { objectKeySrc, registerUploadedFile, fileSrc, resolveFileSrc, useFileUrl
 import ContentPostDrawer from './components/ContentPostDrawer'
 import PostPreviewModal from './components/PostPreviewModal'
 import CategoryModal from './components/CategoryModal'
+import './content-posts.css'
 import PublishModal from './components/PublishModal'
 import { DISPLAY_TYPE_OPTIONS, makePostSlug } from './components/constants'
 import type { ContentPostRow, PostFormValues, CategoryFormValues } from './components/constants'
@@ -235,7 +237,7 @@ export default function ContentPosts() {
     {
       title: 'Tiêu đề', dataIndex: 'title', key: 'title', render: (v: string, row: ContentPostRow) => (
         <Space size={6}>
-          <Typography.Text strong={!!row.is_pinned}>{v}{row.is_pinned ? ' 📌' : ''}</Typography.Text>
+          <Typography.Text className="content-post-title" title={v} strong={!!row.is_pinned}>{v}{row.is_pinned ? ' 📌' : ''}</Typography.Text>
         </Space>
       )
     },
@@ -247,8 +249,9 @@ export default function ContentPosts() {
       title: 'Thao tác', key: 'actions', width: 90, align: 'center' as const,
       render: (_: unknown, row: ContentPostRow) => (
         <RowActionsMenu
+          dropdownOnly
           items={[
-            { key: 'view', icon: <EyeOutlined />, label: 'Xem chi tiết', view: true },
+            { key: 'view', icon: <EyeOutlined />, label: 'Xem chi tiết' },
             ...(ability.can('UPDATE' as never, 'CONTENT')
               ? [
                 ...(row.status !== 'PUBLISHED'
@@ -304,6 +307,7 @@ export default function ContentPosts() {
       title: 'Thao tác', key: 'actions', width: 90, align: 'center' as const,
       render: (_: unknown, row: ContentCategory) => (
         <RowActionsMenu
+          dropdownOnly
           items={[
             ...(ability.can('UPDATE' as never, 'CONTENT')
               ? [{ key: 'edit', icon: <EditOutlined />, label: 'Sửa' }]
@@ -340,12 +344,13 @@ export default function ContentPosts() {
   ]
 
   return (
-    <div>
+    <MobileUI>
       <PageTitle subtitle="Quản lý bài viết và chuyên mục hiển thị trên app">
-        Nội dung App
+        Bài viết App
       </PageTitle>
       {postsQuery.isError && <Alert type="error" showIcon message={errorMessage(postsQuery.error)} style={{ marginBottom: 12 }} />}
       <Tabs
+        className="app-content-tabs"
         activeKey={tab}
         onChange={setTab}
         items={[
@@ -355,11 +360,19 @@ export default function ContentPosts() {
             children: (
               <>
                 {/* Toolbar của tab — đặt dưới thanh tab */}
-                <ToolbarRow>
+                <ToolbarRow className="max-md:grid max-md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
+                  <Input.Search
+                    allowClear
+                    aria-label="Tìm tiêu đề bài viết"
+                    placeholder="Tìm tiêu đề"
+                    className="col-span-full w-full! md:w-[220px]!"
+                    value={postSearchInput}
+                    onChange={(event) => setPostSearchInput(event.target.value)}
+                  />
                   <Select
                     allowClear
                     placeholder="Chuyên mục"
-                    className="w-[200px]"
+                    className="w-full min-w-0 md:w-[200px]"
                     options={categories.map((c) => ({ value: c.id, label: c.name }))}
                     value={postFilter.category_id}
                     onChange={(v) => { setPostFilter((f) => ({ ...f, category_id: v })); setPostPage(1) }}
@@ -367,31 +380,26 @@ export default function ContentPosts() {
                   <Select
                     allowClear
                     placeholder="Trạng thái"
-                    className="w-[150px]"
+                    className="w-full min-w-0 md:w-[150px]"
                     options={Object.entries(STATUS_META).map(([value, m]) => ({ value, label: m.label }))}
                     value={postFilter.status}
                     onChange={(v) => { setPostFilter((f) => ({ ...f, status: v })); setPostPage(1) }}
                   />
-                  <Input
-                    allowClear
-                    prefix={<SearchOutlined className="text-[var(--brand-text-inactive,#A9ADB2)]" />}
-                    placeholder="Tìm tiêu đề"
-                    className="w-[220px]!"
-                    value={postSearchInput}
-                    onChange={(event) => setPostSearchInput(event.target.value)}
-                  />
                   <Can I="CREATE" a="CONTENT">
-                    <Button type="primary" icon={<PlusOutlined />} onClick={() => openPostEditor()}>Tạo bài viết</Button>
+                    <Button type="primary" icon={<PlusOutlined />} aria-label="Tạo bài viết" onClick={() => openPostEditor()}>Tạo bài viết</Button>
                   </Can>
                 </ToolbarRow>
-                <ResponsiveTable
-                  className="[&_.ant-table-thead_th]:whitespace-nowrap"
-                  rowKey="id"
-                  loading={postsQuery.isLoading}
-                  columns={postColumns}
-                  dataSource={posts}
-                  pagination={false}
-                />
+                <div className="content-post-list">
+                  <ResponsiveTable
+                    className="[&_.ant-table-thead_th]:whitespace-nowrap"
+                    scroll={{ x: 760 }}
+                    rowKey="id"
+                    loading={postsQuery.isLoading}
+                    columns={postColumns}
+                    dataSource={posts}
+                    pagination={false}
+                  />
+                </div>
                 <ListPagination page={postPage} limit={20} total={postTotal} onChange={setPostPage} noun="bài viết" />
               </>
             ),
@@ -403,7 +411,7 @@ export default function ContentPosts() {
               <>
                 <ToolbarRow>
                   <Can I="CREATE" a="CONTENT">
-                    <Button type="primary" icon={<PlusOutlined />} onClick={() => { setEditingCategory(null); categoryForm.resetFields(); categoryForm.setFieldsValue({ display_type: 'NEWS', sort_order: 0, is_active: true }); setCategoryModal(true) }}>Tạo chuyên mục</Button>
+                    <Button type="primary" className="keep-label max-md:w-full" icon={<PlusOutlined />} onClick={() => { setEditingCategory(null); categoryForm.resetFields(); categoryForm.setFieldsValue({ display_type: 'NEWS', sort_order: 0, is_active: true }); setCategoryModal(true) }}>Tạo chuyên mục</Button>
                   </Can>
                 </ToolbarRow>
                 <ResponsiveTable
@@ -454,6 +462,6 @@ export default function ContentPosts() {
         onOk={() => void doPublish()}
         onCancel={() => setPublishTarget(null)}
       />
-    </div>
+    </MobileUI>
   )
 }

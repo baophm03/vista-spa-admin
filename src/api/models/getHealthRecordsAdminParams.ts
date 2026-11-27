@@ -8,4 +8,15 @@
 
 export type GetHealthRecordsAdminParams = {
 branch_id?: string;
+q?: string;
+skin_type?: string;
+/**
+ * @minimum 1
+ */
+page?: number;
+/**
+ * @minimum 1
+ * @maximum 200
+ */
+limit?: number;
 };

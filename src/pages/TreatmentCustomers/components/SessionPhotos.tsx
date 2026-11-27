@@ -102,7 +102,7 @@ export default function SessionPhotos({
               key={p.id}
               width={88}
               height={88}
-              className="rounded-[10px] object-cover"
+              className="rounded-lg object-cover"
               src={fileSrc((p as any).file) ?? resolveFileSrc(urlMap, p.file_id) ?? (p.url?.startsWith('http') ? p.url : `${links.imageEndpoint}${p.url ?? ''}`)}
               fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
             />

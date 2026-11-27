@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { displayName } from '@/utils/displayName'
-import { Alert, Button, Select, Space, Table, Tag, Typography, message } from 'antd'
+import { Alert, Button, Input, Select, Skeleton, Space, Table, Tag, Typography, message } from 'antd'
 import type { TableColumnsType } from 'antd'
 import { CheckOutlined, PlayCircleOutlined } from '@ant-design/icons'
 import { useQueryClient } from '@tanstack/react-query'
@@ -8,13 +8,14 @@ import dayjs from 'dayjs'
 import PageTitle from '@/components/base/PageTitle'
 import { errorMessage, pickData } from '@/api/helpers'
 
-import { useGetSessionsAdmin, usePutSessionsIdDoneAdmin, usePutSessionsIdStartAdmin } from '@/api/endpoints/treatment-sessions'
+import { getGetSessionsAdminQueryKey, useGetSessionsAdmin, usePutSessionsIdDoneAdmin, usePutSessionsIdStartAdmin } from '@/api/endpoints/treatment-sessions'
 import type { GetSessionsAdminParams } from '@/api/models/getSessionsAdminParams'
 import type { TreatmentSession } from '@/api/models/treatmentSession'
 import ListPagination from '@/components/base/ListPagination'
 import MobileCards, { MobileCardRow } from '@/components/base/MobileCards'
 import type { Branch } from '@/api/models'
 import { useGetBranchesAdmin } from '@/api/endpoints/branches'
+import './my-sessions.css'
 
 type SessionRow = TreatmentSession & {
   appointment?: { appt_date?: string; start_time?: string } | null
@@ -40,6 +41,15 @@ const STATUS_META: Record<string, { label: string; color: string }> = {
   completed: { label: 'Hoàn tất', color: 'green' },
 }
 
+const SORT_OPTIONS = [
+  { value: 'asc', label: 'Lịch hẹn cũ trước' },
+  { value: 'desc', label: 'Lịch hẹn mới trước' },
+] as const
+
+function normalizeSearch(value: string) {
+  return value.toLocaleLowerCase('vi').normalize('NFD').replace(/\p{M}/gu, '').replace(/đ/g, 'd')
+}
+
 function rowTime(row: SessionRow): string | null {
   const appointment = row.appointment
   if (appointment?.appt_date) return appointment.start_time ? `${appointment.appt_date}T${appointment.start_time}` : appointment.appt_date
@@ -56,6 +66,8 @@ function formatSessionTime(row: SessionRow) {
 export default function MySessions() {
   const [page, setPage] = useState(1)
   const [status, setStatus] = useState('')
+  const [search, setSearch] = useState('')
+  const [sort, setSort] = useState<'asc' | 'desc'>('asc')
   const [startingId, setStartingId] = useState<string | null>(null)
   const [finishingId, setFinishingId] = useState<string | null>(null)
   const queryClient = useQueryClient()
@@ -67,25 +79,38 @@ export default function MySessions() {
   const sessionsQuery = useGetSessionsAdmin({ page: 1, limit: 200 } as GetSessionsAdminParams)
   const sessionRows = useMemo(() => pickData<SessionRow[]>(sessionsQuery.data) ?? [], [sessionsQuery.data])
 
-  const rows = useMemo(() => sessionRows
-    .filter((row) => !status || row.status === status)
-    .sort((a, b) => {
-      const timeA = rowTime(a)
-      const timeB = rowTime(b)
-      if (!timeA && !timeB) return 0
-      if (!timeA) return 1 // chưa xếp lịch xuống cuối
-      if (!timeB) return -1
-      return timeA.localeCompare(timeB)
-    }), [sessionRows, status])
+  const rows = useMemo(() => {
+    const terms = normalizeSearch(search.trim()).split(/\s+/).filter(Boolean)
+    return sessionRows
+      .filter((row) => {
+        if (status && row.status !== status) return false
+        if (!terms.length) return true
+        const customer = row.customer_treatment?.user
+        const text = normalizeSearch([
+          displayName(customer, ''),
+          customer?.phone,
+          customer?.customer_code,
+          row.customer_treatment?.package?.name,
+        ].filter(Boolean).join(' '))
+        return terms.every((term) => text.includes(term))
+      })
+      .sort((a, b) => {
+        const timeA = rowTime(a)
+        const timeB = rowTime(b)
+        if (!timeA) return timeB ? 1 : 0
+        if (!timeB) return -1
+        return sort === 'asc' ? timeA.localeCompare(timeB) : timeB.localeCompare(timeA)
+      })
+  }, [sessionRows, search, sort, status])
 
-  const isLoading = sessionsQuery.isLoading
-  const listError = sessionsQuery.isError ? sessionsQuery.error : null
+  const isLoading = sessionsQuery.isFetching && !sessionsQuery.data
+  const listError = sessionsQuery.isError && !isLoading ? sessionsQuery.error : null
   const total = rows.length
   const currentPage = Math.min(page, Math.max(1, Math.ceil(total / 10)))
   const pageRows = rows.slice((currentPage - 1) * 10, currentPage * 10)
 
   const refresh = async () => {
-    await queryClient.invalidateQueries({ queryKey: ['my-sessions'] })
+    await queryClient.invalidateQueries({ queryKey: getGetSessionsAdminQueryKey() })
   }
 
   const startSession = async (row: SessionRow) => {
@@ -113,8 +138,10 @@ export default function MySessions() {
       setFinishingId(null)
     }
   }
-  const branchName = (id?: string) => branches.find((branch) => branch.id === id)?.name ?? '—'
-  const hasNoMatches = Boolean(status && sessionRows.length)
+  const branchName = (id?: string) => id && branchesQuery.isLoading
+    ? <Skeleton.Input active size="small" />
+    : branches.find((branch) => branch.id === id)?.name ?? '—'
+  const hasNoMatches = Boolean((status || search.trim()) && sessionRows.length)
   const emptyText = hasNoMatches ? 'Không có kết quả' : 'Chưa có buổi nào được giao cho bạn'
 
   const actionCell = (row: SessionRow) => {
@@ -178,22 +205,37 @@ export default function MySessions() {
 
   return <>
     <PageTitle
-      className="max-md:mb-3"
+      className="mb-3!"
       subtitle="Danh sách buổi điều trị được giao cho tài khoản KTV"
-      left={
-        <Select
-          aria-label="Lọc theo trạng thái"
-          value={status}
-          className="w-full md:w-[180px]"
-          options={STATUS_OPTIONS}
-          onChange={(value) => { setStatus(value); setPage(1) }}
-        />
-      }
     >
       Buổi của tôi
     </PageTitle>
+    <div className="my-session-toolbar toolbar-row mb-3 grid grid-cols-2 gap-2 md:grid-cols-[minmax(0,1fr)_180px_190px] lg:grid-cols-[minmax(220px,320px)_180px_190px] lg:justify-end">
+      <Input.Search
+        allowClear
+        className="col-span-2 min-w-0 md:col-span-1"
+        aria-label="Tìm buổi điều trị"
+        placeholder="Tìm khách, SĐT, mã KH hoặc gói"
+        value={search}
+        onChange={(event) => { setSearch(event.target.value); setPage(1) }}
+      />
+      <Select
+        aria-label="Lọc theo trạng thái"
+        value={status}
+        className="min-w-0"
+        options={STATUS_OPTIONS}
+        onChange={(value) => { setStatus(value); setPage(1) }}
+      />
+      <Select<'asc' | 'desc'>
+        aria-label="Sắp xếp theo lịch hẹn"
+        value={sort}
+        className="min-w-0"
+        options={[...SORT_OPTIONS]}
+        onChange={(value) => { setSort(value); setPage(1) }}
+      />
+    </div>
     {listError && <Alert
-      style={{ marginBottom: 16 }}
+      className="mb-4! rounded-lg! max-lg:mb-3! "
       type="error"
       showIcon
       title="Không tải được danh sách buổi"
@@ -206,10 +248,9 @@ export default function MySessions() {
         </>
       }
     />}
-    {!listError && <Table<SessionRow>
-      className="desktop-only"
+    {!listError && !isLoading && <Table<SessionRow>
+      className="desktop-only max-lg:hidden!"
       rowKey="id"
-      loading={isLoading}
       columns={columns}
       dataSource={pageRows}
       scroll={{ x: 950 }}
@@ -217,11 +258,12 @@ export default function MySessions() {
       locale={{ emptyText }}
     />}
     {!listError && <MobileCards
+      className={isLoading ? 'my-session-loading' : 'my-session-cards'}
       rows={pageRows}
       rowKey={(row) => row.id}
       loading={isLoading}
       emptyText={emptyText}
-      emptyDescription={hasNoMatches ? 'Thử đổi trạng thái hoặc bỏ lọc' : undefined}
+      emptyDescription={hasNoMatches ? 'Thử đổi từ khóa hoặc bộ lọc.' : undefined}
       renderCard={(row) => {
         const statusInfo = STATUS_META[row.status || ''] ?? { label: row.status || '—', color: 'default' }
         const canAct = row.status === 'scheduled' || row.status === 'in_progress'

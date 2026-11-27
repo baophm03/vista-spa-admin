@@ -47,6 +47,7 @@ export default function AppointmentFormModal({
 
   return (
     <Modal
+      className="appointment-form-modal"
       title={editing ? 'Đổi lịch hẹn' : 'Thêm lịch hẹn'}
       width="min(880px, calc(100vw - 24px))"
       open={open}

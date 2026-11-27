@@ -1,3 +1,89 @@
+.treatment-package-editor-modal .ant-alert.treatment-package-notice {
+  margin-bottom: 16px;
+}
+.treatment-package-tablet-actions {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  :is(.single-service-stats, .treatment-package-stats) .stat-cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  :is(.single-service-stats, .treatment-package-stats) .stat-cards > .stat-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    padding: 8px;
+  }
+
+  :is(.single-service-stats, .treatment-package-stats) .stat-cards .stat-card-disc {
+    width: 26px;
+    height: 26px;
+    font-size: 13px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1199px) {
+  .desktop-only.treatment-package-table {
+    display: none;
+  }
+
+  .mobile-only.treatment-package-cards {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .treatments-page .treatment-package-cards.is-loading {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .treatment-package-cards .mobile-card {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .treatment-package-cards .mobile-card-rows {
+    flex: 1;
+  }
+
+  :is(.single-service-toolbar, .treatments-page .treatment-list-toolbar) .treatment-list-search {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .treatment-package-stats .stat-cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .treatment-package-action-menu {
+    display: none;
+  }
+
+  .treatment-package-tablet-actions {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+  }
+}
+@media (max-width: 767px) {
+  .ant-modal.treatment-package-editor-modal .ant-form .ant-form-item-row {
+    display: block;
+    margin-inline: 0 !important;
+  }
+
+  .ant-modal.treatment-package-editor-modal .ant-form .ant-form-item-row > .ant-col {
+    width: 100%;
+    max-width: 100% !important;
+    padding-inline: 0 !important;
+  }
+
+  .treatment-package-editor-modal .ant-form-item-control-input-content > :is(.ant-input, .ant-input-number, .ant-input-number-affix-wrapper, .ant-select, .ant-cascader, .ant-picker) {
+    width: 100%;
+  }
+}
 .treatments-page {
   min-width: 0;
 }
@@ -48,17 +134,16 @@
 }
 
 @media (max-width: 767px) {
+  /* docs 6.2.1: N = 0 + nút tạo → [Tìm] / [+ Thêm gói] full width */
   .treatment-list-toolbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: 8px;
+    margin-bottom: 12px;
   }
 
   .treatment-list-toolbar .treatment-list-search {
-    flex: 1 1 0;
-  }
-
-  .treatment-list-toolbar .ant-btn {
-    flex-shrink: 0;
-    min-height: 44px;
+    width: 100%;
   }
 
   .treatments-page .mobile-card-head .ant-tag {

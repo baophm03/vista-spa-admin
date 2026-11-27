@@ -33,7 +33,7 @@ export default function RoleEditModal({
       open={open}
       onCancel={onCancel}
       onOk={onOk}
-      okText={editingRole ? 'Lưu thay đổi' : 'Tạo vai trò'}
+      okText="Lưu"
       cancelText="Hủy"
       confirmLoading={saving}
       title={
@@ -41,8 +41,8 @@ export default function RoleEditModal({
           {editingRole ? 'Sửa vai trò' : 'Tạo vai trò mới'}
         </span>
       }
-      okButtonProps={{ className: 'rounded-xl' }}
-      cancelButtonProps={{ className: 'rounded-xl' }}
+      okButtonProps={{ className: 'rounded-lg' }}
+      cancelButtonProps={{ className: 'rounded-lg' }}
     >
       <div className="flex flex-col gap-4 pt-2">
         <label className="block">

@@ -8,10 +8,10 @@ import {
   LockOutlined,
   PlusOutlined,
   ProfileOutlined,
-  SearchOutlined,
   UndoOutlined,
   UserOutlined,
 } from '@ant-design/icons'
+import MobileUI from '@/components/base/MobileUI'
 import PageTitle from '@/components/base/PageTitle'
 import RowActionsMenu from '@/components/base/RowActionsMenu'
 import ListPagination from '@/components/base/ListPagination'
@@ -292,29 +292,30 @@ export default function Users() {
   }
 
   return (
-    <>
+    <MobileUI>
       <PageTitle
         subtitle="Quản lý thông tin và vai trò của nhân viên"
         left={
           <>
-            <Input
+            <Input.Search
               allowClear
-              prefix={<SearchOutlined className="text-[var(--brand-text-inactive,#A9ADB2)]" />}
               placeholder="Tìm theo tên, email, SĐT"
-              className="w-[260px]!"
+              className="w-full! max-md:col-span-full md:w-[260px]!"
               value={searchInput}
               onChange={(e) => {
                 setSearchInput(e.target.value)
                 if (!e.target.value) applySearch('')
               }}
-              onPressEnter={() => applySearch(searchInput)}
+              onSearch={() => applySearch(searchInput)}
             />
+            {/* Mobile: [Cơ sở][+] cùng 1 hàng (docs 6.2.1); từ tablet tan vào hàng toolbar */}
+            <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 max-md:col-span-full md:contents">
             <Select
               allowClear
               showSearch
               optionFilterProp="label"
               placeholder="Tất cả cơ sở"
-              className="w-[220px]!"
+              className="w-full! md:w-[220px]!"
               value={branchFilter}
               onChange={(value) => {
                 setBranchFilter(value)
@@ -322,11 +323,10 @@ export default function Users() {
               }}
               options={branches.map((branch) => ({ value: branch.id, label: branch.name }))}
             />
+              {canCreateUser && <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>Thêm chuyên viên</Button>}
+            </div>
           </>
         }
-        right={canCreateUser ? (
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>Thêm chuyên viên</Button>
-        ) : undefined}
       >
         Quản lý nhân sự
       </PageTitle>
@@ -486,6 +486,6 @@ export default function Users() {
         onCancel={() => setProfileOpen(false)}
         onOk={() => void submitProfile()}
       />
-    </>
+    </MobileUI>
   )
 }

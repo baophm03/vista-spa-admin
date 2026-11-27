@@ -46,7 +46,7 @@ export default function ContentPostDrawer({
       onCancel={onClose}
       centered
       width={1200}
-      styles={{ body: { maxHeight: 'calc(100vh - 160px)', overflowY: 'auto' } }}
+      styles={{ body: { maxHeight: 'calc(100dvh - 168px)', overflowY: 'auto' } }}
       footer={(
         <Space>
           <Button onClick={onClose}>Đóng</Button>
@@ -125,9 +125,6 @@ export default function ContentPostDrawer({
           </Form.Item>
         </Form.Item>
         <div className="content-post-settings-row">
-          <Form.Item name="video_url" label="Video (YouTube/TikTok/Facebook embed URL)">
-            <Input placeholder="https://www.youtube.com/embed/…" />
-          </Form.Item>
           <Form.Item name="publish_at" label="Bắt đầu xuất bản">
             <DatePicker showTime style={{ width: '100%' }} />
           </Form.Item>

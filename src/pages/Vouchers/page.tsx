@@ -38,7 +38,7 @@ import {
 } from '@/api/endpoints/product-vouchers'
 import type { ProductCategory } from '@/api/models/productCategory'
 import VoucherModal from './components/VoucherModal'
-import { CATEGORY_META, MOBILE_TAB_LABELS, type VoucherCategory, type VoucherCategoryRow, type VoucherCategoryWrite } from './components/constants'
+import { CATEGORY_META, type VoucherCategory, type VoucherCategoryRow, type VoucherCategoryWrite } from './components/constants'
 import { useBrandCurrency } from '@/themeRuntime'
 import './vouchers.css'
 
@@ -264,6 +264,8 @@ function VoucherCategoryTab({ category, isMobile }: { category: VoucherCategory;
     if (row.end_date && dayjs(row.end_date).isBefore(dayjs(), 'day')) return <Tag>Hết hạn</Tag>
     return row.is_active ? <Tag color="green">Hoạt động</Tag> : <Tag>Tắt</Tag>
   }
+  const confirmRemove = (row: VoucherCategoryRow) => Modal.confirm({ title: 'Xóa voucher này?', content: 'Xóa mềm (is_deleted). Không xóa được voucher đã phát hành cho khách hoặc đang cấu hình ở quà/vòng quay.', okText: 'Xóa', okButtonProps: { danger: true }, cancelText: 'Hủy', onOk: () => remove(row) })
+
   const renderActions = (row: VoucherCategoryRow, mobile = false) => (
     <RowActionsMenu
       dropdownOnly={mobile}
@@ -273,7 +275,7 @@ function VoucherCategoryTab({ category, isMobile }: { category: VoucherCategory;
       ]}
       onSelect={(key) => {
         if (key === 'edit') openModal(row)
-        if (key === 'delete') Modal.confirm({ title: 'Xóa voucher này?', content: 'Xóa mềm (is_deleted). Không xóa được voucher đã phát hành cho khách hoặc đang cấu hình ở quà/vòng quay.', okText: 'Xóa', okButtonProps: { danger: true }, cancelText: 'Hủy', onOk: () => remove(row) })
+        if (key === 'delete') confirmRemove(row)
       }}
     />
   )
@@ -380,6 +382,7 @@ function VoucherCategoryTab({ category, isMobile }: { category: VoucherCategory;
   return (
     <>
       <StatCards items={statItems} />
+      {/* docs 6.2.1: mobile → [Tìm] / [Bộ lọc][+] */}
       <div className="voucher-toolbar">
         <div className="voucher-toolbar-search">
           <Input.Search
@@ -393,7 +396,7 @@ function VoucherCategoryTab({ category, isMobile }: { category: VoucherCategory;
           />
           {isMobile ? (
             <Popover trigger="click" placement="bottomRight" title="Lọc theo cơ sở" content={branchSelect}>
-              <Button className="voucher-toolbar-button" type={branchFilter ? 'primary' : 'default'} icon={<FilterOutlined />} aria-label="Bộ lọc cơ sở" />
+              <Button className="voucher-filter-button" type={branchFilter ? 'primary' : 'default'} icon={<FilterOutlined />} aria-label="Bộ lọc cơ sở">Bộ lọc</Button>
             </Popover>
           ) : branchSelect}
         </div>
@@ -406,7 +409,7 @@ function VoucherCategoryTab({ category, isMobile }: { category: VoucherCategory;
       {vouchersQuery.isError && <Alert type="error" showIcon style={{ marginBottom: 16 }} message="Không tải được danh sách voucher" description={errorMessage(vouchersQuery.error)} action={<Button size="small" onClick={() => void vouchersQuery.refetch()}>Thử lại</Button>} />}
       {targetsQuery.isError && <Alert type="warning" showIcon style={{ marginBottom: 16 }} message={`Không tải được danh sách ${meta.label.replace('Voucher ', '').toLowerCase()}`} description={errorMessage(targetsQuery.error)} />}
       <Table<VoucherCategoryRow>
-        className="desktop-only [&_.ant-table-thead_th]:whitespace-nowrap"
+        className="desktop-only voucher-table [&_.ant-table-thead_th]:whitespace-nowrap"
         rowKey="id"
         loading={vouchersQuery.isLoading}
         dataSource={rows}
@@ -415,6 +418,7 @@ function VoucherCategoryTab({ category, isMobile }: { category: VoucherCategory;
         tableLayout="fixed"
       />
       <MobileCards
+        className="voucher-card-list"
         rows={rows}
         rowKey={(row) => row.id}
         loading={vouchersQuery.isLoading}
@@ -451,7 +455,15 @@ function VoucherCategoryTab({ category, isMobile }: { category: VoucherCategory;
                   <div className="mobile-card-sub">Thời hạn</div>
                   <div className="text-xs font-medium">{period}</div>
                 </div>
-                {canUpdate && <div className="mobile-card-actions">{renderActions(row, true)}</div>}
+                {canUpdate && (
+                  <div className="mobile-card-actions">
+                    <div className="voucher-card-action-menu">{renderActions(row, true)}</div>
+                    <div className="voucher-tablet-actions">
+                      <Button size="small" icon={<EditOutlined />} onClick={() => openModal(row)}>Sửa</Button>
+                      <Button size="small" danger icon={<DeleteOutlined />} onClick={() => confirmRemove(row)}>Xóa</Button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )
@@ -488,7 +500,7 @@ export default function Vouchers() {
         onChange={(key) => { setActiveTab(key as VoucherCategory) }}
         items={CATEGORIES.map((category) => ({
           key: category,
-          label: isMobile ? MOBILE_TAB_LABELS[category] : CATEGORY_META[category].label,
+          label: CATEGORY_META[category].label,
           children: <VoucherCategoryTab category={category} isMobile={isMobile} />,
         }))}
       />

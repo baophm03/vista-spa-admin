@@ -16,7 +16,7 @@ export default function QuickCustomerModal({ open, form, onCancel, onOk }: Quick
       open={open}
       onCancel={onCancel}
       onOk={onOk}
-      okText="Tạo khách"
+      okText="Lưu"
       cancelText="Hủy"
     >
       <Form form={form} layout="vertical" style={{ marginTop: 12 }}>

@@ -1,0 +1,43 @@
+/* Hoa hồng — bảng quá nhiều cột (sổ hoa hồng scroll 1300px) nên tablet dùng thẻ như mobile */
+@media (768px <= width < 1200px) {
+  .commissions-page .commission-list .desktop-only {
+    display: none;
+  }
+
+  .commissions-page .commission-list .mobile-only.mobile-card-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: 1fr;
+    gap: 12px;
+  }
+
+  .commissions-page .commission-list .mobile-card {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .commissions-page .commission-list .mobile-card-rows {
+    flex: 1;
+    align-content: start;
+  }
+
+  .commissions-page .commission-list .responsive-table-head {
+    flex-wrap: wrap;
+  }
+
+  .commissions-page .commission-list .mobile-card-row .mobile-card-label {
+    flex-basis: 40%;
+  }
+
+  /* Bộ lọc: 3 select + nút không đủ chỗ trên 1 hàng → chia 2 cột đều nhau */
+  .commissions-page .commission-entries-filters {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .commissions-page .commission-entries-filters > * {
+    width: 100% !important;
+    min-width: 0;
+  }
+}

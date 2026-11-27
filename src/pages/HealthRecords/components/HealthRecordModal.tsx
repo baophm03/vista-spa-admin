@@ -46,7 +46,7 @@ export default function HealthRecordModal({
       footer={[
         <Button key="cancel" onClick={onCancel}>Hủy</Button>,
         <Button key="save" type="primary" loading={saving} onClick={onSubmit}>
-          {editingRecord ? 'Lưu thay đổi' : 'Lưu phiếu khám'}
+          Lưu
         </Button>,
       ]}
     >
@@ -55,7 +55,7 @@ export default function HealthRecordModal({
           <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 18 }}>
             {displayName(recordCustomer)} · {recordCustomer.phone} · {recordCustomer.customer_code}
           </Typography.Text>
-          <Form form={form} layout="vertical" requiredMark={false}>
+          <Form form={form} layout="vertical" requiredMark={false} className="health-record-form">
             <Divider orientation="horizontal" titlePlacement="start" plain style={{ marginTop: 0, color: '#52635A', fontSize: 13 }}>Thông tin khám</Divider>
             <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2">
               <Form.Item name="checked_date" label={<span style={labelStyle}>Ngày khám</span>} rules={[{ required: true, message: 'Chọn ngày khám' }]}>
@@ -93,10 +93,10 @@ export default function HealthRecordModal({
                   options={skinTypes.map((type) => ({ value: type.code, label: type.label }))}
                 />
               </Form.Item>
-              <Form.Item name="allergies" label={<span style={labelStyle}>Dị ứng</span>}>
-                <Input placeholder="Ví dụ: hương liệu, cồn khô" />
-              </Form.Item>
             </div>
+            <Form.Item name="allergies" label={<span style={labelStyle}>Dị ứng</span>}>
+              <Input.TextArea rows={2} placeholder="Ví dụ: hương liệu, cồn khô" />
+            </Form.Item>
             <Form.Item name="medical_history" label={<span style={labelStyle}>Tiền sử bệnh lý</span>}>
               <Input.TextArea rows={2} placeholder="Bệnh lý, thuốc đang sử dụng, lưu ý sức khỏe..." />
             </Form.Item>
@@ -105,7 +105,7 @@ export default function HealthRecordModal({
             </Form.Item>
             <Collapse
               ghost
-              style={{ marginTop: 8, background: '#F7FAF8', borderRadius: 12, padding: '0 12px' }}
+              style={{ marginTop: 8, background: '#F7FAF8', borderRadius: 8, padding: '0 12px' }}
               items={[{
                 key: 'treatment-details',
                 forceRender: true,

@@ -225,7 +225,7 @@ export default function ServiceTable({ categoryId, categories, branches, onChang
 
   return (
     <>
-      <div className="service-list-toolbar">
+      <div className="service-list-toolbar service-detail-toolbar">
         <Input.Search
           allowClear
           aria-label="Tìm tên hoặc mô tả dịch vụ"
@@ -246,7 +246,7 @@ export default function ServiceTable({ categoryId, categories, branches, onChang
       ) : (
         <>
           <Table<ServiceRow>
-            className="desktop-only"
+            className="desktop-only service-detail-table"
             rowKey="id"
             loading={listQuery.isLoading}
             dataSource={rows}
@@ -260,6 +260,7 @@ export default function ServiceTable({ categoryId, categories, branches, onChang
             })}
           />
           <MobileCards
+            className="service-detail-cards"
             rows={rows}
             rowKey={(row) => row.id}
             loading={listQuery.isLoading}

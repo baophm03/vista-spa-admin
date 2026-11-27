@@ -1,0 +1,92 @@
+/* Chuẩn giao diện mobile/tablet dùng chung (docs/mobile-design-guide.md).
+   Bật cho 1 trang bằng component <MobileUI> (components/base/MobileUI.tsx):
+   class "mobile-ui" ở đây + token antd (controlHeight 44, borderRadius 8).
+   Khoảng cách / bố cục toolbar chỉ áp dưới 1024px; bo góc 8px và chuẩn toolbar (không bold, không bóng,
+   icon 14px) áp ở mọi bề rộng. */
+
+@media (max-width: 1023px) {
+  /* ---- Khoảng cách: các khối lớn cách nhau 12px ---- */
+  .mobile-ui .page-title {
+    margin-bottom: 12px !important;
+    gap: 12px !important;
+  }
+  .mobile-ui .page-title-controls {
+    gap: 8px !important;
+  }
+  .mobile-ui .ant-tabs-nav {
+    margin-bottom: 12px;
+  }
+  .mobile-ui .toolbar-row {
+    margin-bottom: 12px;
+  }
+  .mobile-ui > .ant-alert,
+  .mobile-ui > div > .ant-alert,
+  .mobile-ui .ant-tabs-tabpane > .ant-alert {
+    margin-bottom: 12px !important;
+  }
+  .mobile-ui .mobile-card-list,
+  .mobile-ui .responsive-table-mobile .mobile-card-list {
+    gap: 12px;
+  }
+
+  /* ---- Tab: giữ mặc định antd như /customer-data-config — tab rộng theo chữ, vuốt/kéo ngang
+     để xem tab bị khuất (không ép chia đều full width) ---- */
+}
+
+/* Mobile (<768px): nút có icon + chữ chỉ còn icon, thành nút vuông 44×44 (giữ chữ: thêm class keep-label) */
+@media (max-width: 767px) {
+  .mobile-ui :is(.page-title-controls, .toolbar-row) .ant-btn:not(.keep-label):has(> .ant-btn-icon + span) {
+    width: 44px;
+    min-width: 44px;
+    padding-inline: 0;
+  }
+  .mobile-ui :is(.page-title-controls, .toolbar-row) .ant-btn:not(.keep-label) > .ant-btn-icon + span {
+    display: none;
+  }
+}
+
+/* ---- Bo góc: toàn bộ nội dung 8px ở MỌI bề rộng (thống nhất desktop với mobile) ---- */
+.mobile-ui :is(
+  .mobile-card,
+  .ant-card,
+  .ant-btn,
+  .ant-select,
+  .ant-select-selector,
+  .ant-input,
+  .ant-input-affix-wrapper,
+  .ant-input-number,
+  .ant-picker,
+  .ant-alert,
+  .ant-tag,
+  .ant-segmented,
+  .ant-segmented-item,
+  .ant-segmented-thumb,
+  .stat-card
+) {
+  border-radius: 8px;
+}
+.mobile-ui .ant-btn.row-actions-trigger {
+  border-radius: 8px;
+}
+/* Nhóm ghép (Input.Search, Space.Compact): chỉ bo 2 góc ngoài */
+.mobile-ui [class*='-compact-item']:not([class*='-compact-first-item']) {
+  border-start-start-radius: 0;
+  border-end-start-radius: 0;
+}
+.mobile-ui [class*='-compact-item']:not([class*='-compact-last-item']) {
+  border-start-end-radius: 0;
+  border-end-end-radius: 0;
+}
+
+/* ---- Toolbar ở MỌI bề rộng: cùng chiều cao (44px <1024px qua token <MobileUI>, 40px desktop theo theme),
+   nút chữ thường (không bold), không đổ bóng, icon cùng cỡ 14px
+   (prefix tìm kiếm, mũi tên select, nút xóa, icon lịch, icon trên nút) ---- */
+.mobile-ui :is(.page-title-controls, .toolbar-row) .ant-btn {
+  font-weight: 400;
+}
+.mobile-ui .ant-btn {
+  box-shadow: none;
+}
+.mobile-ui :is(.page-title-controls, .toolbar-row) .anticon {
+  font-size: 14px;
+}

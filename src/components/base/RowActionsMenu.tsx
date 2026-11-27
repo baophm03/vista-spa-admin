@@ -18,6 +18,8 @@ interface RowActionsMenuProps {
   items: RowActionItem[]
   onSelect: (key: string) => void
   dropdownOnly?: boolean
+  disabled?: boolean
+  ariaLabel?: string
 }
 
 function isEyeIcon(icon: ReactNode): boolean {
@@ -34,7 +36,7 @@ function isViewAction(item: RowActionItem): boolean {
  *  - Mọi hành động còn lại gom vào nút chấm chấm (dropdown) để cột
  *    Hành động luôn gọn (~64px), không bị tràn khi bảng nhiều cột.
  *  Tự chặn click lan lên dòng (onRow). */
-export default function RowActionsMenu({ items, onSelect, dropdownOnly = false }: RowActionsMenuProps) {
+export default function RowActionsMenu({ items, onSelect, dropdownOnly = false, disabled, ariaLabel }: RowActionsMenuProps) {
   if (items.length === 0) return null
   const viewItems = dropdownOnly ? [] : items.filter(isViewAction)
   const rest = dropdownOnly ? items : items.filter((item) => !isViewAction(item))
@@ -69,11 +71,12 @@ export default function RowActionsMenu({ items, onSelect, dropdownOnly = false }
           }}
         >
           <Button
-            size={dropdownOnly ? 'large' : 'small'}
-            className={dropdownOnly ? 'row-actions-touch-target' : undefined}
+            size={dropdownOnly ? 'middle' : 'small'}
+            className={dropdownOnly ? 'row-actions-trigger' : undefined}
+            disabled={disabled}
             icon={dropdownOnly ? <DownOutlined /> : <MoreOutlined />}
             iconPlacement={dropdownOnly ? 'end' : undefined}
-            aria-label={dropdownOnly ? undefined : 'Thao tác khác'}
+            aria-label={ariaLabel ?? (dropdownOnly ? undefined : 'Thao tác khác')}
           >
             {dropdownOnly ? 'Thao tác' : null}
           </Button>

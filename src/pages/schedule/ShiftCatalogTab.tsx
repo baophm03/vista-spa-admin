@@ -13,11 +13,14 @@ import { deleteShiftTemplatesIdAdmin, getGetShiftTemplatesAdminQueryKey, postShi
 import type { ShiftTemplate } from './types'
 import type { SchedulePageData } from './types'
 import ShiftCatalogFormModal, { ALL_BRANCHES } from './components/ShiftCatalogFormModal'
+import { MobileEmptyCard, MobileErrorCard, MobileLoadingCards } from './mobile/MobileStates'
+import { useCompactLayout } from './useCompactLayout'
 
 interface Props extends SchedulePageData { loadingShared: boolean }
 
 export default function ShiftCatalogTab({ branches, access, loadingShared }: Props) {
   const queryClient = useQueryClient()
+  const compact = useCompactLayout()
   const [branchFilter, setBranchFilter] = useState<string>()
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<ShiftTemplate | null>(null)
@@ -27,6 +30,8 @@ export default function ShiftCatalogTab({ branches, access, loadingShared }: Pro
   const templatesQuery = useGetShiftTemplatesAdmin({ page, limit: 10, ...(branchFilter ? { branch_id: branchFilter } : {}) } as never)
   const rows = (pickData<ShiftTemplate[] | undefined>(templatesQuery.data) ?? []) as ShiftTemplate[]
   const error = templatesQuery.isError ? errorMessage(templatesQuery.error) : ''
+  const loading = loadingShared || templatesQuery.isLoading
+  const retry = () => { setPage(1); void templatesQuery.refetch() }
 
   const reload = useCallback(
     () => queryClient.invalidateQueries({ queryKey: getGetShiftTemplatesAdminQueryKey() }),
@@ -108,21 +113,28 @@ export default function ShiftCatalogTab({ branches, access, loadingShared }: Pro
   ]
 
   return <div>
-    <ToolbarRow>
-      {access.isAdmin && <Select allowClear placeholder="Tất cả cơ sở" style={{ width: 190 }} value={branchFilter} onChange={(value) => { setBranchFilter(value); setPage(1) }} options={branches.map((branch) => ({ value: branch.id, label: branch.name }))} />}
+    <ToolbarRow className="max-md:grid max-md:grid-cols-[minmax(0,1fr)_auto]">
+      {access.isAdmin && <Select allowClear placeholder="Tất cả cơ sở" className="w-full min-w-0 md:w-[190px]" value={branchFilter} onChange={(value) => { setBranchFilter(value); setPage(1) }} options={branches.map((branch) => ({ value: branch.id, label: branch.name }))} />}
       {access.isAdmin && <Button type="primary" icon={<PlusOutlined />} onClick={() => openForm()}>Thêm ca</Button>}
     </ToolbarRow>
-    {!!error && <Alert type="error" showIcon message="Không tải được danh mục ca" description={error} action={<Button size="small" icon={<ReloadOutlined />} onClick={() => { setPage(1); void templatesQuery.refetch() }}>Thử lại</Button>} style={{ marginBottom: 16 }} />}
+    {!!error && !compact && <Alert type="error" showIcon message="Không tải được danh mục ca" description={error} action={<Button size="small" icon={<ReloadOutlined />} onClick={retry}>Thử lại</Button>} style={{ marginBottom: 16 }} />}
     <Table<ShiftTemplate>
       className="desktop-only"
       rowKey="id" size="middle" pagination={false}
-      loading={loadingShared || templatesQuery.isLoading} dataSource={rows} columns={columns}
+      loading={loading} dataSource={rows} columns={columns}
       locale={{ emptyText: <TableEmpty description="Chưa có ca làm nào được cấu hình" /> }}
     />
-    <MobileCards
+    {/* Mobile/tablet: trạng thái tải / lỗi / trống theo Figma */}
+    {compact && (error || loading || !rows.length) ? (
+      <div className="mb-3">
+        {error ? <MobileErrorCard title="Không tải được danh mục ca" onRetry={retry} />
+          : loading ? <MobileLoadingCards />
+            : <MobileEmptyCard title="Chưa có ca làm việc" />}
+      </div>
+    ) : <MobileCards
       rows={rows}
       rowKey={(row) => row.id}
-      loading={loadingShared || templatesQuery.isLoading}
+      loading={loading}
       emptyText="Chưa có ca làm nào được cấu hình"
       renderCard={(row) => (
         <>
@@ -142,8 +154,8 @@ export default function ShiftCatalogTab({ branches, access, loadingShared }: Pro
           )}
         </>
       )}
-    />
-    <ListPagination page={page} limit={10} total={(templatesQuery.data as unknown as { meta?: { total?: number } })?.meta?.total ?? rows.length} onChange={setPage} noun="ca làm việc" />
+    />}
+    {!(compact && (error || loading || !rows.length)) && <ListPagination page={page} limit={10} total={(templatesQuery.data as unknown as { meta?: { total?: number } })?.meta?.total ?? rows.length} onChange={setPage} noun="ca làm việc" />}
 
     <ShiftCatalogFormModal
       open={open}

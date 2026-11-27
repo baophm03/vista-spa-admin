@@ -192,6 +192,14 @@ export default function TreatmentPackageList({ kind }: { kind: PackageKind }) {
     : 'Không thời hạn'
   const packageImage = (row: TreatmentPackageRow) =>
     fileSrc(row.image_file) ?? resolveFileSrc(urlMap, row.image_file_id)
+  const confirmDelete = (row: TreatmentPackageRow) => Modal.confirm({
+    title: `Xóa ${noun} này?`,
+    content: 'Gói đã bán cho khách không thể xóa.',
+    okText: 'Xóa',
+    okButtonProps: { danger: true },
+    cancelText: 'Hủy',
+    onOk: () => deletePackage(row),
+  })
   const renderActions = (row: TreatmentPackageRow, dropdownOnly = false) => (
     <RowActionsMenu
       dropdownOnly={dropdownOnly}
@@ -201,14 +209,7 @@ export default function TreatmentPackageList({ kind }: { kind: PackageKind }) {
       ]}
       onSelect={(key) => {
         if (key === 'edit') openPackageModal(row)
-        else if (key === 'delete') Modal.confirm({
-          title: `Xóa ${noun} này?`,
-          content: 'Gói đã bán cho khách không thể xóa.',
-          okText: 'Xóa',
-          okButtonProps: { danger: true },
-          cancelText: 'Hủy',
-          onOk: () => deletePackage(row),
-        })
+        else if (key === 'delete') confirmDelete(row)
       }}
     />
   )
@@ -263,7 +264,7 @@ export default function TreatmentPackageList({ kind }: { kind: PackageKind }) {
 
   const packagesContent = (
     <>
-      <div className="treatment-list-toolbar">
+      <div className={`treatment-list-toolbar${isSingle ? ' single-service-toolbar' : ''}`}>
         <Input.Search
           allowClear
           aria-label={isSingle ? 'Tìm theo tên hoặc mô tả dịch vụ lẻ' : 'Tìm theo tên hoặc mô tả gói'}
@@ -291,7 +292,7 @@ export default function TreatmentPackageList({ kind }: { kind: PackageKind }) {
       ) : (
         <>
           <Table<TreatmentPackageRow>
-            className="desktop-only [&_.ant-table-cell]:px-2! [&_.ant-table-tbody_.ant-table-cell]:[overflow-wrap:anywhere] [&_.ant-table-thead_th]:whitespace-nowrap! [&_.ant-tag]:whitespace-normal [&_.ant-tag]:me-0!"
+            className="desktop-only treatment-package-table [&_.ant-table-cell]:px-2! [&_.ant-table-tbody_.ant-table-cell]:[overflow-wrap:anywhere] [&_.ant-table-thead_th]:whitespace-nowrap! [&_.ant-tag]:whitespace-normal [&_.ant-tag]:me-0!"
             rowKey="id"
             loading={packagesQuery.isLoading}
             dataSource={rows}
@@ -313,6 +314,7 @@ export default function TreatmentPackageList({ kind }: { kind: PackageKind }) {
             ]}
           />
           <MobileCards
+            className={`treatment-package-cards${packagesQuery.isLoading ? ' is-loading' : ''}`}
             rows={rows}
             rowKey={(row) => row.id}
             loading={packagesQuery.isLoading}
@@ -346,7 +348,13 @@ export default function TreatmentPackageList({ kind }: { kind: PackageKind }) {
                     {!isSingle && <MobileCardRow label="Thời hạn" value={validityLabel(row)} />}
                   </div>
                   {canManage && (
-                    <div className="mobile-card-actions">{renderActions(row, true)}</div>
+                    <div className="mobile-card-actions">
+                      <div className="treatment-package-action-menu">{renderActions(row, true)}</div>
+                      <div className="treatment-package-tablet-actions">
+                        <Button icon={<EditOutlined />} disabled={catalogLoading} onClick={() => openPackageModal(row)}>Sửa</Button>
+                        <Button danger icon={<DeleteOutlined />} onClick={() => confirmDelete(row)}>Xóa</Button>
+                      </div>
+                    </div>
                   )}
                 </>
               )
@@ -360,7 +368,11 @@ export default function TreatmentPackageList({ kind }: { kind: PackageKind }) {
 
   return (
     <>
-      <StatCards items={statItems} />
+      {statItems.length > 0 && (
+        <div className={isSingle ? 'single-service-stats' : 'treatment-package-stats'}>
+          <StatCards items={statItems} />
+        </div>
+      )}
       {packagesContent}
 
       <TreatmentPackageModal

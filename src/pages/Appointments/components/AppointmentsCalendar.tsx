@@ -49,21 +49,6 @@ function getCategory(_row: AppointmentRow): AppointmentCategory {
   return 'consultation'
 }
 
-/**
- * Lấy màu thẻ: kết hợp Phân loại & 7 Trạng thái chuẩn khối màu Google Calendar
- */
-function getEventColor(row: AppointmentRow): string {
-  const status = row.status as AppointmentStatus | undefined
-  // Các trạng thái đặc thù hiển thị màu trạng thái tương ứng
-  if (status && status !== 'approved' && status in STATUS_COLORS) {
-    return STATUS_COLORS[status].accent
-  }
-
-  // Đã duyệt (hoặc mặc định) theo Phân loại:
-  const cat = getCategory(row)
-  return CATEGORY_COLORS[cat].color
-}
-
 function formatPhone(p?: string | null): string {
   if (!p) return ''
   const c = p.replace(/\D/g, '')
@@ -145,7 +130,8 @@ export default function AppointmentsCalendar({
             const statusKey = row.status as AppointmentStatus | undefined
             const statusLabel = (statusKey && STATUS_META[statusKey]?.label) || 'Chưa rõ'
             const isCancelled = statusKey === 'cancelled' || statusKey === 'rejected' || statusKey === 'no_show'
-            const bgColor = getEventColor(row)
+            // Cùng kiểu thẻ với lưới mobile: nền nhạt theo trạng thái + viền trái màu nhấn, chữ tối
+            const palette = (statusKey && STATUS_COLORS[statusKey]) || STATUS_COLORS.approved
 
             const cat = getCategory(row)
             const categoryLabel = CATEGORY_COLORS[cat].label
@@ -165,6 +151,7 @@ export default function AppointmentsCalendar({
             const staff = staffName(row)
             const staffLabel = staff === 'Chưa phân công' ? 'Chưa gán KTV' : staff
 
+            const monthCard = view === 'month'
             const singleLine = compact || height < 28
 
             const tooltipContent = (
@@ -174,7 +161,7 @@ export default function AppointmentsCalendar({
                   <div className="flex items-center gap-2 min-w-0">
                     <span
                       className="h-2.5 w-2.5 shrink-0 rounded-sm"
-                      style={{ backgroundColor: bgColor }}
+                      style={{ backgroundColor: palette.accent }}
                     />
                     <span className="truncate font-bold text-slate-900 text-[13.5px] leading-snug">
                       {name}
@@ -182,7 +169,7 @@ export default function AppointmentsCalendar({
                   </div>
                   <span
                     className="shrink-0 rounded px-2 py-0.5 text-[10px] font-semibold text-white leading-none shadow-2xs"
-                    style={{ backgroundColor: bgColor }}
+                    style={{ backgroundColor: palette.accent }}
                   >
                     {statusLabel}
                   </span>
@@ -256,34 +243,39 @@ export default function AppointmentsCalendar({
                 <button
                   type="button"
                   onClick={(event: MouseEvent<HTMLButtonElement>) => { event.stopPropagation(); select() }}
-                  className={`group relative flex w-full min-w-0 cursor-pointer appearance-none flex-col overflow-hidden text-left transition-all duration-100 focus-visible:outline-2 focus-visible:outline-white hover:brightness-95 hover:shadow-md active:brightness-90 ${
-                    isCancelled ? 'opacity-80' : ''
-                  }`}
+                  className="group relative flex w-full min-w-0 cursor-pointer appearance-none flex-col overflow-hidden text-left transition-all duration-100 focus-visible:outline-2 focus-visible:outline-(--brand-primary) hover:brightness-95 active:brightness-90"
                   style={{
-                    height: compact ? 20 : Math.max(20, height),
-                    backgroundColor: bgColor,
-                    borderRadius: 4,
+                    height: monthCard ? 44 : compact ? 24 : Math.max(24, height),
+                    backgroundColor: palette.bg,
+                    borderRadius: 6,
                     border: '1px solid #ffffff',
+                    borderInlineStart: `3px solid ${palette.accent}`,
                     boxSizing: 'border-box',
-                    boxShadow: '0 1px 2px rgba(60,64,67,0.3)',
-                    color: '#ffffff',
+                    color: palette.text,
                   }}
                 >
-                  {/* Google Calendar: Micro / Single line mode (Month view hoặc ca < 28px) */}
-                  {singleLine ? (
-                    <div className="flex h-full w-full min-w-0 items-center gap-1.5 px-2 py-0.5 text-white leading-none">
+                  {monthCard ? (
+                    <div className="flex h-full w-full min-w-0 flex-col justify-center gap-0.5 px-1.5 leading-tight">
+                      <span className={`truncate text-[11px] font-semibold text-[#282335] ${isCancelled ? 'line-through opacity-75' : ''}`}>{name}</span>
+                      <div className="flex min-w-0 items-center gap-1 text-[10px]">
+                        {time && <span className="shrink-0 tabular-nums">{time}</span>}
+                        <span className="truncate rounded bg-white/70 px-1 text-[9px] font-semibold">{categoryLabel}</span>
+                      </div>
+                    </div>
+                  ) : singleLine ? (
+                    <div className="flex h-full w-full min-w-0 items-center gap-1.5 px-2 py-0.5 leading-none">
                       {time && <span className="shrink-0 font-semibold text-[10px] tabular-nums opacity-95">{time}</span>}
-                      <span className="shrink-0 rounded bg-white/25 px-1 py-0.2 text-[9px] font-semibold leading-none">{categoryLabel}</span>
-                      <span className={`min-w-0 flex-1 truncate text-[11px] font-medium ${isCancelled ? 'line-through opacity-75' : ''}`}>
+                      <span className="shrink-0 rounded bg-white/70 px-1 py-0.2 text-[9px] font-semibold leading-none">{categoryLabel}</span>
+                      <span className={`min-w-0 flex-1 truncate text-[11px] font-medium text-[#282335] ${isCancelled ? 'line-through opacity-75' : ''}`}>
                         {name}
                       </span>
                     </div>
                   ) : height < 46 ? (
                     /* Google Calendar: Compact mode (30 min) */
-                    <div className="flex h-full w-full min-w-0 flex-col justify-center px-2 py-0.5 text-white leading-tight">
+                    <div className="flex h-full w-full min-w-0 flex-col justify-center px-2 py-0.5 leading-tight">
                       <div className="flex items-center gap-1 min-w-0">
-                        <span className="shrink-0 rounded bg-white/25 px-1 py-0.2 text-[9px] font-semibold leading-none">{categoryLabel}</span>
-                        <span className={`min-w-0 flex-1 truncate text-[11.5px] font-semibold ${isCancelled ? 'line-through opacity-75' : ''}`}>{name}</span>
+                        <span className="shrink-0 rounded bg-white/70 px-1 py-0.2 text-[9px] font-semibold leading-none">{categoryLabel}</span>
+                        <span className={`min-w-0 flex-1 truncate text-[11.5px] font-semibold text-[#282335] ${isCancelled ? 'line-through opacity-75' : ''}`}>{name}</span>
                       </div>
                       <div className="w-full truncate text-[10.5px] opacity-90 tabular-nums">
                         {timeRange || time}
@@ -291,10 +283,10 @@ export default function AppointmentsCalendar({
                     </div>
                   ) : height < 68 ? (
                     /* Google Calendar: Medium mode (45 min) */
-                    <div className="flex h-full w-full min-w-0 flex-col justify-start gap-0.5 px-2 py-1 text-white leading-tight">
+                    <div className="flex h-full w-full min-w-0 flex-col justify-start gap-0.5 px-2 py-1 leading-tight">
                       <div className="flex items-center gap-1 min-w-0">
-                        <span className="shrink-0 rounded bg-white/25 px-1 py-0.2 text-[9px] font-semibold leading-none">{categoryLabel}</span>
-                        <span className={`min-w-0 flex-1 truncate text-[12px] font-semibold ${isCancelled ? 'line-through opacity-75' : ''}`}>{name}</span>
+                        <span className="shrink-0 rounded bg-white/70 px-1 py-0.2 text-[9px] font-semibold leading-none">{categoryLabel}</span>
+                        <span className={`min-w-0 flex-1 truncate text-[12px] font-semibold text-[#282335] ${isCancelled ? 'line-through opacity-75' : ''}`}>{name}</span>
                       </div>
                       <div className="w-full truncate text-[11px] opacity-90 tabular-nums">
                         {timeRange || time}
@@ -305,10 +297,10 @@ export default function AppointmentsCalendar({
                     </div>
                   ) : (
                     /* Google Calendar: Standard / Tall mode (60+ min) */
-                    <div className="flex h-full w-full min-w-0 flex-col justify-start gap-0.5 px-2.5 py-1.5 text-white leading-tight">
+                    <div className="flex h-full w-full min-w-0 flex-col justify-start gap-0.5 px-2.5 py-1.5 leading-tight">
                       <div className="flex items-center gap-1 min-w-0">
-                        <span className="shrink-0 rounded bg-white/25 px-1.5 py-0.5 text-[9.5px] font-semibold leading-none">{categoryLabel}</span>
-                        <span className={`min-w-0 flex-1 truncate text-[12.5px] font-bold ${isCancelled ? 'line-through opacity-75' : ''}`}>{name}</span>
+                        <span className="shrink-0 rounded bg-white/70 px-1.5 py-0.5 text-[9.5px] font-semibold leading-none">{categoryLabel}</span>
+                        <span className={`min-w-0 flex-1 truncate text-[12.5px] font-bold text-[#282335] ${isCancelled ? 'line-through opacity-75' : ''}`}>{name}</span>
                       </div>
                       <div className="w-full truncate text-[11px] opacity-90 tabular-nums">
                         {timeRange || time}
@@ -334,9 +326,6 @@ export default function AppointmentsCalendar({
       <details className="md:hidden border-t border-[var(--brand-border-soft)] bg-neutral-50 px-3 py-2 text-xs text-neutral-600">
         <summary className="cursor-pointer font-semibold text-neutral-500 select-none">Chú giải màu</summary>
         <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5">
-          <span className="inline-flex items-center gap-1.5 font-medium text-neutral-700">
-            <span className="h-2.5 w-2.5 rounded-sm" style={{ background: CATEGORY_COLORS.consultation.color }} /> Tư vấn
-          </span>
           {(Object.keys(STATUS_COLORS) as AppointmentStatus[]).map((st) => (
             <span key={st} className="inline-flex items-center gap-1.5 font-medium text-neutral-700">
               <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: STATUS_COLORS[st].accent }} />
@@ -347,14 +336,6 @@ export default function AppointmentsCalendar({
       </details>
       {/* Desktop: thanh chú giải đầy đủ như cũ */}
       <div className="hidden md:flex flex-wrap items-center justify-between gap-x-6 gap-y-2 border-t border-[var(--brand-border-soft)] bg-neutral-50 px-3 py-2 text-xs text-neutral-600">
-        {/* Nhóm Phân loại: 2 loại chuẩn là Tư vấn & Liệu trình */}
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-          <span className="font-semibold text-neutral-500">Phân loại:</span>
-          <span className="inline-flex items-center gap-1.5 font-medium text-neutral-700">
-            <span className="h-2.5 w-2.5 rounded-sm" style={{ background: CATEGORY_COLORS.consultation.color }} /> Tư vấn
-          </span>
-        </div>
-
         {/* Nhóm 7 Trạng thái */}
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
           <span className="font-semibold text-neutral-500">Trạng thái:</span>

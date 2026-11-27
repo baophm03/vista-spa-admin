@@ -14,7 +14,7 @@ body {
 /* ===== Bảng — khung hairline + shadow khuếch tán theo màu brand ===== */
 .ant-table-wrapper {
   border: 1px solid var(--brand-border);
-  border-radius: 12px;
+  border-radius: 8px;
   overflow: hidden;
   background: #FFFFFF;
   box-shadow:
@@ -100,6 +100,17 @@ body {
 }
 
 /* ===== Stat card — thống kê đầu trang danh sách ===== */
+.stat-cards {
+  grid-template-columns: repeat(auto-fit, minmax(205px, 1fr));
+  grid-auto-rows: 1fr;
+}
+
+@media (768px <= width < 1200px) {
+  .stat-cards[data-stat-count='4'] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 .stat-card {
   position: relative;
   overflow: hidden;
@@ -109,7 +120,7 @@ body {
   gap: 16px;
   background: #FFFFFF;
   border: 1px solid var(--brand-border-soft, #ECEFEA);
-  border-radius: 16px;
+  border-radius: 8px;
   padding: 22px 20px;
   box-shadow:
     0 1px 2px rgba(var(--brand-dark-rgb), 0.04),
@@ -142,7 +153,7 @@ body {
   justify-content: center;
   width: 48px;
   height: 48px;
-  border-radius: 14px;
+  border-radius: 8px;
   font-size: 21px;
   flex-shrink: 0;
   border: 1px solid rgba(255, 255, 255, 0.65);
@@ -172,6 +183,69 @@ body {
   font-weight: 800;
   line-height: 1.1;
   letter-spacing: -0.01em;
+}
+
+/* Inline notices share a layout but keep a distinct palette for each state. */
+.ant-alert.ant-alert-info {
+  --notice-bg: color-mix(in srgb, var(--brand-primary, #63336a) 7%, #fff);
+  --notice-ink: var(--brand-dark, #54316f);
+  --notice-icon: var(--brand-primary, #63336a);
+}
+
+.ant-alert.ant-alert-success {
+  --notice-bg: #f0f9f2;
+  --notice-ink: #214d34;
+  --notice-icon: #287a48;
+}
+
+.ant-alert.ant-alert-warning {
+  --notice-bg: #fff7e8;
+  --notice-ink: #66421a;
+  --notice-icon: #995911;
+}
+
+.ant-alert.ant-alert-error {
+  --notice-bg: #fef1f2;
+  --notice-ink: #762e3a;
+  --notice-icon: #b43649;
+}
+
+.ant-alert:not(.ant-alert-banner) {
+  min-width: 0;
+  align-items: flex-start;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--notice-icon) 15%, var(--notice-bg));
+  border-radius: 8px;
+  background: var(--notice-bg);
+  color: var(--notice-ink);
+  line-height: 1.5;
+}
+
+.ant-alert:not(.ant-alert-banner) > .ant-alert-section {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.ant-alert:not(.ant-alert-banner) :is(.ant-alert-title, .ant-alert-description) {
+  color: var(--notice-ink);
+}
+
+.ant-alert:not(.ant-alert-banner) > .ant-alert-icon {
+  flex-shrink: 0;
+  margin-top: 3px;
+  color: var(--notice-icon);
+}
+
+@media (max-width: 767px) {
+  .ant-alert:not(.ant-alert-banner):has(> .ant-alert-actions):not(:has(> .ant-alert-close-icon)) {
+    flex-wrap: wrap;
+  }
+
+  .ant-alert:not(.ant-alert-banner):not(:has(> .ant-alert-close-icon)) > .ant-alert-actions {
+    flex: 0 0 100%;
+    margin-inline-start: 0;
+    text-align: end;
+  }
 }
 
 /* ===== Tag "gold" — badge vàng đồng bộ với màu bổ trợ (accent) trong Brand Settings ===== */
@@ -227,21 +301,23 @@ h4.ant-typography {
     max-width: 100%;
   }
 
-  .ant-modal .ant-row,
-  .ant-drawer .ant-row {
+  /* Lưới Row/Col trong modal/drawer: 2 cột trên mobile. Bỏ qua .ant-form-item-row — antd dùng Row/Col
+     cho nhãn + ô nhập của từng Form.Item, ép 50% sẽ làm mọi trường chỉ rộng nửa modal. */
+  .ant-modal .ant-row:not(.ant-form-item-row),
+  .ant-drawer .ant-row:not(.ant-form-item-row) {
     margin-inline: -6px !important;
   }
 
-  .ant-modal .ant-row > .ant-col,
-  .ant-drawer .ant-row > .ant-col {
+  .ant-modal .ant-row:not(.ant-form-item-row) > .ant-col,
+  .ant-drawer .ant-row:not(.ant-form-item-row) > .ant-col {
     flex: 0 0 50% !important;
     max-width: 50% !important;
     min-width: 0;
     padding-inline: 6px !important;
   }
 
-  .ant-modal .ant-row > :is(.ant-col-24, .ant-col-xs-24),
-  .ant-drawer .ant-row > :is(.ant-col-24, .ant-col-xs-24) {
+  .ant-modal .ant-row:not(.ant-form-item-row) > :is(.ant-col-24, .ant-col-xs-24),
+  .ant-drawer .ant-row:not(.ant-form-item-row) > :is(.ant-col-24, .ant-col-xs-24) {
     flex-basis: 100% !important;
     max-width: 100% !important;
   }
@@ -282,7 +358,7 @@ h4.ant-typography {
     width: 40px;
     height: 40px;
     overflow: hidden;
-    border-radius: 9px;
+    border-radius: 8px;
     background: var(--brand-bg);
   }
 
@@ -356,6 +432,68 @@ h4.ant-typography {
 /* Ẩn card trên desktop — đặt sau .mobile-card-list để thắng cùng độ ưu tiên */
 .mobile-only {
   display: none;
+}
+
+.responsive-table-mobile { container-type: inline-size; }
+.responsive-table-mobile .mobile-card-list { align-items: start; }
+
+@container (min-width: 600px) {
+  .responsive-table-mobile .mobile-card-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+  .responsive-table-mobile .mobile-card-state { grid-column: 1 / -1; }
+}
+
+.responsive-table-media { --media-size: 72px; flex-shrink: 0; }
+.responsive-table-media .ant-image,
+.responsive-table-media .ant-image-img,
+.responsive-table-media > div {
+  width: var(--media-size) !important;
+  height: var(--media-size) !important;
+}
+.responsive-table-media .ant-image-img { object-fit: cover; }
+.responsive-table-media > div { font-size: 24px; }
+
+@media (max-width: 1023px) {
+  .desktop-only {
+    display: none !important;
+  }
+  .mobile-only {
+    display: grid !important;
+  }
+  /* Pagination: ẩn dòng đếm "Hiển thị x - y", căn giữa cụm nút chuyển trang */
+  .list-pagination {
+    justify-content: center !important;
+  }
+  .list-pagination-count {
+    display: none;
+  }
+  /* Mobile (KTV dùng điện thoại): gọn màn hình, bỏ hàng stats */
+  .stat-cards {
+    display: none !important;
+  }
+  /* Card header không chật: chữ nhỏ lại, đủ chỗ cho title + tag cùng hàng */
+  .ant-card-head {
+    min-height: unset;
+    padding: 0 12px;
+    font-size: 13.5px;
+  }
+  .ant-card-head-wrapper {
+    align-items: center;
+  }
+  .ant-card-head-title {
+    padding: 10px 0;
+    overflow: visible;
+    white-space: normal;
+  }
+  .ant-card-size-small .ant-card-head {
+    min-height: unset;
+    font-size: 13.5px;
+  }
+  .ant-card .ant-card-head-title > .ant-space {
+    gap: 6px !important;
+  }
 }
 
 @media (max-width: 767px) {
@@ -438,7 +576,7 @@ h4.ant-typography {
     align-items: center;
   }
   .mobile-segmented .ant-segmented-item {
-    border-radius: 9px;
+    border-radius: 8px;
     font-size: 13px;
     font-weight: 500;
     display: inline-flex;
@@ -451,21 +589,53 @@ h4.ant-typography {
   }
   .mobile-segmented .ant-segmented-thumb {
     background: #f2e5f4;
-    border-radius: 9px;
+    border-radius: 8px;
   }
   /* Select trong hàng lọc mobile cao 44 bo 12 theo Figma */
   .ant-select.mobile-filter-select .ant-select-selector {
     height: 44px;
-    border-radius: 12px;
+    border-radius: 8px;
   }
 
   .mobile-only {
     display: grid !important;
   }
 
-  /* Mobile (KTV dùng điện thoại): gọn màn hình, bỏ hàng stats */
   .stat-cards {
-    display: none !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    margin-bottom: 12px !important;
+  }
+
+  .stat-cards > .stat-card {
+    min-width: 0;
+    min-height: 76px;
+    gap: 8px;
+    padding: 10px;
+    border-radius: 8px;
+  }
+
+  .stat-cards .stat-card-disc {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    font-size: 15px;
+  }
+
+  .stat-cards .stat-card-circle {
+    width: 64px;
+    height: 64px;
+    inset: -24px -24px auto auto;
+  }
+
+  .stat-cards .stat-card-label {
+    font-size: 11px;
+    white-space: normal;
+  }
+
+  .stat-cards .stat-card-value {
+    font-size: 20px;
+    overflow-wrap: anywhere;
   }
 
   /* Dashboard tabs: mobile chia đều full-width (kiểu segmented) thay vì
@@ -519,7 +689,7 @@ h4.ant-typography {
    padding 12, head có divider, cột label 107px căn trái. */
 .mobile-card {
   border: 1px solid var(--brand-border-soft);
-  border-radius: 12px;
+  border-radius: 8px;
   background: #fff;
   padding: 12px;
 }
@@ -582,19 +752,25 @@ h4.ant-typography {
   border-top: 1px dashed var(--brand-border-soft);
 }
 
-@media (max-width: 767px) {
-  .mobile-card-actions .row-actions-touch-target,
-  .responsive-table-actions .row-actions-touch-target,
-  .product-category-actions .row-actions-touch-target,
-  .order-mobile-card-footer .row-actions-touch-target {
-    width: auto;
-    min-width: 88px;
-    height: 34px !important;
-    min-height: 34px !important;
-    padding: 0 8px !important;
-    gap: 4px;
-    font-size: 12px;
-  }
+.ant-btn.row-actions-trigger {
+  width: 112px;
+  height: 36px;
+  min-height: 36px;
+  padding-inline: 10px;
+  justify-content: space-between;
+  border-radius: 8px;
+  box-shadow: none;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.ant-btn.row-actions-trigger:not(:disabled) {
+  color: var(--brand-primary);
+}
+
+.row-actions-trigger .anticon {
+  color: var(--ant-color-text-quaternary, #bfbfbf);
+  font-size: 10px;
 }
 
 /* ===== Card — viền hairline + shadow mềm cùng tông ===== */
@@ -609,14 +785,9 @@ h4.ant-typography {
   border-bottom-color: var(--brand-border-soft);
 }
 
-/* ===== Nút chính — shadow mềm cùng màu, bấm có lực ===== */
-.ant-btn-primary {
-  box-shadow: 0 4px 14px -4px rgba(var(--brand-rgb), 0.5);
-}
-
+/* ===== Nút chính — phẳng, không bóng đổ (docs/mobile-design-guide.md); bấm vẫn có lực ===== */
 .ant-btn-primary:active {
   transform: translateY(1px);
-  box-shadow: 0 2px 8px -4px rgba(var(--brand-rgb), 0.4);
 }
 
 /* Item buổi điều trị — hover cả hàng */
@@ -675,6 +846,12 @@ h4.ant-typography {
   }
 }
 
+/* Modal tạo/sửa chuẩn (theo modal Thêm khách hàng /customers — docs/mobile-design-guide.md mục 8):
+   viền ô nhập đậm hơn 1 chút cho dễ thấy ranh giới trường khi chưa hover/focus */
+.ant-modal .ant-form :is(.ant-input-outlined, .ant-input-number-outlined, .ant-picker-outlined, .ant-select-outlined):not(:hover, :focus-within, .ant-input-status-error, .ant-input-number-status-error, .ant-picker-status-error, .ant-select-status-error, .ant-input-disabled, .ant-input-number-disabled, .ant-picker-disabled, .ant-select-disabled) {
+  border-color: color-mix(in srgb, var(--brand-dark) 22%, white);
+}
+
 .content-rich-editor .ql-toolbar.ql-snow {
   border-color: #d9cfe0;
   border-radius: 0.5rem 0.5rem 0 0;
@@ -706,7 +883,7 @@ h4.ant-typography {
 
 .content-post-settings-row {
   display: grid;
-  grid-template-columns: minmax(0, 2.5fr) minmax(140px, 1.2fr) minmax(140px, 1.2fr) minmax(72px, 0.55fr) minmax(120px, 0.95fr);
+  grid-template-columns: minmax(140px, 1.2fr) minmax(140px, 1.2fr) minmax(72px, 0.55fr) minmax(120px, 0.95fr);
   gap: 0 12px;
   align-items: start;
 }
@@ -738,9 +915,6 @@ h4.ant-typography {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .content-post-settings-row>.ant-form-item:first-child {
-    grid-column: 1 / -1;
-  }
 }
 
 .content-rich-editor .ql-editor img {

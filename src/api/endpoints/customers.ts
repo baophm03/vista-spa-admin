@@ -2745,7 +2745,7 @@ export const usePostUsersCustomersAdmin = <TError = UnauthorizedResponse | Forbi
       return useMutation(mutationOptions, queryClient);
     }
     /**
- * GET `/health-records/admin` — danh sách hồ sơ sức khỏe mới nhất theo khách. Cần đăng nhập + `health_record.read_all` (branch scope áp dụng). Query parameters: `branch_id`. Hồ sơ của chính tài khoản (miniapp): GET /health-records/app.
+ * Danh sách hồ sơ sức khỏe mới nhất theo khách. Hỗ trợ tìm kiếm và lọc theo loại da.
  * @summary View latest health records
  */
 export const getHealthRecordsAdmin = (

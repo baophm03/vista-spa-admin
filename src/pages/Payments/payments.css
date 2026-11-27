@@ -15,20 +15,8 @@
   width: 260px;
 }
 
-.payment-filters .payment-filter-branch {
-  width: 170px;
-}
-
-.payment-filters .payment-filter-staff {
-  width: 160px;
-}
-
-.payment-filter-options {
-  display: contents;
-}
-
 .payment-filter-popup {
-  display: none;
+  display: inline-flex;
 }
 
 .payment-card-amount {
@@ -40,14 +28,98 @@
   overflow-wrap: anywhere;
 }
 
-@media (max-width: 767px) {
-  .payment-filters {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+.payment-history-cards .mobile-card {
+  min-width: 0;
+  padding: 14px;
+}
+
+@media (max-width: 1023px) {
+  .payment-history-cards .mobile-card {
+    padding: 12px;
+  }
+}
+
+.payment-history-cards .payment-card-head {
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.payment-history-cards .payment-card-amount {
+  flex-shrink: 0;
+  color: var(--brand-dark);
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+}
+
+.payment-card-service {
+  display: grid;
+  gap: 3px;
+  margin-bottom: 12px;
+  padding: 9px 10px;
+  border-inline-start: 2px solid var(--brand-primary);
+  border-radius: 0 8px 8px 0;
+  background: color-mix(in srgb, var(--brand-primary) 6%, #fff);
+  color: var(--brand-dark);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.payment-card-service > span {
+  font-size: 11px;
+}
+
+.payment-history-cards .payment-card-details {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-content: start;
+  gap: 8px 12px;
+}
+
+.payment-card-details .mobile-card-row {
+  display: grid;
+  gap: 2px;
+}
+
+.payment-history-cards .mobile-card-actions {
+  margin-top: 10px;
+  padding-top: 4px;
+  border-top: 1px solid var(--brand-border-soft);
+}
+
+@media (min-width: 768px) and (max-width: 1199px) {
+  .desktop-only.payment-history-table {
+    display: none;
   }
 
-  .payment-filter-options {
-    display: none;
+  .mobile-only.payment-history-cards {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .payment-history-cards .mobile-card {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .payment-history-cards .mobile-card-rows {
+    flex: 1;
+  }
+
+}
+
+@media (max-width: 767px) {
+  /* docs 6.2.1: tìm kiếm 1 hàng, Bộ lọc 1 hàng full width có icon + tên */
+  .payment-filters {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    margin-bottom: 12px;
+  }
+
+  .payment-filter-popup {
+    display: grid;
   }
 
   .payment-filters .payment-filter-search {
@@ -55,26 +127,13 @@
     min-width: 0;
   }
 
-  .payment-filter-popup {
-    display: inline-flex;
-  }
-
   .payment-filter-popup .ant-btn {
-    min-height: 44px;
-    padding-inline: 10px;
+    width: 100%;
   }
 
   .payment-filters .ant-input-search .ant-btn,
   .payments-page .payment-void-button {
     min-height: 44px;
-  }
-
-  .payment-card-head {
-    align-items: flex-start;
-  }
-
-  .payments-page .mobile-card-row .mobile-card-label {
-    flex-basis: 36%;
   }
 
   .payment-list-error {

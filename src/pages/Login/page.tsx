@@ -67,7 +67,7 @@ export default function Login() {
   const inputWrapClass =
     'relative flex items-center [&>svg]:pointer-events-none [&>svg]:absolute [&>svg]:left-4 [&>svg]:h-[18px] [&>svg]:w-[18px] [&>svg]:text-[#b3adbd]'
   const inputClass =
-    'h-12 w-full rounded-xl border-[1.5px] border-[var(--brand-border)] bg-[var(--brand-bg)] px-4 pl-11 text-sm text-[#292331] outline-none transition placeholder:text-[#b3adbd] focus:border-[var(--brand-primary)] focus:bg-white focus:shadow-[0_0_0_4px_rgba(var(--brand-rgb),0.1)]'
+    'h-12 w-full rounded-lg border-[1.5px] border-[var(--brand-border)] bg-[var(--brand-bg)] px-4 pl-11 text-sm text-[#292331] outline-none transition placeholder:text-[#b3adbd] focus:border-[var(--brand-primary)] focus:bg-white focus:shadow-[0_0_0_4px_rgba(var(--brand-rgb),0.1)]'
   const labelClass = 'mb-2 block text-xs font-semibold uppercase tracking-[0.06em] text-[#6f6880]'
   const errorClass = 'mt-1.5 text-xs text-[#d4385f]'
 
@@ -94,7 +94,7 @@ export default function Login() {
       {/* Panel form bên phải */}
       {/* Mobile (<720px): bỏ fixed-center (màn thấp bị cắt, không cuộn được) →
           panel nằm trong flow, flex cha canh giữa, dư thì cuộn tự nhiên */}
-      <aside className="fixed top-1/2 right-12 z-[2] w-[min(420px,calc(100vw-48px))] -translate-y-1/2 rounded-xl bg-white p-11 pb-8 shadow-[0_32px_80px_rgba(var(--brand-dark-rgb),0.28),0_4px_16px_rgba(var(--brand-dark-rgb),0.12)] max-[720px]:static max-[720px]:my-6 max-[720px]:w-full max-[720px]:max-w-[420px]! max-[720px]:translate-y-0 max-[720px]:rounded-2xl max-[720px]:px-6 max-[720px]:py-8">
+      <aside className="fixed top-1/2 right-12 z-[2] w-[min(420px,calc(100vw-48px))] -translate-y-1/2 rounded-lg bg-white p-11 pb-8 shadow-[0_32px_80px_rgba(var(--brand-dark-rgb),0.28),0_4px_16px_rgba(var(--brand-dark-rgb),0.12)] max-[720px]:static max-[720px]:my-6 max-[720px]:w-full max-[720px]:max-w-[420px]! max-[720px]:translate-y-0 max-[720px]:rounded-lg max-[720px]:px-6 max-[720px]:py-8">
         <div className="mb-9 text-center max-[720px]:mb-6">
           {brand.logoUrl && (
             <img
@@ -111,7 +111,7 @@ export default function Login() {
         </div>
 
         {alert && (
-          <div className="mb-[18px] rounded-xl border border-[#f5c6d4] bg-[#fdf0f3] px-3.5 py-2.5 text-[13px] text-[#d4385f]">
+          <div className="mb-[18px] rounded-lg border border-[#f5c6d4] bg-[#fdf0f3] px-3.5 py-2.5 text-[13px] text-[#d4385f]">
             {alert}
           </div>
         )}
@@ -167,7 +167,7 @@ export default function Login() {
           <button
             type="submit"
             disabled={loginMutation.isPending}
-            className="mt-1.5 h-[50px] w-full cursor-pointer rounded-xl border-0 bg-[linear-gradient(135deg,var(--brand-primary),var(--brand-dark))] text-[15px] font-semibold tracking-[0.02em] text-white shadow-[0_8px_20px_rgba(var(--brand-dark-rgb),0.35)] transition hover:-translate-y-px hover:shadow-[0_10px_24px_rgba(var(--brand-dark-rgb),0.45)] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-65"
+            className="mt-1.5 h-[50px] w-full cursor-pointer rounded-lg border-0 bg-[linear-gradient(135deg,var(--brand-primary),var(--brand-dark))] text-[15px] font-semibold tracking-[0.02em] text-white shadow-[0_8px_20px_rgba(var(--brand-dark-rgb),0.35)] transition hover:-translate-y-px hover:shadow-[0_10px_24px_rgba(var(--brand-dark-rgb),0.45)] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-65"
           >
             {loginMutation.isPending ? 'Đang đăng nhập...' : 'Đăng nhập'}
           </button>

@@ -139,7 +139,7 @@ export default function CustomerProfileOverviewTab({ profile, summary, fieldDefi
           </div>
         </div>
         {membership?.card_rank?.benefits && <div className="mb-3 text-sm text-gray-600">{membership.card_rank.benefits}</div>}
-        <Space wrap className="mt-2 w-full border-t border-slate-100 pt-3">
+        <Space wrap className="mt-2! w-full border-t border-slate-100 pt-3">
           <Can I="POINTS_ADJUST" a="MEMBERSHIP">
             <Button onClick={() => { adjustForm.resetFields(); adjustForm.setFieldsValue({ reason: '' }); setAdjustOpen(true) }}>Điều chỉnh điểm</Button>
           </Can>
