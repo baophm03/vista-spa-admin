@@ -220,6 +220,12 @@ Tablet (768–1023px) giữ 1 hàng ngang, căn phải. Dưới 768px xếp theo
   - Ví dụ Ngày nghỉ: `Ngày nghỉ:` / `Thời gian nghỉ:` / `Lý do:`
 - Actions (nếu có): hàng dưới cùng, căn phải, divider nét đứt (`.mobile-card-actions`).
 
+### 6.3b Phân trang (`ListPagination`)
+- Mobile/tablet: **bỏ dòng "Hiển thị x – y trong n …"**, chỉ còn cụm nút **căn giữa**, cách danh sách 16px.
+- Mobile (<768px): mọi nút (‹, số trang, ›) cùng cỡ **36×36**, cách nhau **8px**, bo 8px, nền `#F0EBF2`; trang hiện tại nền màu chính chữ trắng;
+  trang xa rút gọn bằng `…` (luôn hiện trang đầu/cuối và 2 trang kề trang hiện tại).
+- Tablet (768–1023px): `Pagination` antd, ẩn dòng đếm, căn giữa (`.list-pagination` trong `index.css`).
+
 ### 6.4 Trạng thái
 Dùng `MobileLoadingCards`, `MobileErrorCard`, `MobileEmptyCard` — không dùng Alert/Empty mặc định của antd trên mobile.
 

@@ -622,10 +622,10 @@ export default function Imports() {
           {customFieldDefs.some((definition) => definition.data_type === 'multiselect') && <Typography.Text type="secondary">Với trường chọn nhiều, ngăn cách các lựa chọn trong file bằng dấu chấm phẩy (;).</Typography.Text>}
           <div style={{ marginTop: 12 }}>{renderFieldMappings(mappingFields)}</div>
           <div className="mt-4 flex flex-wrap gap-2 max-md:grid max-md:grid-cols-2">
-            <Button icon={<SafetyOutlined />} loading={running} onClick={() => void runImport(true)}>
+            <Button loading={running} onClick={() => void runImport(true)}>
               1. Kiểm tra dữ liệu
             </Button>
-            <Button type="primary" danger icon={<PlayCircleOutlined />} disabled={!report || (report?.error_rows ?? 0) > (report?.total_rows ?? 1)} loading={running} onClick={() => {
+            <Button type="primary" danger disabled={!report || (report?.error_rows ?? 0) > (report?.total_rows ?? 1)} loading={running} onClick={() => {
               Modal.confirm({
                 title: 'Xác nhận nhập dữ liệu?',
                 content: `Sẽ nhập ${report?.valid_rows ?? 0} dòng hợp lệ. Khách được thêm mới hoặc cập nhật theo số điện thoại để tránh trùng.`,
