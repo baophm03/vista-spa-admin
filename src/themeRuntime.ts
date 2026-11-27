@@ -1,6 +1,6 @@
 import { useMemo, useSyncExternalStore } from 'react'
 import { brandColors } from './theme'
-import { getSettingsAdmin, getSettingsBrandAdmin } from '@/api/endpoints/settings'
+import { getSettingsAdmin, getSettingsBrand } from '@/api/endpoints/settings'
 import type { BrandSettings } from './api/models/brandSettings'
 import { pickData } from './api/helpers'
 
@@ -211,7 +211,7 @@ export function applyThemeColors(colors: { primary?: string; tertiary?: string }
 export async function refreshThemeFromServer() {
   try {
     // brand settings là nguồn chính thức cho cả 4 màu — không cho giá trị legacy đè lên
-    applyBrandSettings(pickData<BrandSettings>(await getSettingsBrandAdmin()))
+    applyBrandSettings(pickData<BrandSettings>(await getSettingsBrand()))
   } catch {
     try {
       const rows = pickData<Array<{ key: string; value: unknown }>>(await getSettingsAdmin())

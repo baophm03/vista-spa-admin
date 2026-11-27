@@ -337,19 +337,27 @@ export default function Appointments() {
     openModal()
   }, [])
 
-  // Deep-link từ tab Xin nghỉ: ?appointment_id=<id> → mở modal đổi lịch hẹn (đổi KTV phụ trách)
+  // Deep-link từ tab Xin nghỉ: ?appointment_id=<id>[&detail=1]
+  // - detail=1 → mở modal Chi tiết lịch hẹn (từ đó bấm "Đổi KTV" để gán người phụ trách mới)
+  // - mặc định → mở thẳng form đổi lịch hẹn (đổi KTV phụ trách)
   useEffect(() => {
     const appointmentIdParam = searchParams.get('appointment_id')
     if (!appointmentIdParam) return
+    const openDetail = searchParams.get('detail') === '1'
     const next = new URLSearchParams(searchParams)
     next.delete('appointment_id')
+    next.delete('detail')
     setSearchParams(next, { replace: true })
     void (async () => {
       try {
         const item = pickData<Appointment | undefined>(await getAppointmentsIdAdmin(appointmentIdParam))
         if (!item) { message.warning('Không tìm thấy lịch hẹn'); return }
-        openModal(item)
-        message.info('Đổi KTV phụ trách sang người khác rồi lưu để hoàn tất chuyển giao lịch hẹn.')
+        if (openDetail) {
+          setSelectedAppointment(item as AppointmentRow)
+        } else {
+          openModal(item)
+          message.info('Đổi KTV phụ trách sang người khác rồi lưu để hoàn tất chuyển giao lịch hẹn.')
+        }
       } catch (err) {
         message.error(errorMessage(err))
       }
