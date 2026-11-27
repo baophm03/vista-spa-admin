@@ -1091,7 +1091,7 @@ export const prefetchGetAppointmentsAvailableSlotsQuery = async <TData = Awaited
 
 
 /**
- * **AP-01A** — GET /appointments/app. Danh sách lịch hẹn CỦA CHÍNH tài khoản qua miniapp (đa role: khách hàng hoặc nhân viên/KTV). Chỉ cần đăng nhập (API miniapp — không áp phân quyền, dữ liệu luôn của chính tài khoản). Trả mọi trạng thái (pending/approved/in_progress/completed/cancelled), không phân trang, kèm KTV và cơ sở. FE tự chia tab Sắp tới/Lịch sử và sort.
+ * **AP-01A** — GET /appointments/app. Danh sách lịch hẹn CỦA CHÍNH tài khoản qua miniapp (đa role: khách hàng hoặc nhân viên/KTV). Chỉ cần đăng nhập (API miniapp — không áp phân quyền, dữ liệu luôn của chính tài khoản). Trả mọi trạng thái (pending/approved/in_progress/completed/cancelled), không phân trang, kèm KTV, cơ sở và chủ đề (`service`, `treatment_package`, `need`). FE tự chia tab Sắp tới/Lịch sử và sort.
  * @summary List my appointments (miniapp)
  */
 export const getAppointmentsApp = (

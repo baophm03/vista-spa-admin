@@ -30,6 +30,21 @@ export type AppointmentRow = Appointment & {
   diary?: string | null
   products_used?: string | null
   result?: string | null
+  /** Chủ đề lịch hẹn (khách đặt từ dịch vụ / gói liệu trình trên miniapp) */
+  service_id?: string | null
+  treatment_package_id?: string | null
+  service?: { id?: string; title?: string; duration_minutes?: number | null } | null
+  treatment_package?: { id?: string; name?: string } | null
+  /** Nhu cầu khách ghi khi không chọn chủ đề (mặc định "Cần liên hệ hoặc tư vấn") */
+  need?: string | null
+}
+
+/** Chủ đề hiển thị cho admin: dịch vụ / gói liệu trình khách chọn, hoặc nhu cầu khách ghi */
+export function appointmentTopic(row: AppointmentRow): { kind: string; label: string } | null {
+  if (row.service?.title) return { kind: 'Dịch vụ', label: row.service.title }
+  if (row.treatment_package?.name) return { kind: 'Gói liệu trình', label: row.treatment_package.name }
+  if (row.need) return { kind: 'Nhu cầu', label: row.need }
+  return null
 }
 
 export const STATUS_META: Record<AppointmentStatus, { label: string; color: string }> = {

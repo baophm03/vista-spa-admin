@@ -2,7 +2,7 @@ import { Can } from '@casl/react'
 import { displayName } from '@/utils/displayName'
 import { Button, Modal, Tag } from 'antd'
 import dayjs from 'dayjs'
-import { STATUS_META, type AppointmentRow } from './constants'
+import { STATUS_META, appointmentTopic, type AppointmentRow } from './constants'
 import type { AppointmentStatus } from '@/api/models/appointmentStatus'
 import { timeInMinutes } from '../calendar'
 
@@ -54,6 +54,7 @@ export default function AppointmentDetailModal({
   const row = appointment
   const statusKey = row.status as AppointmentStatus | undefined
   const statusMeta = (statusKey && STATUS_META[statusKey]) || { label: row.status || 'Chưa rõ', color: 'default' }
+  const topic = appointmentTopic(row)
 
 
   const name = displayName(row.user, 'Khách vãng lai')
@@ -165,6 +166,13 @@ export default function AppointmentDetailModal({
 
         {/* Danh sách thông tin chi tiết */}
         <div className="grid grid-cols-2 gap-x-4 gap-y-3 px-1 py-4 text-sm text-slate-700">
+          {topic && (
+            <div className="col-span-2 flex min-w-0 flex-col gap-0.5 break-words">
+              <span className="text-xs text-slate-500">Chủ đề · {topic.kind}</span>
+              <span className="font-semibold text-slate-900 whitespace-pre-line">{topic.label}</span>
+            </div>
+          )}
+
           <div className="flex min-w-0 flex-col gap-0.5 break-words">
             <span className="text-xs text-slate-500">Thời gian</span>
             <span className="font-semibold text-slate-900 tabular-nums">

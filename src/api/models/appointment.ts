@@ -10,11 +10,14 @@ import type { AppointmentEndTime } from './appointmentEndTime';
 import type { AppointmentStatus } from './appointmentStatus';
 import type { AppointmentCreatedVia } from './appointmentCreatedVia';
 import type { AppointmentNote } from './appointmentNote';
+import type { AppointmentServiceId } from './appointmentServiceId';
+import type { AppointmentTreatmentPackageId } from './appointmentTreatmentPackageId';
+import type { AppointmentNeed } from './appointmentNeed';
 import type { AppointmentRejectReason } from './appointmentRejectReason';
 import type { AppointmentCustomFields } from './appointmentCustomFields';
 
 /**
- * Lịch hẹn gặp tư vấn — không liên kết buổi điều trị / gói / dịch vụ
+ * Lịch hẹn gặp tại cơ sở — chủ đề tùy chọn: dịch vụ (service_id) hoặc gói liệu trình/dịch vụ lẻ (treatment_package_id), hoặc nhu cầu tự ghi (need)
  */
 export interface Appointment {
   id: string;
@@ -27,6 +30,10 @@ export interface Appointment {
   status?: AppointmentStatus;
   created_via?: AppointmentCreatedVia;
   note?: AppointmentNote;
+  service_id?: AppointmentServiceId;
+  treatment_package_id?: AppointmentTreatmentPackageId;
+  /** Nhu cầu khách ghi; đặt qua app không chọn chủ đề và để trống → "Cần liên hệ hoặc tư vấn" */
+  need?: AppointmentNeed;
   reject_reason?: AppointmentRejectReason;
   custom_fields?: AppointmentCustomFields;
   created_at?: string;

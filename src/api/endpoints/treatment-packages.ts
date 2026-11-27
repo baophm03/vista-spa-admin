@@ -38,6 +38,7 @@ import type {
   GetTreatmentPackagesAdminParams,
   GetTreatmentPackagesId200,
   GetTreatmentPackagesIdAdmin200,
+  GetTreatmentPackagesParams,
   InternalErrorResponse,
   NotFoundResponse,
   PostTreatmentPackagesAdmin200,
@@ -55,17 +56,18 @@ import { customInstance } from '../mutator/custom-instance';
 
 
 /**
- * **APP-07** — GET /treatment-packages. Public, không cần đăng nhập. Danh sách gói liệu trình đang hoạt động (`is_active=true`) cho khách duyệt miniapp, kèm loại gói và ảnh. Quản trị đầy đủ xem `GET /treatment-packages/admin`. Handled by `appService.publicPackages`.
+ * **APP-07** — GET /treatment-packages. Public, không cần đăng nhập. Danh sách gói liệu trình đang hoạt động (`is_active=true`) cho khách duyệt miniapp, kèm loại gói và ảnh. Query parameter `kind`: `PACKAGE` = chỉ gói liệu trình (loại bỏ Dịch vụ lẻ), `SINGLE` = chỉ gói Dịch vụ lẻ, bỏ trống = tất cả. Quản trị đầy đủ xem `GET /treatment-packages/admin`. Handled by `appService.publicPackages`.
  * @summary View service packages (public)
  */
 export const getTreatmentPackages = (
-    
+    params?: GetTreatmentPackagesParams,
  signal?: AbortSignal
 ) => {
       
       
       return customInstance<GetTreatmentPackages200>(
-      {url: `/treatment-packages`, method: 'GET', signal
+      {url: `/treatment-packages`, method: 'GET',
+        params, signal
     },
       );
     }
@@ -73,29 +75,29 @@ export const getTreatmentPackages = (
 
 
 
-export const getGetTreatmentPackagesInfiniteQueryKey = () => {
+export const getGetTreatmentPackagesInfiniteQueryKey = (params?: GetTreatmentPackagesParams,) => {
     return [
-    'infinite', `/treatment-packages`
+    'infinite', `/treatment-packages`, ...(params ? [params]: [])
     ] as const;
     }
 
-export const getGetTreatmentPackagesQueryKey = () => {
+export const getGetTreatmentPackagesQueryKey = (params?: GetTreatmentPackagesParams,) => {
     return [
-    `/treatment-packages`
+    `/treatment-packages`, ...(params ? [params]: [])
     ] as const;
     }
 
     
-export const getGetTreatmentPackagesInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentPackages>>>, TError = InternalErrorResponse>( options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackages>>, TError, TData>>, }
+export const getGetTreatmentPackagesInfiniteQueryOptions = <TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentPackages>>>, TError = InternalErrorResponse>(params?: GetTreatmentPackagesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackages>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetTreatmentPackagesInfiniteQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getGetTreatmentPackagesInfiniteQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTreatmentPackages>>> = ({ signal }) => getTreatmentPackages(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTreatmentPackages>>> = ({ signal }) => getTreatmentPackages(params, signal);
 
       
 
@@ -109,7 +111,7 @@ export type GetTreatmentPackagesInfiniteQueryError = InternalErrorResponse
 
 
 export function useGetTreatmentPackagesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentPackages>>>, TError = InternalErrorResponse>(
-  options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackages>>, TError, TData>> & Pick<
+ params: undefined |  GetTreatmentPackagesParams, options: { query:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackages>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getTreatmentPackages>>,
           TError,
@@ -119,7 +121,7 @@ export function useGetTreatmentPackagesInfinite<TData = InfiniteData<Awaited<Ret
  , queryClient?: QueryClient
   ):  DefinedUseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetTreatmentPackagesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentPackages>>>, TError = InternalErrorResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackages>>, TError, TData>> & Pick<
+ params?: GetTreatmentPackagesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackages>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getTreatmentPackages>>,
           TError,
@@ -129,7 +131,7 @@ export function useGetTreatmentPackagesInfinite<TData = InfiniteData<Awaited<Ret
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetTreatmentPackagesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentPackages>>>, TError = InternalErrorResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackages>>, TError, TData>>, }
+ params?: GetTreatmentPackagesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackages>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
@@ -137,11 +139,11 @@ export function useGetTreatmentPackagesInfinite<TData = InfiniteData<Awaited<Ret
  */
 
 export function useGetTreatmentPackagesInfinite<TData = InfiniteData<Awaited<ReturnType<typeof getTreatmentPackages>>>, TError = InternalErrorResponse>(
-  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackages>>, TError, TData>>, }
+ params?: GetTreatmentPackagesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackages>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetTreatmentPackagesInfiniteQueryOptions(options)
+  const queryOptions = getGetTreatmentPackagesInfiniteQueryOptions(params,options)
 
   const query = useInfiniteQuery(queryOptions, queryClient) as  UseInfiniteQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -154,11 +156,11 @@ export function useGetTreatmentPackagesInfinite<TData = InfiniteData<Awaited<Ret
  * @summary View service packages (public)
  */
 export const prefetchGetTreatmentPackagesInfiniteQuery = async <TData = Awaited<ReturnType<typeof getTreatmentPackages>>, TError = InternalErrorResponse>(
- queryClient: QueryClient,  options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackages>>, TError, TData>>, }
+ queryClient: QueryClient, params?: GetTreatmentPackagesParams, options?: { query?:Partial<UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTreatmentPackages>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetTreatmentPackagesInfiniteQueryOptions(options)
+  const queryOptions = getGetTreatmentPackagesInfiniteQueryOptions(params,options)
 
   await queryClient.prefetchInfiniteQuery(queryOptions);
 
@@ -167,16 +169,16 @@ export const prefetchGetTreatmentPackagesInfiniteQuery = async <TData = Awaited<
 
 
 
-export const getGetTreatmentPackagesQueryOptions = <TData = Awaited<ReturnType<typeof getTreatmentPackages>>, TError = InternalErrorResponse>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackages>>, TError, TData>>, }
+export const getGetTreatmentPackagesQueryOptions = <TData = Awaited<ReturnType<typeof getTreatmentPackages>>, TError = InternalErrorResponse>(params?: GetTreatmentPackagesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackages>>, TError, TData>>, }
 ) => {
 
 const {query: queryOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetTreatmentPackagesQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getGetTreatmentPackagesQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTreatmentPackages>>> = ({ signal }) => getTreatmentPackages(signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTreatmentPackages>>> = ({ signal }) => getTreatmentPackages(params, signal);
 
       
 
@@ -190,7 +192,7 @@ export type GetTreatmentPackagesQueryError = InternalErrorResponse
 
 
 export function useGetTreatmentPackages<TData = Awaited<ReturnType<typeof getTreatmentPackages>>, TError = InternalErrorResponse>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackages>>, TError, TData>> & Pick<
+ params: undefined |  GetTreatmentPackagesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackages>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getTreatmentPackages>>,
           TError,
@@ -200,7 +202,7 @@ export function useGetTreatmentPackages<TData = Awaited<ReturnType<typeof getTre
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetTreatmentPackages<TData = Awaited<ReturnType<typeof getTreatmentPackages>>, TError = InternalErrorResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackages>>, TError, TData>> & Pick<
+ params?: GetTreatmentPackagesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackages>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getTreatmentPackages>>,
           TError,
@@ -210,7 +212,7 @@ export function useGetTreatmentPackages<TData = Awaited<ReturnType<typeof getTre
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetTreatmentPackages<TData = Awaited<ReturnType<typeof getTreatmentPackages>>, TError = InternalErrorResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackages>>, TError, TData>>, }
+ params?: GetTreatmentPackagesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackages>>, TError, TData>>, }
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
@@ -218,11 +220,11 @@ export function useGetTreatmentPackages<TData = Awaited<ReturnType<typeof getTre
  */
 
 export function useGetTreatmentPackages<TData = Awaited<ReturnType<typeof getTreatmentPackages>>, TError = InternalErrorResponse>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackages>>, TError, TData>>, }
+ params?: GetTreatmentPackagesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackages>>, TError, TData>>, }
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetTreatmentPackagesQueryOptions(options)
+  const queryOptions = getGetTreatmentPackagesQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -235,11 +237,11 @@ export function useGetTreatmentPackages<TData = Awaited<ReturnType<typeof getTre
  * @summary View service packages (public)
  */
 export const prefetchGetTreatmentPackagesQuery = async <TData = Awaited<ReturnType<typeof getTreatmentPackages>>, TError = InternalErrorResponse>(
- queryClient: QueryClient,  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackages>>, TError, TData>>, }
+ queryClient: QueryClient, params?: GetTreatmentPackagesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTreatmentPackages>>, TError, TData>>, }
 
   ): Promise<QueryClient> => {
 
-  const queryOptions = getGetTreatmentPackagesQueryOptions(options)
+  const queryOptions = getGetTreatmentPackagesQueryOptions(params,options)
 
   await queryClient.prefetchQuery(queryOptions);
 
