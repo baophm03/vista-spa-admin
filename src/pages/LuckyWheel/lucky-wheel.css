@@ -32,7 +32,7 @@
 
   .lucky-wheel-visibility-panel .mobile-card {
     padding: 12px;
-    border-radius: 12px;
+    border-radius: 8px;
   }
 
   .lucky-wheel-visibility-customer {
@@ -178,7 +178,7 @@
     display: flex;
     flex-direction: column;
     padding: 14px;
-    border-radius: 12px;
+    border-radius: 8px;
   }
 
   .lucky-wheel-detail .lucky-wheel-panel .mobile-card-head {
@@ -291,20 +291,9 @@
 }
 
 @media (max-width: 767px) {
-  /* Tabs full-width trên mobile cho dễ bấm */
+  /* Tab mặc định antd (docs 6.1) — chỉ giữ khoảng cách 12px dưới thanh tab */
   .lucky-wheel-tabs > .ant-tabs-nav {
     margin-bottom: 12px;
-  }
-
-  .lucky-wheel-tabs > .ant-tabs-nav .ant-tabs-nav-list {
-    width: 100%;
-  }
-
-  .lucky-wheel-tabs > .ant-tabs-nav .ant-tabs-tab {
-    flex: 1 1 0;
-    justify-content: center;
-    margin-inline-start: 0;
-    padding-block: 10px;
   }
 
   /* Khoảng cách đều nhau: tabs→nút = nút→card = 12px */
@@ -356,10 +345,7 @@
   }
 
   .lucky-wheel-create .lucky-wheel-add-button.ant-btn {
-    height: 40px;
     padding-inline: 16px;
-    border-radius: 10px;
-    font-weight: 600;
   }
 
 }
@@ -368,7 +354,7 @@
   .lucky-wheel-mobile-list .mobile-card {
     padding: 14px 16px 8px;
     border: 1px solid var(--brand-border-soft);
-    border-radius: 12px;
+    border-radius: 8px;
     background: #fff;
     box-shadow: 0 1px 4px rgba(40, 35, 53, 0.05);
     transition: border-color 160ms ease;
@@ -610,11 +596,10 @@
     background: #efe6f2;
     color: var(--brand-primary);
     font-size: 12px;
-    font-weight: 500;
+    font-weight: 400;
   }
 
   .lucky-wheel-customer-intro .lucky-wheel-panel-search :is(.ant-input-affix-wrapper, .ant-input-search-btn) {
-    height: 40px;
     border-color: var(--brand-border-soft);
     background: #fff;
     box-shadow: none;
@@ -773,20 +758,6 @@
   overflow-wrap: anywhere;
 }
 
-@media (max-width: 767px) {
-  .lucky-wheel-detail-tabs .ant-tabs-nav-list {
-    width: 100%;
-  }
-
-  .lucky-wheel-detail-tabs .ant-tabs-tab {
-    flex: 1 1 0;
-    justify-content: center;
-    min-width: 0;
-    margin-inline: 0 !important;
-    font-size: 12px;
-  }
-
-}
 
 /* Card khách trong popup: switch + thông báo gộp 1 hàng cuối như card giải */
 @media (max-width: 767px) {

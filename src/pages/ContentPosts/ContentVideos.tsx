@@ -596,7 +596,7 @@ export default function ContentVideos() {
           centered
           styles={{ body: { maxHeight: 'calc(100dvh - 168px)', overflowY: 'auto' } }}
           confirmLoading={saving}
-          okText={editor === 'new' ? 'Lưu bản nháp' : 'Lưu thay đổi'}
+          okText={editor === 'new' ? 'Lưu bản nháp' : 'Lưu'}
           cancelText="Hủy"
           onCancel={() => setEditor(null)}
           okButtonProps={{ htmlType: 'submit', form: 'video-editor-form' }}
@@ -687,7 +687,7 @@ export default function ContentVideos() {
           open
           title={categoryEditor === 'new' ? 'Tạo danh mục' : 'Sửa danh mục'}
           confirmLoading={saving}
-          okText={categoryEditor === 'new' ? 'Tạo' : 'Lưu thay đổi'}
+          okText="Lưu"
           cancelText="Hủy"
           onCancel={() => setCategoryEditor(null)}
           onOk={() => categoryForm.submit()}

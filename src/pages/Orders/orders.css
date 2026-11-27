@@ -24,12 +24,12 @@
     padding: 8px;
   }
 
+  /* docs 6.2.1: tìm kiếm 1 hàng, trạng thái 1 hàng */
   .orders-page-title .page-title-controls {
-    grid-template-columns: minmax(0, 1fr) minmax(112px, 0.72fr);
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .orders-page-title .page-title-controls .orders-search-control.ant-input-search {
-    grid-column: auto;
     width: 100% !important;
     max-width: 100%;
     min-width: 0;
@@ -70,14 +70,14 @@
 
 @media (max-width: 1199px) {
   .orders-mobile-list .mobile-card-list {
-    gap: 10px;
+    gap: 12px;
   }
 
   .orders-mobile-list .mobile-card {
     overflow: hidden;
     padding: 0;
     border: 1px solid #eee7f0;
-    border-radius: 16px;
+    border-radius: 8px;
     background: #fff;
     box-shadow: 0 2px 8px rgba(52, 35, 59, 0.035);
     transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;

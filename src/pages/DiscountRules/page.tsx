@@ -314,7 +314,8 @@ export default function DiscountRules() {
               summary={<StatCards items={statItems} />}
               subtitle="Quyết định giảm giá và ưu đãi theo hạng thẻ"
               left={
-                <>
+                // docs 6.2.1: N = 1 + nút tạo → [Bộ lọc][+]; từ tablet tan vào hàng toolbar
+                <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 max-md:col-span-full md:contents">
                   <ListFilterPopover
                     trigger={<Button icon={<FilterOutlined />} className="keep-label">Bộ lọc</Button>}
                     open={filterOpen}
@@ -337,12 +338,10 @@ export default function DiscountRules() {
                     draftVisibleColumns={draftVisibleColumns}
                     onDraftVisibleColumnsChange={(values) => setDraftVisibleColumns(values as DiscountColumnKey[])}
                   />
-                </>
-              }
-              right={
-                <Can I="CREATE" a="DISCOUNT">
-                  <Button type="primary" icon={<PlusOutlined />} className="keep-label" onClick={() => openEditor()}>Thêm quy tắc</Button>
-                </Can>
+                  <Can I="CREATE" a="DISCOUNT">
+                    <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor()}>Thêm quy tắc</Button>
+                  </Can>
+                </div>
               }
             >
               Giảm giá & Ưu đãi

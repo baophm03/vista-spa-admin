@@ -102,50 +102,32 @@
     margin-bottom: 12px;
   }
 
-  .voucher-tabs > .ant-tabs-nav .ant-tabs-nav-list {
-    width: 100%;
-  }
-
-  .voucher-tabs > .ant-tabs-nav .ant-tabs-tab {
-    flex: 1 1 0;
-    justify-content: center;
-    min-width: 0;
-    margin-inline-start: 0;
-    padding: 10px 2px;
-    font-size: 12px;
-  }
-
-  .voucher-toolbar,
-  .voucher-toolbar-search {
-    flex-wrap: nowrap;
-    gap: 8px;
-  }
-
+  /* docs 6.2.1: tìm kiếm 1 hàng; [Bộ lọc][+] */
   .voucher-toolbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
     margin-block: 0 12px;
   }
 
   .voucher-toolbar-search {
-    flex: 1;
-    min-width: 0;
+    display: contents;
   }
 
   .voucher-toolbar-search .voucher-search {
-    flex: 1;
+    grid-column: 1 / -1;
     width: 100%;
     min-width: 0;
     max-width: none;
   }
 
-  .voucher-toolbar .voucher-toolbar-button.ant-btn {
-    flex: 0 0 44px;
-    width: 44px;
-    height: 44px;
-    padding: 0;
+  .voucher-toolbar .voucher-filter-button.ant-btn {
+    width: 100%;
   }
 
-  .voucher-toolbar-search .voucher-search :is(.ant-input-affix-wrapper, .ant-input-search-btn) {
-    height: 44px;
+  .voucher-toolbar .voucher-toolbar-button.ant-btn {
+    width: 44px;
+    padding: 0;
   }
 }
 

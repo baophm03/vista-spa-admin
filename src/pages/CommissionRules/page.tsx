@@ -208,7 +208,8 @@ export default function CommissionRulesPanel() {
       {(allowed) =>
         allowed ? (
           <>
-            <div className="mb-4 flex items-center justify-end gap-2">
+            {/* docs 6.2.1: N = 1 + nút tạo → [Cơ sở][+] */}
+            <div className="toolbar-row mb-4 flex items-center justify-end gap-2">
               <Select
                 showSearch optionFilterProp="label"
                 className="min-w-0 flex-1 md:w-[240px] md:flex-none"
@@ -220,7 +221,7 @@ export default function CommissionRulesPanel() {
                 options={branches.map((branch) => ({ value: branch.id, label: branch.name }))}
               />
               <Can I="RULE_MANAGE" a="COMMISSION">
-                <Button type="primary" className="shrink-0 px-2! md:px-4!" icon={<PlusOutlined />} onClick={openCreate}>Thêm quy tắc</Button>
+                <Button type="primary" className="shrink-0" icon={<PlusOutlined />} onClick={openCreate}>Thêm quy tắc</Button>
               </Can>
             </div>
             {rulesQuery.isError && (

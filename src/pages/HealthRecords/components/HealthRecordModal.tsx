@@ -46,7 +46,7 @@ export default function HealthRecordModal({
       footer={[
         <Button key="cancel" onClick={onCancel}>Hủy</Button>,
         <Button key="save" type="primary" loading={saving} onClick={onSubmit}>
-          {editingRecord ? 'Lưu thay đổi' : 'Lưu phiếu khám'}
+          Lưu
         </Button>,
       ]}
     >

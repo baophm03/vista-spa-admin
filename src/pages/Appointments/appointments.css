@@ -8,23 +8,46 @@
     max-width: 100% !important;
     padding-inline: 0 !important;
   }
-
-  .appointment-form-modal .ant-modal-footer {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px;
+}
+/* Mobile (Figma "Mobile / Lịch hẹn"): segmented nền tím nhạt, mục đang chọn là ô trắng chữ tím.
+   item 36px + padding 3px×2 + viền 1px×2 = 44px, khớp chiều cao control */
+@media (max-width: 767px) {
+  .ant-segmented.appointment-mobile-segment {
+    padding: 3px;
+    border: 1px solid var(--brand-border-soft);
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--brand-primary) 6%, var(--brand-bg));
   }
 
-  .appointment-form-modal .ant-modal-footer .ant-btn {
-    min-height: 44px;
-    margin-inline: 0;
+  .appointment-mobile-segment .ant-segmented-item {
+    border-radius: 6px;
+    color: #6f7071;
+  }
+
+  .appointment-mobile-segment .ant-segmented-item-label {
+    min-width: 0;
+    padding-inline: 4px;
+    white-space: nowrap;
+  }
+
+  .appointment-mobile-segment :is(.ant-segmented-item-selected, .ant-segmented-thumb) {
+    border-radius: 6px;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(41, 35, 49, 0.12);
+  }
+
+  .appointment-mobile-segment .ant-segmented-item-selected {
+    color: var(--brand-primary);
+    font-weight: 500;
   }
 }
+
 @media (768px <= width < 1024px) {
+  /* item 36px + padding 3px×2 + viền 1px×2 = 44px, khớp chiều cao control toolbar */
   .ant-segmented.appointment-tablet-segment {
-    padding: 4px;
+    padding: 3px;
     border: 1px solid var(--brand-border-soft);
-    border-radius: 12px;
+    border-radius: 8px;
     background: color-mix(in srgb, var(--brand-primary) 6%, var(--brand-bg));
   }
 

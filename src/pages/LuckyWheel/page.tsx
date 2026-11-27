@@ -693,7 +693,7 @@ export default function LuckyWheel() {
           <>
             <div className="lucky-wheel-create">
               <Can I="CREATE" a="WHEEL">
-                <Button type="primary" className="lucky-wheel-add-button" icon={<PlusOutlined />} onClick={openCreateWheel}>
+                <Button type="primary" className="lucky-wheel-add-button keep-label max-md:w-full" icon={<PlusOutlined />} onClick={openCreateWheel}>
                   Thêm vòng quay
                 </Button>
               </Can>

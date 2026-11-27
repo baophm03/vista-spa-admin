@@ -195,7 +195,7 @@ export default function AcademyCourses() {
             <Can I="CREATE" a="ACADEMY_COURSE">
               <Button
                 type="primary"
-                className="academy-course-create-button"
+                className="academy-course-create-button keep-label"
                 icon={<PlusOutlined />}
                 aria-label="Thêm khóa học"
                 title="Thêm khóa học"

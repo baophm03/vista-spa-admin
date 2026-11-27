@@ -15,12 +15,13 @@ File tham khảo:
 
 ## 0. Cách áp dụng cho 1 trang
 
-1. Bọc toàn bộ nội dung trang bằng `<MobileUI>…</MobileUI>` (`src/components/base/MobileUI.tsx`, nhận thêm `className`).
+1. **Mọi trang (trừ Dashboard) đã tự được bọc `<MobileUI>`** ở `src/layouts/AdminLayout.tsx` — trang mới không cần bọc thêm.
+   Component `src/components/base/MobileUI.tsx` (nhận thêm `className`) vẫn có thể dùng riêng nếu cần bọc một vùng khác.
    Dưới 1024px component này:
    - bật token antd qua `ConfigProvider`: `controlHeight: 44`, `borderRadius: 8` → **mọi** Button, Input, Input.Search, Select,
      DatePicker, Segmented… (kể cả trong modal/popover mở từ trang) cao đúng 44px, chữ căn giữa;
      size small/large giữ 30/50px nên nút nhỏ trong card không đổi;
-   - gắn class `mobile-ui` (`src/mobile-ui.css`): khoảng cách 12px, tab chia đều, bo góc 8px cho phần tử không phải antd;
+   - gắn class `mobile-ui` (`src/mobile-ui.css`): khoảng cách 12px, bo góc 8px cho phần tử không phải antd;
      trong toolbar (`.page-title-controls`, `.toolbar-row`): nút không bold, không đổ bóng, icon 14px, nút icon vuông 44×44.
    - **Không** chỉnh chiều cao control bằng CSS `height`/`min-height` (antd v6 Select tính chiều cao từ padding, ép bằng CSS sẽ lệch chữ).
 2. Toolbar trong tab dùng `ToolbarRow` (đã có class `toolbar-row`); toolbar tự viết thì thêm class `toolbar-row`.
@@ -28,7 +29,12 @@ File tham khảo:
 4. Class Tailwind bo góc riêng (`rounded-xl`, `rounded-[10px]`…) không bị CSS chung đè → thêm `max-lg:rounded-lg`
    (hoặc đổi thẳng nếu component chỉ dùng cho mobile).
 
-Đã áp dụng: Lịch làm việc, Bài viết App, Video App, Cơ sở, Danh mục chọn, Thương hiệu, Thông báo, Nhật ký.
+Đã áp dụng: **toàn bộ trang trong admin, trừ Dashboard** (bọc ở layout + chỉnh toolbar/bo góc từng trang theo mục 6.2.1).
+Khi thêm trang mới: chỉ cần làm toolbar theo 6.2.1, đổi bo góc tự viết sang `max-lg:rounded-lg`, không ép style tab.
+
+**Trang dạng form / card (không có toolbar lọc):** nút hành động đôi trong card (vd. Kiểm tra kết nối | Lưu cấu hình)
+xếp `grid grid-cols-2` trên mobile, có icon + tên; card cách nhau 12px (`max-lg:mb-3`, `Row gutter={[{ xs: 12, lg: 20 }, …]}`);
+nút lưu duy nhất trên tiêu đề trang full width có icon + tên (`keep-label max-md:col-span-full`).
 
 ---
 
@@ -85,7 +91,7 @@ File tham khảo:
 | Nút/control tự vẽ (không phải antd) | `h-11` (44px) để khớp |
 | **Icon trong toolbar** (kính lúp, mũi tên select, nút xóa ✕, icon lịch, icon trên nút: +, lọc, làm mới…) | **Cùng 14px** — `mobile-ui.css` tự đặt, không truyền `style={{ fontSize }}` riêng cho icon |
 | Nút icon (mobile <768px) | Nút có icon + chữ tự thành nút vuông **44×44** chỉ còn icon; muốn giữ chữ thêm `keep-label` |
-| Bóng đổ nút toolbar | Không có (`box-shadow: none`) — bóng làm nút chính trông cao hơn input bên cạnh |
+| Bóng đổ nút | Không có trên mobile/tablet (`.mobile-ui .ant-btn { box-shadow: none }`) — bóng làm nút chính trông cao hơn input bên cạnh |
 | Tab trong tab bar | Mặc định antd |
 | Ô chọn ngày | Cao 58px; nhãn thứ 11px; số ngày 16px semibold (`text-base leading-5`) |
 | Dòng ca trong card | Cao tối thiểu 44px, chữ 14px |
@@ -115,7 +121,7 @@ File tham khảo:
 ```
 Tiêu đề trang + subtitle
    ↕ 12px
-Tab bar gạch chân (full width, tab chia đều)
+Tab bar gạch chân (tab rộng theo chữ, vuốt ngang khi tràn)
    ↕ 12px
 [Alert nếu có]
    ↕ 12px
@@ -126,16 +132,31 @@ Nội dung: danh sách card
 ```
 
 ### 6.1 Tab bar
-Dùng `Tabs` antd mặc định như các trang khác (Quà đổi điểm, Điểm, Dashboard) — **không** dùng kiểu segmented.
-- Nằm dưới tiêu đề, full width; tab `flex: 1` chia đều, chữ căn giữa, không xuống dòng.
+Mẫu chuẩn: **`/customer-data-config`** — dùng `<Tabs>` antd **mặc định**, không tự style lại thanh tab.
+- **Không** ép tab chia đều full width (`flex: 1`, `min-width: 100%`…) và **không** dùng kiểu segmented.
+- Mỗi tab rộng theo chữ, khoảng cách tab mặc định antd (`tabBarGutter` không đặt), size mặc định (`middle`).
+- Tab nhiều hơn bề ngang màn hình → **vuốt/kéo sang 2 bên** để xem tab bị khuất (antd tự hỗ trợ touch-drag),
+  mép bị cắt có bóng mờ báo còn tab, nút "…" mở danh sách tab ẩn. Không xuống dòng, không rút gọn tên tab.
 - Tab active: chữ màu chính + gạch chân (ink-bar), có đường kẻ mảnh dưới thanh tab.
-- Nút phụ cạnh tab (`tabBarExtraContent`, vd. Làm mới): chỉ hiện icon trên mobile.
+- Tab bar nằm dưới tiêu đề, cách tiêu đề và nội dung 12px.
+- Nút phụ cạnh tab (`tabBarExtraContent`, vd. Làm mới): chỉ hiện icon trên mobile để chừa chỗ cho tab.
+- Trang tự vẽ tab bar (`renderTabBar`, vd. Lịch làm việc): style riêng của desktop phải để sau tiền tố `lg:`;
+  dưới 1024px trả về `size="middle"`, bỏ `tabBarGutter`. Phần tử bọc thanh tab cần `min-w-0` để vuốt ngang được.
 
 ### 6.2 Toolbar
 - Nút cao 44px, radius 8px, full width trong ô grid, chữ thường (không bold).
 - 2 nút ngang nhau: `grid grid-cols-2 gap-2` (vd. Bộ lọc | Đăng ký nghỉ).
 - Điều hướng kỳ: `grid-cols-[44px_1fr_44px] gap-2` — nút ‹ / nút khoảng ngày có icon lịch / nút ›.
 - Tablet: điều hướng + nút tạo chung hàng: `md:grid-cols-[minmax(0,1fr)_158px]`.
+
+- **Segmented trên toolbar** (vd. Ngày | Tuần, Lịch | Danh sách ở `/appointments`): nền tím nhạt
+  (`color-mix(in srgb, var(--brand-primary) 6%, var(--brand-bg))`), viền `--brand-border-soft`, bo 8px, padding 3px → cao đúng 44px;
+  mục đang chọn là ô trắng bo 6px, bóng nhẹ, chữ màu chính. Mẫu: `.appointment-mobile-segment` trong `src/pages/Appointments/appointments.css`.
+- **Mẫu `/appointments` (mobile, cả chế độ Lịch và Danh sách):** `[Ngày|Tuần][Lịch|Danh sách]` · `[‹][📅 16/11 → 22/11][›]` · `[Chọn cơ sở][Tất cả]` · `[+ Thêm lịch hẹn]`.
+  Bên dưới (chế độ Lịch): lưới giờ `AppointmentsMobileGrid` — header cùng màu nút chính `--brand-primary` (Giờ | T2 16/11 | …), cột Giờ 52px cố định,
+  mỗi ngày 120px vuốt ngang (gợi ý "Vuốt ngang để xem các ngày còn lại"), mỗi giờ cao 56px; thẻ lịch hẹn nền màu trạng thái +
+  viền trái màu nhấn, 3 dòng: trạng thái (10px) / tên khách (13px đậm) / SĐT (11px). Chế độ Ngày: 1 cột full width.
+  Chế độ Danh sách ẩn hẳn `Ngày | Tuần` (hàng 1 chỉ còn `Lịch | Danh sách` full width), tự xem theo tuần; danh sách lọc theo ngày/tuần đang chọn (chỉ mobile, desktop vẫn liệt kê toàn bộ).
 
 #### 6.2.1 Quy tắc xếp hàng toolbar (mobile < 768px)
 
@@ -204,7 +225,8 @@ Dùng `MobileLoadingCards`, `MobileErrorCard`, `MobileEmptyCard` — không dùn
 
 ## 7. Checklist khi làm page mới
 
-- [ ] Bọc trang bằng `<MobileUI>`
+- [ ] Trang nằm trong `AdminLayout` (tự có `<MobileUI>`); không phải Dashboard
+- [ ] Tab bar mặc định antd như `/customer-data-config` (không chia đều, vuốt ngang khi tràn)
 - [ ] Toolbar xếp hàng đúng mục 6.2.1 (tìm kiếm riêng hàng, 2 tool / hàng, nút tạo thu nhỏ hoặc full width có icon + tên)
 - [ ] Mọi control trên toolbar cao bằng nhau 44px (không set height riêng cho control antd)
 - [ ] Icon trong toolbar cùng 14px, nút chính không đổ bóng; nút icon vuông 44×44
@@ -215,3 +237,40 @@ Dùng `MobileLoadingCards`, `MobileErrorCard`, `MobileEmptyCard` — không dùn
 - [ ] Table desktop có class `desktop-only`, card mobile qua `MobileCards` (`mobile-only`)
 - [ ] Card: thông tin chính dạng label:value trong body
 - [ ] Có đủ 3 trạng thái Tải / Lỗi / Trống
+
+## 8. Modal tạo / sửa (chuẩn theo "Thêm khách hàng" ở `/customers`)
+
+Mẫu: `src/pages/Customers/components/CustomerProfileFormModal.tsx`.
+
+**Khung modal**
+- `<Modal>` antd mặc định (rộng 520px; form nhiều trường thì `width={720}` hoặc `min(880px, calc(100vw - 24px))`).
+- Tiêu đề: `Thêm <đối tượng>` khi tạo, `Sửa <đối tượng>` khi sửa — cùng 1 modal cho cả 2.
+- Footer mặc định của antd: `[Hủy] [Lưu]` căn phải — `okText="Lưu"`, `cancelText="Hủy"` cho **mọi form tạo/sửa**.
+  Chỉ modal hành động mới dùng động từ riêng: Gửi, Thanh toán, Từ chối, Đổi quà, Gán hạng, Xuất bản, Tiếp nhận…
+- **Không** tự style lại footer (không ép 2 nút full width, không đổi chiều cao/bo góc/đậm chữ) — chiều cao 44px và bo 8px
+  trên mobile đã có từ `<MobileUI>` (modal mở từ trang vẫn nhận token). Form dài có thể thêm viền trên footer.
+- `destroyOnHidden` để mở lại là form sạch.
+
+**Form bên trong**
+- `<Form layout="vertical">`, cách tiêu đề 12px (`className="mt-3"`).
+- **Trường ngắn xếp 2 cột, kể cả trên mobile**: `<div className="grid grid-cols-2 gap-x-3">` (hoặc `Row gutter` + `Col span={12}`;
+  CSS chung trong `index.css` giữ 2 cột trên mobile cho `.ant-modal .ant-row:not(.ant-form-item-row) > .ant-col`).
+- **Mỗi `Form.Item` luôn full width ô chứa nó** — CSS chung đã loại trừ `.ant-form-item-row` (Row/Col nội bộ của antd cho nhãn + ô nhập);
+  không cần thêm override `.ant-form-item-row > .ant-col { flex-basis: 100% }` cho từng modal nữa.
+  Ví dụ cặp: Họ tên | SĐT, Email | Ngày sinh, Loại | Số tiền.
+- **Trường dài 1 hàng full**: địa chỉ, ghi chú, mô tả, select danh sách dài, upload ảnh, rich text (`Col span={24}`).
+- Ghi chú/mô tả: `Input.TextArea rows={2}`.
+- Placeholder có ví dụ cụ thể: `VD: Nguyễn Thu Hà`, `0901234568`, `email@gmail.com`.
+- Đúng bàn phím: SĐT `inputMode="tel"`, email `inputMode="email"`.
+- Ngày: `DatePicker` full width (`style={{ width: '100%' }}`), `format="DD/MM/YYYY"`, chặn ngày không hợp lệ bằng `disabledDate`.
+- Bắt buộc: `rules={[{ required: true, message: 'Nhập …' / 'Chọn …' }]}` — câu tiếng Việt ngắn.
+- Trường tùy chỉnh (custom fields) đặt sau nhóm trường cơ bản, trước Địa chỉ / Ghi chú.
+
+**Viền ô nhập**: mọi `.ant-modal .ant-form` (input, input number, select, date picker) có viền đậm hơn một chút
+`color-mix(in srgb, var(--brand-dark) 22%, white)` khi chưa hover/focus — CSS chung trong `src/index.css`, không cần thêm class.
+
+**Checklist modal**
+- [ ] Tiêu đề Thêm/Sửa, footer `[Hủy] [Lưu]` mặc định
+- [ ] Trường ngắn 2 cột (cả mobile), trường dài full width
+- [ ] Placeholder có ví dụ, đúng `inputMode`, DatePicker full width `DD/MM/YYYY`
+- [ ] Không CSS riêng cho footer / chiều cao nút trong modal

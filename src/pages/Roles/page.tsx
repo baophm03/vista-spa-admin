@@ -7,6 +7,7 @@ import {
   SafetyOutlined,
 } from '@ant-design/icons'
 import { useQueries } from '@tanstack/react-query'
+import MobileUI from '@/components/base/MobileUI'
 import PageTitle from '@/components/base/PageTitle'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { PutRolesIdPermissionsAdminBody } from '@/api/models/putRolesIdPermissionsAdminBody'
@@ -179,7 +180,7 @@ export default function Roles() {
   }
 
   return (
-    <>
+    <MobileUI>
       <PageTitle subtitle="Vai trò và phân quyền truy cập hệ thống">Phân quyền</PageTitle>
 
       {loadError && (
@@ -203,15 +204,15 @@ export default function Roles() {
       )}
 
       <Spin spinning={loading}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-lg:gap-3">
           {roles.map((role) => {
             return (
               <div
                 key={role.id}
-                className="flex flex-col justify-between gap-4 rounded-[20px] border border-[var(--brand-border-soft)] bg-white p-5 transition-all hover:border-[var(--brand-border-strong)] hover:shadow-md max-sm:flex-col sm:flex-row sm:items-start md:flex-col md:items-stretch"
+                className="flex flex-col justify-between gap-4 rounded-[20px] max-lg:rounded-lg border border-[var(--brand-border-soft)] bg-white p-5 max-lg:p-3 max-lg:gap-3 transition-all hover:border-[var(--brand-border-strong)] hover:shadow-md max-sm:flex-col sm:flex-row sm:items-start md:flex-col md:items-stretch"
               >
                 <div className="flex min-w-0 items-start gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[rgba(var(--brand-rgb),0.1)]">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl max-lg:rounded-lg bg-[rgba(var(--brand-rgb),0.1)]">
                     <SafetyOutlined className="text-xl text-[var(--brand-primary)]" />
                   </div>
                   <div className='min-w-0'>
@@ -260,7 +261,7 @@ export default function Roles() {
           })}
 
           {roles.length === 0 && !loading && !loadError && (
-            <div className="rounded-[20px] border border-[var(--brand-border-soft)] bg-[var(--brand-bg)] p-10 text-center text-slate-500">
+            <div className="rounded-[20px] max-lg:rounded-lg border border-[var(--brand-border-soft)] bg-[var(--brand-bg)] p-10 text-center text-slate-500">
               Chưa có vai trò nào
             </div>
           )}
@@ -298,6 +299,6 @@ export default function Roles() {
         onSetModulePerms={setModulePerms}
         onSetAllPerms={setAllPerms}
       />
-    </>
+    </MobileUI>
   )
 }

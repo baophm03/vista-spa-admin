@@ -22,11 +22,11 @@ import {
   CloseOutlined,
   UserSwitchOutlined,
   EditOutlined,
-  FilterOutlined,
+  LeftOutlined,
   MinusCircleOutlined,
   PlayCircleOutlined,
   PlusOutlined,
-  ReloadOutlined,
+  RightOutlined,
   StopOutlined,
   UnorderedListOutlined,
 } from '@ant-design/icons'
@@ -51,6 +51,7 @@ import AppointmentDetailModal from './components/AppointmentDetailModal'
 import AppointmentStaffModal from './components/AppointmentStaffModal'
 import AppointmentFormModal from './components/AppointmentFormModal'
 import AppointmentsCalendar from './components/AppointmentsCalendar'
+import AppointmentsMobileGrid from './components/AppointmentsMobileGrid'
 import AppointmentsTable from './components/AppointmentsTable'
 import AppointmentCalendarFilterPanel from './components/AppointmentCalendarFilterPanel'
 import AppointmentTabletToolbar from './components/AppointmentTabletToolbar'
@@ -123,6 +124,10 @@ export default function Appointments() {
   const selectedDate = selectedDateValue ? dayjs(selectedDateValue).format('YYYY-MM-DD') : ''
 
   const calendarDays = useMemo(() => getCalendarDays(calendarDate, calendarView), [calendarDate, calendarView])
+  // Mobile chỉ có Ngày / Tuần (Figma) — đang xem Tháng thì chuyển về Tuần; chế độ Danh sách chỉ có Tuần
+  useEffect(() => {
+    if (isMobile && (calendarView === 'month' || (displayMode === 'list' && calendarView === 'day'))) setCalendarView('week')
+  }, [isMobile, calendarView, displayMode])
   const calendarParams: GetAppointmentsAdminParams = {
     from_date: calendarDays[0].format('YYYY-MM-DD'),
     to_date: calendarDays[calendarDays.length - 1].format('YYYY-MM-DD'),
@@ -160,10 +165,12 @@ export default function Appointments() {
       : unassignedVisible)
   }, [allCalendarRows, hiddenCalendarStaff, unassignedVisible])
   // Chế độ Danh sách: phân trang server-side trên TOÀN BỘ lịch hẹn (không giới hạn
-  // theo kỳ đang xem) — đúng kỳ vọng "danh sách đầy đủ có trang 1 2 3…"
+  // theo kỳ đang xem) — đúng kỳ vọng "danh sách đầy đủ có trang 1 2 3…".
+  // Riêng mobile có hàng chọn ngày/tuần nên danh sách lọc theo kỳ đang chọn.
   const listParams: GetAppointmentsAdminParams = {
     page,
     limit,
+    ...(isMobile ? { from_date: calendarParams.from_date, to_date: calendarParams.to_date } : {}),
     status: filter === 'all' ? undefined : filter,
     branch_id: branchFilter,
   }
@@ -614,26 +621,27 @@ export default function Appointments() {
 
   // Khối điều khiển mobile theo Figma "Mobile / Lịch hẹn":
   // hàng 1: segmented Ngày/Tuần + Lịch/Danh sách — hàng 2: ‹ pill ngày › — hàng 3: 2 select lọc
-  const mobileNavBtnStyle = {
-    width: 44,
-    height: 44,
-    flexShrink: 0,
-    borderRadius: 10,
-    border: '1px solid var(--brand-border-soft)',
-    background: '#fff',
-    color: 'var(--brand-primary)',
-    cursor: 'pointer',
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: 14,
-    padding: 0,
-  } as const
+  const mobilePeriod = calendarView === 'day' ? 'day' : 'week'
+  const mobilePeriodLabel = calendarView === 'day'
+    ? calendarDate.format('DD/MM/YYYY')
+    : `${calendarDays[0].format('DD/MM')} → ${calendarDays[calendarDays.length - 1].format('DD/MM')}`
   const mobileControls = (
-    <div style={{ display: 'grid', gap: 8, marginBottom: 12 }}>
-      <div className={canCreate ? 'grid grid-cols-2 items-center gap-2' : 'flex items-center'}>
+    <div className="mb-3 grid gap-2">
+      {/* Danh sách luôn xem theo tuần (tự chuyển ở effect phía trên) nên ẩn Ngày | Tuần */}
+      <div className={`grid gap-2 ${displayMode === 'list' ? 'grid-cols-1' : 'grid-cols-2'}`}>
+        {displayMode === 'calendar' && (
+          <Segmented
+            block
+            className="appointment-mobile-segment"
+            aria-label="Phạm vi lịch"
+            value={mobilePeriod}
+            onChange={(value) => changeCalendarView(value as CalendarView)}
+            options={[{ value: 'day', label: 'Ngày' }, { value: 'week', label: 'Tuần' }]}
+          />
+        )}
         <Segmented
-          block={canCreate}
+          block
+          className="appointment-mobile-segment"
           aria-label="Kiểu hiển thị"
           value={displayMode}
           onChange={(value) => { setDisplayMode(value as 'calendar' | 'list'); setPage(1) }}
@@ -641,63 +649,52 @@ export default function Appointments() {
             { value: 'calendar', label: 'Lịch', icon: <CalendarOutlined /> },
             { value: 'list', label: 'Danh sách', icon: <UnorderedListOutlined /> },
           ]}
-          style={{ minWidth: 0, height: 44, borderRadius: 12, padding: 4 }}
-          className="mobile-segmented [&_.ant-segmented-item]:min-w-0 [&_.ant-segmented-item-label]:px-1! [&_.ant-segmented-item-label]:text-center!"
         />
-        {canCreate && (
-          <Button type="primary" className="h-11! w-full min-w-0 px-1!" icon={<PlusOutlined />} aria-label="Thêm lịch hẹn" onClick={() => openModal()}>
-            Thêm lịch hẹn
-          </Button>
-        )}
       </div>
-      <div className="grid grid-cols-3 items-center gap-2 [&>button]:w-full!">
-        <Select
-          aria-label="Phạm vi lịch"
-          className="mobile-filter-select"
-          style={{ width: '100%', minWidth: 0, height: 44 }}
-          disabled={displayMode === 'list'}
-          value={displayMode === 'list' ? 'all' : calendarView}
-          onChange={(value) => changeCalendarView(value as CalendarView)}
-          options={displayMode === 'list'
-            ? [{ value: 'all', label: 'Tất cả' }]
-            : [{ value: 'day', label: 'Ngày' }, { value: 'week', label: 'Tuần' }, { value: 'month', label: 'Tháng' }]}
-        />
-        <button
-          type="button"
-          aria-label="Ngày và bộ lọc"
-          style={{ ...mobileNavBtnStyle, width: 'auto', paddingInline: 10, gap: 6, whiteSpace: 'nowrap', position: 'relative', ...(calendarFilterCount > 0 ? { background: 'var(--brand-primary)', borderColor: 'var(--brand-primary)', color: '#fff' } : {}) }}
+      <div className="grid grid-cols-[44px_minmax(0,1fr)_44px] gap-2">
+        <Button aria-label="Kỳ trước" className="text-(--brand-primary)!" icon={<LeftOutlined />} onClick={() => changeCalendarDate(calendarDate.subtract(1, mobilePeriod))} />
+        <Button
+          aria-label={`Chọn ngày, đang xem ${mobilePeriodLabel}`}
+          className="min-w-0 font-medium text-(--brand-primary)! tabular-nums"
+          icon={<CalendarOutlined />}
           onClick={() => setFilterDrawerOpen(true)}
         >
-          <FilterOutlined />
-          Bộ lọc
-          {calendarFilterCount > 0 && (
-            <span
-              style={{
-                position: 'absolute', top: -5, right: -5, minWidth: 16, height: 16, borderRadius: 8,
-                background: '#fff', border: '1px solid var(--brand-primary)', color: 'var(--brand-primary)',
-                fontSize: 10, fontWeight: 600, lineHeight: '14px', textAlign: 'center' as const,
-              }}
-            >
-              {calendarFilterCount}
-            </span>
-          )}
-        </button>
-        <button
-          type="button"
-          aria-label="Làm mới dữ liệu"
-          style={{ ...mobileNavBtnStyle, width: 'auto', paddingInline: 10, gap: 6, whiteSpace: 'nowrap' }}
-          onClick={() => displayMode === 'calendar' ? refresh() : void listQuery.refetch()}
-        >
-          <ReloadOutlined spin={displayMode === 'calendar' ? calendarAppointmentsQuery.isFetching : listQuery.isFetching} />
-          Tải lại
-        </button>
+          {mobilePeriodLabel}
+        </Button>
+        <Button aria-label="Kỳ sau" className="text-(--brand-primary)!" icon={<RightOutlined />} onClick={() => changeCalendarDate(calendarDate.add(1, mobilePeriod))} />
       </div>
+      <div className="grid grid-cols-2 gap-2">
+        <Select
+          allowClear
+          aria-label="Lọc theo cơ sở"
+          placeholder="Chọn cơ sở"
+          className="min-w-0"
+          value={branchFilter}
+          onChange={(value) => changeBranch(value)}
+          options={branches.map((branch) => ({ value: branch.id, label: branch.name }))}
+        />
+        <Select
+          aria-label="Lọc theo trạng thái"
+          className="min-w-0"
+          value={filter}
+          onChange={(value) => { setFilter(value); setPage(1) }}
+          options={[
+            { value: 'all', label: 'Tất cả' },
+            ...Object.entries(STATUS_META).map(([value, { label }]) => ({ value, label })),
+          ]}
+        />
+      </div>
+      {canCreate && (
+        <Button type="primary" block className="keep-label" icon={<PlusOutlined />} onClick={() => openModal()}>
+          Thêm lịch hẹn
+        </Button>
+      )}
     </div>
   )
 
   return (
     <div className={displayMode === 'calendar' ? 'md:flex md:h-full md:min-h-0 md:flex-col' : undefined}>
-      <div className="mb-2 grid min-w-0 shrink-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-1">
+      <div className="mb-3 grid min-w-0 shrink-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-1 lg:mb-2">
         <PageTitle
           className="col-span-2 col-start-1 row-start-1 mb-0! sm:col-span-1"
           subtitle="Quản lý lịch hẹn và theo dõi các buổi hẹn của khách hàng"
@@ -752,89 +749,13 @@ export default function Appointments() {
               action={<Button onClick={refresh}>Thử lại</Button>} />
           ) : calendarAppointmentsQuery.isPending ? (
             <MobileCards rows={[]} rowKey={() => ''} renderCard={() => null} loading emptyText="" />
-          ) : calendarRows.length === 0 ? (
-            <MobileCards rows={[]} rowKey={() => ''} renderCard={() => null} emptyText="Chưa có lịch hẹn trong kỳ này" />
           ) : (
-            <div style={{ display: 'grid', gap: 14 }}>
-              {calendarDays.map((day) => {
-                const key = day.format('YYYY-MM-DD')
-                const items = calendarRows
-                  .filter((row) => appointmentDay(row) === key)
-                  .sort((a, b) => String(a.start_time).localeCompare(String(b.start_time)))
-                if (!items.length) return null
-                const weekday = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][day.day()]
-                const isToday = key === dayjs().format('YYYY-MM-DD')
-                return (
-                  <div key={key}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                      {/* Khối ngày kiểu lịch: thứ + số ngày nổi bật */}
-                      <span
-                        style={{
-                          width: 40,
-                          height: 44,
-                          borderRadius: 10,
-                          flexShrink: 0,
-                          display: 'inline-flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          background: isToday ? 'var(--brand-primary)' : '#f2e5f4',
-                          color: isToday ? '#fff' : 'var(--brand-primary)',
-                          lineHeight: 1.1,
-                        }}
-                      >
-                        <span style={{ fontSize: 10, fontWeight: 600, opacity: 0.85 }}>{weekday}</span>
-                        <span style={{ fontSize: 16, fontWeight: 700 }}>{day.format('DD')}</span>
-                      </span>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: isToday ? 'var(--brand-primary)' : '#282335' }}>
-                        {isToday ? 'Hôm nay' : `Tháng ${day.format('M')}`}
-                        <span style={{ display: 'block', fontSize: 11.5, fontWeight: 500, color: '#655E71' }}>
-                          {items.length} lịch hẹn
-                        </span>
-                      </span>
-                      <span aria-hidden style={{ flex: 1, height: 1, background: 'var(--brand-border-soft)' }} />
-                    </div>
-                    <div style={{ display: 'grid', gap: 8 }}>
-                      {items.map((row) => {
-                        const startMinute = timeInMinutes(row.start_time)
-                        const endMinute = timeInMinutes(row.end_time)
-                        const duration = startMinute !== null && endMinute !== null && endMinute > startMinute ? endMinute - startMinute : null
-                        return (
-                          // Theo Figma "Vista Admin / Thẻ lịch hẹn": tên đậm + tag góc phải,
-                          // divider, các hàng label/value — cùng ngôn ngữ với thẻ khách hàng
-                          <div
-                            key={row.id}
-                            className="mobile-card"
-                            style={{ cursor: 'pointer' }}
-                            onClick={() => setSelectedAppointment(row)}
-                          >
-                            <div className="mobile-card-head">
-                              <div className="mobile-card-title">{row.user?.full_name || '—'}</div>
-                              <Tag color={STATUS_META[row.status as keyof typeof STATUS_META]?.color} style={{ marginInlineEnd: 0, flexShrink: 0 }}>
-                                {STATUS_META[row.status as keyof typeof STATUS_META]?.label ?? row.status}
-                              </Tag>
-                            </div>
-                            <div className="mobile-card-rows">
-                              <MobileCardRow
-                                label="Thời gian"
-                                value={
-                                  <span style={{ color: 'var(--brand-primary)', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>
-                                    {row.start_time?.slice(0, 5) ?? '—'}
-                                    {duration ? <span style={{ fontWeight: 500, color: '#655E71' }}> ({duration} phút)</span> : null}
-                                  </span>
-                                }
-                              />
-                              <MobileCardRow label="KTV phụ trách" value={staffName(row)} />
-                              <MobileCardRow label="Cơ sở" value={branchName(row.branch_id)} />
-                            </div>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
+            <AppointmentsMobileGrid
+              rows={calendarRows}
+              days={calendarDays}
+              hourRange={shiftHourRange}
+              onSelect={setSelectedAppointment}
+            />
           )}
         </section>
       )}

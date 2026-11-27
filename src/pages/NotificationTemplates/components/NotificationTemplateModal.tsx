@@ -50,7 +50,7 @@ export default function NotificationTemplateModal({
       open={Boolean(editing)}
       onCancel={onCancel}
       onOk={onSave}
-      okText="Lưu mẫu"
+      okText="Lưu"
       cancelText="Hủy"
       confirmLoading={confirmLoading}
       destroyOnHidden

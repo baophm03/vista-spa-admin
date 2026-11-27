@@ -51,7 +51,7 @@ export default function TreatmentAddSessionModal({
       onCancel={onCancel}
       onOk={onOk}
       confirmLoading={submitting}
-      okText="Tạo buổi"
+      okText="Lưu"
       cancelText="Hủy"
     >
       <Form form={form} layout="vertical" className="mt-3">

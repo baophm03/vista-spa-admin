@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { PlusOutlined } from '@ant-design/icons'
 import { Link } from 'react-router-dom'
 import { Alert, Button, Form, Select, Table, Tag, message } from 'antd'
 import { displayName } from '@/utils/displayName'
@@ -169,21 +170,20 @@ export default function WarrantyClaims() {
         className="warranty-claims-title max-lg:mb-3"
         subtitle="Tiếp nhận và xử lý yêu cầu bảo hành"
         left={
-          <>
+          // docs 6.2.1: N = 1 + nút tạo → [Trạng thái][+]; từ tablet tan vào hàng toolbar
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 max-md:col-span-full md:contents">
             <Select
               aria-label="Lọc theo trạng thái bảo hành"
-              allowClear value={statusFilter} placeholder="Trạng thái" className="min-w-0 max-md:flex-1 md:w-[160px]"
+              allowClear value={statusFilter} placeholder="Trạng thái" className="w-full min-w-0 md:w-[160px]"
               onChange={(v) => { setStatusFilter(v); setPage(1) }}
               options={STATUS_FILTER_OPTIONS}
             />
-          </>
-        }
-        right={
-          <Can I="UPDATE" a="WARRANTY_CLAIM">
-            <Button type="primary" onClick={() => { createForm.resetFields(); setCreateOpen(true) }}>
-              Tiếp nhận bảo hành
-            </Button>
-          </Can>
+            <Can I="UPDATE" a="WARRANTY_CLAIM">
+              <Button type="primary" icon={<PlusOutlined />} aria-label="Tiếp nhận bảo hành" onClick={() => { createForm.resetFields(); setCreateOpen(true) }}>
+                Tiếp nhận bảo hành
+              </Button>
+            </Can>
+          </div>
         }
       >
         Bảo hành gói liệu trình

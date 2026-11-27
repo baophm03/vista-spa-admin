@@ -146,7 +146,8 @@ export default function Services() {
       </PageTitle>
       <StatCards items={statItems} />
 
-      <div className="service-list-toolbar service-category-toolbar">
+      {/* docs 6.2.1: mobile → [Tìm] / [Trạng thái][+] */}
+      <div className="service-list-toolbar service-category-toolbar toolbar-row">
         <div className="service-category-filters">
           <Input.Search
             allowClear

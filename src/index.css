@@ -301,21 +301,23 @@ h4.ant-typography {
     max-width: 100%;
   }
 
-  .ant-modal .ant-row,
-  .ant-drawer .ant-row {
+  /* Lưới Row/Col trong modal/drawer: 2 cột trên mobile. Bỏ qua .ant-form-item-row — antd dùng Row/Col
+     cho nhãn + ô nhập của từng Form.Item, ép 50% sẽ làm mọi trường chỉ rộng nửa modal. */
+  .ant-modal .ant-row:not(.ant-form-item-row),
+  .ant-drawer .ant-row:not(.ant-form-item-row) {
     margin-inline: -6px !important;
   }
 
-  .ant-modal .ant-row > .ant-col,
-  .ant-drawer .ant-row > .ant-col {
+  .ant-modal .ant-row:not(.ant-form-item-row) > .ant-col,
+  .ant-drawer .ant-row:not(.ant-form-item-row) > .ant-col {
     flex: 0 0 50% !important;
     max-width: 50% !important;
     min-width: 0;
     padding-inline: 6px !important;
   }
 
-  .ant-modal .ant-row > :is(.ant-col-24, .ant-col-xs-24),
-  .ant-drawer .ant-row > :is(.ant-col-24, .ant-col-xs-24) {
+  .ant-modal .ant-row:not(.ant-form-item-row) > :is(.ant-col-24, .ant-col-xs-24),
+  .ant-drawer .ant-row:not(.ant-form-item-row) > :is(.ant-col-24, .ant-col-xs-24) {
     flex-basis: 100% !important;
     max-width: 100% !important;
   }
@@ -847,6 +849,12 @@ h4.ant-typography {
   .ant-modal {
     max-width: calc(100vw - 16px);
   }
+}
+
+/* Modal tạo/sửa chuẩn (theo modal Thêm khách hàng /customers — docs/mobile-design-guide.md mục 8):
+   viền ô nhập đậm hơn 1 chút cho dễ thấy ranh giới trường khi chưa hover/focus */
+.ant-modal .ant-form :is(.ant-input-outlined, .ant-input-number-outlined, .ant-picker-outlined, .ant-select-outlined):not(:hover, :focus-within, .ant-input-status-error, .ant-input-number-status-error, .ant-picker-status-error, .ant-select-status-error, .ant-input-disabled, .ant-input-number-disabled, .ant-picker-disabled, .ant-select-disabled) {
+  border-color: color-mix(in srgb, var(--brand-dark) 22%, white);
 }
 
 .content-rich-editor .ql-toolbar.ql-snow {

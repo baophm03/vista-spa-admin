@@ -209,11 +209,11 @@ export default function AcademyRegistrations() {
               )}
             >
               <Button
-                className="academy-registration-mobile-filter-button"
+                className="academy-registration-mobile-filter-button keep-label"
                 icon={<Badge dot={!!(filter.course_id || filter.status)}><FilterOutlined /></Badge>}
                 aria-label="Lọc khóa học và trạng thái"
                 title="Lọc khóa học và trạng thái"
-              />
+              ><span className="academy-registration-filter-label">Bộ lọc</span></Button>
             </Popover>
             <div className="academy-registration-desktop-filters">
               <Select

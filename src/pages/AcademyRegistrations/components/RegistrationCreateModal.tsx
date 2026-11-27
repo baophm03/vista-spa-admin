@@ -39,7 +39,7 @@ export default function RegistrationCreateModal({ open, form, courses, vouchers,
       onOk={onSubmit}
       onCancel={onCancel}
       confirmLoading={creating}
-      okText="Thêm đăng ký"
+      okText="Lưu"
       cancelText="Hủy"
     >
       <Form form={form} layout="vertical" className="academy-registration-create-form">

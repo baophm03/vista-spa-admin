@@ -258,7 +258,8 @@ export default function HealthRecords() {
       >
         Sổ sức khỏe
       </PageTitle>
-      <div className="health-record-toolbar mb-3 grid grid-cols-[minmax(0,1fr)_minmax(112px,35%)] gap-2 md:grid-cols-[minmax(0,1fr)_170px] lg:grid-cols-[minmax(220px,320px)_170px] lg:justify-end">
+      {/* docs 6.2.1: mobile → tìm kiếm 1 hàng, bộ lọc loại da 1 hàng */}
+      <div className="health-record-toolbar toolbar-row mb-3 grid grid-cols-1 gap-2 md:grid-cols-[minmax(0,1fr)_170px] lg:grid-cols-[minmax(220px,320px)_170px] lg:justify-end">
           <Input.Search
             aria-label="Tìm hồ sơ sức khỏe"
             allowClear
@@ -283,7 +284,7 @@ export default function HealthRecords() {
       </div>
 
       {listError && (
-        <Alert type="error" showIcon className="mb-4! rounded-xl!"
+        <Alert type="error" showIcon className="mb-4! rounded-xl! max-lg:mb-3! max-lg:rounded-lg!"
           title="Không tải được hồ sơ sức khỏe" description={listError}
           action={<Button size="small" onClick={() => void load()}>Thử lại</Button>} />
       )}

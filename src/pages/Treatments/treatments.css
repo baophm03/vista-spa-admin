@@ -83,17 +83,6 @@
   .treatment-package-editor-modal .ant-form-item-control-input-content > :is(.ant-input, .ant-input-number, .ant-input-number-affix-wrapper, .ant-select, .ant-cascader, .ant-picker) {
     width: 100%;
   }
-
-  .treatment-package-editor-modal .ant-modal-footer {
-    display: flex;
-    gap: 8px;
-  }
-
-  .treatment-package-editor-modal .ant-modal-footer .ant-btn {
-    flex: 1;
-    min-height: 40px;
-    margin-inline-start: 0;
-  }
 }
 .treatments-page {
   min-width: 0;
@@ -145,17 +134,16 @@
 }
 
 @media (max-width: 767px) {
+  /* docs 6.2.1: N = 0 + nút tạo → [Tìm] / [+ Thêm gói] full width */
   .treatment-list-toolbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: 8px;
+    margin-bottom: 12px;
   }
 
   .treatment-list-toolbar .treatment-list-search {
-    flex: 1 1 0;
-  }
-
-  .treatment-list-toolbar .ant-btn {
-    flex-shrink: 0;
-    min-height: 44px;
+    width: 100%;
   }
 
   .treatments-page .mobile-card-head .ant-tag {

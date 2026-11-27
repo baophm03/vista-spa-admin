@@ -1,16 +1,7 @@
 .customers-card-toolbar {
   display: grid;
-  gap: 12px;
-  margin-bottom: 14px;
-}
-
-.customers-card-tools {
-  display: flex;
-  gap: 12px;
-}
-
-.customer-profile-form :is(.ant-input-outlined, .ant-picker-outlined):not(:hover, :focus-within, .ant-input-status-error, .ant-picker-status-error) {
-  border-color: color-mix(in srgb, var(--brand-dark) 22%, white);
+  gap: 8px;
+  margin-bottom: 12px;
 }
 
 @media (max-width: 767px) {
@@ -29,12 +20,6 @@
   .customers-card-toolbar {
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
-  }
-
-  .customers-card-tools button {
-    min-width: 46px;
-    padding-inline: 12px !important;
-    white-space: nowrap;
   }
 
   .customers-card-list.mobile-only {

@@ -7,6 +7,7 @@ import { clearAuth } from '../api/mutator/custom-instance'
 import { AdminHeader, AdminSidebar, getPageTitle } from '.'
 import { canAccessPage, getProfileRoleNames, isKtvRoleName, isReceptionistRoleName } from './sidebarMenu'
 import PermissionGate from './PermissionGate'
+import MobileUI from '@/components/base/MobileUI'
 import { ability } from '../configs/casl/ability'
 import { AbilityProvider } from '@casl/react'
 import { useAuthStore } from '../stores/auth-store'
@@ -35,6 +36,8 @@ export default function AdminLayout() {
   const isSchedulePage = location.pathname === '/schedule'
   const isAppointmentsPage = /^\/appointments\/?$/.test(location.pathname)
   const usesFullHeightContent = isSchedulePage || isAppointmentsPage
+  // Chuẩn mobile (docs/mobile-design-guide.md) áp cho mọi trang, trừ Dashboard
+  const usesMobileUI = location.pathname !== '/'
 
   useEffect(() => {
     // Chỉ gọi API khi đã có token — tránh bắn request lỗi trước khi guard redirect
@@ -116,11 +119,19 @@ export default function AdminLayout() {
 
           <Content className={`min-h-0 flex-1 overflow-y-auto bg-[var(--brand-bg)]! px-3! pb-3! sm:px-4! sm:pb-4! lg:px-6! lg:pb-6! [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-xl [&::-webkit-scrollbar-thumb]:bg-[var(--brand-border)] ${isAppointmentsPage ? 'pt-2!' : 'pt-3! sm:pt-4! lg:pt-6!'} ${isSchedulePage ? 'md:overflow-hidden' : ''}`}>
             {/* Nền trang theo brand.background_color — bảng/card bên trong có nền trắng riêng nên vẫn dễ đọc */}
-            <div className={usesFullHeightContent ? 'min-h-full md:h-full md:min-h-0' : 'min-h-full'}>
-              <PermissionGate>
-                <Outlet />
-              </PermissionGate>
-            </div>
+            {usesMobileUI ? (
+              <MobileUI className={usesFullHeightContent ? 'min-h-full md:h-full md:min-h-0' : 'min-h-full'}>
+                <PermissionGate>
+                  <Outlet />
+                </PermissionGate>
+              </MobileUI>
+            ) : (
+              <div className="min-h-full">
+                <PermissionGate>
+                  <Outlet />
+                </PermissionGate>
+              </div>
+            )}
           </Content>
         </Layout>
       </Layout>

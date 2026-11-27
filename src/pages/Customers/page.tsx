@@ -290,24 +290,6 @@ export default function Customers() {
   const rowRankName = (row: CustomerProfileRow) => row.user?.membership?.card_rank?.name
   const activeFilterCount = Object.values(filters).filter((value) => value !== undefined && value !== '').length + (keyword ? 1 : 0)
 
-  // Nút pill mobile theo Figma "Mobile / Danh sách khách": trắng, viền hairline, radius 12, icon tím
-  const mobilePillStyle = {
-    flex: 1,
-    height: 44,
-    borderRadius: 10,
-    border: '1px solid var(--brand-border-soft)',
-    background: '#fff',
-    cursor: 'pointer',
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    fontSize: 13,
-    fontWeight: 500,
-    color: 'var(--brand-primary)',
-    padding: 0,
-  } as const
-
   const renderFilterPopover = (trigger?: React.ReactNode) => (
     <ListFilterPopover
       trigger={trigger}
@@ -395,51 +377,50 @@ export default function Customers() {
       >
         Khách hàng
       </PageTitle>
-      {useCardLayout && (
-        <div className="customers-card-toolbar">
-          <Input
-            allowClear
-            prefix={<SearchOutlined style={{ color: '#655E71' }} />}
-            placeholder="Tìm tên, SĐT, email, mã KH"
-            value={searchText}
-            onChange={(event) => setSearchText(event.target.value)}
-            onPressEnter={() => { setKeyword(searchText.trim()); setPage(1) }}
-            aria-label="Tìm khách hàng"
-            style={{ height: 46, borderRadius: 12 }}
-          />
-          <div className="customers-card-tools">
-            {profileAccess.canRead && (
-              <button type="button" style={mobilePillStyle} onClick={() => setScannerOpen(true)}>
-                <QrcodeOutlined style={{ color: 'var(--brand-primary)', fontSize: 15 }} />
-                Quét QR
-              </button>
-            )}
-            {renderFilterPopover(
-              <button type="button" style={mobilePillStyle}>
-                <FilterOutlined style={{ color: 'var(--brand-primary)', fontSize: 15 }} />
-                Bộ lọc{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
-              </button>,
-            )}
-            {profileAccess.canExport && (
-              <button type="button" disabled={exporting} style={{ ...mobilePillStyle, gap: 4, whiteSpace: 'nowrap' }} onClick={() => void downloadCsv()}>
-                <DownloadOutlined style={{ color: 'var(--brand-primary)', fontSize: 15 }} />
-                Xuất CSV
-              </button>
-            )}
-            {/* Nút thêm chuyển từ header xuống cùng hàng công cụ trên mobile */}
-            {profileAccess.canManage && (
-              <button
-                type="button"
-                aria-label="Thêm khách hàng"
-                style={{ ...mobilePillStyle, flex: '0 0 46px', background: 'var(--brand-primary)', borderColor: 'var(--brand-primary)', color: '#fff' }}
-                onClick={() => void openModal()}
-              >
-                <PlusOutlined style={{ fontSize: 15 }} />
-              </button>
-            )}
+      {useCardLayout && (() => {
+        // docs 6.2.1: tìm kiếm 1 hàng; N tool lẻ → Bộ lọc đứng riêng + nút tạo full width có tên,
+        // N chẵn → 2 tool 1 hàng, nút tạo thu nhỏ cuối hàng
+        const toolCount = 1 + Number(profileAccess.canRead) + Number(profileAccess.canExport)
+        const odd = toolCount % 2 === 1
+        const gridCols = !odd && profileAccess.canManage ? 'grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]' : 'grid-cols-2'
+        return (
+          <div className="customers-card-toolbar toolbar-row">
+            <Input
+              allowClear
+              prefix={<SearchOutlined />}
+              placeholder="Tìm tên, SĐT, email, mã KH"
+              value={searchText}
+              onChange={(event) => setSearchText(event.target.value)}
+              onPressEnter={() => { setKeyword(searchText.trim()); setPage(1) }}
+              aria-label="Tìm khách hàng"
+            />
+            <div className={`customers-card-tools grid gap-2 md:flex ${gridCols}`}>
+              {renderFilterPopover(
+                <Button className={`keep-label ${odd ? 'max-md:col-span-2' : ''}`} icon={<FilterOutlined />}>
+                  Bộ lọc{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
+                </Button>,
+              )}
+              {profileAccess.canRead && (
+                <Button className="keep-label" icon={<QrcodeOutlined />} loading={qrLookupLoading} onClick={() => setScannerOpen(true)}>Quét QR</Button>
+              )}
+              {profileAccess.canExport && (
+                <Button className="keep-label" icon={<DownloadOutlined />} loading={exporting} onClick={() => void downloadCsv()}>Xuất CSV</Button>
+              )}
+              {profileAccess.canManage && (
+                <Button
+                  type="primary"
+                  className={odd ? 'keep-label max-md:col-span-2' : undefined}
+                  icon={<PlusOutlined />}
+                  aria-label="Thêm khách hàng"
+                  onClick={() => void openModal()}
+                >
+                  Thêm khách hàng
+                </Button>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        )
+      })()}
       <Table<CustomerProfileRow>
         className="desktop-only max-lg:hidden!"
         rowKey="id"

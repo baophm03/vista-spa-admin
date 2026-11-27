@@ -365,37 +365,34 @@
     font-size: 13px;
   }
 
-  .products-tabs > .ant-tabs-nav :is(.ant-tabs-nav-wrap, .ant-tabs-nav-list) {
-    width: 100%;
-  }
-
-  .products-tabs > .ant-tabs-nav .ant-tabs-tab {
-    flex: 1;
-    justify-content: center;
-    min-height: 44px;
-    margin-inline: 0 !important;
-  }
-
-  .product-toolbar,
-  .product-toolbar-filters {
-    flex-wrap: nowrap;
+  /* docs 6.2.1: tìm kiếm 1 hàng; [Bộ lọc][+] (sản phẩm) hoặc nút tạo full width (danh mục) */
+  .product-toolbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
     gap: 8px;
   }
 
-  .product-toolbar-filters,
+  .product-toolbar.product-toolbar-single {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .product-toolbar-filters {
+    display: contents;
+  }
+
   .product-toolbar .product-search {
-    flex: 1 1 0;
+    grid-column: 1 / -1;
+    width: 100%;
     min-width: 0;
     max-width: none;
   }
 
-  .product-toolbar .ant-btn {
-    flex-shrink: 0;
-    min-height: 44px;
+  .product-toolbar .product-filter-popover .ant-btn {
+    width: 100%;
   }
 
-  .product-toolbar .mobile-only .ant-btn {
-    min-width: 44px;
+  .product-catalog-list .mobile-card:has(.product-card) {
+    border-radius: 8px;
   }
 
   .products-page .ant-alert {

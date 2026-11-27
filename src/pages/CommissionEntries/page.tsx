@@ -324,7 +324,8 @@ export default function CommissionEntriesPanel() {
 
   return (
     <>
-      <div className="commission-entries-filters mb-3 grid grid-cols-2 gap-2 md:mb-4 md:flex md:flex-wrap md:justify-end">
+      {/* docs 6.2.1: N = 3 + nút tạo → [Người nhận] / [Cơ sở][Trạng thái] / [+ Thêm thủ công] */}
+      <div className="commission-entries-filters toolbar-row mb-3 grid grid-cols-2 gap-2 md:mb-4 md:flex md:flex-wrap md:justify-end max-lg:mb-3">
         <Select
           showSearch optionFilterProp="label" allowClear
           className="w-full min-w-0 md:w-[220px]"
@@ -337,7 +338,7 @@ export default function CommissionEntriesPanel() {
         />
         <Select
           showSearch optionFilterProp="label" allowClear
-          className="w-full min-w-0 md:w-[220px]"
+          className="w-full min-w-0 max-md:order-first max-md:col-span-2 md:w-[220px]"
           aria-label="Lọc theo người nhận"
           placeholder="Người nhận"
           loading={staffsQuery.isLoading}
@@ -356,7 +357,7 @@ export default function CommissionEntriesPanel() {
         <Can I="CREATE" a="COMMISSION">
           <Button
             type="primary"
-            className="min-w-0 px-2! md:px-4!"
+            className="keep-label min-w-0 max-md:col-span-2"
             icon={<PlusOutlined />}
             onClick={() => { setEditingEntry(null); entryForm.setFieldsValue({}); setEntryModalOpen(true) }}
           >
@@ -380,7 +381,7 @@ export default function CommissionEntriesPanel() {
           <Alert
             type="warning"
             showIcon
-            className="items-start! rounded-xl! px-3! py-2.5!"
+            className="items-start! rounded-xl! max-lg:rounded-lg! px-3! py-2.5!"
             styles={{ icon: { marginTop: 3 } }}
             message={
               <span className="block text-sm leading-snug">

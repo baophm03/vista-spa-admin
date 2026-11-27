@@ -111,7 +111,7 @@ export default function CommissionEntryModal({
       open={open}
       onCancel={onCancel}
       onOk={onOk}
-      okText={isEdit ? 'Lưu' : 'Thêm'}
+      okText="Lưu"
       cancelText="Hủy"
       confirmLoading={submitting}
     >

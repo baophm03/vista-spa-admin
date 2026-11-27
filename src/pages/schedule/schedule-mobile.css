@@ -13,14 +13,6 @@
     color: var(--brand-primary);
   }
 
-  /* Nút trong modal đăng ký: cao 44px, bo 12px như Figma */
-  .schedule-compact-modal .ant-modal-footer .ant-btn {
-    height: 44px;
-    border-radius: 12px;
-    padding-inline: 14px;
-    font-weight: 600;
-  }
-
   /* Toast xanh ở đáy: "Đã lưu đăng ký ca", "Đã xóa ca"... */
   .schedule-compact-toast.ant-notification-notice {
     border: 1px solid #d4e8c8;

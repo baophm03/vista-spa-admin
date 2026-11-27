@@ -40,7 +40,7 @@ const DEFAULT_VISIBLE_COLUMNS = BRANCH_COLUMN_OPTIONS.map((column) => column.val
 
 function BranchMobileSkeleton() {
   return (
-    <div className="w-full rounded-lg border border-[#E9E1EC] bg-[var(--vista-neutral-0)] p-[17px]" aria-busy="true">
+    <div className="w-full rounded-lg border border-[#E9E1EC] bg-white p-[17px]" aria-busy="true">
       <Skeleton active title={false} paragraph={{ rows: 3 }} />
     </div>
   )
@@ -48,7 +48,7 @@ function BranchMobileSkeleton() {
 
 function BranchMobileEmpty({ filtered }: { filtered: boolean }) {
   return (
-    <div className="flex h-[164px] w-full flex-col items-center justify-center gap-[9px] rounded-lg border border-[#E9E1EC] bg-[var(--vista-neutral-0)]">
+    <div className="flex h-[164px] w-full flex-col items-center justify-center gap-[9px] rounded-lg border border-[#E9E1EC] bg-white">
       <div className="flex h-[62px] w-[62px] shrink-0 items-center justify-center rounded-[31px] bg-[#F2E5F4]">
         <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <path
@@ -73,7 +73,7 @@ function BranchMobileError({ onRetry }: { onRetry: () => void }) {
       <button
         type="button"
         onClick={onRetry}
-        className="flex h-11 w-fit cursor-pointer items-center justify-center gap-1.5 text-nowrap rounded-lg border border-[#E9E1EC] bg-[var(--vista-neutral-0)] px-3 text-[13px] font-medium text-[#282335]"
+        className="flex h-11 w-fit cursor-pointer items-center justify-center gap-1.5 text-nowrap rounded-lg border border-[#E9E1EC] bg-white px-3 text-[13px] font-medium text-[#282335]"
       >
         Thử lại
       </button>

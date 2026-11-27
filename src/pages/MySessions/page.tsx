@@ -210,7 +210,7 @@ export default function MySessions() {
     >
       Buổi của tôi
     </PageTitle>
-    <div className="my-session-toolbar mb-3 grid grid-cols-2 gap-2 md:grid-cols-[minmax(0,1fr)_180px_190px] lg:grid-cols-[minmax(220px,320px)_180px_190px] lg:justify-end">
+    <div className="my-session-toolbar toolbar-row mb-3 grid grid-cols-2 gap-2 md:grid-cols-[minmax(0,1fr)_180px_190px] lg:grid-cols-[minmax(220px,320px)_180px_190px] lg:justify-end">
       <Input
         allowClear
         prefix={<SearchOutlined />}
@@ -236,7 +236,7 @@ export default function MySessions() {
       />
     </div>
     {listError && <Alert
-      className="mb-4! rounded-xl!"
+      className="mb-4! rounded-xl! max-lg:mb-3! max-lg:rounded-lg!"
       type="error"
       showIcon
       title="Không tải được danh sách buổi"

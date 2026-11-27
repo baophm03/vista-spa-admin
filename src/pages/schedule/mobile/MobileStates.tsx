@@ -25,7 +25,7 @@ export function MobileErrorCard({ title, onRetry }: { title: string; onRetry: ()
       </div>
       <p className="m-0 text-[13px] text-[#6F7071]">Đã có lỗi xảy ra, vui lòng thử lại sau</p>
       <div className="flex justify-end">
-        <Button className="h-11! rounded-lg! px-3! font-semibold!" onClick={onRetry}>Thử lại</Button>
+        <Button className="h-11! rounded-lg! px-3!" onClick={onRetry}>Thử lại</Button>
       </div>
     </div>
   )

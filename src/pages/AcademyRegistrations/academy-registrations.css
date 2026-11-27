@@ -13,6 +13,10 @@
   display: none;
 }
 
+.academy-registration-filter-label {
+  display: none;
+}
+
 .academy-registration-filter-popover {
   display: grid;
   width: 260px;
@@ -135,6 +139,36 @@
   .academy-registration-stats .stat-card {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  /* docs 6.2.1: N = 1 + nút tạo → [Tìm] / [Bộ lọc][+] */
+  .academy-registrations-page-title .page-title-controls,
+  .academy-registrations-page-title .page-title-controls:has(.academy-registration-create-button) {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .academy-registrations-page-title .academy-registration-search.ant-input-search {
+    grid-column: 1 / -1;
+  }
+
+  .academy-registrations-page-title .academy-registration-mobile-filter-button.ant-btn {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: 100%;
+    padding-inline: 15px;
+  }
+
+  .academy-registrations-page-title .page-title-controls:has(.academy-registration-create-button) .academy-registration-mobile-filter-button.ant-btn {
+    grid-column: 1;
+  }
+
+  .academy-registrations-page-title .academy-registration-create-button.ant-btn {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .academy-registration-filter-label {
+    display: inline;
   }
 }
 

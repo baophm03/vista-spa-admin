@@ -273,7 +273,8 @@ export default function RewardCatalogTab() {
 
   return (
     <>
-      <div className="mb-3 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 md:flex md:flex-wrap md:justify-between">
+      {/* docs 6.2.1: mobile → [Tìm] / [Loại quà][+] */}
+      <div className="toolbar-row mb-3 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 md:flex md:flex-wrap md:justify-between">
         <div className="contents md:flex md:min-w-0 md:flex-1 md:gap-2 lg:flex-none">
         <Input.Search
           allowClear

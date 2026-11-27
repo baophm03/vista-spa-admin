@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Alert, Button, Form, Space, Switch, Tag, Tooltip, Typography, message } from 'antd'
 import { EditOutlined } from '@ant-design/icons'
+import MobileUI from '@/components/base/MobileUI'
 import PageTitle from '@/components/base/PageTitle'
 import TableEmpty from '@/components/base/TableEmpty'
 import { errorMessage, pickData } from '@/api/helpers'
@@ -110,7 +111,7 @@ export default function NotificationTemplates() {
   }
 
   return (
-    <>
+    <MobileUI>
       <PageTitle
         subtitle="Quản lý nội dung thông báo tự động theo sự kiện và kênh gửi"
       >
@@ -118,7 +119,7 @@ export default function NotificationTemplates() {
       </PageTitle>
 
       <Alert
-        className="mb-4!"
+        className="mb-4! max-lg:mb-3!"
         type="info"
         showIcon
         title={isAdmin ? 'Admin có thể sửa mẫu và bật/tắt theo từng kênh.' : 'Lễ tân được xem mẫu thông báo ở chế độ chỉ đọc.'}
@@ -169,6 +170,6 @@ export default function NotificationTemplates() {
         confirmLoading={updateMutation.isPending}
         form={form}
       />
-    </>
+    </MobileUI>
   )
 }

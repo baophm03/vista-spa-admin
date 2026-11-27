@@ -19,6 +19,7 @@
     margin-bottom: 12px;
   }
   .mobile-ui > .ant-alert,
+  .mobile-ui > div > .ant-alert,
   .mobile-ui .ant-tabs-tabpane > .ant-alert {
     margin-bottom: 12px !important;
   }
@@ -27,20 +28,8 @@
     gap: 12px;
   }
 
-  /* ---- Tab: chia đều full width, gạch chân tab đang chọn ---- */
-  .mobile-ui .ant-tabs-nav .ant-tabs-nav-list {
-    min-width: 100%;
-  }
-  .mobile-ui .ant-tabs-nav .ant-tabs-tab {
-    flex: 1 1 0;
-    justify-content: center;
-  }
-  .mobile-ui .ant-tabs-nav .ant-tabs-tab + .ant-tabs-tab {
-    margin-inline-start: 0 !important;
-  }
-  .mobile-ui .ant-tabs-nav .ant-tabs-tab-btn {
-    white-space: nowrap;
-  }
+  /* ---- Tab: giữ mặc định antd như /customer-data-config — tab rộng theo chữ, vuốt/kéo ngang
+     để xem tab bị khuất (không ép chia đều full width) ---- */
 
   /* ---- Bo góc: toàn bộ nội dung 8px ---- */
   .mobile-ui :is(
@@ -79,6 +68,8 @@
      Chiều cao 44px do token antd trong <MobileUI> ---- */
   .mobile-ui :is(.page-title-controls, .toolbar-row) .ant-btn {
     font-weight: 400;
+  }
+  .mobile-ui .ant-btn {
     box-shadow: none;
   }
 

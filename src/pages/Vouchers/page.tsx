@@ -38,7 +38,7 @@ import {
 } from '@/api/endpoints/product-vouchers'
 import type { ProductCategory } from '@/api/models/productCategory'
 import VoucherModal from './components/VoucherModal'
-import { CATEGORY_META, MOBILE_TAB_LABELS, type VoucherCategory, type VoucherCategoryRow, type VoucherCategoryWrite } from './components/constants'
+import { CATEGORY_META, type VoucherCategory, type VoucherCategoryRow, type VoucherCategoryWrite } from './components/constants'
 import { useBrandCurrency } from '@/themeRuntime'
 import './vouchers.css'
 
@@ -382,6 +382,7 @@ function VoucherCategoryTab({ category, isMobile }: { category: VoucherCategory;
   return (
     <>
       <StatCards items={statItems} />
+      {/* docs 6.2.1: mobile → [Tìm] / [Bộ lọc][+] */}
       <div className="voucher-toolbar">
         <div className="voucher-toolbar-search">
           <Input.Search
@@ -395,7 +396,7 @@ function VoucherCategoryTab({ category, isMobile }: { category: VoucherCategory;
           />
           {isMobile ? (
             <Popover trigger="click" placement="bottomRight" title="Lọc theo cơ sở" content={branchSelect}>
-              <Button className="voucher-toolbar-button" type={branchFilter ? 'primary' : 'default'} icon={<FilterOutlined />} aria-label="Bộ lọc cơ sở" />
+              <Button className="voucher-filter-button" type={branchFilter ? 'primary' : 'default'} icon={<FilterOutlined />} aria-label="Bộ lọc cơ sở">Bộ lọc</Button>
             </Popover>
           ) : branchSelect}
         </div>
@@ -499,7 +500,7 @@ export default function Vouchers() {
         onChange={(key) => { setActiveTab(key as VoucherCategory) }}
         items={CATEGORIES.map((category) => ({
           key: category,
-          label: isMobile ? MOBILE_TAB_LABELS[category] : CATEGORY_META[category].label,
+          label: CATEGORY_META[category].label,
           children: <VoucherCategoryTab category={category} isMobile={isMobile} />,
         }))}
       />

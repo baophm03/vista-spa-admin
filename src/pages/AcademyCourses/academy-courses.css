@@ -104,8 +104,7 @@
   }
 
   .academy-course-list .mobile-card {
-    border-radius: 14px;
-    padding: 14px;
+    padding: 12px;
   }
 
   .academy-course-list .mobile-card-label {
@@ -210,8 +209,9 @@
     white-space: normal;
   }
 
+  /* docs 6.2.1: N = 0 + nút tạo → tìm kiếm 1 hàng, nút tạo full width có icon + tên */
   .academy-courses-page-title .page-title-controls {
-    grid-template-columns: minmax(0, 1fr) 44px;
+    grid-template-columns: minmax(0, 1fr);
     gap: 8px !important;
   }
 
@@ -220,16 +220,6 @@
     width: 100% !important;
     max-width: 100%;
     min-width: 0;
-  }
-
-  .academy-courses-page-title .page-title-controls .academy-course-create-button.ant-btn {
-    display: inline-flex;
-    width: 44px;
-    height: 40px;
-    min-height: 40px;
-    padding: 0;
-    align-items: center;
-    justify-content: center;
   }
 
   .academy-course-mobile-actions.mobile-only {

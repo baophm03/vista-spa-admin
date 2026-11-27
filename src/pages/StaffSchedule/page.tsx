@@ -4,6 +4,7 @@ import { Alert, Tabs } from 'antd'
 import type { TabsProps } from 'antd'
 import { pickData } from '@/api/helpers'
 import MobileUI from '@/components/base/MobileUI'
+import useDesktopLayout from '@/hooks/useDesktopLayout'
 import PageTitle from '@/components/base/PageTitle'
 import { ToolbarSlotContext } from '../schedule/ToolbarSlotContext'
 import { useGetBranchesAdmin } from '@/api/endpoints/branches'
@@ -22,6 +23,8 @@ import '../schedule/schedule-mobile.css'
 
 export default function StaffSchedule() {
   const ability = useAbility()
+  // Mobile/tablet: tab mặc định antd như /customer-data-config (vuốt ngang khi tràn)
+  const desktop = useDesktopLayout()
   const profile = useProfileStore((s) => s.profile)
   const { isAdmin, isReceptionist, isTechnician } = useCustomerProfileAccess()
   const [activeTab, setActiveTab] = useState('dates')
@@ -127,8 +130,8 @@ export default function StaffSchedule() {
           activeKey={activeTab}
           onChange={(key: string) => setActiveTab(key)}
           items={items}
-          size="small"
-          tabBarGutter={16}
+          size={desktop ? 'small' : 'middle'}
+          tabBarGutter={desktop ? 16 : undefined}
           renderTabBar={renderTabBar}
         />
         {!!sharedError && <Alert className="shrink-0!" style={{ marginTop: 12 }} type="warning" showIcon message="Một phần dữ liệu dùng chung chưa tải được" description={sharedError} action={<a onClick={() => {

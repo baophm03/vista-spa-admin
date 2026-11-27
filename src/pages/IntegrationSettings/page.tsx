@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Alert, Button, Card, Col, Form, Input, InputNumber, Row, Select, Space, Spin, Switch, Tag, Typography, message } from 'antd'
 import { CheckCircleOutlined, LinkOutlined, SaveOutlined } from '@ant-design/icons'
+import MobileUI from '@/components/base/MobileUI'
 import PageTitle from '@/components/base/PageTitle'
 import { errorMessage, pickData } from '@/api/helpers'
 import type { IntegrationUpdate } from '@/api/models/integrationUpdate'
@@ -116,7 +117,7 @@ function ZaloIntegrationCard({ provider, title, row, canEdit }: {
   }
 
   return (
-    <Card className="mt-5!" title={title} extra={statusTag(row)}>
+    <Card className="mt-5! max-lg:mt-3!" title={title} extra={statusTag(row)}>
       <Alert className="mb-4" type="info" showIcon message="Kiểm tra chỉ truy vấn quyền và hạn mức; không gửi tin và không phát sinh phí." />
       <Form form={form} layout="vertical" disabled={!canEdit} onValuesChange={() => setTestResult(null)}>
         <Row gutter={16}>
@@ -161,10 +162,10 @@ function ZaloIntegrationCard({ provider, title, row, canEdit }: {
           <Switch checked={enabled} onChange={(value) => { setEnabled(value); setTestResult(null) }} disabled={!canEdit || clearSecret} />
         </div>
         {testResult && <Alert className="mb-4" type={testResult.ok ? 'success' : 'error'} showIcon message={testResult.message} />}
-        <Space wrap>
+        <div className="flex flex-wrap gap-2 max-md:grid max-md:grid-cols-2">
           <Button icon={<CheckCircleOutlined />} loading={testMutation.isPending} disabled={!canEdit || clearSecret} onClick={() => void onTest()}>Kiểm tra kết nối</Button>
           <Button type="primary" icon={<SaveOutlined />} loading={saveMutation.isPending} disabled={!canEdit} onClick={() => void onSave()}>Lưu cấu hình</Button>
-        </Space>
+        </div>
       </Form>
     </Card>
   )
@@ -252,12 +253,12 @@ export default function IntegrationSettings() {
   return (
     <Can I="UPDATE" a="SETTING" passThrough>
       {({ isAllowed: canEdit }) => (
-        <>
+        <MobileUI>
           <PageTitle subtitle="Kết nối tích hợp bên ngoài (Zalo, email...)">Tích hợp dịch vụ</PageTitle>
           {!canEdit && <Alert className="mb-4" type="info" showIcon message="Chỉ ADM được xem và quản lý tích hợp." />}
           {query.isError && <Alert className="mb-4" type="error" showIcon message="Không tải được trạng thái tích hợp" description={errorMessage(query.error)} action={<Button size="small" onClick={() => void query.refetch()}>Thử lại</Button>} />}
           <Spin spinning={query.isLoading}>
-            <Row gutter={[20, 20]}>
+            <Row gutter={[{ xs: 12, lg: 20 }, { xs: 12, lg: 20 }]}>
               <Col xs={24} xl={14}>
                 <Card
                   title={<Space><LinkOutlined />Email qua SMTP</Space>}
@@ -287,10 +288,10 @@ export default function IntegrationSettings() {
                       <Switch checked={enabled} onChange={(value) => { setEnabled(value); setTestResult(null) }} disabled={!canEdit} />
                     </div>
                     {testResult && <Alert className="mb-4!" type={testResult.ok ? 'success' : 'error'} showIcon message={testResult.message} />}
-                    <Space wrap>
+                    <div className="flex flex-wrap gap-2 max-md:grid max-md:grid-cols-2">
                       <Button icon={<CheckCircleOutlined />} loading={testMutation.isPending} disabled={!canEdit} onClick={() => void onTest()}>Kiểm tra kết nối</Button>
                       <Button type="primary" icon={<SaveOutlined />} loading={saveMutation.isPending} disabled={!canEdit} onClick={() => void onSave()}>Lưu cấu hình</Button>
-                    </Space>
+                    </div>
                   </Form>
                 </Card>
                 <ZaloIntegrationCard provider="ZALO_OA" title="Zalo Official Account (OA)" row={zaloOa} canEdit={canEdit} />
@@ -308,7 +309,7 @@ export default function IntegrationSettings() {
               </Col>
             </Row>
           </Spin>
-        </>
+        </MobileUI>
       )}
     </Can>
   )

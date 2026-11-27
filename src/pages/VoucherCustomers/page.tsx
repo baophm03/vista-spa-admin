@@ -19,7 +19,7 @@ import { getTreatmentPackageVoucherCustomersAdmin, postTreatmentPackageVoucherCu
 import { getTreatmentPackageVouchersAdmin } from '@/api/endpoints/treatment-package-vouchers'
 import { getProductVoucherCustomersAdmin, postProductVoucherCustomersAdmin, deleteProductVoucherCustomersIdAdmin } from '@/api/endpoints/product-voucher-customers'
 import { getProductVouchersAdmin } from '@/api/endpoints/product-vouchers'
-import { CATEGORY_META, MOBILE_TAB_LABELS, type VoucherCategory, type VoucherCustomerAssignment, type VoucherCustomerRow } from '../Vouchers/components/constants'
+import { CATEGORY_META, type VoucherCategory, type VoucherCustomerAssignment, type VoucherCustomerRow } from '../Vouchers/components/constants'
 import '../Vouchers/vouchers.css'
 import '../Vouchers/components/VoucherModal.css'
 
@@ -267,6 +267,7 @@ function VoucherCustomerTab({ category, branches, isMobile }: { category: Vouche
 
   return (
     <>
+      {/* docs 6.2.1: mobile → [Tìm] / [Bộ lọc][+] */}
       <div className="voucher-toolbar" style={isMobile ? undefined : { gap: 16 }}>
         <div className="voucher-toolbar-search" style={isMobile ? undefined : { gap: 8 }}>
           {isMobile ? (
@@ -281,7 +282,7 @@ function VoucherCustomerTab({ category, branches, isMobile }: { category: Vouche
                 onSearch={applySearch}
               />
               <Popover trigger="click" placement="bottomRight" title="Lọc theo cơ sở" content={branchSelect}>
-                <Button className="voucher-toolbar-button" type={branchFilter ? 'primary' : 'default'} icon={<FilterOutlined />} aria-label="Bộ lọc cơ sở" />
+                <Button className="voucher-filter-button" type={branchFilter ? 'primary' : 'default'} icon={<FilterOutlined />} aria-label="Bộ lọc cơ sở">Bộ lọc</Button>
               </Popover>
             </>
           ) : (
@@ -457,7 +458,7 @@ export default function VoucherCustomers() {
         onChange={(key) => setActiveTab(key as VoucherCategory)}
         items={CATEGORIES.map((category) => ({
           key: category,
-          label: isMobile ? MOBILE_TAB_LABELS[category] : CATEGORY_META[category].label,
+          label: CATEGORY_META[category].label,
           children: <VoucherCustomerTab category={category} branches={branches} isMobile={isMobile} />,
         }))}
       />

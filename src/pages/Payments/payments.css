@@ -33,6 +33,12 @@
   padding: 14px;
 }
 
+@media (max-width: 1023px) {
+  .payment-history-cards .mobile-card {
+    padding: 12px;
+  }
+}
+
 .payment-history-cards .payment-card-head {
   align-items: center;
   margin-bottom: 12px;
@@ -105,9 +111,15 @@
 }
 
 @media (max-width: 767px) {
+  /* docs 6.2.1: tìm kiếm 1 hàng, Bộ lọc 1 hàng full width có icon + tên */
   .payment-filters {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr);
+    margin-bottom: 12px;
+  }
+
+  .payment-filter-popup {
+    display: grid;
   }
 
   .payment-filters .payment-filter-search {
@@ -116,8 +128,7 @@
   }
 
   .payment-filter-popup .ant-btn {
-    min-height: 44px;
-    padding-inline: 10px;
+    width: 100%;
   }
 
   .payment-filters .ant-input-search .ant-btn,

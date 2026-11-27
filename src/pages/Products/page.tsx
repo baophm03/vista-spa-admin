@@ -20,6 +20,7 @@ import {
   EditOutlined,
   EyeInvisibleOutlined,
   EyeOutlined,
+  FilterOutlined,
   FolderOutlined,
   LinkOutlined,
   PictureOutlined,
@@ -313,7 +314,8 @@ export default function Products() {
 
   const productsContent = (
     <>
-      <div className="product-toolbar">
+      {/* docs 6.2.1: mobile → [Tìm] / [Bộ lọc][+] */}
+      <div className="product-toolbar toolbar-row">
         <div className="product-toolbar-filters">
           <Input.Search
             allowClear
@@ -344,7 +346,7 @@ export default function Products() {
           />
           <div className="mobile-only product-filter-popover">
             <ListFilterPopover
-              iconOnly
+              trigger={<Button className="keep-label" icon={<FilterOutlined />}>Bộ lọc{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}</Button>}
               open={filtersOpen}
               onOpenChange={(next) => {
                 if (next) filterForm.setFieldsValue({
@@ -372,8 +374,7 @@ export default function Products() {
         </div>
         {isAdmin && (
           <Button type="primary" icon={<PlusOutlined />} aria-label="Thêm sản phẩm" onClick={() => openModal()}>
-            <span className="desktop-only">Thêm sản phẩm</span>
-            <span className="mobile-only">Thêm</span>
+            Thêm sản phẩm
           </Button>
         )}
       </div>
@@ -591,7 +592,8 @@ export default function Products() {
 
   const categoriesContent = (
     <>
-      <div className="product-toolbar">
+      {/* docs 6.2.1: mobile → [Tìm] / [+ Tạo danh mục] full width */}
+      <div className="product-toolbar product-toolbar-single toolbar-row">
         <Input.Search
           allowClear
           aria-label="Tìm tên danh mục"
@@ -602,9 +604,8 @@ export default function Products() {
           onSearch={(value) => { setCategorySearch(value.trim()); setCategoryPage(1) }}
         />
         {isAdmin && (
-          <Button type="primary" icon={<PlusOutlined />} aria-label="Tạo danh mục" onClick={() => { setEditingCategory(null); catForm.resetFields(); setCategoryModalOpen(true) }}>
-            <span className="desktop-only">Tạo danh mục</span>
-            <span className="mobile-only">Tạo</span>
+          <Button type="primary" className="keep-label" icon={<PlusOutlined />} aria-label="Tạo danh mục" onClick={() => { setEditingCategory(null); catForm.resetFields(); setCategoryModalOpen(true) }}>
+            Tạo danh mục
           </Button>
         )}
       </div>
@@ -676,7 +677,7 @@ export default function Products() {
         onCancel={() => { setCategoryModalOpen(false); setEditingCategory(null); catForm.resetFields() }}
         onOk={() => void submitCategory()}
         confirmLoading={catSaving}
-        okText={editingCategory ? 'Lưu' : 'Tạo'}
+        okText="Lưu"
         cancelText="Hủy"
         width={440}
       >

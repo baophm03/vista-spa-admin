@@ -233,7 +233,7 @@
   .services-page .stat-card {
     gap: 10px;
     padding: 14px 12px;
-    border-radius: 12px;
+    border-radius: 8px;
   }
 
   .services-page .stat-card-label {
@@ -293,24 +293,6 @@
     margin-inline-start: auto;
   }
 
-  .services-tabs > .ant-tabs-nav :is(.ant-tabs-nav-wrap, .ant-tabs-nav-list) {
-    width: 100%;
-  }
-
-  .services-tabs > .ant-tabs-nav .ant-tabs-tab {
-    flex: 1;
-    justify-content: center;
-    min-width: 0;
-    min-height: 44px;
-    margin-inline: 0 !important;
-    text-align: center;
-  }
-
-  .services-tabs > .ant-tabs-nav .ant-tabs-tab-btn {
-    white-space: normal;
-    font-size: 13px;
-  }
-
   .service-list-toolbar {
     flex-wrap: nowrap;
     gap: 8px;
@@ -338,12 +320,29 @@
     min-width: 0;
   }
 
-  .service-category-toolbar > .ant-btn {
-    padding-inline: 12px;
-  }
-
   .service-list-toolbar > .ant-btn {
     flex-shrink: 0;
+  }
+
+  /* docs 6.2.1: danh mục → [Tìm] / [Trạng thái][+]; dịch vụ (N = 0) → [Tìm] / [+ Thêm dịch vụ] full width */
+  .service-list-toolbar {
+    margin-bottom: 12px;
+  }
+
+  .service-list-toolbar.service-detail-toolbar {
+    flex-wrap: wrap;
+  }
+
+  .service-list-toolbar.service-detail-toolbar .service-list-search {
+    flex: 0 0 100%;
+  }
+
+  .service-list-toolbar.service-detail-toolbar > .ant-btn {
+    flex: 1 1 100%;
+  }
+
+  .service-category-card {
+    border-radius: 8px;
   }
 
   .services-page .mobile-card-head .ant-tag {
@@ -412,16 +411,5 @@
 
   .service-editor-modal .ant-form-item-label > label {
     white-space: normal;
-  }
-
-  :is(.service-category-modal, .service-editor-modal) .ant-modal-footer {
-    display: flex;
-    gap: 8px;
-  }
-
-  :is(.service-category-modal, .service-editor-modal) .ant-modal-footer .ant-btn {
-    flex: 1;
-    min-height: 40px;
-    margin-inline-start: 0 !important;
   }
 }

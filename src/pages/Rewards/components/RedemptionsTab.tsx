@@ -132,7 +132,8 @@ export default function RedemptionsTab() {
 
   return (
     <>
-      <div className="mb-3 grid grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] gap-2 md:grid-cols-[minmax(0,1fr)_200px] lg:flex lg:flex-wrap">
+      {/* docs 6.2.1: mobile → tìm kiếm 1 hàng, trạng thái 1 hàng */}
+      <div className="toolbar-row mb-3 grid grid-cols-1 gap-2 md:grid-cols-[minmax(0,1fr)_200px] lg:flex lg:flex-wrap">
           <Input.Search
             allowClear
             value={customerSearchInput}

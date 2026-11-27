@@ -131,12 +131,10 @@ export default function LookupItemsManager({ listId }: { listId: string }) {
         const canDelete = ability.can('DELETE' as never, 'LOOKUP')
         return (
     <>
-      <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 16 }} wrap>
+      <div className="toolbar-row mb-4 flex flex-wrap items-center justify-between gap-2 max-lg:mb-3">
         <Typography.Text type="secondary">Mã mục không đổi sau khi tạo. Mục đã dùng chỉ có thể ẩn.</Typography.Text>
-        <Space>
-          {canUpdate && <Button type="primary" icon={<PlusOutlined />} onClick={() => openEditor()}>Thêm mục</Button>}
-        </Space>
-      </Space>
+        {canUpdate && <Button type="primary" className="keep-label max-md:w-full" icon={<PlusOutlined />} onClick={() => openEditor()}>Thêm mục</Button>}
+      </div>
       {error && <Alert className="mb-4" type="error" showIcon message="Không tải được mục trong danh mục" description={error} action={<Button size="small" onClick={() => void load()}>Thử lại</Button>} />}
       <ResponsiveTable<LookupItemWithColor>
         rowKey="id"

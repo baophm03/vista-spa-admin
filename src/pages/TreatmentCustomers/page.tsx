@@ -735,24 +735,6 @@ export default function TreatmentCustomers({ kind = 'PACKAGE' }: { kind?: 'SINGL
     filterForm.setFieldsValue({ status: filter, package_id: pkgFilter, branch_id: branchFilter })
   }
 
-  // Nút pill mobile theo Figma "Mobile / Danh sách khách": trắng, viền hairline, radius 10, icon tím
-  const mobilePillStyle = {
-    flex: 1,
-    height: 44,
-    borderRadius: 10,
-    border: '1px solid var(--brand-border-soft)',
-    background: '#fff',
-    cursor: 'pointer',
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    fontSize: 13,
-    fontWeight: 500,
-    color: 'var(--brand-primary)',
-    padding: 0,
-  } as const
-
   const renderFilterPopover = (trigger?: ReactNode) => (
     <ListFilterPopover
       iconOnly={isMobile}
@@ -885,59 +867,32 @@ export default function TreatmentCustomers({ kind = 'PACKAGE' }: { kind?: 'SINGL
       >
         {isSingle ? 'Dịch vụ lẻ khách hàng' : 'Liệu trình khách hàng'}
       </PageTitle>
-      {/* Toolbar mobile gộp 1 hàng: search co giãn + nút lọc icon + nút thêm */}
+      {/* docs 6.2.1: mobile → [Tìm] / [Bộ lọc][+] */}
       {isMobile && (
-        <div style={{ display: 'flex', gap: 10, marginBottom: 14 }}>
+        <div className="toolbar-row mb-3 grid grid-cols-[minmax(0,1fr)_auto] gap-2">
           <Input
             allowClear
-            prefix={<SearchOutlined style={{ color: '#655E71' }} />}
+            prefix={<SearchOutlined />}
             placeholder="Tìm tên hoặc SĐT khách hàng"
             value={searchInput}
             onChange={(event) => setSearchInput(event.target.value)}
             aria-label="Tìm khách hàng"
-            style={{ flex: 1, minWidth: 0, height: 44, borderRadius: 12 }}
+            className="col-span-full"
           />
           {renderFilterPopover(
-            <button
-              type="button"
-              aria-label="Bộ lọc"
-              style={{ ...mobilePillStyle, flex: '0 0 44px', position: 'relative' }}
-            >
-              <FilterOutlined style={{ color: 'var(--brand-primary)', fontSize: 15 }} />
-              {activeFilterCount > 0 && (
-                <span
-                  aria-hidden
-                  style={{
-                    position: 'absolute',
-                    top: -5,
-                    right: -5,
-                    minWidth: 16,
-                    height: 16,
-                    borderRadius: 8,
-                    background: 'var(--brand-primary)',
-                    color: '#fff',
-                    fontSize: 10,
-                    fontWeight: 600,
-                    lineHeight: '16px',
-                    textAlign: 'center',
-                    padding: '0 4px',
-                  }}
-                >
-                  {activeFilterCount}
-                </span>
-              )}
-            </button>,
+            <Button className="keep-label" icon={<FilterOutlined />}>
+              Bộ lọc{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
+            </Button>,
           )}
-          {/* Nút thêm chuyển từ header xuống cùng hàng công cụ trên mobile */}
           <Can I="UPDATE" a="CUSTOMER">
-            <button
-              type="button"
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
               aria-label={isSingle ? 'Thêm khách dịch vụ lẻ' : 'Thêm khách vào liệu trình'}
-              style={{ ...mobilePillStyle, flex: '0 0 44px', background: 'var(--brand-primary)', borderColor: 'var(--brand-primary)', color: '#fff' }}
               onClick={() => openCreateModal()}
             >
-              <PlusOutlined style={{ fontSize: 15 }} />
-            </button>
+              {isSingle ? 'Thêm khách dịch vụ lẻ' : 'Thêm khách vào liệu trình'}
+            </Button>
           </Can>
         </div>
       )}

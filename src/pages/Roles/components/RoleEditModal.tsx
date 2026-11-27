@@ -33,7 +33,7 @@ export default function RoleEditModal({
       open={open}
       onCancel={onCancel}
       onOk={onOk}
-      okText={editingRole ? 'Lưu thay đổi' : 'Tạo vai trò'}
+      okText="Lưu"
       cancelText="Hủy"
       confirmLoading={saving}
       title={

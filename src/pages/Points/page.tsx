@@ -334,7 +334,7 @@ export default function Points() {
         Điểm & Hạng thành viên
       </PageTitle>
 
-      <div className="rounded-xl p-3 md:rounded-[20px] md:px-6 md:pt-6 md:pb-7" style={{ background: 'var(--brand-bg-card, #FFFFFF)', border: '1px solid var(--brand-border-soft, #ECEFEA)', marginTop: 8 }}>
+      <div className="rounded-lg p-3 md:px-6 md:pt-6 md:pb-7 lg:mt-2 lg:rounded-[20px]" style={{ background: 'var(--brand-bg-card, #FFFFFF)', border: '1px solid var(--brand-border-soft, #ECEFEA)' }}>
         <button
           type="button"
           aria-expanded={ranksExpanded}
@@ -469,19 +469,18 @@ export default function Points() {
       </div>
 
       <Tabs
-        className="max-md:[&_.ant-tabs-nav-list]:w-full max-md:[&_.ant-tabs-tab]:flex-1 max-md:[&_.ant-tabs-tab]:justify-center max-md:[&_.ant-tabs-tab]:px-1 max-md:[&_.ant-tabs-tab]:text-xs max-md:[&_.ant-tabs-tab+.ant-tabs-tab]:ms-0!"
+        className="mt-3 lg:mt-4"
         activeKey={activeTab}
         onChange={setActiveTab}
-        tabBarGutter={12}
-        style={{ marginTop: 16 }}
         items={[
           {
             key: 'members',
-            label: <><span className="md:hidden">Thành viên</span><span className="max-md:hidden">Thành viên &amp; điểm hiện có</span></>,
+            label: 'Thành viên & điểm hiện có',
             children: (
               <>
                 {/* Tìm kiếm + bộ lọc chỉ áp dụng cho bảng thành viên — đặt trong tab, không để trên card hạng */}
-                <div className="mb-3 grid grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)] gap-2 lg:flex lg:flex-wrap lg:justify-end">
+                {/* docs 6.2.1: mobile → tìm kiếm 1 hàng, lọc hạng 1 hàng */}
+                <div className="toolbar-row mb-3 grid grid-cols-1 gap-2 md:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)] lg:flex lg:flex-wrap lg:justify-end">
                     <Input.Search
                       allowClear
                       placeholder="Tìm tên, SĐT, mã khách..."
@@ -616,7 +615,7 @@ export default function Points() {
             label: 'Lịch sử điểm',
             children: (
               <>
-      <div className="mb-3 grid grid-cols-2 gap-2 lg:flex lg:flex-wrap lg:justify-end">
+      <div className="toolbar-row mb-3 grid grid-cols-2 gap-2 lg:flex lg:flex-wrap lg:justify-end">
           <Select
             placeholder="Tất cả biến động"
             aria-label="Lọc theo loại biến động"
