@@ -426,7 +426,7 @@ export default function AccessLogs() {
         />
       </div>
 
-      {loadError && (
+      {Boolean(loadError) && (
         <Alert
           className="mb-4! max-lg:mb-3!"
           type="error"
